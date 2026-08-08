@@ -20,6 +20,7 @@ import cartModule from './modules/cart/index.js'
 import customerModule from './modules/customer/index.js'
 import fulfillmentModule, { fulfillmentProviderDeclarations } from './modules/fulfillment/index.js'
 import inventoryModule from './modules/inventory/index.js'
+import notificationModule, { notificationProviderDeclarations } from './modules/notification/index.js'
 import paymentModule, { paymentProviderDeclarations } from './modules/payment/index.js'
 import productModule from './modules/product/index.js'
 import userModule from './modules/user/index.js'
@@ -41,6 +42,7 @@ export async function bootstrapContainer(deps: { logger: Logger; dbProvider: DbP
   await bootstrapModule(container, fulfillmentModule, fulfillmentProviderDeclarations)
   await bootstrapModule(container, inventoryModule)
   await bootstrapModule(container, productModule)
+  await bootstrapModule(container, notificationModule, notificationProviderDeclarations)
   await bootstrapModule(container, paymentModule, paymentProviderDeclarations)
   await bootstrapModule(container, userModule)
 
