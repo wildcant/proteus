@@ -1,30 +1,14 @@
 import type { DbProvider } from '@core/db/ports.js'
 import type { IAuthModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { test } from '@tests/setup/test-extend.js'
 import jwt from 'jsonwebtoken'
-import { describe, vi } from 'vitest'
-import type { App } from '../../../server/ports.js'
-
-const SECRET = vi.hoisted(() => 'test-jwt-secret-for-testing-only')
-
-vi.mock('../../../env.js', () => ({
-  env: {
-    JWT_SECRET: SECRET,
-    JWT_EXPIRES_IN: '1d',
-    NODE_ENV: 'test',
-    LOG_LEVEL: 'silent',
-    LOG_FILE: '',
-    CORS_ORIGIN: [],
-    RUNTIME: 'workerd',
-    STRIPE_SECRET_KEY: 'sk_test_xxxx',
-    STRIPE_WEBHOOK_SECRET: 'whsec_test_xxxx',
-  },
-}))
-
-import { applyMiddleware } from '@framework/http/apply-middleware.js'
+import { describe } from 'vitest'
 import { bootstrapContainer } from '../../../container.js'
+import { env } from '../../../env.js'
 import { createApp } from '../../../server/app.js'
+import type { App } from '../../../server/ports.js'
 import authDefinitions from '../definitions.js'
 
 let app: App
@@ -123,7 +107,7 @@ describe('POST /auth/verification/request', () => {
     )
 
     // Get the code from the verification record's providerMetadata
-    const decoded = jwt.verify(token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
     const authIdentityId = decoded.authIdentityId as string
 
     const firstVerifications = await authService.listAuthVerifications({ authIdentityId })
@@ -154,7 +138,7 @@ describe('POST /auth/verification/confirm', () => {
 
     // Extract plaintext code by calling requestAuthVerification directly
     // (the route doesn't return it).
-    const decoded = jwt.verify(token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
     const authIdentityId = decoded.authIdentityId as string
 
     const result = await authService.requestAuthVerification({
@@ -193,7 +177,7 @@ describe('POST /auth/verification/confirm', () => {
 
   test('expired code is rejected', async ({ expect }) => {
     const token = await registerCustomer('expired@example.com', 'secret123')
-    const decoded = jwt.verify(token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
     const authIdentityId = decoded.authIdentityId as string
 
     const result = await authService.requestAuthVerification({
@@ -250,14 +234,14 @@ describe('verification gate on login', () => {
 
     expect(status).toBe(200)
     expect(body.verificationRequired).toBe(true)
-    const decoded = jwt.verify(body.token as string, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('')
   })
 
   test('customer login returns full JWT after verification', async ({ expect }) => {
     // Register
     const regToken = await registerCustomer('gate-verified@example.com', 'secret123')
-    const decoded = jwt.verify(regToken, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(regToken, env.JWT_SECRET) as Record<string, unknown>
     const authIdentityId = decoded.authIdentityId as string
 
     // Link to a customer
@@ -286,7 +270,7 @@ describe('verification gate on login', () => {
 
     expect(status).toBe(200)
     expect(body.verificationRequired).toBeUndefined()
-    const loginDecoded = jwt.verify(body.token as string, SECRET) as Record<string, unknown>
+    const loginDecoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
     expect(loginDecoded.actorId).toBe('cus_linked')
   })
 

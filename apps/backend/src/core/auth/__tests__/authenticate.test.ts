@@ -1,18 +1,9 @@
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import { test } from '@tests/setup/test-extend.js'
 import { afterEach, describe, expect, vi } from 'vitest'
+import { env } from '../../../env.js'
 import { ErrorTypes } from '../../errors/app-error.js'
 import { generateJwtToken } from '../utils/token.js'
-
-const SECRET = 'test-jwt-secret-for-testing-only'
-
-// Mock the env module so tests don't depend on actual env vars
-// Factory is hoisted above const declarations, so the value must be inlined
-vi.mock('../../../env.js', () => ({
-  env: {
-    JWT_SECRET: 'test-jwt-secret-for-testing-only',
-  },
-}))
 
 afterEach(() => {
   vi.useRealTimers()
@@ -31,7 +22,7 @@ describe('authenticate middleware', () => {
           appMetadata: { registered: true },
           userMetadata: { name: 'Test' },
         },
-        { secret: SECRET, expiresIn: '1d' },
+        { secret: env.JWT_SECRET, expiresIn: '1d' },
       )
 
       const result = await middleware(
@@ -64,7 +55,7 @@ describe('authenticate middleware', () => {
           appMetadata: {},
           userMetadata: {},
         },
-        { secret: SECRET, expiresIn: '1h' },
+        { secret: env.JWT_SECRET, expiresIn: '1h' },
       )
 
       vi.advanceTimersByTime(2 * 60 * 60 * 1000)
@@ -97,7 +88,7 @@ describe('authenticate middleware', () => {
           appMetadata: {},
           userMetadata: {},
         },
-        { secret: SECRET, expiresIn: '1d' },
+        { secret: env.JWT_SECRET, expiresIn: '1d' },
       )
 
       await expect(middleware(makeRequest({ headers: { authorization: `Bearer ${token}` } }))).rejects.toMatchObject({
@@ -118,7 +109,7 @@ describe('authenticate middleware', () => {
           appMetadata: {},
           userMetadata: {},
         },
-        { secret: SECRET, expiresIn: '1d' },
+        { secret: env.JWT_SECRET, expiresIn: '1d' },
       )
 
       await expect(middleware(makeRequest({ headers: { authorization: `Bearer ${token}` } }))).rejects.toMatchObject({
@@ -138,7 +129,7 @@ describe('authenticate middleware', () => {
           appMetadata: {},
           userMetadata: {},
         },
-        { secret: SECRET, expiresIn: '1d' },
+        { secret: env.JWT_SECRET, expiresIn: '1d' },
       )
 
       const result = await middleware(makeRequest({ headers: { authorization: `Bearer ${token}` } }))
@@ -168,7 +159,7 @@ describe('authenticate middleware', () => {
           appMetadata: {},
           userMetadata: {},
         },
-        { secret: SECRET, expiresIn: '1d' },
+        { secret: env.JWT_SECRET, expiresIn: '1d' },
       )
 
       const result = await middleware(makeRequest({ headers: { authorization: `Bearer ${token}` } }))

@@ -1,30 +1,14 @@
 import type { DbProvider } from '@core/db/ports.js'
 import type { IAuthModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { test } from '@tests/setup/test-extend.js'
 import jwt from 'jsonwebtoken'
-import { describe, vi } from 'vitest'
-import type { App } from '../../../server/ports.js'
-
-const SECRET = vi.hoisted(() => 'test-jwt-secret-for-testing-only')
-
-vi.mock('../../../env.js', () => ({
-  env: {
-    JWT_SECRET: SECRET,
-    JWT_EXPIRES_IN: '1d',
-    NODE_ENV: 'test',
-    LOG_LEVEL: 'silent',
-    LOG_FILE: '',
-    CORS_ORIGIN: [],
-    RUNTIME: 'workerd',
-    STRIPE_SECRET_KEY: 'sk_test_xxxx',
-    STRIPE_WEBHOOK_SECRET: 'whsec_test_xxxx',
-  },
-}))
-
-import { applyMiddleware } from '@framework/http/apply-middleware.js'
+import { describe } from 'vitest'
 import { bootstrapContainer } from '../../../container.js'
+import { env } from '../../../env.js'
 import { createApp } from '../../../server/app.js'
+import type { App } from '../../../server/ports.js'
 import authDefinitions from '../definitions.js'
 
 let app: App
@@ -78,7 +62,7 @@ describe('POST /auth/:actorType/:authProvider/register', () => {
     expect(status).toBe(200)
     expect(body.token).toBeDefined()
 
-    const decoded = jwt.verify(body.token as string, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('')
     expect(decoded.actorType).toBe('user')
     expect(decoded.authProvider).toBe('emailpass')
@@ -99,7 +83,7 @@ describe('POST /auth/:actorType/:authProvider (authenticate)', () => {
     })
 
     expect(status).toBe(200)
-    const decoded = jwt.verify(body.token as string, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('')
     expect(decoded.actorType).toBe('user')
   })
@@ -111,7 +95,7 @@ describe('POST /auth/:actorType/:authProvider (authenticate)', () => {
     })
 
     // Simulate linking: set userId in app_metadata
-    const regDecoded = jwt.verify(regBody.token as string, SECRET) as Record<string, unknown>
+    const regDecoded = jwt.verify(regBody.token as string, env.JWT_SECRET) as Record<string, unknown>
     const authIdentityId = regDecoded.authIdentityId as string
     await authService.updateAuthIdentity(authIdentityId, {
       appMetadata: { registered: true, userId: 'usr_linked' },
@@ -124,7 +108,7 @@ describe('POST /auth/:actorType/:authProvider (authenticate)', () => {
 
     expect(status).toBe(200)
     expect(body.verificationRequired).toBeUndefined()
-    const decoded = jwt.verify(body.token as string, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('usr_linked')
     expect(decoded.actorType).toBe('user')
   })
@@ -137,7 +121,7 @@ describe('POST /auth/token/refresh', () => {
       email: 'refresh@example.com',
       password: 'secret123',
     })
-    const regDecoded = jwt.verify(regBody.token as string, SECRET) as Record<string, unknown>
+    const regDecoded = jwt.verify(regBody.token as string, env.JWT_SECRET) as Record<string, unknown>
     const authIdentityId = regDecoded.authIdentityId as string
 
     // Simulate linking
@@ -162,7 +146,7 @@ describe('POST /auth/token/refresh', () => {
     })
 
     expect(status).toBe(200)
-    const decoded = jwt.verify(body.token as string, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('usr_refresh')
     const appMetadata = decoded.appMetadata as Record<string, unknown>
     expect(appMetadata.role).toBe('admin')
@@ -174,7 +158,7 @@ describe('POST /auth/token/refresh', () => {
       email: 'actorless-refresh@example.com',
       password: 'secret123',
     })
-    const regDecoded = jwt.verify(regBody.token as string, SECRET) as Record<string, unknown>
+    const regDecoded = jwt.verify(regBody.token as string, env.JWT_SECRET) as Record<string, unknown>
     const authIdentityId = regDecoded.authIdentityId as string
 
     // Simulate linking after invite accept
@@ -188,7 +172,7 @@ describe('POST /auth/token/refresh', () => {
     })
 
     expect(status).toBe(200)
-    const decoded = jwt.verify(body.token as string, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('usr_refreshed')
   })
 })
