@@ -19,7 +19,7 @@ import {
   generateCustomerDTO,
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
-import { generateCreateNotificationDTO } from '../factories/notification-dto.js'
+import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
 import {
   generateCreateAccountHolderDTO,
   generateCreatePaymentCollectionDTO,
@@ -65,6 +65,7 @@ type Fixtures = {
       createRefundReason: typeof generateCreateRefundReasonDTO
       updateRefundReason: typeof generateUpdateRefundReasonDTO
       createAccountHolder: typeof generateCreateAccountHolderDTO
+      notification: typeof generateNotificationDTO
       createNotification: typeof generateCreateNotificationDTO
       createProduct: typeof generateCreateProductDTO
       updateProduct: typeof generateUpdateProductDTO
@@ -113,6 +114,7 @@ export const test = testBase.extend<Fixtures>({
         createRefundReason: generateCreateRefundReasonDTO,
         updateRefundReason: generateUpdateRefundReasonDTO,
         createAccountHolder: generateCreateAccountHolderDTO,
+        notification: generateNotificationDTO,
         createNotification: generateCreateNotificationDTO,
         createProduct: generateCreateProductDTO,
         updateProduct: generateUpdateProductDTO,
