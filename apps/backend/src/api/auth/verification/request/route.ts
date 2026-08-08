@@ -22,6 +22,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     metadata: req.body.metadata,
   })
 
+  // TODO(notification): send the verification code to the user via email
   logger.debug(`Verification code for ${result.entityId}: ${result.code}`)
 
   return {

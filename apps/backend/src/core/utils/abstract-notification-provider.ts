@@ -28,10 +28,6 @@ export abstract class AbstractNotificationProviderService<TConfig = Record<strin
     this.config = config
   }
 
-  static validateOptions(_options: Record<string, unknown>): void {
-    // Override in subclasses to validate provider options at registration time.
-  }
-
   async send(_input: NotificationProviderSendInput): Promise<NotificationProviderSendOutput> {
     throw new Error('Method not implemented. Override "send" in your notification provider.')
   }

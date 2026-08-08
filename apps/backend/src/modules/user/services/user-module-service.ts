@@ -178,7 +178,6 @@ export class UserModuleService implements IUserModuleService {
     return this.withTransaction(context, async (ctx) => {
       const { token, expiresAt } = this.generateInviteToken(data.email)
       const invite = await this.inviteRepository.create({ email: data.email, token, expiresAt }, ctx)
-      this.logger.debug(`Invite link for ${invite.email}: http://localhost:3002/invite?token=${invite.token}`)
       return invite
     })
   }

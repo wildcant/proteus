@@ -13,6 +13,7 @@ import adminCustomerDefinitions from './api/admin/customers/definitions.js'
 import adminFulfillmentProviderDefinitions from './api/admin/fulfillment-providers/definitions.js'
 import adminFulfillmentSetDefinitions from './api/admin/fulfillment-sets/definitions.js'
 import adminInviteDefinitions from './api/admin/invites/definitions.js'
+import adminNotificationDefinitions from './api/admin/notifications/definitions.js'
 import adminPaymentCollectionDefinitions from './api/admin/payment-collections/definitions.js'
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
 import adminProductDefinitions from './api/admin/products/definitions.js'
@@ -44,6 +45,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminCustomerDefinitions,
   ...adminFulfillmentProviderDefinitions,
   ...adminInviteDefinitions,
+  ...adminNotificationDefinitions,
   ...adminFulfillmentSetDefinitions,
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,

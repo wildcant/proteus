@@ -50,6 +50,7 @@ export type NotificationProviderDTO = {
 
 export interface FilterableNotificationProps extends BaseFilterable<FilterableNotificationProps> {
   id?: string | string[]
+  to?: string | string[]
   channel?: NotificationChannel | NotificationChannel[]
   status?: NotificationStatus | NotificationStatus[]
   providerId?: string | string[]

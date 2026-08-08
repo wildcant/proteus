@@ -17,6 +17,12 @@ const envSchema = z.object({
   // SENDGRID_API_KEY: z.string(),
   // SENDGRID_FROM: z.string(),
 
+  // Resend (development only)
+  RESEND_API_KEY: z.string(),
+  RESEND_FROM: z.string(),
+
+  ADMIN_URL: z.url(),
+
   CORS_ORIGIN: z
     .string()
     .transform((s) => s.split(',').map((u) => u.trim()))

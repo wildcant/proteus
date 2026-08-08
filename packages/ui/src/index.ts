@@ -96,6 +96,16 @@ export {
 } from './components/ui/popover.tsx'
 export { Separator } from './components/ui/separator.tsx'
 export {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from './components/ui/sheet.tsx'
+export {
   Sidebar,
   SidebarContent,
   SidebarFooter,

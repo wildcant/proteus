@@ -43,6 +43,7 @@
     "jsonwebtoken": "^9.0.3",
     "postgres": "^3.4.7",
     "qs": "^6.15.3",
+    "resend": "^6.18.1",
     "scrypt-kdf": "^4.0.0",
     "stripe": "^22.3.2",
     "swagger-ui-express": "^5.0.1",
