@@ -16,6 +16,7 @@ import {
   TooltipProvider,
 } from '@proteus/ui'
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
+import { NotificationBell } from '#/features/notifications/components/notification-bell'
 import { Breadcrumbs } from './breadcrumbs'
 import { navItems } from './nav'
 import { UserMenu } from './user-menu'
@@ -44,6 +45,9 @@ function Topbar() {
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumbs />
+      <div className="ml-auto">
+        <NotificationBell />
+      </div>
     </header>
   )
 }

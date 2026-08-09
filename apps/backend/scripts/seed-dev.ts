@@ -5,6 +5,7 @@ import type {
   ICustomerModuleService,
   IInventoryModuleService,
   ILinkService,
+  INotificationModuleService,
   IPaymentModuleService,
   IProductModuleService,
   IUserModuleService,
@@ -18,6 +19,7 @@ const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
 const cartService = container.resolve<ICartModuleService>(Modules.CART)
 const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
 // --- Users ---
@@ -179,202 +181,201 @@ if (customerIdentity) {
 const existingProducts = await productService.listProducts()
 if (existingProducts.length > 0) {
   console.info(`Skipped products (${existingProducts.length} already exist)`)
-  process.exit(0)
-}
-
-const createdProducts = await productService.createProducts([
-  {
-    title: 'Classic T-Shirt',
-    handle: 't-shirt',
-    description:
-      'Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.',
-    status: 'published',
-    weight: 400,
-    thumbnail: 'https://placehold.co/600x400?text=T-Shirt',
-  },
-  {
-    title: 'Vintage Sweatshirt',
-    handle: 'sweatshirt',
-    description:
-      'Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.',
-    status: 'published',
-    weight: 400,
-    thumbnail: 'https://placehold.co/600x400?text=Sweatshirt',
-  },
-  {
-    title: 'Classic Sweatpants',
-    handle: 'sweatpants',
-    description:
-      'Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.',
-    status: 'published',
-    weight: 400,
-    thumbnail: 'https://placehold.co/600x400?text=Sweatpants',
-  },
-  {
-    title: 'Vintage Shorts',
-    handle: 'shorts',
-    description:
-      'Reimagine the feeling of classic shorts. With our cotton shorts, everyday essentials no longer have to be ordinary.',
-    status: 'published',
-    weight: 400,
-    thumbnail: 'https://placehold.co/600x400?text=Shorts',
-  },
-])
-const [tshirt, sweatshirt, sweatpants, shorts] = createdProducts as [
-  (typeof createdProducts)[number],
-  (typeof createdProducts)[number],
-  (typeof createdProducts)[number],
-  (typeof createdProducts)[number],
-]
-console.info(`Seeded ${4} products`)
-
-// --- Options ---
-const tshirtOptions = await productService.createProductOptions([
-  { productId: tshirt.id, title: 'Size' },
-  { productId: tshirt.id, title: 'Color' },
-])
-const [tshirtSize, tshirtColor] = tshirtOptions as [(typeof tshirtOptions)[number], (typeof tshirtOptions)[number]]
-const [sweatshirtSize] = (await productService.createProductOptions([{ productId: sweatshirt.id, title: 'Size' }])) as [
-  (typeof tshirtOptions)[number],
-]
-const [sweatpantsSize] = (await productService.createProductOptions([{ productId: sweatpants.id, title: 'Size' }])) as [
-  (typeof tshirtOptions)[number],
-]
-const [shortsSize] = (await productService.createProductOptions([{ productId: shorts.id, title: 'Size' }])) as [
-  (typeof tshirtOptions)[number],
-]
-console.info('Seeded product options')
-
-// --- Option Values ---
-const sizes = ['S', 'M', 'L', 'XL']
-const colors = ['Black', 'White']
-
-await productService.createProductOptionValues([
-  ...sizes.map((value, i) => ({ optionId: tshirtSize.id, value, rank: i })),
-  ...colors.map((value, i) => ({ optionId: tshirtColor.id, value, rank: i })),
-  ...sizes.map((value, i) => ({ optionId: sweatshirtSize.id, value, rank: i })),
-  ...sizes.map((value, i) => ({ optionId: sweatpantsSize.id, value, rank: i })),
-  ...sizes.map((value, i) => ({ optionId: shortsSize.id, value, rank: i })),
-])
-console.info('Seeded product option values')
-
-// --- Variants ---
-const tshirtVariants = sizes.flatMap((size) =>
-  colors.map((color) => ({
-    productId: tshirt.id,
-    title: `${size} / ${color}`,
-    sku: `SHIRT-${size}-${color.toUpperCase()}`,
-  })),
-)
-
-const sweatshirtVariants = sizes.map((size) => ({
-  productId: sweatshirt.id,
-  title: size,
-  sku: `SWEATSHIRT-${size}`,
-}))
-
-const sweatpantsVariants = sizes.map((size) => ({
-  productId: sweatpants.id,
-  title: size,
-  sku: `SWEATPANTS-${size}`,
-}))
-
-const shortsVariants = sizes.map((size) => ({
-  productId: shorts.id,
-  title: size,
-  sku: `SHORTS-${size}`,
-}))
-
-const createdVariants = await productService.createProductVariants([
-  ...tshirtVariants,
-  ...sweatshirtVariants,
-  ...sweatpantsVariants,
-  ...shortsVariants,
-])
-console.info(`Seeded ${createdVariants.length} product variants`)
-
-// --- Images ---
-await productService.createProductImages([
-  { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+Front', rank: 0 },
-  { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+Back', rank: 1 },
-  { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+White+Front', rank: 2 },
-  { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+White+Back', rank: 3 },
-  { productId: sweatshirt.id, url: 'https://placehold.co/600x400?text=Sweatshirt+Front', rank: 0 },
-  { productId: sweatshirt.id, url: 'https://placehold.co/600x400?text=Sweatshirt+Back', rank: 1 },
-  { productId: sweatpants.id, url: 'https://placehold.co/600x400?text=Sweatpants+Front', rank: 0 },
-  { productId: sweatpants.id, url: 'https://placehold.co/600x400?text=Sweatpants+Back', rank: 1 },
-  { productId: shorts.id, url: 'https://placehold.co/600x400?text=Shorts+Front', rank: 0 },
-  { productId: shorts.id, url: 'https://placehold.co/600x400?text=Shorts+Back', rank: 1 },
-])
-console.info('Seeded product images')
-
-// --- Inventory Items + Levels + Variant Links ---
-const inventoryData = createdVariants.map((v) => ({
-  sku: v.sku,
-  title: v.title,
-  requiresShipping: true,
-}))
-
-const createdItems = await inventoryService.createInventoryItems(inventoryData)
-console.info(`Seeded ${createdItems.length} inventory items`)
-
-// Create inventory levels (all items at a single default location with stock)
-await inventoryService.createInventoryLevels(
-  createdItems.map((item) => ({
-    inventoryItemId: item.id,
-    locationId: 'loc_default',
-    stockedQuantity: 100,
-    reservedQuantity: 0,
-    incomingQuantity: 0,
-  })),
-)
-console.info(`Seeded ${createdItems.length} inventory levels`)
-
-// Link variants -> inventory items (1:1 by matching SKU order)
-const links = createdVariants.map((variant, i) => {
-  const item = createdItems[i]
-  if (!item) throw new Error(`Missing inventory item for variant "${variant.id}"`)
-  return { variantId: variant.id, inventoryItemId: item.id }
-})
-await linkService.repo('productVariantInventoryItem').createMany(links)
-console.info(`Seeded ${links.length} variant-inventory links`)
-
-// --- Cart with line items (for testing payment endpoints) ---
-const existingCarts = await cartService.listCarts()
-if (existingCarts.length === 0) {
-  const tshirtVariant = createdVariants.find((v) => v.sku === 'SHIRT-M-BLACK') as (typeof createdVariants)[number]
-  const sweatshirtVariant = createdVariants.find((v) => v.sku === 'SWEATSHIRT-L') as (typeof createdVariants)[number]
-
-  const [cart] = (await cartService.createCarts([
-    {
-      currencyCode: 'usd',
-      email: 'test@example.com',
-      items: [
-        {
-          title: 'Classic T-Shirt (M / Black)',
-          quantity: 2,
-          unitPrice: 2500,
-          variantId: tshirtVariant.id,
-          variantSku: tshirtVariant.sku,
-          productId: tshirt.id,
-          productTitle: 'Classic T-Shirt',
-        },
-        {
-          title: 'Vintage Sweatshirt (L)',
-          quantity: 1,
-          unitPrice: 4500,
-          variantId: sweatshirtVariant.id,
-          variantSku: sweatshirtVariant.sku,
-          productId: sweatshirt.id,
-          productTitle: 'Vintage Sweatshirt',
-        },
-      ],
-    },
-  ])) as [Awaited<ReturnType<typeof cartService.createCarts>>[number]]
-
-  console.info(`Seeded cart ${cart.id} with 2 line items (total: $95.00)`)
 } else {
-  console.info(`Skipped cart (${existingCarts.length} already exist)`)
+  const createdProducts = await productService.createProducts([
+    {
+      title: 'Classic T-Shirt',
+      handle: 't-shirt',
+      description:
+        'Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.',
+      status: 'published',
+      weight: 400,
+      thumbnail: 'https://placehold.co/600x400?text=T-Shirt',
+    },
+    {
+      title: 'Vintage Sweatshirt',
+      handle: 'sweatshirt',
+      description:
+        'Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.',
+      status: 'published',
+      weight: 400,
+      thumbnail: 'https://placehold.co/600x400?text=Sweatshirt',
+    },
+    {
+      title: 'Classic Sweatpants',
+      handle: 'sweatpants',
+      description:
+        'Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.',
+      status: 'published',
+      weight: 400,
+      thumbnail: 'https://placehold.co/600x400?text=Sweatpants',
+    },
+    {
+      title: 'Vintage Shorts',
+      handle: 'shorts',
+      description:
+        'Reimagine the feeling of classic shorts. With our cotton shorts, everyday essentials no longer have to be ordinary.',
+      status: 'published',
+      weight: 400,
+      thumbnail: 'https://placehold.co/600x400?text=Shorts',
+    },
+  ])
+  const [tshirt, sweatshirt, sweatpants, shorts] = createdProducts as [
+    (typeof createdProducts)[number],
+    (typeof createdProducts)[number],
+    (typeof createdProducts)[number],
+    (typeof createdProducts)[number],
+  ]
+  console.info(`Seeded ${4} products`)
+
+  // --- Options ---
+  const tshirtOptions = await productService.createProductOptions([
+    { productId: tshirt.id, title: 'Size' },
+    { productId: tshirt.id, title: 'Color' },
+  ])
+  const [tshirtSize, tshirtColor] = tshirtOptions as [(typeof tshirtOptions)[number], (typeof tshirtOptions)[number]]
+  const [sweatshirtSize] = (await productService.createProductOptions([
+    { productId: sweatshirt.id, title: 'Size' },
+  ])) as [(typeof tshirtOptions)[number]]
+  const [sweatpantsSize] = (await productService.createProductOptions([
+    { productId: sweatpants.id, title: 'Size' },
+  ])) as [(typeof tshirtOptions)[number]]
+  const [shortsSize] = (await productService.createProductOptions([{ productId: shorts.id, title: 'Size' }])) as [
+    (typeof tshirtOptions)[number],
+  ]
+  console.info('Seeded product options')
+
+  // --- Option Values ---
+  const sizes = ['S', 'M', 'L', 'XL']
+  const colors = ['Black', 'White']
+
+  await productService.createProductOptionValues([
+    ...sizes.map((value, i) => ({ optionId: tshirtSize.id, value, rank: i })),
+    ...colors.map((value, i) => ({ optionId: tshirtColor.id, value, rank: i })),
+    ...sizes.map((value, i) => ({ optionId: sweatshirtSize.id, value, rank: i })),
+    ...sizes.map((value, i) => ({ optionId: sweatpantsSize.id, value, rank: i })),
+    ...sizes.map((value, i) => ({ optionId: shortsSize.id, value, rank: i })),
+  ])
+  console.info('Seeded product option values')
+
+  // --- Variants ---
+  const tshirtVariants = sizes.flatMap((size) =>
+    colors.map((color) => ({
+      productId: tshirt.id,
+      title: `${size} / ${color}`,
+      sku: `SHIRT-${size}-${color.toUpperCase()}`,
+    })),
+  )
+
+  const sweatshirtVariants = sizes.map((size) => ({
+    productId: sweatshirt.id,
+    title: size,
+    sku: `SWEATSHIRT-${size}`,
+  }))
+
+  const sweatpantsVariants = sizes.map((size) => ({
+    productId: sweatpants.id,
+    title: size,
+    sku: `SWEATPANTS-${size}`,
+  }))
+
+  const shortsVariants = sizes.map((size) => ({
+    productId: shorts.id,
+    title: size,
+    sku: `SHORTS-${size}`,
+  }))
+
+  const createdVariants = await productService.createProductVariants([
+    ...tshirtVariants,
+    ...sweatshirtVariants,
+    ...sweatpantsVariants,
+    ...shortsVariants,
+  ])
+  console.info(`Seeded ${createdVariants.length} product variants`)
+
+  // --- Images ---
+  await productService.createProductImages([
+    { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+Front', rank: 0 },
+    { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+Back', rank: 1 },
+    { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+White+Front', rank: 2 },
+    { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+White+Back', rank: 3 },
+    { productId: sweatshirt.id, url: 'https://placehold.co/600x400?text=Sweatshirt+Front', rank: 0 },
+    { productId: sweatshirt.id, url: 'https://placehold.co/600x400?text=Sweatshirt+Back', rank: 1 },
+    { productId: sweatpants.id, url: 'https://placehold.co/600x400?text=Sweatpants+Front', rank: 0 },
+    { productId: sweatpants.id, url: 'https://placehold.co/600x400?text=Sweatpants+Back', rank: 1 },
+    { productId: shorts.id, url: 'https://placehold.co/600x400?text=Shorts+Front', rank: 0 },
+    { productId: shorts.id, url: 'https://placehold.co/600x400?text=Shorts+Back', rank: 1 },
+  ])
+  console.info('Seeded product images')
+
+  // --- Inventory Items + Levels + Variant Links ---
+  const inventoryData = createdVariants.map((v) => ({
+    sku: v.sku,
+    title: v.title,
+    requiresShipping: true,
+  }))
+
+  const createdItems = await inventoryService.createInventoryItems(inventoryData)
+  console.info(`Seeded ${createdItems.length} inventory items`)
+
+  // Create inventory levels (all items at a single default location with stock)
+  await inventoryService.createInventoryLevels(
+    createdItems.map((item) => ({
+      inventoryItemId: item.id,
+      locationId: 'loc_default',
+      stockedQuantity: 100,
+      reservedQuantity: 0,
+      incomingQuantity: 0,
+    })),
+  )
+  console.info(`Seeded ${createdItems.length} inventory levels`)
+
+  // Link variants -> inventory items (1:1 by matching SKU order)
+  const links = createdVariants.map((variant, i) => {
+    const item = createdItems[i]
+    if (!item) throw new Error(`Missing inventory item for variant "${variant.id}"`)
+    return { variantId: variant.id, inventoryItemId: item.id }
+  })
+  await linkService.repo('productVariantInventoryItem').createMany(links)
+  console.info(`Seeded ${links.length} variant-inventory links`)
+
+  // --- Cart with line items (for testing payment endpoints) ---
+  const existingCarts = await cartService.listCarts()
+  if (existingCarts.length === 0) {
+    const tshirtVariant = createdVariants.find((v) => v.sku === 'SHIRT-M-BLACK') as (typeof createdVariants)[number]
+    const sweatshirtVariant = createdVariants.find((v) => v.sku === 'SWEATSHIRT-L') as (typeof createdVariants)[number]
+
+    const [cart] = (await cartService.createCarts([
+      {
+        currencyCode: 'usd',
+        email: 'test@example.com',
+        items: [
+          {
+            title: 'Classic T-Shirt (M / Black)',
+            quantity: 2,
+            unitPrice: 2500,
+            variantId: tshirtVariant.id,
+            variantSku: tshirtVariant.sku,
+            productId: tshirt.id,
+            productTitle: 'Classic T-Shirt',
+          },
+          {
+            title: 'Vintage Sweatshirt (L)',
+            quantity: 1,
+            unitPrice: 4500,
+            variantId: sweatshirtVariant.id,
+            variantSku: sweatshirtVariant.sku,
+            productId: sweatshirt.id,
+            productTitle: 'Vintage Sweatshirt',
+          },
+        ],
+      },
+    ])) as [Awaited<ReturnType<typeof cartService.createCarts>>[number]]
+
+    console.info(`Seeded cart ${cart.id} with 2 line items (total: $95.00)`)
+  } else {
+    console.info(`Skipped cart (${existingCarts.length} already exist)`)
+  }
 }
 
 // --- Refund reasons ---
@@ -389,6 +390,126 @@ if (existingReasons.length === 0) {
   console.info('Seeded 4 refund reasons')
 } else {
   console.info(`Skipped refund reasons (${existingReasons.length} already exist)`)
+}
+
+// --- Notifications (feed channel, addressed to dev admin) ---
+// Pass --notifications flag to seed: npm run db:seed:dev -- --notifications
+const seedNotifications = process.argv.includes('--notifications')
+if (seedNotifications && (await notificationService.listNotifications({ channel: 'feed' })).length === 0) {
+  const now = Date.now()
+
+  await notificationService.createNotifications([
+    {
+      to: DEV_ADMIN_ID,
+      channel: 'feed',
+      template: 'product-import',
+      triggerType: 'product.import.completed',
+      resourceType: 'product',
+      receiverId: DEV_ADMIN_ID,
+      data: {
+        title: 'Product import completed',
+        description: '42 products were imported successfully.',
+        file: 'https://example.com/imports/products-2026-08-08.csv',
+      },
+      idempotencyKey: `seed-notif-1-${now}`,
+    },
+    {
+      to: DEV_ADMIN_ID,
+      channel: 'feed',
+      template: 'order-placed',
+      triggerType: 'order.placed',
+      resourceType: 'order',
+      resourceId: 'order_abc123',
+      receiverId: DEV_ADMIN_ID,
+      data: {
+        title: 'New order received',
+        description: 'Order #1042 for $95.00 from customer@example.com.',
+      },
+      idempotencyKey: `seed-notif-2-${now}`,
+    },
+    {
+      to: DEV_ADMIN_EMAIL,
+      channel: 'feed',
+      template: 'low-stock',
+      triggerType: 'inventory.low_stock',
+      resourceType: 'inventory',
+      receiverId: DEV_ADMIN_ID,
+      data: {
+        title: 'Low stock alert',
+        description: 'Classic T-Shirt (M / Black) has only 3 units remaining.',
+      },
+      idempotencyKey: `seed-notif-3-${now}`,
+    },
+    {
+      to: DEV_ADMIN_ID,
+      channel: 'feed',
+      template: 'payment-captured',
+      triggerType: 'payment.captured',
+      resourceType: 'payment',
+      resourceId: 'pay_xyz789',
+      receiverId: DEV_ADMIN_ID,
+      data: {
+        title: 'Payment captured',
+        description: 'Payment of $95.00 captured for order #1042.',
+      },
+      idempotencyKey: `seed-notif-4-${now}`,
+    },
+    {
+      to: DEV_ADMIN_ID,
+      channel: 'feed',
+      template: 'fulfillment-shipped',
+      triggerType: 'fulfillment.shipped',
+      resourceType: 'fulfillment',
+      receiverId: DEV_ADMIN_ID,
+      data: {
+        title: 'Shipment dispatched',
+        description: 'Order #1038 has been shipped via FedEx. Tracking: 7948302817.',
+      },
+      idempotencyKey: `seed-notif-5-${now}`,
+    },
+    {
+      to: DEV_ADMIN_EMAIL,
+      channel: 'feed',
+      template: 'export-ready',
+      triggerType: 'export.completed',
+      receiverId: DEV_ADMIN_ID,
+      data: {
+        title: 'Export ready for download',
+        description: 'Your customer export (1,247 records) is ready.',
+        file: 'https://example.com/exports/customers-2026-08-07.csv',
+      },
+      idempotencyKey: `seed-notif-6-${now}`,
+    },
+    {
+      to: DEV_ADMIN_ID,
+      channel: 'feed',
+      template: 'refund-requested',
+      triggerType: 'order.refund_requested',
+      resourceType: 'order',
+      resourceId: 'order_def456',
+      receiverId: DEV_ADMIN_ID,
+      data: {
+        title: 'Refund requested',
+        description: 'Customer requested a $45.00 refund for order #1035. Reason: damaged.',
+      },
+      idempotencyKey: `seed-notif-7-${now}`,
+    },
+    {
+      to: DEV_ADMIN_ID,
+      channel: 'feed',
+      template: 'system',
+      triggerType: 'system.update',
+      receiverId: DEV_ADMIN_ID,
+      data: {
+        title: 'System update scheduled',
+        description: 'A maintenance window is scheduled for Aug 10, 2:00 AM - 4:00 AM UTC.',
+      },
+      idempotencyKey: `seed-notif-8-${now}`,
+    },
+  ])
+  console.info('Seeded 8 feed notifications for dev admin')
+} else if (seedNotifications) {
+  console.info('Skipped notifications (already exist)')
 }
 
 console.info('Done!')

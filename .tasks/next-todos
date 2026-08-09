@@ -1,5 +1,11 @@
+- ci workflow
+- default indexes in all tables with deleted_at.
+- investigate locking
+  - Context: Medusa's notification module uses DB queries for idempotency checks (query by idempotency_key, skip if already SUCCESS/PENDING). There's a race window where two concurrent requests with the same key could both pass the check before either creates a PENDING record. Medusa has a TODO to use Redis-based locking instead.
+  - The DB unique constraint on idempotencyKey catches the second insert if both slip through, so for single-instance it's sufficient.
+  - For multi-instance / high-concurrency: need distributed locking (Redis, or DB-level SELECT FOR UPDATE).
+  - Decide: DB-only (current scale) vs Redis locking (future scale).
 - features flags
-- notification module
 - add a new validation script to make sure we are not throwing generic errors in backend, we should throw AppError instead.. Also another validation script to make sure there's no `z.string().datetime()` in http-schemas all datetimes should use dateToIso.
 - To stop failures from crashing the server - implement Graceful Shutdowns, Safe Fetch Parsing, and Global Exception Handling.
 - deploy to supabase and coudflare workers.

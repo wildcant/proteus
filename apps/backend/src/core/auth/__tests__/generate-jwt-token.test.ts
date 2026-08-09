@@ -1,19 +1,12 @@
 import { test } from '@tests/setup/test-extend.js'
 import jwt from 'jsonwebtoken'
 import { describe, expect, vi } from 'vitest'
+import { env } from '../../../env.js'
 import type { ConfigModule } from '../../config/types.js'
 import type { AuthIdentityDTO, IAuthModuleService, ProviderIdentityDTO } from '../../types/index.js'
 import { generateJwtTokenForAuthIdentity, generateJwtTokenWithChecks } from '../utils/generate-jwt-token.js'
 
-vi.mock('../../../env.js', () => ({
-  env: {
-    JWT_SECRET: 'test-jwt-secret-for-testing-only',
-    JWT_EXPIRES_IN: '1d',
-  },
-}))
-
-const SECRET = 'test-jwt-secret-for-testing-only'
-const JWT_CONFIG = { secret: SECRET, expiresIn: '1d' as const }
+const JWT_CONFIG = { secret: env.JWT_SECRET, expiresIn: '1d' as const }
 
 const customerVerificationConfig: ConfigModule['projectConfig']['http']['authVerificationsPerActor'] = {
   customer: [{ entityType: 'email', authProvider: 'emailpass' }],
@@ -58,7 +51,7 @@ describe('generateJwtTokenForAuthIdentity', () => {
       { actorless: true },
     )
 
-    const decoded = jwt.verify(token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('')
     expect(decoded.actorType).toBe('user')
     expect(decoded.authIdentityId).toBe('authid_123')
@@ -76,7 +69,7 @@ describe('generateJwtTokenForAuthIdentity', () => {
       JWT_CONFIG,
     )
 
-    const decoded = jwt.verify(token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('usr_abc')
     expect(decoded.actorType).toBe('user')
     expect(decoded.userMetadata).toEqual({ name: 'Test User' })
@@ -93,7 +86,7 @@ describe('generateJwtTokenForAuthIdentity', () => {
       JWT_CONFIG,
     )
 
-    const decoded = jwt.verify(token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('')
   })
 
@@ -108,7 +101,7 @@ describe('generateJwtTokenForAuthIdentity', () => {
       JWT_CONFIG,
     )
 
-    const decoded = jwt.verify(token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('cus_xyz')
     expect(decoded.actorType).toBe('customer')
   })
@@ -134,7 +127,7 @@ describe('generateJwtTokenWithChecks', () => {
     )
 
     expect(result.verificationRequired).toBeUndefined()
-    const decoded = jwt.verify(result.token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(result.token, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('usr_abc')
   })
 
@@ -156,7 +149,7 @@ describe('generateJwtTokenWithChecks', () => {
     )
 
     expect(result.verificationRequired).toBe(true)
-    const decoded = jwt.verify(result.token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(result.token, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('')
   })
 
@@ -186,7 +179,7 @@ describe('generateJwtTokenWithChecks', () => {
     )
 
     expect(result.verificationRequired).toBeUndefined()
-    const decoded = jwt.verify(result.token, SECRET) as Record<string, unknown>
+    const decoded = jwt.verify(result.token, env.JWT_SECRET) as Record<string, unknown>
     expect(decoded.actorId).toBe('cus_xyz')
   })
 })

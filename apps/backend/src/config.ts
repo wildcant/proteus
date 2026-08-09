@@ -19,8 +19,7 @@ export const appConfig = defineAppConfig({
        * at login and token refresh. If absent for an actor type, no verification required.
        */
       authVerificationsPerActor: {
-        // TODO: add verification config for customer actor type once notifications module is implemented
-        // customer: [{ entityType: 'email', authProvider: 'emailpass' }],
+        customer: [{ entityType: 'email', authProvider: 'emailpass' }],
       },
     },
   },

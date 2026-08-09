@@ -7,6 +7,7 @@ import {
   AdminInviteResponse,
 } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '../../../server/ports.js'
+import { createInviteWorkflow } from '../../../workflows/user/create-invite.js'
 
 export const GetInput = { query: AdminInviteListParams }
 export const GetOutput = AdminInviteListResponse
@@ -23,7 +24,7 @@ export const PostInput = { body: AdminCreateInvite }
 export const PostOutput = AdminInviteResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const userService = req.scope.resolve<IUserModuleService>(Modules.USER)
-  const invite = await userService.createInvite(req.body)
+  const invite = await createInviteWorkflow.run({ email: req.body.email })
+
   return { status: 201, json: { invite } }
 }

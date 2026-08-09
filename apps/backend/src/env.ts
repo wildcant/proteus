@@ -12,6 +12,18 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('1d'),
   STRIPE_SECRET_KEY: z.string(),
   STRIPE_WEBHOOK_SECRET: z.string(),
+
+  // Sendgrid
+  // SENDGRID_API_KEY: z.string(),
+  // SENDGRID_FROM: z.string(),
+
+  // Resend (development only)
+  RESEND_API_KEY: z.string(),
+  RESEND_FROM: z.string(),
+
+  ADMIN_URL: z.url(),
+  STORE_URL: z.url(),
+
   CORS_ORIGIN: z
     .string()
     .transform((s) => s.split(',').map((u) => u.trim()))

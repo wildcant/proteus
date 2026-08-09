@@ -6,9 +6,10 @@ import {
 import type { ConfigModule } from '@core/config/types.js'
 import type { IAuthModuleService } from '@core/types/auth/service.js'
 import type { CreateCustomerDTO } from '@core/types/customer/mutations.js'
-import type { Logger } from '@core/types/logger.js'
+import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { sendVerificationEmail } from '../auth/send-verification-email.js'
 import { createCustomerAccountWorkflow } from './create-customer-account.js'
 
 export type CompleteCustomerAuthInput = {
@@ -24,7 +25,7 @@ type CompleteCustomerAuthOutput = {
 
 type VerificationCheckResult =
   | { verified: true; token: string; hasCustomer: boolean }
-  | { verified: false; token: string }
+  | { verified: false; token: string; email: string; verificationCode: string }
 
 export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthInput, CompleteCustomerAuthOutput>(
   'complete-customer-auth',
@@ -44,8 +45,6 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
       )
 
       if (tokenResult.verificationRequired) {
-        const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
-
         // Store pending customer fields for later (signup path only)
         if (input.customerData) {
           const currentMetadata = authIdentity.appMetadata ?? {}
@@ -69,14 +68,24 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
           codeProvider: 'token',
         })
 
-        logger.debug(`Verification code for ${verificationResult.entityId}: ${verificationResult.code}`)
-
-        return { verified: false as const, token: tokenResult.token }
+        return {
+          verified: false as const,
+          token: tokenResult.token,
+          email: providerIdentity.entityId,
+          verificationCode: verificationResult.code ?? '',
+        }
       }
 
       const hasCustomer = authIdentity.appMetadata?.customerId != null
       return { verified: true as const, token: tokenResult.token, hasCustomer }
     })
+
+    if (!verificationCheck.verified) {
+      await ctx.step('send-verification-email', async ({ container }) => {
+        const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+        await sendVerificationEmail(notificationService, verificationCheck.email, verificationCheck.verificationCode)
+      })
+    }
 
     const result = await ctx.step<CompleteCustomerAuthOutput>('reconcile-customer', async ({ container }) => {
       if (!verificationCheck.verified) {

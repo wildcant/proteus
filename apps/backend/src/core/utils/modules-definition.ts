@@ -9,6 +9,7 @@ export const Modules = {
   INVENTORY: 'inventory',
   PRODUCT: 'product',
   FULFILLMENT: 'fulfillment',
+  NOTIFICATION: 'notification',
 } as const
 
 export const Links = {
