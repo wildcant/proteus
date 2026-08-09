@@ -22,6 +22,7 @@ const envSchema = z.object({
   RESEND_FROM: z.string(),
 
   ADMIN_URL: z.url(),
+  STORE_URL: z.url(),
 
   CORS_ORIGIN: z
     .string()

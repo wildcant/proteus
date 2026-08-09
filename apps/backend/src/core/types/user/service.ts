@@ -36,5 +36,6 @@ export type IUserModuleService = {
   softDeleteInvites(inviteIds: string[], context?: Context): Promise<void>
   restoreInvites(inviteIds: string[], context?: Context): Promise<void>
   validateInviteToken(token: string): Promise<InviteDTO>
+  refreshInviteToken(inviteId: string, context?: Context): Promise<InviteDTO>
   refreshInviteTokens(inviteIds: string[], context?: Context): Promise<InviteDTO[]>
 }

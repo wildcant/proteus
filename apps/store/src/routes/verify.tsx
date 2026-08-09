@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { z } from 'zod'
 import { useVerifyEmail } from '#/features/auth/api/auth'
+import { getToken } from '#/lib/auth-token'
 
 const verifySearchSchema = z.object({
   code: z.string().min(1),
@@ -61,6 +62,11 @@ function VerifyPage() {
           <>
             <h1 className="demo-section-title uppercase mb-2">Verification failed</h1>
             <p className="text-center text-sm text-[var(--sea-ink-soft)]">{error.message}</p>
+            {!getToken() && (
+              <p className="text-center text-xs text-[var(--sea-ink-soft)] mt-2">
+                Make sure you open this link in the same browser you used to sign up or log in.
+              </p>
+            )}
             <Link to="/login" className="demo-button mt-6">
               Back to sign in
             </Link>

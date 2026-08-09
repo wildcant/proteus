@@ -129,10 +129,6 @@ export class UserModuleService implements IUserModuleService {
         return { email: d.email, token, expiresAt }
       })
       const invites = await this.inviteRepository.createMany(inviteData, ctx)
-      for (const invite of invites) {
-        // TODO(notification): replace with notification module
-        this.logger.debug(`Invite link for ${invite.email}: http://localhost:3002/invite?token=${invite.token}`)
-      }
       return invites
     })
   }
@@ -233,21 +229,19 @@ export class UserModuleService implements IUserModuleService {
     return invite
   }
 
+  async refreshInviteToken(inviteId: string, context?: Context): Promise<InviteDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const invite = await this.inviteRepository.findByIdOrFail(inviteId, undefined, ctx)
+      const { token, expiresAt } = this.generateInviteToken(invite.email)
+      return this.inviteRepository.update(inviteId, { token, expiresAt }, ctx)
+    })
+  }
+
   async refreshInviteTokens(inviteIds: string[], context?: Context): Promise<InviteDTO[]> {
     this.logger.debug(`Refreshing tokens for ${inviteIds.length} invite(s)`)
-
-    const results = await Promise.all(
-      inviteIds.map(async (id) => {
-        const invite = await this.inviteRepository.findByIdOrFail(id, undefined, context)
-        const { token, expiresAt } = this.generateInviteToken(invite.email)
-        const updated = await this.inviteRepository.update(id, { token, expiresAt }, context)
-        // TODO(notification): replace with notification module
-        this.logger.debug(`Invite link for ${updated.email}: http://localhost:3002/invite?token=${updated.token}`)
-        return updated
-      }),
-    )
-
-    return results
+    return this.withTransaction(context, async (ctx) => {
+      return Promise.all(inviteIds.map((id) => this.refreshInviteToken(id, ctx)))
+    })
   }
 
   private generateInviteToken(email: string): { token: string; expiresAt: Date } {
