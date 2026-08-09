@@ -7,6 +7,7 @@ export type JobDefinition = {
   name: string
   schedule: `${CronExpression}`
   handler: JobHandler
+  disabled?: boolean
 }
 
 export type CronScheduler = {

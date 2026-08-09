@@ -13,4 +13,5 @@ export const config: JobDefinition = {
   name: 'heartbeat',
   schedule: CronExpression.EVERY_MINUTE,
   handler: greetingJob,
+  disabled: true,
 }

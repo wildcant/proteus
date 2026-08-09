@@ -70,9 +70,10 @@ export async function start(options?: StartOptions): Promise<StartResult> {
 
   // ---- Cron jobs ----
 
-  await Promise.all(jobs.map((job) => scheduler.schedule(job)))
+  const enabledJobs = jobs.filter((job) => !job.disabled)
+  await Promise.all(enabledJobs.map((job) => scheduler.schedule(job)))
   await scheduler.start()
-  logger.info(`Scheduler started with ${jobs.length} job(s)`)
+  logger.info(`Scheduler started with ${enabledJobs.length} job(s)`)
 
   // ---- Graceful shutdown ----
 
