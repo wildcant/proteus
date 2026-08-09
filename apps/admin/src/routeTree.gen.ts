@@ -9,64 +9,70 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
-import { Route as PublicLoginRouteImport } from './routes/_public/login'
-import { Route as PublicInviteRouteImport } from './routes/_public/invite'
-import { Route as AuthedSettingsRouteRouteImport } from './routes/_authed/settings/route'
+import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthedShellRouteRouteImport } from './routes/_authed/_shell/route'
+import { Route as AuthedSettingsRouteRouteImport } from './routes/_authed/settings/route'
+import { Route as PublicInviteRouteImport } from './routes/_public/invite'
+import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as AuthedShellIndexRouteImport } from './routes/_authed/_shell/index'
-import { Route as AuthedSettingsStoreRouteImport } from './routes/_authed/settings/store'
 import { Route as AuthedShellCustomersRouteImport } from './routes/_authed/_shell/customers'
-import { Route as AuthedSettingsUsersRouteRouteImport } from './routes/_authed/settings/users/route'
 import { Route as AuthedShellProductsRouteRouteImport } from './routes/_authed/_shell/products/route'
+import { Route as AuthedSettingsStoreRouteImport } from './routes/_authed/settings/store'
+import { Route as AuthedSettingsUsersRouteRouteImport } from './routes/_authed/settings/users/route'
 import { Route as AuthedShellProductsIndexRouteImport } from './routes/_authed/_shell/products/index'
-import { Route as AuthedSettingsUsersInviteRouteImport } from './routes/_authed/settings/users/invite'
-import { Route as AuthedShellProductsCreateRouteImport } from './routes/_authed/_shell/products/create'
 import { Route as AuthedShellProductsIdRouteRouteImport } from './routes/_authed/_shell/products/$id/route'
+import { Route as AuthedShellProductsCreateRouteImport } from './routes/_authed/_shell/products/create'
+import { Route as AuthedSettingsUsersInviteRouteImport } from './routes/_authed/settings/users/invite'
 import { Route as AuthedShellProductsIdEditRouteImport } from './routes/_authed/_shell/products/$id/edit'
 
-const PublicRouteRoute = PublicRouteRouteImport.update({
-  id: '/_public',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicLoginRoute = PublicLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => PublicRouteRoute,
+const PublicRouteRoute = PublicRouteRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PublicInviteRoute = PublicInviteRouteImport.update({
-  id: '/invite',
-  path: '/invite',
-  getParentRoute: () => PublicRouteRoute,
+const AuthedShellRouteRoute = AuthedShellRouteRouteImport.update({
+  id: '/_shell',
+  getParentRoute: () => AuthedRouteRoute,
 } as any)
 const AuthedSettingsRouteRoute = AuthedSettingsRouteRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
-const AuthedShellRouteRoute = AuthedShellRouteRouteImport.update({
-  id: '/_shell',
-  getParentRoute: () => AuthedRouteRoute,
+const PublicInviteRoute = PublicInviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicLoginRoute = PublicLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const AuthedShellIndexRoute = AuthedShellIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthedShellRouteRoute,
 } as any)
-const AuthedSettingsStoreRoute = AuthedSettingsStoreRouteImport.update({
-  id: '/store',
-  path: '/store',
-  getParentRoute: () => AuthedSettingsRouteRoute,
-} as any)
 const AuthedShellCustomersRoute = AuthedShellCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
   getParentRoute: () => AuthedShellRouteRoute,
+} as any)
+const AuthedShellProductsRouteRoute =
+  AuthedShellProductsRouteRouteImport.update({
+    id: '/products',
+    path: '/products',
+    getParentRoute: () => AuthedShellRouteRoute,
+  } as any)
+const AuthedSettingsStoreRoute = AuthedSettingsStoreRouteImport.update({
+  id: '/store',
+  path: '/store',
+  getParentRoute: () => AuthedSettingsRouteRoute,
 } as any)
 const AuthedSettingsUsersRouteRoute =
   AuthedSettingsUsersRouteRouteImport.update({
@@ -74,28 +80,10 @@ const AuthedSettingsUsersRouteRoute =
     path: '/users',
     getParentRoute: () => AuthedSettingsRouteRoute,
   } as any)
-const AuthedShellProductsRouteRoute =
-  AuthedShellProductsRouteRouteImport.update({
-    id: '/products',
-    path: '/products',
-    getParentRoute: () => AuthedShellRouteRoute,
-  } as any)
 const AuthedShellProductsIndexRoute =
   AuthedShellProductsIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthedShellProductsRouteRoute,
-  } as any)
-const AuthedSettingsUsersInviteRoute =
-  AuthedSettingsUsersInviteRouteImport.update({
-    id: '/invite',
-    path: '/invite',
-    getParentRoute: () => AuthedSettingsUsersRouteRoute,
-  } as any)
-const AuthedShellProductsCreateRoute =
-  AuthedShellProductsCreateRouteImport.update({
-    id: '/create',
-    path: '/create',
     getParentRoute: () => AuthedShellProductsRouteRoute,
   } as any)
 const AuthedShellProductsIdRouteRoute =
@@ -103,6 +91,18 @@ const AuthedShellProductsIdRouteRoute =
     id: '/$id',
     path: '/$id',
     getParentRoute: () => AuthedShellProductsRouteRoute,
+  } as any)
+const AuthedShellProductsCreateRoute =
+  AuthedShellProductsCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthedShellProductsRouteRoute,
+  } as any)
+const AuthedSettingsUsersInviteRoute =
+  AuthedSettingsUsersInviteRouteImport.update({
+    id: '/invite',
+    path: '/invite',
+    getParentRoute: () => AuthedSettingsUsersRouteRoute,
   } as any)
 const AuthedShellProductsIdEditRoute =
   AuthedShellProductsIdEditRouteImport.update({
@@ -216,13 +216,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_public': {
-      id: '/_public'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof PublicRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authed': {
       id: '/_authed'
       path: ''
@@ -230,26 +223,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public/login': {
-      id: '/_public/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof PublicLoginRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/invite': {
-      id: '/_public/invite'
-      path: '/invite'
-      fullPath: '/invite'
-      preLoaderRoute: typeof PublicInviteRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_authed/settings': {
-      id: '/_authed/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthedSettingsRouteRouteImport
-      parentRoute: typeof AuthedRouteRoute
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authed/_shell': {
       id: '/_authed/_shell'
@@ -258,11 +237,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
+    '/_authed/settings': {
+      id: '/_authed/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthedSettingsRouteRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
+    '/_public/invite': {
+      id: '/_public/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof PublicInviteRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/login': {
+      id: '/_public/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof PublicLoginRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_authed/_shell/': {
       id: '/_authed/_shell/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthedShellIndexRouteImport
+      parentRoute: typeof AuthedShellRouteRoute
+    }
+    '/_authed/_shell/customers': {
+      id: '/_authed/_shell/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AuthedShellCustomersRouteImport
+      parentRoute: typeof AuthedShellRouteRoute
+    }
+    '/_authed/_shell/products': {
+      id: '/_authed/_shell/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof AuthedShellProductsRouteRouteImport
       parentRoute: typeof AuthedShellRouteRoute
     }
     '/_authed/settings/store': {
@@ -272,26 +286,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedSettingsStoreRouteImport
       parentRoute: typeof AuthedSettingsRouteRoute
     }
-    '/_authed/_shell/customers': {
-      id: '/_authed/_shell/customers'
-      path: '/customers'
-      fullPath: '/customers'
-      preLoaderRoute: typeof AuthedShellCustomersRouteImport
-      parentRoute: typeof AuthedShellRouteRoute
-    }
     '/_authed/settings/users': {
       id: '/_authed/settings/users'
       path: '/users'
       fullPath: '/settings/users'
       preLoaderRoute: typeof AuthedSettingsUsersRouteRouteImport
       parentRoute: typeof AuthedSettingsRouteRoute
-    }
-    '/_authed/_shell/products': {
-      id: '/_authed/_shell/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof AuthedShellProductsRouteRouteImport
-      parentRoute: typeof AuthedShellRouteRoute
     }
     '/_authed/_shell/products/': {
       id: '/_authed/_shell/products/'
@@ -300,12 +300,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellProductsIndexRouteImport
       parentRoute: typeof AuthedShellProductsRouteRoute
     }
-    '/_authed/settings/users/invite': {
-      id: '/_authed/settings/users/invite'
-      path: '/invite'
-      fullPath: '/settings/users/invite'
-      preLoaderRoute: typeof AuthedSettingsUsersInviteRouteImport
-      parentRoute: typeof AuthedSettingsUsersRouteRoute
+    '/_authed/_shell/products/$id': {
+      id: '/_authed/_shell/products/$id'
+      path: '/$id'
+      fullPath: '/products/$id'
+      preLoaderRoute: typeof AuthedShellProductsIdRouteRouteImport
+      parentRoute: typeof AuthedShellProductsRouteRoute
     }
     '/_authed/_shell/products/create': {
       id: '/_authed/_shell/products/create'
@@ -314,12 +314,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellProductsCreateRouteImport
       parentRoute: typeof AuthedShellProductsRouteRoute
     }
-    '/_authed/_shell/products/$id': {
-      id: '/_authed/_shell/products/$id'
-      path: '/$id'
-      fullPath: '/products/$id'
-      preLoaderRoute: typeof AuthedShellProductsIdRouteRouteImport
-      parentRoute: typeof AuthedShellProductsRouteRoute
+    '/_authed/settings/users/invite': {
+      id: '/_authed/settings/users/invite'
+      path: '/invite'
+      fullPath: '/settings/users/invite'
+      preLoaderRoute: typeof AuthedSettingsUsersInviteRouteImport
+      parentRoute: typeof AuthedSettingsUsersRouteRoute
     }
     '/_authed/_shell/products/$id/edit': {
       id: '/_authed/_shell/products/$id/edit'

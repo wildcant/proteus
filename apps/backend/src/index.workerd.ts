@@ -1,71 +1,16 @@
-/** Workers + Express entry point via httpServerHandler. */
-
-import { httpServerHandler } from 'cloudflare:node'
-import { Readable } from 'node:stream'
-import express from 'express'
-import { container, dbProvider } from './container.workerd.js'
-import { createRegistry, generateDocument } from './core/openapi/registry.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/index.js'
-import { registerRoutes } from './routes.js'
-import { createApp } from './server/app.js'
-import type { RouteHandler } from './server/ports.js'
+import { env } from './env.js'
+import { container } from './framework/runtime/container.workerd.js'
+import { createHonoApp } from './framework/runtime/hono/app.js'
+import { prepareRoutes } from './routes.js'
 
 const logger: Logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+const routes = prepareRoutes(logger)
 
-// ---- App (universal, no framework dependency) ----
-
-const app = createApp({ container })
-
-// ---- Static routing ----
-
-const adminRegistry = createRegistry()
-const storeRegistry = createRegistry()
-
-logger.info('Registering routes:')
-registerRoutes(app, logger, { admin: adminRegistry, store: storeRegistry })
-
-// ---- OpenAPI ----
-
-app.addRoute('GET', '/admin/openapi.json', (async () => ({
-  status: 200,
-  json: generateDocument(adminRegistry, 'Admin API'),
-})) as RouteHandler)
-
-app.addRoute('GET', '/store/openapi.json', (async () => ({
-  status: 200,
-  json: generateDocument(storeRegistry, 'Store API'),
-})) as RouteHandler)
-
-// ---- Platform: Express on Workers ----
-
-const server = express()
-
-server.all('*', async (req, res) => {
-  const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`
-  const hasBody = !['GET', 'HEAD', 'DELETE'].includes(req.method)
-  const request = new Request(url, {
-    method: req.method,
-    headers: req.headers as Record<string, string>,
-    body: hasBody ? (Readable.toWeb(req) as ReadableStream) : undefined,
-    duplex: hasBody ? 'half' : undefined,
-  } as RequestInit)
-
-  const handle = () => app.fetch(request)
-  const response = req.method === 'OPTIONS' ? await handle() : await dbProvider.withConnection(handle)
-  response.headers.forEach((value, key) => {
-    res.setHeader(key, value)
-  })
-
-  if (response.status === 204) {
-    res.status(204).end()
-    return
-  }
-
-  const body = await response.json()
-  res.status(response.status).json(body)
+export default createHonoApp({
+  routes,
+  container,
+  logger,
+  corsOrigins: env.CORS_ORIGIN,
 })
-
-server.listen(3000)
-
-export default httpServerHandler({ port: 3000 })

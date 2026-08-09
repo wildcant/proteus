@@ -31,4 +31,8 @@ describe('createWorkersDbProvider', () => {
 
     expect(firstDb).not.toBe(secondDb)
   })
+
+  test('shutdown is a no-op', async () => {
+    await expect(provider.shutdown()).resolves.toBeUndefined()
+  })
 })

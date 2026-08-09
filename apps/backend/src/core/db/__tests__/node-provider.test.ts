@@ -18,4 +18,13 @@ describe('createNodeDbProvider', () => {
     const result = await provider.withConnection(async () => 42)
     expect(result).toBe(42)
   })
+
+  test('shutdown closes the postgres client', async () => {
+    const dedicatedClient = postgres(env.DATABASE_URL, { prepare: false })
+    const dedicatedProvider = createNodeDbProvider(dedicatedClient)
+
+    await dedicatedProvider.shutdown()
+
+    await expect(dedicatedClient`SELECT 1`).rejects.toThrow()
+  })
 })

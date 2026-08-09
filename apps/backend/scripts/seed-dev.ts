@@ -1,4 +1,3 @@
-import { container } from '../src/container.node.js'
 import type {
   IAuthModuleService,
   ICartModuleService,
@@ -11,6 +10,7 @@ import type {
   IUserModuleService,
 } from '../src/core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '../src/core/utils/index.js'
+import { container } from '../src/framework/runtime/container.node.js'
 
 const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
 const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)

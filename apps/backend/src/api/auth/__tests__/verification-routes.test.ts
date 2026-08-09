@@ -3,21 +3,23 @@ import type { IAuthModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { test } from '@tests/setup/test-extend.js'
+import type { Express } from 'express'
 import jwt from 'jsonwebtoken'
+import request from 'supertest'
 import { describe } from 'vitest'
 import { bootstrapContainer } from '../../../container.js'
 import { env } from '../../../env.js'
-import { createApp } from '../../../server/app.js'
-import type { App } from '../../../server/ports.js'
+import { createExpressApp } from '../../../framework/runtime/express/app.js'
 import authDefinitions from '../definitions.js'
 
-let app: App
+let expressApp: Express
 let authService: IAuthModuleService
 
 test.beforeEach(async ({ getDb, logger }) => {
   const dbProvider: DbProvider = {
     getDb,
     withConnection: (fn) => fn(),
+    shutdown: async () => {},
   }
   const container = await bootstrapContainer({
     logger,
@@ -33,7 +35,6 @@ test.beforeEach(async ({ getDb, logger }) => {
     },
   })
   authService = container.resolve<IAuthModuleService>(Modules.AUTH)
-  app = createApp({ container })
 
   const relevant = authDefinitions.filter((definition) =>
     [
@@ -45,7 +46,6 @@ test.beforeEach(async ({ getDb, logger }) => {
     ].includes(definition.matcher),
   )
 
-  // Register specific routes before parametric to avoid matching issues
   const ordered = [
     ...relevant.filter((definition) => definition.matcher === '/auth/:actorType/:authProvider/register'),
     ...relevant.filter((definition) => definition.matcher === '/auth/token/refresh'),
@@ -54,20 +54,22 @@ test.beforeEach(async ({ getDb, logger }) => {
     ...relevant.filter((definition) => definition.matcher === '/auth/:actorType/:authProvider'),
   ]
 
-  for (const definition of ordered) {
-    app.addRoute(definition.method, definition.matcher, applyMiddleware(definition))
-  }
+  const routes = ordered.map((definition) => ({
+    method: definition.method,
+    matcher: definition.matcher,
+    handler: applyMiddleware(definition),
+  }))
+
+  expressApp = createExpressApp({ routes, container, logger, corsOrigins: [] })
 })
 
-async function post(path: string, body?: unknown, headers?: Record<string, string>) {
-  const response = await app.fetch(
-    new Request(`http://test${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...headers },
-      body: body ? JSON.stringify(body) : undefined,
-    }),
-  )
-  return { status: response.status, body: (await response.json()) as Record<string, unknown> }
+async function post(path: string, body?: object, headers?: Record<string, string>) {
+  const response = await request(expressApp)
+    .post(path)
+    .set('Content-Type', 'application/json')
+    .set(headers ?? {})
+    .send(body)
+  return { status: response.status, body: response.body as Record<string, unknown> }
 }
 
 /**

@@ -9,5 +9,6 @@ export function createNodeDbProvider(client: Sql): DbProvider {
   return {
     getDb: () => db,
     withConnection: (fn) => fn(),
+    shutdown: () => client.end(),
   }
 }

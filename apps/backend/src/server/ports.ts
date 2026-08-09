@@ -1,13 +1,3 @@
-/**
- * HTTP SERVER PORT -- Framework-agnostic interfaces.
- *
- * Two levels of abstraction:
- *
- * 1. App -- register routes, get a fetch handler. Universal.
- * 2. Platform runners -- serveNode(), Vercel export, Lambda handler, etc.
- *    These are one-liners that plug an App into a specific runtime.
- */
-
 import type { AwilixContainer } from 'awilix'
 import type { AuthContext } from '../core/auth/types.js'
 
@@ -47,11 +37,10 @@ export type HttpResult<T = unknown> = {
 
 export type RouteHandler = <T>(req: HttpRequest) => Promise<HttpResult<T>>
 
-// ---- App port (framework-agnostic) ----
+// ---- Prepared route (output of route processing, input to framework adapters) ----
 
-export type App = {
-  addRoute(method: string, path: string, handler: RouteHandler): void
-  fetch(request: Request): Promise<Response>
+export type PreparedRoute = {
+  method: string
+  matcher: string
+  handler: RouteHandler
 }
-
-export type CreateApp = (opts: { container: AwilixContainer }) => App

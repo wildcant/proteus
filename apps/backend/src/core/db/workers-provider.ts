@@ -24,5 +24,7 @@ export function createWorkersDbProvider(databaseUrl: string): DbProvider {
         await client.end()
       }
     },
+
+    shutdown: async () => {},
   }
 }

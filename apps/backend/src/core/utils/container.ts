@@ -4,4 +4,5 @@ export const ContainerRegistrationKeys = {
   CONFIG_MODULE: 'configModule',
   LOGGER: 'logger',
   LINK: 'link',
+  SCHEDULER: 'scheduler',
 } as const

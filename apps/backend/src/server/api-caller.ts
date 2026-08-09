@@ -16,7 +16,7 @@
  * the DB connection is created and disposed per-request.
  */
 
-import { container, dbProvider } from '../container.workerd.js'
+import { container, dbProvider } from '../framework/runtime/container.workerd.js'
 
 // ---- Type-level helpers ----
 

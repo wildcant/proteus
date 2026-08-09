@@ -1,6 +1,7 @@
 import type { Database } from '../../schema.type.js'
 
-export interface DbProvider {
+export type DbProvider = {
   getDb(): Database
   withConnection<T>(fn: () => Promise<T>): Promise<T>
+  shutdown(): Promise<void>
 }

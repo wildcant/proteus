@@ -4,8 +4,8 @@ import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'
 import type { RouteDefinition } from '@framework/http/types.js'
 import { registerOpenApiRoute } from './core/openapi/register-route.js'
 import type { Logger } from './core/types/logger.js'
-import type { App } from './server/ports.js'
-import { RoutesSorter } from './server/routes-sorter.js'
+import { RoutesSorter } from './framework/http/routes-sorter.js'
+import type { PreparedRoute } from './server/ports.js'
 
 // ---- Definition imports ----
 
@@ -69,13 +69,12 @@ export const storeDefinitions: RouteDefinition[] = [
 // All unique definitions for runtime registration (deduplicated since scoped arrays share auth routes)
 const allDefinitions = [...new Set([...adminDefinitions, ...storeDefinitions, ...hookDefinitions])]
 
-// ---- Registration ----
+// ---- Preparation ----
 
-export function registerRoutes(
-  app: App,
+export function prepareRoutes(
   logger: Logger,
   registries?: { admin: OpenAPIRegistry; store: OpenAPIRegistry },
-) {
+): PreparedRoute[] {
   for (const definition of allDefinitions) {
     applyNamespaceAuth(definition)
   }
@@ -89,10 +88,14 @@ export function registerRoutes(
     }
   }
 
+  logger.info('Registering routes.')
   const sorted = new RoutesSorter(allDefinitions).sort()
-  for (const definition of sorted) {
-    const handler = applyMiddleware(definition)
-    app.addRoute(definition.method, definition.matcher, handler)
-    logger.info(`  ${definition.method} ${definition.matcher}`)
-  }
+  return sorted.map((definition) => {
+    logger.debug(`  ${definition.method} ${definition.matcher}`)
+    return {
+      method: definition.method,
+      matcher: definition.matcher,
+      handler: applyMiddleware(definition),
+    }
+  })
 }
