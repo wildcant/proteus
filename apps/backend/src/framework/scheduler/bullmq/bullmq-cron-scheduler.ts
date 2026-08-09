@@ -1,7 +1,6 @@
 import { createBullBoard } from '@bull-board/api'
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { ExpressAdapter } from '@bull-board/express'
-import type { ApplicationLifecycle } from '@core/types/lifecycle.js'
 import type { Logger } from '@core/types/logger.js'
 import type { CronScheduler, JobDefinition, JobHandler } from '@core/types/scheduler.js'
 import type { AwilixContainer } from 'awilix'
@@ -37,7 +36,7 @@ type PostgresWorker = Worker<unknown, unknown, string, PostgresQueueBackend>
  * "forbid" behavior. It matters because a slow job that exceeds its interval
  * could cause double-processing without this protection.
  */
-export class BullMqCronScheduler implements CronScheduler, ApplicationLifecycle {
+export class BullMqCronScheduler implements CronScheduler {
   readonly queue: PostgresQueue
   private worker: PostgresWorker | undefined
   private readonly handlers = new Map<string, JobHandler>()
@@ -49,27 +48,15 @@ export class BullMqCronScheduler implements CronScheduler, ApplicationLifecycle 
     this.queue = new Queue(QUEUE_NAME, postgresOptions(env.DIRECT_DATABASE_URL), createPostgresBackend)
   }
 
-  async onApplicationStart(): Promise<void> {
-    await this.start()
-  }
-
-  async onApplicationPrepareShutdown(): Promise<void> {
-    if (this.worker) {
-      await this.worker.close()
-    }
-  }
-
   queueName(): string {
     return QUEUE_NAME
   }
 
-  async onApplicationShutdown(): Promise<void> {
-    await this.queue.close()
-  }
-
   async shutdown(): Promise<void> {
-    await this.onApplicationPrepareShutdown()
-    await this.onApplicationShutdown()
+    if (this.worker) {
+      await this.worker.close()
+    }
+    await this.queue.close()
   }
 
   async schedule(job: JobDefinition): Promise<void> {
@@ -94,7 +81,11 @@ export class BullMqCronScheduler implements CronScheduler, ApplicationLifecycle 
     this.handlers.delete(jobName)
   }
 
-  async start(): Promise<void> {
+  async start(jobs: JobDefinition[]): Promise<void> {
+    const enabled = jobs.filter((job) => !job.disabled)
+    const disabled = jobs.filter((job) => job.disabled)
+    await Promise.all([...enabled.map((job) => this.schedule(job)), ...disabled.map((job) => this.remove(job.name))])
+
     this.worker = new Worker(
       QUEUE_NAME,
       async (job) => {
@@ -121,6 +112,8 @@ export class BullMqCronScheduler implements CronScheduler, ApplicationLifecycle 
       postgresOptions(env.DIRECT_DATABASE_URL),
       createPostgresBackend,
     )
+
+    this.logger.info(`[CronScheduler] Started with ${enabled.length} job(s), removed ${disabled.length} disabled`)
   }
 
   mountMonitor() {

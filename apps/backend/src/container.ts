@@ -14,7 +14,6 @@ import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/index.js'
 import { createSimpleWorkflowEngine } from './core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from './core/workflows/types.js'
-import { registerScheduler } from './framework/scheduler/index.js'
 import { registerLinkService } from './link-modules/index.js'
 import authModule, { authProviderDeclarations } from './modules/auth/index.js'
 import cartModule from './modules/cart/index.js'
@@ -49,7 +48,6 @@ export async function bootstrapContainer(deps: { logger: Logger; dbProvider: DbP
 
   registerLinkService(container)
   setWorkflowEngine(createSimpleWorkflowEngine(), container)
-  registerScheduler(container, logger)
 
   return container
 }

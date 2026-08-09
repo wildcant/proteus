@@ -75,5 +75,7 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
     })
   }
 
+  app.get('/health', (c) => c.json({ status: 'ok' }))
+
   return app
 }
