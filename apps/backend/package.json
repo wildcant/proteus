@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "dotenvx run -f ../../.env.local -- tsx --watch src/index.ts",
-    "dev:workerd": "wrangler dev --config wrangler.jsonc --env-file .env.workerd",
+    "dev:workerd": "wrangler dev --test-scheduled --config wrangler.jsonc --env-file .env.workerd",
     "deploy": "wrangler deploy --config wrangler.jsonc",
     "start": "dotenvx run -f ../../.env -- tsx src/index.ts",
     "test": "dotenvx run -f ../../.env.test -- vitest run",
