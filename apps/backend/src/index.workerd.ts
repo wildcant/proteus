@@ -1,9 +1,9 @@
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/index.js'
 import { env } from './env.js'
-import { Cron } from './framework/scheduler/kuron/index.js'
 import { container } from './framework/runtime/container.workerd.js'
 import { createHonoApp } from './framework/runtime/hono/app.js'
+import { Cron } from './framework/scheduler/kuron/index.js'
 import { jobs } from './jobs/index.js'
 import { prepareRoutes } from './routes.js'
 
