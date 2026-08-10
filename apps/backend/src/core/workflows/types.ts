@@ -1,4 +1,5 @@
 import type { AwilixContainer } from 'awilix'
+import { AppError, type ErrorTypes } from '../errors/app-error.js'
 
 export type StepContext = { container: AwilixContainer }
 
@@ -25,9 +26,12 @@ export interface Workflow<TInput, TOutput> extends WorkflowDefinition<TInput, TO
   run(input: TInput): Promise<TOutput>
 }
 
+type TerminalErrorOptions = { type: ErrorTypes; message: string; code?: string }
+
 export class WorkflowTerminalError extends Error {
-  constructor(message: string, cause?: Error) {
-    super(message, { cause })
+  constructor(options: TerminalErrorOptions) {
+    const appError = new AppError(options)
+    super(appError.message, { cause: appError })
     this.name = 'WorkflowTerminalError'
   }
 }

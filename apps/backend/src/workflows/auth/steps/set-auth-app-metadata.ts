@@ -1,7 +1,7 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/auth/service.js'
 import { Modules } from '@core/utils/index.js'
-import type { WorkflowContext } from '@core/workflows/types.js'
-import { WorkflowTerminalError } from '@core/workflows/types.js'
+import { type WorkflowContext, WorkflowTerminalError } from '@core/workflows/types.js'
 
 export type SetAuthAppMetadataInput = {
   authIdentityId: string
@@ -26,7 +26,10 @@ export async function setAuthAppMetadataStep(ctx: WorkflowContext, input: SetAut
       const currentValue = identity.appMetadata?.[key]
 
       if (currentValue != null && input.actorId !== null) {
-        throw new WorkflowTerminalError(`Auth identity "${input.authIdentityId}" already has "${key}" set`)
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.CONFLICT,
+          message: `Auth identity "${input.authIdentityId}" already has "${key}" set`,
+        })
       }
 
       const updatedMetadata = { ...(identity.appMetadata ?? {}), [key]: input.actorId }

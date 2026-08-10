@@ -4,6 +4,7 @@ import {
   getAuthJwtConfig,
 } from '@core/auth/utils/generate-jwt-token.js'
 import type { ConfigModule } from '@core/config/types.js'
+import { ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/auth/service.js'
 import type { CreateCustomerDTO } from '@core/types/customer/mutations.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
@@ -56,9 +57,10 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
         // Find the entityId (email) from the provider identity
         const providerIdentity = authIdentity.providerIdentities.find((p) => p.provider === input.authProvider)
         if (!providerIdentity) {
-          throw new WorkflowTerminalError(
-            `Provider identity for "${input.authProvider}" not found on auth identity "${authIdentity.id}"`,
-          )
+          throw new WorkflowTerminalError({
+            type: ErrorTypes.UNEXPECTED_STATE,
+            message: `Provider identity for "${input.authProvider}" not found on auth identity "${authIdentity.id}"`,
+          })
         }
 
         const verificationResult = await authService.requestAuthVerification({
@@ -106,10 +108,12 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
       const customerData = input.customerData ?? pending
 
       if (!customerData) {
-        throw new WorkflowTerminalError(
-          `No customer data available for auth identity "${input.authIdentityId}". ` +
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.INVALID_DATA,
+          message:
+            `No customer data available for auth identity "${input.authIdentityId}". ` +
             'Expected either input.customerData or appMetadata.pending.',
-        )
+        })
       }
 
       await createCustomerAccountWorkflow.run({

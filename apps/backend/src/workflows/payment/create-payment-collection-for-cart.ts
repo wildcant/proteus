@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { Logger } from '@core/types/logger.js'
@@ -24,12 +25,18 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
       const cart = await cartService.retrieveCart(input.cartId)
 
       if (cart.completedAt) {
-        throw new WorkflowTerminalError(`Cart "${input.cartId}" is already completed`)
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cart "${input.cartId}" is already completed`,
+        })
       }
 
       const existingLink = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
       if (existingLink) {
-        throw new WorkflowTerminalError(`Cart "${input.cartId}" already has a payment collection`)
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.CONFLICT,
+          message: `Cart "${input.cartId}" already has a payment collection`,
+        })
       }
 
       // Compute cart total from line items + shipping
@@ -42,7 +49,10 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
       const amount = lineItemTotal + shippingTotal
 
       if (amount <= 0) {
-        throw new WorkflowTerminalError(`Cart "${input.cartId}" has no items or zero total`)
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.INVALID_DATA,
+          message: `Cart "${input.cartId}" has no items or zero total`,
+        })
       }
 
       logger.debug(

@@ -53,15 +53,15 @@ describe('BullMqCronScheduler', () => {
   test('schedule a job and verify its handler is called', async () => {
     let called = false
 
-    await scheduler.schedule({
-      name: 'test-job',
-      schedule: '* * * * *',
-      handler: async () => {
-        called = true
+    await scheduler.start([
+      {
+        name: 'test-job',
+        schedule: '* * * * *',
+        handler: async () => {
+          called = true
+        },
       },
-    })
-
-    await scheduler.start()
+    ])
 
     // Simulate a cron tick by adding a job with the same data shape
     await triggerQueue.add('test-job', { jobName: 'test-job' })
@@ -73,15 +73,15 @@ describe('BullMqCronScheduler', () => {
   test('remove a job and verify it no longer fires', async () => {
     let callCount = 0
 
-    await scheduler.schedule({
-      name: 'removable-job',
-      schedule: '* * * * *',
-      handler: async () => {
-        callCount++
+    await scheduler.start([
+      {
+        name: 'removable-job',
+        schedule: '* * * * *',
+        handler: async () => {
+          callCount++
+        },
       },
-    })
-
-    await scheduler.start()
+    ])
 
     // Trigger and verify it runs
     await triggerQueue.add('removable-job', { jobName: 'removable-job' })
@@ -98,13 +98,13 @@ describe('BullMqCronScheduler', () => {
   })
 
   test('graceful shutdown completes without error', async () => {
-    await scheduler.schedule({
-      name: 'shutdown-job',
-      schedule: '* * * * *',
-      handler: async () => {},
-    })
-
-    await scheduler.start()
+    await scheduler.start([
+      {
+        name: 'shutdown-job',
+        schedule: '* * * * *',
+        handler: async () => {},
+      },
+    ])
 
     await expect(scheduler.shutdown()).resolves.toBeUndefined()
   })
@@ -113,23 +113,22 @@ describe('BullMqCronScheduler', () => {
     const errorMessage = 'intentional test failure'
     let secondJobCalled = false
 
-    await scheduler.schedule({
-      name: 'failing-job',
-      schedule: '* * * * *',
-      handler: async () => {
-        throw new Error(errorMessage)
+    await scheduler.start([
+      {
+        name: 'failing-job',
+        schedule: '* * * * *',
+        handler: async () => {
+          throw new Error(errorMessage)
+        },
       },
-    })
-
-    await scheduler.schedule({
-      name: 'healthy-job',
-      schedule: '* * * * *',
-      handler: async () => {
-        secondJobCalled = true
+      {
+        name: 'healthy-job',
+        schedule: '* * * * *',
+        handler: async () => {
+          secondJobCalled = true
+        },
       },
-    })
-
-    await scheduler.start()
+    ])
 
     // Trigger both jobs
     await triggerQueue.add('failing-job', { jobName: 'failing-job' })
@@ -144,18 +143,18 @@ describe('BullMqCronScheduler', () => {
   test('handler error does not prevent the next tick from firing', async () => {
     let callCount = 0
 
-    await scheduler.schedule({
-      name: 'flaky-job',
-      schedule: '* * * * *',
-      handler: async () => {
-        callCount++
-        if (callCount === 1) {
-          throw new Error('first tick fails')
-        }
+    await scheduler.start([
+      {
+        name: 'flaky-job',
+        schedule: '* * * * *',
+        handler: async () => {
+          callCount++
+          if (callCount === 1) {
+            throw new Error('first tick fails')
+          }
+        },
       },
-    })
-
-    await scheduler.start()
+    ])
 
     // First tick — handler throws
     await triggerQueue.add('flaky-job', { jobName: 'flaky-job' })

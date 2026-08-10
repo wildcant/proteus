@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CartDTO } from '@core/types/cart/common.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
@@ -18,9 +19,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
     const shippingMethods = await cartService.listShippingMethods({ cartId: input.cartId })
 
     if (shippingMethods.length === 0) {
-      throw new WorkflowTerminalError(
-        `Cart "${input.cartId}" has no shipping method — call POST /store/carts/:id/shipping-methods first`,
-      )
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `Cart "${input.cartId}" has no shipping method — call POST /store/carts/:id/shipping-methods first`,
+      })
     }
 
     await Promise.all(
@@ -28,7 +30,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
         if (!sm.shippingOptionId) return
         const option = await fulfillmentService.retrieveShippingOption(sm.shippingOptionId)
         if (!option.isEnabled) {
-          throw new WorkflowTerminalError(`Shipping option "${sm.shippingOptionId}" is no longer available`)
+          throw new WorkflowTerminalError({
+            type: ErrorTypes.INVALID_DATA,
+            message: `Shipping option "${sm.shippingOptionId}" is no longer available`,
+          })
         }
       }),
     )
@@ -42,27 +47,37 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
 
     const existingCart = await cartService.retrieveCart(input.cartId)
     if (existingCart.status !== 'active') {
-      throw new WorkflowTerminalError(`Cart "${input.cartId}" is not active (status: ${existingCart.status})`)
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: `Cart "${input.cartId}" is not active (status: ${existingCart.status})`,
+      })
     }
 
     const link = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
     if (!link) {
-      throw new WorkflowTerminalError(`Cart "${input.cartId}" has no payment collection`)
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `Cart "${input.cartId}" has no payment collection`,
+      })
     }
 
     const collection = await paymentService.retrievePaymentCollection(link.paymentCollectionId)
     const session = collection.paymentSessions?.[0]
     if (!session) {
-      throw new WorkflowTerminalError(
-        `Payment collection "${collection.id}" has no payment session — call POST /store/payment-collections/:id/payment-sessions first`,
-      )
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `Payment collection "${collection.id}" has no payment session — call POST /store/payment-collections/:id/payment-sessions first`,
+      })
     }
 
     logger.debug(`[complete-cart] Authorizing payment session "${session.id}" for cart "${input.cartId}"`)
 
     const payment = await paymentService.authorizePaymentSession(session.id)
     if (!payment) {
-      throw new WorkflowTerminalError(`Payment authorization failed for session "${session.id}"`)
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.UNEXPECTED_STATE,
+        message: `Payment authorization failed for session "${session.id}"`,
+      })
     }
 
     logger.debug(`[complete-cart] Capturing payment "${payment.id}" for amount ${collection.amount}`)

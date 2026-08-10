@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
@@ -60,7 +61,10 @@ export const confirmInventoryWorkflow = createWorkflow<ConfirmInventoryInput, Co
       )
 
       if (results.some((hasCoverage) => !hasCoverage)) {
-        throw new WorkflowTerminalError('Some variant does not have the required inventory')
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.CONFLICT,
+          message: 'Some variant does not have the required inventory',
+        })
       }
 
       logger.debug(`[confirm-inventory] All ${confirmInput.items.length} item(s) confirmed`)

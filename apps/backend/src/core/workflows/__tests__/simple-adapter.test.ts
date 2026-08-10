@@ -1,4 +1,4 @@
-import { AppError } from '@core/errors/app-error.js'
+import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { describe, expect, vi } from 'vitest'
@@ -64,16 +64,16 @@ describe('simple workflow engine', () => {
 
       await ctx.step('step-3', async () => {
         order.push('action-3-fail')
-        throw new WorkflowTerminalError(
-          'Inventory not available',
-          new AppError({ type: AppError.Types.INVALID_DATA, message: 'Insufficient stock for SKU-001' }),
-        )
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.INVALID_DATA,
+          message: 'Insufficient stock for SKU-001',
+        })
       })
     })
 
     const engine = createSimpleWorkflowEngine()
     await expect(engine.run(workflow, undefined, { container: makeContainer() })).rejects.toThrow(
-      'Inventory not available',
+      'Insufficient stock for SKU-001',
     )
 
     expect(order).toEqual(['action-1', 'action-2', 'action-3-fail', 'compensate-2:result-2', 'compensate-1:result-1'])
@@ -104,10 +104,10 @@ describe('simple workflow engine', () => {
         'only-step',
         async () => {
           events.push('action')
-          throw new WorkflowTerminalError(
-            'Step failed permanently',
-            new AppError({ type: AppError.Types.NOT_FOUND, message: 'Cart not found' }),
-          )
+          throw new WorkflowTerminalError({
+            type: ErrorTypes.NOT_FOUND,
+            message: 'Cart not found',
+          })
         },
         async () => {
           events.push('compensate')
@@ -156,10 +156,10 @@ describe('simple workflow engine', () => {
       await ctx.step('no-comp', async () => 'a')
       await ctx.step('has-comp', async () => 'b', compensated)
       await ctx.step('fail', async () => {
-        throw new WorkflowTerminalError(
-          'Payment declined',
-          new AppError({ type: AppError.Types.UNEXPECTED_STATE, message: 'Card expired' }),
-        )
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.UNEXPECTED_STATE,
+          message: 'Card expired',
+        })
       })
     })
 

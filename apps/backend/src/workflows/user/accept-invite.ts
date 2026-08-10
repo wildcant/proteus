@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/auth/service.js'
 import type { UserDTO } from '@core/types/user/common.js'
 import type { IUserModuleService } from '@core/types/user/service.js'
@@ -32,7 +33,10 @@ export const acceptInviteWorkflow = createWorkflow<AcceptInviteInput, UserDTO>('
       }
 
       if (!result.success || !result.authIdentity) {
-        throw new WorkflowTerminalError(result.error ?? 'Failed to register auth identity')
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.INVALID_DATA,
+          message: result.error ?? 'Failed to register auth identity',
+        })
       }
 
       return result.authIdentity
@@ -65,7 +69,10 @@ export const acceptInviteWorkflow = createWorkflow<AcceptInviteInput, UserDTO>('
       const currentValue = identity.appMetadata?.userId
 
       if (currentValue != null) {
-        throw new WorkflowTerminalError(`Auth identity "${authIdentity.id}" already has "userId" set`)
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.CONFLICT,
+          message: `Auth identity "${authIdentity.id}" already has "userId" set`,
+        })
       }
 
       const updatedMetadata = { ...(identity.appMetadata ?? {}), userId: user.id }

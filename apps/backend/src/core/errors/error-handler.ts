@@ -1,4 +1,5 @@
 import type { Logger } from '../types/logger.js'
+import { WorkflowTerminalError } from '../workflows/types.js'
 import { AppError, ErrorTypes } from './app-error.js'
 
 const typeToStatus: Record<ErrorTypes, number> = {
@@ -38,6 +39,11 @@ export function errorHandler(
   status: number
   json: { code: ApiCode; type: string; message: string }
 } {
+  // Unwrap WorkflowTerminalError — if it wraps an AppError, use the AppError for HTTP semantics
+  if (err instanceof WorkflowTerminalError && AppError.isError(err.cause)) {
+    err = err.cause
+  }
+
   if (AppError.isError(err)) {
     const status = typeToStatus[err.type] ?? 500
     const isServer = serverErrorTypes.has(err.type)
