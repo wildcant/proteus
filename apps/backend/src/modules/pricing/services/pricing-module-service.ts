@@ -36,6 +36,23 @@ export class PricingModuleService implements IPricingModuleService {
     this.logger = logger
   }
 
+  async createPriceSet(data: CreatePriceSetDTO, context?: Context): Promise<PriceSetDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const priceSet = await this.priceSetRepository.create({}, ctx)
+      if (data.prices?.length) {
+        await this.priceRepository.createMany(
+          data.prices.map((price) => ({
+            currencyCode: price.currencyCode,
+            amount: price.amount,
+            priceSetId: priceSet.id,
+          })),
+          ctx,
+        )
+      }
+      return priceSet
+    })
+  }
+
   async createPriceSets(data: CreatePriceSetDTO[], context?: Context): Promise<PriceSetDTO[]> {
     this.logger.debug(`Creating ${data.length} price set(s)`)
     return this.withTransaction(context, async (ctx) => {
@@ -74,6 +91,15 @@ export class PricingModuleService implements IPricingModuleService {
     })
   }
 
+  async addPrice(priceSetId: string, price: CreatePriceDTO, context?: Context): Promise<PriceDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      return this.priceRepository.create(
+        { currencyCode: price.currencyCode, amount: price.amount, priceSetId },
+        ctx,
+      )
+    })
+  }
+
   async addPrices(priceSetId: string, prices: CreatePriceDTO[], context?: Context): Promise<PriceDTO[]> {
     this.logger.debug(`Adding ${prices.length} price(s) to price set ${priceSetId}`)
     return this.withTransaction(context, async (ctx) => {
@@ -85,6 +111,12 @@ export class PricingModuleService implements IPricingModuleService {
         })),
         ctx,
       )
+    })
+  }
+
+  async updatePrice(priceId: string, data: UpdatePriceDTO, context?: Context): Promise<PriceDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      return this.priceRepository.update(priceId, data, ctx)
     })
   }
 

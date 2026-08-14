@@ -106,6 +106,38 @@ describe('PricingModuleService', () => {
     expect(remaining).toHaveLength(0)
   })
 
+  test('createPriceSet creates a single price set with inline prices', async ({ expect, dto }) => {
+    const priceSet = await service.createPriceSet(dto.generate.createPriceSet())
+
+    expect(priceSet.id).toMatch(/^pset_/)
+
+    const prices = await service.listPrices({ priceSetId: priceSet.id })
+    expect(prices).toHaveLength(1)
+  })
+
+  test('addPrice adds a single price to existing price set', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({})
+
+    const price = await service.addPrice(priceSet.id, { currencyCode: 'usd', amount: new BigNumber('15.00') })
+
+    expect(price.id).toMatch(/^price_/)
+    expect(price.priceSetId).toBe(priceSet.id)
+    expect(price.amount.toFixed()).toBe('15')
+  })
+
+  test('updatePrice updates a single price', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [{ currencyCode: 'usd', amount: new BigNumber('10.00') }],
+    })
+    const prices = await service.listPrices({ priceSetId: priceSet.id })
+    const priceId = prices[0]?.id ?? ''
+
+    const updated = await service.updatePrice(priceId, { amount: new BigNumber('30.00') })
+
+    expect(updated.amount.toFixed()).toBe('30')
+    expect(updated.id).toBe(priceId)
+  })
+
   test('BigNumber amounts round-trip without precision loss', async ({ expect }) => {
     const preciseAmount = '1234567890.123456789'
     const [priceSet] = await service.createPriceSets([
