@@ -7,6 +7,7 @@ export const Modules = {
   PAYMENT: 'payment',
   PROMOTION: 'promotion',
   INVENTORY: 'inventory',
+  PRICING: 'pricing',
   PRODUCT: 'product',
   FULFILLMENT: 'fulfillment',
   NOTIFICATION: 'notification',

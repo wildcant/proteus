@@ -28,6 +28,7 @@ import {
   generateUpdatePaymentCollectionDTO,
   generateUpdateRefundReasonDTO,
 } from '../factories/payment-dto.js'
+import { generateCreatePriceDTO, generateCreatePriceSetDTO } from '../factories/pricing-dto.js'
 import { generateCreateProductDTO, generateUpdateProductDTO } from '../factories/product-dto.js'
 import { generateUser } from '../factories/user.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
@@ -67,6 +68,8 @@ type Fixtures = {
       createAccountHolder: typeof generateCreateAccountHolderDTO
       notification: typeof generateNotificationDTO
       createNotification: typeof generateCreateNotificationDTO
+      createPriceSet: typeof generateCreatePriceSetDTO
+      createPrice: typeof generateCreatePriceDTO
       createProduct: typeof generateCreateProductDTO
       updateProduct: typeof generateUpdateProductDTO
     }
@@ -116,6 +119,8 @@ export const test = testBase.extend<Fixtures>({
         createAccountHolder: generateCreateAccountHolderDTO,
         notification: generateNotificationDTO,
         createNotification: generateCreateNotificationDTO,
+        createPriceSet: generateCreatePriceSetDTO,
+        createPrice: generateCreatePriceDTO,
         createProduct: generateCreateProductDTO,
         updateProduct: generateUpdateProductDTO,
       },

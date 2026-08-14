@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import { z } from 'zod'
 
 export const dateToIso = z
@@ -10,6 +11,16 @@ export const timestamps = z.object({
   updatedAt: dateToIso,
   deletedAt: dateToIso.nullable(),
 })
+
+export const bigNumberToString = z
+  .custom<BigNumber>((val) => BigNumber.isBigNumber(val))
+  .transform((bn) => bn.toFixed())
+  .pipe(z.string())
+
+export const stringToBigNumber = z
+  .string()
+  .refine((s) => !new BigNumber(s).isNaN(), 'Invalid numeric value')
+  .transform((s) => new BigNumber(s))
 
 export const IdParams = z.object({ id: z.string().min(1) })
 export type IdParams = z.infer<typeof IdParams>

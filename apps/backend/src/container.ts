@@ -22,6 +22,7 @@ import fulfillmentModule, { fulfillmentProviderDeclarations } from './modules/fu
 import inventoryModule from './modules/inventory/index.js'
 import notificationModule, { notificationProviderDeclarations } from './modules/notification/index.js'
 import paymentModule, { paymentProviderDeclarations } from './modules/payment/index.js'
+import pricingModule from './modules/pricing/index.js'
 import productModule from './modules/product/index.js'
 import userModule from './modules/user/index.js'
 
@@ -41,6 +42,7 @@ export async function bootstrapContainer(deps: { logger: Logger; dbProvider: DbP
   await bootstrapModule(container, customerModule)
   await bootstrapModule(container, fulfillmentModule, fulfillmentProviderDeclarations)
   await bootstrapModule(container, inventoryModule)
+  await bootstrapModule(container, pricingModule)
   await bootstrapModule(container, productModule)
   await bootstrapModule(container, notificationModule, notificationProviderDeclarations)
   await bootstrapModule(container, paymentModule, paymentProviderDeclarations)
