@@ -2,10 +2,7 @@ import { defineConfig } from 'drizzle-kit'
 import { env } from '../env.js'
 
 export default defineConfig({
-  schema: [
-    './src/link-modules/definitions/product-variant-inventory-item.ts',
-    './src/link-modules/definitions/cart-payment-collection.ts',
-  ],
+  schema: './src/link-modules/definitions/*.ts',
   out: './src/link-modules/migrations',
   dialect: 'postgresql',
   casing: 'snake_case',

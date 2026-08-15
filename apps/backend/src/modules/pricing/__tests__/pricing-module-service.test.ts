@@ -138,6 +138,94 @@ describe('PricingModuleService', () => {
     expect(updated.id).toBe(priceId)
   })
 
+  test('calculatePrices returns calculated price for single price set', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [{ currencyCode: 'usd', amount: new BigNumber('49.99') }],
+    })
+
+    const results = await service.calculatePrices([priceSet.id], { currencyCode: 'usd' })
+
+    expect(results).toHaveLength(1)
+    expect(results[0]?.id).toBe(priceSet.id)
+    expect(results[0]?.calculatedAmount?.toFixed()).toBe('49.99')
+    expect(results[0]?.currencyCode).toBe('usd')
+  })
+
+  test('calculatePrices returns calculated prices for multiple price sets', async ({ expect }) => {
+    const priceSetA = await service.createPriceSet({
+      prices: [{ currencyCode: 'usd', amount: new BigNumber('10.00') }],
+    })
+    const priceSetB = await service.createPriceSet({
+      prices: [{ currencyCode: 'usd', amount: new BigNumber('20.00') }],
+    })
+
+    const results = await service.calculatePrices([priceSetA.id, priceSetB.id], { currencyCode: 'usd' })
+
+    expect(results).toHaveLength(2)
+    const amounts = results.map((r) => r.calculatedAmount?.toFixed()).sort()
+    expect(amounts).toEqual(['10', '20'])
+  })
+
+  test('calculatePrices returns no entry for missing price set', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [{ currencyCode: 'usd', amount: new BigNumber('10.00') }],
+    })
+
+    const results = await service.calculatePrices([priceSet.id, 'pset_nonexistent'], { currencyCode: 'usd' })
+
+    expect(results).toHaveLength(1)
+    expect(results[0]?.id).toBe(priceSet.id)
+  })
+
+  test('calculatePrices filters by currency code', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [
+        { currencyCode: 'usd', amount: new BigNumber('10.00') },
+        { currencyCode: 'eur', amount: new BigNumber('9.00') },
+      ],
+    })
+
+    const usdResults = await service.calculatePrices([priceSet.id], { currencyCode: 'usd' })
+    expect(usdResults).toHaveLength(1)
+    expect(usdResults[0]?.calculatedAmount?.toFixed()).toBe('10')
+    expect(usdResults[0]?.currencyCode).toBe('usd')
+
+    const eurResults = await service.calculatePrices([priceSet.id], { currencyCode: 'eur' })
+    expect(eurResults).toHaveLength(1)
+    expect(eurResults[0]?.calculatedAmount?.toFixed()).toBe('9')
+    expect(eurResults[0]?.currencyCode).toBe('eur')
+  })
+
+  test('calculatePrices returns empty array for empty input', async ({ expect }) => {
+    const results = await service.calculatePrices([], { currencyCode: 'usd' })
+    expect(results).toHaveLength(0)
+  })
+
+  test('duplicate prices in same currency are deduplicated (last wins)', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [
+        { currencyCode: 'usd', amount: new BigNumber('10.00') },
+        { currencyCode: 'usd', amount: new BigNumber('20.00') },
+      ],
+    })
+
+    const prices = await service.listPrices({ priceSetId: priceSet.id })
+    expect(prices).toHaveLength(1)
+    expect(prices[0]?.amount.toFixed()).toBe('20')
+  })
+
+  test('addPrices deduplicates by currency', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({})
+
+    const added = await service.addPrices(priceSet.id, [
+      { currencyCode: 'eur', amount: new BigNumber('5.00') },
+      { currencyCode: 'eur', amount: new BigNumber('8.00') },
+    ])
+
+    expect(added).toHaveLength(1)
+    expect(added[0]?.amount.toFixed()).toBe('8')
+  })
+
   test('BigNumber amounts round-trip without precision loss', async ({ expect }) => {
     const preciseAmount = '1234567890.123456789'
     const [priceSet] = await service.createPriceSets([

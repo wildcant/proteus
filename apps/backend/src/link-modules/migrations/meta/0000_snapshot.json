@@ -1,9 +1,84 @@
 {
-  "id": "1b1356ce-9293-4ce1-940f-62514d021fb1",
+  "id": "d8438a54-712d-4c2f-ab3a-03616039f795",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.cart_payment_collection": {
+      "name": "cart_payment_collection",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "CONCAT('cartpaycol_', REPLACE(gen_random_uuid()::text, '-', ''))"
+        },
+        "cart_id": {
+          "name": "cart_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_collection_id": {
+          "name": "payment_collection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_cart_payment_collection": {
+          "name": "idx_cart_payment_collection",
+          "columns": [
+            {
+              "expression": "cart_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "payment_collection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.product_variant_inventory_item": {
       "name": "product_variant_inventory_item",
       "schema": "",
@@ -118,8 +193,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.cart_payment_collection": {
-      "name": "cart_payment_collection",
+    "public.product_variant_price_set": {
+      "name": "product_variant_price_set",
       "schema": "",
       "columns": {
         "id": {
@@ -127,16 +202,16 @@
           "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "default": "CONCAT('cartpaycol_', REPLACE(gen_random_uuid()::text, '-', ''))"
+          "default": "CONCAT('pvps_', REPLACE(gen_random_uuid()::text, '-', ''))"
         },
-        "cart_id": {
-          "name": "cart_id",
+        "variant_id": {
+          "name": "variant_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "payment_collection_id": {
-          "name": "payment_collection_id",
+        "price_set_id": {
+          "name": "price_set_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -163,23 +238,55 @@
         }
       },
       "indexes": {
-        "idx_cart_payment_collection": {
-          "name": "idx_cart_payment_collection",
+        "idx_pvps_variant_price_set": {
+          "name": "idx_pvps_variant_price_set",
           "columns": [
             {
-              "expression": "cart_id",
+              "expression": "variant_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-              "expression": "payment_collection_id",
+              "expression": "price_set_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             }
           ],
           "isUnique": true,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_pvps_variant_id": {
+          "name": "idx_pvps_variant_id",
+          "columns": [
+            {
+              "expression": "variant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_pvps_price_set_id": {
+          "name": "idx_pvps_price_set_id",
+          "columns": [
+            {
+              "expression": "price_set_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "where": "deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
