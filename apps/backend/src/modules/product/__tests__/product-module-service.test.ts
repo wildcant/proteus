@@ -7,6 +7,8 @@ import { ProductRepository } from '../repositories/product.js'
 import { ProductImageRepository } from '../repositories/product-image.js'
 import { ProductOptionRepository } from '../repositories/product-option.js'
 import { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import { ProductProductOptionRepository } from '../repositories/product-product-option.js'
+import { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import { ProductVariantRepository } from '../repositories/product-variant.js'
 import { ProductModuleService } from '../services/product-module-service.js'
 
@@ -17,6 +19,8 @@ test.beforeEach(({ getDb, logger }) => {
   const productVariantRepository = new ProductVariantRepository({ getDb })
   const productOptionRepository = new ProductOptionRepository({ getDb })
   const productOptionValueRepository = new ProductOptionValueRepository({ getDb })
+  const productProductOptionRepository = new ProductProductOptionRepository({ getDb })
+  const productProductOptionValueRepository = new ProductProductOptionValueRepository({ getDb })
   const productImageRepository = new ProductImageRepository({ getDb })
   const withTransaction = createWithTransaction(getDb)
   service = new ProductModuleService({
@@ -24,6 +28,8 @@ test.beforeEach(({ getDb, logger }) => {
     productVariantRepository,
     productOptionRepository,
     productOptionValueRepository,
+    productProductOptionRepository,
+    productProductOptionValueRepository,
     productImageRepository,
     withTransaction,
     logger,
@@ -175,5 +181,60 @@ describe('ProductModuleService', () => {
     const created = result.find((v) => v.id !== existing.id)
     expect(renamed?.title).toBe('Renamed')
     expect(created?.title).toBe('New Variant')
+  })
+
+  test('updateProductOption allows removing values not used by any product', async ({ expect }) => {
+    const option = await service.createProductOption({
+      title: 'Color',
+      values: [{ value: 'Red' }, { value: 'Blue' }, { value: 'Green' }],
+    })
+
+    const updated = await service.updateProductOption(option.id, {
+      values: [{ value: 'Red' }, { value: 'Blue' }],
+    })
+
+    expect(updated.values).toHaveLength(2)
+    expect(updated.values.map((v) => v.value).sort()).toEqual(['Blue', 'Red'])
+  })
+
+  test('listAndCountProductsForOption returns linked products', async ({ expect, dto }) => {
+    const option = await service.createProductOption({ title: 'Color', values: [{ value: 'Red' }] })
+    const product1 = await service.createProduct(dto.generate.createProduct())
+    const product2 = await service.createProduct(dto.generate.createProduct())
+    await service.setProductOptions(product1.id, { options: [{ optionId: option.id, valueIds: [] }] })
+    await service.setProductOptions(product2.id, { options: [{ optionId: option.id, valueIds: [] }] })
+
+    const [products, count] = await service.listAndCountProductsForOption(option.id)
+
+    expect(count).toBe(2)
+    expect(products.map((p) => p.id).sort()).toEqual([product1.id, product2.id].sort())
+  })
+
+  test('listAndCountProductsForOption returns empty when no products linked', async ({ expect }) => {
+    const option = await service.createProductOption({ title: 'Size', values: [{ value: 'S' }] })
+
+    const [products, count] = await service.listAndCountProductsForOption(option.id)
+
+    expect(count).toBe(0)
+    expect(products).toHaveLength(0)
+  })
+
+  test('updateProductOption throws when removing a value used by a product', async ({ expect, dto }) => {
+    const option = await service.createProductOption({
+      title: 'Color',
+      values: [{ value: 'Red' }, { value: 'Blue' }],
+    })
+    const product = await service.createProduct(dto.generate.createProduct())
+    const blueValue = option.values.find((v) => v.value === 'Blue')
+    if (!blueValue) throw new Error('Expected Blue value to exist')
+    await service.setProductOptions(product.id, {
+      options: [{ optionId: option.id, valueIds: [blueValue.id] }],
+    })
+
+    const error = await service.updateProductOption(option.id, { values: [{ value: 'Red' }] }).catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
+    expect(error.message).toContain('Cannot remove option value(s)')
   })
 })

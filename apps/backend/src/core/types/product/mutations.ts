@@ -86,14 +86,19 @@ export type UpdateProductVariantDTO = {
 export type UpsertProductVariantDTO = CreateProductVariantDTO | ({ id: string } & UpdateProductVariantDTO)
 
 export type CreateProductOptionDTO = {
-  productId: string
   title: string
   metadata?: string | null
+  values?: Array<Omit<CreateProductOptionValueDTO, 'optionId'>>
 }
 
 export type UpdateProductOptionDTO = {
   title?: string
   metadata?: string | null
+  values?: Array<Omit<CreateProductOptionValueDTO, 'optionId'>>
+}
+
+export type SetProductOptionsDTO = {
+  options: Array<{ optionId: string; valueIds: string[] }>
 }
 
 export type CreateProductOptionValueDTO = {

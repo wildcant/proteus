@@ -1,3 +1,4 @@
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   Context,
   CreateProductDTO,
@@ -5,6 +6,8 @@ import type {
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductVariantDTO,
+  FilterableProductOptionProps,
+  FilterableProductOptionValueProps,
   FilterableProductProps,
   FilterableProductVariantProps,
   FindConfig,
@@ -13,8 +16,11 @@ import type {
   ProductImageDTO,
   ProductOptionDTO,
   ProductOptionValueDTO,
+  ProductOptionWithValuesDTO,
   ProductVariantDTO,
+  SetProductOptionsDTO,
   UpdateProductDTO,
+  UpdateProductOptionDTO,
   UpdateProductVariantDTO,
   UpsertProductVariantDTO,
 } from '../../../core/types/index.js'
@@ -25,6 +31,8 @@ import type { ProductRepository } from '../repositories/product.js'
 import type { ProductImageRepository } from '../repositories/product-image.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
+import type { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
 
 type InjectedDependencies = {
@@ -32,6 +40,8 @@ type InjectedDependencies = {
   productVariantRepository: ProductVariantRepository
   productOptionRepository: ProductOptionRepository
   productOptionValueRepository: ProductOptionValueRepository
+  productProductOptionRepository: ProductProductOptionRepository
+  productProductOptionValueRepository: ProductProductOptionValueRepository
   productImageRepository: ProductImageRepository
   withTransaction: WithTransaction
   logger: Logger
@@ -42,6 +52,8 @@ export class ProductModuleService implements IProductModuleService {
   private productVariantRepository: ProductVariantRepository
   private productOptionRepository: ProductOptionRepository
   private productOptionValueRepository: ProductOptionValueRepository
+  private productProductOptionRepository: ProductProductOptionRepository
+  private productProductOptionValueRepository: ProductProductOptionValueRepository
   private productImageRepository: ProductImageRepository
   private withTransaction: WithTransaction
   private logger: Logger
@@ -51,6 +63,8 @@ export class ProductModuleService implements IProductModuleService {
     productVariantRepository,
     productOptionRepository,
     productOptionValueRepository,
+    productProductOptionRepository,
+    productProductOptionValueRepository,
     productImageRepository,
     withTransaction,
     logger,
@@ -59,10 +73,14 @@ export class ProductModuleService implements IProductModuleService {
     this.productVariantRepository = productVariantRepository
     this.productOptionRepository = productOptionRepository
     this.productOptionValueRepository = productOptionValueRepository
+    this.productProductOptionRepository = productProductOptionRepository
+    this.productProductOptionValueRepository = productProductOptionValueRepository
     this.productImageRepository = productImageRepository
     this.withTransaction = withTransaction
     this.logger = logger
   }
+
+  // ── Products ──────────────────────────────────────────────────────────
 
   async listProducts(
     filters?: FilterableProductProps,
@@ -119,6 +137,8 @@ export class ProductModuleService implements IProductModuleService {
     })
   }
 
+  // ── Variants ──────────────────────────────────────────────────────────
+
   async createProductVariants(data: CreateProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]> {
     this.logger.debug(`Creating ${data.length} product variant(s)`)
     return this.withTransaction(context, async (ctx) => {
@@ -129,35 +149,6 @@ export class ProductModuleService implements IProductModuleService {
   async createProductVariant(data: CreateProductVariantDTO, context?: Context): Promise<ProductVariantDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.productVariantRepository.create(data, ctx)
-    })
-  }
-
-  async createProductOptions(data: CreateProductOptionDTO[], context?: Context): Promise<ProductOptionDTO[]> {
-    this.logger.debug(`Creating ${data.length} product option(s)`)
-    return this.withTransaction(context, async (ctx) => {
-      return this.productOptionRepository.createMany(data, ctx)
-    })
-  }
-
-  async createProductOption(data: CreateProductOptionDTO, context?: Context): Promise<ProductOptionDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      return this.productOptionRepository.create(data, ctx)
-    })
-  }
-
-  async createProductOptionValues(
-    data: CreateProductOptionValueDTO[],
-    context?: Context,
-  ): Promise<ProductOptionValueDTO[]> {
-    this.logger.debug(`Creating ${data.length} product option value(s)`)
-    return this.withTransaction(context, async (ctx) => {
-      return this.productOptionValueRepository.createMany(data, ctx)
-    })
-  }
-
-  async createProductOptionValue(data: CreateProductOptionValueDTO, context?: Context): Promise<ProductOptionValueDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      return this.productOptionValueRepository.create(data, ctx)
     })
   }
 
@@ -226,6 +217,245 @@ export class ProductModuleService implements IProductModuleService {
     })
   }
 
+  // ── Options (global) ─────────────────────────────────────────────────
+
+  async createProductOption(data: CreateProductOptionDTO, context?: Context): Promise<ProductOptionWithValuesDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const { values: valueInputs, ...optionData } = data
+      const option = await this.productOptionRepository.create(optionData, ctx)
+      const values =
+        valueInputs && valueInputs.length > 0
+          ? await this.productOptionValueRepository.createMany(
+              valueInputs.map((v, index) => ({ ...v, optionId: option.id, rank: v.rank ?? index })),
+              ctx,
+            )
+          : []
+      return { ...option, values }
+    })
+  }
+
+  async createProductOptions(data: CreateProductOptionDTO[], context?: Context): Promise<ProductOptionDTO[]> {
+    this.logger.debug(`Creating ${data.length} product option(s)`)
+    return this.withTransaction(context, async (ctx) => {
+      return this.productOptionRepository.createMany(data, ctx)
+    })
+  }
+
+  async listProductOptions(
+    filters?: FilterableProductOptionProps,
+    config?: FindConfig<ProductOptionDTO>,
+    context?: Context,
+  ): Promise<ProductOptionWithValuesDTO[]> {
+    const options = await this.productOptionRepository.find(filters, config, context)
+    return this.enrichOptionsWithValues(options, context)
+  }
+
+  async listAndCountProductOptions(
+    filters?: FilterableProductOptionProps,
+    config?: FindConfig<ProductOptionDTO>,
+    context?: Context,
+  ): Promise<[ProductOptionWithValuesDTO[], number]> {
+    const [options, count] = await this.productOptionRepository.findAndCount(filters, config, context)
+    const enriched = await this.enrichOptionsWithValues(options, context)
+    return [enriched, count]
+  }
+
+  async retrieveProductOption(optionId: string, context?: Context): Promise<ProductOptionWithValuesDTO> {
+    const option = await this.productOptionRepository.findByIdOrFail(optionId, undefined, context)
+    const values = await this.productOptionValueRepository.find({ optionId }, { order: { rank: 'ASC' } }, context)
+    return { ...option, values }
+  }
+
+  async updateProductOption(
+    optionId: string,
+    data: UpdateProductOptionDTO,
+    context?: Context,
+  ): Promise<ProductOptionWithValuesDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const { values: valueInputs, ...optionData } = data
+
+      const option =
+        Object.keys(optionData).length > 0
+          ? await this.productOptionRepository.update(optionId, optionData, ctx)
+          : await this.productOptionRepository.findByIdOrFail(optionId, undefined, ctx)
+
+      if (valueInputs) {
+        const existing = await this.productOptionValueRepository.find({ optionId }, undefined, ctx)
+
+        const newValueStrings = new Set(valueInputs.map((v) => v.value))
+        const removedValues = existing.filter((v) => !newValueStrings.has(v.value))
+
+        if (removedValues.length > 0) {
+          const removedValueIds = removedValues.map((v) => v.id)
+          const activeValueLinks = await this.productProductOptionValueRepository.find(
+            { optionValueId: removedValueIds },
+            undefined,
+            ctx,
+          )
+          if (activeValueLinks.length > 0) {
+            throw new AppError({
+              type: ErrorTypes.NOT_ALLOWED,
+              message:
+                'Cannot remove option value(s) that are currently used by products. Remove them from all products first.',
+            })
+          }
+        }
+
+        if (existing.length > 0) {
+          await this.productOptionValueRepository.softDelete(
+            existing.map((v) => v.id),
+            ctx,
+          )
+        }
+        const values = await this.productOptionValueRepository.createMany(
+          valueInputs.map((v, index) => ({ ...v, optionId, rank: v.rank ?? index })),
+          ctx,
+        )
+        return { ...option, values }
+      }
+
+      const values = await this.productOptionValueRepository.find({ optionId }, { order: { rank: 'ASC' } }, ctx)
+      return { ...option, values }
+    })
+  }
+
+  async deleteProductOptions(optionIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      const activeLinks = await this.productProductOptionRepository.find({ optionId: optionIds }, undefined, ctx)
+      if (activeLinks.length > 0) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message:
+            'Cannot delete option(s) that are currently linked to products. Remove them from all products first.',
+        })
+      }
+
+      const values = await this.productOptionValueRepository.find({ optionId: optionIds }, undefined, ctx)
+      if (values.length > 0) {
+        await this.productOptionValueRepository.softDelete(
+          values.map((v) => v.id),
+          ctx,
+        )
+      }
+      await this.productOptionRepository.softDelete(optionIds, ctx)
+    })
+  }
+
+  // ── Option Values ─────────────────────────────────────────────────────
+
+  async createProductOptionValues(
+    data: CreateProductOptionValueDTO[],
+    context?: Context,
+  ): Promise<ProductOptionValueDTO[]> {
+    this.logger.debug(`Creating ${data.length} product option value(s)`)
+    return this.withTransaction(context, async (ctx) => {
+      return this.productOptionValueRepository.createMany(data, ctx)
+    })
+  }
+
+  async createProductOptionValue(data: CreateProductOptionValueDTO, context?: Context): Promise<ProductOptionValueDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      return this.productOptionValueRepository.create(data, ctx)
+    })
+  }
+
+  async listProductOptionValues(
+    filters?: FilterableProductOptionValueProps,
+    config?: FindConfig<ProductOptionValueDTO>,
+    context?: Context,
+  ): Promise<ProductOptionValueDTO[]> {
+    return this.productOptionValueRepository.find(filters, config, context)
+  }
+
+  async listAndCountProductOptionValues(
+    filters?: FilterableProductOptionValueProps,
+    config?: FindConfig<ProductOptionValueDTO>,
+    context?: Context,
+  ): Promise<[ProductOptionValueDTO[], number]> {
+    return this.productOptionValueRepository.findAndCount(filters, config, context)
+  }
+
+  // ── Product-Option Linking ────────────────────────────────────────────
+
+  async setProductOptions(productId: string, data: SetProductOptionsDTO, context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      const existingLinks = await this.productProductOptionRepository.find({ productId }, undefined, ctx)
+      if (existingLinks.length > 0) {
+        const linkIds = existingLinks.map((l) => l.id)
+        const existingValueLinks = await this.productProductOptionValueRepository.find(
+          { productProductOptionId: linkIds },
+          undefined,
+          ctx,
+        )
+        if (existingValueLinks.length > 0) {
+          await this.productProductOptionValueRepository.softDelete(
+            existingValueLinks.map((v) => v.id),
+            ctx,
+          )
+        }
+        await this.productProductOptionRepository.softDelete(linkIds, ctx)
+      }
+
+      for (const { optionId, valueIds } of data.options) {
+        const link = await this.productProductOptionRepository.create({ productId, optionId }, ctx)
+        if (valueIds.length > 0) {
+          await this.productProductOptionValueRepository.createMany(
+            valueIds.map((optionValueId) => ({ productProductOptionId: link.id, optionValueId })),
+            ctx,
+          )
+        }
+      }
+    })
+  }
+
+  async listProductOptionsForProduct(productId: string, context?: Context): Promise<ProductOptionWithValuesDTO[]> {
+    const productOptionLinks = await this.productProductOptionRepository.find({ productId }, undefined, context)
+    if (productOptionLinks.length === 0) return []
+
+    const optionIds = productOptionLinks.map((l) => l.optionId)
+    const options = await this.productOptionRepository.find({ id: optionIds }, undefined, context)
+
+    const linkIds = productOptionLinks.map((l) => l.id)
+    const valueLinks = await this.productProductOptionValueRepository.find(
+      { productProductOptionId: linkIds },
+      undefined,
+      context,
+    )
+
+    const linkByOptionId = new Map(productOptionLinks.map((l) => [l.optionId, l.id]))
+    const allowedValueIds = new Set(valueLinks.map((vl) => vl.optionValueId))
+
+    const allValues = await this.productOptionValueRepository.find(
+      { optionId: optionIds },
+      { order: { rank: 'ASC' } },
+      context,
+    )
+
+    return options.map((option) => {
+      const linkId = linkByOptionId.get(option.id)
+      const hasValueLinks = valueLinks.some((vl) => vl.productProductOptionId === linkId)
+      const values = hasValueLinks
+        ? allValues.filter((v) => v.optionId === option.id && allowedValueIds.has(v.id))
+        : allValues.filter((v) => v.optionId === option.id)
+      return { ...option, values }
+    })
+  }
+
+  async listAndCountProductsForOption(
+    optionId: string,
+    filters?: FilterableProductProps,
+    config?: FindConfig<ProductDTO>,
+    context?: Context,
+  ): Promise<[ProductDTO[], number]> {
+    const links = await this.productProductOptionRepository.find({ optionId }, undefined, context)
+    if (links.length === 0) return [[], 0]
+
+    const productIds = links.map((l) => l.productId)
+    return this.productRepository.findAndCount({ ...filters, id: productIds }, config, context)
+  }
+
+  // ── Images ────────────────────────────────────────────────────────────
+
   async createProductImages(data: CreateProductImageDTO[], context?: Context): Promise<ProductImageDTO[]> {
     this.logger.debug(`Creating ${data.length} product image(s)`)
     return this.withTransaction(context, async (ctx) => {
@@ -237,5 +467,36 @@ export class ProductModuleService implements IProductModuleService {
     return this.withTransaction(context, async (ctx) => {
       return this.productImageRepository.create(data, ctx)
     })
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+
+  private async enrichOptionsWithValues(
+    options: ProductOptionDTO[],
+    context?: Context,
+  ): Promise<ProductOptionWithValuesDTO[]> {
+    if (options.length === 0) return []
+
+    const optionIds = options.map((o) => o.id)
+    const allValues = await this.productOptionValueRepository.find(
+      { optionId: optionIds },
+      { order: { rank: 'ASC' } },
+      context,
+    )
+
+    const valuesByOptionId = new Map<string, ProductOptionValueDTO[]>()
+    for (const value of allValues) {
+      const existing = valuesByOptionId.get(value.optionId)
+      if (existing) {
+        existing.push(value)
+      } else {
+        valuesByOptionId.set(value.optionId, [value])
+      }
+    }
+
+    return options.map((option) => ({
+      ...option,
+      values: valuesByOptionId.get(option.id) ?? [],
+    }))
   }
 }

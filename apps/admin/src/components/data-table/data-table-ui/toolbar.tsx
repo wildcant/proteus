@@ -1,3 +1,4 @@
+import { cn } from '@proteus/ui'
 import type { ReactNode } from 'react'
 
 type ToolbarProps = {
@@ -6,6 +7,7 @@ type ToolbarProps = {
 
 type ToolbarRowProps = {
   children: ReactNode
+  className?: string
 }
 
 type ToolbarSectionProps = {
@@ -13,8 +15,10 @@ type ToolbarSectionProps = {
   position: 'left' | 'right'
 }
 
-function ToolbarRow({ children }: ToolbarRowProps) {
-  return <div className="flex items-center justify-between py-2 first:pt-4 last:border-b">{children}</div>
+function ToolbarRow({ children, className }: ToolbarRowProps) {
+  return (
+    <div className={cn('flex items-center justify-between py-2 first:pt-4 last:border-b', className)}>{children}</div>
+  )
 }
 
 function ToolbarSection({ children, position }: ToolbarSectionProps) {

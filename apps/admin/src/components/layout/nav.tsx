@@ -1,4 +1,4 @@
-import { PackageIcon, SettingsIcon } from 'lucide-react'
+import { PackageIcon, SettingsIcon, SlidersHorizontalIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 export type NavItem = {
@@ -9,5 +9,6 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   { label: 'Products', to: '/products', icon: <PackageIcon /> },
+  { label: 'Options', to: '/product-options', icon: <SlidersHorizontalIcon /> },
   { label: 'Settings', to: '/settings/store', icon: <SettingsIcon /> },
 ]

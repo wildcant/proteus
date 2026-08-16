@@ -14,8 +14,11 @@ export const GetOutput = AdminProductResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
-  const product = await productService.retrieveProduct(req.params.id)
-  return { status: 200, json: { product } }
+  const [product, options] = await Promise.all([
+    productService.retrieveProduct(req.params.id),
+    productService.listProductOptionsForProduct(req.params.id),
+  ])
+  return { status: 200, json: { product: { ...product, options } } }
 }
 
 export const PatchInput = { params: IdParams, body: AdminUpdateProduct }

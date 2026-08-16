@@ -1,17 +1,11 @@
-import { Badge, Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
+import { Badge, Card, CardAction, CardHeader, CardTitle, toast } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
 import type { AdminProduct } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { useDeleteProduct } from '#/features/products/api/products'
-
-const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  published: 'default',
-  draft: 'secondary',
-  proposed: 'outline',
-  rejected: 'destructive',
-}
+import { productStatusBadgeVariants } from '#/features/products/constants'
 
 export function ProductGeneralSection({ product }: { product: AdminProduct }) {
   const navigate = useNavigate()
@@ -20,6 +14,7 @@ export function ProductGeneralSection({ product }: { product: AdminProduct }) {
   const handleDelete = async () => {
     await deleteProduct(undefined, {
       onSuccess: () => navigate({ to: '/products' }),
+      onError: (error) => toast.add({ type: 'error', title: 'Failed to delete product', description: error.message }),
     })
   }
 
@@ -28,7 +23,7 @@ export function ProductGeneralSection({ product }: { product: AdminProduct }) {
       <CardHeader>
         <CardTitle>{product.title}</CardTitle>
         <CardAction className="flex items-center gap-x-3">
-          <Badge variant={statusVariants[product.status] ?? 'secondary'}>{product.status}</Badge>
+          <Badge variant={productStatusBadgeVariants[product.status] ?? 'secondary'}>{product.status}</Badge>
           <ActionMenu
             groups={[
               { actions: [{ label: 'Edit', to: './edit', icon: <PencilIcon /> }] },

@@ -1,8 +1,13 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
+import { AdminProductOption } from '../product-option/entities.js'
 import { AdminProduct } from './entities.js'
 
-export const AdminProductResponse = z.object({ product: AdminProduct }).openapi('AdminProductResponse')
+const AdminProductWithOptions = AdminProduct.extend({
+  options: z.array(AdminProductOption).optional(),
+})
+
+export const AdminProductResponse = z.object({ product: AdminProductWithOptions }).openapi('AdminProductResponse')
 export type AdminProductResponse = z.input<typeof AdminProductResponse>
 
 export const AdminCreateProductResponse = z.object({ product: AdminProduct }).openapi('AdminCreateProductResponse')
