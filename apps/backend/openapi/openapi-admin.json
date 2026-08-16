@@ -1140,6 +1140,159 @@
           }
         }
       },
+      "AdminProductOptionListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "productOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductOption"
+            }
+          }
+        },
+        "required": ["count", "offset", "limit", "productOptions"]
+      },
+      "AdminProductOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": ["string", "null"]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductOptionValue"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "title", "metadata", "values", "createdAt", "updatedAt"]
+      },
+      "AdminProductOptionValue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "optionId": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "rank": {
+            "type": ["number", "null"]
+          },
+          "metadata": {
+            "type": ["string", "null"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "optionId", "value", "rank", "metadata", "createdAt", "updatedAt"]
+      },
+      "AdminProductOptionResponse": {
+        "type": "object",
+        "properties": {
+          "productOption": {
+            "$ref": "#/components/schemas/AdminProductOption"
+          }
+        },
+        "required": ["productOption"]
+      },
+      "AdminCreateProductOption": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "metadata": {
+            "type": ["string", "null"]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "rank": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "metadata": {
+                  "type": ["string", "null"]
+                }
+              },
+              "required": ["value"]
+            }
+          }
+        },
+        "required": ["title"]
+      },
+      "AdminUpdateProductOption": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "metadata": {
+            "type": ["string", "null"]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "rank": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "metadata": {
+                  "type": ["string", "null"]
+                }
+              },
+              "required": ["value"]
+            }
+          }
+        }
+      },
       "AdminProductListResponse": {
         "type": "object",
         "properties": {
@@ -1323,7 +1476,22 @@
         "type": "object",
         "properties": {
           "product": {
-            "$ref": "#/components/schemas/AdminProduct"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminProduct"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminProductOption"
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         "required": ["product"]
@@ -1346,6 +1514,44 @@
           }
         },
         "required": ["title"]
+      },
+      "AdminSetProductOptionsResponse": {
+        "type": "object",
+        "properties": {
+          "productOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductOption"
+            }
+          }
+        },
+        "required": ["productOptions"]
+      },
+      "AdminSetProductOptions": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "optionId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "valueIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "required": ["optionId", "valueIds"]
+            }
+          }
+        },
+        "required": ["options"]
       },
       "AdminProductVariantListResponse": {
         "type": "object",
@@ -3679,6 +3885,209 @@
         }
       }
     },
+    "/admin/product-options": {
+      "get": {
+        "operationId": "listProductOptions",
+        "summary": "List product options",
+        "tags": ["Product Options"],
+        "parameters": [
+          {
+            "schema": {
+              "type": ["integer", "null"],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductOptionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createProductOption",
+        "summary": "Create a product option",
+        "tags": ["Product Options"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateProductOption"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductOptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/admin/product-options/{id}": {
+      "get": {
+        "operationId": "getProductOption",
+        "summary": "Retrieve a product option",
+        "tags": ["Product Options"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductOptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateProductOption",
+        "summary": "Update a product option",
+        "tags": ["Product Options"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateProductOption"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductOptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteProductOption",
+        "summary": "Delete a product option",
+        "tags": ["Product Options"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/admin/products": {
       "get": {
         "operationId": "listProducts",
@@ -3937,6 +4346,85 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/products/{id}/options": {
+      "get": {
+        "operationId": "getProductOptions",
+        "summary": "List options for a product",
+        "tags": ["Product Options"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSetProductOptionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "put": {
+        "operationId": "setProductOptions",
+        "summary": "Set options for a product",
+        "tags": ["Product Options"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetProductOptions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSetProductOptionsResponse"
                 }
               }
             }

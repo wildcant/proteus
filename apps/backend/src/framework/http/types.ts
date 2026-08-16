@@ -19,6 +19,7 @@ export const Tags = {
   PAYMENTS: 'Payments',
   PAYMENT_COLLECTIONS: 'Payment Collections',
   PRODUCTS: 'Products',
+  PRODUCT_OPTIONS: 'Product Options',
   PRODUCT_VARIANTS: 'Product Variants',
   REFUND_REASONS: 'Refund Reasons',
   SHIPPING_OPTIONS: 'Shipping Options',

@@ -7,6 +7,8 @@ import { ProductRepository } from '../repositories/product.js'
 import { ProductImageRepository } from '../repositories/product-image.js'
 import { ProductOptionRepository } from '../repositories/product-option.js'
 import { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import { ProductProductOptionRepository } from '../repositories/product-product-option.js'
+import { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import { ProductVariantRepository } from '../repositories/product-variant.js'
 import { ProductModuleService } from '../services/product-module-service.js'
 
@@ -17,6 +19,8 @@ test.beforeEach(({ getDb, logger }) => {
   const productVariantRepository = new ProductVariantRepository({ getDb })
   const productOptionRepository = new ProductOptionRepository({ getDb })
   const productOptionValueRepository = new ProductOptionValueRepository({ getDb })
+  const productProductOptionRepository = new ProductProductOptionRepository({ getDb })
+  const productProductOptionValueRepository = new ProductProductOptionValueRepository({ getDb })
   const productImageRepository = new ProductImageRepository({ getDb })
   const withTransaction = createWithTransaction(getDb)
   service = new ProductModuleService({
@@ -24,6 +28,8 @@ test.beforeEach(({ getDb, logger }) => {
     productVariantRepository,
     productOptionRepository,
     productOptionValueRepository,
+    productProductOptionRepository,
+    productProductOptionValueRepository,
     productImageRepository,
     withTransaction,
     logger,

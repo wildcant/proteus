@@ -231,35 +231,42 @@ if (existingProducts.length > 0) {
   ]
   console.info(`Seeded ${4} products`)
 
-  // --- Options ---
-  const tshirtOptions = await productService.createProductOptions([
-    { productId: tshirt.id, title: 'Size' },
-    { productId: tshirt.id, title: 'Color' },
-  ])
-  const [tshirtSize, tshirtColor] = tshirtOptions as [(typeof tshirtOptions)[number], (typeof tshirtOptions)[number]]
-  const [sweatshirtSize] = (await productService.createProductOptions([
-    { productId: sweatshirt.id, title: 'Size' },
-  ])) as [(typeof tshirtOptions)[number]]
-  const [sweatpantsSize] = (await productService.createProductOptions([
-    { productId: sweatpants.id, title: 'Size' },
-  ])) as [(typeof tshirtOptions)[number]]
-  const [shortsSize] = (await productService.createProductOptions([{ productId: shorts.id, title: 'Size' }])) as [
-    (typeof tshirtOptions)[number],
-  ]
-  console.info('Seeded product options')
-
-  // --- Option Values ---
+  // --- Options (global) ---
   const sizes = ['S', 'M', 'L', 'XL']
   const colors = ['Black', 'White']
 
-  await productService.createProductOptionValues([
-    ...sizes.map((value, i) => ({ optionId: tshirtSize.id, value, rank: i })),
-    ...colors.map((value, i) => ({ optionId: tshirtColor.id, value, rank: i })),
-    ...sizes.map((value, i) => ({ optionId: sweatshirtSize.id, value, rank: i })),
-    ...sizes.map((value, i) => ({ optionId: sweatpantsSize.id, value, rank: i })),
-    ...sizes.map((value, i) => ({ optionId: shortsSize.id, value, rank: i })),
+  const sizeOption = await productService.createProductOption({
+    title: 'Size',
+    values: sizes.map((value, rank) => ({ value, rank })),
+  })
+  const colorOption = await productService.createProductOption({
+    title: 'Color',
+    values: colors.map((value, rank) => ({ value, rank })),
+  })
+  console.info('Seeded global product options')
+
+  // --- Link options to products ---
+  const sizeValueIds = sizeOption.values.map((v) => v.id)
+  const colorValueIds = colorOption.values.map((v) => v.id)
+
+  await Promise.all([
+    productService.setProductOptions(tshirt.id, {
+      options: [
+        { optionId: sizeOption.id, valueIds: sizeValueIds },
+        { optionId: colorOption.id, valueIds: colorValueIds },
+      ],
+    }),
+    productService.setProductOptions(sweatshirt.id, {
+      options: [{ optionId: sizeOption.id, valueIds: sizeValueIds }],
+    }),
+    productService.setProductOptions(sweatpants.id, {
+      options: [{ optionId: sizeOption.id, valueIds: sizeValueIds }],
+    }),
+    productService.setProductOptions(shorts.id, {
+      options: [{ optionId: sizeOption.id, valueIds: sizeValueIds }],
+    }),
   ])
-  console.info('Seeded product option values')
+  console.info('Linked options to products')
 
   // --- Variants ---
   const tshirtVariants = sizes.flatMap((size) =>

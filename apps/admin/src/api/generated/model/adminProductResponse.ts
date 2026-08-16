@@ -4,8 +4,8 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
-import type { AdminProduct } from './adminProduct.ts';
+import type { AdminProductResponseProduct } from './adminProductResponseProduct.ts';
 
 export interface AdminProductResponse {
-  product: AdminProduct;
+  product: AdminProductResponseProduct;
 }
