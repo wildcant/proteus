@@ -2,6 +2,7 @@ import type { RouteDefinition } from '@framework/http/types.js'
 import { searchable, Tags } from '@framework/http/types.js'
 import type { ProductDTO, ProductVariantDTO } from '../../../core/types/product/common.js'
 import * as productByIdRoutes from './[id]/route.js'
+import * as variantPricesRoutes from './[id]/variants/[variantId]/prices/route.js'
 import * as variantByIdRoutes from './[id]/variants/[variantId]/route.js'
 import * as variantRoutes from './[id]/variants/route.js'
 import * as productRoutes from './route.js'
@@ -98,6 +99,16 @@ export default [
     summary: 'Update a product variant',
     tags: [Tags.PRODUCT_VARIANTS],
     output: variantByIdRoutes.PatchOutput,
+  },
+  {
+    method: 'PUT',
+    matcher: '/admin/products/:id/variants/:variantId/prices',
+    handler: variantPricesRoutes.PUT,
+    input: variantPricesRoutes.PutInput,
+    operationId: 'updateVariantPrices',
+    summary: 'Update variant prices',
+    tags: [Tags.PRODUCT_VARIANTS],
+    output: variantPricesRoutes.PutOutput,
   },
   {
     method: 'DELETE',

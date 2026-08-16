@@ -11,6 +11,8 @@ import type {
   AdminProductVariantResponse,
   AdminUpdateProductVariant,
   AdminUpdateProductVariantResponse,
+  AdminUpdateVariantPrices,
+  AdminUpdateVariantPricesResponse,
   DeleteResponse,
   ListProductVariantsParams
 } from '../model';
@@ -86,8 +88,24 @@ export const deleteProductVariant = (
     },
       );
     }
+  /**
+ * @summary Update variant prices
+ */
+export const updateVariantPrices = (
+    id: string,
+    variantId: string,
+    adminUpdateVariantPrices?: BodyType<AdminUpdateVariantPrices>,
+ ) => {
+      return fetcher<AdminUpdateVariantPricesResponse>(
+      {url: `/admin/products/${id}/variants/${variantId}/prices`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: adminUpdateVariantPrices
+    },
+      );
+    }
   export type ListProductVariantsResult = NonNullable<Awaited<ReturnType<typeof listProductVariants>>>
 export type CreateProductVariantResult = NonNullable<Awaited<ReturnType<typeof createProductVariant>>>
 export type GetProductVariantResult = NonNullable<Awaited<ReturnType<typeof getProductVariant>>>
 export type UpdateProductVariantResult = NonNullable<Awaited<ReturnType<typeof updateProductVariant>>>
 export type DeleteProductVariantResult = NonNullable<Awaited<ReturnType<typeof deleteProductVariant>>>
+export type UpdateVariantPricesResult = NonNullable<Awaited<ReturnType<typeof updateVariantPrices>>>

@@ -53,7 +53,13 @@ export const AdminUpdateProductVariant = z
     width: z.number().nullable().optional(),
     variantRank: z.number().optional(),
     metadata: z.string().nullable().optional(),
-    prices: z.array(UpdateVariantPrice).optional(),
   })
   .openapi('AdminUpdateProductVariant')
 export type AdminUpdateProductVariantBody = z.infer<typeof AdminUpdateProductVariant>
+
+export const AdminUpdateVariantPrices = z
+  .object({
+    prices: z.array(UpdateVariantPrice),
+  })
+  .openapi('AdminUpdateVariantPrices')
+export type AdminUpdateVariantPricesBody = z.infer<typeof AdminUpdateVariantPrices>

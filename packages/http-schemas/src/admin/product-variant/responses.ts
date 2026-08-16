@@ -17,6 +17,11 @@ export const AdminUpdateProductVariantResponse = z
   .openapi('AdminUpdateProductVariantResponse')
 export type AdminUpdateProductVariantResponse = z.input<typeof AdminUpdateProductVariantResponse>
 
+export const AdminUpdateVariantPricesResponse = z
+  .object({ variant: AdminProductVariant })
+  .openapi('AdminUpdateVariantPricesResponse')
+export type AdminUpdateVariantPricesResponse = z.input<typeof AdminUpdateVariantPricesResponse>
+
 export const AdminProductVariantListResponse = PaginatedResponse.extend({
   variants: z.array(AdminProductVariant),
 }).openapi('AdminProductVariantListResponse')
