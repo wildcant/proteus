@@ -153,7 +153,7 @@ export {
   TableRow,
 } from './components/ui/table.tsx'
 export { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants } from './components/ui/tabs.tsx'
-export { TagInput } from './components/ui/tag-input.tsx'
+export { TagInput, type TagInputItem } from './components/ui/tag-input.tsx'
 export { Textarea } from './components/ui/textarea.tsx'
 export { Toaster, toast, useToastManager } from './components/ui/toast.tsx'
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/ui/tooltip.tsx'

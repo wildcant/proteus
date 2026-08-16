@@ -3,9 +3,11 @@ import { forwardRef, type KeyboardEvent, useState } from 'react'
 import { cn } from '#/lib/utils.ts'
 import { Badge } from './badge.tsx'
 
+export type TagInputItem = { id: string; label: string }
+
 type TagInputProps = Omit<React.ComponentProps<'input'>, 'value' | 'onChange'> & {
-  value: string[]
-  onChange: (tags: string[]) => void
+  value: TagInputItem[]
+  onChange: (items: TagInputItem[]) => void
 }
 
 const TagInput = forwardRef<HTMLInputElement, TagInputProps>(({ value, onChange, className, ...props }, ref) => {
@@ -13,14 +15,14 @@ const TagInput = forwardRef<HTMLInputElement, TagInputProps>(({ value, onChange,
 
   const addTag = () => {
     const trimmed = pending.trim()
-    if (trimmed && !value.includes(trimmed)) {
-      onChange([...value, trimmed])
+    if (trimmed && !value.some((item) => item.id === trimmed)) {
+      onChange([...value, { id: trimmed, label: trimmed }])
     }
     setPending('')
   }
 
-  const removeTag = (tag: string) => {
-    onChange(value.filter((t) => t !== tag))
+  const removeTag = (id: string) => {
+    onChange(value.filter((item) => item.id !== id))
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -28,8 +30,8 @@ const TagInput = forwardRef<HTMLInputElement, TagInputProps>(({ value, onChange,
       event.preventDefault()
       addTag()
     } else if (event.key === 'Backspace' && pending === '' && value.length > 0) {
-      const lastTag = value[value.length - 1]
-      if (lastTag) removeTag(lastTag)
+      const lastItem = value[value.length - 1]
+      if (lastItem) removeTag(lastItem.id)
     }
   }
 
@@ -40,10 +42,14 @@ const TagInput = forwardRef<HTMLInputElement, TagInputProps>(({ value, onChange,
         className,
       )}
     >
-      {value.map((tag) => (
-        <Badge key={tag} variant="secondary" className="gap-0.5 pr-1">
-          {tag}
-          <button type="button" onClick={() => removeTag(tag)} className="ml-0.5 rounded-full hover:text-foreground">
+      {value.map((item) => (
+        <Badge key={item.id} variant="secondary" className="gap-0.5 pr-1">
+          {item.label}
+          <button
+            type="button"
+            onClick={() => removeTag(item.id)}
+            className="ml-0.5 rounded-full hover:text-foreground"
+          >
             <XIcon className="size-3" />
           </button>
         </Badge>

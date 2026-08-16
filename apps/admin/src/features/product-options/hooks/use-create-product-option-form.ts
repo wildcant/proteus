@@ -1,15 +1,8 @@
-import { z } from 'zod'
+import { AdminCreateProductOption, type AdminCreateProductOptionBody } from '@proteus/http-schemas/admin'
 import type { AdminProductOptionResponse } from '#/api/generated/model'
 import { useCreateProductOption } from '#/features/product-options/api/product-options'
 import { useAppForm } from '#/lib/form-hook.ts'
 import type { SubmitFormParams } from '#/types/form.ts'
-
-const createOptionFormSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  values: z.array(z.string()),
-})
-
-type CreateOptionFormValues = z.infer<typeof createOptionFormSchema>
 
 export type CreateProductOptionFormParams = SubmitFormParams<AdminProductOptionResponse>
 
@@ -17,12 +10,11 @@ export function useCreateProductOptionForm(params?: CreateProductOptionFormParam
   const createMutation = useCreateProductOption()
 
   const form = useAppForm({
-    defaultValues: { title: '', values: [] } satisfies CreateOptionFormValues as CreateOptionFormValues,
-    validators: { onSubmit: createOptionFormSchema },
+    defaultValues: { title: '', values: [] } satisfies AdminCreateProductOptionBody as AdminCreateProductOptionBody,
+    validators: { onSubmit: AdminCreateProductOption },
     onSubmit: ({ value }) => {
-      const values = value.values.map((v, rank) => ({ value: v, rank }))
       createMutation.mutate(
-        { title: value.title, values: values.length > 0 ? values : undefined },
+        { title: value.title, values: value.values?.length ? value.values : undefined },
         {
           onSuccess: (data) => {
             form.reset()

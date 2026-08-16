@@ -29,8 +29,8 @@ export function CreateProductOptionForm() {
             <form.Field name="values">
               {(field) => (
                 <TagInput
-                  value={field.state.value}
-                  onChange={(tags) => field.handleChange(tags)}
+                  value={(field.state.value ?? []).map((v) => ({ id: v.value, label: v.value }))}
+                  onChange={(items) => field.handleChange(items.map((item, rank) => ({ value: item.label, rank })))}
                   placeholder="Type a value and press Enter"
                 />
               )}
