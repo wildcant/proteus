@@ -100,10 +100,21 @@ export type IProductModuleService = {
     config?: FindConfig<ProductOptionValueDTO>,
     context?: Context,
   ): Promise<ProductOptionValueDTO[]>
+  listAndCountProductOptionValues(
+    filters?: FilterableProductOptionValueProps,
+    config?: FindConfig<ProductOptionValueDTO>,
+    context?: Context,
+  ): Promise<[ProductOptionValueDTO[], number]>
 
   // Product-option linking
   setProductOptions(productId: string, data: SetProductOptionsDTO, context?: Context): Promise<void>
   listProductOptionsForProduct(productId: string, context?: Context): Promise<ProductOptionWithValuesDTO[]>
+  listAndCountProductsForOption(
+    optionId: string,
+    filters?: FilterableProductProps,
+    config?: FindConfig<ProductDTO>,
+    context?: Context,
+  ): Promise<[ProductDTO[], number]>
 
   // Images
   createProductImages(data: CreateProductImageDTO[], context?: Context): Promise<ProductImageDTO[]>

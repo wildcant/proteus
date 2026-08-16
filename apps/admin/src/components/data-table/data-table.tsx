@@ -93,49 +93,65 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
     getRowId: config.getRowId,
   })
 
+  const hasSecondRow = (actions && actions.length > 0) || filterDefs.length > 0
+
   return (
     <div className={cn('flex flex-col', className)}>
       <Toolbar>
-        <ToolbarRow>
+        <ToolbarRow className="px-2">
           <ToolbarSection position="left">
             {heading && <h1 className="text-lg font-semibold">{heading}</h1>}
           </ToolbarSection>
-          {actions && actions.length > 0 && (
-            <ToolbarSection position="right">
-              {actions.map((action) => (
+          <ToolbarSection position="right">
+            {!hasSecondRow && (
+              <>
+                <Search value={search.value} onChange={search.onChange} isPending={isFetching} />
+                <SortingMenu
+                  sortableColumns={sorting.sortableColumns}
+                  current={sorting.current}
+                  setField={sorting.setField}
+                  setDirection={sorting.setDirection}
+                  isPending={isPending}
+                />
+              </>
+            )}
+            {actions &&
+              actions.length > 0 &&
+              actions.map((action) => (
                 <Button key={action.to} size="sm" render={<Link to={action.to} />}>
                   {action.label}
                 </Button>
               ))}
-            </ToolbarSection>
-          )}
+          </ToolbarSection>
         </ToolbarRow>
 
-        <ToolbarRow>
-          <ToolbarSection position="left">
-            <FilterBar
-              filterDefs={filterDefs}
-              values={urlState.filters}
-              pendingIds={filters.pendingIds}
-              activeFilterIds={filters.activeIds}
-              onAddFilter={filters.add}
-              onSetFilter={filters.commit}
-              onRemoveFilter={filters.remove}
-              onClearAll={filters.clearAll}
-              isPending={isPending}
-            />
-          </ToolbarSection>
-          <ToolbarSection position="right">
-            <Search value={search.value} onChange={search.onChange} isPending={isFetching} />
-            <SortingMenu
-              sortableColumns={sorting.sortableColumns}
-              current={sorting.current}
-              setField={sorting.setField}
-              setDirection={sorting.setDirection}
-              isPending={isPending}
-            />
-          </ToolbarSection>
-        </ToolbarRow>
+        {hasSecondRow && (
+          <ToolbarRow className="px-2">
+            <ToolbarSection position="left">
+              <FilterBar
+                filterDefs={filterDefs}
+                values={urlState.filters}
+                pendingIds={filters.pendingIds}
+                activeFilterIds={filters.activeIds}
+                onAddFilter={filters.add}
+                onSetFilter={filters.commit}
+                onRemoveFilter={filters.remove}
+                onClearAll={filters.clearAll}
+                isPending={isPending}
+              />
+            </ToolbarSection>
+            <ToolbarSection position="right">
+              <Search value={search.value} onChange={search.onChange} isPending={isFetching} />
+              <SortingMenu
+                sortableColumns={sorting.sortableColumns}
+                current={sorting.current}
+                setField={sorting.setField}
+                setDirection={sorting.setDirection}
+                isPending={isPending}
+              />
+            </ToolbarSection>
+          </ToolbarRow>
+        )}
       </Toolbar>
 
       <DataTableUi

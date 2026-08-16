@@ -8,3 +8,8 @@ export const AdminProductOptionListParams = createFindParams().extend({
   q: z.string().optional(),
 })
 export type AdminProductOptionListQuery = FindParams<typeof AdminProductOptionListParams>
+
+export const AdminProductOptionValueListParams = createFindParams().extend({
+  q: z.string().optional(),
+})
+export type AdminProductOptionValueListQuery = FindParams<typeof AdminProductOptionValueListParams>

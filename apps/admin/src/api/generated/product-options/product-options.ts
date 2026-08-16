@@ -6,13 +6,17 @@
  */
 import type {
   AdminCreateProductOption,
+  AdminProductListResponse,
   AdminProductOptionListResponse,
   AdminProductOptionResponse,
+  AdminProductOptionValueListResponse,
   AdminSetProductOptions,
   AdminSetProductOptionsResponse,
   AdminUpdateProductOption,
   DeleteResponse,
-  ListProductOptionsParams
+  ListProductOptionsParams,
+  ListProductsForOptionParams,
+  ListValuesForOptionParams
 } from '../model';
 
 import { fetcher } from '../../../lib/fetcher.ts';
@@ -82,6 +86,32 @@ export const deleteProductOption = (
       );
     }
   /**
+ * @summary List products linked to an option
+ */
+export const listProductsForOption = (
+    id: string,
+    params?: ListProductsForOptionParams,
+ ) => {
+      return fetcher<AdminProductListResponse>(
+      {url: `/admin/product-options/${id}/products`, method: 'GET',
+        params
+    },
+      );
+    }
+  /**
+ * @summary List values for an option
+ */
+export const listValuesForOption = (
+    id: string,
+    params?: ListValuesForOptionParams,
+ ) => {
+      return fetcher<AdminProductOptionValueListResponse>(
+      {url: `/admin/product-options/${id}/values`, method: 'GET',
+        params
+    },
+      );
+    }
+  /**
  * @summary List options for a product
  */
 export const getProductOptions = (
@@ -111,5 +141,7 @@ export type CreateProductOptionResult = NonNullable<Awaited<ReturnType<typeof cr
 export type GetProductOptionResult = NonNullable<Awaited<ReturnType<typeof getProductOption>>>
 export type UpdateProductOptionResult = NonNullable<Awaited<ReturnType<typeof updateProductOption>>>
 export type DeleteProductOptionResult = NonNullable<Awaited<ReturnType<typeof deleteProductOption>>>
+export type ListProductsForOptionResult = NonNullable<Awaited<ReturnType<typeof listProductsForOption>>>
+export type ListValuesForOptionResult = NonNullable<Awaited<ReturnType<typeof listValuesForOption>>>
 export type GetProductOptionsResult = NonNullable<Awaited<ReturnType<typeof getProductOptions>>>
 export type SetProductOptionsResult = NonNullable<Awaited<ReturnType<typeof setProductOptions>>>

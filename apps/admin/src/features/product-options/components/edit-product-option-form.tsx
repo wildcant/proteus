@@ -1,7 +1,7 @@
 import { Button, TagInput, toast } from '@proteus/ui'
 import type { AdminProductOption } from '#/api/generated/model'
 import { KeyboundForm } from '#/components/modals/keybound-form'
-import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
+import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
 import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
 import { useEditProductOptionForm } from '#/features/product-options/hooks/use-edit-product-option-form'
 
@@ -14,20 +14,12 @@ export function EditProductOptionForm({ option }: { option: AdminProductOption }
   })
 
   return (
-    <RouteFocusModal.Form form={form}>
+    <RouteDrawer.Form form={form}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
-        <RouteFocusModal.Header>
-          <div className="flex items-center gap-x-2">
-            <Button type="submit" size="sm">
-              Save
-            </Button>
-          </div>
-        </RouteFocusModal.Header>
-        <RouteFocusModal.Body className="mx-auto flex w-full max-w-lg flex-col gap-y-8 py-16">
-          <div>
-            <h1 className="text-2xl font-semibold">Edit Option</h1>
-            <p className="text-muted-foreground text-sm">Update option title and values.</p>
-          </div>
+        <RouteDrawer.Header>
+          <RouteDrawer.Title>Edit Product Option</RouteDrawer.Title>
+        </RouteDrawer.Header>
+        <RouteDrawer.Body className="flex flex-col gap-y-6">
           <form.AppField name="title">
             {(field) => <field.TextField label="Title" autoFocus placeholder="e.g. Color, Size" />}
           </form.AppField>
@@ -43,8 +35,14 @@ export function EditProductOptionForm({ option }: { option: AdminProductOption }
               )}
             </form.Field>
           </div>
-        </RouteFocusModal.Body>
+        </RouteDrawer.Body>
+        <RouteDrawer.Footer>
+          <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
+          <Button type="submit" size="sm">
+            Save
+          </Button>
+        </RouteDrawer.Footer>
       </KeyboundForm>
-    </RouteFocusModal.Form>
+    </RouteDrawer.Form>
   )
 }

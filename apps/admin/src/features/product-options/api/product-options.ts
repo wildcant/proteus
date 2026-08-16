@@ -4,6 +4,8 @@ import type {
   AdminSetProductOptions,
   AdminUpdateProductOption,
   ListProductOptionsParams,
+  ListProductsForOptionParams,
+  ListValuesForOptionParams,
 } from '#/api/generated/model'
 import {
   createProductOption,
@@ -11,6 +13,8 @@ import {
   getProductOption,
   getProductOptions,
   listProductOptions,
+  listProductsForOption,
+  listValuesForOption,
   setProductOptions,
   updateProductOption,
 } from '#/api/generated/product-options/product-options'
@@ -51,6 +55,7 @@ export const useUpdateProductOption = (id: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productOptionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: productOptionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: valuesForOptionKeys.lists() })
     },
   })
 }
@@ -63,6 +68,34 @@ export const useDeleteProductOption = (id: string) => {
     },
   })
 }
+
+const productsForOptionKeys = queryKeysFactory<'productsForOption', ListProductsForOptionParams & { optionId: string }>(
+  'productsForOption',
+)
+
+export const productsForOptionQueryOptions = (optionId: string, params?: ListProductsForOptionParams) =>
+  queryOptions({
+    queryKey: productsForOptionKeys.list({ ...params, optionId }),
+    queryFn: () => listProductsForOption(optionId, params),
+    placeholderData: keepPreviousData,
+  })
+
+export const useProductsForOption = (optionId: string, params?: ListProductsForOptionParams) =>
+  useQuery(productsForOptionQueryOptions(optionId, params))
+
+const valuesForOptionKeys = queryKeysFactory<'valuesForOption', ListValuesForOptionParams & { optionId: string }>(
+  'valuesForOption',
+)
+
+export const valuesForOptionQueryOptions = (optionId: string, params?: ListValuesForOptionParams) =>
+  queryOptions({
+    queryKey: valuesForOptionKeys.list({ ...params, optionId }),
+    queryFn: () => listValuesForOption(optionId, params),
+    placeholderData: keepPreviousData,
+  })
+
+export const useValuesForOption = (optionId: string, params?: ListValuesForOptionParams) =>
+  useQuery(valuesForOptionQueryOptions(optionId, params))
 
 const productOptionsForProductKeys = queryKeysFactory<'productOptionsForProduct'>('productOptionsForProduct')
 

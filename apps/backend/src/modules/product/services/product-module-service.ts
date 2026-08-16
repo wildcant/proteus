@@ -367,6 +367,14 @@ export class ProductModuleService implements IProductModuleService {
     return this.productOptionValueRepository.find(filters, config, context)
   }
 
+  async listAndCountProductOptionValues(
+    filters?: FilterableProductOptionValueProps,
+    config?: FindConfig<ProductOptionValueDTO>,
+    context?: Context,
+  ): Promise<[ProductOptionValueDTO[], number]> {
+    return this.productOptionValueRepository.findAndCount(filters, config, context)
+  }
+
   // ── Product-Option Linking ────────────────────────────────────────────
 
   async setProductOptions(productId: string, data: SetProductOptionsDTO, context?: Context): Promise<void> {
@@ -431,6 +439,19 @@ export class ProductModuleService implements IProductModuleService {
         : allValues.filter((v) => v.optionId === option.id)
       return { ...option, values }
     })
+  }
+
+  async listAndCountProductsForOption(
+    optionId: string,
+    filters?: FilterableProductProps,
+    config?: FindConfig<ProductDTO>,
+    context?: Context,
+  ): Promise<[ProductDTO[], number]> {
+    const links = await this.productProductOptionRepository.find({ optionId }, undefined, context)
+    if (links.length === 0) return [[], 0]
+
+    const productIds = links.map((l) => l.productId)
+    return this.productRepository.findAndCount({ ...filters, id: productIds }, config, context)
   }
 
   // ── Images ────────────────────────────────────────────────────────────
