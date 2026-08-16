@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useProducts } from '#/features/products/api/products'
 
@@ -14,10 +15,15 @@ export function ProductList() {
     <>
       <div className="space-y-2">
         {products?.map((product) => (
-          <div key={product.id} className="rounded-xl border border-[var(--line)] bg-[var(--card-bg)] px-4 py-3">
+          <Link
+            key={product.id}
+            to="/products/$productId"
+            params={{ productId: product.id }}
+            className="block rounded-xl border border-[var(--line)] bg-[var(--card-bg)] px-4 py-3 transition-colors hover:border-[var(--sea-ink-soft)]"
+          >
             <span className="font-medium text-[var(--sea-ink)]">{product.title}</span>
             {product.description && <p className="mt-1 text-sm text-[var(--sea-ink-soft)]">{product.description}</p>}
-          </div>
+          </Link>
         ))}
         {(!products || products.length === 0) && (
           <p className="text-center text-sm text-[var(--sea-ink-soft)]">No products found.</p>

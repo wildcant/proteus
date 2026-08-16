@@ -14,6 +14,7 @@ export const timestamps = z.object({
 
 export const bigNumberToString = z
   .custom<BigNumber>((val) => BigNumber.isBigNumber(val))
+  .openapi({ type: 'string', description: 'Numeric string (arbitrary precision)' })
   .transform((bn) => bn.toFixed())
   .pipe(z.string())
 

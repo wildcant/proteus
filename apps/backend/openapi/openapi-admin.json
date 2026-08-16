@@ -1427,6 +1427,12 @@
           },
           "metadata": {
             "type": ["string", "null"]
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminVariantPrice"
+            }
           }
         },
         "required": [
@@ -1450,6 +1456,30 @@
           "variantRank",
           "metadata"
         ]
+      },
+      "AdminVariantPrice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "currencyCode", "amount", "createdAt", "updatedAt"]
       },
       "AdminCreateProductVariantResponse": {
         "type": "object",
@@ -1514,6 +1544,18 @@
           },
           "metadata": {
             "type": ["string", "null"]
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": ["amount"]
+            }
           }
         },
         "required": ["title"]
@@ -1590,6 +1632,21 @@
           },
           "metadata": {
             "type": ["string", "null"]
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": ["amount"]
+            }
           }
         }
       },

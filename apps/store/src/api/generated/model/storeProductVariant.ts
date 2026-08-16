@@ -4,6 +4,7 @@
  * Store API
  * OpenAPI spec version: 0.1.0
  */
+import type { StoreCalculatedPrice } from './storeCalculatedPrice.ts';
 
 export interface StoreProductVariant {
   id: string;
@@ -23,4 +24,5 @@ export interface StoreProductVariant {
   height: number | null;
   /** @nullable */
   width: number | null;
+  calculatedPrice: StoreCalculatedPrice;
 }

@@ -22,6 +22,7 @@ export * from './listStoreCartShippingOptionsParams.ts';
 export * from './listStoreProductsParams.ts';
 export * from './resetPasswordBody.ts';
 export * from './resetPasswordResponse.ts';
+export * from './storeCalculatedPrice.ts';
 export * from './storeCart.ts';
 export * from './storeCartDetailResponse.ts';
 export * from './storeCartDetailResponseCart.ts';

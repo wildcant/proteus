@@ -4,6 +4,7 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminUpdateProductVariantPricesItem } from './adminUpdateProductVariantPricesItem.ts';
 
 export interface AdminUpdateProductVariant {
   /** @minLength 1 */
@@ -37,4 +38,5 @@ export interface AdminUpdateProductVariant {
   variantRank?: number;
   /** @nullable */
   metadata?: string | null;
+  prices?: AdminUpdateProductVariantPricesItem[];
 }

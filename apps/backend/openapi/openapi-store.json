@@ -925,9 +925,40 @@
           },
           "width": {
             "type": ["number", "null"]
+          },
+          "calculatedPrice": {
+            "$ref": "#/components/schemas/StoreCalculatedPrice"
           }
         },
-        "required": ["id", "productId", "title", "sku", "barcode", "material", "weight", "length", "height", "width"]
+        "required": [
+          "id",
+          "productId",
+          "title",
+          "sku",
+          "barcode",
+          "material",
+          "weight",
+          "length",
+          "height",
+          "width",
+          "calculatedPrice"
+        ]
+      },
+      "StoreCalculatedPrice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "originalAmount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["id", "currencyCode", "originalAmount"]
       }
     },
     "parameters": {}
