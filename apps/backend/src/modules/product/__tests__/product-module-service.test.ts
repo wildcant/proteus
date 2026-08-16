@@ -182,4 +182,38 @@ describe('ProductModuleService', () => {
     expect(renamed?.title).toBe('Renamed')
     expect(created?.title).toBe('New Variant')
   })
+
+  test('updateProductOption allows removing values not used by any product', async ({ expect }) => {
+    const option = await service.createProductOption({
+      title: 'Color',
+      values: [{ value: 'Red' }, { value: 'Blue' }, { value: 'Green' }],
+    })
+
+    const updated = await service.updateProductOption(option.id, {
+      values: [{ value: 'Red' }, { value: 'Blue' }],
+    })
+
+    expect(updated.values).toHaveLength(2)
+    expect(updated.values.map((v) => v.value).sort()).toEqual(['Blue', 'Red'])
+  })
+
+  test('updateProductOption throws when removing a value used by a product', async ({ expect, dto }) => {
+    const option = await service.createProductOption({
+      title: 'Color',
+      values: [{ value: 'Red' }, { value: 'Blue' }],
+    })
+    const product = await service.createProduct(dto.generate.createProduct())
+    const blueValue = option.values.find((v) => v.value === 'Blue')
+    await service.setProductOptions(product.id, {
+      options: [{ optionId: option.id, valueIds: [blueValue!.id] }],
+    })
+
+    const error = await service
+      .updateProductOption(option.id, { values: [{ value: 'Red' }] })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
+    expect(error.message).toContain('Cannot remove option value(s)')
+  })
 })

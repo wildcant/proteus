@@ -281,6 +281,26 @@ export class ProductModuleService implements IProductModuleService {
 
       if (valueInputs) {
         const existing = await this.productOptionValueRepository.find({ optionId }, undefined, ctx)
+
+        const newValueStrings = new Set(valueInputs.map((v) => v.value))
+        const removedValues = existing.filter((v) => !newValueStrings.has(v.value))
+
+        if (removedValues.length > 0) {
+          const removedValueIds = removedValues.map((v) => v.id)
+          const activeValueLinks = await this.productProductOptionValueRepository.find(
+            { optionValueId: removedValueIds },
+            undefined,
+            ctx,
+          )
+          if (activeValueLinks.length > 0) {
+            throw new AppError({
+              type: ErrorTypes.NOT_ALLOWED,
+              message:
+                'Cannot remove option value(s) that are currently used by products. Remove them from all products first.',
+            })
+          }
+        }
+
         if (existing.length > 0) {
           await this.productOptionValueRepository.softDelete(
             existing.map((v) => v.id),
