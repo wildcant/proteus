@@ -82,12 +82,15 @@ export class PricingModuleService implements IPricingModuleService {
         ctx,
       )
 
-      for (const [index, priceSet] of priceSets.entries()) {
-        const input = data[index]
-        if (input?.prices?.length) {
-          await this.priceRepository.createMany(normalizePrices(input.prices, priceSet.id), ctx)
-        }
-      }
+      const priceSetsWithPrices = priceSets
+        .map((priceSet, index) => ({ priceSet, prices: data[index]?.prices }))
+        .filter((entry): entry is typeof entry & { prices: CreatePriceDTO[] } => !!entry.prices?.length)
+
+      await Promise.all(
+        priceSetsWithPrices.map((entry) =>
+          this.priceRepository.createMany(normalizePrices(entry.prices, entry.priceSet.id), ctx),
+        ),
+      )
 
       return priceSets
     })
@@ -97,7 +100,7 @@ export class PricingModuleService implements IPricingModuleService {
     return this.withTransaction(context, async (ctx) => {
       // Prices cascade-delete via FK onDelete: 'cascade', but soft-delete the prices first
       const prices = await this.priceRepository.find({ priceSetId: priceSetIds }, undefined, ctx)
-      const priceIds = prices.map((p) => p.id)
+      const priceIds = prices.map((price) => price.id)
       if (priceIds.length) {
         await this.priceRepository.softDelete(priceIds, ctx)
       }
@@ -148,7 +151,9 @@ export class PricingModuleService implements IPricingModuleService {
       }
 
       await Promise.all(
-        toUpdate.map((price) => this.priceRepository.update(price.id as string, { amount: price.amount }, ctx)),
+        toUpdate
+          .filter((price): price is typeof price & { id: string } => typeof price.id === 'string')
+          .map((price) => this.priceRepository.update(price.id, { amount: price.amount }, ctx)),
       )
 
       if (toDelete.length > 0) {

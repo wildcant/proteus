@@ -19,11 +19,13 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       'create-variants',
       async ({ container }) => {
         const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        return productService.createProductVariants(input.variants.map((v) => ({ ...v, productId: input.productId })))
+        return productService.createProductVariants(
+          input.variants.map((variant) => ({ ...variant, productId: input.productId })),
+        )
       },
       async (created, { container }) => {
         const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.deleteProductVariants(created.map((v) => v.id))
+        await productService.deleteProductVariants(created.map((variant) => variant.id))
       },
     )
 
@@ -33,26 +35,26 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       async ({ container }) => {
         const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
         const variantsWithPrices = input.variants
-          .map((v, index) => ({ index, prices: v.prices }))
-          .filter((v) => v.prices && v.prices.length > 0)
+          .map((variant, index) => ({ index, prices: variant.prices }))
+          .filter((entry) => entry.prices && entry.prices.length > 0)
 
         if (variantsWithPrices.length === 0) return []
 
         const created = await pricingService.createPriceSets(
-          variantsWithPrices.map((v) => ({
-            prices: v.prices?.map((p) => ({ currencyCode: 'usd', amount: p.amount })),
+          variantsWithPrices.map((entry) => ({
+            prices: entry.prices?.map((price) => ({ currencyCode: 'usd', amount: price.amount })),
           })),
         )
 
-        return variantsWithPrices.map((v, i) => ({
-          variantId: variants[v.index]?.id ?? '',
-          priceSetId: created[i]?.id ?? '',
+        return variantsWithPrices.map((entry, index) => ({
+          variantId: variants[entry.index]?.id ?? '',
+          priceSetId: created[index]?.id ?? '',
         }))
       },
       async (created, { container }) => {
         if (created.length === 0) return
         const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
-        await pricingService.deletePriceSets(created.map((c) => c.priceSetId))
+        await pricingService.deletePriceSets(created.map((link) => link.priceSetId))
       },
     )
 
@@ -63,18 +65,20 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
         if (priceSets.length === 0) return
         const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
         await Promise.all(
-          priceSets.map((ps) =>
-            linkService.repo('productVariantPriceSet').create({ variantId: ps.variantId, priceSetId: ps.priceSetId }),
+          priceSets.map((priceSetLink) =>
+            linkService
+              .repo('productVariantPriceSet')
+              .create({ variantId: priceSetLink.variantId, priceSetId: priceSetLink.priceSetId }),
           ),
         )
       },
       async (_result, { container }) => {
         if (priceSets.length === 0) return
         const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-        const variantIds = priceSets.map((ps) => ps.variantId)
+        const variantIds = priceSets.map((priceSetLink) => priceSetLink.variantId)
         const variantAndPriceSetLinks = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
         if (variantAndPriceSetLinks.length > 0) {
-          await linkService.repo('productVariantPriceSet').softDelete(variantAndPriceSetLinks.map((l) => l.id))
+          await linkService.repo('productVariantPriceSet').softDelete(variantAndPriceSetLinks.map((link) => link.id))
         }
       },
     )
@@ -84,7 +88,9 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       if (priceSets.length === 0) return variants as ProductVariantExtendedDTO[]
 
       const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
-      const priceSetByVariantId = new Map(priceSets.map((ps) => [ps.variantId, ps.priceSetId]))
+      const priceSetByVariantId = new Map(
+        priceSets.map((priceSetLink) => [priceSetLink.variantId, priceSetLink.priceSetId]),
+      )
 
       return Promise.all(
         variants.map(async (variant) => {

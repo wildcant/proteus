@@ -55,10 +55,10 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
         await pricingService.upsertPriceSets([
           {
             id: variantAndPriceSetLink.record.priceSetId,
-            prices: input.data.prices.map((p) => ({
-              id: p.id,
+            prices: input.data.prices.map((price) => ({
+              id: price.id,
               currencyCode: 'usd',
-              amount: p.amount,
+              amount: price.amount,
             })),
           },
         ])
@@ -71,10 +71,10 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
         await pricingService.upsertPriceSets([
           {
             id: variantAndPriceSetLink.record.priceSetId,
-            prices: prevPrices.map((p) => ({
-              id: p.id,
-              currencyCode: p.currencyCode,
-              amount: p.amount,
+            prices: prevPrices.map((price) => ({
+              id: price.id,
+              currencyCode: price.currencyCode,
+              amount: price.amount,
             })),
           },
         ])

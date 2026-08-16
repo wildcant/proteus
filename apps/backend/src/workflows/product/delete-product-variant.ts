@@ -20,7 +20,7 @@ export const deleteProductVariantWorkflow = createWorkflow<DeleteProductVariantI
       const dismissedPriceSetLinks = dismissed.productVariantPriceSet ?? []
       if (dismissedPriceSetLinks.length === 0) return
       const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
-      await pricingService.deletePriceSets(dismissedPriceSetLinks.map((l) => l.priceSetId))
+      await pricingService.deletePriceSets(dismissedPriceSetLinks.map((link) => link.priceSetId))
     })
 
     // Step 3: Delete variant
