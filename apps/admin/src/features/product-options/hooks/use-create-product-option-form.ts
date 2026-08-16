@@ -13,17 +13,14 @@ export function useCreateProductOptionForm(params?: CreateProductOptionFormParam
     defaultValues: { title: '', values: [] } satisfies AdminCreateProductOptionBody as AdminCreateProductOptionBody,
     validators: { onSubmit: AdminCreateProductOption },
     onSubmit: ({ value }) => {
-      createMutation.mutate(
-        { title: value.title, values: value.values?.length ? value.values : undefined },
-        {
-          onSuccess: (data) => {
-            form.reset()
-            params?.onSuccess?.(data)
-          },
-          onError: (error) => params?.onError?.(error.message),
-          onSettled: () => params?.onSettled?.(),
+      createMutation.mutate(value, {
+        onSuccess: (data) => {
+          form.reset()
+          params?.onSuccess?.(data)
         },
-      )
+        onError: (error) => params?.onError?.(error.message),
+        onSettled: () => params?.onSettled?.(),
+      })
     },
   })
 

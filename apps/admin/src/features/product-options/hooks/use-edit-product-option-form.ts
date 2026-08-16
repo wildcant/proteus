@@ -15,19 +15,15 @@ export function useEditProductOptionForm(option: AdminProductOption, params?: Ed
       values: option.values.map((v) => ({ value: v.value, rank: v.rank ?? undefined })),
     } satisfies AdminUpdateProductOptionBody as AdminUpdateProductOptionBody,
     validators: { onSubmit: AdminUpdateProductOption },
-    onSubmit: async ({ value }) => {
-      try {
-        const data = await updateMutation.mutateAsync({
-          title: value.title,
-          values: value.values?.length ? value.values : undefined,
-        })
-        form.reset()
-        params?.onSuccess?.(data)
-      } catch (error) {
-        params?.onError?.(error instanceof Error ? error.message : 'An unexpected error occurred')
-      } finally {
-        params?.onSettled?.()
-      }
+    onSubmit: ({ value }) => {
+      updateMutation.mutate(value, {
+        onSuccess: (data) => {
+          form.reset()
+          params?.onSuccess?.(data)
+        },
+        onError: (error) => params?.onError?.(error.message),
+        onSettled: () => params?.onSettled?.(),
+      })
     },
   })
 

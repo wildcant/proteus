@@ -21,17 +21,14 @@ export function useManageProductOptionsForm({ productId, defaultValues, params }
     defaultValues,
     validators: { onSubmit: AdminSetProductOptions },
     onSubmit: ({ value }) => {
-      mutation.mutate(
-        { options: value.options },
-        {
-          onSuccess: (data) => {
-            form.reset()
-            params?.onSuccess?.(data)
-          },
-          onError: (error) => params?.onError?.(error.message),
-          onSettled: () => params?.onSettled?.(),
+      mutation.mutate(value, {
+        onSuccess: (data) => {
+          form.reset()
+          params?.onSuccess?.(data)
         },
-      )
+        onError: (error) => params?.onError?.(error.message),
+        onSettled: () => params?.onSettled?.(),
+      })
     },
   })
 
