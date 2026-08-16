@@ -85,6 +85,7 @@ function setupWorkflow(opts: {
     repo: (() => ({
       findByVariantIds: async () => opts.mappings,
     })) as ILinkService['repo'],
+    dismissLinks: async () => ({}),
   }
 
   const inventoryService: Pick<IInventoryModuleService, 'listInventoryLevels' | 'confirmInventory'> = {

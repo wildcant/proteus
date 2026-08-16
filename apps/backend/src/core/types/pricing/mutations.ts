@@ -13,3 +13,10 @@ export type UpdatePriceDTO = {
   amount?: BigNumber
   currencyCode?: string
 }
+
+export type UpdatePriceSetDTO = {
+  id: string
+  prices?: (CreatePriceDTO & { id?: string })[]
+}
+
+export type UpsertPriceSetDTO = CreatePriceSetDTO | UpdatePriceSetDTO

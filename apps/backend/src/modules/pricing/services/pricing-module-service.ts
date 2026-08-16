@@ -11,6 +11,8 @@ import type {
   PriceSetDTO,
   PricingContext,
   UpdatePriceDTO,
+  UpdatePriceSetDTO,
+  UpsertPriceSetDTO,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
@@ -100,6 +102,63 @@ export class PricingModuleService implements IPricingModuleService {
         await this.priceRepository.softDelete(priceIds, ctx)
       }
       await this.priceSetRepository.softDelete(priceSetIds, ctx)
+    })
+  }
+
+  async upsertPriceSets(data: UpsertPriceSetDTO[], context?: Context): Promise<PriceSetDTO[]> {
+    return this.withTransaction(context, async (ctx) => {
+      const forCreate = data.filter((priceSet): priceSet is CreatePriceSetDTO => !('id' in priceSet))
+      const forUpdate = data.filter((priceSet): priceSet is UpdatePriceSetDTO => 'id' in priceSet)
+
+      const created = forCreate.length > 0 ? await this.createPriceSets(forCreate, ctx) : []
+      const updated = forUpdate.length > 0 ? await this.updatePriceSets(forUpdate, ctx) : []
+
+      return [...created, ...updated]
+    })
+  }
+
+  private async updatePriceSets(data: UpdatePriceSetDTO[], context?: Context): Promise<PriceSetDTO[]> {
+    return this.withTransaction(context, async (ctx) => {
+      return Promise.all(data.map((entry) => this.updatePriceSet(entry, ctx)))
+    })
+  }
+
+  private async updatePriceSet(data: UpdatePriceSetDTO, context?: Context): Promise<PriceSetDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const priceSet = await this.priceSetRepository.findByIdOrFail(data.id, undefined, ctx)
+
+      if (!data.prices) return priceSet
+
+      const existing = await this.priceRepository.find({ priceSetId: data.id }, undefined, ctx)
+      const existingById = new Map(existing.map((price) => [price.id, price]))
+
+      const toCreate = data.prices.filter((price) => !price.id)
+      const toUpdate = data.prices.filter((price) => price.id && existingById.has(price.id))
+      const incomingIds = new Set(data.prices.filter((price) => price.id).map((price) => price.id))
+      const toDelete = existing.filter((price) => !incomingIds.has(price.id))
+
+      if (toCreate.length > 0) {
+        await this.priceRepository.createMany(
+          normalizePrices(
+            toCreate.map((price) => ({ currencyCode: price.currencyCode, amount: price.amount })),
+            data.id,
+          ),
+          ctx,
+        )
+      }
+
+      await Promise.all(
+        toUpdate.map((price) => this.priceRepository.update(price.id as string, { amount: price.amount }, ctx)),
+      )
+
+      if (toDelete.length > 0) {
+        await this.priceRepository.softDelete(
+          toDelete.map((price) => price.id),
+          ctx,
+        )
+      }
+
+      return priceSet
     })
   }
 

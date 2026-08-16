@@ -1,4 +1,5 @@
 import type { BaseFilterable, OperatorMap } from '../common.js'
+import type { PriceDTO } from '../pricing/common.js'
 
 export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 
@@ -60,6 +61,8 @@ export type ProductVariantDTO = {
   updatedAt: Date
   deletedAt: Date | null
 }
+
+export type ProductVariantExtendedDTO = ProductVariantDTO & { prices?: PriceDTO[] }
 
 export interface FilterableProductVariantProps extends BaseFilterable<FilterableProductVariantProps> {
   id?: string | string[]

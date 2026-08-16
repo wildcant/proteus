@@ -16,6 +16,7 @@ import type {
   ProductVariantDTO,
   UpdateProductDTO,
   UpdateProductVariantDTO,
+  UpsertProductVariantDTO,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
@@ -201,6 +202,21 @@ export class ProductModuleService implements IProductModuleService {
   ): Promise<ProductVariantDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.productVariantRepository.update(variantId, data, ctx)
+    })
+  }
+
+  async upsertProductVariants(data: UpsertProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]> {
+    return this.withTransaction(context, async (ctx) => {
+      const forCreate = data.filter((variant): variant is CreateProductVariantDTO => !('id' in variant))
+      const forUpdate = data.filter((variant): variant is { id: string } & UpdateProductVariantDTO => 'id' in variant)
+
+      const created = forCreate.length > 0 ? await this.createProductVariants(forCreate, ctx) : []
+      const updated =
+        forUpdate.length > 0
+          ? await Promise.all(forUpdate.map((variant) => this.updateProductVariant(variant.id, variant, ctx)))
+          : []
+
+      return [...created, ...updated]
     })
   }
 

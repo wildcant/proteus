@@ -236,4 +236,107 @@ describe('PricingModuleService', () => {
 
     expect(prices[0]?.amount.toFixed()).toBe(preciseAmount)
   })
+
+  test('upsertPriceSets creates new price sets when no id', async ({ expect }) => {
+    const result = await service.upsertPriceSets([
+      { prices: [{ currencyCode: 'usd', amount: new BigNumber('10.00') }] },
+      { prices: [{ currencyCode: 'eur', amount: new BigNumber('9.00') }] },
+    ])
+
+    expect(result).toHaveLength(2)
+    expect(result[0]?.id).toMatch(/^pset_/)
+    expect(result[1]?.id).toMatch(/^pset_/)
+
+    const pricesA = await service.listPrices({ priceSetId: result[0]?.id })
+    expect(pricesA).toHaveLength(1)
+    expect(pricesA[0]?.currencyCode).toBe('usd')
+
+    const pricesB = await service.listPrices({ priceSetId: result[1]?.id })
+    expect(pricesB).toHaveLength(1)
+    expect(pricesB[0]?.currencyCode).toBe('eur')
+  })
+
+  test('upsertPriceSets updates prices on existing price set', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [{ currencyCode: 'usd', amount: new BigNumber('10.00') }],
+    })
+    const existingPrices = await service.listPrices({ priceSetId: priceSet.id })
+    const existingPriceId = existingPrices[0]?.id ?? ''
+
+    await service.upsertPriceSets([
+      {
+        id: priceSet.id,
+        prices: [{ id: existingPriceId, currencyCode: 'usd', amount: new BigNumber('25.00') }],
+      },
+    ])
+
+    const updatedPrices = await service.listPrices({ priceSetId: priceSet.id })
+    expect(updatedPrices).toHaveLength(1)
+    expect(updatedPrices[0]?.amount.toFixed()).toBe('25')
+  })
+
+  test('upsertPriceSets adds new prices to existing price set', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [{ currencyCode: 'usd', amount: new BigNumber('10.00') }],
+    })
+    const existingPrices = await service.listPrices({ priceSetId: priceSet.id })
+    const existingPriceId = existingPrices[0]?.id ?? ''
+
+    await service.upsertPriceSets([
+      {
+        id: priceSet.id,
+        prices: [
+          { id: existingPriceId, currencyCode: 'usd', amount: new BigNumber('10.00') },
+          { currencyCode: 'eur', amount: new BigNumber('9.00') },
+        ],
+      },
+    ])
+
+    const updatedPrices = await service.listPrices({ priceSetId: priceSet.id })
+    expect(updatedPrices).toHaveLength(2)
+  })
+
+  test('upsertPriceSets deletes prices missing from input', async ({ expect }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [
+        { currencyCode: 'usd', amount: new BigNumber('10.00') },
+        { currencyCode: 'eur', amount: new BigNumber('9.00') },
+      ],
+    })
+    const existingPrices = await service.listPrices({ priceSetId: priceSet.id })
+    const usdPrice = existingPrices.find((p) => p.currencyCode === 'usd')
+
+    await service.upsertPriceSets([
+      {
+        id: priceSet.id,
+        prices: [{ id: usdPrice?.id, currencyCode: 'usd', amount: new BigNumber('10.00') }],
+      },
+    ])
+
+    const updatedPrices = await service.listPrices({ priceSetId: priceSet.id })
+    expect(updatedPrices).toHaveLength(1)
+    expect(updatedPrices[0]?.currencyCode).toBe('usd')
+  })
+
+  test('upsertPriceSets handles mixed creates and updates', async ({ expect }) => {
+    const existingSet = await service.createPriceSet({
+      prices: [{ currencyCode: 'usd', amount: new BigNumber('10.00') }],
+    })
+
+    const result = await service.upsertPriceSets([
+      { id: existingSet.id, prices: [{ currencyCode: 'usd', amount: new BigNumber('20.00') }] },
+      { prices: [{ currencyCode: 'gbp', amount: new BigNumber('8.00') }] },
+    ])
+
+    expect(result).toHaveLength(2)
+
+    const updatedPrices = await service.listPrices({ priceSetId: existingSet.id })
+    expect(updatedPrices).toHaveLength(1)
+    expect(updatedPrices[0]?.amount.toFixed()).toBe('20')
+
+    const newSetId = result.find((ps) => ps.id !== existingSet.id)?.id
+    const newPrices = await service.listPrices({ priceSetId: newSetId })
+    expect(newPrices).toHaveLength(1)
+    expect(newPrices[0]?.currencyCode).toBe('gbp')
+  })
 })

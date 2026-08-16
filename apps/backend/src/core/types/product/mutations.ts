@@ -83,6 +83,8 @@ export type UpdateProductVariantDTO = {
   metadata?: string | null
 }
 
+export type UpsertProductVariantDTO = CreateProductVariantDTO | ({ id: string } & UpdateProductVariantDTO)
+
 export type CreateProductOptionDTO = {
   productId: string
   title: string

@@ -1,4 +1,14 @@
 import { z } from 'zod'
+import { stringToBigNumber } from '../../common.js'
+
+const CreateVariantPrice = z.object({
+  amount: stringToBigNumber,
+})
+
+const UpdateVariantPrice = z.object({
+  id: z.string().optional(),
+  amount: stringToBigNumber,
+})
 
 export const AdminCreateProductVariant = z
   .object({
@@ -19,6 +29,7 @@ export const AdminCreateProductVariant = z
     width: z.number().nullable().optional(),
     variantRank: z.number().optional(),
     metadata: z.string().nullable().optional(),
+    prices: z.array(CreateVariantPrice).optional(),
   })
   .openapi('AdminCreateProductVariant')
 export type AdminCreateProductVariantBody = z.infer<typeof AdminCreateProductVariant>
@@ -42,6 +53,7 @@ export const AdminUpdateProductVariant = z
     width: z.number().nullable().optional(),
     variantRank: z.number().optional(),
     metadata: z.string().nullable().optional(),
+    prices: z.array(UpdateVariantPrice).optional(),
   })
   .openapi('AdminUpdateProductVariant')
 export type AdminUpdateProductVariantBody = z.infer<typeof AdminUpdateProductVariant>

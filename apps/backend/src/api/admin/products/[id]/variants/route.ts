@@ -1,3 +1,4 @@
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IProductModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import {
@@ -7,6 +8,7 @@ import {
   AdminProductVariantListResponse,
   IdParams,
 } from '@proteus/http-schemas/admin'
+import { createProductVariantsWorkflow } from '@workflows/product/create-product-variants.js'
 import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 
 export const GetInput = { params: IdParams, query: AdminProductVariantListParams }
@@ -27,7 +29,14 @@ export const PostInput = { params: IdParams, body: AdminCreateProductVariant }
 export const PostOutput = AdminCreateProductVariantResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
-  const variant = await productService.createProductVariant({ ...req.body, productId: req.params.id })
+  const [variant] = await createProductVariantsWorkflow.run({
+    productId: req.params.id,
+    variants: [req.body],
+  })
+
+  if (!variant) {
+    throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Variant creation returned no results' })
+  }
+
   return { status: 201, json: { variant } }
 }
