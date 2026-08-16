@@ -1,3 +1,4 @@
+- data grid ui component and pricing module
 - ci workflow
 - default indexes in all tables with deleted_at.
 - investigate locking
@@ -7,15 +8,11 @@
   - Decide: DB-only (current scale) vs Redis locking (future scale).
 - features flags
 - add a new validation script to make sure we are not throwing generic errors in backend, we should throw AppError instead.. Also another validation script to make sure there's no `z.string().datetime()` in http-schemas all datetimes should use dateToIso.
-- To stop failures from crashing the server - implement Graceful Shutdowns, Safe Fetch Parsing, and Global Exception Handling.
 - deploy to supabase and coudflare workers.
 - investigate how to supabase as event bus (supabase-event-bus.md) (cloudflare queues)
 ![event](./subscriber-example.png)
-- cron
-![cron](./cron-example.png)
 
 Future TODOs
 - composing workflows
 - ci workflow to handle deployment!
 - migration order in prod (first modules and then link modules, are there edge cases?).
-- review the details on apps/backend/src/index.workerd.ts and apps/backend/src/index.workerd.ts

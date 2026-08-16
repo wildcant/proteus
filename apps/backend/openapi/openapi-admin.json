@@ -1427,6 +1427,12 @@
           },
           "metadata": {
             "type": ["string", "null"]
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminVariantPrice"
+            }
           }
         },
         "required": [
@@ -1450,6 +1456,30 @@
           "variantRank",
           "metadata"
         ]
+      },
+      "AdminVariantPrice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "currencyCode", "amount", "createdAt", "updatedAt"]
       },
       "AdminCreateProductVariantResponse": {
         "type": "object",
@@ -1514,6 +1544,18 @@
           },
           "metadata": {
             "type": ["string", "null"]
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": ["amount"]
+            }
           }
         },
         "required": ["title"]
@@ -1592,6 +1634,36 @@
             "type": ["string", "null"]
           }
         }
+      },
+      "AdminUpdateVariantPricesResponse": {
+        "type": "object",
+        "properties": {
+          "variant": {
+            "$ref": "#/components/schemas/AdminProductVariant"
+          }
+        },
+        "required": ["variant"]
+      },
+      "AdminUpdateVariantPrices": {
+        "type": "object",
+        "properties": {
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": ["amount"]
+            }
+          }
+        },
+        "required": ["prices"]
       },
       "AdminRefundReasonListResponse": {
         "type": "object",
@@ -4199,6 +4271,60 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/products/{id}/variants/{variantId}/prices": {
+      "put": {
+        "operationId": "updateVariantPrices",
+        "summary": "Update variant prices",
+        "tags": ["Product Variants"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "variantId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateVariantPrices"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUpdateVariantPricesResponse"
                 }
               }
             }

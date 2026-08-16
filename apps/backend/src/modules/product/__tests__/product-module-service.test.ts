@@ -136,4 +136,44 @@ describe('ProductModuleService', () => {
     expect(AppError.isError(error)).toBe(true)
     expect(error.type).toBe(ErrorTypes.NOT_FOUND)
   })
+
+  test('upsertProductVariants creates variants without id', async ({ expect, dto }) => {
+    const product = await service.createProduct(dto.generate.createProduct())
+
+    const result = await service.upsertProductVariants([
+      { productId: product.id, title: 'Small' },
+      { productId: product.id, title: 'Large' },
+    ])
+
+    expect(result).toHaveLength(2)
+    expect(result.map((v) => v.title).sort()).toEqual(['Large', 'Small'])
+    expect(result.every((v) => v.productId === product.id)).toBe(true)
+  })
+
+  test('upsertProductVariants updates variants with id', async ({ expect, dto }) => {
+    const product = await service.createProduct(dto.generate.createProduct())
+    const variant = await service.createProductVariant({ productId: product.id, title: 'Original' })
+
+    const result = await service.upsertProductVariants([{ id: variant.id, title: 'Updated' }])
+
+    expect(result).toHaveLength(1)
+    expect(result[0]?.id).toBe(variant.id)
+    expect(result[0]?.title).toBe('Updated')
+  })
+
+  test('upsertProductVariants handles mixed creates and updates', async ({ expect, dto }) => {
+    const product = await service.createProduct(dto.generate.createProduct())
+    const existing = await service.createProductVariant({ productId: product.id, title: 'Existing' })
+
+    const result = await service.upsertProductVariants([
+      { id: existing.id, title: 'Renamed' },
+      { productId: product.id, title: 'New Variant' },
+    ])
+
+    expect(result).toHaveLength(2)
+    const renamed = result.find((v) => v.id === existing.id)
+    const created = result.find((v) => v.id !== existing.id)
+    expect(renamed?.title).toBe('Renamed')
+    expect(created?.title).toBe('New Variant')
+  })
 })

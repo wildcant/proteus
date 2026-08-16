@@ -4,6 +4,7 @@ import { ContainerRegistrationKeys } from '../core/utils/index.js'
 import { CartPaymentCollectionRepository } from './repositories/cart-payment-collection.js'
 import { CartProductRepository } from './repositories/cart-product.js'
 import { ProductVariantInventoryItemRepository } from './repositories/product-variant-inventory-item.js'
+import { ProductVariantPriceSetRepository } from './repositories/product-variant-price-set.js'
 import { LinkService } from './services/link-service.js'
 
 export function registerLinkService(sharedContainer: AwilixContainer): void {
@@ -13,11 +14,13 @@ export function registerLinkService(sharedContainer: AwilixContainer): void {
   const productVariantInventoryItem = new ProductVariantInventoryItemRepository({ getDb })
   const cartProduct = new CartProductRepository({ getDb })
   const cartPaymentCollection = new CartPaymentCollectionRepository({ getDb })
+  const productVariantPriceSet = new ProductVariantPriceSetRepository({ getDb })
 
   const linkService = new LinkService({
     productVariantInventoryItem,
     cartProduct,
     cartPaymentCollection,
+    productVariantPriceSet,
   })
 
   sharedContainer.register({

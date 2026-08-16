@@ -17,6 +17,7 @@ import type {
   CreateProductVariantDTO,
   UpdateProductDTO,
   UpdateProductVariantDTO,
+  UpsertProductVariantDTO,
 } from './mutations.js'
 
 export type IProductModuleService = {
@@ -59,6 +60,7 @@ export type IProductModuleService = {
     context?: Context,
   ): Promise<ProductVariantDTO[]>
   updateProductVariant(variantId: string, data: UpdateProductVariantDTO, context?: Context): Promise<ProductVariantDTO>
+  upsertProductVariants(data: UpsertProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]>
   deleteProductVariants(variantIds: string[], context?: Context): Promise<void>
   createProductOptions(data: CreateProductOptionDTO[], context?: Context): Promise<ProductOptionDTO[]>
   createProductOption(data: CreateProductOptionDTO, context?: Context): Promise<ProductOptionDTO>

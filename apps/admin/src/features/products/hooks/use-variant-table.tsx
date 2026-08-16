@@ -1,6 +1,7 @@
 import type { AdminProductVariant } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table'
 import { useProductVariants } from '#/features/products/api/product-variants'
+import { VariantRowActions } from '#/features/products/components/variant-row-actions'
 
 export const useVariantTable = (productId: string) =>
   useDefineTable<AdminProductVariant>({
@@ -41,6 +42,8 @@ export const useVariantTable = (productId: string) =>
     prefix: 'pv',
     pageSize: 10,
     getRowId: (row) => row.id,
+    rowHref: (row) => `variants/${row.id}`,
+    rowActions: (row) => <VariantRowActions productId={productId} variant={row} />,
 
     empty: {
       heading: 'No variants yet',

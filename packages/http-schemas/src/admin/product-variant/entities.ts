@@ -1,4 +1,16 @@
 import { z } from 'zod'
+import { bigNumberToString, dateToIso } from '../../common.js'
+
+export const AdminVariantPrice = z
+  .object({
+    id: z.string(),
+    currencyCode: z.string(),
+    amount: bigNumberToString,
+    createdAt: dateToIso,
+    updatedAt: dateToIso,
+  })
+  .openapi('AdminVariantPrice')
+export type AdminVariantPrice = z.input<typeof AdminVariantPrice>
 
 export const AdminProductVariant = z
   .object({
@@ -21,6 +33,7 @@ export const AdminProductVariant = z
     width: z.number().nullable(),
     variantRank: z.number().nullable(),
     metadata: z.string().nullable(),
+    prices: z.array(AdminVariantPrice).optional(),
   })
   .openapi('AdminProductVariant')
-export type AdminProductVariant = z.infer<typeof AdminProductVariant>
+export type AdminProductVariant = z.input<typeof AdminProductVariant>

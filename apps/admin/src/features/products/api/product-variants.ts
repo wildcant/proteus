@@ -2,6 +2,7 @@ import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient }
 import type {
   AdminCreateProductVariant,
   AdminUpdateProductVariant,
+  AdminUpdateVariantPrices,
   ListProductVariantsParams,
 } from '#/api/generated/model'
 import {
@@ -10,6 +11,7 @@ import {
   getProductVariant,
   listProductVariants,
   updateProductVariant,
+  updateVariantPrices,
 } from '#/api/generated/product-variants/product-variants'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -62,6 +64,17 @@ export const useDeleteProductVariant = (productId: string, variantId: string) =>
   return useMutation({
     mutationFn: () => deleteProductVariant(productId, variantId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+    },
+  })
+}
+
+export const useUpdateVariantPrices = (productId: string, variantId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: AdminUpdateVariantPrices) => updateVariantPrices(productId, variantId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: variantKeys.detail(variantId) })
       queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
     },
   })

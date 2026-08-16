@@ -85,3 +85,17 @@ export type ICartPaymentCollectionRepository = {
   findByPaymentCollectionId(paymentCollectionId: string, context?: Context): Promise<CartPaymentCollectionDTO | null>
   create(data: Partial<CartPaymentCollectionDTO>, context?: Context): Promise<CartPaymentCollectionDTO>
 }
+
+export type ProductVariantPriceSetDTO = {
+  id: string
+  variantId: string
+  priceSetId: string
+  createdAt: Date
+  deletedAt: Date | null
+}
+
+export type IProductVariantPriceSetRepository = {
+  findByVariantIds(variantIds: string[], context?: Context): Promise<ProductVariantPriceSetDTO[]>
+  create(data: Partial<ProductVariantPriceSetDTO>, context?: Context): Promise<ProductVariantPriceSetDTO>
+  softDelete(ids: string[], context?: Context): Promise<void>
+}

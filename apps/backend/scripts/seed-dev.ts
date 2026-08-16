@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import type {
   IAuthModuleService,
   ICartModuleService,
@@ -6,6 +7,7 @@ import type {
   ILinkService,
   INotificationModuleService,
   IPaymentModuleService,
+  IPricingModuleService,
   IProductModuleService,
   IUserModuleService,
 } from '../src/core/types/index.js'
@@ -20,6 +22,7 @@ const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVE
 const cartService = container.resolve<ICartModuleService>(Modules.CART)
 const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
 // --- Users ---
@@ -292,6 +295,31 @@ if (existingProducts.length > 0) {
     ...shortsVariants,
   ])
   console.info(`Seeded ${createdVariants.length} product variants`)
+
+  // --- Prices ---
+  const priceBySkuPrefix: Record<string, number> = {
+    SHIRT: 2500,
+    SWEATSHIRT: 4500,
+    SWEATPANTS: 3500,
+    SHORTS: 3000,
+  }
+
+  const priceSets = await pricingService.createPriceSets(
+    createdVariants.map((variant) => {
+      const prefix = variant.sku?.split('-')[0] ?? ''
+      const amount = priceBySkuPrefix[prefix] ?? 2500
+      return { prices: [{ currencyCode: 'usd', amount: new BigNumber(amount) }] }
+    }),
+  )
+
+  await Promise.all(
+    createdVariants.map((variant, i) => {
+      const priceSet = priceSets[i]
+      if (!priceSet) throw new Error(`Missing price set for variant "${variant.id}"`)
+      return linkService.repo('productVariantPriceSet').create({ variantId: variant.id, priceSetId: priceSet.id })
+    }),
+  )
+  console.info(`Seeded ${priceSets.length} price sets with variant links`)
 
   // --- Images ---
   await productService.createProductImages([

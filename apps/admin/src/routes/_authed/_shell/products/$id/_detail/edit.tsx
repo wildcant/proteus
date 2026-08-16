@@ -4,7 +4,7 @@ import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
 import { productQueryOptions } from '#/features/products/api/products'
 import { EditProductForm } from '#/features/products/components/edit-product-form'
 
-export const Route = createFileRoute('/_authed/_shell/products/$id/edit')({
+export const Route = createFileRoute('/_authed/_shell/products/$id/_detail/edit')({
   component: EditProductRoute,
 })
 
