@@ -6,16 +6,27 @@ import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { useDeleteProduct } from '#/features/products/api/products'
 import { productStatusBadgeVariants } from '#/features/products/constants'
+import { usePrompt } from '#/hooks/use-prompt.tsx'
 
 export function ProductGeneralSection({ product }: { product: AdminProduct }) {
   const navigate = useNavigate()
   const { mutateAsync: deleteProduct } = useDeleteProduct(product.id)
+  const prompt = usePrompt()
 
   const handleDelete = async () => {
-    await deleteProduct(undefined, {
-      onSuccess: () => navigate({ to: '/products' }),
-      onError: (error) => toast.add({ type: 'error', title: 'Failed to delete product', description: error.message }),
+    const confirmed = await prompt({
+      title: 'Delete product',
+      description: `Are you sure you want to delete "${product.title}"?`,
+      confirmText: 'Delete',
+      variant: 'danger',
     })
+
+    if (confirmed) {
+      await deleteProduct(undefined, {
+        onSuccess: () => navigate({ to: '/products' }),
+        onError: (error) => toast.add({ type: 'error', title: 'Failed to delete product', description: error.message }),
+      })
+    }
   }
 
   return (

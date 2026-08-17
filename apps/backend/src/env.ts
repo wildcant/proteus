@@ -5,6 +5,7 @@ const envSchema = z.object({
   DIRECT_DATABASE_URL: z.string().default(''),
   MIGRATING: z.coerce.boolean().default(false),
   RUNTIME: z.enum(['node', 'workerd']).default('node'),
+  MOCKS: z.coerce.boolean().default(false),
   NODE_ENV: z.string().default('development'),
   LOG_LEVEL: z.string().default('http'),
   LOG_FILE: z.string().default(''),

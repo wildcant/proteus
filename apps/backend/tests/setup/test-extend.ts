@@ -12,13 +12,13 @@ import {
   generateUpdateAuthVerificationDTO,
   generateUpdateProviderIdentityDTO,
 } from '../factories/auth-dto.js'
-import { generateCustomer } from '../factories/customer.js'
 import {
   generateCreateCustomerAddressDTO,
   generateCreateCustomerDTO,
   generateCustomerDTO,
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
+import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
 import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
 import {
   generateCreateAccountHolderDTO,
@@ -30,7 +30,6 @@ import {
 } from '../factories/payment-dto.js'
 import { generateCreatePriceDTO, generateCreatePriceSetDTO } from '../factories/pricing-dto.js'
 import { generateCreateProductDTO, generateUpdateProductDTO } from '../factories/product-dto.js'
-import { generateUser } from '../factories/user.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
 import { makeRequest } from '../utils/make-request.js'
 import { db as dbInstance } from './db-setup.js'
@@ -42,6 +41,7 @@ type Fixtures = {
   factories: {
     customer: typeof generateCustomer
     user: typeof generateUser
+    product: typeof generateProduct
   }
   dto: {
     generate: {
@@ -91,6 +91,7 @@ export const test = testBase.extend<Fixtures>({
     await use({
       customer: generateCustomer,
       user: generateUser,
+      product: generateProduct,
     })
   },
   async dto({ task: _ }, use) {

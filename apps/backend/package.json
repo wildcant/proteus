@@ -3,10 +3,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./api": "./src/api/index.ts"
+    "./api": "./src/api/index.ts",
+    "./test": "./src/test-exports.ts"
   },
   "scripts": {
     "dev": "dotenvx run -f ../../.env.local -- tsx --watch src/index.ts",
+    "dev:test": "MOCKS=true dotenvx run --env-file=../../.env.test -- tsx watch src/index.ts --port 3010",
     "dev:workerd": "wrangler dev --test-scheduled --config wrangler.jsonc --env-file .env.workerd",
     "deploy": "wrangler deploy --config wrangler.jsonc",
     "start": "dotenvx run -f ../../.env -- tsx src/index.ts",
@@ -66,6 +68,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "dependency-cruiser": "^18.1.0",
     "drizzle-kit": "^0.31.0",
+    "msw": "^2.15.0",
     "supabase": "^2.109.1",
     "supertest": "^7.2.2",
     "tsx": "^4.19.0",
