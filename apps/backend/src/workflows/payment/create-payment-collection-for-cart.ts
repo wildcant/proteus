@@ -1,3 +1,4 @@
+import { BigNumber } from '@core/db/bignum.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
@@ -44,11 +45,14 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
         cartService.listLineItems({ cartId: input.cartId }),
         cartService.listShippingMethods({ cartId: input.cartId }),
       ])
-      const lineItemTotal = lineItems.reduce((sum, li) => sum + li.unitPrice * li.quantity, 0)
-      const shippingTotal = shippingMethods.reduce((sum, sm) => sum + sm.amount, 0)
-      const amount = lineItemTotal + shippingTotal
+      const lineItemTotal = lineItems.reduce(
+        (sum, li) => sum.plus(li.unitPrice.multipliedBy(li.quantity)),
+        new BigNumber(0),
+      )
+      const shippingTotal = shippingMethods.reduce((sum, sm) => sum.plus(sm.amount), new BigNumber(0))
+      const amount = lineItemTotal.plus(shippingTotal)
 
-      if (amount <= 0) {
+      if (amount.isLessThanOrEqualTo(0)) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
           message: `Cart "${input.cartId}" has no items or zero total`,
@@ -59,7 +63,10 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
         `[create-payment-collection-for-cart] Creating collection for cart "${input.cartId}" with amount ${amount}`,
       )
 
-      const collection = await paymentService.createPaymentCollection({ amount, currencyCode: cart.currencyCode })
+      const collection = await paymentService.createPaymentCollection({
+        amount,
+        currencyCode: cart.currencyCode,
+      })
 
       await linkService.repo('cartPaymentCollection').create({
         cartId: input.cartId,

@@ -1,3 +1,4 @@
+import type { BigNumber } from '../../db/bignum.js'
 import type { BaseFilterable, OperatorMap } from '../common.js'
 
 // ---------------------------------------------------------------------------
@@ -32,10 +33,10 @@ export type PaymentActions =
 export type PaymentCollectionDTO = {
   id: string
   currencyCode: string
-  amount: number
-  authorizedAmount: number | null
-  capturedAmount: number | null
-  refundedAmount: number | null
+  amount: BigNumber
+  authorizedAmount: BigNumber | null
+  capturedAmount: BigNumber | null
+  refundedAmount: BigNumber | null
   completedAt: Date | null
   status: PaymentCollectionStatus
   metadata: Record<string, unknown> | null
@@ -51,7 +52,7 @@ export type PaymentSessionDTO = {
   paymentCollectionId: string
   providerId: string
   currencyCode: string
-  amount: number
+  amount: BigNumber
   status: PaymentSessionStatus
   data: Record<string, unknown>
   context: Record<string, unknown> | null
@@ -67,7 +68,7 @@ export type PaymentDTO = {
   id: string
   paymentCollectionId: string
   paymentSessionId: string
-  amount: number
+  amount: BigNumber
   currencyCode: string
   providerId: string
   data: Record<string, unknown> | null
@@ -84,7 +85,7 @@ export type PaymentDTO = {
 export type CaptureDTO = {
   id: string
   paymentId: string
-  amount: number
+  amount: BigNumber
   createdBy: string | null
   metadata: Record<string, unknown> | null
   createdAt: Date
@@ -94,7 +95,7 @@ export type RefundDTO = {
   id: string
   paymentId: string
   refundReasonId: string | null
-  amount: number
+  amount: BigNumber
   note: string | null
   createdBy: string | null
   metadata: Record<string, unknown> | null

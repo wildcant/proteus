@@ -1,3 +1,4 @@
+import { BigNumber } from '../../../core/db/bignum.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -338,20 +339,21 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       // Supports partial captures — default to whatever remains
       const existingCaptures = await this.captureRepository.find({ paymentId: payment.id }, undefined, ctx)
-      const alreadyCaptured = existingCaptures.reduce((sum, c) => sum + c.amount, 0)
-      const captureAmount = data.amount ?? payment.amount - alreadyCaptured
+      const alreadyCaptured = existingCaptures.reduce((sum, c) => sum.plus(c.amount), new BigNumber(0))
+      const remaining = payment.amount.minus(alreadyCaptured)
+      const captureAmount = data.amount ?? remaining
 
-      if (captureAmount <= 0) {
+      if (captureAmount.isLessThanOrEqualTo(0)) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
           message: `Payment "${payment.id}" has already been fully captured.`,
         })
       }
 
-      if (captureAmount > payment.amount - alreadyCaptured) {
+      if (captureAmount.isGreaterThan(remaining)) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Capture amount ${captureAmount} exceeds remaining capturable amount ${payment.amount - alreadyCaptured}.`,
+          message: `Capture amount ${captureAmount.toFixed()} exceeds remaining capturable amount ${remaining.toFixed()}.`,
         })
       }
 
@@ -369,8 +371,8 @@ export class PaymentModuleService implements IPaymentModuleService {
       })
 
       // Mark payment as fully captured once all funds are accounted for
-      const totalCaptured = alreadyCaptured + captureAmount
-      if (totalCaptured >= payment.amount) {
+      const totalCaptured = alreadyCaptured.plus(captureAmount)
+      if (totalCaptured.isGreaterThanOrEqualTo(payment.amount)) {
         await this.paymentRepository.update(payment.id, { capturedAt: new Date() }, ctx)
       }
 
@@ -387,25 +389,25 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       // Can only refund what was captured minus what was already refunded
       const existingCaptures = await this.captureRepository.find({ paymentId: payment.id }, undefined, ctx)
-      const totalCaptured = existingCaptures.reduce((sum, c) => sum + c.amount, 0)
+      const totalCaptured = existingCaptures.reduce((sum, c) => sum.plus(c.amount), new BigNumber(0))
 
       const existingRefunds = await this.refundRepository.find({ paymentId: payment.id }, undefined, ctx)
-      const alreadyRefunded = existingRefunds.reduce((sum, r) => sum + r.amount, 0)
+      const alreadyRefunded = existingRefunds.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0))
 
-      const refundableAmount = totalCaptured - alreadyRefunded
+      const refundableAmount = totalCaptured.minus(alreadyRefunded)
       const refundAmount = data.amount ?? refundableAmount
 
-      if (refundAmount <= 0) {
+      if (refundAmount.isLessThanOrEqualTo(0)) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
           message: `Payment "${payment.id}" has no refundable amount remaining.`,
         })
       }
 
-      if (refundAmount > refundableAmount) {
+      if (refundAmount.isGreaterThan(refundableAmount)) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Refund amount ${refundAmount} exceeds refundable amount ${refundableAmount}.`,
+          message: `Refund amount ${refundAmount.toFixed()} exceeds refundable amount ${refundableAmount.toFixed()}.`,
         })
       }
 
@@ -634,36 +636,38 @@ export class PaymentModuleService implements IPaymentModuleService {
           ])
         : [[], []]
 
-    const authorizedAmount = sessions.filter((s) => s.status === 'authorized').reduce((sum, s) => sum + s.amount, 0)
-    const capturedAmount = captures.reduce((sum, c) => sum + c.amount, 0)
-    const refundedAmount = refunds.reduce((sum, r) => sum + r.amount, 0)
+    const authorizedAmount = sessions
+      .filter((s) => s.status === 'authorized')
+      .reduce((sum, s) => sum.plus(s.amount), new BigNumber(0))
+    const capturedAmount = captures.reduce((sum, c) => sum.plus(c.amount), new BigNumber(0))
+    const refundedAmount = refunds.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0))
 
     // Derive status (check most advanced status first)
     let status: PaymentCollectionStatus = 'not_paid'
     let completedAt: Date | null = collection.completedAt
 
-    if (capturedAmount >= collection.amount) {
+    if (capturedAmount.isGreaterThanOrEqualTo(collection.amount)) {
       status = 'completed'
       completedAt = completedAt ?? new Date()
-    } else if (authorizedAmount >= collection.amount) {
+    } else if (authorizedAmount.isGreaterThanOrEqualTo(collection.amount)) {
       status = 'authorized'
-    } else if (authorizedAmount > 0) {
+    } else if (authorizedAmount.isGreaterThan(0)) {
       status = 'partially_authorized'
     } else if (sessions.length > 0) {
       status = 'awaiting'
     }
 
     this.logger.debug(
-      `Collection "${collectionId}" status derived as "${status}" (authorized: ${authorizedAmount}, captured: ${capturedAmount}, refunded: ${refundedAmount})`,
+      `Collection "${collectionId}" status derived as "${status}" (authorized: ${authorizedAmount.toFixed()}, captured: ${capturedAmount.toFixed()}, refunded: ${refundedAmount.toFixed()})`,
     )
 
     await this.paymentCollectionRepository.update(
       collectionId,
       {
         status,
-        authorizedAmount: authorizedAmount || null,
-        capturedAmount: capturedAmount || null,
-        refundedAmount: refundedAmount || null,
+        authorizedAmount: authorizedAmount.isZero() ? null : authorizedAmount,
+        capturedAmount: capturedAmount.isZero() ? null : capturedAmount,
+        refundedAmount: refundedAmount.isZero() ? null : refundedAmount,
         completedAt,
       },
       context,

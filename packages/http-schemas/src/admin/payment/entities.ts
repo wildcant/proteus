@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { dateToIso, timestamps } from '../../common.js'
+import { bigNumberToString, dateToIso, timestamps } from '../../common.js'
 
 export const AdminPaymentProvider = z
   .object({
@@ -13,7 +13,7 @@ export const AdminCapture = z
   .object({
     id: z.string(),
     paymentId: z.string(),
-    amount: z.number(),
+    amount: bigNumberToString,
     createdBy: z.string().nullable(),
     metadata: z.record(z.string(), z.unknown()).nullable(),
     createdAt: dateToIso,
@@ -26,7 +26,7 @@ export const AdminRefund = z
     id: z.string(),
     paymentId: z.string(),
     refundReasonId: z.string().nullable(),
-    amount: z.number(),
+    amount: bigNumberToString,
     note: z.string().nullable(),
     createdBy: z.string().nullable(),
     metadata: z.record(z.string(), z.unknown()).nullable(),
@@ -40,7 +40,7 @@ export const AdminPayment = z
     id: z.string(),
     paymentCollectionId: z.string(),
     paymentSessionId: z.string(),
-    amount: z.number(),
+    amount: bigNumberToString,
     currencyCode: z.string(),
     providerId: z.string(),
     data: z.record(z.string(), z.unknown()).nullable(),
@@ -60,7 +60,7 @@ export const AdminPaymentSession = z
     paymentCollectionId: z.string(),
     providerId: z.string(),
     currencyCode: z.string(),
-    amount: z.number(),
+    amount: bigNumberToString,
     status: z.enum([
       'pending',
       'authorized',
@@ -84,10 +84,10 @@ export const AdminPaymentCollection = z
   .object({
     id: z.string(),
     currencyCode: z.string(),
-    amount: z.number(),
-    authorizedAmount: z.number().nullable(),
-    capturedAmount: z.number().nullable(),
-    refundedAmount: z.number().nullable(),
+    amount: bigNumberToString,
+    authorizedAmount: bigNumberToString.nullable(),
+    capturedAmount: bigNumberToString.nullable(),
+    refundedAmount: bigNumberToString.nullable(),
     completedAt: dateToIso.nullable(),
     status: z.enum(['not_paid', 'awaiting', 'authorized', 'partially_authorized', 'completed']),
     metadata: z.record(z.string(), z.unknown()).nullable(),

@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { boolean, index, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 import { cartTable } from './cart.js'
 
@@ -29,9 +30,8 @@ export const cartLineItemTable = pgTable(
     isDiscountable: boolean().default(true).notNull(),
     isGiftcard: boolean().default(false).notNull(),
     isTaxInclusive: boolean().default(false).notNull(),
-    compareAtUnitPrice: integer(),
-    unitPrice: integer().notNull(),
-    metadata: text(),
+    compareAtUnitPrice: bignum(),
+    unitPrice: bignum().notNull(),
     ...timestamps,
   },
   (table) => [

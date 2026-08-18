@@ -1,3 +1,5 @@
+import type { BigNumber } from '../../db/bignum.js'
+
 export type CreateLineItemDTO = {
   title: string
   subtitle?: string | null | undefined
@@ -18,14 +20,14 @@ export type CreateLineItemDTO = {
   isDiscountable?: boolean | undefined
   isGiftcard?: boolean | undefined
   isTaxInclusive?: boolean | undefined
-  compareAtUnitPrice?: number | null | undefined
-  unitPrice: number
+  compareAtUnitPrice?: BigNumber | null | undefined
+  unitPrice: BigNumber
   metadata?: string | null | undefined
 }
 
 export type UpdateLineItemDTO = {
   quantity?: number | undefined
-  unitPrice?: number | undefined
+  unitPrice?: BigNumber | undefined
   metadata?: string | null | undefined
 }
 
@@ -44,7 +46,7 @@ export type CreateCartDTO = {
 export type CreateShippingMethodDTO = {
   name: string
   description?: string | null | undefined
-  amount: number
+  amount: BigNumber
   isTaxInclusive?: boolean | undefined
   shippingOptionId?: string | null | undefined
   data?: string | null | undefined

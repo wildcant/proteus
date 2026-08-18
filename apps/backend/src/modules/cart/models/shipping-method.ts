@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { boolean, index, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { boolean, index, pgTable, text } from 'drizzle-orm/pg-core'
+import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 import { cartTable } from './cart.js'
 
@@ -12,11 +13,10 @@ export const cartShippingMethodTable = pgTable(
       .references(() => cartTable.id, { onDelete: 'cascade' }),
     name: text().notNull(),
     description: text(),
-    amount: integer().notNull(),
+    amount: bignum().notNull(),
     isTaxInclusive: boolean().default(false).notNull(),
     shippingOptionId: text(),
     data: text(),
-    metadata: text(),
     ...timestamps,
   },
   (table) => [

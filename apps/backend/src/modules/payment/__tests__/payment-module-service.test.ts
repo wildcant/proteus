@@ -1,3 +1,4 @@
+import { BigNumber } from '@core/db/bignum.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -68,13 +69,16 @@ describe('PaymentModuleService', () => {
 
   describe('PaymentCollection CRUD', () => {
     test('createPaymentCollections', async ({ expect, dto }) => {
-      const input = [dto.generate.createPaymentCollection(), dto.generate.createPaymentCollection({ amount: 5000 })]
+      const input = [
+        dto.generate.createPaymentCollection(),
+        dto.generate.createPaymentCollection({ amount: new BigNumber(5000) }),
+      ]
 
       const result = await service.createPaymentCollections(input)
 
       expect(result).toHaveLength(2)
-      expect(result[0]).toMatchObject({ amount: 10000, currencyCode: 'usd', status: 'not_paid' })
-      expect(result[1]).toMatchObject({ amount: 5000, currencyCode: 'usd', status: 'not_paid' })
+      expect(result[0]).toMatchObject({ amount: new BigNumber(10000), currencyCode: 'usd', status: 'not_paid' })
+      expect(result[1]).toMatchObject({ amount: new BigNumber(5000), currencyCode: 'usd', status: 'not_paid' })
       expect(result[0]?.id).toBeDefined()
       expect(result[0]?.createdAt).toBeInstanceOf(Date)
     })
@@ -84,15 +88,15 @@ describe('PaymentModuleService', () => {
 
       const result = await service.retrievePaymentCollection(created.id)
 
-      expect(result).toMatchObject({ id: created.id, amount: 10000, status: 'not_paid' })
+      expect(result).toMatchObject({ id: created.id, amount: new BigNumber(10000), status: 'not_paid' })
     })
 
     test('updatePaymentCollections', async ({ expect, dto }) => {
       const created = await service.createPaymentCollection(dto.generate.createPaymentCollection())
 
-      const updated = await service.updatePaymentCollection(created.id, { amount: 20000 })
+      const updated = await service.updatePaymentCollection(created.id, { amount: new BigNumber(20000) })
 
-      expect(updated.amount).toBe(20000)
+      expect(updated.amount).toEqual(new BigNumber(20000))
       expect(updated.id).toBe(created.id)
     })
 
@@ -131,7 +135,7 @@ describe('PaymentModuleService', () => {
       expect(session.id).toBeDefined()
       expect(session.paymentCollectionId).toBe(collection.id)
       expect(session.providerId).toBe('system')
-      expect(session.amount).toBe(10000)
+      expect(session.amount).toEqual(new BigNumber(10000))
       expect(session.status).toBe('pending')
       expect(session.data).toEqual({ externalId: 'ext_session_1' })
       expect(mockProvider.createSession).toHaveBeenCalledOnce()
@@ -144,7 +148,7 @@ describe('PaymentModuleService', () => {
 
       const session = await service.createPaymentSession(
         collection.id,
-        dto.generate.createPaymentSession({ amount: 5000 }),
+        dto.generate.createPaymentSession({ amount: new BigNumber(5000) }),
       )
 
       expect(session.currencyCode).toBe('eur')
@@ -160,7 +164,7 @@ describe('PaymentModuleService', () => {
       expect(payment.id).toBeDefined()
       expect(payment.paymentCollectionId).toBe(collection.id)
       expect(payment.paymentSessionId).toBe(session.id)
-      expect(payment.amount).toBe(10000)
+      expect(payment.amount).toEqual(new BigNumber(10000))
       expect(payment.captures).toEqual([])
       expect(payment.refunds).toEqual([])
       expect(mockProvider.authorizePayment).toHaveBeenCalledOnce()
@@ -223,7 +227,7 @@ describe('PaymentModuleService', () => {
       expect(captured.capturedAt).toBeInstanceOf(Date)
       expect(captured.captures).toHaveLength(1)
       assertDefined(captured.captures)
-      expect(captured.captures[0]?.amount).toBe(10000)
+      expect(captured.captures[0]?.amount).toEqual(new BigNumber(10000))
     })
 
     test('capturePayment partial capture', async ({ expect, dto }) => {
@@ -232,14 +236,14 @@ describe('PaymentModuleService', () => {
       const authorized = await service.authorizePaymentSession(session.id)
       assertDefined(authorized)
 
-      const firstCapture = await service.capturePayment({ paymentId: authorized.id, amount: 4000 })
+      const firstCapture = await service.capturePayment({ paymentId: authorized.id, amount: new BigNumber(4000) })
 
       expect(firstCapture.capturedAt).toBeNull()
       expect(firstCapture.captures).toHaveLength(1)
       assertDefined(firstCapture.captures)
-      expect(firstCapture.captures[0]?.amount).toBe(4000)
+      expect(firstCapture.captures[0]?.amount).toEqual(new BigNumber(4000))
 
-      const secondCapture = await service.capturePayment({ paymentId: authorized.id, amount: 6000 })
+      const secondCapture = await service.capturePayment({ paymentId: authorized.id, amount: new BigNumber(6000) })
 
       expect(secondCapture.capturedAt).toBeInstanceOf(Date)
       expect(secondCapture.captures).toHaveLength(2)
@@ -256,7 +260,7 @@ describe('PaymentModuleService', () => {
 
       expect(refunded.refunds).toHaveLength(1)
       assertDefined(refunded.refunds)
-      expect(refunded.refunds[0]?.amount).toBe(10000)
+      expect(refunded.refunds[0]?.amount).toEqual(new BigNumber(10000))
       expect(mockProvider.refundPayment).toHaveBeenCalledOnce()
     })
 
@@ -267,12 +271,12 @@ describe('PaymentModuleService', () => {
       assertDefined(authorized)
       await service.capturePayment({ paymentId: authorized.id })
 
-      const first = await service.refundPayment({ paymentId: authorized.id, amount: 3000 })
+      const first = await service.refundPayment({ paymentId: authorized.id, amount: new BigNumber(3000) })
       expect(first.refunds).toHaveLength(1)
       assertDefined(first.refunds)
-      expect(first.refunds[0]?.amount).toBe(3000)
+      expect(first.refunds[0]?.amount).toEqual(new BigNumber(3000))
 
-      const second = await service.refundPayment({ paymentId: authorized.id, amount: 7000 })
+      const second = await service.refundPayment({ paymentId: authorized.id, amount: new BigNumber(7000) })
       expect(second.refunds).toHaveLength(2)
     })
 
@@ -319,23 +323,28 @@ describe('PaymentModuleService', () => {
       assertDefined(payment)
       const afterAuth = await service.retrievePaymentCollection(collection.id)
       expect(afterAuth.status).toBe('authorized')
-      expect(afterAuth.authorizedAmount).toBe(10000)
+      expect(afterAuth.authorizedAmount).toEqual(new BigNumber(10000))
 
       await service.capturePayment({ paymentId: payment.id })
       const afterCapture = await service.retrievePaymentCollection(collection.id)
       expect(afterCapture.status).toBe('completed')
-      expect(afterCapture.capturedAmount).toBe(10000)
+      expect(afterCapture.capturedAmount).toEqual(new BigNumber(10000))
       expect(afterCapture.completedAt).toBeInstanceOf(Date)
     })
 
     test('partial authorization sets partially_authorized', async ({ expect, dto }) => {
-      const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection({ amount: 20000 }))
+      const collection = await service.createPaymentCollection(
+        dto.generate.createPaymentCollection({ amount: new BigNumber(20000) }),
+      )
 
-      await service.createPaymentSession(collection.id, dto.generate.createPaymentSession({ amount: 10000 }))
+      await service.createPaymentSession(
+        collection.id,
+        dto.generate.createPaymentSession({ amount: new BigNumber(10000) }),
+      )
       // Create a second session for the remaining half
       const session2 = await service.createPaymentSession(
         collection.id,
-        dto.generate.createPaymentSession({ amount: 10000 }),
+        dto.generate.createPaymentSession({ amount: new BigNumber(10000) }),
       )
 
       // Authorize only the second session (10000 of 20000)
@@ -343,7 +352,7 @@ describe('PaymentModuleService', () => {
 
       const afterPartialAuth = await service.retrievePaymentCollection(collection.id)
       expect(afterPartialAuth.status).toBe('partially_authorized')
-      expect(afterPartialAuth.authorizedAmount).toBe(10000)
+      expect(afterPartialAuth.authorizedAmount).toEqual(new BigNumber(10000))
     })
   })
 

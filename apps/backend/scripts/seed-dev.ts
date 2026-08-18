@@ -388,7 +388,7 @@ if (existingProducts.length > 0) {
           {
             title: 'Classic T-Shirt (M / Black)',
             quantity: 2,
-            unitPrice: 2500,
+            unitPrice: new BigNumber(2500),
             variantId: tshirtVariant.id,
             variantSku: tshirtVariant.sku,
             productId: tshirt.id,
@@ -397,7 +397,7 @@ if (existingProducts.length > 0) {
           {
             title: 'Vintage Sweatshirt (L)',
             quantity: 1,
-            unitPrice: 4500,
+            unitPrice: new BigNumber(4500),
             variantId: sweatshirtVariant.id,
             variantSku: sweatshirtVariant.sku,
             productId: sweatshirt.id,

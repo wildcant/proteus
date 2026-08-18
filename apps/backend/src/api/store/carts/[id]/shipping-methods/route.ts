@@ -1,3 +1,4 @@
+import { BigNumber } from '@core/db/bignum.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService, IFulfillmentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
@@ -21,7 +22,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     })
   }
 
-  const amount = shippingOption.amount ?? 0
+  const amount = new BigNumber(shippingOption.amount ?? 0)
 
   // Remove existing shipping methods on the cart (replace strategy for MVP)
   const existing = await cartService.listShippingMethods({ cartId: req.params.id })

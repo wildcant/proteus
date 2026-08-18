@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { index, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 import { paymentCollectionTable } from './payment-collection.js'
 import { paymentSessionTable } from './payment-session.js'
@@ -8,7 +9,7 @@ export const paymentTable = pgTable(
   'payment',
   {
     id: text().primaryKey().default(sql`CONCAT('pay_', REPLACE(gen_random_uuid()::text, '-', ''))`),
-    amount: integer().notNull(),
+    amount: bignum().notNull(),
     canceledAt: timestamp({ withTimezone: true }),
     capturedAt: timestamp({ withTimezone: true }),
     currencyCode: text().notNull(),

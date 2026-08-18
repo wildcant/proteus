@@ -15,7 +15,6 @@ export const cartShippingMethodTaxLineTable = pgTable(
     description: text(),
     providerId: text(),
     taxRateId: text(),
-    metadata: text(),
     ...timestamps,
   },
   (table) => [

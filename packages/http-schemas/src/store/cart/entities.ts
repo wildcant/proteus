@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { dateToIso, timestamps } from '../../common.js'
+import { bigNumberToString, dateToIso, timestamps } from '../../common.js'
 
 export const StoreCart = z
   .object({
@@ -42,8 +42,8 @@ export const StoreCartLineItem = z
     isDiscountable: z.boolean(),
     isGiftcard: z.boolean(),
     isTaxInclusive: z.boolean(),
-    compareAtUnitPrice: z.number().nullable(),
-    unitPrice: z.number(),
+    compareAtUnitPrice: bigNumberToString.nullable(),
+    unitPrice: bigNumberToString,
     metadata: z.string().nullable(),
     ...timestamps.shape,
   })
@@ -56,7 +56,7 @@ export const StoreCartShippingMethod = z
     cartId: z.string(),
     name: z.string(),
     description: z.string().nullable(),
-    amount: z.number(),
+    amount: bigNumberToString,
     isTaxInclusive: z.boolean(),
     shippingOptionId: z.string().nullable(),
     data: z.string().nullable(),

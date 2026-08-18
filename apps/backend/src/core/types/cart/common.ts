@@ -1,3 +1,4 @@
+import type { BigNumber } from '../../db/bignum.js'
 import type { BaseFilterable, OperatorMap } from '../common.js'
 
 export type CartStatus = 'active' | 'completed' | 'abandoned'
@@ -52,8 +53,8 @@ export type CartLineItemDTO = {
   isDiscountable: boolean
   isGiftcard: boolean
   isTaxInclusive: boolean
-  compareAtUnitPrice: number | null
-  unitPrice: number
+  compareAtUnitPrice: BigNumber | null
+  unitPrice: BigNumber
   metadata: string | null
   createdAt: Date
   updatedAt: Date
@@ -73,7 +74,7 @@ export type CartShippingMethodDTO = {
   cartId: string
   name: string
   description: string | null
-  amount: number
+  amount: BigNumber
   isTaxInclusive: boolean
   shippingOptionId: string | null
   data: string | null

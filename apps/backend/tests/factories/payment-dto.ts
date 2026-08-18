@@ -1,3 +1,4 @@
+import { BigNumber } from '@core/db/bignum.js'
 import type {
   CreateAccountHolderDTO,
   CreatePaymentCollectionDTO,
@@ -11,7 +12,7 @@ export function generateCreatePaymentCollectionDTO(
   overrides?: Partial<CreatePaymentCollectionDTO>,
 ): CreatePaymentCollectionDTO {
   return {
-    amount: 10000,
+    amount: new BigNumber(10000),
     ...overrides,
   }
 }
@@ -27,7 +28,7 @@ export function generateUpdatePaymentCollectionDTO(
 export function generateCreatePaymentSessionDTO(overrides?: Partial<CreatePaymentSessionDTO>): CreatePaymentSessionDTO {
   return {
     providerId: 'system',
-    amount: 10000,
+    amount: new BigNumber(10000),
     ...overrides,
   }
 }

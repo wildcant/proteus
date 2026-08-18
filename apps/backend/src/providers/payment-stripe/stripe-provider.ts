@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { BigNumber } from '../../core/db/bignum.js'
 import type { PaymentSessionStatus } from '../../core/types/payment/common.js'
 import type {
   AuthorizePaymentInput,
@@ -52,7 +53,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     const intent = await this.stripe.paymentIntents.create(
       {
-        amount: input.amount,
+        amount: input.amount.toNumber(),
         currency: input.currencyCode,
         metadata: { sessionId: (input.data?.sessionId as string) ?? '' },
         // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
@@ -113,7 +114,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     try {
       await this.stripe.refunds.create(
         // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
-        { payment_intent: id, amount: input.amount },
+        { payment_intent: id, amount: input.amount.toNumber() },
         this.idempotencyKey(input.context),
       )
     } catch (error) {
@@ -132,7 +133,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
 
   async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
     const updateParams: Stripe.PaymentIntentUpdateParams = {}
-    if (input.amount !== undefined) updateParams.amount = input.amount
+    if (input.amount !== undefined) updateParams.amount = input.amount.toNumber()
     if (input.currencyCode !== undefined) updateParams.currency = input.currencyCode
 
     await this.stripe.paymentIntents.update(input.data?.id as string, updateParams, this.idempotencyKey(input.context))
@@ -152,7 +153,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
 
     const intent = event.data.object as Stripe.PaymentIntent
     const sessionId = intent.metadata?.sessionId
-    const amount = intent.amount
+    const amount = new BigNumber(intent.amount)
 
     // Ignore events from other integrations sharing this Stripe account
     if (!sessionId) {

@@ -1,15 +1,16 @@
 import { z } from 'zod'
+import { stringToBigNumber } from '../../common.js'
 
 export const AdminCapturePayment = z
   .object({
-    amount: z.number().int().positive().optional(),
+    amount: stringToBigNumber.optional(),
   })
   .openapi('AdminCapturePayment')
 export type AdminCapturePaymentBody = z.infer<typeof AdminCapturePayment>
 
 export const AdminRefundPayment = z
   .object({
-    amount: z.number().int().positive().optional(),
+    amount: stringToBigNumber.optional(),
     refundReasonId: z.string().min(1).optional(),
     note: z.string().optional(),
   })

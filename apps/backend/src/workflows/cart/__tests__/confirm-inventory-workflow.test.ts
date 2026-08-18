@@ -1,3 +1,4 @@
+import { BigNumber } from '@core/db/bignum.js'
 import type { CartLineItemDTO } from '@core/types/cart/common.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
@@ -35,7 +36,7 @@ function makeLineItem(overrides: Partial<CartLineItemDTO> & { id: string; cartId
     isGiftcard: false,
     isTaxInclusive: false,
     compareAtUnitPrice: null,
-    unitPrice: 1000,
+    unitPrice: new BigNumber(1000),
     metadata: null,
     createdAt: new Date(),
     updatedAt: new Date(),

@@ -1,3 +1,4 @@
+import type { BigNumber } from '../../db/bignum.js'
 import type { Context } from '../context.js'
 
 export type ProductVariantInventoryItemDTO = {
@@ -21,7 +22,7 @@ export type VariantInventoryAvailabilityDTO = {
 export type LineItemWithProductDTO = {
   lineItemId: string
   quantity: number
-  unitPrice: number
+  unitPrice: BigNumber
   variantId: string | null
   productId: string | null
   variantTitle: string | null

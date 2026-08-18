@@ -14,7 +14,7 @@ CREATE TABLE "account_holder" (
 --> statement-breakpoint
 CREATE TABLE "capture" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('capt_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
-	"amount" integer NOT NULL,
+	"amount" numeric NOT NULL,
 	"created_by" text,
 	"metadata" jsonb,
 	"payment_id" text NOT NULL,
@@ -25,13 +25,13 @@ CREATE TABLE "capture" (
 --> statement-breakpoint
 CREATE TABLE "payment_collection" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('pay_col_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
-	"amount" integer NOT NULL,
-	"authorized_amount" integer,
-	"captured_amount" integer,
+	"amount" numeric NOT NULL,
+	"authorized_amount" numeric,
+	"captured_amount" numeric,
 	"completed_at" timestamp with time zone,
 	"currency_code" text DEFAULT 'usd' NOT NULL,
 	"metadata" jsonb,
-	"refunded_amount" integer,
+	"refunded_amount" numeric,
 	"status" "payment_collection_status" DEFAULT 'not_paid' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE "payment_provider" (
 --> statement-breakpoint
 CREATE TABLE "payment_session" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('payses_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
-	"amount" integer NOT NULL,
+	"amount" numeric NOT NULL,
 	"authorized_at" timestamp with time zone,
 	"context" jsonb,
 	"currency_code" text NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE "payment_session" (
 --> statement-breakpoint
 CREATE TABLE "payment" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('pay_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
-	"amount" integer NOT NULL,
+	"amount" numeric NOT NULL,
 	"canceled_at" timestamp with time zone,
 	"captured_at" timestamp with time zone,
 	"currency_code" text NOT NULL,
@@ -91,7 +91,7 @@ CREATE TABLE "refund_reason" (
 --> statement-breakpoint
 CREATE TABLE "refund" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('ref_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
-	"amount" integer NOT NULL,
+	"amount" numeric NOT NULL,
 	"created_by" text,
 	"metadata" jsonb,
 	"note" text,

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { stringToBigNumber } from '../../common.js'
 
 export const CreateCart = z.object({
   currencyCode: z.string().min(1),
@@ -8,7 +9,7 @@ export const CreateCart = z.object({
       z.object({
         title: z.string().min(1),
         quantity: z.number().int().positive(),
-        unitPrice: z.number().int().min(0),
+        unitPrice: stringToBigNumber,
         variantId: z.string().optional(),
         productId: z.string().optional(),
         productTitle: z.string().optional(),
@@ -28,7 +29,7 @@ export type UpdateCartBody = z.infer<typeof UpdateCart>
 export const AddLineItem = z.object({
   title: z.string().min(1),
   quantity: z.number().int().positive(),
-  unitPrice: z.number().int().min(0),
+  unitPrice: stringToBigNumber,
   variantId: z.string().optional(),
   productId: z.string().optional(),
   productTitle: z.string().optional(),
@@ -38,7 +39,7 @@ export type AddLineItemBody = z.infer<typeof AddLineItem>
 
 export const UpdateLineItem = z.object({
   quantity: z.number().int().positive().optional(),
-  unitPrice: z.number().int().min(0).optional(),
+  unitPrice: stringToBigNumber.optional(),
 })
 export type UpdateLineItemBody = z.infer<typeof UpdateLineItem>
 

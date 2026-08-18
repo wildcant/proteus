@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "dotenvx run --env-file=../../.env.local -- vite dev --port 3002",
+    "dev:workerd": "VITE_BACKEND_URL=http://localhost:8787 dotenvx run --env-file=../../.env.local -- vite dev --port 3002",
     "openapi:client": "orval",
     "generate-routes": "tsr generate",
     "build": "vite build",
