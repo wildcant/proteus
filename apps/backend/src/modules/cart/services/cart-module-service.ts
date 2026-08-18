@@ -1,5 +1,6 @@
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
+  CartAddressDTO,
   CartDTO,
   CartLineItemDTO,
   CartShippingMethodDTO,
@@ -18,11 +19,13 @@ import type {
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { CartRepository } from '../repositories/cart.js'
+import type { CartAddressRepository } from '../repositories/cart-address.js'
 import type { CartLineItemRepository } from '../repositories/cart-line-item.js'
 import type { CartShippingMethodRepository } from '../repositories/cart-shipping-method.js'
 
 type InjectedDependencies = {
   cartRepository: CartRepository
+  cartAddressRepository: CartAddressRepository
   cartLineItemRepository: CartLineItemRepository
   cartShippingMethodRepository: CartShippingMethodRepository
   withTransaction: WithTransaction
@@ -31,6 +34,7 @@ type InjectedDependencies = {
 
 export class CartModuleService implements ICartModuleService {
   private cartRepository: CartRepository
+  private cartAddressRepository: CartAddressRepository
   private cartLineItemRepository: CartLineItemRepository
   private cartShippingMethodRepository: CartShippingMethodRepository
   private withTransaction: WithTransaction
@@ -38,12 +42,14 @@ export class CartModuleService implements ICartModuleService {
 
   constructor({
     cartRepository,
+    cartAddressRepository,
     cartLineItemRepository,
     cartShippingMethodRepository,
     withTransaction,
     logger,
   }: InjectedDependencies) {
     this.cartRepository = cartRepository
+    this.cartAddressRepository = cartAddressRepository
     this.cartLineItemRepository = cartLineItemRepository
     this.cartShippingMethodRepository = cartShippingMethodRepository
     this.withTransaction = withTransaction
@@ -52,6 +58,10 @@ export class CartModuleService implements ICartModuleService {
 
   async retrieveCart(cartId: string, config?: FindConfig<CartDTO>, context?: Context): Promise<CartDTO> {
     return this.cartRepository.findByIdOrFail(cartId, config, context)
+  }
+
+  async retrieveCartAddress(addressId: string, context?: Context): Promise<CartAddressDTO> {
+    return this.cartAddressRepository.findByIdOrFail(addressId, undefined, context)
   }
 
   async listCarts(filters?: FilterableCartProps, config?: FindConfig<CartDTO>, context?: Context): Promise<CartDTO[]> {

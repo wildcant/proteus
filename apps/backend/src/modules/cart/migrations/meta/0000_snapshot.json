@@ -1,5 +1,5 @@
 {
-  "id": "fae4968e-6412-4eb8-94a6-f2e70d134b55",
+  "id": "f31e73ef-86a2-41f9-a88b-59303fd97ce8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -167,6 +167,12 @@
         },
         "billing_address_id": {
           "name": "billing_address_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -550,6 +556,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -807,6 +819,12 @@
         },
         "data": {
           "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
           "type": "text",
           "primaryKey": false,
           "notNull": false

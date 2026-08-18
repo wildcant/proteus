@@ -1,4 +1,3 @@
-import { BigNumber } from '@core/db/bignum.js'
 import type { CartLineItemDTO } from '@core/types/cart/common.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
@@ -13,65 +12,6 @@ import { asValue, createContainer } from 'awilix'
 import { describe, expect } from 'vitest'
 import { noopLogger } from '../../../framework/logger/noop-logger.js'
 import { confirmInventoryWorkflow } from '../confirm-inventory-workflow.js'
-
-function makeLineItem(overrides: Partial<CartLineItemDTO> & { id: string; cartId: string }): CartLineItemDTO {
-  return {
-    title: 'Test Item',
-    subtitle: null,
-    thumbnail: null,
-    quantity: 1,
-    variantId: null,
-    productId: null,
-    productTitle: null,
-    productDescription: null,
-    productSubtitle: null,
-    productType: null,
-    productHandle: null,
-    variantSku: null,
-    variantBarcode: null,
-    variantTitle: null,
-    variantOptionValues: null,
-    requiresShipping: true,
-    isDiscountable: true,
-    isGiftcard: false,
-    isTaxInclusive: false,
-    compareAtUnitPrice: null,
-    unitPrice: new BigNumber(1000),
-    metadata: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-    ...overrides,
-  }
-}
-
-function makeMapping(
-  overrides: Pick<ProductVariantInventoryItemDTO, 'variantId' | 'inventoryItemId'> &
-    Partial<ProductVariantInventoryItemDTO>,
-): ProductVariantInventoryItemDTO {
-  return {
-    id: `pvitem_${overrides.variantId}_${overrides.inventoryItemId}`,
-    requiredQuantity: 1,
-    createdAt: new Date(),
-    deletedAt: null,
-    ...overrides,
-  }
-}
-
-function makeLevel(
-  overrides: Pick<InventoryLevelDTO, 'inventoryItemId' | 'locationId'> & Partial<InventoryLevelDTO>,
-): InventoryLevelDTO {
-  return {
-    id: `ilev_${overrides.inventoryItemId}_${overrides.locationId}`,
-    stockedQuantity: 0,
-    reservedQuantity: 0,
-    incomingQuantity: 0,
-    metadata: null,
-    createdAt: new Date(),
-    deletedAt: null,
-    ...overrides,
-  }
-}
 
 function setupWorkflow(opts: {
   lineItems: CartLineItemDTO[]
@@ -112,11 +52,18 @@ function setupWorkflow(opts: {
 }
 
 describe('confirmInventoryWorkflow', () => {
-  test('succeeds when stock covers all line items', async () => {
+  test('succeeds when stock covers all line items', async ({ dto }) => {
     setupWorkflow({
-      lineItems: [makeLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 2 })],
-      mappings: [makeMapping({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
-      levels: [makeLevel({ inventoryItemId: 'inv_1', locationId: 'loc_1', stockedQuantity: 10, reservedQuantity: 0 })],
+      lineItems: [dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 2 })],
+      mappings: [dto.generate.productVariantInventoryItem({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
+      levels: [
+        dto.generate.inventoryLevel({
+          inventoryItemId: 'inv_1',
+          locationId: 'loc_1',
+          stockedQuantity: 10,
+          reservedQuantity: 0,
+        }),
+      ],
     })
 
     const result = await confirmInventoryWorkflow.run({ cartId: 'cart_1' })
@@ -136,11 +83,18 @@ describe('confirmInventoryWorkflow', () => {
     })
   })
 
-  test('throws when stock is insufficient', async () => {
+  test('throws when stock is insufficient', async ({ dto }) => {
     setupWorkflow({
-      lineItems: [makeLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 5 })],
-      mappings: [makeMapping({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
-      levels: [makeLevel({ inventoryItemId: 'inv_1', locationId: 'loc_1', stockedQuantity: 3, reservedQuantity: 1 })],
+      lineItems: [dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 5 })],
+      mappings: [dto.generate.productVariantInventoryItem({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
+      levels: [
+        dto.generate.inventoryLevel({
+          inventoryItemId: 'inv_1',
+          locationId: 'loc_1',
+          stockedQuantity: 3,
+          reservedQuantity: 1,
+        }),
+      ],
     })
 
     await expect(confirmInventoryWorkflow.run({ cartId: 'cart_1' })).rejects.toThrow(
@@ -148,13 +102,23 @@ describe('confirmInventoryWorkflow', () => {
     )
   })
 
-  test('passes when stock across multiple locations covers the requirement', async () => {
+  test('passes when stock across multiple locations covers the requirement', async ({ dto }) => {
     setupWorkflow({
-      lineItems: [makeLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 8 })],
-      mappings: [makeMapping({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
+      lineItems: [dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 8 })],
+      mappings: [dto.generate.productVariantInventoryItem({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
       levels: [
-        makeLevel({ inventoryItemId: 'inv_1', locationId: 'loc_1', stockedQuantity: 5, reservedQuantity: 0 }),
-        makeLevel({ inventoryItemId: 'inv_1', locationId: 'loc_2', stockedQuantity: 5, reservedQuantity: 0 }),
+        dto.generate.inventoryLevel({
+          inventoryItemId: 'inv_1',
+          locationId: 'loc_1',
+          stockedQuantity: 5,
+          reservedQuantity: 0,
+        }),
+        dto.generate.inventoryLevel({
+          inventoryItemId: 'inv_1',
+          locationId: 'loc_2',
+          stockedQuantity: 5,
+          reservedQuantity: 0,
+        }),
       ],
     })
 
@@ -164,9 +128,9 @@ describe('confirmInventoryWorkflow', () => {
     expect(result.items[0]?.locationIds).toEqual(['loc_1', 'loc_2'])
   })
 
-  test('skips line items without a variant', async () => {
+  test('skips line items without a variant', async ({ dto }) => {
     setupWorkflow({
-      lineItems: [makeLineItem({ id: 'li_custom', cartId: 'cart_1', variantId: null, quantity: 1 })],
+      lineItems: [dto.generate.cartLineItem({ id: 'li_custom', cartId: 'cart_1', variantId: null, quantity: 1 })],
       mappings: [],
       levels: [],
     })
@@ -176,11 +140,24 @@ describe('confirmInventoryWorkflow', () => {
     expect(result.items).toEqual([])
   })
 
-  test('multiplies quantity by requiredQuantity when checking coverage', async () => {
+  test('multiplies quantity by requiredQuantity when checking coverage', async ({ dto }) => {
     setupWorkflow({
-      lineItems: [makeLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 2 })],
-      mappings: [makeMapping({ variantId: 'var_1', inventoryItemId: 'inv_1', requiredQuantity: 3 })],
-      levels: [makeLevel({ inventoryItemId: 'inv_1', locationId: 'loc_1', stockedQuantity: 5, reservedQuantity: 0 })],
+      lineItems: [dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 2 })],
+      mappings: [
+        dto.generate.productVariantInventoryItem({
+          variantId: 'var_1',
+          inventoryItemId: 'inv_1',
+          requiredQuantity: 3,
+        }),
+      ],
+      levels: [
+        dto.generate.inventoryLevel({
+          inventoryItemId: 'inv_1',
+          locationId: 'loc_1',
+          stockedQuantity: 5,
+          reservedQuantity: 0,
+        }),
+      ],
     })
 
     // needs 2 * 3 = 6, only 5 available
@@ -189,19 +166,29 @@ describe('confirmInventoryWorkflow', () => {
     )
   })
 
-  test('throws when any variant in a multi-item cart is insufficient', async () => {
+  test('throws when any variant in a multi-item cart is insufficient', async ({ dto }) => {
     setupWorkflow({
       lineItems: [
-        makeLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 1 }),
-        makeLineItem({ id: 'li_2', cartId: 'cart_1', variantId: 'var_2', quantity: 100 }),
+        dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 1 }),
+        dto.generate.cartLineItem({ id: 'li_2', cartId: 'cart_1', variantId: 'var_2', quantity: 100 }),
       ],
       mappings: [
-        makeMapping({ variantId: 'var_1', inventoryItemId: 'inv_1' }),
-        makeMapping({ variantId: 'var_2', inventoryItemId: 'inv_2' }),
+        dto.generate.productVariantInventoryItem({ variantId: 'var_1', inventoryItemId: 'inv_1' }),
+        dto.generate.productVariantInventoryItem({ variantId: 'var_2', inventoryItemId: 'inv_2' }),
       ],
       levels: [
-        makeLevel({ inventoryItemId: 'inv_1', locationId: 'loc_1', stockedQuantity: 5, reservedQuantity: 0 }),
-        makeLevel({ inventoryItemId: 'inv_2', locationId: 'loc_1', stockedQuantity: 3, reservedQuantity: 0 }),
+        dto.generate.inventoryLevel({
+          inventoryItemId: 'inv_1',
+          locationId: 'loc_1',
+          stockedQuantity: 5,
+          reservedQuantity: 0,
+        }),
+        dto.generate.inventoryLevel({
+          inventoryItemId: 'inv_2',
+          locationId: 'loc_1',
+          stockedQuantity: 3,
+          reservedQuantity: 0,
+        }),
       ],
     })
 

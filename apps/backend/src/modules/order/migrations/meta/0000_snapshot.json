@@ -312,12 +312,8 @@
           "name": "order_line_item_order_id_order_id_fk",
           "tableFrom": "order_line_item",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -435,12 +431,8 @@
           "name": "order_shipping_method_order_id_order_id_fk",
           "tableFrom": "order_shipping_method",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -612,12 +604,8 @@
           "name": "order_shipping_address_id_order_address_id_fk",
           "tableFrom": "order",
           "tableTo": "order_address",
-          "columnsFrom": [
-            "shipping_address_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["shipping_address_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -625,12 +613,8 @@
           "name": "order_billing_address_id_order_address_id_fk",
           "tableFrom": "order",
           "tableTo": "order_address",
-          "columnsFrom": [
-            "billing_address_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["billing_address_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -748,12 +732,8 @@
           "name": "order_transaction_order_id_order_id_fk",
           "tableFrom": "order_transaction",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -769,22 +749,12 @@
     "public.order_fulfillment_status": {
       "name": "order_fulfillment_status",
       "schema": "public",
-      "values": [
-        "unfulfilled",
-        "fulfilled",
-        "shipped",
-        "delivered"
-      ]
+      "values": ["unfulfilled", "fulfilled", "shipped", "delivered"]
     },
     "public.order_status": {
       "name": "order_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "completed",
-        "canceled",
-        "archived"
-      ]
+      "values": ["pending", "completed", "canceled", "archived"]
     }
   },
   "schemas": {},

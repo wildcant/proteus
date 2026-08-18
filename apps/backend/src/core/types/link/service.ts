@@ -3,8 +3,14 @@ import type {
   CartPaymentCollectionDTO,
   ICartPaymentCollectionRepository,
   ICartProductRepository,
+  IOrderCartRepository,
+  IOrderFulfillmentRepository,
+  IOrderPaymentCollectionRepository,
   IProductVariantInventoryItemRepository,
   IProductVariantPriceSetRepository,
+  OrderCartDTO,
+  OrderFulfillmentDTO,
+  OrderPaymentCollectionDTO,
   ProductVariantInventoryItemDTO,
   ProductVariantPriceSetDTO,
 } from './common.js'
@@ -16,14 +22,19 @@ export type ILinkRepositoryMap = {
   productVariantInventoryItem: IProductVariantInventoryItemRepository
   cartPaymentCollection: ICartPaymentCollectionRepository
   productVariantPriceSet: IProductVariantPriceSetRepository
+  orderCart: IOrderCartRepository
+  orderPaymentCollection: IOrderPaymentCollectionRepository
+  orderFulfillment: IOrderFulfillmentRepository
 }
 
 export type LinkColumnRegistry = {
   variantId: readonly ['productVariantPriceSet', 'productVariantInventoryItem']
-  cartId: readonly ['cartPaymentCollection']
-  paymentCollectionId: readonly ['cartPaymentCollection']
+  cartId: readonly ['cartPaymentCollection', 'orderCart']
+  paymentCollectionId: readonly ['cartPaymentCollection', 'orderPaymentCollection']
   inventoryItemId: readonly ['productVariantInventoryItem']
   priceSetId: readonly ['productVariantPriceSet']
+  orderId: readonly ['orderCart', 'orderPaymentCollection', 'orderFulfillment']
+  fulfillmentId: readonly ['orderFulfillment']
 }
 
 export type WritableLinkRepoKey = LinkColumnRegistry[keyof LinkColumnRegistry][number]
@@ -34,6 +45,9 @@ export type WritableLinkDTOMap = {
   productVariantPriceSet: ProductVariantPriceSetDTO
   productVariantInventoryItem: ProductVariantInventoryItemDTO
   cartPaymentCollection: CartPaymentCollectionDTO
+  orderCart: OrderCartDTO
+  orderPaymentCollection: OrderPaymentCollectionDTO
+  orderFulfillment: OrderFulfillmentDTO
 }
 
 export type DismissLinksResult<T extends DismissLinksInput = DismissLinksInput> = {

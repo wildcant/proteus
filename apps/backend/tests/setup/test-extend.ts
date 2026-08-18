@@ -13,12 +13,20 @@ import {
   generateUpdateProviderIdentityDTO,
 } from '../factories/auth-dto.js'
 import {
+  generateCartAddressDTO,
+  generateCartDTO,
+  generateCartLineItemDTO,
+  generateCartShippingMethodDTO,
+} from '../factories/cart-dto.js'
+import {
   generateCreateCustomerAddressDTO,
   generateCreateCustomerDTO,
   generateCustomerDTO,
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
+import { generateInventoryLevelDTO } from '../factories/inventory-dto.js'
+import { generateProductVariantInventoryItemDTO } from '../factories/link-dto.js'
 import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
 import {
   generateCreateOrderAddressDTO,
@@ -32,6 +40,8 @@ import {
   generateCreatePaymentCollectionDTO,
   generateCreatePaymentSessionDTO,
   generateCreateRefundReasonDTO,
+  generatePaymentDTO,
+  generatePaymentSessionDTO,
   generateUpdatePaymentCollectionDTO,
   generateUpdateRefundReasonDTO,
 } from '../factories/payment-dto.js'
@@ -70,6 +80,8 @@ type Fixtures = {
       createPaymentCollection: typeof generateCreatePaymentCollectionDTO
       updatePaymentCollection: typeof generateUpdatePaymentCollectionDTO
       createPaymentSession: typeof generateCreatePaymentSessionDTO
+      paymentSession: typeof generatePaymentSessionDTO
+      payment: typeof generatePaymentDTO
       createRefundReason: typeof generateCreateRefundReasonDTO
       updateRefundReason: typeof generateUpdateRefundReasonDTO
       createAccountHolder: typeof generateCreateAccountHolderDTO
@@ -84,6 +96,12 @@ type Fixtures = {
       createOrderShippingMethod: typeof generateCreateOrderShippingMethodDTO
       createOrderTransaction: typeof generateCreateOrderTransactionDTO
       createOrderAddress: typeof generateCreateOrderAddressDTO
+      cart: typeof generateCartDTO
+      cartAddress: typeof generateCartAddressDTO
+      cartLineItem: typeof generateCartLineItemDTO
+      cartShippingMethod: typeof generateCartShippingMethodDTO
+      inventoryLevel: typeof generateInventoryLevelDTO
+      productVariantInventoryItem: typeof generateProductVariantInventoryItemDTO
     }
   }
   logger: Logger
@@ -127,6 +145,8 @@ export const test = testBase.extend<Fixtures>({
         createPaymentCollection: generateCreatePaymentCollectionDTO,
         updatePaymentCollection: generateUpdatePaymentCollectionDTO,
         createPaymentSession: generateCreatePaymentSessionDTO,
+        paymentSession: generatePaymentSessionDTO,
+        payment: generatePaymentDTO,
         createRefundReason: generateCreateRefundReasonDTO,
         updateRefundReason: generateUpdateRefundReasonDTO,
         createAccountHolder: generateCreateAccountHolderDTO,
@@ -141,6 +161,12 @@ export const test = testBase.extend<Fixtures>({
         createOrderShippingMethod: generateCreateOrderShippingMethodDTO,
         createOrderTransaction: generateCreateOrderTransactionDTO,
         createOrderAddress: generateCreateOrderAddressDTO,
+        cart: generateCartDTO,
+        cartAddress: generateCartAddressDTO,
+        cartLineItem: generateCartLineItemDTO,
+        cartShippingMethod: generateCartShippingMethodDTO,
+        inventoryLevel: generateInventoryLevelDTO,
+        productVariantInventoryItem: generateProductVariantInventoryItemDTO,
       },
     })
   },

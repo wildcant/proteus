@@ -1,6 +1,7 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
+  CartAddressDTO,
   CartDTO,
   CartLineItemDTO,
   CartShippingMethodDTO,
@@ -18,6 +19,7 @@ import type {
 
 export type ICartModuleService = {
   retrieveCart(cartId: string, config?: FindConfig<CartDTO>, context?: Context): Promise<CartDTO>
+  retrieveCartAddress(addressId: string, context?: Context): Promise<CartAddressDTO>
   listCarts(filters?: FilterableCartProps, config?: FindConfig<CartDTO>, context?: Context): Promise<CartDTO[]>
   listAndCountCarts(
     filters?: FilterableCartProps,

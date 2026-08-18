@@ -22,13 +22,11 @@ export type CreateLineItemDTO = {
   isTaxInclusive?: boolean | undefined
   compareAtUnitPrice?: BigNumber | null | undefined
   unitPrice: BigNumber
-  metadata?: string | null | undefined
 }
 
 export type UpdateLineItemDTO = {
   quantity?: number | undefined
   unitPrice?: BigNumber | undefined
-  metadata?: string | null | undefined
 }
 
 export type CreateCartDTO = {
@@ -39,7 +37,6 @@ export type CreateCartDTO = {
   currencyCode: string
   shippingAddressId?: string | null | undefined
   billingAddressId?: string | null | undefined
-  metadata?: string | null | undefined
   items?: CreateLineItemDTO[] | undefined
 }
 
@@ -50,7 +47,6 @@ export type CreateShippingMethodDTO = {
   isTaxInclusive?: boolean | undefined
   shippingOptionId?: string | null | undefined
   data?: string | null | undefined
-  metadata?: string | null | undefined
 }
 
 export type UpdateCartDTO = {
@@ -62,6 +58,5 @@ export type UpdateCartDTO = {
   status?: 'active' | 'completed' | 'abandoned' | undefined
   shippingAddressId?: string | null | undefined
   billingAddressId?: string | null | undefined
-  metadata?: string | null | undefined
   completedAt?: Date | null | undefined
 }

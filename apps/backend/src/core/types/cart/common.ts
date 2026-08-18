@@ -13,7 +13,6 @@ export type CartDTO = {
   status: CartStatus
   shippingAddressId: string | null
   billingAddressId: string | null
-  metadata: string | null
   completedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -55,7 +54,6 @@ export type CartLineItemDTO = {
   isTaxInclusive: boolean
   compareAtUnitPrice: BigNumber | null
   unitPrice: BigNumber
-  metadata: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -78,7 +76,6 @@ export type CartShippingMethodDTO = {
   isTaxInclusive: boolean
   shippingOptionId: string | null
   data: string | null
-  metadata: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -88,4 +85,22 @@ export interface FilterableCartShippingMethodProps extends BaseFilterable<Filter
   id?: string | string[]
   cartId?: string | string[]
   shippingOptionId?: string | string[]
+}
+
+export type CartAddressDTO = {
+  id: string
+  customerId: string | null
+  company: string | null
+  firstName: string | null
+  lastName: string | null
+  address1: string | null
+  address2: string | null
+  city: string | null
+  countryCode: string | null
+  province: string | null
+  postalCode: string | null
+  phone: string | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
 }

@@ -3,10 +3,17 @@ import type { Context } from '../context.js'
 import type {
   FilterableInventoryItemProps,
   FilterableInventoryLevelProps,
+  FilterableReservationItemProps,
   InventoryItemDTO,
   InventoryLevelDTO,
+  ReservationItemDTO,
 } from './common.js'
-import type { CreateInventoryItemDTO, CreateInventoryLevelDTO, UpdateInventoryItemDTO } from './mutations.js'
+import type {
+  CreateInventoryItemDTO,
+  CreateInventoryLevelDTO,
+  CreateReservationItemDTO,
+  UpdateInventoryItemDTO,
+} from './mutations.js'
 
 export type IInventoryModuleService = {
   listInventoryItems(
@@ -37,4 +44,11 @@ export type IInventoryModuleService = {
     quantity: number,
     context?: Context,
   ): Promise<boolean>
+  createReservationItems(data: CreateReservationItemDTO[], context?: Context): Promise<ReservationItemDTO[]>
+  deleteReservationItems(ids: string[], context?: Context): Promise<void>
+  listReservationItems(
+    filters?: FilterableReservationItemProps,
+    config?: FindConfig<ReservationItemDTO>,
+    context?: Context,
+  ): Promise<ReservationItemDTO[]>
 }

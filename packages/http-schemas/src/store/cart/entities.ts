@@ -12,7 +12,6 @@ export const StoreCart = z
     status: z.string(),
     shippingAddressId: z.string().nullable(),
     billingAddressId: z.string().nullable(),
-    metadata: z.string().nullable(),
     completedAt: dateToIso.nullable(),
     ...timestamps.shape,
   })
@@ -44,7 +43,6 @@ export const StoreCartLineItem = z
     isTaxInclusive: z.boolean(),
     compareAtUnitPrice: bigNumberToString.nullable(),
     unitPrice: bigNumberToString,
-    metadata: z.string().nullable(),
     ...timestamps.shape,
   })
   .openapi('StoreCartLineItem')
@@ -60,7 +58,6 @@ export const StoreCartShippingMethod = z
     isTaxInclusive: z.boolean(),
     shippingOptionId: z.string().nullable(),
     data: z.string().nullable(),
-    metadata: z.string().nullable(),
     ...timestamps.shape,
   })
   .openapi('StoreCartShippingMethod')
