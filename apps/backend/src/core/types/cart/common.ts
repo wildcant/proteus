@@ -75,7 +75,7 @@ export type CartShippingMethodDTO = {
   amount: BigNumber
   isTaxInclusive: boolean
   shippingOptionId: string | null
-  data: string | null
+  data: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null

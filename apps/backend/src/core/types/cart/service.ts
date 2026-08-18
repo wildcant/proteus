@@ -33,7 +33,6 @@ export type ICartModuleService = {
   deleteCarts(cartIds: string[], context?: Context): Promise<void>
   softDeleteCarts(cartIds: string[], context?: Context): Promise<void>
   restoreCarts(cartIds: string[], context?: Context): Promise<void>
-  completeCart(cartId: string, context?: Context): Promise<CartDTO>
   listLineItems(
     filters?: FilterableCartLineItemProps,
     config?: FindConfig<CartLineItemDTO>,

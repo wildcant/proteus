@@ -1,5 +1,5 @@
 {
-  "id": "f31e73ef-86a2-41f9-a88b-59303fd97ce8",
+  "id": "3b49b479-7851-4c90-b099-753183ed48e7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -171,12 +171,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "completed_at": {
           "name": "completed_at",
           "type": "timestamp with time zone",
@@ -275,8 +269,12 @@
           "name": "cart_shipping_address_id_cart_address_id_fk",
           "tableFrom": "cart",
           "tableTo": "cart_address",
-          "columnsFrom": ["shipping_address_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shipping_address_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -284,8 +282,12 @@
           "name": "cart_billing_address_id_cart_address_id_fk",
           "tableFrom": "cart",
           "tableTo": "cart_address",
-          "columnsFrom": ["billing_address_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "billing_address_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -397,8 +399,12 @@
           "name": "cart_credit_line_cart_id_cart_id_fk",
           "tableFrom": "cart_credit_line",
           "tableTo": "cart",
-          "columnsFrom": ["cart_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "cart_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -556,12 +562,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -638,8 +638,12 @@
           "name": "cart_line_item_cart_id_cart_id_fk",
           "tableFrom": "cart_line_item",
           "tableTo": "cart",
-          "columnsFrom": ["cart_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "cart_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -757,8 +761,12 @@
           "name": "cart_line_item_tax_line_item_id_cart_line_item_id_fk",
           "tableFrom": "cart_line_item_tax_line",
           "tableTo": "cart_line_item",
-          "columnsFrom": ["item_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -819,13 +827,7 @@
         },
         "data": {
           "name": "data",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -889,8 +891,12 @@
           "name": "cart_shipping_method_cart_id_cart_id_fk",
           "tableFrom": "cart_shipping_method",
           "tableTo": "cart",
-          "columnsFrom": ["cart_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "cart_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1008,8 +1014,12 @@
           "name": "cart_shipping_method_tax_line_shipping_method_id_cart_shipping_method_id_fk",
           "tableFrom": "cart_shipping_method_tax_line",
           "tableTo": "cart_shipping_method",
-          "columnsFrom": ["shipping_method_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shipping_method_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1025,7 +1035,11 @@
     "public.cart_status": {
       "name": "cart_status",
       "schema": "public",
-      "values": ["active", "completed", "abandoned"]
+      "values": [
+        "active",
+        "completed",
+        "abandoned"
+      ]
     }
   },
   "schemas": {},

@@ -227,18 +227,4 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
-  async completeCart(cartId: string, context?: Context): Promise<CartDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      const cart = await this.cartRepository.findByIdOrFail(cartId, undefined, ctx)
-
-      if (cart.status !== 'active') {
-        throw new AppError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart ${cartId} is not active (current status: ${cart.status})`,
-        })
-      }
-
-      return this.cartRepository.update(cartId, { status: 'completed', completedAt: new Date() }, ctx)
-    })
-  }
 }

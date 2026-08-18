@@ -94,7 +94,7 @@ CREATE TABLE "cart_shipping_method" (
 	"amount" numeric NOT NULL,
 	"is_tax_inclusive" boolean DEFAULT false NOT NULL,
 	"shipping_option_id" text,
-	"data" text,
+	"data" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone

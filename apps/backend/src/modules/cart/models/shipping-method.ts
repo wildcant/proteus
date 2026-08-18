@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { boolean, index, pgTable, text } from 'drizzle-orm/pg-core'
+import { boolean, index, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 import { cartTable } from './cart.js'
@@ -16,7 +16,7 @@ export const cartShippingMethodTable = pgTable(
     amount: bignum().notNull(),
     isTaxInclusive: boolean().default(false).notNull(),
     shippingOptionId: text(),
-    data: text(),
+    data: jsonb().$type<Record<string, unknown>>(),
     ...timestamps,
   },
   (table) => [

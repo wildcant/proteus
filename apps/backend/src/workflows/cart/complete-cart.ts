@@ -7,6 +7,7 @@ import type { ILinkService } from '@core/types/link/service.js'
 import type { Logger } from '@core/types/logger.js'
 import type { CreateOrderLineItemDTO, CreateOrderShippingMethodDTO } from '@core/types/order/mutations.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
+import type { PaymentSessionStatus } from '@core/types/payment/common.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -14,7 +15,98 @@ import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-
 
 type CompleteCartInput = { cartId: string }
 
+const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
+  'pending',
+  'requires_more',
+  'authorized',
+  'captured',
+  'pending_authorization',
+]
+
+// TODO(locking): No distributed lock guards this workflow. Concurrent calls for the same cart
+// can produce duplicate orders. Add acquireLock/releaseLock steps once a locking module is available.
 export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('complete-cart', async (ctx, input) => {
+  const completedCart = await ctx.step('check-idempotency', async ({ container }) => {
+    const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+    const orderCartLink = await linkService.repo('orderCart').findByCartId(input.cartId)
+    if (orderCartLink) {
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      const cart = await cartService.retrieveCart(input.cartId)
+      if (!cart.completedAt) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.UNEXPECTED_STATE,
+          message: `Cart "${input.cartId}" has a linked order but was never marked completed — a previous checkout may have partially failed`,
+        })
+      }
+      return cart
+    }
+    return null
+  })
+
+  if (completedCart) return completedCart
+
+  await ctx.step('validate-cart-items', async ({ container }) => {
+    const cartService = container.resolve<ICartModuleService>(Modules.CART)
+    const lineItems = await cartService.listLineItems({ cartId: input.cartId })
+
+    if (lineItems.length === 0) {
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `Cart "${input.cartId}" has no items`,
+      })
+    }
+
+    for (const item of lineItems) {
+      if (!item.variantId) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.INVALID_DATA,
+          message: `Cart item "${item.id}" has no variant`,
+        })
+      }
+      if (item.quantity <= 0) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.INVALID_DATA,
+          message: `Cart item "${item.id}" has invalid quantity: ${item.quantity}`,
+        })
+      }
+    }
+  })
+
+  const paymentInfo = await ctx.step('validate-cart-payments', async ({ container }) => {
+    const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+    const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+
+    const cartPaymentLink = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
+    if (!cartPaymentLink) {
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `Cart "${input.cartId}" has no payment collection`,
+      })
+    }
+
+    const collection = await paymentService.retrievePaymentCollection(cartPaymentLink.paymentCollectionId)
+    const session = collection.paymentSessions?.[0]
+    if (!session) {
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `Payment collection "${collection.id}" has no payment session — call POST /store/payment-collections/:id/payment-sessions first`,
+      })
+    }
+
+    if (!PROCESSABLE_STATUSES.includes(session.status)) {
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `Payment session "${session.id}" is not processable (status: ${session.status})`,
+      })
+    }
+
+    return {
+      sessionId: session.id,
+      paymentCollectionId: cartPaymentLink.paymentCollectionId,
+      amount: collection.amount,
+    }
+  })
+
   await ctx.step('validate-shipping', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
     const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
@@ -42,67 +134,19 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
     )
   })
 
-  const existingCart = await ctx.step('check-idempotency', async ({ container }) => {
-    const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-    const orderCartLink = await linkService.repo('orderCart').findByCartId(input.cartId)
-    if (orderCartLink) {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      return cartService.retrieveCart(input.cartId)
-    }
-    return null
-  })
-
-  if (existingCart) return existingCart
-
-  // Payment must be secured before creating the order to avoid fulfilling unpaid carts
-  const capturedPayment = await ctx.step('authorize-and-capture', async ({ container }) => {
-    const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+  await ctx.step('check-cart-not-completed', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
-    const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
-    const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-
     const cart = await cartService.retrieveCart(input.cartId)
-    if (cart.status !== 'active') {
+    if (cart.completedAt) {
       throw new WorkflowTerminalError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `Cart "${input.cartId}" is not active (status: ${cart.status})`,
+        message: `Cart "${input.cartId}" is already completed`,
       })
     }
-
-    const cartPaymentLink = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
-    if (!cartPaymentLink) {
-      throw new WorkflowTerminalError({
-        type: ErrorTypes.INVALID_DATA,
-        message: `Cart "${input.cartId}" has no payment collection`,
-      })
-    }
-
-    const collection = await paymentService.retrievePaymentCollection(cartPaymentLink.paymentCollectionId)
-    const session = collection.paymentSessions?.[0]
-    if (!session) {
-      throw new WorkflowTerminalError({
-        type: ErrorTypes.INVALID_DATA,
-        message: `Payment collection "${collection.id}" has no payment session — call POST /store/payment-collections/:id/payment-sessions first`,
-      })
-    }
-
-    logger.debug(`[complete-cart] Authorizing payment session "${session.id}" for cart "${input.cartId}"`)
-
-    const payment = await paymentService.authorizePaymentSession(session.id)
-    if (!payment) {
-      throw new WorkflowTerminalError({
-        type: ErrorTypes.UNEXPECTED_STATE,
-        message: `Payment authorization failed for session "${session.id}"`,
-      })
-    }
-
-    logger.debug(`[complete-cart] Capturing payment "${payment.id}" for amount ${collection.amount}`)
-    const captured = await paymentService.capturePayment({ paymentId: payment.id, amount: collection.amount })
-
-    return { payment: captured, paymentCollectionId: cartPaymentLink.paymentCollectionId }
   })
 
-  // Order is a point-in-time snapshot — cart data is copied so later cart changes don't affect the order
+  // Order is created before payment authorization to minimize the window where captured
+  // payments need reversal. If anything after this point fails, compensation rolls back.
   const order = await ctx.step(
     'create-order',
     async ({ container }) => {
@@ -169,14 +213,13 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
         requiresShipping: item.requiresShipping,
       }))
 
-      // Cart stores `data` as text; order stores it as jsonb — parse it across the boundary
       const shippingMethods = await cartService.listShippingMethods({ cartId: input.cartId })
       const orderShippingMethods: CreateOrderShippingMethodDTO[] = shippingMethods.map((method) => ({
         name: method.name,
         description: method.description,
         amount: method.amount,
         shippingOptionId: method.shippingOptionId,
-        data: method.data ? tryParseJson(method.data) : undefined,
+        data: method.data ?? undefined,
       }))
 
       const createdOrder = await orderService.createOrder({
@@ -208,7 +251,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
         linkService.repo('orderCart').create({ orderId: order.id, cartId: input.cartId }),
         linkService.repo('orderPaymentCollection').create({
           orderId: order.id,
-          paymentCollectionId: capturedPayment.paymentCollectionId,
+          paymentCollectionId: paymentInfo.paymentCollectionId,
         }),
       ])
     },
@@ -227,7 +270,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
       const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
       const lineItems = await cartService.listLineItems({ cartId: input.cartId })
-      const variantIds = lineItems.map((li) => li.variantId).filter((id): id is string => id != null)
+      const variantIds = lineItems.map((li) => li.variantId).filter((id) => id != null)
       if (variantIds.length === 0) return []
 
       const mappings = await linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds)
@@ -261,31 +304,68 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
     },
   )
 
+  await ctx.step(
+    'mark-cart-completed',
+    async ({ container }) => {
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      await cartService.updateCart(input.cartId, { status: 'completed', completedAt: new Date() })
+    },
+    async (_result, { container }) => {
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      await cartService.updateCart(input.cartId, { status: 'active', completedAt: null })
+    },
+  )
+
+  // Payment is authorized and captured last to minimize the window where a captured payment
+  // needs reversal. The only steps after this are recording the transaction.
+  const capturedPayment = await ctx.step(
+    'authorize-and-capture',
+    async ({ container }) => {
+      const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+
+      logger.debug(`[complete-cart] Authorizing payment session "${paymentInfo.sessionId}" for cart "${input.cartId}"`)
+
+      const payment = await paymentService.authorizePaymentSession(paymentInfo.sessionId)
+      if (!payment) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.UNEXPECTED_STATE,
+          message: `Payment authorization failed for session "${paymentInfo.sessionId}"`,
+        })
+      }
+
+      logger.debug(`[complete-cart] Capturing payment "${payment.id}" for amount ${paymentInfo.amount}`)
+      const captured = await paymentService.capturePayment({ paymentId: payment.id, amount: paymentInfo.amount })
+
+      return captured
+    },
+    async (captured, { container }) => {
+      const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+
+      logger.debug(`[complete-cart] Compensating: refunding payment "${captured.id}"`)
+      await paymentService.refundPayment({ paymentId: captured.id, amount: captured.amount }).catch((error) => {
+        logger.error(error)
+      })
+    },
+  )
+
   // The order module tracks its own ledger independently of the payment module
   await ctx.step('record-transaction', async ({ container }) => {
     const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
     await orderService.addOrderTransaction({
       orderId: order.id,
-      amount: capturedPayment.payment.amount,
-      currencyCode: capturedPayment.payment.currencyCode,
+      amount: capturedPayment.amount,
+      currencyCode: capturedPayment.currencyCode,
       reference: 'capture',
-      referenceId: capturedPayment.payment.id,
+      referenceId: capturedPayment.id,
     })
   })
 
-  // Mark the cart as completed last — this is the point of no return for the storefront
-  const completedCart = await ctx.step('complete-cart', async ({ container }) => {
+  const finalCart = await ctx.step('retrieve-completed-cart', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
-    return cartService.completeCart(input.cartId)
+    return cartService.retrieveCart(input.cartId)
   })
 
-  return completedCart
+  return finalCart
 })
-
-function tryParseJson(value: string): unknown {
-  try {
-    return JSON.parse(value)
-  } catch {
-    return value
-  }
-}

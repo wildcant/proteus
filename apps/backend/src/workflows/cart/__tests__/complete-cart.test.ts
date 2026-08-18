@@ -44,8 +44,6 @@ function setupWorkflow(generate: Factories, options: SetupOptions = {}) {
   const shippingMethods = options.shippingMethods ?? [generate.cartShippingMethod({ cartId: cart.id })]
   const initialOrderCartLink = options.orderCartLink ?? null
 
-  const completedCart = { ...cart, status: 'completed' as const, completedAt: new Date() }
-
   const createdOrder = {
     id: 'ord_1',
     displayId: 1,
@@ -68,15 +66,19 @@ function setupWorkflow(generate: Factories, options: SetupOptions = {}) {
     capturedAt: new Date(),
   })
 
+  let currentCart: CartDTO = cart
   const cartService = {
-    retrieveCart: vi.fn().mockResolvedValue(cart),
+    retrieveCart: vi.fn().mockImplementation(async () => currentCart),
     retrieveCartAddress: vi.fn().mockImplementation(async (id: string) => {
       if (!address) throw new Error(`Address ${id} not found`)
       return address
     }),
     listLineItems: vi.fn().mockResolvedValue(lineItems),
     listShippingMethods: vi.fn().mockResolvedValue(shippingMethods),
-    completeCart: vi.fn().mockResolvedValue(completedCart),
+    updateCart: vi.fn().mockImplementation(async (_id: string, updates: Partial<CartDTO>) => {
+      currentCart = { ...currentCart, ...updates }
+      return currentCart
+    }),
   }
 
   const fulfillmentService = {
@@ -236,11 +238,14 @@ describe('completeCartWorkflow', () => {
     })
 
     // Cart was completed
-    expect(services.cartService.completeCart).toHaveBeenCalledWith(services.cart.id)
+    expect(services.cartService.updateCart).toHaveBeenCalledWith(services.cart.id, {
+      status: 'completed',
+      completedAt: expect.any(Date),
+    })
   })
 
   test('idempotency: returns existing cart if order already linked', async ({ dto }) => {
-    const cart = dto.generate.cart({ id: 'cart_1' })
+    const cart = dto.generate.cart({ id: 'cart_1', status: 'completed', completedAt: new Date() })
     const services = setupWorkflow(dto.generate, {
       cart,
       orderCartLink: { orderId: 'ord_existing', cartId: cart.id },
@@ -250,7 +255,7 @@ describe('completeCartWorkflow', () => {
 
     expect(result).toBeDefined()
     expect(services.orderService.createOrder).not.toHaveBeenCalled()
-    expect(services.cartService.completeCart).not.toHaveBeenCalled()
+    expect(services.cartService.updateCart).not.toHaveBeenCalled()
   })
 
   test('parses shipping method data from text to jsonb', async ({ dto }) => {
@@ -260,7 +265,7 @@ describe('completeCartWorkflow', () => {
       shippingMethods: [
         dto.generate.cartShippingMethod({
           cartId: cart.id,
-          data: '{"provider":"ups","rateId":"R123"}',
+          data: { provider: 'ups', rateId: 'R123' },
         }),
       ],
     })
@@ -272,24 +277,6 @@ describe('completeCartWorkflow', () => {
     expect(orderMethod.data).toEqual({ provider: 'ups', rateId: 'R123' })
   })
 
-  test('passes non-JSON shipping method data through as-is', async ({ dto }) => {
-    const cart = dto.generate.cart({ id: 'cart_1' })
-    const services = setupWorkflow(dto.generate, {
-      cart,
-      shippingMethods: [
-        dto.generate.cartShippingMethod({
-          cartId: cart.id,
-          data: 'plain-text-data',
-        }),
-      ],
-    })
-
-    await completeCartWorkflow.run({ cartId: cart.id })
-
-    const createOrderCall = services.orderService.createOrder.mock.calls[0]?.[0]
-    const orderMethod = createOrderCall.shippingMethods[0]
-    expect(orderMethod.data).toBe('plain-text-data')
-  })
 
   test('snapshots addresses without timestamps', async ({ dto }) => {
     const services = setupWorkflow(dto.generate, {
@@ -338,16 +325,13 @@ describe('completeCartWorkflow', () => {
     expect(services.orderService.deleteOrders).toHaveBeenCalledWith(['ord_1'])
   })
 
-  test('skips inventory reservation for line items without variants', async ({ dto }) => {
+  test('rejects line items without variants', async ({ dto }) => {
     const cart = dto.generate.cart()
-    const services = setupWorkflow(dto.generate, {
+    setupWorkflow(dto.generate, {
       cart,
       lineItems: [dto.generate.cartLineItem({ cartId: cart.id, variantId: null })],
     })
 
-    await completeCartWorkflow.run({ cartId: cart.id })
-
-    expect(services.productVariantInventoryItemRepo.findByVariantIds).not.toHaveBeenCalled()
-    expect(services.inventoryService.createReservationItems).not.toHaveBeenCalled()
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('has no variant')
   })
 })

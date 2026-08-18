@@ -46,7 +46,7 @@ export type CreateShippingMethodDTO = {
   amount: BigNumber
   isTaxInclusive?: boolean | undefined
   shippingOptionId?: string | null | undefined
-  data?: string | null | undefined
+  data?: Record<string, unknown> | null | undefined
 }
 
 export type UpdateCartDTO = {
