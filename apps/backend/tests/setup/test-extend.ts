@@ -21,6 +21,13 @@ import {
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
 import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
 import {
+  generateCreateOrderAddressDTO,
+  generateCreateOrderDTO,
+  generateCreateOrderLineItemDTO,
+  generateCreateOrderShippingMethodDTO,
+  generateCreateOrderTransactionDTO,
+} from '../factories/order-dto.js'
+import {
   generateCreateAccountHolderDTO,
   generateCreatePaymentCollectionDTO,
   generateCreatePaymentSessionDTO,
@@ -72,6 +79,11 @@ type Fixtures = {
       createPrice: typeof generateCreatePriceDTO
       createProduct: typeof generateCreateProductDTO
       updateProduct: typeof generateUpdateProductDTO
+      createOrder: typeof generateCreateOrderDTO
+      createOrderLineItem: typeof generateCreateOrderLineItemDTO
+      createOrderShippingMethod: typeof generateCreateOrderShippingMethodDTO
+      createOrderTransaction: typeof generateCreateOrderTransactionDTO
+      createOrderAddress: typeof generateCreateOrderAddressDTO
     }
   }
   logger: Logger
@@ -124,6 +136,11 @@ export const test = testBase.extend<Fixtures>({
         createPrice: generateCreatePriceDTO,
         createProduct: generateCreateProductDTO,
         updateProduct: generateUpdateProductDTO,
+        createOrder: generateCreateOrderDTO,
+        createOrderLineItem: generateCreateOrderLineItemDTO,
+        createOrderShippingMethod: generateCreateOrderShippingMethodDTO,
+        createOrderTransaction: generateCreateOrderTransactionDTO,
+        createOrderAddress: generateCreateOrderAddressDTO,
       },
     })
   },
