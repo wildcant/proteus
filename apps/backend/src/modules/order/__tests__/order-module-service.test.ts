@@ -400,7 +400,12 @@ describe('OrderModuleService', () => {
         dto.generate.createOrderTransaction({ orderId: order.id, amount: new BigNumber(26500) }),
       )
 
-      const totals = await service.computeOrderTotals(order.id)
+      const [lineItems, shippingMethods, transactions] = await Promise.all([
+        service.listOrderLineItems({ orderId: order.id }),
+        service.listOrderShippingMethods({ orderId: order.id }),
+        service.listOrderTransactions({ orderId: order.id }),
+      ])
+      const totals = service.computeOrderTotals({ lineItems, shippingMethods, transactions })
 
       // itemsTotal = (10000 * 2) + (5000 * 1) = 25000
       expect(totals.itemsTotal).toEqual(new BigNumber(25000))
@@ -414,10 +419,8 @@ describe('OrderModuleService', () => {
       expect(totals.outstandingTotal).toEqual(new BigNumber(0))
     })
 
-    test('computeOrderTotals — zero totals for empty order', async ({ expect, dto }) => {
-      const order = await service.createOrder(dto.generate.createOrder())
-
-      const totals = await service.computeOrderTotals(order.id)
+    test('computeOrderTotals — zero totals for empty order', ({ expect }) => {
+      const totals = service.computeOrderTotals({ lineItems: [], shippingMethods: [], transactions: [] })
 
       expect(totals.itemsTotal).toEqual(new BigNumber(0))
       expect(totals.shippingTotal).toEqual(new BigNumber(0))

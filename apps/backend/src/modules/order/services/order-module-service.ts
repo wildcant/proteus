@@ -1,12 +1,14 @@
 import { BigNumber } from '../../../core/db/bignum.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
+  ComputeOrderTotalsDTO,
   Context,
   CreateOrderAddressDTO,
   CreateOrderDTO,
   CreateOrderLineItemDTO,
   CreateOrderShippingMethodDTO,
   CreateOrderTransactionDTO,
+  EnrichedOrderLineItemDTO,
   FilterableOrderLineItemProps,
   FilterableOrderProps,
   FilterableOrderShippingMethodProps,
@@ -20,6 +22,7 @@ import type {
   OrderShippingMethodDTO,
   OrderTotals,
   OrderTransactionDTO,
+  PaymentStatus,
   UpdateOrderAddressDTO,
   UpdateOrderDTO,
 } from '../../../core/types/index.js'
@@ -167,6 +170,10 @@ export class OrderModuleService implements IOrderModuleService {
   // ---------------------------------------------------------------------------
   // Addresses
   // ---------------------------------------------------------------------------
+
+  async retrieveOrderAddress(id: string, context?: Context): Promise<OrderAddressDTO> {
+    return this.orderAddressRepository.findByIdOrFail(id, undefined, context)
+  }
 
   async createOrderAddress(data: CreateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO> {
     return this.withTransaction(context, async (ctx) => {
@@ -322,8 +329,25 @@ export class OrderModuleService implements IOrderModuleService {
   }
 
   // ---------------------------------------------------------------------------
-  // Computed actions
+  // Computed status
   // ---------------------------------------------------------------------------
+
+  enrichLineItems(lineItems: OrderLineItemDTO[]): EnrichedOrderLineItemDTO[] {
+    return lineItems.map((item) => ({
+      ...item,
+      lineTotal: item.unitPrice.multipliedBy(item.quantity),
+    }))
+  }
+
+  computePaymentStatus(totals: OrderTotals): PaymentStatus {
+    if (totals.outstandingTotal.isZero()) {
+      return 'captured'
+    }
+    if (totals.paidTotal.isGreaterThan(0)) {
+      return 'authorized'
+    }
+    return 'awaiting'
+  }
 
   computeAllowedActions(order: OrderDTO): OrderAllowedActions {
     return {
@@ -337,13 +361,7 @@ export class OrderModuleService implements IOrderModuleService {
   // Computed totals
   // ---------------------------------------------------------------------------
 
-  async computeOrderTotals(orderId: string, context?: Context): Promise<OrderTotals> {
-    const [lineItems, shippingMethods, transactions] = await Promise.all([
-      this.orderLineItemRepository.find({ orderId }, undefined, context),
-      this.orderShippingMethodRepository.find({ orderId }, undefined, context),
-      this.orderTransactionRepository.find({ orderId }, undefined, context),
-    ])
-
+  computeOrderTotals({ lineItems, shippingMethods, transactions }: ComputeOrderTotalsDTO): OrderTotals {
     const itemsTotal = lineItems.reduce(
       (sum, item) => sum.plus(item.unitPrice.multipliedBy(item.quantity)),
       new BigNumber(0),

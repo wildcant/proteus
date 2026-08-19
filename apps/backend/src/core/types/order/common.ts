@@ -122,6 +122,12 @@ export interface FilterableOrderTransactionProps extends BaseFilterable<Filterab
   createdAt?: OperatorMap<Date>
 }
 
+export type ComputeOrderTotalsDTO = {
+  lineItems: OrderLineItemDTO[]
+  shippingMethods: OrderShippingMethodDTO[]
+  transactions: OrderTransactionDTO[]
+}
+
 export type OrderTotals = {
   itemsTotal: BigNumber
   shippingTotal: BigNumber
@@ -129,6 +135,10 @@ export type OrderTotals = {
   paidTotal: BigNumber
   outstandingTotal: BigNumber
 }
+
+export type PaymentStatus = 'awaiting' | 'authorized' | 'captured'
+
+export type EnrichedOrderLineItemDTO = OrderLineItemDTO & { lineTotal: BigNumber }
 
 export type OrderAllowedActions = {
   canComplete: boolean

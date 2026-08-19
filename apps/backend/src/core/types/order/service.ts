@@ -1,6 +1,8 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
+  ComputeOrderTotalsDTO,
+  EnrichedOrderLineItemDTO,
   FilterableOrderLineItemProps,
   FilterableOrderProps,
   FilterableOrderShippingMethodProps,
@@ -12,6 +14,7 @@ import type {
   OrderShippingMethodDTO,
   OrderTotals,
   OrderTransactionDTO,
+  PaymentStatus,
 } from './common.js'
 import type {
   CreateOrderAddressDTO,
@@ -41,6 +44,7 @@ export type IOrderModuleService = {
   restoreOrders(ids: string[], context?: Context): Promise<void>
 
   // Addresses
+  retrieveOrderAddress(id: string, context?: Context): Promise<OrderAddressDTO>
   createOrderAddress(data: CreateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO>
   createOrderAddresses(data: CreateOrderAddressDTO[], context?: Context): Promise<OrderAddressDTO[]>
   updateOrderAddress(id: string, data: UpdateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO>
@@ -80,9 +84,11 @@ export type IOrderModuleService = {
   cancelOrder(id: string, context?: Context): Promise<OrderDTO>
   archiveOrder(id: string, context?: Context): Promise<OrderDTO>
 
-  // Computed totals
-  computeOrderTotals(orderId: string, context?: Context): Promise<OrderTotals>
+  // Computed
+  enrichLineItems(lineItems: OrderLineItemDTO[]): EnrichedOrderLineItemDTO[]
+  computeOrderTotals(data: ComputeOrderTotalsDTO): OrderTotals
 
-  // Computed actions
+  // Computed status
+  computePaymentStatus(totals: OrderTotals): PaymentStatus
   computeAllowedActions(order: OrderDTO): OrderAllowedActions
 }
