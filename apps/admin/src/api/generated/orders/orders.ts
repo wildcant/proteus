@@ -5,6 +5,8 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AdminCreateOrderFulfillment,
+  AdminCreateOrderShipment,
   AdminOrderActionResponse,
   AdminOrderListResponse,
   AdminOrderResponse,
@@ -12,6 +14,7 @@ import type {
 } from '../model';
 
 import { fetcher } from '../../../lib/fetcher.ts';
+import type { BodyType } from '../../../lib/fetcher.ts';
 
 
 
@@ -76,9 +79,12 @@ export const archiveOrder = (
  */
 export const createOrderFulfillment = (
     id: string,
+    adminCreateOrderFulfillment?: BodyType<AdminCreateOrderFulfillment>,
  ) => {
       return fetcher<AdminOrderActionResponse>(
-      {url: `/admin/orders/${id}/fulfillments`, method: 'POST'
+      {url: `/admin/orders/${id}/fulfillments`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminCreateOrderFulfillment
     },
       );
     }
@@ -88,9 +94,12 @@ export const createOrderFulfillment = (
 export const createOrderShipment = (
     id: string,
     fulfillmentId: string,
+    adminCreateOrderShipment?: BodyType<AdminCreateOrderShipment>,
  ) => {
       return fetcher<AdminOrderActionResponse>(
-      {url: `/admin/orders/${id}/fulfillments/${fulfillmentId}/shipments`, method: 'POST'
+      {url: `/admin/orders/${id}/fulfillments/${fulfillmentId}/shipments`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminCreateOrderShipment
     },
       );
     }

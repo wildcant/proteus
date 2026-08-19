@@ -18,6 +18,7 @@ import type {
   OrderAddressDTO,
   OrderAllowedActions,
   OrderDTO,
+  OrderFulfillmentStatus,
   OrderLineItemDTO,
   OrderShippingMethodDTO,
   OrderTotals,
@@ -325,6 +326,13 @@ export class OrderModuleService implements IOrderModuleService {
       }
 
       return this.orderRepository.update(id, { status: 'archived' }, ctx)
+    })
+  }
+
+  async updateFulfillmentStatus(id: string, status: OrderFulfillmentStatus, context?: Context): Promise<OrderDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.orderRepository.findByIdOrFail(id, undefined, ctx)
+      return this.orderRepository.update(id, { fulfillmentStatus: status }, ctx)
     })
   }
 

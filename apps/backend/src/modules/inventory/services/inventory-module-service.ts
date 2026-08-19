@@ -1,3 +1,4 @@
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   Context,
   CreateInventoryItemDTO,
@@ -139,6 +140,28 @@ export class InventoryModuleService implements IInventoryModuleService {
     const availableQuantity = levels.reduce((sum, level) => sum + level.stockedQuantity - level.reservedQuantity, 0)
 
     return availableQuantity >= quantity
+  }
+
+  async adjustInventoryLevel(
+    inventoryItemId: string,
+    locationId: string,
+    adjustment: number,
+    context?: Context,
+  ): Promise<InventoryLevelDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const [level] = await this.inventoryLevelRepository.find({ inventoryItemId, locationId }, undefined, ctx)
+      if (!level) {
+        throw new AppError({
+          type: ErrorTypes.NOT_FOUND,
+          message: `Inventory level not found for item ${inventoryItemId} at location ${locationId}`,
+        })
+      }
+      return this.inventoryLevelRepository.update(
+        level.id,
+        { stockedQuantity: level.stockedQuantity + adjustment },
+        ctx,
+      )
+    })
   }
 
   async createReservationItems(data: CreateReservationItemDTO[], context?: Context): Promise<ReservationItemDTO[]> {

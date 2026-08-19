@@ -10,6 +10,7 @@ import type {
   OrderAddressDTO,
   OrderAllowedActions,
   OrderDTO,
+  OrderFulfillmentStatus,
   OrderLineItemDTO,
   OrderShippingMethodDTO,
   OrderTotals,
@@ -83,6 +84,7 @@ export type IOrderModuleService = {
   completeOrder(id: string, context?: Context): Promise<OrderDTO>
   cancelOrder(id: string, context?: Context): Promise<OrderDTO>
   archiveOrder(id: string, context?: Context): Promise<OrderDTO>
+  updateFulfillmentStatus(id: string, status: OrderFulfillmentStatus, context?: Context): Promise<OrderDTO>
 
   // Computed
   enrichLineItems(lineItems: OrderLineItemDTO[]): EnrichedOrderLineItemDTO[]

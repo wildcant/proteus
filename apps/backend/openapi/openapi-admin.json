@@ -858,6 +858,109 @@
         },
         "required": ["order"]
       },
+      "AdminCreateOrderFulfillment": {
+        "type": "object",
+        "properties": {
+          "providerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "locationId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "sku": {
+                  "type": "string"
+                },
+                "barcode": {
+                  "type": "string"
+                },
+                "lineItemId": {
+                  "type": "string"
+                },
+                "inventoryItemId": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "quantity"]
+            },
+            "minItems": 1
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "company": {
+                "type": "string"
+              },
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "address1": {
+                "type": "string"
+              },
+              "address2": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "countryCode": {
+                "type": "string"
+              },
+              "province": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            }
+          },
+          "shippingOptionId": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "metadata": {
+            "type": "string"
+          }
+        },
+        "required": ["providerId", "locationId", "items", "address"]
+      },
+      "AdminCreateOrderShipment": {
+        "type": "object",
+        "properties": {
+          "trackingNumber": {
+            "type": "string"
+          },
+          "trackingUrl": {
+            "type": "string"
+          },
+          "labelUrl": {
+            "type": "string"
+          }
+        }
+      },
       "AdminFulfillmentSetListResponse": {
         "type": "object",
         "properties": {
@@ -3999,6 +4102,15 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateOrderFulfillment"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -4044,6 +4156,15 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateOrderShipment"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response",

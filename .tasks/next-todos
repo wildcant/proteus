@@ -1,3 +1,4 @@
+- store full checkout flow.
 - storage service: S3, R2, Minio
 - reusable workflow setup function for tests
 - orders module

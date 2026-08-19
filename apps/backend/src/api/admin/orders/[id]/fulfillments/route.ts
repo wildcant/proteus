@@ -1,10 +1,15 @@
-import { AdminOrderActionResponse, IdParams } from '@proteus/http-schemas/admin'
+import { AdminCreateOrderFulfillment, AdminOrderActionResponse, IdParams } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import { createOrderFulfillmentWorkflow } from '../../../../../workflows/order/create-order-fulfillment.js'
 
-export const PostInput = { params: IdParams }
+export const PostInput = { params: IdParams, body: AdminCreateOrderFulfillment }
 export const PostOutput = AdminOrderActionResponse
 
-// Stub — will be wired to createOrderFulfillmentWorkflow in ticket 05
-export const POST = async (_req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  throw new Error('Not implemented: createOrderFulfillmentWorkflow (ticket 05)')
+export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
+  const order = await createOrderFulfillmentWorkflow.run({
+    orderId: req.params.id,
+    locationId: req.body.locationId,
+    fulfillmentData: req.body,
+  })
+  return { status: 200, json: { order } }
 }

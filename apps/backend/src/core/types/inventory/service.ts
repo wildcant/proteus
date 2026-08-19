@@ -44,6 +44,12 @@ export type IInventoryModuleService = {
     quantity: number,
     context?: Context,
   ): Promise<boolean>
+  adjustInventoryLevel(
+    inventoryItemId: string,
+    locationId: string,
+    adjustment: number,
+    context?: Context,
+  ): Promise<InventoryLevelDTO>
   createReservationItems(data: CreateReservationItemDTO[], context?: Context): Promise<ReservationItemDTO[]>
   deleteReservationItems(ids: string[], context?: Context): Promise<void>
   listReservationItems(

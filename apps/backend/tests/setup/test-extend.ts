@@ -25,6 +25,7 @@ import {
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
+import { generateFulfillmentDTO } from '../factories/fulfillment-dto.js'
 import { generateInventoryLevelDTO, generateReservationItemDTO } from '../factories/inventory-dto.js'
 import { generateProductVariantInventoryItemDTO } from '../factories/link-dto.js'
 import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
@@ -105,6 +106,7 @@ export type Fixtures = {
       cartAddress: typeof generateCartAddressDTO
       cartLineItem: typeof generateCartLineItemDTO
       cartShippingMethod: typeof generateCartShippingMethodDTO
+      fulfillment: typeof generateFulfillmentDTO
       inventoryLevel: typeof generateInventoryLevelDTO
       productVariantInventoryItem: typeof generateProductVariantInventoryItemDTO
     }
@@ -173,6 +175,7 @@ export const test = testBase.extend<Fixtures>({
         cartAddress: generateCartAddressDTO,
         cartLineItem: generateCartLineItemDTO,
         cartShippingMethod: generateCartShippingMethodDTO,
+        fulfillment: generateFulfillmentDTO,
         inventoryLevel: generateInventoryLevelDTO,
         productVariantInventoryItem: generateProductVariantInventoryItemDTO,
       },
