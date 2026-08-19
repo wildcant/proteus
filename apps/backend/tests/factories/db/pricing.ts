@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
-import BigNumber from 'bignumber.js'
 import { eq } from 'drizzle-orm'
+import { BigNumber } from '../../../src/core/db/bignum.js'
 import {
   type CreatePrice,
   type CreatePriceSet,

@@ -63,7 +63,7 @@ function ProductDetailPage() {
 
           {!!firstVariant && (
             <p className="mt-2 text-lg font-semibold text-(--foreground)">
-              {formatPrice(firstVariant.calculatedPrice.originalAmount, firstVariant.calculatedPrice.currencyCode)}
+              {formatPrice(firstVariant.calculatedPrice.calculatedAmount, firstVariant.calculatedPrice.currencyCode)}
             </p>
           )}
 

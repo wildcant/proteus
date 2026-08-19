@@ -55,9 +55,9 @@ Add a standalone pricing module that provides a generic, consumer-agnostic prici
 - `updatePrices(priceId, data, context?)` — updates a single price.
 - `removePrices(priceIds[], context?)` — soft-deletes prices.
 - `listPrices(filters?, config?, context?)` — lists prices with standard filter/pagination support.
-- `calculatePrices(priceSetIds[], context)` — resolves the best price per PriceSet for the given context. Returns a `Map<priceSetId, CalculatedPriceSet>`. For MVP (no rules, no price lists), this is a simple query: find the price matching the PriceSet and currency code.
+- `calculatePrices(priceSetIds[], context)` — resolves the best price per PriceSet for the given context. Returns a `Map<priceSetId, CalculatedPriceSetDTO>`. For MVP (no rules, no price lists), this is a simple query: find the price matching the PriceSet and currency code.
 
-### CalculatedPriceSet shape
+### CalculatedPriceSetDTO shape
 
 - Fields for MVP: `id` (price_set_id), `currencyCode`, `originalAmount` (BigNumber).
 - No `calculatedAmount` for MVP — it would always equal `originalAmount` without PriceRule/PriceList. Adding it later as a new field is non-breaking.

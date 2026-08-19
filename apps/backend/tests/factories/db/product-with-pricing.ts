@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import BigNumber from 'bignumber.js'
+import { BigNumber } from '../../../src/core/db/bignum.js'
 import type { CreateProduct, CreateProductVariant } from '../../../src/schema.js'
 import {
   createPrice,

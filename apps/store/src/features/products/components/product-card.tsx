@@ -22,7 +22,7 @@ export function ProductCard({ product }: { product: StoreProductListItem }) {
       <h3 className="mt-3 text-sm font-normal text-(--foreground)">{product.title}</h3>
       {!!product.startingPrice && (
         <p className="mt-1 text-sm font-semibold text-(--foreground)">
-          {formatPrice(product.startingPrice.originalAmount, product.startingPrice.currencyCode)}
+          {formatPrice(product.startingPrice.calculatedAmount, product.startingPrice.currencyCode)}
         </p>
       )}
     </Link>

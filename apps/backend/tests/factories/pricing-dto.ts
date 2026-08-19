@@ -1,5 +1,5 @@
 import { BigNumber } from '@core/db/bignum.js'
-import type { CreatePriceDTO, CreatePriceSetDTO } from '@core/types/index.js'
+import type { CalculatedPriceSetDTO, CreatePriceDTO, CreatePriceSetDTO } from '@core/types/index.js'
 import { faker } from '@faker-js/faker'
 
 export function generateCreatePriceSetDTO(overrides?: Partial<CreatePriceSetDTO>): CreatePriceSetDTO {
@@ -18,6 +18,15 @@ export function generateCreatePriceDTO(overrides?: Partial<CreatePriceDTO>): Cre
   return {
     currencyCode: 'usd',
     amount: new BigNumber(faker.commerce.price({ min: 1, max: 1000 })),
+    ...overrides,
+  }
+}
+
+export function generateCalculatedPriceSetDTO(overrides?: Partial<CalculatedPriceSetDTO>): CalculatedPriceSetDTO {
+  return {
+    id: `pset_${faker.string.alphanumeric(32)}`,
+    calculatedAmount: new BigNumber(faker.commerce.price({ min: 1, max: 1000 })),
+    currencyCode: 'usd',
     ...overrides,
   }
 }

@@ -5,9 +5,9 @@ export const StoreCalculatedPrice = z
   .object({
     id: z.string(),
     currencyCode: z.string(),
-    originalAmount: bigNumberToString,
-    // TODO(pricing): add calculatedAmount when PriceRule/PriceList is implemented
-    // TODO(tax): add originalAmountWithTax, originalAmountWithoutTax
+    calculatedAmount: bigNumberToString,
+    // TODO(pricing): add originalAmount when PriceRule/PriceList is implemented
+    // TODO(tax): add calculatedAmountWithTax, calculatedAmountWithoutTax
   })
   .openapi('StoreCalculatedPrice')
 

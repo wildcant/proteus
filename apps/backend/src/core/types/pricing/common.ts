@@ -18,10 +18,10 @@ export type PriceDTO = {
   deletedAt: Date | null
 }
 
-export type CalculatedPriceSet = {
+export type CalculatedPriceSetDTO = {
   id: string
-  calculatedAmount: BigNumber | null
-  currencyCode: string | null
+  calculatedAmount: BigNumber
+  currencyCode: string
 }
 
 export interface FilterablePriceProps extends BaseFilterable<FilterablePriceProps> {

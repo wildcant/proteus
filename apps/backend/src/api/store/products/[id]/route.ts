@@ -3,6 +3,7 @@ import type { ILinkService, IPricingModuleService, IProductModuleService } from 
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { IdParams, StoreProductResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
+import { buildVariantPrices } from '../../../../workflows/product/utils/build-variant-prices.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = StoreProductResponse
@@ -25,31 +26,17 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   ])
 
   const variantIds = variants.map((variant) => variant.id)
-  const variantAndPriceSetLinks = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
+  const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
 
-  const variantToPriceSetId = new Map(variantAndPriceSetLinks.map((link) => [link.variantId, link.priceSetId]))
-  const priceSetIds = [...new Set(variantToPriceSetId.values())]
+  const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
+  const calculatedPrices = await pricingService.calculatePrices(priceSetIds, req.pricingContext)
 
-  const calculatedPrices =
-    priceSetIds.length > 0 ? await pricingService.calculatePrices(priceSetIds, req.pricingContext) : []
-
-  const calculatedPriceBySetId = new Map(calculatedPrices.map((price) => [price.id, price]))
+  const priceByVariantId = buildVariantPrices(links, calculatedPrices)
 
   const enrichedVariants = variants.flatMap((variant) => {
-    const priceSetId = variantToPriceSetId.get(variant.id)
-    if (!priceSetId) return []
-
-    const calculated = calculatedPriceBySetId.get(priceSetId)
-    if (!calculated?.calculatedAmount || !calculated.currencyCode) return []
-
-    return {
-      ...variant,
-      calculatedPrice: {
-        id: calculated.id,
-        currencyCode: calculated.currencyCode,
-        originalAmount: calculated.calculatedAmount,
-      },
-    }
+    const calculatedPrice = priceByVariantId.get(variant.id)
+    if (!calculatedPrice) return []
+    return { ...variant, calculatedPrice }
   })
 
   return { status: 200, json: { product: { ...product, variants: enrichedVariants } } }

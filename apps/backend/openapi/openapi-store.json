@@ -1186,12 +1186,12 @@
           "currencyCode": {
             "type": "string"
           },
-          "originalAmount": {
+          "calculatedAmount": {
             "type": "string",
             "description": "Numeric string (arbitrary precision)"
           }
         },
-        "required": ["id", "currencyCode", "originalAmount"]
+        "required": ["id", "currencyCode", "calculatedAmount"]
       },
       "StoreProduct": {
         "type": "object",

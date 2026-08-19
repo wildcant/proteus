@@ -22,7 +22,7 @@ export function AddToCart({ product }: AddToCartProps) {
     addLineItem.mutate(
       {
         title: product.title,
-        unitPrice: selectedVariant.calculatedPrice.originalAmount,
+        unitPrice: selectedVariant.calculatedPrice.calculatedAmount,
         quantity,
         variantId: selectedVariant.id,
         productId: product.id,

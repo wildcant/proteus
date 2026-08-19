@@ -1,4 +1,4 @@
-import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
+import type { ProductVariantInventoryItemDTO, ProductVariantPriceSetDTO } from '@core/types/link/common.js'
 import { faker } from '@faker-js/faker'
 
 export function generateProductVariantInventoryItemDTO(
@@ -9,6 +9,19 @@ export function generateProductVariantInventoryItemDTO(
     variantId: `variant_${faker.string.alphanumeric(32)}`,
     inventoryItemId: `iitem_${faker.string.alphanumeric(32)}`,
     requiredQuantity: 1,
+    createdAt: faker.date.recent(),
+    deletedAt: null,
+    ...overrides,
+  }
+}
+
+export function generateProductVariantPriceSetDTO(
+  overrides?: Partial<ProductVariantPriceSetDTO>,
+): ProductVariantPriceSetDTO {
+  return {
+    id: `pvps_${faker.string.alphanumeric(32)}`,
+    variantId: `variant_${faker.string.alphanumeric(32)}`,
+    priceSetId: `pset_${faker.string.alphanumeric(32)}`,
     createdAt: faker.date.recent(),
     deletedAt: null,
     ...overrides,

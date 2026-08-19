@@ -27,7 +27,7 @@ import {
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
 import { generateFulfillmentDTO } from '../factories/fulfillment-dto.js'
 import { generateInventoryLevelDTO, generateReservationItemDTO } from '../factories/inventory-dto.js'
-import { generateProductVariantInventoryItemDTO } from '../factories/link-dto.js'
+import { generateProductVariantInventoryItemDTO, generateProductVariantPriceSetDTO } from '../factories/link-dto.js'
 import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
 import {
   generateCreateOrderAddressDTO,
@@ -48,7 +48,11 @@ import {
   generateUpdatePaymentCollectionDTO,
   generateUpdateRefundReasonDTO,
 } from '../factories/payment-dto.js'
-import { generateCreatePriceDTO, generateCreatePriceSetDTO } from '../factories/pricing-dto.js'
+import {
+  generateCalculatedPriceSetDTO,
+  generateCreatePriceDTO,
+  generateCreatePriceSetDTO,
+} from '../factories/pricing-dto.js'
 import { generateCreateProductDTO, generateUpdateProductDTO } from '../factories/product-dto.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
 import { makeRequest } from '../utils/make-request.js'
@@ -109,6 +113,8 @@ export type Fixtures = {
       fulfillment: typeof generateFulfillmentDTO
       inventoryLevel: typeof generateInventoryLevelDTO
       productVariantInventoryItem: typeof generateProductVariantInventoryItemDTO
+      productVariantPriceSet: typeof generateProductVariantPriceSetDTO
+      calculatedPriceSet: typeof generateCalculatedPriceSetDTO
     }
   }
   logger: Logger
@@ -178,6 +184,8 @@ export const test = testBase.extend<Fixtures>({
         fulfillment: generateFulfillmentDTO,
         inventoryLevel: generateInventoryLevelDTO,
         productVariantInventoryItem: generateProductVariantInventoryItemDTO,
+        productVariantPriceSet: generateProductVariantPriceSetDTO,
+        calculatedPriceSet: generateCalculatedPriceSetDTO,
       },
     })
   },
