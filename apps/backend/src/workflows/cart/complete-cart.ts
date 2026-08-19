@@ -317,10 +317,12 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     },
   )
 
-  // Payment is authorized and captured last to minimize the window where a captured payment
-  // needs reversal. The only steps after this are recording the transaction.
-  const capturedPayment = await ctx.step(
-    'authorize-and-capture',
+  // Payment is authorized last to minimize the window where an authorized/captured payment
+  // needs reversal. The provider may auto-capture (e.g. Stripe in automatic mode), in which
+  // case the returned payment already has captures. We record those as-is rather than forcing
+  // a separate capture call, so deferred flows (bank transfers, manual capture) work correctly.
+  const authorizedPayment = await ctx.step(
+    'authorize-payment',
     async ({ container }) => {
       const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
       const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
@@ -335,32 +337,47 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         })
       }
 
-      logger.debug(`[complete-cart] Capturing payment "${payment.id}" for amount ${paymentInfo.amount}`)
-      const captured = await paymentService.capturePayment({ paymentId: payment.id, amount: paymentInfo.amount })
-
-      return captured
+      return payment
     },
-    async (captured, { container }) => {
+    async (payment, { container }) => {
       const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
       const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
-      logger.debug(`[complete-cart] Compensating: refunding payment "${captured.id}"`)
-      await paymentService.refundPayment({ paymentId: captured.id, amount: captured.amount }).catch((error) => {
-        logger.error(error)
-      })
+      const hasCaptured = payment.captures && payment.captures.length > 0
+      if (hasCaptured) {
+        logger.debug(`[complete-cart] Compensating: refunding payment "${payment.id}"`)
+        await paymentService.refundPayment({ paymentId: payment.id, amount: payment.amount }).catch((error) => {
+          logger.error(error)
+        })
+      } else {
+        logger.debug(`[complete-cart] Compensating: canceling payment "${payment.id}"`)
+        await paymentService.cancelPayment(payment.id).catch((error) => {
+          logger.error(error)
+        })
+      }
     },
   )
 
-  // The order module tracks its own ledger independently of the payment module
-  await ctx.step('record-transaction', async ({ container }) => {
+  // The order module tracks its own ledger independently of the payment module.
+  // Only record transactions for captures that already happened (provider auto-capture).
+  // If the provider only authorized, there are no captures yet — they happen later
+  // (e.g. at fulfillment) and are recorded then.
+  await ctx.step('record-transactions', async ({ container }) => {
+    const captures = authorizedPayment.captures ?? []
+    if (captures.length === 0) return
+
     const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-    await orderService.addOrderTransaction({
-      orderId: order.id,
-      amount: capturedPayment.amount,
-      currencyCode: capturedPayment.currencyCode,
-      reference: 'capture',
-      referenceId: capturedPayment.id,
-    })
+    await Promise.all(
+      captures.map((capture) =>
+        orderService.addOrderTransaction({
+          orderId: order.id,
+          amount: capture.amount,
+          currencyCode: authorizedPayment.currencyCode,
+          reference: 'capture',
+          referenceId: capture.id,
+        }),
+      ),
+    )
   })
 
   return order
