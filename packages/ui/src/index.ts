@@ -98,6 +98,7 @@ export {
 } from './components/ui/field.tsx'
 export { Input } from './components/ui/input.tsx'
 export { Label } from './components/ui/label.tsx'
+export { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from './components/ui/native-select.tsx'
 export {
   Popover,
   PopoverContent,

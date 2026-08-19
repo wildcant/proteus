@@ -1,5 +1,6 @@
 import { formatPrice } from '@proteus/ui'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { AddToCart } from '#/features/cart/components/add-to-cart'
 import { productQueryOptions, useProduct } from '#/features/products/api/products'
 
 export const Route = createFileRoute('/_main/products/$productId')({
@@ -56,6 +57,8 @@ function ProductDetailPage() {
         ) : (
           <p className="text-sm text-[var(--sea-ink-soft)]">No variants available.</p>
         )}
+
+        <AddToCart product={product} />
       </section>
     </main>
   )
