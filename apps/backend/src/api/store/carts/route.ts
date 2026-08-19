@@ -1,5 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { ICartModuleService } from '@core/types/index.js'
+import type { ICartModuleService, ICustomerModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { CreateCart, StoreCreateCartResponse } from '@proteus/http-schemas/store'
 
@@ -18,7 +18,18 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   }
 
   const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
-  const cart = await cartService.createCart({ ...req.body, currencyCode })
+  const customerId = req.authContext?.actorId
+
+  // TODO(guest): move to a createCartWorkflow with a findOrCreateCustomerStep
+  // so guest emails also resolve to a customer record
+  let email: string | undefined
+  if (customerId) {
+    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+    const customer = await customerService.retrieveCustomer(customerId)
+    email = customer.email
+  }
+
+  const cart = await cartService.createCart({ ...req.body, currencyCode, customerId, email })
 
   return { status: 201, json: { cart } }
 }

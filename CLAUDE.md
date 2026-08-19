@@ -119,6 +119,14 @@ Each feature at `src/features/{name}/` co-locates:
 - `components/` — Feature-specific UI
 - `hooks/` — `useDefineTable` config, form hooks
 
+### Form Hooks
+
+Form logic lives in `features/{name}/hooks/use-{action}-form.ts`, not in components. Components only render fields. See `docs/form-hooks.md` for the full pattern. Key rules:
+
+- `defaultValues` typed with Orval-generated `Body` types. Validate with Zod schemas from `http-schemas` directly (no re-wrapping in `z.object()`).
+- Use `.mutate()` with `onSuccess`/`onError`/`onSettled` callbacks. Only use `try/catch` with `mutateAsync` when chaining multiple sequential mutations.
+- Data-fetching queries (e.g., fetching options for a select/radio) belong in the component, not the form hook.
+
 ### Dependency Rules (dependency-cruiser)
 
 - Admin app must not import store schemas from http-schemas
@@ -151,4 +159,4 @@ Tests construct services manually with injected repos. Vitest config at `apps/ba
  
 ## Documentation
 
-Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/error-handling.md`, `docs/middleware-and-openapi.md`.
+Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/middleware-and-openapi.md`.

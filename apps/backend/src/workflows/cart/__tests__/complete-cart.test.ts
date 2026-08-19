@@ -90,6 +90,7 @@ function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOpti
 
   const orderService = {
     createOrder: vi.fn().mockResolvedValue(createdOrder),
+    retrieveOrder: vi.fn().mockResolvedValue(createdOrder),
     createOrderAddresses: vi
       .fn()
       .mockImplementation(async (data: Record<string, unknown>[]) =>
@@ -186,7 +187,8 @@ describe('completeCartWorkflow', () => {
 
     const result = await completeCartWorkflow.run({ cartId: services.cart.id })
 
-    expect(result.status).toBe('completed')
+    expect(result.id).toBe('ord_1')
+    expect(result.status).toBe('pending')
 
     // Order was created with correct data
     expect(services.orderService.createOrder).toHaveBeenCalledOnce()
@@ -228,7 +230,7 @@ describe('completeCartWorkflow', () => {
     })
   })
 
-  test('idempotency: returns existing cart if order already linked', async ({ dto }) => {
+  test('idempotency: returns existing order if order already linked', async ({ dto }) => {
     const cart = dto.generate.cart({ id: 'cart_1', status: 'completed', completedAt: new Date() })
     const services = setupWorkflow(dto.generate, {
       cart,
@@ -237,7 +239,8 @@ describe('completeCartWorkflow', () => {
 
     const result = await completeCartWorkflow.run({ cartId: cart.id })
 
-    expect(result).toBeDefined()
+    expect(result.id).toBe('ord_1')
+    expect(services.orderService.retrieveOrder).toHaveBeenCalledWith('ord_existing')
     expect(services.orderService.createOrder).not.toHaveBeenCalled()
     expect(services.cartService.updateCart).not.toHaveBeenCalled()
   })

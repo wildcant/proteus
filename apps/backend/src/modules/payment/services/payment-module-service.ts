@@ -471,6 +471,10 @@ export class PaymentModuleService implements IPaymentModuleService {
     return this.paymentProviderService.list(filters, config, context)
   }
 
+  getProviderMeta(providerId: string): { label: string; isTestOnly: boolean } {
+    return this.paymentProviderService.getProviderMeta(providerId)
+  }
+
   // ---------------------------------------------------------------------------
   // Webhooks
   // ---------------------------------------------------------------------------

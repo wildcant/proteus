@@ -8,7 +8,6 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
   const updateLineItem = useUpdateLineItem()
   const removeLineItem = useRemoveLineItem()
 
-  const lineTotal = String(Number(item.unitPrice) * item.quantity)
   const isMutating = updateLineItem.isPending || removeLineItem.isPending
 
   return (
@@ -61,7 +60,7 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
           </NativeSelect>
 
           <span className="min-w-[5rem] text-right font-semibold text-(--foreground)">
-            {formatPrice(lineTotal, currencyCode)}
+            {formatPrice(item.lineTotal, currencyCode)}
           </span>
         </div>
       </div>

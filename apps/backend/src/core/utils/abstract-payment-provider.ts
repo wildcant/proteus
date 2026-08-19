@@ -68,6 +68,12 @@ export abstract class AbstractPaymentProvider<TConfig = Record<string, unknown>>
    */
   static identifier: string
 
+  /** Human-readable name shown to customers in the storefront. */
+  static label = 'Unknown'
+
+  /** Whether this provider is for testing/development only. */
+  static isTestOnly = false
+
   protected config: TConfig
   protected container: Record<string, unknown>
 

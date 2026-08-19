@@ -4,8 +4,7 @@
  * Store API
  * OpenAPI spec version: 0.1.0
  */
-import type { StoreCart } from './storeCart.ts';
 
-export interface StoreCartResponse {
-  cart: StoreCart;
+export interface StoreCompleteCartResponse {
+  orderId: string;
 }

@@ -7,14 +7,17 @@ import type {
   CartShippingMethodDTO,
   CartTotalsDTO,
   ComputeCartTotalsDTO,
+  EnrichedCartLineItemDTO,
   FilterableCartLineItemProps,
   FilterableCartProps,
   FilterableCartShippingMethodProps,
 } from './common.js'
 import type {
+  CreateCartAddressDTO,
   CreateCartDTO,
   CreateLineItemDTO,
   CreateShippingMethodDTO,
+  UpdateCartAddressDTO,
   UpdateCartDTO,
   UpdateLineItemDTO,
 } from './mutations.js'
@@ -57,6 +60,18 @@ export type ICartModuleService = {
   ): Promise<CartShippingMethodDTO[]>
   deleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
 
+  // Addresses
+  createCartAddress(data: CreateCartAddressDTO, context?: Context): Promise<CartAddressDTO>
+  updateCartAddress(addressId: string, data: UpdateCartAddressDTO, context?: Context): Promise<CartAddressDTO>
+  upsertCartAddress(
+    existingAddressId: string | null,
+    data: CreateCartAddressDTO,
+    context?: Context,
+  ): Promise<CartAddressDTO>
+  deleteCartAddresses(addressIds: string[], context?: Context): Promise<void>
+
   // Computed
+  enrichLineItem(lineItem: CartLineItemDTO): EnrichedCartLineItemDTO
+  enrichLineItems(lineItems: CartLineItemDTO[]): EnrichedCartLineItemDTO[]
   computeCartTotals(data: ComputeCartTotalsDTO): CartTotalsDTO
 }

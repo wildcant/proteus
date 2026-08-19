@@ -23,6 +23,7 @@ import { Route as MainVerifyRouteImport } from './routes/_main/verify'
 import { Route as MainAuthedAccountRouteImport } from './routes/_main/_authed/account'
 import { Route as MainProductsIndexRouteImport } from './routes/_main/products/index'
 import { Route as MainProductsProductIdRouteImport } from './routes/_main/products/$productId'
+import { Route as MainOrderOrderIdConfirmedRouteImport } from './routes/_main/order/$orderId/confirmed'
 
 const CheckoutRouteRoute = CheckoutRouteRouteImport.update({
   id: '/_checkout',
@@ -91,6 +92,12 @@ const MainProductsProductIdRoute = MainProductsProductIdRouteImport.update({
   path: '/$productId',
   getParentRoute: () => MainProductsRouteRoute,
 } as any)
+const MainOrderOrderIdConfirmedRoute =
+  MainOrderOrderIdConfirmedRouteImport.update({
+    id: '/order/$orderId/confirmed',
+    path: '/order/$orderId/confirmed',
+    getParentRoute: () => MainRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof MainIndexRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof MainAuthedAccountRoute
   '/products/$productId': typeof MainProductsProductIdRoute
   '/products/': typeof MainProductsIndexRoute
+  '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof MainIndexRoute
@@ -116,6 +124,7 @@ export interface FileRoutesByTo {
   '/account': typeof MainAuthedAccountRoute
   '/products/$productId': typeof MainProductsProductIdRoute
   '/products': typeof MainProductsIndexRoute
+  '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,6 +142,7 @@ export interface FileRoutesById {
   '/_main/_authed/account': typeof MainAuthedAccountRoute
   '/_main/products/$productId': typeof MainProductsProductIdRoute
   '/_main/products/': typeof MainProductsIndexRoute
+  '/_main/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/products/$productId'
     | '/products/'
+    | '/order/$orderId/confirmed'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/products/$productId'
     | '/products'
+    | '/order/$orderId/confirmed'
   id:
     | '__root__'
     | '/_checkout'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/_main/_authed/account'
     | '/_main/products/$productId'
     | '/_main/products/'
+    | '/_main/order/$orderId/confirmed'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProductsProductIdRouteImport
       parentRoute: typeof MainProductsRouteRoute
     }
+    '/_main/order/$orderId/confirmed': {
+      id: '/_main/order/$orderId/confirmed'
+      path: '/order/$orderId/confirmed'
+      fullPath: '/order/$orderId/confirmed'
+      preLoaderRoute: typeof MainOrderOrderIdConfirmedRouteImport
+      parentRoute: typeof MainRouteRoute
+    }
   }
 }
 
@@ -332,6 +352,7 @@ interface MainRouteRouteChildren {
   MainResetPasswordRoute: typeof MainResetPasswordRoute
   MainVerifyRoute: typeof MainVerifyRoute
   MainIndexRoute: typeof MainIndexRoute
+  MainOrderOrderIdConfirmedRoute: typeof MainOrderOrderIdConfirmedRoute
 }
 
 const MainRouteRouteChildren: MainRouteRouteChildren = {
@@ -343,6 +364,7 @@ const MainRouteRouteChildren: MainRouteRouteChildren = {
   MainResetPasswordRoute: MainResetPasswordRoute,
   MainVerifyRoute: MainVerifyRoute,
   MainIndexRoute: MainIndexRoute,
+  MainOrderOrderIdConfirmedRoute: MainOrderOrderIdConfirmedRoute,
 }
 
 const MainRouteRouteWithChildren = MainRouteRoute._addFileChildren(

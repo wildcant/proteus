@@ -60,3 +60,19 @@ export type UpdateCartDTO = {
   billingAddressId?: string | null | undefined
   completedAt?: Date | null | undefined
 }
+
+export type CreateCartAddressDTO = {
+  customerId?: string | null | undefined
+  company?: string | null | undefined
+  firstName?: string | null | undefined
+  lastName?: string | null | undefined
+  address1?: string | null | undefined
+  address2?: string | null | undefined
+  city?: string | null | undefined
+  countryCode?: string | null | undefined
+  province?: string | null | undefined
+  postalCode?: string | null | undefined
+  phone?: string | null | undefined
+}
+
+export type UpdateCartAddressDTO = Partial<CreateCartAddressDTO>

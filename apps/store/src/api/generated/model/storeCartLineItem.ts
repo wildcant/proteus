@@ -44,6 +44,8 @@ export interface StoreCartLineItem {
   compareAtUnitPrice: string;
   /** Numeric string (arbitrary precision) */
   unitPrice: string;
+  /** Numeric string (arbitrary precision) */
+  lineTotal: string;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

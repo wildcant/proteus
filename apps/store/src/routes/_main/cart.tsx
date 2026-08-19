@@ -65,7 +65,11 @@ function CartPage() {
             </div>
           </dl>
 
-          <Button render={<Link to="/checkout" />} variant="outline" className="mt-6 w-full">
+          <Button
+            render={<Link to="/checkout" search={{ step: 'address' }} />}
+            variant="outline"
+            className="mt-6 w-full"
+          >
             Go to checkout
           </Button>
         </aside>

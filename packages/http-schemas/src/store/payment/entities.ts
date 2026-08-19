@@ -5,6 +5,8 @@ export const StorePaymentProvider = z
   .object({
     id: z.string(),
     isEnabled: z.boolean(),
+    label: z.string(),
+    isTestOnly: z.boolean(),
   })
   .openapi('StorePaymentProvider')
 export type StorePaymentProvider = z.input<typeof StorePaymentProvider>

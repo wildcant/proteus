@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import {
   StoreCart,
+  StoreCartAddress,
   StoreCartLineItem,
   StoreCartShippingMethod,
   StoreCartTotals,
@@ -22,6 +23,8 @@ export const StoreCartDetailResponse = z
       items: z.array(StoreCartLineItem),
       shippingMethods: z.array(StoreCartShippingMethod),
       totals: StoreCartTotals,
+      shippingAddress: StoreCartAddress.nullable(),
+      billingAddress: StoreCartAddress.nullable(),
     }),
   })
   .openapi('StoreCartDetailResponse')
@@ -52,3 +55,6 @@ export const StoreCartInventoryResponse = z
   })
   .openapi('StoreCartInventoryResponse')
 export type StoreCartInventoryResponse = z.input<typeof StoreCartInventoryResponse>
+
+export const StoreCompleteCartResponse = z.object({ orderId: z.string() }).openapi('StoreCompleteCartResponse')
+export type StoreCompleteCartResponse = z.input<typeof StoreCompleteCartResponse>

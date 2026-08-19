@@ -1,10 +1,10 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { CartDTO } from '@core/types/cart/common.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { Logger } from '@core/types/logger.js'
+import type { OrderDTO } from '@core/types/order/common.js'
 import type { CreateOrderLineItemDTO, CreateOrderShippingMethodDTO } from '@core/types/order/mutations.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { PaymentSessionStatus } from '@core/types/payment/common.js'
@@ -25,8 +25,8 @@ const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
 
 // TODO(locking): No distributed lock guards this workflow. Concurrent calls for the same cart
 // can produce duplicate orders. Add acquireLock/releaseLock steps once a locking module is available.
-export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('complete-cart', async (ctx, input) => {
-  const completedCart = await ctx.step('check-idempotency', async ({ container }) => {
+export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>('complete-cart', async (ctx, input) => {
+  const existingOrder = await ctx.step('check-idempotency', async ({ container }) => {
     const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
     const orderCartLink = await linkService.repo('orderCart').findByCartId(input.cartId)
     if (orderCartLink) {
@@ -38,12 +38,13 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
           message: `Cart "${input.cartId}" has a linked order but was never marked completed — a previous checkout may have partially failed`,
         })
       }
-      return cart
+      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      return orderService.retrieveOrder(orderCartLink.orderId)
     }
     return null
   })
 
-  if (completedCart) return completedCart
+  if (existingOrder) return existingOrder
 
   await ctx.step('validate-cart-items', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
@@ -362,10 +363,5 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, CartDTO>('
     })
   })
 
-  const finalCart = await ctx.step('retrieve-completed-cart', async ({ container }) => {
-    const cartService = container.resolve<ICartModuleService>(Modules.CART)
-    return cartService.retrieveCart(input.cartId)
-  })
-
-  return finalCart
+  return order
 })

@@ -5,12 +5,15 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreCart } from './storeCart.ts';
+import type { StoreCartAddress } from './storeCartAddress.ts';
 import type { StoreCartLineItem } from './storeCartLineItem.ts';
 import type { StoreCartShippingMethod } from './storeCartShippingMethod.ts';
 import type { StoreCartTotals } from './storeCartTotals.ts';
 
-export type StoreCartDetailResponseCart = StoreCart & {
+export type StoreCartDetailResponseCart = StoreCart & ({
   items: StoreCartLineItem[];
   shippingMethods: StoreCartShippingMethod[];
   totals: StoreCartTotals;
-};
+  shippingAddress: StoreCartAddress | null;
+  billingAddress: StoreCartAddress | null;
+});

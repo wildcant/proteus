@@ -31,6 +31,7 @@ import type {
   WebhookActionResult,
 } from '../../../core/types/payment/mutations.js'
 import type { IPaymentProvider } from '../../../core/types/payment/provider.js'
+import type { AbstractPaymentProvider } from '../../../core/utils/abstract-payment-provider.js'
 import type { PaymentProviderRepository } from '../repositories/payment-provider.js'
 
 type InjectedDependencies = {
@@ -56,6 +57,12 @@ export class PaymentProviderService {
     } catch {
       throw new Error(`Payment provider "${providerId}" is not registered.`)
     }
+  }
+
+  getProviderMeta(providerId: string): { label: string; isTestOnly: boolean } {
+    const provider = this.retrieveProvider(providerId)
+    const klass = provider.constructor as typeof AbstractPaymentProvider
+    return { label: klass.label, isTestOnly: klass.isTestOnly }
   }
 
   // -- Provider table CRUD --

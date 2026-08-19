@@ -14,5 +14,5 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Line item not returned after create' })
   }
 
-  return { status: 201, json: { lineItem } }
+  return { status: 201, json: { lineItem: cartService.enrichLineItem(lineItem) } }
 }

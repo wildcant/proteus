@@ -26,6 +26,7 @@
     "rules": {
       "preset": "recommended",
       "suspicious": {
+        "noLeakedRender": "on",
         "noConsole": {
           "level": "warn",
           "options": {
@@ -91,8 +92,7 @@
             "noLabelWithoutControl": "off"
           },
           "suspicious": {
-            "noArrayIndexKey": "off",
-            "noLeakedRender": "on"
+            "noArrayIndexKey": "off"
           }
         }
       }

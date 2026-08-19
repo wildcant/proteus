@@ -4,7 +4,11 @@
  * Store API
  * OpenAPI spec version: 0.1.0
  */
+import type { UpdateStoreCartBodyBillingAddress } from './updateStoreCartBodyBillingAddress.ts';
+import type { UpdateStoreCartBodyShippingAddress } from './updateStoreCartBodyShippingAddress.ts';
 
 export type UpdateStoreCartBody = {
   email?: string;
+  shippingAddress?: UpdateStoreCartBodyShippingAddress;
+  billingAddress?: UpdateStoreCartBodyBillingAddress;
 };

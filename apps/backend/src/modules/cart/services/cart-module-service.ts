@@ -8,14 +8,17 @@ import type {
   CartTotalsDTO,
   ComputeCartTotalsDTO,
   Context,
+  CreateCartAddressDTO,
   CreateCartDTO,
   CreateLineItemDTO,
   CreateShippingMethodDTO,
+  EnrichedCartLineItemDTO,
   FilterableCartLineItemProps,
   FilterableCartProps,
   FilterableCartShippingMethodProps,
   FindConfig,
   ICartModuleService,
+  UpdateCartAddressDTO,
   UpdateCartDTO,
   UpdateLineItemDTO,
 } from '../../../core/types/index.js'
@@ -123,7 +126,7 @@ export class CartModuleService implements ICartModuleService {
 
   async deleteCarts(cartIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.cartRepository.delete(cartIds, ctx)
+      await this.cartRepository.softDelete(cartIds, ctx)
     })
   }
 
@@ -192,7 +195,7 @@ export class CartModuleService implements ICartModuleService {
 
   async deleteLineItems(lineItemIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.cartLineItemRepository.delete(lineItemIds, ctx)
+      await this.cartLineItemRepository.softDelete(lineItemIds, ctx)
     })
   }
 
@@ -226,8 +229,47 @@ export class CartModuleService implements ICartModuleService {
 
   async deleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.cartShippingMethodRepository.delete(shippingMethodIds, ctx)
+      await this.cartShippingMethodRepository.softDelete(shippingMethodIds, ctx)
     })
+  }
+
+  async createCartAddress(data: CreateCartAddressDTO, context?: Context): Promise<CartAddressDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      return this.cartAddressRepository.create(data, ctx)
+    })
+  }
+
+  async updateCartAddress(addressId: string, data: UpdateCartAddressDTO, context?: Context): Promise<CartAddressDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      return this.cartAddressRepository.update(addressId, data, ctx)
+    })
+  }
+
+  async upsertCartAddress(
+    existingAddressId: string | null,
+    data: CreateCartAddressDTO,
+    context?: Context,
+  ): Promise<CartAddressDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      if (existingAddressId) {
+        return this.cartAddressRepository.update(existingAddressId, data, ctx)
+      }
+      return this.cartAddressRepository.create(data, ctx)
+    })
+  }
+
+  async deleteCartAddresses(addressIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.cartAddressRepository.softDelete(addressIds, ctx)
+    })
+  }
+
+  enrichLineItem(lineItem: CartLineItemDTO): EnrichedCartLineItemDTO {
+    return { ...lineItem, lineTotal: lineItem.unitPrice.multipliedBy(lineItem.quantity) }
+  }
+
+  enrichLineItems(lineItems: CartLineItemDTO[]): EnrichedCartLineItemDTO[] {
+    return lineItems.map((item) => this.enrichLineItem(item))
   }
 
   computeCartTotals({ lineItems, shippingMethods }: ComputeCartTotalsDTO): CartTotalsDTO {

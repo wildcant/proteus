@@ -24,6 +24,8 @@ import { AbstractPaymentProvider } from '../../../core/utils/abstract-payment-pr
 
 export class SystemPaymentProvider extends AbstractPaymentProvider {
   static identifier = 'system'
+  static label = 'Manual Payment'
+  static isTestOnly = true
 
   constructor() {
     super({}, {} as Record<string, unknown>)

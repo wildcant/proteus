@@ -15,7 +15,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
   const lineItem = await cartService.updateLineItem(req.params.lineId, req.body)
 
-  return { status: 200, json: { lineItem } }
+  return { status: 200, json: { lineItem: cartService.enrichLineItem(lineItem) } }
 }
 
 export const DeleteInput = { params: LineIdParams }

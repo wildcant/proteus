@@ -1,3 +1,7 @@
+- should order email be required? how do you communicate with the customer otherwise?
+- if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
+- mutations can error - make sure we provide onError => display toast. to all mutations under api.
+- biome no unused vars should warn
 - store full checkout flow.
 - storage service: S3, R2, Minio
 - reusable workflow setup function for tests

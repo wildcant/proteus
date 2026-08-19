@@ -43,6 +43,7 @@ export const StoreCartLineItem = z
     isTaxInclusive: z.boolean(),
     compareAtUnitPrice: bigNumberToString.nullable(),
     unitPrice: bigNumberToString,
+    lineTotal: bigNumberToString,
     ...timestamps.shape,
   })
   .openapi('StoreCartLineItem')
@@ -71,6 +72,25 @@ export const StoreCartTotals = z
   })
   .openapi('StoreCartTotals')
 export type StoreCartTotals = z.input<typeof StoreCartTotals>
+
+export const StoreCartAddress = z
+  .object({
+    id: z.string(),
+    customerId: z.string().nullable(),
+    company: z.string().nullable(),
+    firstName: z.string().nullable(),
+    lastName: z.string().nullable(),
+    address1: z.string().nullable(),
+    address2: z.string().nullable(),
+    city: z.string().nullable(),
+    countryCode: z.string().nullable(),
+    province: z.string().nullable(),
+    postalCode: z.string().nullable(),
+    phone: z.string().nullable(),
+    ...timestamps.shape,
+  })
+  .openapi('StoreCartAddress')
+export type StoreCartAddress = z.input<typeof StoreCartAddress>
 
 export const StoreConfirmInventoryItem = z
   .object({

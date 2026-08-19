@@ -222,9 +222,15 @@
                   },
                   "totals": {
                     "$ref": "#/components/schemas/StoreCartTotals"
+                  },
+                  "shippingAddress": {
+                    "$ref": "#/components/schemas/StoreCartAddress"
+                  },
+                  "billingAddress": {
+                    "$ref": "#/components/schemas/StoreCartAddress"
                   }
                 },
-                "required": ["items", "shippingMethods", "totals"]
+                "required": ["items", "shippingMethods", "totals", "shippingAddress", "billingAddress"]
               }
             ]
           }
@@ -305,6 +311,10 @@
             "type": "string",
             "description": "Numeric string (arbitrary precision)"
           },
+          "lineTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -342,6 +352,7 @@
           "isTaxInclusive",
           "compareAtUnitPrice",
           "unitPrice",
+          "lineTotal",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -420,6 +431,76 @@
           }
         },
         "required": ["itemsTotal", "shippingTotal", "cartTotal"]
+      },
+      "StoreCartAddress": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": ["string", "null"]
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "city": {
+            "type": ["string", "null"]
+          },
+          "countryCode": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "postalCode": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "customerId",
+          "company",
+          "firstName",
+          "lastName",
+          "address1",
+          "address2",
+          "city",
+          "countryCode",
+          "province",
+          "postalCode",
+          "phone",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
       },
       "StoreUpdateCartResponse": {
         "type": "object",
@@ -545,14 +626,14 @@
         },
         "required": ["shippingMethod"]
       },
-      "StoreCartResponse": {
+      "StoreCompleteCartResponse": {
         "type": "object",
         "properties": {
-          "cart": {
-            "$ref": "#/components/schemas/StoreCart"
+          "orderId": {
+            "type": "string"
           }
         },
-        "required": ["cart"]
+        "required": ["orderId"]
       },
       "StoreCartInventoryResponse": {
         "type": "object",
@@ -1050,9 +1131,15 @@
           },
           "isEnabled": {
             "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "isTestOnly": {
+            "type": "boolean"
           }
         },
-        "required": ["id", "isEnabled"]
+        "required": ["id", "isEnabled", "label", "isTestOnly"]
       },
       "StoreProductListResponse": {
         "type": "object",
@@ -1570,6 +1657,92 @@
                   "email": {
                     "type": "string",
                     "format": "email"
+                  },
+                  "shippingAddress": {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lastName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "address1": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "address2": {
+                        "type": "string"
+                      },
+                      "company": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "countryCode": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 2
+                      },
+                      "province": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
+                  },
+                  "billingAddress": {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lastName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "address1": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "address2": {
+                        "type": "string"
+                      },
+                      "company": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "countryCode": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 2
+                      },
+                      "province": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
                   }
                 }
               }
@@ -1919,7 +2092,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StoreCartResponse"
+                  "$ref": "#/components/schemas/StoreCompleteCartResponse"
                 }
               }
             }

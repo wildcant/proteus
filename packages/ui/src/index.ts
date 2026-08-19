@@ -107,6 +107,7 @@ export {
   PopoverTitle,
   PopoverTrigger,
 } from './components/ui/popover.tsx'
+export { RadioGroup, RadioGroupItem } from './components/ui/radio-group.tsx'
 export { Separator } from './components/ui/separator.tsx'
 export {
   Sheet,

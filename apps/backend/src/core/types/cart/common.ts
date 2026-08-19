@@ -98,6 +98,8 @@ export type CartTotalsDTO = {
   cartTotal: BigNumber
 }
 
+export type EnrichedCartLineItemDTO = CartLineItemDTO & { lineTotal: BigNumber }
+
 export type CartAddressDTO = {
   id: string
   customerId: string | null

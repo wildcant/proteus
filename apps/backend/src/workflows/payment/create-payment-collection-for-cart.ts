@@ -34,10 +34,7 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
 
       const existingLink = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
       if (existingLink) {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.CONFLICT,
-          message: `Cart "${input.cartId}" already has a payment collection`,
-        })
+        return paymentService.retrievePaymentCollection(existingLink.paymentCollectionId)
       }
 
       // Compute cart total from line items + shipping

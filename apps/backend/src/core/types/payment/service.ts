@@ -72,6 +72,7 @@ export type IPaymentModuleService = {
     config?: FindConfig<PaymentProviderDTO>,
     context?: Context,
   ): Promise<PaymentProviderDTO[]>
+  getProviderMeta(providerId: string): { label: string; isTestOnly: boolean }
 
   // Webhooks
   getWebhookActionAndData(data: ProviderWebhookPayload): Promise<WebhookActionResult>
