@@ -142,6 +142,7 @@ export {
   useSidebar,
 } from './components/ui/sidebar.tsx'
 export { Skeleton } from './components/ui/skeleton.tsx'
+export { StatusBadge, statusBadgeDotVariants } from './components/ui/status-badge.tsx'
 export {
   Table,
   TableBody,

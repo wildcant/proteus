@@ -1,9 +1,8 @@
-import { Badge } from '@proteus/ui'
 import { daysAgoIso, todayIso } from '@proteus/utils'
 import type { AdminOrder } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { StatusCell, useDefineTable } from '#/components/data-table'
 import { useOrders } from '#/features/orders/api/orders'
-import { fulfillmentStatusBadgeVariants, orderStatusBadgeVariants } from '#/features/orders/constants'
+import { fulfillmentStatusColors, orderStatusColors } from '#/features/orders/constants'
 
 export const useOrderTable = () =>
   useDefineTable<AdminOrder>({
@@ -26,12 +25,12 @@ export const useOrderTable = () =>
       col.accessor('status', {
         header: 'Status',
         truncateTooltip: false,
-        cell: ({ value }) => <Badge variant={orderStatusBadgeVariants[value]}>{value}</Badge>,
+        cell: ({ value }) => <StatusCell color={orderStatusColors[value]}>{value}</StatusCell>,
       }),
       col.accessor('fulfillmentStatus', {
         header: 'Fulfillment',
         truncateTooltip: false,
-        cell: ({ value }) => <Badge variant={fulfillmentStatusBadgeVariants[value]}>{value}</Badge>,
+        cell: ({ value }) => <StatusCell color={fulfillmentStatusColors[value]}>{value}</StatusCell>,
       }),
       col.accessor('createdAt', { header: 'Date', render: 'datetime', sortable: true }),
     ],

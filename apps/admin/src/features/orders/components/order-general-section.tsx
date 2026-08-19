@@ -1,10 +1,10 @@
-import { Badge, Card, CardAction, CardHeader, CardTitle, toast } from '@proteus/ui'
+import { Card, CardAction, CardHeader, CardTitle, StatusBadge, toast } from '@proteus/ui'
 import { formatDatetime } from '@proteus/utils'
 import { ArchiveIcon, CheckCircleIcon, XCircleIcon } from 'lucide-react'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { useArchiveOrder, useCancelOrder, useCompleteOrder } from '#/features/orders/api/orders'
-import { fulfillmentStatusBadgeVariants, orderStatusBadgeVariants } from '#/features/orders/constants'
+import { fulfillmentStatusColors, orderStatusColors } from '#/features/orders/constants'
 import { usePrompt } from '#/hooks/use-prompt'
 
 export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder }) {
@@ -69,8 +69,8 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
           <p className="text-sm text-muted-foreground">{formatDatetime(order.createdAt)}</p>
         </div>
         <CardAction className="flex items-center gap-x-3">
-          <Badge variant={orderStatusBadgeVariants[order.status]}>{order.status}</Badge>
-          <Badge variant={fulfillmentStatusBadgeVariants[order.fulfillmentStatus]}>{order.fulfillmentStatus}</Badge>
+          <StatusBadge color={orderStatusColors[order.status]}>{order.status}</StatusBadge>
+          <StatusBadge color={fulfillmentStatusColors[order.fulfillmentStatus]}>{order.fulfillmentStatus}</StatusBadge>
           {actions.length > 0 && <ActionMenu groups={[{ actions }]} />}
         </CardAction>
       </CardHeader>
