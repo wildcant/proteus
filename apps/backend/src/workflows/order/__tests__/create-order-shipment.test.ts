@@ -8,7 +8,7 @@ import { describe, expect, vi } from 'vitest'
 import { createOrderShipmentWorkflow } from '../create-order-shipment.js'
 
 function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<OrderDTO>) {
-  const order = generate.order({ fulfillmentStatus: 'fulfilled', ...orderOverrides })
+  const order = generate.order({ status: 'pending', fulfillmentStatus: 'fulfilled', ...orderOverrides })
   const fulfillment = generate.fulfillment()
   const shippedOrder = { ...order, fulfillmentStatus: 'shipped' as const }
 

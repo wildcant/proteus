@@ -21,6 +21,13 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
       const order = await orderService.retrieveOrder(input.orderId)
 
+      if (order.status === 'canceled') {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cannot mark order ${input.orderId} as delivered: order is canceled`,
+        })
+      }
+
       if (order.fulfillmentStatus !== 'shipped') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
@@ -35,6 +42,16 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_FOUND,
           message: `Fulfillment ${input.fulfillmentId} is not linked to order ${input.orderId}`,
+        })
+      }
+
+      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+      const fulfillment = await fulfillmentService.retrieveFulfillment(input.fulfillmentId)
+
+      if (fulfillment.canceledAt) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cannot deliver fulfillment ${input.fulfillmentId}: fulfillment is canceled`,
         })
       }
     })

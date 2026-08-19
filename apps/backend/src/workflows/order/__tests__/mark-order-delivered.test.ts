@@ -8,7 +8,7 @@ import { describe, expect, vi } from 'vitest'
 import { markOrderDeliveredWorkflow } from '../mark-order-delivered.js'
 
 function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<OrderDTO>) {
-  const order = generate.order({ fulfillmentStatus: 'shipped', ...orderOverrides })
+  const order = generate.order({ status: 'pending', fulfillmentStatus: 'shipped', ...orderOverrides })
   const fulfillment = generate.fulfillment({ shippedAt: new Date() })
   const deliveredOrder = { ...order, fulfillmentStatus: 'delivered' as const }
 
@@ -18,6 +18,7 @@ function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<O
   }
 
   const fulfillmentService = {
+    retrieveFulfillment: vi.fn().mockResolvedValue(fulfillment),
     updateFulfillment: vi.fn().mockResolvedValue({ ...fulfillment, deliveredAt: new Date() }),
   }
 
@@ -60,6 +61,32 @@ describe('markOrderDeliveredWorkflow', () => {
       deliveredAt: expect.any(Date),
     })
     expect(services.orderService.updateFulfillmentStatus).toHaveBeenCalledWith(services.order.id, 'delivered')
+  })
+
+  test('rejects when order is canceled', async ({ dto }) => {
+    const services = setup(dto.generate, { status: 'canceled', fulfillmentStatus: 'shipped' })
+
+    await expect(
+      markOrderDeliveredWorkflow.run({
+        orderId: services.order.id,
+        fulfillmentId: services.fulfillment.id,
+      }),
+    ).rejects.toThrow('order is canceled')
+  })
+
+  test('rejects when fulfillment is canceled', async ({ dto }) => {
+    const services = setup(dto.generate)
+    services.fulfillmentService.retrieveFulfillment.mockResolvedValue({
+      ...services.fulfillment,
+      canceledAt: new Date(),
+    })
+
+    await expect(
+      markOrderDeliveredWorkflow.run({
+        orderId: services.order.id,
+        fulfillmentId: services.fulfillment.id,
+      }),
+    ).rejects.toThrow('fulfillment is canceled')
   })
 
   test('rejects when fulfillment status is not shipped', async ({ dto }) => {

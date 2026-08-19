@@ -25,6 +25,13 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
       const order = await orderService.retrieveOrder(input.orderId)
 
+      if (order.status === 'canceled') {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cannot ship order ${input.orderId}: order is canceled`,
+        })
+      }
+
       if (order.fulfillmentStatus !== 'fulfilled') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
