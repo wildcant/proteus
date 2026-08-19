@@ -100,7 +100,7 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
       <Toolbar>
         <ToolbarRow className="px-6">
           <ToolbarSection position="left">
-            {heading && <h1 className="text-lg font-semibold">{heading}</h1>}
+            {!!heading && <h1 className="text-lg font-semibold">{heading}</h1>}
           </ToolbarSection>
           <ToolbarSection position="right">
             {!hasSecondRow && (
@@ -125,7 +125,7 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
           </ToolbarSection>
         </ToolbarRow>
 
-        {hasSecondRow && (
+        {!!hasSecondRow && (
           <ToolbarRow className="px-6">
             <ToolbarSection position="left">
               <FilterBar

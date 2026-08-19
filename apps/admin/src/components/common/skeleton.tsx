@@ -109,13 +109,13 @@ export function TableSkeleton({
 
   return (
     <div aria-hidden className={cn({ 'flex h-full flex-col overflow-hidden': layout === 'fill' })}>
-      {hasToolbar && (
+      {!!hasToolbar && (
         <div className="flex items-center justify-between px-6 py-4">
-          {filters && <SkeletonBlock className="h-7 w-full max-w-33.75" />}
-          {(search || orderBy) && (
+          {!!filters && <SkeletonBlock className="h-7 w-full max-w-33.75" />}
+          {!!(search || orderBy) && (
             <div className="flex items-center gap-x-2">
-              {search && <SkeletonBlock className="h-7 w-40" />}
-              {orderBy && <SkeletonBlock className="h-7 w-7" />}
+              {!!search && <SkeletonBlock className="h-7 w-40" />}
+              {!!orderBy && <SkeletonBlock className="h-7 w-7" />}
             </div>
           )}
         </div>
@@ -125,7 +125,7 @@ export function TableSkeleton({
           <SkeletonBlock key={i} className="h-10 w-full rounded-none" />
         ))}
       </div>
-      {pagination && <TableFooterSkeleton layout={layout} />}
+      {!!pagination && <TableFooterSkeleton layout={layout} />}
     </div>
   )
 }
@@ -170,8 +170,8 @@ export function SingleColumnPageSkeleton({
       {Array.from({ length: sections }, (_, i) => (
         <SkeletonBlock key={i} className={cn('w-full rounded-lg', i === 0 ? 'h-54.75' : 'h-115')} />
       ))}
-      {showMetadata && <SkeletonBlock className="h-15 w-full rounded-lg" />}
-      {showJSON && <SkeletonBlock className="h-15 w-full rounded-lg" />}
+      {!!showMetadata && <SkeletonBlock className="h-15 w-full rounded-lg" />}
+      {!!showJSON && <SkeletonBlock className="h-15 w-full rounded-lg" />}
     </div>
   )
 }
@@ -196,10 +196,10 @@ export function TwoColumnPageSkeleton({
           {Array.from({ length: mainSections }, (_, i) => (
             <SkeletonBlock key={i} className={cn('w-full rounded-lg', i === 0 ? 'h-54.75' : 'h-115')} />
           ))}
-          {showExtraData && (
+          {!!showExtraData && (
             <div className="hidden flex-col gap-y-3 xl:flex">
-              {showMetadata && <SkeletonBlock className="h-15 w-full rounded-lg" />}
-              {showJSON && <SkeletonBlock className="h-15 w-full rounded-lg" />}
+              {!!showMetadata && <SkeletonBlock className="h-15 w-full rounded-lg" />}
+              {!!showJSON && <SkeletonBlock className="h-15 w-full rounded-lg" />}
             </div>
           )}
         </div>
@@ -207,10 +207,10 @@ export function TwoColumnPageSkeleton({
           {Array.from({ length: sidebarSections }, (_, i) => (
             <SkeletonBlock key={i} className={cn('w-full rounded-lg', i === 0 ? 'h-35' : 'h-80')} />
           ))}
-          {showExtraData && (
+          {!!showExtraData && (
             <div className="flex flex-col gap-y-3 xl:hidden">
-              {showMetadata && <SkeletonBlock className="h-15 w-full rounded-lg" />}
-              {showJSON && <SkeletonBlock className="h-15 w-full rounded-lg" />}
+              {!!showMetadata && <SkeletonBlock className="h-15 w-full rounded-lg" />}
+              {!!showJSON && <SkeletonBlock className="h-15 w-full rounded-lg" />}
             </div>
           )}
         </div>

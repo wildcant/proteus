@@ -27,7 +27,7 @@ export function NumberField({ label, className, ...inputProps }: NumberFieldProp
         aria-invalid={isInvalid}
         {...inputProps}
       />
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

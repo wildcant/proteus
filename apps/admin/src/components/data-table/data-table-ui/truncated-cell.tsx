@@ -27,7 +27,7 @@ export function TruncatedCell({ children, disabled }: TruncatedCellProps) {
       <TooltipTrigger render={<div ref={ref} className="truncate" onMouseEnter={onMouseEnter} />}>
         {children}
       </TooltipTrigger>
-      {overflows && <TooltipContent>{children}</TooltipContent>}
+      {!!overflows && <TooltipContent>{children}</TooltipContent>}
     </Tooltip>
   )
 }

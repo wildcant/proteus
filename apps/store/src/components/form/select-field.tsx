@@ -27,7 +27,7 @@ export function SelectField({ label, className, children, ...selectProps }: Sele
       >
         {children}
       </NativeSelect>
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

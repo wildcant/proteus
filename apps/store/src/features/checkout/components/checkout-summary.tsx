@@ -26,7 +26,7 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
             <div className="flex min-w-0 flex-1 items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-(--foreground)">{item.title}</p>
-                {item.variantTitle && <p className="text-xs text-(--foreground-muted)">{item.variantTitle}</p>}
+                {!!item.variantTitle && <p className="text-xs text-(--foreground-muted)">{item.variantTitle}</p>}
                 <p className="text-xs text-(--foreground-muted)">Qty: {item.quantity}</p>
               </div>
               <span className="text-sm font-medium text-(--foreground)">

@@ -78,7 +78,7 @@ export function DataTableUi<T>({
           ) : (
             <TableRow>
               <TableCell colSpan={table.getAllColumns().length} className="h-24">
-                {emptyState && <EmptyState {...emptyState} />}
+                {!!emptyState && <EmptyState {...emptyState} />}
               </TableCell>
             </TableRow>
           )}

@@ -141,7 +141,7 @@ export function CartDropdown() {
 function CartBadge({ count }: { count: number }) {
   return (
     <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-(--foreground) px-1 text-[10px] font-bold leading-none text-(--background)">
-      {count > 99 ? '99+' : count}
+      {count > 99 ? '99+' : String(count)}
     </span>
   )
 }

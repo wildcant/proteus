@@ -63,7 +63,7 @@ export function ShippingMethodForm({ cartId, currencyCode, selectedMethodId, onC
         {isPending ? 'Saving...' : 'Continue to payment'}
       </Button>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
+      {!!error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
     </form>
   )
 }

@@ -23,7 +23,7 @@ export function OrderFulfillmentSection({ order }: { order: AdminOrderResponseOr
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-medium">{item.title}</span>
-            {item.variantTitle && <span className="text-xs text-muted-foreground">{item.variantTitle}</span>}
+            {!!item.variantTitle && <span className="text-xs text-muted-foreground">{item.variantTitle}</span>}
           </div>
           <span className="text-sm text-muted-foreground">&times;{item.quantity}</span>
         </div>

@@ -17,10 +17,10 @@ export function OrderPaymentSection({ order }: { order: AdminOrderResponseOrder 
             <span className="font-medium">{formatPrice(transaction.amount, transaction.currencyCode)}</span>
             <span className="text-xs text-muted-foreground">{formatDatetime(transaction.createdAt)}</span>
           </div>
-          {transaction.reference && (
+          {!!transaction.reference && (
             <span className="text-muted-foreground">
               {transaction.reference}
-              {transaction.referenceId && ` #${transaction.referenceId}`}
+              {!!transaction.referenceId && ` #${transaction.referenceId}`}
             </span>
           )}
         </div>

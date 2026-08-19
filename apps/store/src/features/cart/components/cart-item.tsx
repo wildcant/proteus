@@ -25,7 +25,7 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
       <div className="flex min-w-0 flex-1 flex-col justify-between">
         <div>
           <h3 className="font-medium text-(--foreground)">{item.title}</h3>
-          {item.variantTitle && <p className="text-sm text-(--foreground-muted)">{item.variantTitle}</p>}
+          {!!item.variantTitle && <p className="text-sm text-(--foreground-muted)">{item.variantTitle}</p>}
         </div>
 
         <div className="flex items-center gap-3">

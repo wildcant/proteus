@@ -42,13 +42,13 @@ function VerifyPage() {
   return (
     <main className="flex min-h-[calc(100vh-13rem)] items-center justify-center px-4">
       <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
-        {isPending && (
+        {!!isPending && (
           <>
             <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Verifying</h1>
             <p className="text-center text-sm text-foreground-muted">Please wait while we verify your email...</p>
           </>
         )}
-        {isSuccess && (
+        {!!isSuccess && (
           <>
             <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Email verified</h1>
             <p className="text-center text-sm text-foreground-muted">
@@ -59,7 +59,7 @@ function VerifyPage() {
             </Button>
           </>
         )}
-        {isError && (
+        {!!isError && (
           <>
             <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Verification failed</h1>
             <p className="text-center text-sm text-foreground-muted">{error.message}</p>

@@ -96,7 +96,7 @@ export function ShippingAddressForm({ cart, onComplete }: ShippingAddressFormPro
         {isPending ? 'Saving...' : 'Continue to delivery'}
       </Button>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
+      {!!error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
     </form>
   )
 }

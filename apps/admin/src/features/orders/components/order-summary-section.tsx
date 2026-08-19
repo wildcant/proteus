@@ -21,10 +21,10 @@ export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder 
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-medium">{item.title}</span>
-            {item.variantTitle && (
+            {!!item.variantTitle && (
               <span className="text-xs text-muted-foreground">
                 {item.variantTitle}
-                {item.variantSku && ` \u00b7 ${item.variantSku}`}
+                {!!item.variantSku && ` \u00b7 ${item.variantSku}`}
               </span>
             )}
           </div>

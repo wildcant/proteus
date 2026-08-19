@@ -50,7 +50,7 @@ export function PaymentForm({ cartId, onComplete }: PaymentFormProps) {
                     </div>
                     <CreditCardIcon className="h-5 w-5 text-foreground-muted" />
                   </div>
-                  {provider.isTestOnly && (
+                  {!!provider.isTestOnly && (
                     <p className="w-full rounded bg-amber-50 px-3 py-1.5 text-xs text-amber-700">
                       Attention: For testing purposes only.
                     </p>
@@ -66,7 +66,7 @@ export function PaymentForm({ cartId, onComplete }: PaymentFormProps) {
         {isPending ? 'Setting up payment...' : 'Continue to review'}
       </Button>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
+      {!!error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
     </form>
   )
 }

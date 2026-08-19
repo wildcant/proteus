@@ -14,14 +14,14 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
           <p className="text-sm font-semibold text-(--foreground)">Shipping Address</p>
           {address ? (
             <div className="mt-1 text-sm text-(--foreground-muted)">
-              {(address.firstName || address.lastName) && (
+              {!!(address.firstName || address.lastName) && (
                 <p>{[address.firstName, address.lastName].filter(Boolean).join(' ')}</p>
               )}
-              {address.address1 && <p>{address.address1}</p>}
-              {(address.postalCode || address.city) && (
+              {!!address.address1 && <p>{address.address1}</p>}
+              {!!(address.postalCode || address.city) && (
                 <p>{[address.postalCode, address.city].filter(Boolean).join(', ')}</p>
               )}
-              {address.countryCode && <p>{address.countryCode.toUpperCase()}</p>}
+              {!!address.countryCode && <p>{address.countryCode.toUpperCase()}</p>}
             </div>
           ) : (
             <p className="mt-1 text-sm text-(--foreground-muted)">No address provided</p>
@@ -30,12 +30,12 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
 
         <div>
           <p className="text-sm font-semibold text-(--foreground)">Contact</p>
-          {order.email && <p className="mt-1 text-sm text-(--foreground-muted)">{order.email}</p>}
+          {!!order.email && <p className="mt-1 text-sm text-(--foreground-muted)">{order.email}</p>}
         </div>
 
         <div>
           <p className="text-sm font-semibold text-(--foreground)">Method</p>
-          {shippingMethod && (
+          {!!shippingMethod && (
             <p className="mt-1 text-sm text-(--foreground-muted)">
               {shippingMethod.name} ({formatPrice(shippingMethod.amount, order.currencyCode)})
             </p>

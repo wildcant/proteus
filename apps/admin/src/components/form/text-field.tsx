@@ -30,7 +30,7 @@ export function TextField({ label, className, hideLabel, placeholder, ...inputPr
         placeholder={hideLabel ? label : placeholder}
         {...inputProps}
       />
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

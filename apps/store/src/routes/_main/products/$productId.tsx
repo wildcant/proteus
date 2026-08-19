@@ -61,13 +61,13 @@ function ProductDetailPage() {
         <div>
           <h1 className="text-2xl font-medium text-(--foreground)">{product.title}</h1>
 
-          {firstVariant && (
+          {!!firstVariant && (
             <p className="mt-2 text-lg font-semibold text-(--foreground)">
               {formatPrice(firstVariant.calculatedPrice.originalAmount, firstVariant.calculatedPrice.currencyCode)}
             </p>
           )}
 
-          {product.description && (
+          {!!product.description && (
             <p className="mt-4 text-sm leading-relaxed text-(--foreground-muted)">{product.description}</p>
           )}
 

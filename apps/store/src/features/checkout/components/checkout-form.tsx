@@ -40,7 +40,7 @@ export function CheckoutForm({ cart, step }: CheckoutFormProps) {
               <div>
                 <p className="font-medium text-(--foreground)">Contact</p>
                 <p>{cart.email}</p>
-                {cart.shippingAddress.phone && <p>{cart.shippingAddress.phone}</p>}
+                {!!cart.shippingAddress.phone && <p>{cart.shippingAddress.phone}</p>}
               </div>
             </div>
           )
@@ -55,7 +55,7 @@ export function CheckoutForm({ cart, step }: CheckoutFormProps) {
         isOpen={step === Step.DELIVERY}
         isComplete={hasShipping}
         onEdit={() => goToStep(Step.DELIVERY)}
-        summary={lastShippingMethod && <p>{lastShippingMethod.name}</p>}
+        summary={!!lastShippingMethod && <p>{lastShippingMethod.name}</p>}
       >
         <ShippingMethodForm
           cartId={cart.id}
