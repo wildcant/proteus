@@ -6,9 +6,9 @@ export const Route = createFileRoute('/_checkout/checkout')({
 
 function CheckoutPage() {
   return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <h1 className="display-title text-4xl font-bold tracking-tight text-[var(--sea-ink)]">Checkout</h1>
-      <p className="mt-4 text-[var(--sea-ink-soft)]">Coming soon</p>
+    <main className="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <h1 className="text-2xl font-medium text-(--foreground)">Checkout</h1>
+      <p className="mt-4 text-sm text-(--foreground-muted)">Coming soon</p>
     </main>
   )
 }

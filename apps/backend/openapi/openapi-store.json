@@ -1069,11 +1069,42 @@
           "products": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StoreProduct"
+              "$ref": "#/components/schemas/StoreProductListItem"
             }
           }
         },
         "required": ["count", "offset", "limit", "products"]
+      },
+      "StoreProductListItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StoreProduct"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "startingPrice": {
+                "$ref": "#/components/schemas/StoreCalculatedPrice"
+              }
+            }
+          }
+        ]
+      },
+      "StoreCalculatedPrice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "originalAmount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["id", "currencyCode", "originalAmount"]
       },
       "StoreProduct": {
         "type": "object",
@@ -1205,22 +1236,6 @@
           "width",
           "calculatedPrice"
         ]
-      },
-      "StoreCalculatedPrice": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "currencyCode": {
-            "type": "string"
-          },
-          "originalAmount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          }
-        },
-        "required": ["id", "currencyCode", "originalAmount"]
       }
     },
     "parameters": {}

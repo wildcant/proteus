@@ -1,3 +1,4 @@
+import { Button } from '#/components/button'
 import type { ResetPasswordFormParams } from '#/features/auth/hooks/use-reset-password-form'
 import { useResetPasswordForm } from '#/features/auth/hooks/use-reset-password-form'
 
@@ -17,9 +18,9 @@ export function ResetPasswordForm(props: ResetPasswordFormParams) {
           {(field) => <field.TextField label="New password" type="password" autoComplete="new-password" autoFocus />}
         </form.AppField>
       </div>
-      <button type="submit" disabled={isPending} className="demo-button mt-6 w-full">
+      <Button type="submit" disabled={isPending} className="mt-6 w-full">
         {isPending ? 'Updating...' : 'Set new password'}
-      </button>
+      </Button>
     </form>
   )
 }

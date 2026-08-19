@@ -8,20 +8,19 @@ export const Route = createFileRoute('/_checkout')({
 function CheckoutLayout() {
   return (
     <>
-      <header className="border-b border-(--line) bg-(--header-bg) backdrop-blur-lg">
-        <div className="page-wrap grid grid-cols-3 items-center px-4 py-3 sm:py-4">
+      <header className="border-b border-(--border) bg-white dark:bg-neutral-950">
+        <div className="mx-auto grid w-full max-w-[1400px] grid-cols-3 items-center px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <Link
             to="/cart"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-(--sea-ink-soft) no-underline hover:text-(--sea-ink)"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-(--foreground-muted) no-underline hover:text-(--foreground)"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             Back to cart
           </Link>
           <Link
             to="/"
-            className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-(--sea-ink) no-underline"
+            className="inline-flex items-center justify-center text-sm font-semibold uppercase tracking-[0.2em] text-(--foreground) no-underline"
           >
-            <span className="h-2 w-2 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)]" />
             Proteus
           </Link>
           <div />

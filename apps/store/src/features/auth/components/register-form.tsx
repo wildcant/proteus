@@ -1,3 +1,4 @@
+import { Button } from '#/components/button'
 import type { RegisterFormParams } from '#/features/auth/hooks/use-register-form'
 import { useRegisterForm } from '#/features/auth/hooks/use-register-form'
 
@@ -10,7 +11,7 @@ export function RegisterForm(props: RegisterFormParams) {
         event.preventDefault()
         form.handleSubmit()
       }}
-      className="w-full flex flex-col"
+      className="flex w-full flex-col"
     >
       <div className="flex w-full flex-col gap-y-2">
         <form.AppField name="firstName">
@@ -26,12 +27,12 @@ export function RegisterForm(props: RegisterFormParams) {
           {(field) => <field.TextField label="Password" type="password" autoComplete="new-password" />}
         </form.AppField>
       </div>
-      <span className="mt-6 text-center text-xs text-[var(--sea-ink-soft)]">
+      <span className="mt-6 text-center text-xs text-(--foreground-muted)">
         By creating an account, you agree to our Privacy Policy and Terms of Use.
       </span>
-      <button type="submit" disabled={isPending} className="demo-button mt-6 w-full">
+      <Button type="submit" disabled={isPending} className="mt-6 w-full">
         {isPending ? 'Creating account...' : 'Join'}
-      </button>
+      </Button>
     </form>
   )
 }

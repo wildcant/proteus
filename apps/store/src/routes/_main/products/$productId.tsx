@@ -1,5 +1,6 @@
 import { formatPrice } from '@proteus/ui'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { PackageIcon } from 'lucide-react'
 import { AddToCart } from '#/features/cart/components/add-to-cart'
 import { productQueryOptions, useProduct } from '#/features/products/api/products'
 
@@ -14,52 +15,65 @@ function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="page-wrap px-4 pb-8 pt-14">
-        <p className="text-[var(--sea-ink-soft)]">Loading...</p>
+      <main className="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-2">
+          <div className="aspect-[3/4] animate-pulse bg-(--bg-subtle)" />
+          <div className="space-y-4">
+            <div className="h-8 w-2/3 animate-pulse rounded bg-(--bg-subtle)" />
+            <div className="h-5 w-1/4 animate-pulse rounded bg-(--bg-subtle)" />
+          </div>
+        </div>
       </main>
     )
   }
 
   if (!product) {
     return (
-      <main className="page-wrap px-4 pb-8 pt-14">
-        <p className="text-[var(--sea-ink-soft)]">Product not found.</p>
+      <main className="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+        <p className="text-sm text-(--foreground-muted)">Product not found.</p>
       </main>
     )
   }
 
+  const firstVariant = product.variants[0]
+
   return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <section className="island-shell rise-in rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
-        <Link to="/products" className="mb-4 inline-block text-sm text-[var(--sea-ink-soft)] hover:underline">
-          &larr; Back to products
+    <main className="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <nav className="mb-8 text-sm text-(--foreground-muted)">
+        <Link to="/products" className="hover:text-(--foreground)">
+          Products
         </Link>
+        <span className="mx-2">/</span>
+        <span className="text-(--foreground)">{product.title}</span>
+      </nav>
 
-        <h1 className="display-title mb-2 text-4xl font-bold tracking-tight text-[var(--sea-ink)]">{product.title}</h1>
+      <div className="grid gap-10 lg:grid-cols-2">
+        <div className="aspect-[3/4] overflow-hidden bg-(--bg-subtle)">
+          {product.thumbnail ? (
+            <img src={product.thumbnail} alt={product.title} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-(--border)">
+              <PackageIcon className="h-16 w-16" />
+            </div>
+          )}
+        </div>
 
-        {product.description && <p className="mb-8 text-[var(--sea-ink-soft)]">{product.description}</p>}
+        <div>
+          <h1 className="text-2xl font-medium text-(--foreground)">{product.title}</h1>
 
-        {product.variants.length > 0 ? (
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-[var(--sea-ink)]">Variants</h2>
-            {product.variants.map((variant) => (
-              <div
-                key={variant.id}
-                className="flex items-center justify-between rounded-xl border border-[var(--line)] bg-[var(--card-bg)] px-4 py-3"
-              >
-                <span className="font-medium text-[var(--sea-ink)]">{variant.title}</span>
-                <span className="font-semibold text-[var(--sea-ink)]">
-                  {formatPrice(variant.calculatedPrice.originalAmount, variant.calculatedPrice.currencyCode)}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-[var(--sea-ink-soft)]">No variants available.</p>
-        )}
+          {firstVariant && (
+            <p className="mt-2 text-lg font-semibold text-(--foreground)">
+              {formatPrice(firstVariant.calculatedPrice.originalAmount, firstVariant.calculatedPrice.currencyCode)}
+            </p>
+          )}
 
-        <AddToCart product={product} />
-      </section>
+          {product.description && (
+            <p className="mt-4 text-sm leading-relaxed text-(--foreground-muted)">{product.description}</p>
+          )}
+
+          <AddToCart product={product} />
+        </div>
+      </div>
     </main>
   )
 }

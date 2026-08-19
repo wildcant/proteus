@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { bigNumberToString } from '../../common.js'
 
-const StoreCalculatedPrice = z
+export const StoreCalculatedPrice = z
   .object({
     id: z.string(),
     currencyCode: z.string(),
@@ -45,3 +45,8 @@ export const StoreProduct = z
   })
   .openapi('StoreProduct')
 export type StoreProduct = z.infer<typeof StoreProduct>
+
+export const StoreProductListItem = StoreProduct.extend({
+  startingPrice: StoreCalculatedPrice.optional(),
+}).openapi('StoreProductListItem')
+export type StoreProductListItem = z.infer<typeof StoreProductListItem>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { z } from 'zod'
+import { Button } from '#/components/button'
 import { useVerifyEmail } from '#/features/auth/api/auth'
 import { getToken } from '#/lib/auth-token'
 
@@ -16,15 +17,15 @@ export const Route = createFileRoute('/_main/verify')({
 
 function VerifyError() {
   return (
-    <main className="demo-center px-4">
-      <div className="demo-panel max-w-sm w-full flex flex-col items-center">
-        <h1 className="demo-section-title uppercase mb-2">Invalid verification link</h1>
-        <p className="text-center text-sm text-[var(--sea-ink-soft)]">
+    <main className="flex min-h-[calc(100vh-13rem)] items-center justify-center px-4">
+      <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
+        <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Invalid verification link</h1>
+        <p className="text-center text-sm text-foreground-muted">
           The verification link is invalid or has expired. Please request a new verification email.
         </p>
-        <Link to="/login" className="demo-button mt-6">
+        <Button variant="outline" render={<Link to="/login" />} className="mt-6">
           Back to sign in
-        </Link>
+        </Button>
       </div>
     </main>
   )
@@ -39,37 +40,37 @@ function VerifyPage() {
   }, [code, mutate])
 
   return (
-    <main className="demo-center px-4">
-      <div className="demo-panel max-w-sm w-full flex flex-col items-center">
+    <main className="flex min-h-[calc(100vh-13rem)] items-center justify-center px-4">
+      <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
         {isPending && (
           <>
-            <h1 className="demo-section-title uppercase mb-2">Verifying</h1>
-            <p className="text-center text-sm text-[var(--sea-ink-soft)]">Please wait while we verify your email...</p>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Verifying</h1>
+            <p className="text-center text-sm text-foreground-muted">Please wait while we verify your email...</p>
           </>
         )}
         {isSuccess && (
           <>
-            <h1 className="demo-section-title uppercase mb-2">Email verified</h1>
-            <p className="text-center text-sm text-[var(--sea-ink-soft)]">
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Email verified</h1>
+            <p className="text-center text-sm text-foreground-muted">
               Your email has been verified. You can now log in to your account.
             </p>
-            <Link to="/login" className="demo-button mt-6">
+            <Button variant="outline" render={<Link to="/login" />} className="mt-6">
               Log in
-            </Link>
+            </Button>
           </>
         )}
         {isError && (
           <>
-            <h1 className="demo-section-title uppercase mb-2">Verification failed</h1>
-            <p className="text-center text-sm text-[var(--sea-ink-soft)]">{error.message}</p>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Verification failed</h1>
+            <p className="text-center text-sm text-foreground-muted">{error.message}</p>
             {!getToken() && (
-              <p className="text-center text-xs text-[var(--sea-ink-soft)] mt-2">
+              <p className="mt-2 text-center text-xs text-foreground-muted">
                 Make sure you open this link in the same browser you used to sign up or log in.
               </p>
             )}
-            <Link to="/login" className="demo-button mt-6">
+            <Button variant="outline" render={<Link to="/login" />} className="mt-6">
               Back to sign in
-            </Link>
+            </Button>
           </>
         )}
       </div>

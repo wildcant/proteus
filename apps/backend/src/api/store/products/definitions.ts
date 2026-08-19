@@ -11,6 +11,7 @@ export default [
     matcher: '/store/products',
     handler: productRoutes.GET,
     auth: 'public',
+    middlewares: [setPricingContext()],
     input: productRoutes.GetInput,
     searchableColumns: searchable<ProductDTO>('title'),
     operationId: 'listStoreProducts',

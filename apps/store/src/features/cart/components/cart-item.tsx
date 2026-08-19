@@ -1,6 +1,7 @@
-import { Button, formatPrice, NativeSelect, NativeSelectOption } from '@proteus/ui'
+import { formatPrice, NativeSelect, NativeSelectOption } from '@proteus/ui'
 import { Loader2Icon, ShoppingBagIcon, TrashIcon } from 'lucide-react'
 import type { StoreCartLineItem } from '#/api/generated/model'
+import { Button } from '#/components/button'
 import { useRemoveLineItem, useUpdateLineItem } from '#/features/cart/api/cart'
 
 export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; currencyCode: string }) {
@@ -11,12 +12,12 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
   const isMutating = updateLineItem.isPending || removeLineItem.isPending
 
   return (
-    <div className="island-shell flex gap-4 rounded-2xl p-4">
-      <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-(--card-bg)">
+    <div className="flex gap-4 border-b border-(--border) pb-4">
+      <div className="h-20 w-20 shrink-0 overflow-hidden bg-(--bg-subtle)">
         {item.thumbnail ? (
           <img src={item.thumbnail} alt={item.title} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-(--sea-ink-soft)">
+          <div className="flex h-full w-full items-center justify-center text-(--foreground-muted)">
             <ShoppingBagIcon className="h-6 w-6" />
           </div>
         )}
@@ -24,12 +25,12 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
 
       <div className="flex min-w-0 flex-1 flex-col justify-between">
         <div>
-          <h3 className="font-medium text-(--sea-ink)">{item.title}</h3>
-          {item.variantTitle && <p className="text-sm text-(--sea-ink-soft)">{item.variantTitle}</p>}
+          <h3 className="font-medium text-(--foreground)">{item.title}</h3>
+          {item.variantTitle && <p className="text-sm text-(--foreground-muted)">{item.variantTitle}</p>}
         </div>
 
         <div className="flex items-center gap-3">
-          <p className="text-sm text-(--sea-ink-soft)">{formatPrice(item.unitPrice, currencyCode)} each</p>
+          <p className="text-sm text-(--foreground-muted)">{formatPrice(item.unitPrice, currencyCode)} each</p>
         </div>
       </div>
 
@@ -59,7 +60,7 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
             ))}
           </NativeSelect>
 
-          <span className="min-w-[5rem] text-right font-semibold text-(--sea-ink)">
+          <span className="min-w-[5rem] text-right font-semibold text-(--foreground)">
             {formatPrice(lineTotal, currencyCode)}
           </span>
         </div>
