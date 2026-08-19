@@ -1,8 +1,9 @@
 import { Sheet, SheetTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
-import { MenuIcon, ShoppingBagIcon } from 'lucide-react'
+import { MenuIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '#/components/button'
+import { CartDropdown } from '#/features/cart/components/cart-dropdown'
 import SideMenu from './side-menu'
 
 export default function Nav() {
@@ -25,13 +26,7 @@ export default function Nav() {
           Proteus
         </Link>
 
-        <Link
-          to="/cart"
-          aria-label="Cart"
-          className="rounded-lg p-2 text-(--foreground) no-underline hover:text-(--foreground-muted)"
-        >
-          <ShoppingBagIcon className="h-5 w-5" />
-        </Link>
+        <CartDropdown />
       </nav>
     </header>
   )
