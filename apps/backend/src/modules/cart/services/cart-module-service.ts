@@ -20,6 +20,7 @@ import type {
   ICartModuleService,
   UpdateCartAddressDTO,
   UpdateCartDTO,
+  UpdateCartWithAddressesDTO,
   UpdateLineItemDTO,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
@@ -121,6 +122,34 @@ export class CartModuleService implements ICartModuleService {
   async updateCart(cartId: string, data: UpdateCartDTO, context?: Context): Promise<CartDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.cartRepository.update(cartId, data, ctx)
+    })
+  }
+
+  async updateCartWithAddresses(cartId: string, data: UpdateCartWithAddressesDTO, context?: Context): Promise<CartDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const cart = await this.cartRepository.findByIdOrFail(cartId, undefined, ctx)
+
+      const updateData: UpdateCartDTO = {}
+
+      if (data.email !== undefined) {
+        updateData.email = data.email
+      }
+
+      if (data.shippingAddress) {
+        const address = await this.upsertCartAddress(cart.shippingAddressId, data.shippingAddress, ctx)
+        updateData.shippingAddressId = address.id
+      }
+
+      if (data.billingAddress) {
+        const address = await this.upsertCartAddress(cart.billingAddressId, data.billingAddress, ctx)
+        updateData.billingAddressId = address.id
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return cart
+      }
+
+      return this.cartRepository.update(cartId, updateData, ctx)
     })
   }
 

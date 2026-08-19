@@ -76,3 +76,9 @@ export type CreateCartAddressDTO = {
 }
 
 export type UpdateCartAddressDTO = Partial<CreateCartAddressDTO>
+
+export type UpdateCartWithAddressesDTO = {
+  email?: string | null | undefined
+  shippingAddress?: CreateCartAddressDTO | undefined
+  billingAddress?: CreateCartAddressDTO | undefined
+}
