@@ -1,9 +1,9 @@
-import { test } from '@tests/setup/test-extend.js'
+import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import jwt from 'jsonwebtoken'
 import { describe, expect, vi } from 'vitest'
 import { env } from '../../../env.js'
 import type { ConfigModule } from '../../config/types.js'
-import type { AuthIdentityDTO, IAuthModuleService, ProviderIdentityDTO } from '../../types/index.js'
+import type { IAuthModuleService } from '../../types/index.js'
 import { generateJwtTokenForAuthIdentity, generateJwtTokenWithChecks } from '../utils/generate-jwt-token.js'
 
 const JWT_CONFIG = { secret: env.JWT_SECRET, expiresIn: '1d' as const }
@@ -12,37 +12,26 @@ const customerVerificationConfig: ConfigModule['projectConfig']['http']['authVer
   customer: [{ entityType: 'email', authProvider: 'emailpass' }],
 }
 
-function makeAuthIdentity(overrides: Partial<AuthIdentityDTO> & { providerIdentities?: ProviderIdentityDTO[] } = {}) {
-  return {
-    id: 'authid_123',
-    appMetadata: null as Record<string, unknown> | null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-    ...overrides,
-  }
+function makeAuthIdentity(generate: Fixtures['dto']['generate'], overrides: Parameters<Fixtures['dto']['generate']['authIdentity']>[0] & { providerIdentities?: ReturnType<Fixtures['dto']['generate']['providerIdentity']>[] } = {}) {
+  return generate.authIdentity({ id: 'authid_123', ...overrides })
 }
 
-function makeProviderIdentity(overrides: Partial<ProviderIdentityDTO> = {}): ProviderIdentityDTO {
-  return {
+function makeProviderIdentity(generate: Fixtures['dto']['generate'], overrides: Parameters<Fixtures['dto']['generate']['providerIdentity']>[0] = {}) {
+  return generate.providerIdentity({
     id: 'provid_456',
     authIdentityId: 'authid_123',
     entityId: 'test@example.com',
     provider: 'emailpass',
-    providerMetadata: null,
     userMetadata: { name: 'Test User' },
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
     ...overrides,
-  }
+  })
 }
 
 describe('generateJwtTokenForAuthIdentity', () => {
-  test('generates actorless token with empty actorId', () => {
-    const authIdentity = makeAuthIdentity({
+  test('generates actorless token with empty actorId', ({ dto }) => {
+    const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { userId: 'usr_abc' },
-      providerIdentities: [makeProviderIdentity()],
+      providerIdentities: [makeProviderIdentity(dto.generate)],
     })
 
     const token = generateJwtTokenForAuthIdentity(
@@ -58,10 +47,10 @@ describe('generateJwtTokenForAuthIdentity', () => {
     expect(decoded.authProvider).toBe('emailpass')
   })
 
-  test('generates full token with actorId from app_metadata', () => {
-    const authIdentity = makeAuthIdentity({
+  test('generates full token with actorId from app_metadata', ({ dto }) => {
+    const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { userId: 'usr_abc' },
-      providerIdentities: [makeProviderIdentity()],
+      providerIdentities: [makeProviderIdentity(dto.generate)],
     })
 
     const token = generateJwtTokenForAuthIdentity(
@@ -75,10 +64,10 @@ describe('generateJwtTokenForAuthIdentity', () => {
     expect(decoded.userMetadata).toEqual({ name: 'Test User' })
   })
 
-  test('defaults actorId to empty string when app_metadata has no actor key', () => {
-    const authIdentity = makeAuthIdentity({
+  test('defaults actorId to empty string when app_metadata has no actor key', ({ dto }) => {
+    const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { registered: true },
-      providerIdentities: [makeProviderIdentity()],
+      providerIdentities: [makeProviderIdentity(dto.generate)],
     })
 
     const token = generateJwtTokenForAuthIdentity(
@@ -90,10 +79,10 @@ describe('generateJwtTokenForAuthIdentity', () => {
     expect(decoded.actorId).toBe('')
   })
 
-  test('uses customerId key for customer actor type', () => {
-    const authIdentity = makeAuthIdentity({
+  test('uses customerId key for customer actor type', ({ dto }) => {
+    const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { customerId: 'cus_xyz' },
-      providerIdentities: [makeProviderIdentity()],
+      providerIdentities: [makeProviderIdentity(dto.generate)],
     })
 
     const token = generateJwtTokenForAuthIdentity(
@@ -108,10 +97,10 @@ describe('generateJwtTokenForAuthIdentity', () => {
 })
 
 describe('generateJwtTokenWithChecks', () => {
-  test('returns full token when no verification required (user)', async () => {
-    const authIdentity = makeAuthIdentity({
+  test('returns full token when no verification required (user)', async ({ dto }) => {
+    const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { userId: 'usr_abc' },
-      providerIdentities: [makeProviderIdentity()],
+      providerIdentities: [makeProviderIdentity(dto.generate)],
     })
 
     // Users don't have verification configured in authVerificationsPerActor
@@ -131,10 +120,10 @@ describe('generateJwtTokenWithChecks', () => {
     expect(decoded.actorId).toBe('usr_abc')
   })
 
-  test('returns actorless token with verificationRequired when verification missing (customer)', async () => {
-    const authIdentity = makeAuthIdentity({
+  test('returns actorless token with verificationRequired when verification missing (customer)', async ({ dto }) => {
+    const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { customerId: 'cus_xyz' },
-      providerIdentities: [makeProviderIdentity()],
+      providerIdentities: [makeProviderIdentity(dto.generate)],
     })
 
     const mockService = {
@@ -153,10 +142,10 @@ describe('generateJwtTokenWithChecks', () => {
     expect(decoded.actorId).toBe('')
   })
 
-  test('returns full token when verification is completed (customer)', async () => {
-    const authIdentity = makeAuthIdentity({
+  test('returns full token when verification is completed (customer)', async ({ dto }) => {
+    const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { customerId: 'cus_xyz' },
-      providerIdentities: [makeProviderIdentity()],
+      providerIdentities: [makeProviderIdentity(dto.generate)],
     })
 
     const mockService = {

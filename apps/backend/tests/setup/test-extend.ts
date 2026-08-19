@@ -8,6 +8,7 @@ import {
   generateCreateAuthPasswordResetTokenDTO,
   generateCreateAuthVerificationDTO,
   generateCreateProviderIdentityDTO,
+  generateProviderIdentityDTO,
   generateUpdateAuthIdentityDTO,
   generateUpdateAuthVerificationDTO,
   generateUpdateProviderIdentityDTO,
@@ -72,6 +73,7 @@ export type Fixtures = {
       authIdentity: typeof generateAuthIdentityDTO
       createAuthIdentity: typeof generateCreateAuthIdentityDTO
       updateAuthIdentity: typeof generateUpdateAuthIdentityDTO
+      providerIdentity: typeof generateProviderIdentityDTO
       createProviderIdentity: typeof generateCreateProviderIdentityDTO
       updateProviderIdentity: typeof generateUpdateProviderIdentityDTO
       createAuthVerification: typeof generateCreateAuthVerificationDTO
@@ -143,6 +145,7 @@ export const test = testBase.extend<Fixtures>({
         authIdentity: generateAuthIdentityDTO,
         createAuthIdentity: generateCreateAuthIdentityDTO,
         updateAuthIdentity: generateUpdateAuthIdentityDTO,
+        providerIdentity: generateProviderIdentityDTO,
         createProviderIdentity: generateCreateProviderIdentityDTO,
         updateProviderIdentity: generateUpdateProviderIdentityDTO,
         createAuthVerification: generateCreateAuthVerificationDTO,

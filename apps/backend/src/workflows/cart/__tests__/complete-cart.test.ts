@@ -28,26 +28,19 @@ function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOpti
   const shippingMethods = options.shippingMethods ?? [generate.cartShippingMethod({ cartId: cart.id })]
   const initialOrderCartLink = options.orderCartLink ?? null
 
-  const createdOrder = {
+  const createdOrder = generate.order({
     id: 'ord_1',
-    displayId: 1,
-    status: 'pending' as const,
-    fulfillmentStatus: 'unfulfilled' as const,
     email: cart.email,
     customerId: cart.customerId,
     currencyCode: cart.currencyCode,
     shippingAddressId: 'ordaddr_1',
-    billingAddressId: null,
-    canceledAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-  }
+  })
 
   const capturedPayment = generate.payment({
     amount: new BigNumber(1500),
     providerId: 'stripe',
     capturedAt: new Date(),
+    captures: [{ id: 'cap_1', amount: new BigNumber(1500), paymentId: 'pay_1', createdBy: null, metadata: null, createdAt: new Date() }],
   })
 
   let currentCart: CartDTO = cart
@@ -86,6 +79,8 @@ function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOpti
     } as PaymentCollectionDTO),
     authorizePaymentSession: vi.fn().mockResolvedValue(capturedPayment),
     capturePayment: vi.fn().mockResolvedValue(capturedPayment),
+    refundPayment: vi.fn().mockResolvedValue(undefined),
+    cancelPayment: vi.fn().mockResolvedValue(undefined),
   }
 
   const orderService = {
@@ -291,7 +286,7 @@ describe('completeCartWorkflow', () => {
 
     await completeCartWorkflow.run({ cartId: services.cart.id })
 
-    expect(services.orderService.createOrderAddresses).toHaveBeenCalledWith([])
+    expect(services.orderService.createOrderAddresses).not.toHaveBeenCalled()
     expect(services.orderService.createOrder).toHaveBeenCalledOnce()
     const createOrderCall = services.orderService.createOrder.mock.calls[0]?.[0]
     expect(createOrderCall.shippingAddressId).toBeUndefined()
