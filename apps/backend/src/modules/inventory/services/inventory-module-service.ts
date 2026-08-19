@@ -177,6 +177,12 @@ export class InventoryModuleService implements IInventoryModuleService {
     })
   }
 
+  async restoreReservationItems(ids: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.reservationItemRepository.restore(ids, ctx)
+    })
+  }
+
   async listReservationItems(
     filters?: FilterableReservationItemProps,
     config?: FindConfig<ReservationItemDTO>,

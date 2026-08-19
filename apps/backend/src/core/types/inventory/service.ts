@@ -52,6 +52,7 @@ export type IInventoryModuleService = {
   ): Promise<InventoryLevelDTO>
   createReservationItems(data: CreateReservationItemDTO[], context?: Context): Promise<ReservationItemDTO[]>
   deleteReservationItems(ids: string[], context?: Context): Promise<void>
+  restoreReservationItems(ids: string[], context?: Context): Promise<void>
   listReservationItems(
     filters?: FilterableReservationItemProps,
     config?: FindConfig<ReservationItemDTO>,

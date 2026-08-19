@@ -1,4 +1,5 @@
 import type { BigNumber } from '../../db/bignum.js'
+import type { OrderStatus } from './common.js'
 
 export type CreateOrderAddressDTO = {
   customerId?: string | null | undefined
@@ -75,8 +76,10 @@ export type CreateOrderDTO = {
 }
 
 export type UpdateOrderDTO = {
+  status?: OrderStatus | undefined
   email?: string | null | undefined
   customerId?: string | null | undefined
   shippingAddressId?: string | null | undefined
   billingAddressId?: string | null | undefined
+  canceledAt?: Date | null | undefined
 }
