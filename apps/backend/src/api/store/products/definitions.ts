@@ -1,8 +1,8 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { searchable, Tags } from '@framework/http/types.js'
 import type { ProductDTO } from '../../../core/types/product/common.js'
+import { setPricingContext } from '../middlewares.js'
 import * as productByIdRoutes from './[id]/route.js'
-import { setPricingContext } from './middlewares.js'
 import * as productRoutes from './route.js'
 
 export default [

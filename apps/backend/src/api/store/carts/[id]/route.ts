@@ -15,7 +15,9 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     cartService.listShippingMethods({ cartId: req.params.id }),
   ])
 
-  return { status: 200, json: { cart: { ...cart, items: lineItems, shippingMethods } } }
+  const totals = cartService.computeCartTotals({ lineItems, shippingMethods })
+
+  return { status: 200, json: { cart: { ...cart, items: lineItems, shippingMethods, totals } } }
 }
 
 export const PostInput = { params: IdParams, body: UpdateCart }

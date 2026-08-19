@@ -219,9 +219,12 @@
                     "items": {
                       "$ref": "#/components/schemas/StoreCartShippingMethod"
                     }
+                  },
+                  "totals": {
+                    "$ref": "#/components/schemas/StoreCartTotals"
                   }
                 },
-                "required": ["items", "shippingMethods"]
+                "required": ["items", "shippingMethods", "totals"]
               }
             ]
           }
@@ -399,6 +402,24 @@
           "updatedAt",
           "deletedAt"
         ]
+      },
+      "StoreCartTotals": {
+        "type": "object",
+        "properties": {
+          "itemsTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "shippingTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "cartTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["itemsTotal", "shippingTotal", "cartTotal"]
       },
       "StoreUpdateCartResponse": {
         "type": "object",
@@ -1417,10 +1438,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "currencyCode": {
-                    "type": "string",
-                    "minLength": 1
-                  },
                   "email": {
                     "type": "string",
                     "format": "email"
@@ -1457,8 +1474,7 @@
                       "required": ["title", "quantity", "unitPrice"]
                     }
                   }
-                },
-                "required": ["currencyCode"]
+                }
               }
             }
           }
@@ -1539,10 +1555,6 @@
                   "email": {
                     "type": "string",
                     "format": "email"
-                  },
-                  "currencyCode": {
-                    "type": "string",
-                    "minLength": 1
                   }
                 }
               }

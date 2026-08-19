@@ -63,6 +63,15 @@ export const StoreCartShippingMethod = z
   .openapi('StoreCartShippingMethod')
 export type StoreCartShippingMethod = z.input<typeof StoreCartShippingMethod>
 
+export const StoreCartTotals = z
+  .object({
+    itemsTotal: bigNumberToString,
+    shippingTotal: bigNumberToString,
+    cartTotal: bigNumberToString,
+  })
+  .openapi('StoreCartTotals')
+export type StoreCartTotals = z.input<typeof StoreCartTotals>
+
 export const StoreConfirmInventoryItem = z
   .object({
     lineItemId: z.string(),

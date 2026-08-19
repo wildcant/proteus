@@ -1,9 +1,12 @@
+import { BigNumber } from '../../../core/db/bignum.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   CartAddressDTO,
   CartDTO,
   CartLineItemDTO,
   CartShippingMethodDTO,
+  CartTotalsDTO,
+  ComputeCartTotalsDTO,
   Context,
   CreateCartDTO,
   CreateLineItemDTO,
@@ -225,5 +228,18 @@ export class CartModuleService implements ICartModuleService {
     return this.withTransaction(context, async (ctx) => {
       await this.cartShippingMethodRepository.delete(shippingMethodIds, ctx)
     })
+  }
+
+  computeCartTotals({ lineItems, shippingMethods }: ComputeCartTotalsDTO): CartTotalsDTO {
+    const itemsTotal = lineItems.reduce(
+      (sum, item) => sum.plus(item.unitPrice.multipliedBy(item.quantity)),
+      new BigNumber(0),
+    )
+
+    const shippingTotal = shippingMethods.reduce((sum, method) => sum.plus(method.amount), new BigNumber(0))
+
+    const cartTotal = itemsTotal.plus(shippingTotal)
+
+    return { itemsTotal, shippingTotal, cartTotal }
   }
 }

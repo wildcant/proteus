@@ -7,8 +7,10 @@
 import type { StoreCart } from './storeCart.ts';
 import type { StoreCartLineItem } from './storeCartLineItem.ts';
 import type { StoreCartShippingMethod } from './storeCartShippingMethod.ts';
+import type { StoreCartTotals } from './storeCartTotals.ts';
 
 export type StoreCartDetailResponseCart = StoreCart & {
   items: StoreCartLineItem[];
   shippingMethods: StoreCartShippingMethod[];
+  totals: StoreCartTotals;
 };

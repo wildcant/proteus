@@ -32,6 +32,7 @@ export * from './storeCartLineItem.ts';
 export * from './storeCartResponse.ts';
 export * from './storeCartShippingMethod.ts';
 export * from './storeCartShippingMethodData.ts';
+export * from './storeCartTotals.ts';
 export * from './storeConfirmInventoryItem.ts';
 export * from './storeCreateCartLineItemResponse.ts';
 export * from './storeCreateCartResponse.ts';

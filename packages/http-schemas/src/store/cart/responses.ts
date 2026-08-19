@@ -1,5 +1,11 @@
 import { z } from 'zod'
-import { StoreCart, StoreCartLineItem, StoreCartShippingMethod, StoreConfirmInventoryItem } from './entities.js'
+import {
+  StoreCart,
+  StoreCartLineItem,
+  StoreCartShippingMethod,
+  StoreCartTotals,
+  StoreConfirmInventoryItem,
+} from './entities.js'
 
 export const StoreCartResponse = z.object({ cart: StoreCart }).openapi('StoreCartResponse')
 export type StoreCartResponse = z.input<typeof StoreCartResponse>
@@ -15,6 +21,7 @@ export const StoreCartDetailResponse = z
     cart: StoreCart.extend({
       items: z.array(StoreCartLineItem),
       shippingMethods: z.array(StoreCartShippingMethod),
+      totals: StoreCartTotals,
     }),
   })
   .openapi('StoreCartDetailResponse')

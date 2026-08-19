@@ -2,8 +2,7 @@ import { z } from 'zod'
 import { stringToBigNumber } from '../../common.js'
 
 export const CreateCart = z.object({
-  currencyCode: z.string().min(1),
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   items: z
     .array(
       z.object({
@@ -21,8 +20,7 @@ export const CreateCart = z.object({
 export type CreateCartBody = z.infer<typeof CreateCart>
 
 export const UpdateCart = z.object({
-  email: z.string().email().optional(),
-  currencyCode: z.string().min(1).optional(),
+  email: z.email().optional(),
 })
 export type UpdateCartBody = z.infer<typeof UpdateCart>
 

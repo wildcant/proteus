@@ -87,6 +87,17 @@ export interface FilterableCartShippingMethodProps extends BaseFilterable<Filter
   shippingOptionId?: string | string[]
 }
 
+export type ComputeCartTotalsDTO = {
+  lineItems: CartLineItemDTO[]
+  shippingMethods: CartShippingMethodDTO[]
+}
+
+export type CartTotalsDTO = {
+  itemsTotal: BigNumber
+  shippingTotal: BigNumber
+  cartTotal: BigNumber
+}
+
 export type CartAddressDTO = {
   id: string
   customerId: string | null

@@ -7,6 +7,4 @@
 
 export type UpdateStoreCartBody = {
   email?: string;
-  /** @minLength 1 */
-  currencyCode?: string;
 };

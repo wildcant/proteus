@@ -5,6 +5,8 @@ import type {
   CartDTO,
   CartLineItemDTO,
   CartShippingMethodDTO,
+  CartTotalsDTO,
+  ComputeCartTotalsDTO,
   FilterableCartLineItemProps,
   FilterableCartProps,
   FilterableCartShippingMethodProps,
@@ -54,4 +56,7 @@ export type ICartModuleService = {
     context?: Context,
   ): Promise<CartShippingMethodDTO[]>
   deleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
+
+  // Computed
+  computeCartTotals(data: ComputeCartTotalsDTO): CartTotalsDTO
 }
