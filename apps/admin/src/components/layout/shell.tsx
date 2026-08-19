@@ -6,7 +6,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -23,7 +22,7 @@ import {
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { NotificationBell } from '#/features/notifications/components/notification-bell'
 import { Breadcrumbs } from './breadcrumbs'
-import { navItems } from './nav'
+import { navItems, settingsItem } from './nav'
 import { UserMenu } from './user-menu'
 
 export function Shell() {
@@ -79,7 +78,6 @@ function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarMenu>
             {navItems.map((item) => {
               const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
@@ -123,6 +121,20 @@ function AppSidebar() {
                 </Collapsible>
               )
             })}
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup className="mt-auto">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={pathname === settingsItem.to || pathname.startsWith(`${settingsItem.to}/`)}
+                tooltip={settingsItem.label}
+                render={<Link to={settingsItem.to} />}
+              >
+                {settingsItem.icon}
+                <span>{settingsItem.label}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

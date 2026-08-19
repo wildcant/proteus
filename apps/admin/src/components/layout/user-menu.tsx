@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@proteus/ui'
-import { ChevronsUpDownIcon, LogOutIcon } from 'lucide-react'
+import { EllipsisIcon, LogOutIcon } from 'lucide-react'
 import { useLogout, useMe } from '#/features/auth/api/auth'
 
 function UserAvatar({ name }: { name: string }) {
@@ -38,7 +38,7 @@ export function UserMenu() {
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">{user.name}</span>
             </div>
-            <ChevronsUpDownIcon className="ml-auto size-4" />
+            <EllipsisIcon className="ml-auto size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             side="top"

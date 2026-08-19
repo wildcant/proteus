@@ -16,5 +16,10 @@ export const navItems: NavItem[] = [
     icon: <PackageIcon />,
     children: [{ label: 'Options', to: '/product-options', icon: <SlidersHorizontalIcon /> }],
   },
-  { label: 'Settings', to: '/settings/store', icon: <SettingsIcon /> },
 ]
+
+export const settingsItem: NavItem = {
+  label: 'Settings',
+  to: '/settings/store',
+  icon: <SettingsIcon />,
+}

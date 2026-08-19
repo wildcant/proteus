@@ -96,9 +96,9 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
   const hasSecondRow = (actions && actions.length > 0) || filterDefs.length > 0
 
   return (
-    <div className={cn('flex flex-col', className)}>
+    <div className={cn('flex flex-col overflow-hidden rounded-lg border', className)}>
       <Toolbar>
-        <ToolbarRow className="px-2">
+        <ToolbarRow className="px-6">
           <ToolbarSection position="left">
             {heading && <h1 className="text-lg font-semibold">{heading}</h1>}
           </ToolbarSection>
@@ -118,7 +118,7 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
             {actions &&
               actions.length > 0 &&
               actions.map((action) => (
-                <Button key={action.to} size="sm" render={<Link to={action.to} />}>
+                <Button key={action.to} variant="outline" size="sm" render={<Link to={action.to} />}>
                   {action.label}
                 </Button>
               ))}
@@ -126,7 +126,7 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
         </ToolbarRow>
 
         {hasSecondRow && (
-          <ToolbarRow className="px-2">
+          <ToolbarRow className="px-6">
             <ToolbarSection position="left">
               <FilterBar
                 filterDefs={filterDefs}
@@ -172,6 +172,9 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
         goNext={pagination.goNext}
         goPrev={pagination.goPrev}
         isPending={isPending}
+        offset={pagination.offset}
+        limit={pagination.limit}
+        count={pagination.count}
       />
     </div>
   )

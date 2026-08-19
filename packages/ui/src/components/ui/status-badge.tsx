@@ -3,7 +3,7 @@ import { forwardRef } from 'react'
 
 import { cn } from '#/lib/utils.ts'
 
-const dotVariants = cva('size-2', {
+const dotVariants = cva('size-2 rounded-full', {
   variants: {
     color: {
       grey: 'bg-neutral-400 dark:bg-neutral-500',

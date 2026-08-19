@@ -20,7 +20,7 @@ export function StatusCell({ color = 'grey', children }: StatusCellProps) {
   return (
     <div className="flex h-full w-full items-center gap-x-2 overflow-hidden text-sm text-muted-foreground">
       <div role="presentation" className="flex size-5 shrink-0 items-center justify-center">
-        <div className={cn('size-2 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.12)_inset]', dotColors[color])} />
+        <div className={cn('size-2 rounded-full shadow-[0px_0px_0px_1px_rgba(0,0,0,0.12)_inset]', dotColors[color])} />
       </div>
       <span className="truncate capitalize">{children}</span>
     </div>
