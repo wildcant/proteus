@@ -26,6 +26,9 @@ const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
 // TODO(locking): No distributed lock guards this workflow. Concurrent calls for the same cart
 // can produce duplicate orders. Add acquireLock/releaseLock steps once a locking module is available.
 export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>('complete-cart', async (ctx, input) => {
+  /** If this cart was already completed (e.g. retry or concurrent request), return the
+   *  existing order instead of creating a duplicate. A linked order without `completedAt`
+   *  signals a partial failure that needs investigation, so we surface it as an error. */
   const existingOrder = await ctx.step('check-idempotency', async ({ container }) => {
     const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
     const orderCartLink = await linkService.repo('orderCart').findByCartId(input.cartId)
@@ -46,6 +49,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
   if (existingOrder) return existingOrder
 
+  /** Reject carts with no items, missing variants, or zero/negative quantities early,
+   *  before any side effects (order creation, payment) happen. */
   await ctx.step('validate-cart-items', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
     const lineItems = await cartService.listLineItems({ cartId: input.cartId })
@@ -73,6 +78,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     }
   })
 
+  /** Ensure a payment session exists and is in a processable state before proceeding.
+   *  Returns the session/collection IDs needed by the authorize step later. */
   const paymentInfo = await ctx.step('validate-cart-payments', async ({ container }) => {
     const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
     const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
@@ -108,6 +115,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     }
   })
 
+  /** Verify a shipping method is selected and its underlying option is still enabled.
+   *  Options can be disabled between cart creation and checkout. */
   await ctx.step('validate-shipping', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
     const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
@@ -135,6 +144,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     )
   })
 
+  /** Final guard against completing a cart that was already finalized. This catches the
+   *  window between the idempotency check and order creation (no locking yet). */
   await ctx.step('check-cart-not-completed', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
     const cart = await cartService.retrieveCart(input.cartId)
@@ -146,8 +157,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     }
   })
 
-  // Order is created before payment authorization to minimize the window where captured
-  // payments need reversal. If anything after this point fails, compensation rolls back.
+  /** Snapshot the cart into an immutable order record.
+   * If anything after this point fails, compensation deletes the order. */
   const order = await ctx.step(
     'create-order',
     async ({ container }) => {
@@ -157,40 +168,17 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
       const cart = await cartService.retrieveCart(input.cartId)
 
-      // Addresses are copied without timestamps so the order keeps an immutable record
-      const [shippingAddress, billingAddress] = await Promise.all([
-        cart.shippingAddressId ? cartService.retrieveCartAddress(cart.shippingAddressId) : null,
-        cart.billingAddressId ? cartService.retrieveCartAddress(cart.billingAddressId) : null,
+      const copyAddress = async (addressId: string | null) => {
+        if (!addressId) return undefined
+        const { id, createdAt, updatedAt, deletedAt, ...fields } = await cartService.retrieveCartAddress(addressId)
+        const [created] = await orderService.createOrderAddresses([fields])
+        return created?.id
+      }
+
+      const [orderShippingAddressId, orderBillingAddressId] = await Promise.all([
+        copyAddress(cart.shippingAddressId),
+        copyAddress(cart.billingAddressId),
       ])
-
-      const addressInputs = [shippingAddress, billingAddress]
-        .filter((address): address is NonNullable<typeof address> => address != null)
-        .map((address) => ({
-          customerId: address.customerId,
-          company: address.company,
-          firstName: address.firstName,
-          lastName: address.lastName,
-          address1: address.address1,
-          address2: address.address2,
-          city: address.city,
-          countryCode: address.countryCode,
-          province: address.province,
-          postalCode: address.postalCode,
-          phone: address.phone,
-        }))
-
-      const createdAddresses = await orderService.createOrderAddresses(addressInputs)
-
-      let orderShippingAddressId: string | undefined
-      let orderBillingAddressId: string | undefined
-      let addressIndex = 0
-      if (shippingAddress) {
-        orderShippingAddressId = createdAddresses[addressIndex]?.id
-        addressIndex++
-      }
-      if (billingAddress) {
-        orderBillingAddressId = createdAddresses[addressIndex]?.id
-      }
 
       const lineItems = await cartService.listLineItems({ cartId: input.cartId })
       const orderLineItems: CreateOrderLineItemDTO[] = lineItems.map((item) => ({
@@ -243,7 +231,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     },
   )
 
-  // Cross-module links enable idempotency checks and let other modules discover the order
+  /** Cross-module links enable the idempotency check (order↔cart) and let other modules
+   *  discover the order's payment collection (order↔paymentCollection). */
   await ctx.step(
     'link-order',
     async ({ container }) => {
@@ -262,7 +251,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     },
   )
 
-  // Reservations prevent overselling between order creation and fulfillment
+  /** Reserve inventory so the purchased quantities can't be oversold between now
+   *  and fulfillment. Reservations are released if later steps fail. */
   await ctx.step(
     'reserve-inventory',
     async ({ container }) => {
@@ -305,6 +295,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     },
   )
 
+  /** Mark the cart as completed so it can't be modified or re-checked-out.
+   *  Placed before payment auth so a failure there still leaves the cart locked. */
   await ctx.step(
     'mark-cart-completed',
     async ({ container }) => {
@@ -317,10 +309,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     },
   )
 
-  // Payment is authorized last to minimize the window where an authorized/captured payment
-  // needs reversal. The provider may auto-capture (e.g. Stripe in automatic mode), in which
-  // case the returned payment already has captures. We record those as-is rather than forcing
-  // a separate capture call, so deferred flows (bank transfers, manual capture) work correctly.
+  /** Authorize the payment session. Placed last to minimize the window where a payment
+   *  needs reversal. The provider may auto-capture (e.g. Stripe in automatic mode), in
+   *  which case the returned payment already has captures — we don't force a separate
+   *  capture call, so deferred flows (bank transfers, manual capture) work correctly. */
   const authorizedPayment = await ctx.step(
     'authorize-payment',
     async ({ container }) => {
@@ -358,10 +350,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     },
   )
 
-  // The order module tracks its own ledger independently of the payment module.
-  // Only record transactions for captures that already happened (provider auto-capture).
-  // If the provider only authorized, there are no captures yet — they happen later
-  // (e.g. at fulfillment) and are recorded then.
+  /** Record order transactions for any captures the provider already performed. The order
+   *  module tracks its own ledger independently of the payment module. If the provider only
+   *  authorized (no captures yet), transactions are recorded later when capture happens
+   *  (e.g. at fulfillment). */
   await ctx.step('record-transactions', async ({ container }) => {
     const captures = authorizedPayment.captures ?? []
     if (captures.length === 0) return

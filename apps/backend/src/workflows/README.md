@@ -81,4 +81,4 @@ Utils are reusable from both route handlers and workflow steps. They are the rig
 - **Steps need `WorkflowContext`.** They can only run inside a workflow, not from route handlers directly.
 - **Utils are pure.** No services, no `container`, no async I/O. If it needs a service, it's a step, not a util.
 - **Compensation reverses the action.** Store enough state in the step's return value to undo it.
-- **`WorkflowTerminalError`** skips compensation and fails immediately. Use for validation errors where rollback is unnecessary (e.g., "cart already completed").
+- **`WorkflowTerminalError`** signals a step has permanently failed — triggers compensation of all successful steps. Currently equivalent to throwing any error (the simple adapter has no retry logic), but marks the intent: this failure is unrecoverable and retrying would produce the same result.
