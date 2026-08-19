@@ -40,7 +40,16 @@ function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOpti
     amount: new BigNumber(1500),
     providerId: 'stripe',
     capturedAt: new Date(),
-    captures: [{ id: 'cap_1', amount: new BigNumber(1500), paymentId: 'pay_1', createdBy: null, metadata: null, createdAt: new Date() }],
+    captures: [
+      {
+        id: 'cap_1',
+        amount: new BigNumber(1500),
+        paymentId: 'pay_1',
+        createdBy: null,
+        metadata: null,
+        createdAt: new Date(),
+      },
+    ],
   })
 
   let currentCart: CartDTO = cart

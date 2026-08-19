@@ -12,11 +12,19 @@ const customerVerificationConfig: ConfigModule['projectConfig']['http']['authVer
   customer: [{ entityType: 'email', authProvider: 'emailpass' }],
 }
 
-function makeAuthIdentity(generate: Fixtures['dto']['generate'], overrides: Parameters<Fixtures['dto']['generate']['authIdentity']>[0] & { providerIdentities?: ReturnType<Fixtures['dto']['generate']['providerIdentity']>[] } = {}) {
+function makeAuthIdentity(
+  generate: Fixtures['dto']['generate'],
+  overrides: Parameters<Fixtures['dto']['generate']['authIdentity']>[0] & {
+    providerIdentities?: ReturnType<Fixtures['dto']['generate']['providerIdentity']>[]
+  } = {},
+) {
   return generate.authIdentity({ id: 'authid_123', ...overrides })
 }
 
-function makeProviderIdentity(generate: Fixtures['dto']['generate'], overrides: Parameters<Fixtures['dto']['generate']['providerIdentity']>[0] = {}) {
+function makeProviderIdentity(
+  generate: Fixtures['dto']['generate'],
+  overrides: Parameters<Fixtures['dto']['generate']['providerIdentity']>[0] = {},
+) {
   return generate.providerIdentity({
     id: 'provid_456',
     authIdentityId: 'authid_123',

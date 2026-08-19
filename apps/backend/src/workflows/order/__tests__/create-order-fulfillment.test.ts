@@ -36,8 +36,16 @@ function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<O
     create: vi.fn().mockResolvedValue({ id: 'ordful_1', orderId: order.id, fulfillmentId: fulfillment.id }),
   }
 
+  const variantInventoryItemRepo = {
+    findByVariantIds: vi.fn().mockResolvedValue([]),
+  }
+
   const linkService = {
-    repo: vi.fn().mockReturnValue(orderFulfillmentRepo),
+    repo: vi.fn().mockImplementation((name: string) => {
+      if (name === 'orderFulfillment') return orderFulfillmentRepo
+      if (name === 'productVariantInventoryItem') return variantInventoryItemRepo
+      throw new Error(`Unknown link repo: ${name}`)
+    }),
     dismissLinks: vi.fn().mockResolvedValue({}),
   }
 
@@ -72,6 +80,7 @@ function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<O
     fulfillmentService,
     linkService,
     orderFulfillmentRepo,
+    variantInventoryItemRepo,
     inventoryService,
     fulfillmentData,
   }
@@ -150,5 +159,140 @@ describe('createOrderFulfillmentWorkflow', () => {
 
     expect(services.inventoryService.adjustInventoryLevel).not.toHaveBeenCalled()
     expect(services.inventoryService.deleteReservationItems).not.toHaveBeenCalled()
+  })
+
+  test('computes inventory deduction using requiredQuantity from variant-inventory link', async ({ dto }) => {
+    const services = setup(dto.generate)
+
+    const lineItem = dto.generate.orderLineItem({ orderId: services.order.id, variantId: 'var_1', quantity: 2 })
+    services.orderService.listOrderLineItems.mockResolvedValue([lineItem])
+
+    services.variantInventoryItemRepo.findByVariantIds.mockResolvedValue([
+      {
+        id: 'pvii_1',
+        variantId: 'var_1',
+        inventoryItemId: 'iitem_abc',
+        requiredQuantity: 3,
+        createdAt: new Date(),
+        deletedAt: null,
+      },
+    ])
+
+    services.inventoryService.listReservationItems.mockResolvedValue([
+      dto.generate.reservationItem({
+        lineItemId: lineItem.id,
+        inventoryItemId: 'iitem_abc',
+        locationId: 'sloc_abc',
+        quantity: 100,
+      }),
+    ])
+
+    await createOrderFulfillmentWorkflow.run({
+      orderId: services.order.id,
+      locationId: 'sloc_abc',
+      fulfillmentData: services.fulfillmentData,
+    })
+
+    // Should deduct lineItemQty × requiredQuantity = 2 × 3 = 6, not reservation.quantity (100)
+    expect(services.inventoryService.adjustInventoryLevel).toHaveBeenCalledWith('iitem_abc', 'sloc_abc', -6)
+  })
+
+  test('throws when reservation quantity is insufficient for the required deduction', async ({ dto }) => {
+    const services = setup(dto.generate)
+
+    const lineItem = dto.generate.orderLineItem({ orderId: services.order.id, variantId: 'var_1', quantity: 5 })
+    services.orderService.listOrderLineItems.mockResolvedValue([lineItem])
+
+    services.variantInventoryItemRepo.findByVariantIds.mockResolvedValue([
+      {
+        id: 'pvii_1',
+        variantId: 'var_1',
+        inventoryItemId: 'iitem_abc',
+        requiredQuantity: 2,
+        createdAt: new Date(),
+        deletedAt: null,
+      },
+    ])
+
+    // Need 5 × 2 = 10, but reservation only has 4
+    services.inventoryService.listReservationItems.mockResolvedValue([
+      dto.generate.reservationItem({
+        lineItemId: lineItem.id,
+        inventoryItemId: 'iitem_abc',
+        locationId: 'sloc_abc',
+        quantity: 4,
+      }),
+    ])
+
+    await expect(
+      createOrderFulfillmentWorkflow.run({
+        orderId: services.order.id,
+        locationId: 'sloc_abc',
+        fulfillmentData: services.fulfillmentData,
+      }),
+    ).rejects.toThrow(/insufficient|exceeds/i)
+  })
+
+  test('throws when a managed-inventory item has no reservation', async ({ dto }) => {
+    const services = setup(dto.generate)
+
+    const lineItem = dto.generate.orderLineItem({ orderId: services.order.id, variantId: 'var_1' })
+    services.orderService.listOrderLineItems.mockResolvedValue([lineItem])
+
+    // Variant is linked to an inventory item (manages inventory)
+    services.variantInventoryItemRepo.findByVariantIds.mockResolvedValue([
+      {
+        id: 'pvii_1',
+        variantId: 'var_1',
+        inventoryItemId: 'iitem_abc',
+        requiredQuantity: 1,
+        createdAt: new Date(),
+        deletedAt: null,
+      },
+    ])
+
+    // But no reservations exist — items would leave warehouse with no stock deduction
+    services.inventoryService.listReservationItems.mockResolvedValue([])
+
+    await expect(
+      createOrderFulfillmentWorkflow.run({
+        orderId: services.order.id,
+        locationId: 'sloc_abc',
+        fulfillmentData: services.fulfillmentData,
+      }),
+    ).rejects.toThrow(/reservation/i)
+  })
+
+  test('throws when fulfillment items reference line items not in the order', async ({ dto }) => {
+    setup(dto.generate)
+
+    await expect(
+      createOrderFulfillmentWorkflow.run({
+        orderId: 'any',
+        locationId: 'sloc_abc',
+        fulfillmentData: {
+          providerId: 'manual',
+          items: [{ lineItemId: 'ordli_unknown', title: 'Ghost Item', quantity: 1 }],
+          address: { firstName: 'John', lastName: 'Doe' },
+        },
+      }),
+    ).rejects.toThrow(/does not exist|not found/i)
+  })
+
+  test('throws when order items have mixed shipping requirements', async ({ dto }) => {
+    const services = setup(dto.generate)
+
+    services.orderService.listOrderLineItems.mockResolvedValue([
+      dto.generate.orderLineItem({ orderId: services.order.id, requiresShipping: true }),
+      dto.generate.orderLineItem({ orderId: services.order.id, requiresShipping: false }),
+    ])
+
+    await expect(
+      createOrderFulfillmentWorkflow.run({
+        orderId: services.order.id,
+        locationId: 'sloc_abc',
+        fulfillmentData: services.fulfillmentData,
+      }),
+    ).rejects.toThrow(/shipping/i)
   })
 })

@@ -1,12 +1,14 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CreateFulfillmentDTO } from '@core/types/fulfillment/mutations.js'
 import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import type { ReservationItemDTO } from '@core/types/inventory/common.js'
 import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { OrderDTO } from '@core/types/order/common.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { computeInventoryAdjustments } from './utils/compute-inventory-adjustments.js'
 
 type CreateOrderFulfillmentInput = {
   orderId: string
@@ -20,7 +22,8 @@ type CreateOrderFulfillmentInput = {
 export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillmentInput, OrderDTO>(
   'create-order-fulfillment',
   async (ctx, input) => {
-    // Only pending orders that haven't been fulfilled yet can enter the fulfillment flow.
+    /** Gate on order lifecycle state — only pending, unfulfilled orders may enter
+     *  the fulfillment flow. Prevents double-fulfillment and fulfilling canceled orders. */
     await ctx.step('validate-guards', async ({ container }) => {
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
       const order = await orderService.retrieveOrder(input.orderId)
@@ -40,8 +43,34 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       }
     })
 
-    // Create the fulfillment record in the fulfillment module (items, address, provider).
-    // Compensates by canceling the fulfillment if a later step fails.
+    /** Validate fulfillment data against the order before creating any resources.
+     *  Rejects requests that reference non-existent line items or orders whose items
+     *  have mixed shipping requirements (shippable + non-shippable in one fulfillment). */
+    await ctx.step('validate-fulfillment-items', async ({ container }) => {
+      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const lineItems = await orderService.listOrderLineItems({ orderId: input.orderId })
+      const lineItemIds = new Set(lineItems.map((item) => item.id))
+
+      for (const item of input.fulfillmentData.items) {
+        if (item.lineItemId != null && !lineItemIds.has(item.lineItemId)) {
+          throw new WorkflowTerminalError({
+            type: ErrorTypes.NOT_ALLOWED,
+            message: `Fulfillment item references line item "${item.lineItemId}" which does not exist in order ${input.orderId}`,
+          })
+        }
+      }
+
+      const shippingRequirements = new Set(lineItems.map((item) => item.requiresShipping))
+      if (shippingRequirements.size > 1) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Order ${input.orderId} contains items with mixed shipping requirements`,
+        })
+      }
+    })
+
+    /** Create the fulfillment record in the fulfillment module (items, address, provider).
+     *  Compensates by canceling the fulfillment if a later step fails. */
     const fulfillment = await ctx.step(
       'create-fulfillment',
       async ({ container }) => {
@@ -54,8 +83,9 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       },
     )
 
-    // Cross-module join: the fulfillment module owns the fulfillment, but the order module
-    // needs to know which fulfillment belongs to which order. The link table bridges them.
+    /** Bridge the fulfillment and order modules via a cross-module link table — the
+     *  fulfillment module owns the record, but the order module needs to know which
+     *  fulfillment belongs to which order. Compensates by dismissing the link. */
     await ctx.step(
       'link-order-fulfillment',
       async ({ container }) => {
@@ -68,8 +98,8 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       },
     )
 
-    // Transition the order's fulfillment status so downstream steps (shipment, delivery)
-    // can gate on the correct state.
+    /** Advance the order's fulfillment status so downstream workflows (shipment,
+     *  delivery) can gate on the correct state. Compensates back to "unfulfilled". */
     const updated = await ctx.step(
       'update-fulfillment-status',
       async ({ container }) => {
@@ -82,35 +112,77 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       },
     )
 
-    // Items are physically leaving the warehouse: deduct the reserved quantities from
-    // stocked inventory, then delete the reservations since they've been consumed.
-    // No compensation — inventory adjustments are best-effort at this point; the
-    // fulfillment is already created and the order status updated.
-    await ctx.step('adjust-inventory', async ({ container }) => {
-      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+    /** Items are physically leaving the warehouse — convert reservations into stock
+     *  decrements. For managed-inventory variants, the deduction is computed as
+     *  lineItemQty × requiredQuantity (from the variant-inventory link). Throws if
+     *  a managed item is missing a reservation or the reservation is insufficient.
+     *  Compensates by reversing inventory adjustments and restoring reservations. */
+    await ctx.step(
+      'adjust-inventory',
+      async ({ container }) => {
+        const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-      const lineItems = await orderService.listOrderLineItems({ orderId: input.orderId })
-      const lineItemIds = lineItems.map((item) => item.id)
+        const lineItems = await orderService.listOrderLineItems({ orderId: input.orderId })
+        if (lineItems.length === 0) return { adjustments: [], reservationIdsToDelete: [] }
 
-      if (lineItemIds.length === 0) return
+        const variantIds = lineItems.map((item) => item.variantId).filter((id): id is string => id !== null)
+        const variantInventoryLinks =
+          variantIds.length > 0
+            ? await linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds)
+            : []
+        const variantInventoryMap = new Map(variantInventoryLinks.map((link) => [link.variantId, link]))
 
-      const reservations = await inventoryService.listReservationItems({ lineItemId: lineItemIds })
+        const lineItemIds = lineItems.map((item) => item.id)
+        const reservations = await inventoryService.listReservationItems({ lineItemId: lineItemIds })
+        const reservationsByLineItem = new Map<string, ReservationItemDTO>()
+        for (const reservation of reservations) {
+          if (reservation.lineItemId !== null) {
+            reservationsByLineItem.set(reservation.lineItemId, reservation)
+          }
+        }
 
-      await Promise.all(
-        reservations.map((reservation) =>
-          inventoryService.adjustInventoryLevel(
-            reservation.inventoryItemId,
-            reservation.locationId,
-            -reservation.quantity,
+        const result = computeInventoryAdjustments(lineItems, variantInventoryMap, reservationsByLineItem)
+
+        await Promise.all(
+          result.adjustments.map((adjustment) =>
+            inventoryService.adjustInventoryLevel(
+              adjustment.inventoryItemId,
+              adjustment.locationId,
+              adjustment.quantity,
+            ),
           ),
-        ),
-      )
+        )
 
-      if (reservations.length > 0) {
-        await inventoryService.deleteReservationItems(reservations.map((reservation) => reservation.id))
-      }
-    })
+        if (result.reservationIdsToDelete.length > 0) {
+          await inventoryService.deleteReservationItems(result.reservationIdsToDelete)
+        }
+
+        return result
+      },
+      async (result, { container }) => {
+        if (!result || (result.adjustments.length === 0 && result.reservationIdsToDelete.length === 0)) return
+
+        const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+        // Reverse inventory adjustments (add back what was deducted)
+        await Promise.all(
+          result.adjustments.map((adjustment) =>
+            inventoryService.adjustInventoryLevel(
+              adjustment.inventoryItemId,
+              adjustment.locationId,
+              -adjustment.quantity,
+            ),
+          ),
+        )
+
+        // Restore soft-deleted reservations
+        if (result.reservationIdsToDelete.length > 0) {
+          await inventoryService.restoreReservationItems(result.reservationIdsToDelete)
+        }
+      },
+    )
 
     return updated
   },
