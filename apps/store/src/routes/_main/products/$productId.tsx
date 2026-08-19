@@ -2,7 +2,7 @@ import { formatPrice } from '@proteus/ui'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { productQueryOptions, useProduct } from '#/features/products/api/products'
 
-export const Route = createFileRoute('/products/$productId')({
+export const Route = createFileRoute('/_main/products/$productId')({
   component: ProductDetailPage,
   loader: ({ context, params }) => context.queryClient.ensureQueryData(productQueryOptions(params.productId)),
 })

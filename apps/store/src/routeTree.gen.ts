@@ -9,106 +9,138 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as ProductsRouteRouteImport } from './routes/products/route'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as VerifyRouteImport } from './routes/verify'
-import { Route as AuthedAccountRouteImport } from './routes/_authed/account'
-import { Route as ProductsIndexRouteImport } from './routes/products/index'
-import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
+import { Route as CheckoutRouteRouteImport } from './routes/_checkout/route'
+import { Route as MainRouteRouteImport } from './routes/_main/route'
+import { Route as CheckoutCheckoutRouteImport } from './routes/_checkout/checkout'
+import { Route as MainIndexRouteImport } from './routes/_main/index'
+import { Route as MainAuthedRouteRouteImport } from './routes/_main/_authed/route'
+import { Route as MainCartRouteImport } from './routes/_main/cart'
+import { Route as MainForgotPasswordRouteImport } from './routes/_main/forgot-password'
+import { Route as MainLoginRouteImport } from './routes/_main/login'
+import { Route as MainProductsRouteRouteImport } from './routes/_main/products/route'
+import { Route as MainResetPasswordRouteImport } from './routes/_main/reset-password'
+import { Route as MainVerifyRouteImport } from './routes/_main/verify'
+import { Route as MainAuthedAccountRouteImport } from './routes/_main/_authed/account'
+import { Route as MainProductsIndexRouteImport } from './routes/_main/products/index'
+import { Route as MainProductsProductIdRouteImport } from './routes/_main/products/$productId'
 
-const IndexRoute = IndexRouteImport.update({
+const CheckoutRouteRoute = CheckoutRouteRouteImport.update({
+  id: '/_checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MainRouteRoute = MainRouteRouteImport.update({
+  id: '/_main',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutCheckoutRoute = CheckoutCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => CheckoutRouteRoute,
+} as any)
+const MainIndexRoute = MainIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRouteRoute,
 } as any)
-const AuthedRouteRoute = AuthedRouteRouteImport.update({
+const MainAuthedRouteRoute = MainAuthedRouteRouteImport.update({
   id: '/_authed',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRouteRoute,
 } as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+const MainCartRoute = MainCartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => MainRouteRoute,
+} as any)
+const MainForgotPasswordRoute = MainForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRouteRoute,
 } as any)
-const LoginRoute = LoginRouteImport.update({
+const MainLoginRoute = MainLoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRouteRoute,
 } as any)
-const ProductsRouteRoute = ProductsRouteRouteImport.update({
+const MainProductsRouteRoute = MainProductsRouteRouteImport.update({
   id: '/products',
   path: '/products',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRouteRoute,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
+const MainResetPasswordRoute = MainResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRouteRoute,
 } as any)
-const VerifyRoute = VerifyRouteImport.update({
+const MainVerifyRoute = MainVerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRouteRoute,
 } as any)
-const AuthedAccountRoute = AuthedAccountRouteImport.update({
+const MainAuthedAccountRoute = MainAuthedAccountRouteImport.update({
   id: '/account',
   path: '/account',
-  getParentRoute: () => AuthedRouteRoute,
+  getParentRoute: () => MainAuthedRouteRoute,
 } as any)
-const ProductsIndexRoute = ProductsIndexRouteImport.update({
+const MainProductsIndexRoute = MainProductsIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProductsRouteRoute,
+  getParentRoute: () => MainProductsRouteRoute,
 } as any)
-const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
+const MainProductsProductIdRoute = MainProductsProductIdRouteImport.update({
   id: '/$productId',
   path: '/$productId',
-  getParentRoute: () => ProductsRouteRoute,
+  getParentRoute: () => MainProductsRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/products': typeof ProductsRouteRouteWithChildren
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/verify': typeof VerifyRoute
-  '/account': typeof AuthedAccountRoute
-  '/products/$productId': typeof ProductsProductIdRoute
-  '/products/': typeof ProductsIndexRoute
+  '/': typeof MainIndexRoute
+  '/products': typeof MainProductsRouteRouteWithChildren
+  '/checkout': typeof CheckoutCheckoutRoute
+  '/cart': typeof MainCartRoute
+  '/forgot-password': typeof MainForgotPasswordRoute
+  '/login': typeof MainLoginRoute
+  '/reset-password': typeof MainResetPasswordRoute
+  '/verify': typeof MainVerifyRoute
+  '/account': typeof MainAuthedAccountRoute
+  '/products/$productId': typeof MainProductsProductIdRoute
+  '/products/': typeof MainProductsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/verify': typeof VerifyRoute
-  '/account': typeof AuthedAccountRoute
-  '/products/$productId': typeof ProductsProductIdRoute
-  '/products': typeof ProductsIndexRoute
+  '/': typeof MainIndexRoute
+  '/checkout': typeof CheckoutCheckoutRoute
+  '/cart': typeof MainCartRoute
+  '/forgot-password': typeof MainForgotPasswordRoute
+  '/login': typeof MainLoginRoute
+  '/reset-password': typeof MainResetPasswordRoute
+  '/verify': typeof MainVerifyRoute
+  '/account': typeof MainAuthedAccountRoute
+  '/products/$productId': typeof MainProductsProductIdRoute
+  '/products': typeof MainProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/_authed': typeof AuthedRouteRouteWithChildren
-  '/products': typeof ProductsRouteRouteWithChildren
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/verify': typeof VerifyRoute
-  '/_authed/account': typeof AuthedAccountRoute
-  '/products/$productId': typeof ProductsProductIdRoute
-  '/products/': typeof ProductsIndexRoute
+  '/_checkout': typeof CheckoutRouteRouteWithChildren
+  '/_main': typeof MainRouteRouteWithChildren
+  '/_main/_authed': typeof MainAuthedRouteRouteWithChildren
+  '/_main/products': typeof MainProductsRouteRouteWithChildren
+  '/_checkout/checkout': typeof CheckoutCheckoutRoute
+  '/_main/cart': typeof MainCartRoute
+  '/_main/forgot-password': typeof MainForgotPasswordRoute
+  '/_main/login': typeof MainLoginRoute
+  '/_main/reset-password': typeof MainResetPasswordRoute
+  '/_main/verify': typeof MainVerifyRoute
+  '/_main/': typeof MainIndexRoute
+  '/_main/_authed/account': typeof MainAuthedAccountRoute
+  '/_main/products/$productId': typeof MainProductsProductIdRoute
+  '/_main/products/': typeof MainProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/products'
+    | '/checkout'
+    | '/cart'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -119,6 +151,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/checkout'
+    | '/cart'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -128,137 +162,196 @@ export interface FileRouteTypes {
     | '/products'
   id:
     | '__root__'
-    | '/'
-    | '/_authed'
-    | '/products'
-    | '/forgot-password'
-    | '/login'
-    | '/reset-password'
-    | '/verify'
-    | '/_authed/account'
-    | '/products/$productId'
-    | '/products/'
+    | '/_checkout'
+    | '/_main'
+    | '/_main/_authed'
+    | '/_main/products'
+    | '/_checkout/checkout'
+    | '/_main/cart'
+    | '/_main/forgot-password'
+    | '/_main/login'
+    | '/_main/reset-password'
+    | '/_main/verify'
+    | '/_main/'
+    | '/_main/_authed/account'
+    | '/_main/products/$productId'
+    | '/_main/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
-  ProductsRouteRoute: typeof ProductsRouteRouteWithChildren
-  ForgotPasswordRoute: typeof ForgotPasswordRoute
-  LoginRoute: typeof LoginRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
-  VerifyRoute: typeof VerifyRoute
+  CheckoutRouteRoute: typeof CheckoutRouteRouteWithChildren
+  MainRouteRoute: typeof MainRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authed': {
-      id: '/_authed'
+    '/_checkout': {
+      id: '/_checkout'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AuthedRouteRouteImport
+      preLoaderRoute: typeof CheckoutRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/forgot-password': {
-      id: '/forgot-password'
+    '/_main': {
+      id: '/_main'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof MainRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_checkout/checkout': {
+      id: '/_checkout/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutCheckoutRouteImport
+      parentRoute: typeof CheckoutRouteRoute
+    }
+    '/_main/': {
+      id: '/_main/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof MainIndexRouteImport
+      parentRoute: typeof MainRouteRoute
+    }
+    '/_main/_authed': {
+      id: '/_main/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof MainAuthedRouteRouteImport
+      parentRoute: typeof MainRouteRoute
+    }
+    '/_main/cart': {
+      id: '/_main/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof MainCartRouteImport
+      parentRoute: typeof MainRouteRoute
+    }
+    '/_main/forgot-password': {
+      id: '/_main/forgot-password'
       path: '/forgot-password'
       fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof MainForgotPasswordRouteImport
+      parentRoute: typeof MainRouteRoute
     }
-    '/login': {
-      id: '/login'
+    '/_main/login': {
+      id: '/_main/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof MainLoginRouteImport
+      parentRoute: typeof MainRouteRoute
     }
-    '/products': {
-      id: '/products'
+    '/_main/products': {
+      id: '/_main/products'
       path: '/products'
       fullPath: '/products'
-      preLoaderRoute: typeof ProductsRouteRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof MainProductsRouteRouteImport
+      parentRoute: typeof MainRouteRoute
     }
-    '/reset-password': {
-      id: '/reset-password'
+    '/_main/reset-password': {
+      id: '/_main/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof MainResetPasswordRouteImport
+      parentRoute: typeof MainRouteRoute
     }
-    '/verify': {
-      id: '/verify'
+    '/_main/verify': {
+      id: '/_main/verify'
       path: '/verify'
       fullPath: '/verify'
-      preLoaderRoute: typeof VerifyRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof MainVerifyRouteImport
+      parentRoute: typeof MainRouteRoute
     }
-    '/_authed/account': {
-      id: '/_authed/account'
+    '/_main/_authed/account': {
+      id: '/_main/_authed/account'
       path: '/account'
       fullPath: '/account'
-      preLoaderRoute: typeof AuthedAccountRouteImport
-      parentRoute: typeof AuthedRouteRoute
+      preLoaderRoute: typeof MainAuthedAccountRouteImport
+      parentRoute: typeof MainAuthedRouteRoute
     }
-    '/products/': {
-      id: '/products/'
+    '/_main/products/': {
+      id: '/_main/products/'
       path: '/'
       fullPath: '/products/'
-      preLoaderRoute: typeof ProductsIndexRouteImport
-      parentRoute: typeof ProductsRouteRoute
+      preLoaderRoute: typeof MainProductsIndexRouteImport
+      parentRoute: typeof MainProductsRouteRoute
     }
-    '/products/$productId': {
-      id: '/products/$productId'
+    '/_main/products/$productId': {
+      id: '/_main/products/$productId'
       path: '/$productId'
       fullPath: '/products/$productId'
-      preLoaderRoute: typeof ProductsProductIdRouteImport
-      parentRoute: typeof ProductsRouteRoute
+      preLoaderRoute: typeof MainProductsProductIdRouteImport
+      parentRoute: typeof MainProductsRouteRoute
     }
   }
 }
 
-interface AuthedRouteRouteChildren {
-  AuthedAccountRoute: typeof AuthedAccountRoute
+interface CheckoutRouteRouteChildren {
+  CheckoutCheckoutRoute: typeof CheckoutCheckoutRoute
 }
 
-const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
-  AuthedAccountRoute: AuthedAccountRoute,
+const CheckoutRouteRouteChildren: CheckoutRouteRouteChildren = {
+  CheckoutCheckoutRoute: CheckoutCheckoutRoute,
 }
 
-const AuthedRouteRouteWithChildren = AuthedRouteRoute._addFileChildren(
-  AuthedRouteRouteChildren,
+const CheckoutRouteRouteWithChildren = CheckoutRouteRoute._addFileChildren(
+  CheckoutRouteRouteChildren,
 )
 
-interface ProductsRouteRouteChildren {
-  ProductsProductIdRoute: typeof ProductsProductIdRoute
-  ProductsIndexRoute: typeof ProductsIndexRoute
+interface MainAuthedRouteRouteChildren {
+  MainAuthedAccountRoute: typeof MainAuthedAccountRoute
 }
 
-const ProductsRouteRouteChildren: ProductsRouteRouteChildren = {
-  ProductsProductIdRoute: ProductsProductIdRoute,
-  ProductsIndexRoute: ProductsIndexRoute,
+const MainAuthedRouteRouteChildren: MainAuthedRouteRouteChildren = {
+  MainAuthedAccountRoute: MainAuthedAccountRoute,
 }
 
-const ProductsRouteRouteWithChildren = ProductsRouteRoute._addFileChildren(
-  ProductsRouteRouteChildren,
+const MainAuthedRouteRouteWithChildren = MainAuthedRouteRoute._addFileChildren(
+  MainAuthedRouteRouteChildren,
+)
+
+interface MainProductsRouteRouteChildren {
+  MainProductsProductIdRoute: typeof MainProductsProductIdRoute
+  MainProductsIndexRoute: typeof MainProductsIndexRoute
+}
+
+const MainProductsRouteRouteChildren: MainProductsRouteRouteChildren = {
+  MainProductsProductIdRoute: MainProductsProductIdRoute,
+  MainProductsIndexRoute: MainProductsIndexRoute,
+}
+
+const MainProductsRouteRouteWithChildren =
+  MainProductsRouteRoute._addFileChildren(MainProductsRouteRouteChildren)
+
+interface MainRouteRouteChildren {
+  MainAuthedRouteRoute: typeof MainAuthedRouteRouteWithChildren
+  MainProductsRouteRoute: typeof MainProductsRouteRouteWithChildren
+  MainCartRoute: typeof MainCartRoute
+  MainForgotPasswordRoute: typeof MainForgotPasswordRoute
+  MainLoginRoute: typeof MainLoginRoute
+  MainResetPasswordRoute: typeof MainResetPasswordRoute
+  MainVerifyRoute: typeof MainVerifyRoute
+  MainIndexRoute: typeof MainIndexRoute
+}
+
+const MainRouteRouteChildren: MainRouteRouteChildren = {
+  MainAuthedRouteRoute: MainAuthedRouteRouteWithChildren,
+  MainProductsRouteRoute: MainProductsRouteRouteWithChildren,
+  MainCartRoute: MainCartRoute,
+  MainForgotPasswordRoute: MainForgotPasswordRoute,
+  MainLoginRoute: MainLoginRoute,
+  MainResetPasswordRoute: MainResetPasswordRoute,
+  MainVerifyRoute: MainVerifyRoute,
+  MainIndexRoute: MainIndexRoute,
+}
+
+const MainRouteRouteWithChildren = MainRouteRoute._addFileChildren(
+  MainRouteRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AuthedRouteRoute: AuthedRouteRouteWithChildren,
-  ProductsRouteRoute: ProductsRouteRouteWithChildren,
-  ForgotPasswordRoute: ForgotPasswordRoute,
-  LoginRoute: LoginRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
-  VerifyRoute: VerifyRoute,
+  CheckoutRouteRoute: CheckoutRouteRouteWithChildren,
+  MainRouteRoute: MainRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

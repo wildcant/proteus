@@ -6,7 +6,7 @@ import { LoginForm } from '#/features/auth/components/login-form'
 import { RegisterForm } from '#/features/auth/components/register-form'
 import { getToken } from '#/lib/auth-token'
 
-export const Route = createFileRoute('/login')({
+export const Route = createFileRoute('/_main/login')({
   beforeLoad: () => {
     if (getToken()) throw redirect({ to: '/account' })
   },

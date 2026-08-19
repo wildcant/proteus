@@ -8,7 +8,7 @@ const searchSchema = z.object({
   token: z.string().min(1),
 })
 
-export const Route = createFileRoute('/reset-password')({
+export const Route = createFileRoute('/_main/reset-password')({
   validateSearch: searchSchema,
   component: ResetPasswordPage,
 })

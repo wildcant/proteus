@@ -8,7 +8,7 @@ const verifySearchSchema = z.object({
   code: z.string().min(1),
 })
 
-export const Route = createFileRoute('/verify')({
+export const Route = createFileRoute('/_main/verify')({
   validateSearch: verifySearchSchema,
   component: VerifyPage,
   errorComponent: VerifyError,

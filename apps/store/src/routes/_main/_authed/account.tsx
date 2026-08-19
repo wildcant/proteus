@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useLogout } from '#/features/auth/api/auth'
 
-export const Route = createFileRoute('/_authed/account')({
+export const Route = createFileRoute('/_main/_authed/account')({
   component: AccountPage,
 })
 

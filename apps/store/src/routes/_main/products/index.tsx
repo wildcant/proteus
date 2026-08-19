@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { productsListQueryOptions } from '#/features/products/api/products'
 import { ProductList } from '#/features/products/components/product-list'
 
-export const Route = createFileRoute('/products/')({
+export const Route = createFileRoute('/_main/products/')({
   component: ProductsPage,
   loader: ({ context }) => context.queryClient.ensureQueryData(productsListQueryOptions()),
 })

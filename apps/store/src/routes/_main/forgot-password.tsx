@@ -3,7 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ForgotPasswordForm } from '#/features/auth/components/forgot-password-form'
 
-export const Route = createFileRoute('/forgot-password')({
+export const Route = createFileRoute('/_main/forgot-password')({
   component: ForgotPasswordPage,
 })
 
