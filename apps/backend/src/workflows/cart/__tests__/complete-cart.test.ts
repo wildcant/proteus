@@ -5,27 +5,11 @@ import type { PaymentCollectionDTO } from '@core/types/payment/common.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
-import type {
-  generateCartAddressDTO,
-  generateCartDTO,
-  generateCartLineItemDTO,
-  generateCartShippingMethodDTO,
-} from '@tests/factories/cart-dto.js'
-import type { generatePaymentDTO, generatePaymentSessionDTO } from '@tests/factories/payment-dto.js'
-import { test } from '@tests/setup/test-extend.js'
+import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { describe, expect, vi } from 'vitest'
 import { noopLogger } from '../../../framework/logger/noop-logger.js'
 import { completeCartWorkflow } from '../complete-cart.js'
-
-type Factories = {
-  cart: typeof generateCartDTO
-  cartAddress: typeof generateCartAddressDTO
-  cartLineItem: typeof generateCartLineItemDTO
-  cartShippingMethod: typeof generateCartShippingMethodDTO
-  paymentSession: typeof generatePaymentSessionDTO
-  payment: typeof generatePaymentDTO
-}
 
 type SetupOptions = {
   cart?: CartDTO
@@ -37,7 +21,7 @@ type SetupOptions = {
   inventoryLevels?: Array<{ inventoryItemId: string; locationId: string; stockedQuantity: number }>
 }
 
-function setupWorkflow(generate: Factories, options: SetupOptions = {}) {
+function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOptions = {}) {
   const cart = options.cart ?? generate.cart({ customerId: 'cus_1', shippingAddressId: 'caaddr_1' })
   const address = options.address !== undefined ? options.address : generate.cartAddress({ customerId: 'cus_1' })
   const lineItems = options.lineItems ?? [generate.cartLineItem({ cartId: cart.id, variantId: 'var_1' })]
@@ -276,7 +260,6 @@ describe('completeCartWorkflow', () => {
     const orderMethod = createOrderCall.shippingMethods[0]
     expect(orderMethod.data).toEqual({ provider: 'ups', rateId: 'R123' })
   })
-
 
   test('snapshots addresses without timestamps', async ({ dto }) => {
     const services = setupWorkflow(dto.generate, {

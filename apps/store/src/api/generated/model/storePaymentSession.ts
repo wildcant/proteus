@@ -14,7 +14,8 @@ export interface StorePaymentSession {
   paymentCollectionId: string;
   providerId: string;
   currencyCode: string;
-  amount: number;
+  /** Numeric string (arbitrary precision) */
+  amount: string;
   status: StorePaymentSessionStatus;
   data: StorePaymentSessionData;
   /** @nullable */

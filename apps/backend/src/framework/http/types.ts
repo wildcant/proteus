@@ -26,6 +26,7 @@ export const Tags = {
   SHIPPING_PROFILES: 'Shipping Profiles',
   INVITES: 'Invites',
   NOTIFICATIONS: 'Notifications',
+  ORDERS: 'Orders',
   USERS: 'Users',
   WEBHOOKS: 'Webhooks',
 } as const

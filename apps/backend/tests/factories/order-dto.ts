@@ -1,4 +1,5 @@
 import { BigNumber } from '@core/db/bignum.js'
+import type { OrderDTO, OrderLineItemDTO } from '@core/types/order/common.js'
 import type {
   CreateOrderAddressDTO,
   CreateOrderDTO,
@@ -6,6 +7,55 @@ import type {
   CreateOrderShippingMethodDTO,
   CreateOrderTransactionDTO,
 } from '@core/types/order/mutations.js'
+import { faker } from '@faker-js/faker'
+
+export function generateOrderDTO(overrides?: Partial<OrderDTO>): OrderDTO {
+  return {
+    id: `ord_${faker.string.alphanumeric(32)}`,
+    displayId: faker.number.int({ min: 1, max: 99999 }),
+    status: 'pending',
+    fulfillmentStatus: 'unfulfilled',
+    email: faker.internet.email(),
+    customerId: null,
+    currencyCode: 'usd',
+    shippingAddressId: null,
+    billingAddressId: null,
+    canceledAt: null,
+    createdAt: faker.date.recent(),
+    updatedAt: faker.date.recent(),
+    deletedAt: null,
+    ...overrides,
+  }
+}
+
+export function generateOrderLineItemDTO(overrides?: Partial<OrderLineItemDTO>): OrderLineItemDTO {
+  return {
+    id: `ordli_${faker.string.alphanumeric(32)}`,
+    orderId: `ord_${faker.string.alphanumeric(32)}`,
+    title: faker.commerce.productName(),
+    subtitle: null,
+    thumbnail: null,
+    quantity: faker.number.int({ min: 1, max: 10 }),
+    unitPrice: new BigNumber(faker.number.int({ min: 100, max: 100000 })),
+    compareAtUnitPrice: null,
+    variantId: null,
+    productId: null,
+    productTitle: null,
+    productDescription: null,
+    productSubtitle: null,
+    productType: null,
+    productHandle: null,
+    variantSku: null,
+    variantBarcode: null,
+    variantTitle: null,
+    variantOptionValues: null,
+    requiresShipping: true,
+    createdAt: faker.date.recent(),
+    updatedAt: faker.date.recent(),
+    deletedAt: null,
+    ...overrides,
+  }
+}
 
 export function generateCreateOrderDTO(overrides?: Partial<CreateOrderDTO>): CreateOrderDTO {
   return {

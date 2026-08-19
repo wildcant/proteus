@@ -8,6 +8,5 @@
 export type UpdateStoreCartLineItemBody = {
   /** @exclusiveMinimum 0 */
   quantity?: number;
-  /** @minimum 0 */
-  unitPrice?: number;
+  unitPrice?: string;
 };

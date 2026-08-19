@@ -269,12 +269,8 @@
           "name": "cart_shipping_address_id_cart_address_id_fk",
           "tableFrom": "cart",
           "tableTo": "cart_address",
-          "columnsFrom": [
-            "shipping_address_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["shipping_address_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -282,12 +278,8 @@
           "name": "cart_billing_address_id_cart_address_id_fk",
           "tableFrom": "cart",
           "tableTo": "cart_address",
-          "columnsFrom": [
-            "billing_address_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["billing_address_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -399,12 +391,8 @@
           "name": "cart_credit_line_cart_id_cart_id_fk",
           "tableFrom": "cart_credit_line",
           "tableTo": "cart",
-          "columnsFrom": [
-            "cart_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cart_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -638,12 +626,8 @@
           "name": "cart_line_item_cart_id_cart_id_fk",
           "tableFrom": "cart_line_item",
           "tableTo": "cart",
-          "columnsFrom": [
-            "cart_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cart_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -761,12 +745,8 @@
           "name": "cart_line_item_tax_line_item_id_cart_line_item_id_fk",
           "tableFrom": "cart_line_item_tax_line",
           "tableTo": "cart_line_item",
-          "columnsFrom": [
-            "item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -891,12 +871,8 @@
           "name": "cart_shipping_method_cart_id_cart_id_fk",
           "tableFrom": "cart_shipping_method",
           "tableTo": "cart",
-          "columnsFrom": [
-            "cart_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cart_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1014,12 +990,8 @@
           "name": "cart_shipping_method_tax_line_shipping_method_id_cart_shipping_method_id_fk",
           "tableFrom": "cart_shipping_method_tax_line",
           "tableTo": "cart_shipping_method",
-          "columnsFrom": [
-            "shipping_method_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["shipping_method_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1035,11 +1007,7 @@
     "public.cart_status": {
       "name": "cart_status",
       "schema": "public",
-      "values": [
-        "active",
-        "completed",
-        "abandoned"
-      ]
+      "values": ["active", "completed", "abandoned"]
     }
   },
   "schemas": {},

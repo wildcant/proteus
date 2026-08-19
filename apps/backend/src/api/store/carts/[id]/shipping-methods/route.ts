@@ -36,7 +36,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
       name: shippingOption.name,
       amount,
       shippingOptionId: shippingOption.id,
-      data: req.body.data ? JSON.stringify(req.body.data) : null,
+      data: req.body.data ?? null,
     },
   ])
   if (!shippingMethod) {

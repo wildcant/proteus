@@ -6,6 +6,7 @@ import type {
   FilterableOrderShippingMethodProps,
   FilterableOrderTransactionProps,
   OrderAddressDTO,
+  OrderAllowedActions,
   OrderDTO,
   OrderLineItemDTO,
   OrderShippingMethodDTO,
@@ -81,4 +82,7 @@ export type IOrderModuleService = {
 
   // Computed totals
   computeOrderTotals(orderId: string, context?: Context): Promise<OrderTotals>
+
+  // Computed actions
+  computeAllowedActions(order: OrderDTO): OrderAllowedActions
 }

@@ -11,7 +11,8 @@ export interface AdminRefund {
   paymentId: string;
   /** @nullable */
   refundReasonId: string | null;
-  amount: number;
+  /** Numeric string (arbitrary precision) */
+  amount: string;
   /** @nullable */
   note: string | null;
   /** @nullable */

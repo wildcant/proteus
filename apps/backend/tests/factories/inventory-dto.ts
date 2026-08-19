@@ -1,5 +1,23 @@
-import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
+import type { InventoryLevelDTO, ReservationItemDTO } from '@core/types/inventory/common.js'
 import { faker } from '@faker-js/faker'
+
+export function generateReservationItemDTO(overrides?: Partial<ReservationItemDTO>): ReservationItemDTO {
+  return {
+    id: `resitem_${faker.string.alphanumeric(32)}`,
+    inventoryItemId: `iitem_${faker.string.alphanumeric(32)}`,
+    locationId: `sloc_${faker.string.alphanumeric(32)}`,
+    quantity: faker.number.int({ min: 1, max: 100 }),
+    lineItemId: null,
+    allowBackorder: false,
+    externalId: null,
+    description: null,
+    createdBy: null,
+    metadata: null,
+    createdAt: faker.date.recent(),
+    deletedAt: null,
+    ...overrides,
+  }
+}
 
 export function generateInventoryLevelDTO(overrides?: Partial<InventoryLevelDTO>): InventoryLevelDTO {
   return {

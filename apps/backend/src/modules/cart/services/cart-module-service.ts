@@ -226,5 +226,4 @@ export class CartModuleService implements ICartModuleService {
       await this.cartShippingMethodRepository.delete(shippingMethodIds, ctx)
     })
   }
-
 }

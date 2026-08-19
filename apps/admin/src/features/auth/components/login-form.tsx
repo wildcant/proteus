@@ -17,10 +17,10 @@ export function LoginForm(props: LoginFormParams) {
       className="flex flex-col gap-4"
     >
       <form.AppField name="email">
-        {(field) => <field.TextField label="Email" type="email" autoComplete="email" autoFocus />}
+        {(field) => <field.TextField label="Email" type="email" autoComplete="email" autoFocus hideLabel />}
       </form.AppField>
       <form.AppField name="password">
-        {(field) => <field.TextField label="Password" type="password" autoComplete="current-password" />}
+        {(field) => <field.TextField label="Password" type="password" autoComplete="current-password" hideLabel />}
       </form.AppField>
       <Button type="submit" disabled={isPending}>
         {isPending ? 'Signing in...' : 'Sign in'}

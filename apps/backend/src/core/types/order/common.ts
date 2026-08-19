@@ -127,4 +127,11 @@ export type OrderTotals = {
   shippingTotal: BigNumber
   orderTotal: BigNumber
   paidTotal: BigNumber
+  outstandingTotal: BigNumber
+}
+
+export type OrderAllowedActions = {
+  canComplete: boolean
+  canCancel: boolean
+  canArchive: boolean
 }

@@ -57,7 +57,7 @@ export const StoreCartShippingMethod = z
     amount: bigNumberToString,
     isTaxInclusive: z.boolean(),
     shippingOptionId: z.string().nullable(),
-    data: z.string().nullable(),
+    data: z.record(z.string(), z.unknown()).nullable(),
     ...timestamps.shape,
   })
   .openapi('StoreCartShippingMethod')

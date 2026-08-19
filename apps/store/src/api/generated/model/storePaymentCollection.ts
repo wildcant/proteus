@@ -10,13 +10,14 @@ import type { StorePaymentCollectionStatus } from './storePaymentCollectionStatu
 export interface StorePaymentCollection {
   id: string;
   currencyCode: string;
-  amount: number;
-  /** @nullable */
-  authorizedAmount: number | null;
-  /** @nullable */
-  capturedAmount: number | null;
-  /** @nullable */
-  refundedAmount: number | null;
+  /** Numeric string (arbitrary precision) */
+  amount: string;
+  /** Numeric string (arbitrary precision) */
+  authorizedAmount: string;
+  /** Numeric string (arbitrary precision) */
+  capturedAmount: string;
+  /** Numeric string (arbitrary precision) */
+  refundedAmount: string;
   /** @nullable */
   completedAt: string | null;
   status: StorePaymentCollectionStatus;

@@ -25,7 +25,7 @@ import {
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
-import { generateInventoryLevelDTO } from '../factories/inventory-dto.js'
+import { generateInventoryLevelDTO, generateReservationItemDTO } from '../factories/inventory-dto.js'
 import { generateProductVariantInventoryItemDTO } from '../factories/link-dto.js'
 import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
 import {
@@ -34,6 +34,8 @@ import {
   generateCreateOrderLineItemDTO,
   generateCreateOrderShippingMethodDTO,
   generateCreateOrderTransactionDTO,
+  generateOrderDTO,
+  generateOrderLineItemDTO,
 } from '../factories/order-dto.js'
 import {
   generateCreateAccountHolderDTO,
@@ -51,7 +53,7 @@ import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '.
 import { makeRequest } from '../utils/make-request.js'
 import { db as dbInstance } from './db-setup.js'
 
-type Fixtures = {
+export type Fixtures = {
   db: Database
   getDb: () => Database
   makeRequest: typeof makeRequest
@@ -96,6 +98,9 @@ type Fixtures = {
       createOrderShippingMethod: typeof generateCreateOrderShippingMethodDTO
       createOrderTransaction: typeof generateCreateOrderTransactionDTO
       createOrderAddress: typeof generateCreateOrderAddressDTO
+      order: typeof generateOrderDTO
+      orderLineItem: typeof generateOrderLineItemDTO
+      reservationItem: typeof generateReservationItemDTO
       cart: typeof generateCartDTO
       cartAddress: typeof generateCartAddressDTO
       cartLineItem: typeof generateCartLineItemDTO
@@ -161,6 +166,9 @@ export const test = testBase.extend<Fixtures>({
         createOrderShippingMethod: generateCreateOrderShippingMethodDTO,
         createOrderTransaction: generateCreateOrderTransactionDTO,
         createOrderAddress: generateCreateOrderAddressDTO,
+        order: generateOrderDTO,
+        orderLineItem: generateOrderLineItemDTO,
+        reservationItem: generateReservationItemDTO,
         cart: generateCartDTO,
         cartAddress: generateCartAddressDTO,
         cartLineItem: generateCartLineItemDTO,

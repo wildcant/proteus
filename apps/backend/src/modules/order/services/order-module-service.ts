@@ -14,6 +14,7 @@ import type {
   FindConfig,
   IOrderModuleService,
   OrderAddressDTO,
+  OrderAllowedActions,
   OrderDTO,
   OrderLineItemDTO,
   OrderShippingMethodDTO,
@@ -321,6 +322,18 @@ export class OrderModuleService implements IOrderModuleService {
   }
 
   // ---------------------------------------------------------------------------
+  // Computed actions
+  // ---------------------------------------------------------------------------
+
+  computeAllowedActions(order: OrderDTO): OrderAllowedActions {
+    return {
+      canComplete: order.status === 'pending',
+      canCancel: order.status === 'pending' && order.fulfillmentStatus === 'unfulfilled',
+      canArchive: order.status === 'completed',
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Computed totals
   // ---------------------------------------------------------------------------
 
@@ -342,6 +355,8 @@ export class OrderModuleService implements IOrderModuleService {
 
     const paidTotal = transactions.reduce((sum, transaction) => sum.plus(transaction.amount), new BigNumber(0))
 
-    return { itemsTotal, shippingTotal, orderTotal, paidTotal }
+    const outstandingTotal = orderTotal.minus(paidTotal)
+
+    return { itemsTotal, shippingTotal, orderTotal, paidTotal, outstandingTotal }
   }
 }

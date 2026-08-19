@@ -9,7 +9,8 @@ import type { AdminCaptureMetadata } from './adminCaptureMetadata.ts';
 export interface AdminCapture {
   id: string;
   paymentId: string;
-  amount: number;
+  /** Numeric string (arbitrary precision) */
+  amount: string;
   /** @nullable */
   createdBy: string | null;
   /** @nullable */

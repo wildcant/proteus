@@ -410,6 +410,8 @@ describe('OrderModuleService', () => {
       expect(totals.orderTotal).toEqual(new BigNumber(26500))
       // paidTotal = 26500
       expect(totals.paidTotal).toEqual(new BigNumber(26500))
+      // outstandingTotal = 26500 - 26500 = 0
+      expect(totals.outstandingTotal).toEqual(new BigNumber(0))
     })
 
     test('computeOrderTotals — zero totals for empty order', async ({ expect, dto }) => {
@@ -421,6 +423,7 @@ describe('OrderModuleService', () => {
       expect(totals.shippingTotal).toEqual(new BigNumber(0))
       expect(totals.orderTotal).toEqual(new BigNumber(0))
       expect(totals.paidTotal).toEqual(new BigNumber(0))
+      expect(totals.outstandingTotal).toEqual(new BigNumber(0))
     })
   })
 })

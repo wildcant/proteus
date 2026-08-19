@@ -164,9 +164,6 @@
           "billingAddressId": {
             "type": ["string", "null"]
           },
-          "metadata": {
-            "type": ["string", "null"]
-          },
           "completedAt": {
             "type": ["string", "null"],
             "format": "date-time"
@@ -194,7 +191,6 @@
           "status",
           "shippingAddressId",
           "billingAddressId",
-          "metadata",
           "completedAt",
           "createdAt",
           "updatedAt",
@@ -299,13 +295,12 @@
             "type": "boolean"
           },
           "compareAtUnitPrice": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "unitPrice": {
-            "type": "number"
-          },
-          "metadata": {
-            "type": ["string", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "createdAt": {
             "type": "string",
@@ -344,7 +339,6 @@
           "isTaxInclusive",
           "compareAtUnitPrice",
           "unitPrice",
-          "metadata",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -366,7 +360,8 @@
             "type": ["string", "null"]
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "isTaxInclusive": {
             "type": "boolean"
@@ -375,10 +370,8 @@
             "type": ["string", "null"]
           },
           "data": {
-            "type": ["string", "null"]
-          },
-          "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "createdAt": {
             "type": "string",
@@ -402,7 +395,6 @@
           "isTaxInclusive",
           "shippingOptionId",
           "data",
-          "metadata",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -641,16 +633,20 @@
             "type": "string"
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "authorizedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "capturedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "refundedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "completedAt": {
             "type": ["string", "null"],
@@ -717,7 +713,8 @@
             "type": "string"
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "status": {
             "type": "string",
@@ -1198,8 +1195,7 @@
                           "exclusiveMinimum": 0
                         },
                         "unitPrice": {
-                          "type": "integer",
-                          "minimum": 0
+                          "type": "string"
                         },
                         "variantId": {
                           "type": "string"
@@ -1360,8 +1356,7 @@
                     "exclusiveMinimum": 0
                   },
                   "unitPrice": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "string"
                   },
                   "variantId": {
                     "type": "string"
@@ -1437,8 +1432,7 @@
                     "exclusiveMinimum": 0
                   },
                   "unitPrice": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "string"
                   }
                 }
               }

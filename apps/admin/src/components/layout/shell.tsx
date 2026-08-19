@@ -1,15 +1,20 @@
 import {
+  Collapsible,
+  CollapsibleContent,
   Separator,
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
@@ -74,10 +79,12 @@ function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => {
-                const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarMenu>
+            {navItems.map((item) => {
+              const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
+
+              if (!item.children?.length) {
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
@@ -86,9 +93,37 @@ function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
+              }
+
+              const isGroupActive =
+                isActive || item.children.some((child) => pathname === child.to || pathname.startsWith(`${child.to}/`))
+
+              return (
+                <Collapsible key={item.to} open={isGroupActive}>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.children.map((child) => {
+                          const isChildActive = pathname === child.to || pathname.startsWith(`${child.to}/`)
+                          return (
+                            <SidebarMenuSubItem key={child.to}>
+                              <SidebarMenuSubButton isActive={isChildActive} render={<Link to={child.to} />}>
+                                <span>{child.label}</span>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              )
+            })}
+          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
