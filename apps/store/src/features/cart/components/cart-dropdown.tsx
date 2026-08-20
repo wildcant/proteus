@@ -6,7 +6,7 @@ import { Button } from '#/components/button'
 import { useCart } from '#/features/cart/api/cart'
 
 export function CartDropdown() {
-  const { cart } = useCart()
+  const { cart, isLoading } = useCart()
   const location = useLocation()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
@@ -80,7 +80,20 @@ export function CartDropdown() {
           </PopoverTrigger>
 
           <PopoverContent align="end" sideOffset={8} className="w-80">
-            {recentItems.length === 0 ? (
+            {isLoading ? (
+              <div className="space-y-3 py-2">
+                {Array.from({ length: 3 }, (_, index) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+                  <div key={index} className="flex gap-3">
+                    <div className="h-12 w-12 shrink-0 animate-pulse rounded bg-(--bg-subtle)" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3.5 w-2/3 animate-pulse rounded bg-(--bg-subtle)" />
+                      <div className="h-3 w-1/3 animate-pulse rounded bg-(--bg-subtle)" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : recentItems.length === 0 ? (
               <div className="py-6 text-center">
                 <p className="mb-2 font-medium text-foreground text-sm">Your cart is empty</p>
                 <Link

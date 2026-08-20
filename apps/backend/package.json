@@ -26,6 +26,7 @@
     "db:migrate:dev": "dotenvx run -f ../../.env.local -- npm run db:migrate",
     "db:seed:dev": "dotenvx run -f ../../.env.local -- tsx scripts/seed-dev.ts",
     "db:seed:providers": "dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-providers.ts",
+    "db:restore:staging": "./scripts/restore-staging-db.sh",
     "openapi:dump": "curl -s http://localhost:3000/admin/openapi.json | python3 -m json.tool > openapi/openapi-admin.json && curl -s http://localhost:3000/store/openapi.json | python3 -m json.tool > openapi/openapi-store.json && echo 'Saved openapi/openapi-admin.json and openapi/openapi-store.json'",
     "openapi:dump:offline": "dotenvx run -f ../../.env.test -- tsx scripts/openapi-dump.ts",
     "check:deps": "depcruise src/ --config deps-analyzer/.dependency-cruiser.cjs",

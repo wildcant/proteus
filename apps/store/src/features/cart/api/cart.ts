@@ -1,5 +1,5 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
   addStoreCartLineItem,
   createStoreCart,
@@ -18,21 +18,31 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
 const CART_QUERY_KEY = 'cart' as const
 export const cartQueryKeys = queryKeysFactory(CART_QUERY_KEY)
 
-export const useCart = (
-  options?: Omit<
-    UseQueryOptions<StoreCartDetailResponse | null, Error, StoreCartDetailResponse | null>,
-    'queryFn' | 'queryKey'
-  >,
-) => {
-  const { data, ...rest } = useQuery({
-    queryKey: cartQueryKeys.all,
-    queryFn: async () => {
-      const cartId = getCartId()
-      if (!cartId) return null
-      return getStoreCart(cartId)
-    },
-    ...options,
-  })
+type CartQueryOptions = Omit<
+  UseQueryOptions<StoreCartDetailResponse | null, Error, StoreCartDetailResponse | null>,
+  'queryFn' | 'queryKey'
+>
+
+/** Shared query config. Use in route loaders via `prefetchQuery(cartQueryOptions())`. */
+export const cartQueryOptions = (options?: CartQueryOptions) => ({
+  queryKey: cartQueryKeys.all,
+  queryFn: async () => {
+    const cartId = getCartId()
+    if (!cartId) return null
+    return getStoreCart(cartId)
+  },
+  ...options,
+})
+
+/** Suspends until cart data resolves. Use inside a `<Suspense>` boundary (route pages). */
+export const useSuspenseCart = (options?: CartQueryOptions) => {
+  const { data, ...rest } = useSuspenseQuery(cartQueryOptions(options))
+  return { cart: data?.cart ?? null, ...rest }
+}
+
+/** Non-suspending variant. Renders immediately with `isLoading` — use for always-mounted UI (nav). */
+export const useCart = (options?: CartQueryOptions) => {
+  const { data, ...rest } = useQuery(cartQueryOptions(options))
   return { cart: data?.cart ?? null, ...rest }
 }
 

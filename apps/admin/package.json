@@ -12,6 +12,7 @@
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
+    "deploy": "vite build && wrangler pages deploy dist --project-name=proteus-admin",
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
