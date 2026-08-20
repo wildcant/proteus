@@ -150,11 +150,14 @@
           "id": {
             "type": "string"
           },
+          "hasAccount": {
+            "type": "boolean"
+          },
           "firstName": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "lastName": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "email": {
             "type": "string"
@@ -172,7 +175,7 @@
             "format": "date-time"
           }
         },
-        "required": ["id", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
+        "required": ["id", "hasAccount", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
       },
       "AdminCreateCustomersResponse": {
         "type": "object",
@@ -232,11 +235,11 @@
         "type": "object",
         "properties": {
           "firstName": {
-            "type": "string",
+            "type": ["string", "null"],
             "minLength": 1
           },
           "lastName": {
-            "type": "string",
+            "type": ["string", "null"],
             "minLength": 1
           },
           "email": {
@@ -3123,6 +3126,14 @@
             },
             "required": false,
             "name": "email",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "name": "hasAccount",
             "in": "query"
           }
         ],

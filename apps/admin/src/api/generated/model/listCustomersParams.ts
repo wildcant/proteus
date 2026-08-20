@@ -19,4 +19,5 @@ limit?: number;
 order?: string;
 id?: string | string[];
 email?: string;
+hasAccount?: boolean;
 };

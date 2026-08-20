@@ -2,8 +2,9 @@ import type { BaseFilterable, OperatorMap } from '../common.js'
 
 export type CustomerDTO = {
   id: string
-  firstName: string
-  lastName: string
+  hasAccount: boolean
+  firstName: string | null
+  lastName: string | null
   email: string
   createdAt: Date
   updatedAt: Date
@@ -12,6 +13,7 @@ export type CustomerDTO = {
 
 export interface FilterableCustomerProps extends BaseFilterable<FilterableCustomerProps> {
   id?: string | string[] | undefined
+  hasAccount?: boolean | undefined
   email?: string | string[] | OperatorMap<string> | undefined
   firstName?: string | OperatorMap<string> | undefined
   lastName?: string | OperatorMap<string> | undefined

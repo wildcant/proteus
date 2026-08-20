@@ -692,11 +692,14 @@
           "id": {
             "type": "string"
           },
+          "hasAccount": {
+            "type": "boolean"
+          },
           "firstName": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "lastName": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "email": {
             "type": "string"
@@ -714,7 +717,7 @@
             "format": "date-time"
           }
         },
-        "required": ["id", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
+        "required": ["id", "hasAccount", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
       },
       "StoreOrderListResponse": {
         "type": "object",

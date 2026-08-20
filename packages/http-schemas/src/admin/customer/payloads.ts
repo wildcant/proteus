@@ -14,8 +14,8 @@ export type AdminCreateCustomersBody = z.infer<typeof AdminCreateCustomers>
 
 export const AdminUpdateCustomer = z
   .object({
-    firstName: z.string().min(1).optional(),
-    lastName: z.string().min(1).optional(),
+    firstName: z.string().min(1).optional().nullable(),
+    lastName: z.string().min(1).optional().nullable(),
     email: z.email().optional(),
   })
   .openapi('AdminUpdateCustomer')

@@ -17,7 +17,7 @@ export const createCustomerAccountWorkflow = createWorkflow<CreateCustomerAccoun
       'create-customer',
       async ({ container }) => {
         const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
-        return customerService.createCustomer(input.customerData)
+        return customerService.createCustomer({ ...input.customerData, hasAccount: true })
       },
       async (createdCustomer, { container }) => {
         const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)

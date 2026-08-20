@@ -7,8 +7,11 @@
 
 export interface AdminCustomer {
   id: string;
-  firstName: string;
-  lastName: string;
+  hasAccount: boolean;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  lastName: string | null;
   email: string;
   createdAt: string;
   updatedAt: string;
