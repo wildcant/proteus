@@ -1,4 +1,5 @@
 import type { AwilixContainer } from 'awilix'
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
@@ -55,7 +56,7 @@ export class PaymentProviderService {
     try {
       return this.container.resolve<IPaymentProvider>(providerId)
     } catch {
-      throw new Error(`Payment provider "${providerId}" is not registered.`)
+      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Payment provider "${providerId}" is not registered.` })
     }
   }
 

@@ -1,4 +1,5 @@
 import type { AwilixContainer } from 'awilix'
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type {
@@ -35,7 +36,10 @@ export class FulfillmentProviderService {
     try {
       return this.container.resolve<IFulfillmentProvider>(providerId)
     } catch {
-      throw new Error(`Fulfillment provider "${providerId}" is not registered.`)
+      throw new AppError({
+        type: ErrorTypes.NOT_FOUND,
+        message: `Fulfillment provider "${providerId}" is not registered.`,
+      })
     }
   }
 

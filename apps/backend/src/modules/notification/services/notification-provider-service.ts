@@ -1,4 +1,5 @@
 import type { AwilixContainer } from 'awilix'
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { NotificationChannel } from '../../../core/types/notification/common.js'
@@ -49,7 +50,10 @@ export class NotificationProviderService {
     try {
       return this.container.resolve<INotificationProvider>(`${PROVIDER_REGISTRATION_PREFIX}${providerId}`)
     } catch {
-      throw new Error(`Notification provider "${providerId}" is not registered.`)
+      throw new AppError({
+        type: ErrorTypes.NOT_FOUND,
+        message: `Notification provider "${providerId}" is not registered.`,
+      })
     }
   }
 

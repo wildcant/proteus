@@ -244,7 +244,10 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     return this.geoZoneRepository.createMany(
       data.map((gz) => {
         if (!gz.serviceZoneId) {
-          throw new Error('serviceZoneId is required when creating geo zones directly')
+          throw new AppError({
+            type: ErrorTypes.INVALID_DATA,
+            message: 'serviceZoneId is required when creating geo zones directly',
+          })
         }
         return { ...gz, serviceZoneId: gz.serviceZoneId }
       }),
@@ -268,7 +271,10 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async createGeoZone(data: CreateGeoZoneDTO, context?: Context): Promise<GeoZoneDTO> {
     if (!data.serviceZoneId) {
-      throw new Error('serviceZoneId is required when creating geo zones directly')
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: 'serviceZoneId is required when creating geo zones directly',
+      })
     }
     return this.geoZoneRepository.create({ ...data, serviceZoneId: data.serviceZoneId }, context) as Promise<GeoZoneDTO>
   }

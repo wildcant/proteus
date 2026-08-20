@@ -1,5 +1,5 @@
 import type { AwilixContainer } from 'awilix'
-import { AppError, type ErrorTypes } from '../errors/app-error.js'
+import { AppError, ErrorTypes } from '../errors/app-error.js'
 
 export type StepContext = { container: AwilixContainer }
 
@@ -63,7 +63,10 @@ export function createWorkflow<TInput, TOutput>(
     handler,
     run(input: TInput): Promise<TOutput> {
       if (!globalEngine || !globalContainer) {
-        throw new Error('No workflow engine configured. Call setWorkflowEngine() first.')
+        throw new AppError({
+          type: ErrorTypes.UNEXPECTED_STATE,
+          message: 'No workflow engine configured. Call setWorkflowEngine() first.',
+        })
       }
       return globalEngine.run(this, input, { container: globalContainer })
     },

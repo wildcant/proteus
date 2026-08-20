@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { BigNumber } from '../../core/db/bignum.js'
+import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import type { PaymentSessionStatus } from '../../core/types/payment/common.js'
 import type {
   AuthorizePaymentInput,
@@ -147,7 +148,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
 
   async getWebhookActionAndData(payload: ProviderWebhookPayload['payload']): Promise<WebhookActionResult> {
     const signature = payload.headers['stripe-signature']
-    if (!signature) throw new Error('Missing stripe-signature header')
+    if (!signature) throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Missing stripe-signature header' })
 
     const event = this.stripe.webhooks.constructEvent(payload.rawData as string, signature, this.config.webhookSecret)
 

@@ -1,3 +1,4 @@
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   CalculateShippingPriceContext,
   CreateProviderFulfillmentInput,
@@ -37,7 +38,7 @@ export class ManualFulfillmentProvider extends AbstractFulfillmentProvider {
     _data: Record<string, unknown>,
     _context: CalculateShippingPriceContext,
   ): Promise<{ amount: number }> {
-    throw new Error('Manual provider does not support calculated prices')
+    throw new AppError({ type: ErrorTypes.NOT_ALLOWED, message: 'Manual provider does not support calculated prices' })
   }
 
   async createFulfillment(_input: CreateProviderFulfillmentInput): Promise<{ data: Record<string, unknown> }> {

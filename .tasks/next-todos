@@ -1,16 +1,8 @@
-- per item fullfilment and shipment.
-- fix imports in backend to use alias.
+- GUEST MODE: should order email be required? how do you communicate with the customer otherwise? 
+- GLOBAL SHIPPING OPTIONS [COUNTRY CODE]: if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
 - add loader: ({ context }) => context.queryClient.ensureQueryData(...) + useSuspenseQuery to store pages.
-- should order email be required? how do you communicate with the customer otherwise?
-- if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
 - mutations can error - make sure we provide onError => display toast. to all mutations under api.
-- biome no unused vars should warn
-- store full checkout flow.
 - storage service: S3, R2, Minio
-- reusable workflow setup function for tests
-- orders module
-- features flags
-- add a new validation script to make sure we are not throwing generic errors in backend, we should throw AppError instead.. Also another validation script to make sure there's no `z.string().datetime()` in http-schemas all datetimes should use dateToIso.
 - deploy to supabase and coudflare workers.
 - investigate how to supabase as event bus (supabase-event-bus.md) (cloudflare queues)
 ![event](./subscriber-example.png)
@@ -21,9 +13,17 @@
   - For multi-instance / high-concurrency: need distributed locking (Redis, or DB-level SELECT FOR UPDATE).
   - Decide: DB-only (current scale) vs Redis locking (future scale).
 
-Future TODOs
+Future Infra TODOs
 - aws deployment
 - default indexes in all tables with deleted_at.
 - composing workflows
 - ci workflow to handle deployment!
 - migration order in prod (first modules and then link modules, are there edge cases?).
+- reusable workflow setup function for tests
+- features flags
+
+Future features TODOs
+- per item fullfilment and shipment.
+
+Future nice to have TODOs
+- fix imports in backend to use alias.
