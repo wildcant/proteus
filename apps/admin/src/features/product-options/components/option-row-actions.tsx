@@ -21,7 +21,6 @@ export function OptionRowActions({ option }: { option: AdminProductOption }) {
     if (confirmed) {
       remove(undefined, {
         onSuccess: () => toast.add({ type: 'success', title: `Option "${option.title}" deleted` }),
-        onError: (error) => toast.add({ type: 'error', title: 'Failed to delete option', description: error.message }),
       })
     }
   }

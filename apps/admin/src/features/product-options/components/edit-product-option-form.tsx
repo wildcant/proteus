@@ -1,4 +1,4 @@
-import { Button, TagInput, toast } from '@proteus/ui'
+import { Button, TagInput } from '@proteus/ui'
 import type { AdminProductOption } from '#/api/generated/model'
 import { KeyboundForm } from '#/components/modals/keybound-form'
 import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
@@ -10,7 +10,6 @@ export function EditProductOptionForm({ option }: { option: AdminProductOption }
 
   const { form } = useEditProductOptionForm(option, {
     onSuccess: () => handleSuccess(),
-    onError: (error) => toast.add({ type: 'error', title: 'Failed to update option', description: error }),
   })
 
   return (

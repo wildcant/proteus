@@ -1,4 +1,4 @@
-import { Card, CardAction, CardHeader, CardTitle, StatusBadge, toast } from '@proteus/ui'
+import { Card, CardAction, CardHeader, CardTitle, StatusBadge } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
 import type { AdminProduct } from '#/api/generated/model'
@@ -22,10 +22,7 @@ export function ProductGeneralSection({ product }: { product: AdminProduct }) {
     })
 
     if (confirmed) {
-      await deleteProduct(undefined, {
-        onSuccess: () => navigate({ to: '/products' }),
-        onError: (error) => toast.add({ type: 'error', title: 'Failed to delete product', description: error.message }),
-      })
+      await deleteProduct(undefined, { onSuccess: () => navigate({ to: '/products' }) })
     }
   }
 

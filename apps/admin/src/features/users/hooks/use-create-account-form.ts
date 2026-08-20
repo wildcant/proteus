@@ -15,11 +15,11 @@ export type CreateAccountFormParams = SubmitFormParams & {
   token: string
 }
 
-export function useCreateAccountForm({ token, onSuccess, onError, onSettled }: CreateAccountFormParams) {
+export function useCreateAccountForm(params: CreateAccountFormParams) {
   const acceptInviteMutation = useAcceptInvite()
 
   const form = useAppForm({
-    defaultValues: { token, name: '', password: '', confirmPassword: '' },
+    defaultValues: { token: params.token, name: '', password: '', confirmPassword: '' },
     validators: { onSubmit: CreateAccountSchema },
     onSubmit: ({ value }) => {
       acceptInviteMutation.mutate(
@@ -27,10 +27,10 @@ export function useCreateAccountForm({ token, onSuccess, onError, onSettled }: C
         {
           onSuccess: () => {
             form.reset()
-            onSuccess?.()
+            params.onSuccess?.()
           },
-          onError: (error) => onError?.(error.message),
-          onSettled: () => onSettled?.(),
+          onError: (error) => params.onError?.(error.message),
+          onSettled: () => params.onSettled?.(),
         },
       )
     },

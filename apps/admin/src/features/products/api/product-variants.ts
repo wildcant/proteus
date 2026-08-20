@@ -1,8 +1,14 @@
+import { toast } from '@proteus/ui'
+import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
   AdminCreateProductVariant,
+  AdminCreateProductVariantResponse,
   AdminUpdateProductVariant,
+  AdminUpdateProductVariantResponse,
   AdminUpdateVariantPrices,
+  AdminUpdateVariantPricesResponse,
+  DeleteResponse,
   ListProductVariantsParams,
 } from '#/api/generated/model'
 import {
@@ -38,44 +44,91 @@ export const useProductVariants = (productId: string, params?: ListProductVarian
 export const useProductVariant = (productId: string, variantId: string) =>
   useQuery(productVariantQueryOptions(productId, variantId))
 
-export const useCreateProductVariant = (productId: string) => {
+export const useCreateProductVariant = (
+  productId: string,
+  options?: UseMutationOptions<AdminCreateProductVariantResponse, Error, AdminCreateProductVariant>,
+) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminCreateProductVariant) => createProductVariant(productId, data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create variant', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useUpdateProductVariant = (productId: string, variantId: string) => {
+export const useUpdateProductVariant = (
+  productId: string,
+  variantId: string,
+  options?: UseMutationOptions<AdminUpdateProductVariantResponse, Error, AdminUpdateProductVariant>,
+) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminUpdateProductVariant) => updateProductVariant(productId, variantId, data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: variantKeys.detail(variantId) })
       queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update variant', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useDeleteProductVariant = (productId: string, variantId: string) => {
+export const useDeleteProductVariant = (
+  productId: string,
+  variantId: string,
+  options?: UseMutationOptions<DeleteResponse, Error, void>,
+) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: () => deleteProductVariant(productId, variantId),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to delete variant', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useUpdateVariantPrices = (productId: string, variantId: string) => {
+export const useUpdateVariantPrices = (
+  productId: string,
+  variantId: string,
+  options?: UseMutationOptions<AdminUpdateVariantPricesResponse, Error, AdminUpdateVariantPrices>,
+) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminUpdateVariantPrices) => updateVariantPrices(productId, variantId, data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: variantKeys.detail(variantId) })
       queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update variant prices', description: error.message })
+      onError?.(...args)
     },
   })
 }

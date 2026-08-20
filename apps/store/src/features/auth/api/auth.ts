@@ -1,3 +1,4 @@
+import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
@@ -8,11 +9,19 @@ import {
   storeAuthLogin,
   storeAuthSignup,
 } from '#/api/generated/auth/auth'
-import type { AuthenticateResponse, ResetPasswordBody, StoreLoginBody, StoreSignupBody } from '#/api/generated/model'
+import type {
+  AuthenticateResponse,
+  ResetPasswordBody,
+  ResetPasswordResponse,
+  StoreLoginBody,
+  StoreSignupBody,
+  UpdatePasswordResponse,
+  VerificationConfirmResponse,
+} from '#/api/generated/model'
 import { clearToken, setToken } from '#/lib/auth-token'
 
 export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Error, StoreLoginBody>) => {
-  const { onSuccess, ...rest } = options ?? {}
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: (payload: StoreLoginBody) => storeAuthLogin(payload),
@@ -21,11 +30,16 @@ export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Erro
       setToken(data.token)
       onSuccess?.(...args)
     },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Login failed', description: error.message })
+      onError?.(...args)
+    },
   })
 }
 
 export const useRegister = (options?: UseMutationOptions<AuthenticateResponse, Error, StoreSignupBody>) => {
-  const { onSuccess, ...rest } = options ?? {}
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: (payload: StoreSignupBody) => storeAuthSignup(payload),
@@ -34,27 +48,57 @@ export const useRegister = (options?: UseMutationOptions<AuthenticateResponse, E
       setToken(data.token)
       onSuccess?.(...args)
     },
-  })
-}
-
-export const useRequestPasswordReset = () => {
-  return useMutation({
-    mutationFn: (payload: ResetPasswordBody) => authResetPassword('customer', 'emailpass', payload),
-  })
-}
-
-export const useUpdatePassword = () => {
-  return useMutation({
-    mutationFn: ({ password, token }: { password: string; token: string }) => {
-      setToken(token)
-      return authUpdatePassword('customer', 'emailpass', { password }).finally(() => clearToken())
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Registration failed', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useVerifyEmail = () => {
+export const useRequestPasswordReset = (
+  options?: UseMutationOptions<ResetPasswordResponse, Error, ResetPasswordBody>,
+) => {
+  const { onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
+    mutationFn: (payload: ResetPasswordBody) => authResetPassword('customer', 'emailpass', payload),
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to request password reset', description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+export const useUpdatePassword = (
+  options?: UseMutationOptions<UpdatePasswordResponse, Error, { password: string; token: string }>,
+) => {
+  const { onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
+    mutationFn: ({ password, token }: { password: string; token: string }) => {
+      setToken(token)
+      return authUpdatePassword('customer', 'emailpass', { password }).finally(() => clearToken())
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update password', description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+export const useVerifyEmail = (options?: UseMutationOptions<VerificationConfirmResponse, Error, { code: string }>) => {
+  const { onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
     mutationFn: (payload: { code: string }) => authVerificationConfirm(payload),
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to verify email', description: error.message })
+      onError?.(...args)
+    },
   })
 }
 

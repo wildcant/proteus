@@ -1,3 +1,4 @@
+import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
@@ -35,7 +36,7 @@ export const useLogout = () => {
 type LoginPayload = { email: string; password: string }
 
 export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Error, LoginPayload>) => {
-  const { onSuccess, ...rest } = options ?? {}
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: (payload: LoginPayload) => authAuthenticate('user', 'emailpass', payload),
@@ -43,6 +44,11 @@ export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Erro
       const [data] = args
       setToken(data.token)
       onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Login failed', description: error.message })
+      onError?.(...args)
     },
   })
 }

@@ -1,5 +1,12 @@
+import { toast } from '@proteus/ui'
+import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
-import type { AdminCreateOrderFulfillment, AdminCreateOrderShipment, ListOrdersParams } from '#/api/generated/model'
+import type {
+  AdminCreateOrderFulfillment,
+  AdminCreateOrderShipment,
+  AdminOrderActionResponse,
+  ListOrdersParams,
+} from '#/api/generated/model'
 import {
   archiveOrder,
   cancelOrder,
@@ -32,62 +39,121 @@ export const useOrders = (params?: ListOrdersParams) => useQuery(ordersListQuery
 
 export const useOrder = (id: string) => useQuery(orderQueryOptions(id))
 
-export const useCompleteOrder = (id: string) => {
+export const useCompleteOrder = (id: string, options?: UseMutationOptions<AdminOrderActionResponse, Error, void>) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: () => completeOrder(id),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to complete order', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useCancelOrder = (id: string) => {
+export const useCancelOrder = (id: string, options?: UseMutationOptions<AdminOrderActionResponse, Error, void>) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: () => cancelOrder(id),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to cancel order', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useArchiveOrder = (id: string) => {
+export const useArchiveOrder = (id: string, options?: UseMutationOptions<AdminOrderActionResponse, Error, void>) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: () => archiveOrder(id),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to archive order', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useCreateOrderFulfillment = (id: string) => {
+export const useCreateOrderFulfillment = (
+  id: string,
+  options?: UseMutationOptions<AdminOrderActionResponse, Error, AdminCreateOrderFulfillment>,
+) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminCreateOrderFulfillment) => createOrderFulfillment(id, data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create fulfillment', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useCreateOrderShipment = (id: string, fulfillmentId: string) => {
+export const useCreateOrderShipment = (
+  id: string,
+  fulfillmentId: string,
+  options?: UseMutationOptions<AdminOrderActionResponse, Error, AdminCreateOrderShipment | undefined>,
+) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data?: AdminCreateOrderShipment) => createOrderShipment(id, fulfillmentId, data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create shipment', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useMarkOrderDelivered = (id: string, fulfillmentId: string) => {
+export const useMarkOrderDelivered = (
+  id: string,
+  fulfillmentId: string,
+  options?: UseMutationOptions<AdminOrderActionResponse, Error, void>,
+) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: () => markOrderAsDelivered(id, fulfillmentId),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to mark order as delivered', description: error.message })
+      onError?.(...args)
     },
   })
 }

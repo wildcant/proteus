@@ -85,6 +85,10 @@ try {
 }
 ```
 
+### Error handling
+
+Error toasts are handled by the mutation hook layer (see `docs/mutation-hooks.md`), not the form hook. The form hook's `onError` callback is for notifying the caller (e.g., to keep a modal open) — it doesn't need to show a toast.
+
 ### Data queries don't belong in form hooks
 
 Queries that fetch options for the UI (e.g., `useShippingOptions`, `usePaymentProviders`) belong in the **component**, not the hook. The hook only owns form state and mutations.

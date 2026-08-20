@@ -1,8 +1,13 @@
+import { toast } from '@proteus/ui'
+import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import type {
   AdminCreateProductOption,
+  AdminProductOptionResponse,
   AdminSetProductOptions,
+  AdminSetProductOptionsResponse,
   AdminUpdateProductOption,
+  DeleteResponse,
   ListProductOptionsParams,
   ListProductsForOptionParams,
   ListValuesForOptionParams,
@@ -40,31 +45,60 @@ export const useProductOptions = (params?: ListProductOptionsParams) => useQuery
 
 export const useProductOption = (id: string) => useQuery(productOptionQueryOptions(id))
 
-export const useCreateProductOption = () => {
+export const useCreateProductOption = (
+  options?: UseMutationOptions<AdminProductOptionResponse, Error, AdminCreateProductOption>,
+) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminCreateProductOption) => createProductOption(data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productOptionKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create option', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useUpdateProductOption = (id: string) => {
+export const useUpdateProductOption = (
+  id: string,
+  options?: UseMutationOptions<AdminProductOptionResponse, Error, AdminUpdateProductOption>,
+) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminUpdateProductOption) => updateProductOption(id, data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productOptionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: productOptionKeys.lists() })
       queryClient.invalidateQueries({ queryKey: valuesForOptionKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update option', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useDeleteProductOption = (id: string) => {
+export const useDeleteProductOption = (id: string, options?: UseMutationOptions<DeleteResponse, Error, void>) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: () => deleteProductOption(id),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productOptionKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to delete option', description: error.message })
+      onError?.(...args)
     },
   })
 }
@@ -108,11 +142,22 @@ export const productOptionsForProductQueryOptions = (productId: string) =>
 export const useProductOptionsForProduct = (productId: string) =>
   useQuery(productOptionsForProductQueryOptions(productId))
 
-export const useSetProductOptions = (productId: string) => {
+export const useSetProductOptions = (
+  productId: string,
+  options?: UseMutationOptions<AdminSetProductOptionsResponse, Error, AdminSetProductOptions>,
+) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminSetProductOptions) => setProductOptions(productId, data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productOptionsForProductKeys.detail(productId) })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to set product options', description: error.message })
+      onError?.(...args)
     },
   })
 }

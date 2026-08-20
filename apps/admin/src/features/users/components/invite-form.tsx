@@ -10,7 +10,6 @@ export function InviteForm() {
 
   const { form, isLoading } = useInviteForm({
     onSuccess: () => toast.add({ type: 'success', title: 'Invite sent' }),
-    onError: (error) => toast.add({ type: 'error', title: 'Failed to send invite', description: error }),
   })
 
   return (

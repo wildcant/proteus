@@ -1,4 +1,3 @@
-import { toast } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { useCompleteCart } from '#/features/checkout/api/checkout'
 
@@ -9,7 +8,6 @@ export function useReviewStep() {
     onSuccess: (response) => {
       navigate({ to: '/order/$orderId/confirmed', params: { orderId: response.orderId } })
     },
-    onError: (error) => toast.add({ type: 'error', title: error.message }),
   })
 
   const handlePlaceOrder = () => {
