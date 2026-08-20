@@ -19,6 +19,7 @@ export default [
     matcher: '/store/orders/:id',
     handler: orderByIdRoutes.GET,
     input: orderByIdRoutes.GetInput,
+    auth: 'optional',
     operationId: 'getStoreOrder',
     summary: 'Retrieve a customer order',
     tags: [Tags.ORDERS],
