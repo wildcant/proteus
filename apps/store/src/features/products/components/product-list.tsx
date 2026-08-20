@@ -1,44 +1,25 @@
 import { useState } from 'react'
-import { useProducts } from '#/features/products/api/products'
+import { PRODUCTS_DEFAULT_LIMIT, PRODUCTS_DEFAULT_OFFSET, useSuspenseProducts } from '#/features/products/api/products'
 import { ProductCard } from './product-card'
 
-function ProductListSkeleton({ count }: { count: number }) {
-  return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-      {Array.from({ length: count }, (_, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
-        <div key={index}>
-          <div className="aspect-3/4 animate-pulse bg-(--bg-subtle)" />
-          <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-(--bg-subtle)" />
-          <div className="mt-2 h-4 w-1/3 animate-pulse rounded bg-(--bg-subtle)" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export function ProductList() {
-  const [offset, setOffset] = useState(0)
-  const limit = 12
-  const { products, count, isLoading } = useProducts({ offset, limit })
-
-  if (isLoading) {
-    return <ProductListSkeleton count={limit} />
-  }
+  const [offset, setOffset] = useState(PRODUCTS_DEFAULT_OFFSET)
+  const limit = PRODUCTS_DEFAULT_LIMIT
+  const { products, count } = useSuspenseProducts({ offset, limit })
 
   return (
     <>
       <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-        {products?.map((product) => (
-          <ProductCard key={product.id} product={product} />
+        {products.map((product, index) => (
+          <ProductCard key={product.id} product={product} priority={index < 4} />
         ))}
       </div>
 
-      {(!products || products.length === 0) && (
+      {products.length === 0 && (
         <p className="py-20 text-center text-(--foreground-muted) text-sm">No products found.</p>
       )}
 
-      {count != null && count > limit && (
+      {count > limit && (
         <div className="mt-12 flex items-center justify-center gap-6 text-(--foreground-muted) text-sm">
           <button
             type="button"

@@ -1,10 +1,10 @@
 import { Toaster } from '@proteus/ui'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { QueryClient } from '@tanstack/react-query'
-import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import manropeFont from '../assets/fonts/Manrope-VariableFont_wght.woff2?url'
 import appCss from '../styles.css?url'
 
 const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`
@@ -22,8 +22,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         title: 'Proteus',
       },
+      {
+        name: 'description',
+        content: 'Proteus — modern storefront powered by TanStack Start',
+      },
     ],
     links: [
+      {
+        rel: 'preload',
+        href: manropeFont,
+        as: 'font',
+        type: 'font/woff2',
+        crossOrigin: 'anonymous',
+      },
       {
         rel: 'stylesheet',
         href: appCss,
@@ -35,12 +46,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 })
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext()
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <Outlet />
       <ReactQueryDevtools buttonPosition="bottom-left" />
-    </QueryClientProvider>
+    </>
   )
 }
 

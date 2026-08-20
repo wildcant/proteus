@@ -3,7 +3,8 @@
   "name": "proteus",
   // Set this to today's date
   "compatibility_date": "2026-07-26",
-  "compatibility_flags": ["nodejs_compat"],
+  // TODO: Remove global_fetch_strictly_public when using custom domains — only needed for *.workers.dev Worker-to-Worker fetch
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "main": "@tanstack/react-start/server-entry",
   "vars": {
     "RUNTIME": "workerd",

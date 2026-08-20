@@ -1,18 +1,12 @@
-import { z } from 'zod'
-
-const envSchema = z.object({
-  VITE_BACKEND_URL: z.url(),
-})
-
 function createEnv() {
-  const result = envSchema.safeParse(import.meta.env)
-
-  if (!result.success) {
-    const issues = result.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n')
-    throw new Error(`Invalid environment variables:\n${issues}`)
+  const url = import.meta.env.VITE_BACKEND_URL
+  if (!url) throw new Error('Missing required env var: VITE_BACKEND_URL')
+  try {
+    new URL(url)
+  } catch {
+    throw new Error(`VITE_BACKEND_URL is not a valid URL: "${url}"`)
   }
-
-  return result.data
+  return { VITE_BACKEND_URL: url as string }
 }
 
 export const env = createEnv()

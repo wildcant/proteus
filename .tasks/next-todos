@@ -1,6 +1,4 @@
 Fixes and improvements
-- deploy to cloudflare workers.
-- add loader: ({ context }) => context.queryClient.ensureQueryData(...) + useSuspenseQuery to store pages.
 - allow store to render products server side or static site generation for SEO.
 - mutations can error - make sure we provide onError => display toast. to all mutations under api. add doc to make sure this is an stablished pattern.
 

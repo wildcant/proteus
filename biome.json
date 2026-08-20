@@ -157,7 +157,7 @@
     {
       "includes": [
         "**/src/routes/**",
-        "**/*.config.ts",
+        "**/*.config*.ts",
         "**/database.config.ts",
         "**/src/api/**/definitions.ts",
         "apps/backend/src/modules/*/index.ts",
