@@ -15,7 +15,7 @@
     "build": "dotenvx run --env-file=../../.env -- vite build",
     "preview": "npm run build && vite preview",
     "deploy": "npm run build && wrangler deploy",
-    "deploy:static": "dotenvx run --env-file=../../.env -- vite build --config vite.config.static.ts && cp dist/client/_shell.html dist/client/index.html && rm -f .wrangler/deploy/config.json && wrangler pages deploy dist/client --project-name=proteus-store",
+    "deploy:static": "dotenvx run --env-file=../../.env -- vite build --config vite.config.static.ts && cp dist/client/_shell.html dist/client/index.html && cp static/_redirects dist/client/_redirects && rm -f .wrangler/deploy/config.json && wrangler pages deploy dist/client --project-name=proteus-store",
     "cf-typegen": "wrangler types",
     "test": "dotenvx run -f ../../.env.test -- vitest run",
     "typecheck": "tsc --noEmit",

@@ -6,9 +6,14 @@ import { ProductDetailSkeleton } from '#/features/products/components/product-de
 
 export const Route = createFileRoute('/_main/products/$productId')({
   component: ProductDetailPage,
-  loader: ({ context, params }) => {
-    context.queryClient.prefetchQuery(productQueryOptions(params.productId))
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(productQueryOptions(params.productId))
   },
+  headers: () => ({
+    // Shorter cache due to inventory changes
+    'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
+  }),
+  staleTime: 30_000,
 })
 
 function ProductDetailPage() {

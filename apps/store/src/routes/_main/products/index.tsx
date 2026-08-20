@@ -10,11 +10,15 @@ import { ProductListSkeleton } from '#/features/products/components/product-list
 
 export const Route = createFileRoute('/_main/products/')({
   component: ProductsPage,
-  loader: ({ context }) => {
-    context.queryClient.prefetchQuery(
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
       productsListQueryOptions({ offset: PRODUCTS_DEFAULT_OFFSET, limit: PRODUCTS_DEFAULT_LIMIT }),
     )
   },
+  headers: () => ({
+    'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
+  }),
+  staleTime: 30_000,
 })
 
 function ProductsPage() {
