@@ -11,7 +11,7 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
   const isMutating = updateLineItem.isPending || removeLineItem.isPending
 
   return (
-    <div className="flex gap-4 border-b border-(--border) pb-4">
+    <div className="flex gap-4 border-b border-border pb-4">
       <div className="h-20 w-20 shrink-0 overflow-hidden bg-(--bg-subtle)">
         {item.thumbnail ? (
           <img src={item.thumbnail} alt={item.title} className="h-full w-full object-cover" />
@@ -24,7 +24,7 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
 
       <div className="flex min-w-0 flex-1 flex-col justify-between">
         <div>
-          <h3 className="font-medium text-(--foreground)">{item.title}</h3>
+          <h3 className="font-medium text-foreground">{item.title}</h3>
           {!!item.variantTitle && <p className="text-sm text-(--foreground-muted)">{item.variantTitle}</p>}
         </div>
 
@@ -59,7 +59,7 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
             ))}
           </NativeSelect>
 
-          <span className="min-w-[5rem] text-right font-semibold text-(--foreground)">
+          <span className="min-w-20 text-right font-semibold text-foreground">
             {formatPrice(item.lineTotal, currencyCode)}
           </span>
         </div>

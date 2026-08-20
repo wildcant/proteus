@@ -20,7 +20,7 @@ function CheckoutPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
         <p className="text-(--foreground-muted)">Loading checkout...</p>
       </main>
     )
@@ -31,7 +31,7 @@ function CheckoutPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
       <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
         <CheckoutForm cart={cart} step={step} />
         <CheckoutSummary cart={cart} />

@@ -14,7 +14,7 @@ export default function SideMenu({ onClose }: { onClose: () => void }) {
   return (
     <SheetContent side="left" className="flex flex-col">
       <SheetHeader>
-        <span className="text-base font-semibold text-(--foreground)">Menu</span>
+        <span className="text-base font-semibold text-foreground">Menu</span>
       </SheetHeader>
 
       <nav className="flex flex-1 flex-col gap-1 px-4">
@@ -23,8 +23,8 @@ export default function SideMenu({ onClose }: { onClose: () => void }) {
             key={to}
             to={to}
             onClick={onClose}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-(--foreground-muted) no-underline hover:bg-(--bg-subtle) hover:text-(--foreground)"
-            activeProps={{ className: 'bg-(--bg-subtle) text-(--foreground)' }}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-(--foreground-muted) no-underline hover:bg-(--bg-subtle) hover:text-foreground"
+            activeProps={{ className: 'bg-(--bg-subtle) text-foreground' }}
           >
             <Icon className="h-4 w-4" />
             {label}
@@ -32,7 +32,7 @@ export default function SideMenu({ onClose }: { onClose: () => void }) {
         ))}
       </nav>
 
-      <SheetFooter className="border-t border-(--border) px-4 py-4">
+      <SheetFooter className="border-t border-border px-4 py-4">
         <div className="flex items-center justify-between">
           <ThemeToggle />
           <p className="m-0 text-xs text-(--foreground-muted)">&copy; {new Date().getFullYear()} Proteus</p>

@@ -8,7 +8,7 @@ function ProductListSkeleton({ count }: { count: number }) {
       {Array.from({ length: count }, (_, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
         <div key={index}>
-          <div className="aspect-[3/4] animate-pulse bg-(--bg-subtle)" />
+          <div className="aspect-3/4 animate-pulse bg-(--bg-subtle)" />
           <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-(--bg-subtle)" />
           <div className="mt-2 h-4 w-1/3 animate-pulse rounded bg-(--bg-subtle)" />
         </div>
@@ -42,7 +42,7 @@ export function ProductList() {
         <div className="mt-12 flex items-center justify-center gap-6 text-sm text-(--foreground-muted)">
           <button
             type="button"
-            className="hover:text-(--foreground) disabled:opacity-40"
+            className="hover:text-foreground disabled:opacity-40"
             disabled={offset === 0}
             onClick={() => setOffset(Math.max(0, offset - limit))}
           >
@@ -53,7 +53,7 @@ export function ProductList() {
           </span>
           <button
             type="button"
-            className="hover:text-(--foreground) disabled:opacity-40"
+            className="hover:text-foreground disabled:opacity-40"
             disabled={offset + limit >= count}
             onClick={() => setOffset(offset + limit)}
           >

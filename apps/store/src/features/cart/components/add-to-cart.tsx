@@ -43,7 +43,7 @@ export function AddToCart({ product }: AddToCartProps) {
     <div className="mt-8 space-y-4">
       {product.variants.length > 1 && (
         <div>
-          <label htmlFor="variant-select" className="mb-1.5 block text-sm font-medium text-(--foreground)">
+          <label htmlFor="variant-select" className="mb-1.5 block text-sm font-medium text-foreground">
             Variant
           </label>
           <NativeSelect
@@ -62,7 +62,7 @@ export function AddToCart({ product }: AddToCartProps) {
       )}
 
       <div>
-        <label htmlFor="quantity-input" className="mb-1.5 block text-sm font-medium text-(--foreground)">
+        <label htmlFor="quantity-input" className="mb-1.5 block text-sm font-medium text-foreground">
           Quantity
         </label>
         <NativeSelect

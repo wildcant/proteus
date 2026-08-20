@@ -23,7 +23,7 @@ function OrderConfirmedPage() {
   if (!order) {
     return (
       <main className="mx-auto w-full max-w-170 px-4 pb-16 pt-12 sm:px-6">
-        <h1 className="text-2xl font-bold text-(--foreground)">Order not found</h1>
+        <h1 className="text-2xl font-bold text-foreground">Order not found</h1>
         <Button render={<Link to="/" />} variant="outline" className="mt-8">
           Continue shopping
         </Button>
@@ -33,12 +33,12 @@ function OrderConfirmedPage() {
 
   return (
     <main className="mx-auto w-full max-w-170 px-4 pb-16 pt-12 sm:px-6">
-      <h1 className="text-2xl font-bold text-(--foreground)">Thank you!</h1>
-      <h2 className="mt-2 text-xl font-bold text-(--foreground)">Your order was placed successfully.</h2>
+      <h1 className="text-2xl font-bold text-foreground">Thank you!</h1>
+      <h2 className="mt-2 text-xl font-bold text-foreground">Your order was placed successfully.</h2>
 
       <p className="mt-4 text-sm text-(--foreground-muted)">
         We have sent the order confirmation details to{' '}
-        <span className="font-semibold text-(--foreground)">{order.email}</span>.
+        <span className="font-semibold text-foreground">{order.email}</span>.
       </p>
 
       <p className="text-sm text-(--foreground-muted)">Order date: {formatDate(order.createdAt)}</p>

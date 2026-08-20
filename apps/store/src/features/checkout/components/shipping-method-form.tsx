@@ -44,12 +44,12 @@ export function ShippingMethodForm({ cartId, currencyCode, selectedMethodId, onC
           <RadioGroup value={field.state.value} onValueChange={(value) => field.handleChange(value)}>
             {options.map((option) => (
               <Field key={option.id} orientation="horizontal" className="cursor-pointer">
-                <FieldLabel className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-(--border) p-4 has-data-checked:border-primary has-data-checked:bg-primary/5">
+                <FieldLabel className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-border p-4 has-data-checked:border-primary has-data-checked:bg-primary/5">
                   <div className="flex items-center gap-3">
                     <RadioGroupItem value={option.id} />
-                    <span className="text-sm font-medium text-(--foreground)">{option.name}</span>
+                    <span className="text-sm font-medium text-foreground">{option.name}</span>
                   </div>
-                  <span className="text-sm font-medium text-(--foreground)">
+                  <span className="text-sm font-medium text-foreground">
                     {option.amount != null ? formatPrice(String(option.amount), currencyCode) : 'Calculated'}
                   </span>
                 </FieldLabel>

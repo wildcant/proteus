@@ -20,10 +20,10 @@ function ResetPasswordPage() {
 
   return (
     <main className="flex min-h-[calc(100vh-13rem)] items-center justify-center px-4">
-      <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-(--border) p-8">
+      <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
         {!success ? (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-(--foreground)">Set new password</h1>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Set new password</h1>
             <p className="mb-6 text-center text-sm text-(--foreground-muted)">Enter your new password below.</p>
             <ResetPasswordForm
               token={token}
@@ -33,7 +33,7 @@ function ResetPasswordPage() {
           </>
         ) : (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-(--foreground)">Password updated</h1>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Password updated</h1>
             <p className="text-center text-sm text-(--foreground-muted)">
               Your password has been reset successfully. You can now sign in with your new password.
             </p>

@@ -18,7 +18,7 @@ export function OrderItems({ order }: { order: StoreOrderResponseOrder }) {
           </div>
           <div className="flex min-w-0 flex-1 items-start justify-between">
             <div>
-              <p className="text-sm font-semibold text-(--foreground)">{item.title}</p>
+              <p className="text-sm font-semibold text-foreground">{item.title}</p>
               {item.variantTitle ? (
                 <p className="text-sm text-(--foreground-muted)">Variant: {item.variantTitle}</p>
               ) : null}
@@ -27,9 +27,7 @@ export function OrderItems({ order }: { order: StoreOrderResponseOrder }) {
               <p className="text-sm text-(--foreground-muted)">
                 {item.quantity}x {formatPrice(item.unitPrice, order.currencyCode)}
               </p>
-              <p className="text-sm font-medium text-(--foreground)">
-                {formatPrice(item.lineTotal, order.currencyCode)}
-              </p>
+              <p className="text-sm font-medium text-foreground">{formatPrice(item.lineTotal, order.currencyCode)}</p>
             </div>
           </div>
         </div>

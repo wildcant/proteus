@@ -72,7 +72,7 @@ export default function ThemeToggle() {
       onClick={toggleMode}
       aria-label={label}
       title={label}
-      className="rounded-full border border-(--border) bg-(--bg-subtle) px-3 py-1.5 text-sm font-medium text-(--foreground)"
+      className="rounded-full border border-border bg-(--bg-subtle) px-3 py-1.5 text-sm font-medium text-foreground"
     >
       {mode === 'auto' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'}
     </button>

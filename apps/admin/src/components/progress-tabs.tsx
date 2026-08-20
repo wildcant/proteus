@@ -18,7 +18,7 @@ function ProgressTabsList({ className, ...props }: React.ComponentProps<typeof T
     <TabsList
       className={cn(
         'flex flex-1 items-center justify-start rounded-none bg-muted/40 p-0 group-data-horizontal/tabs:h-13',
-        '[&>[data-slot=tabs-trigger]]:border-r [&>[data-slot=tabs-trigger]:last-child]:border-r-0',
+        '*:data-[slot=tabs-trigger]:border-r [&>[data-slot=tabs-trigger]:last-child]:border-r-0',
         className,
       )}
       {...props}

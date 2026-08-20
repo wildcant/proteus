@@ -7,11 +7,11 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
 
   return (
     <section>
-      <h3 className="text-xl font-bold text-(--foreground)">Delivery</h3>
+      <h3 className="text-xl font-bold text-foreground">Delivery</h3>
 
       <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3">
         <div>
-          <p className="text-sm font-semibold text-(--foreground)">Shipping Address</p>
+          <p className="text-sm font-semibold text-foreground">Shipping Address</p>
           {address ? (
             <div className="mt-1 text-sm text-(--foreground-muted)">
               {!!(address.firstName || address.lastName) && (
@@ -29,12 +29,12 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-(--foreground)">Contact</p>
+          <p className="text-sm font-semibold text-foreground">Contact</p>
           {!!order.email && <p className="mt-1 text-sm text-(--foreground-muted)">{order.email}</p>}
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-(--foreground)">Method</p>
+          <p className="text-sm font-semibold text-foreground">Method</p>
           {!!shippingMethod && (
             <p className="mt-1 text-sm text-(--foreground-muted)">
               {shippingMethod.name} ({formatPrice(shippingMethod.amount, order.currencyCode)})

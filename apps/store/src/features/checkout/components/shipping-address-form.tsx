@@ -120,7 +120,7 @@ export function ShippingAddressForm({ cart, onComplete }: ShippingAddressFormPro
         {(sameAsBilling) =>
           !sameAsBilling && (
             <div className="mt-6">
-              <h3 className="mb-4 text-lg font-medium text-(--foreground)">Billing address</h3>
+              <h3 className="mb-4 text-lg font-medium text-foreground">Billing address</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <form.AppField name="billingAddress.firstName">
                   {(field) => <field.TextField label="First name" autoComplete="billing given-name" />}

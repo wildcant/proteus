@@ -13,8 +13,8 @@ function CustomersPage() {
     <main className="page-wrap px-4 pb-8 pt-14">
       <section className="island-shell rise-in rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
         <p className="island-kicker mb-3">Customer Module</p>
-        <h1 className="display-title mb-5 text-4xl font-bold tracking-tight text-[var(--sea-ink)]">Customers</h1>
-        <p className="mb-6 text-[var(--sea-ink-soft)]">
+        <h1 className="display-title mb-5 text-4xl font-bold tracking-tight text-(--sea-ink)">Customers</h1>
+        <p className="mb-6 text-(--sea-ink-soft)">
           Using generated <code className="rounded bg-black/5 px-1.5 py-0.5 text-sm">React Query</code> hooks — calls
           the JSON API over HTTP
         </p>

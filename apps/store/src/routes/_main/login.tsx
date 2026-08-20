@@ -30,10 +30,10 @@ function LoginPage() {
 
   return (
     <main className="flex min-h-[calc(100vh-13rem)] items-center justify-center px-4">
-      <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-(--border) p-8">
+      <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
         {currentView === 'sign-in' && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-(--foreground)">Welcome back</h1>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Welcome back</h1>
             <p className="mb-6 text-center text-sm text-(--foreground-muted)">
               Sign in to access an enhanced shopping experience.
             </p>
@@ -52,7 +52,7 @@ function LoginPage() {
         )}
         {currentView === 'register' && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-(--foreground)">Become a member</h1>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Become a member</h1>
             <p className="mb-6 text-center text-sm text-(--foreground-muted)">
               Create your profile and get access to an enhanced shopping experience.
             </p>
@@ -68,7 +68,7 @@ function LoginPage() {
         )}
         {currentView === 'verify-pending' && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-(--foreground)">Check your email</h1>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Check your email</h1>
             <p className="text-center text-sm text-(--foreground-muted)">
               We sent a verification link to your email. Please click it to verify your account, then come back and log
               in.

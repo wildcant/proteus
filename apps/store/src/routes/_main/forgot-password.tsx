@@ -13,10 +13,10 @@ function ForgotPasswordPage() {
 
   return (
     <main className="flex min-h-[calc(100vh-13rem)] items-center justify-center px-4">
-      <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-(--border) p-8">
+      <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
         {!submitted ? (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-(--foreground)">Reset password</h1>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Reset password</h1>
             <p className="mb-6 text-center text-sm text-(--foreground-muted)">
               Enter your email and we'll send you a link to reset your password.
             </p>
@@ -34,7 +34,7 @@ function ForgotPasswordPage() {
           </>
         ) : (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-(--foreground)">Check your email</h1>
+            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Check your email</h1>
             <p className="text-center text-sm text-(--foreground-muted)">
               If an account exists with that email, we've sent a password reset link. Please check your inbox.
             </p>

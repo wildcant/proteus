@@ -12,7 +12,7 @@ export function AddressSummary({ cart }: AddressSummaryProps) {
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
       <div>
-        <p className="font-medium text-(--foreground)">Address</p>
+        <p className="font-medium text-foreground">Address</p>
         <p>
           {cart.shippingAddress.firstName} {cart.shippingAddress.lastName}
         </p>
@@ -23,7 +23,7 @@ export function AddressSummary({ cart }: AddressSummaryProps) {
         <p>{cart.shippingAddress.countryCode?.toUpperCase()}</p>
       </div>
       <div>
-        <p className="font-medium text-(--foreground)">Contact</p>
+        <p className="font-medium text-foreground">Contact</p>
         <p>{cart.email}</p>
         {!!cart.shippingAddress.phone && <p>{cart.shippingAddress.phone}</p>}
       </div>
