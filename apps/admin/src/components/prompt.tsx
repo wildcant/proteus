@@ -82,7 +82,7 @@ export function RenderPrompt({
             <AlertDialogTitle>{title}</AlertDialogTitle>
             <AlertDialogDescription>{description}</AlertDialogDescription>
           </AlertDialogHeader>
-          {verificationText && (
+          {!!verificationText && (
             <div className="flex flex-col gap-y-3 border-t pt-4">
               <Label htmlFor="verificationText" className="text-muted-foreground">
                 {instructionParts[0]} <span className="text-foreground font-medium">{verificationText}</span>{' '}

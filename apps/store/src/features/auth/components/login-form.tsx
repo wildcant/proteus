@@ -1,3 +1,4 @@
+import { Button } from '#/components/button'
 import type { LoginFormParams } from '#/features/auth/hooks/use-login-form'
 import { useLoginForm } from '#/features/auth/hooks/use-login-form'
 
@@ -20,9 +21,9 @@ export function LoginForm(props: LoginFormParams) {
           {(field) => <field.TextField label="Password" type="password" autoComplete="current-password" />}
         </form.AppField>
       </div>
-      <button type="submit" disabled={isPending} className="demo-button mt-6 w-full">
+      <Button type="submit" disabled={isPending} className="mt-6 w-full">
         {isPending ? 'Signing in...' : 'Sign in'}
-      </button>
+      </Button>
     </form>
   )
 }

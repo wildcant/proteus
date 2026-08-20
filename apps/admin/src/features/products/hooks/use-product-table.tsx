@@ -1,10 +1,9 @@
-import { Badge } from '@proteus/ui'
 import { daysAgoIso, todayIso } from '@proteus/utils'
 import type { AdminProduct } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { StatusCell, useDefineTable } from '#/components/data-table'
 import { useProducts } from '#/features/products/api/products'
 import { ProductRowActions } from '#/features/products/components/product-row-actions'
-import { productStatusBadgeVariants } from '#/features/products/constants'
+import { productStatusColors } from '#/features/products/constants'
 
 export const useProductTable = () =>
   useDefineTable<AdminProduct>({
@@ -24,7 +23,7 @@ export const useProductTable = () =>
       col.accessor('status', {
         header: 'Status',
         truncateTooltip: false,
-        cell: ({ value }) => <Badge variant={productStatusBadgeVariants[value] ?? 'secondary'}>{value}</Badge>,
+        cell: ({ value }) => <StatusCell color={productStatusColors[value]}>{value}</StatusCell>,
       }),
     ],
 

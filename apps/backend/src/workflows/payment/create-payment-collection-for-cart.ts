@@ -33,10 +33,7 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
 
       const existingLink = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
       if (existingLink) {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.CONFLICT,
-          message: `Cart "${input.cartId}" already has a payment collection`,
-        })
+        return paymentService.retrievePaymentCollection(existingLink.paymentCollectionId)
       }
 
       // Compute cart total from line items + shipping
@@ -44,11 +41,9 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
         cartService.listLineItems({ cartId: input.cartId }),
         cartService.listShippingMethods({ cartId: input.cartId }),
       ])
-      const lineItemTotal = lineItems.reduce((sum, li) => sum + li.unitPrice * li.quantity, 0)
-      const shippingTotal = shippingMethods.reduce((sum, sm) => sum + sm.amount, 0)
-      const amount = lineItemTotal + shippingTotal
+      const { cartTotal: amount } = cartService.computeCartTotals({ lineItems, shippingMethods })
 
-      if (amount <= 0) {
+      if (amount.isLessThanOrEqualTo(0)) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
           message: `Cart "${input.cartId}" has no items or zero total`,
@@ -59,7 +54,10 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
         `[create-payment-collection-for-cart] Creating collection for cart "${input.cartId}" with amount ${amount}`,
       )
 
-      const collection = await paymentService.createPaymentCollection({ amount, currencyCode: cart.currencyCode })
+      const collection = await paymentService.createPaymentCollection({
+        amount,
+        currencyCode: cart.currencyCode,
+      })
 
       await linkService.repo('cartPaymentCollection').create({
         cartId: input.cartId,

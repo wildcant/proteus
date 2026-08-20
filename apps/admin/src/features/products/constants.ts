@@ -1,11 +1,10 @@
 import type { AdminProductStatus } from '#/api/generated/model'
 
-export const productStatusBadgeVariants: Record<
-  AdminProductStatus,
-  'default' | 'secondary' | 'outline' | 'destructive'
-> = {
-  published: 'default',
-  draft: 'secondary',
-  proposed: 'outline',
-  rejected: 'destructive',
+type StatusColor = 'green' | 'red' | 'blue' | 'orange' | 'grey' | 'purple'
+
+export const productStatusColors: Record<AdminProductStatus, StatusColor> = {
+  published: 'green',
+  draft: 'grey',
+  proposed: 'orange',
+  rejected: 'red',
 }

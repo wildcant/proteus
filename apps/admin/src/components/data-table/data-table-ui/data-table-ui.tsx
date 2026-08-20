@@ -40,7 +40,7 @@ export function DataTableUi<T>({
       {/* table-fixed so column size/minSize/maxSize are respected — without it the
           browser's auto-sizing algorithm ignores configured widths */}
       <Table className="table-fixed">
-        <TableHeader className="sticky top-0 z-1 bg-background">
+        <TableHeader className="sticky top-0 z-1 bg-muted/50">
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id}>
               {group.headers.map((header) => (
@@ -78,7 +78,7 @@ export function DataTableUi<T>({
           ) : (
             <TableRow>
               <TableCell colSpan={table.getAllColumns().length} className="h-24">
-                {emptyState && <EmptyState {...emptyState} />}
+                {!!emptyState && <EmptyState {...emptyState} />}
               </TableCell>
             </TableRow>
           )}

@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { index, jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 
 export const paymentCollectionStatusEnum = pgEnum('payment_collection_status', [
@@ -14,13 +15,13 @@ export const paymentCollectionTable = pgTable(
   'payment_collection',
   {
     id: text().primaryKey().default(sql`CONCAT('pay_col_', REPLACE(gen_random_uuid()::text, '-', ''))`),
-    amount: integer().notNull(),
-    authorizedAmount: integer(),
-    capturedAmount: integer(),
+    amount: bignum().notNull(),
+    authorizedAmount: bignum(),
+    capturedAmount: bignum(),
     completedAt: timestamp({ withTimezone: true }),
     currencyCode: text().notNull().default('usd'),
     metadata: jsonb().$type<Record<string, unknown> | null>(),
-    refundedAmount: integer(),
+    refundedAmount: bignum(),
     status: paymentCollectionStatusEnum().notNull().default('not_paid'),
 
     ...timestamps,

@@ -10,8 +10,7 @@ export type CreateStoreCartBodyItemsItem = {
   title: string;
   /** @exclusiveMinimum 0 */
   quantity: number;
-  /** @minimum 0 */
-  unitPrice: number;
+  unitPrice: string;
   variantId?: string;
   productId?: string;
   productTitle?: string;

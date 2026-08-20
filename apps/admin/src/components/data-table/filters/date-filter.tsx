@@ -24,7 +24,7 @@ export function DateFilter({ value, onChange, presets }: DateFilterProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      {presets && presets.length > 0 && (
+      {!!presets && presets.length > 0 && (
         <div className="flex flex-col gap-0.5">
           {presets.map((preset) => (
             <Button

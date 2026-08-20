@@ -1,23 +1,29 @@
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   Context,
   CreateInventoryItemDTO,
   CreateInventoryLevelDTO,
+  CreateReservationItemDTO,
   FilterableInventoryItemProps,
   FilterableInventoryLevelProps,
+  FilterableReservationItemProps,
   FindConfig,
   IInventoryModuleService,
   InventoryItemDTO,
   InventoryLevelDTO,
+  ReservationItemDTO,
   UpdateInventoryItemDTO,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { InventoryItemRepository } from '../repositories/inventory-item.js'
 import type { InventoryLevelRepository } from '../repositories/inventory-level.js'
+import type { ReservationItemRepository } from '../repositories/reservation-item.js'
 
 type InjectedDependencies = {
   inventoryItemRepository: InventoryItemRepository
   inventoryLevelRepository: InventoryLevelRepository
+  reservationItemRepository: ReservationItemRepository
   withTransaction: WithTransaction
   logger: Logger
 }
@@ -25,12 +31,20 @@ type InjectedDependencies = {
 export class InventoryModuleService implements IInventoryModuleService {
   private inventoryItemRepository: InventoryItemRepository
   private inventoryLevelRepository: InventoryLevelRepository
+  private reservationItemRepository: ReservationItemRepository
   private withTransaction: WithTransaction
   private logger: Logger
 
-  constructor({ inventoryItemRepository, inventoryLevelRepository, withTransaction, logger }: InjectedDependencies) {
+  constructor({
+    inventoryItemRepository,
+    inventoryLevelRepository,
+    reservationItemRepository,
+    withTransaction,
+    logger,
+  }: InjectedDependencies) {
     this.inventoryItemRepository = inventoryItemRepository
     this.inventoryLevelRepository = inventoryLevelRepository
+    this.reservationItemRepository = reservationItemRepository
     this.withTransaction = withTransaction
     this.logger = logger
   }
@@ -126,5 +140,54 @@ export class InventoryModuleService implements IInventoryModuleService {
     const availableQuantity = levels.reduce((sum, level) => sum + level.stockedQuantity - level.reservedQuantity, 0)
 
     return availableQuantity >= quantity
+  }
+
+  async adjustInventoryLevel(
+    inventoryItemId: string,
+    locationId: string,
+    adjustment: number,
+    context?: Context,
+  ): Promise<InventoryLevelDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const [level] = await this.inventoryLevelRepository.find({ inventoryItemId, locationId }, undefined, ctx)
+      if (!level) {
+        throw new AppError({
+          type: ErrorTypes.NOT_FOUND,
+          message: `Inventory level not found for item ${inventoryItemId} at location ${locationId}`,
+        })
+      }
+      return this.inventoryLevelRepository.update(
+        level.id,
+        { stockedQuantity: level.stockedQuantity + adjustment },
+        ctx,
+      )
+    })
+  }
+
+  async createReservationItems(data: CreateReservationItemDTO[], context?: Context): Promise<ReservationItemDTO[]> {
+    this.logger.debug(`Creating ${data.length} reservation item(s)`)
+    return this.withTransaction(context, async (ctx) => {
+      return this.reservationItemRepository.createMany(data, ctx)
+    })
+  }
+
+  async deleteReservationItems(ids: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.reservationItemRepository.softDelete(ids, ctx)
+    })
+  }
+
+  async restoreReservationItems(ids: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.reservationItemRepository.restore(ids, ctx)
+    })
+  }
+
+  async listReservationItems(
+    filters?: FilterableReservationItemProps,
+    config?: FindConfig<ReservationItemDTO>,
+    context?: Context,
+  ): Promise<ReservationItemDTO[]> {
+    return this.reservationItemRepository.find(filters, config, context)
   }
 }

@@ -1,3 +1,4 @@
+import { Button } from '#/components/button'
 import type { ForgotPasswordFormParams } from '#/features/auth/hooks/use-forgot-password-form'
 import { useForgotPasswordForm } from '#/features/auth/hooks/use-forgot-password-form'
 
@@ -17,9 +18,9 @@ export function ForgotPasswordForm(props: ForgotPasswordFormParams) {
           {(field) => <field.TextField label="Email" type="email" autoComplete="email" autoFocus />}
         </form.AppField>
       </div>
-      <button type="submit" disabled={isPending} className="demo-button mt-6 w-full">
+      <Button type="submit" disabled={isPending} className="mt-6 w-full">
         {isPending ? 'Sending...' : 'Send reset link'}
-      </button>
+      </Button>
     </form>
   )
 }

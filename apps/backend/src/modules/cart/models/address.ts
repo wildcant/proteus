@@ -15,7 +15,6 @@ export const cartAddressTable = pgTable('cart_address', {
   province: text(),
   postalCode: text(),
   phone: text(),
-  metadata: text(),
   ...timestamps,
 })
 

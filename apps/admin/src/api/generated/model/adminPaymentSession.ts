@@ -15,7 +15,8 @@ export interface AdminPaymentSession {
   paymentCollectionId: string;
   providerId: string;
   currencyCode: string;
-  amount: number;
+  /** Numeric string (arbitrary precision) */
+  amount: string;
   status: AdminPaymentSessionStatus;
   data: AdminPaymentSessionData;
   /** @nullable */

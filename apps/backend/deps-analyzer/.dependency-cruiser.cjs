@@ -40,6 +40,32 @@ module.exports = {
       },
     },
     {
+      name: 'no-direct-factory-imports-in-tests',
+      comment:
+        'Test files must use the dto/factories fixtures from test-extend.ts, ' +
+        'not import generators from tests/factories/ directly.',
+      severity: 'error',
+      from: {
+        path: '__tests__/.+',
+      },
+      to: {
+        path: '^tests/factories/',
+      },
+    },
+    {
+      name: 'no-direct-bignumber-import',
+      comment:
+        'Only src/core/db/bignum.ts may import from bignumber.js. ' +
+        'All other code should use the BigNumber wrapper.',
+      severity: 'error',
+      from: {
+        pathNot: '^src/core/db/bignum\\.ts$|packages/http-schemas/',
+      },
+      to: {
+        path: 'bignumber\\.js',
+      },
+    },
+    {
       name: 'no-circular',
       comment: 'No circular dependencies allowed.',
       severity: 'error',

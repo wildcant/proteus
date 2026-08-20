@@ -8,10 +8,17 @@ import {
   generateCreateAuthPasswordResetTokenDTO,
   generateCreateAuthVerificationDTO,
   generateCreateProviderIdentityDTO,
+  generateProviderIdentityDTO,
   generateUpdateAuthIdentityDTO,
   generateUpdateAuthVerificationDTO,
   generateUpdateProviderIdentityDTO,
 } from '../factories/auth-dto.js'
+import {
+  generateCartAddressDTO,
+  generateCartDTO,
+  generateCartLineItemDTO,
+  generateCartShippingMethodDTO,
+} from '../factories/cart-dto.js'
 import {
   generateCreateCustomerAddressDTO,
   generateCreateCustomerDTO,
@@ -19,22 +26,40 @@ import {
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
+import { generateFulfillmentDTO } from '../factories/fulfillment-dto.js'
+import { generateInventoryLevelDTO, generateReservationItemDTO } from '../factories/inventory-dto.js'
+import { generateProductVariantInventoryItemDTO, generateProductVariantPriceSetDTO } from '../factories/link-dto.js'
 import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
+import {
+  generateCreateOrderAddressDTO,
+  generateCreateOrderDTO,
+  generateCreateOrderLineItemDTO,
+  generateCreateOrderShippingMethodDTO,
+  generateCreateOrderTransactionDTO,
+  generateOrderDTO,
+  generateOrderLineItemDTO,
+} from '../factories/order-dto.js'
 import {
   generateCreateAccountHolderDTO,
   generateCreatePaymentCollectionDTO,
   generateCreatePaymentSessionDTO,
   generateCreateRefundReasonDTO,
+  generatePaymentDTO,
+  generatePaymentSessionDTO,
   generateUpdatePaymentCollectionDTO,
   generateUpdateRefundReasonDTO,
 } from '../factories/payment-dto.js'
-import { generateCreatePriceDTO, generateCreatePriceSetDTO } from '../factories/pricing-dto.js'
+import {
+  generateCalculatedPriceSetDTO,
+  generateCreatePriceDTO,
+  generateCreatePriceSetDTO,
+} from '../factories/pricing-dto.js'
 import { generateCreateProductDTO, generateUpdateProductDTO } from '../factories/product-dto.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
 import { makeRequest } from '../utils/make-request.js'
 import { db as dbInstance } from './db-setup.js'
 
-type Fixtures = {
+export type Fixtures = {
   db: Database
   getDb: () => Database
   makeRequest: typeof makeRequest
@@ -48,6 +73,7 @@ type Fixtures = {
       authIdentity: typeof generateAuthIdentityDTO
       createAuthIdentity: typeof generateCreateAuthIdentityDTO
       updateAuthIdentity: typeof generateUpdateAuthIdentityDTO
+      providerIdentity: typeof generateProviderIdentityDTO
       createProviderIdentity: typeof generateCreateProviderIdentityDTO
       updateProviderIdentity: typeof generateUpdateProviderIdentityDTO
       createAuthVerification: typeof generateCreateAuthVerificationDTO
@@ -63,6 +89,8 @@ type Fixtures = {
       createPaymentCollection: typeof generateCreatePaymentCollectionDTO
       updatePaymentCollection: typeof generateUpdatePaymentCollectionDTO
       createPaymentSession: typeof generateCreatePaymentSessionDTO
+      paymentSession: typeof generatePaymentSessionDTO
+      payment: typeof generatePaymentDTO
       createRefundReason: typeof generateCreateRefundReasonDTO
       updateRefundReason: typeof generateUpdateRefundReasonDTO
       createAccountHolder: typeof generateCreateAccountHolderDTO
@@ -72,6 +100,23 @@ type Fixtures = {
       createPrice: typeof generateCreatePriceDTO
       createProduct: typeof generateCreateProductDTO
       updateProduct: typeof generateUpdateProductDTO
+      createOrder: typeof generateCreateOrderDTO
+      createOrderLineItem: typeof generateCreateOrderLineItemDTO
+      createOrderShippingMethod: typeof generateCreateOrderShippingMethodDTO
+      createOrderTransaction: typeof generateCreateOrderTransactionDTO
+      createOrderAddress: typeof generateCreateOrderAddressDTO
+      order: typeof generateOrderDTO
+      orderLineItem: typeof generateOrderLineItemDTO
+      reservationItem: typeof generateReservationItemDTO
+      cart: typeof generateCartDTO
+      cartAddress: typeof generateCartAddressDTO
+      cartLineItem: typeof generateCartLineItemDTO
+      cartShippingMethod: typeof generateCartShippingMethodDTO
+      fulfillment: typeof generateFulfillmentDTO
+      inventoryLevel: typeof generateInventoryLevelDTO
+      productVariantInventoryItem: typeof generateProductVariantInventoryItemDTO
+      productVariantPriceSet: typeof generateProductVariantPriceSetDTO
+      calculatedPriceSet: typeof generateCalculatedPriceSetDTO
     }
   }
   logger: Logger
@@ -100,6 +145,7 @@ export const test = testBase.extend<Fixtures>({
         authIdentity: generateAuthIdentityDTO,
         createAuthIdentity: generateCreateAuthIdentityDTO,
         updateAuthIdentity: generateUpdateAuthIdentityDTO,
+        providerIdentity: generateProviderIdentityDTO,
         createProviderIdentity: generateCreateProviderIdentityDTO,
         updateProviderIdentity: generateUpdateProviderIdentityDTO,
         createAuthVerification: generateCreateAuthVerificationDTO,
@@ -115,6 +161,8 @@ export const test = testBase.extend<Fixtures>({
         createPaymentCollection: generateCreatePaymentCollectionDTO,
         updatePaymentCollection: generateUpdatePaymentCollectionDTO,
         createPaymentSession: generateCreatePaymentSessionDTO,
+        paymentSession: generatePaymentSessionDTO,
+        payment: generatePaymentDTO,
         createRefundReason: generateCreateRefundReasonDTO,
         updateRefundReason: generateUpdateRefundReasonDTO,
         createAccountHolder: generateCreateAccountHolderDTO,
@@ -124,6 +172,23 @@ export const test = testBase.extend<Fixtures>({
         createPrice: generateCreatePriceDTO,
         createProduct: generateCreateProductDTO,
         updateProduct: generateUpdateProductDTO,
+        createOrder: generateCreateOrderDTO,
+        createOrderLineItem: generateCreateOrderLineItemDTO,
+        createOrderShippingMethod: generateCreateOrderShippingMethodDTO,
+        createOrderTransaction: generateCreateOrderTransactionDTO,
+        createOrderAddress: generateCreateOrderAddressDTO,
+        order: generateOrderDTO,
+        orderLineItem: generateOrderLineItemDTO,
+        reservationItem: generateReservationItemDTO,
+        cart: generateCartDTO,
+        cartAddress: generateCartAddressDTO,
+        cartLineItem: generateCartLineItemDTO,
+        cartShippingMethod: generateCartShippingMethodDTO,
+        fulfillment: generateFulfillmentDTO,
+        inventoryLevel: generateInventoryLevelDTO,
+        productVariantInventoryItem: generateProductVariantInventoryItemDTO,
+        productVariantPriceSet: generateProductVariantPriceSetDTO,
+        calculatedPriceSet: generateCalculatedPriceSetDTO,
       },
     })
   },

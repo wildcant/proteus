@@ -1,3 +1,4 @@
+import type { BigNumber } from '../../db/bignum.js'
 import type { BaseFilterable, OperatorMap } from '../common.js'
 
 export type CartStatus = 'active' | 'completed' | 'abandoned'
@@ -12,7 +13,6 @@ export type CartDTO = {
   status: CartStatus
   shippingAddressId: string | null
   billingAddressId: string | null
-  metadata: string | null
   completedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -52,9 +52,8 @@ export type CartLineItemDTO = {
   isDiscountable: boolean
   isGiftcard: boolean
   isTaxInclusive: boolean
-  compareAtUnitPrice: number | null
-  unitPrice: number
-  metadata: string | null
+  compareAtUnitPrice: BigNumber | null
+  unitPrice: BigNumber
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -73,11 +72,10 @@ export type CartShippingMethodDTO = {
   cartId: string
   name: string
   description: string | null
-  amount: number
+  amount: BigNumber
   isTaxInclusive: boolean
   shippingOptionId: string | null
-  data: string | null
-  metadata: string | null
+  data: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -87,4 +85,35 @@ export interface FilterableCartShippingMethodProps extends BaseFilterable<Filter
   id?: string | string[]
   cartId?: string | string[]
   shippingOptionId?: string | string[]
+}
+
+export type ComputeCartTotalsDTO = {
+  lineItems: CartLineItemDTO[]
+  shippingMethods: CartShippingMethodDTO[]
+}
+
+export type CartTotalsDTO = {
+  itemsTotal: BigNumber
+  shippingTotal: BigNumber
+  cartTotal: BigNumber
+}
+
+export type EnrichedCartLineItemDTO = CartLineItemDTO & { lineTotal: BigNumber }
+
+export type CartAddressDTO = {
+  id: string
+  customerId: string | null
+  company: string | null
+  firstName: string | null
+  lastName: string | null
+  address1: string | null
+  address2: string | null
+  city: string | null
+  countryCode: string | null
+  province: string | null
+  postalCode: string | null
+  phone: string | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
 }

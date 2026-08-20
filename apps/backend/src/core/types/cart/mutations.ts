@@ -1,3 +1,5 @@
+import type { BigNumber } from '../../db/bignum.js'
+
 export type CreateLineItemDTO = {
   title: string
   subtitle?: string | null | undefined
@@ -18,15 +20,13 @@ export type CreateLineItemDTO = {
   isDiscountable?: boolean | undefined
   isGiftcard?: boolean | undefined
   isTaxInclusive?: boolean | undefined
-  compareAtUnitPrice?: number | null | undefined
-  unitPrice: number
-  metadata?: string | null | undefined
+  compareAtUnitPrice?: BigNumber | null | undefined
+  unitPrice: BigNumber
 }
 
 export type UpdateLineItemDTO = {
   quantity?: number | undefined
-  unitPrice?: number | undefined
-  metadata?: string | null | undefined
+  unitPrice?: BigNumber | undefined
 }
 
 export type CreateCartDTO = {
@@ -37,18 +37,16 @@ export type CreateCartDTO = {
   currencyCode: string
   shippingAddressId?: string | null | undefined
   billingAddressId?: string | null | undefined
-  metadata?: string | null | undefined
   items?: CreateLineItemDTO[] | undefined
 }
 
 export type CreateShippingMethodDTO = {
   name: string
   description?: string | null | undefined
-  amount: number
+  amount: BigNumber
   isTaxInclusive?: boolean | undefined
   shippingOptionId?: string | null | undefined
-  data?: string | null | undefined
-  metadata?: string | null | undefined
+  data?: Record<string, unknown> | null | undefined
 }
 
 export type UpdateCartDTO = {
@@ -60,6 +58,27 @@ export type UpdateCartDTO = {
   status?: 'active' | 'completed' | 'abandoned' | undefined
   shippingAddressId?: string | null | undefined
   billingAddressId?: string | null | undefined
-  metadata?: string | null | undefined
   completedAt?: Date | null | undefined
+}
+
+export type CreateCartAddressDTO = {
+  customerId?: string | null | undefined
+  company?: string | null | undefined
+  firstName?: string | null | undefined
+  lastName?: string | null | undefined
+  address1?: string | null | undefined
+  address2?: string | null | undefined
+  city?: string | null | undefined
+  countryCode?: string | null | undefined
+  province?: string | null | undefined
+  postalCode?: string | null | undefined
+  phone?: string | null | undefined
+}
+
+export type UpdateCartAddressDTO = Partial<CreateCartAddressDTO>
+
+export type UpdateCartWithAddressesDTO = {
+  email?: string | null | undefined
+  shippingAddress?: CreateCartAddressDTO | undefined
+  billingAddress?: CreateCartAddressDTO | undefined
 }

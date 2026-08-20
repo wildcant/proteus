@@ -154,7 +154,7 @@ Extends `MedusaService` with typed DTOs for all six entities, auto-generating st
 4. Fetches `PriceRule` and `PricePreference` records for the selected prices
 5. Resolves tax-inclusivity via `isTaxInclusive()`:
    - Checks `region_id` preference first, then `currency_code` preference
-6. Returns `CalculatedPriceSet` objects with `calculated_amount`, `original_amount`, tax-inclusivity flags
+6. Returns `CalculatedPriceSetDTO` objects with `calculated_amount`, `original_amount`, tax-inclusivity flags
 
 #### `normalizePrices()` (lines 911-993)
 Converts external `rules` dict format (`{ region_id: "reg_1" }`) into internal `price_rules` array format. Validates operators, normalizes currency codes, deduplicates via `hashPrice()`.
@@ -349,7 +349,7 @@ All at `packages/core/core-flows/src/`.
 **`getVariantPriceSetsStep`**: The main cart pricing step.
 - Groups items by identical pricing context (sorted/serialized) to minimize `calculatePrices()` calls
 - For each context group: `pricingModule.calculatePrices({ id: priceSetIds }, { context })`
-- Returns `Record<string, CalculatedPriceSet>`
+- Returns `Record<string, CalculatedPriceSetDTO>`
 
 **`getLineItemPricingQuantitiesStep`**: Resolves the quantity each item should be priced at, accounting for line-item merging (if item being added already exists in cart, uses accumulated quantity for tiered pricing).
 
@@ -598,6 +598,6 @@ createPriceListsWorkflow
 
 ### Types
 - `packages/core/types/src/pricing/service.ts` -- IPricingModuleService interface
-- `packages/core/types/src/pricing/common/` -- DTOs (PriceSetDTO, CalculatedPriceSet, etc.)
+- `packages/core/types/src/pricing/common/` -- DTOs (PriceSetDTO, CalculatedPriceSetDTO, etc.)
 - `packages/core/types/src/http/price-list/admin/` -- admin HTTP types
 - `packages/core/types/src/http/price-preference/` -- price preference HTTP types

@@ -13,7 +13,8 @@ export interface AdminPayment {
   id: string;
   paymentCollectionId: string;
   paymentSessionId: string;
-  amount: number;
+  /** Numeric string (arbitrary precision) */
+  amount: string;
   currencyCode: string;
   providerId: string;
   /** @nullable */

@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { index, jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 export const paymentSessionStatusEnum = pgEnum('payment_session_status', [
   'pending',
@@ -17,7 +18,7 @@ export const paymentSessionTable = pgTable(
   'payment_session',
   {
     id: text().primaryKey().default(sql`CONCAT('payses_', REPLACE(gen_random_uuid()::text, '-', ''))`),
-    amount: integer().notNull(),
+    amount: bignum().notNull(),
     authorizedAt: timestamp({ withTimezone: true }),
     context: jsonb().$type<Record<string, unknown> | null>(),
     currencyCode: text().notNull(),

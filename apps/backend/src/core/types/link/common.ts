@@ -1,3 +1,4 @@
+import type { BigNumber } from '../../db/bignum.js'
 import type { Context } from '../context.js'
 
 export type ProductVariantInventoryItemDTO = {
@@ -21,7 +22,7 @@ export type VariantInventoryAvailabilityDTO = {
 export type LineItemWithProductDTO = {
   lineItemId: string
   quantity: number
-  unitPrice: number
+  unitPrice: BigNumber
   variantId: string | null
   productId: string | null
   variantTitle: string | null
@@ -98,4 +99,46 @@ export type IProductVariantPriceSetRepository = {
   findByVariantIds(variantIds: string[], context?: Context): Promise<ProductVariantPriceSetDTO[]>
   create(data: Partial<ProductVariantPriceSetDTO>, context?: Context): Promise<ProductVariantPriceSetDTO>
   softDelete(ids: string[], context?: Context): Promise<void>
+}
+
+export type OrderCartDTO = {
+  id: string
+  orderId: string
+  cartId: string
+  createdAt: Date
+  deletedAt: Date | null
+}
+
+export type IOrderCartRepository = {
+  findByCartId(cartId: string, context?: Context): Promise<OrderCartDTO | null>
+  findByOrderId(orderId: string, context?: Context): Promise<OrderCartDTO | null>
+  create(data: Partial<OrderCartDTO>, context?: Context): Promise<OrderCartDTO>
+}
+
+export type OrderPaymentCollectionDTO = {
+  id: string
+  orderId: string
+  paymentCollectionId: string
+  createdAt: Date
+  deletedAt: Date | null
+}
+
+export type IOrderPaymentCollectionRepository = {
+  findByOrderId(orderId: string, context?: Context): Promise<OrderPaymentCollectionDTO | null>
+  findByPaymentCollectionId(paymentCollectionId: string, context?: Context): Promise<OrderPaymentCollectionDTO | null>
+  create(data: Partial<OrderPaymentCollectionDTO>, context?: Context): Promise<OrderPaymentCollectionDTO>
+}
+
+export type OrderFulfillmentDTO = {
+  id: string
+  orderId: string
+  fulfillmentId: string
+  createdAt: Date
+  deletedAt: Date | null
+}
+
+export type IOrderFulfillmentRepository = {
+  findByOrderId(orderId: string, context?: Context): Promise<OrderFulfillmentDTO | null>
+  findByFulfillmentId(fulfillmentId: string, context?: Context): Promise<OrderFulfillmentDTO | null>
+  create(data: Partial<OrderFulfillmentDTO>, context?: Context): Promise<OrderFulfillmentDTO>
 }

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { stringToBigNumber } from '../../common.js'
 
 export const CreatePaymentSession = z.object({
   providerId: z.string().min(1),
@@ -13,12 +14,12 @@ export const CreatePaymentCollection = z.object({
 export type CreatePaymentCollectionBody = z.infer<typeof CreatePaymentCollection>
 
 export const CapturePayment = z.object({
-  amount: z.number().int().positive().optional(),
+  amount: stringToBigNumber.optional(),
 })
 export type CapturePaymentBody = z.infer<typeof CapturePayment>
 
 export const RefundPayment = z.object({
-  amount: z.number().int().positive().optional(),
+  amount: stringToBigNumber.optional(),
   refundReasonId: z.string().min(1).optional(),
   note: z.string().optional(),
 })

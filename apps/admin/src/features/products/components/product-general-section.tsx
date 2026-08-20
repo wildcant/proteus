@@ -1,11 +1,11 @@
-import { Badge, Card, CardAction, CardHeader, CardTitle, toast } from '@proteus/ui'
+import { Card, CardAction, CardHeader, CardTitle, StatusBadge, toast } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
 import type { AdminProduct } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { useDeleteProduct } from '#/features/products/api/products'
-import { productStatusBadgeVariants } from '#/features/products/constants'
+import { productStatusColors } from '#/features/products/constants'
 import { usePrompt } from '#/hooks/use-prompt.tsx'
 
 export function ProductGeneralSection({ product }: { product: AdminProduct }) {
@@ -34,7 +34,7 @@ export function ProductGeneralSection({ product }: { product: AdminProduct }) {
       <CardHeader>
         <CardTitle>{product.title}</CardTitle>
         <CardAction className="flex items-center gap-x-3">
-          <Badge variant={productStatusBadgeVariants[product.status] ?? 'secondary'}>{product.status}</Badge>
+          <StatusBadge color={productStatusColors[product.status]}>{product.status}</StatusBadge>
           <ActionMenu
             groups={[
               { actions: [{ label: 'Edit', to: './edit', icon: <PencilIcon /> }] },

@@ -24,8 +24,8 @@ export function CheckboxField({ label, description, className }: CheckboxFieldPr
         />
         <Label htmlFor={id}>{label}</Label>
       </div>
-      {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!description && <p className="text-sm text-muted-foreground">{description}</p>}
+      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

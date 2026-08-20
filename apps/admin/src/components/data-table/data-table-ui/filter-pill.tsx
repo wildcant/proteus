@@ -72,7 +72,7 @@ export function FilterPill({ def, value, isNew = false, onChange, onRemove }: Fi
     <Popover open={open} onOpenChange={handleOpenChange}>
       <div className="flex shrink-0 items-center overflow-hidden rounded-md text-xs shadow-[0_0_0_1px] shadow-border">
         <span className="px-2 py-1 text-muted-foreground">{def.label}</span>
-        {hasValue && (
+        {!!hasValue && (
           <>
             <span className="border-x border-border px-2 py-1 text-muted-foreground">is</span>
             <PopoverTrigger className="cursor-pointer border-r border-border px-2 py-1 font-medium transition-colors hover:bg-muted">
@@ -85,7 +85,7 @@ export function FilterPill({ def, value, isNew = false, onChange, onRemove }: Fi
             select...
           </PopoverTrigger>
         )}
-        {hasValue && (
+        {!!hasValue && (
           <button
             type="button"
             onClick={onRemove}

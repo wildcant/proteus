@@ -1,4 +1,3 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@proteus/ui'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { LoginForm } from '#/features/auth/components/login-form'
 
@@ -10,16 +9,16 @@ function LoginPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="w-full max-w-sm px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription>Enter your credentials to access the admin dashboard.</CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="flex min-h-dvh w-dvw items-center justify-center">
+      <div className="m-4 flex w-full max-w-70 flex-col items-center">
+        <div className="mb-4 flex flex-col items-center">
+          <h1 className="text-2xl">Welcome to Proteus</h1>
+          <p className="text-ui-fg-subtle text-center text-sm">Sign in to access the account area</p>
+        </div>
+        <div className="flex w-full flex-col gap-y-3">
           <LoginForm onSuccess={() => navigate({ to: '/' })} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

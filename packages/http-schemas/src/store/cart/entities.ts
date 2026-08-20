@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { dateToIso, timestamps } from '../../common.js'
+import { bigNumberToString, dateToIso, timestamps } from '../../common.js'
 
 export const StoreCart = z
   .object({
@@ -12,7 +12,6 @@ export const StoreCart = z
     status: z.string(),
     shippingAddressId: z.string().nullable(),
     billingAddressId: z.string().nullable(),
-    metadata: z.string().nullable(),
     completedAt: dateToIso.nullable(),
     ...timestamps.shape,
   })
@@ -42,9 +41,9 @@ export const StoreCartLineItem = z
     isDiscountable: z.boolean(),
     isGiftcard: z.boolean(),
     isTaxInclusive: z.boolean(),
-    compareAtUnitPrice: z.number().nullable(),
-    unitPrice: z.number(),
-    metadata: z.string().nullable(),
+    compareAtUnitPrice: bigNumberToString.nullable(),
+    unitPrice: bigNumberToString,
+    lineTotal: bigNumberToString,
     ...timestamps.shape,
   })
   .openapi('StoreCartLineItem')
@@ -56,15 +55,42 @@ export const StoreCartShippingMethod = z
     cartId: z.string(),
     name: z.string(),
     description: z.string().nullable(),
-    amount: z.number(),
+    amount: bigNumberToString,
     isTaxInclusive: z.boolean(),
     shippingOptionId: z.string().nullable(),
-    data: z.string().nullable(),
-    metadata: z.string().nullable(),
+    data: z.record(z.string(), z.unknown()).nullable(),
     ...timestamps.shape,
   })
   .openapi('StoreCartShippingMethod')
 export type StoreCartShippingMethod = z.input<typeof StoreCartShippingMethod>
+
+export const StoreCartTotals = z
+  .object({
+    itemsTotal: bigNumberToString,
+    shippingTotal: bigNumberToString,
+    cartTotal: bigNumberToString,
+  })
+  .openapi('StoreCartTotals')
+export type StoreCartTotals = z.input<typeof StoreCartTotals>
+
+export const StoreCartAddress = z
+  .object({
+    id: z.string(),
+    customerId: z.string().nullable(),
+    company: z.string().nullable(),
+    firstName: z.string().nullable(),
+    lastName: z.string().nullable(),
+    address1: z.string().nullable(),
+    address2: z.string().nullable(),
+    city: z.string().nullable(),
+    countryCode: z.string().nullable(),
+    province: z.string().nullable(),
+    postalCode: z.string().nullable(),
+    phone: z.string().nullable(),
+    ...timestamps.shape,
+  })
+  .openapi('StoreCartAddress')
+export type StoreCartAddress = z.input<typeof StoreCartAddress>
 
 export const StoreConfirmInventoryItem = z
   .object({

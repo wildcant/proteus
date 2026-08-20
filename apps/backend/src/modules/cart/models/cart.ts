@@ -17,7 +17,6 @@ export const cartTable = pgTable(
     status: cartStatusEnum().default('active').notNull(),
     shippingAddressId: text().references(() => cartAddressTable.id),
     billingAddressId: text().references(() => cartAddressTable.id),
-    metadata: text(),
     completedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },

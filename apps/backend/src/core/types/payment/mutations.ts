@@ -1,3 +1,4 @@
+import type { BigNumber } from '../../db/bignum.js'
 import type { PaymentActions, PaymentSessionStatus } from './common.js'
 
 // ---------------------------------------------------------------------------
@@ -5,13 +6,13 @@ import type { PaymentActions, PaymentSessionStatus } from './common.js'
 // ---------------------------------------------------------------------------
 
 export type CreatePaymentCollectionDTO = {
-  amount: number
+  amount: BigNumber
   currencyCode?: string
   metadata?: Record<string, unknown> | null
 }
 
 export type UpdatePaymentCollectionDTO = {
-  amount?: number
+  amount?: BigNumber
   currencyCode?: string
   metadata?: Record<string, unknown> | null
 }
@@ -22,14 +23,14 @@ export type UpdatePaymentCollectionDTO = {
 
 export type CreatePaymentSessionDTO = {
   providerId: string
-  amount: number
+  amount: BigNumber
   currencyCode?: string | undefined
   data?: Record<string, unknown> | undefined
   context?: Record<string, unknown> | undefined
 }
 
 export type UpdatePaymentSessionDTO = {
-  amount?: number
+  amount?: BigNumber
   currencyCode?: string
   data?: Record<string, unknown>
   metadata?: Record<string, unknown> | null
@@ -42,7 +43,7 @@ export type UpdatePaymentSessionDTO = {
 export type CreatePaymentDTO = {
   paymentCollectionId: string
   paymentSessionId: string
-  amount: number
+  amount: BigNumber
   currencyCode: string
   providerId: string
   data?: Record<string, unknown> | null
@@ -55,7 +56,7 @@ export type CreatePaymentDTO = {
 
 export type CreateCaptureDTO = {
   paymentId: string
-  amount?: number | undefined
+  amount?: BigNumber | undefined
   capturedBy?: string | undefined
 }
 
@@ -65,7 +66,7 @@ export type CreateCaptureDTO = {
 
 export type CreateRefundDTO = {
   paymentId: string
-  amount?: number | undefined
+  amount?: BigNumber | undefined
   refundReasonId?: string | undefined
   note?: string | undefined
   createdBy?: string | undefined
@@ -144,7 +145,7 @@ export type WebhookActionResult = {
   action: PaymentActions
   data?: {
     sessionId: string
-    amount: number
+    amount: BigNumber
   }
 }
 
@@ -153,7 +154,7 @@ export type WebhookActionResult = {
 // ---------------------------------------------------------------------------
 
 export type InitiatePaymentInput = {
-  amount: number
+  amount: BigNumber
   currencyCode: string
   data?: Record<string, unknown> | undefined
   context?: Record<string, unknown> | undefined
@@ -203,7 +204,7 @@ export type DeletePaymentOutput = {
 }
 
 export type RefundPaymentInput = {
-  amount: number
+  amount: BigNumber
   data?: Record<string, unknown> | undefined
   context?: Record<string, unknown> | undefined
 }
@@ -222,7 +223,7 @@ export type RetrievePaymentOutput = {
 }
 
 export type UpdatePaymentInput = {
-  amount?: number
+  amount?: BigNumber
   currencyCode?: string
   data?: Record<string, unknown>
   context?: Record<string, unknown>

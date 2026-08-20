@@ -6,7 +6,7 @@ import type { SubmitFormParams } from '#/types/form'
 
 const LoginSchema = z.object({
   email: z.email(),
-  password: z.string().min(1),
+  password: z.string().min(1, { error: 'Password is required' }),
 })
 
 export type LoginFormParams = SubmitFormParams<AuthenticateResponse>

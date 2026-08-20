@@ -1,13 +1,13 @@
 import { z } from 'zod'
 import { bigNumberToString } from '../../common.js'
 
-const StoreCalculatedPrice = z
+export const StoreCalculatedPrice = z
   .object({
     id: z.string(),
     currencyCode: z.string(),
-    originalAmount: bigNumberToString,
-    // TODO(pricing): add calculatedAmount when PriceRule/PriceList is implemented
-    // TODO(tax): add originalAmountWithTax, originalAmountWithoutTax
+    calculatedAmount: bigNumberToString,
+    // TODO(pricing): add originalAmount when PriceRule/PriceList is implemented
+    // TODO(tax): add calculatedAmountWithTax, calculatedAmountWithoutTax
   })
   .openapi('StoreCalculatedPrice')
 
@@ -45,3 +45,8 @@ export const StoreProduct = z
   })
   .openapi('StoreProduct')
 export type StoreProduct = z.infer<typeof StoreProduct>
+
+export const StoreProductListItem = StoreProduct.extend({
+  startingPrice: StoreCalculatedPrice.optional(),
+}).openapi('StoreProductListItem')
+export type StoreProductListItem = z.infer<typeof StoreProductListItem>

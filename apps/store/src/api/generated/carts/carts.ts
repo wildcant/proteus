@@ -12,7 +12,7 @@ import type {
   ListStoreCartShippingOptionsParams,
   StoreCartDetailResponse,
   StoreCartInventoryResponse,
-  StoreCartResponse,
+  StoreCompleteCartResponse,
   StoreCreateCartLineItemResponse,
   StoreCreateCartResponse,
   StoreCreateCartShippingMethodResponse,
@@ -140,7 +140,7 @@ export const addStoreCartShippingMethod = (
 export const completeStoreCart = (
     id: string,
  ) => {
-      return fetcher<StoreCartResponse>(
+      return fetcher<StoreCompleteCartResponse>(
       {url: `/store/carts/${id}/complete`, method: 'POST'
     },
       );

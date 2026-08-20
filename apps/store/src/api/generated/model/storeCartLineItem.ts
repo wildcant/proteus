@@ -40,11 +40,12 @@ export interface StoreCartLineItem {
   isDiscountable: boolean;
   isGiftcard: boolean;
   isTaxInclusive: boolean;
-  /** @nullable */
-  compareAtUnitPrice: number | null;
-  unitPrice: number;
-  /** @nullable */
-  metadata: string | null;
+  /** Numeric string (arbitrary precision) */
+  compareAtUnitPrice: string;
+  /** Numeric string (arbitrary precision) */
+  unitPrice: string;
+  /** Numeric string (arbitrary precision) */
+  lineTotal: string;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

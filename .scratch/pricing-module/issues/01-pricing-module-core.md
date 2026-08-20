@@ -52,7 +52,7 @@ The Price table model should include TODO comments for future fields:
 
 Create the following type files:
 
-- `apps/backend/src/core/types/pricing/common.ts` — contains `PriceSetDTO`, `PriceDTO`, `CalculatedPriceSet`, `FilterablePriceProps`, `PricingContext`
+- `apps/backend/src/core/types/pricing/common.ts` — contains `PriceSetDTO`, `PriceDTO`, `CalculatedPriceSetDTO`, `FilterablePriceProps`, `PricingContext`
 - `apps/backend/src/core/types/pricing/mutations.ts` — contains `CreatePriceDTO`, `CreatePriceSetDTO`, `UpdatePriceDTO`
 - `apps/backend/src/core/types/pricing/service.ts` — contains `IPricingModuleService` (full interface including `calculatePrices` signature; implementation deferred to ticket 02)
 - `apps/backend/src/core/types/pricing/index.ts` — re-exports all three files

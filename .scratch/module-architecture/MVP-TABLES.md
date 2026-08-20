@@ -83,19 +83,15 @@ Skipped: LineItemAdjustment, ShippingMethodAdjustment (promotions), CreditLine.
 
 ---
 
-## 6. Order (9 tables)
+## 6. Order (5 tables)
 
 | # | Table | Why it exists |
 |---|-------|--------------|
 | 1 | **Order** | The order itself. Has `display_id` for humans |
 | 2 | **OrderAddress** | Shipping/billing addresses (snapshotted from cart) |
 | 3 | **OrderLineItem** | Immutable snapshot of purchased item |
-| 4 | **OrderLineItemTaxLine** | Tax applied to each line item |
-| 5 | **OrderShippingMethod** | Immutable snapshot of chosen shipping |
-| 6 | **OrderShippingMethodTaxLine** | Tax on shipping |
-| 7 | **OrderTransaction** | Records every payment/refund event |
-
-Skipped: OrderItem/OrderShipping/OrderSummary (versioning), OrderChange/OrderChangeAction (change tracking), Adjustments, CreditLine, Returns (3), Claims (3), Exchanges (2).
+| 4 | **OrderShippingMethod** | Immutable snapshot of chosen shipping |
+| 5 | **OrderTransaction** | Records every payment/refund event |
 
 ---
 

@@ -2,6 +2,9 @@ import { test } from '@tests/setup/test-extend.js'
 import { describe, expect } from 'vitest'
 import { CartPaymentCollectionRepository } from '../repositories/cart-payment-collection.js'
 import { CartProductRepository } from '../repositories/cart-product.js'
+import { OrderCartRepository } from '../repositories/order-cart.js'
+import { OrderFulfillmentRepository } from '../repositories/order-fulfillment.js'
+import { OrderPaymentCollectionRepository } from '../repositories/order-payment-collection.js'
 import { ProductVariantInventoryItemRepository } from '../repositories/product-variant-inventory-item.js'
 import { ProductVariantPriceSetRepository } from '../repositories/product-variant-price-set.js'
 import { LinkService } from '../services/link-service.js'
@@ -16,12 +19,18 @@ test.beforeEach(({ getDb }) => {
   productVariantInventoryItem = new ProductVariantInventoryItemRepository({ getDb })
   cartPaymentCollection = new CartPaymentCollectionRepository({ getDb })
   const cartProduct = new CartProductRepository({ getDb })
+  const orderCart = new OrderCartRepository({ getDb })
+  const orderPaymentCollection = new OrderPaymentCollectionRepository({ getDb })
+  const orderFulfillment = new OrderFulfillmentRepository({ getDb })
 
   linkService = new LinkService({
     productVariantPriceSet,
     productVariantInventoryItem,
     cartPaymentCollection,
     cartProduct,
+    orderCart,
+    orderPaymentCollection,
+    orderFulfillment,
   })
 })
 

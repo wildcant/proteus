@@ -9,5 +9,5 @@ export interface StoreCalculatedPrice {
   id: string;
   currencyCode: string;
   /** Numeric string (arbitrary precision) */
-  originalAmount: string;
+  calculatedAmount: string;
 }

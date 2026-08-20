@@ -15,6 +15,9 @@ export function usePagination(urlState: UrlState, count: number | undefined, pag
       canNext,
       goNext: () => urlState.setOffset((currentPage + 1) * pageSize),
       goPrev: () => urlState.setOffset(Math.max(0, (currentPage - 1) * pageSize)),
+      offset: urlState.offset,
+      limit: pageSize,
+      count,
     }
   }, [urlState, count, pageSize])
 }

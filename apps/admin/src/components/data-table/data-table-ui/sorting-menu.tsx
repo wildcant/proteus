@@ -37,7 +37,7 @@ export function SortingMenu<T>({ sortableColumns, current, setField, setDirectio
           ))}
         </DropdownMenuRadioGroup>
 
-        {current && (
+        {!!current && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={String(current.desc)} onValueChange={(v) => setDirection(v === 'true')}>

@@ -18,4 +18,7 @@ export const Links = {
   CART_PRODUCT: 'cartProduct',
   CART_PAYMENT_COLLECTION: 'cartPaymentCollection',
   PRODUCT_VARIANT_PRICE_SET: 'productVariantPriceSet',
+  ORDER_CART: 'orderCart',
+  ORDER_PAYMENT_COLLECTION: 'orderPaymentCollection',
+  ORDER_FULFILLMENT: 'orderFulfillment',
 } as const

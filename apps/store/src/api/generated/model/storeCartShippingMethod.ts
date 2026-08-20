@@ -4,6 +4,7 @@
  * Store API
  * OpenAPI spec version: 0.1.0
  */
+import type { StoreCartShippingMethodData } from './storeCartShippingMethodData.ts';
 
 export interface StoreCartShippingMethod {
   id: string;
@@ -11,14 +12,13 @@ export interface StoreCartShippingMethod {
   name: string;
   /** @nullable */
   description: string | null;
-  amount: number;
+  /** Numeric string (arbitrary precision) */
+  amount: string;
   isTaxInclusive: boolean;
   /** @nullable */
   shippingOptionId: string | null;
   /** @nullable */
-  data: string | null;
-  /** @nullable */
-  metadata: string | null;
+  data: StoreCartShippingMethodData;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

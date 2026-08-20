@@ -29,8 +29,8 @@ export interface Workflow<TInput, TOutput> extends WorkflowDefinition<TInput, TO
 type TerminalErrorOptions = { type: ErrorTypes; message: string; code?: string }
 
 export class WorkflowTerminalError extends Error {
-  constructor(options: TerminalErrorOptions) {
-    const appError = new AppError(options)
+  constructor(optionsOrError: TerminalErrorOptions | AppError) {
+    const appError = AppError.isError(optionsOrError) ? optionsOrError : new AppError(optionsOrError)
     super(appError.message, { cause: appError })
     this.name = 'WorkflowTerminalError'
   }

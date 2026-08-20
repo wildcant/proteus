@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
+import { index, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
+import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 import { paymentTable } from './payment.js'
 import { refundReasonTable } from './refund-reason.js'
@@ -8,7 +9,7 @@ export const refundTable = pgTable(
   'refund',
   {
     id: text().primaryKey().default(sql`CONCAT('ref_', REPLACE(gen_random_uuid()::text, '-', ''))`),
-    amount: integer().notNull(),
+    amount: bignum().notNull(),
     createdBy: text(),
     metadata: jsonb().$type<Record<string, unknown> | null>(),
     note: text(),

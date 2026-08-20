@@ -4,11 +4,11 @@
  * Store API
  * OpenAPI spec version: 0.1.0
  */
-import type { StoreProduct } from './storeProduct.ts';
+import type { StoreProductListItem } from './storeProductListItem.ts';
 
 export interface StoreProductListResponse {
   count: number;
   offset: number;
   limit: number;
-  products: StoreProduct[];
+  products: StoreProductListItem[];
 }

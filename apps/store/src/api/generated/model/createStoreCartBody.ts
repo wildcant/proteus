@@ -7,8 +7,6 @@
 import type { CreateStoreCartBodyItemsItem } from './createStoreCartBodyItemsItem.ts';
 
 export type CreateStoreCartBody = {
-  /** @minLength 1 */
-  currencyCode: string;
   email?: string;
   items?: CreateStoreCartBodyItemsItem[];
 };

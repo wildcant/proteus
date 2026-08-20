@@ -9,7 +9,7 @@ Two files serve different purposes and both need updates:
 - `modules-definitions.ts` — the re-export hub for link module definitions (so link table relations can reference module tables)
 - `schema.ts` — the combined schema for Drizzle's typed client (so relational queries resolve pricing tables)
 
-`calculatePrices` is the single entry point for price resolution. For MVP (no rules, no price lists), it queries prices matching the given price set IDs and currency code, returning a `Map<priceSetId, CalculatedPriceSet>`. The `CalculatedPriceSet` type was defined in ticket 01 in `apps/backend/src/core/types/pricing/common.ts`. It contains only `originalAmount` for now — `calculatedAmount` is added later when PriceRule/PriceList arrives (non-breaking addition).
+`calculatePrices` is the single entry point for price resolution. For MVP (no rules, no price lists), it queries prices matching the given price set IDs and currency code, returning a `Map<priceSetId, CalculatedPriceSetDTO>`. The `CalculatedPriceSetDTO` type was defined in ticket 01 in `apps/backend/src/core/types/pricing/common.ts`. It contains only `originalAmount` for now — `calculatedAmount` is added later when PriceRule/PriceList arrives (non-breaking addition).
 
 The `calculatePrices` implementation should include TODO comments:
 
@@ -39,5 +39,5 @@ Registration requires updating multiple files in the link module infrastructure:
 - [ ] Link table and relations registered in `apps/backend/src/schema.ts`
 - [ ] `LinkRepositoryMap` type, `InjectedDependencies`, and `LinkService` constructor updated in `link-service.ts`
 - [ ] `registerLinkService()` in `apps/backend/src/link-modules/index.ts` updated to instantiate and pass `ProductVariantPriceSetRepository`
-- [ ] `calculatePrices(priceSetIds[], context: PricingContext)` implemented on PricingModuleService — returns `Map<string, CalculatedPriceSet>`, first matching price per set wins
+- [ ] `calculatePrices(priceSetIds[], context: PricingContext)` implemented on PricingModuleService — returns `Map<string, CalculatedPriceSetDTO>`, first matching price per set wins
 - [ ] Integration tests: calculatePrices with single price set, multiple price sets, missing price set returns no entry in map, correct currency matching

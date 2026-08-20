@@ -475,6 +475,492 @@
         },
         "required": ["notification"]
       },
+      "AdminOrderListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrder"
+            }
+          }
+        },
+        "required": ["count", "offset", "limit", "orders"]
+      },
+      "AdminOrder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayId": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "canceled", "archived"]
+          },
+          "fulfillmentStatus": {
+            "type": "string",
+            "enum": ["unfulfilled", "fulfilled", "shipped", "delivered"]
+          },
+          "email": {
+            "type": ["string", "null"]
+          },
+          "customerId": {
+            "type": ["string", "null"]
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "shippingAddressId": {
+            "type": ["string", "null"]
+          },
+          "billingAddressId": {
+            "type": ["string", "null"]
+          },
+          "canceledAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "displayId",
+          "status",
+          "fulfillmentStatus",
+          "email",
+          "customerId",
+          "currencyCode",
+          "shippingAddressId",
+          "billingAddressId",
+          "canceledAt",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminOrderResponse": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminOrder"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "lineItems": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminOrderLineItem"
+                    }
+                  },
+                  "shippingMethods": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminOrderShippingMethod"
+                    }
+                  },
+                  "transactions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminOrderTransaction"
+                    }
+                  },
+                  "totals": {
+                    "$ref": "#/components/schemas/AdminOrderTotals"
+                  },
+                  "allowedActions": {
+                    "$ref": "#/components/schemas/AdminOrderAllowedActions"
+                  }
+                },
+                "required": ["lineItems", "shippingMethods", "transactions", "totals", "allowedActions"]
+              }
+            ]
+          }
+        },
+        "required": ["order"]
+      },
+      "AdminOrderLineItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": ["string", "null"]
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unitPrice": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "lineTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "compareAtUnitPrice": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "variantId": {
+            "type": ["string", "null"]
+          },
+          "productId": {
+            "type": ["string", "null"]
+          },
+          "productTitle": {
+            "type": ["string", "null"]
+          },
+          "productDescription": {
+            "type": ["string", "null"]
+          },
+          "productSubtitle": {
+            "type": ["string", "null"]
+          },
+          "productType": {
+            "type": ["string", "null"]
+          },
+          "productHandle": {
+            "type": ["string", "null"]
+          },
+          "variantSku": {
+            "type": ["string", "null"]
+          },
+          "variantBarcode": {
+            "type": ["string", "null"]
+          },
+          "variantTitle": {
+            "type": ["string", "null"]
+          },
+          "variantOptionValues": {
+            "type": ["string", "null"]
+          },
+          "requiresShipping": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "title",
+          "subtitle",
+          "thumbnail",
+          "quantity",
+          "unitPrice",
+          "lineTotal",
+          "compareAtUnitPrice",
+          "variantId",
+          "productId",
+          "productTitle",
+          "productDescription",
+          "productSubtitle",
+          "productType",
+          "productHandle",
+          "variantSku",
+          "variantBarcode",
+          "variantTitle",
+          "variantOptionValues",
+          "requiresShipping",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminOrderShippingMethod": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": ["string", "null"]
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "shippingOptionId": {
+            "type": ["string", "null"]
+          },
+          "data": {},
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "name",
+          "description",
+          "amount",
+          "shippingOptionId",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminOrderTransaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "reference": {
+            "type": ["string", "null"]
+          },
+          "referenceId": {
+            "type": ["string", "null"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "amount",
+          "currencyCode",
+          "reference",
+          "referenceId",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminOrderTotals": {
+        "type": "object",
+        "properties": {
+          "itemsTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "shippingTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "orderTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "paidTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "outstandingTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["itemsTotal", "shippingTotal", "orderTotal", "paidTotal", "outstandingTotal"]
+      },
+      "AdminOrderAllowedActions": {
+        "type": "object",
+        "properties": {
+          "canComplete": {
+            "type": "boolean"
+          },
+          "canCancel": {
+            "type": "boolean"
+          },
+          "canArchive": {
+            "type": "boolean"
+          }
+        },
+        "required": ["canComplete", "canCancel", "canArchive"]
+      },
+      "AdminOrderActionResponse": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/AdminOrder"
+          }
+        },
+        "required": ["order"]
+      },
+      "AdminCreateOrderFulfillment": {
+        "type": "object",
+        "properties": {
+          "providerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "locationId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "sku": {
+                  "type": "string"
+                },
+                "barcode": {
+                  "type": "string"
+                },
+                "lineItemId": {
+                  "type": "string"
+                },
+                "inventoryItemId": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "quantity"]
+            },
+            "minItems": 1
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "company": {
+                "type": "string"
+              },
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "address1": {
+                "type": "string"
+              },
+              "address2": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "countryCode": {
+                "type": "string"
+              },
+              "province": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            }
+          },
+          "shippingOptionId": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "metadata": {
+            "type": "string"
+          }
+        },
+        "required": ["providerId", "locationId", "items", "address"]
+      },
+      "AdminCreateOrderShipment": {
+        "type": "object",
+        "properties": {
+          "trackingNumber": {
+            "type": "string"
+          },
+          "trackingUrl": {
+            "type": "string"
+          },
+          "labelUrl": {
+            "type": "string"
+          }
+        }
+      },
       "AdminFulfillmentSetListResponse": {
         "type": "object",
         "properties": {
@@ -813,16 +1299,20 @@
             "type": "string"
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "authorizedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "capturedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "refundedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "completedAt": {
             "type": ["string", "null"],
@@ -892,7 +1382,8 @@
             "type": "string"
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "status": {
             "type": "string",
@@ -959,7 +1450,8 @@
             "type": "string"
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "currencyCode": {
             "type": "string"
@@ -1034,7 +1526,8 @@
             "type": "string"
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "createdBy": {
             "type": ["string", "null"]
@@ -1063,7 +1556,8 @@
             "type": ["string", "null"]
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "note": {
             "type": ["string", "null"]
@@ -1119,8 +1613,7 @@
         "type": "object",
         "properties": {
           "amount": {
-            "type": "integer",
-            "exclusiveMinimum": 0
+            "type": "string"
           }
         }
       },
@@ -1128,8 +1621,7 @@
         "type": "object",
         "properties": {
           "amount": {
-            "type": "integer",
-            "exclusiveMinimum": 0
+            "type": "string"
           },
           "refundReasonId": {
             "type": "string",
@@ -3270,6 +3762,461 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminNotificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders": {
+      "get": {
+        "operationId": "listOrders",
+        "summary": "List orders",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": ["integer", "null"],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": ["pending", "completed", "canceled", "archived"]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["pending", "completed", "canceled", "archived"]
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": ["unfulfilled", "fulfilled", "shipped", "delivered"]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["unfulfilled", "fulfilled", "shipped", "delivered"]
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "fulfillmentStatus",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "customerId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "$eq": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "$ne": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "$gt": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "$gte": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "$lt": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "$lte": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "$in": {
+                  "type": "array",
+                  "items": {
+                    "type": ["string", "null"],
+                    "format": "date-time"
+                  }
+                },
+                "$nin": {
+                  "type": "array",
+                  "items": {
+                    "type": ["string", "null"],
+                    "format": "date-time"
+                  }
+                }
+              }
+            },
+            "required": false,
+            "name": "createdAt",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}": {
+      "get": {
+        "operationId": "getOrder",
+        "summary": "Retrieve an order",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/complete": {
+      "post": {
+        "operationId": "completeOrder",
+        "summary": "Complete an order",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/cancel": {
+      "post": {
+        "operationId": "cancelOrder",
+        "summary": "Cancel an order",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/archive": {
+      "post": {
+        "operationId": "archiveOrder",
+        "summary": "Archive an order",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/fulfillments": {
+      "post": {
+        "operationId": "createOrderFulfillment",
+        "summary": "Create a fulfillment for an order",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateOrderFulfillment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/fulfillments/{fulfillmentId}/shipments": {
+      "post": {
+        "operationId": "createOrderShipment",
+        "summary": "Create a shipment for a fulfillment",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "fulfillmentId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateOrderShipment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/fulfillments/{fulfillmentId}/mark-as-delivered": {
+      "post": {
+        "operationId": "markOrderAsDelivered",
+        "summary": "Mark a fulfillment as delivered",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "fulfillmentId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderActionResponse"
                 }
               }
             }

@@ -6,8 +6,7 @@
  */
 
 export interface AdminRefundPayment {
-  /** @exclusiveMinimum 0 */
-  amount?: number;
+  amount?: string;
   /** @minLength 1 */
   refundReasonId?: string;
   note?: string;

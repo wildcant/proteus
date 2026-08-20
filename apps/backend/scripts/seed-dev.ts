@@ -1,8 +1,9 @@
-import BigNumber from 'bignumber.js'
+import { BigNumber } from '../src/core/db/bignum.js'
 import type {
   IAuthModuleService,
   ICartModuleService,
   ICustomerModuleService,
+  IFulfillmentModuleService,
   IInventoryModuleService,
   ILinkService,
   INotificationModuleService,
@@ -23,6 +24,7 @@ const cartService = container.resolve<ICartModuleService>(Modules.CART)
 const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
 // --- Users ---
@@ -388,7 +390,7 @@ if (existingProducts.length > 0) {
           {
             title: 'Classic T-Shirt (M / Black)',
             quantity: 2,
-            unitPrice: 2500,
+            unitPrice: new BigNumber(2500),
             variantId: tshirtVariant.id,
             variantSku: tshirtVariant.sku,
             productId: tshirt.id,
@@ -397,7 +399,7 @@ if (existingProducts.length > 0) {
           {
             title: 'Vintage Sweatshirt (L)',
             quantity: 1,
-            unitPrice: 4500,
+            unitPrice: new BigNumber(4500),
             variantId: sweatshirtVariant.id,
             variantSku: sweatshirtVariant.sku,
             productId: sweatshirt.id,
@@ -411,6 +413,64 @@ if (existingProducts.length > 0) {
   } else {
     console.info(`Skipped cart (${existingCarts.length} already exist)`)
   }
+}
+
+// --- Shipping options ---
+const existingShippingOptions = await fulfillmentService.listShippingOptions()
+if (existingShippingOptions.length === 0) {
+  const shippingProfile = await fulfillmentService.createShippingProfile({ name: 'Default', type: 'default' })
+
+  const fulfillmentSet = await fulfillmentService.createFulfillmentSet({ name: 'Default Shipping', type: 'shipping' })
+
+  const serviceZone = await fulfillmentService.createServiceZone({
+    name: 'Worldwide',
+    fulfillmentSetId: fulfillmentSet.id,
+    geoZones: [
+      { type: 'country', countryCode: 'us' },
+      { type: 'country', countryCode: 'ca' },
+      { type: 'country', countryCode: 'gb' },
+      { type: 'country', countryCode: 'de' },
+      { type: 'country', countryCode: 'fr' },
+      { type: 'country', countryCode: 'au' },
+      { type: 'country', countryCode: 'se' },
+      { type: 'country', countryCode: 'dk' },
+    ],
+  })
+
+  const standardType = await fulfillmentService.createShippingOptionType({
+    label: 'Standard',
+    description: 'Ship in 2-3 days.',
+    code: 'standard',
+  })
+  const expressType = await fulfillmentService.createShippingOptionType({
+    label: 'Express',
+    description: 'Ship in 24 hours.',
+    code: 'express',
+  })
+
+  await fulfillmentService.createShippingOptions([
+    {
+      name: 'Standard Shipping',
+      priceType: 'flat',
+      amount: 500,
+      serviceZoneId: serviceZone.id,
+      shippingProfileId: shippingProfile.id,
+      shippingOptionTypeId: standardType.id,
+      providerId: 'manual_manual',
+    },
+    {
+      name: 'Express Shipping',
+      priceType: 'flat',
+      amount: 1500,
+      serviceZoneId: serviceZone.id,
+      shippingProfileId: shippingProfile.id,
+      shippingOptionTypeId: expressType.id,
+      providerId: 'manual_manual',
+    },
+  ])
+  console.info('Seeded shipping profile, fulfillment set, service zone, geo zones, and 2 shipping options')
+} else {
+  console.info(`Skipped shipping options (${existingShippingOptions.length} already exist)`)
 }
 
 // --- Refund reasons ---

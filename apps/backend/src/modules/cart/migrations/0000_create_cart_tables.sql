@@ -12,7 +12,6 @@ CREATE TABLE "cart_address" (
 	"province" text,
 	"postal_code" text,
 	"phone" text,
-	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -28,7 +27,6 @@ CREATE TABLE "cart" (
 	"status" "cart_status" DEFAULT 'active' NOT NULL,
 	"shipping_address_id" text,
 	"billing_address_id" text,
-	"metadata" text,
 	"completed_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -41,7 +39,6 @@ CREATE TABLE "cart_credit_line" (
 	"reference" text,
 	"reference_id" text,
 	"amount" integer NOT NULL,
-	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -69,9 +66,8 @@ CREATE TABLE "cart_line_item" (
 	"is_discountable" boolean DEFAULT true NOT NULL,
 	"is_giftcard" boolean DEFAULT false NOT NULL,
 	"is_tax_inclusive" boolean DEFAULT false NOT NULL,
-	"compare_at_unit_price" integer,
-	"unit_price" integer NOT NULL,
-	"metadata" text,
+	"compare_at_unit_price" numeric,
+	"unit_price" numeric NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -85,7 +81,6 @@ CREATE TABLE "cart_line_item_tax_line" (
 	"description" text,
 	"provider_id" text,
 	"tax_rate_id" text,
-	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -96,11 +91,10 @@ CREATE TABLE "cart_shipping_method" (
 	"cart_id" text NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
-	"amount" integer NOT NULL,
+	"amount" numeric NOT NULL,
 	"is_tax_inclusive" boolean DEFAULT false NOT NULL,
 	"shipping_option_id" text,
-	"data" text,
-	"metadata" text,
+	"data" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -114,7 +108,6 @@ CREATE TABLE "cart_shipping_method_tax_line" (
 	"description" text,
 	"provider_id" text,
 	"tax_rate_id" text,
-	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone

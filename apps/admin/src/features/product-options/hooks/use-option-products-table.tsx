@@ -1,8 +1,7 @@
-import { Badge } from '@proteus/ui'
 import type { AdminProduct } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { StatusCell, useDefineTable } from '#/components/data-table'
 import { useProductsForOption } from '#/features/product-options/api/product-options'
-import { productStatusBadgeVariants } from '#/features/products/constants'
+import { productStatusColors } from '#/features/products/constants'
 
 export const useOptionProductsTable = (optionId: string) =>
   useDefineTable<AdminProduct>({
@@ -21,7 +20,7 @@ export const useOptionProductsTable = (optionId: string) =>
       col.accessor('status', {
         header: 'Status',
         truncateTooltip: false,
-        cell: ({ value }) => <Badge variant={productStatusBadgeVariants[value] ?? 'secondary'}>{value}</Badge>,
+        cell: ({ value }) => <StatusCell color={productStatusColors[value]}>{value}</StatusCell>,
       }),
     ],
 

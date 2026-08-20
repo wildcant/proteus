@@ -1,6 +1,6 @@
 import type { BigNumber } from '../../../core/db/bignum.js'
 import type {
-  CalculatedPriceSet,
+  CalculatedPriceSetDTO,
   Context,
   CreatePriceDTO,
   CreatePriceSetDTO,
@@ -213,7 +213,7 @@ export class PricingModuleService implements IPricingModuleService {
     priceSetIds: string[],
     pricingContext: PricingContext,
     context?: Context,
-  ): Promise<CalculatedPriceSet[]> {
+  ): Promise<CalculatedPriceSetDTO[]> {
     // TODO(pricing): when PriceRule exists, apply rule matching and specificity ordering
     // TODO(pricing): when PriceList exists, apply SALE vs OVERRIDE logic
     // For now: first matching price wins (one price per set per currency)

@@ -10,6 +10,7 @@
 export { cartPaymentCollectionTable } from './link-modules/definitions/cart-payment-collection.js'
 export type { productVariantInventoryItemTable } from './link-modules/definitions/product-variant-inventory-item.js'
 export {
+  type CreateProductVariantPriceSet,
   productVariantPriceSetRelations,
   productVariantPriceSetTable,
 } from './link-modules/definitions/product-variant-price-set.js'

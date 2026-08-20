@@ -26,7 +26,7 @@ export function TextareaField({ label, className, ...textareaProps }: TextareaFi
         aria-invalid={isInvalid}
         {...textareaProps}
       />
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

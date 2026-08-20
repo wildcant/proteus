@@ -14,6 +14,7 @@ import adminFulfillmentProviderDefinitions from './api/admin/fulfillment-provide
 import adminFulfillmentSetDefinitions from './api/admin/fulfillment-sets/definitions.js'
 import adminInviteDefinitions from './api/admin/invites/definitions.js'
 import adminNotificationDefinitions from './api/admin/notifications/definitions.js'
+import adminOrderDefinitions from './api/admin/orders/definitions.js'
 import adminPaymentCollectionDefinitions from './api/admin/payment-collections/definitions.js'
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
 import adminProductOptionDefinitions from './api/admin/product-options/definitions.js'
@@ -27,6 +28,7 @@ import hookDefinitions from './api/hooks/definitions.js'
 import storeAuthDefinitions from './api/store/auth/definitions.js'
 import storeCartDefinitions from './api/store/carts/definitions.js'
 import storeCustomerDefinitions from './api/store/customers/definitions.js'
+import storeOrderDefinitions from './api/store/orders/definitions.js'
 import storePaymentCollectionDefinitions from './api/store/payment-collections/definitions.js'
 import storePaymentProviderDefinitions from './api/store/payment-providers/definitions.js'
 import storeProductDefinitions from './api/store/products/definitions.js'
@@ -47,6 +49,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminFulfillmentProviderDefinitions,
   ...adminInviteDefinitions,
   ...adminNotificationDefinitions,
+  ...adminOrderDefinitions,
   ...adminFulfillmentSetDefinitions,
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,
@@ -63,6 +66,7 @@ export const storeDefinitions: RouteDefinition[] = [
   ...authDefinitions.filter((d) => storeSharedAuthRoutes.has(d.matcher)),
   ...storeCartDefinitions,
   ...storeCustomerDefinitions,
+  ...storeOrderDefinitions,
   ...storePaymentCollectionDefinitions,
   ...storePaymentProviderDefinitions,
   ...storeProductDefinitions,

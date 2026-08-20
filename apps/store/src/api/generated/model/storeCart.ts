@@ -22,8 +22,6 @@ export interface StoreCart {
   /** @nullable */
   billingAddressId: string | null;
   /** @nullable */
-  metadata: string | null;
-  /** @nullable */
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;

@@ -49,7 +49,7 @@ export function FilterBar({
           isPending={isPending}
         />
       )}
-      {hasFilters && (
+      {!!hasFilters && (
         <Button variant="ghost" size="xs" onClick={onClearAll}>
           Clear all
         </Button>

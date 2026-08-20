@@ -164,9 +164,6 @@
           "billingAddressId": {
             "type": ["string", "null"]
           },
-          "metadata": {
-            "type": ["string", "null"]
-          },
           "completedAt": {
             "type": ["string", "null"],
             "format": "date-time"
@@ -194,7 +191,6 @@
           "status",
           "shippingAddressId",
           "billingAddressId",
-          "metadata",
           "completedAt",
           "createdAt",
           "updatedAt",
@@ -223,9 +219,18 @@
                     "items": {
                       "$ref": "#/components/schemas/StoreCartShippingMethod"
                     }
+                  },
+                  "totals": {
+                    "$ref": "#/components/schemas/StoreCartTotals"
+                  },
+                  "shippingAddress": {
+                    "$ref": "#/components/schemas/StoreCartAddress"
+                  },
+                  "billingAddress": {
+                    "$ref": "#/components/schemas/StoreCartAddress"
                   }
                 },
-                "required": ["items", "shippingMethods"]
+                "required": ["items", "shippingMethods", "totals", "shippingAddress", "billingAddress"]
               }
             ]
           }
@@ -299,13 +304,16 @@
             "type": "boolean"
           },
           "compareAtUnitPrice": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "unitPrice": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
-          "metadata": {
-            "type": ["string", "null"]
+          "lineTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "createdAt": {
             "type": "string",
@@ -344,7 +352,7 @@
           "isTaxInclusive",
           "compareAtUnitPrice",
           "unitPrice",
-          "metadata",
+          "lineTotal",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -366,7 +374,8 @@
             "type": ["string", "null"]
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "isTaxInclusive": {
             "type": "boolean"
@@ -375,10 +384,8 @@
             "type": ["string", "null"]
           },
           "data": {
-            "type": ["string", "null"]
-          },
-          "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "createdAt": {
             "type": "string",
@@ -402,7 +409,94 @@
           "isTaxInclusive",
           "shippingOptionId",
           "data",
-          "metadata",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "StoreCartTotals": {
+        "type": "object",
+        "properties": {
+          "itemsTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "shippingTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "cartTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["itemsTotal", "shippingTotal", "cartTotal"]
+      },
+      "StoreCartAddress": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": ["string", "null"]
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "city": {
+            "type": ["string", "null"]
+          },
+          "countryCode": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "postalCode": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "customerId",
+          "company",
+          "firstName",
+          "lastName",
+          "address1",
+          "address2",
+          "city",
+          "countryCode",
+          "province",
+          "postalCode",
+          "phone",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -532,14 +626,14 @@
         },
         "required": ["shippingMethod"]
       },
-      "StoreCartResponse": {
+      "StoreCompleteCartResponse": {
         "type": "object",
         "properties": {
-          "cart": {
-            "$ref": "#/components/schemas/StoreCart"
+          "orderId": {
+            "type": "string"
           }
         },
-        "required": ["cart"]
+        "required": ["orderId"]
       },
       "StoreCartInventoryResponse": {
         "type": "object",
@@ -622,6 +716,250 @@
         },
         "required": ["id", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
       },
+      "StoreOrderListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/StoreOrder"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreOrderItemSummary"
+                      }
+                    },
+                    "total": {
+                      "type": "string",
+                      "description": "Numeric string (arbitrary precision)"
+                    }
+                  },
+                  "required": ["items", "total"]
+                }
+              ]
+            }
+          }
+        },
+        "required": ["count", "offset", "limit", "orders"]
+      },
+      "StoreOrderItemSummary": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
+          },
+          "quantity": {
+            "type": "number"
+          }
+        },
+        "required": ["title", "thumbnail", "quantity"]
+      },
+      "StoreOrder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayId": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "canceled", "archived"]
+          },
+          "fulfillmentStatus": {
+            "type": "string",
+            "enum": ["unfulfilled", "fulfilled", "shipped", "delivered"]
+          },
+          "email": {
+            "type": ["string", "null"]
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "displayId",
+          "status",
+          "fulfillmentStatus",
+          "email",
+          "currencyCode",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "StoreOrderResponse": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StoreOrder"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "lineItems": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/StoreOrderLineItem"
+                    }
+                  },
+                  "shippingAddress": {
+                    "$ref": "#/components/schemas/StoreOrderAddress"
+                  },
+                  "shippingMethods": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/StoreOrderShippingMethod"
+                    }
+                  },
+                  "totals": {
+                    "$ref": "#/components/schemas/StoreOrderTotals"
+                  },
+                  "paymentStatus": {
+                    "type": "string",
+                    "enum": ["awaiting", "authorized", "captured"]
+                  }
+                },
+                "required": ["lineItems", "shippingAddress", "shippingMethods", "totals", "paymentStatus"]
+              }
+            ]
+          }
+        },
+        "required": ["order"]
+      },
+      "StoreOrderLineItem": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "variantTitle": {
+            "type": ["string", "null"]
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unitPrice": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "lineTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["title", "variantTitle", "thumbnail", "quantity", "unitPrice", "lineTotal"]
+      },
+      "StoreOrderAddress": {
+        "type": ["object", "null"],
+        "properties": {
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "city": {
+            "type": ["string", "null"]
+          },
+          "countryCode": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "postalCode": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": [
+          "company",
+          "firstName",
+          "lastName",
+          "address1",
+          "address2",
+          "city",
+          "countryCode",
+          "province",
+          "postalCode",
+          "phone"
+        ]
+      },
+      "StoreOrderShippingMethod": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["name", "amount"]
+      },
+      "StoreOrderTotals": {
+        "type": "object",
+        "properties": {
+          "itemsTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "shippingTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "orderTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["itemsTotal", "shippingTotal", "orderTotal"]
+      },
       "StoreCreatePaymentCollectionResponse": {
         "type": "object",
         "properties": {
@@ -641,16 +979,20 @@
             "type": "string"
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "authorizedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "capturedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "refundedAmount": {
-            "type": ["number", "null"]
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "completedAt": {
             "type": ["string", "null"],
@@ -717,7 +1059,8 @@
             "type": "string"
           },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
           },
           "status": {
             "type": "string",
@@ -788,9 +1131,15 @@
           },
           "isEnabled": {
             "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "isTestOnly": {
+            "type": "boolean"
           }
         },
-        "required": ["id", "isEnabled"]
+        "required": ["id", "isEnabled", "label", "isTestOnly"]
       },
       "StoreProductListResponse": {
         "type": "object",
@@ -807,11 +1156,42 @@
           "products": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StoreProduct"
+              "$ref": "#/components/schemas/StoreProductListItem"
             }
           }
         },
         "required": ["count", "offset", "limit", "products"]
+      },
+      "StoreProductListItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StoreProduct"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "startingPrice": {
+                "$ref": "#/components/schemas/StoreCalculatedPrice"
+              }
+            }
+          }
+        ]
+      },
+      "StoreCalculatedPrice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "calculatedAmount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": ["id", "currencyCode", "calculatedAmount"]
       },
       "StoreProduct": {
         "type": "object",
@@ -943,22 +1323,6 @@
           "width",
           "calculatedPrice"
         ]
-      },
-      "StoreCalculatedPrice": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "currencyCode": {
-            "type": "string"
-          },
-          "originalAmount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          }
-        },
-        "required": ["id", "currencyCode", "originalAmount"]
       }
     },
     "parameters": {}
@@ -1176,10 +1540,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "currencyCode": {
-                    "type": "string",
-                    "minLength": 1
-                  },
                   "email": {
                     "type": "string",
                     "format": "email"
@@ -1198,8 +1558,7 @@
                           "exclusiveMinimum": 0
                         },
                         "unitPrice": {
-                          "type": "integer",
-                          "minimum": 0
+                          "type": "string"
                         },
                         "variantId": {
                           "type": "string"
@@ -1217,8 +1576,7 @@
                       "required": ["title", "quantity", "unitPrice"]
                     }
                   }
-                },
-                "required": ["currencyCode"]
+                }
               }
             }
           }
@@ -1300,9 +1658,91 @@
                     "type": "string",
                     "format": "email"
                   },
-                  "currencyCode": {
-                    "type": "string",
-                    "minLength": 1
+                  "shippingAddress": {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lastName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "address1": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "address2": {
+                        "type": "string"
+                      },
+                      "company": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "countryCode": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 2
+                      },
+                      "province": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
+                  },
+                  "billingAddress": {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lastName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "address1": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "address2": {
+                        "type": "string"
+                      },
+                      "company": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "countryCode": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 2
+                      },
+                      "province": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
                   }
                 }
               }
@@ -1360,8 +1800,7 @@
                     "exclusiveMinimum": 0
                   },
                   "unitPrice": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "string"
                   },
                   "variantId": {
                     "type": "string"
@@ -1437,8 +1876,7 @@
                     "exclusiveMinimum": 0
                   },
                   "unitPrice": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "string"
                   }
                 }
               }
@@ -1654,7 +2092,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StoreCartResponse"
+                  "$ref": "#/components/schemas/StoreCompleteCartResponse"
                 }
               }
             }
@@ -1722,6 +2160,95 @@
           },
           "400": {
             "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/orders": {
+      "get": {
+        "operationId": "listStoreOrders",
+        "summary": "List customer orders",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": ["integer", "null"],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOrderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/orders/{id}": {
+      "get": {
+        "operationId": "getStoreOrder",
+        "summary": "Retrieve a customer order",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
           }
         }
       }

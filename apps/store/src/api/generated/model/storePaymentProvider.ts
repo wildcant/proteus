@@ -8,4 +8,6 @@
 export interface StorePaymentProvider {
   id: string;
   isEnabled: boolean;
+  label: string;
+  isTestOnly: boolean;
 }

@@ -1,6 +1,6 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
-import type { CalculatedPriceSet, FilterablePriceProps, PriceDTO, PriceSetDTO, PricingContext } from './common.js'
+import type { CalculatedPriceSetDTO, FilterablePriceProps, PriceDTO, PriceSetDTO, PricingContext } from './common.js'
 import type { CreatePriceDTO, CreatePriceSetDTO, UpdatePriceDTO, UpsertPriceSetDTO } from './mutations.js'
 
 export type IPricingModuleService = {
@@ -18,5 +18,5 @@ export type IPricingModuleService = {
     priceSetIds: string[],
     pricingContext: PricingContext,
     context?: Context,
-  ): Promise<CalculatedPriceSet[]>
+  ): Promise<CalculatedPriceSetDTO[]>
 }

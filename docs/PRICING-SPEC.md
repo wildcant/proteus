@@ -210,7 +210,7 @@ export type PriceDTO = {
   deletedAt: Date | null
 }
 
-export type CalculatedPriceSet = {
+export type CalculatedPriceSetDTO = {
   id: string            // price_set_id
   currencyCode: string
   originalAmount: BigNumber
@@ -263,7 +263,7 @@ export type IPricingModuleService = {
   calculatePrices(
     priceSetIds: string[],
     context: PricingContext,
-  ): Promise<Map<string, CalculatedPriceSet>>
+  ): Promise<Map<string, CalculatedPriceSetDTO>>
 }
 ```
 
@@ -304,9 +304,9 @@ Key method — `calculatePrices()` for MVP:
 async calculatePrices(
   priceSetIds: string[],
   context: PricingContext,
-): Promise<Map<string, CalculatedPriceSet>> {
+): Promise<Map<string, CalculatedPriceSetDTO>> {
   const prices = await this.priceRepository.findByPriceSetIds(priceSetIds, context.currencyCode)
-  const result = new Map<string, CalculatedPriceSet>()
+  const result = new Map<string, CalculatedPriceSetDTO>()
 
   for (const price of prices) {
     // TODO(pricing): when PriceRule exists, apply rule matching and specificity ordering
@@ -742,8 +742,8 @@ apps/admin/src/features/products/api/product-variants.ts        (add price-aware
 | PriceRule model + matching | Multi-region / customer groups | `pricing/models/`, `pricing/services/` |
 | PriceList + PriceListRule | Sale/override pricing | `pricing/models/`, `pricing/services/` |
 | PricePreference | Tax module | `pricing/models/` |
-| `calculatedAmount` field | PriceRule / PriceList | `CalculatedPriceSet` type, store entity schema |
-| Tax fields (`_withTax`, `_withoutTax`) | Tax module | `CalculatedPriceSet` type, store entity schema |
+| `calculatedAmount` field | PriceRule / PriceList | `CalculatedPriceSetDTO` type, store entity schema |
+| Tax fields (`_withTax`, `_withoutTax`) | Tax module | `CalculatedPriceSetDTO` type, store entity schema |
 | `shippingOptionPriceSet` link | Shipping option creation | `link-modules/definitions/` |
 | Cart pricing integration | Cart + Tax | `workflows/`, cart line item `unitPrice` |
 | Quantity tiers (`minQuantity`, `maxQuantity`) | PriceRule or standalone | `price` table, `calculatePrices()` |
@@ -766,7 +766,7 @@ Key files in `/Users/willo/learn/medusa/medusa-source/` for implementation refer
 | `packages/modules/pricing/src/models/price.ts` | Price entity: dual `amount`/`raw_amount`, `rules_count`, quantity tiers |
 | `packages/modules/pricing/src/repositories/pricing.ts` | `calculatePrices` SQL engine (rule matching, price list filtering) |
 | `packages/modules/pricing/src/services/pricing-module.ts` | Service: `calculatePrices()`, `normalizePrices()`, `createPriceSets_()` |
-| `packages/core/types/src/pricing/common/price-set.ts` | Full type defs: `CalculatedPriceSet`, mutation DTOs |
+| `packages/core/types/src/pricing/common/price-set.ts` | Full type defs: `CalculatedPriceSetDTO`, mutation DTOs |
 | `packages/core/types/src/pricing/common/pricing-context.ts` | `MedusaPricingContext` (region_id, currency_code, customer fields) |
 | `packages/core/utils/src/totals/big-number.ts` | Medusa's BigNumber wrapper (dual numeric + raw JSONB storage) |
 | `packages/admin/dashboard/src/routes/product-variants/product-variant-detail/` | Variant detail page UI |

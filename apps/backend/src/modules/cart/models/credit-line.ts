@@ -13,7 +13,6 @@ export const cartCreditLineTable = pgTable(
     reference: text(),
     referenceId: text(),
     amount: integer().notNull(),
-    metadata: text(),
     ...timestamps,
   },
   (table) => [

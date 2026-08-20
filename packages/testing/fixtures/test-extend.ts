@@ -1,15 +1,29 @@
 import { test as base, expect } from '@playwright/test'
 import { interpolatePath } from '@tanstack/react-router'
 import {
+  createCart,
   createCustomer,
+  createPrice,
+  createPriceSet,
   createProduct,
   createProductVariant,
+  createProductVariantPriceSet,
+  createProductWithPricing,
   createUser,
+  deleteCartById,
   deleteCustomerById,
+  deletePriceById,
+  deletePriceSetById,
+  deleteProductById,
+  deleteProductVariantPriceSetById,
   deleteUserById,
+  generateCart,
   generateCustomer,
+  generatePrice,
+  generatePriceSet,
   generateProduct,
   generateProductVariant,
+  generateProductVariantPriceSet,
   generateUser,
 } from 'backend/test'
 import { type AuthenticateFunction, combinePersonas, definePersona } from 'playwright-persona'
@@ -72,18 +86,36 @@ export function createTest<RoutePath extends string = string>() {
   const test = base.extend<{
     factories: {
       generate: {
+        cart: typeof generateCart
         customer: typeof generateCustomer
         user: typeof generateUser
         product: typeof generateProduct
         productVariant: typeof generateProductVariant
+        priceSet: typeof generatePriceSet
+        price: typeof generatePrice
+        productVariantPriceSet: typeof generateProductVariantPriceSet
         loginForm: typeof generateLoginFormValues
         customerSignupForm: typeof generateRegisterFormValues
       }
       create: {
+        cart: typeof createCart
         customer: typeof createCustomer
         user: typeof createUser
         product: typeof createProduct
         productVariant: typeof createProductVariant
+        priceSet: typeof createPriceSet
+        price: typeof createPrice
+        productVariantPriceSet: typeof createProductVariantPriceSet
+        productWithPricing: typeof createProductWithPricing
+      }
+      destroy: {
+        cart: typeof deleteCartById
+        customer: typeof deleteCustomerById
+        user: typeof deleteUserById
+        product: typeof deleteProductById
+        priceSet: typeof deletePriceSetById
+        price: typeof deletePriceById
+        productVariantPriceSet: typeof deleteProductVariantPriceSetById
       }
     }
     navigate: NavigateFunction<RoutePath>
@@ -92,20 +124,38 @@ export function createTest<RoutePath extends string = string>() {
   }>({
     factories: {
       generate: {
+        cart: generateCart,
         customer: generateCustomer,
         user: generateUser,
         product: generateProduct,
         productVariant: generateProductVariant,
+        priceSet: generatePriceSet,
+        price: generatePrice,
+        productVariantPriceSet: generateProductVariantPriceSet,
 
         // Forms
         loginForm: generateLoginFormValues,
         customerSignupForm: generateRegisterFormValues,
       },
       create: {
+        cart: createCart,
         customer: createCustomer,
         user: createUser,
         product: createProduct,
         productVariant: createProductVariant,
+        priceSet: createPriceSet,
+        price: createPrice,
+        productVariantPriceSet: createProductVariantPriceSet,
+        productWithPricing: createProductWithPricing,
+      },
+      destroy: {
+        cart: deleteCartById,
+        customer: deleteCustomerById,
+        user: deleteUserById,
+        product: deleteProductById,
+        priceSet: deletePriceSetById,
+        price: deletePriceById,
+        productVariantPriceSet: deleteProductVariantPriceSetById,
       },
     },
 

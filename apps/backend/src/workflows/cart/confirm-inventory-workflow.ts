@@ -21,7 +21,7 @@ export const confirmInventoryWorkflow = createWorkflow<ConfirmInventoryInput, Co
       const lineItems = await cartService.listLineItems({ cartId: input.cartId })
       logger.debug(`[confirm-inventory] Found ${lineItems.length} line item(s) for cart ${input.cartId}`)
 
-      const variantIds = lineItems.map((li) => li.variantId).filter((id): id is string => id != null)
+      const variantIds = lineItems.map((li) => li.variantId).filter((id) => id != null)
       const mappings = await linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds)
       logger.debug(
         `[confirm-inventory] Found ${mappings.length} variant-inventory mapping(s) for ${variantIds.length} variant(s)`,

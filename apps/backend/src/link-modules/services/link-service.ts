@@ -7,6 +7,9 @@ import type {
 } from '../../core/types/link/service.js'
 import type { CartPaymentCollectionRepository } from '../repositories/cart-payment-collection.js'
 import type { CartProductRepository } from '../repositories/cart-product.js'
+import type { OrderCartRepository } from '../repositories/order-cart.js'
+import type { OrderFulfillmentRepository } from '../repositories/order-fulfillment.js'
+import type { OrderPaymentCollectionRepository } from '../repositories/order-payment-collection.js'
 import type { ProductVariantInventoryItemRepository } from '../repositories/product-variant-inventory-item.js'
 import type { ProductVariantPriceSetRepository } from '../repositories/product-variant-price-set.js'
 
@@ -15,6 +18,9 @@ export type LinkRepositoryMap = {
   cartProduct: CartProductRepository
   cartPaymentCollection: CartPaymentCollectionRepository
   productVariantPriceSet: ProductVariantPriceSetRepository
+  orderCart: OrderCartRepository
+  orderPaymentCollection: OrderPaymentCollectionRepository
+  orderFulfillment: OrderFulfillmentRepository
 }
 
 type WritableLinkRepositoryMap = {
@@ -30,10 +36,12 @@ export class LinkService {
 
   private static readonly COLUMN_REGISTRY = {
     variantId: ['productVariantPriceSet', 'productVariantInventoryItem'],
-    cartId: ['cartPaymentCollection'],
-    paymentCollectionId: ['cartPaymentCollection'],
+    cartId: ['cartPaymentCollection', 'orderCart'],
+    paymentCollectionId: ['cartPaymentCollection', 'orderPaymentCollection'],
     inventoryItemId: ['productVariantInventoryItem'],
     priceSetId: ['productVariantPriceSet'],
+    orderId: ['orderCart', 'orderPaymentCollection', 'orderFulfillment'],
+    fulfillmentId: ['orderFulfillment'],
   } as const satisfies LinkColumnRegistry
 
   constructor({
@@ -41,12 +49,18 @@ export class LinkService {
     cartProduct,
     cartPaymentCollection,
     productVariantPriceSet,
+    orderCart,
+    orderPaymentCollection,
+    orderFulfillment,
   }: InjectedDependencies) {
     this.repositories = {
       productVariantInventoryItem,
       cartProduct,
       cartPaymentCollection,
       productVariantPriceSet,
+      orderCart,
+      orderPaymentCollection,
+      orderFulfillment,
     }
   }
 
