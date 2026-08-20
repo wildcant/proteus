@@ -1,4 +1,3 @@
-import { BigNumber } from '@core/db/bignum.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
@@ -42,12 +41,7 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
         cartService.listLineItems({ cartId: input.cartId }),
         cartService.listShippingMethods({ cartId: input.cartId }),
       ])
-      const lineItemTotal = lineItems.reduce(
-        (sum, li) => sum.plus(li.unitPrice.multipliedBy(li.quantity)),
-        new BigNumber(0),
-      )
-      const shippingTotal = shippingMethods.reduce((sum, sm) => sum.plus(sm.amount), new BigNumber(0))
-      const amount = lineItemTotal.plus(shippingTotal)
+      const { cartTotal: amount } = cartService.computeCartTotals({ lineItems, shippingMethods })
 
       if (amount.isLessThanOrEqualTo(0)) {
         throw new WorkflowTerminalError({
