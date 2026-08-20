@@ -5,14 +5,14 @@ export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder 
   const currency = order.currencyCode
 
   return (
-    <Card className="divide-y gap-0 py-0">
+    <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>Summary</CardTitle>
       </CardHeader>
 
       {order.lineItems.map((item) => (
         <div key={item.id} className="flex items-center gap-4 px-6 py-4">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground text-xs">
             {item.thumbnail ? (
               <img src={item.thumbnail} alt={item.title} className="size-full rounded-md object-cover" />
             ) : (
@@ -20,17 +20,17 @@ export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder 
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-medium">{item.title}</span>
+            <span className="truncate font-medium text-sm">{item.title}</span>
             {!!item.variantTitle && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 {item.variantTitle}
                 {!!item.variantSku && ` \u00b7 ${item.variantSku}`}
               </span>
             )}
           </div>
-          <span className="shrink-0 text-sm text-muted-foreground">{formatPrice(item.unitPrice, currency)}</span>
-          <span className="shrink-0 text-sm text-muted-foreground">\u00d7{item.quantity}</span>
-          <span className="shrink-0 text-sm font-medium tabular-nums">{formatPrice(item.lineTotal, currency)}</span>
+          <span className="shrink-0 text-muted-foreground text-sm">{formatPrice(item.unitPrice, currency)}</span>
+          <span className="shrink-0 text-muted-foreground text-sm">\u00d7{item.quantity}</span>
+          <span className="shrink-0 font-medium text-sm tabular-nums">{formatPrice(item.lineTotal, currency)}</span>
         </div>
       ))}
 

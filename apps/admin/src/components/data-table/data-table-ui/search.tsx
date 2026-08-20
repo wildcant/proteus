@@ -11,9 +11,9 @@ export function Search({ value, onChange, isPending }: SearchProps) {
   return (
     <div className="relative">
       {isPending ? (
-        <LoaderIcon className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />
+        <LoaderIcon className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />
       ) : (
-        <SearchIcon className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <SearchIcon className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
       )}
       <Input
         type="search"

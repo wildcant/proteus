@@ -13,7 +13,7 @@ function LoginPage() {
       <div className="m-4 flex w-full max-w-70 flex-col items-center">
         <div className="mb-4 flex flex-col items-center">
           <h1 className="text-2xl">Welcome to Proteus</h1>
-          <p className="text-ui-fg-subtle text-center text-sm">Sign in to access the account area</p>
+          <p className="text-center text-sm text-ui-fg-subtle">Sign in to access the account area</p>
         </div>
         <div className="flex w-full flex-col gap-y-3">
           <LoginForm onSuccess={() => navigate({ to: '/' })} />

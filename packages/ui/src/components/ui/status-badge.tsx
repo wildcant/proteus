@@ -27,7 +27,7 @@ const StatusBadge = forwardRef<HTMLSpanElement, StatusBadgeProps>(
       <span
         ref={ref}
         className={cn(
-          'inline-flex w-fit select-none items-center overflow-hidden rounded-md border border-border bg-secondary pl-0 pr-1 text-xs font-medium leading-none text-secondary-foreground',
+          'inline-flex w-fit select-none items-center overflow-hidden rounded-md border border-border bg-secondary pr-1 pl-0 font-medium text-secondary-foreground text-xs leading-none',
           className,
         )}
         {...props}

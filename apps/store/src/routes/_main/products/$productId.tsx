@@ -15,7 +15,7 @@ function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-2">
           <div className="aspect-3/4 animate-pulse bg-(--bg-subtle)" />
           <div className="space-y-4">
@@ -29,8 +29,8 @@ function ProductDetailPage() {
 
   if (!product) {
     return (
-      <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-        <p className="text-sm text-(--foreground-muted)">Product not found.</p>
+      <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
+        <p className="text-(--foreground-muted) text-sm">Product not found.</p>
       </main>
     )
   }
@@ -38,8 +38,8 @@ function ProductDetailPage() {
   const firstVariant = product.variants[0]
 
   return (
-    <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-      <nav className="mb-8 text-sm text-(--foreground-muted)">
+    <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
+      <nav className="mb-8 text-(--foreground-muted) text-sm">
         <Link to="/products" className="hover:text-foreground">
           Products
         </Link>
@@ -59,16 +59,16 @@ function ProductDetailPage() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-medium text-foreground">{product.title}</h1>
+          <h1 className="font-medium text-2xl text-foreground">{product.title}</h1>
 
           {!!firstVariant && (
-            <p className="mt-2 text-lg font-semibold text-foreground">
+            <p className="mt-2 font-semibold text-foreground text-lg">
               {formatPrice(firstVariant.calculatedPrice.calculatedAmount, firstVariant.calculatedPrice.currencyCode)}
             </p>
           )}
 
           {!!product.description && (
-            <p className="mt-4 text-sm leading-relaxed text-(--foreground-muted)">{product.description}</p>
+            <p className="mt-4 text-(--foreground-muted) text-sm leading-relaxed">{product.description}</p>
           )}
 
           <AddToCart product={product} />

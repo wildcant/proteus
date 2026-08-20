@@ -67,7 +67,7 @@ export function RouteDrawer({ prev = '..', children }: RouteDrawerProps) {
 
 RouteDrawer.Header = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <DrawerHeader
-    className={cn('flex flex-row shrink-0 items-start justify-between gap-x-4 border-b px-6 py-4', className)}
+    className={cn('flex shrink-0 flex-row items-start justify-between gap-x-4 border-b px-6 py-4', className)}
     {...props}
   >
     <div className="flex flex-col gap-y-1">{children}</div>

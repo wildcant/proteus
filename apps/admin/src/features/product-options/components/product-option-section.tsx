@@ -8,7 +8,7 @@ export function ProductOptionSection({ productId }: { productId: string }) {
   const options = data?.productOptions ?? []
 
   return (
-    <Card className="divide-y gap-0 py-0">
+    <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>Options</CardTitle>
         <CardAction>
@@ -16,7 +16,7 @@ export function ProductOptionSection({ productId }: { productId: string }) {
         </CardAction>
       </CardHeader>
       {options.length === 0 ? (
-        <div className="px-6 py-4 text-sm text-muted-foreground">No options linked to this product.</div>
+        <div className="px-6 py-4 text-muted-foreground text-sm">No options linked to this product.</div>
       ) : (
         options.map((option) => (
           <div key={option.id} className="grid grid-cols-[1fr_1fr_28px] items-center gap-4 px-6 py-4 text-sm">

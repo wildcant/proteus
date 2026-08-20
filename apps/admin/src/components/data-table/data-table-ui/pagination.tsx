@@ -37,9 +37,9 @@ export function Pagination({
 
   return (
     <div className="flex items-center justify-between border-t px-6 py-3">
-      <span className="text-sm text-muted-foreground">{resultInfo}</span>
+      <span className="text-muted-foreground text-sm">{resultInfo}</span>
       <div className="flex items-center gap-x-2">
-        <span className="text-sm text-muted-foreground">{pageInfo}</span>
+        <span className="text-muted-foreground text-sm">{pageInfo}</span>
         <Button variant="outline" size="sm" disabled={!canPrev} onClick={goPrev}>
           Prev
         </Button>

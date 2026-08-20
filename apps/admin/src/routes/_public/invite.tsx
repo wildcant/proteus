@@ -29,15 +29,15 @@ function InvitePage() {
     return (
       <div className="flex w-full max-w-sm flex-col items-center gap-6 px-4">
         <div className="flex flex-col items-center gap-1">
-          <h1 className="text-xl font-semibold">Your account has been registered</h1>
-          <p className="text-sm text-muted-foreground">Get started with the admin right away.</p>
+          <h1 className="font-semibold text-xl">Your account has been registered</h1>
+          <p className="text-muted-foreground text-sm">Get started with the admin right away.</p>
         </div>
         <Link to="/login" className="w-full">
           <Button variant="outline" className="w-full">
             Go to login
           </Button>
         </Link>
-        <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/login" className="text-muted-foreground text-sm hover:text-foreground">
           Back to login
         </Link>
       </div>
@@ -51,10 +51,10 @@ function InvalidInviteError() {
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-6 px-4">
       <div className="flex flex-col items-center gap-1">
-        <h1 className="text-xl font-semibold">Your invite token is invalid</h1>
-        <p className="text-sm text-muted-foreground">Try requesting a new invite link.</p>
+        <h1 className="font-semibold text-xl">Your invite token is invalid</h1>
+        <p className="text-muted-foreground text-sm">Try requesting a new invite link.</p>
       </div>
-      <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">
+      <Link to="/login" className="text-muted-foreground text-sm hover:text-foreground">
         Back to login
       </Link>
     </div>

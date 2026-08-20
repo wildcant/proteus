@@ -39,7 +39,7 @@ export function CurrencyCell({
 
   return (
     <div className="flex h-full items-center gap-x-2">
-      <span className="text-sm text-muted-foreground">{symbol}</span>
+      <span className="text-muted-foreground text-sm">{symbol}</span>
       <input
         ref={inputRef}
         type="text"

@@ -120,7 +120,7 @@ export function ShippingAddressForm({ cart, onComplete }: ShippingAddressFormPro
         {(sameAsBilling) =>
           !sameAsBilling && (
             <div className="mt-6">
-              <h3 className="mb-4 text-lg font-medium text-foreground">Billing address</h3>
+              <h3 className="mb-4 font-medium text-foreground text-lg">Billing address</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <form.AppField name="billingAddress.firstName">
                   {(field) => <field.TextField label="First name" autoComplete="billing given-name" />}
@@ -172,7 +172,7 @@ export function ShippingAddressForm({ cart, onComplete }: ShippingAddressFormPro
         {isPending ? 'Saving...' : 'Continue to delivery'}
       </Button>
 
-      {!!error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
+      {!!error && <p className="mt-2 text-red-600 text-sm">{error.message}</p>}
     </form>
   )
 }

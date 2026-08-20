@@ -32,9 +32,18 @@
           "options": {
             "allow": ["info"]
           }
-        }
+        },
+        "noFallthroughSwitchClause": "error",
+        "noTemplateCurlyInString": "warn",
+        "noEmptyBlockStatements": "warn",
+        "noForIn": "error",
+        "useErrorMessage": "warn"
       },
       "style": {
+        "noUselessElse": "warn",
+        "noCommonJs": "warn",
+        "useNodejsImportProtocol": "warn",
+        "noDefaultExport": "warn",
         "useComponentExportOnlyModules": "warn",
         "useNamingConvention": {
           "level": "warn",
@@ -62,6 +71,14 @@
                 "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
               }
             ]
+          }
+        }
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "warn",
+          "options": {
+            "maxAllowedComplexity": 25
           }
         }
       }
@@ -128,7 +145,73 @@
       }
     },
     {
+      "includes": ["apps/backend/src/framework/logger/noop-logger.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noEmptyBlockStatements": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": [
+        "**/src/routes/**",
+        "**/*.config.ts",
+        "**/database.config.ts",
+        "**/src/api/**/definitions.ts",
+        "apps/backend/src/modules/*/index.ts",
+        "apps/backend/src/providers/*/index.ts",
+        "apps/backend/src/index.workerd.ts",
+        "packages/testing/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/backend/**"],
+      "linter": {
+        "domains": {
+          "drizzle": "all",
+          "test": "recommended",
+          "types": "all",
+          "react": "none"
+        }
+      }
+    },
+    {
+      "includes": ["apps/admin/**", "apps/store/**", "packages/ui/**"],
+      "linter": {
+        "domains": {
+          "react": "recommended",
+          "tailwind": "all",
+          "types": "all",
+          "drizzle": "none"
+        },
+        "rules": {
+          "correctness": {
+            "noNestedComponentDefinitions": "error"
+          },
+          "nursery": {
+            "useSortedClasses": {
+              "level": "warn",
+              "fix": "safe",
+              "options": {
+                "functions": ["clsx", "cva", "cx"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "apps/admin/**",
         "apps/store/**",
         "!apps/store/src/api/generated/**",
         "!apps/store/src/routeTree.gen.ts",

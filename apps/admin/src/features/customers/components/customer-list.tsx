@@ -20,7 +20,7 @@ export function CustomerList() {
                   <p className="font-semibold text-(--sea-ink)">
                     {customer.firstName} {customer.lastName}
                   </p>
-                  <p className="text-sm text-(--sea-ink-soft)">{customer.email}</p>
+                  <p className="text-(--sea-ink-soft) text-sm">{customer.email}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button type="button" variant="outline" size="sm" onClick={() => setEditingId(customer.id)}>
@@ -40,12 +40,12 @@ export function CustomerList() {
           </div>
         ))}
         {customers.length === 0 && (
-          <p className="text-center text-sm text-(--sea-ink-soft)">No customers yet. Add one above.</p>
+          <p className="text-center text-(--sea-ink-soft) text-sm">No customers yet. Add one above.</p>
         )}
       </div>
 
       {count > 0 && (
-        <div className="mt-6 flex items-center justify-between text-sm text-(--sea-ink-soft)">
+        <div className="mt-6 flex items-center justify-between text-(--sea-ink-soft) text-sm">
           <span>
             Showing {offset + 1}–{Math.min(offset + limit, count)} of {count}
           </span>

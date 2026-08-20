@@ -57,7 +57,7 @@ export function DataGrid<T>({ data, columns, onChange, onEditingChange, isLoadin
         <TableHeader className="txt-compact-small-plus sticky top-0 z-10 bg-muted">
           <TableRow className="hover:bg-transparent">
             {columns.map((column) => (
-              <TableHead key={column.accessorKey} className="w-37.5 bg-background border-r font-normal last:border-r-0">
+              <TableHead key={column.accessorKey} className="w-37.5 border-r bg-background font-normal last:border-r-0">
                 {column.header}
               </TableHead>
             ))}

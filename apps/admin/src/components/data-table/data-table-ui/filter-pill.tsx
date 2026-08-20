@@ -74,8 +74,8 @@ export function FilterPill({ def, value, isNew = false, onChange, onRemove }: Fi
         <span className="px-2 py-1 text-muted-foreground">{def.label}</span>
         {!!hasValue && (
           <>
-            <span className="border-x border-border px-2 py-1 text-muted-foreground">is</span>
-            <PopoverTrigger className="cursor-pointer border-r border-border px-2 py-1 font-medium transition-colors hover:bg-muted">
+            <span className="border-border border-x px-2 py-1 text-muted-foreground">is</span>
+            <PopoverTrigger className="cursor-pointer border-border border-r px-2 py-1 font-medium transition-colors hover:bg-muted">
               {formatDisplayValue(value, def)}
             </PopoverTrigger>
           </>

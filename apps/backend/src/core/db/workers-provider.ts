@@ -25,6 +25,8 @@ export function createWorkersDbProvider(databaseUrl: string): DbProvider {
       }
     },
 
-    shutdown: async () => {},
+    shutdown: async () => {
+      // noop
+    },
   }
 }

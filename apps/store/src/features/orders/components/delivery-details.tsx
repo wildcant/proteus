@@ -7,13 +7,13 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
 
   return (
     <section>
-      <h3 className="text-xl font-bold text-foreground">Delivery</h3>
+      <h3 className="font-bold text-foreground text-xl">Delivery</h3>
 
       <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3">
         <div>
-          <p className="text-sm font-semibold text-foreground">Shipping Address</p>
+          <p className="font-semibold text-foreground text-sm">Shipping Address</p>
           {address ? (
-            <div className="mt-1 text-sm text-(--foreground-muted)">
+            <div className="mt-1 text-(--foreground-muted) text-sm">
               {!!(address.firstName || address.lastName) && (
                 <p>{[address.firstName, address.lastName].filter(Boolean).join(' ')}</p>
               )}
@@ -24,19 +24,19 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
               {!!address.countryCode && <p>{address.countryCode.toUpperCase()}</p>}
             </div>
           ) : (
-            <p className="mt-1 text-sm text-(--foreground-muted)">No address provided</p>
+            <p className="mt-1 text-(--foreground-muted) text-sm">No address provided</p>
           )}
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-foreground">Contact</p>
-          {!!order.email && <p className="mt-1 text-sm text-(--foreground-muted)">{order.email}</p>}
+          <p className="font-semibold text-foreground text-sm">Contact</p>
+          {!!order.email && <p className="mt-1 text-(--foreground-muted) text-sm">{order.email}</p>}
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-foreground">Method</p>
+          <p className="font-semibold text-foreground text-sm">Method</p>
           {!!shippingMethod && (
-            <p className="mt-1 text-sm text-(--foreground-muted)">
+            <p className="mt-1 text-(--foreground-muted) text-sm">
               {shippingMethod.name} ({formatPrice(shippingMethod.amount, order.currencyCode)})
             </p>
           )}

@@ -33,15 +33,15 @@ function LoginPage() {
       <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
         {currentView === 'sign-in' && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Welcome back</h1>
-            <p className="mb-6 text-center text-sm text-(--foreground-muted)">
+            <h1 className="mb-2 font-bold text-foreground text-sm uppercase tracking-widest">Welcome back</h1>
+            <p className="mb-6 text-center text-(--foreground-muted) text-sm">
               Sign in to access an enhanced shopping experience.
             </p>
             <LoginForm onSuccess={handleSuccess} onError={(error) => toast.add({ type: 'error', title: error })} />
-            <Link to="/forgot-password" className="mt-4 text-xs text-(--foreground-muted) underline">
+            <Link to="/forgot-password" className="mt-4 text-(--foreground-muted) text-xs underline">
               Forgot your password?
             </Link>
-            <span className="mt-4 text-center text-xs text-(--foreground-muted)">
+            <span className="mt-4 text-center text-(--foreground-muted) text-xs">
               Not a member?{' '}
               <button type="button" onClick={() => setCurrentView('register')} className="underline">
                 Join us
@@ -52,12 +52,12 @@ function LoginPage() {
         )}
         {currentView === 'register' && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Become a member</h1>
-            <p className="mb-6 text-center text-sm text-(--foreground-muted)">
+            <h1 className="mb-2 font-bold text-foreground text-sm uppercase tracking-widest">Become a member</h1>
+            <p className="mb-6 text-center text-(--foreground-muted) text-sm">
               Create your profile and get access to an enhanced shopping experience.
             </p>
             <RegisterForm onSuccess={handleSuccess} onError={(error) => toast.add({ type: 'error', title: error })} />
-            <span className="mt-6 text-center text-xs text-(--foreground-muted)">
+            <span className="mt-6 text-center text-(--foreground-muted) text-xs">
               Already a member?{' '}
               <button type="button" onClick={() => setCurrentView('sign-in')} className="underline">
                 Sign in
@@ -68,8 +68,8 @@ function LoginPage() {
         )}
         {currentView === 'verify-pending' && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Check your email</h1>
-            <p className="text-center text-sm text-(--foreground-muted)">
+            <h1 className="mb-2 font-bold text-foreground text-sm uppercase tracking-widest">Check your email</h1>
+            <p className="text-center text-(--foreground-muted) text-sm">
               We sent a verification link to your email. Please click it to verify your account, then come back and log
               in.
             </p>

@@ -8,7 +8,12 @@ import { afterAll, beforeEach } from 'vitest'
 import { DRIZZLE_OPTIONS } from '../../src/core/db/config.js'
 import { env } from '../../src/env.js'
 
-const sql = postgres(env.DATABASE_URL, { prepare: false, onnotice: () => {} })
+const sql = postgres(env.DATABASE_URL, {
+  prepare: false,
+  onnotice: () => {
+    // noop
+  },
+})
 export const db = drizzle(sql, DRIZZLE_OPTIONS)
 
 const backendRoot = join(import.meta.dirname, '../../src')

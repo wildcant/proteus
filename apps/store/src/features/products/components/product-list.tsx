@@ -35,11 +35,11 @@ export function ProductList() {
       </div>
 
       {(!products || products.length === 0) && (
-        <p className="py-20 text-center text-sm text-(--foreground-muted)">No products found.</p>
+        <p className="py-20 text-center text-(--foreground-muted) text-sm">No products found.</p>
       )}
 
       {count != null && count > limit && (
-        <div className="mt-12 flex items-center justify-center gap-6 text-sm text-(--foreground-muted)">
+        <div className="mt-12 flex items-center justify-center gap-6 text-(--foreground-muted) text-sm">
           <button
             type="button"
             className="hover:text-foreground disabled:opacity-40"

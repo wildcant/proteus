@@ -40,7 +40,7 @@ export function DateFilter({ value, onChange, presets }: DateFilterProps) {
         </div>
       )}
       <div className="flex flex-col gap-3">
-        <Label className="flex flex-col gap-1 text-xs text-muted-foreground">
+        <Label className="flex flex-col gap-1 text-muted-foreground text-xs">
           From
           <Input
             type="date"
@@ -49,7 +49,7 @@ export function DateFilter({ value, onChange, presets }: DateFilterProps) {
             className="h-7 text-xs"
           />
         </Label>
-        <Label className="flex flex-col gap-1 text-xs text-muted-foreground">
+        <Label className="flex flex-col gap-1 text-muted-foreground text-xs">
           To
           <Input
             type="date"

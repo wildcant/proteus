@@ -24,7 +24,7 @@ export function EditProductOptionForm({ option }: { option: AdminProductOption }
             {(field) => <field.TextField label="Title" autoFocus placeholder="e.g. Color, Size" />}
           </form.AppField>
           <div>
-            <h2 className="mb-2 text-sm font-medium">Values</h2>
+            <h2 className="mb-2 font-medium text-sm">Values</h2>
             <form.Field name="values">
               {(field) => (
                 <TagInput

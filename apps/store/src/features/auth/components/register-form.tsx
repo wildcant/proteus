@@ -27,7 +27,7 @@ export function RegisterForm(props: RegisterFormParams) {
           {(field) => <field.TextField label="Password" type="password" autoComplete="new-password" />}
         </form.AppField>
       </div>
-      <span className="mt-6 text-center text-xs text-(--foreground-muted)">
+      <span className="mt-6 text-center text-(--foreground-muted) text-xs">
         By creating an account, you agree to our Privacy Policy and Terms of Use.
       </span>
       <Button type="submit" disabled={isPending} className="mt-6 w-full">

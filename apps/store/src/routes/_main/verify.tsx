@@ -19,8 +19,8 @@ function VerifyError() {
   return (
     <main className="flex min-h-[calc(100vh-13rem)] items-center justify-center px-4">
       <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
-        <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Invalid verification link</h1>
-        <p className="text-center text-sm text-foreground-muted">
+        <h1 className="mb-2 font-bold text-foreground text-sm uppercase tracking-widest">Invalid verification link</h1>
+        <p className="text-center text-foreground-muted text-sm">
           The verification link is invalid or has expired. Please request a new verification email.
         </p>
         <Button variant="outline" render={<Link to="/login" />} className="mt-6">
@@ -44,14 +44,14 @@ function VerifyPage() {
       <div className="flex w-full max-w-sm flex-col items-center rounded-lg border border-border p-8">
         {!!isPending && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Verifying</h1>
-            <p className="text-center text-sm text-foreground-muted">Please wait while we verify your email...</p>
+            <h1 className="mb-2 font-bold text-foreground text-sm uppercase tracking-widest">Verifying</h1>
+            <p className="text-center text-foreground-muted text-sm">Please wait while we verify your email...</p>
           </>
         )}
         {!!isSuccess && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Email verified</h1>
-            <p className="text-center text-sm text-foreground-muted">
+            <h1 className="mb-2 font-bold text-foreground text-sm uppercase tracking-widest">Email verified</h1>
+            <p className="text-center text-foreground-muted text-sm">
               Your email has been verified. You can now log in to your account.
             </p>
             <Button variant="outline" render={<Link to="/login" />} className="mt-6">
@@ -61,10 +61,10 @@ function VerifyPage() {
         )}
         {!!isError && (
           <>
-            <h1 className="mb-2 text-sm font-bold uppercase tracking-widest text-foreground">Verification failed</h1>
-            <p className="text-center text-sm text-foreground-muted">{error.message}</p>
+            <h1 className="mb-2 font-bold text-foreground text-sm uppercase tracking-widest">Verification failed</h1>
+            <p className="text-center text-foreground-muted text-sm">{error.message}</p>
             {!getToken() && (
-              <p className="mt-2 text-center text-xs text-foreground-muted">
+              <p className="mt-2 text-center text-foreground-muted text-xs">
                 Make sure you open this link in the same browser you used to sign up or log in.
               </p>
             )}

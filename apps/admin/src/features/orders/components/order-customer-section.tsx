@@ -4,7 +4,7 @@ import { SectionRow } from '#/components/common/section-row'
 
 export function OrderCustomerSection({ order }: { order: AdminOrderResponseOrder }) {
   return (
-    <Card className="divide-y gap-0 py-0">
+    <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>Customer</CardTitle>
       </CardHeader>

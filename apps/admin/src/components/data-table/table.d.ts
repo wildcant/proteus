@@ -4,6 +4,7 @@ import type { RowData } from '@tanstack/react-table'
 // declaration merging so we can pass align/truncateTooltip through the column
 // pipeline without losing type safety.
 declare module '@tanstack/react-table' {
+  // biome-ignore lint/style/useConsistentTypeDefinitions: declaration merging requires interface
   interface ColumnMeta<TData extends RowData, TValue> {
     align?: 'left' | 'center' | 'right'
     truncateTooltip?: boolean

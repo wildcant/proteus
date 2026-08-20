@@ -38,7 +38,7 @@ function ProgressTabsTrigger({ status, children, className, ...props }: Progress
       className={cn(
         'group/trigger h-full w-full max-w-50 flex-1 items-center justify-start gap-x-2 rounded-none border-r-border px-4 text-left text-muted-foreground',
         'hover:bg-muted/60',
-        'data-active:text-foreground data-active:bg-background data-active:shadow-none',
+        'data-active:bg-background data-active:text-foreground data-active:shadow-none',
         className,
       )}
       {...props}

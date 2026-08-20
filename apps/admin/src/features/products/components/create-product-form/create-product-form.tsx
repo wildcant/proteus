@@ -29,7 +29,7 @@ export function CreateProductForm() {
     <RouteFocusModal.Form form={form}>
       <KeyboundForm onSubmit={() => handleSave('publish')} onKeyDown={handleKeyDown} className="flex flex-1 flex-col">
         <ProgressTabs value={tab} onValueChange={handleTabChange} className="flex-1">
-          <RouteFocusModal.Header className="pr-0 py-0">
+          <RouteFocusModal.Header className="py-0 pr-0">
             <RouteFocusModal.Title className="sr-only">Create Product</RouteFocusModal.Title>
             <ProgressTabs.List>
               <ProgressTabs.Trigger value={Tab.DETAILS} status={tabState[Tab.DETAILS]}>

@@ -82,10 +82,10 @@ export function CartDropdown() {
           <PopoverContent align="end" sideOffset={8} className="w-80">
             {recentItems.length === 0 ? (
               <div className="py-6 text-center">
-                <p className="mb-2 text-sm font-medium text-foreground">Your cart is empty</p>
+                <p className="mb-2 font-medium text-foreground text-sm">Your cart is empty</p>
                 <Link
                   to="/products"
-                  className="text-sm text-(--foreground-muted) underline hover:text-foreground"
+                  className="text-(--foreground-muted) text-sm underline hover:text-foreground"
                   onClick={() => setOpen(false)}
                 >
                   Browse products
@@ -106,8 +106,8 @@ export function CartDropdown() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="m-0 truncate text-sm font-medium text-foreground">{item.title}</p>
-                        <p className="m-0 text-xs text-(--foreground-muted)">
+                        <p className="m-0 truncate font-medium text-foreground text-sm">{item.title}</p>
+                        <p className="m-0 text-(--foreground-muted) text-xs">
                           Qty: {item.quantity} &middot; {formatPrice(item.unitPrice, currencyCode)}
                         </p>
                       </div>
@@ -115,9 +115,9 @@ export function CartDropdown() {
                   ))}
                 </ul>
 
-                <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-                  <span className="text-sm font-medium text-foreground">Subtotal</span>
-                  <span className="text-sm font-semibold text-foreground">{formatPrice(subtotal, currencyCode)}</span>
+                <div className="mt-3 flex items-center justify-between border-border border-t pt-3">
+                  <span className="font-medium text-foreground text-sm">Subtotal</span>
+                  <span className="font-semibold text-foreground text-sm">{formatPrice(subtotal, currencyCode)}</span>
                 </div>
 
                 <Button
@@ -138,7 +138,7 @@ export function CartDropdown() {
 
 function CartBadge({ count }: { count: number }) {
   return (
-    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-bold leading-none text-background">
+    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 font-bold text-[10px] text-background leading-none">
       {count > 99 ? '99+' : String(count)}
     </span>
   )

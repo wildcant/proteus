@@ -31,7 +31,7 @@ function applyThemeMode(mode: ThemeMode) {
   document.documentElement.style.colorScheme = resolved
 }
 
-export default function ThemeToggle() {
+export function ThemeToggle() {
   const [mode, setMode] = useState<ThemeMode>('auto')
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function ThemeToggle() {
       onClick={toggleMode}
       aria-label={label}
       title={label}
-      className="rounded-full border border-border bg-(--bg-subtle) px-3 py-1.5 text-sm font-medium text-foreground"
+      className="rounded-full border border-border bg-(--bg-subtle) px-3 py-1.5 font-medium text-foreground text-sm"
     >
       {mode === 'auto' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'}
     </button>

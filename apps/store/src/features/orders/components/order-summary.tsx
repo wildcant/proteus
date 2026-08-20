@@ -5,7 +5,7 @@ import { OrderItems } from './order-items'
 export function OrderSummary({ order }: { order: StoreOrderResponseOrder }) {
   return (
     <section className="mt-8">
-      <h3 className="text-xl font-bold text-foreground">Summary</h3>
+      <h3 className="font-bold text-foreground text-xl">Summary</h3>
 
       <div className="mt-4">
         <OrderItems order={order} />

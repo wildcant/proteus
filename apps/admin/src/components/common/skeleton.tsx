@@ -59,7 +59,7 @@ export function IconButtonSkeleton() {
 
 export function GeneralSectionSkeleton({ rowCount = 0 }: { rowCount?: number }) {
   return (
-    <Card className="divide-y gap-0 py-0" aria-hidden>
+    <Card className="gap-0 divide-y py-0" aria-hidden>
       <div className="flex items-center justify-between px-6 py-4">
         <HeadingSkeleton characters={16} />
         <IconButtonSkeleton />
@@ -132,7 +132,7 @@ export function TableSkeleton({
 
 export function TableSectionSkeleton(props: TableSkeletonProps) {
   return (
-    <Card className="divide-y gap-0 py-0" aria-hidden>
+    <Card className="gap-0 divide-y py-0" aria-hidden>
       <div className="flex items-center justify-between px-6 py-4">
         <HeadingSkeleton level="h2" characters={16} />
         <IconButtonSkeleton />
@@ -144,7 +144,7 @@ export function TableSectionSkeleton(props: TableSkeletonProps) {
 
 export function JsonViewSectionSkeleton() {
   return (
-    <Card className="divide-y gap-0 py-0" aria-hidden>
+    <Card className="gap-0 divide-y py-0" aria-hidden>
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-x-4">
           <HeadingSkeleton level="h2" characters={16} />

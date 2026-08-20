@@ -22,20 +22,20 @@ const columns = [
   },
 ]
 
-export default function Footer() {
+export function Footer() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="mt-20 border-t border-border px-4 pb-14 pt-10">
+    <footer className="mt-20 border-border border-t px-4 pt-10 pb-14">
       <div className="mx-auto w-full max-w-350 sm:px-2 lg:px-4">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           {columns.map((column) => (
             <div key={column.title}>
-              <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-foreground">{column.title}</h3>
+              <h3 className="mb-3 font-bold text-foreground text-xs uppercase tracking-widest">{column.title}</h3>
               <ul className="m-0 list-none space-y-2 p-0">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.to} className="text-sm text-(--foreground-muted) no-underline hover:text-foreground">
+                    <Link to={link.to} className="text-(--foreground-muted) text-sm no-underline hover:text-foreground">
                       {link.label}
                     </Link>
                   </li>
@@ -44,8 +44,8 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-10 border-t border-border pt-6 text-center">
-          <p className="m-0 text-sm text-(--foreground-muted)">&copy; {year} Proteus. All rights reserved.</p>
+        <div className="mt-10 border-border border-t pt-6 text-center">
+          <p className="m-0 text-(--foreground-muted) text-sm">&copy; {year} Proteus. All rights reserved.</p>
         </div>
       </div>
     </footer>

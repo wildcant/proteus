@@ -155,6 +155,8 @@ export function useGridNavigation<T>({ data, columns, onChange, onEditingChange 
   )
 
   const handleKeyDown = useCallback(
+    // TODO: refactor into per-key handlers to reduce complexity
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: needs refactor
     (event: React.KeyboardEvent) => {
       if (!state.focused) return
 

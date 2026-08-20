@@ -9,7 +9,7 @@ type CheckoutSummaryProps = {
 export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
   return (
     <aside className="sticky top-8 h-fit rounded-lg border border-border p-6">
-      <h2 className="mb-4 text-lg font-semibold text-foreground">In your cart</h2>
+      <h2 className="mb-4 font-semibold text-foreground text-lg">In your cart</h2>
 
       <div className="space-y-3">
         {cart.items.map((item) => (
@@ -25,11 +25,11 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
             </div>
             <div className="flex min-w-0 flex-1 items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-foreground">{item.title}</p>
-                {!!item.variantTitle && <p className="text-xs text-(--foreground-muted)">{item.variantTitle}</p>}
-                <p className="text-xs text-(--foreground-muted)">Qty: {item.quantity}</p>
+                <p className="font-medium text-foreground text-sm">{item.title}</p>
+                {!!item.variantTitle && <p className="text-(--foreground-muted) text-xs">{item.variantTitle}</p>}
+                <p className="text-(--foreground-muted) text-xs">Qty: {item.quantity}</p>
               </div>
-              <span className="text-sm font-medium text-foreground">
+              <span className="font-medium text-foreground text-sm">
                 {formatPrice(item.lineTotal, cart.currencyCode)}
               </span>
             </div>

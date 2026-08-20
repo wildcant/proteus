@@ -29,7 +29,7 @@ export function ShippingMethodForm({ cartId, currencyCode, selectedMethodId, onC
   }
 
   if (options.length === 0) {
-    return <p className="text-sm text-(--foreground-muted)">No shipping options available for your address.</p>
+    return <p className="text-(--foreground-muted) text-sm">No shipping options available for your address.</p>
   }
 
   return (
@@ -47,9 +47,9 @@ export function ShippingMethodForm({ cartId, currencyCode, selectedMethodId, onC
                 <FieldLabel className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-border p-4 has-data-checked:border-primary has-data-checked:bg-primary/5">
                   <div className="flex items-center gap-3">
                     <RadioGroupItem value={option.id} />
-                    <span className="text-sm font-medium text-foreground">{option.name}</span>
+                    <span className="font-medium text-foreground text-sm">{option.name}</span>
                   </div>
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="font-medium text-foreground text-sm">
                     {option.amount != null ? formatPrice(String(option.amount), currencyCode) : 'Calculated'}
                   </span>
                 </FieldLabel>
@@ -63,7 +63,7 @@ export function ShippingMethodForm({ cartId, currencyCode, selectedMethodId, onC
         {isPending ? 'Saving...' : 'Continue to payment'}
       </Button>
 
-      {!!error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
+      {!!error && <p className="mt-2 text-red-600 text-sm">{error.message}</p>}
     </form>
   )
 }

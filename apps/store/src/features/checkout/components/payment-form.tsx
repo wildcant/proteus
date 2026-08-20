@@ -27,7 +27,7 @@ export function PaymentForm({ cartId, onComplete }: PaymentFormProps) {
   }
 
   if (providers.length === 0) {
-    return <p className="text-sm text-(--foreground-muted)">No payment providers available.</p>
+    return <p className="text-(--foreground-muted) text-sm">No payment providers available.</p>
   }
 
   return (
@@ -46,12 +46,12 @@ export function PaymentForm({ cartId, onComplete }: PaymentFormProps) {
                   <div className="flex w-full items-center justify-between">
                     <div className="flex items-center gap-3">
                       <RadioGroupItem value={provider.id} />
-                      <span className="text-sm font-medium text-foreground">{provider.label}</span>
+                      <span className="font-medium text-foreground text-sm">{provider.label}</span>
                     </div>
                     <CreditCardIcon className="h-5 w-5 text-foreground-muted" />
                   </div>
                   {!!provider.isTestOnly && (
-                    <p className="w-full rounded bg-amber-50 px-3 py-1.5 text-xs text-amber-700">
+                    <p className="w-full rounded bg-amber-50 px-3 py-1.5 text-amber-700 text-xs">
                       Attention: For testing purposes only.
                     </p>
                   )}
@@ -66,7 +66,7 @@ export function PaymentForm({ cartId, onComplete }: PaymentFormProps) {
         {isPending ? 'Setting up payment...' : 'Continue to review'}
       </Button>
 
-      {!!error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
+      {!!error && <p className="mt-2 text-red-600 text-sm">{error.message}</p>}
     </form>
   )
 }

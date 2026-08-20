@@ -11,12 +11,12 @@ export function NotificationItem({ notification }: { notification: AdminNotifica
   return (
     <div className="border-b px-4 py-3">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium">{title}</p>
-        <span className="shrink-0 text-xs text-muted-foreground">{formatRelativeTime(notification.createdAt)}</span>
+        <p className="font-medium text-sm">{title}</p>
+        <span className="shrink-0 text-muted-foreground text-xs">{formatRelativeTime(notification.createdAt)}</span>
       </div>
-      {description ? <p className="mt-0.5 text-sm text-muted-foreground">{description}</p> : null}
+      {description ? <p className="mt-0.5 text-muted-foreground text-sm">{description}</p> : null}
       {file ? (
-        <a href={file} download className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline">
+        <a href={file} download className="mt-1 inline-flex items-center gap-1 text-primary text-xs hover:underline">
           <DownloadIcon className="size-3" />
           Download file
         </a>

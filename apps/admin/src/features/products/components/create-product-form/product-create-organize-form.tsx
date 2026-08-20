@@ -15,7 +15,7 @@ export const ProductCreateOrganizeForm = withForm({
 
           return (
             <div className="flex flex-col gap-y-8">
-              <h2 className="text-xl font-semibold">Organize</h2>
+              <h2 className="font-semibold text-xl">Organize</h2>
               <div className="flex flex-col gap-y-4">
                 <form.AppField name="organize.discountable">
                   {(f) => (

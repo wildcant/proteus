@@ -10,8 +10,8 @@ function StorePage() {
   return (
     <PageLayout.SingleColumn>
       <div className="rounded-lg border p-6">
-        <h2 className="text-lg font-semibold">Store Details</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your store settings.</p>
+        <h2 className="font-semibold text-lg">Store Details</h2>
+        <p className="mt-1 text-muted-foreground text-sm">Manage your store settings.</p>
       </div>
     </PageLayout.SingleColumn>
   )

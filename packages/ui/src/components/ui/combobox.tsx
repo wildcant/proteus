@@ -31,7 +31,7 @@ function ComboboxChip({ children, className, ...props }: ComboboxPrimitive.Chip.
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
       className={cn(
-        'inline-flex items-center gap-0.5 rounded-md border bg-muted px-1.5 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-0.5 rounded-md border bg-muted px-1.5 py-0.5 font-medium text-xs',
         className,
       )}
       {...props}
@@ -48,10 +48,7 @@ function ComboboxChipsInput({ className, ...props }: ComboboxPrimitive.Input.Pro
   return (
     <ComboboxPrimitive.Input
       data-slot="combobox-chips-input"
-      className={cn(
-        'min-w-[80px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground',
-        className,
-      )}
+      className={cn('min-w-20 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground', className)}
       {...props}
     />
   )
@@ -73,7 +70,7 @@ function ComboboxContent({ anchor, className, sideOffset = 4, ...props }: Combob
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"
           className={cn(
-            'max-h-(--available-height) w-(--anchor-width) min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95',
+            'data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 max-h-(--available-height) w-(--anchor-width) min-w-32 origin-(--transform-origin) overflow-y-auto overflow-x-hidden rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-closed:animate-out data-open:animate-in data-closed:overflow-hidden',
             className,
           )}
           {...props}
@@ -87,7 +84,7 @@ function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
   return (
     <ComboboxPrimitive.Empty
       data-slot="combobox-empty"
-      className={cn('px-1.5 py-6 text-center text-sm text-muted-foreground empty:p-0', className)}
+      className={cn('px-1.5 py-6 text-center text-muted-foreground text-sm empty:p-0', className)}
       {...props}
     />
   )
@@ -98,7 +95,7 @@ function ComboboxItem({ className, children, ...props }: ComboboxPrimitive.Item.
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
       className={cn(
-        'relative flex cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50',
+        'relative flex cursor-default select-none items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-hidden data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-50',
         className,
       )}
       {...props}

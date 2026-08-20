@@ -9,7 +9,7 @@ export const Route = createFileRoute('/_main/products/')({
 
 function ProductsPage() {
   return (
-    <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
       <ProductList />
     </main>
   )

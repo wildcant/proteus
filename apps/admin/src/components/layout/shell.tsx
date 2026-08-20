@@ -66,11 +66,11 @@ function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link to="/" />} tooltip="Proteus">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <span className="text-sm font-bold">P</span>
+                <span className="font-bold text-sm">P</span>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">Proteus</span>
-                <span className="truncate text-xs text-muted-foreground">Admin</span>
+                <span className="truncate text-muted-foreground text-xs">Admin</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

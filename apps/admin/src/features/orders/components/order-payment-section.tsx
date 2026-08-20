@@ -6,7 +6,7 @@ export function OrderPaymentSection({ order }: { order: AdminOrderResponseOrder 
   if (order.transactions.length === 0) return null
 
   return (
-    <Card className="divide-y gap-0 py-0">
+    <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>Transactions</CardTitle>
       </CardHeader>
@@ -15,7 +15,7 @@ export function OrderPaymentSection({ order }: { order: AdminOrderResponseOrder 
         <div key={transaction.id} className="flex items-center justify-between px-6 py-4 text-sm">
           <div className="flex flex-col">
             <span className="font-medium">{formatPrice(transaction.amount, transaction.currencyCode)}</span>
-            <span className="text-xs text-muted-foreground">{formatDatetime(transaction.createdAt)}</span>
+            <span className="text-muted-foreground text-xs">{formatDatetime(transaction.createdAt)}</span>
           </div>
           {!!transaction.reference && (
             <span className="text-muted-foreground">

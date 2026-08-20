@@ -19,9 +19,9 @@ export function ProductCard({ product }: { product: StoreProductListItem }) {
           </div>
         )}
       </div>
-      <h3 className="mt-3 text-sm font-normal text-foreground">{product.title}</h3>
+      <h3 className="mt-3 font-normal text-foreground text-sm">{product.title}</h3>
       {!!product.startingPrice && (
-        <p className="mt-1 text-sm font-semibold text-foreground">
+        <p className="mt-1 font-semibold text-foreground text-sm">
           {formatPrice(product.startingPrice.calculatedAmount, product.startingPrice.currencyCode)}
         </p>
       )}

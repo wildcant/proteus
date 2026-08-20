@@ -14,7 +14,7 @@ function CartPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <p className="text-(--foreground-muted)">Loading cart...</p>
       </main>
     )
@@ -27,8 +27,8 @@ function CartPage() {
   const sortedItems = [...cart.items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   return (
-    <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-      <h1 className="mb-8 text-2xl font-medium text-foreground">Cart</h1>
+    <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
+      <h1 className="mb-8 font-medium text-2xl text-foreground">Cart</h1>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
         <section className="space-y-4">
@@ -38,7 +38,7 @@ function CartPage() {
         </section>
 
         <aside className="h-fit rounded-lg border border-border p-6">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Order summary</h2>
+          <h2 className="mb-4 font-semibold text-foreground text-lg">Order summary</h2>
 
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
@@ -53,7 +53,7 @@ function CartPage() {
                   : formatPrice(cart.totals.shippingTotal, cart.currencyCode)}
               </dd>
             </div>
-            <div className="border-t border-border pt-3">
+            <div className="border-border border-t pt-3">
               <div className="flex justify-between text-base">
                 <dt className="font-semibold text-foreground">Total</dt>
                 <dd className="font-semibold text-foreground">

@@ -102,7 +102,9 @@ describe('BullMqCronScheduler', () => {
       {
         name: 'shutdown-job',
         schedule: '* * * * *',
-        handler: async () => {},
+        handler: async () => {
+          // noop
+        },
       },
     ])
 

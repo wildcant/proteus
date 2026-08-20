@@ -78,6 +78,8 @@ export class NotificationModuleService implements INotificationModuleService {
    * batch-create new records, and return ordered notifications with dispatch targets.
    */
   private async prepareNotifications(data: CreateNotificationDTO[], context?: Context) {
+    // TODO: decompose into smaller steps to reduce complexity
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: needs refactor
     return this.withTransaction(context, async (ctx) => {
       const channelProviderMap = await this.resolveChannelProviders(data)
       const existingByKey = await this.fetchExistingByIdempotencyKeys(data, ctx)

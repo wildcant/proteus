@@ -11,17 +11,17 @@ function AccountPage() {
   const logout = useLogout()
 
   return (
-    <main className="mx-auto w-full max-w-350 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-foreground">Hello, {customer.firstName}</h1>
-        <span className="text-sm text-(--foreground-muted)">
+        <h1 className="font-medium text-2xl text-foreground">Hello, {customer.firstName}</h1>
+        <span className="text-(--foreground-muted) text-sm">
           Signed in as <span className="font-semibold">{customer.email}</span>
         </span>
       </div>
 
-      <div className="border-t border-border pt-8">
+      <div className="border-border border-t pt-8">
         <div className="mb-8 flex flex-col gap-y-2">
-          <h3 className="text-lg font-semibold text-foreground">Profile</h3>
+          <h3 className="font-semibold text-foreground text-lg">Profile</h3>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
             <dt className="text-(--foreground-muted)">Name</dt>
             <dd>

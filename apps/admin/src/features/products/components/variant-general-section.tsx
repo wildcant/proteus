@@ -17,7 +17,7 @@ export function VariantGeneralSection({ productId, variant }: { productId: strin
   }
 
   return (
-    <Card className="divide-y gap-0 py-0">
+    <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>{variant.title}</CardTitle>
         <CardAction>

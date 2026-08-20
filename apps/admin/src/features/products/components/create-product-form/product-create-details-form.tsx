@@ -15,7 +15,7 @@ export const ProductCreateDetailsForm = withForm({
 
           return (
             <div className="flex flex-col gap-y-8">
-              <h2 className="text-xl font-semibold">General</h2>
+              <h2 className="font-semibold text-xl">General</h2>
               <div className="flex flex-col gap-y-4">
                 <div className="grid grid-cols-3 gap-4">
                   <form.AppField name="details.title">

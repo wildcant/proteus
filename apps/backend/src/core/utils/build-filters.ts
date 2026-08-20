@@ -35,6 +35,8 @@ export type FilterRecord = Record<string, FilterValue | undefined> & {
   $or?: FilterRecord[]
 }
 
+// TODO: refactor into operator strategy map to reduce complexity
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: needs refactor
 export function buildFilters(filters: FilterRecord, columns: Record<string, Column>): SQL | undefined {
   const conditions: SQL[] = []
 

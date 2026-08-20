@@ -1,17 +1,13 @@
+Fixes and improvements
+- deploy to supabase and coudflare workers.
+- add loader: ({ context }) => context.queryClient.ensureQueryData(...) + useSuspenseQuery to store pages.
+- allow store to render products server side or static site generation for SEO.
+- mutations can error - make sure we provide onError => display toast. to all mutations under api. add doc to make sure this is an stablished pattern.
+
+Future features TODOs
+- storage service: S3, R2, Minio
 - GUEST MODE: should order email be required? how do you communicate with the customer otherwise? 
 - GLOBAL SHIPPING OPTIONS [COUNTRY CODE]: if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
-- add loader: ({ context }) => context.queryClient.ensureQueryData(...) + useSuspenseQuery to store pages.
-- mutations can error - make sure we provide onError => display toast. to all mutations under api.
-- storage service: S3, R2, Minio
-- deploy to supabase and coudflare workers.
-- investigate how to supabase as event bus (supabase-event-bus.md) (cloudflare queues)
-![event](./subscriber-example.png)
-
-- investigate locking
-  -  Context: Medusa's notification module uses DB queries for idempotency checks (query by idempotency_key, skip if already SUCCESS/PENDING). There's a race window where two concurrent requests with the same key could both pass the check before either creates a PENDING record. Medusa has a TODO to use Redis-based locking instead.
-  - The DB unique constraint on idempotencyKey catches the second insert if both slip through, so for single-instance it's sufficient.
-  - For multi-instance / high-concurrency: need distributed locking (Redis, or DB-level SELECT FOR UPDATE).
-  - Decide: DB-only (current scale) vs Redis locking (future scale).
 
 Future Infra TODOs
 - aws deployment
@@ -21,9 +17,14 @@ Future Infra TODOs
 - migration order in prod (first modules and then link modules, are there edge cases?).
 - reusable workflow setup function for tests
 - features flags
-
-Future features TODOs
-- per item fullfilment and shipment.
+- event bus: investigate how to in supabase (supabase-event-bus.md) (cloudflare queues)
+![event](./subscriber-example.png)
+- investigate locking
+  -  Context: Medusa's notification module uses DB queries for idempotency checks (query by idempotency_key, skip if already SUCCESS/PENDING). There's a race window where two concurrent requests with the same key could both pass the check before either creates a PENDING record. Medusa has a TODO to use Redis-based locking instead.
+  - The DB unique constraint on idempotencyKey catches the second insert if both slip through, so for single-instance it's sufficient.
+  - For multi-instance / high-concurrency: need distributed locking (Redis, or DB-level SELECT FOR UPDATE).
+  - Decide: DB-only (current scale) vs Redis locking (future scale).
 
 Future nice to have TODOs
+- per item fullfilment and shipment.
 - fix imports in backend to use alias.

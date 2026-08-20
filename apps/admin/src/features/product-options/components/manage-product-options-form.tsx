@@ -103,14 +103,14 @@ function OptionSelector({ allOptions, value, onChange }: OptionSelectorProps) {
   const selectedOptions = value.map((entry) => optionMap.get(entry.optionId)).filter(Boolean) as AdminProductOption[]
 
   if (allOptions.length === 0) {
-    return <p className="text-sm text-muted-foreground">No product options available. Create one first.</p>
+    return <p className="text-muted-foreground text-sm">No product options available. Create one first.</p>
   }
 
   return (
     <>
       <div>
-        <h2 className="text-sm font-medium">Product Options</h2>
-        <p className="mb-3 text-sm text-muted-foreground">Select which options should be associated to this product.</p>
+        <h2 className="font-medium text-sm">Product Options</h2>
+        <p className="mb-3 text-muted-foreground text-sm">Select which options should be associated to this product.</p>
         <MultiSelectCombobox
           items={optionItems}
           value={selectedOptionIds}
@@ -122,15 +122,15 @@ function OptionSelector({ allOptions, value, onChange }: OptionSelectorProps) {
 
       {selectedOptions.length > 0 && (
         <div>
-          <h2 className="text-sm font-medium">Values</h2>
-          <p className="mb-3 text-sm text-muted-foreground">Select which values to use for each option.</p>
+          <h2 className="font-medium text-sm">Values</h2>
+          <p className="mb-3 text-muted-foreground text-sm">Select which values to use for each option.</p>
           <div className="space-y-4">
             {selectedOptions.map((option) => {
               const valueItems = option.values.map((v) => ({ id: v.id, label: v.value }))
               const entry = value.find((e) => e.optionId === option.id)
               return (
                 <div key={option.id}>
-                  <h3 className="mb-2 text-sm font-medium text-muted-foreground">{option.title}</h3>
+                  <h3 className="mb-2 font-medium text-muted-foreground text-sm">{option.title}</h3>
                   <MultiSelectCombobox
                     items={valueItems}
                     value={entry?.valueIds ?? []}

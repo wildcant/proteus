@@ -6,7 +6,7 @@ export function ReviewStep() {
 
   return (
     <div>
-      <p className="text-sm text-(--foreground-muted)">
+      <p className="text-(--foreground-muted) text-sm">
         By placing this order, you agree to our terms of service and privacy policy.
       </p>
 
@@ -14,7 +14,7 @@ export function ReviewStep() {
         {isPending ? 'Placing order...' : 'Place order'}
       </Button>
 
-      {error ? <p className="mt-2 text-sm text-red-600">{error.message}</p> : null}
+      {error ? <p className="mt-2 text-red-600 text-sm">{error.message}</p> : null}
     </div>
   )
 }

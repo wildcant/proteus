@@ -19,7 +19,9 @@ test.beforeEach(async ({ getDb, logger }) => {
   const dbProvider: DbProvider = {
     getDb,
     withConnection: (fn) => fn(),
-    shutdown: async () => {},
+    shutdown: async () => {
+      // noop
+    },
   }
   const container = await bootstrapContainer({ logger, dbProvider })
   authService = container.resolve<IAuthModuleService>(Modules.AUTH)

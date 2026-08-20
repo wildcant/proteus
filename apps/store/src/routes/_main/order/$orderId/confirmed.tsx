@@ -14,7 +14,7 @@ function OrderConfirmedPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-170 px-4 pb-16 pt-12 sm:px-6">
+      <main className="mx-auto w-full max-w-170 px-4 pt-12 pb-16 sm:px-6">
         <p className="text-(--foreground-muted)">Loading order details...</p>
       </main>
     )
@@ -22,8 +22,8 @@ function OrderConfirmedPage() {
 
   if (!order) {
     return (
-      <main className="mx-auto w-full max-w-170 px-4 pb-16 pt-12 sm:px-6">
-        <h1 className="text-2xl font-bold text-foreground">Order not found</h1>
+      <main className="mx-auto w-full max-w-170 px-4 pt-12 pb-16 sm:px-6">
+        <h1 className="font-bold text-2xl text-foreground">Order not found</h1>
         <Button render={<Link to="/" />} variant="outline" className="mt-8">
           Continue shopping
         </Button>
@@ -32,16 +32,16 @@ function OrderConfirmedPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-170 px-4 pb-16 pt-12 sm:px-6">
-      <h1 className="text-2xl font-bold text-foreground">Thank you!</h1>
-      <h2 className="mt-2 text-xl font-bold text-foreground">Your order was placed successfully.</h2>
+    <main className="mx-auto w-full max-w-170 px-4 pt-12 pb-16 sm:px-6">
+      <h1 className="font-bold text-2xl text-foreground">Thank you!</h1>
+      <h2 className="mt-2 font-bold text-foreground text-xl">Your order was placed successfully.</h2>
 
-      <p className="mt-4 text-sm text-(--foreground-muted)">
+      <p className="mt-4 text-(--foreground-muted) text-sm">
         We have sent the order confirmation details to{' '}
         <span className="font-semibold text-foreground">{order.email}</span>.
       </p>
 
-      <p className="text-sm text-(--foreground-muted)">Order date: {formatDate(order.createdAt)}</p>
+      <p className="text-(--foreground-muted) text-sm">Order date: {formatDate(order.createdAt)}</p>
       <p className="text-sm">
         <span className="text-blue-600">Order number: {order.displayId}</span>
       </p>

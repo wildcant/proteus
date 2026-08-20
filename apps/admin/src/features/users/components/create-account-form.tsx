@@ -31,7 +31,7 @@ export function CreateAccountForm({ token, email, onSuccess }: CreateAccountForm
             className="flex flex-col gap-4"
           >
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-muted-foreground">Email</span>
+              <span className="font-medium text-muted-foreground text-sm">Email</span>
               <span className="text-sm">{email}</span>
             </div>
             <form.AppField name="name">
@@ -48,7 +48,7 @@ export function CreateAccountForm({ token, email, onSuccess }: CreateAccountForm
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link to="/login" className="text-muted-foreground text-sm hover:text-foreground">
               Back to login
             </Link>
           </div>

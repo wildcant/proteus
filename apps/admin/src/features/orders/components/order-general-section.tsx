@@ -62,11 +62,11 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
   ]
 
   return (
-    <Card className="divide-y gap-0 py-0">
+    <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <div>
           <CardTitle>#{order.displayId}</CardTitle>
-          <p className="text-sm text-muted-foreground">{formatDatetime(order.createdAt)}</p>
+          <p className="text-muted-foreground text-sm">{formatDatetime(order.createdAt)}</p>
         </div>
         <CardAction className="flex items-center gap-x-3">
           <StatusBadge color={orderStatusColors[order.status]}>{order.status}</StatusBadge>

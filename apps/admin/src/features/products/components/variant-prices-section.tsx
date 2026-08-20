@@ -9,7 +9,7 @@ export function VariantPricesSection({ variant }: { variant: AdminProductVariant
   const usdPrice = prices.find((price) => price.currencyCode === 'usd')
 
   return (
-    <Card className="divide-y gap-0 py-0">
+    <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>Prices</CardTitle>
         <CardAction>

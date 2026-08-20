@@ -18,14 +18,14 @@ export function CreateProductOptionForm() {
         <RouteFocusModal.Header />
         <RouteFocusModal.Body className="mx-auto flex w-full max-w-lg flex-col gap-y-8 py-16">
           <div>
-            <h1 className="text-2xl font-semibold">Create Option</h1>
+            <h1 className="font-semibold text-2xl">Create Option</h1>
             <p className="text-muted-foreground text-sm">Create a new product option with values.</p>
           </div>
           <form.AppField name="title">
             {(field) => <field.TextField label="Title" autoFocus placeholder="e.g. Color, Size" />}
           </form.AppField>
           <div>
-            <h2 className="mb-2 text-sm font-medium">Values</h2>
+            <h2 className="mb-2 font-medium text-sm">Values</h2>
             <form.Field name="values">
               {(field) => (
                 <TagInput

@@ -45,7 +45,7 @@ function ProductOptionDetailLayout() {
 
   return (
     <PageLayout.SingleColumn>
-      <Card className="divide-y gap-0 py-0">
+      <Card className="gap-0 divide-y py-0">
         <CardHeader>
           <CardTitle>{data.productOption.title}</CardTitle>
           <CardAction className="flex items-center gap-x-3">

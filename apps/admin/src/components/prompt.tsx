@@ -85,7 +85,7 @@ export function RenderPrompt({
           {!!verificationText && (
             <div className="flex flex-col gap-y-3 border-t pt-4">
               <Label htmlFor="verificationText" className="text-muted-foreground">
-                {instructionParts[0]} <span className="text-foreground font-medium">{verificationText}</span>{' '}
+                {instructionParts[0]} <span className="font-medium text-foreground">{verificationText}</span>{' '}
                 {instructionParts[1]}
               </Label>
               <Input
