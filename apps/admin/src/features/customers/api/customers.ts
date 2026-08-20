@@ -1,3 +1,4 @@
+import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
@@ -60,7 +61,7 @@ export const useCustomers = (
 export const useCreateCustomer = (
   options?: UseMutationOptions<AdminCreateCustomersResponse, Error, AdminCreateCustomer[]>,
 ) => {
-  const { onSuccess, ...rest } = options ?? {}
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: (payload) => createCustomers(payload),
@@ -68,13 +69,18 @@ export const useCreateCustomer = (
       queryClient.invalidateQueries({ queryKey: customersQueryKeys.lists() })
       onSuccess?.(...args)
     },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create customer', description: error.message })
+      onError?.(...args)
+    },
   })
 }
 
 export const useUpdateCustomer = (
   options?: UseMutationOptions<AdminCustomerResponse, Error, { id: string; data?: AdminUpdateCustomer }>,
 ) => {
-  const { onSuccess, ...rest } = options ?? {}
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: ({ id, data }) => updateCustomer(id, data),
@@ -84,11 +90,16 @@ export const useUpdateCustomer = (
       queryClient.invalidateQueries({ queryKey: customersQueryKeys.detail(variables.id) })
       onSuccess?.(...args)
     },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update customer', description: error.message })
+      onError?.(...args)
+    },
   })
 }
 
 export const useDeleteCustomer = (options?: UseMutationOptions<DeleteResponse, Error, { id: string }>) => {
-  const { onSuccess, ...rest } = options ?? {}
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: ({ id }) => deleteCustomer(id),
@@ -97,6 +108,11 @@ export const useDeleteCustomer = (options?: UseMutationOptions<DeleteResponse, E
       queryClient.invalidateQueries({ queryKey: customersQueryKeys.lists() })
       queryClient.invalidateQueries({ queryKey: customersQueryKeys.detail(variables.id) })
       onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to delete customer', description: error.message })
+      onError?.(...args)
     },
   })
 }

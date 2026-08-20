@@ -1,4 +1,4 @@
-import { Button, toast } from '@proteus/ui'
+import { Button } from '@proteus/ui'
 import { useCallback, useMemo } from 'react'
 import type { AdminProductOption } from '#/api/generated/model'
 import { KeyboundForm } from '#/components/modals/keybound-form'
@@ -30,10 +30,7 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
   const { form } = useManageProductOptionsForm({
     productId,
     defaultValues,
-    params: {
-      onSuccess: () => handleSuccess(),
-      onError: (error) => toast.add({ type: 'error', title: 'Failed to update options', description: error }),
-    },
+    params: { onSuccess: () => handleSuccess() },
   })
 
   return (

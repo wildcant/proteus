@@ -1,3 +1,4 @@
+import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -11,6 +12,10 @@ import type {
   CreateStorePaymentCollectionBody,
   CreateStorePaymentSessionBody,
   StoreCompleteCartResponse,
+  StoreCreateCartShippingMethodResponse,
+  StoreCreatePaymentCollectionResponse,
+  StoreCreatePaymentSessionResponse,
+  StoreUpdateCartResponse,
   UpdateStoreCartBody,
 } from '#/api/generated/model'
 import {
@@ -42,51 +47,91 @@ export const usePaymentProviders = () => {
   })
 }
 
-export const useUpdateCart = () => {
+export const useUpdateCart = (options?: UseMutationOptions<StoreUpdateCartResponse, Error, UpdateStoreCartBody>) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
+    ...rest,
     mutationFn: (payload: UpdateStoreCartBody) => {
       const cartId = getCartId()
       if (!cartId) throw new Error('No cart exists')
       return updateStoreCart(cartId, payload)
     },
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: cartQueryKeys.all })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update cart', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useSelectShippingMethod = () => {
+export const useSelectShippingMethod = (
+  options?: UseMutationOptions<StoreCreateCartShippingMethodResponse, Error, AddStoreCartShippingMethodBody>,
+) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
+    ...rest,
     mutationFn: (payload: AddStoreCartShippingMethodBody) => {
       const cartId = getCartId()
       if (!cartId) throw new Error('No cart exists')
       return addStoreCartShippingMethod(cartId, payload)
     },
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: cartQueryKeys.all })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to select shipping method', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useCreatePaymentCollection = () => {
+export const useCreatePaymentCollection = (
+  options?: UseMutationOptions<StoreCreatePaymentCollectionResponse, Error, CreateStorePaymentCollectionBody>,
+) => {
+  const { onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (payload: CreateStorePaymentCollectionBody) => createStorePaymentCollection(payload),
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create payment collection', description: error.message })
+      onError?.(...args)
+    },
   })
 }
 
-export const useCreatePaymentSession = () => {
+export const useCreatePaymentSession = (
+  options?: UseMutationOptions<
+    StoreCreatePaymentSessionResponse,
+    Error,
+    CreateStorePaymentSessionBody & { collectionId: string }
+  >,
+) => {
+  const { onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: ({ collectionId, ...payload }: CreateStorePaymentSessionBody & { collectionId: string }) =>
       createStorePaymentSession(collectionId, payload),
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create payment session', description: error.message })
+      onError?.(...args)
+    },
   })
 }
 
 export const useCompleteCart = (options?: UseMutationOptions<StoreCompleteCartResponse, Error, void>) => {
-  const { onSuccess, ...rest } = options ?? {}
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
     ...rest,
@@ -98,6 +143,11 @@ export const useCompleteCart = (options?: UseMutationOptions<StoreCompleteCartRe
     onSuccess: (...args) => {
       clearCartId()
       onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to complete order', description: error.message })
+      onError?.(...args)
     },
   })
 }

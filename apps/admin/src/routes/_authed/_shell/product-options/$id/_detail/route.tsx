@@ -1,4 +1,4 @@
-import { Badge, Card, CardAction, CardHeader, CardTitle, toast } from '@proteus/ui'
+import { Badge, Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
@@ -38,7 +38,6 @@ function ProductOptionDetailLayout() {
     if (confirmed) {
       await deleteOption(undefined, {
         onSuccess: () => navigate({ to: '/product-options' }),
-        onError: (error) => toast.add({ type: 'error', title: 'Failed to delete option', description: error.message }),
       })
     }
   }

@@ -1,4 +1,4 @@
-import { Card, CardAction, CardHeader, CardTitle, StatusBadge, toast } from '@proteus/ui'
+import { Card, CardAction, CardHeader, CardTitle, StatusBadge } from '@proteus/ui'
 import { formatDatetime } from '@proteus/utils'
 import { ArchiveIcon, CheckCircleIcon, XCircleIcon } from 'lucide-react'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
@@ -20,9 +20,7 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
       confirmText: 'Complete',
     })
     if (confirmed) {
-      await complete(undefined, {
-        onError: (error) => toast.add({ type: 'error', title: 'Failed to complete order', description: error.message }),
-      })
+      await complete()
     }
   }
 
@@ -34,9 +32,7 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
       variant: 'danger',
     })
     if (confirmed) {
-      await cancel(undefined, {
-        onError: (error) => toast.add({ type: 'error', title: 'Failed to cancel order', description: error.message }),
-      })
+      await cancel()
     }
   }
 
@@ -47,9 +43,7 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
       confirmText: 'Archive',
     })
     if (confirmed) {
-      await archive(undefined, {
-        onError: (error) => toast.add({ type: 'error', title: 'Failed to archive order', description: error.message }),
-      })
+      await archive()
     }
   }
 

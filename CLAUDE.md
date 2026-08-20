@@ -98,7 +98,7 @@ TanStack Router + React Query + React Table + TanStack Form + Zod v4. Path alias
 
 Orval generates typed API clients from the backend's OpenAPI spec into `src/api/generated/` (tags-split mode). Custom fetcher at `src/lib/fetcher.ts` uses `qs.stringify()` for nested query params.
 
-Feature modules wrap generated functions with React Query hooks in `features/{name}/api/`.
+Feature modules wrap generated functions with React Query hooks in `features/{name}/api/`. Every mutation hook accepts an optional `UseMutationOptions` parameter, shows an error toast on failure, and forwards callbacks. See `docs/mutation-hooks.md` for the full pattern.
 
 ### DataTable System (`src/components/data-table/`)
 
@@ -121,11 +121,7 @@ Each feature at `src/features/{name}/` co-locates:
 
 ### Form Hooks
 
-Form logic lives in `features/{name}/hooks/use-{action}-form.ts`, not in components. Components only render fields. See `docs/form-hooks.md` for the full pattern. Key rules:
-
-- `defaultValues` typed with Orval-generated `Body` types. Validate with Zod schemas from `http-schemas` directly (no re-wrapping in `z.object()`).
-- Use `.mutate()` with `onSuccess`/`onError`/`onSettled` callbacks. Only use `try/catch` with `mutateAsync` when chaining multiple sequential mutations.
-- Data-fetching queries (e.g., fetching options for a select/radio) belong in the component, not the form hook.
+Form logic lives in `features/{name}/hooks/use-{action}-form.ts`, not in components. Components only render fields. See `docs/form-hooks.md` for the full pattern.
 
 ### Dependency Rules (dependency-cruiser)
 
@@ -160,4 +156,4 @@ Tests construct services manually with injected repos. Vitest config at `apps/ba
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/middleware-and-openapi.md`.
+Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/middleware-and-openapi.md`.

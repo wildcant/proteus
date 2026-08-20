@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, toast } from '@proteus/ui'
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { useCreateAccountForm } from '#/features/users/hooks/use-create-account-form'
 
@@ -12,7 +12,6 @@ export function CreateAccountForm({ token, email, onSuccess }: CreateAccountForm
   const { form, isPending } = useCreateAccountForm({
     token,
     onSuccess,
-    onError: (error) => toast.add({ type: 'error', title: 'Failed to create account', description: error }),
   })
 
   return (

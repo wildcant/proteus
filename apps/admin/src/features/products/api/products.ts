@@ -1,5 +1,14 @@
+import { toast } from '@proteus/ui'
+import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
-import type { AdminCreateProduct, AdminUpdateProduct, ListProductsParams } from '#/api/generated/model'
+import type {
+  AdminCreateProduct,
+  AdminCreateProductResponse,
+  AdminUpdateProduct,
+  AdminUpdateProductResponse,
+  DeleteResponse,
+  ListProductsParams,
+} from '#/api/generated/model'
 import {
   createProduct,
   deleteProduct,
@@ -29,30 +38,59 @@ export const useProducts = (params?: ListProductsParams) => useQuery(productsLis
 
 export const useProduct = (id: string) => useQuery(productQueryOptions(id))
 
-export const useCreateProduct = () => {
+export const useCreateProduct = (
+  options?: UseMutationOptions<AdminCreateProductResponse, Error, AdminCreateProduct>,
+) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminCreateProduct) => createProduct(data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create product', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useUpdateProduct = (id: string) => {
+export const useUpdateProduct = (
+  id: string,
+  options?: UseMutationOptions<AdminUpdateProductResponse, Error, AdminUpdateProduct>,
+) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: (data: AdminUpdateProduct) => updateProduct(id, data),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update product', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useDeleteProduct = (id: string) => {
+export const useDeleteProduct = (id: string, options?: UseMutationOptions<DeleteResponse, Error, void>) => {
+  const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
+    ...rest,
     mutationFn: () => deleteProduct(id),
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to delete product', description: error.message })
+      onError?.(...args)
     },
   })
 }

@@ -1,4 +1,4 @@
-import { Button, TagInput, toast } from '@proteus/ui'
+import { Button, TagInput } from '@proteus/ui'
 import { KeyboundForm } from '#/components/modals/keybound-form'
 import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
 import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
@@ -9,7 +9,6 @@ export function CreateProductOptionForm() {
 
   const { form } = useCreateProductOptionForm({
     onSuccess: () => handleSuccess(),
-    onError: (error) => toast.add({ type: 'error', title: 'Failed to create option', description: error }),
   })
 
   return (

@@ -1,12 +1,9 @@
-import { Button, toast } from '@proteus/ui'
+import { Button } from '@proteus/ui'
 import type { LoginFormParams } from '#/features/auth/hooks/use-login-form'
 import { useLoginForm } from '#/features/auth/hooks/use-login-form'
 
 export function LoginForm(props: LoginFormParams) {
-  const { form, isPending } = useLoginForm({
-    ...props,
-    onError: (error) => toast.add({ type: 'error', title: 'Login failed', description: error }),
-  })
+  const { form, isPending } = useLoginForm(props)
 
   return (
     <form

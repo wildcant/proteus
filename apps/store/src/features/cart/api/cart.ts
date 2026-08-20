@@ -1,4 +1,5 @@
-import type { UseQueryOptions } from '@tanstack/react-query'
+import { toast } from '@proteus/ui'
+import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
   addStoreCartLineItem,
@@ -9,7 +10,11 @@ import {
 } from '#/api/generated/carts/carts'
 import type {
   AddStoreCartLineItemBody,
+  DeleteResponse,
   StoreCartDetailResponse,
+  StoreCreateCartLineItemResponse,
+  StoreCreateCartResponse,
+  StoreUpdateCartLineItemResponse,
   UpdateStoreCartLineItemBody,
 } from '#/api/generated/model'
 import { getCartId, setCartId } from '#/lib/cart-id'
@@ -46,25 +51,37 @@ export const useCart = (options?: CartQueryOptions) => {
   return { cart: data?.cart ?? null, ...rest }
 }
 
-export const useCreateCart = () => {
+export const useCreateCart = (options?: UseMutationOptions<StoreCreateCartResponse, Error, void>) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
+    ...rest,
     mutationFn: async () => {
       const response = await createStoreCart({})
       setCartId(response.cart.id)
       return response
     },
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: cartQueryKeys.all })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to create cart', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useAddLineItem = () => {
+export const useAddLineItem = (
+  options?: UseMutationOptions<StoreCreateCartLineItemResponse, Error, AddStoreCartLineItemBody>,
+) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
+    ...rest,
     mutationFn: async (payload: AddStoreCartLineItemBody) => {
       let cartId = getCartId()
       if (!cartId) {
@@ -74,38 +91,66 @@ export const useAddLineItem = () => {
       }
       return addStoreCartLineItem(cartId, payload)
     },
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: cartQueryKeys.all })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to add item to cart', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useUpdateLineItem = () => {
+export const useUpdateLineItem = (
+  options?: UseMutationOptions<
+    StoreUpdateCartLineItemResponse,
+    Error,
+    UpdateStoreCartLineItemBody & { lineId: string }
+  >,
+) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
+    ...rest,
     mutationFn: ({ lineId, ...body }: UpdateStoreCartLineItemBody & { lineId: string }) => {
       const cartId = getCartId()
       if (!cartId) throw new Error('No cart exists')
       return updateStoreCartLineItem(cartId, lineId, body)
     },
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: cartQueryKeys.all })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update cart item', description: error.message })
+      onError?.(...args)
     },
   })
 }
 
-export const useRemoveLineItem = () => {
+export const useRemoveLineItem = (options?: UseMutationOptions<DeleteResponse, Error, string>) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
+    ...rest,
     mutationFn: (lineId: string) => {
       const cartId = getCartId()
       if (!cartId) throw new Error('No cart exists')
       return deleteStoreCartLineItem(cartId, lineId)
     },
-    onSuccess: () => {
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: cartQueryKeys.all })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to remove cart item', description: error.message })
+      onError?.(...args)
     },
   })
 }

@@ -17,9 +17,6 @@ export function CreateProductForm() {
       toast.add({ type: 'success', title: 'Product created successfully' })
       handleSuccess(`../${data.product.id}`)
     },
-    onError: (error) => {
-      toast.add({ type: 'error', title: 'Failed to create product', description: error })
-    },
   })
 
   const { tab, tabState, groupRefs, isLastTab, handleTabChange, handleContinue, handleSave, handleKeyDown } =
