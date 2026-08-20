@@ -5,6 +5,7 @@ import type { AuthenticateResponse } from '#/api/generated/model'
 import { Button } from '#/components/button'
 import { LoginForm } from '#/features/auth/components/login-form'
 import { RegisterForm } from '#/features/auth/components/register-form'
+import { useTransferCart } from '#/features/cart/api/cart'
 import { getToken } from '#/lib/auth-token'
 
 export const Route = createFileRoute('/_main/login')({
@@ -19,13 +20,17 @@ type AuthView = 'sign-in' | 'register' | 'verify-pending'
 function LoginPage() {
   const [currentView, setCurrentView] = useState<AuthView>('sign-in')
   const navigate = useNavigate()
+  const transferCart = useTransferCart()
 
   const handleSuccess = (data: AuthenticateResponse) => {
     if (data.verificationRequired) {
       setCurrentView('verify-pending')
       return
     }
-    navigate({ to: '/account' })
+    // Transfer guest cart to the newly authenticated customer. Failure must not block login.
+    transferCart.mutate(undefined, {
+      onSettled: () => navigate({ to: '/account' }),
+    })
   }
 
   return (

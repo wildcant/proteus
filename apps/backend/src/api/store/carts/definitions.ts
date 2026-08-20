@@ -2,6 +2,7 @@ import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
 import { setPricingContext } from '../middlewares.js'
 import * as completeRoutes from './[id]/complete/route.js'
+import * as customerRoutes from './[id]/customer/route.js'
 import * as inventoryRoutes from './[id]/inventory/route.js'
 import * as lineItemByIdRoutes from './[id]/line-items/[lineId]/route.js'
 import * as lineItemRoutes from './[id]/line-items/route.js'
@@ -131,5 +132,16 @@ export default [
     summary: 'Check inventory availability for a cart',
     tags: [Tags.CARTS],
     output: inventoryRoutes.GetOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/store/carts/:id/customer',
+    handler: customerRoutes.POST,
+    auth: 'required',
+    input: customerRoutes.PostInput,
+    operationId: 'transferStoreCartCustomer',
+    summary: 'Transfer a cart to the authenticated customer',
+    tags: [Tags.CARTS],
+    output: customerRoutes.PostOutput,
   },
 ] satisfies RouteDefinition[]

@@ -10,7 +10,7 @@ export function useLoginForm(params?: LoginFormParams) {
   const loginMutation = useLogin()
 
   const form = useAppForm({
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: 'customer@example.com', password: '123' },
     validators: { onSubmit: StoreLoginBody },
     onSubmit: ({ value }) => {
       loginMutation.mutate(value, {

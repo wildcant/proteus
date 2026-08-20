@@ -12,6 +12,7 @@ import type {
   ListStoreCartShippingOptionsParams,
   StoreCartDetailResponse,
   StoreCartInventoryResponse,
+  StoreCartResponse,
   StoreCompleteCartResponse,
   StoreCreateCartLineItemResponse,
   StoreCreateCartResponse,
@@ -156,6 +157,17 @@ export const checkStoreCartInventory = (
     },
       );
     }
+  /**
+ * @summary Transfer a cart to the authenticated customer
+ */
+export const transferStoreCartCustomer = (
+    id: string,
+ ) => {
+      return fetcher<StoreCartResponse>(
+      {url: `/store/carts/${id}/customer`, method: 'POST'
+    },
+      );
+    }
   export type CreateStoreCartResult = NonNullable<Awaited<ReturnType<typeof createStoreCart>>>
 export type GetStoreCartResult = NonNullable<Awaited<ReturnType<typeof getStoreCart>>>
 export type UpdateStoreCartResult = NonNullable<Awaited<ReturnType<typeof updateStoreCart>>>
@@ -166,3 +178,4 @@ export type ListStoreCartShippingOptionsResult = NonNullable<Awaited<ReturnType<
 export type AddStoreCartShippingMethodResult = NonNullable<Awaited<ReturnType<typeof addStoreCartShippingMethod>>>
 export type CompleteStoreCartResult = NonNullable<Awaited<ReturnType<typeof completeStoreCart>>>
 export type CheckStoreCartInventoryResult = NonNullable<Awaited<ReturnType<typeof checkStoreCartInventory>>>
+export type TransferStoreCartCustomerResult = NonNullable<Awaited<ReturnType<typeof transferStoreCartCustomer>>>
