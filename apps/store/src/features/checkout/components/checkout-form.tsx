@@ -1,6 +1,7 @@
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { Step } from '#/features/checkout/constants'
 import { useCheckoutProgress } from '#/features/checkout/hooks/use-checkout-progress'
+import { AddressSummary } from './address-summary'
 import { CheckoutStep } from './checkout-step'
 import { PaymentForm } from './payment-form'
 import { ReviewStep } from './review-step'
@@ -23,28 +24,7 @@ export function CheckoutForm({ cart, step }: CheckoutFormProps) {
         isOpen={step === Step.ADDRESS}
         isComplete={hasAddress}
         onEdit={() => goToStep(Step.ADDRESS)}
-        summary={
-          cart.shippingAddress && (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <div>
-                <p className="font-medium text-(--foreground)">Address</p>
-                <p>
-                  {cart.shippingAddress.firstName} {cart.shippingAddress.lastName}
-                </p>
-                <p>{cart.shippingAddress.address1}</p>
-                <p>
-                  {cart.shippingAddress.city}, {cart.shippingAddress.province} {cart.shippingAddress.postalCode}
-                </p>
-                <p>{cart.shippingAddress.countryCode?.toUpperCase()}</p>
-              </div>
-              <div>
-                <p className="font-medium text-(--foreground)">Contact</p>
-                <p>{cart.email}</p>
-                {!!cart.shippingAddress.phone && <p>{cart.shippingAddress.phone}</p>}
-              </div>
-            </div>
-          )
-        }
+        summary={<AddressSummary cart={cart} />}
       >
         <ShippingAddressForm cart={cart} onComplete={() => goToStep(Step.DELIVERY)} />
       </CheckoutStep>
@@ -55,7 +35,7 @@ export function CheckoutForm({ cart, step }: CheckoutFormProps) {
         isOpen={step === Step.DELIVERY}
         isComplete={hasShipping}
         onEdit={() => goToStep(Step.DELIVERY)}
-        summary={!!lastShippingMethod && <p>{lastShippingMethod.name}</p>}
+        summary={lastShippingMethod && <p>{lastShippingMethod.name}</p>}
       >
         <ShippingMethodForm
           cartId={cart.id}

@@ -1,5 +1,4 @@
 - per item fullfilment and shipment.
-- add billin address form to checkout
 - fix imports in backend to use alias.
 - add loader: ({ context }) => context.queryClient.ensureQueryData(...) + useSuspenseQuery to store pages.
 - should order email be required? how do you communicate with the customer otherwise?

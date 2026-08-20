@@ -1,15 +1,29 @@
-import { CartAddressInput, UpdateCart } from '@proteus/http-schemas/store'
+import { UpdateCart } from '@proteus/http-schemas/store'
 import { z } from 'zod'
-import type { UpdateStoreCartBodyShippingAddress } from '#/api/generated/model'
 import { useUpdateCart } from '#/features/checkout/api/checkout'
 import type { SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
 
-const shippingAddressSchema = CartAddressInput.extend({ sameAsBilling: z.boolean() })
+const shippingAddressSchema = UpdateCart.pick({ shippingAddress: true, billingAddress: true })
+  .required()
+  .extend({ sameAsBilling: z.boolean() })
 
-export type ShippingAddressFormValues = UpdateStoreCartBodyShippingAddress & { sameAsBilling: boolean }
+export type ShippingAddressFormValues = z.infer<typeof shippingAddressSchema>
 
-const EMPTY_DEFAULTS = {
+const EMPTY_ADDRESS: ShippingAddressFormValues['shippingAddress'] = {
+  firstName: '',
+  lastName: '',
+  address1: '',
+  address2: '',
+  company: '',
+  city: '',
+  countryCode: '',
+  province: '',
+  postalCode: '',
+  phone: '',
+}
+
+const TEST_ADDRESS_DEFAULT = {
   firstName: 'John',
   lastName: 'Doe',
   address1: '123 Main St',
@@ -20,8 +34,13 @@ const EMPTY_DEFAULTS = {
   province: 'TX',
   postalCode: '78701',
   phone: '5551234567',
+}
+
+const EMPTY_DEFAULTS: ShippingAddressFormValues = {
   sameAsBilling: true,
-} satisfies ShippingAddressFormValues as ShippingAddressFormValues
+  shippingAddress: TEST_ADDRESS_DEFAULT,
+  billingAddress: EMPTY_ADDRESS,
+}
 
 export type ShippingAddressFormParams = SubmitFormParams & {
   defaultValues?: ShippingAddressFormValues
@@ -34,16 +53,17 @@ export function useShippingAddressForm(params?: ShippingAddressFormParams) {
     defaultValues: params?.defaultValues ?? EMPTY_DEFAULTS,
     validators: { onSubmit: shippingAddressSchema },
     onSubmit: async ({ value }) => {
-      const payload = UpdateCart.parse({
-        shippingAddress: value,
-        billingAddress: value.sameAsBilling ? value : undefined,
-      })
-
-      updateCart.mutate(payload, {
-        onSuccess: () => params?.onSuccess?.(),
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+      updateCart.mutate(
+        {
+          shippingAddress: value.shippingAddress,
+          billingAddress: value.billingAddress,
+        },
+        {
+          onSuccess: () => params?.onSuccess?.(),
+          onError: (error) => params?.onError?.(error.message),
+          onSettled: () => params?.onSettled?.(),
+        },
+      )
     },
   })
 
