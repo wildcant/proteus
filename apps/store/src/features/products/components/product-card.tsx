@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { PackageIcon } from 'lucide-react'
 import type { StoreProductListItem } from '#/api/generated/model'
 
-export function ProductCard({ product }: { product: StoreProductListItem }) {
+export function ProductCard({ product, priority }: { product: StoreProductListItem; priority?: boolean }) {
   return (
     <Link to="/products/$productId" params={{ productId: product.id }} className="group block no-underline">
       <div className="aspect-3/4 overflow-hidden bg-(--bg-subtle)">
@@ -12,6 +12,10 @@ export function ProductCard({ product }: { product: StoreProductListItem }) {
             src={product.thumbnail}
             alt={product.title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fetchPriority={priority ? 'high' : undefined}
+            loading={priority ? undefined : 'lazy'}
+            width={600}
+            height={800}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-border">

@@ -111,7 +111,13 @@ export function CartDropdown() {
                     <li key={item.id} className="flex gap-3">
                       <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-(--bg-subtle)">
                         {item.thumbnail ? (
-                          <img src={item.thumbnail} alt={item.title} className="h-full w-full object-cover" />
+                          <img
+                            src={item.thumbnail}
+                            alt={item.title}
+                            className="h-full w-full object-cover"
+                            width={48}
+                            height={48}
+                          />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-(--foreground-muted)">
                             <ShoppingBagIcon className="h-4 w-4" />

@@ -33,7 +33,14 @@ export function ProductDetail() {
       <div className="grid gap-10 lg:grid-cols-2">
         <div className="aspect-3/4 overflow-hidden bg-(--bg-subtle)">
           {product.thumbnail ? (
-            <img src={product.thumbnail} alt={product.title} className="h-full w-full object-cover" />
+            <img
+              src={product.thumbnail}
+              alt={product.title}
+              className="h-full w-full object-cover"
+              fetchPriority="high"
+              width={600}
+              height={800}
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-border">
               <PackageIcon className="h-16 w-16" />
