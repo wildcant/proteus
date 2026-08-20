@@ -13,8 +13,8 @@ npm run --workspace=backend dev          # API at :3000 (Swagger at /admin/docs/
 npm run --workspace=admin dev            # Admin SPA at :3002
 npm run --workspace=store dev         # Storefront at :3001
 
-# Database (Supabase local Postgres)
-npm run --workspace=backend db:start:lean   # Start Postgres (no extras)
+# Database (Docker Postgres)
+npm run --workspace=backend db:start        # Start Postgres
 npm run --workspace=backend db:migrate:dev  # Run migrations
 npm run --workspace=backend db:generate     # Generate migration after schema change
 npm run --workspace=backend db:seed:dev     # Seed dev data

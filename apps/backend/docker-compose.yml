@@ -1,16 +1,19 @@
 services:
-  postgres-test:
+  postgres:
     image: postgres:17
     ports:
-      - '5433:5432'
+      - '5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: proteus_test
-    tmpfs:
-      - /var/lib/postgresql/data
+      POSTGRES_DB: proteus
+    volumes:
+      - proteus-dev-data:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 2s
       timeout: 5s
       retries: 10
+
+volumes:
+  proteus-dev-data:

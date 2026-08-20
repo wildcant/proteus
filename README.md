@@ -42,7 +42,7 @@ This prototype proves you don't have to accept that. It demonstrates:
 | **Language** | TypeScript (strict) |
 | **Backend runtime** | Node.js, Cloudflare Workers (workerd) |
 | **DI container** | Awilix (FP-style factories) |
-| **Database** | PostgreSQL (via Supabase) |
+| **Database** | PostgreSQL |
 | **ORM** | Drizzle ORM |
 | **Validation** | Zod |
 | **API docs** | OpenAPI 3.1 + Swagger UI (auto-generated from Zod schemas) |
@@ -207,7 +207,7 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 ### Prerequisites
 
 - Node.js 20+
-- Docker (for Supabase local dev)
+- Docker (for local PostgreSQL)
 
 ### Setup
 
@@ -215,8 +215,8 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 # Install dependencies
 npm install
 
-# Start local Supabase (Postgres)
-npm run --workspace=backend db:start:lean
+# Start local Postgres
+npm run --workspace=backend db:start
 
 # Run database migrations
 npm run --workspace=backend db:migrate:dev

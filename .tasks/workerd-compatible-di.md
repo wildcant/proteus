@@ -113,7 +113,7 @@ The refactoring changes HOW the database connection is obtained (factory vs dire
 
 ## Further Notes
 
-- The `postgres` package (postgres.js) supports both TCP and WebSocket transports. For production Workers without Hyperdrive, WebSocket transport to Supabase may be needed. This is a connection string change, not an architectural one.
+- The `postgres` package (postgres.js) supports both TCP and WebSocket transports. For production Workers without Hyperdrive, WebSocket transport to the managed Postgres host may be needed. This is a connection string change, not an architectural one.
 - ADR 0001 (per-module container isolation) remains fully respected — `getDb` is bridged into local containers the same way `db` was before.
 - ADR 0011 (module loaders) is extended with the `RUNTIME` gate — loaders still run, they just conditionally skip DB operations on `workerd`.
 - The `AsyncLocalStorage` instance for the Workers db provider is independent from TanStack Start's own ALS (used for H3Event). This avoids coupling to framework internals.
