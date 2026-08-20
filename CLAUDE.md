@@ -156,7 +156,8 @@ Tests construct services manually with injected repos. Vitest config at `apps/ba
 - Use `type` instead of `interface`. Interfaces allow declaration merging on name overlap, which can cause subtle bugs. Composable `type` aliases with `&` intersections are safer and more predictable.
 - **Never use non-null assertions (`!`).** Use proper narrowing (guard clauses, `if` checks, `?.`, `?? fallback`, or explicit error throws) instead.
 - **Never use `any`.** If the type feels like `unknown`, stop and find a more precise type — a generic, a union, a mapped type, or a named type from the codebase.
- 
+- **Tailwind v4 canonical classes.** Always use the short canonical form for Tailwind classes. Write `text-foreground` not `text-(--foreground)` or `text-[var(--foreground)]`. Write `max-w-350` not `max-w-[1400px]`. Only use the `(--var)` syntax for CSS variables that are NOT registered in the `@theme` (e.g., component-scoped variables like `--drawer-height`).
+
 ## Documentation
 
 Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/middleware-and-openapi.md`.
