@@ -12,7 +12,7 @@ export type FileProviderConfig = {
 }
 
 export type FileModuleOptions = {
-  providers?: FileProviderConfig[]
+  provider?: FileProviderConfig
   maxFileSize?: number
 }
 
@@ -28,20 +28,18 @@ export async function loadFileProviders({
 }): Promise<void> {
   const opts = options as FileModuleOptions | undefined
 
-  if (opts?.providers) {
-    for (const config of opts.providers) {
-      const { resolve: providerExports, id, options: providerOptions } = config
+  if (opts?.provider) {
+    const { resolve: providerExports, id, options: providerOptions } = opts.provider
 
-      for (const ServiceClass of providerExports.services) {
-        const Klass = ServiceClass as ProviderConstructor
-        if (!Klass.identifier) {
-          throw new Error(`File provider class ${Klass.name} is missing static "identifier" property.`)
-        }
-        const instance = new Klass(container.cradle, providerOptions ?? {})
-        container.register({
-          [`${FILE_PROVIDER_REGISTRATION_PREFIX}${Klass.identifier}_${id}`]: asValue(instance),
-        })
+    for (const ServiceClass of providerExports.services) {
+      const Klass = ServiceClass as ProviderConstructor
+      if (!Klass.identifier) {
+        throw new Error(`File provider class ${Klass.name} is missing static "identifier" property.`)
       }
+      const instance = new Klass(container.cradle, providerOptions ?? {})
+      container.register({
+        [`${FILE_PROVIDER_REGISTRATION_PREFIX}${Klass.identifier}_${id}`]: asValue(instance),
+      })
     }
   }
 
