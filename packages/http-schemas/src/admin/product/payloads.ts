@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { ProductStatus } from './entities.js'
 
 const AdminCreateProductImage = z.object({ url: z.string().min(1) })
-const AdminUpsertProductImage = z.object({ id: z.string().optional(), url: z.string().min(1) })
+export const AdminUpsertProductImage = z.object({ id: z.string().optional(), url: z.string().min(1) })
 
 export const AdminCreateProduct = z
   .object({

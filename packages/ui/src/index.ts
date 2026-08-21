@@ -55,6 +55,12 @@ export {
   useComboboxAnchor,
 } from './components/ui/combobox.tsx'
 export {
+  CommandBar,
+  CommandBarCommand,
+  CommandBarSeparator,
+  CommandBarValue,
+} from './components/ui/command-bar.tsx'
+export {
   Drawer,
   DrawerClose,
   DrawerContent,

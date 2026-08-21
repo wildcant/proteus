@@ -3,8 +3,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { TwoColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
 import { productVariantQueryOptions } from '#/features/products/api/product-variants'
-import { VariantGeneralSection } from '#/features/products/components/variant-general-section'
-import { VariantPricesSection } from '#/features/products/components/variant-prices-section'
+import { VariantGeneralSection } from '#/features/products/components/variant/variant-general-section'
+import { VariantPricesSection } from '#/features/products/components/variant/variant-prices-section'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/variants/$variantId')({
   beforeLoad: async ({ context, params }) => {

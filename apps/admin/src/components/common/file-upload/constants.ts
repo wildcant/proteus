@@ -12,6 +12,7 @@ export const IMAGE_FORMATS: AcceptedFormat[] = [
   { mimeType: 'image/png', extension: '.png' },
   { mimeType: 'image/gif', extension: '.gif' },
   { mimeType: 'image/webp', extension: '.webp' },
+  { mimeType: 'image/avif', extension: '.avif' },
   { mimeType: 'image/heic', extension: '.heic' },
   { mimeType: 'image/svg+xml', extension: '.svg' },
 ]
