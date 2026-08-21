@@ -1,0 +1,22 @@
+import { type FileType, IMAGE_FORMATS } from '#/components/common/file-upload'
+import { FileUploadField } from '#/components/form/file-upload-field.tsx'
+
+export type UploadedMedia = FileType & { isThumbnail: boolean }
+
+type UploadMediaFormItemProps = {
+  showHint?: boolean
+}
+
+/** Renders inside a `media` array field — see `FileUploadField` for the field contract. */
+export function UploadMediaFormItem({ showHint = true }: UploadMediaFormItemProps) {
+  return (
+    <FileUploadField<UploadedMedia>
+      label="Media"
+      description={showHint ? 'Add media to the product to showcase it in your storefront.' : undefined}
+      uploadLabel="Upload images"
+      uploadHint="Drag and drop images here or click to upload."
+      formats={IMAGE_FORMATS}
+      toValue={(file) => ({ ...file, isThumbnail: false })}
+    />
+  )
+}
