@@ -22,6 +22,7 @@ import adminProductDefinitions from './api/admin/products/definitions.js'
 import adminRefundReasonDefinitions from './api/admin/refund-reasons/definitions.js'
 import adminShippingOptionDefinitions from './api/admin/shipping-options/definitions.js'
 import adminShippingProfileDefinitions from './api/admin/shipping-profiles/definitions.js'
+import adminUploadDefinitions from './api/admin/uploads/definitions.js'
 import adminUserDefinitions from './api/admin/users/definitions.js'
 import authDefinitions from './api/auth/definitions.js'
 import hookDefinitions from './api/hooks/definitions.js'
@@ -58,6 +59,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminRefundReasonDefinitions,
   ...adminShippingOptionDefinitions,
   ...adminShippingProfileDefinitions,
+  ...adminUploadDefinitions,
   ...adminUserDefinitions,
 ]
 

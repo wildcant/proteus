@@ -57,6 +57,7 @@
     "scrypt-kdf": "^4.0.0",
     "stripe": "^22.3.2",
     "swagger-ui-express": "^5.0.1",
+    "ulid": "^3.0.2",
     "winston": "^3.19.0",
     "zod": "^4.4.3"
   },
