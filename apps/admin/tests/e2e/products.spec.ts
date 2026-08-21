@@ -164,3 +164,57 @@ test('product create form uploads staged media', async ({ page, authenticate, na
   await expect(tiles.nth(1).getByRole('button', { name: 'Thumbnail' })).toBeVisible()
   await expect(mediaSection.getByRole('button', { name: 'Thumbnail' })).toHaveCount(1)
 })
+
+test('variant media section assigns product images to a variant', async ({
+  page,
+  authenticate,
+  navigate,
+  factories,
+}) => {
+  await using product = await factories.create.product({ status: 'published', thumbnail: null })
+  await using variant = await factories.create.productVariant({ productId: product.id })
+  await authenticate({ as: 'admin' })
+
+  // Variants can only pick from images the product already has
+  await navigate({ to: '/products/$id/media', params: { id: product.id } })
+  const productMediaModal = page.getByRole('dialog').last()
+  await productMediaModal.locator('input[type="file"]').setInputFiles([imageFile('one.png'), imageFile('two.png')])
+  await productMediaModal.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Media updated successfully')).toBeVisible({ timeout: 10000 })
+
+  await navigate({
+    to: '/products/$id/variants/$variantId/media',
+    params: { id: product.id, variantId: variant.id },
+  })
+  const modal = page.getByRole('dialog').last()
+  const available = modal.locator('[data-slot="available-image"]')
+  const assigned = modal.locator('[data-slot="media-tile"]')
+
+  // Clicking an available image moves it out of the pool and into the variant
+  await expect(available).toHaveCount(2)
+  await available.first().click()
+  await expect(assigned).toHaveCount(1)
+  await expect(available).toHaveCount(1)
+
+  await assigned.first().hover()
+  await assigned.first().getByRole('checkbox', { name: 'Select image' }).click()
+  await page.locator('[data-slot="command-bar-command"]', { hasText: 'Make thumbnail' }).click()
+  await modal.getByRole('button', { name: 'Save' }).click()
+
+  const mediaSection = page.locator('[data-slot="card"]').filter({ has: page.getByText('Media', { exact: true }) })
+  await expect(mediaSection.getByRole('img', { name: `${variant.title} media` })).toHaveCount(1)
+  await expect(mediaSection.getByRole('button', { name: 'Thumbnail' })).toBeVisible({ timeout: 10000 })
+
+  // Unassigning returns the image to the pool and drops it from the variant
+  await navigate({
+    to: '/products/$id/variants/$variantId/media',
+    params: { id: product.id, variantId: variant.id },
+  })
+  const reopened = page.getByRole('dialog').last()
+  await reopened.locator('[data-slot="media-tile"]').first().hover()
+  await reopened.getByRole('checkbox', { name: 'Select image' }).first().click()
+  await page.locator('[data-slot="command-bar-command"]', { hasText: 'Remove Selected' }).click()
+  await reopened.getByRole('button', { name: 'Save' }).click()
+
+  await expect(mediaSection.getByText('No media')).toBeVisible({ timeout: 10000 })
+})

@@ -2348,7 +2348,22 @@
         "type": "object",
         "properties": {
           "variant": {
-            "$ref": "#/components/schemas/AdminProductVariant"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminProductVariant"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminProductImage"
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         "required": ["variant"]
@@ -2471,6 +2486,41 @@
         "required": ["added", "removed"]
       },
       "AdminBatchImageVariant": {
+        "type": "object",
+        "properties": {
+          "add": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AdminBatchVariantImagesResponse": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["added", "removed"]
+      },
+      "AdminBatchVariantImages": {
         "type": "object",
         "properties": {
           "add": {
@@ -6268,6 +6318,60 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminBatchImageVariantResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/products/{id}/variants/{variantId}/images/batch": {
+      "post": {
+        "operationId": "batchVariantImages",
+        "summary": "Add or remove images for a product variant",
+        "tags": ["Product Variants"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "variantId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminBatchVariantImages"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBatchVariantImagesResponse"
                 }
               }
             }

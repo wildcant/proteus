@@ -2,6 +2,8 @@ import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
+  AdminBatchVariantImages,
+  AdminBatchVariantImagesResponse,
   AdminCreateProductVariant,
   AdminCreateProductVariantResponse,
   AdminUpdateProductVariant,
@@ -12,6 +14,7 @@ import type {
   ListProductVariantsParams,
 } from '#/api/generated/model'
 import {
+  batchVariantImages,
   createProductVariant,
   deleteProductVariant,
   getProductVariant,
@@ -128,6 +131,29 @@ export const useUpdateVariantPrices = (
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: 'Failed to update variant prices', description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+/** Links and unlinks product images for one variant in a single atomic request. */
+export const useBatchVariantImages = (
+  productId: string,
+  variantId: string,
+  options?: UseMutationOptions<AdminBatchVariantImagesResponse, Error, AdminBatchVariantImages>,
+) => {
+  const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
+    mutationFn: (data: AdminBatchVariantImages) => batchVariantImages(productId, variantId, data),
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: variantKeys.detail(variantId) })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update variant images', description: error.message })
       onError?.(...args)
     },
   })

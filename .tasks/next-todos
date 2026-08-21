@@ -1,4 +1,6 @@
 Fixes and improvements
+- include product variants and variant images to seed script
+- update store product details page to display images based on selected variant
 
 Future features TODOs
 - Access Control Module Architecture

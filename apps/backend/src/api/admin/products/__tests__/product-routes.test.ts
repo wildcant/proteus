@@ -9,6 +9,8 @@ import type { AwilixContainer } from 'awilix'
 import { bootstrapContainer } from '../../../../container.js'
 import type * as imageVariantBatchRoutes from '../[id]/images/[imageId]/variants/batch/route.js'
 import type * as productByIdRoutes from '../[id]/route.js'
+import type * as variantImageBatchRoutes from '../[id]/variants/[variantId]/images/batch/route.js'
+import type * as variantByIdRoutes from '../[id]/variants/[variantId]/route.js'
 import productDefinitions from '../definitions.js'
 import type * as productRoutes from '../route.js'
 
@@ -190,5 +192,120 @@ test.describe('POST /admin/products/:id/images/:imageId/variants/batch', () => {
     )
 
     expect(response.json).toEqual({ added: [], removed: [] })
+  })
+})
+
+test.describe('POST /admin/products/:id/variants/:variantId/images/batch', () => {
+  const batchMatcher = '/admin/products/:id/variants/:variantId/images/batch'
+
+  const createVariantWithImages = async (dto: { createProduct: () => CreateProductDTO }) => {
+    const product = await productService.createProduct({
+      ...dto.createProduct(),
+      images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
+    })
+    const [linkedImage, unlinkedImage] = await productService.listProductImages(
+      { productId: product.id },
+      { order: { rank: 'ASC' } },
+    )
+    const [variant] = await productService.createProductVariants([{ productId: product.id, title: 'Small' }])
+    if (!linkedImage || !unlinkedImage || !variant) throw new Error('Expected two images and a variant to exist')
+
+    await productService.addImageToVariant([{ imageId: linkedImage.id, variantId: variant.id }])
+    return { product, linkedImage, unlinkedImage, variant }
+  }
+
+  test('adds and removes image associations in one request', async ({ expect, dto }) => {
+    const { product, linkedImage, unlinkedImage, variant } = await createVariantWithImages(dto.generate)
+    const handler = applyMiddleware(findDefinition('POST', batchMatcher))
+
+    const response = await handler<typeof variantImageBatchRoutes.PostOutput>(
+      makeRequest({
+        scope: container,
+        params: { id: product.id, variantId: variant.id },
+        body: { add: [unlinkedImage.id], remove: [linkedImage.id] },
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.json).toEqual({ added: [unlinkedImage.id], removed: [linkedImage.id] })
+    const variantImages = await productService.listProductVariantImages({ variantId: variant.id })
+    expect(variantImages.map((variantImage) => variantImage.imageId)).toEqual([unlinkedImage.id])
+  })
+
+  test('clears the thumbnail when the variant loses the image it pointed at', async ({ expect, dto }) => {
+    const { product, linkedImage, variant } = await createVariantWithImages(dto.generate)
+    await productService.updateProductVariant(variant.id, { thumbnail: linkedImage.url })
+    const handler = applyMiddleware(findDefinition('POST', batchMatcher))
+
+    await handler<typeof variantImageBatchRoutes.PostOutput>(
+      makeRequest({
+        scope: container,
+        params: { id: product.id, variantId: variant.id },
+        body: { remove: [linkedImage.id] },
+      }),
+    )
+
+    expect((await productService.retrieveProductVariant(variant.id)).thumbnail).toBeNull()
+  })
+
+  test('leaves a thumbnail pointing at a still-assigned image alone', async ({ expect, dto }) => {
+    const { product, linkedImage, unlinkedImage, variant } = await createVariantWithImages(dto.generate)
+    await productService.updateProductVariant(variant.id, { thumbnail: linkedImage.url })
+    const handler = applyMiddleware(findDefinition('POST', batchMatcher))
+
+    await handler<typeof variantImageBatchRoutes.PostOutput>(
+      makeRequest({
+        scope: container,
+        params: { id: product.id, variantId: variant.id },
+        body: { add: [unlinkedImage.id] },
+      }),
+    )
+
+    expect((await productService.retrieveProductVariant(variant.id)).thumbnail).toBe(linkedImage.url)
+  })
+
+  test('reports only the images that were actually linked', async ({ expect, dto }) => {
+    const { product, unlinkedImage, variant } = await createVariantWithImages(dto.generate)
+    const handler = applyMiddleware(findDefinition('POST', batchMatcher))
+
+    const response = await handler<typeof variantImageBatchRoutes.PostOutput>(
+      makeRequest({
+        scope: container,
+        params: { id: product.id, variantId: variant.id },
+        body: { remove: [unlinkedImage.id] },
+      }),
+    )
+
+    expect(response.json).toEqual({ added: [], removed: [] })
+  })
+})
+
+test.describe('GET /admin/products/:id/variants/:variantId', () => {
+  test('returns the images assigned to the variant, ordered by rank', async ({ expect, dto }) => {
+    const product = await productService.createProduct({
+      ...dto.generate.createProduct(),
+      images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
+    })
+    const images = await productService.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } })
+    const [variant] = await productService.createProductVariants([{ productId: product.id, title: 'Small' }])
+    const [first, second] = images
+    if (!variant || !first || !second) throw new Error('Expected two images and a variant to exist')
+
+    // Linked out of rank order to prove the response is sorted rather than insertion-ordered.
+    await productService.addImageToVariant([
+      { imageId: second.id, variantId: variant.id },
+      { imageId: first.id, variantId: variant.id },
+    ])
+    const handler = applyMiddleware(findDefinition('GET', '/admin/products/:id/variants/:variantId'))
+
+    const response = await handler<typeof variantByIdRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: product.id, variantId: variant.id } }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.json.variant.images?.map((image) => image.url)).toEqual([
+      'https://cdn.test/a.png',
+      'https://cdn.test/b.png',
+    ])
   })
 })
