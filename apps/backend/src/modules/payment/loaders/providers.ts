@@ -12,7 +12,7 @@ export type ProviderConfig = {
   options?: Record<string, unknown>
 }
 
-type LoaderOptions = {
+export type PaymentModuleOptions = {
   providers?: ProviderConfig[]
 }
 
@@ -54,7 +54,7 @@ export async function loadProviders({
   container: AwilixContainer
   options?: Record<string, unknown>
 }): Promise<void> {
-  const opts = options as LoaderOptions | undefined
+  const opts = options as PaymentModuleOptions | undefined
 
   // 1. Always register the system provider
   const systemProvider = new SystemPaymentProvider()

@@ -20,7 +20,7 @@ test.describe('Auth', () => {
     await page.getByRole('textbox', { name: 'Password' }).fill(credentials.password)
     await page.getByRole('button', { name: /sign in/i }).click()
 
-    await expect(page.getByText(/invalid email or password/i)).toBeVisible()
+    await expect(page.getByText(/invalid email or password/i).first()).toBeVisible()
   })
 
   test('register new customer', async ({ page, navigate, factories }) => {

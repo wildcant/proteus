@@ -43,6 +43,7 @@ function isStripeError(error: unknown): error is Stripe.errors.StripeError {
 
 export class StripeProviderService extends AbstractPaymentProvider<StripeOptions> {
   static identifier = 'stripe'
+  static label = 'Stripe'
 
   private stripe: Stripe
 

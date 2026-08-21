@@ -1,8 +1,12 @@
+import { execSync } from 'node:child_process'
 import { rmSync } from 'node:fs'
 import { sql } from 'drizzle-orm'
 import { db, shutdown } from '../db/client.js'
 
 export default async function globalSetup() {
+  // Ensure test DB schema is up-to-date (idempotent — skips already-applied migrations)
+  execSync('npm run --workspace=backend db:migrate:test', { stdio: 'inherit' })
+
   await db.execute(sql`
     DO $$
     DECLARE r RECORD;
@@ -13,7 +17,11 @@ export default async function globalSetup() {
     END $$
   `)
 
-  rmSync('playwright/.auth', { recursive: true, force: true })
-
   await shutdown()
+
+  // Re-seed providers after truncation. Needed because the backend server may be reused
+  // across test runs (reuseExistingServer: true) and won't re-run its boot-time seeding.
+  execSync('npm run --workspace=backend db:seed:providers:test', { stdio: 'inherit' })
+
+  rmSync('playwright/.auth', { recursive: true, force: true })
 }

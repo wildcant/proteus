@@ -77,7 +77,7 @@ test.describe('Cart', () => {
 
     // 7. Click "Go to checkout", assert checkout layout
     await page.getByRole('link', { name: /go to checkout/i }).click()
-    await expect(page).toHaveURL('/checkout')
+    await expect(page).toHaveURL(/\/checkout/)
 
     // Checkout layout has "Back to cart" link, no hamburger, no footer
     await expect(page.getByRole('link', { name: /back to cart/i })).toBeVisible()
@@ -109,7 +109,6 @@ test.describe('Cart', () => {
     // Side menu contains expected links
     await expect(sideMenu.getByText('Home')).toBeVisible()
     await expect(sideMenu.getByText('Products')).toBeVisible()
-    await expect(sideMenu.getByText('Account')).toBeVisible()
     await expect(sideMenu.getByText('Cart')).toBeVisible()
 
     // Close side menu

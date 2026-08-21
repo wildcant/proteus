@@ -20,6 +20,7 @@ export { cartLineItemProductRelations } from './link-modules/definitions/readonl
 export * from './modules/auth/models/index.js'
 export * from './modules/cart/models/index.js'
 export * from './modules/customer/models/index.js'
+export * from './modules/fulfillment/models/index.js'
 export * from './modules/inventory/models/index.js'
 export * from './modules/payment/models/index.js'
 export * from './modules/pricing/models/index.js'

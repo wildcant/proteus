@@ -12,5 +12,5 @@ export async function syncFulfillmentProviders(getDb: () => Database) {
     fulfillmentProviderRepository,
     logger: noopLogger,
   })
-  await seedProviders(providerService, fulfillmentProviderDeclarations)
+  await seedProviders(providerService, fulfillmentProviderDeclarations.providers)
 }
