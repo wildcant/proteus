@@ -1,11 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
+import { z } from 'zod'
 import { productQueryOptions } from '#/features/products/api/products'
 import { ProductDetail } from '#/features/products/components/product-detail'
 import { ProductDetailSkeleton } from '#/features/products/components/product-detail-skeleton'
 
+/** Keeps the chosen variant shareable — a link to a colourway renders that colourway on the server. */
+const productSearchSchema = z.object({
+  variant: z.string().optional(),
+})
+
 export const Route = createFileRoute('/_main/products/$productId')({
   ssr: true,
+  validateSearch: productSearchSchema,
   component: ProductDetailPage,
   loader: async ({ context, params }) => {
     await context.queryClient.ensureQueryData(productQueryOptions(params.productId))

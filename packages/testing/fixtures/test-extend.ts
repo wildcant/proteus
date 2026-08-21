@@ -11,7 +11,9 @@ import {
   createPrice,
   createPriceSet,
   createProduct,
+  createProductImage,
   createProductVariant,
+  createProductVariantImage,
   createProductVariantPriceSet,
   createProductWithPricing,
   createServiceZone,
@@ -29,6 +31,8 @@ import {
   deletePriceById,
   deletePriceSetById,
   deleteProductById,
+  deleteProductImageById,
+  deleteProductVariantImageById,
   deleteProductVariantPriceSetById,
   deleteServiceZoneById,
   deleteShippingOptionById,
@@ -44,7 +48,9 @@ import {
   generatePrice,
   generatePriceSet,
   generateProduct,
+  generateProductImage,
   generateProductVariant,
+  generateProductVariantImage,
   generateProductVariantPriceSet,
   generateServiceZone,
   generateShippingOption,
@@ -58,6 +64,7 @@ import { generateLoginFormValues, generateRegisterFormValues } from '../factorie
 type NavigateOptions<RoutePath extends string> = {
   to: RoutePath
   params?: Record<string, string>
+  search?: Record<string, string>
 }
 
 type NavigateFunction<RoutePath extends string> = (options: NavigateOptions<RoutePath>) => Promise<void>
@@ -108,68 +115,77 @@ const customer = definePersona('customer', {
   },
 })
 
+/** The database factories exposed on the `factories` fixture. */
+export type Factories = {
+  generate: {
+    cart: typeof generateCart
+    customer: typeof generateCustomer
+    user: typeof generateUser
+    product: typeof generateProduct
+    productImage: typeof generateProductImage
+    productVariant: typeof generateProductVariant
+    productVariantImage: typeof generateProductVariantImage
+    priceSet: typeof generatePriceSet
+    price: typeof generatePrice
+    productVariantPriceSet: typeof generateProductVariantPriceSet
+    fulfillmentProvider: typeof generateFulfillmentProvider
+    fulfillmentSet: typeof generateFulfillmentSet
+    serviceZone: typeof generateServiceZone
+    geoZone: typeof generateGeoZone
+    shippingProfile: typeof generateShippingProfile
+    shippingOptionType: typeof generateShippingOptionType
+    shippingOption: typeof generateShippingOption
+    paymentProvider: typeof generatePaymentProvider
+    loginForm: typeof generateLoginFormValues
+    customerSignupForm: typeof generateRegisterFormValues
+  }
+  create: {
+    cart: typeof createCart
+    customer: typeof createCustomer
+    user: typeof createUser
+    product: typeof createProduct
+    productImage: typeof createProductImage
+    productVariant: typeof createProductVariant
+    productVariantImage: typeof createProductVariantImage
+    priceSet: typeof createPriceSet
+    price: typeof createPrice
+    productVariantPriceSet: typeof createProductVariantPriceSet
+    productWithPricing: typeof createProductWithPricing
+    checkoutInfrastructure: typeof createCheckoutInfrastructure
+    shippingInfrastructure: typeof createShippingInfrastructure
+    fulfillmentProvider: typeof createFulfillmentProvider
+    fulfillmentSet: typeof createFulfillmentSet
+    serviceZone: typeof createServiceZone
+    geoZone: typeof createGeoZone
+    shippingProfile: typeof createShippingProfile
+    shippingOptionType: typeof createShippingOptionType
+    shippingOption: typeof createShippingOption
+    paymentProvider: typeof createPaymentProvider
+  }
+  destroy: {
+    cart: typeof deleteCartById
+    customer: typeof deleteCustomerById
+    user: typeof deleteUserById
+    product: typeof deleteProductById
+    productImage: typeof deleteProductImageById
+    productVariantImage: typeof deleteProductVariantImageById
+    priceSet: typeof deletePriceSetById
+    price: typeof deletePriceById
+    productVariantPriceSet: typeof deleteProductVariantPriceSetById
+    fulfillmentProvider: typeof deleteFulfillmentProviderById
+    fulfillmentSet: typeof deleteFulfillmentSetById
+    serviceZone: typeof deleteServiceZoneById
+    geoZone: typeof deleteGeoZoneById
+    shippingProfile: typeof deleteShippingProfileById
+    shippingOptionType: typeof deleteShippingOptionTypeById
+    shippingOption: typeof deleteShippingOptionById
+    paymentProvider: typeof deletePaymentProviderById
+  }
+}
+
 export function createTest<RoutePath extends string = string>() {
   const test = base.extend<{
-    factories: {
-      generate: {
-        cart: typeof generateCart
-        customer: typeof generateCustomer
-        user: typeof generateUser
-        product: typeof generateProduct
-        productVariant: typeof generateProductVariant
-        priceSet: typeof generatePriceSet
-        price: typeof generatePrice
-        productVariantPriceSet: typeof generateProductVariantPriceSet
-        fulfillmentProvider: typeof generateFulfillmentProvider
-        fulfillmentSet: typeof generateFulfillmentSet
-        serviceZone: typeof generateServiceZone
-        geoZone: typeof generateGeoZone
-        shippingProfile: typeof generateShippingProfile
-        shippingOptionType: typeof generateShippingOptionType
-        shippingOption: typeof generateShippingOption
-        paymentProvider: typeof generatePaymentProvider
-        loginForm: typeof generateLoginFormValues
-        customerSignupForm: typeof generateRegisterFormValues
-      }
-      create: {
-        cart: typeof createCart
-        customer: typeof createCustomer
-        user: typeof createUser
-        product: typeof createProduct
-        productVariant: typeof createProductVariant
-        priceSet: typeof createPriceSet
-        price: typeof createPrice
-        productVariantPriceSet: typeof createProductVariantPriceSet
-        productWithPricing: typeof createProductWithPricing
-        checkoutInfrastructure: typeof createCheckoutInfrastructure
-        shippingInfrastructure: typeof createShippingInfrastructure
-        fulfillmentProvider: typeof createFulfillmentProvider
-        fulfillmentSet: typeof createFulfillmentSet
-        serviceZone: typeof createServiceZone
-        geoZone: typeof createGeoZone
-        shippingProfile: typeof createShippingProfile
-        shippingOptionType: typeof createShippingOptionType
-        shippingOption: typeof createShippingOption
-        paymentProvider: typeof createPaymentProvider
-      }
-      destroy: {
-        cart: typeof deleteCartById
-        customer: typeof deleteCustomerById
-        user: typeof deleteUserById
-        product: typeof deleteProductById
-        priceSet: typeof deletePriceSetById
-        price: typeof deletePriceById
-        productVariantPriceSet: typeof deleteProductVariantPriceSetById
-        fulfillmentProvider: typeof deleteFulfillmentProviderById
-        fulfillmentSet: typeof deleteFulfillmentSetById
-        serviceZone: typeof deleteServiceZoneById
-        geoZone: typeof deleteGeoZoneById
-        shippingProfile: typeof deleteShippingProfileById
-        shippingOptionType: typeof deleteShippingOptionTypeById
-        shippingOption: typeof deleteShippingOptionById
-        paymentProvider: typeof deletePaymentProviderById
-      }
-    }
+    factories: Factories
     navigate: NavigateFunction<RoutePath>
     authenticate: AuthenticateFunction<[typeof admin, typeof customer]>
     cleanup: CleanupFunction
@@ -180,7 +196,9 @@ export function createTest<RoutePath extends string = string>() {
         customer: generateCustomer,
         user: generateUser,
         product: generateProduct,
+        productImage: generateProductImage,
         productVariant: generateProductVariant,
+        productVariantImage: generateProductVariantImage,
         priceSet: generatePriceSet,
         price: generatePrice,
         productVariantPriceSet: generateProductVariantPriceSet,
@@ -202,7 +220,9 @@ export function createTest<RoutePath extends string = string>() {
         customer: createCustomer,
         user: createUser,
         product: createProduct,
+        productImage: createProductImage,
         productVariant: createProductVariant,
+        productVariantImage: createProductVariantImage,
         priceSet: createPriceSet,
         price: createPrice,
         productVariantPriceSet: createProductVariantPriceSet,
@@ -223,6 +243,8 @@ export function createTest<RoutePath extends string = string>() {
         customer: deleteCustomerById,
         user: deleteUserById,
         product: deleteProductById,
+        productImage: deleteProductImageById,
+        productVariantImage: deleteProductVariantImageById,
         priceSet: deletePriceSetById,
         price: deletePriceById,
         productVariantPriceSet: deleteProductVariantPriceSetById,
@@ -238,9 +260,10 @@ export function createTest<RoutePath extends string = string>() {
     },
 
     navigate: async ({ page }, use) => {
-      const navigate: NavigateFunction<RoutePath> = async ({ to, params }) => {
+      const navigate: NavigateFunction<RoutePath> = async ({ to, params, search }) => {
         const { interpolatedPath } = interpolatePath({ path: to, params: params ?? {} })
-        await page.goto(interpolatedPath, { waitUntil: 'networkidle' })
+        const query = new URLSearchParams(search).toString()
+        await page.goto(query ? `${interpolatedPath}?${query}` : interpolatedPath, { waitUntil: 'networkidle' })
       }
       await use(navigate)
     },

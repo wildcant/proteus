@@ -20,24 +20,33 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     })
   }
 
-  const [product, variants] = await Promise.all([
+  const [product, variants, images] = await Promise.all([
     productService.retrieveProduct(req.params.id),
     productService.listProductVariants({ productId: req.params.id }),
+    productService.listProductImages({ productId: req.params.id }, { order: { rank: 'ASC' } }),
   ])
 
   const variantIds = variants.map((variant) => variant.id)
-  const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
+  const [links, variantImages] = await Promise.all([
+    linkService.repo('productVariantPriceSet').findByVariantIds(variantIds),
+    // An empty filter array would reach the query builder as `inArray(column, [])`.
+    variantIds.length > 0 ? productService.listProductVariantImages({ variantId: variantIds }) : [],
+  ])
 
   const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
   const calculatedPrices = await pricingService.calculatePrices(priceSetIds, req.pricingContext)
 
   const priceByVariantId = buildVariantPrices(links, calculatedPrices)
 
+  const linkedImages = new Set(variantImages.map((variantImage) => `${variantImage.variantId}:${variantImage.imageId}`))
+
   const enrichedVariants = variants.flatMap((variant) => {
     const calculatedPrice = priceByVariantId.get(variant.id)
     if (!calculatedPrice) return []
-    return { ...variant, calculatedPrice }
+    // Filtering the rank-ordered images means `imageIds` inherits that order for free.
+    const imageIds = images.filter((image) => linkedImages.has(`${variant.id}:${image.id}`)).map((image) => image.id)
+    return { ...variant, imageIds, calculatedPrice }
   })
 
-  return { status: 200, json: { product: { ...product, variants: enrichedVariants } } }
+  return { status: 200, json: { product: { ...product, images, variants: enrichedVariants } } }
 }

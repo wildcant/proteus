@@ -11,6 +11,9 @@ export interface StoreProductVariant {
   productId: string;
   title: string;
   /** @nullable */
+  thumbnail: string | null;
+  imageIds: string[];
+  /** @nullable */
   sku: string | null;
   /** @nullable */
   barcode: string | null;

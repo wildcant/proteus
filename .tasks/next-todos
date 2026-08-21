@@ -1,6 +1,6 @@
 Fixes and improvements
-- include product variants and variant images to seed script
-- update store product details page to display images based on selected variant
+- when removing an option from product Options section it should validate there are no variants linked.
+- product variant creation form.
 
 Future features TODOs
 - Access Control Module Architecture

@@ -14,6 +14,8 @@
 
 @theme {
   --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  /* Registered so `text-foreground-muted` resolves; the value itself is themed on :root below. */
+  --color-foreground-muted: var(--foreground-muted);
 }
 
 :root {
