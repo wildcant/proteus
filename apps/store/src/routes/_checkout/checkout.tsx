@@ -7,7 +7,7 @@ import { CheckoutSkeleton } from '#/features/checkout/components/checkout-skelet
 import { STEPS, Step } from '#/features/checkout/constants'
 
 const checkoutSearchSchema = z.object({
-  step: z.enum(STEPS).catch(Step.ADDRESS),
+  step: z.enum(STEPS).catch(Step.CONTACT),
 })
 
 export const Route = createFileRoute('/_checkout/checkout')({
