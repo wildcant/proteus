@@ -1,5 +1,6 @@
 import type { AwilixContainer } from 'awilix'
 import { Hono } from 'hono'
+import { serveStatic } from 'hono/cloudflare-workers'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import qs from 'qs'
 import type { DbProvider } from '../../../core/db/ports.js'
@@ -7,6 +8,7 @@ import { errorHandler } from '../../../core/errors/index.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/index.js'
 import type { PreparedRoute } from '../../../server/ports.js'
+import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
@@ -16,6 +18,17 @@ type CreateHonoAppOptions = {
   container: AwilixContainer
   logger: Logger
   corsOrigins: string[]
+}
+
+async function extractFiles(raw: Request): Promise<File[]> {
+  const formData = await raw.formData()
+  const files: File[] = []
+  for (const value of formData.values()) {
+    if (value instanceof File) {
+      files.push(value)
+    }
+  }
+  return files
 }
 
 export function createHonoApp({ routes, container, logger, corsOrigins }: CreateHonoAppOptions) {
@@ -45,13 +58,19 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
     await next()
   })
 
+  app.use('/static/*', serveStatic({}))
+
   for (const route of routes) {
     const method = route.method.toLowerCase() as HttpMethod
     app[method](route.matcher, async (c) => {
       const url = new URL(c.req.url)
       const query = qs.parse(url.search, { ignoreQueryPrefix: true }) as Record<string, unknown>
       const hasBody = !['GET', 'HEAD', 'DELETE'].includes(c.req.method)
-      const body = hasBody ? await c.req.json().catch(() => undefined) : undefined
+
+      const multipart = hasBody && isMultipart(c.req.header('content-type'))
+      const files = multipart ? await extractFiles(c.req.raw) : undefined
+      const body = multipart ? undefined : hasBody ? await c.req.json().catch(() => undefined) : undefined
+
       const headers: Record<string, string> = {}
       c.req.raw.headers.forEach((value, key) => {
         headers[key] = value
@@ -64,6 +83,7 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
           query,
           validatedQuery: {},
           body,
+          files,
           headers,
           scope: container.createScope(),
         })

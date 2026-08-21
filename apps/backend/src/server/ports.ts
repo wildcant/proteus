@@ -25,6 +25,7 @@ export type HttpRequest<T = object> = {
   query: Record<string, unknown>
   validatedQuery: T extends { query: infer Q } ? InferQuery<Q> : Record<string, unknown>
   body: T extends { body: infer B } ? InferField<B> : unknown
+  files?: File[]
   scope: AwilixContainer
   headers: Record<string, string>
   authContext?: AuthContext
