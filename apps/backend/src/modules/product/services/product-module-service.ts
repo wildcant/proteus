@@ -10,6 +10,7 @@ import type {
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
+  FilterableProductVariantImageProps,
   FilterableProductVariantProps,
   FindConfig,
   IProductModuleService,
@@ -19,12 +20,14 @@ import type {
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
   ProductVariantDTO,
+  ProductVariantImageDTO,
   SetProductOptionsDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
   UpdateProductVariantDTO,
   UpsertProductImageInput,
   UpsertProductVariantDTO,
+  VariantImageInput,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
@@ -36,6 +39,7 @@ import type { ProductOptionValueRepository } from '../repositories/product-optio
 import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import type { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
+import type { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
 
 type InjectedDependencies = {
   productRepository: ProductRepository
@@ -45,6 +49,7 @@ type InjectedDependencies = {
   productProductOptionRepository: ProductProductOptionRepository
   productProductOptionValueRepository: ProductProductOptionValueRepository
   productImageRepository: ProductImageRepository
+  productVariantImageRepository: ProductVariantImageRepository
   withTransaction: WithTransaction
   logger: Logger
 }
@@ -57,6 +62,7 @@ export class ProductModuleService implements IProductModuleService {
   private productProductOptionRepository: ProductProductOptionRepository
   private productProductOptionValueRepository: ProductProductOptionValueRepository
   private productImageRepository: ProductImageRepository
+  private productVariantImageRepository: ProductVariantImageRepository
   private withTransaction: WithTransaction
   private logger: Logger
 
@@ -68,6 +74,7 @@ export class ProductModuleService implements IProductModuleService {
     productProductOptionRepository,
     productProductOptionValueRepository,
     productImageRepository,
+    productVariantImageRepository,
     withTransaction,
     logger,
   }: InjectedDependencies) {
@@ -78,6 +85,7 @@ export class ProductModuleService implements IProductModuleService {
     this.productProductOptionRepository = productProductOptionRepository
     this.productProductOptionValueRepository = productProductOptionValueRepository
     this.productImageRepository = productImageRepository
+    this.productVariantImageRepository = productVariantImageRepository
     this.withTransaction = withTransaction
     this.logger = logger
   }
@@ -516,6 +524,39 @@ export class ProductModuleService implements IProductModuleService {
   async createProductImage(data: CreateProductImageDTO, context?: Context): Promise<ProductImageDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.productImageRepository.create(data, ctx)
+    })
+  }
+
+  // ── Variant images ────────────────────────────────────────────────────
+
+  async listProductVariantImages(
+    filters?: FilterableProductVariantImageProps,
+    config?: FindConfig<ProductVariantImageDTO>,
+    context?: Context,
+  ): Promise<ProductVariantImageDTO[]> {
+    return this.productVariantImageRepository.find(filters, config, context)
+  }
+
+  async addImageToVariant(data: VariantImageInput[], context?: Context): Promise<{ id: string }[]> {
+    this.logger.debug(`Linking ${data.length} image(s) to variant(s)`)
+    return this.withTransaction(context, async (ctx) => {
+      const created = await this.productVariantImageRepository.createMany(data, ctx)
+      return created.map(({ id }) => ({ id }))
+    })
+  }
+
+  async removeImageFromVariant(data: VariantImageInput[], context?: Context): Promise<void> {
+    if (data.length === 0) return
+    return this.withTransaction(context, async (ctx) => {
+      const linked = await this.productVariantImageRepository.find(
+        { $or: data.map(({ imageId, variantId }) => ({ imageId, variantId })) },
+        undefined,
+        ctx,
+      )
+      await this.productVariantImageRepository.softDelete(
+        linked.map((variantImage) => variantImage.id),
+        ctx,
+      )
     })
   }
 

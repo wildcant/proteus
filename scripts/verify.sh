@@ -2,10 +2,15 @@
 # Post-implementation verification gate.
 #
 # Formatting runs first and alone: `biome format --write` rewrites files, so it cannot
-# race the suites that read them. The three read-only suites afterwards share no state,
-# so they run concurrently and the wall clock collapses to the slowest one (the backend
-# integration tests). Each suite's output is buffered and printed as it finishes, so the
-# streams never interleave.
+# race the suites that read them. The read-only suites afterwards share no state, so they
+# run concurrently and the wall clock collapses to the slowest one (the backend integration
+# tests). Each suite's output is buffered and printed as it finishes, so the streams never
+# interleave.
+#
+# The job list below is the single definition of what "checked" means for this repo — each
+# suite invokes its tool directly so the gate owns the flags it passes. Biome is the reason:
+# it needs --error-on-warnings here, while plain `npm run check` stays lenient for ad-hoc use.
+# A new project-wide check belongs in this list; nothing else aggregates them.
 
 set -uo pipefail
 
@@ -18,7 +23,33 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-JOBS="typecheck check test"
+JOBS="typecheck lint conventions deps test"
+
+job_typecheck() { npm run typecheck; }
+
+# Warnings are failures here even though `npm run check` tolerates them. `npm exec` pins this
+# to the Biome in the workspace's node_modules — the same binary `npm run check` uses.
+job_lint() { npm exec -- biome check --error-on-warnings .; }
+
+# Every check runs even after one fails, so a single run reports every violation at once.
+job_conventions() {
+  local code=0
+  ./scripts/check-env-usage.sh || code=1
+  ./scripts/check-generic-errors.sh || code=1
+  ./scripts/check-datetime-schema.sh || code=1
+  return $code
+}
+
+job_deps() {
+  local code=0
+  npm run --workspace=backend check:deps || code=1
+  npm run --workspace=admin check:deps || code=1
+  npm run --workspace=store check:deps || code=1
+  return $code
+}
+
+# Only the API tests run here — the full suite is ~96s and would dominate the gate.
+job_test() { npm run --workspace=backend test:api; }
 
 # CI mode: report formatting instead of applying it. Triggered by --ci or by the CI env
 # var that every CI provider sets, so the workflow file needs no extra wiring.
@@ -31,8 +62,8 @@ for arg in "$@"; do
     -h | --help)
       echo "Usage: npm run verify [-- --ci]"
       echo ""
-      echo "  Formats the tree, then runs typecheck, check:all and the backend API tests"
-      echo "  in parallel."
+      echo "  Formats the tree, then runs typecheck, lint, convention checks, dependency"
+      echo "  rules and the backend API tests in parallel."
       echo ""
       echo "  --ci   Fail on unformatted files instead of rewriting them."
       echo "         Implied when the CI environment variable is set."
@@ -49,7 +80,9 @@ done
 label_of() {
   case "$1" in
     typecheck) echo "Type checking (backend, store, admin)" ;;
-    check) echo "Lint, env usage & dependency rules" ;;
+    lint) echo "Lint & format rules (warnings fail)" ;;
+    conventions) echo "Env usage, error & schema conventions" ;;
+    deps) echo "Dependency rules (backend, admin, store)" ;;
     test) echo "Backend API tests" ;;
   esac
 }
@@ -57,7 +90,7 @@ label_of() {
 echo ""
 if [[ "$ci_mode" == true ]]; then
   # CI must not rewrite the tree: unformatted code has to fail the build rather than be
-  # silently fixed here, which would also mask it from the `biome check` inside check:all.
+  # silently fixed here, which would also mask it from the lint suite's `biome check`.
   echo -e "${BOLD}Checking formatting${RESET} ${DIM}(CI — reporting only, no files rewritten)${RESET}"
   if ! npm run format:check; then
     echo ""
@@ -88,12 +121,12 @@ run_job() {
 }
 
 echo ""
-echo -e "${BOLD}Running 3 suites in parallel${RESET} ${DIM}(output appears as each finishes)${RESET}"
+job_count="$(echo "$JOBS" | wc -w | xargs)"
+echo -e "${BOLD}Running ${job_count} suites in parallel${RESET} ${DIM}(output appears as each finishes)${RESET}"
 
-run_job typecheck npm run typecheck &
-run_job check npm run check:all &
-# Only the API tests run here — the full suite is ~96s and would dominate the gate.
-run_job test npm run --workspace=backend test:api &
+for name in $JOBS; do
+  run_job "$name" "job_$name" &
+done
 
 failures=0
 

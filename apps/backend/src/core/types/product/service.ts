@@ -5,6 +5,7 @@ import type {
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
+  FilterableProductVariantImageProps,
   FilterableProductVariantProps,
   ProductDTO,
   ProductImageDTO,
@@ -12,6 +13,7 @@ import type {
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
   ProductVariantDTO,
+  ProductVariantImageDTO,
 } from './common.js'
 import type {
   CreateProductDTO,
@@ -24,6 +26,7 @@ import type {
   UpdateProductOptionDTO,
   UpdateProductVariantDTO,
   UpsertProductVariantDTO,
+  VariantImageInput,
 } from './mutations.js'
 
 export type IProductModuleService = {
@@ -125,4 +128,13 @@ export type IProductModuleService = {
   ): Promise<ProductImageDTO[]>
   createProductImages(data: CreateProductImageDTO[], context?: Context): Promise<ProductImageDTO[]>
   createProductImage(data: CreateProductImageDTO, context?: Context): Promise<ProductImageDTO>
+
+  // Variant images
+  listProductVariantImages(
+    filters?: FilterableProductVariantImageProps,
+    config?: FindConfig<ProductVariantImageDTO>,
+    context?: Context,
+  ): Promise<ProductVariantImageDTO[]>
+  addImageToVariant(data: VariantImageInput[], context?: Context): Promise<{ id: string }[]>
+  removeImageFromVariant(data: VariantImageInput[], context?: Context): Promise<void>
 }

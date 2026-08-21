@@ -34,3 +34,11 @@ export const AdminUpdateProduct = z
   })
   .openapi('AdminUpdateProduct')
 export type AdminUpdateProductBody = z.infer<typeof AdminUpdateProduct>
+
+export const AdminBatchImageVariant = z
+  .object({
+    add: z.array(z.string()).optional(),
+    remove: z.array(z.string()).optional(),
+  })
+  .openapi('AdminBatchImageVariant')
+export type AdminBatchImageVariantBody = z.infer<typeof AdminBatchImageVariant>

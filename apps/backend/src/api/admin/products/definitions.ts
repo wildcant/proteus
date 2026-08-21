@@ -1,6 +1,7 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { searchable, Tags } from '@framework/http/types.js'
 import type { ProductDTO, ProductVariantDTO } from '../../../core/types/product/common.js'
+import * as imageVariantBatchRoutes from './[id]/images/[imageId]/variants/batch/route.js'
 import * as productOptionRoutes from './[id]/options/route.js'
 import * as productByIdRoutes from './[id]/route.js'
 import * as variantPricesRoutes from './[id]/variants/[variantId]/prices/route.js'
@@ -140,5 +141,15 @@ export default [
     summary: 'Delete a product variant',
     tags: [Tags.PRODUCT_VARIANTS],
     output: variantByIdRoutes.DeleteOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/products/:id/images/:imageId/variants/batch',
+    handler: imageVariantBatchRoutes.POST,
+    input: imageVariantBatchRoutes.PostInput,
+    operationId: 'batchImageVariants',
+    summary: 'Add or remove variants for a product image',
+    tags: [Tags.PRODUCTS],
+    output: imageVariantBatchRoutes.PostOutput,
   },
 ] satisfies RouteDefinition[]

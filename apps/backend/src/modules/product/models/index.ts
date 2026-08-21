@@ -12,3 +12,5 @@ export type { CreateProductProductOptionValue, ProductProductOptionValue } from 
 export { productProductOptionValueTable } from './product-product-option-value.js'
 export type { CreateProductVariant, ProductVariant } from './product-variant.js'
 export { productVariantTable } from './product-variant.js'
+export type { CreateProductVariantImage, ProductVariantImage } from './product-variant-image.js'
+export { productVariantImageTable } from './product-variant-image.js'

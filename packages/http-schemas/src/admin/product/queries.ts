@@ -9,3 +9,6 @@ export const AdminProductListParams = createFindParams().extend({
 })
 
 export type AdminProductListQuery = FindParams<typeof AdminProductListParams>
+
+export const ImageIdParams = z.object({ id: z.string().min(1), imageId: z.string().min(1) })
+export type ImageIdParams = z.infer<typeof ImageIdParams>

@@ -5,6 +5,8 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AdminBatchImageVariant,
+  AdminBatchImageVariantResponse,
   AdminCreateProduct,
   AdminCreateProductResponse,
   AdminProductListResponse,
@@ -81,8 +83,24 @@ export const deleteProduct = (
     },
       );
     }
+  /**
+ * @summary Add or remove variants for a product image
+ */
+export const batchImageVariants = (
+    id: string,
+    imageId: string,
+    adminBatchImageVariant?: BodyType<AdminBatchImageVariant>,
+ ) => {
+      return fetcher<AdminBatchImageVariantResponse>(
+      {url: `/admin/products/${id}/images/${imageId}/variants/batch`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminBatchImageVariant
+    },
+      );
+    }
   export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
 export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
 export type GetProductResult = NonNullable<Awaited<ReturnType<typeof getProduct>>>
 export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
 export type DeleteProductResult = NonNullable<Awaited<ReturnType<typeof deleteProduct>>>
+export type BatchImageVariantsResult = NonNullable<Awaited<ReturnType<typeof batchImageVariants>>>

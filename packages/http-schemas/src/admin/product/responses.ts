@@ -21,3 +21,8 @@ export const AdminProductListResponse = PaginatedResponse.extend({
   products: z.array(AdminProduct),
 }).openapi('AdminProductListResponse')
 export type AdminProductListResponse = z.input<typeof AdminProductListResponse>
+
+export const AdminBatchImageVariantResponse = z
+  .object({ added: z.array(z.string()), removed: z.array(z.string()) })
+  .openapi('AdminBatchImageVariantResponse')
+export type AdminBatchImageVariantResponse = z.input<typeof AdminBatchImageVariantResponse>

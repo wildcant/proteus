@@ -11,6 +11,7 @@ export const productVariantTable = pgTable(
       .notNull()
       .references(() => productTable.id, { onDelete: 'cascade' }),
     title: text().notNull(),
+    thumbnail: text(),
     sku: text(),
     barcode: text(),
     ean: text(),

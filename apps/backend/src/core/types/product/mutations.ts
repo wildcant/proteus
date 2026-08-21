@@ -56,6 +56,7 @@ export type UpdateProductDTO = {
 export type CreateProductVariantDTO = {
   productId: string
   title: string
+  thumbnail?: string | null
   sku?: string | null
   barcode?: string | null
   ean?: string | null
@@ -76,6 +77,7 @@ export type CreateProductVariantDTO = {
 
 export type UpdateProductVariantDTO = {
   title?: string
+  thumbnail?: string | null
   sku?: string | null
   barcode?: string | null
   ean?: string | null
@@ -136,4 +138,9 @@ export type UpdateProductImageDTO = {
   url?: string
   rank?: number
   metadata?: string | null
+}
+
+export type VariantImageInput = {
+  imageId: string
+  variantId: string
 }

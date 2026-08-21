@@ -7,6 +7,8 @@
 
 export * from './acceptInviteBody.ts';
 export * from './adminAcceptInviteResponse.ts';
+export * from './adminBatchImageVariant.ts';
+export * from './adminBatchImageVariantResponse.ts';
 export * from './adminCapture.ts';
 export * from './adminCaptureMetadata.ts';
 export * from './adminCapturePayment.ts';

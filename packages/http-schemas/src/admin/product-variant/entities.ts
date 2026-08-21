@@ -17,6 +17,7 @@ export const AdminProductVariant = z
     id: z.string(),
     productId: z.string(),
     title: z.string(),
+    thumbnail: z.string().nullable(),
     sku: z.string().nullable(),
     barcode: z.string().nullable(),
     ean: z.string().nullable(),
