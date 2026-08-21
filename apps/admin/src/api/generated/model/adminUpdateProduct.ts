@@ -4,8 +4,12 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminUpdateProductImagesItem } from './adminUpdateProductImagesItem.ts';
 
 export interface AdminUpdateProduct {
+  images?: AdminUpdateProductImagesItem[];
+  /** @nullable */
+  thumbnail?: string | null;
   /** @minLength 1 */
-  title: string;
+  title?: string;
 }

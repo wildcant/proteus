@@ -6,6 +6,7 @@ import type {
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductVariantDTO,
+  FilterableProductImageProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
@@ -22,6 +23,7 @@ import type {
   UpdateProductDTO,
   UpdateProductOptionDTO,
   UpdateProductVariantDTO,
+  UpsertProductImageInput,
   UpsertProductVariantDTO,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
@@ -104,30 +106,70 @@ export class ProductModuleService implements IProductModuleService {
 
   async createProducts(data: CreateProductDTO[], context?: Context): Promise<ProductDTO[]> {
     this.logger.debug(`Creating ${data.length} product(s)`)
-    const withHandles = data.map((d) => ({
-      ...d,
-      handle: d.handle ?? toHandle(d.title),
-    }))
     return this.withTransaction(context, async (ctx) => {
-      return this.productRepository.createMany(withHandles, ctx)
+      const products = await this.productRepository.createMany(
+        data.map(({ images, ...product }) => ({
+          ...product,
+          handle: product.handle ?? toHandle(product.title),
+          thumbnail: this.resolveThumbnail(product, images),
+        })),
+        ctx,
+      )
+
+      await Promise.all(
+        products.map((product, index) => {
+          const images = data[index]?.images
+          return images ? this.replaceProductImages(product.id, images, ctx) : Promise.resolve()
+        }),
+      )
+
+      return products
     })
   }
 
   async updateProducts(productIds: string[], data: UpdateProductDTO, context?: Context): Promise<ProductDTO[]> {
+    const { images, ...productData } = data
     return this.withTransaction(context, async (ctx) => {
-      return this.productRepository.updateMany(productIds, data, ctx)
+      const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
+      const products = Object.values(changes).some((value) => value !== undefined)
+        ? await this.productRepository.updateMany(productIds, changes, ctx)
+        : await this.productRepository.find({ id: productIds }, undefined, ctx)
+
+      if (images) {
+        await Promise.all(productIds.map((productId) => this.replaceProductImages(productId, images, ctx)))
+      }
+
+      return products
     })
   }
 
   async createProduct(data: CreateProductDTO, context?: Context): Promise<ProductDTO> {
     return this.withTransaction(context, async (ctx) => {
-      return this.productRepository.create({ ...data, handle: data.handle ?? toHandle(data.title) }, ctx)
+      const { images, ...product } = data
+      const created = await this.productRepository.create(
+        {
+          ...product,
+          handle: product.handle ?? toHandle(product.title),
+          thumbnail: this.resolveThumbnail(product, images),
+        },
+        ctx,
+      )
+      if (images) await this.replaceProductImages(created.id, images, ctx)
+      return created
     })
   }
 
   async updateProduct(productId: string, data: UpdateProductDTO, context?: Context): Promise<ProductDTO> {
+    const { images, ...productData } = data
     return this.withTransaction(context, async (ctx) => {
-      return this.productRepository.update(productId, data, ctx)
+      const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
+      const product = Object.values(changes).some((value) => value !== undefined)
+        ? await this.productRepository.update(productId, changes, ctx)
+        : await this.productRepository.findByIdOrFail(productId, undefined, ctx)
+
+      if (images) await this.replaceProductImages(productId, images, ctx)
+
+      return product
     })
   }
 
@@ -456,6 +498,14 @@ export class ProductModuleService implements IProductModuleService {
 
   // ── Images ────────────────────────────────────────────────────────────
 
+  async listProductImages(
+    filters?: FilterableProductImageProps,
+    config?: FindConfig<ProductImageDTO>,
+    context?: Context,
+  ): Promise<ProductImageDTO[]> {
+    return this.productImageRepository.find(filters, config, context)
+  }
+
   async createProductImages(data: CreateProductImageDTO[], context?: Context): Promise<ProductImageDTO[]> {
     this.logger.debug(`Creating ${data.length} product image(s)`)
     return this.withTransaction(context, async (ctx) => {
@@ -470,6 +520,52 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
+
+  /**
+   * A product's thumbnail defaults to its first image so the admin never has to pick one
+   * explicitly. Only applies when the caller sends an `images` collection.
+   */
+  private resolveThumbnail(
+    data: { thumbnail?: string | null },
+    images: UpsertProductImageInput[] | undefined,
+  ): string | null | undefined {
+    if (!images) return data.thumbnail
+    return data.thumbnail ?? images[0]?.url ?? null
+  }
+
+  /**
+   * Collection replacement: entries carrying a known `id` are kept and re-ranked, entries without
+   * one are created, and images the caller left out are soft-deleted. Rank follows array order.
+   */
+  private async replaceProductImages(
+    productId: string,
+    images: UpsertProductImageInput[],
+    context?: Context,
+  ): Promise<void> {
+    const existing = await this.productImageRepository.find({ productId }, undefined, context)
+    const existingIds = new Set(existing.map((image) => image.id))
+
+    const keptIds = new Set<string>()
+    const toCreate: CreateProductImageDTO[] = []
+    const toUpdate: Array<{ id: string; url: string; rank: number }> = []
+
+    images.forEach((image, rank) => {
+      if (!image.id || !existingIds.has(image.id)) {
+        toCreate.push({ productId, url: image.url, rank })
+        return
+      }
+      keptIds.add(image.id)
+      toUpdate.push({ id: image.id, url: image.url, rank })
+    })
+
+    const removedIds = existing.filter((image) => !keptIds.has(image.id)).map((image) => image.id)
+
+    await this.productImageRepository.softDelete(removedIds, context)
+    await Promise.all([
+      this.productImageRepository.createMany(toCreate, context),
+      ...toUpdate.map(({ id, url, rank }) => this.productImageRepository.update(id, { url, rank }, context)),
+    ])
+  }
 
   private async enrichOptionsWithValues(
     options: ProductOptionDTO[],

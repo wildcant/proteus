@@ -29,6 +29,12 @@ npm run check                  # Biome lint + format
 npm run typecheck              # All workspaces
 npm run check:all              # Biome + dependency-cruiser (all apps) + env usage
 
+# Verification gate — run after finishing any implementation task
+npm run verify                 # format, then typecheck + check:all + backend API tests in parallel
+                               # Runs src/api tests only; run the full suite separately before a PR
+npm run verify -- --ci         # CI mode: fails on unformatted files instead of rewriting them
+                               # (implied when the CI env var is set)
+
 # Code generation
 npm run openapi:generate       # Dump OpenAPI spec → regenerate Orval clients (admin + store)
 npm run --workspace=admin openapi:client    # Admin Orval client only

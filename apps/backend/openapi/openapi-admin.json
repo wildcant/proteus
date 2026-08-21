@@ -1956,6 +1956,19 @@
           "hsCode": {
             "type": "string"
           },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": ["url"]
+            }
+          },
           "length": {
             "type": ["number", "null"]
           },
@@ -1974,6 +1987,9 @@
           },
           "subtitle": {
             "type": "string"
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
           },
           "title": {
             "type": "string",
@@ -2004,6 +2020,12 @@
                     "items": {
                       "$ref": "#/components/schemas/AdminProductOption"
                     }
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminProductImage"
+                    }
                   }
                 }
               }
@@ -2011,6 +2033,21 @@
           }
         },
         "required": ["product"]
+      },
+      "AdminProductImage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "url", "rank"]
       },
       "AdminUpdateProductResponse": {
         "type": "object",
@@ -2024,12 +2061,30 @@
       "AdminUpdateProduct": {
         "type": "object",
         "properties": {
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": ["url"]
+            }
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
+          },
           "title": {
             "type": "string",
             "minLength": 1
           }
-        },
-        "required": ["title"]
+        }
       },
       "AdminSetProductOptionsResponse": {
         "type": "object",

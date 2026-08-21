@@ -11,7 +11,7 @@ export function useEditProductForm(product: AdminProduct, params?: EditProductFo
 
   const form = useAppForm({
     defaultValues: { title: product.title },
-    validators: { onSubmit: AdminUpdateProduct },
+    validators: { onSubmit: AdminUpdateProduct.required({ title: true }) },
     onSubmit: ({ value }) => {
       updateMutation.mutate(value, {
         onSuccess: (data) => {

@@ -13,6 +13,7 @@
     "deploy": "wrangler deploy --config wrangler.jsonc",
     "start": "dotenvx run -f ../../.env -- tsx src/index.ts",
     "test": "dotenvx run -f ../../.env.test -- vitest run",
+    "test:api": "dotenvx run -f ../../.env.test -- vitest run src/api",
     "db:test:up": "docker compose -f docker-compose.test.yml up -d --wait",
     "db:test:down": "docker compose -f docker-compose.test.yml down",
     "typecheck": "tsc --noEmit",

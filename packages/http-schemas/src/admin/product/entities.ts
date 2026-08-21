@@ -3,6 +3,15 @@ import { timestamps } from '../../common.js'
 
 export const ProductStatus = z.enum(['draft', 'proposed', 'published', 'rejected'])
 
+export const AdminProductImage = z
+  .object({
+    id: z.string(),
+    url: z.string(),
+    rank: z.number(),
+  })
+  .openapi('AdminProductImage')
+export type AdminProductImage = z.input<typeof AdminProductImage>
+
 export const AdminProduct = z
   .object({
     id: z.string(),

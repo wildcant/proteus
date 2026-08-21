@@ -5,8 +5,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AdminProduct } from './adminProduct.ts';
+import type { AdminProductImage } from './adminProductImage.ts';
 import type { AdminProductOption } from './adminProductOption.ts';
 
 export type AdminProductResponseProduct = AdminProduct & {
   options?: AdminProductOption[];
+  images?: AdminProductImage[];
 };

@@ -1,6 +1,7 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
+  FilterableProductImageProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
@@ -117,6 +118,11 @@ export type IProductModuleService = {
   ): Promise<[ProductDTO[], number]>
 
   // Images
+  listProductImages(
+    filters?: FilterableProductImageProps,
+    config?: FindConfig<ProductImageDTO>,
+    context?: Context,
+  ): Promise<ProductImageDTO[]>
   createProductImages(data: CreateProductImageDTO[], context?: Context): Promise<ProductImageDTO[]>
   createProductImage(data: CreateProductImageDTO, context?: Context): Promise<ProductImageDTO>
 }
