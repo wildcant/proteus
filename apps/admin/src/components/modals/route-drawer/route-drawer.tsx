@@ -17,6 +17,8 @@ import { RouteModalProvider } from '../route-modal-provider/route-provider'
 
 type RouteDrawerProps = PropsWithChildren<{
   prev?: string | number
+  /** `wide` fits a data table; it still yields to the viewport on small screens. */
+  size?: 'default' | 'wide'
 }>
 
 /**
@@ -29,7 +31,7 @@ type RouteDrawerProps = PropsWithChildren<{
  * Compound API: `.Header`, `.Title`, `.Description`, `.Body`, `.Footer`,
  * `.Close`, `.Form` (unsaved-changes guard).
  */
-export function RouteDrawer({ prev = '..', children }: RouteDrawerProps) {
+export function RouteDrawer({ prev = '..', size = 'default', children }: RouteDrawerProps) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
 
@@ -56,7 +58,12 @@ export function RouteDrawer({ prev = '..', children }: RouteDrawerProps) {
       <RouteModalProvider prev={prev}>
         <DrawerContent
           className="shadow-lg data-[swipe-direction=right]:rounded-lg data-[swipe-direction=right]:border"
-          style={{ '--drawer-inset': '8px', '--drawer-content-width': '560px' } as React.CSSProperties}
+          style={
+            {
+              '--drawer-inset': '8px',
+              '--drawer-content-width': size === 'wide' ? 'min(720px, calc(100dvw - 16px))' : '560px',
+            } as React.CSSProperties
+          }
         >
           {children}
         </DrawerContent>

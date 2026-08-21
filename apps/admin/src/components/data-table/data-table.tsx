@@ -1,6 +1,11 @@
 import { Button, cn } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
-import { getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import {
+  getCoreRowModel,
+  type RowSelectionState as TanStackRowSelectionState,
+  type Updater,
+  useReactTable,
+} from '@tanstack/react-table'
 import { useEffect, useMemo, useRef } from 'react'
 import { DataTableUi } from './data-table-ui/data-table-ui'
 import { FilterBar } from './data-table-ui/filter-bar'
@@ -30,7 +35,7 @@ type DataTableProps<T> = {
 }
 
 export function DataTable<T>({ use, heading, actions, className }: DataTableProps<T>) {
-  const { config, columns, filterDefs } = use
+  const { config, columns, filterDefs, rowSelection } = use
 
   const urlState = useUrlState({
     prefix: config.prefix,
@@ -81,7 +86,7 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
     containerRef.current?.scrollTo({ top: 0, left: 0 })
   }, [pagination.currentPage])
 
-  const tanstackColumns = useColumns(columns, config.rowActions)
+  const tanstackColumns = useColumns(columns, config.rowActions, !!rowSelection)
 
   const table = useReactTable({
     data,
@@ -91,6 +96,14 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
     manualSorting: true,
     manualFiltering: true,
     getRowId: config.getRowId,
+    // Spread conditionally so tables without selection keep TanStack's own untouched state.
+    ...(rowSelection && {
+      enableRowSelection: true,
+      state: { rowSelection: rowSelection.value },
+      // Resolve TanStack's updater here so consumers only ever see a plain record.
+      onRowSelectionChange: (updater: Updater<TanStackRowSelectionState>) =>
+        rowSelection.onChange(typeof updater === 'function' ? updater(rowSelection.value) : updater),
+    }),
   })
 
   const hasSecondRow = (actions && actions.length > 0) || filterDefs.length > 0

@@ -2467,6 +2467,18 @@
         },
         "required": ["prices"]
       },
+      "AdminImageVariantsResponse": {
+        "type": "object",
+        "properties": {
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductVariant"
+            }
+          }
+        },
+        "required": ["variants"]
+      },
       "AdminBatchImageVariantResponse": {
         "type": "object",
         "properties": {
@@ -6264,6 +6276,51 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminUpdateVariantPricesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/products/{id}/images/{imageId}/variants": {
+      "get": {
+        "operationId": "listImageVariants",
+        "summary": "List the variants a product image is assigned to",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "imageId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminImageVariantsResponse"
                 }
               }
             }

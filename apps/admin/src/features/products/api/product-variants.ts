@@ -2,6 +2,8 @@ import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
+  AdminBatchImageVariant,
+  AdminBatchImageVariantResponse,
   AdminBatchVariantImages,
   AdminBatchVariantImagesResponse,
   AdminCreateProductVariant,
@@ -22,11 +24,21 @@ import {
   updateProductVariant,
   updateVariantPrices,
 } from '#/api/generated/product-variants/product-variants'
+import { batchImageVariants, listImageVariants } from '#/api/generated/products/products'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const variantKeys = queryKeysFactory<'product-variants', ListProductVariantsParams & { productId: string }>(
   'product-variants',
 )
+
+// Keyed by product + image, since an image's variant links are scoped to both.
+const imageVariantKeys = queryKeysFactory<'image-variants'>('image-variants')
+
+export const imageVariantsQueryOptions = (productId: string, imageId: string) =>
+  queryOptions({
+    queryKey: imageVariantKeys.detail(`${productId}:${imageId}`),
+    queryFn: () => listImageVariants(productId, imageId),
+  })
 
 export const productVariantsListQueryOptions = (productId: string, params?: ListProductVariantsParams) =>
   queryOptions({
@@ -154,6 +166,35 @@ export const useBatchVariantImages = (
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: 'Failed to update variant images', description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+/**
+ * Links and unlinks variants for one product image.
+ *
+ * The workflow clears a variant's thumbnail when it loses the image that thumbnail pointed at,
+ * so the variant caches go stale alongside the product's.
+ */
+export const useBatchImageVariants = (
+  productId: string,
+  imageId: string,
+  options?: UseMutationOptions<AdminBatchImageVariantResponse, Error, AdminBatchImageVariant>,
+) => {
+  const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
+    mutationFn: (data: AdminBatchImageVariant) => batchImageVariants(productId, imageId, data),
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: imageVariantKeys.detail(`${productId}:${imageId}`) })
+      queryClient.invalidateQueries({ queryKey: variantKeys.all })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update image variants', description: error.message })
       onError?.(...args)
     },
   })

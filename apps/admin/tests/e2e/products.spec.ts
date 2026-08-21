@@ -218,3 +218,69 @@ test('variant media section assigns product images to a variant', async ({
 
   await expect(mediaSection.getByText('No media')).toBeVisible({ timeout: 10000 })
 })
+
+test('manage the variants associated with a product image', async ({ page, authenticate, navigate, factories }) => {
+  await using product = await factories.create.product({ status: 'published', thumbnail: null })
+  await using first = await factories.create.productVariant({ productId: product.id, title: 'Small' })
+  await using second = await factories.create.productVariant({ productId: product.id, title: 'Large' })
+  await authenticate({ as: 'admin' })
+
+  await navigate({ to: '/products/$id/media', params: { id: product.id } })
+  const mediaModal = page.getByRole('dialog').last()
+  await mediaModal.locator('input[type="file"]').setInputFiles([imageFile('one.png'), imageFile('two.png')])
+  await mediaModal.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Media updated successfully')).toBeVisible({ timeout: 10000 })
+
+  const mediaSection = page.locator('[data-slot="card"]').filter({ has: page.getByText('Media', { exact: true }) })
+  const tiles = mediaSection.locator('[data-slot="media-tile"]')
+  const manageCommand = page.locator('[data-slot="command-bar-command"]', { hasText: 'Manage associated variants' })
+
+  // The command acts on a single image, so it only offers itself for one selection
+  await tiles.first().hover()
+  await tiles.first().getByRole('checkbox', { name: 'Select image' }).click()
+  await expect(manageCommand).toBeVisible()
+  await tiles.nth(1).hover()
+  await tiles.nth(1).getByRole('checkbox', { name: 'Select image' }).click()
+  await expect(manageCommand).toHaveCount(0)
+  await tiles.nth(1).getByRole('checkbox', { name: 'Select image' }).click()
+
+  // Reached by its keyboard shortcut rather than a click
+  await page.keyboard.press('m')
+  const drawer = page.getByRole('dialog').last()
+  await expect(drawer.getByText('Manage associated variants for the image')).toBeVisible()
+
+  // Cancelling returns to the product detail, not to the intermediate image segment
+  await drawer.getByRole('button', { name: 'Cancel' }).click()
+  await expect(page).toHaveURL(new RegExp(`/products/${product.id}$`))
+  await manageCommand.click()
+
+  await drawer.getByRole('row', { name: /Small/ }).getByRole('checkbox', { name: 'Select row' }).click()
+  await expect(drawer.getByText('1 selected')).toBeVisible()
+  await drawer.getByRole('row', { name: /Large/ }).getByRole('checkbox', { name: 'Select row' }).click()
+  await drawer.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Image variants updated successfully')).toBeVisible({ timeout: 10000 })
+
+  // Reopening from a fresh page load reflects what was saved, exercising the new read endpoint
+  await navigate({ to: '/products/$id', params: { id: product.id } })
+  await tiles.first().hover()
+  await tiles.first().getByRole('checkbox', { name: 'Select image' }).click()
+  await manageCommand.click()
+  const reopened = page.getByRole('dialog').last()
+  await expect(reopened.getByText('2 selected')).toBeVisible()
+
+  // Unchecking one round-trips through `remove`
+  await reopened.getByRole('row', { name: /Small/ }).getByRole('checkbox', { name: 'Select row' }).click()
+  await expect(reopened.getByText('1 selected')).toBeVisible()
+  await reopened.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Image variants updated successfully')).toBeVisible({ timeout: 10000 })
+
+  await navigate({
+    to: '/products/$id/variants/$variantId',
+    params: { id: product.id, variantId: second.id },
+  })
+  const variantMedia = page.locator('[data-slot="card"]').filter({ has: page.getByText('Media', { exact: true }) })
+  await expect(variantMedia.getByRole('img', { name: `${second.title} media` })).toHaveCount(1)
+
+  await navigate({ to: '/products/$id/variants/$variantId', params: { id: product.id, variantId: first.id } })
+  await expect(page.getByText('No media')).toBeVisible()
+})

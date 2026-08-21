@@ -549,6 +549,18 @@ export class ProductModuleService implements IProductModuleService {
     )
   }
 
+  /** Resolves the variants an image is assigned to through the variant-image pivot. */
+  async listVariantsForImage(imageId: string, context?: Context): Promise<ProductVariantDTO[]> {
+    const pivots = await this.productVariantImageRepository.find({ imageId }, undefined, context)
+    if (pivots.length === 0) return []
+
+    return this.productVariantRepository.find(
+      { id: pivots.map((pivot) => pivot.variantId) },
+      { order: { variantRank: 'ASC' } },
+      context,
+    )
+  }
+
   async addImageToVariant(data: VariantImageInput[], context?: Context): Promise<{ id: string }[]> {
     this.logger.debug(`Linking ${data.length} image(s) to variant(s)`)
     return this.withTransaction(context, async (ctx) => {

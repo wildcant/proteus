@@ -44,6 +44,7 @@ import { Route as AuthedShellProductsIdDetailOptionsRouteImport } from './routes
 import { Route as AuthedShellProductsIdVariantsVariantIdRouteRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/route'
 import { Route as AuthedShellProductsIdVariantsVariantIdMediaRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/media'
 import { Route as AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/prices/route'
+import { Route as AuthedShellProductsIdDetailImagesImageIdVariantsRouteImport } from './routes/_authed/_shell/products/$id/_detail/images/$imageId/variants'
 
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
@@ -238,6 +239,12 @@ const AuthedShellProductsIdVariantsVariantIdPricesRouteRoute =
     path: '/prices',
     getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
   } as any)
+const AuthedShellProductsIdDetailImagesImageIdVariantsRoute =
+  AuthedShellProductsIdDetailImagesImageIdVariantsRouteImport.update({
+    id: '/images/$imageId/variants',
+    path: '/images/$imageId/variants',
+    getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthedShellIndexRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/products/$id/': typeof AuthedShellProductsIdDetailIndexRoute
   '/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
   '/products/$id/variants/$variantId/media': typeof AuthedShellProductsIdVariantsVariantIdMediaRoute
+  '/products/$id/images/$imageId/variants': typeof AuthedShellProductsIdDetailImagesImageIdVariantsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthedShellIndexRoute
@@ -294,6 +302,7 @@ export interface FileRoutesByTo {
   '/products/$id/options': typeof AuthedShellProductsIdDetailOptionsRoute
   '/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
   '/products/$id/variants/$variantId/media': typeof AuthedShellProductsIdVariantsVariantIdMediaRoute
+  '/products/$id/images/$imageId/variants': typeof AuthedShellProductsIdDetailImagesImageIdVariantsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -332,6 +341,7 @@ export interface FileRoutesById {
   '/_authed/_shell/products/$id/_detail/': typeof AuthedShellProductsIdDetailIndexRoute
   '/_authed/_shell/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
   '/_authed/_shell/products/$id/variants/$variantId/media': typeof AuthedShellProductsIdVariantsVariantIdMediaRoute
+  '/_authed/_shell/products/$id/_detail/images/$imageId/variants': typeof AuthedShellProductsIdDetailImagesImageIdVariantsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -365,6 +375,7 @@ export interface FileRouteTypes {
     | '/products/$id/'
     | '/products/$id/variants/$variantId/prices'
     | '/products/$id/variants/$variantId/media'
+    | '/products/$id/images/$imageId/variants'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/products/$id/options'
     | '/products/$id/variants/$variantId/prices'
     | '/products/$id/variants/$variantId/media'
+    | '/products/$id/images/$imageId/variants'
   id:
     | '__root__'
     | '/_authed'
@@ -427,6 +439,7 @@ export interface FileRouteTypes {
     | '/_authed/_shell/products/$id/_detail/'
     | '/_authed/_shell/products/$id/variants/$variantId/prices'
     | '/_authed/_shell/products/$id/variants/$variantId/media'
+    | '/_authed/_shell/products/$id/_detail/images/$imageId/variants'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -681,6 +694,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport
       parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
     }
+    '/_authed/_shell/products/$id/_detail/images/$imageId/variants': {
+      id: '/_authed/_shell/products/$id/_detail/images/$imageId/variants'
+      path: '/images/$imageId/variants'
+      fullPath: '/products/$id/images/$imageId/variants'
+      preLoaderRoute: typeof AuthedShellProductsIdDetailImagesImageIdVariantsRouteImport
+      parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
+    }
   }
 }
 
@@ -786,6 +806,7 @@ interface AuthedShellProductsIdDetailRouteRouteChildren {
   AuthedShellProductsIdDetailMediaRoute: typeof AuthedShellProductsIdDetailMediaRoute
   AuthedShellProductsIdDetailOptionsRoute: typeof AuthedShellProductsIdDetailOptionsRoute
   AuthedShellProductsIdDetailIndexRoute: typeof AuthedShellProductsIdDetailIndexRoute
+  AuthedShellProductsIdDetailImagesImageIdVariantsRoute: typeof AuthedShellProductsIdDetailImagesImageIdVariantsRoute
 }
 
 const AuthedShellProductsIdDetailRouteRouteChildren: AuthedShellProductsIdDetailRouteRouteChildren =
@@ -797,6 +818,8 @@ const AuthedShellProductsIdDetailRouteRouteChildren: AuthedShellProductsIdDetail
       AuthedShellProductsIdDetailOptionsRoute,
     AuthedShellProductsIdDetailIndexRoute:
       AuthedShellProductsIdDetailIndexRoute,
+    AuthedShellProductsIdDetailImagesImageIdVariantsRoute:
+      AuthedShellProductsIdDetailImagesImageIdVariantsRoute,
   }
 
 const AuthedShellProductsIdDetailRouteRouteWithChildren =

@@ -136,6 +136,7 @@ export type IProductModuleService = {
     context?: Context,
   ): Promise<ProductVariantImageDTO[]>
   listImagesForVariant(variantId: string, context?: Context): Promise<ProductImageDTO[]>
+  listVariantsForImage(imageId: string, context?: Context): Promise<ProductVariantDTO[]>
   addImageToVariant(data: VariantImageInput[], context?: Context): Promise<{ id: string }[]>
   removeImageFromVariant(data: VariantImageInput[], context?: Context): Promise<void>
 }

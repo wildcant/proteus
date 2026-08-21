@@ -9,6 +9,7 @@ import type {
   AdminBatchImageVariantResponse,
   AdminCreateProduct,
   AdminCreateProductResponse,
+  AdminImageVariantsResponse,
   AdminProductListResponse,
   AdminProductResponse,
   AdminUpdateProduct,
@@ -84,6 +85,18 @@ export const deleteProduct = (
       );
     }
   /**
+ * @summary List the variants a product image is assigned to
+ */
+export const listImageVariants = (
+    id: string,
+    imageId: string,
+ ) => {
+      return fetcher<AdminImageVariantsResponse>(
+      {url: `/admin/products/${id}/images/${imageId}/variants`, method: 'GET'
+    },
+      );
+    }
+  /**
  * @summary Add or remove variants for a product image
  */
 export const batchImageVariants = (
@@ -103,4 +116,5 @@ export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createPr
 export type GetProductResult = NonNullable<Awaited<ReturnType<typeof getProduct>>>
 export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
 export type DeleteProductResult = NonNullable<Awaited<ReturnType<typeof deleteProduct>>>
+export type ListImageVariantsResult = NonNullable<Awaited<ReturnType<typeof listImageVariants>>>
 export type BatchImageVariantsResult = NonNullable<Awaited<ReturnType<typeof batchImageVariants>>>

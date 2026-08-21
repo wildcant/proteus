@@ -145,6 +145,13 @@ export type DataResult<T> = {
 // Table config & definition
 // ---------------------------------------------------------------------------
 
+/** Controlled row selection, keyed by `TableConfig.getRowId`. State is owned by the consumer so
+ * it survives pagination and search — the table only ever holds one page of server data. */
+export type RowSelection = {
+  value: Record<string, boolean>
+  onChange: (next: Record<string, boolean>) => void
+}
+
 export type TableConfig<T> = {
   useData: (params: DataParams) => DataResult<T>
   columns: (col: ColumnHelper<T>) => ColumnDef<T>[]
@@ -152,7 +159,9 @@ export type TableConfig<T> = {
   prefix?: string
   pageSize?: number
   paramMap?: Record<string, string>
-  getRowId?: (row: T) => string
+  getRowId: (row: T) => string
+  /** Opt-in checkbox column, keyed by `getRowId`. */
+  rowSelection?: () => RowSelection
   rowHref?: (row: T) => string
   rowActions?: (row: T) => ReactNode
   empty?: { heading: string; description?: string }
@@ -165,6 +174,7 @@ export type TableDefinition<T> = {
   config: TableConfig<T>
   columns: ColumnDef<T>[]
   filterDefs: FilterDef[]
+  rowSelection?: RowSelection
 }
 
 // ---------------------------------------------------------------------------

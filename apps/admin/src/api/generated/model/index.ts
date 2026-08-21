@@ -66,6 +66,7 @@ export * from './adminFulfillmentSetDetailResponseFulfillmentSet.ts';
 export * from './adminFulfillmentSetListResponse.ts';
 export * from './adminGeoZone.ts';
 export * from './adminGeoZoneType.ts';
+export * from './adminImageVariantsResponse.ts';
 export * from './adminInvite.ts';
 export * from './adminInviteListResponse.ts';
 export * from './adminInviteResponse.ts';

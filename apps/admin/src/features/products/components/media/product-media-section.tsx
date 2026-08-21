@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ImageIcon, PencilIcon, StarIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { AdminProductResponseProduct } from '#/api/generated/model'
@@ -24,12 +24,17 @@ import { getProductMedia } from '#/features/products/media.ts'
 import { usePrompt } from '#/hooks/use-prompt.tsx'
 
 export function ProductMediaSection({ product }: { product: AdminProductResponseProduct }) {
+  const navigate = useNavigate()
   const prompt = usePrompt()
   const [selection, setSelection] = useState<Record<string, boolean>>({})
   const { mutateAsync: updateProduct } = useUpdateProduct(product.id)
 
   const media = getProductMedia(product)
   const selectedKeys = Object.keys(selection)
+
+  // A thumbnail that is not part of the images collection has no image row to link variants to,
+  // so it carries no `id` and the command stays hidden for it.
+  const selectedImageId = selectedKeys.length === 1 ? media.find((item) => item.key === selectedKeys[0])?.id : undefined
 
   const toggleSelected = (key: string) => {
     setSelection((prev) => {
@@ -136,6 +141,21 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
       <CommandBar open={selectedKeys.length > 0}>
         <CommandBarValue>{selectedKeys.length} selected</CommandBarValue>
         <CommandBarSeparator />
+        {!!selectedImageId && (
+          <>
+            <CommandBarCommand
+              action={() =>
+                navigate({
+                  to: '/products/$id/images/$imageId/variants',
+                  params: { id: product.id, imageId: selectedImageId },
+                })
+              }
+              label="Manage associated variants"
+              shortcut="m"
+            />
+            <CommandBarSeparator />
+          </>
+        )}
         <CommandBarCommand action={handleDelete} label="Delete" shortcut="d" />
       </CommandBar>
     </Card>

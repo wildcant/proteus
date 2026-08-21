@@ -2,6 +2,7 @@ import type { RouteDefinition } from '@framework/http/types.js'
 import { searchable, Tags } from '@framework/http/types.js'
 import type { ProductDTO, ProductVariantDTO } from '../../../core/types/product/common.js'
 import * as imageVariantBatchRoutes from './[id]/images/[imageId]/variants/batch/route.js'
+import * as imageVariantRoutes from './[id]/images/[imageId]/variants/route.js'
 import * as productOptionRoutes from './[id]/options/route.js'
 import * as productByIdRoutes from './[id]/route.js'
 import * as variantImageBatchRoutes from './[id]/variants/[variantId]/images/batch/route.js'
@@ -142,6 +143,16 @@ export default [
     summary: 'Delete a product variant',
     tags: [Tags.PRODUCT_VARIANTS],
     output: variantByIdRoutes.DeleteOutput,
+  },
+  {
+    method: 'GET',
+    matcher: '/admin/products/:id/images/:imageId/variants',
+    handler: imageVariantRoutes.GET,
+    input: imageVariantRoutes.GetInput,
+    operationId: 'listImageVariants',
+    summary: 'List the variants a product image is assigned to',
+    tags: [Tags.PRODUCTS],
+    output: imageVariantRoutes.GetOutput,
   },
   {
     method: 'POST',

@@ -8,6 +8,7 @@ import { makeRequest } from '@tests/utils/make-request.js'
 import type { AwilixContainer } from 'awilix'
 import { bootstrapContainer } from '../../../../container.js'
 import type * as imageVariantBatchRoutes from '../[id]/images/[imageId]/variants/batch/route.js'
+import type * as imageVariantRoutes from '../[id]/images/[imageId]/variants/route.js'
 import type * as productByIdRoutes from '../[id]/route.js'
 import type * as variantImageBatchRoutes from '../[id]/variants/[variantId]/images/batch/route.js'
 import type * as variantByIdRoutes from '../[id]/variants/[variantId]/route.js'
@@ -307,5 +308,66 @@ test.describe('GET /admin/products/:id/variants/:variantId', () => {
       'https://cdn.test/a.png',
       'https://cdn.test/b.png',
     ])
+  })
+})
+
+test.describe('GET /admin/products/:id/images/:imageId/variants', () => {
+  const matcher = '/admin/products/:id/images/:imageId/variants'
+
+  const createProductWithTwoImages = async (dto: { createProduct: () => CreateProductDTO }) => {
+    const product = await productService.createProduct({
+      ...dto.createProduct(),
+      images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
+    })
+    const [imageA, imageB] = await productService.listProductImages(
+      { productId: product.id },
+      { order: { rank: 'ASC' } },
+    )
+    const [linked, unlinked] = await productService.createProductVariants([
+      { productId: product.id, title: 'Small' },
+      { productId: product.id, title: 'Large' },
+    ])
+    if (!imageA || !imageB || !linked || !unlinked) throw new Error('Expected two images and two variants to exist')
+
+    return { product, imageA, imageB, linked, unlinked }
+  }
+
+  test('returns only the variants the image is assigned to', async ({ expect, dto }) => {
+    const { product, imageA, linked } = await createProductWithTwoImages(dto.generate)
+    await productService.addImageToVariant([{ imageId: imageA.id, variantId: linked.id }])
+    const handler = applyMiddleware(findDefinition('GET', matcher))
+
+    const response = await handler<typeof imageVariantRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: product.id, imageId: imageA.id } }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.json.variants.map((variant) => variant.id)).toEqual([linked.id])
+  })
+
+  test('returns an empty list for an image no variant uses', async ({ expect, dto }) => {
+    const { product, imageA } = await createProductWithTwoImages(dto.generate)
+    const handler = applyMiddleware(findDefinition('GET', matcher))
+
+    const response = await handler<typeof imageVariantRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: product.id, imageId: imageA.id } }),
+    )
+
+    expect(response.json.variants).toEqual([])
+  })
+
+  test('ignores variants linked to a different image', async ({ expect, dto }) => {
+    const { product, imageA, imageB, linked, unlinked } = await createProductWithTwoImages(dto.generate)
+    await productService.addImageToVariant([
+      { imageId: imageA.id, variantId: linked.id },
+      { imageId: imageB.id, variantId: unlinked.id },
+    ])
+    const handler = applyMiddleware(findDefinition('GET', matcher))
+
+    const response = await handler<typeof imageVariantRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: product.id, imageId: imageB.id } }),
+    )
+
+    expect(response.json.variants.map((variant) => variant.id)).toEqual([unlinked.id])
   })
 })
