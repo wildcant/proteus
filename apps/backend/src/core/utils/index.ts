@@ -1,4 +1,5 @@
 export * from '../errors/index.js'
+export { AbstractFileProviderService } from './abstract-file-provider.js'
 export { AbstractFulfillmentProvider } from './abstract-fulfillment-provider.js'
 export { AbstractNotificationProviderService } from './abstract-notification-provider.js'
 export { AbstractPaymentProvider } from './abstract-payment-provider.js'

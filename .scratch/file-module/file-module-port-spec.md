@@ -39,8 +39,12 @@ Multipart file upload support is added to both HTTP adapters (Express and Hono) 
 25. As an admin user, I want to add images during product creation, so that I can set up media before publishing.
 26. As an admin user, I want to see product images on the product detail page, so that I can review the current media.
 27. As a developer, I want the product update endpoint to accept an `images` array, so that the admin can manage product media via the API.
-28. As a developer, I want `setProductImages()` to handle collection replacement (create/keep/delete by comparing the input array to existing images), so that the admin only needs to send the desired final state.
+28. As a developer, I want the product update method to handle image collection replacement inline (create/keep/delete by comparing the input `images` array to existing images), so that the admin only needs to send the desired final state.
 29. As a developer, I want the product's thumbnail to auto-set to the first image URL when no thumbnail is explicitly provided, so that products always have a representative image.
+30. As a developer, I want to associate specific images with specific variants via `addImageToVariant()`, so that variants can have their own image sets.
+31. As a developer, I want to remove image-variant associations via `removeImageFromVariant()`, so that I can manage which images belong to which variants.
+32. As a developer, I want a batch endpoint (`POST /admin/products/:id/images/:imageId/variants/batch`) that adds and removes variant associations in one call, so that the admin can manage variant images efficiently.
+33. As a developer, I want the file module to enforce a configurable `maxFileSize`, so that oversized uploads are rejected at the service level.
 
 ## Implementation Decisions
 
@@ -132,7 +136,7 @@ await bootstrapModule(container, fileModule, { providers: fileProviderDeclaratio
 Both HTTP adapters are extended to parse `multipart/form-data` using the Web standard `Request.formData()` API:
 
 - **Hono adapter:** Check `Content-Type` header before body parsing. If `multipart/form-data`, call `c.req.raw.formData()` (native in workerd) and extract `File` entries. Otherwise, fall through to the existing `c.req.json()` path. This replaces the current unconditional `c.req.json().catch(() => undefined)` with a content-type branch.
-- **Express adapter:** The global `express.json()` middleware consumes the body stream, which prevents later `formData()` parsing. Fix: make `express.json()` conditional -- skip it when `Content-Type` is `multipart/form-data`. Then, for multipart requests, construct a Web `Request` from Express's `req` (passing headers and the unconsumed body stream) and call `.formData()`. Node 18+ supports this via the built-in `undici` global `Request`.
+- **Express adapter:** The global `express.json()` middleware consumes the body stream, which prevents later `formData()` parsing. Fix: change `express.json()` to `express.json({ type: 'application/json' })` so it only activates for JSON content types and leaves the body stream unconsumed for multipart requests. Then, for multipart requests, construct a Web `Request` from Express's `req` (passing headers and the unconsumed body stream) and call `.formData()`. Node 18+ supports this via the built-in `undici` global `Request`.
 - Parsed `File` objects (Web standard type) are placed on `HttpRequest.files?: File[]`. Add the `files` field to the `HttpRequest` type in `server/ports.ts`. Route handlers receive `File` objects regardless of runtime.
 - For multipart requests: `files` is populated, `body` is `undefined`. For JSON requests: `body` is populated, `files` is `undefined`. The two are mutually exclusive based on content type.
 
@@ -160,6 +164,11 @@ Four routes under `/admin/uploads`:
 
 - **`uploadFilesWorkflow`** -- single step wrapping `fileService.createFiles()`. Compensation calls `fileService.deleteFiles(createdIds)` to roll back uploads on workflow failure.
 - **`deleteFilesWorkflow`** -- single step wrapping `fileService.deleteFiles(ids)`. No compensation (deletions are irreversible).
+- **`batchImageVariantsWorkflow`** -- accepts `{ imageId: string, add?: string[], remove?: string[] }` (variant IDs). Parallelizes two steps: `addImageToVariantsStep` (calls `productService.addImageToVariant()`) and `removeImageFromVariantsStep` (calls `productService.removeImageFromVariant()`). After removal, checks if any removed variants had this image URL as their thumbnail -- if so, clears the thumbnail via `updateProductVariants()`. Compensation on `add`: removes the added pivot records. Compensation on `remove`: re-adds the removed pivot records.
+
+### File size limits
+
+The file module enforces a configurable `maxFileSize` (bytes, default 10MB). The `createFiles` method checks `Buffer.byteLength(content, 'base64')` against this limit before delegating to the provider. Requests exceeding the limit are rejected with a clear error. This prevents unbounded uploads via direct API calls regardless of what the admin UI enforces client-side.
 
 ### Dependencies to add
 
@@ -251,14 +260,41 @@ What does NOT exist yet:
 
 ### Backend Changes
 
-#### 1. Product module service — new image methods
+#### 1. Product module service — image handling
 
-Add to `IProductModuleService` and `ProductModuleService`:
+**Inline image handling on create/update (no separate CRUD methods).** Following Medusa's pattern, product images are managed as part of the product create/update payload, not via standalone image CRUD methods:
 
-- `listProductImages(filters: FilterableProductImageProps, config?, context?): Promise<ProductImageDTO[]>` — list images, primarily by `productId`.
-- `deleteProductImages(imageIds: string[], context?): Promise<void>` — soft-delete images by ID.
-- `updateProductImage(imageId: string, data: UpdateProductImageDTO, context?): Promise<ProductImageDTO>` — update rank or metadata.
-- `setProductImages(productId: string, images: Array<{ id?: string, url: string }>, context?): Promise<ProductImageDTO[]>` — the collection-replacement method. Receives the full desired image array. Images with an `id` matching an existing record are kept (rank updated to array index). Images without an `id` are created. Existing images absent from the input array are soft-deleted. Auto-sets `product.thumbnail` to `images[0].url` if no thumbnail is provided (matching Medusa's normalization). This is the method the product update route calls.
+- **Create:** The `images` array on `CreateProductDTO` (new field: `images?: Array<{ url: string }>`) creates `product_image` rows. Each image gets `rank` = its array index. If no `thumbnail` is provided but `images[0]` exists, auto-set `thumbnail` to `images[0].url`.
+- **Update:** The `images` array on `UpdateProductDTO` (new field: `images?: Array<{ id?: string, url: string }>`) is a full replacement. Images with an existing `id` are kept (rank updated to array index). New entries (no `id`) are created. Existing images absent from the array are soft-deleted. Thumbnail auto-set follows the same rule as create.
+
+This normalization logic lives inside `ProductModuleService.createProducts` / `updateProducts`, matching how Medusa's `normalizeCreateProductInput` and `deepUpdate` work.
+
+**Variant-image pivot table (new).** A `product_variant_image` table tracks which images are explicitly associated with which variants:
+
+```
+product_variant_image:
+  id:        text PK (prefix 'pvimg_')
+  variantId: text FK → product_variant.id (cascade delete)
+  imageId:   text FK → product_image.id (cascade delete)
+  ...timestamps
+
+  unique index on (variantId, imageId) WHERE deleted_at IS NULL
+  indexes on variantId, imageId
+```
+
+New `ProductVariantImageRepository` extending `BaseRepository(productVariantImageTable)`.
+
+**Two new variant-image methods.** Add to `IProductModuleService` and `ProductModuleService`:
+
+- `addImageToVariant(data: { imageId: string; variantId: string }[], context?): Promise<{ id: string }[]>` — creates `product_variant_image` pivot records. Returns the created pivot record IDs.
+- `removeImageFromVariant(data: { imageId: string; variantId: string }[], context?): Promise<void>` — queries the pivot table for matching `(imageId, variantId)` pairs, soft-deletes the found records.
+
+**New types** in `core/types/product/`:
+
+- `mutations.ts` — add `VariantImageInput = { imageId: string; variantId: string }`
+- `common.ts` — add `ProductVariantImageDTO = { id: string; variantId: string; imageId: string; createdAt: Date; updatedAt: Date; deletedAt: Date | null }`, add `FilterableProductVariantImageProps`
+- `mutations.ts` — add `images?: Array<{ url: string }>` to `CreateProductDTO`, add `images?: Array<{ id?: string; url: string }>` to `UpdateProductDTO`
+- `service.ts` — add `addImageToVariant` and `removeImageFromVariant` method signatures
 
 #### 2. HTTP schemas — extend product types
 
@@ -279,7 +315,17 @@ z.object({ id: z.string(), url: z.string(), rank: z.number() })
 - `images: z.array(z.object({ id: z.string().optional(), url: z.string() })).optional()` — on update, each image can optionally include its existing `id` to preserve it.
 - `thumbnail: z.string().nullable().optional()`
 
-**`AdminProductResponse`** — include `images` in the response shape alongside `options`.
+**`AdminProductResponse`** — include `images` in the detail response shape alongside `options`. The list response (`AdminProductsResponse`) does NOT include `images` — the `thumbnail` field on the product entity is sufficient for list views.
+
+**`AdminBatchImageVariantPayload`** (new):
+```
+z.object({ add: z.array(z.string()).optional(), remove: z.array(z.string()).optional() })
+```
+
+**`AdminBatchImageVariantResponse`** (new):
+```
+z.object({ added: z.array(z.string()), removed: z.array(z.string()) })
+```
 
 #### 3. Upload API routes
 
@@ -298,13 +344,15 @@ These are defined in the file module port spec already (`POST /admin/uploads`, `
 
 #### 4. Product routes — wire images
 
-**`GET /admin/products/:id`** — after retrieving the product, also fetch `listProductImages({ productId: id }, { order: { rank: 'ASC' } })` and include `images` in the response.
+**`GET /admin/products/:id`** — after retrieving the product, also fetch its images (ordered by `rank` ASC) and include `images` in the response.
 
-**`GET /admin/products`** — include `images` in each product response (batch query by product IDs from the list result).
+**`GET /admin/products`** — does NOT include `images`. The `thumbnail` field on the product entity is sufficient for list views.
 
-**`POST /admin/products`** — accept `images` and `thumbnail` in the body. After creating the product, if `images` is provided, call `createProductImages()` with each image's URL and its array index as `rank`. If `thumbnail` is not provided but `images[0]` exists, auto-set `thumbnail` to `images[0].url`.
+**`POST /admin/products`** — accept `images` and `thumbnail` in the body. The `images` array and thumbnail auto-set are handled by the product module service's create method (see §1).
 
-**`PATCH /admin/products/:id`** — accept `images` and `thumbnail` in the body. If `images` is provided, call `setProductImages()` which handles the collection replacement (create new, keep existing, delete removed, update ranks). If `thumbnail` is explicitly provided (including `null`), update it.
+**`PATCH /admin/products/:id`** — accept `images` and `thumbnail` in the body. The `images` array triggers collection replacement inside the product module service's update method (see §1). If `thumbnail` is explicitly provided (including `null`), it overrides the auto-set logic.
+
+**`POST /admin/products/:id/images/:imageId/variants/batch`** — accepts `{ add?: string[], remove?: string[] }` (variant IDs). Runs `batchImageVariantsWorkflow`. Returns `{ added: string[], removed: string[] }`.
 
 #### 5. Orval regeneration
 
@@ -372,7 +420,7 @@ Rendered in the product detail layout's side column (or as a full-width section)
 **Location:** `apps/admin/src/features/products/components/edit-product-media-form.tsx`
 
 Opened as a `RouteFocusModal` at route `/products/:id/media`. Two-pane layout:
-- **Left pane:** Grid of current images with `@dnd-kit/core` for drag-to-reorder. Each image has a selection checkbox. `CommandBar` with "Make thumbnail" (sets `isThumbnail: true`) and "Delete" (removes from field array).
+- **Left pane:** Grid of current images with `@dnd-kit/core` + `@dnd-kit/sortable` for drag-to-reorder. Each image has a selection checkbox. `CommandBar` with "Make thumbnail" (sets `isThumbnail: true`) and "Delete" (removes from field array).
 - **Right pane:** `UploadMediaFormItem` for adding new images.
 
 **Form state:** A `media` field array where each entry is:
@@ -413,6 +461,7 @@ Add to the admin router:
 ### Dependencies to add (admin)
 
 - `@dnd-kit/core` — drag-and-drop for image reorder.
+- `@dnd-kit/sortable` — sortable preset for drag-and-drop reorder lists.
 
 ### Data Flow Summary
 
@@ -430,16 +479,26 @@ User drops images ──→ FileUpload (blob URLs, local File objects)
     POST /admin/uploads              POST or PATCH /admin/products/:id
     (FormData with files)            ({ images: [{ url }], thumbnail })
               │                               │
-     uploadFilesWorkflow              setProductImages()
-              │                        (collection replacement)
+     uploadFilesWorkflow              product service create/update
+              │                        (inline image handling)
      File provider stores              │
      binary, returns URLs       product_image rows upserted
-              │                 product.thumbnail updated
+              │                 product.thumbnail auto-set
               ▼                               ▼
     { files: [{ id, url }] }        { product: { ...images } }
+
+                     Variant-image associations
+                     ──────────────────────────
+    POST /admin/products/:id/images/:imageId/variants/batch
+    ({ add: [variantId, ...], remove: [variantId, ...] })
+              │
+     batchImageVariantsWorkflow
+              │
+     product_variant_image pivot rows created/deleted
+     variant thumbnails cleared if needed
 ```
 
-The URL string is the only bridge between the file module and the product module. There is no link table, no foreign key, no reference. The file module stores and serves binaries; the product module stores URLs as strings.
+The URL string is the only bridge between the file module and the product module. There is no link table, no foreign key, no reference. The file module stores and serves binaries; the product module stores URLs as strings. The `product_variant_image` pivot table links images to variants within the product module.
 
 ### What This Validates
 
@@ -449,20 +508,30 @@ The URL string is the only bridge between the file module and the product module
 | File provider storage | Upload → store → retrieve URL round-trip |
 | Upload workflow compensation | If product creation fails after upload, files are cleaned up |
 | URL-based decoupling | File module returns URL, product module stores it — no link table |
-| Collection replacement | `setProductImages()` handles create/keep/delete/reorder in one call |
+| Inline image handling | Product create/update with `images` array handles create/keep/delete/reorder |
+| Variant-image associations | Batch endpoint creates/removes pivot records, clears variant thumbnails |
+| File size limits | `maxFileSize` config rejects oversized uploads at the service level |
 | Static file serving | Local provider: uploaded images served via `/static/*` path |
 | Admin fetcher extension | `FormData` support in the fetcher (skip `JSON.stringify`) |
 | Full user flow | Drop image → upload → see it on the product → reorder → set thumbnail → delete |
 
 ### Product images integration tests
 
-- `setProductImages` creates new images, preserves existing ones by `id`, and soft-deletes removed ones.
-- `setProductImages` assigns `rank` by array index.
-- `setProductImages` auto-sets `product.thumbnail` to `images[0].url` when thumbnail is not provided.
-- `listProductImages` returns images ordered by `rank` for a given `productId`.
-- `deleteProductImages` soft-deletes images by ID.
-- Product update endpoint (`PATCH /admin/products/:id`) with `images` payload triggers collection replacement.
-- Product create endpoint (`POST /admin/products`) with `images` creates image rows and sets thumbnail.
+**Inline image handling (create/update):**
+- Product create with `images` creates `product_image` rows with `rank` by array index.
+- Product create with `images` but no `thumbnail` auto-sets thumbnail to `images[0].url`.
+- Product create with explicit `thumbnail` uses the provided value, not auto-set.
+- Product update with `images` replaces the full image set (creates new, keeps existing by `id`, soft-deletes removed).
+- Product update with `images` re-ranks images by array index.
+- Product update with `images` auto-sets thumbnail when not explicitly provided.
+
+**Variant-image associations:**
+- `addImageToVariant` creates pivot records and returns IDs.
+- `addImageToVariant` with duplicate `(imageId, variantId)` pair is rejected (unique constraint).
+- `removeImageFromVariant` soft-deletes matching pivot records.
+- `removeImageFromVariant` with non-existent pair is a no-op (no error).
+- Batch endpoint (`POST /admin/products/:id/images/:imageId/variants/batch`) parallelizes add and remove.
+- Batch endpoint clears variant thumbnail when the removed image was the variant's thumbnail.
 
 ## Out of Scope
 
@@ -473,7 +542,6 @@ The URL string is the only bridge between the file module and the product module
 - **Store (customer-facing) upload routes** -- only admin routes are in scope. Store routes can be added later.
 - **`validateOptions` and `getIdentifier`** on the abstract class -- providers validate in their constructor.
 - **Joiner config / `__joinerConfig()`** -- Medusa's `FileModuleService` implements this for the remote query system. Proteus has no joiner infrastructure, so this is omitted entirely.
-- **Variant-image associations** -- Medusa has a `ProductVariantProductImage` pivot table and batch endpoints for linking specific images to specific variants (added in v2.11.2). This is out of scope for the initial port. All product images are product-level.
 - **Image gallery / lightbox view** -- Medusa's admin has a full gallery lightbox with filmstrip navigation. The initial port only needs the grid view on the product detail page and the edit modal. A gallery view can be added later.
 - **Presigned upload URLs route** -- defined in the file module spec but not wired into the admin UI for this validation. The admin uses direct multipart upload. The presigned URL endpoint exists for future client-side direct-to-S3 uploads.
 
@@ -484,5 +552,6 @@ The URL string is the only bridge between the file module and the product module
 - The base64 content encoding means the entire file sits in memory as a string (33% larger than raw binary) through every layer. For large files, use the streaming APIs (`getUploadStream`, `getDownloadStream`) instead of the base64 upload path.
 - `ulid` is added as a new dependency for presigned URL filename generation. It produces time-sortable, URL-safe identifiers.
 - The `File` type on `HttpRequest.files` is the Web standard `File` (a `Blob` subclass). Both Node.js 18+ and workerd support this natively.
-- The `express.json()` bypass for multipart requests is the trickiest part of the adapter work. The cleanest approach: replace the global `app.use(express.json())` with a conditional middleware that checks `Content-Type` and only runs `express.json()` for non-multipart requests. This keeps the body stream unconsumed for multipart requests so `Request.formData()` can read it.
+- The `express.json()` fix for multipart requests: change `express.json()` to `express.json({ type: 'application/json' })` so it only activates for JSON content types. This is a one-line change that leaves the body stream unconsumed for multipart requests so `Request.formData()` can read it.
+- `MIMEType` from `node:util` is confirmed available in Cloudflare Workers with `nodejs_compat` (explicitly listed in Cloudflare's docs). No polyfill needed.
 - `MIMEType.subtype` can produce compound extensions like `"svg+xml"` for `image/svg+xml`. The presigned URL route should handle this gracefully (e.g., mapping `"svg+xml"` to `"svg"` or accepting the compound form as-is -- Medusa uses it as-is).
