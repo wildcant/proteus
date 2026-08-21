@@ -1,5 +1,6 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
+import { AdminUploadFiles } from '@proteus/http-schemas/admin'
 import * as uploadByIdRoutes from './[id]/route.js'
 import * as presignedUrlRoutes from './presigned-urls/route.js'
 import * as uploadRoutes from './route.js'
@@ -9,6 +10,7 @@ export default [
     method: 'POST',
     matcher: '/admin/uploads',
     handler: uploadRoutes.POST,
+    multipartBody: AdminUploadFiles,
     operationId: 'uploadFiles',
     summary: 'Upload files',
     tags: [Tags.UPLOADS],

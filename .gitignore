@@ -7,6 +7,9 @@ node_modules
 backend/generated/
 
 tmp
+
+# Local filesystem file provider upload directory
+apps/backend/static
 .wrangler
 .env.workerd
 

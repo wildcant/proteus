@@ -10,6 +10,7 @@ import { ContainerRegistrationKeys } from '../../../core/utils/index.js'
 import type { PreparedRoute } from '../../../server/ports.js'
 import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
+import { extractFiles } from '../../http/multipart.js'
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
 
@@ -18,17 +19,6 @@ type CreateHonoAppOptions = {
   container: AwilixContainer
   logger: Logger
   corsOrigins: string[]
-}
-
-async function extractFiles(raw: Request): Promise<File[]> {
-  const formData = await raw.formData()
-  const files: File[] = []
-  for (const value of formData.values()) {
-    if (value instanceof File) {
-      files.push(value)
-    }
-  }
-  return files
 }
 
 export function createHonoApp({ routes, container, logger, corsOrigins }: CreateHonoAppOptions) {

@@ -36,7 +36,7 @@ const moduleMigrations = readdirSync(modulesRoot, { withFileTypes: true })
 
 moduleMigrations.push({
   migrationsFolder: join(backendRoot, 'link-modules/migrations'),
-  migrationsTable: 'migrations_link_modules',
+  migrationsTable: 'migrations_links',
 })
 
 beforeEach(async () => {

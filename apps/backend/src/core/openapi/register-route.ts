@@ -21,9 +21,12 @@ export function registerOpenApiRoute(registry: OpenAPIRegistry, routePath: strin
   if (config.method === 'GET' && config.input?.query) {
     request.query = config.input.query as unknown as NonNullable<RouteConfig['request']>['query']
   }
-  if ((config.method === 'POST' || config.method === 'PUT' || config.method === 'PATCH') && config.input?.body) {
-    request.body = {
-      content: { 'application/json': { schema: config.input.body } },
+  if (config.method === 'POST' || config.method === 'PUT' || config.method === 'PATCH') {
+    const multipartBody = config.multipartBody
+    if (multipartBody) {
+      request.body = { content: { 'multipart/form-data': { schema: multipartBody } } }
+    } else if (config.input?.body) {
+      request.body = { content: { 'application/json': { schema: config.input.body } } }
     }
   }
 

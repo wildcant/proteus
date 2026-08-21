@@ -2706,6 +2706,114 @@
           }
         }
       },
+      "AdminUploadResponse": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminFile"
+            }
+          }
+        },
+        "required": ["files"]
+      },
+      "AdminFile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "url"]
+      },
+      "AdminUploadFiles": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        },
+        "required": ["files"]
+      },
+      "AdminFileResponse": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "$ref": "#/components/schemas/AdminFile"
+          }
+        },
+        "required": ["file"]
+      },
+      "AdminDeleteFileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": ["file"]
+          },
+          "deleted": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "object", "deleted"]
+      },
+      "AdminPresignedUploadUrlResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "extension": {
+            "type": "string"
+          },
+          "originalName": {
+            "type": "string"
+          }
+        },
+        "required": ["url", "filename", "mimeType", "size", "extension", "originalName"]
+      },
+      "AdminCreatePresignedUploadUrl": {
+        "type": "object",
+        "properties": {
+          "originalName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mimeType": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}\\/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}$"
+          },
+          "size": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "access": {
+            "type": "string",
+            "enum": ["public", "private"]
+          }
+        },
+        "required": ["originalName", "mimeType", "size"]
+      },
       "AdminUserResponse": {
         "type": "object",
         "properties": {
@@ -6396,6 +6504,138 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/uploads": {
+      "post": {
+        "operationId": "uploadFiles",
+        "summary": "Upload files",
+        "tags": ["Uploads"],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUploadFiles"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/admin/uploads/{id}": {
+      "get": {
+        "operationId": "getUpload",
+        "summary": "Retrieve a file",
+        "tags": ["Uploads"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUpload",
+        "summary": "Delete a file",
+        "tags": ["Uploads"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDeleteFileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/uploads/presigned-urls": {
+      "post": {
+        "operationId": "createPresignedUploadUrl",
+        "summary": "Get a presigned upload URL",
+        "tags": ["Uploads"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreatePresignedUploadUrl"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPresignedUploadUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }

@@ -7,6 +7,7 @@ import type { Logger } from '../../../core/types/logger.js'
 import type { PreparedRoute } from '../../../server/ports.js'
 import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
+import { extractFiles } from '../../http/multipart.js'
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
 
@@ -17,7 +18,7 @@ type CreateExpressAppOptions = {
   corsOrigins: string[]
 }
 
-async function extractFiles(req: express.Request): Promise<File[]> {
+async function toWebRequest(req: express.Request): Promise<Request> {
   const protocol = req.protocol
   const host = req.get('host') ?? 'localhost'
   const url = `${protocol}://${host}${req.originalUrl}`
@@ -34,22 +35,13 @@ async function extractFiles(req: express.Request): Promise<File[]> {
     chunks.push(chunk as Buffer)
   }
 
-  const webRequest = new Request(url, {
+  return new Request(url, {
     method: req.method,
     headers,
     body: Buffer.concat(chunks),
     // @ts-expect-error -- Node needs duplex for request bodies
     duplex: 'half',
   })
-
-  const formData = await webRequest.formData()
-  const files: File[] = []
-  for (const value of formData.values()) {
-    if (value instanceof File) {
-      files.push(value)
-    }
-  }
-  return files
 }
 
 export function createExpressApp({ routes, container, logger, corsOrigins }: CreateExpressAppOptions) {
@@ -80,7 +72,7 @@ export function createExpressApp({ routes, container, logger, corsOrigins }: Cre
         const hasBody = !['GET', 'HEAD', 'DELETE'].includes(req.method)
         const multipart = hasBody && isMultipart(req.headers['content-type'])
 
-        const files = multipart ? await extractFiles(req) : undefined
+        const files = multipart ? await extractFiles(await toWebRequest(req)) : undefined
         const body = multipart ? undefined : req.body
 
         const result = await route.handler({

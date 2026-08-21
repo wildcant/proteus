@@ -13,8 +13,15 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
 
   const { originalName, mimeType, size, access = 'public' } = req.body
 
-  const mime = new MIMEType(mimeType)
-  const extension = mime.subtype
+  // MIMEType throws a bare TypeError on malformed input, which the error handler
+  // would surface as a 500. The schema rejects those already; this keeps the
+  // parser's stricter view of validity a client error rather than a server one.
+  let extension: string
+  try {
+    extension = new MIMEType(mimeType).subtype
+  } catch {
+    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: `Invalid MIME type: "${mimeType}"` })
+  }
   const filename = `${ulid()}.${extension}`
 
   const [uploadUrl] = await fileService.getUploadFileUrls([{ filename, access }])
