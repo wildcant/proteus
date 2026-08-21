@@ -2,7 +2,7 @@ import { BigNumber } from '@core/db/bignum.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
-import { describe, vi } from 'vitest'
+import { vi } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 
 import {
@@ -62,12 +62,12 @@ test.beforeEach(({ getDb, logger }) => {
   })
 })
 
-describe('PaymentModuleService', () => {
+test.describe('PaymentModuleService', () => {
   // ---------------------------------------------------------------------------
   // PaymentCollection CRUD
   // ---------------------------------------------------------------------------
 
-  describe('PaymentCollection CRUD', () => {
+  test.describe('PaymentCollection CRUD', () => {
     test('createPaymentCollections', async ({ expect, dto }) => {
       const input = [
         dto.generate.createPaymentCollection(),
@@ -126,7 +126,7 @@ describe('PaymentModuleService', () => {
   // PaymentSession lifecycle
   // ---------------------------------------------------------------------------
 
-  describe('PaymentSession lifecycle', () => {
+  test.describe('PaymentSession lifecycle', () => {
     test('createPaymentSession creates session and calls provider', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
 
@@ -215,7 +215,7 @@ describe('PaymentModuleService', () => {
   // Payment lifecycle
   // ---------------------------------------------------------------------------
 
-  describe('Payment lifecycle', () => {
+  test.describe('Payment lifecycle', () => {
     test('capturePayment full capture', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
@@ -311,7 +311,7 @@ describe('PaymentModuleService', () => {
   // Collection status transitions
   // ---------------------------------------------------------------------------
 
-  describe('collection status transitions', () => {
+  test.describe('collection status transitions', () => {
     test('full lifecycle: not_paid → awaiting → authorized → completed', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       expect((await service.retrievePaymentCollection(collection.id)).status).toBe('not_paid')
@@ -360,7 +360,7 @@ describe('PaymentModuleService', () => {
   // RefundReason CRUD
   // ---------------------------------------------------------------------------
 
-  describe('RefundReason CRUD', () => {
+  test.describe('RefundReason CRUD', () => {
     test('createRefundReasons and listRefundReasons', async ({ expect, dto }) => {
       await service.createRefundReasons([
         dto.generate.createRefundReason(),
@@ -408,7 +408,7 @@ describe('PaymentModuleService', () => {
   // AccountHolder
   // ---------------------------------------------------------------------------
 
-  describe('AccountHolder', () => {
+  test.describe('AccountHolder', () => {
     test('createAccountHolder', async ({ expect, dto }) => {
       const input = dto.generate.createAccountHolder()
 
@@ -433,7 +433,7 @@ describe('PaymentModuleService', () => {
   // PaymentMethods (provider-managed, no DB table)
   // ---------------------------------------------------------------------------
 
-  describe('PaymentMethods', () => {
+  test.describe('PaymentMethods', () => {
     test('createPaymentMethods', async ({ expect }) => {
       const result = await service.createPaymentMethods([
         { providerId: 'system', data: { token: 'tok_123' }, context: {} },
@@ -463,7 +463,7 @@ describe('PaymentModuleService', () => {
   // Webhooks
   // ---------------------------------------------------------------------------
 
-  describe('Webhooks', () => {
+  test.describe('Webhooks', () => {
     test('getWebhookActionAndData delegates to provider', async ({ expect }) => {
       const result = await service.getWebhookActionAndData({
         provider: 'system',
@@ -479,7 +479,7 @@ describe('PaymentModuleService', () => {
   // Providers
   // ---------------------------------------------------------------------------
 
-  describe('Providers', () => {
+  test.describe('Providers', () => {
     test('listPaymentProviders delegates to provider service', async ({ expect }) => {
       mockProvider.list.mockResolvedValueOnce([{ id: 'system', isEnabled: true }])
 

@@ -1,6 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
-import { describe } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { CustomerRepository } from '../repositories/customer.js'
 import { CustomerAddressRepository } from '../repositories/customer-address.js'
@@ -15,7 +14,7 @@ test.beforeEach(({ getDb, logger }) => {
   service = new CustomerModuleService({ customerRepository, customerAddressRepository, withTransaction, logger })
 })
 
-describe('hasAccount behavior', () => {
+test.describe('hasAccount behavior', () => {
   test('create customer with hasAccount: false and only email succeeds', async ({ expect }) => {
     const customer = await service.createCustomer({ email: 'guest@example.com' })
 

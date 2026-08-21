@@ -6,7 +6,7 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import { cancelOrderWorkflow } from '../cancel-order.js'
 
 function setup(
@@ -98,9 +98,10 @@ function setup(
   }
 }
 
-describe('cancelOrderWorkflow', () => {
+test.describe('cancelOrderWorkflow', () => {
   test('cancels a pending unfulfilled order, cancels uncaptured payments, and deletes reservations', async ({
     dto,
+    expect,
   }) => {
     const services = setup(dto.generate)
 
@@ -119,7 +120,7 @@ describe('cancelOrderWorkflow', () => {
     expect(services.orderService.cancelOrder).toHaveBeenCalledWith(services.order.id)
   })
 
-  test('refunds captured payments instead of canceling them', async ({ dto }) => {
+  test('refunds captured payments instead of canceling them', async ({ dto, expect }) => {
     const payment = dto.generate.payment({
       canceledAt: null,
       capturedAt: new Date(),
@@ -159,7 +160,7 @@ describe('cancelOrderWorkflow', () => {
     expect(services.paymentService.cancelPayment).not.toHaveBeenCalled()
   })
 
-  test('skips already-canceled payments', async ({ dto }) => {
+  test('skips already-canceled payments', async ({ dto, expect }) => {
     const collection: PaymentCollectionDTO = {
       id: 'paycol_test',
       currencyCode: 'usd',
@@ -185,7 +186,7 @@ describe('cancelOrderWorkflow', () => {
     expect(services.paymentService.refundPayment).not.toHaveBeenCalled()
   })
 
-  test('skips payment step when order has no payment collection', async ({ dto }) => {
+  test('skips payment step when order has no payment collection', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.orderPaymentCollectionRepo.findByOrderId.mockResolvedValue(null)
 
@@ -195,7 +196,7 @@ describe('cancelOrderWorkflow', () => {
     expect(services.orderService.cancelOrder).toHaveBeenCalledWith(services.order.id)
   })
 
-  test('skips reservation deletion when order has no line items', async ({ dto }) => {
+  test('skips reservation deletion when order has no line items', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.orderService.listOrderLineItems.mockResolvedValue([])
 
@@ -206,7 +207,7 @@ describe('cancelOrderWorkflow', () => {
     expect(services.inventoryService.deleteReservationItems).not.toHaveBeenCalled()
   })
 
-  test('skips reservation deletion when no reservations exist', async ({ dto }) => {
+  test('skips reservation deletion when no reservations exist', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.inventoryService.listReservationItems.mockResolvedValue([])
 
@@ -216,7 +217,7 @@ describe('cancelOrderWorkflow', () => {
     expect(services.inventoryService.deleteReservationItems).not.toHaveBeenCalled()
   })
 
-  test('compensation: restores order and reservations when cancel-payments fails', async ({ dto }) => {
+  test('compensation: restores order and reservations when cancel-payments fails', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.paymentService.cancelPayment.mockRejectedValue(new Error('provider unavailable'))
 
@@ -229,7 +230,7 @@ describe('cancelOrderWorkflow', () => {
     expect(services.inventoryService.restoreReservationItems).toHaveBeenCalledWith([services.reservations[0]?.id])
   })
 
-  test('compensation: restores order when delete-reservations fails', async ({ dto }) => {
+  test('compensation: restores order when delete-reservations fails', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.inventoryService.deleteReservationItems.mockRejectedValue(new Error('inventory unavailable'))
 
@@ -243,7 +244,7 @@ describe('cancelOrderWorkflow', () => {
     expect(services.paymentService.cancelPayment).not.toHaveBeenCalled()
   })
 
-  test('rejects when order status is not pending', async ({ dto }) => {
+  test('rejects when order status is not pending', async ({ dto, expect }) => {
     const services = setup(dto.generate, { order: dto.generate.order({ status: 'completed' }) })
 
     await expect(cancelOrderWorkflow.run({ orderId: services.order.id })).rejects.toThrow(
@@ -251,7 +252,7 @@ describe('cancelOrderWorkflow', () => {
     )
   })
 
-  test('rejects when order is already fulfilled', async ({ dto }) => {
+  test('rejects when order is already fulfilled', async ({ dto, expect }) => {
     const services = setup(dto.generate, { order: dto.generate.order({ fulfillmentStatus: 'fulfilled' }) })
 
     await expect(cancelOrderWorkflow.run({ orderId: services.order.id })).rejects.toThrow(

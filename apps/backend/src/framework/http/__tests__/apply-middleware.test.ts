@@ -1,12 +1,11 @@
 import { test } from '@tests/setup/test-extend.js'
-import { describe, expect } from 'vitest'
 import { z } from 'zod'
 import { applyMiddleware } from '../apply-middleware.js'
 import type { MiddlewareFunction, RouteDefinition } from '../types.js'
 import { Tags } from '../types.js'
 
-describe('applyMiddleware', () => {
-  test('validates path params through input.params', async ({ makeRequest }) => {
+test.describe('applyMiddleware', () => {
+  test('validates path params through input.params', async ({ makeRequest, expect }) => {
     const definition: RouteDefinition = {
       method: 'GET',
       matcher: '/admin/users/:id',
@@ -23,7 +22,7 @@ describe('applyMiddleware', () => {
     expect(result.json).toEqual({ id: 'usr_123' })
   })
 
-  test('rejects invalid path params', async ({ makeRequest }) => {
+  test('rejects invalid path params', async ({ makeRequest, expect }) => {
     const definition: RouteDefinition = {
       method: 'GET',
       matcher: '/admin/users/:id',
@@ -39,7 +38,7 @@ describe('applyMiddleware', () => {
     await expect(handler(makeRequest({ params: { id: 'bad' } }))).rejects.toThrow('Invalid path params')
   })
 
-  test('validates request body through input.body', async ({ makeRequest }) => {
+  test('validates request body through input.body', async ({ makeRequest, expect }) => {
     const definition: RouteDefinition = {
       method: 'POST',
       matcher: '/admin/users',
@@ -56,7 +55,7 @@ describe('applyMiddleware', () => {
     expect(result.json).toEqual({ email: 'test@example.com' })
   })
 
-  test('rejects invalid request body', async ({ makeRequest }) => {
+  test('rejects invalid request body', async ({ makeRequest, expect }) => {
     const definition: RouteDefinition = {
       method: 'POST',
       matcher: '/admin/users',
@@ -72,7 +71,7 @@ describe('applyMiddleware', () => {
     await expect(handler(makeRequest({ body: { email: 'not-an-email' } }))).rejects.toThrow('Invalid request body')
   })
 
-  test('validates response through output', async ({ makeRequest }) => {
+  test('validates response through output', async ({ makeRequest, expect }) => {
     const definition: RouteDefinition = {
       method: 'GET',
       matcher: '/admin/users',
@@ -89,7 +88,7 @@ describe('applyMiddleware', () => {
     expect(result.json).toEqual({ name: 'Alice' })
   })
 
-  test('runs middlewares in order before handler', async ({ makeRequest }) => {
+  test('runs middlewares in order before handler', async ({ makeRequest, expect }) => {
     const order: string[] = []
 
     const middleware1: MiddlewareFunction = (req) => {
@@ -120,7 +119,7 @@ describe('applyMiddleware', () => {
     expect(order).toEqual(['middleware1', 'middleware2', 'handler'])
   })
 
-  test('auth middleware from namespace runs before custom middleware', async ({ makeRequest }) => {
+  test('auth middleware from namespace runs before custom middleware', async ({ makeRequest, expect }) => {
     const order: string[] = []
 
     const authMiddleware: MiddlewareFunction = (req) => {

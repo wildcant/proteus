@@ -6,7 +6,6 @@ import { test } from '@tests/setup/test-extend.js'
 import type { Express } from 'express'
 import jwt from 'jsonwebtoken'
 import request from 'supertest'
-import { describe } from 'vitest'
 import { bootstrapContainer } from '../../../container.js'
 import { env } from '../../../env.js'
 import { createExpressApp } from '../../../framework/runtime/express/app.js'
@@ -56,7 +55,7 @@ async function post(path: string, body?: object, headers?: Record<string, string
   return { status: response.status, body: response.body as Record<string, unknown> }
 }
 
-describe('POST /auth/:actorType/:authProvider/register', () => {
+test.describe('POST /auth/:actorType/:authProvider/register', () => {
   test('returns actorless JWT', async ({ expect }) => {
     const { status, body } = await post('/auth/user/emailpass/register', {
       email: 'reg@example.com',
@@ -74,7 +73,7 @@ describe('POST /auth/:actorType/:authProvider/register', () => {
   })
 })
 
-describe('POST /auth/:actorType/:authProvider (authenticate)', () => {
+test.describe('POST /auth/:actorType/:authProvider (authenticate)', () => {
   test('login without linked actor returns actorless JWT', async ({ expect }) => {
     await post('/auth/user/emailpass/register', {
       email: 'noactor@example.com',
@@ -118,7 +117,7 @@ describe('POST /auth/:actorType/:authProvider (authenticate)', () => {
   })
 })
 
-describe('POST /auth/token/refresh', () => {
+test.describe('POST /auth/token/refresh', () => {
   test('picks up app_metadata changes on full token refresh', async ({ expect }) => {
     // Register
     const { body: regBody } = await post('/auth/user/emailpass/register', {
@@ -181,7 +180,7 @@ describe('POST /auth/token/refresh', () => {
   })
 })
 
-describe('validateScopeProviderAssociation', () => {
+test.describe('validateScopeProviderAssociation', () => {
   test('rejects disallowed provider for actor type', async ({ expect }) => {
     const { status, body } = await post('/auth/user/google/register', {
       email: 'blocked@example.com',

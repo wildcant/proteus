@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { afterEach, beforeEach, describe, expect, test } from 'vitest'
+import { test } from '@tests/setup/test-extend.js'
 import { ErrorTypes } from '../../../core/errors/app-error.js'
 import { LocalFileProvider } from '../local-file-provider.js'
 
@@ -18,18 +18,18 @@ function createProvider(options?: { uploadDir?: string; privateUploadDir?: strin
   )
 }
 
-beforeEach(() => {
+test.beforeEach(() => {
   fs.mkdirSync(testUploadDir, { recursive: true })
 })
 
-afterEach(() => {
+test.afterEach(() => {
   fs.rmSync(testUploadDir, { recursive: true, force: true })
 })
 
 const base64Content = Buffer.from('hello world').toString('base64')
 
-describe('LocalFileProvider', () => {
-  test('identifier is "localfs"', () => {
+test.describe('LocalFileProvider', () => {
+  test('identifier is "localfs"', ({ expect }) => {
     expect(LocalFileProvider.identifier).toBe('localfs')
   })
 
@@ -37,8 +37,8 @@ describe('LocalFileProvider', () => {
   // upload + read back
   // ---------------------------------------------------------------------------
 
-  describe('upload', () => {
-    test('writes file to disk and returns url + key', async () => {
+  test.describe('upload', () => {
+    test('writes file to disk and returns url + key', async ({ expect }) => {
       const provider = createProvider()
 
       const result = await provider.upload({
@@ -56,7 +56,7 @@ describe('LocalFileProvider', () => {
       expect(fs.readFileSync(filePath, 'utf-8')).toBe('hello world')
     })
 
-    test('private files get "private-" prefix in key', async () => {
+    test('private files get "private-" prefix in key', async ({ expect }) => {
       const provider = createProvider()
 
       const result = await provider.upload({
@@ -69,7 +69,7 @@ describe('LocalFileProvider', () => {
       expect(result.key).toMatch(/^private-\d+-secret\.txt$/)
     })
 
-    test('rejects path traversal in filename', async () => {
+    test('rejects path traversal in filename', async ({ expect }) => {
       const provider = createProvider()
 
       const error = await provider
@@ -90,8 +90,8 @@ describe('LocalFileProvider', () => {
   // content decoding
   // ---------------------------------------------------------------------------
 
-  describe('decodeFileContent', () => {
-    test('decodes base64 content', async () => {
+  test.describe('decodeFileContent', () => {
+    test('decodes base64 content', async ({ expect }) => {
       const provider = createProvider()
 
       const result = await provider.upload({
@@ -105,7 +105,7 @@ describe('LocalFileProvider', () => {
       expect(fs.readFileSync(filePath, 'utf-8')).toBe('hello world')
     })
 
-    test('decodes UTF-8 text for text MIME types', async () => {
+    test('decodes UTF-8 text for text MIME types', async ({ expect }) => {
       const provider = createProvider()
       const textContent = 'plain text content, not base64'
 
@@ -120,7 +120,7 @@ describe('LocalFileProvider', () => {
       expect(fs.readFileSync(filePath, 'utf-8')).toBe('plain text content, not base64')
     })
 
-    test('decodes UTF-8 for json MIME type', async () => {
+    test('decodes UTF-8 for json MIME type', async ({ expect }) => {
       const provider = createProvider()
       const jsonContent = '{"key": "value"}'
 
@@ -135,7 +135,7 @@ describe('LocalFileProvider', () => {
       expect(fs.readFileSync(filePath, 'utf-8')).toBe('{"key": "value"}')
     })
 
-    test('decodes UTF-8 for csv MIME type', async () => {
+    test('decodes UTF-8 for csv MIME type', async ({ expect }) => {
       const provider = createProvider()
       const csvContent = 'a,b,c\n1,2,3'
 
@@ -150,7 +150,7 @@ describe('LocalFileProvider', () => {
       expect(fs.readFileSync(filePath, 'utf-8')).toBe('a,b,c\n1,2,3')
     })
 
-    test('decodes UTF-8 for xml MIME type', async () => {
+    test('decodes UTF-8 for xml MIME type', async ({ expect }) => {
       const provider = createProvider()
       const xmlContent = '<root><item>1</item></root>'
 
@@ -165,7 +165,7 @@ describe('LocalFileProvider', () => {
       expect(fs.readFileSync(filePath, 'utf-8')).toBe('<root><item>1</item></root>')
     })
 
-    test('falls back to binary for non-text MIME types', async () => {
+    test('falls back to binary for non-text MIME types', async ({ expect }) => {
       const provider = createProvider()
       const binaryData = Buffer.from([0xff, 0xd8, 0xff, 0xe0])
       const binaryBase64 = binaryData.toString('base64')
@@ -187,8 +187,8 @@ describe('LocalFileProvider', () => {
   // delete
   // ---------------------------------------------------------------------------
 
-  describe('delete', () => {
-    test('removes file from disk', async () => {
+  test.describe('delete', () => {
+    test('removes file from disk', async ({ expect }) => {
       const provider = createProvider()
 
       const result = await provider.upload({
@@ -205,13 +205,13 @@ describe('LocalFileProvider', () => {
       expect(fs.existsSync(filePath)).toBe(false)
     })
 
-    test('silently succeeds for non-existent files', async () => {
+    test('silently succeeds for non-existent files', async ({ expect }) => {
       const provider = createProvider()
 
       await expect(provider.delete({ fileKey: 'does-not-exist.txt' })).resolves.toBeUndefined()
     })
 
-    test('rejects path traversal in fileKey', async () => {
+    test('rejects path traversal in fileKey', async ({ expect }) => {
       const provider = createProvider()
 
       const error = await provider.delete({ fileKey: '../../etc/passwd' }).catch((e) => e)
@@ -225,8 +225,8 @@ describe('LocalFileProvider', () => {
   // getPresignedDownloadUrl
   // ---------------------------------------------------------------------------
 
-  describe('getPresignedDownloadUrl', () => {
-    test('returns URL for existing file', async () => {
+  test.describe('getPresignedDownloadUrl', () => {
+    test('returns URL for existing file', async ({ expect }) => {
       const provider = createProvider()
 
       const result = await provider.upload({
@@ -240,7 +240,7 @@ describe('LocalFileProvider', () => {
       expect(url).toBe(`${backendUrl}/${result.key}`)
     })
 
-    test('throws for non-existent files', async () => {
+    test('throws for non-existent files', async ({ expect }) => {
       const provider = createProvider()
 
       const error = await provider.getPresignedDownloadUrl({ fileKey: 'missing.txt' }).catch((e) => e)
@@ -253,8 +253,8 @@ describe('LocalFileProvider', () => {
   // getPresignedUploadUrl
   // ---------------------------------------------------------------------------
 
-  describe('getPresignedUploadUrl', () => {
-    test('returns url and key', async () => {
+  test.describe('getPresignedUploadUrl', () => {
+    test('returns url and key', async ({ expect }) => {
       const provider = createProvider()
 
       const result = await provider.getPresignedUploadUrl({
@@ -271,8 +271,8 @@ describe('LocalFileProvider', () => {
   // getDownloadStream
   // ---------------------------------------------------------------------------
 
-  describe('getDownloadStream', () => {
-    test('returns readable stream of file content', async () => {
+  test.describe('getDownloadStream', () => {
+    test('returns readable stream of file content', async ({ expect }) => {
       const provider = createProvider()
 
       const result = await provider.upload({
@@ -295,8 +295,8 @@ describe('LocalFileProvider', () => {
   // getAsBuffer
   // ---------------------------------------------------------------------------
 
-  describe('getAsBuffer', () => {
-    test('returns file content as buffer', async () => {
+  test.describe('getAsBuffer', () => {
+    test('returns file content as buffer', async ({ expect }) => {
       const provider = createProvider()
 
       const result = await provider.upload({

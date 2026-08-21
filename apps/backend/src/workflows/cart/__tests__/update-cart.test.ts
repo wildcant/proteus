@@ -5,7 +5,7 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import { updateCartWorkflow } from '../update-cart.js'
 
 function setup(
@@ -67,9 +67,10 @@ function setup(
   return { cart, cartService, customerService, createdCustomer }
 }
 
-describe('updateCartWorkflow', () => {
+test.describe('updateCartWorkflow', () => {
   test('email provided, no existing guest — creates guest customer, sets customerId and email on cart', async ({
     dto,
+    expect,
   }) => {
     const services = setup(dto.generate)
 
@@ -94,7 +95,7 @@ describe('updateCartWorkflow', () => {
     })
   })
 
-  test('email provided, existing guest found — reuses customer, sets customerId on cart', async ({ dto }) => {
+  test('email provided, existing guest found — reuses customer, sets customerId on cart', async ({ dto, expect }) => {
     const existingGuest = dto.generate.customer({
       id: 'cus_existing_guest',
       hasAccount: false,
@@ -118,7 +119,7 @@ describe('updateCartWorkflow', () => {
     })
   })
 
-  test('email provided with firstName/lastName — passes name fields to customer creation', async ({ dto }) => {
+  test('email provided with firstName/lastName — passes name fields to customer creation', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     await updateCartWorkflow.run({
@@ -136,7 +137,7 @@ describe('updateCartWorkflow', () => {
     })
   })
 
-  test('no email provided — skips findOrCreateCustomer, only updates addresses', async ({ dto }) => {
+  test('no email provided — skips findOrCreateCustomer, only updates addresses', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     await updateCartWorkflow.run({
@@ -160,6 +161,7 @@ describe('updateCartWorkflow', () => {
 
   test('workflow failure after customer creation — compensates by deleting the newly created customer', async ({
     dto,
+    expect,
   }) => {
     const services = setup(dto.generate)
 
@@ -177,7 +179,10 @@ describe('updateCartWorkflow', () => {
     expect(services.customerService.deleteCustomers).toHaveBeenCalledWith(['cus_new_guest'])
   })
 
-  test('workflow failure after finding existing customer — does NOT delete the existing customer', async ({ dto }) => {
+  test('workflow failure after finding existing customer — does NOT delete the existing customer', async ({
+    dto,
+    expect,
+  }) => {
     const existingGuest = dto.generate.customer({
       id: 'cus_existing',
       hasAccount: false,
@@ -199,7 +204,7 @@ describe('updateCartWorkflow', () => {
     expect(services.customerService.deleteCustomers).not.toHaveBeenCalled()
   })
 
-  test('workflow failure after name update — compensates by reverting to previous name', async ({ dto }) => {
+  test('workflow failure after name update — compensates by reverting to previous name', async ({ dto, expect }) => {
     const existingGuest = dto.generate.customer({
       id: 'cus_existing',
       hasAccount: false,

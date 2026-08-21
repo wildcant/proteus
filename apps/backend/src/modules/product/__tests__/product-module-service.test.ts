@@ -1,6 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
-import { describe } from 'vitest'
 import { buildSearchFilter } from '../../../core/utils/build-search-filter.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { ProductRepository } from '../repositories/product.js'
@@ -36,7 +35,7 @@ test.beforeEach(({ getDb, logger }) => {
   })
 })
 
-describe('ProductModuleService', () => {
+test.describe('ProductModuleService', () => {
   test('listAndCountProducts with pagination', async ({ expect, dto }) => {
     await service.createProducts([
       dto.generate.createProduct(),

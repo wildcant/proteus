@@ -4,7 +4,7 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import { createOrderFulfillmentWorkflow } from '../create-order-fulfillment.js'
 
 function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<OrderDTO>) {
@@ -86,8 +86,8 @@ function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<O
   }
 }
 
-describe('createOrderFulfillmentWorkflow', () => {
-  test('creates fulfillment, links it, updates status, and adjusts inventory', async ({ dto }) => {
+test.describe('createOrderFulfillmentWorkflow', () => {
+  test('creates fulfillment, links it, updates status, and adjusts inventory', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     const result = await createOrderFulfillmentWorkflow.run({
@@ -107,7 +107,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     expect(services.inventoryService.deleteReservationItems).toHaveBeenCalledWith([services.reservations[0]?.id])
   })
 
-  test('rejects when order status is not pending', async ({ dto }) => {
+  test('rejects when order status is not pending', async ({ dto, expect }) => {
     setup(dto.generate, { status: 'completed' })
 
     await expect(
@@ -119,7 +119,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     ).rejects.toThrow('status is "completed", expected "pending"')
   })
 
-  test('rejects when fulfillment status is not unfulfilled', async ({ dto }) => {
+  test('rejects when fulfillment status is not unfulfilled', async ({ dto, expect }) => {
     setup(dto.generate, { fulfillmentStatus: 'fulfilled' })
 
     await expect(
@@ -131,7 +131,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     ).rejects.toThrow('fulfillment status is "fulfilled", expected "unfulfilled"')
   })
 
-  test('compensates on failure after fulfillment is created', async ({ dto }) => {
+  test('compensates on failure after fulfillment is created', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.orderService.updateFulfillmentStatus.mockRejectedValue(new Error('DB error'))
 
@@ -147,7 +147,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     expect(services.fulfillmentService.cancelFulfillment).toHaveBeenCalledWith(services.fulfillment.id)
   })
 
-  test('skips inventory adjustment when no line items exist', async ({ dto }) => {
+  test('skips inventory adjustment when no line items exist', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.orderService.listOrderLineItems.mockResolvedValue([])
 
@@ -161,7 +161,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     expect(services.inventoryService.deleteReservationItems).not.toHaveBeenCalled()
   })
 
-  test('computes inventory deduction using requiredQuantity from variant-inventory link', async ({ dto }) => {
+  test('computes inventory deduction using requiredQuantity from variant-inventory link', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     const lineItem = dto.generate.orderLineItem({ orderId: services.order.id, variantId: 'var_1', quantity: 2 })
@@ -197,7 +197,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     expect(services.inventoryService.adjustInventoryLevel).toHaveBeenCalledWith('iitem_abc', 'sloc_abc', -6)
   })
 
-  test('throws when reservation quantity is insufficient for the required deduction', async ({ dto }) => {
+  test('throws when reservation quantity is insufficient for the required deduction', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     const lineItem = dto.generate.orderLineItem({ orderId: services.order.id, variantId: 'var_1', quantity: 5 })
@@ -233,7 +233,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     ).rejects.toThrow(/insufficient|exceeds/i)
   })
 
-  test('throws when a managed-inventory item has no reservation', async ({ dto }) => {
+  test('throws when a managed-inventory item has no reservation', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     const lineItem = dto.generate.orderLineItem({ orderId: services.order.id, variantId: 'var_1' })
@@ -263,7 +263,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     ).rejects.toThrow(/reservation/i)
   })
 
-  test('throws when fulfillment items reference line items not in the order', async ({ dto }) => {
+  test('throws when fulfillment items reference line items not in the order', async ({ dto, expect }) => {
     setup(dto.generate)
 
     await expect(
@@ -279,7 +279,7 @@ describe('createOrderFulfillmentWorkflow', () => {
     ).rejects.toThrow(/does not exist|not found/i)
   })
 
-  test('throws when order items have mixed shipping requirements', async ({ dto }) => {
+  test('throws when order items have mixed shipping requirements', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     services.orderService.listOrderLineItems.mockResolvedValue([

@@ -1,7 +1,6 @@
 import { BigNumber } from '@core/db/bignum.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
-import { describe } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import {
   OrderAddressRepository,
@@ -26,12 +25,12 @@ test.beforeEach(({ getDb, logger }) => {
   })
 })
 
-describe('OrderModuleService', () => {
+test.describe('OrderModuleService', () => {
   // ---------------------------------------------------------------------------
   // Order CRUD
   // ---------------------------------------------------------------------------
 
-  describe('Order CRUD', () => {
+  test.describe('Order CRUD', () => {
     test('createOrder — creates an order with defaults', async ({ expect, dto }) => {
       const order = await service.createOrder(dto.generate.createOrder())
 
@@ -135,7 +134,7 @@ describe('OrderModuleService', () => {
   // Address
   // ---------------------------------------------------------------------------
 
-  describe('Order Address', () => {
+  test.describe('Order Address', () => {
     test('createOrderAddress — creates a snapshot address', async ({ expect, dto }) => {
       const address = await service.createOrderAddress(dto.generate.createOrderAddress())
 
@@ -174,7 +173,7 @@ describe('OrderModuleService', () => {
   // Line Items
   // ---------------------------------------------------------------------------
 
-  describe('Line Items', () => {
+  test.describe('Line Items', () => {
     test('createOrderLineItems — creates items for an order', async ({ expect, dto }) => {
       const order = await service.createOrder(dto.generate.createOrder())
       const items = await service.createOrderLineItems(order.id, [
@@ -206,7 +205,7 @@ describe('OrderModuleService', () => {
   // Shipping Methods
   // ---------------------------------------------------------------------------
 
-  describe('Shipping Methods', () => {
+  test.describe('Shipping Methods', () => {
     test('createOrderShippingMethods — creates methods for an order', async ({ expect, dto }) => {
       const order = await service.createOrder(dto.generate.createOrder())
       const methods = await service.createOrderShippingMethods(order.id, [
@@ -239,7 +238,7 @@ describe('OrderModuleService', () => {
   // Transactions
   // ---------------------------------------------------------------------------
 
-  describe('Transactions', () => {
+  test.describe('Transactions', () => {
     test('addOrderTransaction — creates a transaction', async ({ expect, dto }) => {
       const order = await service.createOrder(dto.generate.createOrder())
       const transaction = await service.addOrderTransaction(dto.generate.createOrderTransaction({ orderId: order.id }))
@@ -279,7 +278,7 @@ describe('OrderModuleService', () => {
   // Lifecycle — valid transitions
   // ---------------------------------------------------------------------------
 
-  describe('Lifecycle — valid transitions', () => {
+  test.describe('Lifecycle — valid transitions', () => {
     test('completeOrder — pending -> completed', async ({ expect, dto }) => {
       const order = await service.createOrder(dto.generate.createOrder())
       const completed = await service.completeOrder(order.id)
@@ -308,7 +307,7 @@ describe('OrderModuleService', () => {
   // Lifecycle — invalid transitions
   // ---------------------------------------------------------------------------
 
-  describe('Lifecycle — invalid transitions', () => {
+  test.describe('Lifecycle — invalid transitions', () => {
     test('completeOrder — rejects non-pending order', async ({ expect, dto }) => {
       const order = await service.createOrder(dto.generate.createOrder())
       await service.completeOrder(order.id)
@@ -358,7 +357,7 @@ describe('OrderModuleService', () => {
   // Cascade delete
   // ---------------------------------------------------------------------------
 
-  describe('Cascade delete', () => {
+  test.describe('Cascade delete', () => {
     test('deleteOrders — cascades to line items, shipping methods, and transactions', async ({ expect, dto }) => {
       const order = await service.createOrder(
         dto.generate.createOrder({
@@ -384,7 +383,7 @@ describe('OrderModuleService', () => {
   // Computed totals
   // ---------------------------------------------------------------------------
 
-  describe('Computed totals', () => {
+  test.describe('Computed totals', () => {
     test('computeOrderTotals — calculates correct totals with BigNumber', async ({ expect, dto }) => {
       const order = await service.createOrder(
         dto.generate.createOrder({

@@ -2,7 +2,6 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { asValue, createContainer } from 'awilix'
-import { describe } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { AuthIdentityRepository } from '../repositories/auth-identity.js'
 import { AuthPasswordResetTokenRepository } from '../repositories/auth-password-reset-token.js'
@@ -36,7 +35,7 @@ test.beforeEach(({ getDb, logger }) => {
   })
 })
 
-describe('AuthModuleService — AuthIdentity', () => {
+test.describe('AuthModuleService — AuthIdentity', () => {
   test('createAuthIdentities', async ({ expect, dto }) => {
     const input = [dto.generate.createAuthIdentity(), dto.generate.createAuthIdentity()]
 
@@ -116,7 +115,7 @@ describe('AuthModuleService — AuthIdentity', () => {
   })
 })
 
-describe('AuthModuleService — ProviderIdentity', () => {
+test.describe('AuthModuleService — ProviderIdentity', () => {
   test('CRUD on provider_identity', async ({ expect, dto }) => {
     // Create parent auth identity
     const authIdentity = await service.createAuthIdentity(dto.generate.createAuthIdentity())
@@ -193,7 +192,7 @@ describe('AuthModuleService — ProviderIdentity', () => {
   })
 })
 
-describe('AuthModuleService — AuthVerification', () => {
+test.describe('AuthModuleService — AuthVerification', () => {
   test('CRUD on auth_verification', async ({ expect, dto }) => {
     const authIdentity = await service.createAuthIdentity(dto.generate.createAuthIdentity())
 
@@ -238,7 +237,7 @@ describe('AuthModuleService — AuthVerification', () => {
   })
 })
 
-describe('AuthModuleService — AuthPasswordResetToken', () => {
+test.describe('AuthModuleService — AuthPasswordResetToken', () => {
   test('create and find by token hash', async ({ expect, dto }) => {
     const authIdentity = await service.createAuthIdentity(dto.generate.createAuthIdentity())
     const providerIdentity = await service.createProviderIdentity(

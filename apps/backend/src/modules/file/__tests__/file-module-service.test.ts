@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { test } from '@tests/setup/test-extend.js'
 import { ErrorTypes } from '../../../core/errors/app-error.js'
 import { FILE_PROVIDER_REGISTRATION_PREFIX } from '../constants.js'
 import { FileModuleService } from '../services/file-module-service.js'
@@ -17,13 +17,13 @@ function createFileService(options?: { maxFileSize?: number }) {
 
 const base64Content = Buffer.from('hello world').toString('base64')
 
-describe('FileModuleService', () => {
+test.describe('FileModuleService', () => {
   // ---------------------------------------------------------------------------
   // createFiles / retrieveFile
   // ---------------------------------------------------------------------------
 
-  describe('createFiles + retrieveFile', () => {
-    test('creates a file and retrieves its URL', async () => {
+  test.describe('createFiles + retrieveFile', () => {
+    test('creates a file and retrieves its URL', async ({ expect }) => {
       const service = createFileService()
 
       const files = await service.createFiles([
@@ -40,7 +40,7 @@ describe('FileModuleService', () => {
       expect(retrieved.url).toBe(created?.url)
     })
 
-    test('creates multiple files', async () => {
+    test('creates multiple files', async ({ expect }) => {
       const service = createFileService()
 
       const files = await service.createFiles([
@@ -55,7 +55,7 @@ describe('FileModuleService', () => {
       expect(files[2]?.id).toBe('uploads/c.pdf')
     })
 
-    test('rejects files exceeding maxFileSize', async () => {
+    test('rejects files exceeding maxFileSize', async ({ expect }) => {
       const service = createFileService({ maxFileSize: 5 })
 
       const error = await service
@@ -71,8 +71,8 @@ describe('FileModuleService', () => {
   // deleteFiles
   // ---------------------------------------------------------------------------
 
-  describe('deleteFiles', () => {
-    test('deletes files by key', async () => {
+  test.describe('deleteFiles', () => {
+    test('deletes files by key', async ({ expect }) => {
       const service = createFileService()
 
       const files = await service.createFiles([
@@ -91,8 +91,8 @@ describe('FileModuleService', () => {
   // getUploadFileUrls
   // ---------------------------------------------------------------------------
 
-  describe('getUploadFileUrls', () => {
-    test('generates presigned upload URLs', async () => {
+  test.describe('getUploadFileUrls', () => {
+    test('generates presigned upload URLs', async ({ expect }) => {
       const service = createFileService()
 
       const urls = await service.getUploadFileUrls([
@@ -107,7 +107,7 @@ describe('FileModuleService', () => {
       expect(urls[1]?.url).toContain('upload2.png')
     })
 
-    test('rejects empty filename', async () => {
+    test('rejects empty filename', async ({ expect }) => {
       const service = createFileService()
 
       const error = await service.getUploadFileUrls([{ filename: '' }]).catch((e) => e)
@@ -121,8 +121,8 @@ describe('FileModuleService', () => {
   // listFiles
   // ---------------------------------------------------------------------------
 
-  describe('listFiles', () => {
-    test('throws without id filter', async () => {
+  test.describe('listFiles', () => {
+    test('throws without id filter', async ({ expect }) => {
       const service = createFileService()
 
       const error = await service.listFiles().catch((e) => e)
@@ -131,7 +131,7 @@ describe('FileModuleService', () => {
       expect(error.message).toContain('requires an "id" filter')
     })
 
-    test('lists files by id', async () => {
+    test('lists files by id', async ({ expect }) => {
       const service = createFileService()
 
       await service.createFiles([
@@ -151,8 +151,8 @@ describe('FileModuleService', () => {
   // listAndCountFiles
   // ---------------------------------------------------------------------------
 
-  describe('listAndCountFiles', () => {
-    test('returns correct count', async () => {
+  test.describe('listAndCountFiles', () => {
+    test('returns correct count', async ({ expect }) => {
       const service = createFileService()
 
       await service.createFiles([
@@ -174,8 +174,8 @@ describe('FileModuleService', () => {
   // getProvider
   // ---------------------------------------------------------------------------
 
-  describe('getProvider', () => {
-    test('returns provider instance', () => {
+  test.describe('getProvider', () => {
+    test('returns provider instance', ({ expect }) => {
       const service = createFileService()
 
       const provider = service.getProvider()
@@ -188,12 +188,12 @@ describe('FileModuleService', () => {
   // Single provider constraint
   // ---------------------------------------------------------------------------
 
-  describe('single provider constraint', () => {
-    test('throws when no provider is registered', () => {
+  test.describe('single provider constraint', () => {
+    test('throws when no provider is registered', ({ expect }) => {
       expect(() => new FileProviderService({})).toThrow('exactly one provider')
     })
 
-    test('throws when multiple providers are registered', () => {
+    test('throws when multiple providers are registered', ({ expect }) => {
       expect(
         () =>
           new FileProviderService({

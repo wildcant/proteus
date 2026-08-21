@@ -6,7 +6,6 @@ import { test } from '@tests/setup/test-extend.js'
 import type { Express } from 'express'
 import jwt from 'jsonwebtoken'
 import request from 'supertest'
-import { describe } from 'vitest'
 import { bootstrapContainer } from '../../../container.js'
 import { env } from '../../../env.js'
 import { createExpressApp } from '../../../framework/runtime/express/app.js'
@@ -83,7 +82,7 @@ async function registerCustomer(email: string, password: string) {
   return body.token as string
 }
 
-describe('POST /auth/verification/request', () => {
+test.describe('POST /auth/verification/request', () => {
   test('request generates a verification record', async ({ expect }) => {
     const token = await registerCustomer('verify-request@example.com', 'secret123')
 
@@ -133,7 +132,7 @@ describe('POST /auth/verification/request', () => {
   })
 })
 
-describe('POST /auth/verification/confirm', () => {
+test.describe('POST /auth/verification/confirm', () => {
   /**
    * Helper: register customer, request verification, extract code from DB.
    */
@@ -224,7 +223,7 @@ describe('POST /auth/verification/confirm', () => {
   })
 })
 
-describe('verification gate on login', () => {
+test.describe('verification gate on login', () => {
   test('customer login returns verification_required when unverified', async ({ expect }) => {
     await post('/auth/customer/emailpass/register', {
       email: 'gate-unverified@example.com',

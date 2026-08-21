@@ -7,7 +7,7 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import { noopLogger } from '../../../framework/logger/noop-logger.js'
 import { completeCartWorkflow } from '../complete-cart.js'
 
@@ -185,8 +185,11 @@ function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOpti
   }
 }
 
-describe('completeCartWorkflow', () => {
-  test('happy path: creates order from cart, links, reserves inventory, and records transaction', async ({ dto }) => {
+test.describe('completeCartWorkflow', () => {
+  test('happy path: creates order from cart, links, reserves inventory, and records transaction', async ({
+    dto,
+    expect,
+  }) => {
     const services = setupWorkflow(dto.generate)
 
     const result = await completeCartWorkflow.run({ cartId: services.cart.id })
@@ -234,7 +237,7 @@ describe('completeCartWorkflow', () => {
     })
   })
 
-  test('idempotency: returns existing order if order already linked', async ({ dto }) => {
+  test('idempotency: returns existing order if order already linked', async ({ dto, expect }) => {
     const cart = dto.generate.cart({ id: 'cart_1', status: 'completed', completedAt: new Date() })
     const services = setupWorkflow(dto.generate, {
       cart,
@@ -249,7 +252,7 @@ describe('completeCartWorkflow', () => {
     expect(services.cartService.updateCart).not.toHaveBeenCalled()
   })
 
-  test('parses shipping method data from text to jsonb', async ({ dto }) => {
+  test('parses shipping method data from text to jsonb', async ({ dto, expect }) => {
     const cart = dto.generate.cart({ id: 'cart_1' })
     const services = setupWorkflow(dto.generate, {
       cart,
@@ -268,7 +271,7 @@ describe('completeCartWorkflow', () => {
     expect(orderMethod.data).toEqual({ provider: 'ups', rateId: 'R123' })
   })
 
-  test('snapshots addresses without timestamps', async ({ dto }) => {
+  test('snapshots addresses without timestamps', async ({ dto, expect }) => {
     const services = setupWorkflow(dto.generate, {
       address: dto.generate.cartAddress({ firstName: 'John', lastName: 'Smith' }),
     })
@@ -287,7 +290,7 @@ describe('completeCartWorkflow', () => {
     expect(addressInput).not.toHaveProperty('deletedAt')
   })
 
-  test('handles cart with no addresses', async ({ dto }) => {
+  test('handles cart with no addresses', async ({ dto, expect }) => {
     const services = setupWorkflow(dto.generate, {
       cart: dto.generate.cart({ shippingAddressId: null, billingAddressId: null }),
       address: null,
@@ -302,7 +305,7 @@ describe('completeCartWorkflow', () => {
     expect(createOrderCall.billingAddressId).toBeUndefined()
   })
 
-  test('compensation: deletes order and dismisses links when record-transaction fails', async ({ dto }) => {
+  test('compensation: deletes order and dismisses links when record-transaction fails', async ({ dto, expect }) => {
     const services = setupWorkflow(dto.generate)
 
     // Make addOrderTransaction fail to trigger compensation
@@ -315,7 +318,7 @@ describe('completeCartWorkflow', () => {
     expect(services.orderService.deleteOrders).toHaveBeenCalledWith(['ord_1'])
   })
 
-  test('rejects line items without variants', async ({ dto }) => {
+  test('rejects line items without variants', async ({ dto, expect }) => {
     const cart = dto.generate.cart()
     setupWorkflow(dto.generate, {
       cart,
@@ -325,7 +328,7 @@ describe('completeCartWorkflow', () => {
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('has no variant')
   })
 
-  test('rejects cart without email', async ({ dto }) => {
+  test('rejects cart without email', async ({ dto, expect }) => {
     const cart = dto.generate.cart({ email: null })
     setupWorkflow(dto.generate, { cart })
 
