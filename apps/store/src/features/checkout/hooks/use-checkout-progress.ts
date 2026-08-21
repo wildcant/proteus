@@ -1,10 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
-import type { Step } from '#/features/checkout/constants'
+import { AUTHED_STEPS, STEPS, Step } from '#/features/checkout/constants'
+import { isGuest } from '#/lib/auth-token'
 
 export function useCheckoutProgress(cart: StoreCartDetailResponseCart) {
   const navigate = useNavigate()
 
+  const isGuestCheckout = isGuest()
+  const hasContact = !!cart.email
   const hasAddress = !!cart.shippingAddress
   const hasShipping = cart.shippingMethods.length > 0
 
@@ -14,5 +17,22 @@ export function useCheckoutProgress(cart: StoreCartDetailResponseCart) {
 
   const lastShippingMethod = cart.shippingMethods.at(-1)
 
-  return { hasAddress, hasShipping, goToStep, lastShippingMethod }
+  // Dynamic step numbers: guests see CONTACT as step 1, authenticated users start at ADDRESS
+  const stepNumber = (step: Step) => {
+    const order = isGuestCheckout ? STEPS : AUTHED_STEPS
+    return order.indexOf(step) + 1
+  }
+
+  const defaultStep = isGuestCheckout ? Step.CONTACT : Step.ADDRESS
+
+  return {
+    isGuest: isGuestCheckout,
+    hasContact,
+    hasAddress,
+    hasShipping,
+    goToStep,
+    lastShippingMethod,
+    stepNumber,
+    defaultStep,
+  }
 }

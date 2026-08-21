@@ -23,22 +23,22 @@ const EMPTY_ADDRESS: ShippingAddressFormValues['shippingAddress'] = {
   phone: '',
 }
 
-const TEST_ADDRESS_DEFAULT = {
-  firstName: 'John',
-  lastName: 'Doe',
-  address1: '123 Main St',
-  address2: '',
-  company: '',
-  city: 'Austin',
-  countryCode: 'us',
-  province: 'TX',
-  postalCode: '78701',
-  phone: '5551234567',
-}
+// const TEST_ADDRESS_DEFAULT = {
+//   firstName: 'John',
+//   lastName: 'Doe',
+//   address1: '123 Main St',
+//   address2: '',
+//   company: '',
+//   city: 'Austin',
+//   countryCode: 'us',
+//   province: 'TX',
+//   postalCode: '78701',
+//   phone: '5551234567',
+// }
 
 const EMPTY_DEFAULTS: ShippingAddressFormValues = {
   sameAsBilling: true,
-  shippingAddress: TEST_ADDRESS_DEFAULT,
+  shippingAddress: EMPTY_ADDRESS,
   billingAddress: EMPTY_ADDRESS,
 }
 

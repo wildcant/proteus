@@ -35,6 +35,8 @@ export type CartAddressInputBody = z.infer<typeof CartAddressInput>
 
 export const UpdateCart = z.object({
   email: z.email().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   shippingAddress: CartAddressInput.optional(),
   billingAddress: CartAddressInput.optional(),
 })

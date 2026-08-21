@@ -16,3 +16,7 @@ export function clearToken(): void {
   if (!hasLocalStorage) return
   localStorage.removeItem(TOKEN_KEY)
 }
+
+export function isGuest(): boolean {
+  return !getToken()
+}

@@ -1,6 +1,6 @@
 import { Sheet, SheetTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
-import { MenuIcon } from 'lucide-react'
+import { MenuIcon, UserIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '#/components/button'
 import { CartDropdown } from '#/features/cart/components/cart-dropdown'
@@ -26,7 +26,14 @@ export function Nav() {
           Proteus
         </Link>
 
-        <CartDropdown />
+        <div className="flex items-center gap-1">
+          <CartDropdown />
+          <Link to="/account">
+            <Button variant="ghost" size="icon" aria-label="Account">
+              <UserIcon className="h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
       </nav>
     </header>
   )

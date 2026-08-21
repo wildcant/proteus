@@ -7,6 +7,7 @@ export default [
     method: 'GET',
     matcher: '/store/payment-providers',
     handler: paymentProviderRoutes.GET,
+    auth: 'optional',
     operationId: 'listStorePaymentProviders',
     summary: 'List enabled payment providers',
     tags: [Tags.PAYMENTS],

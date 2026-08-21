@@ -1,12 +1,11 @@
 import { SheetContent, SheetFooter, SheetHeader } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
-import { HomeIcon, PackageIcon, ShoppingBagIcon, UserIcon } from 'lucide-react'
+import { HomeIcon, PackageIcon, ShoppingBagIcon } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 
 const navLinks = [
   { to: '/' as const, label: 'Home', icon: HomeIcon },
   { to: '/products' as const, label: 'Products', icon: PackageIcon },
-  { to: '/account' as const, label: 'Account', icon: UserIcon },
   { to: '/cart' as const, label: 'Cart', icon: ShoppingBagIcon },
 ]
 

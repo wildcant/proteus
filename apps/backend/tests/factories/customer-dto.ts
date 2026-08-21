@@ -52,6 +52,7 @@ export function generateCreateCustomerAddressDTO(
 export function generateCustomerDTO(overrides?: Partial<CustomerDTO>): CustomerDTO {
   return {
     id: `cus_${faker.string.alphanumeric(32)}`,
+    hasAccount: faker.datatype.boolean(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
     email: faker.internet.email(),

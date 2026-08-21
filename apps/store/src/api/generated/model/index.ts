@@ -30,6 +30,7 @@ export * from './storeCartDetailResponse.ts';
 export * from './storeCartDetailResponseCart.ts';
 export * from './storeCartInventoryResponse.ts';
 export * from './storeCartLineItem.ts';
+export * from './storeCartResponse.ts';
 export * from './storeCartShippingMethod.ts';
 export * from './storeCartShippingMethodData.ts';
 export * from './storeCartTotals.ts';

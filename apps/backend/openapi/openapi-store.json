@@ -677,6 +677,15 @@
         },
         "required": ["lineItemId", "variantId", "inventoryItemId", "requiredQuantity", "quantity", "locationIds"]
       },
+      "StoreCartResponse": {
+        "type": "object",
+        "properties": {
+          "cart": {
+            "$ref": "#/components/schemas/StoreCart"
+          }
+        },
+        "required": ["cart"]
+      },
       "CustomerResponse": {
         "type": "object",
         "properties": {
@@ -692,11 +701,14 @@
           "id": {
             "type": "string"
           },
+          "hasAccount": {
+            "type": "boolean"
+          },
           "firstName": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "lastName": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "email": {
             "type": "string"
@@ -714,7 +726,7 @@
             "format": "date-time"
           }
         },
-        "required": ["id", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
+        "required": ["id", "hasAccount", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
       },
       "StoreOrderListResponse": {
         "type": "object",
@@ -1658,6 +1670,12 @@
                     "type": "string",
                     "format": "email"
                   },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
                   "shippingAddress": {
                     "type": "object",
                     "properties": {
@@ -2129,6 +2147,42 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreCartInventoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/carts/{id}/customer": {
+      "post": {
+        "operationId": "transferStoreCartCustomer",
+        "summary": "Transfer a cart to the authenticated customer",
+        "tags": ["Carts"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCartResponse"
                 }
               }
             }

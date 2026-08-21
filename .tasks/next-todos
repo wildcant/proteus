@@ -1,9 +1,8 @@
 Fixes and improvements
-- mutations can error - make sure we provide onError => display toast. to all mutations under api. add doc to make sure this is an stablished pattern.
 
 Future features TODOs
+- Access Control Module Architecture
 - storage service: S3, R2, Minio
-- GUEST MODE: should order email be required? how do you communicate with the customer otherwise? 
 - GLOBAL SHIPPING OPTIONS [COUNTRY CODE]: if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
 
 Future Infra TODOs

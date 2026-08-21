@@ -3,14 +3,13 @@ import { customerMeQueryOptions } from '#/features/account/api/customer'
 import { getToken } from '#/lib/auth-token'
 
 export const Route = createFileRoute('/_main/_authed')({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: ({ context }) => {
     const token = getToken()
     if (!token) {
       throw redirect({ to: '/login' })
     }
 
-    const { customer } = await context.queryClient.ensureQueryData(customerMeQueryOptions())
-    return { customer }
+    context.queryClient.prefetchQuery(customerMeQueryOptions())
   },
   component: () => <Outlet />,
 })

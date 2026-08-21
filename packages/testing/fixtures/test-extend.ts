@@ -2,28 +2,54 @@ import { test as base, expect } from '@playwright/test'
 import { interpolatePath } from '@tanstack/react-router'
 import {
   createCart,
+  createCheckoutInfrastructure,
   createCustomer,
+  createFulfillmentProvider,
+  createFulfillmentSet,
+  createGeoZone,
+  createPaymentProvider,
   createPrice,
   createPriceSet,
   createProduct,
   createProductVariant,
   createProductVariantPriceSet,
   createProductWithPricing,
+  createServiceZone,
+  createShippingInfrastructure,
+  createShippingOption,
+  createShippingOptionType,
+  createShippingProfile,
   createUser,
   deleteCartById,
   deleteCustomerById,
+  deleteFulfillmentProviderById,
+  deleteFulfillmentSetById,
+  deleteGeoZoneById,
+  deletePaymentProviderById,
   deletePriceById,
   deletePriceSetById,
   deleteProductById,
   deleteProductVariantPriceSetById,
+  deleteServiceZoneById,
+  deleteShippingOptionById,
+  deleteShippingOptionTypeById,
+  deleteShippingProfileById,
   deleteUserById,
   generateCart,
   generateCustomer,
+  generateFulfillmentProvider,
+  generateFulfillmentSet,
+  generateGeoZone,
+  generatePaymentProvider,
   generatePrice,
   generatePriceSet,
   generateProduct,
   generateProductVariant,
   generateProductVariantPriceSet,
+  generateServiceZone,
+  generateShippingOption,
+  generateShippingOptionType,
+  generateShippingProfile,
   generateUser,
 } from 'backend/test'
 import { type AuthenticateFunction, combinePersonas, definePersona } from 'playwright-persona'
@@ -94,6 +120,14 @@ export function createTest<RoutePath extends string = string>() {
         priceSet: typeof generatePriceSet
         price: typeof generatePrice
         productVariantPriceSet: typeof generateProductVariantPriceSet
+        fulfillmentProvider: typeof generateFulfillmentProvider
+        fulfillmentSet: typeof generateFulfillmentSet
+        serviceZone: typeof generateServiceZone
+        geoZone: typeof generateGeoZone
+        shippingProfile: typeof generateShippingProfile
+        shippingOptionType: typeof generateShippingOptionType
+        shippingOption: typeof generateShippingOption
+        paymentProvider: typeof generatePaymentProvider
         loginForm: typeof generateLoginFormValues
         customerSignupForm: typeof generateRegisterFormValues
       }
@@ -107,6 +141,16 @@ export function createTest<RoutePath extends string = string>() {
         price: typeof createPrice
         productVariantPriceSet: typeof createProductVariantPriceSet
         productWithPricing: typeof createProductWithPricing
+        checkoutInfrastructure: typeof createCheckoutInfrastructure
+        shippingInfrastructure: typeof createShippingInfrastructure
+        fulfillmentProvider: typeof createFulfillmentProvider
+        fulfillmentSet: typeof createFulfillmentSet
+        serviceZone: typeof createServiceZone
+        geoZone: typeof createGeoZone
+        shippingProfile: typeof createShippingProfile
+        shippingOptionType: typeof createShippingOptionType
+        shippingOption: typeof createShippingOption
+        paymentProvider: typeof createPaymentProvider
       }
       destroy: {
         cart: typeof deleteCartById
@@ -116,6 +160,14 @@ export function createTest<RoutePath extends string = string>() {
         priceSet: typeof deletePriceSetById
         price: typeof deletePriceById
         productVariantPriceSet: typeof deleteProductVariantPriceSetById
+        fulfillmentProvider: typeof deleteFulfillmentProviderById
+        fulfillmentSet: typeof deleteFulfillmentSetById
+        serviceZone: typeof deleteServiceZoneById
+        geoZone: typeof deleteGeoZoneById
+        shippingProfile: typeof deleteShippingProfileById
+        shippingOptionType: typeof deleteShippingOptionTypeById
+        shippingOption: typeof deleteShippingOptionById
+        paymentProvider: typeof deletePaymentProviderById
       }
     }
     navigate: NavigateFunction<RoutePath>
@@ -132,6 +184,14 @@ export function createTest<RoutePath extends string = string>() {
         priceSet: generatePriceSet,
         price: generatePrice,
         productVariantPriceSet: generateProductVariantPriceSet,
+        fulfillmentProvider: generateFulfillmentProvider,
+        fulfillmentSet: generateFulfillmentSet,
+        serviceZone: generateServiceZone,
+        geoZone: generateGeoZone,
+        shippingProfile: generateShippingProfile,
+        shippingOptionType: generateShippingOptionType,
+        shippingOption: generateShippingOption,
+        paymentProvider: generatePaymentProvider,
 
         // Forms
         loginForm: generateLoginFormValues,
@@ -147,6 +207,16 @@ export function createTest<RoutePath extends string = string>() {
         price: createPrice,
         productVariantPriceSet: createProductVariantPriceSet,
         productWithPricing: createProductWithPricing,
+        checkoutInfrastructure: createCheckoutInfrastructure,
+        shippingInfrastructure: createShippingInfrastructure,
+        fulfillmentProvider: createFulfillmentProvider,
+        fulfillmentSet: createFulfillmentSet,
+        serviceZone: createServiceZone,
+        geoZone: createGeoZone,
+        shippingProfile: createShippingProfile,
+        shippingOptionType: createShippingOptionType,
+        shippingOption: createShippingOption,
+        paymentProvider: createPaymentProvider,
       },
       destroy: {
         cart: deleteCartById,
@@ -156,6 +226,14 @@ export function createTest<RoutePath extends string = string>() {
         priceSet: deletePriceSetById,
         price: deletePriceById,
         productVariantPriceSet: deleteProductVariantPriceSetById,
+        fulfillmentProvider: deleteFulfillmentProviderById,
+        fulfillmentSet: deleteFulfillmentSetById,
+        serviceZone: deleteServiceZoneById,
+        geoZone: deleteGeoZoneById,
+        shippingProfile: deleteShippingProfileById,
+        shippingOptionType: deleteShippingOptionTypeById,
+        shippingOption: deleteShippingOptionById,
+        paymentProvider: deletePaymentProviderById,
       },
     },
 

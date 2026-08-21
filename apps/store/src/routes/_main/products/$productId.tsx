@@ -5,6 +5,7 @@ import { ProductDetail } from '#/features/products/components/product-detail'
 import { ProductDetailSkeleton } from '#/features/products/components/product-detail-skeleton'
 
 export const Route = createFileRoute('/_main/products/$productId')({
+  ssr: true,
   component: ProductDetailPage,
   loader: async ({ context, params }) => {
     await context.queryClient.ensureQueryData(productQueryOptions(params.productId))

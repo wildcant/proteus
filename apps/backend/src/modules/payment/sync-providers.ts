@@ -14,5 +14,5 @@ export async function syncPaymentProviders(getDb: () => Database) {
     paymentProviderRepository,
     logger: noopLogger,
   })
-  await seedProviders(providerService, paymentProviderDeclarations)
+  await seedProviders(providerService, paymentProviderDeclarations.providers)
 }

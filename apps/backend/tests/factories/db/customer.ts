@@ -8,6 +8,7 @@ import { db } from '../../db/client.js'
 export function generateCustomer(overrides?: Partial<CreateCustomer>): CreateCustomer {
   return {
     id: `cus_${faker.string.alphanumeric(32)}`,
+    hasAccount: faker.datatype.boolean(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
     email: faker.internet.email(),

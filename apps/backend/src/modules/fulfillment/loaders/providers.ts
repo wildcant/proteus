@@ -12,6 +12,10 @@ export type FulfillmentProviderConfig = {
   options?: Record<string, unknown>
 }
 
+export type FulfillmentModuleOptions = {
+  providers?: FulfillmentProviderConfig[]
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: provider constructors accept varied dependency shapes
 type ProviderConstructor = (new (...args: any[]) => AbstractFulfillmentProvider) & { identifier: string }
 
@@ -48,7 +52,7 @@ export async function loadProviders({
   container: AwilixContainer
   options?: Record<string, unknown>
 }): Promise<void> {
-  const opts = options as { providers?: FulfillmentProviderConfig[] } | undefined
+  const opts = options as FulfillmentModuleOptions | undefined
 
   // 1. Always register the manual provider
   const manualProvider = new ManualFulfillmentProvider()

@@ -19,6 +19,7 @@ import type {
   VerificationConfirmResponse,
 } from '#/api/generated/model'
 import { clearToken, setToken } from '#/lib/auth-token'
+import { clearCartId } from '#/lib/cart-id'
 
 export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Error, StoreLoginBody>) => {
   const { onSuccess, onError, ...rest } = options ?? {}
@@ -108,7 +109,8 @@ export const useLogout = () => {
 
   return () => {
     clearToken()
-    queryClient.clear()
+    clearCartId()
+    queryClient.resetQueries()
     navigate({ to: '/' })
   }
 }

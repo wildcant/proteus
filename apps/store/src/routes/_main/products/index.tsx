@@ -9,6 +9,7 @@ import { ProductList } from '#/features/products/components/product-list'
 import { ProductListSkeleton } from '#/features/products/components/product-list-skeleton'
 
 export const Route = createFileRoute('/_main/products/')({
+  ssr: true,
   component: ProductsPage,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(

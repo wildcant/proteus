@@ -6,9 +6,15 @@
  */
 
 export interface AdminUpdateCustomer {
-  /** @minLength 1 */
-  firstName?: string;
-  /** @minLength 1 */
-  lastName?: string;
+  /**
+     * @minLength 1
+     * @nullable
+     */
+  firstName?: string | null;
+  /**
+     * @minLength 1
+     * @nullable
+     */
+  lastName?: string | null;
   email?: string;
 }

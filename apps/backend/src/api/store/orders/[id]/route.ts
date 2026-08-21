@@ -7,14 +7,15 @@ import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
 export const GetInput = { params: IdParams }
 export const GetOutput = StoreOrderResponse
 
+// TODO: Replace unauthenticated access with a signed order access token (JWT scoped to order ID)
+// so that order details are not accessible to anyone who knows the order UUID.
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const customerId = req.authContext?.actorId
-  if (!customerId) throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
 
   const orderService = req.scope.resolve<IOrderModuleService>(Modules.ORDER)
   const order = await orderService.retrieveOrder(req.params.id)
 
-  if (order.customerId !== customerId) {
+  if (customerId && order.customerId !== customerId) {
     throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Order with id "${req.params.id}" not found` })
   }
 

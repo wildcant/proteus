@@ -3,6 +3,7 @@ import { Step } from '#/features/checkout/constants'
 import { useCheckoutProgress } from '#/features/checkout/hooks/use-checkout-progress'
 import { AddressSummary } from './address-summary'
 import { CheckoutStep } from './checkout-step'
+import { ContactForm } from './contact-form'
 import { PaymentForm } from './payment-form'
 import { ReviewStep } from './review-step'
 import { ShippingAddressForm } from './shipping-address-form'
@@ -14,13 +15,27 @@ type CheckoutFormProps = {
 }
 
 export function CheckoutForm({ cart, step }: CheckoutFormProps) {
-  const { hasAddress, hasShipping, goToStep, lastShippingMethod } = useCheckoutProgress(cart)
+  const { isGuest, hasContact, hasAddress, hasShipping, goToStep, lastShippingMethod, stepNumber } =
+    useCheckoutProgress(cart)
 
   return (
     <div className="space-y-6">
+      {isGuest ? (
+        <CheckoutStep
+          title="Contact"
+          stepNumber={stepNumber(Step.CONTACT)}
+          isOpen={step === Step.CONTACT}
+          isComplete={hasContact}
+          onEdit={() => goToStep(Step.CONTACT)}
+          summary={<p>{cart.email}</p>}
+        >
+          <ContactForm cart={cart} onComplete={() => goToStep(Step.ADDRESS)} />
+        </CheckoutStep>
+      ) : null}
+
       <CheckoutStep
         title="Shipping Address"
-        stepNumber={1}
+        stepNumber={stepNumber(Step.ADDRESS)}
         isOpen={step === Step.ADDRESS}
         isComplete={hasAddress}
         onEdit={() => goToStep(Step.ADDRESS)}
@@ -31,7 +46,7 @@ export function CheckoutForm({ cart, step }: CheckoutFormProps) {
 
       <CheckoutStep
         title="Delivery"
-        stepNumber={2}
+        stepNumber={stepNumber(Step.DELIVERY)}
         isOpen={step === Step.DELIVERY}
         isComplete={hasShipping}
         onEdit={() => goToStep(Step.DELIVERY)}
@@ -47,7 +62,7 @@ export function CheckoutForm({ cart, step }: CheckoutFormProps) {
 
       <CheckoutStep
         title="Payment"
-        stepNumber={3}
+        stepNumber={stepNumber(Step.PAYMENT)}
         isOpen={step === Step.PAYMENT}
         isComplete={step === Step.REVIEW}
         onEdit={() => goToStep(Step.PAYMENT)}
@@ -58,7 +73,7 @@ export function CheckoutForm({ cart, step }: CheckoutFormProps) {
 
       <CheckoutStep
         title="Review"
-        stepNumber={4}
+        stepNumber={stepNumber(Step.REVIEW)}
         isOpen={step === Step.REVIEW}
         isComplete={false}
         onEdit={() => goToStep(Step.REVIEW)}

@@ -6,12 +6,14 @@ import {
   createStoreCart,
   deleteStoreCartLineItem,
   getStoreCart,
+  transferStoreCartCustomer,
   updateStoreCartLineItem,
 } from '#/api/generated/carts/carts'
 import type {
   AddStoreCartLineItemBody,
   DeleteResponse,
   StoreCartDetailResponse,
+  StoreCartResponse,
   StoreCreateCartLineItemResponse,
   StoreCreateCartResponse,
   StoreUpdateCartLineItemResponse,
@@ -150,6 +152,29 @@ export const useRemoveLineItem = (options?: UseMutationOptions<DeleteResponse, E
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: 'Failed to remove cart item', description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+export const useTransferCart = (options?: UseMutationOptions<StoreCartResponse | null, Error, void>) => {
+  const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
+
+  return useMutation({
+    ...rest,
+    mutationFn: async () => {
+      const cartId = getCartId()
+      if (!cartId) return null
+      return transferStoreCartCustomer(cartId)
+    },
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: cartQueryKeys.all })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to transfer cart', description: error.message })
       onError?.(...args)
     },
   })

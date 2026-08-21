@@ -1,14 +1,15 @@
 export type CreateCustomerDTO = {
   id?: string
-  firstName: string
-  lastName: string
+  hasAccount?: boolean
+  firstName?: string | null
+  lastName?: string | null
   email: string
   addresses?: Omit<CreateCustomerAddressDTO, 'customerId'>[]
 }
 
 export type UpdateCustomerDTO = {
-  firstName?: string | undefined
-  lastName?: string | undefined
+  firstName?: string | undefined | null
+  lastName?: string | undefined | null
   email?: string | undefined
 }
 

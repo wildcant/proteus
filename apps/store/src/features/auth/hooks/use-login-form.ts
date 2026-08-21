@@ -6,11 +6,14 @@ import { useAppForm } from '#/lib/form-hook'
 
 export type LoginFormParams = SubmitFormParams<AuthenticateResponse>
 
+const EMPTY: StoreLoginBody = { email: '', password: '' }
+// const TEST: StoreLoginBody= {email: 'customer@example.com', password: '123'}
+
 export function useLoginForm(params?: LoginFormParams) {
   const loginMutation = useLogin()
 
   const form = useAppForm({
-    defaultValues: { email: '', password: '' },
+    defaultValues: EMPTY,
     validators: { onSubmit: StoreLoginBody },
     onSubmit: ({ value }) => {
       loginMutation.mutate(value, {
