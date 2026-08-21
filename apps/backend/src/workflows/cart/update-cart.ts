@@ -4,6 +4,7 @@ import type { ICartModuleService } from '@core/types/cart/service.js'
 import { Modules } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import type { UpdateCartBody } from '@proteus/http-schemas/store'
+import { findOrCreateCustomerStep } from './steps/find-or-create-customer.js'
 
 type UpdateCartInput = UpdateCartBody & {
   cartId: string
@@ -35,15 +36,25 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>('upda
   })
 
   /**
-   * Upserts addresses and updates the cart in a single transaction. Address
-   * entities are created or updated first, then linked to the cart along with
-   * any email change. If anything fails, the entire transaction rolls back —
-   * no manual compensation needed.
+   * When a guest provides an email, find or create a guest customer record
+   * and link it to the cart so the order inherits a customerId.
    */
-  // TODO(guest): when a guest provides an email, findOrCreateCustomer by email
-  // and set customerId on the cart so the order inherits it
+  const { customer } = await findOrCreateCustomerStep(ctx, {
+    email: input.email,
+    firstName: input.firstName,
+    lastName: input.lastName,
+  })
+
+  /**
+   * Links the guest customer to the cart, then upserts addresses and email
+   * in a single transaction.
+   */
   const updatedCart = await ctx.step('update-cart', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
+
+    if (customer) {
+      await cartService.updateCart(input.cartId, { customerId: customer.id, email: customer.email })
+    }
 
     return cartService.updateCartWithAddresses(input.cartId, {
       email: input.email,

@@ -324,4 +324,13 @@ describe('completeCartWorkflow', () => {
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('has no variant')
   })
+
+  test('rejects cart without email', async ({ dto }) => {
+    const cart = dto.generate.cart({ email: null })
+    setupWorkflow(dto.generate, { cart })
+
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow(
+      'has no email — an email is required to complete checkout',
+    )
+  })
 })

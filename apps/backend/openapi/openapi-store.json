@@ -1670,6 +1670,12 @@
                     "type": "string",
                     "format": "email"
                   },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
                   "shippingAddress": {
                     "type": "object",
                     "properties": {

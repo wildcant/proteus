@@ -9,6 +9,8 @@ import type { UpdateStoreCartBodyShippingAddress } from './updateStoreCartBodySh
 
 export type UpdateStoreCartBody = {
   email?: string;
+  firstName?: string;
+  lastName?: string;
   shippingAddress?: UpdateStoreCartBodyShippingAddress;
   billingAddress?: UpdateStoreCartBodyBillingAddress;
 };

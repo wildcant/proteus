@@ -157,6 +157,19 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     }
   })
 
+  /** Every order needs an email for receipts and communication. Reject early
+   *  before any side effects if the guest never provided one. */
+  await ctx.step('validate-cart-email', async ({ container }) => {
+    const cartService = container.resolve<ICartModuleService>(Modules.CART)
+    const cart = await cartService.retrieveCart(input.cartId)
+    if (!cart.email) {
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `Cart "${input.cartId}" has no email — an email is required to complete checkout`,
+      })
+    }
+  })
+
   /** Snapshot the cart into an immutable order record.
    * If anything after this point fails, compensation deletes the order. */
   const order = await ctx.step(
