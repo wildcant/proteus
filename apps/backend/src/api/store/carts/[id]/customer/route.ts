@@ -1,3 +1,4 @@
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { IdParams, StoreCartResponse } from '@proteus/http-schemas/store'
 import { transferCartCustomerWorkflow } from '@workflows/cart/transfer-cart-customer.js'
 import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
@@ -8,7 +9,7 @@ export const PostOutput = StoreCartResponse
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const customerId = req.authContext?.actorId
   if (!customerId) {
-    return { status: 401, json: { message: 'Authentication required' } as never }
+    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Authentication required' })
   }
 
   const cart = await transferCartCustomerWorkflow.run({

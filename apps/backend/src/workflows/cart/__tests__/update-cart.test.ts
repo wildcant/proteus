@@ -40,8 +40,10 @@ function setup(
   })
 
   const customerService = {
-    listCustomers: vi.fn().mockImplementation(async () => {
-      return existingGuestCustomer ? [existingGuestCustomer] : []
+    listCustomers: vi.fn().mockImplementation(async (filters: { hasAccount?: boolean }) => {
+      if (!existingGuestCustomer) return []
+      if (filters.hasAccount !== undefined && filters.hasAccount !== existingGuestCustomer.hasAccount) return []
+      return [existingGuestCustomer]
     }),
     createCustomer: vi.fn().mockImplementation(async (data: Partial<CustomerDTO>) => ({
       ...createdCustomer,
