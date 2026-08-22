@@ -26,7 +26,13 @@ The backend answers the questions; clients render the answers.
   every combination the product could sell, each carrying a stable `key`, a `label`, its
   rank-ordered resolved values, the `optionValues` map to POST back, and `variantId` naming the
   variant that has it or `null` if it is still free. Creating a variant is picking a free one;
-  editing is picking a free one or your own.
+  editing is picking a free one or your own, so `scope=available` (with `variantId` when editing)
+  does that narrowing server-side — otherwise a page of taken combinations arrives empty.
+- **The response carries two product-level totals**, `totalCombinations` and
+  `availableCombinations`, both measured before the search narrows anything. "Does this product
+  have options" and "is every combination taken" are questions about the product, not about the
+  query, and a client reading them off the searched `count` announces that a product has no
+  options the moment a search matches nothing.
 - **Admin variants** carry resolved, rank-ordered option values rather than an id map, because
   every admin surface renders labels.
 - **Store** keeps the id map, because the picker only ever compares ids and never renders a label

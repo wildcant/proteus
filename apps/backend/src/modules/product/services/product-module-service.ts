@@ -8,6 +8,7 @@ import type {
   CreateProductVariantDTO,
   EnrichedProductVariantDTO,
   FilterableProductImageProps,
+  FilterableProductOptionCombinationProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
@@ -19,6 +20,7 @@ import type {
   ProductDTO,
   ProductImageDTO,
   ProductOptionCombinationDTO,
+  ProductOptionCombinationPageDTO,
   ProductOptionDTO,
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
@@ -796,38 +798,54 @@ export class ProductModuleService implements IProductModuleService {
 
   /**
    * The Option Combinations this product could sell, each naming the variant that has it or `null`
-   * while it is still available. One response drives the create form, the edit form and the matrix
-   * step — each is a different filter over `variantId`.
+   * while it is still available. One response drives the create form and the edit form — each
+   * passes a different `scope`.
    *
    * Paginated and searched here rather than in the client because the count is the product of the
    * option value counts, so it grows multiplicatively with the product's options.
+   *
+   * The two totals are deliberately measured before `label` narrows anything: a client asking
+   * "does this product have options at all" or "is every combination taken" is asking about the
+   * product, not about what the shopkeeper happens to have typed. Deriving those from `count`
+   * makes a search that matches nothing look like a product with no options.
    */
   async listProductOptionCombinations(
-    productId: string,
-    config?: { label?: string; limit?: number; offset?: number },
+    filters: FilterableProductOptionCombinationProps,
+    config?: FindConfig<ProductOptionCombinationDTO>,
     context?: Context,
-  ): Promise<[ProductOptionCombinationDTO[], number]> {
-    const options = await this.listProductOptionsForProduct(productId, context)
+  ): Promise<ProductOptionCombinationPageDTO> {
+    const options = await this.listProductOptionsForProduct(filters.productId, context)
 
-    const total = countCombinations(options)
-    if (total > MAX_OPTION_COMBINATIONS) {
+    const totalCombinations = countCombinations(options)
+    if (totalCombinations > MAX_OPTION_COMBINATIONS) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `This product's options produce ${total} combinations, above the limit of ${MAX_OPTION_COMBINATIONS}. Reduce the options or the values they offer.`,
+        message: `This product's options produce ${totalCombinations} combinations, above the limit of ${MAX_OPTION_COMBINATIONS}. Reduce the options or the values they offer.`,
       })
     }
-    if (total === 0) return [[], 0]
+    if (totalCombinations === 0) {
+      return { combinations: [], count: 0, totalCombinations: 0, availableCombinations: 0 }
+    }
 
-    const combinations = await this.loadCombinations(productId, options, context)
+    const combinations = await this.loadCombinations(filters.productId, options, context)
 
-    const query = config?.label?.trim().toLowerCase()
-    const matched = query
-      ? combinations.filter((combination) => combination.label.toLowerCase().includes(query))
-      : combinations
+    // A variant editing its own combination must still find it in an `available` list — it is
+    // taken by the very variant asking.
+    const isFree = (combination: ProductOptionCombinationDTO) =>
+      combination.variantId === null || combination.variantId === filters.variantId
+    const scoped = filters.scope === 'available' ? combinations.filter(isFree) : combinations
+
+    const query = filters.label?.trim().toLowerCase()
+    const matched = query ? scoped.filter((combination) => combination.label.toLowerCase().includes(query)) : scoped
 
     const offset = config?.offset ?? 0
     const limit = config?.limit ?? 50
-    return [matched.slice(offset, offset + limit), matched.length]
+    return {
+      combinations: matched.slice(offset, offset + limit),
+      count: matched.length,
+      totalCombinations,
+      availableCombinations: combinations.filter(isFree).length,
+    }
   }
 
   /**

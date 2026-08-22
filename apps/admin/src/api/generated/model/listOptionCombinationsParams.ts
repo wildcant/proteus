@@ -4,6 +4,7 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { ListOptionCombinationsScope } from './listOptionCombinationsScope.ts';
 
 export type ListOptionCombinationsParams = {
 /**
@@ -18,4 +19,6 @@ offset?: number | null;
 limit?: number;
 order?: string;
 label?: string;
+scope?: ListOptionCombinationsScope;
+variantId?: string;
 };

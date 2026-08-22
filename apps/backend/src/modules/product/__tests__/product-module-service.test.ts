@@ -584,12 +584,47 @@ test.describe('ProductModuleService variant options', () => {
       optionValues: combination('S', 'Red'),
     })
 
-    const [combinations, count] = await service.listProductOptionCombinations(product.id)
+    const { combinations, count, totalCombinations, availableCombinations } =
+      await service.listProductOptionCombinations({ productId: product.id })
 
     // Two sizes times two colours.
     expect(count).toBe(4)
+    expect(totalCombinations).toBe(4)
+    expect(availableCombinations).toBe(3)
     expect(combinations.find((entry) => entry.label === 'S / Red')?.variantId).toBe(variant.id)
     expect(combinations.filter((entry) => entry.variantId === null)).toHaveLength(3)
+  })
+
+  test('scope available drops taken combinations but keeps the named variant its own', async ({ expect, dto }) => {
+    const { product, combination } = await createProductWithOptions(dto.generate.createProduct())
+    const mine = await service.createProductVariant({ productId: product.id, optionValues: combination('S', 'Red') })
+    await service.createProductVariant({ productId: product.id, optionValues: combination('M', 'Red') })
+
+    const others = await service.listProductOptionCombinations({ productId: product.id, scope: 'available' })
+    const forMine = await service.listProductOptionCombinations({
+      productId: product.id,
+      scope: 'available',
+      variantId: mine.id,
+    })
+
+    expect(others.combinations.map((entry) => entry.label).sort()).toEqual(['M / Blue', 'S / Blue'])
+    expect(others.count).toBe(2)
+    expect(forMine.combinations.map((entry) => entry.label).sort()).toEqual(['M / Blue', 'S / Blue', 'S / Red'])
+    expect(forMine.availableCombinations).toBe(3)
+    // The totals describe the product, so scoping never moves them.
+    expect(forMine.totalCombinations).toBe(4)
+  })
+
+  test('a label that matches nothing leaves the product totals intact', async ({ expect, dto }) => {
+    const { product } = await createProductWithOptions(dto.generate.createProduct())
+
+    const page = await service.listProductOptionCombinations({ productId: product.id, label: 'chartreuse' })
+
+    // The difference the create form reads: no matches is not the same as no options.
+    expect(page.combinations).toEqual([])
+    expect(page.count).toBe(0)
+    expect(page.totalCombinations).toBe(4)
+    expect(page.availableCombinations).toBe(4)
   })
 
   test('listProductOptionCombinations filters by label and still reports the full match count', async ({
@@ -598,7 +633,7 @@ test.describe('ProductModuleService variant options', () => {
   }) => {
     const { product } = await createProductWithOptions(dto.generate.createProduct())
 
-    const [combinations, count] = await service.listProductOptionCombinations(product.id, { label: 'red' })
+    const { combinations, count } = await service.listProductOptionCombinations({ productId: product.id, label: 'red' })
 
     // Case-insensitive, and the count is of matches rather than of the whole matrix.
     expect(count).toBe(2)
@@ -608,7 +643,10 @@ test.describe('ProductModuleService variant options', () => {
   test('listProductOptionCombinations paginates', async ({ expect, dto }) => {
     const { product } = await createProductWithOptions(dto.generate.createProduct())
 
-    const [combinations, count] = await service.listProductOptionCombinations(product.id, { offset: 1, limit: 2 })
+    const { combinations, count } = await service.listProductOptionCombinations(
+      { productId: product.id },
+      { offset: 1, limit: 2 },
+    )
 
     expect(count).toBe(4)
     expect(combinations).toHaveLength(2)
@@ -617,7 +655,12 @@ test.describe('ProductModuleService variant options', () => {
   test('a product with no options offers no combinations', async ({ expect, dto }) => {
     const product = await service.createProduct(dto.generate.createProduct())
 
-    expect(await service.listProductOptionCombinations(product.id)).toEqual([[], 0])
+    expect(await service.listProductOptionCombinations({ productId: product.id })).toEqual({
+      combinations: [],
+      count: 0,
+      totalCombinations: 0,
+      availableCombinations: 0,
+    })
   })
 
   test('buildProductPickerTargets sends a value to the variant that carries it', async ({ expect, dto }) => {

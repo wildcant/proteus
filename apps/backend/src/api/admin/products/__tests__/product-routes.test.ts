@@ -9,6 +9,7 @@ import type { AwilixContainer } from 'awilix'
 import { bootstrapContainer } from '../../../../container.js'
 import type * as imageVariantBatchRoutes from '../[id]/images/[imageId]/variants/batch/route.js'
 import type * as imageVariantRoutes from '../[id]/images/[imageId]/variants/route.js'
+import type * as optionCombinationRoutes from '../[id]/option-combinations/route.js'
 import type * as productByIdRoutes from '../[id]/route.js'
 import type * as variantImageBatchRoutes from '../[id]/variants/[variantId]/images/batch/route.js'
 import type * as variantByIdRoutes from '../[id]/variants/[variantId]/route.js'
@@ -369,5 +370,75 @@ test.describe('GET /admin/products/:id/images/:imageId/variants', () => {
     )
 
     expect(response.json.variants.map((variant) => variant.id)).toEqual([unlinked.id])
+  })
+})
+
+test.describe('GET /admin/products/:id/option-combinations', () => {
+  /** A product offering S/M in one option and Red/Blue in another — four combinations. */
+  const createProductWithOptions = async (draft: CreateProductDTO) => {
+    const product = await productService.createProduct(draft)
+    const size = await productService.createProductOption({
+      title: `Size-${product.id}`,
+      values: [{ value: 'S' }, { value: 'M' }],
+    })
+    const colour = await productService.createProductOption({
+      title: `Colour-${product.id}`,
+      values: [{ value: 'Red' }, { value: 'Blue' }],
+    })
+    await productService.setProductOptions(product.id, {
+      options: [
+        { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+        { optionId: colour.id, valueIds: colour.values.map((value) => value.id) },
+      ],
+    })
+    return { product, size, colour }
+  }
+
+  const listCombinations = (productId: string, query: Record<string, string> = {}) => {
+    const handler = applyMiddleware(findDefinition('GET', '/admin/products/:id/option-combinations'))
+    return handler<typeof optionCombinationRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: productId }, query }),
+    )
+  }
+
+  test('a search that matches nothing still reports the product as having options', async ({ expect, dto }) => {
+    const { product } = await createProductWithOptions(dto.generate.createProduct())
+
+    const response = await listCombinations(product.id, { label: 'chartreuse' })
+
+    // The create form reads `totalCombinations`, not `count` — otherwise typing a colour the
+    // product does not sell makes it announce that the product has no options at all.
+    expect(response.json.count).toBe(0)
+    expect(response.json.totalCombinations).toBe(4)
+    expect(response.json.availableCombinations).toBe(4)
+  })
+
+  test('scope available paginates over the free combinations, not over all of them', async ({ expect, dto }) => {
+    const { product, size, colour } = await createProductWithOptions(dto.generate.createProduct())
+    const valueId = (option: { values: Array<{ id: string; value: string }> }, value: string) => {
+      const match = option.values.find((candidate) => candidate.value === value)
+      if (!match) throw new Error(`Expected the option to carry the value "${value}"`)
+      return match.id
+    }
+    await productService.createProductVariant({
+      productId: product.id,
+      optionValues: { [size.id]: valueId(size, 'S'), [colour.id]: valueId(colour, 'Red') },
+    })
+
+    const response = await listCombinations(product.id, { scope: 'available', limit: '2' })
+
+    expect(response.json.combinations).toHaveLength(2)
+    expect(response.json.combinations.every((combination) => combination.variantId === null)).toBe(true)
+    expect(response.json.count).toBe(3)
+    expect(response.json.availableCombinations).toBe(3)
+  })
+
+  test('a product with no options reports zero totals', async ({ expect, dto }) => {
+    const product = await productService.createProduct(dto.generate.createProduct())
+
+    const response = await listCombinations(product.id)
+
+    expect(response.json.totalCombinations).toBe(0)
+    expect(response.json.combinations).toEqual([])
   })
 })

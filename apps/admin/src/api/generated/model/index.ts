@@ -199,6 +199,7 @@ export * from './listCustomersParams.ts';
 export * from './listInvitesParams.ts';
 export * from './listNotificationsParams.ts';
 export * from './listOptionCombinationsParams.ts';
+export * from './listOptionCombinationsScope.ts';
 export * from './listOrdersParams.ts';
 export * from './listProductOptionsParams.ts';
 export * from './listProductsForOptionParams.ts';

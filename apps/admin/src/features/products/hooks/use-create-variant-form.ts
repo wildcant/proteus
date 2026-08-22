@@ -1,18 +1,18 @@
-import { useState } from 'react'
 import { z } from 'zod'
-import type { AdminCreateProductVariantResponse } from '#/api/generated/model'
-import { useCreateProductVariant, useOptionCombinations } from '#/features/products/api/product-variants'
-import { useDebouncedValue } from '#/hooks/use-debounced-value'
+import type { AdminCreateProductVariantResponse, AdminOptionCombination } from '#/api/generated/model'
+import { useCreateProductVariant } from '#/features/products/api/product-variants'
 import { useAppForm } from '#/lib/form-hook.ts'
 import type { SubmitFormParams } from '#/types/form.ts'
 
 /**
- * The form holds the combination's `key`, not the option values themselves — picking a combination
- * is one choice, so it is one field. Title and SKU stay optional: an omitted title takes the
- * combination's label server-side.
+ * The form holds the chosen combination itself, not its key — the payload needs its `optionValues`
+ * and the title placeholder its `label`, so a key would only have to be resolved back again at
+ * submit time. Picking a combination is one choice, so it is one field.
+ *
+ * Title and SKU stay optional: an omitted title takes the combination's label server-side.
  */
 const createVariantSchema = z.object({
-  combinationKey: z.string(),
+  combination: z.custom<AdminOptionCombination>().nullable(),
   title: z.string(),
   sku: z.string(),
 })
@@ -25,27 +25,20 @@ type UseCreateVariantFormArgs = {
 export function useCreateVariantForm({ productId, params }: UseCreateVariantFormArgs) {
   const createMutation = useCreateProductVariant(productId)
 
-  // The combobox filters server-side, so the query follows what was typed rather than the page
-  // being narrowed locally — which is what lets this work for a product with thousands of them.
-  const [search, setSearch] = useState('')
-  const { data, isPending } = useOptionCombinations(productId, { label: useDebouncedValue(search) || undefined })
-
-  // Only the ones no variant has yet. That single filter is the whole "already taken" rule.
-  const available = (data?.combinations ?? []).filter((combination) => !combination.variantId)
-  const byKey = new Map(available.map((combination) => [combination.key, combination]))
+  // Annotated rather than `satisfies`, which would narrow the empty combination to `null` and
+  // leave the field unable to hold one.
+  const defaultValues: z.infer<typeof createVariantSchema> = { combination: null, title: '', sku: '' }
 
   const form = useAppForm({
-    defaultValues: { combinationKey: '', title: '', sku: '' } satisfies z.infer<typeof createVariantSchema>,
+    defaultValues,
     validators: { onSubmit: createVariantSchema },
     onSubmit: ({ value }) => {
-      const combination = byKey.get(value.combinationKey)
-
       createMutation.mutate(
         {
           // Omitted rather than sent empty, so the service falls back to the combination's label.
           ...(value.title ? { title: value.title } : {}),
           sku: value.sku || null,
-          ...(combination ? { optionValues: combination.optionValues } : {}),
+          ...(value.combination ? { optionValues: value.combination.optionValues } : {}),
         },
         {
           onSuccess: (created) => {
@@ -59,16 +52,5 @@ export function useCreateVariantForm({ productId, params }: UseCreateVariantForm
     },
   })
 
-  return {
-    form,
-    available,
-    /** What the title field shows when the user has typed nothing of their own. */
-    labelFor: (key: string): string | undefined => byKey.get(key)?.label,
-    onSearchChange: setSearch,
-    /** True once the product has options but every combination of them is spoken for. */
-    isExhausted: !isPending && !search && available.length === 0 && (data?.count ?? 0) > 0,
-    hasNoOptions: !isPending && (data?.count ?? 0) === 0,
-    isPending,
-    isLoading: createMutation.isPending,
-  }
+  return { form, isLoading: createMutation.isPending }
 }

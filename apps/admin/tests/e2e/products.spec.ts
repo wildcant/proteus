@@ -338,7 +338,20 @@ test('variant options journey: create variants from the available combinations',
   // Creating again no longer offers "S": a variant holds that combination, so only "M" is left.
   await navigate({ to: '/products/$id/variants/create', params: { id: product.id } })
   const second = page.getByRole('dialog').last()
-  await second.getByLabel('Combination').click()
+  const combination = second.getByLabel('Combination')
+  await combination.click()
+
+  // Searching for something the product does not sell is not the same as the product having no
+  // options — the form must stay put rather than be replaced by the empty-product message.
+  // Waiting on the response matters: the combobox also filters locally, so an empty list alone
+  // proves nothing about what the server said.
+  await combination.fill('chartreuse')
+  await page.waitForResponse((response) => response.url().includes('label=chartreuse'))
+  await expect(page.getByText('No combinations left.')).toBeVisible()
+  await expect(combination).toBeVisible()
+  await expect(second.getByText('This product has no options yet')).toHaveCount(0)
+  await combination.fill('')
+
   await expect(page.getByRole('option', { name: 'M', exact: true })).toBeVisible()
   await expect(page.getByRole('option', { name: 'S', exact: true })).toHaveCount(0)
   await page.getByRole('option', { name: 'M', exact: true }).click()

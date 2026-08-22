@@ -2227,9 +2227,15 @@
             "items": {
               "$ref": "#/components/schemas/AdminOptionCombination"
             }
+          },
+          "totalCombinations": {
+            "type": "number"
+          },
+          "availableCombinations": {
+            "type": "number"
           }
         },
-        "required": ["count", "offset", "limit", "combinations"]
+        "required": ["count", "offset", "limit", "combinations", "totalCombinations", "availableCombinations"]
       },
       "AdminOptionCombination": {
         "type": "object",
@@ -6149,6 +6155,23 @@
             },
             "required": false,
             "name": "label",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["all", "available"]
+            },
+            "required": false,
+            "name": "scope",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "variantId",
             "in": "query"
           }
         ],

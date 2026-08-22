@@ -3,6 +3,7 @@ import type { Context } from '../context.js'
 import type {
   EnrichedProductVariantDTO,
   FilterableProductImageProps,
+  FilterableProductOptionCombinationProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
@@ -12,6 +13,7 @@ import type {
   ProductDTO,
   ProductImageDTO,
   ProductOptionCombinationDTO,
+  ProductOptionCombinationPageDTO,
   ProductOptionDTO,
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
@@ -173,10 +175,10 @@ export type IProductModuleService = {
    * the option value counts.
    */
   listProductOptionCombinations(
-    productId: string,
-    config?: { label?: string; limit?: number; offset?: number },
+    filters: FilterableProductOptionCombinationProps,
+    config?: FindConfig<ProductOptionCombinationDTO>,
     context?: Context,
-  ): Promise<[ProductOptionCombinationDTO[], number]>
+  ): Promise<ProductOptionCombinationPageDTO>
   /** The storefront picker, precomputed over the variants the caller is actually shipping. */
   buildProductPickerTargets(
     productId: string,

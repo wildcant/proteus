@@ -5,11 +5,17 @@ import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-foc
 import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
 import { SingleSelectCombobox } from '#/components/single-select-combobox'
 import { useCreateVariantForm } from '#/features/products/hooks/use-create-variant-form'
+import { useOptionCombinationSearch } from '#/features/products/hooks/use-option-combination-search'
 
 export function CreateVariantForm({ productId }: { productId: string }) {
   const { handleSuccess } = useRouteModal()
 
-  const { form, available, labelFor, onSearchChange, isExhausted, hasNoOptions, isLoading } = useCreateVariantForm({
+  // The combobox is this component's concern, so the search lives here rather than being proxied
+  // back out through the form hook.
+  const { combinations, combinationFor, onSearchChange, isExhausted, hasNoOptions, isPending } =
+    useOptionCombinationSearch({ productId })
+
+  const { form, isLoading } = useCreateVariantForm({
     productId,
     params: {
       onSuccess: (data) => {
@@ -51,7 +57,7 @@ export function CreateVariantForm({ productId }: { productId: string }) {
 
           {/* One field, because picking a combination is one choice. The list arrives already
               filtered to what is still available, so nothing here decides what may be picked. */}
-          <form.Field name="combinationKey">
+          <form.Field name="combination">
             {(field) => (
               <div>
                 <label htmlFor="combination" className="mb-1.5 block font-medium text-sm">
@@ -59,9 +65,9 @@ export function CreateVariantForm({ productId }: { productId: string }) {
                 </label>
                 <SingleSelectCombobox
                   id="combination"
-                  items={available.map((combination) => ({ id: combination.key, label: combination.label }))}
-                  value={field.state.value || null}
-                  onValueChange={(key) => field.handleChange(key ?? '')}
+                  items={combinations.map((combination) => ({ id: combination.key, label: combination.label }))}
+                  value={field.state.value?.key ?? null}
+                  onValueChange={(key) => field.handleChange(combinationFor(key))}
                   onInputValueChange={onSearchChange}
                   disabled={isExhausted}
                   placeholder="Search combinations..."
@@ -76,10 +82,12 @@ export function CreateVariantForm({ productId }: { productId: string }) {
             )}
           </form.Field>
 
-          <form.Subscribe selector={(state) => state.values.combinationKey}>
-            {(combinationKey) => (
+          {/* The placeholder is what the server would derive, so it shows what leaving this blank
+              will produce. */}
+          <form.Subscribe selector={(state) => state.values.combination?.label}>
+            {(label) => (
               <form.AppField name="title">
-                {(field) => <field.TextField label="Title" placeholder={labelFor(combinationKey) ?? 'Optional'} />}
+                {(field) => <field.TextField label="Title" placeholder={label ?? 'Optional'} />}
               </form.AppField>
             )}
           </form.Subscribe>
@@ -89,7 +97,7 @@ export function CreateVariantForm({ productId }: { productId: string }) {
 
         <RouteFocusModal.Footer>
           <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-          <Button type="submit" size="sm" disabled={isLoading || isExhausted}>
+          <Button type="submit" size="sm" disabled={isPending || isLoading || isExhausted}>
             Create
           </Button>
         </RouteFocusModal.Footer>

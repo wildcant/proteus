@@ -38,7 +38,16 @@ export const AdminCreateProductVariantsBatchResponse = z
   .openapi('AdminCreateProductVariantsBatchResponse')
 export type AdminCreateProductVariantsBatchResponse = z.input<typeof AdminCreateProductVariantsBatchResponse>
 
+/**
+ * `count` follows the query; the two totals do not. A picker asking "does this product have
+ * options" or "is every combination taken" is asking about the product, so reading those off a
+ * searched, scoped `count` makes an empty search look like a product with no options.
+ */
 export const AdminOptionCombinationListResponse = PaginatedResponse.extend({
   combinations: z.array(AdminOptionCombination),
+  /** Every combination the product could sell. Zero means it has no options yet. */
+  totalCombinations: z.number(),
+  /** Those still free, plus `variantId`'s own. Zero against a non-zero total means exhausted. */
+  availableCombinations: z.number(),
 }).openapi('AdminOptionCombinationListResponse')
 export type AdminOptionCombinationListResponse = z.input<typeof AdminOptionCombinationListResponse>

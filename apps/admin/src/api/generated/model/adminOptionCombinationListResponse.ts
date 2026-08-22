@@ -11,4 +11,6 @@ export interface AdminOptionCombinationListResponse {
   offset: number;
   limit: number;
   combinations: AdminOptionCombination[];
+  totalCombinations: number;
+  availableCombinations: number;
 }

@@ -97,6 +97,37 @@ export type ProductOptionCombinationDTO = {
   variantId: string | null
 }
 
+export interface FilterableProductOptionCombinationProps
+  extends BaseFilterable<FilterableProductOptionCombinationProps> {
+  /**
+   * Required, unlike every other filter here: a combination only exists relative to one product's
+   * option set, so there is no unscoped list to narrow.
+   */
+  productId: string
+  /** Substring match on the combination's label, e.g. `"red"`. */
+  label?: string
+  /** `available` drops the combinations a variant already has. Defaults to all of them. */
+  scope?: 'all' | 'available'
+  /** Kept in an `available` list even though it is taken — the variant doing the editing. */
+  variantId?: string
+}
+
+/**
+ * A page of Option Combinations plus the two product-level totals every picker needs.
+ *
+ * Both totals ignore the filters, so a search that matches nothing stays distinguishable from a
+ * product that has no options and from one whose combinations are all spoken for.
+ */
+export type ProductOptionCombinationPageDTO = {
+  combinations: ProductOptionCombinationDTO[]
+  /** Matching the filters — what pagination runs over. */
+  count: number
+  /** Every combination the product could sell. Zero means the product has no options yet. */
+  totalCombinations: number
+  /** Those still free, plus `variantId`'s own. Zero against a non-zero total means exhausted. */
+  availableCombinations: number
+}
+
 export interface FilterableProductVariantProps extends BaseFilterable<FilterableProductVariantProps> {
   id?: string | string[]
   productId?: string | string[]

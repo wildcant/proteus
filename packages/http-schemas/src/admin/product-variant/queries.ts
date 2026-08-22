@@ -22,5 +22,9 @@ export type AdminProductVariantListQuery = FindParams<typeof AdminProductVariant
  */
 export const AdminOptionCombinationListParams = createFindParams({ limit: 50 }).extend({
   label: z.string().optional(),
+  /** `available` drops the combinations a variant already has. Defaults to all of them. */
+  scope: z.enum(['all', 'available']).optional(),
+  /** Kept in an `available` list even though it is taken — the variant doing the editing. */
+  variantId: z.string().optional(),
 })
 export type AdminOptionCombinationListQuery = FindParams<typeof AdminOptionCombinationListParams>
