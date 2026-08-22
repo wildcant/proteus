@@ -47,7 +47,6 @@ const SEED_IMAGES = {
   sweatpantsGrey: 'sweatpants-grey.jpg',
   sweatpantsStreet: 'sweatpants-street.jpg',
   shortsDenim: 'shorts-denim.jpg',
-  shortsStriped: 'shorts-striped.jpg',
 } as const
 
 const imageUrl = (file: string) => `${STATIC_BASE_URL}/seed/${file}`
@@ -287,7 +286,6 @@ if (existingProducts.length > 0) {
       price: 3000,
       colors: {
         Blue: [SEED_IMAGES.shortsDenim],
-        Navy: [SEED_IMAGES.shortsStriped],
       },
     },
   ]
