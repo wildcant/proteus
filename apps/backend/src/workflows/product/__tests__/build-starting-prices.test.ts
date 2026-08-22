@@ -1,10 +1,9 @@
 import { test } from '@tests/setup/test-extend.js'
-import { describe, expect } from 'vitest'
 import { BigNumber } from '../../../core/db/bignum.js'
 import { buildStartingPrices } from '../utils/build-starting-prices.js'
 
-describe('buildStartingPrices', () => {
-  test('picks the cheapest variant price per product', ({ dto }) => {
+test.describe('buildStartingPrices', () => {
+  test('picks the cheapest variant price per product', ({ dto, expect }) => {
     const variants = [
       { id: 'var_1', productId: 'prod_1' },
       { id: 'var_2', productId: 'prod_1' },
@@ -26,7 +25,7 @@ describe('buildStartingPrices', () => {
     expect(starting?.id).toBe('ps_2')
   })
 
-  test('returns separate starting prices for different products', ({ dto }) => {
+  test('returns separate starting prices for different products', ({ dto, expect }) => {
     const variants = [
       { id: 'var_1', productId: 'prod_1' },
       { id: 'var_2', productId: 'prod_2' },
@@ -47,7 +46,7 @@ describe('buildStartingPrices', () => {
     expect(result.get('prod_2')?.calculatedAmount.toNumber()).toBe(50)
   })
 
-  test('skips variants without a link', ({ dto }) => {
+  test('skips variants without a link', ({ dto, expect }) => {
     const variants = [{ id: 'var_1', productId: 'prod_1' }]
     const prices = [dto.generate.calculatedPriceSet({ id: 'ps_1', calculatedAmount: new BigNumber(10) })]
 
@@ -56,7 +55,7 @@ describe('buildStartingPrices', () => {
     expect(result.size).toBe(0)
   })
 
-  test('returns empty map for empty inputs', () => {
+  test('returns empty map for empty inputs', ({ expect }) => {
     const result = buildStartingPrices([], [], [])
 
     expect(result.size).toBe(0)

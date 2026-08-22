@@ -1,16 +1,15 @@
 import { test } from '@tests/setup/test-extend.js'
-import { describe, expect } from 'vitest'
 import { env } from '../../../env.js'
 import { createWorkersDbProvider } from '../workers-provider.js'
 
-describe('createWorkersDbProvider', () => {
+test.describe('createWorkersDbProvider', () => {
   const provider = createWorkersDbProvider(env.DATABASE_URL)
 
-  test('getDb throws outside withConnection', () => {
+  test('getDb throws outside withConnection', ({ expect }) => {
     expect(() => provider.getDb()).toThrow('Called outside withConnection()')
   })
 
-  test('getDb returns a valid drizzle instance inside withConnection', async () => {
+  test('getDb returns a valid drizzle instance inside withConnection', async ({ expect }) => {
     await provider.withConnection(async () => {
       const db = provider.getDb()
       expect(db).toBeDefined()
@@ -18,7 +17,7 @@ describe('createWorkersDbProvider', () => {
     })
   })
 
-  test('each withConnection call creates a fresh instance', async () => {
+  test('each withConnection call creates a fresh instance', async ({ expect }) => {
     let firstDb: unknown
     let secondDb: unknown
 
@@ -32,7 +31,7 @@ describe('createWorkersDbProvider', () => {
     expect(firstDb).not.toBe(secondDb)
   })
 
-  test('shutdown is a no-op', async () => {
+  test('shutdown is a no-op', async ({ expect }) => {
     await expect(provider.shutdown()).resolves.toBeUndefined()
   })
 })

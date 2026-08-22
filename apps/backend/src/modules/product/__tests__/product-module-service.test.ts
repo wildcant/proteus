@@ -1,6 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { CreateProductDTO } from '@core/types/index.js'
 import { test } from '@tests/setup/test-extend.js'
-import { describe } from 'vitest'
 import { buildSearchFilter } from '../../../core/utils/build-search-filter.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { ProductRepository } from '../repositories/product.js'
@@ -10,6 +10,7 @@ import { ProductOptionValueRepository } from '../repositories/product-option-val
 import { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import { ProductVariantRepository } from '../repositories/product-variant.js'
+import { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
 import { ProductModuleService } from '../services/product-module-service.js'
 
 let service: ProductModuleService
@@ -22,6 +23,7 @@ test.beforeEach(({ getDb, logger }) => {
   const productProductOptionRepository = new ProductProductOptionRepository({ getDb })
   const productProductOptionValueRepository = new ProductProductOptionValueRepository({ getDb })
   const productImageRepository = new ProductImageRepository({ getDb })
+  const productVariantImageRepository = new ProductVariantImageRepository({ getDb })
   const withTransaction = createWithTransaction(getDb)
   service = new ProductModuleService({
     productRepository,
@@ -31,12 +33,13 @@ test.beforeEach(({ getDb, logger }) => {
     productProductOptionRepository,
     productProductOptionValueRepository,
     productImageRepository,
+    productVariantImageRepository,
     withTransaction,
     logger,
   })
 })
 
-describe('ProductModuleService', () => {
+test.describe('ProductModuleService', () => {
   test('listAndCountProducts with pagination', async ({ expect, dto }) => {
     await service.createProducts([
       dto.generate.createProduct(),
@@ -236,5 +239,190 @@ describe('ProductModuleService', () => {
     expect(AppError.isError(error)).toBe(true)
     expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
     expect(error.message).toContain('Cannot remove option value(s)')
+  })
+
+  test('createProduct with images ranks them by array index and auto-sets the thumbnail', async ({ expect, dto }) => {
+    const product = await service.createProduct(
+      dto.generate.createProduct({
+        images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
+      }),
+    )
+
+    const images = await service.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } })
+
+    expect(images.map((i) => [i.url, i.rank])).toEqual([
+      ['https://cdn.test/a.png', 0],
+      ['https://cdn.test/b.png', 1],
+    ])
+    expect(product.thumbnail).toBe('https://cdn.test/a.png')
+  })
+  test('createProduct keeps an explicitly provided thumbnail', async ({ expect, dto }) => {
+    const product = await service.createProduct(
+      dto.generate.createProduct({
+        thumbnail: 'https://cdn.test/hero.png',
+        images: [{ url: 'https://cdn.test/a.png' }],
+      }),
+    )
+
+    expect(product.thumbnail).toBe('https://cdn.test/hero.png')
+  })
+  test('updateProduct replaces the image collection: keeps by id, re-ranks, creates and soft-deletes', async ({
+    expect,
+    dto,
+  }) => {
+    const product = await service.createProduct(
+      dto.generate.createProduct({
+        images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
+      }),
+    )
+    const [first, second] = await service.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } })
+    if (!first || !second) throw new Error('Expected two images to exist')
+
+    await service.updateProduct(product.id, {
+      images: [{ url: 'https://cdn.test/c.png' }, { id: second.id, url: second.url }],
+    })
+
+    const images = await service.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } })
+    expect(images.map((i) => [i.url, i.rank])).toEqual([
+      ['https://cdn.test/c.png', 0],
+      ['https://cdn.test/b.png', 1],
+    ])
+    expect(images.map((i) => i.id)).toContain(second.id)
+
+    const withDeleted = await service.listProductImages({ productId: product.id }, { withDeleted: true })
+    expect(withDeleted.find((i) => i.id === first.id)?.deletedAt).toBeInstanceOf(Date)
+  })
+  test('updateProduct auto-sets the thumbnail to the first image of the new collection', async ({ expect, dto }) => {
+    const product = await service.createProduct(
+      dto.generate.createProduct({ images: [{ url: 'https://cdn.test/a.png' }] }),
+    )
+
+    const updated = await service.updateProduct(product.id, {
+      images: [{ url: 'https://cdn.test/b.png' }, { url: 'https://cdn.test/a.png' }],
+    })
+
+    expect(updated.thumbnail).toBe('https://cdn.test/b.png')
+  })
+
+  test('updateProduct with an empty image collection clears images and the thumbnail', async ({ expect, dto }) => {
+    const product = await service.createProduct(
+      dto.generate.createProduct({ images: [{ url: 'https://cdn.test/a.png' }] }),
+    )
+
+    const updated = await service.updateProduct(product.id, { images: [] })
+
+    expect(updated.thumbnail).toBeNull()
+    expect(await service.listProductImages({ productId: product.id })).toHaveLength(0)
+  })
+
+  test('updateProduct without an image collection leaves existing images untouched', async ({ expect, dto }) => {
+    const product = await service.createProduct(
+      dto.generate.createProduct({ images: [{ url: 'https://cdn.test/a.png' }] }),
+    )
+
+    const updated = await service.updateProduct(product.id, { title: 'Renamed' })
+
+    expect(updated.title).toBe('Renamed')
+    expect(updated.thumbnail).toBe('https://cdn.test/a.png')
+    expect(await service.listProductImages({ productId: product.id })).toHaveLength(1)
+  })
+
+  test('updateProducts replaces the image collection of every product', async ({ expect, dto }) => {
+    const [first, second] = await service.createProducts([
+      dto.generate.createProduct({ images: [{ url: 'https://cdn.test/old.png' }] }),
+      dto.generate.createProduct(),
+    ])
+    if (!first || !second) throw new Error('Expected two products to exist')
+
+    const updated = await service.updateProducts([first.id, second.id], {
+      images: [{ url: 'https://cdn.test/new.png' }],
+    })
+
+    expect(updated.every((p) => p.thumbnail === 'https://cdn.test/new.png')).toBe(true)
+    for (const product of [first, second]) {
+      const images = await service.listProductImages({ productId: product.id })
+      expect(images.map((i) => i.url)).toEqual(['https://cdn.test/new.png'])
+    }
+  })
+  test('createProducts attaches each image collection to its own product', async ({ expect, dto }) => {
+    const [first, second] = await service.createProducts([
+      dto.generate.createProduct({ images: [{ url: 'https://cdn.test/first.png' }] }),
+      dto.generate.createProduct({ images: [{ url: 'https://cdn.test/second.png' }] }),
+    ])
+    if (!first || !second) throw new Error('Expected two products to exist')
+
+    expect(await service.listProductImages({ productId: first.id })).toMatchObject([
+      { url: 'https://cdn.test/first.png' },
+    ])
+    expect(await service.listProductImages({ productId: second.id })).toMatchObject([
+      { url: 'https://cdn.test/second.png' },
+    ])
+  })
+})
+
+test.describe('ProductModuleService variant images', () => {
+  const createProductWithVariantAndImage = async (draft: CreateProductDTO) => {
+    const product = await service.createProduct({
+      ...draft,
+      images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
+    })
+    const [image, otherImage] = await service.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } })
+    const variant = await service.createProductVariant({ productId: product.id, title: 'Small' })
+    if (!image || !otherImage) throw new Error('Expected two product images to exist')
+    return { product, image, otherImage, variant }
+  }
+
+  test('addImageToVariant creates pivot records', async ({ expect, dto }) => {
+    const { image, variant } = await createProductWithVariantAndImage(dto.generate.createProduct())
+
+    const created = await service.addImageToVariant([{ imageId: image.id, variantId: variant.id }])
+
+    expect(created).toEqual([{ id: expect.stringMatching(/^pvimg_/) }])
+    expect(await service.listProductVariantImages({ variantId: variant.id })).toMatchObject([
+      { imageId: image.id, variantId: variant.id },
+    ])
+  })
+
+  test('addImageToVariant rejects a duplicate image/variant pair', async ({ expect, dto }) => {
+    const { image, variant } = await createProductWithVariantAndImage(dto.generate.createProduct())
+    await service.addImageToVariant([{ imageId: image.id, variantId: variant.id }])
+
+    await expect(service.addImageToVariant([{ imageId: image.id, variantId: variant.id }])).rejects.toThrow()
+  })
+
+  test('removeImageFromVariant soft-deletes the matching pivot record', async ({ expect, dto }) => {
+    const { image, otherImage, variant } = await createProductWithVariantAndImage(dto.generate.createProduct())
+    await service.addImageToVariant([
+      { imageId: image.id, variantId: variant.id },
+      { imageId: otherImage.id, variantId: variant.id },
+    ])
+
+    await service.removeImageFromVariant([{ imageId: image.id, variantId: variant.id }])
+
+    expect(await service.listProductVariantImages({ variantId: variant.id })).toMatchObject([
+      { imageId: otherImage.id },
+    ])
+  })
+
+  test('removeImageFromVariant skips a pair that was never linked without touching the others', async ({
+    expect,
+    dto,
+  }) => {
+    const { image, otherImage, variant } = await createProductWithVariantAndImage(dto.generate.createProduct())
+    await service.addImageToVariant([{ imageId: image.id, variantId: variant.id }])
+
+    await service.removeImageFromVariant([{ imageId: otherImage.id, variantId: variant.id }])
+
+    expect(await service.listProductVariantImages({ variantId: variant.id })).toMatchObject([{ imageId: image.id }])
+  })
+
+  test('a removed pair can be linked again', async ({ expect, dto }) => {
+    const { image, variant } = await createProductWithVariantAndImage(dto.generate.createProduct())
+    await service.addImageToVariant([{ imageId: image.id, variantId: variant.id }])
+    await service.removeImageFromVariant([{ imageId: image.id, variantId: variant.id }])
+
+    await service.addImageToVariant([{ imageId: image.id, variantId: variant.id }])
+
+    expect(await service.listProductVariantImages({ variantId: variant.id })).toHaveLength(1)
   })
 })

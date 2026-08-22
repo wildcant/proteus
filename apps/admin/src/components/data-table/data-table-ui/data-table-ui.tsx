@@ -62,6 +62,7 @@ export function DataTableUi<T>({
               return (
                 <TableRow
                   key={row.id}
+                  data-state={row.getIsSelected() ? 'selected' : undefined}
                   className={cn(href && 'cursor-pointer')}
                   onClick={href && onRowClick ? (e) => onRowClick(e, href) : undefined}
                 >

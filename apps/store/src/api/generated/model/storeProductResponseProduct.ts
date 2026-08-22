@@ -5,8 +5,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreProduct } from './storeProduct.ts';
+import type { StoreProductImage } from './storeProductImage.ts';
 import type { StoreProductVariant } from './storeProductVariant.ts';
 
 export type StoreProductResponseProduct = StoreProduct & {
+  images: StoreProductImage[];
   variants: StoreProductVariant[];
 };

@@ -3,8 +3,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { TwoColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
 import { productVariantQueryOptions } from '#/features/products/api/product-variants'
-import { VariantGeneralSection } from '#/features/products/components/variant-general-section'
-import { VariantPricesSection } from '#/features/products/components/variant-prices-section'
+import { VariantGeneralSection } from '#/features/products/components/variant/variant-general-section'
+import { VariantMediaSection } from '#/features/products/components/variant/variant-media-section'
+import { VariantPricesSection } from '#/features/products/components/variant/variant-prices-section'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/variants/$variantId')({
   beforeLoad: async ({ context, params }) => {
@@ -23,6 +24,7 @@ function VariantDetailLayout() {
     <PageLayout.TwoColumn>
       <PageLayout.TwoColumn.Main>
         <VariantGeneralSection productId={id} variant={data.variant} />
+        <VariantMediaSection variant={data.variant} />
       </PageLayout.TwoColumn.Main>
       <PageLayout.TwoColumn.Side>
         <VariantPricesSection variant={data.variant} />

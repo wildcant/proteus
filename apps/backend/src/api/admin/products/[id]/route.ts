@@ -14,11 +14,12 @@ export const GetOutput = AdminProductResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
-  const [product, options] = await Promise.all([
+  const [product, options, images] = await Promise.all([
     productService.retrieveProduct(req.params.id),
     productService.listProductOptionsForProduct(req.params.id),
+    productService.listProductImages({ productId: req.params.id }, { order: { rank: 'ASC' } }),
   ])
-  return { status: 200, json: { product: { ...product, options } } }
+  return { status: 200, json: { product: { ...product, options, images } } }
 }
 
 export const PatchInput = { params: IdParams, body: AdminUpdateProduct }

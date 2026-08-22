@@ -6,7 +6,6 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { createWorkflow, setWorkflowEngine } from '@core/workflows/types.js'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect } from 'vitest'
 import type { SendNotificationsInput } from '../steps/send-notifications.js'
 import { sendNotificationsStep } from '../steps/send-notifications.js'
 
@@ -25,8 +24,8 @@ function makeTestWorkflow(input: SendNotificationsInput) {
   ).run(input)
 }
 
-describe('sendNotificationsStep', () => {
-  test('calls createNotifications with provided data', async ({ dto }) => {
+test.describe('sendNotificationsStep', () => {
+  test('calls createNotifications with provided data', async ({ dto, expect }) => {
     const expectedNotification = dto.generate.notification()
     const createCalls: CreateNotificationDTO[][] = []
 
@@ -45,7 +44,7 @@ describe('sendNotificationsStep', () => {
     expect(result).toEqual([expectedNotification])
   })
 
-  test('has no compensation — rollback does not undo notifications', async ({ dto }) => {
+  test('has no compensation — rollback does not undo notifications', async ({ dto, expect }) => {
     const createCalls: CreateNotificationDTO[][] = []
 
     setupWorkflowEngine({

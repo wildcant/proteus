@@ -11,6 +11,7 @@ export const Modules = {
   PRODUCT: 'product',
   FULFILLMENT: 'fulfillment',
   NOTIFICATION: 'notification',
+  FILE: 'file',
 } as const
 
 export const Links = {

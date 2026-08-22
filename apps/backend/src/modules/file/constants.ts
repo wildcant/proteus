@@ -1,0 +1,1 @@
+export const FILE_PROVIDER_REGISTRATION_PREFIX = 'fs_'

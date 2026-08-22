@@ -1,6 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
-import { describe, vi } from 'vitest'
+import { vi } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { CustomerRepository } from '../repositories/customer.js'
 import { CustomerAddressRepository } from '../repositories/customer-address.js'
@@ -15,7 +15,7 @@ test.beforeEach(({ getDb, logger }) => {
   service = new CustomerModuleService({ customerRepository, customerAddressRepository, withTransaction, logger })
 })
 
-describe('CustomerModuleService', () => {
+test.describe('CustomerModuleService', () => {
   test('createCustomers', async ({ expect, dto }) => {
     const input = [dto.generate.createCustomer(), dto.generate.createCustomer()]
 
@@ -179,7 +179,7 @@ describe('CustomerModuleService', () => {
     expect(list[0]?.id).toBe(created.id)
   })
 
-  describe('error paths', () => {
+  test.describe('error paths', () => {
     test('retrieveCustomer throws NOT_FOUND for non-existent id', async ({ expect }) => {
       const error = await service.retrieveCustomer('cus_nonexistent').catch((e) => e)
 

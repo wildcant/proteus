@@ -1,7 +1,6 @@
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { asValue, createContainer } from 'awilix'
-import { describe } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { EmailpassProvider } from '../../../providers/auth-emailpass/emailpass.js'
 import { AuthIdentityRepository } from '../repositories/auth-identity.js'
@@ -43,7 +42,7 @@ test.beforeEach(({ getDb, logger }) => {
   })
 })
 
-describe('Emailpass provider — register', () => {
+test.describe('Emailpass provider — register', () => {
   test('creates auth_identity + provider_identity', async ({ expect }) => {
     const result = await service.register('emailpass', {
       body: { email: 'new@example.com', password: 'secret123' },
@@ -120,7 +119,7 @@ describe('Emailpass provider — register', () => {
   })
 })
 
-describe('Emailpass provider — authenticate', () => {
+test.describe('Emailpass provider — authenticate', () => {
   test('succeeds with correct password', async ({ expect }) => {
     await service.register('emailpass', {
       body: { email: 'auth@example.com', password: 'correct-password' },
@@ -175,7 +174,7 @@ describe('Emailpass provider — authenticate', () => {
   })
 })
 
-describe('Emailpass provider — update', () => {
+test.describe('Emailpass provider — update', () => {
   test('updates password so old one stops working', async ({ expect }) => {
     await service.register('emailpass', {
       body: { email: 'update@example.com', password: 'old-password' },

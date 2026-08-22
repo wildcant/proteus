@@ -1956,6 +1956,19 @@
           "hsCode": {
             "type": "string"
           },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": ["url"]
+            }
+          },
           "length": {
             "type": ["number", "null"]
           },
@@ -1974,6 +1987,9 @@
           },
           "subtitle": {
             "type": "string"
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
           },
           "title": {
             "type": "string",
@@ -2004,6 +2020,12 @@
                     "items": {
                       "$ref": "#/components/schemas/AdminProductOption"
                     }
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminProductImage"
+                    }
                   }
                 }
               }
@@ -2011,6 +2033,21 @@
           }
         },
         "required": ["product"]
+      },
+      "AdminProductImage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "url", "rank"]
       },
       "AdminUpdateProductResponse": {
         "type": "object",
@@ -2024,12 +2061,30 @@
       "AdminUpdateProduct": {
         "type": "object",
         "properties": {
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": ["url"]
+            }
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
+          },
           "title": {
             "type": "string",
             "minLength": 1
           }
-        },
-        "required": ["title"]
+        }
       },
       "AdminSetProductOptionsResponse": {
         "type": "object",
@@ -2102,6 +2157,9 @@
           "title": {
             "type": "string"
           },
+          "thumbnail": {
+            "type": ["string", "null"]
+          },
           "sku": {
             "type": ["string", "null"]
           },
@@ -2161,6 +2219,7 @@
           "id",
           "productId",
           "title",
+          "thumbnail",
           "sku",
           "barcode",
           "ean",
@@ -2218,6 +2277,9 @@
           "title": {
             "type": "string",
             "minLength": 1
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
           },
           "sku": {
             "type": ["string", "null"]
@@ -2286,7 +2348,22 @@
         "type": "object",
         "properties": {
           "variant": {
-            "$ref": "#/components/schemas/AdminProductVariant"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminProductVariant"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminProductImage"
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         "required": ["variant"]
@@ -2306,6 +2383,9 @@
           "title": {
             "type": "string",
             "minLength": 1
+          },
+          "thumbnail": {
+            "type": ["string", "null"]
           },
           "sku": {
             "type": ["string", "null"]
@@ -2386,6 +2466,88 @@
           }
         },
         "required": ["prices"]
+      },
+      "AdminImageVariantsResponse": {
+        "type": "object",
+        "properties": {
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductVariant"
+            }
+          }
+        },
+        "required": ["variants"]
+      },
+      "AdminBatchImageVariantResponse": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["added", "removed"]
+      },
+      "AdminBatchImageVariant": {
+        "type": "object",
+        "properties": {
+          "add": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AdminBatchVariantImagesResponse": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["added", "removed"]
+      },
+      "AdminBatchVariantImages": {
+        "type": "object",
+        "properties": {
+          "add": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
       },
       "AdminRefundReasonListResponse": {
         "type": "object",
@@ -2705,6 +2867,114 @@
             "minLength": 1
           }
         }
+      },
+      "AdminUploadResponse": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminFile"
+            }
+          }
+        },
+        "required": ["files"]
+      },
+      "AdminFile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "url"]
+      },
+      "AdminUploadFiles": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        },
+        "required": ["files"]
+      },
+      "AdminFileResponse": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "$ref": "#/components/schemas/AdminFile"
+          }
+        },
+        "required": ["file"]
+      },
+      "AdminDeleteFileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": ["file"]
+          },
+          "deleted": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "object", "deleted"]
+      },
+      "AdminPresignedUploadUrlResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "extension": {
+            "type": "string"
+          },
+          "originalName": {
+            "type": "string"
+          }
+        },
+        "required": ["url", "filename", "mimeType", "size", "extension", "originalName"]
+      },
+      "AdminCreatePresignedUploadUrl": {
+        "type": "object",
+        "properties": {
+          "originalName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mimeType": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}\\/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}$"
+          },
+          "size": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "access": {
+            "type": "string",
+            "enum": ["public", "private"]
+          }
+        },
+        "required": ["originalName", "mimeType", "size"]
       },
       "AdminUserResponse": {
         "type": "object",
@@ -6019,6 +6289,159 @@
         }
       }
     },
+    "/admin/products/{id}/images/{imageId}/variants": {
+      "get": {
+        "operationId": "listImageVariants",
+        "summary": "List the variants a product image is assigned to",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "imageId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminImageVariantsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/products/{id}/images/{imageId}/variants/batch": {
+      "post": {
+        "operationId": "batchImageVariants",
+        "summary": "Add or remove variants for a product image",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "imageId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminBatchImageVariant"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBatchImageVariantResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/products/{id}/variants/{variantId}/images/batch": {
+      "post": {
+        "operationId": "batchVariantImages",
+        "summary": "Add or remove images for a product variant",
+        "tags": ["Product Variants"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "variantId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminBatchVariantImages"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBatchVariantImagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/admin/refund-reasons": {
       "get": {
         "operationId": "listRefundReasons",
@@ -6396,6 +6819,138 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/uploads": {
+      "post": {
+        "operationId": "uploadFiles",
+        "summary": "Upload files",
+        "tags": ["Uploads"],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUploadFiles"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/admin/uploads/{id}": {
+      "get": {
+        "operationId": "getUpload",
+        "summary": "Retrieve a file",
+        "tags": ["Uploads"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUpload",
+        "summary": "Delete a file",
+        "tags": ["Uploads"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDeleteFileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/uploads/presigned-urls": {
+      "post": {
+        "operationId": "createPresignedUploadUrl",
+        "summary": "Get a presigned upload URL",
+        "tags": ["Uploads"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreatePresignedUploadUrl"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPresignedUploadUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }

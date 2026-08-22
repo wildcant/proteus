@@ -10,6 +10,7 @@ export default defineConfig({
       '@tests': resolve(__dirname, './tests'),
       '@core': resolve(__dirname, './src/core'),
       '@framework': resolve(__dirname, './src/framework'),
+      '@workflows': resolve(__dirname, './src/workflows'),
     },
   },
   test: {

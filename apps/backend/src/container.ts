@@ -18,6 +18,7 @@ import { registerLinkService } from './link-modules/index.js'
 import authModule, { authProviderDeclarations } from './modules/auth/index.js'
 import cartModule from './modules/cart/index.js'
 import customerModule from './modules/customer/index.js'
+import fileModule, { fileProviderDeclarations } from './modules/file/index.js'
 import fulfillmentModule, { fulfillmentProviderDeclarations } from './modules/fulfillment/index.js'
 import inventoryModule from './modules/inventory/index.js'
 import notificationModule, { notificationProviderDeclarations } from './modules/notification/index.js'
@@ -41,6 +42,7 @@ export async function bootstrapContainer(deps: { logger: Logger; dbProvider: DbP
   await bootstrapModule(container, authModule, authProviderDeclarations)
   await bootstrapModule(container, cartModule)
   await bootstrapModule(container, customerModule)
+  await bootstrapModule(container, fileModule, fileProviderDeclarations)
   await bootstrapModule(container, fulfillmentModule, fulfillmentProviderDeclarations)
   await bootstrapModule(container, inventoryModule)
   await bootstrapModule(container, pricingModule)

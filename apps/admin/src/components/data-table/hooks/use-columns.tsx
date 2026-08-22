@@ -1,3 +1,4 @@
+import { Checkbox } from '@proteus/ui'
 import type { ColumnDef as TanStackColumnDef } from '@tanstack/react-table'
 import { type ReactNode, useMemo } from 'react'
 import type { CellValue, ColumnDef } from '../types'
@@ -10,7 +11,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   }, obj)
 }
 
-export function useColumns<T>(columns: ColumnDef<T>[], rowActions?: (row: T) => ReactNode) {
+export function useColumns<T>(columns: ColumnDef<T>[], rowActions?: (row: T) => ReactNode, selectable = false) {
   return useMemo<TanStackColumnDef<T>[]>(() => {
     const cols: TanStackColumnDef<T>[] = columns.map(({ accessorKey, ...col }) => ({
       id: col.id,
@@ -38,6 +39,31 @@ export function useColumns<T>(columns: ColumnDef<T>[], rowActions?: (row: T) => 
       },
     }))
 
+    if (selectable) {
+      cols.unshift({
+        id: '_select',
+        size: 40,
+        meta: { align: 'center' as const, truncateTooltip: false },
+        // Select-all only reaches the current page: with manual pagination the table never
+        // holds the rows it has not fetched.
+        header: ({ table }) => (
+          <Checkbox
+            checked={table.getIsAllPageRowsSelected()}
+            indeterminate={table.getIsSomePageRowsSelected()}
+            onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
+            aria-label="Select all rows on this page"
+          />
+        ),
+        cell: (info) => (
+          <Checkbox
+            checked={info.row.getIsSelected()}
+            onCheckedChange={(checked) => info.row.toggleSelected(checked)}
+            aria-label="Select row"
+          />
+        ),
+      })
+    }
+
     if (rowActions) {
       cols.push({
         id: '_actions',
@@ -49,5 +75,5 @@ export function useColumns<T>(columns: ColumnDef<T>[], rowActions?: (row: T) => 
     }
 
     return cols
-  }, [columns, rowActions])
+  }, [columns, rowActions, selectable])
 }

@@ -1,5 +1,4 @@
 import { test } from '@tests/setup/test-extend.js'
-import { describe } from 'vitest'
 import { BigNumber } from '../../../core/db/bignum.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { PriceRepository } from '../repositories/price.js'
@@ -20,7 +19,7 @@ test.beforeEach(({ getDb, logger }) => {
   })
 })
 
-describe('PricingModuleService', () => {
+test.describe('PricingModuleService', () => {
   test('createPriceSets creates price set with inline prices', async ({ expect, dto }) => {
     const [priceSet] = await service.createPriceSets([dto.generate.createPriceSet()])
 

@@ -11,11 +11,23 @@ export const StoreCalculatedPrice = z
   })
   .openapi('StoreCalculatedPrice')
 
+export const StoreProductImage = z
+  .object({
+    id: z.string(),
+    url: z.string(),
+    rank: z.number(),
+  })
+  .openapi('StoreProductImage')
+export type StoreProductImage = z.infer<typeof StoreProductImage>
+
 export const StoreProductVariant = z
   .object({
     id: z.string(),
     productId: z.string(),
     title: z.string(),
+    thumbnail: z.string().nullable(),
+    /** Ids into the product's `images`, in image rank order. Empty when the variant has no links. */
+    imageIds: z.array(z.string()),
     sku: z.string().nullable(),
     barcode: z.string().nullable(),
     material: z.string().nullable(),

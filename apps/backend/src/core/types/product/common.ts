@@ -41,6 +41,7 @@ export type ProductVariantDTO = {
   id: string
   productId: string
   title: string
+  thumbnail: string | null
   sku: string | null
   barcode: string | null
   ean: string | null
@@ -153,4 +154,19 @@ export interface FilterableProductImageProps extends BaseFilterable<FilterablePr
   id?: string | string[]
   productId?: string | string[]
   url?: string | OperatorMap<string>
+}
+
+export type ProductVariantImageDTO = {
+  id: string
+  variantId: string
+  imageId: string
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductVariantImageProps extends BaseFilterable<FilterableProductVariantImageProps> {
+  id?: string | string[]
+  variantId?: string | string[]
+  imageId?: string | string[]
 }

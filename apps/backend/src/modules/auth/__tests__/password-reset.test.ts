@@ -3,7 +3,6 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { asValue, createContainer } from 'awilix'
-import { describe } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { EmailpassProvider } from '../../../providers/auth-emailpass/emailpass.js'
 import { AuthIdentityRepository } from '../repositories/auth-identity.js'
@@ -50,7 +49,7 @@ async function registerUser(email: string, password: string) {
   return result.authIdentity
 }
 
-describe('createPasswordResetToken', () => {
+test.describe('createPasswordResetToken', () => {
   test('creates a reset token and returns jti + providerIdentity + expiresAt', async ({ expect }) => {
     await registerUser('reset@example.com', 'password123')
 
@@ -104,7 +103,7 @@ describe('createPasswordResetToken', () => {
   })
 })
 
-describe('consumePasswordResetToken', () => {
+test.describe('consumePasswordResetToken', () => {
   test('succeeds on first use', async ({ expect }) => {
     await registerUser('consume@example.com', 'password123')
 
@@ -235,7 +234,7 @@ describe('consumePasswordResetToken', () => {
   })
 })
 
-describe('password reset end-to-end', () => {
+test.describe('password reset end-to-end', () => {
   test('password updated successfully + login with new password succeeds', async ({ expect }) => {
     await registerUser('e2e@example.com', 'old-password')
 

@@ -1,5 +1,6 @@
 import { AdminCreateProduct } from '@proteus/http-schemas/admin'
 import { z } from 'zod'
+import { mediaSchema } from '#/features/products/media.ts'
 
 export const detailsSchema = AdminCreateProduct.pick({
   title: true,
@@ -27,6 +28,8 @@ export const productFormSchema = z.object({
   details: detailsSchema,
   organize: organizeSchema,
   attributes: attributesSchema,
+  // Staged client-side, so it sits beside the tab groups rather than inside one.
+  media: mediaSchema,
 })
 
 export type ProductFormValues = z.infer<typeof productFormSchema>

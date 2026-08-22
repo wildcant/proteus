@@ -1,5 +1,14 @@
 import type { ProductStatusType } from './common.js'
 
+export type CreateProductImageInput = {
+  url: string
+}
+
+export type UpsertProductImageInput = {
+  id?: string
+  url: string
+}
+
 export type CreateProductDTO = {
   title: string
   handle?: string
@@ -19,6 +28,7 @@ export type CreateProductDTO = {
   discountable?: boolean
   externalId?: string | null
   metadata?: string | null
+  images?: CreateProductImageInput[]
 }
 
 export type UpdateProductDTO = {
@@ -40,11 +50,13 @@ export type UpdateProductDTO = {
   discountable?: boolean
   externalId?: string | null
   metadata?: string | null
+  images?: UpsertProductImageInput[]
 }
 
 export type CreateProductVariantDTO = {
   productId: string
   title: string
+  thumbnail?: string | null
   sku?: string | null
   barcode?: string | null
   ean?: string | null
@@ -65,6 +77,7 @@ export type CreateProductVariantDTO = {
 
 export type UpdateProductVariantDTO = {
   title?: string
+  thumbnail?: string | null
   sku?: string | null
   barcode?: string | null
   ean?: string | null
@@ -125,4 +138,9 @@ export type UpdateProductImageDTO = {
   url?: string
   rank?: number
   metadata?: string | null
+}
+
+export type VariantImageInput = {
+  imageId: string
+  variantId: string
 }

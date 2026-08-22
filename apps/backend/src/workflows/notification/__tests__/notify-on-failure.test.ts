@@ -5,7 +5,6 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { createWorkflow, setWorkflowEngine } from '@core/workflows/types.js'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect } from 'vitest'
 import type { NotifyOnFailureInput } from '../steps/notify-on-failure.js'
 import { notifyOnFailureStep } from '../steps/notify-on-failure.js'
 
@@ -15,8 +14,8 @@ function setupWorkflowEngine(notificationService: Partial<INotificationModuleSer
   setWorkflowEngine(createSimpleWorkflowEngine(), container)
 }
 
-describe('notifyOnFailureStep', () => {
-  test('main function is a no-op — does not call createNotifications', async () => {
+test.describe('notifyOnFailureStep', () => {
+  test('main function is a no-op — does not call createNotifications', async ({ expect }) => {
     const createCalls: CreateNotificationDTO[][] = []
 
     setupWorkflowEngine({
@@ -35,7 +34,7 @@ describe('notifyOnFailureStep', () => {
     expect(createCalls).toHaveLength(0)
   })
 
-  test('compensation calls createNotifications on workflow rollback', async () => {
+  test('compensation calls createNotifications on workflow rollback', async ({ expect }) => {
     const createCalls: CreateNotificationDTO[][] = []
 
     setupWorkflowEngine({
@@ -65,7 +64,7 @@ describe('notifyOnFailureStep', () => {
     expect(createCalls[0]).toEqual(notifications)
   })
 
-  test('compensation preserves full notification payload', async () => {
+  test('compensation preserves full notification payload', async ({ expect }) => {
     const createCalls: CreateNotificationDTO[][] = []
 
     setupWorkflowEngine({

@@ -1,6 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
-import { describe } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { InviteRepository } from '../repositories/invite.js'
 import { UserRepository } from '../repositories/user.js'
@@ -15,7 +14,7 @@ test.beforeEach(({ getDb, logger }) => {
   service = new UserModuleService({ inviteRepository, userRepository, withTransaction, logger })
 })
 
-describe('UserModuleService', () => {
+test.describe('UserModuleService', () => {
   test('createUsers', async ({ expect, dto }) => {
     const input = [dto.generate.createUser(), dto.generate.createUser()]
 
@@ -99,7 +98,7 @@ describe('UserModuleService', () => {
     expect(list[0]?.id).toBe(created.id)
   })
 
-  describe('error paths', () => {
+  test.describe('error paths', () => {
     test('retrieveUser throws NOT_FOUND for non-existent id', async ({ expect }) => {
       const error = await service.retrieveUser('usr_nonexistent').catch((e) => e)
 

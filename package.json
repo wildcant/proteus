@@ -12,10 +12,11 @@
     "gen:workerd-env": "dotenvx get -f .env.local --format eval 2>/dev/null > apps/backend/.env.workerd",
     "lint": "biome lint .",
     "format": "biome format --write .",
+    "format:check": "biome format .",
     "check": "biome check .",
-    "check:all": "./scripts/check-env-usage.sh; e1=$?; ./scripts/check-generic-errors.sh; e2=$?; ./scripts/check-datetime-schema.sh; e3=$?; npm run check; e4=$?; npm run --workspace=backend check:deps; e5=$?; npm run --workspace=admin check:deps; e6=$?; npm run --workspace=store check:deps; e7=$?; exit $((e1 + e2 + e3 + e4 + e5 + e6 + e7))",
     "openapi:generate": "npm run --workspace=backend openapi:dump:offline && npm run --workspace=admin openapi:client && npm run --workspace=store openapi:client",
     "typecheck": "npm run --workspace=backend typecheck && npm run --workspace=store typecheck && npm run --workspace=admin typecheck",
+    "verify": "./scripts/verify.sh",
     "sync-secrets:backend": "./scripts/sync-secrets.sh proteus-backend",
     "sync-secrets:store": "./scripts/sync-secrets.sh proteus",
     "pull-keys": "npx wrangler r2 object get dotenv-keys/.env.keys --file=.env.keys --remote"

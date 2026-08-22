@@ -1,7 +1,8 @@
 import type { Logger } from '@core/types/logger.js'
+import { test } from '@tests/setup/test-extend.js'
 import { createContainer } from 'awilix'
 import { createPostgresBackend, type PostgresQueueBackend, Queue, type QueueOptions } from 'bullmq'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { vi } from 'vitest'
 import { BullMqCronScheduler } from '../bullmq/bullmq-cron-scheduler.js'
 
 const DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5433/proteus_test'
@@ -32,25 +33,25 @@ async function waitFor(predicate: () => boolean, timeoutMs = 10_000, intervalMs 
   throw new Error(`waitFor timed out after ${timeoutMs}ms`)
 }
 
-describe('BullMqCronScheduler', () => {
+test.describe('BullMqCronScheduler', () => {
   let scheduler: BullMqCronScheduler
   let logger: Logger
   // Separate queue instance for manually triggering jobs in tests
   let triggerQueue: Queue<unknown, unknown, string, unknown, unknown, string, PostgresQueueBackend>
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     logger = createSpyLogger()
     scheduler = new BullMqCronScheduler(logger, createContainer())
     triggerQueue = new Queue(QUEUE_NAME, { connection: DATABASE_URL } as QueueOptions, createPostgresBackend)
     await triggerQueue.obliterate({ force: true })
   })
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     await scheduler.shutdown()
     await triggerQueue.close()
   })
 
-  test('schedule a job and verify its handler is called', async () => {
+  test('schedule a job and verify its handler is called', async ({ expect }) => {
     let called = false
 
     await scheduler.start([
@@ -70,7 +71,7 @@ describe('BullMqCronScheduler', () => {
     expect(called).toBe(true)
   })
 
-  test('remove a job and verify it no longer fires', async () => {
+  test('remove a job and verify it no longer fires', async ({ expect }) => {
     let callCount = 0
 
     await scheduler.start([
@@ -97,7 +98,7 @@ describe('BullMqCronScheduler', () => {
     expect(callCount).toBe(1)
   })
 
-  test('graceful shutdown completes without error', async () => {
+  test('graceful shutdown completes without error', async ({ expect }) => {
     await scheduler.start([
       {
         name: 'shutdown-job',
@@ -111,7 +112,7 @@ describe('BullMqCronScheduler', () => {
     await expect(scheduler.shutdown()).resolves.toBeUndefined()
   })
 
-  test('handler error is logged and scheduler continues operating', async () => {
+  test('handler error is logged and scheduler continues operating', async ({ expect }) => {
     const errorMessage = 'intentional test failure'
     let secondJobCalled = false
 
@@ -142,7 +143,7 @@ describe('BullMqCronScheduler', () => {
     expect(secondJobCalled).toBe(true)
   })
 
-  test('handler error does not prevent the next tick from firing', async () => {
+  test('handler error does not prevent the next tick from firing', async ({ expect }) => {
     let callCount = 0
 
     await scheduler.start([

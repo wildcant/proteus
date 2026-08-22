@@ -66,6 +66,7 @@ export * from './storePaymentSessionData.ts';
 export * from './storePaymentSessionMetadata.ts';
 export * from './storePaymentSessionStatus.ts';
 export * from './storeProduct.ts';
+export * from './storeProductImage.ts';
 export * from './storeProductListItem.ts';
 export * from './storeProductListResponse.ts';
 export * from './storeProductResponse.ts';

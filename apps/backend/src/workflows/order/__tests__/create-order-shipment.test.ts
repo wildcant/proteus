@@ -4,7 +4,7 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import { createOrderShipmentWorkflow } from '../create-order-shipment.js'
 
 function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<OrderDTO>) {
@@ -46,8 +46,8 @@ function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<O
   return { order, fulfillment, orderService, fulfillmentService, linkService, orderFulfillmentRepo }
 }
 
-describe('createOrderShipmentWorkflow', () => {
-  test('marks fulfillment as shipped and updates order status', async ({ dto }) => {
+test.describe('createOrderShipmentWorkflow', () => {
+  test('marks fulfillment as shipped and updates order status', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     const result = await createOrderShipmentWorkflow.run({
@@ -62,7 +62,7 @@ describe('createOrderShipmentWorkflow', () => {
     expect(services.orderService.updateFulfillmentStatus).toHaveBeenCalledWith(services.order.id, 'shipped')
   })
 
-  test('passes tracking data when provided', async ({ dto }) => {
+  test('passes tracking data when provided', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     await createOrderShipmentWorkflow.run({
@@ -83,7 +83,7 @@ describe('createOrderShipmentWorkflow', () => {
     })
   })
 
-  test('rejects when fulfillment status is not fulfilled', async ({ dto }) => {
+  test('rejects when fulfillment status is not fulfilled', async ({ dto, expect }) => {
     setup(dto.generate, { fulfillmentStatus: 'unfulfilled' })
 
     await expect(createOrderShipmentWorkflow.run({ orderId: 'any', fulfillmentId: 'ful_1' })).rejects.toThrow(
@@ -91,7 +91,7 @@ describe('createOrderShipmentWorkflow', () => {
     )
   })
 
-  test('rejects when fulfillment is not linked to the order', async ({ dto }) => {
+  test('rejects when fulfillment is not linked to the order', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.orderFulfillmentRepo.findByFulfillmentId.mockResolvedValue(null)
 
@@ -103,7 +103,7 @@ describe('createOrderShipmentWorkflow', () => {
     ).rejects.toThrow('not linked to order')
   })
 
-  test('compensates on failure by reverting fulfillment and order status', async ({ dto }) => {
+  test('compensates on failure by reverting fulfillment and order status', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.orderService.updateFulfillmentStatus.mockRejectedValue(new Error('DB error'))
 

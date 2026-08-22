@@ -19,15 +19,19 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const pricingService = req.scope.resolve<IPricingModuleService>(Modules.PRICING)
   const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-  const variant = await productService.retrieveProductVariant(req.params.variantId)
+  const [variant, images] = await Promise.all([
+    productService.retrieveProductVariant(req.params.variantId),
+    productService.listImagesForVariant(req.params.variantId),
+  ])
+
   const [variantAndPriceSetLink] = await linkService.repo('productVariantPriceSet').findByVariantIds([variant.id])
   const priceSetId = variantAndPriceSetLink?.priceSetId
 
-  if (!priceSetId) return { status: 200, json: { variant } }
+  if (!priceSetId) return { status: 200, json: { variant: { ...variant, images } } }
 
   const prices = await pricingService.listPrices({ priceSetId })
 
-  return { status: 200, json: { variant: { ...variant, prices } } }
+  return { status: 200, json: { variant: { ...variant, images, prices } } }
 }
 
 export const PatchInput = { params: VariantIdParams, body: AdminUpdateProductVariant }

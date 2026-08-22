@@ -1,5 +1,5 @@
 import { test } from '@tests/setup/test-extend.js'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import type { ConfigModule } from '../../config/types.js'
 import { ErrorTypes } from '../../errors/app-error.js'
 import type { AuthIdentityDTO, IAuthModuleService, ProviderIdentityDTO } from '../../types/index.js'
@@ -41,8 +41,8 @@ function makeMockService(verifications: unknown[] = []) {
   } as unknown as IAuthModuleService
 }
 
-describe('validateVerification', () => {
-  test('no verification required for actor type without config (user)', async () => {
+test.describe('validateVerification', () => {
+  test('no verification required for actor type without config (user)', async ({ expect }) => {
     const mockService = makeMockService()
     const authIdentity = makeAuthIdentity({ providerIdentities: [makeProviderIdentity()] })
 
@@ -56,7 +56,7 @@ describe('validateVerification', () => {
     expect(mockService.listAuthVerifications).not.toHaveBeenCalled()
   })
 
-  test('no verification required when auth provider not in actor config', async () => {
+  test('no verification required when auth provider not in actor config', async ({ expect }) => {
     const mockService = makeMockService()
     const authIdentity = makeAuthIdentity({
       providerIdentities: [makeProviderIdentity({ provider: 'google' })],
@@ -73,7 +73,7 @@ describe('validateVerification', () => {
     expect(mockService.listAuthVerifications).not.toHaveBeenCalled()
   })
 
-  test('throws when provider identity is missing', async () => {
+  test('throws when provider identity is missing', async ({ expect }) => {
     const mockService = makeMockService()
     const authIdentity = makeAuthIdentity({ providerIdentities: [] })
 
@@ -86,7 +86,7 @@ describe('validateVerification', () => {
     ).rejects.toMatchObject({ type: ErrorTypes.INVALID_DATA })
   })
 
-  test('verification required when no verification record exists', async () => {
+  test('verification required when no verification record exists', async ({ expect }) => {
     const mockService = makeMockService([])
     const authIdentity = makeAuthIdentity({
       providerIdentities: [makeProviderIdentity()],
@@ -101,7 +101,7 @@ describe('validateVerification', () => {
     expect(result.verificationRequired).toBe(true)
   })
 
-  test('verification required when verifiedAt is null', async () => {
+  test('verification required when verifiedAt is null', async ({ expect }) => {
     const mockService = makeMockService([
       {
         id: 'authver_1',
@@ -124,7 +124,7 @@ describe('validateVerification', () => {
     expect(result.verificationRequired).toBe(true)
   })
 
-  test('no verification required when verification is completed', async () => {
+  test('no verification required when verification is completed', async ({ expect }) => {
     const mockService = makeMockService([
       {
         id: 'authver_1',

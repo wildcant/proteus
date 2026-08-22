@@ -1,6 +1,6 @@
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import jwt from 'jsonwebtoken'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import { env } from '../../../env.js'
 import type { ConfigModule } from '../../config/types.js'
 import type { IAuthModuleService } from '../../types/index.js'
@@ -35,8 +35,8 @@ function makeProviderIdentity(
   })
 }
 
-describe('generateJwtTokenForAuthIdentity', () => {
-  test('generates actorless token with empty actorId', ({ dto }) => {
+test.describe('generateJwtTokenForAuthIdentity', () => {
+  test('generates actorless token with empty actorId', ({ dto, expect }) => {
     const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { userId: 'usr_abc' },
       providerIdentities: [makeProviderIdentity(dto.generate)],
@@ -55,7 +55,7 @@ describe('generateJwtTokenForAuthIdentity', () => {
     expect(decoded.authProvider).toBe('emailpass')
   })
 
-  test('generates full token with actorId from app_metadata', ({ dto }) => {
+  test('generates full token with actorId from app_metadata', ({ dto, expect }) => {
     const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { userId: 'usr_abc' },
       providerIdentities: [makeProviderIdentity(dto.generate)],
@@ -72,7 +72,7 @@ describe('generateJwtTokenForAuthIdentity', () => {
     expect(decoded.userMetadata).toEqual({ name: 'Test User' })
   })
 
-  test('defaults actorId to empty string when app_metadata has no actor key', ({ dto }) => {
+  test('defaults actorId to empty string when app_metadata has no actor key', ({ dto, expect }) => {
     const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { registered: true },
       providerIdentities: [makeProviderIdentity(dto.generate)],
@@ -87,7 +87,7 @@ describe('generateJwtTokenForAuthIdentity', () => {
     expect(decoded.actorId).toBe('')
   })
 
-  test('uses customerId key for customer actor type', ({ dto }) => {
+  test('uses customerId key for customer actor type', ({ dto, expect }) => {
     const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { customerId: 'cus_xyz' },
       providerIdentities: [makeProviderIdentity(dto.generate)],
@@ -104,8 +104,8 @@ describe('generateJwtTokenForAuthIdentity', () => {
   })
 })
 
-describe('generateJwtTokenWithChecks', () => {
-  test('returns full token when no verification required (user)', async ({ dto }) => {
+test.describe('generateJwtTokenWithChecks', () => {
+  test('returns full token when no verification required (user)', async ({ dto, expect }) => {
     const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { userId: 'usr_abc' },
       providerIdentities: [makeProviderIdentity(dto.generate)],
@@ -128,7 +128,10 @@ describe('generateJwtTokenWithChecks', () => {
     expect(decoded.actorId).toBe('usr_abc')
   })
 
-  test('returns actorless token with verificationRequired when verification missing (customer)', async ({ dto }) => {
+  test('returns actorless token with verificationRequired when verification missing (customer)', async ({
+    dto,
+    expect,
+  }) => {
     const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { customerId: 'cus_xyz' },
       providerIdentities: [makeProviderIdentity(dto.generate)],
@@ -150,7 +153,7 @@ describe('generateJwtTokenWithChecks', () => {
     expect(decoded.actorId).toBe('')
   })
 
-  test('returns full token when verification is completed (customer)', async ({ dto }) => {
+  test('returns full token when verification is completed (customer)', async ({ dto, expect }) => {
     const authIdentity = makeAuthIdentity(dto.generate, {
       appMetadata: { customerId: 'cus_xyz' },
       providerIdentities: [makeProviderIdentity(dto.generate)],

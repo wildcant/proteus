@@ -13,6 +13,7 @@ const UpdateVariantPrice = z.object({
 export const AdminCreateProductVariant = z
   .object({
     title: z.string().min(1),
+    thumbnail: z.string().nullable().optional(),
     sku: z.string().nullable().optional(),
     barcode: z.string().nullable().optional(),
     ean: z.string().nullable().optional(),
@@ -37,6 +38,7 @@ export type AdminCreateProductVariantBody = z.infer<typeof AdminCreateProductVar
 export const AdminUpdateProductVariant = z
   .object({
     title: z.string().min(1).optional(),
+    thumbnail: z.string().nullable().optional(),
     sku: z.string().nullable().optional(),
     barcode: z.string().nullable().optional(),
     ean: z.string().nullable().optional(),

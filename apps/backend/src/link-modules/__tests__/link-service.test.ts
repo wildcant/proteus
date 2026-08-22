@@ -1,5 +1,4 @@
 import { test } from '@tests/setup/test-extend.js'
-import { describe, expect } from 'vitest'
 import { CartPaymentCollectionRepository } from '../repositories/cart-payment-collection.js'
 import { CartProductRepository } from '../repositories/cart-product.js'
 import { OrderCartRepository } from '../repositories/order-cart.js'
@@ -34,8 +33,8 @@ test.beforeEach(({ getDb }) => {
   })
 })
 
-describe('LinkService.dismissLinks', () => {
-  test('dismisses variant links from both price set and inventory item repos', async () => {
+test.describe('LinkService.dismissLinks', () => {
+  test('dismisses variant links from both price set and inventory item repos', async ({ expect }) => {
     const pvps = await productVariantPriceSet.create({ variantId: 'var_1', priceSetId: 'pset_1' })
     const pvii = await productVariantInventoryItem.create({ variantId: 'var_1', inventoryItemId: 'inv_1' })
 
@@ -47,7 +46,7 @@ describe('LinkService.dismissLinks', () => {
     expect(result.productVariantInventoryItem?.[0]?.id).toBe(pvii.id)
   })
 
-  test('soft-deletes records (sets deletedAt, does not hard-delete)', async () => {
+  test('soft-deletes records (sets deletedAt, does not hard-delete)', async ({ expect }) => {
     const pvps = await productVariantPriceSet.create({ variantId: 'var_2', priceSetId: 'pset_2' })
 
     await linkService.dismissLinks({ variantId: ['var_2'] })
@@ -60,14 +59,14 @@ describe('LinkService.dismissLinks', () => {
     expect(withDeleted?.deletedAt).toBeInstanceOf(Date)
   })
 
-  test('returns empty result when no records match', async () => {
+  test('returns empty result when no records match', async ({ expect }) => {
     const result = await linkService.dismissLinks({ variantId: ['var_nonexistent'] })
 
     expect(result.productVariantPriceSet).toBeUndefined()
     expect(result.productVariantInventoryItem).toBeUndefined()
   })
 
-  test('only dismisses matching records, leaves others untouched', async () => {
+  test('only dismisses matching records, leaves others untouched', async ({ expect }) => {
     await productVariantPriceSet.create({ variantId: 'var_keep', priceSetId: 'pset_keep' })
     await productVariantPriceSet.create({ variantId: 'var_dismiss', priceSetId: 'pset_dismiss' })
 
@@ -80,7 +79,7 @@ describe('LinkService.dismissLinks', () => {
     expect(dismissed).toHaveLength(0)
   })
 
-  test('dismisses by cartId from cart payment collection repo', async () => {
+  test('dismisses by cartId from cart payment collection repo', async ({ expect }) => {
     const cpc = await cartPaymentCollection.create({ cartId: 'cart_1', paymentCollectionId: 'paycol_1' })
 
     const result = await linkService.dismissLinks({ cartId: ['cart_1'] })
@@ -89,7 +88,7 @@ describe('LinkService.dismissLinks', () => {
     expect(result.cartPaymentCollection?.[0]?.id).toBe(cpc.id)
   })
 
-  test('dismisses across multiple columns in a single call', async () => {
+  test('dismisses across multiple columns in a single call', async ({ expect }) => {
     const pvps = await productVariantPriceSet.create({ variantId: 'var_multi', priceSetId: 'pset_multi' })
     const cpc = await cartPaymentCollection.create({ cartId: 'cart_multi', paymentCollectionId: 'paycol_multi' })
 
@@ -104,7 +103,7 @@ describe('LinkService.dismissLinks', () => {
     expect(result.cartPaymentCollection?.[0]?.id).toBe(cpc.id)
   })
 
-  test('dismisses multiple records for the same column', async () => {
+  test('dismisses multiple records for the same column', async ({ expect }) => {
     const pvps1 = await productVariantPriceSet.create({ variantId: 'var_batch_1', priceSetId: 'pset_b1' })
     const pvps2 = await productVariantPriceSet.create({ variantId: 'var_batch_2', priceSetId: 'pset_b2' })
 

@@ -4,7 +4,7 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import { markOrderDeliveredWorkflow } from '../mark-order-delivered.js'
 
 function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<OrderDTO>) {
@@ -47,8 +47,8 @@ function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<O
   return { order, fulfillment, orderService, fulfillmentService, linkService, orderFulfillmentRepo }
 }
 
-describe('markOrderDeliveredWorkflow', () => {
-  test('marks fulfillment as delivered and updates order status', async ({ dto }) => {
+test.describe('markOrderDeliveredWorkflow', () => {
+  test('marks fulfillment as delivered and updates order status', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     const result = await markOrderDeliveredWorkflow.run({
@@ -63,7 +63,7 @@ describe('markOrderDeliveredWorkflow', () => {
     expect(services.orderService.updateFulfillmentStatus).toHaveBeenCalledWith(services.order.id, 'delivered')
   })
 
-  test('rejects when order is canceled', async ({ dto }) => {
+  test('rejects when order is canceled', async ({ dto, expect }) => {
     const services = setup(dto.generate, { status: 'canceled', fulfillmentStatus: 'shipped' })
 
     await expect(
@@ -74,7 +74,7 @@ describe('markOrderDeliveredWorkflow', () => {
     ).rejects.toThrow('order is canceled')
   })
 
-  test('rejects when fulfillment is canceled', async ({ dto }) => {
+  test('rejects when fulfillment is canceled', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.fulfillmentService.retrieveFulfillment.mockResolvedValue({
       ...services.fulfillment,
@@ -89,7 +89,7 @@ describe('markOrderDeliveredWorkflow', () => {
     ).rejects.toThrow('fulfillment is canceled')
   })
 
-  test('rejects when fulfillment status is not shipped', async ({ dto }) => {
+  test('rejects when fulfillment status is not shipped', async ({ dto, expect }) => {
     setup(dto.generate, { fulfillmentStatus: 'fulfilled' })
 
     await expect(markOrderDeliveredWorkflow.run({ orderId: 'any', fulfillmentId: 'ful_1' })).rejects.toThrow(
@@ -97,7 +97,7 @@ describe('markOrderDeliveredWorkflow', () => {
     )
   })
 
-  test('rejects when fulfillment is not linked to the order', async ({ dto }) => {
+  test('rejects when fulfillment is not linked to the order', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.orderFulfillmentRepo.findByFulfillmentId.mockResolvedValue(null)
 
@@ -109,7 +109,7 @@ describe('markOrderDeliveredWorkflow', () => {
     ).rejects.toThrow('not linked to order')
   })
 
-  test('compensates on failure by reverting fulfillment and order status', async ({ dto }) => {
+  test('compensates on failure by reverting fulfillment and order status', async ({ dto, expect }) => {
     const services = setup(dto.generate)
     services.orderService.updateFulfillmentStatus.mockRejectedValue(new Error('DB error'))
 

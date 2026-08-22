@@ -1,5 +1,4 @@
 import { test } from '@tests/setup/test-extend.js'
-import { describe, expect } from 'vitest'
 import { z } from 'zod'
 import { applyNamespaceAuth } from '../namespace-auth.js'
 import type { MiddlewareFunction, RouteDefinition } from '../types.js'
@@ -19,8 +18,8 @@ function makeDefinition(overrides: Partial<RouteDefinition> & { matcher: string 
   } as RouteDefinition
 }
 
-describe('applyNamespaceAuth', () => {
-  test('admin route with default auth prepends authenticate("user")', () => {
+test.describe('applyNamespaceAuth', () => {
+  test('admin route with default auth prepends authenticate("user")', ({ expect }) => {
     const definition = makeDefinition({ matcher: '/admin/users' })
 
     applyNamespaceAuth(definition)
@@ -28,7 +27,7 @@ describe('applyNamespaceAuth', () => {
     expect(definition.middlewares).toHaveLength(1)
   })
 
-  test('store route with default auth prepends authenticate("customer")', () => {
+  test('store route with default auth prepends authenticate("customer")', ({ expect }) => {
     const definition = makeDefinition({ matcher: '/store/products' })
 
     applyNamespaceAuth(definition)
@@ -36,7 +35,7 @@ describe('applyNamespaceAuth', () => {
     expect(definition.middlewares).toHaveLength(1)
   })
 
-  test('auth: "public" does not inject auth middleware', () => {
+  test('auth: "public" does not inject auth middleware', ({ expect }) => {
     const definition = makeDefinition({ matcher: '/admin/products', auth: 'public' })
 
     applyNamespaceAuth(definition)
@@ -44,7 +43,7 @@ describe('applyNamespaceAuth', () => {
     expect(definition.middlewares).toBeUndefined()
   })
 
-  test('auth: "optional" prepends authenticate with allowUnauthenticated', () => {
+  test('auth: "optional" prepends authenticate with allowUnauthenticated', ({ expect }) => {
     const definition = makeDefinition({ matcher: '/store/products', auth: 'optional' })
 
     applyNamespaceAuth(definition)
@@ -52,7 +51,7 @@ describe('applyNamespaceAuth', () => {
     expect(definition.middlewares).toHaveLength(1)
   })
 
-  test('auth: "unregistered" prepends authenticate with allowUnregistered', () => {
+  test('auth: "unregistered" prepends authenticate with allowUnregistered', ({ expect }) => {
     const definition = makeDefinition({ matcher: '/admin/users', auth: 'unregistered' })
 
     applyNamespaceAuth(definition)
@@ -60,7 +59,7 @@ describe('applyNamespaceAuth', () => {
     expect(definition.middlewares).toHaveLength(1)
   })
 
-  test('auth: "required" with custom middlewares prepends auth before custom', () => {
+  test('auth: "required" with custom middlewares prepends auth before custom', ({ expect }) => {
     const customMiddleware: MiddlewareFunction = (req) => req
     const definition = makeDefinition({
       matcher: '/admin/users',
@@ -75,7 +74,7 @@ describe('applyNamespaceAuth', () => {
     expect(definition.middlewares?.[1]).toBe(customMiddleware)
   })
 
-  test('/auth/ route gets no namespace auth regardless of auth value', () => {
+  test('/auth/ route gets no namespace auth regardless of auth value', ({ expect }) => {
     const definition = makeDefinition({ matcher: '/auth/token/refresh' })
 
     applyNamespaceAuth(definition)
@@ -83,7 +82,7 @@ describe('applyNamespaceAuth', () => {
     expect(definition.middlewares).toBeUndefined()
   })
 
-  test('/hooks/ route gets no namespace auth', () => {
+  test('/hooks/ route gets no namespace auth', ({ expect }) => {
     const definition = makeDefinition({
       matcher: '/hooks/payment/:provider',
       method: 'POST',
@@ -94,7 +93,7 @@ describe('applyNamespaceAuth', () => {
     expect(definition.middlewares).toBeUndefined()
   })
 
-  test('default auth for admin routes without explicit auth field is "required"', () => {
+  test('default auth for admin routes without explicit auth field is "required"', ({ expect }) => {
     const definitionWithRequired = makeDefinition({ matcher: '/admin/users', auth: 'required' })
     const definitionWithDefault = makeDefinition({ matcher: '/admin/users' })
 

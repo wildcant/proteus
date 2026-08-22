@@ -1,4 +1,6 @@
 Fixes and improvements
+- when removing an option from product Options section it should validate there are no variants linked.
+- product variant creation form.
 
 Future features TODOs
 - Access Control Module Architecture

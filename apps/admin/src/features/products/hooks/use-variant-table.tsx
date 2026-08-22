@@ -1,7 +1,7 @@
 import type { AdminProductVariant } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table'
 import { useProductVariants } from '#/features/products/api/product-variants'
-import { VariantRowActions } from '#/features/products/components/variant-row-actions'
+import { VariantRowActions } from '#/features/products/components/variant/variant-row-actions'
 
 export const useVariantTable = (productId: string) =>
   useDefineTable<AdminProductVariant>({

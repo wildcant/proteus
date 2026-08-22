@@ -1,10 +1,9 @@
 import { test } from '@tests/setup/test-extend.js'
-import { describe, expect } from 'vitest'
 import { BigNumber } from '../../../core/db/bignum.js'
 import { buildVariantPrices } from '../utils/build-variant-prices.js'
 
-describe('buildVariantPrices', () => {
-  test('maps each variant to its calculated price', ({ dto }) => {
+test.describe('buildVariantPrices', () => {
+  test('maps each variant to its calculated price', ({ dto, expect }) => {
     const links = [
       dto.generate.productVariantPriceSet({ variantId: 'var_1', priceSetId: 'ps_1' }),
       dto.generate.productVariantPriceSet({ variantId: 'var_2', priceSetId: 'ps_2' }),
@@ -21,7 +20,7 @@ describe('buildVariantPrices', () => {
     expect(result.get('var_2')?.calculatedAmount.toNumber()).toBe(35)
   })
 
-  test('preserves currency code from the calculated price', ({ dto }) => {
+  test('preserves currency code from the calculated price', ({ dto, expect }) => {
     const links = [dto.generate.productVariantPriceSet({ variantId: 'var_1', priceSetId: 'ps_1' })]
     const prices = [
       dto.generate.calculatedPriceSet({ id: 'ps_1', calculatedAmount: new BigNumber(10), currencyCode: 'eur' }),
@@ -32,7 +31,7 @@ describe('buildVariantPrices', () => {
     expect(result.get('var_1')?.currencyCode).toBe('eur')
   })
 
-  test('skips variants without a matching calculated price', ({ dto }) => {
+  test('skips variants without a matching calculated price', ({ dto, expect }) => {
     const links = [dto.generate.productVariantPriceSet({ variantId: 'var_1', priceSetId: 'ps_1' })]
     const prices = [dto.generate.calculatedPriceSet({ id: 'ps_other' })]
 
@@ -41,7 +40,7 @@ describe('buildVariantPrices', () => {
     expect(result.size).toBe(0)
   })
 
-  test('returns empty map for empty inputs', () => {
+  test('returns empty map for empty inputs', ({ expect }) => {
     const result = buildVariantPrices([], [])
 
     expect(result.size).toBe(0)

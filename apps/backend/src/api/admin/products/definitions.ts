@@ -1,8 +1,11 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { searchable, Tags } from '@framework/http/types.js'
 import type { ProductDTO, ProductVariantDTO } from '../../../core/types/product/common.js'
+import * as imageVariantBatchRoutes from './[id]/images/[imageId]/variants/batch/route.js'
+import * as imageVariantRoutes from './[id]/images/[imageId]/variants/route.js'
 import * as productOptionRoutes from './[id]/options/route.js'
 import * as productByIdRoutes from './[id]/route.js'
+import * as variantImageBatchRoutes from './[id]/variants/[variantId]/images/batch/route.js'
 import * as variantPricesRoutes from './[id]/variants/[variantId]/prices/route.js'
 import * as variantByIdRoutes from './[id]/variants/[variantId]/route.js'
 import * as variantRoutes from './[id]/variants/route.js'
@@ -140,5 +143,35 @@ export default [
     summary: 'Delete a product variant',
     tags: [Tags.PRODUCT_VARIANTS],
     output: variantByIdRoutes.DeleteOutput,
+  },
+  {
+    method: 'GET',
+    matcher: '/admin/products/:id/images/:imageId/variants',
+    handler: imageVariantRoutes.GET,
+    input: imageVariantRoutes.GetInput,
+    operationId: 'listImageVariants',
+    summary: 'List the variants a product image is assigned to',
+    tags: [Tags.PRODUCTS],
+    output: imageVariantRoutes.GetOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/products/:id/images/:imageId/variants/batch',
+    handler: imageVariantBatchRoutes.POST,
+    input: imageVariantBatchRoutes.PostInput,
+    operationId: 'batchImageVariants',
+    summary: 'Add or remove variants for a product image',
+    tags: [Tags.PRODUCTS],
+    output: imageVariantBatchRoutes.PostOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/products/:id/variants/:variantId/images/batch',
+    handler: variantImageBatchRoutes.POST,
+    input: variantImageBatchRoutes.PostInput,
+    operationId: 'batchVariantImages',
+    summary: 'Add or remove images for a product variant',
+    tags: [Tags.PRODUCT_VARIANTS],
+    output: variantImageBatchRoutes.PostOutput,
   },
 ] satisfies RouteDefinition[]

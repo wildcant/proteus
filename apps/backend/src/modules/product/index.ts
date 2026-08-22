@@ -7,6 +7,7 @@ import { ProductOptionValueRepository } from './repositories/product-option-valu
 import { ProductProductOptionRepository } from './repositories/product-product-option.js'
 import { ProductProductOptionValueRepository } from './repositories/product-product-option-value.js'
 import { ProductVariantRepository } from './repositories/product-variant.js'
+import { ProductVariantImageRepository } from './repositories/product-variant-image.js'
 import { ProductModuleService } from './services/product-module-service.js'
 
 export default Module(Modules.PRODUCT, {
@@ -19,5 +20,6 @@ export default Module(Modules.PRODUCT, {
     productProductOptionRepository: ProductProductOptionRepository,
     productProductOptionValueRepository: ProductProductOptionValueRepository,
     productImageRepository: ProductImageRepository,
+    productVariantImageRepository: ProductVariantImageRepository,
   },
 })

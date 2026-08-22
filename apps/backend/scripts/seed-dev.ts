@@ -1,3 +1,5 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { BigNumber } from '../src/core/db/bignum.js'
 import type {
   IAuthModuleService,
@@ -26,6 +28,44 @@ const notificationService = container.resolve<INotificationModuleService>(Module
 const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
 const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+
+// --- Seed images ---
+// Product photos live in `seed-images/` (committed, see its README for provenance) and are copied
+// into the gitignored `static/` root so they serve through the same `/static` route as uploads.
+const SEED_IMAGE_SOURCE_DIR = path.join(process.cwd(), 'seed-images')
+const SEED_IMAGE_DIR = path.join(process.cwd(), 'static', 'seed')
+// Mirrors the default in `src/providers/file-localfs/local-file-provider.ts`.
+const STATIC_BASE_URL = 'http://localhost:3000/static'
+
+const SEED_IMAGES = {
+  tshirtBlackFront: 'tshirt-black-front.jpg',
+  tshirtBlackBack: 'tshirt-black-back.jpg',
+  tshirtWhiteFront: 'tshirt-white-front.jpg',
+  tshirtWhiteFlat: 'tshirt-white-flat.jpg',
+  sweatshirtWhite: 'sweatshirt-white.jpg',
+  sweatshirtBlack: 'sweatshirt-black.jpg',
+  sweatpantsGrey: 'sweatpants-grey.jpg',
+  sweatpantsStreet: 'sweatpants-street.jpg',
+  shortsDenim: 'shorts-denim.jpg',
+} as const
+
+const imageUrl = (file: string) => `${STATIC_BASE_URL}/seed/${file}`
+
+async function copySeedImages() {
+  await fs.mkdir(SEED_IMAGE_DIR, { recursive: true })
+
+  // Overwrites unconditionally — the copies are disposable, and re-seeding should repair a
+  // `static/` directory that was cleared or half-populated.
+  await Promise.all(
+    Object.values(SEED_IMAGES).map((file) =>
+      fs.copyFile(path.join(SEED_IMAGE_SOURCE_DIR, file), path.join(SEED_IMAGE_DIR, file)),
+    ),
+  )
+
+  console.info(`Copied ${Object.keys(SEED_IMAGES).length} seed images to ${SEED_IMAGE_DIR}`)
+}
+
+await copySeedImages()
 
 // --- Users ---
 const existingUsers = await userService.listUsers()
@@ -187,138 +227,151 @@ const existingProducts = await productService.listProducts()
 if (existingProducts.length > 0) {
   console.info(`Skipped products (${existingProducts.length} already exist)`)
 } else {
-  const createdProducts = await productService.createProducts([
+  // One catalogue drives products, option values, variants, prices and images, so a colourway is
+  // described once and everything downstream derives from it.
+  const SIZES = ['S', 'M', 'L', 'XL']
+
+  type CatalogEntry = {
+    title: string
+    handle: string
+    description: string
+    skuPrefix: string
+    price: number
+    /** Colourway to its photos in gallery order. The first photo becomes that colourway's thumbnail. */
+    colors: Record<string, string[]>
+  }
+
+  const CATALOG: CatalogEntry[] = [
     {
       title: 'Classic T-Shirt',
       handle: 't-shirt',
       description:
         'Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.',
-      status: 'published',
-      weight: 400,
-      thumbnail: 'https://placehold.co/600x400?text=T-Shirt',
+      skuPrefix: 'SHIRT',
+      price: 2500,
+      colors: {
+        Black: [SEED_IMAGES.tshirtBlackFront, SEED_IMAGES.tshirtBlackBack],
+        White: [SEED_IMAGES.tshirtWhiteFront, SEED_IMAGES.tshirtWhiteFlat],
+      },
     },
     {
       title: 'Vintage Sweatshirt',
       handle: 'sweatshirt',
       description:
         'Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.',
-      status: 'published',
-      weight: 400,
-      thumbnail: 'https://placehold.co/600x400?text=Sweatshirt',
+      skuPrefix: 'SWEATSHIRT',
+      price: 4500,
+      colors: {
+        White: [SEED_IMAGES.sweatshirtWhite],
+        Black: [SEED_IMAGES.sweatshirtBlack],
+      },
     },
     {
       title: 'Classic Sweatpants',
       handle: 'sweatpants',
       description:
         'Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.',
-      status: 'published',
-      weight: 400,
-      thumbnail: 'https://placehold.co/600x400?text=Sweatpants',
+      skuPrefix: 'SWEATPANTS',
+      price: 3500,
+      colors: {
+        Grey: [SEED_IMAGES.sweatpantsGrey, SEED_IMAGES.sweatpantsStreet],
+      },
     },
     {
       title: 'Vintage Shorts',
       handle: 'shorts',
       description:
         'Reimagine the feeling of classic shorts. With our cotton shorts, everyday essentials no longer have to be ordinary.',
-      status: 'published',
-      weight: 400,
-      thumbnail: 'https://placehold.co/600x400?text=Shorts',
+      skuPrefix: 'SHORTS',
+      price: 3000,
+      colors: {
+        Blue: [SEED_IMAGES.shortsDenim],
+      },
     },
-  ])
-  const [tshirt, sweatshirt, sweatpants, shorts] = createdProducts as [
-    (typeof createdProducts)[number],
-    (typeof createdProducts)[number],
-    (typeof createdProducts)[number],
-    (typeof createdProducts)[number],
   ]
-  console.info(`Seeded ${4} products`)
+
+  const galleryOf = (entry: CatalogEntry) => Object.values(entry.colors).flat()
+
+  const createdProducts = await productService.createProducts(
+    CATALOG.map((entry) => {
+      const [thumbnail] = galleryOf(entry)
+      if (!thumbnail) throw new Error(`Catalog entry "${entry.handle}" has no images`)
+      return {
+        title: entry.title,
+        handle: entry.handle,
+        description: entry.description,
+        status: 'published' as const,
+        weight: 400,
+        thumbnail: imageUrl(thumbnail),
+      }
+    }),
+  )
+  const productByHandle = new Map(createdProducts.map((product) => [product.handle, product]))
+  const productFor = (entry: CatalogEntry) => {
+    const product = productByHandle.get(entry.handle)
+    if (!product) throw new Error(`Missing product for catalog entry "${entry.handle}"`)
+    return product
+  }
+  console.info(`Seeded ${createdProducts.length} products`)
 
   // --- Options (global) ---
-  const sizes = ['S', 'M', 'L', 'XL']
-  const colors = ['Black', 'White']
+  const colorValues = [...new Set(CATALOG.flatMap((entry) => Object.keys(entry.colors)))]
 
   const sizeOption = await productService.createProductOption({
     title: 'Size',
-    values: sizes.map((value, rank) => ({ value, rank })),
+    values: SIZES.map((value, rank) => ({ value, rank })),
   })
   const colorOption = await productService.createProductOption({
     title: 'Color',
-    values: colors.map((value, rank) => ({ value, rank })),
+    values: colorValues.map((value, rank) => ({ value, rank })),
   })
   console.info('Seeded global product options')
 
   // --- Link options to products ---
-  const sizeValueIds = sizeOption.values.map((v) => v.id)
-  const colorValueIds = colorOption.values.map((v) => v.id)
+  // Each product exposes every size, but only the colourways it actually has photos for.
+  const sizeValueIds = sizeOption.values.map((value) => value.id)
+  const colorValueIdByName = new Map(colorOption.values.map((value) => [value.value, value.id]))
 
-  await Promise.all([
-    productService.setProductOptions(tshirt.id, {
-      options: [
-        { optionId: sizeOption.id, valueIds: sizeValueIds },
-        { optionId: colorOption.id, valueIds: colorValueIds },
-      ],
-    }),
-    productService.setProductOptions(sweatshirt.id, {
-      options: [{ optionId: sizeOption.id, valueIds: sizeValueIds }],
-    }),
-    productService.setProductOptions(sweatpants.id, {
-      options: [{ optionId: sizeOption.id, valueIds: sizeValueIds }],
-    }),
-    productService.setProductOptions(shorts.id, {
-      options: [{ optionId: sizeOption.id, valueIds: sizeValueIds }],
-    }),
-  ])
+  await Promise.all(
+    CATALOG.map((entry) =>
+      productService.setProductOptions(productFor(entry).id, {
+        options: [
+          { optionId: sizeOption.id, valueIds: sizeValueIds },
+          {
+            optionId: colorOption.id,
+            valueIds: Object.keys(entry.colors).flatMap((color) => {
+              const valueId = colorValueIdByName.get(color)
+              return valueId ? [valueId] : []
+            }),
+          },
+        ],
+      }),
+    ),
+  )
   console.info('Linked options to products')
 
   // --- Variants ---
-  const tshirtVariants = sizes.flatMap((size) =>
-    colors.map((color) => ({
-      productId: tshirt.id,
-      title: `${size} / ${color}`,
-      sku: `SHIRT-${size}-${color.toUpperCase()}`,
-    })),
+  // Every product is now size x colour, so each variant maps onto exactly one colourway gallery.
+  const variantSpecs = CATALOG.flatMap((entry) =>
+    Object.keys(entry.colors).flatMap((color) =>
+      SIZES.map((size) => ({
+        productId: productFor(entry).id,
+        title: `${size} / ${color}`,
+        sku: `${entry.skuPrefix}-${size}-${color.toUpperCase()}`,
+        color,
+        price: entry.price,
+      })),
+    ),
   )
 
-  const sweatshirtVariants = sizes.map((size) => ({
-    productId: sweatshirt.id,
-    title: size,
-    sku: `SWEATSHIRT-${size}`,
-  }))
-
-  const sweatpantsVariants = sizes.map((size) => ({
-    productId: sweatpants.id,
-    title: size,
-    sku: `SWEATPANTS-${size}`,
-  }))
-
-  const shortsVariants = sizes.map((size) => ({
-    productId: shorts.id,
-    title: size,
-    sku: `SHORTS-${size}`,
-  }))
-
-  const createdVariants = await productService.createProductVariants([
-    ...tshirtVariants,
-    ...sweatshirtVariants,
-    ...sweatpantsVariants,
-    ...shortsVariants,
-  ])
+  const createdVariants = await productService.createProductVariants(
+    variantSpecs.map(({ productId, title, sku }) => ({ productId, title, sku })),
+  )
   console.info(`Seeded ${createdVariants.length} product variants`)
 
   // --- Prices ---
-  const priceBySkuPrefix: Record<string, number> = {
-    SHIRT: 2500,
-    SWEATSHIRT: 4500,
-    SWEATPANTS: 3500,
-    SHORTS: 3000,
-  }
-
   const priceSets = await pricingService.createPriceSets(
-    createdVariants.map((variant) => {
-      const prefix = variant.sku?.split('-')[0] ?? ''
-      const amount = priceBySkuPrefix[prefix] ?? 2500
-      return { prices: [{ currencyCode: 'usd', amount: new BigNumber(amount) }] }
-    }),
+    variantSpecs.map((spec) => ({ prices: [{ currencyCode: 'usd', amount: new BigNumber(spec.price) }] })),
   )
 
   await Promise.all(
@@ -331,19 +384,50 @@ if (existingProducts.length > 0) {
   console.info(`Seeded ${priceSets.length} price sets with variant links`)
 
   // --- Images ---
-  await productService.createProductImages([
-    { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+Front', rank: 0 },
-    { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+Back', rank: 1 },
-    { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+White+Front', rank: 2 },
-    { productId: tshirt.id, url: 'https://placehold.co/600x400?text=T-Shirt+White+Back', rank: 3 },
-    { productId: sweatshirt.id, url: 'https://placehold.co/600x400?text=Sweatshirt+Front', rank: 0 },
-    { productId: sweatshirt.id, url: 'https://placehold.co/600x400?text=Sweatshirt+Back', rank: 1 },
-    { productId: sweatpants.id, url: 'https://placehold.co/600x400?text=Sweatpants+Front', rank: 0 },
-    { productId: sweatpants.id, url: 'https://placehold.co/600x400?text=Sweatpants+Back', rank: 1 },
-    { productId: shorts.id, url: 'https://placehold.co/600x400?text=Shorts+Front', rank: 0 },
-    { productId: shorts.id, url: 'https://placehold.co/600x400?text=Shorts+Back', rank: 1 },
-  ])
-  console.info('Seeded product images')
+  const createdImages = await productService.createProductImages(
+    CATALOG.flatMap((entry) =>
+      galleryOf(entry).map((file, rank) => ({ productId: productFor(entry).id, url: imageUrl(file), rank })),
+    ),
+  )
+  console.info(`Seeded ${createdImages.length} product images`)
+
+  // --- Variant images ---
+  // A variant shows the photos of its own colourway, which is the case variant images exist for.
+  const imageIdByUrl = new Map(createdImages.map((image) => [image.url, image.id]))
+  const galleryKey = (productId: string, color: string) => `${productId}:${color}`
+  const galleryByColorway = new Map(
+    CATALOG.flatMap((entry) =>
+      Object.entries(entry.colors).map(([color, files]) => [galleryKey(productFor(entry).id, color), files] as const),
+    ),
+  )
+
+  const variantImageLinks = createdVariants.flatMap((variant, i) => {
+    const spec = variantSpecs[i]
+    const files = spec ? (galleryByColorway.get(galleryKey(spec.productId, spec.color)) ?? []) : []
+    return files.flatMap((file) => {
+      const imageId = imageIdByUrl.get(imageUrl(file))
+      return imageId ? [{ imageId, variantId: variant.id }] : []
+    })
+  })
+
+  await productService.addImageToVariant(variantImageLinks)
+
+  // Grouped by thumbnail so each colourway is one update rather than one per size.
+  const variantIdsByThumbnail = new Map<string, string[]>()
+  for (const [i, variant] of createdVariants.entries()) {
+    const spec = variantSpecs[i]
+    const [front] = spec ? (galleryByColorway.get(galleryKey(spec.productId, spec.color)) ?? []) : []
+    if (!front) continue
+    const url = imageUrl(front)
+    variantIdsByThumbnail.set(url, [...(variantIdsByThumbnail.get(url) ?? []), variant.id])
+  }
+
+  await Promise.all(
+    [...variantIdsByThumbnail].map(([thumbnail, variantIds]) =>
+      productService.updateProductVariants(variantIds, { thumbnail }),
+    ),
+  )
+  console.info(`Seeded ${variantImageLinks.length} variant image links with colour-matched thumbnails`)
 
   // --- Inventory Items + Levels + Variant Links ---
   const inventoryData = createdVariants.map((v) => ({
@@ -379,8 +463,13 @@ if (existingProducts.length > 0) {
   // --- Cart with line items (for testing payment endpoints) ---
   const existingCarts = await cartService.listCarts()
   if (existingCarts.length === 0) {
-    const tshirtVariant = createdVariants.find((v) => v.sku === 'SHIRT-M-BLACK') as (typeof createdVariants)[number]
-    const sweatshirtVariant = createdVariants.find((v) => v.sku === 'SWEATSHIRT-L') as (typeof createdVariants)[number]
+    const tshirt = productByHandle.get('t-shirt')
+    const sweatshirt = productByHandle.get('sweatshirt')
+    const tshirtVariant = createdVariants.find((v) => v.sku === 'SHIRT-M-BLACK')
+    const sweatshirtVariant = createdVariants.find((v) => v.sku === 'SWEATSHIRT-L-WHITE')
+    if (!tshirt || !sweatshirt || !tshirtVariant || !sweatshirtVariant) {
+      throw new Error('Expected the seeded catalog to contain the cart line item variants')
+    }
 
     const [cart] = (await cartService.createCarts([
       {
@@ -397,7 +486,7 @@ if (existingProducts.length > 0) {
             productTitle: 'Classic T-Shirt',
           },
           {
-            title: 'Vintage Sweatshirt (L)',
+            title: 'Vintage Sweatshirt (L / White)',
             quantity: 1,
             unitPrice: new BigNumber(4500),
             variantId: sweatshirtVariant.id,

@@ -9,6 +9,7 @@ export type {
   DataResult,
   FilterDef,
   FilterValue,
+  RowSelection,
   TableConfig,
   TableDefinition,
 } from './types'

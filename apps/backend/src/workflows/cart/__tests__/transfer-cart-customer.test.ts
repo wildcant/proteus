@@ -5,7 +5,7 @@ import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import { transferCartCustomerWorkflow } from '../transfer-cart-customer.js'
 
 function setup(generate: Fixtures['dto']['generate'], overrides?: { cart?: CartDTO; customer?: CustomerDTO | null }) {
@@ -41,8 +41,8 @@ function setup(generate: Fixtures['dto']['generate'], overrides?: { cart?: CartD
   return { cart, customer, cartService, customerService }
 }
 
-describe('transferCartCustomerWorkflow', () => {
-  test('transfers guest cart to registered customer — updates customerId and email', async ({ dto }) => {
+test.describe('transferCartCustomerWorkflow', () => {
+  test('transfers guest cart to registered customer — updates customerId and email', async ({ dto, expect }) => {
     const services = setup(dto.generate)
 
     const result = await transferCartCustomerWorkflow.run({
@@ -58,7 +58,7 @@ describe('transferCartCustomerWorkflow', () => {
     expect(result.email).toBe('registered@example.com')
   })
 
-  test('cart already belongs to target customer — no-op, no update call', async ({ dto }) => {
+  test('cart already belongs to target customer — no-op, no update call', async ({ dto, expect }) => {
     const customer = dto.generate.customer({ id: 'cus_same', hasAccount: true, email: 'same@example.com' })
     const cart = dto.generate.cart({ customerId: 'cus_same', email: 'same@example.com' })
     const services = setup(dto.generate, { cart, customer })
@@ -72,7 +72,7 @@ describe('transferCartCustomerWorkflow', () => {
     expect(result.customerId).toBe('cus_same')
   })
 
-  test('target customer not found — throws error', async ({ dto }) => {
+  test('target customer not found — throws error', async ({ dto, expect }) => {
     const services = setup(dto.generate, { customer: null })
 
     await expect(

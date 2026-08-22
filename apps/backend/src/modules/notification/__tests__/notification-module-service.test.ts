@@ -1,6 +1,6 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
-import { describe, vi } from 'vitest'
+import { vi } from 'vitest'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 
 import { NotificationRepository } from '../repositories/notification.js'
@@ -31,12 +31,12 @@ test.beforeEach(({ getDb, logger }) => {
   })
 })
 
-describe('NotificationModuleService', () => {
+test.describe('NotificationModuleService', () => {
   // ---------------------------------------------------------------------------
   // Batch creation with status tracking
   // ---------------------------------------------------------------------------
 
-  describe('createNotifications', () => {
+  test.describe('createNotifications', () => {
     test('creates a batch of notifications with SUCCESS status', async ({ expect, dto }) => {
       const input = [dto.generate.createNotification(), dto.generate.createNotification({ to: 'other@example.com' })]
 
@@ -88,7 +88,7 @@ describe('NotificationModuleService', () => {
   // Idempotency
   // ---------------------------------------------------------------------------
 
-  describe('idempotency', () => {
+  test.describe('idempotency', () => {
     test('skips non-failure duplicates (SUCCESS)', async ({ expect, dto }) => {
       const input = dto.generate.createNotification({ idempotencyKey: 'idem_1' })
 
@@ -159,7 +159,7 @@ describe('NotificationModuleService', () => {
   // Provider failure handling
   // ---------------------------------------------------------------------------
 
-  describe('provider failure', () => {
+  test.describe('provider failure', () => {
     test('sets FAILURE status without blocking other notifications in batch', async ({ expect, dto }) => {
       // First notification will fail, second will succeed
       mockProvider.send.mockRejectedValueOnce(new Error('provider error')).mockResolvedValueOnce({})
@@ -199,7 +199,7 @@ describe('NotificationModuleService', () => {
   // Edge cases
   // ---------------------------------------------------------------------------
 
-  describe('edge cases', () => {
+  test.describe('edge cases', () => {
     test('empty batch returns empty array', async ({ expect }) => {
       const result = await service.createNotifications([])
 
@@ -285,7 +285,7 @@ describe('NotificationModuleService', () => {
   // retrieveNotification
   // ---------------------------------------------------------------------------
 
-  describe('retrieveNotification', () => {
+  test.describe('retrieveNotification', () => {
     test('retrieves by ID', async ({ expect, dto }) => {
       const created = await service.createNotification(dto.generate.createNotification())
 
@@ -306,7 +306,7 @@ describe('NotificationModuleService', () => {
   // listNotifications
   // ---------------------------------------------------------------------------
 
-  describe('listNotifications', () => {
+  test.describe('listNotifications', () => {
     test('lists with pagination', async ({ expect, dto }) => {
       await service.createNotifications([
         dto.generate.createNotification({ to: 'a@example.com' }),
@@ -354,7 +354,7 @@ describe('NotificationModuleService', () => {
   // listAndCountNotifications
   // ---------------------------------------------------------------------------
 
-  describe('listAndCountNotifications', () => {
+  test.describe('listAndCountNotifications', () => {
     test('returns records and total count', async ({ expect, dto }) => {
       await service.createNotifications([
         dto.generate.createNotification({ to: 'a@example.com' }),

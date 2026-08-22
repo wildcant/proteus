@@ -30,7 +30,13 @@ export const fetcher = async <T>({
   }
 
   const init: RequestInit = { method }
-  if (data) {
+  if (data instanceof FormData) {
+    // Content-Type is dropped on purpose: only the browser can append the multipart
+    // boundary, and it only does so when the header is absent.
+    const { 'Content-Type': _contentType, ...forwardedHeaders } = headers ?? {}
+    init.headers = { ...baseHeaders, ...forwardedHeaders }
+    init.body = data
+  } else if (data) {
     init.headers = { ...baseHeaders, 'Content-Type': 'application/json', ...headers }
     init.body = JSON.stringify(data)
   } else {

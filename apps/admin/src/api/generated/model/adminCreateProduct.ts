@@ -4,6 +4,7 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminCreateProductImagesItem } from './adminCreateProductImagesItem.ts';
 import type { AdminCreateProductStatus } from './adminCreateProductStatus.ts';
 
 export interface AdminCreateProduct {
@@ -13,6 +14,7 @@ export interface AdminCreateProduct {
   /** @nullable */
   height?: number | null;
   hsCode?: string;
+  images?: AdminCreateProductImagesItem[];
   /** @nullable */
   length?: number | null;
   material?: string;
@@ -20,6 +22,8 @@ export interface AdminCreateProduct {
   originCountry?: string;
   status?: AdminCreateProductStatus;
   subtitle?: string;
+  /** @nullable */
+  thumbnail?: string | null;
   /** @minLength 1 */
   title: string;
   /** @nullable */

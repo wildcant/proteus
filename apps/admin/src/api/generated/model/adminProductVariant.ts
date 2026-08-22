@@ -11,6 +11,8 @@ export interface AdminProductVariant {
   productId: string;
   title: string;
   /** @nullable */
+  thumbnail: string | null;
+  /** @nullable */
   sku: string | null;
   /** @nullable */
   barcode: string | null;

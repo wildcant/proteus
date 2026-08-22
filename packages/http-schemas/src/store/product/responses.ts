@@ -1,9 +1,14 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
-import { StoreProduct, StoreProductListItem, StoreProductVariant } from './entities.js'
+import { StoreProduct, StoreProductImage, StoreProductListItem, StoreProductVariant } from './entities.js'
 
 export const StoreProductResponse = z
-  .object({ product: StoreProduct.extend({ variants: z.array(StoreProductVariant) }) })
+  .object({
+    product: StoreProduct.extend({
+      images: z.array(StoreProductImage),
+      variants: z.array(StoreProductVariant),
+    }),
+  })
   .openapi('StoreProductResponse')
 export type StoreProductResponse = z.input<typeof StoreProductResponse>
 

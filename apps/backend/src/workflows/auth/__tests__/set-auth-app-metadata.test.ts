@@ -7,7 +7,7 @@ import { createWorkflow, setWorkflowEngine, WorkflowTerminalError } from '@core/
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import jwt from 'jsonwebtoken'
-import { describe, expect, vi } from 'vitest'
+import { vi } from 'vitest'
 import type { SetAuthAppMetadataInput } from '../steps/set-auth-app-metadata.js'
 import { setAuthAppMetadataStep } from '../steps/set-auth-app-metadata.js'
 
@@ -25,8 +25,8 @@ function makeTestWorkflow(input: SetAuthAppMetadataInput) {
   }).run(input)
 }
 
-describe('setAuthAppMetadataStep', () => {
-  test('writes userId into app_metadata', async ({ dto }) => {
+test.describe('setAuthAppMetadataStep', () => {
+  test('writes userId into app_metadata', async ({ dto, expect }) => {
     const identity = dto.generate.authIdentity()
     const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
 
@@ -45,7 +45,7 @@ describe('setAuthAppMetadataStep', () => {
     expect(updateCalls[0]?.data.appMetadata).toEqual({ userId: 'usr_abc' })
   })
 
-  test('preserves existing app_metadata keys', async ({ dto }) => {
+  test('preserves existing app_metadata keys', async ({ dto, expect }) => {
     const identity = dto.generate.authIdentity({ appMetadata: { registered: true } })
     const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
 
@@ -62,7 +62,7 @@ describe('setAuthAppMetadataStep', () => {
     expect(updateCalls[0]?.data.appMetadata).toEqual({ registered: true, userId: 'usr_abc' })
   })
 
-  test('throws on overwrite attempt', async ({ dto }) => {
+  test('throws on overwrite attempt', async ({ dto, expect }) => {
     const identity = dto.generate.authIdentity({ appMetadata: { userId: 'usr_existing' } })
 
     setupWorkflowEngine({
@@ -79,7 +79,7 @@ describe('setAuthAppMetadataStep', () => {
     ).rejects.toThrow('already has "userId" set')
   })
 
-  test('allows clearing an existing link with null', async ({ dto }) => {
+  test('allows clearing an existing link with null', async ({ dto, expect }) => {
     const identity = dto.generate.authIdentity({ appMetadata: { userId: 'usr_existing' } })
     const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
 
@@ -97,7 +97,7 @@ describe('setAuthAppMetadataStep', () => {
     expect(updateCalls[0]?.data.appMetadata).toEqual({ userId: null })
   })
 
-  test('compensation restores previous app_metadata on rollback', async ({ dto }) => {
+  test('compensation restores previous app_metadata on rollback', async ({ dto, expect }) => {
     const identity = dto.generate.authIdentity({ appMetadata: { registered: true } })
     const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
 
@@ -127,7 +127,7 @@ describe('setAuthAppMetadataStep', () => {
     expect(updateCalls[1]?.data.appMetadata).toEqual({ registered: true })
   })
 
-  test('compensation restores null when app_metadata was originally null', async ({ dto }) => {
+  test('compensation restores null when app_metadata was originally null', async ({ dto, expect }) => {
     const identity = dto.generate.authIdentity({ appMetadata: null })
     const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
 
@@ -157,7 +157,7 @@ describe('setAuthAppMetadataStep', () => {
     expect(updateCalls[1]?.data.appMetadata).toBeNull()
   })
 
-  test('produces a JWT with actorId after the step sets app_metadata', async ({ dto }) => {
+  test('produces a JWT with actorId after the step sets app_metadata', async ({ dto, expect }) => {
     let storedMetadata: Record<string, unknown> | null = null
     const identity = dto.generate.authIdentity()
 

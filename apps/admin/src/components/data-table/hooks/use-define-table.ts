@@ -50,5 +50,7 @@ export function useDefineTable<T>(config: TableConfig<T>): TableDefinition<T> {
 
   const filterDefs = useMemo(() => (config.filters ? config.filters(createFilterHelper<T>()) : []), [config.filters])
 
-  return useMemo(() => ({ config, columns, filterDefs }), [config, columns, filterDefs])
+  const rowSelection = useMemo(() => config.rowSelection?.(), [config.rowSelection])
+
+  return useMemo(() => ({ config, columns, filterDefs, rowSelection }), [config, columns, filterDefs, rowSelection])
 }

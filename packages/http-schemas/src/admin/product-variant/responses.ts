@@ -1,9 +1,15 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
+import { AdminProductImage } from '../product/entities.js'
 import { AdminProductVariant } from './entities.js'
 
+// Only the detail endpoint resolves the images assigned to the variant through the pivot.
+const AdminProductVariantDetail = AdminProductVariant.extend({
+  images: z.array(AdminProductImage).optional(),
+})
+
 export const AdminProductVariantResponse = z
-  .object({ variant: AdminProductVariant })
+  .object({ variant: AdminProductVariantDetail })
   .openapi('AdminProductVariantResponse')
 export type AdminProductVariantResponse = z.input<typeof AdminProductVariantResponse>
 

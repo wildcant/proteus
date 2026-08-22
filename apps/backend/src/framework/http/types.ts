@@ -27,6 +27,7 @@ export const Tags = {
   INVITES: 'Invites',
   NOTIFICATIONS: 'Notifications',
   ORDERS: 'Orders',
+  UPLOADS: 'Uploads',
   USERS: 'Users',
   WEBHOOKS: 'Webhooks',
 } as const
@@ -62,6 +63,10 @@ type GetRoute = BaseRoute & {
 
 type BodyRoute = BaseRoute & {
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  // Multipart bodies reach the handler as `req.files`, not `req.body`, so they are
+  // never run through `input.body` validation. This schema exists purely to describe
+  // the form shape in the OpenAPI spec so generated clients accept a FormData payload.
+  multipartBody?: z.ZodType
 }
 
 export type RouteDefinition = GetRoute | BodyRoute
