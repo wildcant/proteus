@@ -1,6 +1,7 @@
 Fixes and improvements
 - when removing an option from product Options section it should validate there are no variants linked.
 - product variant creation form.
+- display product image in products table in admin
 
 Future features TODOs
 - Access Control Module Architecture

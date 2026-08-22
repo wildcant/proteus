@@ -5,8 +5,10 @@ import resendProvider from '../../providers/notification-email-resend/index.js'
 import localProvider from '../../providers/notification-local/index.js'
 
 // TODO: Explore module providers as part of config
+// MOCKS covers the e2e test server, which runs with NODE_ENV=test and needs the
+// email provider registered so MSW can intercept the Resend call.
 const resendEmailProvider: NotificationProviderConfig | null =
-  env.NODE_ENV === 'development'
+  env.NODE_ENV === 'development' || env.MOCKS
     ? {
         resolve: resendProvider,
         id: 'resend',

@@ -70,7 +70,14 @@ export async function start(options?: StartOptions): Promise<StartResult> {
 
   // ---- Cron jobs ----
 
-  await scheduler.start(jobs)
+  // The test server shares its database with the backend test suite, and BullMQ's
+  // queue lives in that same database. A worker here would compete with the suite's
+  // own worker for `proteus-cron-jobs` and swallow the jobs its tests enqueue.
+  if (env.NODE_ENV === 'test') {
+    logger.info('[CronScheduler] Not started: NODE_ENV=test')
+  } else {
+    await scheduler.start(jobs)
+  }
 
   // ---- Graceful shutdown ----
 

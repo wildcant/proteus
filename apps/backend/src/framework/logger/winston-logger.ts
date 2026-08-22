@@ -3,7 +3,9 @@ import winston from 'winston'
 import type { Logger } from '../../core/types/logger.js'
 import { env } from '../../env.js'
 
-const IS_DEV = env.NODE_ENV.startsWith('dev')
+// Anything that is not a real deployment gets the human-readable CLI format,
+// including the NODE_ENV=test e2e server.
+const IS_DEV = env.NODE_ENV !== 'production'
 function buildTransports(): winston.transport[] {
   const transports: winston.transport[] = []
 
