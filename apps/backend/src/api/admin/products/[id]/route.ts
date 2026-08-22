@@ -16,7 +16,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const [product, options, images] = await Promise.all([
     productService.retrieveProduct(req.params.id),
-    productService.listProductOptionsForProduct(req.params.id),
+    productService.listProductScopedOptions(req.params.id),
     productService.listProductImages({ productId: req.params.id }, { order: { rank: 'ASC' } }),
   ])
   return { status: 200, json: { product: { ...product, options, images } } }

@@ -5,4 +5,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type AdminProductVariantOptionValues = {[key: string]: string};
+/**
+ * @nullable
+ */
+export type AdminProductScopedOptionValueMetadata = {[key: string]: unknown} | null;

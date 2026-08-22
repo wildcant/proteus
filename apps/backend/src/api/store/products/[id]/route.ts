@@ -35,11 +35,13 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   ])
 
   const variantIds = variants.map((variant) => variant.id)
-  const [links, variantImages, enrichedVariants, inventoryLinks] = await Promise.all([
+  const [links, variantImages, optionValuesByVariantId, inventoryLinks] = await Promise.all([
     linkService.repo('productVariantPriceSet').findByVariantIds(variantIds),
     // An empty filter array would reach the query builder as `inArray(column, [])`.
     variantIds.length > 0 ? productService.listProductVariantImages({ variantId: variantIds }) : [],
-    productService.enrichVariants(variants),
+    // The lean id map rather than `enrichVariants`: the picker only compares ids, and the labels
+    // already ship once on `product.options`.
+    productService.listVariantOptionMaps(variantIds),
     linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds),
   ])
 
@@ -58,7 +60,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   )
   const inStockByVariantId = buildVariantStock(inventoryLinks, availableByItemId)
 
-  const variantsForResponse = enrichedVariants.flatMap((variant) => {
+  const variantsForResponse = variants.flatMap((variant) => {
     const calculatedPrice = priceByVariantId.get(variant.id)
     if (!calculatedPrice) return []
     // Filtering the rank-ordered images means `imageIds` inherits that order for free.
@@ -67,8 +69,27 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     // A variant with no inventory link is absent from the map and counts as buyable, which is what
     // checkout does today — `prepareConfirmInventoryInput` skips unmapped variants entirely.
     const inStock = inStockByVariantId.get(variant.id) ?? true
-    return { ...variant, imageIds, inStock, calculatedPrice }
+    return { ...variant, imageIds, inStock, optionValues: optionValuesByVariantId[variant.id] ?? {}, calculatedPrice }
   })
 
-  return { status: 200, json: { product: { ...product, images, options, variants: variantsForResponse } } }
+  // Built from the variants actually being shipped, so the picker never offers one the response
+  // dropped for having no price.
+  const pickerTargets = await productService.buildProductPickerTargets(req.params.id, variantsForResponse)
+
+  const imageUrlById = new Map(images.map((image) => [image.id, image.url]))
+  const optionsForResponse = options.map((option) => ({
+    ...option,
+    values: option.values.map((value) => {
+      const carrier = variantsForResponse.find((variant) => variant.optionValues[option.id] === value.id)
+      const swatchImageUrl = carrier?.imageIds[0] ? (imageUrlById.get(carrier.imageIds[0]) ?? null) : null
+      return { ...value, swatchImageUrl }
+    }),
+  }))
+
+  return {
+    status: 200,
+    json: {
+      product: { ...product, images, options: optionsForResponse, variants: variantsForResponse, pickerTargets },
+    },
+  }
 }

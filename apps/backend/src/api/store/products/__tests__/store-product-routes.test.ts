@@ -155,7 +155,7 @@ test.describe('GET /store/products/:id options', () => {
 
   /**
    * A product offering Size (S/M) then Colour (Red), with one priced variant per size so the
-   * response carries a complete tuple for each.
+   * response carries a complete combination for each.
    */
   const createProductWithOptions = async (dto: { createProduct: () => CreateProductDTO }) => {
     const product = await productService.createProduct(dto.createProduct())
@@ -215,7 +215,7 @@ test.describe('GET /store/products/:id options', () => {
     expect(response.json.product.options[0]?.values.map((value) => value.value)).toEqual(['S', 'M'])
   })
 
-  test('gives each variant its own option tuple keyed by option id', async ({ expect, dto }) => {
+  test('gives each variant its own Option Combination keyed by option id', async ({ expect, dto }) => {
     const { product, size, colour, small, medium, valueId } = await createProductWithOptions(dto.generate)
     const handler = applyMiddleware(findDefinition('GET', matcher))
 
@@ -223,18 +223,128 @@ test.describe('GET /store/products/:id options', () => {
       makeRequest({ scope: container, params: { id: product.id } }),
     )
 
-    const tupleByVariantId = new Map(response.json.product.variants.map((v) => [v.id, v.optionValues]))
-    expect(tupleByVariantId.get(small.id)).toEqual({
+    const combinationByVariantId = new Map(response.json.product.variants.map((v) => [v.id, v.optionValues]))
+    expect(combinationByVariantId.get(small.id)).toEqual({
       [size.id]: valueId(size, 'S'),
       [colour.id]: valueId(colour, 'Red'),
     })
-    expect(tupleByVariantId.get(medium.id)).toEqual({
+    expect(combinationByVariantId.get(medium.id)).toEqual({
       [size.id]: valueId(size, 'M'),
       [colour.id]: valueId(colour, 'Red'),
     })
   })
 
-  test('a product with no options returns none, and its variants carry empty tuples', async ({ expect, dto }) => {
+  test('precomputes where every option value would take the shopper', async ({ expect, dto }) => {
+    const { product, size, small, medium, valueId } = await createProductWithOptions(dto.generate)
+    const handler = applyMiddleware(findDefinition('GET', matcher))
+
+    const response = await handler<typeof productByIdRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: product.id } }),
+    )
+
+    const fromSmall = response.json.product.pickerTargets[small.id]
+    // A value pointing at the variant you are on is how the picker knows to render it selected.
+    expect(fromSmall?.[valueId(size, 'S')]).toBe(small.id)
+    expect(fromSmall?.[valueId(size, 'M')]).toBe(medium.id)
+  })
+
+  test('marks a value unreachable when no purchasable variant carries it', async ({ expect, dto }) => {
+    // The M variant exists but is never priced, so the response drops it — and the picker must not
+    // offer a size the shopper cannot actually buy.
+    const product = await productService.createProduct(dto.generate.createProduct())
+    const size = await productService.createProductOption({
+      title: `Size-${product.id}`,
+      values: [
+        { value: 'S', rank: 0 },
+        { value: 'M', rank: 1 },
+      ],
+    })
+    await productService.setProductOptions(product.id, {
+      options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+    })
+    const idOf = (value: string) => {
+      const match = size.values.find((candidate) => candidate.value === value)
+      if (!match) throw new Error(`Expected the option to carry the value "${value}"`)
+      return match.id
+    }
+    const [small, medium] = await productService.createProductVariants([
+      { productId: product.id, optionValues: { [size.id]: idOf('S') } },
+      { productId: product.id, optionValues: { [size.id]: idOf('M') } },
+    ])
+    if (!small || !medium) throw new Error('Expected two variants to exist')
+    await priceVariants([small.id])
+    const handler = applyMiddleware(findDefinition('GET', matcher))
+
+    const response = await handler<typeof productByIdRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: product.id } }),
+    )
+
+    expect(response.json.product.variants.map((variant) => variant.id)).toEqual([small.id])
+    expect(response.json.product.pickerTargets[small.id]?.[idOf('M')]).toBeNull()
+  })
+
+  test("resolves each value's swatch image from the first variant carrying it", async ({ expect, dto }) => {
+    // Selection-independent, so the API resolves it once instead of the storefront scanning the
+    // variants and joining against the product's images on every render.
+    const product = await productService.createProduct({
+      ...dto.generate.createProduct(),
+      images: [{ url: 'https://cdn.test/red.png' }],
+    })
+    const [image] = await productService.listProductImages({ productId: product.id })
+    const colour = await productService.createProductOption({
+      title: `Colour-${product.id}`,
+      renderAs: 'swatch',
+      values: [{ value: 'Red', rank: 0 }],
+    })
+    await productService.setProductOptions(product.id, {
+      options: [{ optionId: colour.id, valueIds: colour.values.map((value) => value.id) }],
+    })
+    const red = colour.values[0]
+    if (!image || !red) throw new Error('Expected an image and an option value to exist')
+
+    const [variant] = await productService.createProductVariants([
+      { productId: product.id, optionValues: { [colour.id]: red.id } },
+    ])
+    if (!variant) throw new Error('Expected a variant to exist')
+    await productService.addImageToVariant([{ imageId: image.id, variantId: variant.id }])
+    await priceVariants([variant.id])
+    const handler = applyMiddleware(findDefinition('GET', matcher))
+
+    const response = await handler<typeof productByIdRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: product.id } }),
+    )
+
+    expect(response.json.product.options[0]?.values[0]?.swatchImageUrl).toBe('https://cdn.test/red.png')
+  })
+
+  test('leaves the swatch image null when no variant carrying the value has one', async ({ expect, dto }) => {
+    const product = await productService.createProduct(dto.generate.createProduct())
+    const colour = await productService.createProductOption({
+      title: `Colour-${product.id}`,
+      renderAs: 'swatch',
+      values: [{ value: 'Red', rank: 0 }],
+    })
+    await productService.setProductOptions(product.id, {
+      options: [{ optionId: colour.id, valueIds: colour.values.map((value) => value.id) }],
+    })
+    const red = colour.values[0]
+    if (!red) throw new Error('Expected an option value to exist')
+
+    const [variant] = await productService.createProductVariants([
+      { productId: product.id, optionValues: { [colour.id]: red.id } },
+    ])
+    if (!variant) throw new Error('Expected a variant to exist')
+    await priceVariants([variant.id])
+    const handler = applyMiddleware(findDefinition('GET', matcher))
+
+    const response = await handler<typeof productByIdRoutes.GetOutput>(
+      makeRequest({ scope: container, params: { id: product.id } }),
+    )
+
+    expect(response.json.product.options[0]?.values[0]?.swatchImageUrl).toBeNull()
+  })
+
+  test('a product with no options returns none, and its variants carry empty combinations', async ({ expect, dto }) => {
     const product = await productService.createProduct(dto.generate.createProduct())
     const [variant] = await productService.createProductVariants([{ productId: product.id, title: 'Only' }])
     if (!variant) throw new Error('Expected a variant to exist')

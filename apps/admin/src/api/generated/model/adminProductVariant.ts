@@ -5,7 +5,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AdminProductVariantMetadata } from './adminProductVariantMetadata.ts';
-import type { AdminProductVariantOptionValues } from './adminProductVariantOptionValues.ts';
+import type { AdminVariantOptionValue } from './adminVariantOptionValue.ts';
 import type { AdminVariantPrice } from './adminVariantPrice.ts';
 
 export interface AdminProductVariant {
@@ -42,7 +42,7 @@ export interface AdminProductVariant {
   width: number | null;
   /** @nullable */
   variantRank: number | null;
-  optionValues: AdminProductVariantOptionValues;
+  optionValues: AdminVariantOptionValue[];
   /** @nullable */
   metadata: AdminProductVariantMetadata;
   prices?: AdminVariantPrice[];

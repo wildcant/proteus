@@ -11,6 +11,7 @@ import type {
   AdminCreateProductVariantResponse,
   AdminCreateProductVariantsBatch,
   AdminCreateProductVariantsBatchResponse,
+  AdminOptionCombinationListResponse,
   AdminProductVariantListResponse,
   AdminProductVariantResponse,
   AdminUpdateProductVariant,
@@ -18,6 +19,7 @@ import type {
   AdminUpdateVariantPrices,
   AdminUpdateVariantPricesResponse,
   DeleteResponse,
+  ListOptionCombinationsParams,
   ListProductVariantsParams
 } from '../model';
 
@@ -26,6 +28,19 @@ import type { BodyType } from '../../../lib/fetcher.ts';
 
 
 
+  /**
+ * @summary List the option combinations a product could sell
+ */
+export const listOptionCombinations = (
+    id: string,
+    params?: ListOptionCombinationsParams,
+ ) => {
+      return fetcher<AdminOptionCombinationListResponse>(
+      {url: `/admin/products/${id}/option-combinations`, method: 'GET',
+        params
+    },
+      );
+    }
   /**
  * @summary List product variants
  */
@@ -136,7 +151,8 @@ export const batchVariantImages = (
     },
       );
     }
-  export type ListProductVariantsResult = NonNullable<Awaited<ReturnType<typeof listProductVariants>>>
+  export type ListOptionCombinationsResult = NonNullable<Awaited<ReturnType<typeof listOptionCombinations>>>
+export type ListProductVariantsResult = NonNullable<Awaited<ReturnType<typeof listProductVariants>>>
 export type CreateProductVariantResult = NonNullable<Awaited<ReturnType<typeof createProductVariant>>>
 export type CreateProductVariantsBatchResult = NonNullable<Awaited<ReturnType<typeof createProductVariantsBatch>>>
 export type GetProductVariantResult = NonNullable<Awaited<ReturnType<typeof getProductVariant>>>

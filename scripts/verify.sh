@@ -48,8 +48,10 @@ job_deps() {
   return $code
 }
 
-# Only the API tests run here — the full suite is ~96s and would dominate the gate.
-job_test() { npm run --workspace=backend test:api; }
+# The API tests plus the pure option-combination unit tests — the full suite is ~96s and would
+# dominate the gate. One vitest process, not two: every backend test file pulls in db-setup, and
+# the suite is not safe to run twice concurrently against the shared test database.
+job_test() { npm run --workspace=backend test:gate; }
 
 # CI mode: report formatting instead of applying it. Triggered by --ci or by the CI env
 # var that every CI provider sets, so the workflow file needs no extra wiring.
@@ -178,5 +180,5 @@ if [[ $failures -gt 0 ]]; then
 fi
 
 echo -e "${GREEN}✔${RESET} ${BOLD}All checks passed.${RESET}"
-echo -e "${DIM}  Only src/api tests ran. Full suite: npm run --workspace=backend test${RESET}"
+echo -e "${DIM}  Only src/api and pure unit tests ran. Full suite: npm run --workspace=backend test${RESET}"
 echo ""

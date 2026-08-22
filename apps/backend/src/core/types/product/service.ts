@@ -11,9 +11,11 @@ import type {
   FilterableProductVariantProps,
   ProductDTO,
   ProductImageDTO,
+  ProductOptionCombinationDTO,
   ProductOptionDTO,
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
+  ProductScopedOptionDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
@@ -151,9 +153,34 @@ export type IProductModuleService = {
   ): Promise<ProductVariantOptionDTO[]>
   listOptionValuesForVariant(variantId: string, context?: Context): Promise<ProductOptionValueDTO[]>
   /**
-   * Attaches each variant's option tuple, keyed by option id. Async because the tuple lives in a
+   * Attaches each variant's Option Combination, resolved for display. Async because it lives in a
    * pivot rather than on the variant row — one batched read for the whole set.
    */
   enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO>
   enrichVariants(variants: ProductVariantDTO[], context?: Context): Promise<EnrichedProductVariantDTO[]>
+  /**
+   * Each variant's Option Combination as an id map — the lean form the storefront ships, where the
+   * picker only ever compares ids and the labels already travel once on the product's options.
+   */
+  listVariantOptionMaps(variantIds: string[], context?: Context): Promise<Record<string, Record<string, string>>>
+  /** How many of the product's variants carry each option value, keyed by option value id. */
+  countVariantsByOptionValue(productId: string, context?: Context): Promise<Record<string, number>>
+  /** The product's options with each value's variant usage attached. */
+  listProductScopedOptions(productId: string, context?: Context): Promise<ProductScopedOptionDTO[]>
+  /**
+   * The Option Combinations this product could sell, each naming the variant that has it or `null`
+   * while it is still available. Paginated and searched here because the count is the product of
+   * the option value counts.
+   */
+  listProductOptionCombinations(
+    productId: string,
+    config?: { label?: string; limit?: number; offset?: number },
+    context?: Context,
+  ): Promise<[ProductOptionCombinationDTO[], number]>
+  /** The storefront picker, precomputed over the variants the caller is actually shipping. */
+  buildProductPickerTargets(
+    productId: string,
+    variants: Array<{ id: string; optionValues: Record<string, string>; inStock: boolean }>,
+    context?: Context,
+  ): Promise<Record<string, Record<string, string | null>>>
 }

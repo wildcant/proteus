@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
 import { AdminProductImage } from '../product/entities.js'
-import { AdminProductVariant } from './entities.js'
+import { AdminOptionCombination, AdminProductVariant } from './entities.js'
 
 // Only the detail endpoint resolves the images assigned to the variant through the pivot.
 const AdminProductVariantDetail = AdminProductVariant.extend({
@@ -37,3 +37,8 @@ export const AdminCreateProductVariantsBatchResponse = z
   .object({ variants: z.array(AdminProductVariant) })
   .openapi('AdminCreateProductVariantsBatchResponse')
 export type AdminCreateProductVariantsBatchResponse = z.input<typeof AdminCreateProductVariantsBatchResponse>
+
+export const AdminOptionCombinationListResponse = PaginatedResponse.extend({
+  combinations: z.array(AdminOptionCombination),
+}).openapi('AdminOptionCombinationListResponse')
+export type AdminOptionCombinationListResponse = z.input<typeof AdminOptionCombinationListResponse>

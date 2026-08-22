@@ -1,15 +1,14 @@
 import { Button } from '@proteus/ui'
 import { useCallback, useMemo } from 'react'
-import type { AdminProductOption, AdminProductVariant } from '#/api/generated/model'
+import type { AdminProductOption, AdminProductScopedOption } from '#/api/generated/model'
 import { KeyboundForm } from '#/components/modals/keybound-form'
 import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
 import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
 import { MultiSelectCombobox } from '#/components/multi-select-combobox'
 import { useProductOptions, useProductOptionsForProduct } from '#/features/product-options/api/product-options'
 import { useManageProductOptionsForm } from '#/features/product-options/hooks/use-manage-product-options-form'
-import { useProductVariants } from '#/features/products/api/product-variants'
 
-function buildDefaultValues(currentOptions: AdminProductOption[]) {
+function buildDefaultValues(currentOptions: AdminProductScopedOption[]) {
   return {
     options: currentOptions.map((option) => ({
       optionId: option.id,
@@ -23,12 +22,20 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
   const { data: currentData } = useProductOptionsForProduct(productId)
   const { data: allData } = useProductOptions()
 
-  // 100 is the API's pagination ceiling; the notice below is advisory, the backend still enforces.
-  const { data: variantsData } = useProductVariants(productId, { limit: 100 })
-
   const currentOptions = currentData?.productOptions ?? []
   const allOptions = allData?.productOptions ?? []
-  const variants = variantsData?.variants ?? []
+
+  // The product-scoped read carries each value's variant usage, so a value pinned by an existing
+  // variant is shown as such rather than recomputed from the variant list.
+  const pinnedValueIds = useMemo(
+    () =>
+      new Set(
+        currentOptions.flatMap((option) =>
+          option.values.filter((value) => value.variantCount > 0).map((value) => value.id),
+        ),
+      ),
+    [currentOptions],
+  )
 
   const defaultValues = useMemo(() => buildDefaultValues(currentOptions), [currentOptions])
 
@@ -47,10 +54,12 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
         <RouteDrawer.Body className="space-y-6 p-6">
           <form.Field name="options">
             {(field) => (
-              <>
-                <OptionSelector allOptions={allOptions} value={field.state.value} onChange={field.handleChange} />
-                <InUseNotice allOptions={allOptions} variants={variants} value={field.state.value} />
-              </>
+              <OptionSelector
+                allOptions={allOptions}
+                pinnedValueIds={pinnedValueIds}
+                value={field.state.value}
+                onChange={field.handleChange}
+              />
             )}
           </form.Field>
         </RouteDrawer.Body>
@@ -67,61 +76,15 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
 
 type OptionEntry = { optionId: string; valueIds: string[] }
 
-type InUseNoticeProps = {
-  allOptions: AdminProductOption[]
-  variants: AdminProductVariant[]
-  value: OptionEntry[]
-}
-
-/**
- * The backend refuses to unlink an option or value some variant still carries. Showing what would
- * break — computed from the variants' own tuples — turns that rejection into something the
- * shopkeeper sees before pressing Save rather than only after.
- */
-function InUseNotice({ allOptions, variants, value }: InUseNoticeProps) {
-  const blocked = useMemo(() => {
-    const keptOptionIds = new Set(value.map((entry) => entry.optionId))
-    // An option kept with no values selected offers all of them, so nothing is dropped there.
-    const offersEveryValue = new Set(value.filter((entry) => entry.valueIds.length === 0).map((e) => e.optionId))
-    const keptValueIds = new Set(value.flatMap((entry) => entry.valueIds))
-
-    const labels = new Map(allOptions.flatMap((o) => o.values.map((v) => [v.id, `${o.title}: ${v.value}`])))
-    const optionTitles = new Map(allOptions.map((option) => [option.id, option.title]))
-
-    const droppedOptions = new Set<string>()
-    const droppedValues = new Set<string>()
-
-    for (const variant of variants) {
-      for (const [optionId, valueId] of Object.entries(variant.optionValues)) {
-        if (!keptOptionIds.has(optionId)) {
-          droppedOptions.add(optionTitles.get(optionId) ?? optionId)
-          continue
-        }
-        if (!offersEveryValue.has(optionId) && !keptValueIds.has(valueId)) {
-          droppedValues.add(labels.get(valueId) ?? valueId)
-        }
-      }
-    }
-
-    return [...droppedOptions, ...droppedValues]
-  }, [allOptions, variants, value])
-
-  if (blocked.length === 0) return null
-
-  return (
-    <p className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-destructive text-sm">
-      Still used by existing variants: {blocked.join(', ')}. Saving will be rejected until those variants are updated.
-    </p>
-  )
-}
-
 type OptionSelectorProps = {
   allOptions: AdminProductOption[]
+  /** Values some variant already carries. The backend refuses to unlink these. */
+  pinnedValueIds: Set<string>
   value: OptionEntry[]
   onChange: (value: OptionEntry[]) => void
 }
 
-function OptionSelector({ allOptions, value, onChange }: OptionSelectorProps) {
+function OptionSelector({ allOptions, pinnedValueIds, value, onChange }: OptionSelectorProps) {
   const optionMap = useMemo(() => new Map(allOptions.map((option) => [option.id, option])), [allOptions])
 
   const selectedOptionIds = useMemo(() => value.map((entry) => entry.optionId), [value])
@@ -181,6 +144,7 @@ function OptionSelector({ allOptions, value, onChange }: OptionSelectorProps) {
             {selectedOptions.map((option) => {
               const valueItems = option.values.map((v) => ({ id: v.id, label: v.value }))
               const entry = value.find((e) => e.optionId === option.id)
+              const pinned = option.values.filter((v) => pinnedValueIds.has(v.id))
               return (
                 <div key={option.id}>
                   <h3 className="mb-2 font-medium text-muted-foreground text-sm">{option.title}</h3>
@@ -191,6 +155,12 @@ function OptionSelector({ allOptions, value, onChange }: OptionSelectorProps) {
                     placeholder="Search values..."
                     emptyMessage="No values found."
                   />
+                  {pinned.length > 0 ? (
+                    <p className="mt-1.5 text-muted-foreground text-xs">
+                      In use by variants: {pinned.map((v) => v.value).join(', ')}. Move those variants to another value
+                      before removing it.
+                    </p>
+                  ) : null}
                 </div>
               )
             })}

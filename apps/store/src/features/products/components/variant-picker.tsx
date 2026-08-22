@@ -1,53 +1,67 @@
 import { cn, NativeSelect, NativeSelectOption } from '@proteus/ui'
-import type { StoreProductImage, StoreProductOption, StoreProductVariant } from '#/api/generated/model'
-import { buildVariantPicker, canRenderPicker, type PickerValue } from '#/features/products/variant-picker'
+import type { StoreProductScopedOption, StoreProductVariant } from '#/api/generated/model'
+
+type PickerTargets = Record<string, Record<string, string | null>>
 
 type VariantPickerProps = {
-  options: StoreProductOption[]
+  options: StoreProductScopedOption[]
   variants: StoreProductVariant[]
-  images: StoreProductImage[]
+  /** Where every option value leads, per variant the shopper could be on. Precomputed by the API. */
+  pickerTargets: PickerTargets
   selectedVariant: StoreProductVariant | undefined
   onVariantChange: (variantId: string) => void
 }
 
 /**
- * Option pickers driven by the variant/option-value link. Products whose variants carry no option
- * values — anything created before the link existed — fall back to a plain list of variant titles,
- * so the page never degrades to an empty picker.
+ * Option pickers driven by the variant/option-value link.
+ *
+ * The selection rules — which values are reachable, which variant a click lands on, which image a
+ * swatch shows — are all resolved server-side, so this only renders. Products whose variants carry
+ * no option values fall back to a plain list of variant titles, so the page never degrades to an
+ * empty picker.
  */
-export function VariantPicker({ options, variants, images, selectedVariant, onVariantChange }: VariantPickerProps) {
-  if (!canRenderPicker(options, variants)) {
+export function VariantPicker({
+  options,
+  variants,
+  pickerTargets,
+  selectedVariant,
+  onVariantChange,
+}: VariantPickerProps) {
+  const targets = selectedVariant ? pickerTargets[selectedVariant.id] : undefined
+
+  if (options.length === 0 || !selectedVariant || !targets) {
     return <VariantSelect variants={variants} selectedVariant={selectedVariant} onVariantChange={onVariantChange} />
   }
 
-  const rows = buildVariantPicker({ options, variants, selectedVariant })
-  const imageUrlById = new Map(images.map((image) => [image.id, image.url]))
-
   return (
     <div className="flex flex-col gap-5">
-      {rows.map((row) => (
-        <fieldset key={row.id} className="border-0 p-0">
+      {options.map((option) => (
+        <fieldset key={option.id} className="border-0 p-0">
           <legend className="mb-2 block text-foreground-muted text-xs uppercase tracking-[0.18em]">
-            {row.title}
-            {row.renderAs === 'swatch' && !!selectedVariant && (
+            {option.title}
+            {option.renderAs === 'swatch' && (
               <span className="ml-2 text-foreground normal-case tracking-normal">
-                {row.values.find((value) => value.isSelected)?.value}
+                {option.values.find((value) => targets[value.id] === selectedVariant.id)?.value}
               </span>
             )}
           </legend>
           <div className="flex flex-wrap gap-2">
-            {row.values.map((value) =>
-              row.renderAs === 'swatch' ? (
-                <SwatchValue
-                  key={value.id}
-                  value={value}
-                  imageUrl={value.swatchImageId ? imageUrlById.get(value.swatchImageId) : undefined}
-                  onSelect={onVariantChange}
-                />
+            {option.values.map((value) => {
+              // A value pointing at the variant you are on is how "selected" is expressed; a null
+              // target means no purchasable variant carries it alongside the current selection.
+              const target = targets[value.id] ?? null
+              const props = {
+                label: value.value,
+                isSelected: target === selectedVariant.id,
+                isAvailable: target !== null,
+                onSelect: () => target && onVariantChange(target),
+              }
+              return option.renderAs === 'swatch' ? (
+                <SwatchValue key={value.id} {...props} imageUrl={value.swatchImageUrl} />
               ) : (
-                <TextValue key={value.id} value={value} onSelect={onVariantChange} />
-              ),
-            )}
+                <TextValue key={value.id} {...props} />
+              )
+            })}
           </div>
         </fieldset>
       ))}
@@ -56,49 +70,51 @@ export function VariantPicker({ options, variants, images, selectedVariant, onVa
 }
 
 type ValueProps = {
-  value: PickerValue
-  onSelect: (variantId: string) => void
+  label: string
+  isSelected: boolean
+  isAvailable: boolean
+  onSelect: () => void
 }
 
-function TextValue({ value, onSelect }: ValueProps) {
+function TextValue({ label, isSelected, isAvailable, onSelect }: ValueProps) {
   return (
     <button
       type="button"
-      aria-pressed={value.isSelected}
-      disabled={!value.isAvailable}
-      onClick={() => value.targetVariantId && onSelect(value.targetVariantId)}
+      aria-pressed={isSelected}
+      disabled={!isAvailable}
+      onClick={onSelect}
       className={cn(
         'min-w-11 border px-3 py-2 text-sm -outline-offset-2 transition-colors focus-visible:outline focus-visible:outline-foreground',
-        value.isSelected ? 'border-foreground bg-foreground text-background' : 'border-border text-foreground',
-        !value.isSelected && value.isAvailable && 'hover:border-foreground',
+        isSelected ? 'border-foreground bg-foreground text-background' : 'border-border text-foreground',
+        !isSelected && isAvailable && 'hover:border-foreground',
         // Struck through rather than merely dimmed, so "sold out" reads differently from "muted".
-        !value.isAvailable && 'cursor-not-allowed text-foreground-muted line-through opacity-50',
+        !isAvailable && 'cursor-not-allowed text-foreground-muted line-through opacity-50',
       )}
     >
-      {value.value}
+      {label}
     </button>
   )
 }
 
-function SwatchValue({ value, imageUrl, onSelect }: ValueProps & { imageUrl: string | undefined }) {
+function SwatchValue({ label, isSelected, isAvailable, onSelect, imageUrl }: ValueProps & { imageUrl: string | null }) {
   return (
     <button
       type="button"
-      aria-label={value.value}
-      aria-pressed={value.isSelected}
-      disabled={!value.isAvailable}
-      onClick={() => value.targetVariantId && onSelect(value.targetVariantId)}
+      aria-label={label}
+      aria-pressed={isSelected}
+      disabled={!isAvailable}
+      onClick={onSelect}
       className={cn(
         'size-11 overflow-hidden rounded-full border-2 -outline-offset-2 transition-colors focus-visible:outline focus-visible:outline-foreground',
-        value.isSelected ? 'border-foreground' : 'border-transparent',
-        !value.isAvailable && 'cursor-not-allowed opacity-40',
+        isSelected ? 'border-foreground' : 'border-transparent',
+        !isAvailable && 'cursor-not-allowed opacity-40',
       )}
     >
       {imageUrl ? (
         <img src={imageUrl} alt="" className="size-full object-cover" />
       ) : (
         <span className="flex size-full items-center justify-center bg-(--bg-subtle) text-[10px] text-foreground-muted uppercase">
-          {value.value.slice(0, 2)}
+          {label.slice(0, 2)}
         </span>
       )}
     </button>

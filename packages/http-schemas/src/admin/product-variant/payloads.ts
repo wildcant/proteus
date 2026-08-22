@@ -12,36 +12,7 @@ const UpdateVariantPrice = z.object({
 
 export const AdminCreateProductVariant = z
   .object({
-    title: z.string().min(1),
-    thumbnail: z.string().nullable().optional(),
-    sku: z.string().nullable().optional(),
-    barcode: z.string().nullable().optional(),
-    ean: z.string().nullable().optional(),
-    upc: z.string().nullable().optional(),
-    allowBackorder: z.boolean().optional(),
-    manageInventory: z.boolean().optional(),
-    hsCode: z.string().nullable().optional(),
-    originCountry: z.string().nullable().optional(),
-    midCode: z.string().nullable().optional(),
-    material: z.string().nullable().optional(),
-    weight: z.number().nullable().optional(),
-    length: z.number().nullable().optional(),
-    height: z.number().nullable().optional(),
-    width: z.number().nullable().optional(),
-    variantRank: z.number().optional(),
-    /**
-     * The variant's option tuple, keyed by option id. Omit to leave an existing tuple untouched;
-     * send `{}` to clear it. When set it must name every option the product offers.
-     */
-    optionValues: z.record(z.string(), z.string()).optional(),
-    metadata: metadata.optional(),
-    prices: z.array(CreateVariantPrice).optional(),
-  })
-  .openapi('AdminCreateProductVariant')
-export type AdminCreateProductVariantBody = z.infer<typeof AdminCreateProductVariant>
-
-export const AdminUpdateProductVariant = z
-  .object({
+    /** Omit to take the Option Combination's label, e.g. `"M / White"`. */
     title: z.string().min(1).optional(),
     thumbnail: z.string().nullable().optional(),
     sku: z.string().nullable().optional(),
@@ -60,8 +31,40 @@ export const AdminUpdateProductVariant = z
     width: z.number().nullable().optional(),
     variantRank: z.number().optional(),
     /**
-     * The variant's option tuple, keyed by option id. Omit to leave an existing tuple untouched;
-     * send `{}` to clear it. When set it must name every option the product offers.
+     * The Option Combination this variant carries, keyed by option id. It must name every option
+     * the product offers, and must be one no other variant already has.
+     */
+    optionValues: z.record(z.string(), z.string()).optional(),
+    metadata: metadata.optional(),
+    prices: z.array(CreateVariantPrice).optional(),
+  })
+  .openapi('AdminCreateProductVariant')
+export type AdminCreateProductVariantBody = z.infer<typeof AdminCreateProductVariant>
+
+export const AdminUpdateProductVariant = z
+  .object({
+    /** Omit to let the title follow the Option Combination when `optionValues` changes. */
+    title: z.string().min(1).optional(),
+    thumbnail: z.string().nullable().optional(),
+    sku: z.string().nullable().optional(),
+    barcode: z.string().nullable().optional(),
+    ean: z.string().nullable().optional(),
+    upc: z.string().nullable().optional(),
+    allowBackorder: z.boolean().optional(),
+    manageInventory: z.boolean().optional(),
+    hsCode: z.string().nullable().optional(),
+    originCountry: z.string().nullable().optional(),
+    midCode: z.string().nullable().optional(),
+    material: z.string().nullable().optional(),
+    weight: z.number().nullable().optional(),
+    length: z.number().nullable().optional(),
+    height: z.number().nullable().optional(),
+    width: z.number().nullable().optional(),
+    variantRank: z.number().optional(),
+    /**
+     * The Option Combination to move this variant onto, keyed by option id. Omit to leave the
+     * existing one alone; send `{}` to clear it. When set it must name every option the product
+     * offers, and must be a combination no other variant already has.
      */
     optionValues: z.record(z.string(), z.string()).optional(),
     metadata: metadata.optional(),

@@ -67,7 +67,7 @@ export function ProductDetail() {
           <VariantPicker
             options={product.options}
             variants={product.variants}
-            images={product.images}
+            pickerTargets={product.pickerTargets}
             selectedVariant={selectedVariant}
             // Replace so browsing colourways doesn't bury the previous page in history.
             onVariantChange={(id) => navigate({ search: { variant: id }, replace: true })}

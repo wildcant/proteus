@@ -10,7 +10,7 @@ import type { AdminCreateProductVariantPricesItem } from './adminCreateProductVa
 
 export interface AdminCreateProductVariant {
   /** @minLength 1 */
-  title: string;
+  title?: string;
   /** @nullable */
   thumbnail?: string | null;
   /** @nullable */

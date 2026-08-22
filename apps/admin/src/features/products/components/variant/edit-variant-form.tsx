@@ -1,23 +1,22 @@
-import { Button, NativeSelect, NativeSelectOption } from '@proteus/ui'
-import type { AdminProductOption, AdminProductVariant } from '#/api/generated/model'
+import { Button } from '@proteus/ui'
+import type { AdminProductVariant } from '#/api/generated/model'
 import { KeyboundForm } from '#/components/modals/keybound-form'
 import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
 import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
+import { SingleSelectCombobox } from '#/components/single-select-combobox'
 import { useEditVariantForm } from '#/features/products/hooks/use-edit-variant-form'
 
 type EditVariantFormProps = {
   productId: string
   variant: AdminProductVariant
-  options: AdminProductOption[]
 }
 
-export function EditVariantForm({ productId, variant, options }: EditVariantFormProps) {
+export function EditVariantForm({ productId, variant }: EditVariantFormProps) {
   const { handleSuccess } = useRouteModal()
 
-  const { form } = useEditVariantForm({
+  const { form, available, onSearchChange, hasNoOptions, isLoading } = useEditVariantForm({
     productId,
     variant,
-    options,
     params: { onSuccess: () => handleSuccess() },
   })
 
@@ -35,37 +34,34 @@ export function EditVariantForm({ productId, variant, options }: EditVariantForm
             {(field) => <field.TextField label="Material" placeholder="Optional" />}
           </form.AppField>
 
-          {/* One select per option — the DB allows exactly one value per option per variant. */}
-          {options.map((option) => (
-            <form.Field key={option.id} name={`optionValues.${option.id}`}>
+          {/* The list already excludes combinations other variants hold, and already includes this
+              variant's own — so moving it can never collide. */}
+          {!hasNoOptions && (
+            <form.Field name="combinationKey">
               {(field) => (
                 <div>
-                  <label htmlFor={`option-${option.id}`} className="mb-1.5 block font-medium text-sm">
-                    {option.title}
+                  <label htmlFor="combination" className="mb-1.5 block font-medium text-sm">
+                    Combination
                   </label>
-                  <NativeSelect
-                    id={`option-${option.id}`}
-                    className="w-full"
-                    value={field.state.value ?? ''}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                  >
-                    <NativeSelectOption value="">Select {option.title}</NativeSelectOption>
-                    {option.values.map((value) => (
-                      <NativeSelectOption key={value.id} value={value.id}>
-                        {value.value}
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
+                  <SingleSelectCombobox
+                    id="combination"
+                    items={available.map((combination) => ({ id: combination.key, label: combination.label }))}
+                    value={field.state.value || null}
+                    onValueChange={(key) => field.handleChange(key ?? '')}
+                    onInputValueChange={onSearchChange}
+                    placeholder="Search combinations..."
+                    emptyMessage="No combinations left."
+                  />
                 </div>
               )}
             </form.Field>
-          ))}
+          )}
 
           <form.AppField name="sku">{(field) => <field.TextField label="SKU" placeholder="Optional" />}</form.AppField>
         </RouteDrawer.Body>
         <RouteDrawer.Footer>
           <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-          <Button type="submit" size="sm">
+          <Button type="submit" size="sm" disabled={isLoading}>
             Save
           </Button>
         </RouteDrawer.Footer>

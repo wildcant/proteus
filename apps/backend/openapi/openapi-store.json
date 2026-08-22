@@ -1280,7 +1280,7 @@
                   "options": {
                     "type": "array",
                     "items": {
-                      "$ref": "#/components/schemas/StoreProductOption"
+                      "$ref": "#/components/schemas/StoreProductScopedOption"
                     }
                   },
                   "variants": {
@@ -1288,9 +1288,18 @@
                     "items": {
                       "$ref": "#/components/schemas/StoreProductVariant"
                     }
+                  },
+                  "pickerTargets": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": ["string", "null"]
+                      }
+                    }
                   }
                 },
-                "required": ["images", "options", "variants"]
+                "required": ["images", "options", "variants", "pickerTargets"]
               }
             ]
           }
@@ -1312,7 +1321,7 @@
         },
         "required": ["id", "url", "rank"]
       },
-      "StoreProductOption": {
+      "StoreProductScopedOption": {
         "type": "object",
         "properties": {
           "id": {
@@ -1328,13 +1337,13 @@
           "values": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StoreProductOptionValue"
+              "$ref": "#/components/schemas/StoreProductScopedOptionValue"
             }
           }
         },
         "required": ["id", "title", "renderAs", "values"]
       },
-      "StoreProductOptionValue": {
+      "StoreProductScopedOptionValue": {
         "type": "object",
         "properties": {
           "id": {
@@ -1345,9 +1354,12 @@
           },
           "rank": {
             "type": ["number", "null"]
+          },
+          "swatchImageUrl": {
+            "type": ["string", "null"]
           }
         },
-        "required": ["id", "value", "rank"]
+        "required": ["id", "value", "rank", "swatchImageUrl"]
       },
       "StoreProductVariant": {
         "type": "object",

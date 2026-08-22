@@ -5,9 +5,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface StoreProductOptionValue {
+export interface StoreProductScopedOptionValue {
   id: string;
   value: string;
   /** @nullable */
   rank: number | null;
+  /** @nullable */
+  swatchImageUrl: string | null;
 }

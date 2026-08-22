@@ -68,8 +68,34 @@ export type ProductVariantDTO = {
 
 export type ProductVariantExtendedDTO = ProductVariantDTO & { prices?: PriceDTO[] }
 
-/** A variant with its option tuple resolved from the `product_variant_option` pivot. */
-export type EnrichedProductVariantDTO = ProductVariantDTO & { optionValues: Record<string, string> }
+/**
+ * One entry of a variant's Option Combination, resolved for display: both the ids a client posts
+ * back and the labels it renders. Always in the product's option order.
+ */
+export type VariantOptionValueDTO = {
+  optionId: string
+  optionTitle: string
+  valueId: string
+  value: string
+}
+
+/**
+ * A variant with its Option Combination resolved from the `product_variant_option` pivot.
+ *
+ * Resolved rather than an id map because every admin surface renders labels — the variants table,
+ * the detail card, the generated title. The storefront takes the lean map instead, via
+ * `listVariantOptionMaps`.
+ */
+export type EnrichedProductVariantDTO = ProductVariantDTO & { optionValues: VariantOptionValueDTO[] }
+
+/** An Option Combination a product could sell, and the variant that has it if one does. */
+export type ProductOptionCombinationDTO = {
+  key: string
+  label: string
+  values: VariantOptionValueDTO[]
+  optionValues: Record<string, string>
+  variantId: string | null
+}
 
 export interface FilterableProductVariantProps extends BaseFilterable<FilterableProductVariantProps> {
   id?: string | string[]
@@ -91,6 +117,20 @@ export type ProductOptionDTO = {
 
 export type ProductOptionWithValuesDTO = ProductOptionDTO & {
   values: ProductOptionValueDTO[]
+}
+
+/** A Product Option Value as one product offers it, with that product's usage attached. */
+export type ProductScopedOptionValueDTO = ProductOptionValueDTO & {
+  /** Variants of this product carrying the value. Non-zero means it cannot be unlinked yet. */
+  variantCount: number
+}
+
+/**
+ * A Product Option as one particular product offers it — only the values that product sells, in
+ * its own display order. Distinct from `ProductOptionDTO`, which is the global catalogue entity.
+ */
+export type ProductScopedOptionDTO = ProductOptionDTO & {
+  values: ProductScopedOptionValueDTO[]
 }
 
 export interface FilterableProductOptionProps extends BaseFilterable<FilterableProductOptionProps> {

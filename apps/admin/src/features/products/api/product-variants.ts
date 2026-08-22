@@ -15,6 +15,7 @@ import type {
   AdminUpdateVariantPrices,
   AdminUpdateVariantPricesResponse,
   DeleteResponse,
+  ListOptionCombinationsParams,
   ListProductVariantsParams,
 } from '#/api/generated/model'
 import {
@@ -23,6 +24,7 @@ import {
   createProductVariantsBatch,
   deleteProductVariant,
   getProductVariant,
+  listOptionCombinations,
   listProductVariants,
   updateProductVariant,
   updateVariantPrices,
@@ -32,6 +34,10 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const variantKeys = queryKeysFactory<'product-variants', ListProductVariantsParams & { productId: string }>(
   'product-variants',
+)
+
+const combinationKeys = queryKeysFactory<'option-combinations', ListOptionCombinationsParams & { productId: string }>(
+  'option-combinations',
 )
 
 // Keyed by product + image, since an image's variant links are scoped to both.
@@ -56,6 +62,24 @@ export const productVariantQueryOptions = (productId: string, variantId: string)
     queryFn: () => getProductVariant(productId, variantId),
   })
 
+/**
+ * Every Option Combination the product could sell, each naming the variant that has it or `null`
+ * while it is still available.
+ *
+ * One list drives every option-picking surface: create takes the free ones, edit takes those plus
+ * the variant's own. Searched and paginated server-side because the count is the product of the
+ * option value counts.
+ */
+export const optionCombinationsQueryOptions = (productId: string, params?: ListOptionCombinationsParams) =>
+  queryOptions({
+    queryKey: combinationKeys.list({ ...params, productId }),
+    queryFn: () => listOptionCombinations(productId, params),
+    placeholderData: keepPreviousData,
+  })
+
+export const useOptionCombinations = (productId: string, params?: ListOptionCombinationsParams) =>
+  useQuery(optionCombinationsQueryOptions(productId, params))
+
 export const useProductVariants = (productId: string, params?: ListProductVariantsParams) =>
   useQuery(productVariantsListQueryOptions(productId, params))
 
@@ -73,6 +97,8 @@ export const useCreateProductVariant = (
     mutationFn: (data: AdminCreateProductVariant) => createProductVariant(productId, data),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+      // A new variant takes a combination, so the list of free ones is now stale.
+      queryClient.invalidateQueries({ queryKey: combinationKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {
@@ -83,7 +109,12 @@ export const useCreateProductVariant = (
   })
 }
 
-/** Creates a whole option matrix in one request, so the duplicate check sees every row together. */
+/**
+ * Creates a whole option matrix in one request, so the duplicate check sees every row together.
+ *
+ * Unused since the create-variant modal became one-variant-at-a-time; kept for the matrix step of
+ * a product-create wizard, which is the flow that actually needs a batch.
+ */
 export const useCreateProductVariantsBatch = (
   productId: string,
   options?: UseMutationOptions<AdminCreateProductVariantsBatchResponse, Error, AdminCreateProductVariantsBatch>,
@@ -118,6 +149,8 @@ export const useUpdateProductVariant = (
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: variantKeys.detail(variantId) })
       queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+      // Moving a variant frees its old combination and takes a new one.
+      queryClient.invalidateQueries({ queryKey: combinationKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {
@@ -140,6 +173,8 @@ export const useDeleteProductVariant = (
     mutationFn: () => deleteProductVariant(productId, variantId),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+      // Deleting a variant releases its combination.
+      queryClient.invalidateQueries({ queryKey: combinationKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {

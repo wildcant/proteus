@@ -18,9 +18,11 @@ import type {
   IProductModuleService,
   ProductDTO,
   ProductImageDTO,
+  ProductOptionCombinationDTO,
   ProductOptionDTO,
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
+  ProductScopedOptionDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
@@ -31,6 +33,7 @@ import type {
   UpsertProductImageInput,
   UpsertProductVariantDTO,
   VariantImageInput,
+  VariantOptionValueDTO,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
@@ -44,6 +47,19 @@ import type { ProductProductOptionValueRepository } from '../repositories/produc
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
 import type { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
 import type { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
+import {
+  buildCombinations,
+  buildPickerTargets,
+  countCombinations,
+  findCombination,
+  MAX_OPTION_COMBINATIONS,
+} from '../utils/option-combinations.js'
+
+/** A resolved Option Combination ready to write: the pivot rows, plus the label a title falls back to. */
+type ResolvedCombination = {
+  links: Array<{ optionId: string; optionValueId: string }>
+  label: string
+}
 
 type InjectedDependencies = {
   productRepository: ProductRepository
@@ -200,7 +216,7 @@ export class ProductModuleService implements IProductModuleService {
   async createProductVariants(data: CreateProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]> {
     this.logger.debug(`Creating ${data.length} product variant(s)`)
     return this.withTransaction(context, async (ctx) => {
-      const tuples = await this.resolveVariantOptionTuples(
+      const resolved = await this.resolveVariantCombinations(
         data.map((variant) => ({
           productId: variant.productId,
           title: variant.title,
@@ -210,14 +226,17 @@ export class ProductModuleService implements IProductModuleService {
       )
 
       const variants = await this.productVariantRepository.createMany(
-        data.map(({ optionValues: _optionValues, ...variant }) => variant),
+        data.map(({ optionValues: _optionValues, ...variant }, index) => ({
+          ...variant,
+          title: this.resolveVariantTitle(variant.title, resolved[index]) ?? '',
+        })),
         ctx,
       )
 
       await Promise.all(
         variants.map((variant, index) => {
-          const tuple = tuples[index]
-          return tuple ? this.replaceVariantOptionValues(variant.id, tuple, ctx) : undefined
+          const combination = resolved[index]
+          return combination ? this.replaceVariantOptionValues(variant.id, combination.links, ctx) : undefined
         }),
       )
 
@@ -265,26 +284,34 @@ export class ProductModuleService implements IProductModuleService {
   ): Promise<ProductVariantDTO[]> {
     return this.withTransaction(context, async (ctx) => {
       const { optionValues, ...columns } = data
+
+      // The same combination applied to several variants would collide by definition, so this
+      // only makes sense for a single target — which is what every caller does today.
+      const existing = await this.productVariantRepository.find({ id: variantIds }, undefined, ctx)
+      const resolved = optionValues
+        ? await this.resolveVariantCombinations(
+            existing.map((variant) => ({ ...variant, optionValues })),
+            ctx,
+          )
+        : []
+
+      // Retitling follows the combination when the caller sends no title of its own, so changing
+      // a variant from M/White to L/White does not leave a stale name behind.
+      const derivedTitle = this.resolveVariantTitle(columns.title, resolved[0])
+      const changes = { ...columns, ...(derivedTitle !== undefined ? { title: derivedTitle } : {}) }
+
       // An options-only edit has no columns to set, which the repository's UPDATE would reject.
       const variants =
-        Object.keys(columns).length > 0
-          ? await this.productVariantRepository.updateMany(variantIds, columns, ctx)
-          : await this.productVariantRepository.find({ id: variantIds }, undefined, ctx)
+        Object.keys(changes).length > 0
+          ? await this.productVariantRepository.updateMany(variantIds, changes, ctx)
+          : existing
 
-      // The same tuple applied to several variants would collide by definition, so this only
-      // makes sense for a single target — which is what every caller does today.
-      if (optionValues) {
-        const tuples = await this.resolveVariantOptionTuples(
-          variants.map((variant) => ({ ...variant, optionValues })),
-          ctx,
-        )
-        await Promise.all(
-          variants.map((variant, index) => {
-            const tuple = tuples[index]
-            return tuple ? this.replaceVariantOptionValues(variant.id, tuple, ctx) : undefined
-          }),
-        )
-      }
+      await Promise.all(
+        variants.map((variant, index) => {
+          const combination = resolved[index]
+          return combination ? this.replaceVariantOptionValues(variant.id, combination.links, ctx) : undefined
+        }),
+      )
 
       return variants
     })
@@ -679,15 +706,51 @@ export class ProductModuleService implements IProductModuleService {
     )
   }
 
-  async enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO> {
-    const [enriched] = await this.enrichVariants([variant], context)
-    // A single input always yields a single output; the guard is for the compiler.
-    return enriched ?? { ...variant, optionValues: {} }
+  /**
+   * Each variant's Option Combination as an id map — the lean form the storefront ships and the
+   * combination builder works with. Variants with no options map to `{}`.
+   */
+  async listVariantOptionMaps(
+    variantIds: string[],
+    context?: Context,
+  ): Promise<Record<string, Record<string, string>>> {
+    // An empty filter array would reach the query builder as `inArray(column, [])`.
+    if (variantIds.length === 0) return {}
+
+    const links = await this.productVariantOptionRepository.find({ variantId: variantIds }, undefined, context)
+
+    const maps: Record<string, Record<string, string>> = Object.fromEntries(variantIds.map((id) => [id, {}]))
+    for (const link of links) {
+      const map = maps[link.variantId]
+      if (map) map[link.optionId] = link.optionValueId
+    }
+    return maps
   }
 
-  async enrichVariants(variants: ProductVariantDTO[], context?: Context): Promise<EnrichedProductVariantDTO[]> {
-    // An empty filter array would reach the query builder as `inArray(column, [])`.
-    if (variants.length === 0) return []
+  /**
+   * The product's options with each value's variant usage attached — the shape every admin surface
+   * that reads options through a product wants, so neither route has to assemble it.
+   */
+  async listProductScopedOptions(productId: string, context?: Context): Promise<ProductScopedOptionDTO[]> {
+    const [options, counts] = await Promise.all([
+      this.listProductOptionsForProduct(productId, context),
+      this.countVariantsByOptionValue(productId, context),
+    ])
+
+    return options.map((option) => ({
+      ...option,
+      values: option.values.map((value) => ({ ...value, variantCount: counts[value.id] ?? 0 })),
+    }))
+  }
+
+  /**
+   * How many of the product's variants carry each option value, keyed by value id. Values with a
+   * count cannot be unlinked from the product until those variants move, so the admin can say so
+   * before a save is attempted rather than only after `setProductOptions` rejects it.
+   */
+  async countVariantsByOptionValue(productId: string, context?: Context): Promise<Record<string, number>> {
+    const variants = await this.productVariantRepository.find({ productId }, undefined, context)
+    if (variants.length === 0) return {}
 
     const links = await this.productVariantOptionRepository.find(
       { variantId: variants.map((variant) => variant.id) },
@@ -695,24 +758,124 @@ export class ProductModuleService implements IProductModuleService {
       context,
     )
 
-    const optionValuesByVariantId = new Map<string, Record<string, string>>()
-    for (const link of links) {
-      const tuple = optionValuesByVariantId.get(link.variantId) ?? {}
-      tuple[link.optionId] = link.optionValueId
-      optionValuesByVariantId.set(link.variantId, tuple)
-    }
+    const counts: Record<string, number> = {}
+    for (const link of links) counts[link.optionValueId] = (counts[link.optionValueId] ?? 0) + 1
+    return counts
+  }
+
+  async enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO> {
+    const [enriched] = await this.enrichVariants([variant], context)
+    // A single input always yields a single output; the guard is for the compiler.
+    return enriched ?? { ...variant, optionValues: [] }
+  }
+
+  async enrichVariants(variants: ProductVariantDTO[], context?: Context): Promise<EnrichedProductVariantDTO[]> {
+    if (variants.length === 0) return []
+
+    const maps = await this.listVariantOptionMaps(
+      variants.map((variant) => variant.id),
+      context,
+    )
+
+    // Labels and order belong to the product, not the variant, so options are read once per
+    // product rather than once per variant.
+    const productIds = [...new Set(variants.map((variant) => variant.productId))]
+    const optionsByProductId = new Map(
+      await Promise.all(
+        productIds.map(
+          async (productId) => [productId, await this.listProductOptionsForProduct(productId, context)] as const,
+        ),
+      ),
+    )
 
     return variants.map((variant) => ({
       ...variant,
-      optionValues: optionValuesByVariantId.get(variant.id) ?? {},
+      optionValues: this.resolveOptionValues(optionsByProductId.get(variant.productId) ?? [], maps[variant.id] ?? {}),
     }))
+  }
+
+  /**
+   * The Option Combinations this product could sell, each naming the variant that has it or `null`
+   * while it is still available. One response drives the create form, the edit form and the matrix
+   * step — each is a different filter over `variantId`.
+   *
+   * Paginated and searched here rather than in the client because the count is the product of the
+   * option value counts, so it grows multiplicatively with the product's options.
+   */
+  async listProductOptionCombinations(
+    productId: string,
+    config?: { label?: string; limit?: number; offset?: number },
+    context?: Context,
+  ): Promise<[ProductOptionCombinationDTO[], number]> {
+    const options = await this.listProductOptionsForProduct(productId, context)
+
+    const total = countCombinations(options)
+    if (total > MAX_OPTION_COMBINATIONS) {
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: `This product's options produce ${total} combinations, above the limit of ${MAX_OPTION_COMBINATIONS}. Reduce the options or the values they offer.`,
+      })
+    }
+    if (total === 0) return [[], 0]
+
+    const combinations = await this.loadCombinations(productId, options, context)
+
+    const query = config?.label?.trim().toLowerCase()
+    const matched = query
+      ? combinations.filter((combination) => combination.label.toLowerCase().includes(query))
+      : combinations
+
+    const offset = config?.offset ?? 0
+    const limit = config?.limit ?? 50
+    return [matched.slice(offset, offset + limit), matched.length]
+  }
+
+  /**
+   * The storefront picker, precomputed: for every variant a shopper could be looking at, where
+   * each option value would take them. Takes the variants the caller is actually shipping, since
+   * the store route drops variants with no price and the picker must not offer those.
+   */
+  async buildProductPickerTargets(
+    productId: string,
+    variants: Array<{ id: string; optionValues: Record<string, string>; inStock: boolean }>,
+    context?: Context,
+  ): Promise<Record<string, Record<string, string | null>>> {
+    const options = await this.listProductOptionsForProduct(productId, context)
+    if (options.length === 0) return {}
+
+    return buildPickerTargets({ options, variants })
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
 
   /**
+   * The values a `setProductOptions` payload would leave the product offering, keyed by option.
+   *
+   * An option listing no values offers all of them — the same rule `listProductOptionsForProduct`
+   * applies to the stored links, expressed here once for the incoming payload rather than at each
+   * place that needs to know what a save would drop.
+   */
+  private async expandOfferedValues(data: SetProductOptionsDTO, context: Context): Promise<Map<string, Set<string>>> {
+    const optionIds = data.options.map((option) => option.optionId)
+    if (optionIds.length === 0) return new Map()
+
+    const allValues = await this.productOptionValueRepository.find({ optionId: optionIds }, undefined, context)
+
+    return new Map(
+      data.options.map((option) => [
+        option.optionId,
+        new Set(
+          option.valueIds.length > 0
+            ? option.valueIds
+            : allValues.filter((value) => value.optionId === option.optionId).map((value) => value.id),
+        ),
+      ]),
+    )
+  }
+
+  /**
    * Refuses a `setProductOptions` payload that drops an option or a value some variant still
-   * carries. Without this the product would keep variants whose tuples reference values the
+   * carries. Without this the product would keep variants whose combinations reference values the
    * product no longer offers, and the storefront picker could not render them.
    */
   private async checkProductOptionsStillCoverVariants(
@@ -730,11 +893,10 @@ export class ProductModuleService implements IProductModuleService {
     )
     if (links.length === 0) return
 
-    const keptOptionIds = new Set(data.options.map((option) => option.optionId))
-    const keptValueIds = new Set(data.options.flatMap((option) => option.valueIds))
+    const offered = await this.expandOfferedValues(data, context)
 
     const droppedOptionIds = [...new Set(links.map((link) => link.optionId))].filter(
-      (optionId) => !keptOptionIds.has(optionId),
+      (optionId) => !offered.has(optionId),
     )
     if (droppedOptionIds.length > 0) {
       const titles = await this.productOptionRepository.find({ id: droppedOptionIds }, undefined, context)
@@ -746,14 +908,10 @@ export class ProductModuleService implements IProductModuleService {
       })
     }
 
-    // An option kept with an empty `valueIds` offers all of its values, so nothing is dropped.
-    const optionsOfferingEveryValue = new Set(
-      data.options.filter((option) => option.valueIds.length === 0).map((option) => option.optionId),
-    )
     const droppedValueIds = [
       ...new Set(
         links
-          .filter((link) => !optionsOfferingEveryValue.has(link.optionId) && !keptValueIds.has(link.optionValueId))
+          .filter((link) => offered.get(link.optionId)?.has(link.optionValueId) === false)
           .map((link) => link.optionValueId),
       ),
     ]
@@ -769,152 +927,155 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   /**
-   * Turns each variant's `optionValues` map into the rows the pivot needs, validating along the
-   * way. Returns one entry per input variant: `undefined` where the caller left `optionValues`
-   * out, which means "leave the existing tuple alone".
+   * Resolves each variant's `optionValues` map into the pivot rows to write, rejecting anything
+   * the product cannot sell. Returns one entry per input variant: `undefined` where the caller
+   * left `optionValues` out, which means "leave the existing combination alone".
    *
-   * Doing the whole batch at once is what lets the duplicate-combination checks see siblings —
-   * two new variants with the same tuple must be rejected even though neither is in the DB yet.
+   * Every check is a lookup into the product's combinations, so what the admin is offered and what
+   * the service accepts come from one function and cannot drift. Doing the whole batch at once is
+   * what lets two new variants claiming the same combination reject each other, even though
+   * neither is in the database yet.
    */
-  private async resolveVariantOptionTuples(
+  private async resolveVariantCombinations(
     /** `id` is present on updates and absent on creates — it excludes a variant from colliding with itself. */
-    variants: Array<{ id?: string; productId: string; title: string; optionValues?: Record<string, string> }>,
+    variants: Array<{ id?: string; productId: string; title?: string; optionValues?: Record<string, string> }>,
     context: Context,
-  ): Promise<Array<Array<{ optionId: string; optionValueId: string }> | undefined>> {
-    // Nothing to resolve is the common case (a scalar-only edit), and skipping it also skips
-    // the option reads and the O(variants) uniqueness scans below.
+  ): Promise<Array<ResolvedCombination | undefined>> {
+    // A scalar-only edit is the common case, and skipping it also skips the option reads below.
     if (variants.every((variant) => !variant.optionValues)) return variants.map(() => undefined)
 
     const productIds = [...new Set(variants.map((variant) => variant.productId))]
-    const optionsByProductId = new Map(
+    const byProductId = new Map(
       await Promise.all(
-        productIds.map(
-          async (productId) => [productId, await this.listProductOptionsForProduct(productId, context)] as const,
-        ),
+        productIds.map(async (productId) => {
+          const options = await this.listProductOptionsForProduct(productId, context)
+          const combinations = await this.loadCombinations(productId, options, context)
+          return [productId, { options, combinations }] as const
+        }),
       ),
     )
 
-    const tuples = variants.map(({ productId, title, optionValues }) => {
+    const claimedBy = new Map<string, string>()
+
+    return variants.map(({ id, productId, title, optionValues }) => {
       if (!optionValues) return undefined
 
-      const productOptions = optionsByProductId.get(productId) ?? []
-      const entries = Object.entries(optionValues)
+      const product = byProductId.get(productId)
+      const options = product?.options ?? []
+      const describe = title ?? id ?? 'the variant'
 
-      // An explicit empty map clears the tuple. Distinct from omitting the key, which leaves it.
-      if (entries.length === 0) return []
+      // An explicit empty map clears the combination. Distinct from omitting the key, which leaves it.
+      if (Object.keys(optionValues).length === 0) return { links: [], label: '' }
 
-      // Partial tuples are rejected rather than merged: the duplicate-combination checks below
-      // compare whole tuples, and they are only sound if every tuple is complete.
-      if (entries.length !== productOptions.length) {
+      const combination = findCombination(product?.combinations ?? [], optionValues)
+      if (!combination) throw this.describeUnknownCombination(options, optionValues, describe)
+
+      // Re-sending a variant's own combination is a no-op, not a collision.
+      if (combination.variantId && combination.variantId !== id) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Product has ${productOptions.length} option(s) but ${entries.length} option value(s) were provided for the variant: ${title}.`,
+          message: `Variant (${combination.label}) with the provided options already exists.`,
         })
       }
 
-      return entries.map(([optionId, optionValueId]) => {
-        const option = productOptions.find((productOption) => productOption.id === optionId)
-        if (!option) {
-          throw new AppError({
-            type: ErrorTypes.INVALID_DATA,
-            message: `Option "${optionId}" is not available on this product.`,
-          })
-        }
-        if (!option.values.some((value) => value.id === optionValueId)) {
-          throw new AppError({
-            type: ErrorTypes.INVALID_DATA,
-            message: `Option value "${optionValueId}" does not exist for option ${option.title}.`,
-          })
-        }
-        return { optionId, optionValueId }
-      })
-    })
-
-    this.checkVariantTuplesAreUniqueWithinBatch(variants, tuples)
-    await this.checkVariantTuplesAreUniqueOnProduct(variants, tuples, context)
-
-    return tuples
-  }
-
-  /** Rejects two variants in the same call claiming the same combination. */
-  private checkVariantTuplesAreUniqueWithinBatch(
-    variants: Array<{ productId: string; title: string }>,
-    tuples: Array<Array<{ optionId: string; optionValueId: string }> | undefined>,
-  ): void {
-    const seen = new Map<string, string>()
-    tuples.forEach((tuple, index) => {
-      const variant = variants[index]
-      if (!tuple || !variant) return
-
-      const key = `${variant.productId}:${this.tupleKey(tuple)}`
-      const clash = seen.get(key)
+      const clash = claimedBy.get(`${productId}:${combination.key}`)
       if (clash !== undefined) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Variant "${variant.title}" has the same combination of option values as "${clash}".`,
+          message: `Variant "${describe}" has the same combination of option values as "${clash}".`,
         })
       }
-      seen.set(key, variant.title)
+      claimedBy.set(`${productId}:${combination.key}`, describe)
+
+      return {
+        links: combination.values.map(({ optionId, valueId }) => ({ optionId, optionValueId: valueId })),
+        label: combination.label,
+      }
     })
   }
 
   /**
-   * Rejects a combination already carried by another variant of the same product. This is a set
-   * property across rows, so no index can express it — unlike "one value per option per variant",
-   * which the pivot's unique index owns.
+   * Why a payload matched no combination. The lookup itself yields a single bit, so this exists
+   * only to turn that bit into a message naming what is actually wrong.
    */
-  private async checkVariantTuplesAreUniqueOnProduct(
-    variants: Array<{ id?: string; productId: string; title: string }>,
-    tuples: Array<Array<{ optionId: string; optionValueId: string }> | undefined>,
-    context: Context,
-  ): Promise<void> {
-    const productIds = [...new Set(variants.filter((_, index) => tuples[index]).map((variant) => variant.productId))]
-    if (productIds.length === 0) return
+  private describeUnknownCombination(
+    options: ProductOptionWithValuesDTO[],
+    optionValues: Record<string, string>,
+    describe: string,
+  ): AppError {
+    const entries = Object.entries(optionValues)
 
-    const siblings = await this.productVariantRepository.find({ productId: productIds }, undefined, context)
-    if (siblings.length === 0) return
-
-    const links = await this.productVariantOptionRepository.find(
-      { variantId: siblings.map((sibling) => sibling.id) },
-      undefined,
-      context,
-    )
-
-    const tupleByVariantId = new Map<string, Array<{ optionId: string; optionValueId: string }>>()
-    for (const link of links) {
-      const existing = tupleByVariantId.get(link.variantId)
-      if (existing) existing.push(link)
-      else tupleByVariantId.set(link.variantId, [link])
-    }
-
-    const siblingsByKey = new Map<string, { id: string; title: string }>()
-    for (const sibling of siblings) {
-      const tuple = tupleByVariantId.get(sibling.id)
-      if (!tuple) continue
-      siblingsByKey.set(`${sibling.productId}:${this.tupleKey(tuple)}`, sibling)
-    }
-
-    tuples.forEach((tuple, index) => {
-      const variant = variants[index]
-      if (!tuple || !variant) return
-
-      const clash = siblingsByKey.get(`${variant.productId}:${this.tupleKey(tuple)}`)
-      // Re-sending a variant's own tuple is a no-op, not a collision.
-      if (!clash || clash.id === variant.id) return
-
-      throw new AppError({
+    if (entries.length !== options.length) {
+      return new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: `Variant (${clash.title}) with the provided options already exists.`,
+        message: `Product has ${options.length} option(s) but ${entries.length} option value(s) were provided for the variant: ${describe}.`,
       })
+    }
+
+    for (const [optionId, optionValueId] of entries) {
+      const option = options.find((productOption) => productOption.id === optionId)
+      if (!option) {
+        return new AppError({
+          type: ErrorTypes.INVALID_DATA,
+          message: `Option "${optionId}" is not available on this product.`,
+        })
+      }
+      if (!option.values.some((value) => value.id === optionValueId)) {
+        return new AppError({
+          type: ErrorTypes.INVALID_DATA,
+          message: `Option value "${optionValueId}" does not exist for option ${option.title}.`,
+        })
+      }
+    }
+
+    return new AppError({
+      type: ErrorTypes.INVALID_DATA,
+      message: `The provided options are not a valid combination for the variant: ${describe}.`,
     })
   }
 
-  /** Order-independent identity for an option combination. */
-  private tupleKey(tuple: Array<{ optionId: string; optionValueId: string }>): string {
-    return tuple
-      .map(({ optionId, optionValueId }) => `${optionId}=${optionValueId}`)
-      .sort()
-      .join('|')
+  /** The product's combinations, each knowing which variant carries it. */
+  private async loadCombinations(
+    productId: string,
+    options: ProductOptionWithValuesDTO[],
+    context?: Context,
+  ): Promise<ProductOptionCombinationDTO[]> {
+    const variants = await this.productVariantRepository.find({ productId }, undefined, context)
+    const maps = await this.listVariantOptionMaps(
+      variants.map((variant) => variant.id),
+      context,
+    )
+
+    return buildCombinations({
+      options,
+      variants: variants.map((variant) => ({ id: variant.id, optionValues: maps[variant.id] ?? {} })),
+    })
+  }
+
+  /** A variant's Option Combination resolved for display, in the product's option order. */
+  private resolveOptionValues(
+    options: ProductOptionWithValuesDTO[],
+    optionValues: Record<string, string>,
+  ): VariantOptionValueDTO[] {
+    return options.flatMap((option) => {
+      const valueId = optionValues[option.id]
+      const value = option.values.find((optionValue) => optionValue.id === valueId)
+      if (!valueId || !value) return []
+      return { optionId: option.id, optionTitle: option.title, valueId, value: value.value }
+    })
+  }
+
+  /**
+   * A variant's title defaults to its combination's label, the way `resolveThumbnail` defaults a
+   * product's thumbnail from its images. Titles are copied onto cart line items and order items,
+   * so deriving them here keeps a shopper's order history consistent with the catalogue.
+   */
+  private resolveVariantTitle(
+    title: string | undefined,
+    resolved: ResolvedCombination | undefined,
+  ): string | undefined {
+    if (title !== undefined) return title
+    return resolved?.label || undefined
   }
 
   /**
@@ -923,7 +1084,7 @@ export class ProductModuleService implements IProductModuleService {
    */
   private async replaceVariantOptionValues(
     variantId: string,
-    tuple: Array<{ optionId: string; optionValueId: string }>,
+    links: Array<{ optionId: string; optionValueId: string }>,
     context: Context,
   ): Promise<void> {
     const existing = await this.productVariantOptionRepository.find({ variantId }, undefined, context)
@@ -933,10 +1094,10 @@ export class ProductModuleService implements IProductModuleService {
         context,
       )
     }
-    if (tuple.length === 0) return
+    if (links.length === 0) return
 
     await this.productVariantOptionRepository.createMany(
-      tuple.map(({ optionId, optionValueId }) => ({ variantId, optionId, optionValueId })),
+      links.map(({ optionId, optionValueId }) => ({ variantId, optionId, optionValueId })),
       context,
     )
   }

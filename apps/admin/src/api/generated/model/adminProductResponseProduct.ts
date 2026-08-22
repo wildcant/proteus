@@ -6,9 +6,9 @@
  */
 import type { AdminProduct } from './adminProduct.ts';
 import type { AdminProductImage } from './adminProductImage.ts';
-import type { AdminProductOption } from './adminProductOption.ts';
+import type { AdminProductScopedOption } from './adminProductScopedOption.ts';
 
 export type AdminProductResponseProduct = AdminProduct & {
-  options?: AdminProductOption[];
+  options?: AdminProductScopedOption[];
   images?: AdminProductImage[];
 };

@@ -3,6 +3,7 @@ import { searchable, Tags } from '@framework/http/types.js'
 import type { ProductDTO, ProductVariantDTO } from '../../../core/types/product/common.js'
 import * as imageVariantBatchRoutes from './[id]/images/[imageId]/variants/batch/route.js'
 import * as imageVariantRoutes from './[id]/images/[imageId]/variants/route.js'
+import * as optionCombinationRoutes from './[id]/option-combinations/route.js'
 import * as productOptionRoutes from './[id]/options/route.js'
 import * as productByIdRoutes from './[id]/route.js'
 import * as variantImageBatchRoutes from './[id]/variants/[variantId]/images/batch/route.js'
@@ -83,6 +84,16 @@ export default [
     summary: 'Set options for a product',
     tags: [Tags.PRODUCT_OPTIONS],
     output: productOptionRoutes.PutOutput,
+  },
+  {
+    method: 'GET',
+    matcher: '/admin/products/:id/option-combinations',
+    handler: optionCombinationRoutes.GET,
+    input: optionCombinationRoutes.GetInput,
+    operationId: 'listOptionCombinations',
+    summary: 'List the option combinations a product could sell',
+    tags: [Tags.PRODUCT_VARIANTS],
+    output: optionCombinationRoutes.GetOutput,
   },
   {
     method: 'GET',

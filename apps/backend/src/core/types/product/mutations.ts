@@ -55,32 +55,7 @@ export type UpdateProductDTO = {
 
 export type CreateProductVariantDTO = {
   productId: string
-  title: string
-  thumbnail?: string | null
-  sku?: string | null
-  barcode?: string | null
-  ean?: string | null
-  upc?: string | null
-  allowBackorder?: boolean
-  manageInventory?: boolean
-  hsCode?: string | null
-  originCountry?: string | null
-  midCode?: string | null
-  material?: string | null
-  weight?: number | null
-  length?: number | null
-  height?: number | null
-  width?: number | null
-  variantRank?: number
-  metadata?: Record<string, unknown> | null
-  /**
-   * The variant's option tuple, keyed by option id. Omit to leave an existing tuple untouched;
-   * pass `{}` to clear it. When set it must name every option the product offers.
-   */
-  optionValues?: Record<string, string>
-}
-
-export type UpdateProductVariantDTO = {
+  /** Defaults to the Option Combination's label when omitted, e.g. `"M / White"`. */
   title?: string
   thumbnail?: string | null
   sku?: string | null
@@ -100,7 +75,34 @@ export type UpdateProductVariantDTO = {
   variantRank?: number
   metadata?: Record<string, unknown> | null
   /**
-   * The variant's option tuple, keyed by option id. Omit to leave an existing tuple untouched;
+   * The variant's Option Combination, keyed by option id. Omit to leave an existing one untouched;
+   * pass `{}` to clear it. When set it must name every option the product offers.
+   */
+  optionValues?: Record<string, string>
+}
+
+export type UpdateProductVariantDTO = {
+  /** Omit to let the title follow the Option Combination when `optionValues` changes. */
+  title?: string
+  thumbnail?: string | null
+  sku?: string | null
+  barcode?: string | null
+  ean?: string | null
+  upc?: string | null
+  allowBackorder?: boolean
+  manageInventory?: boolean
+  hsCode?: string | null
+  originCountry?: string | null
+  midCode?: string | null
+  material?: string | null
+  weight?: number | null
+  length?: number | null
+  height?: number | null
+  width?: number | null
+  variantRank?: number
+  metadata?: Record<string, unknown> | null
+  /**
+   * The variant's Option Combination, keyed by option id. Omit to leave an existing one untouched;
    * pass `{}` to clear it. When set it must name every option the product offers.
    */
   optionValues?: Record<string, string>

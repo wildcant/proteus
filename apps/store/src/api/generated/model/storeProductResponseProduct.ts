@@ -6,11 +6,13 @@
  */
 import type { StoreProduct } from './storeProduct.ts';
 import type { StoreProductImage } from './storeProductImage.ts';
-import type { StoreProductOption } from './storeProductOption.ts';
+import type { StoreProductResponseProductPickerTargets } from './storeProductResponseProductPickerTargets.ts';
+import type { StoreProductScopedOption } from './storeProductScopedOption.ts';
 import type { StoreProductVariant } from './storeProductVariant.ts';
 
 export type StoreProductResponseProduct = StoreProduct & {
   images: StoreProductImage[];
-  options: StoreProductOption[];
+  options: StoreProductScopedOption[];
   variants: StoreProductVariant[];
+  pickerTargets: StoreProductResponseProductPickerTargets;
 };

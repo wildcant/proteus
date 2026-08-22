@@ -17,7 +17,6 @@
     "lint": "biome lint",
     "check": "biome check",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
     "dev:test": "dotenvx run --env-file=../../.env.test -- vite dev --port 3012",
     "test:e2e": "dotenvx run --env-file=../../.env.test -- playwright test",
     "test:e2e:dev": "npm run test:e2e -- --ui",

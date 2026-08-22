@@ -12,3 +12,15 @@ export const AdminProductVariantListParams = createFindParams({ limit: 10 }).ext
 })
 
 export type AdminProductVariantListQuery = FindParams<typeof AdminProductVariantListParams>
+
+/**
+ * Searched and paginated server-side: the number of combinations is the product of the option
+ * value counts, so it grows multiplicatively and cannot be shipped whole for every product.
+ *
+ * `label` rather than the usual `q` because combinations are computed, not rows — there is no
+ * column for the framework's `searchableColumns` to build a filter against.
+ */
+export const AdminOptionCombinationListParams = createFindParams({ limit: 50 }).extend({
+  label: z.string().optional(),
+})
+export type AdminOptionCombinationListQuery = FindParams<typeof AdminOptionCombinationListParams>
