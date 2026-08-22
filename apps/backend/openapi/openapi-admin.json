@@ -1665,8 +1665,13 @@
           "title": {
             "type": "string"
           },
+          "renderAs": {
+            "type": "string",
+            "enum": ["text", "swatch"]
+          },
           "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "values": {
             "type": "array",
@@ -1683,7 +1688,7 @@
             "format": "date-time"
           }
         },
-        "required": ["id", "title", "metadata", "values", "createdAt", "updatedAt"]
+        "required": ["id", "title", "renderAs", "metadata", "values", "createdAt", "updatedAt"]
       },
       "AdminProductOptionValue": {
         "type": "object",
@@ -1701,7 +1706,8 @@
             "type": ["number", "null"]
           },
           "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "createdAt": {
             "type": "string",
@@ -1730,8 +1736,13 @@
             "type": "string",
             "minLength": 1
           },
+          "renderAs": {
+            "type": "string",
+            "enum": ["text", "swatch"]
+          },
           "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "values": {
             "type": "array",
@@ -1747,7 +1758,8 @@
                   "minimum": 0
                 },
                 "metadata": {
-                  "type": ["string", "null"]
+                  "type": ["object", "null"],
+                  "additionalProperties": {}
                 }
               },
               "required": ["value"]
@@ -1763,8 +1775,13 @@
             "type": "string",
             "minLength": 1
           },
+          "renderAs": {
+            "type": "string",
+            "enum": ["text", "swatch"]
+          },
           "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "values": {
             "type": "array",
@@ -1780,7 +1797,8 @@
                   "minimum": 0
                 },
                 "metadata": {
-                  "type": ["string", "null"]
+                  "type": ["object", "null"],
+                  "additionalProperties": {}
                 }
               },
               "required": ["value"]
@@ -1868,7 +1886,8 @@
             "type": ["string", "null"]
           },
           "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "createdAt": {
             "type": "string",
@@ -2205,8 +2224,15 @@
           "variantRank": {
             "type": ["number", "null"]
           },
+          "optionValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
           "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "prices": {
             "type": "array",
@@ -2235,6 +2261,7 @@
           "height",
           "width",
           "variantRank",
+          "optionValues",
           "metadata"
         ]
       },
@@ -2326,8 +2353,15 @@
           "variantRank": {
             "type": "number"
           },
+          "optionValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
           "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           },
           "prices": {
             "type": "array",
@@ -2343,6 +2377,31 @@
           }
         },
         "required": ["title"]
+      },
+      "AdminCreateProductVariantsBatchResponse": {
+        "type": "object",
+        "properties": {
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductVariant"
+            }
+          }
+        },
+        "required": ["variants"]
+      },
+      "AdminCreateProductVariantsBatch": {
+        "type": "object",
+        "properties": {
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCreateProductVariant"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["variants"]
       },
       "AdminProductVariantResponse": {
         "type": "object",
@@ -2432,8 +2491,15 @@
           "variantRank": {
             "type": "number"
           },
+          "optionValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
           "metadata": {
-            "type": ["string", "null"]
+            "type": ["object", "null"],
+            "additionalProperties": {}
           }
         }
       },
@@ -6082,6 +6148,51 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminCreateProductVariantResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/products/{id}/variants/batch": {
+      "post": {
+        "operationId": "createProductVariantsBatch",
+        "summary": "Create several product variants at once",
+        "tags": ["Product Variants"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateProductVariantsBatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCreateProductVariantsBatchResponse"
                 }
               }
             }

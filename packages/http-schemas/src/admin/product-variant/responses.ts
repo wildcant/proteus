@@ -32,3 +32,8 @@ export const AdminProductVariantListResponse = PaginatedResponse.extend({
   variants: z.array(AdminProductVariant),
 }).openapi('AdminProductVariantListResponse')
 export type AdminProductVariantListResponse = z.input<typeof AdminProductVariantListResponse>
+
+export const AdminCreateProductVariantsBatchResponse = z
+  .object({ variants: z.array(AdminProductVariant) })
+  .openapi('AdminCreateProductVariantsBatchResponse')
+export type AdminCreateProductVariantsBatchResponse = z.input<typeof AdminCreateProductVariantsBatchResponse>

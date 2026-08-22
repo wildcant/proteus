@@ -1,11 +1,19 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
-import { StoreProduct, StoreProductImage, StoreProductListItem, StoreProductVariant } from './entities.js'
+import {
+  StoreProduct,
+  StoreProductImage,
+  StoreProductListItem,
+  StoreProductOption,
+  StoreProductVariant,
+} from './entities.js'
 
 export const StoreProductResponse = z
   .object({
     product: StoreProduct.extend({
       images: z.array(StoreProductImage),
+      /** The options this product offers, in the order the picker should render them. */
+      options: z.array(StoreProductOption),
       variants: z.array(StoreProductVariant),
     }),
   })

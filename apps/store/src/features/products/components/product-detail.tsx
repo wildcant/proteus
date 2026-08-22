@@ -4,6 +4,7 @@ import { AddToCart } from '#/features/cart/components/add-to-cart'
 import { useSuspenseProduct } from '#/features/products/api/products'
 import { ProductGallery } from '#/features/products/components/product-gallery'
 import { ProductSpecs } from '#/features/products/components/product-specs'
+import { VariantPicker } from '#/features/products/components/variant-picker'
 
 const route = getRouteApi('/_main/products/$productId')
 
@@ -63,12 +64,16 @@ export function ProductDetail() {
             )}
           </div>
 
-          <AddToCart
-            product={product}
+          <VariantPicker
+            options={product.options}
+            variants={product.variants}
+            images={product.images}
             selectedVariant={selectedVariant}
             // Replace so browsing colourways doesn't bury the previous page in history.
             onVariantChange={(id) => navigate({ search: { variant: id }, replace: true })}
           />
+
+          <AddToCart product={product} selectedVariant={selectedVariant} />
 
           {!!product.description && (
             <p className="max-w-prose text-(--foreground-muted) text-sm leading-relaxed">{product.description}</p>

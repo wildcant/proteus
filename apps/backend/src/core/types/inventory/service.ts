@@ -38,6 +38,11 @@ export type IInventoryModuleService = {
     context?: Context,
   ): Promise<InventoryLevelDTO[]>
   createInventoryLevels(data: CreateInventoryLevelDTO[], context?: Context): Promise<InventoryLevelDTO[]>
+  /**
+   * Stocked minus reserved for one inventory item, summed across the given locations — or across
+   * every location when `locationIds` is omitted. Zero when the item has no level.
+   */
+  retrieveAvailableQuantity(inventoryItemId: string, locationIds?: string[], context?: Context): Promise<number>
   confirmInventory(
     inventoryItemId: string,
     locationIds: string[],

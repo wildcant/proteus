@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { stringToBigNumber } from '../../common.js'
+import { metadata, stringToBigNumber } from '../../common.js'
 
 const CreateVariantPrice = z.object({
   amount: stringToBigNumber,
@@ -29,7 +29,12 @@ export const AdminCreateProductVariant = z
     height: z.number().nullable().optional(),
     width: z.number().nullable().optional(),
     variantRank: z.number().optional(),
-    metadata: z.string().nullable().optional(),
+    /**
+     * The variant's option tuple, keyed by option id. Omit to leave an existing tuple untouched;
+     * send `{}` to clear it. When set it must name every option the product offers.
+     */
+    optionValues: z.record(z.string(), z.string()).optional(),
+    metadata: metadata.optional(),
     prices: z.array(CreateVariantPrice).optional(),
   })
   .openapi('AdminCreateProductVariant')
@@ -54,7 +59,12 @@ export const AdminUpdateProductVariant = z
     height: z.number().nullable().optional(),
     width: z.number().nullable().optional(),
     variantRank: z.number().optional(),
-    metadata: z.string().nullable().optional(),
+    /**
+     * The variant's option tuple, keyed by option id. Omit to leave an existing tuple untouched;
+     * send `{}` to clear it. When set it must name every option the product offers.
+     */
+    optionValues: z.record(z.string(), z.string()).optional(),
+    metadata: metadata.optional(),
   })
   .openapi('AdminUpdateProductVariant')
 export type AdminUpdateProductVariantBody = z.infer<typeof AdminUpdateProductVariant>
@@ -65,3 +75,10 @@ export const AdminUpdateVariantPrices = z
   })
   .openapi('AdminUpdateVariantPrices')
 export type AdminUpdateVariantPricesBody = z.infer<typeof AdminUpdateVariantPrices>
+
+export const AdminCreateProductVariantsBatch = z
+  .object({
+    variants: z.array(AdminCreateProductVariant).min(1),
+  })
+  .openapi('AdminCreateProductVariantsBatch')
+export type AdminCreateProductVariantsBatchBody = z.infer<typeof AdminCreateProductVariantsBatch>

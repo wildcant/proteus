@@ -1277,6 +1277,12 @@
                       "$ref": "#/components/schemas/StoreProductImage"
                     }
                   },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/StoreProductOption"
+                    }
+                  },
                   "variants": {
                     "type": "array",
                     "items": {
@@ -1284,7 +1290,7 @@
                     }
                   }
                 },
-                "required": ["images", "variants"]
+                "required": ["images", "options", "variants"]
               }
             ]
           }
@@ -1306,6 +1312,43 @@
         },
         "required": ["id", "url", "rank"]
       },
+      "StoreProductOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "renderAs": {
+            "type": "string",
+            "enum": ["text", "swatch"]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductOptionValue"
+            }
+          }
+        },
+        "required": ["id", "title", "renderAs", "values"]
+      },
+      "StoreProductOptionValue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "rank": {
+            "type": ["number", "null"]
+          }
+        },
+        "required": ["id", "value", "rank"]
+      },
       "StoreProductVariant": {
         "type": "object",
         "properties": {
@@ -1326,6 +1369,15 @@
             "items": {
               "type": "string"
             }
+          },
+          "optionValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "inStock": {
+            "type": "boolean"
           },
           "sku": {
             "type": ["string", "null"]
@@ -1358,6 +1410,8 @@
           "title",
           "thumbnail",
           "imageIds",
+          "optionValues",
+          "inStock",
           "sku",
           "barcode",
           "material",

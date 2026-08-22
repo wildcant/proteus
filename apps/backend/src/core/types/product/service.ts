@@ -1,11 +1,13 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
+  EnrichedProductVariantDTO,
   FilterableProductImageProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
   FilterableProductVariantImageProps,
+  FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
   ProductDTO,
   ProductImageDTO,
@@ -14,6 +16,7 @@ import type {
   ProductOptionWithValuesDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
+  ProductVariantOptionDTO,
 } from './common.js'
 import type {
   CreateProductDTO,
@@ -139,4 +142,18 @@ export type IProductModuleService = {
   listVariantsForImage(imageId: string, context?: Context): Promise<ProductVariantDTO[]>
   addImageToVariant(data: VariantImageInput[], context?: Context): Promise<{ id: string }[]>
   removeImageFromVariant(data: VariantImageInput[], context?: Context): Promise<void>
+
+  // Variant options
+  listProductVariantOptions(
+    filters?: FilterableProductVariantOptionProps,
+    config?: FindConfig<ProductVariantOptionDTO>,
+    context?: Context,
+  ): Promise<ProductVariantOptionDTO[]>
+  listOptionValuesForVariant(variantId: string, context?: Context): Promise<ProductOptionValueDTO[]>
+  /**
+   * Attaches each variant's option tuple, keyed by option id. Async because the tuple lives in a
+   * pivot rather than on the variant row — one batched read for the whole set.
+   */
+  enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO>
+  enrichVariants(variants: ProductVariantDTO[], context?: Context): Promise<EnrichedProductVariantDTO[]>
 }

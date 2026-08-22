@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { bigNumberToString, dateToIso } from '../../common.js'
+import { bigNumberToString, dateToIso, metadata } from '../../common.js'
 
 export const AdminVariantPrice = z
   .object({
@@ -33,7 +33,9 @@ export const AdminProductVariant = z
     height: z.number().nullable(),
     width: z.number().nullable(),
     variantRank: z.number().nullable(),
-    metadata: z.string().nullable(),
+    /** The variant's option tuple, keyed by option id. Empty when it carries no options. */
+    optionValues: z.record(z.string(), z.string()),
+    metadata,
     prices: z.array(AdminVariantPrice).optional(),
   })
   .openapi('AdminProductVariant')

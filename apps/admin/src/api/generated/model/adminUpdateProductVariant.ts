@@ -4,6 +4,8 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminUpdateProductVariantMetadata } from './adminUpdateProductVariantMetadata.ts';
+import type { AdminUpdateProductVariantOptionValues } from './adminUpdateProductVariantOptionValues.ts';
 
 export interface AdminUpdateProductVariant {
   /** @minLength 1 */
@@ -37,6 +39,7 @@ export interface AdminUpdateProductVariant {
   /** @nullable */
   width?: number | null;
   variantRank?: number;
+  optionValues?: AdminUpdateProductVariantOptionValues;
   /** @nullable */
-  metadata?: string | null;
+  metadata?: AdminUpdateProductVariantMetadata;
 }

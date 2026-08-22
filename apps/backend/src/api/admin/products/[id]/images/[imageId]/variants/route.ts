@@ -8,7 +8,7 @@ export const GetOutput = AdminImageVariantsResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
-  const variants = await productService.listVariantsForImage(req.params.imageId)
-
+  const retrieved = await productService.listVariantsForImage(req.params.imageId)
+  const variants = await productService.enrichVariants(retrieved)
   return { status: 200, json: { variants } }
 }

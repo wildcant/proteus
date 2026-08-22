@@ -20,6 +20,26 @@ export const StoreProductImage = z
   .openapi('StoreProductImage')
 export type StoreProductImage = z.infer<typeof StoreProductImage>
 
+export const StoreProductOptionValue = z
+  .object({
+    id: z.string(),
+    value: z.string(),
+    rank: z.number().nullable(),
+  })
+  .openapi('StoreProductOptionValue')
+export type StoreProductOptionValue = z.infer<typeof StoreProductOptionValue>
+
+export const StoreProductOption = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    /** How the picker draws this option's values. */
+    renderAs: z.enum(['text', 'swatch']),
+    values: z.array(StoreProductOptionValue),
+  })
+  .openapi('StoreProductOption')
+export type StoreProductOption = z.infer<typeof StoreProductOption>
+
 export const StoreProductVariant = z
   .object({
     id: z.string(),
@@ -28,6 +48,10 @@ export const StoreProductVariant = z
     thumbnail: z.string().nullable(),
     /** Ids into the product's `images`, in image rank order. Empty when the variant has no links. */
     imageIds: z.array(z.string()),
+    /** The variant's option tuple, keyed by option id. Empty when the variant carries no options. */
+    optionValues: z.record(z.string(), z.string()),
+    /** Whether every inventory item this variant needs covers its required quantity. */
+    inStock: z.boolean(),
     sku: z.string().nullable(),
     barcode: z.string().nullable(),
     material: z.string().nullable(),

@@ -5,6 +5,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreCalculatedPrice } from './storeCalculatedPrice.ts';
+import type { StoreProductVariantOptionValues } from './storeProductVariantOptionValues.ts';
 
 export interface StoreProductVariant {
   id: string;
@@ -13,6 +14,8 @@ export interface StoreProductVariant {
   /** @nullable */
   thumbnail: string | null;
   imageIds: string[];
+  optionValues: StoreProductVariantOptionValues;
+  inStock: boolean;
   /** @nullable */
   sku: string | null;
   /** @nullable */

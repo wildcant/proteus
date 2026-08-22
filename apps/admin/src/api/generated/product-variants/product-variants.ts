@@ -9,6 +9,8 @@ import type {
   AdminBatchVariantImagesResponse,
   AdminCreateProductVariant,
   AdminCreateProductVariantResponse,
+  AdminCreateProductVariantsBatch,
+  AdminCreateProductVariantsBatchResponse,
   AdminProductVariantListResponse,
   AdminProductVariantResponse,
   AdminUpdateProductVariant,
@@ -48,6 +50,20 @@ export const createProductVariant = (
       {url: `/admin/products/${id}/variants`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: adminCreateProductVariant
+    },
+      );
+    }
+  /**
+ * @summary Create several product variants at once
+ */
+export const createProductVariantsBatch = (
+    id: string,
+    adminCreateProductVariantsBatch?: BodyType<AdminCreateProductVariantsBatch>,
+ ) => {
+      return fetcher<AdminCreateProductVariantsBatchResponse>(
+      {url: `/admin/products/${id}/variants/batch`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminCreateProductVariantsBatch
     },
       );
     }
@@ -122,6 +138,7 @@ export const batchVariantImages = (
     }
   export type ListProductVariantsResult = NonNullable<Awaited<ReturnType<typeof listProductVariants>>>
 export type CreateProductVariantResult = NonNullable<Awaited<ReturnType<typeof createProductVariant>>>
+export type CreateProductVariantsBatchResult = NonNullable<Awaited<ReturnType<typeof createProductVariantsBatch>>>
 export type GetProductVariantResult = NonNullable<Awaited<ReturnType<typeof getProductVariant>>>
 export type UpdateProductVariantResult = NonNullable<Awaited<ReturnType<typeof updateProductVariant>>>
 export type DeleteProductVariantResult = NonNullable<Awaited<ReturnType<typeof deleteProductVariant>>>

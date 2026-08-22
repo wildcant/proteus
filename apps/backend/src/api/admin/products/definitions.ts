@@ -8,6 +8,7 @@ import * as productByIdRoutes from './[id]/route.js'
 import * as variantImageBatchRoutes from './[id]/variants/[variantId]/images/batch/route.js'
 import * as variantPricesRoutes from './[id]/variants/[variantId]/prices/route.js'
 import * as variantByIdRoutes from './[id]/variants/[variantId]/route.js'
+import * as variantBatchRoutes from './[id]/variants/batch/route.js'
 import * as variantRoutes from './[id]/variants/route.js'
 import * as productRoutes from './route.js'
 
@@ -103,6 +104,16 @@ export default [
     summary: 'Create a product variant',
     tags: [Tags.PRODUCT_VARIANTS],
     output: variantRoutes.PostOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/products/:id/variants/batch',
+    handler: variantBatchRoutes.POST,
+    input: variantBatchRoutes.PostInput,
+    operationId: 'createProductVariantsBatch',
+    summary: 'Create several product variants at once',
+    tags: [Tags.PRODUCT_VARIANTS],
+    output: variantBatchRoutes.PostOutput,
   },
   {
     method: 'GET',

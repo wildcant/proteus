@@ -4,6 +4,7 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminUpdateProductOptionValuesItemMetadata } from './adminUpdateProductOptionValuesItemMetadata.ts';
 
 export type AdminUpdateProductOptionValuesItem = {
   /** @minLength 1 */
@@ -11,5 +12,5 @@ export type AdminUpdateProductOptionValuesItem = {
   /** @minimum 0 */
   rank?: number;
   /** @nullable */
-  metadata?: string | null;
+  metadata?: AdminUpdateProductOptionValuesItemMetadata;
 };

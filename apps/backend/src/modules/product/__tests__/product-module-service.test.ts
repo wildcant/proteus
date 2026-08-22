@@ -11,6 +11,7 @@ import { ProductProductOptionRepository } from '../repositories/product-product-
 import { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import { ProductVariantRepository } from '../repositories/product-variant.js'
 import { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
+import { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
 import { ProductModuleService } from '../services/product-module-service.js'
 
 let service: ProductModuleService
@@ -24,6 +25,7 @@ test.beforeEach(({ getDb, logger }) => {
   const productProductOptionValueRepository = new ProductProductOptionValueRepository({ getDb })
   const productImageRepository = new ProductImageRepository({ getDb })
   const productVariantImageRepository = new ProductVariantImageRepository({ getDb })
+  const productVariantOptionRepository = new ProductVariantOptionRepository({ getDb })
   const withTransaction = createWithTransaction(getDb)
   service = new ProductModuleService({
     productRepository,
@@ -34,6 +36,7 @@ test.beforeEach(({ getDb, logger }) => {
     productProductOptionValueRepository,
     productImageRepository,
     productVariantImageRepository,
+    productVariantOptionRepository,
     withTransaction,
     logger,
   })
@@ -424,5 +427,317 @@ test.describe('ProductModuleService variant images', () => {
     await service.addImageToVariant([{ imageId: image.id, variantId: variant.id }])
 
     expect(await service.listProductVariantImages({ variantId: variant.id })).toHaveLength(1)
+  })
+})
+
+test.describe('ProductModuleService variant options', () => {
+  /** A product offering Size (S/M) and Colour (Red/Blue), in that rank order. */
+  const createProductWithOptions = async (draft: CreateProductDTO) => {
+    const product = await service.createProduct(draft)
+    const size = await service.createProductOption({
+      title: `Size-${product.id}`,
+      values: [{ value: 'S' }, { value: 'M' }],
+    })
+    const colour = await service.createProductOption({
+      title: `Colour-${product.id}`,
+      renderAs: 'swatch',
+      values: [{ value: 'Red' }, { value: 'Blue' }],
+    })
+    await service.setProductOptions(product.id, {
+      options: [
+        { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+        { optionId: colour.id, valueIds: colour.values.map((value) => value.id) },
+      ],
+    })
+
+    const valueId = (option: typeof size, value: string) => {
+      const match = option.values.find((candidate) => candidate.value === value)
+      if (!match) throw new Error(`Expected option to carry the value "${value}"`)
+      return match.id
+    }
+
+    return {
+      product,
+      size,
+      colour,
+      /** e.g. tuple('S', 'Red') */
+      tuple: (sizeValue: string, colourValue: string) => ({
+        [size.id]: valueId(size, sizeValue),
+        [colour.id]: valueId(colour, colourValue),
+      }),
+    }
+  }
+
+  test('createProductVariant persists the option tuple', async ({ expect, dto }) => {
+    const { product, size, colour, tuple } = await createProductWithOptions(dto.generate.createProduct())
+
+    const variant = await service.createProductVariant({
+      productId: product.id,
+      title: 'S / Red',
+      optionValues: tuple('S', 'Red'),
+    })
+
+    const links = await service.listProductVariantOptions({ variantId: variant.id })
+    expect(links).toHaveLength(2)
+    expect(links.map((link) => link.optionId).sort()).toEqual([size.id, colour.id].sort())
+    expect(links.every((link) => link.id.startsWith('pvopt_'))).toBe(true)
+  })
+
+  test("enrichVariants attaches each variant's option tuple", async ({ expect, dto }) => {
+    const { product, size, colour, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    const withOptions = await service.createProductVariant({
+      productId: product.id,
+      title: 'S / Red',
+      optionValues: tuple('S', 'Red'),
+    })
+    const withoutOptions = await service.createProductVariant({ productId: product.id, title: 'bare' })
+
+    const enriched = await service.enrichVariants([withOptions, withoutOptions])
+
+    expect(enriched[0]?.optionValues).toEqual({
+      [size.id]: tuple('S', 'Red')[size.id],
+      [colour.id]: tuple('S', 'Red')[colour.id],
+    })
+    // A variant carrying nothing gets an empty tuple rather than a missing key.
+    expect(enriched[1]?.optionValues).toEqual({})
+    // The scalar fields survive the spread.
+    expect(enriched[0]?.title).toBe('S / Red')
+  })
+
+  test('enrichVariants on an empty list makes no query', async ({ expect }) => {
+    expect(await service.enrichVariants([])).toEqual([])
+  })
+
+  test('listOptionValuesForVariant resolves the values a variant carries', async ({ expect, dto }) => {
+    const { product, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    const variant = await service.createProductVariant({
+      productId: product.id,
+      title: 'M / Blue',
+      optionValues: tuple('M', 'Blue'),
+    })
+
+    const values = await service.listOptionValuesForVariant(variant.id)
+
+    expect(values.map((value) => value.value).sort()).toEqual(['Blue', 'M'])
+  })
+
+  test('updating with optionValues replaces the tuple', async ({ expect, dto }) => {
+    const { product, colour, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    const variant = await service.createProductVariant({
+      productId: product.id,
+      title: 'S / Red',
+      optionValues: tuple('S', 'Red'),
+    })
+
+    await service.updateProductVariant(variant.id, { optionValues: tuple('S', 'Blue') })
+
+    const values = await service.listOptionValuesForVariant(variant.id)
+    expect(values.map((value) => value.value).sort()).toEqual(['Blue', 'S'])
+    const links = await service.listProductVariantOptions({ variantId: variant.id })
+    expect(links.filter((link) => link.optionId === colour.id)).toHaveLength(1)
+  })
+
+  test('updating without optionValues leaves the tuple untouched', async ({ expect, dto }) => {
+    const { product, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    const variant = await service.createProductVariant({
+      productId: product.id,
+      title: 'S / Red',
+      optionValues: tuple('S', 'Red'),
+    })
+
+    await service.updateProductVariant(variant.id, { title: 'Renamed' })
+
+    const values = await service.listOptionValuesForVariant(variant.id)
+    expect(values.map((value) => value.value).sort()).toEqual(['Red', 'S'])
+  })
+
+  test('an empty optionValues map clears the tuple', async ({ expect, dto }) => {
+    const { product, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    const variant = await service.createProductVariant({
+      productId: product.id,
+      title: 'S / Red',
+      optionValues: tuple('S', 'Red'),
+    })
+
+    await service.updateProductVariant(variant.id, { optionValues: {} })
+
+    expect(await service.listProductVariantOptions({ variantId: variant.id })).toEqual([])
+  })
+
+  test('a mixed batch only touches the variants that carry a tuple', async ({ expect, dto }) => {
+    const { product, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    const untouched = await service.createProductVariant({
+      productId: product.id,
+      title: 'keeps its tuple',
+      optionValues: tuple('M', 'Blue'),
+    })
+
+    await service.upsertProductVariants([
+      { productId: product.id, title: 'new one', optionValues: tuple('S', 'Red') },
+      { id: untouched.id, title: 'renamed only' },
+    ])
+
+    const values = await service.listOptionValuesForVariant(untouched.id)
+    expect(values.map((value) => value.value).sort()).toEqual(['Blue', 'M'])
+  })
+
+  test('a partial tuple is rejected', async ({ expect, dto }) => {
+    const { product, size } = await createProductWithOptions(dto.generate.createProduct())
+    const smallId = size.values.find((value) => value.value === 'S')?.id
+    if (!smallId) throw new Error('Expected the Size option to carry an S value')
+
+    const error = await service
+      .createProductVariant({ productId: product.id, title: 'S', optionValues: { [size.id]: smallId } })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('Product has 2 option(s) but 1 option value(s) were provided')
+  })
+
+  test('a value the product does not offer is rejected', async ({ expect, dto }) => {
+    const { product, size, colour, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    // Narrow the product to Red only, so Blue exists on the option but not on this product.
+    await service.setProductOptions(product.id, {
+      options: [
+        { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+        { optionId: colour.id, valueIds: [colour.values.filter((value) => value.value === 'Red')[0]?.id ?? ''] },
+      ],
+    })
+
+    const error = await service
+      .createProductVariant({ productId: product.id, title: 'S / Blue', optionValues: tuple('S', 'Blue') })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('does not exist for option')
+  })
+
+  test('two variants in one batch cannot claim the same combination', async ({ expect, dto }) => {
+    const { product, tuple } = await createProductWithOptions(dto.generate.createProduct())
+
+    const error = await service
+      .createProductVariants([
+        { productId: product.id, title: 'first', optionValues: tuple('S', 'Red') },
+        { productId: product.id, title: 'second', optionValues: tuple('S', 'Red') },
+      ])
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('has the same combination of option values as')
+  })
+
+  test('a combination already on the product is rejected', async ({ expect, dto }) => {
+    const { product, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    await service.createProductVariant({ productId: product.id, title: 'S / Red', optionValues: tuple('S', 'Red') })
+
+    const error = await service
+      .createProductVariant({ productId: product.id, title: 'duplicate', optionValues: tuple('S', 'Red') })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('with the provided options already exists')
+  })
+
+  test('re-sending a variant its own tuple is not a collision', async ({ expect, dto }) => {
+    const { product, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    const variant = await service.createProductVariant({
+      productId: product.id,
+      title: 'S / Red',
+      optionValues: tuple('S', 'Red'),
+    })
+
+    await service.updateProductVariant(variant.id, { optionValues: tuple('S', 'Red') })
+
+    const values = await service.listOptionValuesForVariant(variant.id)
+    expect(values.map((value) => value.value).sort()).toEqual(['Red', 'S'])
+  })
+
+  test('two values of the same option cannot both be assigned', async ({ expect, dto, getDb }) => {
+    const { product, size } = await createProductWithOptions(dto.generate.createProduct())
+    const variant = await service.createProductVariant({ productId: product.id, title: 'bare' })
+    const [small, medium] = size.values
+    if (!small || !medium) throw new Error('Expected the Size option to carry two values')
+
+    // Straight at the repository, since the DTO's map shape makes this unrepresentable.
+    const productVariantOptionRepository = new ProductVariantOptionRepository({ getDb })
+    await productVariantOptionRepository.create({
+      variantId: variant.id,
+      optionId: size.id,
+      optionValueId: small.id,
+    })
+
+    await expect(
+      productVariantOptionRepository.create({ variantId: variant.id, optionId: size.id, optionValueId: medium.id }),
+    ).rejects.toThrow()
+  })
+
+  test('deleteProductVariants releases the option links', async ({ expect, dto }) => {
+    const { product, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    const variant = await service.createProductVariant({
+      productId: product.id,
+      title: 'S / Red',
+      optionValues: tuple('S', 'Red'),
+    })
+
+    await service.deleteProductVariants([variant.id])
+
+    expect(await service.listProductVariantOptions({ variantId: variant.id })).toEqual([])
+  })
+
+  test('setProductOptions refuses to drop a value a variant still carries', async ({ expect, dto }) => {
+    const { product, size, colour, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    await service.createProductVariant({ productId: product.id, title: 'S / Red', optionValues: tuple('S', 'Red') })
+    const blue = colour.values.find((value) => value.value === 'Blue')
+    if (!blue) throw new Error('Expected the Colour option to carry a Blue value')
+
+    const error = await service
+      .setProductOptions(product.id, {
+        options: [
+          { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+          { optionId: colour.id, valueIds: [blue.id] },
+        ],
+      })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
+    expect(error.message).toContain('Cannot remove option value(s) that are currently used by variants: Red')
+  })
+
+  test('setProductOptions refuses to drop an option a variant still carries', async ({ expect, dto }) => {
+    const { product, size, colour, tuple } = await createProductWithOptions(dto.generate.createProduct())
+    await service.createProductVariant({ productId: product.id, title: 'S / Red', optionValues: tuple('S', 'Red') })
+
+    const error = await service
+      .setProductOptions(product.id, {
+        options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+      })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
+    expect(error.message).toContain(`Cannot remove option(s) that are currently used by variants: ${colour.title}`)
+  })
+
+  test('listProductOptionsForProduct returns options in the order they were set', async ({ expect, dto }) => {
+    const { product, size, colour } = await createProductWithOptions(dto.generate.createProduct())
+
+    const inOrder = await service.listProductOptionsForProduct(product.id)
+    expect(inOrder.map((option) => option.id)).toEqual([size.id, colour.id])
+
+    await service.setProductOptions(product.id, {
+      options: [
+        { optionId: colour.id, valueIds: colour.values.map((value) => value.id) },
+        { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+      ],
+    })
+
+    const reordered = await service.listProductOptionsForProduct(product.id)
+    expect(reordered.map((option) => option.id)).toEqual([colour.id, size.id])
+    expect(reordered[0]?.renderAs).toBe('swatch')
   })
 })

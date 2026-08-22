@@ -4,6 +4,7 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminProductOptionValueMetadata } from './adminProductOptionValueMetadata.ts';
 
 export interface AdminProductOptionValue {
   id: string;
@@ -12,7 +13,7 @@ export interface AdminProductOptionValue {
   /** @nullable */
   rank: number | null;
   /** @nullable */
-  metadata: string | null;
+  metadata: AdminProductOptionValueMetadata;
   createdAt: string;
   updatedAt: string;
 }

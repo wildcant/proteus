@@ -22,21 +22,25 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     pagination,
   )
   const { offset, limit } = pagination
-  return { status: 200, json: { variants, count, offset, limit } }
+  return { status: 200, json: { variants: await productService.enrichVariants(variants), count, offset, limit } }
 }
 
 export const PostInput = { params: IdParams, body: AdminCreateProductVariant }
 export const PostOutput = AdminCreateProductVariantResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const [variant] = await createProductVariantsWorkflow.run({
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
+  const created = await createProductVariantsWorkflow.run({
     productId: req.params.id,
     variants: [req.body],
   })
 
-  if (!variant) {
+  const [createdVariant] = created
+  if (!createdVariant) {
     throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Variant creation returned no results' })
   }
+
+  const variant = await productService.enrichVariant(createdVariant)
 
   return { status: 201, json: { variant } }
 }

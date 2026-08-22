@@ -323,6 +323,8 @@ if (existingProducts.length > 0) {
   })
   const colorOption = await productService.createProductOption({
     title: 'Color',
+    // Each colourway has its own photos, so the storefront draws this option as image swatches.
+    renderAs: 'swatch',
     values: colorValues.map((value, rank) => ({ value, rank })),
   })
   console.info('Seeded global product options')
@@ -358,16 +360,32 @@ if (existingProducts.length > 0) {
         productId: productFor(entry).id,
         title: `${size} / ${color}`,
         sku: `${entry.skuPrefix}-${size}-${color.toUpperCase()}`,
+        size,
         color,
         price: entry.price,
       })),
     ),
   )
 
+  // The option tuple rides along on the variant, so there is no second pass to link them.
+  const sizeValueIdByName = new Map(sizeOption.values.map((value) => [value.value, value.id]))
+
+  const optionValuesFor = (size: string, color: string) => {
+    const sizeValueId = sizeValueIdByName.get(size)
+    const colorValueId = colorValueIdByName.get(color)
+    if (!sizeValueId || !colorValueId) throw new Error(`Missing option value for "${size} / ${color}"`)
+    return { [sizeOption.id]: sizeValueId, [colorOption.id]: colorValueId }
+  }
+
   const createdVariants = await productService.createProductVariants(
-    variantSpecs.map(({ productId, title, sku }) => ({ productId, title, sku })),
+    variantSpecs.map(({ productId, title, sku, size, color }) => ({
+      productId,
+      title,
+      sku,
+      optionValues: optionValuesFor(size, color),
+    })),
   )
-  console.info(`Seeded ${createdVariants.length} product variants`)
+  console.info(`Seeded ${createdVariants.length} product variants with their option values`)
 
   // --- Prices ---
   const priceSets = await pricingService.createPriceSets(
@@ -439,17 +457,21 @@ if (existingProducts.length > 0) {
   const createdItems = await inventoryService.createInventoryItems(inventoryData)
   console.info(`Seeded ${createdItems.length} inventory items`)
 
-  // Create inventory levels (all items at a single default location with stock)
+  // Create inventory levels (all items at a single default location with stock). One SKU is left
+  // with nothing on hand so the storefront's sold-out option state is reachable without editing
+  // the database by hand.
+  const SOLD_OUT_SKU = 'SHIRT-XL-BLACK'
+
   await inventoryService.createInventoryLevels(
     createdItems.map((item) => ({
       inventoryItemId: item.id,
       locationId: 'loc_default',
-      stockedQuantity: 100,
+      stockedQuantity: item.sku === SOLD_OUT_SKU ? 0 : 100,
       reservedQuantity: 0,
       incomingQuantity: 0,
     })),
   )
-  console.info(`Seeded ${createdItems.length} inventory levels`)
+  console.info(`Seeded ${createdItems.length} inventory levels (${SOLD_OUT_SKU} deliberately sold out)`)
 
   // Link variants -> inventory items (1:1 by matching SKU order)
   const links = createdVariants.map((variant, i) => {

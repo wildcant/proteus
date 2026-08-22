@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { boolean, doublePrecision, index, integer, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { productTable } from './product.js'
 
@@ -27,7 +27,7 @@ export const productVariantTable = pgTable(
     height: doublePrecision(),
     width: doublePrecision(),
     variantRank: integer().default(0),
-    metadata: text(),
+    metadata: jsonb().$type<Record<string, unknown> | null>(),
     ...timestamps,
   },
   (table) => [

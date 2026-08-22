@@ -18,6 +18,9 @@ export const useProductTable = () =>
     },
 
     columns: (col) => [
+      // The table is `table-fixed` and wraps cells in TruncatedCell, so an image column needs an
+      // explicit size and has to opt out of truncation.
+      col.accessor('thumbnail', { header: '', render: 'thumbnail', truncateTooltip: false, size: 56 }),
       col.accessor('title', { header: 'Title', sortable: true }),
       col.accessor('handle', { header: 'Handle' }),
       col.accessor('status', {

@@ -19,10 +19,12 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const pricingService = req.scope.resolve<IPricingModuleService>(Modules.PRICING)
   const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-  const [variant, images] = await Promise.all([
+  const [retrieved, images] = await Promise.all([
     productService.retrieveProductVariant(req.params.variantId),
     productService.listImagesForVariant(req.params.variantId),
   ])
+
+  const variant = await productService.enrichVariant(retrieved)
 
   const [variantAndPriceSetLink] = await linkService.repo('productVariantPriceSet').findByVariantIds([variant.id])
   const priceSetId = variantAndPriceSetLink?.priceSetId
@@ -38,7 +40,10 @@ export const PatchInput = { params: VariantIdParams, body: AdminUpdateProductVar
 export const PatchOutput = AdminUpdateProductVariantResponse
 
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
-  const variant = await updateProductVariantWorkflow.run({ variantId: req.params.variantId, data: req.body })
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
+  const updated = await updateProductVariantWorkflow.run({ variantId: req.params.variantId, data: req.body })
+  const variant = await productService.enrichVariant(updated)
+
   return { status: 200, json: { variant } }
 }
 

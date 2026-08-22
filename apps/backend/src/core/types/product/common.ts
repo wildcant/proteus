@@ -3,6 +3,9 @@ import type { PriceDTO } from '../pricing/common.js'
 
 export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 
+/** How the storefront draws an option's values. */
+export type ProductOptionRenderAs = 'text' | 'swatch'
+
 export type ProductDTO = {
   id: string
   title: string
@@ -22,7 +25,7 @@ export type ProductDTO = {
   material: string | null
   discountable: boolean
   externalId: string | null
-  metadata: string | null
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -57,13 +60,16 @@ export type ProductVariantDTO = {
   height: number | null
   width: number | null
   variantRank: number | null
-  metadata: string | null
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
 }
 
 export type ProductVariantExtendedDTO = ProductVariantDTO & { prices?: PriceDTO[] }
+
+/** A variant with its option tuple resolved from the `product_variant_option` pivot. */
+export type EnrichedProductVariantDTO = ProductVariantDTO & { optionValues: Record<string, string> }
 
 export interface FilterableProductVariantProps extends BaseFilterable<FilterableProductVariantProps> {
   id?: string | string[]
@@ -76,7 +82,8 @@ export interface FilterableProductVariantProps extends BaseFilterable<Filterable
 export type ProductOptionDTO = {
   id: string
   title: string
-  metadata: string | null
+  renderAs: ProductOptionRenderAs
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -96,7 +103,7 @@ export type ProductOptionValueDTO = {
   optionId: string
   value: string
   rank: number | null
-  metadata: string | null
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -112,6 +119,7 @@ export type ProductProductOptionDTO = {
   id: string
   productId: string
   optionId: string
+  rank: number
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -144,7 +152,7 @@ export type ProductImageDTO = {
   productId: string
   url: string
   rank: number
-  metadata: string | null
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -154,6 +162,23 @@ export interface FilterableProductImageProps extends BaseFilterable<FilterablePr
   id?: string | string[]
   productId?: string | string[]
   url?: string | OperatorMap<string>
+}
+
+export type ProductVariantOptionDTO = {
+  id: string
+  variantId: string
+  optionId: string
+  optionValueId: string
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductVariantOptionProps extends BaseFilterable<FilterableProductVariantOptionProps> {
+  id?: string | string[]
+  variantId?: string | string[]
+  optionId?: string | string[]
+  optionValueId?: string | string[]
 }
 
 export type ProductVariantImageDTO = {

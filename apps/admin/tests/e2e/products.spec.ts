@@ -284,3 +284,104 @@ test('manage the variants associated with a product image', async ({ page, authe
   await navigate({ to: '/products/$id/variants/$variantId', params: { id: product.id, variantId: first.id } })
   await expect(page.getByText('No media')).toBeVisible()
 })
+
+test('variant options journey: generate a matrix, then reassign a value', async ({
+  page,
+  authenticate,
+  navigate,
+  factories,
+}) => {
+  await using product = await factories.create.product({ status: 'published' })
+  await using size = await factories.create.productOption({ renderAs: 'text' })
+  await using small = await factories.create.productOptionValue({ optionId: size.id, value: 'S', rank: 0 })
+  await using medium = await factories.create.productOptionValue({ optionId: size.id, value: 'M', rank: 1 })
+  await using link = await factories.create.productProductOption({ productId: product.id, optionId: size.id, rank: 0 })
+  await using offersSmall = await factories.create.productProductOptionValue({
+    productProductOptionId: link.id,
+    optionValueId: small.id,
+  })
+  await using offersMedium = await factories.create.productProductOptionValue({
+    productProductOptionId: link.id,
+    optionValueId: medium.id,
+  })
+  await authenticate({ as: 'admin' })
+
+  // Create — the matrix form offers one row per unused combination.
+  await navigate({ to: '/products/$id/variants/create', params: { id: product.id } })
+  const modal = page.getByRole('dialog').last()
+  // Both values start ticked, so the full matrix is the default.
+  await expect(modal.getByRole('checkbox', { name: 'S', exact: true })).toBeChecked()
+  await expect(modal.getByRole('checkbox', { name: 'M', exact: true })).toBeChecked()
+  await modal.getByLabel('SKU prefix').fill('E2E')
+  await expect(modal.getByRole('button', { name: /Create 2 variants/ })).toBeEnabled()
+
+  // Closing must land on the product, not on `/variants`, which is not a page.
+  await modal.getByRole('button', { name: 'Cancel' }).click()
+  await page.waitForURL((url) => url.pathname === `/products/${product.id}`, { timeout: 10000 })
+
+  await navigate({ to: '/products/$id/variants/create', params: { id: product.id } })
+  const reopened = page.getByRole('dialog').last()
+  await reopened.getByLabel('SKU prefix').fill('E2E')
+  await reopened.getByRole('button', { name: /Create 2 variants/ }).click()
+  await expect(page.getByText('2 variants created')).toBeVisible({ timeout: 10000 })
+
+  // A batch has no single variant to show, so it lands back on the product.
+  await page.waitForURL((url) => url.pathname === `/products/${product.id}`, { timeout: 10000 })
+
+  // The generated titles and SKUs come from the option values.
+  await expect(page.getByRole('cell', { name: 'S', exact: true })).toBeVisible()
+  await expect(page.getByRole('cell', { name: 'E2E-S' })).toBeVisible()
+
+  // Detail — the variant shows the option value it carries.
+  await page.getByRole('cell', { name: 'S', exact: true }).click()
+  await page.waitForURL(/\/variants\/variant_/, { timeout: 10000 })
+  // Options live in the general section alongside the variant's own identifiers.
+  const generalCard = page.locator('[data-slot="variant-general-section"]')
+  // Scoped to the option's own row — the variant is titled "S" too, so the card text is ambiguous.
+  const sizeRow = generalCard.locator('[data-slot="section-row"]').filter({ hasText: size.title })
+  await expect(sizeRow.getByText('S', { exact: true })).toBeVisible()
+
+  // Reassigning to a combination another variant already holds is refused by the service.
+  await generalCard.locator('[data-slot="dropdown-menu-trigger"]').click()
+  await page.getByRole('menuitem', { name: 'Edit' }).click()
+  const drawer = page.getByRole('dialog').last()
+  await drawer.getByLabel(size.title).selectOption(medium.id)
+  await drawer.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText(/with the provided options already exists/)).toBeVisible({ timeout: 10000 })
+
+  void offersSmall
+  void offersMedium
+})
+
+test('creating a single variant lands on that variant', async ({ page, authenticate, navigate, factories }) => {
+  await using product = await factories.create.product({ status: 'published' })
+  await using size = await factories.create.productOption({ renderAs: 'text' })
+  await using small = await factories.create.productOptionValue({ optionId: size.id, value: 'S', rank: 0 })
+  await using medium = await factories.create.productOptionValue({ optionId: size.id, value: 'M', rank: 1 })
+  await using link = await factories.create.productProductOption({ productId: product.id, optionId: size.id, rank: 0 })
+  await using offersSmall = await factories.create.productProductOptionValue({
+    productProductOptionId: link.id,
+    optionValueId: small.id,
+  })
+  await using offersMedium = await factories.create.productProductOptionValue({
+    productProductOptionId: link.id,
+    optionValueId: medium.id,
+  })
+  await authenticate({ as: 'admin' })
+
+  await navigate({ to: '/products/$id/variants/create', params: { id: product.id } })
+  const modal = page.getByRole('dialog').last()
+  // Narrow the matrix to one row, which does have a detail page worth landing on.
+  await modal.getByRole('checkbox', { name: 'M', exact: true }).click()
+  await modal.getByRole('button', { name: /Create 1 variant$/ }).click()
+
+  await expect(page.getByText('Variant created successfully')).toBeVisible({ timeout: 10000 })
+  await page.waitForURL(new RegExp(`/products/${product.id}/variants/variant_`), { timeout: 10000 })
+  const sizeRow = page
+    .locator('[data-slot="variant-general-section"] [data-slot="section-row"]')
+    .filter({ hasText: size.title })
+  await expect(sizeRow.getByText('S', { exact: true })).toBeVisible()
+
+  void offersSmall
+  void offersMedium
+})
