@@ -40,7 +40,7 @@ export interface AdminCreateProductVariant {
   /** @nullable */
   width?: number | null;
   variantRank?: number;
-  optionValues?: AdminCreateProductVariantOptionValues;
+  optionValues: AdminCreateProductVariantOptionValues;
   /** @nullable */
   metadata?: AdminCreateProductVariantMetadata;
   prices?: AdminCreateProductVariantPricesItem[];

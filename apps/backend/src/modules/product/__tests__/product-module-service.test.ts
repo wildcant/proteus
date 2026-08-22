@@ -153,8 +153,8 @@ test.describe('ProductModuleService', () => {
     const product = await service.createProduct(dto.generate.createProduct())
 
     const result = await service.upsertProductVariants([
-      { productId: product.id, title: 'Small' },
-      { productId: product.id, title: 'Large' },
+      { productId: product.id, title: 'Small', optionValues: {} },
+      { productId: product.id, title: 'Large', optionValues: {} },
     ])
 
     expect(result).toHaveLength(2)
@@ -164,7 +164,7 @@ test.describe('ProductModuleService', () => {
 
   test('upsertProductVariants updates variants with id', async ({ expect, dto }) => {
     const product = await service.createProduct(dto.generate.createProduct())
-    const variant = await service.createProductVariant({ productId: product.id, title: 'Original' })
+    const variant = await service.createProductVariant({ productId: product.id, title: 'Original', optionValues: {} })
 
     const result = await service.upsertProductVariants([{ id: variant.id, title: 'Updated' }])
 
@@ -175,11 +175,11 @@ test.describe('ProductModuleService', () => {
 
   test('upsertProductVariants handles mixed creates and updates', async ({ expect, dto }) => {
     const product = await service.createProduct(dto.generate.createProduct())
-    const existing = await service.createProductVariant({ productId: product.id, title: 'Existing' })
+    const existing = await service.createProductVariant({ productId: product.id, title: 'Existing', optionValues: {} })
 
     const result = await service.upsertProductVariants([
       { id: existing.id, title: 'Renamed' },
-      { productId: product.id, title: 'New Variant' },
+      { productId: product.id, title: 'New Variant', optionValues: {} },
     ])
 
     expect(result).toHaveLength(2)
@@ -370,7 +370,7 @@ test.describe('ProductModuleService variant images', () => {
       images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
     })
     const [image, otherImage] = await service.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } })
-    const variant = await service.createProductVariant({ productId: product.id, title: 'Small' })
+    const variant = await service.createProductVariant({ productId: product.id, title: 'Small', optionValues: {} })
     if (!image || !otherImage) throw new Error('Expected two product images to exist')
     return { product, image, otherImage, variant }
   }
@@ -490,7 +490,14 @@ test.describe('ProductModuleService variant options', () => {
       title: 'S / Red',
       optionValues: combination('S', 'Red'),
     })
-    const withoutOptions = await service.createProductVariant({ productId: product.id, title: 'bare' })
+    // Cleared rather than created bare: a create has to name every option, so an empty
+    // combination is only reachable through an update.
+    const withoutOptions = await service.createProductVariant({
+      productId: product.id,
+      title: 'bare',
+      optionValues: combination('M', 'Blue'),
+    })
+    await service.updateProductVariant(withoutOptions.id, { optionValues: {} })
 
     const enriched = await service.enrichVariants([withOptions, withoutOptions])
 
@@ -513,7 +520,12 @@ test.describe('ProductModuleService variant options', () => {
       title: 'S / Red',
       optionValues: combination('S', 'Red'),
     })
-    const bare = await service.createProductVariant({ productId: product.id, title: 'bare' })
+    const bare = await service.createProductVariant({
+      productId: product.id,
+      title: 'bare',
+      optionValues: combination('M', 'Blue'),
+    })
+    await service.updateProductVariant(bare.id, { optionValues: {} })
 
     const maps = await service.listVariantOptionMaps([variant.id, bare.id])
 
@@ -718,6 +730,23 @@ test.describe('ProductModuleService variant options', () => {
     expect(links.filter((link) => link.optionId === colour.id)).toHaveLength(1)
   })
 
+  test('one combination cannot be moved onto several variants at once', async ({ expect, dto }) => {
+    const { product, combination } = await createProductWithOptions(dto.generate.createProduct())
+    const first = await service.createProductVariant({ productId: product.id, optionValues: combination('S', 'Red') })
+    const second = await service.createProductVariant({ productId: product.id, optionValues: combination('M', 'Blue') })
+
+    const error = await service
+      .updateProductVariants([first.id, second.id], { optionValues: combination('S', 'Blue') })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('cannot be assigned to several at once')
+    // Nothing was written on the way to the error.
+    const values = await service.listOptionValuesForVariant(first.id)
+    expect(values.map((value) => value.value).sort()).toEqual(['Red', 'S'])
+  })
+
   test('updating without optionValues leaves the combination untouched', async ({ expect, dto }) => {
     const { product, combination } = await createProductWithOptions(dto.generate.createProduct())
     const variant = await service.createProductVariant({
@@ -774,6 +803,27 @@ test.describe('ProductModuleService variant options', () => {
     expect(AppError.isError(error)).toBe(true)
     expect(error.type).toBe(ErrorTypes.INVALID_DATA)
     expect(error.message).toContain('Product has 2 option(s) but 1 option value(s) were provided')
+  })
+
+  test('a create with no combination at all is rejected', async ({ expect, dto }) => {
+    const { product } = await createProductWithOptions(dto.generate.createProduct())
+
+    const error = await service
+      .createProductVariant({ productId: product.id, title: 'bare', optionValues: {} })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('Product has 2 option(s) but 0 option value(s) were provided')
+  })
+
+  test('a product with no options takes a variant with an empty combination', async ({ expect, dto }) => {
+    const product = await service.createProduct(dto.generate.createProduct())
+
+    const variant = await service.createProductVariant({ productId: product.id, title: 'Only', optionValues: {} })
+
+    expect(variant.title).toBe('Only')
+    expect(await service.listProductVariantOptions({ variantId: variant.id })).toEqual([])
   })
 
   test('a value the product does not offer is rejected', async ({ expect, dto }) => {
@@ -842,8 +892,13 @@ test.describe('ProductModuleService variant options', () => {
   })
 
   test('two values of the same option cannot both be assigned', async ({ expect, dto, getDb }) => {
-    const { product, size } = await createProductWithOptions(dto.generate.createProduct())
-    const variant = await service.createProductVariant({ productId: product.id, title: 'bare' })
+    const { product, size, combination } = await createProductWithOptions(dto.generate.createProduct())
+    const variant = await service.createProductVariant({
+      productId: product.id,
+      title: 'bare',
+      optionValues: combination('M', 'Blue'),
+    })
+    await service.updateProductVariant(variant.id, { optionValues: {} })
     const [small, medium] = size.values
     if (!small || !medium) throw new Error('Expected the Size option to carry two values')
 

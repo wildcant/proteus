@@ -21,6 +21,8 @@ type SingleSelectComboboxProps = {
   placeholder?: string
   emptyMessage?: string
   disabled?: boolean
+  /** Marks the input, so a field wrapper's error styling reaches the control itself. */
+  'aria-invalid'?: boolean
 }
 
 /**
@@ -38,6 +40,7 @@ export function SingleSelectCombobox({
   placeholder = 'Search...',
   emptyMessage = 'No results found.',
   disabled,
+  'aria-invalid': ariaInvalid,
 }: SingleSelectComboboxProps) {
   const anchor = useComboboxAnchor()
   const itemIds = useMemo(() => items.map((item) => item.id), [items])
@@ -54,7 +57,7 @@ export function SingleSelectCombobox({
       onInputValueChange={onInputValueChange}
     >
       <div ref={anchor}>
-        <ComboboxInput id={id} placeholder={placeholder} />
+        <ComboboxInput id={id} placeholder={placeholder} aria-invalid={ariaInvalid} />
       </div>
       <ComboboxContent anchor={anchor}>
         <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>

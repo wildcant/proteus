@@ -1,7 +1,5 @@
 Fixes and improvements
-- not sure why i can't delete variants from the variants table in product details.
-- create variant allows me to create without options selected. should be guarded server side as well and i mean not only in the api layer but on the module service method.
-- edge case, what happens when we adding a new option to product that has variants with other saved option values. the edit variant form should probably throw since the single option is no longer a valid combination.
+- edge case, what happens when we adding a new option to product that has variants with other saved option values. the edit variant form should probably throw on submit since the single option is no longer a valid combination.
 - inStock is an inventory concern that now lives in the product module, should probably live in a workflow :/
 
 Future features TODOs

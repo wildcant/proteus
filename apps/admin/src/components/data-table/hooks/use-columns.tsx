@@ -68,7 +68,10 @@ export function useColumns<T>(columns: ColumnDef<T>[], rowActions?: (row: T) => 
       cols.push({
         id: '_actions',
         header: '',
-        size: 50,
+        // Every cell carries `px-6`, so 48 of this is gutter before the 24px trigger gets any.
+        // Sized under that, the button is clipped rather than the column merely being snug —
+        // which is what happens on a table wide enough that `table-fixed` has no slack to hand out.
+        size: 80,
         meta: { align: 'right' as const, truncateTooltip: false },
         cell: (info) => rowActions(info.row.original),
       })

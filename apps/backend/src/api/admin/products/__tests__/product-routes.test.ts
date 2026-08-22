@@ -1,4 +1,5 @@
 import type { DbProvider } from '@core/db/ports.js'
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { CreateProductDTO, IProductModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
@@ -121,8 +122,8 @@ test.describe('POST /admin/products/:id/images/:imageId/variants/batch', () => {
     })
     const [image] = await productService.listProductImages({ productId: product.id })
     const [linked, unlinked] = await productService.createProductVariants([
-      { productId: product.id, title: 'Small' },
-      { productId: product.id, title: 'Large' },
+      { productId: product.id, title: 'Small', optionValues: {} },
+      { productId: product.id, title: 'Large', optionValues: {} },
     ])
     if (!image || !linked || !unlinked) throw new Error('Expected an image and two variants to exist')
 
@@ -209,7 +210,9 @@ test.describe('POST /admin/products/:id/variants/:variantId/images/batch', () =>
       { productId: product.id },
       { order: { rank: 'ASC' } },
     )
-    const [variant] = await productService.createProductVariants([{ productId: product.id, title: 'Small' }])
+    const [variant] = await productService.createProductVariants([
+      { productId: product.id, title: 'Small', optionValues: {} },
+    ])
     if (!linkedImage || !unlinkedImage || !variant) throw new Error('Expected two images and a variant to exist')
 
     await productService.addImageToVariant([{ imageId: linkedImage.id, variantId: variant.id }])
@@ -282,6 +285,23 @@ test.describe('POST /admin/products/:id/variants/:variantId/images/batch', () =>
   })
 })
 
+test.describe('POST /admin/products/:id/variants', () => {
+  const matcher = '/admin/products/:id/variants'
+
+  test('a body with no combination never reaches the workflow', async ({ expect, dto }) => {
+    const product = await productService.createProduct(dto.generate.createProduct())
+    const handler = applyMiddleware(findDefinition('POST', matcher))
+
+    const error = await handler(
+      makeRequest({ scope: container, params: { id: product.id }, body: { title: 'Small' } }),
+    ).catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('optionValues')
+  })
+})
+
 test.describe('GET /admin/products/:id/variants/:variantId', () => {
   test('returns the images assigned to the variant, ordered by rank', async ({ expect, dto }) => {
     const product = await productService.createProduct({
@@ -289,7 +309,9 @@ test.describe('GET /admin/products/:id/variants/:variantId', () => {
       images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
     })
     const images = await productService.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } })
-    const [variant] = await productService.createProductVariants([{ productId: product.id, title: 'Small' }])
+    const [variant] = await productService.createProductVariants([
+      { productId: product.id, title: 'Small', optionValues: {} },
+    ])
     const [first, second] = images
     if (!variant || !first || !second) throw new Error('Expected two images and a variant to exist')
 
@@ -325,8 +347,8 @@ test.describe('GET /admin/products/:id/images/:imageId/variants', () => {
       { order: { rank: 'ASC' } },
     )
     const [linked, unlinked] = await productService.createProductVariants([
-      { productId: product.id, title: 'Small' },
-      { productId: product.id, title: 'Large' },
+      { productId: product.id, title: 'Small', optionValues: {} },
+      { productId: product.id, title: 'Large', optionValues: {} },
     ])
     if (!imageA || !imageB || !linked || !unlinked) throw new Error('Expected two images and two variants to exist')
 

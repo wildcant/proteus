@@ -56,6 +56,13 @@ rather than enumerating. `pickerTargets` is variants × values, which is why it 
 target map instead of expanded picker rows — roughly 60 KB rather than 450 KB for a 100-variant
 product.
 
+A create has to name a complete combination. `optionValues` is required on
+`AdminCreateProductVariant`, and the module service rejects a create whose map does not cover
+every option the product offers — so only a product with no options takes `{}`. An update keeps
+both looser readings: omit the key to leave the combination alone, send `{}` to clear it. That
+asymmetry is deliberate, because a variant stranded by an option added after the fact has to be
+fixable, while nothing justifies creating one in that state.
+
 A variant's title defaults to its combination's label and is only overridden when the caller sends
 one, matching how `resolveThumbnail` already defaults a product's thumbnail. Because the title is
 copied onto cart line items and order items, deriving it server-side keeps what a shopper sees in

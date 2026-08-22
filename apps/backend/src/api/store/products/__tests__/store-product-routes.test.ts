@@ -75,8 +75,8 @@ test.describe('GET /store/products/:id', () => {
       { order: { rank: 'ASC' } },
     )
     const [linked, unlinked] = await productService.createProductVariants([
-      { productId: product.id, title: 'Small' },
-      { productId: product.id, title: 'Medium' },
+      { productId: product.id, title: 'Small', optionValues: {} },
+      { productId: product.id, title: 'Medium', optionValues: {} },
     ])
     if (!first || !second || !linked || !unlinked) throw new Error('Expected two images and two variants to exist')
 
@@ -346,7 +346,9 @@ test.describe('GET /store/products/:id options', () => {
 
   test('a product with no options returns none, and its variants carry empty combinations', async ({ expect, dto }) => {
     const product = await productService.createProduct(dto.generate.createProduct())
-    const [variant] = await productService.createProductVariants([{ productId: product.id, title: 'Only' }])
+    const [variant] = await productService.createProductVariants([
+      { productId: product.id, title: 'Only', optionValues: {} },
+    ])
     if (!variant) throw new Error('Expected a variant to exist')
     await priceVariants([variant.id])
     const handler = applyMiddleware(findDefinition('GET', matcher))

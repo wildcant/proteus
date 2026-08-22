@@ -63,6 +63,12 @@ type ResolvedCombination = {
   label: string
 }
 
+/** A product's options and everything they can combine into — the table a payload is checked against. */
+type ProductCombinations = {
+  options: ProductOptionWithValuesDTO[]
+  combinations: ProductOptionCombinationDTO[]
+}
+
 type InjectedDependencies = {
   productRepository: ProductRepository
   productVariantRepository: ProductVariantRepository
@@ -218,7 +224,7 @@ export class ProductModuleService implements IProductModuleService {
   async createProductVariants(data: CreateProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]> {
     this.logger.debug(`Creating ${data.length} product variant(s)`)
     return this.withTransaction(context, async (ctx) => {
-      const resolved = await this.resolveVariantCombinations(
+      const resolved = await this.resolveCombinationsForCreate(
         data.map((variant) => ({
           productId: variant.productId,
           title: variant.title,
@@ -287,15 +293,10 @@ export class ProductModuleService implements IProductModuleService {
     return this.withTransaction(context, async (ctx) => {
       const { optionValues, ...columns } = data
 
-      // The same combination applied to several variants would collide by definition, so this
-      // only makes sense for a single target — which is what every caller does today.
+      // Omitting `optionValues` leaves each variant's combination alone, which is why the resolver
+      // is skipped rather than handed a map meaning "no change".
       const existing = await this.productVariantRepository.find({ id: variantIds }, undefined, ctx)
-      const resolved = optionValues
-        ? await this.resolveVariantCombinations(
-            existing.map((variant) => ({ ...variant, optionValues })),
-            ctx,
-          )
-        : []
+      const resolved = optionValues ? await this.resolveCombinationsForUpdate(existing, optionValues, ctx) : []
 
       // Retitling follows the combination when the caller sends no title of its own, so changing
       // a variant from M/White to L/White does not leave a stale name behind.
@@ -945,51 +946,40 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   /**
-   * Resolves each variant's `optionValues` map into the pivot rows to write, rejecting anything
-   * the product cannot sell. Returns one entry per input variant: `undefined` where the caller
-   * left `optionValues` out, which means "leave the existing combination alone".
+   * The pivot rows each new variant's combination becomes, one entry per input variant.
    *
-   * Every check is a lookup into the product's combinations, so what the admin is offered and what
-   * the service accepts come from one function and cannot drift. Doing the whole batch at once is
-   * what lets two new variants claiming the same combination reject each other, even though
-   * neither is in the database yet.
+   * A create names its combination in full — it has no existing one to leave alone — so an
+   * incomplete map is an error and `{}` resolves to nothing only for a product that offers no
+   * options at all. Taking the whole batch at once is what lets two new variants claiming the same
+   * combination reject each other, even though neither is in the database yet.
+   *
+   * Every check is a lookup into the product's combinations, which is what keeps what the admin is
+   * offered and what the service accepts from drifting apart.
    */
-  private async resolveVariantCombinations(
-    /** `id` is present on updates and absent on creates — it excludes a variant from colliding with itself. */
-    variants: Array<{ id?: string; productId: string; title?: string; optionValues?: Record<string, string> }>,
+  private async resolveCombinationsForCreate(
+    variants: Array<{ productId: string; title?: string; optionValues: Record<string, string> }>,
     context: Context,
-  ): Promise<Array<ResolvedCombination | undefined>> {
-    // A scalar-only edit is the common case, and skipping it also skips the option reads below.
-    if (variants.every((variant) => !variant.optionValues)) return variants.map(() => undefined)
-
-    const productIds = [...new Set(variants.map((variant) => variant.productId))]
-    const byProductId = new Map(
-      await Promise.all(
-        productIds.map(async (productId) => {
-          const options = await this.listProductOptionsForProduct(productId, context)
-          const combinations = await this.loadCombinations(productId, options, context)
-          return [productId, { options, combinations }] as const
-        }),
-      ),
+  ): Promise<ResolvedCombination[]> {
+    const byProductId = await this.loadCombinationsByProductId(
+      variants.map((variant) => variant.productId),
+      context,
     )
-
     const claimedBy = new Map<string, string>()
 
-    return variants.map(({ id, productId, title, optionValues }) => {
-      if (!optionValues) return undefined
-
+    return variants.map(({ productId, title, optionValues }) => {
       const product = byProductId.get(productId)
-      const options = product?.options ?? []
-      const describe = title ?? id ?? 'the variant'
+      const describe = title ?? 'the variant'
 
-      // An explicit empty map clears the combination. Distinct from omitting the key, which leaves it.
-      if (Object.keys(optionValues).length === 0) return { links: [], label: '' }
+      // An empty combination is complete for exactly one kind of product: one with no options.
+      if (Object.keys(optionValues).length === 0) {
+        const options = product?.options ?? []
+        if (options.length > 0) throw this.describeUnknownCombination(options, optionValues, describe)
+        return { links: [], label: '' }
+      }
 
-      const combination = findCombination(product?.combinations ?? [], optionValues)
-      if (!combination) throw this.describeUnknownCombination(options, optionValues, describe)
+      const combination = this.matchCombination(product, optionValues, describe)
 
-      // Re-sending a variant's own combination is a no-op, not a collision.
-      if (combination.variantId && combination.variantId !== id) {
+      if (combination.variantId) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
           message: `Variant (${combination.label}) with the provided options already exists.`,
@@ -1005,11 +995,90 @@ export class ProductModuleService implements IProductModuleService {
       }
       claimedBy.set(`${productId}:${combination.key}`, describe)
 
-      return {
-        links: combination.values.map(({ optionId, valueId }) => ({ optionId, optionValueId: valueId })),
-        label: combination.label,
-      }
+      return this.toResolvedCombination(combination)
     })
+  }
+
+  /**
+   * The pivot rows the targeted variants move onto, one entry per variant.
+   *
+   * Only reached when the caller sent a map, since omitting it means "leave the combination alone".
+   * An empty one clears the combination instead — the one way a variant ends up carrying none, and
+   * how a variant stranded by an option added after the fact gets fixed.
+   */
+  private async resolveCombinationsForUpdate(
+    variants: Array<{ id: string; productId: string; title?: string }>,
+    optionValues: Record<string, string>,
+    context: Context,
+  ): Promise<ResolvedCombination[]> {
+    if (Object.keys(optionValues).length === 0) return variants.map(() => ({ links: [], label: '' }))
+
+    // Every target is handed the same map, and a combination belongs to one variant, so more than
+    // one target is a collision by definition rather than something to resolve.
+    if (variants.length > 1) {
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: 'A combination belongs to a single variant, so it cannot be assigned to several at once.',
+      })
+    }
+
+    const byProductId = await this.loadCombinationsByProductId(
+      variants.map((variant) => variant.productId),
+      context,
+    )
+
+    return variants.map((variant) => {
+      const combination = this.matchCombination(
+        byProductId.get(variant.productId),
+        optionValues,
+        variant.title ?? variant.id,
+      )
+
+      // Re-sending a variant its own combination is a no-op, not a collision.
+      if (combination.variantId && combination.variantId !== variant.id) {
+        throw new AppError({
+          type: ErrorTypes.INVALID_DATA,
+          message: `Variant (${combination.label}) with the provided options already exists.`,
+        })
+      }
+
+      return this.toResolvedCombination(combination)
+    })
+  }
+
+  /** Each product's options and the combinations they generate, keyed by product id. */
+  private async loadCombinationsByProductId(
+    productIds: string[],
+    context: Context,
+  ): Promise<Map<string, ProductCombinations>> {
+    return new Map(
+      await Promise.all(
+        [...new Set(productIds)].map(async (productId) => {
+          const options = await this.listProductOptionsForProduct(productId, context)
+          const combinations = await this.loadCombinations(productId, options, context)
+          return [productId, { options, combinations }] as const
+        }),
+      ),
+    )
+  }
+
+  /** The combination a payload names, or an error saying why the product cannot sell it. */
+  private matchCombination(
+    product: ProductCombinations | undefined,
+    optionValues: Record<string, string>,
+    describe: string,
+  ): ProductOptionCombinationDTO {
+    const combination = findCombination(product?.combinations ?? [], optionValues)
+    if (!combination) throw this.describeUnknownCombination(product?.options ?? [], optionValues, describe)
+    return combination
+  }
+
+  /** A combination as the variant-option rows that record it. */
+  private toResolvedCombination(combination: ProductOptionCombinationDTO): ResolvedCombination {
+    return {
+      links: combination.values.map(({ optionId, valueId }) => ({ optionId, optionValueId: valueId })),
+      label: combination.label,
+    }
   }
 
   /**

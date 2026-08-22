@@ -75,10 +75,10 @@ export type CreateProductVariantDTO = {
   variantRank?: number
   metadata?: Record<string, unknown> | null
   /**
-   * The variant's Option Combination, keyed by option id. Omit to leave an existing one untouched;
-   * pass `{}` to clear it. When set it must name every option the product offers.
+   * The variant's Option Combination, keyed by option id. It must name every option the product
+   * offers, so only a product with no options takes `{}`.
    */
-  optionValues?: Record<string, string>
+  optionValues: Record<string, string>
 }
 
 export type UpdateProductVariantDTO = {

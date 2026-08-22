@@ -309,6 +309,11 @@ test('variant options journey: create variants from the available combinations',
   // Create — one variant is one combination, so the form is one field.
   await navigate({ to: '/products/$id/variants/create', params: { id: product.id } })
   const modal = page.getByRole('dialog').last()
+
+  // The combination is the variant, so submitting without one is refused before any request.
+  await modal.getByRole('button', { name: 'Create' }).click()
+  await expect(modal.getByText('Pick a combination.')).toBeVisible()
+
   await modal.getByLabel('Combination').click()
   await page.getByRole('option', { name: 'S', exact: true }).click()
   await modal.getByLabel('SKU').fill('E2E-S')

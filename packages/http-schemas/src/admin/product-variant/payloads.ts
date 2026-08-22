@@ -32,9 +32,10 @@ export const AdminCreateProductVariant = z
     variantRank: z.number().optional(),
     /**
      * The Option Combination this variant carries, keyed by option id. It must name every option
-     * the product offers, and must be one no other variant already has.
+     * the product offers, and must be one no other variant already has. Only a product with no
+     * options takes `{}`.
      */
-    optionValues: z.record(z.string(), z.string()).optional(),
+    optionValues: z.record(z.string(), z.string()),
     metadata: metadata.optional(),
     prices: z.array(CreateVariantPrice).optional(),
   })
