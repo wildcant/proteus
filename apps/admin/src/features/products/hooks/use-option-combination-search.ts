@@ -3,6 +3,9 @@ import type { AdminOptionCombination } from '#/api/generated/model'
 import { useOptionCombinations } from '#/features/products/api/product-variants'
 import { useDebouncedValue } from '#/hooks/use-debounced-value'
 
+/** A combination as the combobox sees it: selectable by `id`, still carrying its `optionValues`. */
+export type CombinationOption = AdminOptionCombination & { id: string }
+
 type UseOptionCombinationSearchArgs = {
   productId: string
   /** The variant being edited, so the combination it already holds stays pickable. */
@@ -28,14 +31,16 @@ export function useOptionCombinationSearch({ productId, variantId }: UseOptionCo
     variantId,
   })
 
-  const combinations = data?.combinations ?? []
-  const byKey = new Map(combinations.map((combination) => [combination.key, combination]))
+  // `id` is what a combobox selects by; the rest of the combination rides along so the form can
+  // hold the whole thing rather than look it up again against a list that may have moved on.
+  const combinations: CombinationOption[] = (data?.combinations ?? []).map((combination) => ({
+    ...combination,
+    id: combination.key,
+  }))
 
   return {
     /** Already scoped to what this form may pick, so nothing here decides what is offered. */
     combinations,
-    /** The combination a combobox item stands for, since the combobox only carries its key. */
-    combinationFor: (key: string | null): AdminOptionCombination | null => (key ? (byKey.get(key) ?? null) : null),
     /** The one `variantId` holds today, which is what seeds the edit form's default. */
     current: combinations.find((combination) => combination.variantId === variantId),
     onSearchChange: setSearch,

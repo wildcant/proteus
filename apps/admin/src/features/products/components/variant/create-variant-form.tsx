@@ -1,9 +1,8 @@
-import { Button, Field, FieldError, toast } from '@proteus/ui'
+import { Button, toast } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { KeyboundForm } from '#/components/modals/keybound-form'
 import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
 import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
-import { SingleSelectCombobox } from '#/components/single-select-combobox'
 import { useCreateVariantForm } from '#/features/products/hooks/use-create-variant-form'
 import { useOptionCombinationSearch } from '#/features/products/hooks/use-option-combination-search'
 
@@ -12,8 +11,9 @@ export function CreateVariantForm({ productId }: { productId: string }) {
 
   // The combobox is this component's concern, so the search lives here rather than being proxied
   // back out through the form hook.
-  const { combinations, combinationFor, onSearchChange, isExhausted, hasNoOptions, isPending } =
-    useOptionCombinationSearch({ productId })
+  const { combinations, onSearchChange, isExhausted, hasNoOptions, isPending } = useOptionCombinationSearch({
+    productId,
+  })
 
   const { form, isLoading } = useCreateVariantForm({
     productId,
@@ -57,42 +57,25 @@ export function CreateVariantForm({ productId }: { productId: string }) {
             </div>
 
             {/* One field, because picking a combination is one choice. The list arrives already
-              filtered to what is still available, so nothing here decides what may be picked. */}
-            <form.Field name="combination">
-              {(field) => {
-                // Not gated on `isTouched`: the requirement is only checked on submit, so a user who
-                // never opened the combobox is exactly who needs to see the message.
-                const isInvalid = !field.state.meta.isValid
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <label htmlFor="combination" className="mb-1.5 block font-medium text-sm">
-                      Combination
-                    </label>
-                    <SingleSelectCombobox
-                      id="combination"
-                      items={combinations.map((combination) => ({ id: combination.key, label: combination.label }))}
-                      value={field.state.value?.key ?? null}
-                      onValueChange={(key) => field.handleChange(combinationFor(key))}
-                      onInputValueChange={onSearchChange}
-                      disabled={isExhausted}
-                      placeholder="Search combinations..."
-                      emptyMessage="No combinations left."
-                      aria-invalid={isInvalid}
-                    />
-                    {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
-                    {isExhausted ? (
-                      <p className="mt-1.5 text-muted-foreground text-sm">
-                        Every combination of this product's options already has a variant.
-                      </p>
-                    ) : null}
-                  </Field>
-                )
-              }}
-            </form.Field>
+                filtered to what is still available, so nothing here decides what may be picked. */}
+            <form.AppField name="combination">
+              {(field) => (
+                <field.SingleComboboxField
+                  label="Combination"
+                  items={combinations}
+                  onInputValueChange={onSearchChange}
+                  disabled={isExhausted}
+                  placeholder="Search combinations..."
+                  emptyMessage="No combinations left."
+                  description={
+                    isExhausted ? "Every combination of this product's options already has a variant." : undefined
+                  }
+                />
+              )}
+            </form.AppField>
 
             {/* No title field: it is the combination's label. Shown read-only so the shopkeeper can
-              see what the variant will be called on a line item. */}
+                see what the variant will be called on a line item. */}
             <form.Subscribe selector={(state) => state.values.combination?.label}>
               {(label) => (
                 <div>

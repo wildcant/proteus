@@ -1,15 +1,12 @@
 import { z } from 'zod'
-import type {
-  AdminOptionCombination,
-  AdminProductVariant,
-  AdminUpdateProductVariantResponse,
-} from '#/api/generated/model'
+import type { AdminProductVariant, AdminUpdateProductVariantResponse } from '#/api/generated/model'
 import { useUpdateProductVariant } from '#/features/products/api/product-variants'
+import type { CombinationOption } from '#/features/products/hooks/use-option-combination-search'
 import { useAppForm } from '#/lib/form-hook.ts'
 import type { SubmitFormParams } from '#/types/form.ts'
 
 const editVariantSchema = z.object({
-  combination: z.custom<AdminOptionCombination>().nullable(),
+  combination: z.custom<CombinationOption>().nullable(),
   sku: z.string(),
   material: z.string(),
 })
@@ -20,7 +17,7 @@ type UseEditVariantFormArgs = {
   productId: string
   variant: AdminProductVariant
   /** The combination the variant holds today, from `useOptionCombinationSearch`. */
-  current?: AdminOptionCombination
+  current?: CombinationOption
   params?: EditVariantFormParams
 }
 

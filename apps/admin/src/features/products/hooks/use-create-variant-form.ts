@@ -1,6 +1,7 @@
 import { z } from 'zod'
-import type { AdminCreateProductVariantResponse, AdminOptionCombination } from '#/api/generated/model'
+import type { AdminCreateProductVariantResponse } from '#/api/generated/model'
 import { useCreateProductVariant } from '#/features/products/api/product-variants'
+import type { CombinationOption } from '#/features/products/hooks/use-option-combination-search'
 import { useAppForm } from '#/lib/form-hook.ts'
 import type { SubmitFormParams } from '#/types/form.ts'
 
@@ -15,7 +16,7 @@ import type { SubmitFormParams } from '#/types/form.ts'
  */
 const createVariantSchema = z.object({
   combination: z
-    .custom<AdminOptionCombination>()
+    .custom<CombinationOption>()
     .nullable()
     .refine((combination) => combination !== null, { message: 'Pick a combination.' }),
   sku: z.string(),
