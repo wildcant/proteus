@@ -6,7 +6,7 @@
  * rather than in each client is what stops "what we offer" and "what we accept" from drifting
  * apart: the admin endpoint and the service's duplicate rejection both come from `buildCombinations`.
  *
- * See `docs/adr/0015-server-computed-option-projections.md`.
+ * See `docs/specs/variant-options.md` and `docs/adr/0015-server-computed-option-projections.md`.
  */
 
 /**

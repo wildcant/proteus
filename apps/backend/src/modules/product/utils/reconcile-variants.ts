@@ -6,7 +6,7 @@
  * variants exist — it is something the variant set has to follow. This plans that change so the
  * admin can see it before it happens and the workflow can apply it with compensation.
  *
- * See `.tasks/variant-option-reconciliation.md`.
+ * See `docs/specs/variant-options.md`.
  */
 
 import {

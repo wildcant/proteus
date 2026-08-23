@@ -1,3 +1,4 @@
+import { AdminCreateProductVariant } from '@proteus/http-schemas/admin'
 import { z } from 'zod'
 import type { AdminCreateProductVariantResponse } from '#/api/generated/model'
 import { useCreateProductVariant } from '#/features/products/api/product-variants'
@@ -38,14 +39,15 @@ export function useCreateVariantForm({ productId, params }: UseCreateVariantForm
     defaultValues,
     validators: { onSubmit: createVariantSchema },
     onSubmit: ({ value }) => {
-      // The schema has already rejected a null combination; this only narrows it for the payload.
-      if (!value.combination) return
-
       createMutation.mutate(
-        {
+        // Parsing rather than casting drops any key the endpoint rejects, and takes `unknown`, so
+        // the combination needs no narrowing here — the validator has already refused a null one.
+        // `prices` is omitted because the schema's pipeline outputs a BigNumber, which is not the
+        // wire type, and this form does not set them.
+        AdminCreateProductVariant.omit({ prices: true }).parse({
           sku: value.sku || null,
-          optionValues: value.combination.optionValues,
-        },
+          optionValues: value.combination?.optionValues,
+        }),
         {
           onSuccess: (created) => {
             form.reset()

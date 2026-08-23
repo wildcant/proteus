@@ -1,5 +1,7 @@
 # 15. Server-Computed Option Projections
 
+Full feature spec: [Variant Options](../specs/variant-options.md).
+
 **Status:** Accepted
 
 ## Context
