@@ -18,6 +18,9 @@ import {
   generateCartDTO,
   generateCartLineItemDTO,
   generateCartShippingMethodDTO,
+  generateCreateCartDTO,
+  generateCreateLineItemDTO,
+  generateCreateShippingMethodDTO,
 } from '../factories/cart-dto.js'
 import {
   generateCreateCustomerAddressDTO,
@@ -27,7 +30,12 @@ import {
 } from '../factories/customer-dto.js'
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
 import { generateFulfillmentDTO } from '../factories/fulfillment-dto.js'
-import { generateInventoryLevelDTO, generateReservationItemDTO } from '../factories/inventory-dto.js'
+import {
+  generateCreateInventoryItemDTO,
+  generateCreateInventoryLevelDTO,
+  generateInventoryLevelDTO,
+  generateReservationItemDTO,
+} from '../factories/inventory-dto.js'
 import { generateProductVariantInventoryItemDTO, generateProductVariantPriceSetDTO } from '../factories/link-dto.js'
 import { generateCreateNotificationDTO, generateNotificationDTO } from '../factories/notification-dto.js'
 import {
@@ -55,6 +63,14 @@ import {
   generateCreatePriceSetDTO,
 } from '../factories/pricing-dto.js'
 import { generateCreateProductDTO, generateUpdateProductDTO } from '../factories/product-dto.js'
+import {
+  addLineItem,
+  addShippingMethod,
+  createCart,
+  createCheckoutReadyCart,
+  createPaymentSessionForCart,
+  stockVariant,
+} from '../factories/services/index.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
 import { makeRequest } from '../utils/make-request.js'
 import { db as dbInstance } from './db-setup.js'
@@ -112,11 +128,28 @@ export type Fixtures = {
       cartAddress: typeof generateCartAddressDTO
       cartLineItem: typeof generateCartLineItemDTO
       cartShippingMethod: typeof generateCartShippingMethodDTO
+      createCart: typeof generateCreateCartDTO
+      createLineItem: typeof generateCreateLineItemDTO
+      createShippingMethod: typeof generateCreateShippingMethodDTO
       fulfillment: typeof generateFulfillmentDTO
       inventoryLevel: typeof generateInventoryLevelDTO
+      createInventoryItem: typeof generateCreateInventoryItemDTO
+      createInventoryLevel: typeof generateCreateInventoryLevelDTO
       productVariantInventoryItem: typeof generateProductVariantInventoryItemDTO
       productVariantPriceSet: typeof generateProductVariantPriceSetDTO
       calculatedPriceSet: typeof generateCalculatedPriceSetDTO
+    }
+  }
+  /** Factories that build real state through the module services, for tests that run against
+   *  a bootstrapped container. Each takes that container as its first argument. */
+  service: {
+    create: {
+      cart: typeof createCart
+      lineItem: typeof addLineItem
+      shippingMethod: typeof addShippingMethod
+      variantStock: typeof stockVariant
+      paymentSessionForCart: typeof createPaymentSessionForCart
+      checkoutReadyCart: typeof createCheckoutReadyCart
     }
   }
   logger: Logger
@@ -184,11 +217,28 @@ export const test = testBase.extend<Fixtures>({
         cartAddress: generateCartAddressDTO,
         cartLineItem: generateCartLineItemDTO,
         cartShippingMethod: generateCartShippingMethodDTO,
+        createCart: generateCreateCartDTO,
+        createLineItem: generateCreateLineItemDTO,
+        createShippingMethod: generateCreateShippingMethodDTO,
         fulfillment: generateFulfillmentDTO,
         inventoryLevel: generateInventoryLevelDTO,
+        createInventoryItem: generateCreateInventoryItemDTO,
+        createInventoryLevel: generateCreateInventoryLevelDTO,
         productVariantInventoryItem: generateProductVariantInventoryItemDTO,
         productVariantPriceSet: generateProductVariantPriceSetDTO,
         calculatedPriceSet: generateCalculatedPriceSetDTO,
+      },
+    })
+  },
+  async service({ task: _ }, use) {
+    await use({
+      create: {
+        cart: createCart,
+        lineItem: addLineItem,
+        shippingMethod: addShippingMethod,
+        variantStock: stockVariant,
+        paymentSessionForCart: createPaymentSessionForCart,
+        checkoutReadyCart: createCheckoutReadyCart,
       },
     })
   },

@@ -1,8 +1,15 @@
 Fixes and improvements
+- CHECKOUT IDEMPOTENCY: nothing persists idempotency state on our side, so a double-clicked "Place Order" creates two orders.
+  - apps/backend/src/core/workflows/types.ts has an `idempotent` config flag, but no workflow_execution table or idempotency-key storage backs it.
+  - The Stripe provider passes idempotency keys to Stripe (apps/backend/src/providers/payment-stripe/stripe-provider.ts), which protects the charge but not the order record.
+  - Same problem family as "investigate locking" below — decide the storage + locking strategy once and apply it to both.
 
 Future features TODOs
 - Allow customer to manage addresses.
 - Allow customer to see previous orders.
+- PRODUCT DISCOVERY: no ProductCategory / ProductCollection / ProductTag / ProductType, so the storefront has no navigation beyond a flat product list.
+  - order_line_item already snapshots productType and productHandle, implying a type entity that does not exist yet.
+  - ~4 tables including the pivots. Blocks category nav, collection landing pages, and tag filtering.
 - Access Control and Multi tenancy Module Architecture
   - TODO: Read posts regarding tenant isolation patterns and tradeoffs and security
     - https://learn.microsoft.com/en-us/azure/azure-sql/database/saas-tenancy-app-design-patterns?view=azuresql
@@ -28,6 +35,7 @@ Future Infra TODOs
   - The DB unique constraint on idempotencyKey catches the second insert if both slip through, so for single-instance it's sufficient.
   - For multi-instance / high-concurrency: need distributed locking (Redis, or DB-level SELECT FOR UPDATE).
   - Decide: DB-only (current scale) vs Redis locking (future scale).
+  - https://www.youtube.com/watch?v=5_DyX3PnKxg
 
 Future nice to have TODOs
 - per item fullfilment and shipment.

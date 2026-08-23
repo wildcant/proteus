@@ -22,6 +22,9 @@ function setupWorkflow(opts: {
   }
 
   const linkService: ILinkService = {
+    createMany: async () => {
+      // This workflow only reads links.
+    },
     repo: (() => ({
       findByVariantIds: async () => opts.mappings,
     })) as ILinkService['repo'],

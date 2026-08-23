@@ -1,5 +1,5 @@
 {
-  "id": "54ae7504-1e89-4c2f-a01b-23acf81f8f92",
+  "id": "988c7c3f-06f5-486d-ab2b-6834ab60fcf8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -133,6 +133,22 @@
               "asc": true,
               "nulls": "last"
             },
+            {
+              "expression": "cart_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_order_cart_cart_id": {
+          "name": "idx_order_cart_cart_id",
+          "columns": [
             {
               "expression": "cart_id",
               "isExpression": false,

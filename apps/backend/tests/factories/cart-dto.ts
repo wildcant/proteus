@@ -1,5 +1,6 @@
 import { BigNumber } from '@core/db/bignum.js'
 import type { CartAddressDTO, CartDTO, CartLineItemDTO, CartShippingMethodDTO } from '@core/types/cart/common.js'
+import type { CreateCartDTO, CreateLineItemDTO, CreateShippingMethodDTO } from '@core/types/cart/mutations.js'
 import { faker } from '@faker-js/faker'
 
 export function generateCartDTO(overrides?: Partial<CartDTO>): CartDTO {
@@ -87,6 +88,40 @@ export function generateCartShippingMethodDTO(overrides?: Partial<CartShippingMe
     createdAt: faker.date.recent(),
     updatedAt: faker.date.recent(),
     deletedAt: null,
+    ...overrides,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Create inputs — what a caller sends, as opposed to a row that was read back
+// ---------------------------------------------------------------------------
+
+export function generateCreateCartDTO(overrides?: Partial<CreateCartDTO>): CreateCartDTO {
+  return {
+    email: faker.internet.email(),
+    currencyCode: 'usd',
+    ...overrides,
+  }
+}
+
+/** Defaults `variantId`, unlike `generateCartLineItemDTO` — a line item being created for a
+ *  checkout almost always references one, and several workflows reject items without it. */
+export function generateCreateLineItemDTO(overrides?: Partial<CreateLineItemDTO>): CreateLineItemDTO {
+  return {
+    title: faker.commerce.productName(),
+    quantity: faker.number.int({ min: 1, max: 10 }),
+    unitPrice: new BigNumber(faker.number.int({ min: 100, max: 100000 })),
+    variantId: `variant_${faker.string.alphanumeric(32)}`,
+    ...overrides,
+  }
+}
+
+/** Leaves `shippingOptionId` unset: `validate-shipping` resolves it against the fulfillment
+ *  module, so a fabricated id would fail the lookup. Pass a real one to exercise that path. */
+export function generateCreateShippingMethodDTO(overrides?: Partial<CreateShippingMethodDTO>): CreateShippingMethodDTO {
+  return {
+    name: faker.helpers.arrayElement(['Standard Shipping', 'Express Shipping', 'Overnight']),
+    amount: new BigNumber(faker.number.int({ min: 100, max: 5000 })),
     ...overrides,
   }
 }

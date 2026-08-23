@@ -125,10 +125,6 @@ function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOpti
 
   const orderCartRepo = {
     findByCartId: vi.fn().mockResolvedValue(initialOrderCartLink),
-    create: vi.fn().mockResolvedValue({ id: 'ordcart_1' }),
-  }
-  const orderPaymentCollectionRepo = {
-    create: vi.fn().mockResolvedValue({ id: 'ordpaycol_1' }),
   }
   const cartPaymentCollectionRepo = {
     findByCartId: vi.fn().mockResolvedValue({ id: 'cartpaycol_1', cartId: cart.id, paymentCollectionId: 'paycol_1' }),
@@ -146,11 +142,12 @@ function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOpti
   }
 
   const dismissLinks = vi.fn().mockResolvedValue({})
+  const createManyLinks = vi.fn().mockResolvedValue(undefined)
   const linkService: ILinkService = {
+    createMany: createManyLinks,
     repo: ((name: string) => {
       const repos: Record<string, unknown> = {
         orderCart: orderCartRepo,
-        orderPaymentCollection: orderPaymentCollectionRepo,
         cartPaymentCollection: cartPaymentCollectionRepo,
         productVariantInventoryItem: productVariantInventoryItemRepo,
       }
@@ -179,8 +176,8 @@ function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOpti
     orderService,
     inventoryService,
     dismissLinks,
+    createManyLinks,
     orderCartRepo,
-    orderPaymentCollectionRepo,
     productVariantInventoryItemRepo,
   }
 }
@@ -208,15 +205,12 @@ test.describe('completeCartWorkflow', () => {
     expect(createOrderCall.items).toHaveLength(1)
     expect(createOrderCall.shippingMethods).toHaveLength(1)
 
-    // Links were created
-    expect(services.orderCartRepo.create).toHaveBeenCalledWith({
-      orderId: 'ord_1',
-      cartId: services.cart.id,
-    })
-    expect(services.orderPaymentCollectionRepo.create).toHaveBeenCalledWith({
-      orderId: 'ord_1',
-      paymentCollectionId: 'paycol_1',
-    })
+    // Both links go out as one atomic batch, order↔cart first so the unique index on
+    // `cartId` rejects a duplicate completion before the sibling link is written.
+    expect(services.createManyLinks).toHaveBeenCalledWith([
+      { link: 'orderCart', data: { orderId: 'ord_1', cartId: services.cart.id } },
+      { link: 'orderPaymentCollection', data: { orderId: 'ord_1', paymentCollectionId: 'paycol_1' } },
+    ])
 
     // Inventory was reserved
     expect(services.inventoryService.createReservationItems).toHaveBeenCalledOnce()

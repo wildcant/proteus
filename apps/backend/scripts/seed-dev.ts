@@ -187,7 +187,7 @@ if (adminIdentity) {
 
 // --- Dev customer (registered + email-verified, ready for store auth) ---
 const DEV_CUSTOMER_ID = 'cus_6021b88819c64605807aebf26260d7b7'
-const DEV_CUSTOMER_EMAIL = 'customer@example.com'
+const DEV_CUSTOMER_EMAIL = 'delivered@resend.dev'
 const DEV_CUSTOMER_PASSWORD = '123'
 
 const existingCustomerIdentities = await authService.listProviderIdentities({

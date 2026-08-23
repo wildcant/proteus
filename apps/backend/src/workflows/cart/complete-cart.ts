@@ -248,17 +248,19 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
   )
 
   /** Cross-module links enable the idempotency check (order↔cart) and let other modules
-   *  discover the order's payment collection (order↔paymentCollection). */
+   *  discover the order's payment collection (order↔paymentCollection). Created together so a
+   *  concurrent completion that loses the race on `orderCart` leaves nothing behind. */
   await ctx.step(
     'link-order',
     async ({ container }) => {
       const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-      await Promise.all([
-        linkService.repo('orderCart').create({ orderId: order.id, cartId: input.cartId }),
-        linkService.repo('orderPaymentCollection').create({
-          orderId: order.id,
-          paymentCollectionId: paymentInfo.paymentCollectionId,
-        }),
+      await linkService.createMany([
+        // Most constrained first: `cartId` is unique, so a duplicate completion stops here.
+        { link: 'orderCart', data: { orderId: order.id, cartId: input.cartId } },
+        {
+          link: 'orderPaymentCollection',
+          data: { orderId: order.id, paymentCollectionId: paymentInfo.paymentCollectionId },
+        },
       ])
     },
     async (_result, { container }) => {

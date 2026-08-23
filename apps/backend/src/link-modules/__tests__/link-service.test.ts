@@ -1,4 +1,5 @@
 import { test } from '@tests/setup/test-extend.js'
+import { createWithTransaction } from '../../core/utils/with-transaction.js'
 import { CartPaymentCollectionRepository } from '../repositories/cart-payment-collection.js'
 import { CartProductRepository } from '../repositories/cart-product.js'
 import { OrderCartRepository } from '../repositories/order-cart.js'
@@ -23,6 +24,7 @@ test.beforeEach(({ getDb }) => {
   const orderFulfillment = new OrderFulfillmentRepository({ getDb })
 
   linkService = new LinkService({
+    withTransaction: createWithTransaction(getDb),
     productVariantPriceSet,
     productVariantInventoryItem,
     cartPaymentCollection,
