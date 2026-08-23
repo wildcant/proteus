@@ -1,8 +1,11 @@
-import type { TestApi } from '@tests/setup/create-api.js'
+import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
-import jwt from 'jsonwebtoken'
-import { env } from '../../../env.js'
+import { decodeToken } from '@tests/utils/decode-token.js'
+import type * as registerRoutes from '../[actorType]/[authProvider]/register/route.js'
+import type * as authenticateRoutes from '../[actorType]/[authProvider]/route.js'
 import authDefinitions from '../definitions.js'
+import type * as confirmRoutes from '../verification/confirm/route.js'
+import type * as requestRoutes from '../verification/request/route.js'
 
 type Services = Fixtures['service']
 
@@ -24,19 +27,28 @@ test.beforeEach(async ({ createApi }) => {
  * Customers require email verification per authVerificationsPerActor config.
  */
 async function registerCustomer(email: string, password: string) {
-  const { body } = await api.post('/auth/customer/emailpass/register', { email, password })
-  return body.token as string
+  const { body } = await api.post<typeof registerRoutes.PostOutput>('/auth/customer/emailpass/register', {
+    email,
+    password,
+  })
+  return body.token
 }
+
+const requestVerification = (entityId: string, token: string) =>
+  api.post<typeof requestRoutes.PostOutput>(
+    '/auth/verification/request',
+    { entityId, entityType: 'email' },
+    { headers: { authorization: `Bearer ${token}` } },
+  )
+
+const confirmVerification = <T = typeof confirmRoutes.PostOutput>(code: string, token: string) =>
+  api.post<T>('/auth/verification/confirm', { code }, { headers: { authorization: `Bearer ${token}` } })
 
 test.describe('POST /auth/verification/request', () => {
   test('request generates a verification record', async ({ expect }) => {
     const token = await registerCustomer('verify-request@example.com', 'secret123')
 
-    const { status, body } = await api.post(
-      '/auth/verification/request',
-      { entityId: 'verify-request@example.com', entityType: 'email' },
-      { headers: { authorization: `Bearer ${token}` } },
-    )
+    const { status, body } = await requestVerification('verify-request@example.com', token)
 
     expect(status).toBe(200)
     expect(body.id).toMatch(/^authver_/)
@@ -49,28 +61,19 @@ test.describe('POST /auth/verification/request', () => {
     const token = await registerCustomer('rotate@example.com', 'secret123')
 
     // First request
-    await api.post(
-      '/auth/verification/request',
-      { entityId: 'rotate@example.com', entityType: 'email' },
-      { headers: { authorization: `Bearer ${token}` } },
-    )
+    await requestVerification('rotate@example.com', token)
 
     // Get the code from the verification record's providerMetadata
-    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
-    const authIdentityId = decoded.authIdentityId as string
+    const { authIdentityId } = decodeToken(token)
 
     const firstVerifications = await service.read.authVerifications(api.container, { authIdentityId })
-    const firstHash = (firstVerifications[0]?.providerMetadata as Record<string, unknown>)?.tokenHash
+    const firstHash = firstVerifications[0]?.providerMetadata?.tokenHash
 
     // Second request (rotate)
-    await api.post(
-      '/auth/verification/request',
-      { entityId: 'rotate@example.com', entityType: 'email' },
-      { headers: { authorization: `Bearer ${token}` } },
-    )
+    await requestVerification('rotate@example.com', token)
 
     const secondVerifications = await service.read.authVerifications(api.container, { authIdentityId })
-    const secondHash = (secondVerifications[0]?.providerMetadata as Record<string, unknown>)?.tokenHash
+    const secondHash = secondVerifications[0]?.providerMetadata?.tokenHash
 
     // Code was rotated: different hash, same record
     expect(secondHash).not.toBe(firstHash)
@@ -87,8 +90,7 @@ test.describe('POST /auth/verification/confirm', () => {
 
     // Extract plaintext code by calling requestAuthVerification directly
     // (the route doesn't return it).
-    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
-    const authIdentityId = decoded.authIdentityId as string
+    const { authIdentityId } = decodeToken(token)
 
     const result = await service.create.authVerification(api.container, {
       authIdentityId,
@@ -104,11 +106,7 @@ test.describe('POST /auth/verification/confirm', () => {
   test('confirm with correct code succeeds', async ({ expect, service }) => {
     const { token, code } = await setupVerification(service, 'confirm-ok@example.com')
 
-    const { status, body } = await api.post(
-      '/auth/verification/confirm',
-      { code },
-      { headers: { authorization: `Bearer ${token}` } },
-    )
+    const { status, body } = await confirmVerification(code, token)
 
     expect(status).toBe(200)
     expect(body.id).toMatch(/^authver_/)
@@ -118,10 +116,9 @@ test.describe('POST /auth/verification/confirm', () => {
   test('confirm with wrong code fails', async ({ expect, service }) => {
     const { token } = await setupVerification(service, 'confirm-bad@example.com')
 
-    const { status, body } = await api.post(
-      '/auth/verification/confirm',
-      { code: 'wrong-code-wrong-code-wrong-code-wrong-code' },
-      { headers: { authorization: `Bearer ${token}` } },
+    const { status, body } = await confirmVerification<ApiErrorBody>(
+      'wrong-code-wrong-code-wrong-code-wrong-code',
+      token,
     )
 
     expect(status).toBe(400)
@@ -130,8 +127,7 @@ test.describe('POST /auth/verification/confirm', () => {
 
   test('expired code is rejected', async ({ expect, service }) => {
     const token = await registerCustomer('expired@example.com', 'secret123')
-    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>
-    const authIdentityId = decoded.authIdentityId as string
+    const { authIdentityId } = decodeToken(token)
 
     const result = await service.create.authVerification(api.container, {
       authIdentityId,
@@ -139,6 +135,7 @@ test.describe('POST /auth/verification/confirm', () => {
       entityType: 'email',
       codeProvider: 'token',
     })
+    if (!result.code) throw new Error('Expected code from requestAuthVerification')
 
     // Backdate requestedAt to simulate expiry (> 15 minutes ago)
     const verifications = await service.read.authVerifications(api.container, { authIdentityId })
@@ -152,11 +149,7 @@ test.describe('POST /auth/verification/confirm', () => {
       })
     }
 
-    const { status, body } = await api.post(
-      '/auth/verification/confirm',
-      { code: result.code },
-      { headers: { authorization: `Bearer ${token}` } },
-    )
+    const { status, body } = await confirmVerification<ApiErrorBody>(result.code, token)
 
     expect(status).toBe(400)
     expect(body.message).toMatch(/expired/)
@@ -166,47 +159,37 @@ test.describe('POST /auth/verification/confirm', () => {
     const { token, code } = await setupVerification(service, 'already-verified@example.com')
 
     // First confirm succeeds
-    const first = await api.post(
-      '/auth/verification/confirm',
-      { code },
-      { headers: { authorization: `Bearer ${token}` } },
-    )
+    const first = await confirmVerification(code, token)
     expect(first.status).toBe(200)
 
     // Second confirm fails (already verified)
-    const second = await api.post(
-      '/auth/verification/confirm',
-      { code },
-      { headers: { authorization: `Bearer ${token}` } },
-    )
+    const second = await confirmVerification<ApiErrorBody>(code, token)
     expect(second.status).toBe(400)
     expect(second.body.message).toMatch(/invalid or already used/)
   })
 })
 
 test.describe('verification gate on login', () => {
-  test('customer login returns verification_required when unverified', async ({ expect }) => {
-    await api.post('/auth/customer/emailpass/register', {
-      email: 'gate-unverified@example.com',
+  const login = (email: string, actorType: 'customer' | 'user' = 'customer') =>
+    api.post<typeof authenticateRoutes.PostOutput>(`/auth/${actorType}/emailpass`, {
+      email,
       password: 'secret123',
     })
 
-    const { status, body } = await api.post('/auth/customer/emailpass', {
-      email: 'gate-unverified@example.com',
-      password: 'secret123',
-    })
+  test('customer login returns verification_required when unverified', async ({ expect }) => {
+    await registerCustomer('gate-unverified@example.com', 'secret123')
+
+    const { status, body } = await login('gate-unverified@example.com')
 
     expect(status).toBe(200)
     expect(body.verificationRequired).toBe(true)
-    const decoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
-    expect(decoded.actorId).toBe('')
+    expect(decodeToken(body.token).actorId).toBe('')
   })
 
   test('customer login returns full JWT after verification', async ({ expect, service }) => {
     // Register
-    const regToken = await registerCustomer('gate-verified@example.com', 'secret123')
-    const decoded = jwt.verify(regToken, env.JWT_SECRET) as Record<string, unknown>
-    const authIdentityId = decoded.authIdentityId as string
+    const registrationToken = await registerCustomer('gate-verified@example.com', 'secret123')
+    const { authIdentityId } = decodeToken(registrationToken)
 
     // Link to a customer
     await service.update.authIdentity(api.container, authIdentityId, {
@@ -224,28 +207,21 @@ test.describe('verification gate on login', () => {
     await service.create.confirmedAuthVerification(api.container, { code: verificationResult.code })
 
     // Login should now return full JWT
-    const { status, body } = await api.post('/auth/customer/emailpass', {
-      email: 'gate-verified@example.com',
-      password: 'secret123',
-    })
+    const { status, body } = await login('gate-verified@example.com')
 
     expect(status).toBe(200)
     expect(body.verificationRequired).toBeUndefined()
-    const loginDecoded = jwt.verify(body.token as string, env.JWT_SECRET) as Record<string, unknown>
-    expect(loginDecoded.actorId).toBe('cus_linked')
+    expect(decodeToken(body.token).actorId).toBe('cus_linked')
   })
 
   test('user login is not gated by verification', async ({ expect }) => {
     // Register as user (users don't require verification)
-    await api.post('/auth/user/emailpass/register', {
+    await api.post<typeof registerRoutes.PostOutput>('/auth/user/emailpass/register', {
       email: 'no-gate@example.com',
       password: 'secret123',
     })
 
-    const { status, body } = await api.post('/auth/user/emailpass', {
-      email: 'no-gate@example.com',
-      password: 'secret123',
-    })
+    const { status, body } = await login('no-gate@example.com', 'user')
 
     expect(status).toBe(200)
     expect(body.verificationRequired).toBeUndefined()

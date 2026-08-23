@@ -4,6 +4,7 @@
  */
 
 import { createServer, type Server } from 'node:http'
+import type { errorHandler } from '@core/errors/index.js'
 import type { Logger } from '@core/types/logger.js'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'
@@ -33,6 +34,12 @@ export type CreateApiOptions = CreateContainerOptions & {
  * `JSON.parse` have run, so the same schema resolves to ISO strings here.
  */
 type InferBody<T> = T extends ZodType ? T['_zod']['output'] : T
+
+/**
+ * What `errorHandler` serializes for anything that throws. Pass it as the verb's generic when a
+ * test asserts on a failure, so `type` and `message` are typed rather than cast.
+ */
+export type ApiErrorBody = ReturnType<typeof errorHandler>['json']
 
 /** Only what assertions read. Anything else — response headers, redirects — goes through `request`. */
 export type TestResponse<T = Record<string, unknown>> = {

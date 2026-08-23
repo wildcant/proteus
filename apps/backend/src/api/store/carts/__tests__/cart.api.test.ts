@@ -1,8 +1,13 @@
-import type { TestApi } from '@tests/setup/create-api.js'
+import type { StoreCompleteCartResponse } from '@proteus/http-schemas/store'
+import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
 import cartDefinitions from '../definitions.js'
+
+/** A completion either returns the order or the error body saying why it lost the race, and
+ *  only the status says which — so both shapes are in play for every response in the batch. */
+type CompletionBody = StoreCompleteCartResponse | ApiErrorBody
 
 const CONCURRENT_REQUESTS = 5
 
@@ -21,7 +26,9 @@ test.beforeEach(async ({ createApi }) => {
 })
 
 const completeCartConcurrently = (cartId: string) =>
-  Promise.all(Array.from({ length: CONCURRENT_REQUESTS }, () => api.post(`/store/carts/${cartId}/complete`)))
+  Promise.all(
+    Array.from({ length: CONCURRENT_REQUESTS }, () => api.post<CompletionBody>(`/store/carts/${cartId}/complete`)),
+  )
 
 /**
  * Concurrent completions of one cart. Nothing in the workflow serializes them —
@@ -67,18 +74,19 @@ test.describe('POST /store/carts/:id/complete (concurrent)', () => {
     const reservations = await service.read.reservationItems(api.container)
     expect(reservations.reduce((sum, reservation) => sum + reservation.quantity, 0)).toBe(1)
 
+    const returnedOrderIds = new Set<string>()
+    const rejectedTypes: string[] = []
+    for (const { body } of responses) {
+      if ('orderId' in body) returnedOrderIds.add(body.orderId)
+      else rejectedTypes.push(body.type)
+    }
+
     // Whoever got an order back got the same one.
-    const returnedOrderIds = responses
-      .filter((response) => response.status === 200)
-      .map((response) => (response.body as { orderId: string }).orderId)
-    expect(new Set(returnedOrderIds)).toEqual(new Set([orderId]))
+    expect(returnedOrderIds).toEqual(new Set([orderId]))
 
     // The rest were rejected. A 422 beats a 500, but it is still the wrong answer for a shopper
     // who double-clicked: their order exists and they were told it failed. Serializing the
     // request would let the loser fall through to `check-idempotency` and return a 200.
-    const rejectedTypes = responses
-      .filter((response) => response.status !== 200)
-      .map((response) => (response.body as { type: string }).type)
     expect(rejectedTypes.length).toBeGreaterThan(0)
     expect(rejectedTypes.filter((type) => !RACE_REJECTION_TYPES.includes(type))).toEqual([])
   })
@@ -95,7 +103,7 @@ test.describe('POST /store/carts/:id/complete (concurrent)', () => {
       new Error('payment collection link unavailable'),
     )
 
-    const response = await api.post(`/store/carts/${cartId}/complete`)
+    const response = await api.post<CompletionBody>(`/store/carts/${cartId}/complete`)
 
     expect(response.status).not.toBe(200)
     expect(await service.read.orders(api.container)).toHaveLength(0)
