@@ -10,7 +10,7 @@ export function ReviewStep() {
         By placing this order, you agree to our terms of service and privacy policy.
       </p>
 
-      <Button onClick={handlePlaceOrder} className="mt-6">
+      <Button onClick={handlePlaceOrder} disabled={isPending} className="mt-6">
         {isPending ? 'Placing order...' : 'Place order'}
       </Button>
 
