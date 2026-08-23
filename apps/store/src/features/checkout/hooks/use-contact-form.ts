@@ -16,6 +16,12 @@ const EMPTY_DEFAULTS: ContactFormValues = {
   lastName: '',
 }
 
+// const TEST_DEFAULTS: ContactFormValues = {
+//   email: 'joe@mail.com',
+//   firstName: 'Joe',
+//   lastName: 'Doe',
+// }
+
 export type ContactFormParams = SubmitFormParams & {
   defaultValues?: ContactFormValues
 }

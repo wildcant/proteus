@@ -1,6 +1,5 @@
 Fixes and improvements
-- edge case, what happens when we adding a new option to product that has variants with other saved option values. the edit variant form should probably throw on submit since the single option is no longer a valid combination.
-- inStock is an inventory concern that now lives in the product module, should probably live in a workflow :/
+
 
 Future features TODOs
 - Access Control and Multi tenancy Module Architecture
@@ -8,7 +7,6 @@ Future features TODOs
     - https://learn.microsoft.com/en-us/azure/azure-sql/database/saas-tenancy-app-design-patterns?view=azuresql
     - https://aws.amazon.com/blogs/apn/explore-saas-tenant-isolation-strategies-in-new-saas-whitepaper/
     - https://www.youtube.com/watch?v=4_pxeE1Xv3Q
-- storage service: S3, R2, Minio
 - GLOBAL SHIPPING OPTIONS [COUNTRY CODE]: if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
 
 Future Infra TODOs
