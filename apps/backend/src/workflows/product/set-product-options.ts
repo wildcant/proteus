@@ -111,20 +111,24 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
       const sourceLinks = await linkService.repo('productVariantPriceSet').findByVariantIds(sourceIds)
       const priceSetIdByVariantId = new Map(sourceLinks.map((link) => [link.variantId, link.priceSetId]))
 
-      for (const [index, variant] of created.entries()) {
-        const sourcePriceSetId = priceSetIdByVariantId.get(sources[index] ?? '')
-        if (!sourcePriceSetId) continue
+      // Each created variant gets its own price set and link, so the copies do not depend on one
+      // another. Sharing a source only means reading the same prices twice, never a write conflict.
+      await Promise.all(
+        created.map(async (variant, index) => {
+          const sourcePriceSetId = priceSetIdByVariantId.get(sources[index] ?? '')
+          if (!sourcePriceSetId) return
 
-        const prices = await pricingService.listPrices({ priceSetId: sourcePriceSetId })
-        if (prices.length === 0) continue
+          const prices = await pricingService.listPrices({ priceSetId: sourcePriceSetId })
+          if (prices.length === 0) return
 
-        const [priceSet] = await pricingService.createPriceSets([
-          { prices: prices.map((price) => ({ currencyCode: price.currencyCode, amount: price.amount })) },
-        ])
-        if (!priceSet) continue
+          const [priceSet] = await pricingService.createPriceSets([
+            { prices: prices.map((price) => ({ currencyCode: price.currencyCode, amount: price.amount })) },
+          ])
+          if (!priceSet) return
 
-        await linkService.repo('productVariantPriceSet').create({ variantId: variant.id, priceSetId: priceSet.id })
-      }
+          await linkService.repo('productVariantPriceSet').create({ variantId: variant.id, priceSetId: priceSet.id })
+        }),
+      )
     })
 
     // Step 6: variants the change leaves no room for

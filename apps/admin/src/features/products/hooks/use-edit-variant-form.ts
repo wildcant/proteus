@@ -1,3 +1,4 @@
+import { AdminUpdateProductVariant } from '@proteus/http-schemas/admin'
 import { z } from 'zod'
 import type { AdminProductVariant, AdminUpdateProductVariantResponse } from '#/api/generated/model'
 import { useUpdateProductVariant } from '#/features/products/api/product-variants'
@@ -5,10 +6,13 @@ import type { CombinationOption } from '#/features/products/hooks/use-option-com
 import { useAppForm } from '#/lib/form-hook.ts'
 import type { SubmitFormParams } from '#/types/form.ts'
 
-const editVariantSchema = z.object({
+/**
+ * The variant's own fields come from the endpoint's schema; `combination` is the one field that is
+ * not a column — it stands for the Option Combination the variant will carry, and the payload takes
+ * its `optionValues`.
+ */
+const editVariantSchema = AdminUpdateProductVariant.pick({ sku: true, material: true }).extend({
   combination: z.custom<CombinationOption>().nullable(),
-  sku: z.string(),
-  material: z.string(),
 })
 
 export type EditVariantFormParams = SubmitFormParams<AdminUpdateProductVariantResponse>
@@ -24,7 +28,7 @@ type UseEditVariantFormArgs = {
 export function useEditVariantForm({ productId, variant, current, params }: UseEditVariantFormArgs) {
   const updateMutation = useUpdateProductVariant(productId, variant.id)
 
-  const defaultValues: z.infer<typeof editVariantSchema> = {
+  const defaultValues: z.input<typeof editVariantSchema> = {
     combination: current ?? null,
     sku: variant.sku ?? '',
     material: variant.material ?? '',

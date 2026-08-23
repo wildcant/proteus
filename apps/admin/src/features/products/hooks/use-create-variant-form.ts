@@ -15,12 +15,11 @@ import type { SubmitFormParams } from '#/types/form.ts'
  * the server rejects a create that names none. There is no title field: a Variant Title is derived
  * from its combination, so there is nothing here for the shopkeeper to disagree with.
  */
-const createVariantSchema = z.object({
+const createVariantSchema = AdminCreateProductVariant.pick({ sku: true }).extend({
   combination: z
     .custom<CombinationOption>()
     .nullable()
     .refine((combination) => combination !== null, { message: 'Pick a combination.' }),
-  sku: z.string(),
 })
 
 type UseCreateVariantFormArgs = {

@@ -185,6 +185,10 @@ function overlap(key: string | undefined, target: OptionCombination): number {
 /** What a set of carried values is called, using whichever options can still name them. */
 function labelFor(options: readonly CombinableOption[], optionValues: Readonly<Record<string, string>>): string {
   return options
-    .flatMap((option) => option.values.filter((value) => value.id === optionValues[option.id]).map((v) => v.value))
+    .flatMap((option) =>
+      option.values
+        .filter((optionValue) => optionValue.id === optionValues[option.id])
+        .map((optionValue) => optionValue.value),
+    )
     .join(' / ')
 }

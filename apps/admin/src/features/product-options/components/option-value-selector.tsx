@@ -31,7 +31,7 @@ export function OptionValueSelector({ allOptions, value, onChange }: OptionValue
           if (existing) return existing
           // Every value by default when an option is first added — a product that offers an option
           // but none of its values sells nothing.
-          return { optionId, valueIds: optionById.get(optionId)?.values.map((v) => v.id) ?? [] }
+          return { optionId, valueIds: optionById.get(optionId)?.values.map((optionValue) => optionValue.id) ?? [] }
         }),
       )
     },
@@ -82,7 +82,7 @@ export function OptionValueSelector({ allOptions, value, onChange }: OptionValue
               <div key={option.id}>
                 <h3 className="mb-2 font-medium text-muted-foreground text-sm">{option.title}</h3>
                 <MultiSelectCombobox
-                  items={option.values.map((v) => ({ id: v.id, label: v.value }))}
+                  items={option.values.map((optionValue) => ({ id: optionValue.id, label: optionValue.value }))}
                   value={value.find((entry) => entry.optionId === option.id)?.valueIds ?? []}
                   onValueChange={(valueIds) => handleValuesChange(option.id, valueIds)}
                   placeholder="Search values..."
