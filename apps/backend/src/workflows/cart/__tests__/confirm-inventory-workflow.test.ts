@@ -1,200 +1,107 @@
-import type { CartLineItemDTO } from '@core/types/cart/common.js'
-import type { ICartModuleService } from '@core/types/cart/service.js'
-import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
-import type { IInventoryModuleService } from '@core/types/inventory/service.js'
-import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
-import type { ILinkService } from '@core/types/link/service.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { setWorkflowEngine } from '@core/workflows/types.js'
-import { test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
-import { noopLogger } from '../../../framework/logger/noop-logger.js'
+import type { TestContainer } from '@tests/setup/create-container.js'
+import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { confirmInventoryWorkflow } from '../confirm-inventory-workflow.js'
 
-function setupWorkflow(opts: {
-  lineItems: CartLineItemDTO[]
-  mappings: ProductVariantInventoryItemDTO[]
-  levels: InventoryLevelDTO[]
-}) {
-  const cartService: Pick<ICartModuleService, 'listLineItems'> = {
-    listLineItems: async () => opts.lineItems,
-  }
+type Services = Fixtures['service']
 
-  const linkService: ILinkService = {
-    createMany: async () => {
-      // This workflow only reads links.
-    },
-    repo: (() => ({
-      findByVariantIds: async () => opts.mappings,
-    })) as ILinkService['repo'],
-    dismissLinks: async () => ({}),
-  }
+let container: TestContainer
 
-  const inventoryService: Pick<IInventoryModuleService, 'listInventoryLevels' | 'confirmInventory'> = {
-    listInventoryLevels: async () => opts.levels,
-    confirmInventory: async (inventoryItemId, locationIds, quantity) => {
-      const matching = opts.levels.filter(
-        (l) => l.inventoryItemId === inventoryItemId && locationIds.includes(l.locationId),
-      )
-      const available = matching.reduce((sum, l) => sum + l.stockedQuantity - l.reservedQuantity, 0)
-      return available >= quantity
-    },
-  }
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
 
-  const container = createContainer()
-  container.register({
-    [Modules.CART]: asValue(cartService),
-    [Modules.INVENTORY]: asValue(inventoryService),
-    [ContainerRegistrationKeys.LINK]: asValue(linkService),
-    [ContainerRegistrationKeys.LOGGER]: asValue(noopLogger),
+/**
+ * A cart holding one line item for a freshly stocked variant. Returns the ids the assertions
+ * name, so no test lists rows back to learn them.
+ */
+const stockedCartItem = async (
+  service: Services,
+  options: { cartId?: string; quantity?: number; stockedQuantity?: number; requiredQuantity?: number } = {},
+) => {
+  const cartId = options.cartId ?? (await service.create.cart(container)).id
+  const { product } = await service.create.product(container)
+  const variant = await service.create.productVariant(container, product.id)
+
+  const { inventoryItem, inventoryLevel } = await service.create.variantStock(container, {
+    variantId: variant.id,
+    level: { stockedQuantity: options.stockedQuantity ?? 10 },
+    requiredQuantity: options.requiredQuantity,
+  })
+  const lineItem = await service.create.lineItem(container, cartId, {
+    variantId: variant.id,
+    quantity: options.quantity ?? 1,
   })
 
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
+  return { cartId, variantId: variant.id, lineItem, inventoryItem, inventoryLevel }
 }
 
 test.describe('confirmInventoryWorkflow', () => {
-  test('succeeds when stock covers all line items', async ({ dto, expect }) => {
-    setupWorkflow({
-      lineItems: [dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 2 })],
-      mappings: [dto.generate.productVariantInventoryItem({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
-      levels: [
-        dto.generate.inventoryLevel({
-          inventoryItemId: 'inv_1',
-          locationId: 'loc_1',
-          stockedQuantity: 10,
-          reservedQuantity: 0,
-        }),
-      ],
+  test('reports what each line item needs and where it can come from', async ({ service, expect }) => {
+    const { cartId, variantId, lineItem, inventoryItem, inventoryLevel } = await stockedCartItem(service, {
+      quantity: 2,
+      stockedQuantity: 10,
     })
 
-    const result = await confirmInventoryWorkflow.run({ cartId: 'cart_1' })
+    const result = await confirmInventoryWorkflow.run({ cartId })
 
     expect(result).toEqual({
-      cartId: 'cart_1',
+      cartId,
       items: [
         {
-          lineItemId: 'li_1',
-          variantId: 'var_1',
-          inventoryItemId: 'inv_1',
+          lineItemId: lineItem.id,
+          variantId,
+          inventoryItemId: inventoryItem.id,
           requiredQuantity: 1,
           quantity: 2,
-          locationIds: ['loc_1'],
+          locationIds: [inventoryLevel.locationId],
         },
       ],
     })
   })
 
-  test('throws when stock is insufficient', async ({ dto, expect }) => {
-    setupWorkflow({
-      lineItems: [dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 5 })],
-      mappings: [dto.generate.productVariantInventoryItem({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
-      levels: [
-        dto.generate.inventoryLevel({
-          inventoryItemId: 'inv_1',
-          locationId: 'loc_1',
-          stockedQuantity: 3,
-          reservedQuantity: 1,
-        }),
-      ],
-    })
+  test('throws when stock does not cover the line item', async ({ service, expect }) => {
+    const { cartId } = await stockedCartItem(service, { quantity: 5, stockedQuantity: 2 })
 
-    await expect(confirmInventoryWorkflow.run({ cartId: 'cart_1' })).rejects.toThrow(
+    await expect(confirmInventoryWorkflow.run({ cartId })).rejects.toThrow(
       'Some variant does not have the required inventory',
     )
   })
 
-  test('passes when stock across multiple locations covers the requirement', async ({ dto, expect }) => {
-    setupWorkflow({
-      lineItems: [dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 8 })],
-      mappings: [dto.generate.productVariantInventoryItem({ variantId: 'var_1', inventoryItemId: 'inv_1' })],
-      levels: [
-        dto.generate.inventoryLevel({
-          inventoryItemId: 'inv_1',
-          locationId: 'loc_1',
-          stockedQuantity: 5,
-          reservedQuantity: 0,
-        }),
-        dto.generate.inventoryLevel({
-          inventoryItemId: 'inv_1',
-          locationId: 'loc_2',
-          stockedQuantity: 5,
-          reservedQuantity: 0,
-        }),
-      ],
+  test('counts stock pooled across locations', async ({ service, expect }) => {
+    const { cartId, inventoryItem, inventoryLevel } = await stockedCartItem(service, {
+      quantity: 8,
+      stockedQuantity: 5,
     })
+    const second = await service.create.inventoryLevel(container, inventoryItem.id, { stockedQuantity: 5 })
 
-    const result = await confirmInventoryWorkflow.run({ cartId: 'cart_1' })
+    const result = await confirmInventoryWorkflow.run({ cartId })
 
-    expect(result.items).toHaveLength(1)
-    expect(result.items[0]?.locationIds).toEqual(['loc_1', 'loc_2'])
+    expect(result.items[0]?.locationIds.sort()).toEqual([inventoryLevel.locationId, second.locationId].sort())
   })
 
-  test('skips line items without a variant', async ({ dto, expect }) => {
-    setupWorkflow({
-      lineItems: [dto.generate.cartLineItem({ id: 'li_custom', cartId: 'cart_1', variantId: null, quantity: 1 })],
-      mappings: [],
-      levels: [],
-    })
+  test('skips a line item with no variant', async ({ service, expect }) => {
+    const { id: cartId } = await service.create.cart(container)
+    await service.create.lineItem(container, cartId, { variantId: null })
 
-    const result = await confirmInventoryWorkflow.run({ cartId: 'cart_1' })
+    const result = await confirmInventoryWorkflow.run({ cartId })
 
     expect(result.items).toEqual([])
   })
 
-  test('multiplies quantity by requiredQuantity when checking coverage', async ({ dto, expect }) => {
-    setupWorkflow({
-      lineItems: [dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 2 })],
-      mappings: [
-        dto.generate.productVariantInventoryItem({
-          variantId: 'var_1',
-          inventoryItemId: 'inv_1',
-          requiredQuantity: 3,
-        }),
-      ],
-      levels: [
-        dto.generate.inventoryLevel({
-          inventoryItemId: 'inv_1',
-          locationId: 'loc_1',
-          stockedQuantity: 5,
-          reservedQuantity: 0,
-        }),
-      ],
-    })
+  test('multiplies the ordered quantity by the units each one consumes', async ({ service, expect }) => {
+    // Needs 2 × 3 = 6, only 5 in stock.
+    const { cartId } = await stockedCartItem(service, { quantity: 2, requiredQuantity: 3, stockedQuantity: 5 })
 
-    // needs 2 * 3 = 6, only 5 available
-    await expect(confirmInventoryWorkflow.run({ cartId: 'cart_1' })).rejects.toThrow(
+    await expect(confirmInventoryWorkflow.run({ cartId })).rejects.toThrow(
       'Some variant does not have the required inventory',
     )
   })
 
-  test('throws when any variant in a multi-item cart is insufficient', async ({ dto, expect }) => {
-    setupWorkflow({
-      lineItems: [
-        dto.generate.cartLineItem({ id: 'li_1', cartId: 'cart_1', variantId: 'var_1', quantity: 1 }),
-        dto.generate.cartLineItem({ id: 'li_2', cartId: 'cart_1', variantId: 'var_2', quantity: 100 }),
-      ],
-      mappings: [
-        dto.generate.productVariantInventoryItem({ variantId: 'var_1', inventoryItemId: 'inv_1' }),
-        dto.generate.productVariantInventoryItem({ variantId: 'var_2', inventoryItemId: 'inv_2' }),
-      ],
-      levels: [
-        dto.generate.inventoryLevel({
-          inventoryItemId: 'inv_1',
-          locationId: 'loc_1',
-          stockedQuantity: 5,
-          reservedQuantity: 0,
-        }),
-        dto.generate.inventoryLevel({
-          inventoryItemId: 'inv_2',
-          locationId: 'loc_1',
-          stockedQuantity: 3,
-          reservedQuantity: 0,
-        }),
-      ],
-    })
+  test('throws when any one item in a multi-item cart is short', async ({ service, expect }) => {
+    const { cartId } = await stockedCartItem(service, { quantity: 1, stockedQuantity: 5 })
+    await stockedCartItem(service, { cartId, quantity: 100, stockedQuantity: 3 })
 
-    await expect(confirmInventoryWorkflow.run({ cartId: 'cart_1' })).rejects.toThrow(
+    await expect(confirmInventoryWorkflow.run({ cartId })).rejects.toThrow(
       'Some variant does not have the required inventory',
     )
   })

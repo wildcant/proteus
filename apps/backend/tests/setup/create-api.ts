@@ -4,8 +4,6 @@
  */
 
 import { createServer, type Server } from 'node:http'
-import type { InputConfig } from '@core/config/types.js'
-import type { DbProvider } from '@core/db/ports.js'
 import type { Logger } from '@core/types/logger.js'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'
@@ -16,22 +14,17 @@ import type { Express } from 'express'
 import qs from 'qs'
 import request, { type Agent } from 'supertest'
 import type { ZodType } from 'zod'
-import { bootstrapContainer } from '../../src/container.js'
 import { createExpressApp } from '../../src/framework/runtime/express/app.js'
 import type { Database } from '../../src/schema.type.js'
+import { type CreateContainerOptions, createTestContainer } from './create-container.js'
 
-export type CreateApiOptions = {
+export type CreateApiOptions = CreateContainerOptions & {
   /** Definitions to mount. Sorted with the same RoutesSorter the real server uses. */
   definitions?: RouteDefinition[]
   /** Mount only these matchers. Omitted mounts everything passed. */
   matchers?: string[]
-  /** Config overrides, e.g. authVerificationsPerActor. */
-  config?: InputConfig
   /** Inject the namespace auth middleware prepareRoutes applies to /admin and /store. */
   namespaceAuth?: boolean
-  /** Runs after the container is built, before the server listens — the place to
-   *  register a fake provider or override a registration for this test. */
-  register?: (container: AwilixContainer) => void | Promise<void>
 }
 
 /**
@@ -98,22 +91,14 @@ export async function createApi(
   deps: { getDb: () => Database; logger: Logger },
   options: CreateApiOptions = {},
 ): Promise<TestApi> {
-  const { getDb, logger } = deps
-
-  const dbProvider: DbProvider = {
-    getDb,
-    withConnection: (fn) => fn(),
-    shutdown: async () => {
-      // The pool belongs to db-setup.ts and outlives every container built here.
-    },
-  }
+  const { logger } = deps
 
   const selected = (options.definitions ?? []).filter(
     (definition) => !options.matchers || options.matchers.includes(definition.matcher),
   )
   const mounted = options.namespaceAuth ? selected.map(withNamespaceAuth) : selected
 
-  const container = await bootstrapContainer({ logger, dbProvider, config: options.config })
+  const { container, close: disposeContainer } = await createTestContainer(deps, options)
 
   let server: Server | undefined
   let closed = false
@@ -123,12 +108,10 @@ export async function createApi(
     closed = true
     const running = server
     if (running) await new Promise<void>((resolve) => running.close(() => resolve()))
-    await container.dispose()
+    await disposeContainer()
   }
 
   try {
-    await options.register?.(container)
-
     if (mounted.length > 0) {
       const routes = new RoutesSorter(mounted).sort().map((definition) => ({
         method: definition.method,

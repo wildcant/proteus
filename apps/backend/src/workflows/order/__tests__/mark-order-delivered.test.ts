@@ -1,127 +1,83 @@
-import type { OrderDTO } from '@core/types/order/common.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { setWorkflowEngine } from '@core/workflows/types.js'
+import type { IOrderModuleService } from '@core/types/order/service.js'
+import { Modules } from '@core/utils/index.js'
+import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
 import { vi } from 'vitest'
 import { markOrderDeliveredWorkflow } from '../mark-order-delivered.js'
 
-function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<OrderDTO>) {
-  const order = generate.order({ status: 'pending', fulfillmentStatus: 'shipped', ...orderOverrides })
-  const fulfillment = generate.fulfillment({ shippedAt: new Date() })
-  const deliveredOrder = { ...order, fulfillmentStatus: 'delivered' as const }
+type Services = Fixtures['service']
 
-  const orderService = {
-    retrieveOrder: vi.fn().mockResolvedValue(order),
-    updateFulfillmentStatus: vi.fn().mockResolvedValue(deliveredOrder),
-  }
+let container: TestContainer
 
-  const fulfillmentService = {
-    retrieveFulfillment: vi.fn().mockResolvedValue(fulfillment),
-    updateFulfillment: vi.fn().mockResolvedValue({ ...fulfillment, deliveredAt: new Date() }),
-  }
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
 
-  const orderFulfillmentLink = {
-    orderId: order.id,
-    fulfillmentId: fulfillment.id,
-  }
+/** Inventory is left untracked: delivery does not touch stock. */
+const shippedOrder = async (service: Services) => {
+  const { order } = await service.create.order(container, { inventory: null })
+  const { fulfillmentId } = await service.create.shippedOrder(container, order.id)
 
-  const orderFulfillmentRepo = {
-    findByFulfillmentId: vi.fn().mockResolvedValue(orderFulfillmentLink),
-  }
-
-  const linkService = {
-    repo: vi.fn().mockReturnValue(orderFulfillmentRepo),
-  }
-
-  const container = createContainer()
-  container.register({
-    [Modules.ORDER]: asValue(orderService),
-    [Modules.FULFILLMENT]: asValue(fulfillmentService),
-    [ContainerRegistrationKeys.LINK]: asValue(linkService),
-  })
-
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
-
-  return { order, fulfillment, orderService, fulfillmentService, linkService, orderFulfillmentRepo }
+  return { orderId: order.id, fulfillmentId }
 }
 
 test.describe('markOrderDeliveredWorkflow', () => {
-  test('marks fulfillment as delivered and updates order status', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
+  test('stamps the fulfillment as delivered and advances the order', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await shippedOrder(service)
 
-    const result = await markOrderDeliveredWorkflow.run({
-      orderId: services.order.id,
-      fulfillmentId: services.fulfillment.id,
-    })
+    const result = await markOrderDeliveredWorkflow.run({ orderId, fulfillmentId })
 
     expect(result.fulfillmentStatus).toBe('delivered')
-    expect(services.fulfillmentService.updateFulfillment).toHaveBeenCalledWith(services.fulfillment.id, {
+    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'delivered' })
+    expect(await service.read.fulfillment(container, fulfillmentId)).toMatchObject({
       deliveredAt: expect.any(Date),
     })
-    expect(services.orderService.updateFulfillmentStatus).toHaveBeenCalledWith(services.order.id, 'delivered')
   })
 
-  test('rejects when order is canceled', async ({ dto, expect }) => {
-    const services = setup(dto.generate, { status: 'canceled', fulfillmentStatus: 'shipped' })
+  test('refuses to deliver a canceled order', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await shippedOrder(service)
+    // Written directly: `cancel-order` refuses an order that has already shipped, so this
+    // combination is only reachable by an admin correcting the record.
+    await service.update.order(container, orderId, { status: 'canceled' })
 
-    await expect(
-      markOrderDeliveredWorkflow.run({
-        orderId: services.order.id,
-        fulfillmentId: services.fulfillment.id,
-      }),
-    ).rejects.toThrow('order is canceled')
+    await expect(markOrderDeliveredWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow('order is canceled')
   })
 
-  test('rejects when fulfillment is canceled', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
-    services.fulfillmentService.retrieveFulfillment.mockResolvedValue({
-      ...services.fulfillment,
-      canceledAt: new Date(),
-    })
+  test('refuses to deliver a canceled fulfillment', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await shippedOrder(service)
+    await service.update.fulfillment(container, fulfillmentId, { canceledAt: new Date() })
 
-    await expect(
-      markOrderDeliveredWorkflow.run({
-        orderId: services.order.id,
-        fulfillmentId: services.fulfillment.id,
-      }),
-    ).rejects.toThrow('fulfillment is canceled')
+    await expect(markOrderDeliveredWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow('fulfillment is canceled')
   })
 
-  test('rejects when fulfillment status is not shipped', async ({ dto, expect }) => {
-    setup(dto.generate, { fulfillmentStatus: 'fulfilled' })
+  test('refuses to deliver an order that has not shipped', async ({ service, expect }) => {
+    const { order } = await service.create.order(container, { inventory: null })
+    const { fulfillmentId } = await service.create.fulfilledOrder(container, order.id)
 
-    await expect(markOrderDeliveredWorkflow.run({ orderId: 'any', fulfillmentId: 'ful_1' })).rejects.toThrow(
+    await expect(markOrderDeliveredWorkflow.run({ orderId: order.id, fulfillmentId })).rejects.toThrow(
       'fulfillment status is "fulfilled", expected "shipped"',
     )
   })
 
-  test('rejects when fulfillment is not linked to the order', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
-    services.orderFulfillmentRepo.findByFulfillmentId.mockResolvedValue(null)
+  test('refuses a fulfillment belonging to another order', async ({ service, expect }) => {
+    const { orderId } = await shippedOrder(service)
+    const other = await shippedOrder(service)
 
-    await expect(
-      markOrderDeliveredWorkflow.run({
-        orderId: services.order.id,
-        fulfillmentId: 'ful_unlinked',
-      }),
-    ).rejects.toThrow('not linked to order')
+    await expect(markOrderDeliveredWorkflow.run({ orderId, fulfillmentId: other.fulfillmentId })).rejects.toThrow(
+      `is not linked to order ${orderId}`,
+    )
   })
 
-  test('compensates on failure by reverting fulfillment and order status', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
-    services.orderService.updateFulfillmentStatus.mockRejectedValue(new Error('DB error'))
+  test('rollback un-stamps the fulfillment when the order cannot be advanced', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await shippedOrder(service)
 
-    await expect(
-      markOrderDeliveredWorkflow.run({
-        orderId: services.order.id,
-        fulfillmentId: services.fulfillment.id,
-      }),
-    ).rejects.toThrow('DB error')
+    vi.spyOn(container.resolve<IOrderModuleService>(Modules.ORDER), 'updateFulfillmentStatus').mockRejectedValueOnce(
+      new Error('DB error'),
+    )
 
-    expect(services.fulfillmentService.updateFulfillment).toHaveBeenLastCalledWith(services.fulfillment.id, {
-      deliveredAt: null,
-    })
+    await expect(markOrderDeliveredWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow('DB error')
+
+    expect(await service.read.fulfillment(container, fulfillmentId)).toMatchObject({ deliveredAt: null })
+    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'shipped' })
   })
 })

@@ -23,9 +23,12 @@ import {
   generateCartDTO,
   generateCartLineItemDTO,
   generateCartShippingMethodDTO,
+  generateCreateCartAddressDTO,
   generateCreateCartDTO,
   generateCreateLineItemDTO,
   generateCreateShippingMethodDTO,
+  generateUpdateCartDTO,
+  generateUpdateCartWithAddressesDTO,
 } from '../factories/cart-dto.js'
 import {
   generateCreateCustomerAddressDTO,
@@ -34,7 +37,7 @@ import {
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
-import { generateFulfillmentDTO } from '../factories/fulfillment-dto.js'
+import { generateFulfillmentDTO, generateUpdateFulfillmentDTO } from '../factories/fulfillment-dto.js'
 import {
   generateCreateInventoryItemDTO,
   generateCreateInventoryLevelDTO,
@@ -51,6 +54,7 @@ import {
   generateCreateOrderTransactionDTO,
   generateOrderDTO,
   generateOrderLineItemDTO,
+  generateUpdateOrderDTO,
 } from '../factories/order-dto.js'
 import {
   generateCreateAccountHolderDTO,
@@ -78,38 +82,69 @@ import {
   generateVariantImageInputDTO,
 } from '../factories/product-dto.js'
 import {
+  addCartAddresses,
   addImageToVariant,
+  addInventoryLevel,
   addLineItem,
   addShippingMethod,
+  cancelPayment,
+  capturePayment,
   confirmAuthVerification,
+  createAuthIdentity,
   createCart,
   createCheckoutReadyCart,
+  createCustomer,
+  createOrder,
   createPaymentSessionForCart,
   createProduct,
   createProductOption,
   createProductVariant,
   createProductVariants,
+  fulfillOrder,
   linkRepo,
   listAuthVerifications,
+  listCarts,
+  listCustomers,
+  listLineItems,
+  listNotifications,
+  listOrderLineItems,
+  listOrderShippingMethods,
   listOrders,
+  listOrderTransactions,
+  listPrices,
   listProductImages,
+  listProductOptionsForProduct,
   listProducts,
   listProductVariantImages,
   listProductVariants,
   listReservationItems,
   priceVariants,
   requestAuthVerification,
+  retrieveAuthIdentity,
+  retrieveCart,
+  retrieveCartAddress,
+  retrieveCustomer,
+  retrieveFulfillment,
+  retrieveOrder,
+  retrieveOrderAddress,
+  retrievePayment,
   retrievePaymentCollection,
   retrieveProductVariant,
   setProductOptions,
+  shipOrder,
   stockVariant,
   updateAuthIdentity,
   updateAuthVerification,
+  updateCart,
+  updateFulfillment,
+  updateOrder,
   updateProductVariant,
 } from '../factories/services/index.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
 import { type CreateApiOptions, createApi, type TestApi } from './create-api.js'
+import { type CreateContainerOptions, createTestContainer, type TestContainer } from './create-container.js'
 import { db as dbInstance } from './db-setup.js'
+import { runStep, runStepAndCompensate } from './run-step.js'
 
 function makeRequest(overrides: Partial<HttpRequest> = {}): HttpRequest {
   return {
@@ -135,6 +170,17 @@ export type Fixtures = {
   /** Builds a bootstrapped container, and an Express server when definitions are passed.
    *  Everything it creates is closed after the test. */
   createApi: (options?: CreateApiOptions) => Promise<TestApi>
+  /** The bootstrapped container on its own — no routes, no listening server. What a workflow or
+   *  service test wants; `createApi` is the same container with an HTTP surface around it.
+   *  Disposed after the test. */
+  createTestContainer: (options?: CreateContainerOptions) => Promise<TestContainer>
+  /** Runs a bare workflow step against whatever container is currently registered — the one
+   *  `createApi` built. Steps are written to be composed, so exercising one alone means
+   *  wrapping it in a throwaway workflow. */
+  step: {
+    run: typeof runStep
+    runAndCompensate: typeof runStepAndCompensate
+  }
   factories: {
     customer: typeof generateCustomer
     user: typeof generateUser
@@ -195,7 +241,12 @@ export type Fixtures = {
       createCart: typeof generateCreateCartDTO
       createLineItem: typeof generateCreateLineItemDTO
       createShippingMethod: typeof generateCreateShippingMethodDTO
+      createCartAddress: typeof generateCreateCartAddressDTO
+      updateCartWithAddresses: typeof generateUpdateCartWithAddressesDTO
       fulfillment: typeof generateFulfillmentDTO
+      updateFulfillment: typeof generateUpdateFulfillmentDTO
+      updateCart: typeof generateUpdateCartDTO
+      updateOrder: typeof generateUpdateOrderDTO
       inventoryLevel: typeof generateInventoryLevelDTO
       createInventoryItem: typeof generateCreateInventoryItemDTO
       createInventoryLevel: typeof generateCreateInventoryLevelDTO
@@ -210,11 +261,19 @@ export type Fixtures = {
   service: {
     create: {
       cart: typeof createCart
+      cartAddresses: typeof addCartAddresses
+      customer: typeof createCustomer
       lineItem: typeof addLineItem
       shippingMethod: typeof addShippingMethod
       variantStock: typeof stockVariant
+      inventoryLevel: typeof addInventoryLevel
       paymentSessionForCart: typeof createPaymentSessionForCart
+      capturedPayment: typeof capturePayment
+      canceledPayment: typeof cancelPayment
       checkoutReadyCart: typeof createCheckoutReadyCart
+      order: typeof createOrder
+      fulfilledOrder: typeof fulfillOrder
+      shippedOrder: typeof shipOrder
       product: typeof createProduct
       productOption: typeof createProductOption
       productVariant: typeof createProductVariant
@@ -223,23 +282,44 @@ export type Fixtures = {
       variantPrices: typeof priceVariants
       authVerification: typeof requestAuthVerification
       confirmedAuthVerification: typeof confirmAuthVerification
+      authIdentity: typeof createAuthIdentity
     }
     update: {
       productOptions: typeof setProductOptions
       productVariant: typeof updateProductVariant
       authIdentity: typeof updateAuthIdentity
       authVerification: typeof updateAuthVerification
+      cart: typeof updateCart
+      fulfillment: typeof updateFulfillment
+      order: typeof updateOrder
     }
     read: {
+      authIdentity: typeof retrieveAuthIdentity
+      cart: typeof retrieveCart
+      cartAddress: typeof retrieveCartAddress
+      carts: typeof listCarts
+      cartLineItems: typeof listLineItems
+      customer: typeof retrieveCustomer
+      customers: typeof listCustomers
       authVerifications: typeof listAuthVerifications
+      notifications: typeof listNotifications
+      fulfillment: typeof retrieveFulfillment
+      order: typeof retrieveOrder
       orders: typeof listOrders
+      orderAddress: typeof retrieveOrderAddress
+      orderLineItems: typeof listOrderLineItems
+      orderShippingMethods: typeof listOrderShippingMethods
+      orderTransactions: typeof listOrderTransactions
+      payment: typeof retrievePayment
       paymentCollection: typeof retrievePaymentCollection
       reservationItems: typeof listReservationItems
       linkRepo: typeof linkRepo
+      prices: typeof listPrices
       products: typeof listProducts
       productVariants: typeof listProductVariants
       productVariant: typeof retrieveProductVariant
       productImages: typeof listProductImages
+      productOptionsForProduct: typeof listProductOptionsForProduct
       productVariantImages: typeof listProductVariantImages
     }
   }
@@ -264,6 +344,18 @@ export const test = testBase.extend<Fixtures>({
       return api
     })
     await Promise.all(created.map((api) => api.close()))
+  },
+  async step({ task: _ }, use) {
+    await use({ run: runStep, runAndCompensate: runStepAndCompensate })
+  },
+  async createTestContainer({ getDb, logger }, use) {
+    const created: Array<() => Promise<void>> = []
+    await use(async (options) => {
+      const { container, close } = await createTestContainer({ getDb, logger }, options)
+      created.push(close)
+      return container
+    })
+    await Promise.all(created.map((close) => close()))
   },
   async factories({ task: _ }, use) {
     await use({
@@ -328,7 +420,12 @@ export const test = testBase.extend<Fixtures>({
         createCart: generateCreateCartDTO,
         createLineItem: generateCreateLineItemDTO,
         createShippingMethod: generateCreateShippingMethodDTO,
+        createCartAddress: generateCreateCartAddressDTO,
+        updateCartWithAddresses: generateUpdateCartWithAddressesDTO,
         fulfillment: generateFulfillmentDTO,
+        updateFulfillment: generateUpdateFulfillmentDTO,
+        updateCart: generateUpdateCartDTO,
+        updateOrder: generateUpdateOrderDTO,
         inventoryLevel: generateInventoryLevelDTO,
         createInventoryItem: generateCreateInventoryItemDTO,
         createInventoryLevel: generateCreateInventoryLevelDTO,
@@ -342,11 +439,19 @@ export const test = testBase.extend<Fixtures>({
     await use({
       create: {
         cart: createCart,
+        cartAddresses: addCartAddresses,
+        customer: createCustomer,
         lineItem: addLineItem,
         shippingMethod: addShippingMethod,
         variantStock: stockVariant,
+        inventoryLevel: addInventoryLevel,
         paymentSessionForCart: createPaymentSessionForCart,
+        capturedPayment: capturePayment,
+        canceledPayment: cancelPayment,
         checkoutReadyCart: createCheckoutReadyCart,
+        order: createOrder,
+        fulfilledOrder: fulfillOrder,
+        shippedOrder: shipOrder,
         product: createProduct,
         productOption: createProductOption,
         productVariant: createProductVariant,
@@ -355,23 +460,44 @@ export const test = testBase.extend<Fixtures>({
         variantPrices: priceVariants,
         authVerification: requestAuthVerification,
         confirmedAuthVerification: confirmAuthVerification,
+        authIdentity: createAuthIdentity,
       },
       update: {
         productOptions: setProductOptions,
         productVariant: updateProductVariant,
         authIdentity: updateAuthIdentity,
         authVerification: updateAuthVerification,
+        cart: updateCart,
+        fulfillment: updateFulfillment,
+        order: updateOrder,
       },
       read: {
+        authIdentity: retrieveAuthIdentity,
+        cart: retrieveCart,
+        cartAddress: retrieveCartAddress,
+        carts: listCarts,
+        cartLineItems: listLineItems,
+        customer: retrieveCustomer,
+        customers: listCustomers,
         authVerifications: listAuthVerifications,
+        notifications: listNotifications,
+        fulfillment: retrieveFulfillment,
+        order: retrieveOrder,
         orders: listOrders,
+        orderAddress: retrieveOrderAddress,
+        orderLineItems: listOrderLineItems,
+        orderShippingMethods: listOrderShippingMethods,
+        orderTransactions: listOrderTransactions,
+        payment: retrievePayment,
         paymentCollection: retrievePaymentCollection,
         reservationItems: listReservationItems,
         linkRepo,
+        prices: listPrices,
         products: listProducts,
         productVariants: listProductVariants,
         productVariant: retrieveProductVariant,
         productImages: listProductImages,
+        productOptionsForProduct: listProductOptionsForProduct,
         productVariantImages: listProductVariantImages,
       },
     })

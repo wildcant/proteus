@@ -1,330 +1,126 @@
-import { BigNumber } from '@core/db/bignum.js'
-import type { CartAddressDTO, CartDTO, CartLineItemDTO, CartShippingMethodDTO } from '@core/types/cart/common.js'
-import type { ILinkService } from '@core/types/link/service.js'
-import type { PaymentCollectionDTO } from '@core/types/payment/common.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { setWorkflowEngine } from '@core/workflows/types.js'
-import { type Fixtures, test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import { Modules } from '@core/utils/index.js'
+import type { TestContainer } from '@tests/setup/create-container.js'
+import { test } from '@tests/setup/test-extend.js'
+import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
-import { noopLogger } from '../../../framework/logger/noop-logger.js'
 import { completeCartWorkflow } from '../complete-cart.js'
 
-type SetupOptions = {
-  cart?: CartDTO
-  address?: CartAddressDTO | null
-  lineItems?: CartLineItemDTO[]
-  shippingMethods?: CartShippingMethodDTO[]
-  orderCartLink?: { orderId: string; cartId: string } | null
-  variantMappings?: Array<{ variantId: string; inventoryItemId: string; requiredQuantity?: number }>
-  inventoryLevels?: Array<{ inventoryItemId: string; locationId: string; stockedQuantity: number }>
-}
+let container: TestContainer
 
-function setupWorkflow(generate: Fixtures['dto']['generate'], options: SetupOptions = {}) {
-  const cart = options.cart ?? generate.cart({ customerId: 'cus_1', shippingAddressId: 'caaddr_1' })
-  const address = options.address !== undefined ? options.address : generate.cartAddress({ customerId: 'cus_1' })
-  const lineItems = options.lineItems ?? [generate.cartLineItem({ cartId: cart.id, variantId: 'var_1' })]
-  const shippingMethods = options.shippingMethods ?? [generate.cartShippingMethod({ cartId: cart.id })]
-  const initialOrderCartLink = options.orderCartLink ?? null
-
-  const createdOrder = generate.order({
-    id: 'ord_1',
-    email: cart.email,
-    customerId: cart.customerId,
-    currencyCode: cart.currencyCode,
-    shippingAddressId: 'ordaddr_1',
-  })
-
-  const capturedPayment = generate.payment({
-    amount: new BigNumber(1500),
-    providerId: 'stripe',
-    capturedAt: new Date(),
-    captures: [
-      {
-        id: 'cap_1',
-        amount: new BigNumber(1500),
-        paymentId: 'pay_1',
-        createdBy: null,
-        metadata: null,
-        createdAt: new Date(),
-      },
-    ],
-  })
-
-  let currentCart: CartDTO = cart
-  const cartService = {
-    retrieveCart: vi.fn().mockImplementation(async () => currentCart),
-    retrieveCartAddress: vi.fn().mockImplementation(async (id: string) => {
-      if (!address) throw new Error(`Address ${id} not found`)
-      return address
-    }),
-    listLineItems: vi.fn().mockResolvedValue(lineItems),
-    listShippingMethods: vi.fn().mockResolvedValue(shippingMethods),
-    updateCart: vi.fn().mockImplementation(async (_id: string, updates: Partial<CartDTO>) => {
-      currentCart = { ...currentCart, ...updates }
-      return currentCart
-    }),
-  }
-
-  const fulfillmentService = {
-    retrieveShippingOption: vi.fn().mockResolvedValue({ isEnabled: true }),
-  }
-
-  const paymentService = {
-    retrievePaymentCollection: vi.fn().mockResolvedValue({
-      id: 'paycol_1',
-      currencyCode: 'usd',
-      amount: new BigNumber(1500),
-      status: 'authorized',
-      paymentSessions: [
-        generate.paymentSession({
-          providerId: 'stripe',
-          amount: new BigNumber(1500),
-          status: 'authorized',
-          authorizedAt: new Date(),
-        }),
-      ],
-    } as PaymentCollectionDTO),
-    authorizePaymentSession: vi.fn().mockResolvedValue(capturedPayment),
-    capturePayment: vi.fn().mockResolvedValue(capturedPayment),
-    refundPayment: vi.fn().mockResolvedValue(undefined),
-    cancelPayment: vi.fn().mockResolvedValue(undefined),
-  }
-
-  const orderService = {
-    createOrder: vi.fn().mockResolvedValue(createdOrder),
-    retrieveOrder: vi.fn().mockResolvedValue(createdOrder),
-    createOrderAddresses: vi
-      .fn()
-      .mockImplementation(async (data: Record<string, unknown>[]) =>
-        data.map((entry, i) => ({ id: `ordaddr_${i + 1}`, ...entry })),
-      ),
-    addOrderTransaction: vi.fn().mockResolvedValue({ id: 'ordtrx_1' }),
-    deleteOrders: vi.fn().mockResolvedValue(undefined),
-  }
-
-  const inventoryService = {
-    listInventoryLevels: vi.fn().mockResolvedValue(
-      (options.inventoryLevels ?? [{ inventoryItemId: 'inv_1', locationId: 'loc_1', stockedQuantity: 10 }]).map(
-        (l) => ({
-          id: `ilev_${l.inventoryItemId}`,
-          ...l,
-          reservedQuantity: 0,
-          incomingQuantity: 0,
-          metadata: null,
-          createdAt: new Date(),
-          deletedAt: null,
-        }),
-      ),
-    ),
-    createReservationItems: vi.fn().mockResolvedValue([{ id: 'resitem_1' }]),
-    deleteReservationItems: vi.fn().mockResolvedValue(undefined),
-    listReservationItems: vi.fn().mockResolvedValue([]),
-  }
-
-  const orderCartRepo = {
-    findByCartId: vi.fn().mockResolvedValue(initialOrderCartLink),
-  }
-  const cartPaymentCollectionRepo = {
-    findByCartId: vi.fn().mockResolvedValue({ id: 'cartpaycol_1', cartId: cart.id, paymentCollectionId: 'paycol_1' }),
-  }
-  const productVariantInventoryItemRepo = {
-    findByVariantIds: vi.fn().mockResolvedValue(
-      (options.variantMappings ?? [{ variantId: 'var_1', inventoryItemId: 'inv_1' }]).map((m) => ({
-        id: `pvitem_${m.variantId}`,
-        requiredQuantity: m.requiredQuantity ?? 1,
-        createdAt: new Date(),
-        deletedAt: null,
-        ...m,
-      })),
-    ),
-  }
-
-  const dismissLinks = vi.fn().mockResolvedValue({})
-  const createManyLinks = vi.fn().mockResolvedValue(undefined)
-  const linkService: ILinkService = {
-    createMany: createManyLinks,
-    repo: ((name: string) => {
-      const repos: Record<string, unknown> = {
-        orderCart: orderCartRepo,
-        cartPaymentCollection: cartPaymentCollectionRepo,
-        productVariantInventoryItem: productVariantInventoryItemRepo,
-      }
-      return repos[name]
-    }) as ILinkService['repo'],
-    dismissLinks,
-  }
-
-  const container = createContainer()
-  container.register({
-    [Modules.CART]: asValue(cartService),
-    [Modules.FULFILLMENT]: asValue(fulfillmentService),
-    [Modules.PAYMENT]: asValue(paymentService),
-    [Modules.ORDER]: asValue(orderService),
-    [Modules.INVENTORY]: asValue(inventoryService),
-    [ContainerRegistrationKeys.LINK]: asValue(linkService),
-    [ContainerRegistrationKeys.LOGGER]: asValue(noopLogger),
-  })
-
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
-
-  return {
-    cart,
-    cartService,
-    paymentService,
-    orderService,
-    inventoryService,
-    dismissLinks,
-    createManyLinks,
-    orderCartRepo,
-    productVariantInventoryItemRepo,
-  }
-}
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
 
 test.describe('completeCartWorkflow', () => {
-  test('happy path: creates order from cart, links, reserves inventory, and records transaction', async ({
-    dto,
-    expect,
-  }) => {
-    const services = setupWorkflow(dto.generate)
+  test('turns the cart into an order, reserves its stock, and locks the cart', async ({ service, expect }) => {
+    const { cart, lineItem, paymentCollection } = await service.create.checkoutReadyCart(container)
+    assertDefined(paymentCollection)
 
-    const result = await completeCartWorkflow.run({ cartId: services.cart.id })
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
 
-    expect(result.id).toBe('ord_1')
-    expect(result.status).toBe('pending')
+    expect(order).toMatchObject({ status: 'pending', email: cart.email, currencyCode: cart.currencyCode })
+    expect(await service.read.orderLineItems(container, order.id)).toMatchObject([{ title: lineItem.title }])
+    expect(await service.read.orderShippingMethods(container, order.id)).toHaveLength(1)
 
-    // Order was created with correct data
-    expect(services.orderService.createOrder).toHaveBeenCalledOnce()
-    const createOrderCall = services.orderService.createOrder.mock.calls[0]?.[0]
-    expect(createOrderCall).toMatchObject({
-      email: services.cart.email,
-      customerId: 'cus_1',
-      currencyCode: services.cart.currencyCode,
+    // Both links go out as one batch, order↔cart first so the unique index on `cartId` rejects
+    // a duplicate completion before the sibling link is written.
+    expect(await service.read.linkRepo(container, 'orderCart').findByCartId(cart.id)).toMatchObject({
+      orderId: order.id,
     })
-    expect(createOrderCall.items).toHaveLength(1)
-    expect(createOrderCall.shippingMethods).toHaveLength(1)
-
-    // Both links go out as one atomic batch, order↔cart first so the unique index on
-    // `cartId` rejects a duplicate completion before the sibling link is written.
-    expect(services.createManyLinks).toHaveBeenCalledWith([
-      { link: 'orderCart', data: { orderId: 'ord_1', cartId: services.cart.id } },
-      { link: 'orderPaymentCollection', data: { orderId: 'ord_1', paymentCollectionId: 'paycol_1' } },
-    ])
-
-    // Inventory was reserved
-    expect(services.inventoryService.createReservationItems).toHaveBeenCalledOnce()
-
-    // Transaction was recorded
-    expect(services.orderService.addOrderTransaction).toHaveBeenCalledWith({
-      orderId: 'ord_1',
-      amount: expect.any(BigNumber),
-      currencyCode: expect.any(String),
-      reference: 'capture',
-      referenceId: expect.any(String),
+    expect(await service.read.linkRepo(container, 'orderPaymentCollection').findByOrderId(order.id)).toMatchObject({
+      paymentCollectionId: paymentCollection.id,
     })
 
-    // Cart was completed
-    expect(services.cartService.updateCart).toHaveBeenCalledWith(services.cart.id, {
+    expect(await service.read.reservationItems(container)).toHaveLength(1)
+    expect(await service.read.cart(container, cart.id)).toMatchObject({
       status: 'completed',
       completedAt: expect.any(Date),
     })
   })
 
-  test('idempotency: returns existing order if order already linked', async ({ dto, expect }) => {
-    const cart = dto.generate.cart({ id: 'cart_1', status: 'completed', completedAt: new Date() })
-    const services = setupWorkflow(dto.generate, {
-      cart,
-      orderCartLink: { orderId: 'ord_existing', cartId: cart.id },
-    })
+  test('a second completion returns the first order instead of making another', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+    const first = await completeCartWorkflow.run({ cartId: cart.id })
 
-    const result = await completeCartWorkflow.run({ cartId: cart.id })
+    const second = await completeCartWorkflow.run({ cartId: cart.id })
 
-    expect(result.id).toBe('ord_1')
-    expect(services.orderService.retrieveOrder).toHaveBeenCalledWith('ord_existing')
-    expect(services.orderService.createOrder).not.toHaveBeenCalled()
-    expect(services.cartService.updateCart).not.toHaveBeenCalled()
+    expect(second.id).toBe(first.id)
+    expect(await service.read.orders(container)).toHaveLength(1)
   })
 
-  test('parses shipping method data from text to jsonb', async ({ dto, expect }) => {
-    const cart = dto.generate.cart({ id: 'cart_1' })
-    const services = setupWorkflow(dto.generate, {
-      cart,
-      shippingMethods: [
-        dto.generate.cartShippingMethod({
-          cartId: cart.id,
-          data: { provider: 'ups', rateId: 'R123' },
-        }),
-      ],
+  test('carries the shipping method payload onto the order', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container, {
+      shippingMethod: { data: { provider: 'ups', rateId: 'R123' } },
     })
 
-    await completeCartWorkflow.run({ cartId: cart.id })
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
 
-    const createOrderCall = services.orderService.createOrder.mock.calls[0]?.[0]
-    const orderMethod = createOrderCall.shippingMethods[0]
-    expect(orderMethod.data).toEqual({ provider: 'ups', rateId: 'R123' })
+    expect(await service.read.orderShippingMethods(container, order.id)).toMatchObject([
+      { data: { provider: 'ups', rateId: 'R123' } },
+    ])
   })
 
-  test('snapshots addresses without timestamps', async ({ dto, expect }) => {
-    const services = setupWorkflow(dto.generate, {
-      address: dto.generate.cartAddress({ firstName: 'John', lastName: 'Smith' }),
+  test('snapshots the address rather than pointing at the cart’s', async ({ dto, service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+    const withAddress = await service.create.cartAddresses(container, cart.id, {
+      shippingAddress: dto.generate.createCartAddress({
+        firstName: 'John',
+        lastName: 'Smith',
+        city: 'Springfield',
+      }),
     })
+    assertDefined(withAddress.shippingAddressId)
 
-    await completeCartWorkflow.run({ cartId: services.cart.id })
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
 
-    expect(services.orderService.createOrderAddresses).toHaveBeenCalledOnce()
-    const addressInput = services.orderService.createOrderAddresses.mock.calls[0]?.[0][0]
-    expect(addressInput).toMatchObject({
+    assertDefined(order.shippingAddressId)
+    // A copy, not a reference: editing the cart address later must not rewrite the order.
+    expect(order.shippingAddressId).not.toBe(withAddress.shippingAddressId)
+    expect(await service.read.orderAddress(container, order.shippingAddressId)).toMatchObject({
       firstName: 'John',
       lastName: 'Smith',
+      city: 'Springfield',
     })
-    expect(addressInput).not.toHaveProperty('id')
-    expect(addressInput).not.toHaveProperty('createdAt')
-    expect(addressInput).not.toHaveProperty('updatedAt')
-    expect(addressInput).not.toHaveProperty('deletedAt')
   })
 
-  test('handles cart with no addresses', async ({ dto, expect }) => {
-    const services = setupWorkflow(dto.generate, {
-      cart: dto.generate.cart({ shippingAddressId: null, billingAddressId: null }),
-      address: null,
-    })
+  test('completes a cart that has no addresses', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+    expect(await service.read.cart(container, cart.id)).toMatchObject({ shippingAddressId: null })
 
-    await completeCartWorkflow.run({ cartId: services.cart.id })
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
 
-    expect(services.orderService.createOrderAddresses).not.toHaveBeenCalled()
-    expect(services.orderService.createOrder).toHaveBeenCalledOnce()
-    const createOrderCall = services.orderService.createOrder.mock.calls[0]?.[0]
-    expect(createOrderCall.shippingAddressId).toBeUndefined()
-    expect(createOrderCall.billingAddressId).toBeUndefined()
+    expect(order).toMatchObject({ shippingAddressId: null, billingAddressId: null, status: 'pending' })
   })
 
-  test('compensation: deletes order and dismisses links when record-transaction fails', async ({ dto, expect }) => {
-    const services = setupWorkflow(dto.generate)
+  test('a failure after the order exists unwinds every earlier step', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
 
-    // Make addOrderTransaction fail to trigger compensation
-    services.orderService.addOrderTransaction.mockRejectedValue(new Error('Transaction recording failed'))
+    vi.spyOn(
+      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
+      'authorizePaymentSession',
+    ).mockRejectedValueOnce(new Error('provider unavailable'))
 
-    await expect(completeCartWorkflow.run({ cartId: services.cart.id })).rejects.toThrow('Transaction recording failed')
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
 
-    // Compensation should have dismissed links and deleted the order
-    expect(services.dismissLinks).toHaveBeenCalledWith({ orderId: ['ord_1'] })
-    expect(services.orderService.deleteOrders).toHaveBeenCalledWith(['ord_1'])
+    // Each compensation asserted on the state it restored, not on the call that restored it.
+    expect(await service.read.orders(container)).toEqual([])
+    expect(await service.read.linkRepo(container, 'orderCart').findByCartId(cart.id)).toBeNull()
+    expect(await service.read.reservationItems(container)).toEqual([])
+    expect(await service.read.cart(container, cart.id)).toMatchObject({ status: 'active', completedAt: null })
   })
 
-  test('rejects line items without variants', async ({ dto, expect }) => {
-    const cart = dto.generate.cart()
-    setupWorkflow(dto.generate, {
-      cart,
-      lineItems: [dto.generate.cartLineItem({ cartId: cart.id, variantId: null })],
+  test('refuses a line item with no variant', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container, {
+      lineItem: { variantId: null },
+      inventory: null,
     })
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('has no variant')
   })
 
-  test('rejects cart without email', async ({ dto, expect }) => {
-    const cart = dto.generate.cart({ email: null })
-    setupWorkflow(dto.generate, { cart })
+  test('refuses a cart with no email', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container, { cart: { email: null } })
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow(
       'has no email — an email is required to complete checkout',

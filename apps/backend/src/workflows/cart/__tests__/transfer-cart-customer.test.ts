@@ -1,85 +1,44 @@
-import type { CartDTO } from '@core/types/cart/common.js'
-import type { CustomerDTO } from '@core/types/customer/common.js'
-import { Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { setWorkflowEngine } from '@core/workflows/types.js'
-import { type Fixtures, test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
-import { vi } from 'vitest'
+import type { TestContainer } from '@tests/setup/create-container.js'
+import { test } from '@tests/setup/test-extend.js'
 import { transferCartCustomerWorkflow } from '../transfer-cart-customer.js'
 
-function setup(generate: Fixtures['dto']['generate'], overrides?: { cart?: CartDTO; customer?: CustomerDTO | null }) {
-  const customer =
-    overrides?.customer !== undefined
-      ? overrides.customer
-      : generate.customer({ id: 'cus_registered', hasAccount: true, email: 'registered@example.com' })
+let container: TestContainer
 
-  const cart = overrides?.cart ?? generate.cart({ customerId: null, email: 'guest@example.com' })
-
-  const cartService = {
-    retrieveCart: vi.fn().mockResolvedValue(cart),
-    updateCart: vi.fn().mockImplementation(async (_id: string, updates: Partial<CartDTO>) => ({
-      ...cart,
-      ...updates,
-    })),
-  }
-
-  const customerService = {
-    retrieveCustomer: customer
-      ? vi.fn().mockResolvedValue(customer)
-      : vi.fn().mockRejectedValue(new Error('Customer not found')),
-  }
-
-  const container = createContainer()
-  container.register({
-    [Modules.CART]: asValue(cartService),
-    [Modules.CUSTOMER]: asValue(customerService),
-  })
-
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
-
-  return { cart, customer, cartService, customerService }
-}
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
 
 test.describe('transferCartCustomerWorkflow', () => {
-  test('transfers guest cart to registered customer — updates customerId and email', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
+  test('moves a guest cart to the registered customer, taking their email with it', async ({ service, expect }) => {
+    const customer = await service.create.customer(container, { hasAccount: true })
+    const { id: cartId } = await service.create.cart(container, { customerId: null })
 
-    const result = await transferCartCustomerWorkflow.run({
-      cartId: services.cart.id,
-      customerId: 'cus_registered',
-    })
+    const result = await transferCartCustomerWorkflow.run({ cartId, customerId: customer.id })
 
-    expect(services.cartService.updateCart).toHaveBeenCalledWith(services.cart.id, {
-      customerId: 'cus_registered',
-      email: 'registered@example.com',
+    expect(result).toMatchObject({ customerId: customer.id, email: customer.email })
+    expect(await service.read.cart(container, cartId)).toMatchObject({
+      customerId: customer.id,
+      email: customer.email,
     })
-    expect(result.customerId).toBe('cus_registered')
-    expect(result.email).toBe('registered@example.com')
   })
 
-  test('cart already belongs to target customer — no-op, no update call', async ({ dto, expect }) => {
-    const customer = dto.generate.customer({ id: 'cus_same', hasAccount: true, email: 'same@example.com' })
-    const cart = dto.generate.cart({ customerId: 'cus_same', email: 'same@example.com' })
-    const services = setup(dto.generate, { cart, customer })
+  test('leaves a cart that already belongs to the customer alone', async ({ service, expect }) => {
+    const customer = await service.create.customer(container, { hasAccount: true })
+    // A different email on the cart than on the customer: transferring would overwrite it, so
+    // this is what the no-op guard actually protects.
+    const { id: cartId, email } = await service.create.cart(container, { customerId: customer.id })
 
-    const result = await transferCartCustomerWorkflow.run({
-      cartId: cart.id,
-      customerId: 'cus_same',
-    })
+    const result = await transferCartCustomerWorkflow.run({ cartId, customerId: customer.id })
 
-    expect(services.cartService.updateCart).not.toHaveBeenCalled()
-    expect(result.customerId).toBe('cus_same')
+    expect(result.email).toBe(email)
+    expect(await service.read.cart(container, cartId)).toMatchObject({ customerId: customer.id, email })
   })
 
-  test('target customer not found — throws error', async ({ dto, expect }) => {
-    const services = setup(dto.generate, { customer: null })
+  test('rejects a customer that does not exist', async ({ service, expect }) => {
+    const { id: cartId } = await service.create.cart(container, { customerId: null })
 
-    await expect(
-      transferCartCustomerWorkflow.run({
-        cartId: services.cart.id,
-        customerId: 'cus_nonexistent',
-      }),
-    ).rejects.toThrow('Customer with id "cus_nonexistent" not found')
+    await expect(transferCartCustomerWorkflow.run({ cartId, customerId: 'cus_nonexistent' })).rejects.toThrow(
+      'Customer with id "cus_nonexistent" not found',
+    )
   })
 })

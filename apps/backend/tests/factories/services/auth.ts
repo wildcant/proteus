@@ -1,6 +1,7 @@
 import type { AwilixContainer } from 'awilix'
 import type {
   ConfirmAuthVerificationDTO,
+  CreateAuthIdentityDTO,
   FilterableAuthVerificationProps,
   IAuthModuleService,
   RequestAuthVerificationDTO,
@@ -10,10 +11,17 @@ import type {
 import { Modules } from '../../../src/core/utils/index.js'
 import {
   generateConfirmAuthVerificationDTO,
+  generateCreateAuthIdentityDTO,
   generateRequestAuthVerificationDTO,
   generateUpdateAuthIdentityDTO,
   generateUpdateAuthVerificationDTO,
 } from '../auth-dto.js'
+
+export async function createAuthIdentity(container: AwilixContainer, overrides?: Partial<CreateAuthIdentityDTO>) {
+  const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
+
+  return authService.createAuthIdentity(generateCreateAuthIdentityDTO(overrides))
+}
 
 /**
  * Issues a verification and returns the provider's result, including the plaintext `code`
@@ -61,6 +69,12 @@ export async function updateAuthVerification(
 }
 
 // ---- Reads ----
+
+export async function retrieveAuthIdentity(container: AwilixContainer, authIdentityId: string) {
+  const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
+
+  return authService.retrieveAuthIdentity(authIdentityId)
+}
 
 export async function listAuthVerifications(container: AwilixContainer, filters?: FilterableAuthVerificationProps) {
   const authService = container.resolve<IAuthModuleService>(Modules.AUTH)

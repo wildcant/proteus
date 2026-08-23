@@ -110,6 +110,49 @@ expect(body.type).toBe(ErrorTypes.INVALID_DATA)
 expect(body.message).toContain('optionValues')
 ```
 
+## Workflow Tests
+
+A workflow test wants the container without an HTTP surface, which is the `createTestContainer`
+fixture. It bootstraps every module and registers the workflow engine, so `workflow.run(...)`
+resolves against the real modules with no extra wiring, and the container is disposed after the
+test. `createApi` is the same container with routes and a listening server around it.
+
+```ts
+import type { TestContainer } from '@tests/setup/create-container.js'
+
+let container: TestContainer
+
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
+
+test('...', async ({ service, expect }) => {
+  const { cart } = await service.create.checkoutReadyCart(container)
+
+  const order = await completeCartWorkflow.run({ cartId: cart.id })
+
+  expect(await service.read.orders(container)).toHaveLength(1)
+})
+```
+
+It takes the same `config` and `register` options `createApi` does — they live on
+`CreateContainerOptions`, which `CreateApiOptions` extends.
+
+Compensation is asserted on the state it restored, never on the call that restored it — a
+`deleteOrders` spy proves the workflow called something, not that the order is gone.
+
+### A bare step
+
+`step.run` wraps one step in a single-step workflow; `step.runAndCompensate` runs it and then
+fails the workflow so its compensation fires. The injected failure is swallowed, so there is
+nothing to assert about it — assert what the compensation did.
+
+```ts
+await step.runAndCompensate(setAuthAppMetadataStep, { authIdentityId, actorType: 'user', actorId: 'usr_abc' })
+
+expect(await service.read.authIdentity(api.container, authIdentityId)).toMatchObject({ appMetadata: null })
+```
+
 ## The Three Factory Layers
 
 Each has a distinct job. Do not mix them.
@@ -248,13 +291,23 @@ covering all of them, or `assertDefined` from `@tests/utils/assert-defined.js`.
 MSW mocks third-party HTTP (`tests/mocks/`): `resend.ts` covers `api.resend.com/emails`, and
 `on-unhandled-request.ts` throws for anything that is not `localhost`/`127.0.0.1`.
 
-`vi.spyOn` on a resolved repo is the tool for forcing a mid-workflow failure:
+`vi.spyOn` on a resolved repo or module service is the tool for forcing a mid-workflow failure:
 
 ```ts
 vi.spyOn(linkService.repo('orderPaymentCollection'), 'create').mockRejectedValueOnce(
   new Error('payment collection link unavailable'),
 )
+
+// Module services register as `asValue(service)`, so the resolved object is the one the
+// workflow gets and the spy sticks.
+vi.spyOn(api.container.resolve<IPaymentModuleService>(Modules.PAYMENT), 'authorizePaymentSession')
+  .mockRejectedValueOnce(new Error('provider unavailable'))
 ```
+
+**Installing a spy is the only thing `container.resolve` may be used for in a test file.**
+Querying or mutating through a resolved service is a `service.read.*` / `service.create.*`
+factory that was not written — write it. A `container.resolve` not immediately followed by
+`vi.spyOn` is the smell.
 
 Prefer `createApi`'s `register` hook when the goal is swapping a provider for the whole test —
 it is the sanctioned seam, and it runs before the server listens.
@@ -262,14 +315,17 @@ it is the sanctioned seam, and it runs before the server listens.
 ## Debugging
 
 ### Mass failures that look like a regression
-Almost always two test processes on one database. `pgrep -fl vitest`, kill strays, re-run alone.
-`scripts/verify.sh` prints a hint when it greps those signatures out of a failing log.
+Almost always two test processes on one database. `globalSetup` takes an advisory lock for the
+run, so a second one now exits immediately naming the collision — but a run started before that
+landed, or killed mid-flight, can still leave strays. `pgrep -fl vitest`, kill them, re-run alone.
 
 ### A test passes alone and fails in the suite
-Check for state that outlives the `beforeEach` drop. It drops `drizzle` and `public` only, so
-any other schema (`bullmq`) survives the whole run — as does module-scope state in the test
+Check for state that outlives the `beforeEach`. It `TRUNCATE`s every table in `public`, so
+anything outside that schema survives the whole run — as does module-scope state in the test
 file itself, which persists across every test in that file.
 
 ### Timing
-The suite is dominated by schema re-creation (~220ms per test, ~90% of wall clock). A slow test
-file is usually just a test count. See `docs/research/test-suite-migration-and-parallelism.md`.
+The full suite is ~28s: the schema is built once per worker database in `globalSetup`, and each
+test resets with a `TRUNCATE` (~25ms) rather than a re-migration (~220ms). What dominates now is
+per-file module loading, so a slow file is usually just a test count. See
+`docs/research/test-suite-migration-and-parallelism.md`.

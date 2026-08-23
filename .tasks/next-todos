@@ -4,7 +4,56 @@ Fixes and improvements
   - The Stripe provider passes idempotency keys to Stripe (apps/backend/src/providers/payment-stripe/stripe-provider.ts), which protects the charge but not the order record.
   - Same problem family as "investigate locking" below — decide the storage + locking strategy once and apply it to both.
 
+- INVENTORY IS NOT ACTUALLY RESERVED: placing an order does not reduce what the storefront offers.
+  - `createReservationItems` (apps/backend/src/modules/inventory/services/inventory-module-service.ts:173) writes a
+    reservation_item row and nothing else. `deleteReservationItems` / `restoreReservationItems` are the same.
+    Nothing in the codebase ever writes `inventory_level.reserved_quantity`.
+  - `retrieveAvailableQuantity` is `stocked - reserved`, so with reserved permanently 0 availability ignores every
+    order that has been placed but not yet fulfilled. Stock only moves at fulfillment, via `adjustInventoryLevel`,
+    which touches `stocked_quantity` only.
+  - Net effect: the same last unit can be sold an unbounded number of times. The concurrency test in
+    src/api/store/carts/__tests__/cart.api.test.ts passes on the `order_cart` unique index, not on inventory —
+    it proves one cart completes once, not that stock is respected across different carts.
+  - Fix is one decision: keep reserved_quantity as a maintained counter (increment on reserve, decrement on
+    release/fulfil, all inside the existing transaction) or drop the column and derive availability by summing
+    live reservation_item rows. Either way `confirmInventory` and `buildVariantStock` inherit it for free.
+
+- RESERVATIONS ARE KEYED TO CART LINE ITEMS, BUT READ BY ORDER LINE ITEM.
+  - complete-cart.ts:303 writes `lineItemId` from the *cart*'s line items (`cali_…`). cancel-order.ts:40 and
+    create-order-fulfillment.ts:138 both call `listReservationItems({ lineItemId })` with *order* line item ids
+    (`ordli_…`). They never match.
+  - Cancelling an order therefore never releases its stock — the reservation is stranded and the units stay
+    unsellable forever (and see above: they were never counted as reserved anyway).
+  - Fulfilling an order with managed inventory always throws `No reservation found for managed-inventory item
+    ordli_…` from compute-inventory-adjustments.ts, so fulfillment is impossible for any tracked variant.
+  - Decide where the mapping lives: re-key the reservation to the order line item in `reserve-inventory` (the
+    order already exists by then), or carry a `cartLineItemId` onto order_line_item and look up through it.
+  - Blocks the last two files of the workflow-test migration — see docs/plans/reusable-workflow-test-setup.md.
+
 Future features TODOs
+- INVENTORY MODULE COMPLETION: the tables exist and checkout reads them, but there is no way to operate them.
+  - No stock location entity. `location_id` is free text on inventory_level and reservation_item — no table, no
+    FK, no validation. The seed hardcodes `loc_default`, test factories generate `sloc_*`, and the admin
+    fulfillment route (src/api/admin/orders/[id]/fulfillments/route.ts:11) takes whatever locationId the client
+    sends. complete-cart.ts:301 picks `locationIds[0] ?? ''` — an arbitrary location, and an empty string when the
+    variant has no levels at all.
+  - No admin surface. There are no routes under src/api/admin/inventory and no admin feature module. A shopkeeper
+    cannot create an inventory item, set or adjust a level, or see what is committed. Only scripts/seed-dev.ts
+    writes stock.
+  - Creating a variant does not create inventory. `createProductVariant` makes no inventory item and no
+    productVariantInventoryItem link, so every variant added through the admin is silently untracked and treated
+    as infinitely available. Only the seed wires the link up.
+  - `manageInventory` and `allowBackorder` are dead columns (product_variant.ts:19-20, plus
+    reservation_item.allow_backorder). Nothing reads them: every linked variant is treated as tracked and no
+    variant can ever backorder. Honouring them touches buildVariantStock, confirmInventory and complete-cart
+    together — see the TODO(inventory) notes in src/workflows/product/utils/build-variant-stock.ts and
+    src/api/store/products/[id]/route.ts.
+  - `incoming_quantity` is read by the availability projection and never written. There is no restock / purchase
+    order concept behind it.
+  - No low-stock signal. The seed writes a notification with `triggerType: 'inventory.low_stock'`, but nothing
+    emits one.
+  - `adjustInventoryLevel` throws when the item has no level at the given location, so fulfilling from a location
+    that was never stocked fails rather than falling back.
 - Allow customer to manage addresses.
 - Allow customer to see previous orders.
 - PRODUCT DISCOVERY: no ProductCategory / ProductCollection / ProductTag / ProductType, so the storefront has no navigation beyond a flat product list.
@@ -25,7 +74,9 @@ Future Infra TODOs
 - composing workflows
 - ci workflow to handle deployment!
 - migration order in prod (first modules and then link modules, are there edge cases?).
-- reusable workflow setup function for tests
+- reusable workflow setup function for tests — done for 12 of 14 workflow test files (they now run against a real
+  container from `createApi()`; see docs/plans/reusable-workflow-test-setup.md). cancel-order and
+  create-order-fulfillment are still on mocks, blocked on the reservation keying bug above.
 - features flags
 - event bus: investigate pgmq (see docs/research/event-subscriber-system/) and cloudflare queues
   - Related video: https://www.youtube.com/watch?v=ACVevIlWEfM

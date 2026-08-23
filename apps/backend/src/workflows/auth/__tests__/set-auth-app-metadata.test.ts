@@ -1,180 +1,109 @@
 import { generateJwtTokenForAuthIdentity } from '@core/auth/utils/generate-jwt-token.js'
-import type { UpdateAuthIdentityDTO } from '@core/types/auth/mutations.js'
-import type { IAuthModuleService } from '@core/types/auth/service.js'
-import { Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { createWorkflow, setWorkflowEngine, WorkflowTerminalError } from '@core/workflows/types.js'
+import { WorkflowTerminalError } from '@core/workflows/types.js'
+import type { TestContainer } from '@tests/setup/create-container.js'
 import { test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
 import jwt from 'jsonwebtoken'
-import { vi } from 'vitest'
-import type { SetAuthAppMetadataInput } from '../steps/set-auth-app-metadata.js'
 import { setAuthAppMetadataStep } from '../steps/set-auth-app-metadata.js'
 
 const JWT_SECRET = 'test-secret-for-unit-tests'
 
-function setupWorkflowEngine(authService: Partial<IAuthModuleService>) {
-  const container = createContainer()
-  container.register({ [Modules.AUTH]: asValue(authService) })
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
-}
+let container: TestContainer
 
-function makeTestWorkflow(input: SetAuthAppMetadataInput) {
-  return createWorkflow<SetAuthAppMetadataInput, void>('test-set-auth-app-metadata', async (ctx, workflowInput) => {
-    await setAuthAppMetadataStep(ctx, workflowInput)
-  }).run(input)
-}
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
 
 test.describe('setAuthAppMetadataStep', () => {
-  test('writes userId into app_metadata', async ({ dto, expect }) => {
-    const identity = dto.generate.authIdentity()
-    const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
+  test('writes actorId under the actor type key', async ({ service, step, expect }) => {
+    const identity = await service.create.authIdentity(container)
 
-    setupWorkflowEngine({
-      retrieveAuthIdentity: async () => identity,
-      updateAuthIdentity: async (id, data) => {
-        updateCalls.push({ id, data })
-        return dto.generate.authIdentity({ appMetadata: data.appMetadata ?? null })
-      },
+    await step.run(setAuthAppMetadataStep, {
+      authIdentityId: identity.id,
+      actorType: 'user',
+      actorId: 'usr_abc',
     })
 
-    await makeTestWorkflow({ authIdentityId: 'authid_test1', actorType: 'user', actorId: 'usr_abc' })
-
-    expect(updateCalls).toHaveLength(1)
-    expect(updateCalls[0]?.id).toEqual('authid_test1')
-    expect(updateCalls[0]?.data.appMetadata).toEqual({ userId: 'usr_abc' })
+    const updated = await service.read.authIdentity(container, identity.id)
+    expect(updated.appMetadata).toEqual({ userId: 'usr_abc' })
   })
 
-  test('preserves existing app_metadata keys', async ({ dto, expect }) => {
-    const identity = dto.generate.authIdentity({ appMetadata: { registered: true } })
-    const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
+  test('preserves the keys it does not own', async ({ service, step, expect }) => {
+    const identity = await service.create.authIdentity(container, { appMetadata: { registered: true } })
 
-    setupWorkflowEngine({
-      retrieveAuthIdentity: async () => identity,
-      updateAuthIdentity: async (id, data) => {
-        updateCalls.push({ id, data })
-        return dto.generate.authIdentity({ appMetadata: data.appMetadata ?? null })
-      },
+    await step.run(setAuthAppMetadataStep, {
+      authIdentityId: identity.id,
+      actorType: 'user',
+      actorId: 'usr_abc',
     })
 
-    await makeTestWorkflow({ authIdentityId: 'authid_test1', actorType: 'user', actorId: 'usr_abc' })
-
-    expect(updateCalls[0]?.data.appMetadata).toEqual({ registered: true, userId: 'usr_abc' })
+    const updated = await service.read.authIdentity(container, identity.id)
+    expect(updated.appMetadata).toEqual({ registered: true, userId: 'usr_abc' })
   })
 
-  test('throws on overwrite attempt', async ({ dto, expect }) => {
-    const identity = dto.generate.authIdentity({ appMetadata: { userId: 'usr_existing' } })
+  test('refuses to overwrite an actor that is already linked', async ({ service, step, expect }) => {
+    const identity = await service.create.authIdentity(container, { appMetadata: { userId: 'usr_existing' } })
 
-    setupWorkflowEngine({
-      retrieveAuthIdentity: async () => identity,
-      updateAuthIdentity: vi.fn(),
-    })
+    const run = () =>
+      step.run(setAuthAppMetadataStep, { authIdentityId: identity.id, actorType: 'user', actorId: 'usr_new' })
 
-    await expect(
-      makeTestWorkflow({ authIdentityId: 'authid_test1', actorType: 'user', actorId: 'usr_new' }),
-    ).rejects.toThrow(WorkflowTerminalError)
+    await expect(run()).rejects.toThrow(WorkflowTerminalError)
+    await expect(run()).rejects.toThrow('already has "userId" set')
 
-    await expect(
-      makeTestWorkflow({ authIdentityId: 'authid_test1', actorType: 'user', actorId: 'usr_new' }),
-    ).rejects.toThrow('already has "userId" set')
+    const untouched = await service.read.authIdentity(container, identity.id)
+    expect(untouched.appMetadata).toEqual({ userId: 'usr_existing' })
   })
 
-  test('allows clearing an existing link with null', async ({ dto, expect }) => {
-    const identity = dto.generate.authIdentity({ appMetadata: { userId: 'usr_existing' } })
-    const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
+  test('allows clearing an existing link with null', async ({ service, step, expect }) => {
+    const identity = await service.create.authIdentity(container, { appMetadata: { userId: 'usr_existing' } })
 
-    setupWorkflowEngine({
-      retrieveAuthIdentity: async () => identity,
-      updateAuthIdentity: async (id, data) => {
-        updateCalls.push({ id, data })
-        return dto.generate.authIdentity({ appMetadata: data.appMetadata ?? null })
-      },
+    await step.run(setAuthAppMetadataStep, {
+      authIdentityId: identity.id,
+      actorType: 'user',
+      actorId: null,
     })
 
-    await makeTestWorkflow({ authIdentityId: 'authid_test1', actorType: 'user', actorId: null })
-
-    expect(updateCalls).toHaveLength(1)
-    expect(updateCalls[0]?.data.appMetadata).toEqual({ userId: null })
+    const updated = await service.read.authIdentity(container, identity.id)
+    expect(updated.appMetadata).toEqual({ userId: null })
   })
 
-  test('compensation restores previous app_metadata on rollback', async ({ dto, expect }) => {
-    const identity = dto.generate.authIdentity({ appMetadata: { registered: true } })
-    const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
+  test('rollback restores the previous metadata', async ({ service, step, expect }) => {
+    const identity = await service.create.authIdentity(container, { appMetadata: { registered: true } })
 
-    setupWorkflowEngine({
-      retrieveAuthIdentity: async () => identity,
-      updateAuthIdentity: async (id, data) => {
-        updateCalls.push({ id, data })
-        return dto.generate.authIdentity({ appMetadata: data.appMetadata ?? null })
-      },
+    await step.runAndCompensate(setAuthAppMetadataStep, {
+      authIdentityId: identity.id,
+      actorType: 'user',
+      actorId: 'usr_abc',
     })
 
-    const failingWorkflow = createWorkflow<SetAuthAppMetadataInput, void>('test-compensation', async (ctx, input) => {
-      await setAuthAppMetadataStep(ctx, input)
-      await ctx.step('deliberate-failure', async () => {
-        throw new Error('deliberate failure')
-      })
-    })
-
-    await expect(
-      failingWorkflow.run({ authIdentityId: 'authid_test1', actorType: 'user', actorId: 'usr_abc' }),
-    ).rejects.toThrow('deliberate failure')
-
-    // First call: the step writing userId
-    // Second call: compensation restoring previous metadata
-    expect(updateCalls).toHaveLength(2)
-    expect(updateCalls[0]?.data.appMetadata).toEqual({ registered: true, userId: 'usr_abc' })
-    expect(updateCalls[1]?.data.appMetadata).toEqual({ registered: true })
+    const restored = await service.read.authIdentity(container, identity.id)
+    expect(restored.appMetadata).toEqual({ registered: true })
   })
 
-  test('compensation restores null when app_metadata was originally null', async ({ dto, expect }) => {
-    const identity = dto.generate.authIdentity({ appMetadata: null })
-    const updateCalls: Array<{ id: string; data: UpdateAuthIdentityDTO }> = []
+  test('rollback restores null when there was no metadata', async ({ service, step, expect }) => {
+    const identity = await service.create.authIdentity(container, { appMetadata: null })
 
-    setupWorkflowEngine({
-      retrieveAuthIdentity: async () => identity,
-      updateAuthIdentity: async (id, data) => {
-        updateCalls.push({ id, data })
-        return dto.generate.authIdentity({ appMetadata: data.appMetadata ?? null })
-      },
+    await step.runAndCompensate(setAuthAppMetadataStep, {
+      authIdentityId: identity.id,
+      actorType: 'user',
+      actorId: 'usr_abc',
     })
 
-    const failingWorkflow = createWorkflow<SetAuthAppMetadataInput, void>(
-      'test-compensation-null',
-      async (ctx, input) => {
-        await setAuthAppMetadataStep(ctx, input)
-        await ctx.step('deliberate-failure', async () => {
-          throw new Error('deliberate failure')
-        })
-      },
-    )
-
-    await expect(
-      failingWorkflow.run({ authIdentityId: 'authid_test1', actorType: 'user', actorId: 'usr_abc' }),
-    ).rejects.toThrow('deliberate failure')
-
-    expect(updateCalls).toHaveLength(2)
-    expect(updateCalls[1]?.data.appMetadata).toBeNull()
+    const restored = await service.read.authIdentity(container, identity.id)
+    expect(restored.appMetadata).toBeNull()
   })
 
-  test('produces a JWT with actorId after the step sets app_metadata', async ({ dto, expect }) => {
-    let storedMetadata: Record<string, unknown> | null = null
-    const identity = dto.generate.authIdentity()
+  test('the metadata it writes is what a refreshed JWT carries as actorId', async ({ service, step, expect }) => {
+    const identity = await service.create.authIdentity(container)
 
-    setupWorkflowEngine({
-      retrieveAuthIdentity: async () => identity,
-      updateAuthIdentity: async (_id, data) => {
-        storedMetadata = (data.appMetadata as Record<string, unknown>) ?? null
-        return dto.generate.authIdentity({ appMetadata: storedMetadata })
-      },
+    await step.run(setAuthAppMetadataStep, {
+      authIdentityId: identity.id,
+      actorType: 'user',
+      actorId: 'usr_linked',
     })
 
-    await makeTestWorkflow({ authIdentityId: 'authid_test1', actorType: 'user', actorId: 'usr_linked' })
-
-    // Simulate token refresh: generate JWT from the updated identity
     const token = generateJwtTokenForAuthIdentity(
       {
-        authIdentity: { ...identity, appMetadata: storedMetadata },
+        authIdentity: await service.read.authIdentity(container, identity.id),
         actorType: 'user',
         authProvider: 'emailpass',
       },

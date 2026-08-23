@@ -40,13 +40,14 @@ export async function createCheckoutReadyCart(
   const lineItem = await addLineItem(container, cart.id, lineItemInput)
   const shippingMethod = await addShippingMethod(container, cart.id, options.shippingMethod)
 
-  // A single unit by default, so a second reservation for this cart is an oversell.
+  // Exactly what this cart orders, so it completes deterministically whatever quantity the
+  // generator picked, and a second reservation for the same cart is still an oversell.
   const inventory =
     options.inventory === null || !lineItem.variantId
       ? null
       : await stockVariant(container, {
           ...options.inventory,
-          level: { stockedQuantity: 1, ...options.inventory?.level },
+          level: { stockedQuantity: lineItemInput.quantity, ...options.inventory?.level },
           variantId: lineItem.variantId,
         })
 

@@ -1,80 +1,52 @@
-import type { OrderDTO } from '@core/types/order/common.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { setWorkflowEngine } from '@core/workflows/types.js'
+import type { IOrderModuleService } from '@core/types/order/service.js'
+import { Modules } from '@core/utils/index.js'
+import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
 import { vi } from 'vitest'
 import { createOrderShipmentWorkflow } from '../create-order-shipment.js'
 
-function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<OrderDTO>) {
-  const order = generate.order({ status: 'pending', fulfillmentStatus: 'fulfilled', ...orderOverrides })
-  const fulfillment = generate.fulfillment()
-  const shippedOrder = { ...order, fulfillmentStatus: 'shipped' as const }
+type Services = Fixtures['service']
 
-  const orderService = {
-    retrieveOrder: vi.fn().mockResolvedValue(order),
-    updateFulfillmentStatus: vi.fn().mockResolvedValue(shippedOrder),
-  }
+let container: TestContainer
 
-  const fulfillmentService = {
-    updateFulfillment: vi.fn().mockResolvedValue({ ...fulfillment, shippedAt: new Date() }),
-  }
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
 
-  const orderFulfillmentLink = {
-    orderId: order.id,
-    fulfillmentId: fulfillment.id,
-  }
+/** Inventory is left untracked: shipping does not touch stock, and tracking it would only
+ *  couple these tests to the reservation path `create-order-fulfillment` owns. */
+const fulfilledOrder = async (service: Services) => {
+  const { order } = await service.create.order(container, { inventory: null })
+  const { fulfillmentId } = await service.create.fulfilledOrder(container, order.id)
 
-  const orderFulfillmentRepo = {
-    findByFulfillmentId: vi.fn().mockResolvedValue(orderFulfillmentLink),
-  }
-
-  const linkService = {
-    repo: vi.fn().mockReturnValue(orderFulfillmentRepo),
-  }
-
-  const container = createContainer()
-  container.register({
-    [Modules.ORDER]: asValue(orderService),
-    [Modules.FULFILLMENT]: asValue(fulfillmentService),
-    [ContainerRegistrationKeys.LINK]: asValue(linkService),
-  })
-
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
-
-  return { order, fulfillment, orderService, fulfillmentService, linkService, orderFulfillmentRepo }
+  return { orderId: order.id, fulfillmentId }
 }
 
 test.describe('createOrderShipmentWorkflow', () => {
-  test('marks fulfillment as shipped and updates order status', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
+  test('stamps the fulfillment as shipped and advances the order', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await fulfilledOrder(service)
 
-    const result = await createOrderShipmentWorkflow.run({
-      orderId: services.order.id,
-      fulfillmentId: services.fulfillment.id,
-    })
+    const result = await createOrderShipmentWorkflow.run({ orderId, fulfillmentId })
 
     expect(result.fulfillmentStatus).toBe('shipped')
-    expect(services.fulfillmentService.updateFulfillment).toHaveBeenCalledWith(services.fulfillment.id, {
+    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'shipped' })
+    expect(await service.read.fulfillment(container, fulfillmentId)).toMatchObject({
       shippedAt: expect.any(Date),
     })
-    expect(services.orderService.updateFulfillmentStatus).toHaveBeenCalledWith(services.order.id, 'shipped')
   })
 
-  test('passes tracking data when provided', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
+  test('records tracking details when they are given', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await fulfilledOrder(service)
 
     await createOrderShipmentWorkflow.run({
-      orderId: services.order.id,
-      fulfillmentId: services.fulfillment.id,
+      orderId,
+      fulfillmentId,
       trackingNumber: 'TRACK123',
       trackingUrl: 'https://track.example.com/TRACK123',
       labelUrl: 'https://labels.example.com/TRACK123.pdf',
     })
 
-    expect(services.fulfillmentService.updateFulfillment).toHaveBeenCalledWith(services.fulfillment.id, {
-      shippedAt: expect.any(Date),
+    expect(await service.read.fulfillment(container, fulfillmentId)).toMatchObject({
       data: {
         trackingNumber: 'TRACK123',
         trackingUrl: 'https://track.example.com/TRACK123',
@@ -83,40 +55,34 @@ test.describe('createOrderShipmentWorkflow', () => {
     })
   })
 
-  test('rejects when fulfillment status is not fulfilled', async ({ dto, expect }) => {
-    setup(dto.generate, { fulfillmentStatus: 'unfulfilled' })
+  test('refuses to ship an order that was never fulfilled', async ({ service, expect }) => {
+    const { order } = await service.create.order(container, { inventory: null })
 
-    await expect(createOrderShipmentWorkflow.run({ orderId: 'any', fulfillmentId: 'ful_1' })).rejects.toThrow(
-      'fulfillment status is "unfulfilled", expected "fulfilled"',
+    // The status guard runs before the link lookup, so the fulfillment id never gets resolved.
+    await expect(
+      createOrderShipmentWorkflow.run({ orderId: order.id, fulfillmentId: 'ful_never_created' }),
+    ).rejects.toThrow('fulfillment status is "unfulfilled", expected "fulfilled"')
+  })
+
+  test('refuses a fulfillment belonging to another order', async ({ service, expect }) => {
+    const { orderId } = await fulfilledOrder(service)
+    const other = await fulfilledOrder(service)
+
+    await expect(createOrderShipmentWorkflow.run({ orderId, fulfillmentId: other.fulfillmentId })).rejects.toThrow(
+      `is not linked to order ${orderId}`,
     )
   })
 
-  test('rejects when fulfillment is not linked to the order', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
-    services.orderFulfillmentRepo.findByFulfillmentId.mockResolvedValue(null)
+  test('rollback un-stamps the fulfillment when the order cannot be advanced', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await fulfilledOrder(service)
 
-    await expect(
-      createOrderShipmentWorkflow.run({
-        orderId: services.order.id,
-        fulfillmentId: 'ful_unlinked',
-      }),
-    ).rejects.toThrow('not linked to order')
-  })
+    vi.spyOn(container.resolve<IOrderModuleService>(Modules.ORDER), 'updateFulfillmentStatus').mockRejectedValueOnce(
+      new Error('DB error'),
+    )
 
-  test('compensates on failure by reverting fulfillment and order status', async ({ dto, expect }) => {
-    const services = setup(dto.generate)
-    services.orderService.updateFulfillmentStatus.mockRejectedValue(new Error('DB error'))
+    await expect(createOrderShipmentWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow('DB error')
 
-    await expect(
-      createOrderShipmentWorkflow.run({
-        orderId: services.order.id,
-        fulfillmentId: services.fulfillment.id,
-      }),
-    ).rejects.toThrow('DB error')
-
-    expect(services.fulfillmentService.updateFulfillment).toHaveBeenLastCalledWith(services.fulfillment.id, {
-      shippedAt: null,
-      data: null,
-    })
+    expect(await service.read.fulfillment(container, fulfillmentId)).toMatchObject({ shippedAt: null })
+    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'fulfilled' })
   })
 })

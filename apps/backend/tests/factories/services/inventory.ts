@@ -39,6 +39,25 @@ export async function stockVariant(container: AwilixContainer, options: StockVar
   return { inventoryItem, inventoryLevel }
 }
 
+/**
+ * A second (or third) location holding the same inventory item. `stockVariant` creates one
+ * level; coverage across several locations needs more, and they must share the item.
+ */
+export async function addInventoryLevel(
+  container: AwilixContainer,
+  inventoryItemId: string,
+  overrides?: Partial<Omit<CreateInventoryLevelDTO, 'inventoryItemId'>>,
+) {
+  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+  const [inventoryLevel] = await inventoryService.createInventoryLevels([
+    generateCreateInventoryLevelDTO({ ...overrides, inventoryItemId }),
+  ])
+  if (!inventoryLevel) throw new Error('createInventoryLevels returned no rows')
+
+  return inventoryLevel
+}
+
 // ---- Reads ----
 
 export async function listReservationItems(

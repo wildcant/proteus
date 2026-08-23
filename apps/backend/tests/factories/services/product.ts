@@ -135,3 +135,9 @@ export async function listProductVariantImages(
 
   return productService.listProductVariantImages(filters)
 }
+
+export async function listProductOptionsForProduct(container: AwilixContainer, productId: string) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+
+  return productService.listProductOptionsForProduct(productId)
+}

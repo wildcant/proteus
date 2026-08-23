@@ -1,163 +1,155 @@
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { setWorkflowEngine } from '@core/workflows/types.js'
-import { test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
+import { BigNumber } from '@core/db/bignum.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
+import { Modules } from '@core/utils/index.js'
+import type { TestContainer } from '@tests/setup/create-container.js'
+import { type Fixtures, test } from '@tests/setup/test-extend.js'
+import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
 import { setProductOptionsWorkflow } from '../set-product-options.js'
 
-const PRODUCT_ID = 'prod_1'
-const SIZE = 'opt_size'
-const COLOR = 'opt_color'
-const KEPT = 'variant_kept'
-const DOOMED = 'variant_doomed'
+type Services = Fixtures['service']
 
-const combination = (label: string, optionValues: Record<string, string>) => ({
-  key: label,
-  label,
-  values: [],
-  optionValues,
-  variantId: null,
+let container: TestContainer
+
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
 })
 
-type PlanOverrides = Partial<{
-  keep: unknown[]
-  reassign: unknown[]
-  create: unknown[]
-  remove: unknown[]
-}>
-
-function setup(plan: PlanOverrides, options?: { lineItems?: Array<{ id: string; cartId: string }>; carts?: string[] }) {
-  const productService = {
-    // Values, so the options being restored differ from the ones being written — otherwise the
-    // compensation assertion below would pass against the forward call.
-    listProductOptionsForProduct: vi
-      .fn()
-      .mockResolvedValue([{ id: SIZE, title: 'Size', values: [{ id: 'v_s' }, { id: 'v_m' }] }]),
-    listProductVariants: vi.fn().mockResolvedValue([{ id: KEPT, productId: PRODUCT_ID }]),
-    listVariantOptionMaps: vi.fn().mockResolvedValue({ [KEPT]: { [SIZE]: 'v_s' } }),
-    planProductOptionChange: vi.fn().mockResolvedValue({ keep: [], reassign: [], create: [], remove: [], ...plan }),
-    setProductOptions: vi.fn().mockResolvedValue(undefined),
-    applyVariantReassignments: vi.fn().mockResolvedValue(undefined),
-    createProductVariants: vi.fn().mockResolvedValue([{ id: 'variant_new', productId: PRODUCT_ID }]),
-    deleteProductVariants: vi.fn().mockResolvedValue(undefined),
-  }
-
-  const priceSetRepository = { findByVariantIds: vi.fn().mockResolvedValue([]), create: vi.fn() }
-  const linkService = {
-    repo: vi.fn().mockReturnValue(priceSetRepository),
-    dismissLinks: vi.fn().mockResolvedValue({ productVariantPriceSet: [{ priceSetId: 'pset_gone' }] }),
-  }
-  const pricingService = {
-    listPrices: vi.fn().mockResolvedValue([]),
-    createPriceSets: vi.fn().mockResolvedValue([{ id: 'pset_new' }]),
-    deletePriceSets: vi.fn().mockResolvedValue(undefined),
-  }
-  const cartService = {
-    listLineItems: vi.fn().mockResolvedValue(options?.lineItems ?? []),
-    listCarts: vi.fn().mockResolvedValue((options?.carts ?? []).map((id) => ({ id }))),
-    deleteLineItems: vi.fn().mockResolvedValue(undefined),
-  }
-
-  const container = createContainer()
-  container.register({
-    [Modules.PRODUCT]: asValue(productService),
-    [Modules.PRICING]: asValue(pricingService),
-    [Modules.CART]: asValue(cartService),
-    [ContainerRegistrationKeys.LINK]: asValue(linkService),
-  })
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
-
-  return { productService, linkService, pricingService, cartService, priceSetRepository }
+const valueId = (option: { values: { id: string; value: string }[] }, value: string) => {
+  const match = option.values.find((candidate) => candidate.value === value)
+  if (!match) throw new Error(`Expected the option to carry the value "${value}"`)
+  return match.id
 }
 
-const run = () =>
-  setProductOptionsWorkflow.run({ productId: PRODUCT_ID, data: { options: [{ optionId: SIZE, valueIds: [] }] } })
+/** A product offering Size S/M, with a variant for each — the state an edit has to bring along. */
+const productSizedSAndM = async (service: Services) => {
+  const { product } = await service.create.product(container)
+  const size = await service.create.productOption(container, {
+    title: `Size-${product.id}`,
+    values: [{ value: 'S' }, { value: 'M' }],
+  })
+  const colour = await service.create.productOption(container, {
+    title: `Colour-${product.id}`,
+    values: [{ value: 'Red' }, { value: 'Blue' }],
+  })
+
+  await service.update.productOptions(container, product.id, {
+    options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+  })
+  const variants = await service.create.productVariants(container, product.id, [
+    { optionValues: { [size.id]: valueId(size, 'S') } },
+    { optionValues: { [size.id]: valueId(size, 'M') } },
+  ])
+
+  const titles = async () =>
+    (await service.read.productVariants(container, { productId: product.id })).map((variant) => variant.title).sort()
+
+  /** Both options at full spread: four combinations against the two variants that exist. */
+  const expanded = {
+    options: [
+      { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+      { optionId: colour.id, valueIds: colour.values.map((value) => value.id) },
+    ],
+  }
+
+  return { product, size, colour, variants, titles, expanded }
+}
 
 test.describe('setProductOptionsWorkflow', () => {
-  test('creates the combinations nothing covers yet', async ({ expect }) => {
-    const { productService } = setup({
-      create: [
-        { combination: combination('M / White', { [SIZE]: 'v_m', [COLOR]: 'v_w' }), copyPricesFromVariantId: null },
-      ],
+  test('creates the combinations the new options open up', async ({ service, expect }) => {
+    const { product, titles, expanded } = await productSizedSAndM(service)
+
+    await setProductOptionsWorkflow.run({ productId: product.id, data: expanded })
+
+    // The two that existed are reassigned; the other two are new.
+    expect(await titles()).toEqual(['M / Blue', 'M / Red', 'S / Blue', 'S / Red'])
+  })
+
+  test('prices a created variant from the survivor it came closest to', async ({ service, expect }) => {
+    const { product, variants, expanded } = await productSizedSAndM(service)
+    const [small] = variants
+    assertDefined(small)
+    await service.create.variantPrices(container, [small.id], {
+      prices: [{ currencyCode: 'usd', amount: new BigNumber(2800) }],
     })
 
-    await run()
+    await setProductOptionsWorkflow.run({ productId: product.id, data: expanded })
 
-    expect(productService.createProductVariants).toHaveBeenCalledWith([
-      { productId: PRODUCT_ID, optionValues: { [SIZE]: 'v_m', [COLOR]: 'v_w' } },
+    // `S / Blue` did not exist before, and shares its size value with the priced `S`.
+    const created = (await service.read.productVariants(container, { productId: product.id })).find(
+      (variant) => variant.title === 'S / Blue',
+    )
+    assertDefined(created)
+    const [link] = await service.read.linkRepo(container, 'productVariantPriceSet').findByVariantIds([created.id])
+    assertDefined(link)
+    const prices = await service.read.prices(container, link.priceSetId)
+    expect(prices.map((price) => ({ currencyCode: price.currencyCode, amount: Number(price.amount) }))).toEqual([
+      { currencyCode: 'usd', amount: 2800 },
     ])
   })
 
-  test('copies the nearest survivor prices onto a created variant', async ({ expect }) => {
-    const { pricingService, priceSetRepository } = setup({
-      create: [{ combination: combination('M / White', { [SIZE]: 'v_m' }), copyPricesFromVariantId: KEPT }],
-    })
-    priceSetRepository.findByVariantIds.mockResolvedValue([{ variantId: KEPT, priceSetId: 'pset_source' }])
-    pricingService.listPrices.mockResolvedValue([{ currencyCode: 'usd', amount: 2800 }])
+  test('a dropped variant takes its price set with it', async ({ service, expect }) => {
+    const { product, size, variants, titles } = await productSizedSAndM(service)
+    const [, medium] = variants
+    assertDefined(medium)
+    const [priceSet] = await service.create.variantPrices(container, [medium.id])
+    assertDefined(priceSet)
 
-    await run()
-
-    expect(pricingService.createPriceSets).toHaveBeenCalledWith([{ prices: [{ currencyCode: 'usd', amount: 2800 }] }])
-    expect(priceSetRepository.create).toHaveBeenCalledWith({ variantId: 'variant_new', priceSetId: 'pset_new' })
-  })
-
-  test('a removed variant takes its price set and links with it', async ({ expect }) => {
-    const { productService, linkService, pricingService } = setup({
-      remove: [{ variantId: DOOMED, title: 'S / Red', reason: 'value-dropped' }],
+    await setProductOptionsWorkflow.run({
+      productId: product.id,
+      data: { options: [{ optionId: size.id, valueIds: [valueId(size, 'S')] }] },
     })
 
-    await run()
-
-    expect(linkService.dismissLinks).toHaveBeenCalledWith({ variantId: [DOOMED] })
-    expect(pricingService.deletePriceSets).toHaveBeenCalledWith(['pset_gone'])
-    expect(productService.deleteProductVariants).toHaveBeenCalledWith([DOOMED])
+    expect(await titles()).toEqual(['S'])
+    expect(await service.read.linkRepo(container, 'productVariantPriceSet').findByVariantIds([medium.id])).toEqual([])
+    expect(await service.read.prices(container, priceSet.id)).toEqual([])
   })
 
-  test('a removed variant is evicted from active carts only', async ({ expect }) => {
+  test('a dropped variant is evicted from active carts but not from completed ones', async ({ service, expect }) => {
+    const { product, size, variants } = await productSizedSAndM(service)
+    const [, medium] = variants
+    assertDefined(medium)
+
+    const active = await service.create.cart(container)
+    const completed = await service.create.cart(container)
+    await service.create.lineItem(container, active.id, { variantId: medium.id })
+    await service.create.lineItem(container, completed.id, { variantId: medium.id })
+    await service.update.cart(container, completed.id, { status: 'completed', completedAt: new Date() })
+
+    await setProductOptionsWorkflow.run({
+      productId: product.id,
+      data: { options: [{ optionId: size.id, valueIds: [valueId(size, 'S')] }] },
+    })
+
     // A completed cart is the record behind an order; rewriting it would rewrite history.
-    const { cartService } = setup(
-      { remove: [{ variantId: DOOMED, title: 'S / Red', reason: 'collapsed' }] },
-      {
-        lineItems: [
-          { id: 'li_active', cartId: 'cart_active' },
-          { id: 'li_completed', cartId: 'cart_completed' },
-        ],
-        carts: ['cart_active'],
-      },
+    expect(await service.read.cartLineItems(container, { cartId: active.id })).toEqual([])
+    expect(await service.read.cartLineItems(container, { cartId: completed.id })).toHaveLength(1)
+  })
+
+  test('a change that removes nothing leaves the carts alone', async ({ service, expect }) => {
+    const { product, variants, expanded } = await productSizedSAndM(service)
+    const [small] = variants
+    assertDefined(small)
+    const cart = await service.create.cart(container)
+    await service.create.lineItem(container, cart.id, { variantId: small.id })
+
+    await setProductOptionsWorkflow.run({ productId: product.id, data: expanded })
+
+    expect(await service.read.cartLineItems(container, { cartId: cart.id })).toHaveLength(1)
+  })
+
+  test('rollback puts the previous options and combinations back', async ({ service, expect }) => {
+    const { product, size, titles, expanded } = await productSizedSAndM(service)
+
+    vi.spyOn(container.resolve<IProductModuleService>(Modules.PRODUCT), 'createProductVariants').mockRejectedValueOnce(
+      new Error('SKU collision'),
     )
 
-    await run()
+    await expect(setProductOptionsWorkflow.run({ productId: product.id, data: expanded })).rejects.toThrow(
+      'SKU collision',
+    )
 
-    expect(cartService.listCarts).toHaveBeenCalledWith({ id: ['cart_active', 'cart_completed'], status: 'active' })
-    expect(cartService.deleteLineItems).toHaveBeenCalledWith(['li_active'])
-  })
-
-  test('nothing to remove leaves the cart alone', async ({ expect }) => {
-    const { cartService, linkService } = setup({})
-
-    await run()
-
-    expect(cartService.listLineItems).not.toHaveBeenCalled()
-    expect(linkService.dismissLinks).not.toHaveBeenCalled()
-  })
-
-  test('a failure after the options are written puts them back', async ({ expect }) => {
-    const { productService } = setup({
-      // Lands somewhere other than where it started, so restoring it is observably different.
-      reassign: [{ variantId: KEPT, fromLabel: 'S', combination: combination('M / White', { [SIZE]: 'v_m' }) }],
-      create: [{ combination: combination('M / White', { [SIZE]: 'v_m' }), copyPricesFromVariantId: null }],
-    })
-    productService.createProductVariants.mockRejectedValue(new Error('SKU collision'))
-
-    await expect(run()).rejects.toThrow()
-
-    // The prior option set, read before anything was written.
-    expect(productService.setProductOptions).toHaveBeenLastCalledWith(PRODUCT_ID, {
-      options: [{ optionId: SIZE, valueIds: ['v_s', 'v_m'] }],
-    })
-    expect(productService.applyVariantReassignments).toHaveBeenLastCalledWith([
-      { variantId: KEPT, optionValues: { [SIZE]: 'v_s' } },
-    ])
+    expect(await titles()).toEqual(['M', 'S'])
+    expect(await service.read.productOptionsForProduct(container, product.id)).toMatchObject([{ id: size.id }])
   })
 })

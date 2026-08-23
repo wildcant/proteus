@@ -30,3 +30,11 @@ export async function priceVariants(
 
   return priceSets
 }
+
+// ---- Reads ----
+
+export async function listPrices(container: AwilixContainer, priceSetId: string) {
+  const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+
+  return pricingService.listPrices({ priceSetId })
+}

@@ -4,7 +4,7 @@ import { faker } from '@faker-js/faker'
 
 export function generateCreateNotificationDTO(overrides?: Partial<CreateNotificationDTO>): CreateNotificationDTO {
   return {
-    to: 'user@example.com',
+    to: faker.internet.email(),
     channel: 'feed',
     template: 'order-confirmation',
     data: { orderId: 'order_123' },
