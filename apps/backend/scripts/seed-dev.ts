@@ -5,6 +5,7 @@ import type {
   IAuthModuleService,
   ICartModuleService,
   ICustomerModuleService,
+  IFileModuleService,
   IFulfillmentModuleService,
   IInventoryModuleService,
   ILinkService,
@@ -21,6 +22,7 @@ const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
 const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
 const userService = container.resolve<IUserModuleService>(Modules.USER)
 const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+const fileService = container.resolve<IFileModuleService>(Modules.FILE)
 const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
 const cartService = container.resolve<ICartModuleService>(Modules.CART)
 const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
@@ -30,12 +32,18 @@ const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
 // --- Seed images ---
-// Product photos live in `seed-images/` (committed, see its README for provenance) and are copied
-// into the gitignored `static/` root so they serve through the same `/static` route as uploads.
+// Product photos live in `seed-images/` (committed, see its README for provenance).
 const SEED_IMAGE_SOURCE_DIR = path.join(process.cwd(), 'seed-images')
 const SEED_IMAGE_DIR = path.join(process.cwd(), 'static', 'seed')
 // Mirrors the default in `src/providers/file-localfs/local-file-provider.ts`.
 const STATIC_BASE_URL = 'http://localhost:3000/static'
+
+const MIME_TYPE_BY_EXTENSION: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+}
 
 const SEED_IMAGES = {
   tshirtBlackFront: 'tshirt-black-front.jpg',
@@ -49,13 +57,14 @@ const SEED_IMAGES = {
   shortsDenim: 'shorts-denim.jpg',
 } as const
 
-const imageUrl = (file: string) => `${STATIC_BASE_URL}/seed/${file}`
-
-async function copySeedImages() {
+/**
+ * Copies the photos into the gitignored `static/` root so they serve through the same `/static`
+ * route as uploads. Keys stay stable, so re-seeding repairs a `static/` that was cleared or
+ * half-populated.
+ */
+async function copySeedImages(): Promise<Map<string, string>> {
   await fs.mkdir(SEED_IMAGE_DIR, { recursive: true })
 
-  // Overwrites unconditionally — the copies are disposable, and re-seeding should repair a
-  // `static/` directory that was cleared or half-populated.
   await Promise.all(
     Object.values(SEED_IMAGES).map((file) =>
       fs.copyFile(path.join(SEED_IMAGE_SOURCE_DIR, file), path.join(SEED_IMAGE_DIR, file)),
@@ -63,9 +72,51 @@ async function copySeedImages() {
   )
 
   console.info(`Copied ${Object.keys(SEED_IMAGES).length} seed images to ${SEED_IMAGE_DIR}`)
+  return new Map(Object.values(SEED_IMAGES).map((file) => [file, `${STATIC_BASE_URL}/seed/${file}`]))
 }
 
-await copySeedImages()
+/** Pushes the photos through the file module, so they land wherever uploads land. */
+async function uploadSeedImages(): Promise<Map<string, string>> {
+  const files = Object.values(SEED_IMAGES)
+
+  const uploaded = await fileService.createFiles(
+    await Promise.all(
+      files.map(async (file) => {
+        const mimeType = MIME_TYPE_BY_EXTENSION[path.extname(file).toLowerCase()]
+        if (!mimeType) throw new Error(`Unsupported seed image type: "${file}"`)
+
+        return {
+          filename: `seed/${file}`,
+          mimeType,
+          content: (await fs.readFile(path.join(SEED_IMAGE_SOURCE_DIR, file))).toString('base64'),
+          access: 'public' as const,
+        }
+      }),
+    ),
+  )
+
+  console.info(
+    `Uploaded ${uploaded.length} seed images via the "${fileService.getProvider().getIdentifier()}" provider`,
+  )
+  return new Map(
+    files.map((file, index) => {
+      const result = uploaded[index]
+      if (!result) throw new Error(`Upload returned no result for seed image "${file}"`)
+      return [file, result.url]
+    }),
+  )
+}
+
+// A remote deployment has no local disk the storefront can reach, so its photos have to go to the
+// configured object storage. Locally they stay on disk under a stable path.
+const seedImageUrls =
+  fileService.getProvider().getIdentifier() === 'localfs' ? await copySeedImages() : await uploadSeedImages()
+
+const imageUrl = (file: string) => {
+  const url = seedImageUrls.get(file)
+  if (!url) throw new Error(`No seeded URL for image "${file}"`)
+  return url
+}
 
 // --- Users ---
 const existingUsers = await userService.listUsers()

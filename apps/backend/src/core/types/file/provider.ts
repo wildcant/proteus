@@ -11,6 +11,8 @@ import type {
 } from './mutations.js'
 
 export type IFileProvider = {
+  /** The provider's `identifier`, e.g. `localfs` or `s3`. */
+  getIdentifier(): string
   upload(file: ProviderUploadFileDTO): Promise<ProviderFileResultDTO>
   delete(file: ProviderDeleteFileDTO): Promise<void>
   getPresignedDownloadUrl(fileData: ProviderGetFileDTO): Promise<string>

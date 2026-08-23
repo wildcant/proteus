@@ -14,7 +14,7 @@ import type {
   ProviderUploadStreamResult,
 } from '../../core/types/file/mutations.js'
 import { AbstractFileProviderService } from '../../core/utils/abstract-file-provider.js'
-import { decodeFileContent } from './utils.js'
+import { decodeFileContent } from '../../core/utils/decode-file-content.js'
 
 type LocalFileProviderConfig = {
   uploadDir?: string

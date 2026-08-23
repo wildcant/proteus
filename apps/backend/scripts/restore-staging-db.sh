@@ -3,6 +3,9 @@ set -euo pipefail
 
 # Restore the staging database: drop all schemas, re-migrate, seed providers, seed dev data.
 # Usage: npm run --workspace=backend db:restore:staging
+#
+# Seeding runs with FILE_PROVIDER=s3 so the product photos are uploaded to the bucket in .env
+# rather than copied to a local `static/` directory staging cannot serve.
 
 REPO_ROOT="$(cd "$(dirname "$0")/../../../" && pwd)"
 BACKEND_DIR="$REPO_ROOT/apps/backend"
@@ -33,7 +36,7 @@ MIGRATING=true npx dotenvx run -f "$REPO_ROOT/.env" -- npm run --workspace=backe
 echo "==> Seeding providers..."
 MIGRATING=true npx dotenvx run -f "$REPO_ROOT/.env" -- npx -w backend tsx scripts/seed-providers.ts
 
-echo "==> Seeding dev data..."
-MIGRATING=true npx dotenvx run -f "$REPO_ROOT/.env" -- npx -w backend tsx scripts/seed-dev.ts
+echo "==> Seeding dev data (uploading seed images to $(npx dotenvx get S3_BUCKET -f "$REPO_ROOT/.env"))..."
+MIGRATING=true FILE_PROVIDER=s3 npx dotenvx run -f "$REPO_ROOT/.env" -- npx -w backend tsx scripts/seed-dev.ts
 
 echo "==> Done! Staging database restored."
