@@ -1,4 +1,3 @@
-import { Checkbox, Label } from '@proteus/ui'
 import { SortableList } from '#/components/common/sortable-list'
 import { useProductOptions } from '#/features/product-options/api/product-options'
 import { OptionValueSelector } from '#/features/product-options/components/option-value-selector'
@@ -24,28 +23,17 @@ export const ProductCreateVariantsSection = withForm({
           <div className="flex flex-col gap-y-6">
             <h2 className="font-semibold text-xl">Variants</h2>
 
-            <div className="flex items-start gap-3 rounded-md border p-3">
-              <Checkbox
-                id="has-variants"
-                checked={variants.hasVariants}
-                onCheckedChange={(checked) => {
-                  const hasVariants = checked === true
-                  form.setFieldValue('variants', {
-                    ...variants,
-                    hasVariants,
-                    // Clearing rather than hiding: a product saved without variations must not
-                    // carry a matrix the shopkeeper turned off.
-                    options: hasVariants ? variants.options : [],
-                    rows: hasVariants ? variants.rows : [],
-                  })
-                }}
-              />
-              <div>
-                <Label htmlFor="has-variants">Yes, this is a product with variants</Label>
-                <p className="text-muted-foreground text-sm">
-                  When unchecked, a single variant is created, named after the product.
-                </p>
-              </div>
+            {/* The matrix is left alone when this goes off rather than cleared: `resolveVariantsPayload`
+                already ignores it, so keeping it means flipping back on restores the shopkeeper's work. */}
+            <div className="rounded-md border p-3">
+              <form.AppField name="variants.hasVariants">
+                {(field) => (
+                  <field.SwitchField
+                    label="Yes, this is a product with variants"
+                    description="When off, a single variant is created, named after the product."
+                  />
+                )}
+              </form.AppField>
             </div>
 
             {variants.hasVariants ? (
