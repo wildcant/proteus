@@ -8,8 +8,6 @@ import type {
   AdminBatchVariantImagesResponse,
   AdminCreateProductVariant,
   AdminCreateProductVariantResponse,
-  AdminCreateProductVariantsBatch,
-  AdminCreateProductVariantsBatchResponse,
   AdminUpdateProductVariant,
   AdminUpdateProductVariantResponse,
   AdminUpdateVariantPrices,
@@ -21,7 +19,6 @@ import type {
 import {
   batchVariantImages,
   createProductVariant,
-  createProductVariantsBatch,
   deleteProductVariant,
   getProductVariant,
   listOptionCombinations,
@@ -105,33 +102,6 @@ export const useCreateProductVariant = (
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: 'Failed to create variant', description: error.message })
-      onError?.(...args)
-    },
-  })
-}
-
-/**
- * Creates a whole option matrix in one request, so the duplicate check sees every row together.
- *
- * Unused since the create-variant modal became one-variant-at-a-time; kept for the matrix step of
- * a product-create wizard, which is the flow that actually needs a batch.
- */
-export const useCreateProductVariantsBatch = (
-  productId: string,
-  options?: UseMutationOptions<AdminCreateProductVariantsBatchResponse, Error, AdminCreateProductVariantsBatch>,
-) => {
-  const queryClient = useQueryClient()
-  const { onSuccess, onError, ...rest } = options ?? {}
-  return useMutation({
-    ...rest,
-    mutationFn: (data: AdminCreateProductVariantsBatch) => createProductVariantsBatch(productId, data),
-    onSuccess: (...args) => {
-      queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
-      onSuccess?.(...args)
-    },
-    onError: (...args) => {
-      const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create variants', description: error.message })
       onError?.(...args)
     },
   })

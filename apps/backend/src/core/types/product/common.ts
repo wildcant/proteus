@@ -97,6 +97,19 @@ export type ProductOptionCombinationDTO = {
   variantId: string | null
 }
 
+/**
+ * The shape `buildProductPickerTargets` needs from each variant the caller is shipping.
+ *
+ * Named here rather than inlined at the two places that use it, so the port and its implementation
+ * cannot drift. `inStock` is required, unlike the module's `CombinableVariant`: a caller building a
+ * storefront picker has always resolved it.
+ */
+export type PickerVariantDTO = {
+  id: string
+  optionValues: Record<string, string>
+  inStock: boolean
+}
+
 /** Why a variant cannot survive a change to its product's options. */
 export type VariantRemovalReason = 'value-dropped' | 'collapsed'
 

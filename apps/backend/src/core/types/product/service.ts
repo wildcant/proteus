@@ -10,6 +10,7 @@ import type {
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
+  PickerVariantDTO,
   ProductDTO,
   ProductImageDTO,
   ProductOptionCombinationDTO,
@@ -196,7 +197,7 @@ export type IProductModuleService = {
   /** The storefront picker, precomputed over the variants the caller is actually shipping. */
   buildProductPickerTargets(
     productId: string,
-    variants: Array<{ id: string; optionValues: Record<string, string>; inStock: boolean }>,
+    variants: readonly PickerVariantDTO[],
     context?: Context,
   ): Promise<Record<string, Record<string, string | null>>>
 }

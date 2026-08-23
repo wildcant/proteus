@@ -8,6 +8,7 @@ import type {
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { IdParams, StoreProductResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
+import { buildOptionSwatches } from '../../../../workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '../../../../workflows/product/utils/build-variant-prices.js'
 import { buildVariantStock } from '../../../../workflows/product/utils/build-variant-stock.js'
 
@@ -76,14 +77,12 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   // dropped for having no price.
   const pickerTargets = await productService.buildProductPickerTargets(req.params.id, variantsForResponse)
 
-  const imageUrlById = new Map(images.map((image) => [image.id, image.url]))
+  // Built from the same shipped variants as the picker, so a swatch can never point at an image
+  // belonging to a variant the response dropped.
+  const swatchUrlByValueId = buildOptionSwatches(options, variantsForResponse, images)
   const optionsForResponse = options.map((option) => ({
     ...option,
-    values: option.values.map((value) => {
-      const carrier = variantsForResponse.find((variant) => variant.optionValues[option.id] === value.id)
-      const swatchImageUrl = carrier?.imageIds[0] ? (imageUrlById.get(carrier.imageIds[0]) ?? null) : null
-      return { ...value, swatchImageUrl }
-    }),
+    values: option.values.map((value) => ({ ...value, swatchImageUrl: swatchUrlByValueId[value.id] ?? null })),
   }))
 
   return {

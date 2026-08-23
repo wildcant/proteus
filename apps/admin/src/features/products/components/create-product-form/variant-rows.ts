@@ -15,9 +15,11 @@ export type VariantRow = {
 /**
  * The full matrix the selected options produce, in the product's option order.
  *
- * Mirrors the server's `buildCombinations` for a product that does not exist yet: there is no
- * server state to be authoritative about, and every row is validated against the real rules on
- * create. Options offering no values are dropped rather than multiplying the matrix to nothing.
+ * A second cartesian product, knowingly: `/option-combinations` is scoped to a product, and this
+ * one does not exist yet, so there is no server answer to ask for. The divergence ADR 0015 warns
+ * about — offering a combination the save then rejects — is closed by the create call validating
+ * every row against the real rules. Options offering no values are dropped rather than multiplying
+ * the matrix to nothing.
  */
 export function enumerateVariantRows(
   allOptions: AdminProductOption[],
@@ -52,7 +54,7 @@ export function enumerateVariantRows(
 
   return combinations.map((values) => {
     const optionValues = Object.fromEntries(values.map((value) => [value.optionId, value.valueId]))
-    const key = combinationKey(optionValues)
+    const key = variantRowKey(optionValues)
     const edited = editedByKey.get(key)
 
     return {
@@ -65,8 +67,15 @@ export function enumerateVariantRows(
   })
 }
 
-/** Order-independent identity for a combination, matching the server's `combinationKey`. */
-export function combinationKey(optionValues: Record<string, string>): string {
+/**
+ * Identity for a row of the grid, order-independent so it survives a re-enumeration.
+ *
+ * Deliberately not the server's `combinationKey`, despite computing the same string: this one is
+ * never sent — `resolveVariantsPayload` drops it — and never compared against one the server sent.
+ * It is a `Map` key for carrying an edited SKU, so either side is free to change its format without
+ * telling the other. Sharing an implementation would turn that freedom into a deploy dependency.
+ */
+function variantRowKey(optionValues: Record<string, string>): string {
   return Object.entries(optionValues)
     .map(([optionId, valueId]) => `${optionId}=${valueId}`)
     .sort()

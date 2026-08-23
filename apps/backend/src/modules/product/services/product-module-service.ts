@@ -17,6 +17,7 @@ import type {
   FilterableProductVariantProps,
   FindConfig,
   IProductModuleService,
+  PickerVariantDTO,
   ProductDTO,
   ProductImageDTO,
   ProductOptionCombinationDTO,
@@ -610,19 +611,7 @@ export class ProductModuleService implements IProductModuleService {
         undefined,
         ctx,
       )
-      const enriched = await this.enrichVariants(variants, ctx)
-      const fallbackTitles = await this.productTitlesFor(
-        variants.map((variant) => variant.productId),
-        ctx,
-      )
-
-      await Promise.all(
-        enriched.map((variant) => {
-          const title = combinationLabel(variant.optionValues) || fallbackTitles.get(variant.productId) || ''
-          if (!title || title === variant.title) return undefined
-          return this.productVariantRepository.update(variant.id, { title }, ctx)
-        }),
-      )
+      await this.retitleVariants(variants, ctx)
     })
   }
 
@@ -842,9 +831,8 @@ export class ProductModuleService implements IProductModuleService {
    * Brings every variant carrying one of these option values back in line with its combination.
    *
    * Titles are derived, so a value rename that left them alone would make "derived" a lie — and a
-   * stale title is copied onto the next line item and kept in order history for good. Labels come
-   * from `combinationLabel` rather than being spelled again here, so there is one way to name a
-   * combination.
+   * stale title is copied onto the next line item and kept in order history for good. The retitling
+   * itself goes through `retitleVariants`, so there is one way to name a combination.
    */
   async retitleVariantsCarrying(optionValueIds: string[], context?: Context): Promise<void> {
     if (optionValueIds.length === 0) return
@@ -859,19 +847,7 @@ export class ProductModuleService implements IProductModuleService {
     )
     if (variants.length === 0) return
 
-    const enriched = await this.enrichVariants(variants, context)
-    const fallbackTitles = await this.productTitlesFor(
-      variants.map((variant) => variant.productId),
-      context,
-    )
-
-    await Promise.all(
-      enriched.map((variant) => {
-        const title = combinationLabel(variant.optionValues) || fallbackTitles.get(variant.productId) || ''
-        if (!title || title === variant.title) return undefined
-        return this.productVariantRepository.update(variant.id, { title }, context)
-      }),
-    )
+    await this.retitleVariants(variants, context)
   }
 
   async enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO> {
@@ -964,7 +940,7 @@ export class ProductModuleService implements IProductModuleService {
    */
   async buildProductPickerTargets(
     productId: string,
-    variants: Array<{ id: string; optionValues: Record<string, string>; inStock: boolean }>,
+    variants: readonly PickerVariantDTO[],
     context?: Context,
   ): Promise<Record<string, Record<string, string | null>>> {
     const options = await this.listProductOptionsForProduct(productId, context)
@@ -974,6 +950,31 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
+
+  /**
+   * Brings a set of variants' titles back in line with the combinations they carry.
+   *
+   * The one place a derived title is written, so a reassignment and a value rename can never
+   * disagree about what a variant is called. A variant with no combination falls back to its
+   * product's title; one whose title is already right is left alone rather than rewritten.
+   */
+  private async retitleVariants(variants: ProductVariantDTO[], context?: Context): Promise<void> {
+    if (variants.length === 0) return
+
+    const enriched = await this.enrichVariants(variants, context)
+    const fallbackTitles = await this.productTitlesFor(
+      variants.map((variant) => variant.productId),
+      context,
+    )
+
+    await Promise.all(
+      enriched.map((variant) => {
+        const title = combinationLabel(variant.optionValues) || fallbackTitles.get(variant.productId) || ''
+        if (!title || title === variant.title) return undefined
+        return this.productVariantRepository.update(variant.id, { title }, context)
+      }),
+    )
+  }
 
   /**
    * The Product-Scoped Options a `setProductOptions` payload would leave behind, in payload order.
