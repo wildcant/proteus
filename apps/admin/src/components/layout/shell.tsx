@@ -23,6 +23,7 @@ import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { NotificationBell } from '#/features/notifications/components/notification-bell'
 import { Breadcrumbs } from './breadcrumbs'
 import { navItems, settingsItem } from './nav'
+import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
 
 export function Shell() {
@@ -49,7 +50,8 @@ function Topbar() {
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumbs />
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-1">
+        <ThemeToggle />
         <NotificationBell />
       </div>
     </header>

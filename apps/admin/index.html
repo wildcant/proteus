@@ -5,6 +5,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>admin</title>
+    <script>
+      // Applied before first paint so a dark-mode reload does not flash the light palette.
+      ;(() => {
+        const stored = localStorage.getItem('theme')
+        const mode = stored === 'light' || stored === 'dark' ? stored : 'auto'
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const resolved = mode === 'auto' ? (prefersDark ? 'dark' : 'light') : mode
+
+        document.documentElement.classList.add(resolved)
+        if (mode !== 'auto') {
+          document.documentElement.setAttribute('data-theme', mode)
+        }
+        document.documentElement.style.colorScheme = resolved
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>
