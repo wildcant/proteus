@@ -4,6 +4,7 @@ import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.
 import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { Logger } from '@core/types/logger.js'
+import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { OrderDTO } from '@core/types/order/common.js'
 import type { CreateOrderLineItemDTO, CreateOrderShippingMethodDTO } from '@core/types/order/mutations.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
@@ -11,7 +12,9 @@ import type { PaymentSessionStatus } from '@core/types/payment/common.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { env } from '../../env.js'
 import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
+import { prepareOrderConfirmationData } from './utils/prepare-order-confirmation-data.js'
 
 type CompleteCartInput = { cartId: string }
 
@@ -383,6 +386,52 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         }),
       ),
     )
+  })
+
+  /** Send the order confirmation email. Deliberately swallows every error: the payment is
+   *  already authorized at this point, so throwing would compensate the whole workflow and
+   *  refund a valid order over a mail failure. The notification module persists the attempt,
+   *  so a failed send is recoverable without re-running checkout. */
+  await ctx.step('send-order-confirmation', async ({ container }) => {
+    const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+
+    try {
+      if (!order.email) return
+
+      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+
+      const [lineItems, shippingMethods, transactions] = await Promise.all([
+        orderService.listOrderLineItems({ orderId: order.id }),
+        orderService.listOrderShippingMethods({ orderId: order.id }),
+        orderService.listOrderTransactions({ orderId: order.id }),
+      ])
+
+      const shippingAddress = order.shippingAddressId
+        ? await orderService.retrieveOrderAddress(order.shippingAddressId)
+        : null
+
+      await notificationService.createNotification({
+        to: order.email,
+        channel: 'email',
+        template: 'order-confirmation',
+        data: prepareOrderConfirmationData({
+          order,
+          lineItems: orderService.enrichLineItems(lineItems),
+          totals: orderService.computeOrderTotals({ lineItems, shippingMethods, transactions }),
+          shippingAddress,
+          storeUrl: env.STORE_URL,
+        }),
+        triggerType: 'order.placed',
+        resourceId: order.id,
+        resourceType: 'order',
+        // Guards against a duplicate email if the workflow is retried after this point.
+        idempotencyKey: `order-confirmation:${order.id}`,
+      })
+    } catch (error) {
+      logger.error(`[complete-cart] Failed to send order confirmation for order "${order.id}"`)
+      logger.error(error instanceof Error ? error : String(error))
+    }
   })
 
   return order

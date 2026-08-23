@@ -1,7 +1,8 @@
 Fixes and improvements
 
-
 Future features TODOs
+- Allow customer to manage addresses.
+- Allow customer to see previous orders.
 - Access Control and Multi tenancy Module Architecture
   - TODO: Read posts regarding tenant isolation patterns and tradeoffs and security
     - https://learn.microsoft.com/en-us/azure/azure-sql/database/saas-tenancy-app-design-patterns?view=azuresql
@@ -10,6 +11,7 @@ Future features TODOs
 - GLOBAL SHIPPING OPTIONS [COUNTRY CODE]: if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
 
 Future Infra TODOs
+- Monitoring
 - temporal as a workflow adapter, allow to trace/retry/persist/resume workflows (https://www.youtube.com/watch?v=WjzojcyNp4U) (https://hub.docker.com/r/temporalio/server) (https://docs.temporal.io/design-patterns/saga-pattern?language=typescript) (https://github.com/temporalio/samples-typescript/blob/main/saga/src/workflows.ts)
 - aws deployment
 - default indexes in all tables with deleted_at.

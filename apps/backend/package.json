@@ -45,6 +45,7 @@
     "@dotenvx/dotenvx": "^2.14.0",
     "@hono/node-server": "^2.0.0",
     "@proteus/http-schemas": "*",
+    "@proteus/utils": "*",
     "@sendgrid/mail": "^8.1.6",
     "awilix": "^12.0.0",
     "bignumber.js": "^11.1.5",

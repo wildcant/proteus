@@ -371,6 +371,16 @@ export class ProductModuleService implements IProductModuleService {
     })
   }
 
+  async resolveVariantThumbnail(variantId: string, context?: Context): Promise<string | null> {
+    // Finding rather than retrieving: an unknown variant yields no thumbnail instead of throwing.
+    const [variant] = await this.productVariantRepository.find({ id: variantId }, undefined, context)
+    if (!variant) return null
+    if (variant.thumbnail) return variant.thumbnail
+
+    const [product] = await this.productRepository.find({ id: variant.productId }, undefined, context)
+    return product?.thumbnail ?? null
+  }
+
   // ── Options (global) ─────────────────────────────────────────────────
 
   async createProductOption(data: CreateProductOptionDTO, context?: Context): Promise<ProductOptionWithValuesDTO> {

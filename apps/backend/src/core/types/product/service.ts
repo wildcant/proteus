@@ -83,6 +83,8 @@ export type IProductModuleService = {
   updateProductVariant(variantId: string, data: UpdateProductVariantDTO, context?: Context): Promise<ProductVariantDTO>
   upsertProductVariants(data: UpsertProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]>
   deleteProductVariants(variantIds: string[], context?: Context): Promise<void>
+  /** The variant's own thumbnail, falling back to its product's. Null when the variant is unknown or neither carries an image. */
+  resolveVariantThumbnail(variantId: string, context?: Context): Promise<string | null>
 
   // Options (global)
   createProductOption(data: CreateProductOptionDTO, context?: Context): Promise<ProductOptionWithValuesDTO>
