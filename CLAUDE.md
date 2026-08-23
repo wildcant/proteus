@@ -162,4 +162,4 @@ Tests construct services manually with injected repos. Vitest config at `apps/ba
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/middleware-and-openapi.md`.
+Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/middleware-and-openapi.md`.

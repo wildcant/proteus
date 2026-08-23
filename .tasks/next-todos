@@ -28,7 +28,7 @@ Fixes and improvements
     ordli_…` from compute-inventory-adjustments.ts, so fulfillment is impossible for any tracked variant.
   - Decide where the mapping lives: re-key the reservation to the order line item in `reserve-inventory` (the
     order already exists by then), or carry a `cartLineItemId` onto order_line_item and look up through it.
-  - Blocks the last two files of the workflow-test migration — see docs/plans/reusable-workflow-test-setup.md.
+  - Blocks the last two files of the workflow-test migration — see docs/backend-test-infrastructure.md.
 
 Future features TODOs
 - INVENTORY MODULE COMPLETION: the tables exist and checkout reads them, but there is no way to operate them.
@@ -75,7 +75,7 @@ Future Infra TODOs
 - ci workflow to handle deployment!
 - migration order in prod (first modules and then link modules, are there edge cases?).
 - reusable workflow setup function for tests — done for 12 of 14 workflow test files (they now run against a real
-  container from `createApi()`; see docs/plans/reusable-workflow-test-setup.md). cancel-order and
+  container from `createTestContainer()`; see docs/backend-test-infrastructure.md). cancel-order and
   create-order-fulfillment are still on mocks, blocked on the reservation keying bug above.
 - features flags
 - event bus: investigate pgmq (see docs/research/event-subscriber-system/) and cloudflare queues

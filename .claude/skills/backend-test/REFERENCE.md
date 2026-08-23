@@ -328,4 +328,4 @@ file itself, which persists across every test in that file.
 The full suite is ~28s: the schema is built once per worker database in `globalSetup`, and each
 test resets with a `TRUNCATE` (~25ms) rather than a re-migration (~220ms). What dominates now is
 per-file module loading, so a slow file is usually just a test count. See
-`docs/research/test-suite-migration-and-parallelism.md`.
+`docs/backend-test-infrastructure.md`.
