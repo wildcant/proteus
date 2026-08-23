@@ -4,6 +4,7 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminProductMetadata } from './adminProductMetadata.ts';
 import type { AdminProductStatus } from './adminProductStatus.ts';
 
 export interface AdminProduct {
@@ -38,7 +39,7 @@ export interface AdminProduct {
   /** @nullable */
   externalId: string | null;
   /** @nullable */
-  metadata: string | null;
+  metadata: AdminProductMetadata;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

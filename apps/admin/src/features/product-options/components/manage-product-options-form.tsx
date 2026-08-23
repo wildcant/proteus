@@ -1,14 +1,18 @@
 import { Button } from '@proteus/ui'
-import { useCallback, useMemo } from 'react'
-import type { AdminProductOption } from '#/api/generated/model'
+import { useMemo } from 'react'
+import type { AdminProductScopedOption } from '#/api/generated/model'
 import { KeyboundForm } from '#/components/modals/keybound-form'
 import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
 import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
-import { MultiSelectCombobox } from '#/components/multi-select-combobox'
 import { useProductOptions, useProductOptionsForProduct } from '#/features/product-options/api/product-options'
+import { OptionValueSelector } from '#/features/product-options/components/option-value-selector'
 import { useManageProductOptionsForm } from '#/features/product-options/hooks/use-manage-product-options-form'
+import {
+  describeOptionChange,
+  type OptionChangeConsequences,
+} from '#/features/product-options/option-change-consequences'
 
-function buildDefaultValues(currentOptions: AdminProductOption[]) {
+function buildDefaultValues(currentOptions: AdminProductScopedOption[]) {
   return {
     options: currentOptions.map((option) => ({
       optionId: option.id,
@@ -42,9 +46,15 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
         <RouteDrawer.Body className="space-y-6 p-6">
           <form.Field name="options">
             {(field) => (
-              <OptionSelector allOptions={allOptions} value={field.state.value} onChange={field.handleChange} />
+              <OptionValueSelector allOptions={allOptions} value={field.state.value} onChange={field.handleChange} />
             )}
           </form.Field>
+
+          {/* The variants follow the options, so what that costs is shown while it is still a
+              choice rather than reported once it has happened. */}
+          <form.Subscribe selector={(state) => state.values.options}>
+            {(next) => <ConsequenceNotice consequences={describeOptionChange(currentOptions, next)} />}
+          </form.Subscribe>
         </RouteDrawer.Body>
         <RouteDrawer.Footer>
           <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
@@ -57,90 +67,26 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
   )
 }
 
-type OptionEntry = { optionId: string; valueIds: string[] }
-
-type OptionSelectorProps = {
-  allOptions: AdminProductOption[]
-  value: OptionEntry[]
-  onChange: (value: OptionEntry[]) => void
-}
-
-function OptionSelector({ allOptions, value, onChange }: OptionSelectorProps) {
-  const optionMap = useMemo(() => new Map(allOptions.map((option) => [option.id, option])), [allOptions])
-
-  const selectedOptionIds = useMemo(() => value.map((entry) => entry.optionId), [value])
-
-  const optionItems = useMemo(() => allOptions.map((option) => ({ id: option.id, label: option.title })), [allOptions])
-
-  const handleOptionsChange = useCallback(
-    (selectedIds: string[]) => {
-      const next: OptionEntry[] = selectedIds.map((optionId) => {
-        const existing = value.find((entry) => entry.optionId === optionId)
-        if (existing) return existing
-        const option = optionMap.get(optionId)
-        // Select all values by default when an option is first added
-        return { optionId, valueIds: option?.values.map((v) => v.id) ?? [] }
-      })
-      onChange(next)
-    },
-    [value, onChange, optionMap],
-  )
-
-  const handleValuesChange = useCallback(
-    (optionId: string, valueIds: string[]) => {
-      if (valueIds.length === 0) {
-        onChange(value.filter((entry) => entry.optionId !== optionId))
-        return
-      }
-      onChange(value.map((entry) => (entry.optionId === optionId ? { ...entry, valueIds } : entry)))
-    },
-    [value, onChange],
-  )
-
-  const selectedOptions = value.map((entry) => optionMap.get(entry.optionId)).filter(Boolean) as AdminProductOption[]
-
-  if (allOptions.length === 0) {
-    return <p className="text-muted-foreground text-sm">No product options available. Create one first.</p>
-  }
+function ConsequenceNotice({ consequences }: { consequences: OptionChangeConsequences }) {
+  if (!consequences.isDestructive) return null
 
   return (
-    <>
-      <div>
-        <h2 className="font-medium text-sm">Product Options</h2>
-        <p className="mb-3 text-muted-foreground text-sm">Select which options should be associated to this product.</p>
-        <MultiSelectCombobox
-          items={optionItems}
-          value={selectedOptionIds}
-          onValueChange={handleOptionsChange}
-          placeholder="Search options..."
-          emptyMessage="No options found."
-        />
-      </div>
-
-      {selectedOptions.length > 0 && (
-        <div>
-          <h2 className="font-medium text-sm">Values</h2>
-          <p className="mb-3 text-muted-foreground text-sm">Select which values to use for each option.</p>
-          <div className="space-y-4">
-            {selectedOptions.map((option) => {
-              const valueItems = option.values.map((v) => ({ id: v.id, label: v.value }))
-              const entry = value.find((e) => e.optionId === option.id)
-              return (
-                <div key={option.id}>
-                  <h3 className="mb-2 font-medium text-muted-foreground text-sm">{option.title}</h3>
-                  <MultiSelectCombobox
-                    items={valueItems}
-                    value={entry?.valueIds ?? []}
-                    onValueChange={(valueIds) => handleValuesChange(option.id, valueIds)}
-                    placeholder="Search values..."
-                    emptyMessage="No values found."
-                  />
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-    </>
+    <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3">
+      <h3 className="font-medium text-destructive text-sm">Saving will delete variants</h3>
+      <ul className="mt-1.5 list-disc space-y-1 pl-4 text-muted-foreground text-sm">
+        {consequences.droppedValues.map((dropped) => (
+          <li key={dropped.label}>
+            Removing <span className="font-medium">{dropped.label}</span> deletes {dropped.variantCount}{' '}
+            {dropped.variantCount === 1 ? 'variant' : 'variants'}.
+          </li>
+        ))}
+        {consequences.droppedOptions.map((title) => (
+          <li key={title}>
+            Removing <span className="font-medium">{title}</span> merges variants that differ only by it. Those left
+            standing for the same combination are deleted.
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }

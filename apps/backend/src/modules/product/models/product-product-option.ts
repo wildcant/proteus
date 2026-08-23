@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { index, integer, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { productTable } from './product.js'
 import { productOptionTable } from './product-option.js'
@@ -19,6 +19,8 @@ export const productProductOptionTable = pgTable(
     optionId: text()
       .notNull()
       .references(() => productOptionTable.id, { onDelete: 'restrict' }),
+    /** Display order of this option on the product. The storefront picker resolves left to right. */
+    rank: integer().default(0).notNull(),
     ...timestamps,
   },
   (table) => [

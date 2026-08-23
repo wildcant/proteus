@@ -3,6 +3,9 @@ import type { PriceDTO } from '../pricing/common.js'
 
 export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 
+/** How the storefront draws an option's values. */
+export type ProductOptionRenderAs = 'text' | 'swatch'
+
 export type ProductDTO = {
   id: string
   title: string
@@ -22,7 +25,7 @@ export type ProductDTO = {
   material: string | null
   discountable: boolean
   externalId: string | null
-  metadata: string | null
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -57,13 +60,100 @@ export type ProductVariantDTO = {
   height: number | null
   width: number | null
   variantRank: number | null
-  metadata: string | null
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
 }
 
 export type ProductVariantExtendedDTO = ProductVariantDTO & { prices?: PriceDTO[] }
+
+/**
+ * One entry of a variant's Option Combination, resolved for display: both the ids a client posts
+ * back and the labels it renders. Always in the product's option order.
+ */
+export type VariantOptionValueDTO = {
+  optionId: string
+  optionTitle: string
+  valueId: string
+  value: string
+}
+
+/**
+ * A variant with its Option Combination resolved from the `product_variant_option` pivot.
+ *
+ * Resolved rather than an id map because every admin surface renders labels — the variants table,
+ * the detail card, the generated title. The storefront takes the lean map instead, via
+ * `listVariantOptionMaps`.
+ */
+export type EnrichedProductVariantDTO = ProductVariantDTO & { optionValues: VariantOptionValueDTO[] }
+
+/** An Option Combination a product could sell, and the variant that has it if one does. */
+export type ProductOptionCombinationDTO = {
+  key: string
+  label: string
+  values: VariantOptionValueDTO[]
+  optionValues: Record<string, string>
+  variantId: string | null
+}
+
+/**
+ * The shape `buildProductPickerTargets` needs from each variant the caller is shipping.
+ *
+ * Named here rather than inlined at the two places that use it, so the port and its implementation
+ * cannot drift. `inStock` is required, unlike the module's `CombinableVariant`: a caller building a
+ * storefront picker has always resolved it.
+ */
+export type PickerVariantDTO = {
+  id: string
+  optionValues: Record<string, string>
+  inStock: boolean
+}
+
+/** Why a variant cannot survive a change to its product's options. */
+export type VariantRemovalReason = 'value-dropped' | 'collapsed'
+
+/**
+ * What a proposed set of Product-Scoped Options would do to a product's variants. Structurally
+ * mirrors the module's pure planner, the way `ProductOptionCombinationDTO` mirrors its combinations.
+ */
+export type VariantReconciliationPlanDTO = {
+  keep: Array<{ variantId: string; combination: ProductOptionCombinationDTO }>
+  reassign: Array<{ variantId: string; fromLabel: string; combination: ProductOptionCombinationDTO }>
+  create: Array<{ combination: ProductOptionCombinationDTO; copyPricesFromVariantId: string | null }>
+  remove: Array<{ variantId: string; title: string; reason: VariantRemovalReason }>
+}
+
+export interface FilterableProductOptionCombinationProps
+  extends BaseFilterable<FilterableProductOptionCombinationProps> {
+  /**
+   * Required, unlike every other filter here: a combination only exists relative to one product's
+   * option set, so there is no unscoped list to narrow.
+   */
+  productId: string
+  /** Substring match on the combination's label, e.g. `"red"`. */
+  label?: string
+  /** `available` drops the combinations a variant already has. Defaults to all of them. */
+  scope?: 'all' | 'available'
+  /** Kept in an `available` list even though it is taken — the variant doing the editing. */
+  variantId?: string
+}
+
+/**
+ * A page of Option Combinations plus the two product-level totals every picker needs.
+ *
+ * Both totals ignore the filters, so a search that matches nothing stays distinguishable from a
+ * product that has no options and from one whose combinations are all spoken for.
+ */
+export type ProductOptionCombinationPageDTO = {
+  combinations: ProductOptionCombinationDTO[]
+  /** Matching the filters — what pagination runs over. */
+  count: number
+  /** Every combination the product could sell. Zero means the product has no options yet. */
+  totalCombinations: number
+  /** Those still free, plus `variantId`'s own. Zero against a non-zero total means exhausted. */
+  availableCombinations: number
+}
 
 export interface FilterableProductVariantProps extends BaseFilterable<FilterableProductVariantProps> {
   id?: string | string[]
@@ -76,7 +166,8 @@ export interface FilterableProductVariantProps extends BaseFilterable<Filterable
 export type ProductOptionDTO = {
   id: string
   title: string
-  metadata: string | null
+  renderAs: ProductOptionRenderAs
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -84,6 +175,20 @@ export type ProductOptionDTO = {
 
 export type ProductOptionWithValuesDTO = ProductOptionDTO & {
   values: ProductOptionValueDTO[]
+}
+
+/** A Product Option Value as one product offers it, with that product's usage attached. */
+export type ProductScopedOptionValueDTO = ProductOptionValueDTO & {
+  /** Variants of this product carrying the value. Non-zero means it cannot be unlinked yet. */
+  variantCount: number
+}
+
+/**
+ * A Product Option as one particular product offers it — only the values that product sells, in
+ * its own display order. Distinct from `ProductOptionDTO`, which is the global catalogue entity.
+ */
+export type ProductScopedOptionDTO = ProductOptionDTO & {
+  values: ProductScopedOptionValueDTO[]
 }
 
 export interface FilterableProductOptionProps extends BaseFilterable<FilterableProductOptionProps> {
@@ -96,7 +201,7 @@ export type ProductOptionValueDTO = {
   optionId: string
   value: string
   rank: number | null
-  metadata: string | null
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -112,6 +217,7 @@ export type ProductProductOptionDTO = {
   id: string
   productId: string
   optionId: string
+  rank: number
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -144,7 +250,7 @@ export type ProductImageDTO = {
   productId: string
   url: string
   rank: number
-  metadata: string | null
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -154,6 +260,23 @@ export interface FilterableProductImageProps extends BaseFilterable<FilterablePr
   id?: string | string[]
   productId?: string | string[]
   url?: string | OperatorMap<string>
+}
+
+export type ProductVariantOptionDTO = {
+  id: string
+  variantId: string
+  optionId: string
+  optionValueId: string
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductVariantOptionProps extends BaseFilterable<FilterableProductVariantOptionProps> {
+  id?: string | string[]
+  variantId?: string | string[]
+  optionId?: string | string[]
+  optionValueId?: string | string[]
 }
 
 export type ProductVariantImageDTO = {

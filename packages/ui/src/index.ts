@@ -49,6 +49,7 @@ export {
   ComboboxChipsInput,
   ComboboxContent,
   ComboboxEmpty,
+  ComboboxInput,
   ComboboxItem,
   ComboboxList,
   ComboboxValue,
@@ -151,6 +152,7 @@ export {
 } from './components/ui/sidebar.tsx'
 export { Skeleton } from './components/ui/skeleton.tsx'
 export { StatusBadge, statusBadgeDotVariants } from './components/ui/status-badge.tsx'
+export { Switch } from './components/ui/switch.tsx'
 export {
   Table,
   TableBody,

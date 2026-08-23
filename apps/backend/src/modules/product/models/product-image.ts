@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { index, integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { productTable } from './product.js'
 
@@ -12,7 +12,7 @@ export const productImageTable = pgTable(
       .references(() => productTable.id, { onDelete: 'cascade' }),
     url: text().notNull(),
     rank: integer().default(0).notNull(),
-    metadata: text(),
+    metadata: jsonb().$type<Record<string, unknown> | null>(),
     ...timestamps,
   },
   (table) => [

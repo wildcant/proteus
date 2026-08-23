@@ -1,5 +1,6 @@
 import { formatDate, formatDatetime } from '@proteus/utils'
 import { configureDataTable } from '#/components/data-table'
+import { ThumbnailCell } from '#/components/data-table/data-table-ui/thumbnail-cell'
 
 export function setupDataTable() {
   configureDataTable({
@@ -14,6 +15,7 @@ export function setupDataTable() {
         return formatDate(value)
       },
       boolean: ({ value }) => (value ? 'Yes' : 'No'),
+      thumbnail: ({ value }) => <ThumbnailCell url={typeof value === 'string' ? value : null} />,
     },
   })
 }

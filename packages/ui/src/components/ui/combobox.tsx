@@ -54,6 +54,20 @@ function ComboboxChipsInput({ className, ...props }: ComboboxPrimitive.Input.Pro
   )
 }
 
+/** The single-select input. `ComboboxChipsInput` is its multi-select counterpart. */
+function ComboboxInput({ className, ...props }: ComboboxPrimitive.Input.Props) {
+  return (
+    <ComboboxPrimitive.Input
+      data-slot="combobox-input"
+      className={cn(
+        'flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
 function ComboboxValue(props: ComboboxPrimitive.Value.Props) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />
 }
@@ -121,6 +135,7 @@ export {
   ComboboxChipsInput,
   ComboboxContent,
   ComboboxEmpty,
+  ComboboxInput,
   ComboboxItem,
   ComboboxList,
   ComboboxValue,

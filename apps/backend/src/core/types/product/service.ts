@@ -1,19 +1,28 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
+  EnrichedProductVariantDTO,
   FilterableProductImageProps,
+  FilterableProductOptionCombinationProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
   FilterableProductVariantImageProps,
+  FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
+  PickerVariantDTO,
   ProductDTO,
   ProductImageDTO,
+  ProductOptionCombinationDTO,
+  ProductOptionCombinationPageDTO,
   ProductOptionDTO,
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
+  ProductScopedOptionDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
+  ProductVariantOptionDTO,
+  VariantReconciliationPlanDTO,
 } from './common.js'
 import type {
   CreateProductDTO,
@@ -112,6 +121,19 @@ export type IProductModuleService = {
 
   // Product-option linking
   setProductOptions(productId: string, data: SetProductOptionsDTO, context?: Context): Promise<void>
+  /** What a proposed set of options would do to the product's variants. Reads only. */
+  planProductOptionChange(
+    productId: string,
+    data: SetProductOptionsDTO,
+    context?: Context,
+  ): Promise<VariantReconciliationPlanDTO>
+  /** Moves variants onto the combinations a plan assigned them, retitling as it goes. */
+  applyVariantReassignments(
+    reassignments: ReadonlyArray<{ variantId: string; optionValues: Record<string, string> }>,
+    context?: Context,
+  ): Promise<void>
+  /** Brings every variant carrying one of these option values back in line with its combination. */
+  retitleVariantsCarrying(optionValueIds: string[], context?: Context): Promise<void>
   listProductOptionsForProduct(productId: string, context?: Context): Promise<ProductOptionWithValuesDTO[]>
   listAndCountProductsForOption(
     optionId: string,
@@ -139,4 +161,43 @@ export type IProductModuleService = {
   listVariantsForImage(imageId: string, context?: Context): Promise<ProductVariantDTO[]>
   addImageToVariant(data: VariantImageInput[], context?: Context): Promise<{ id: string }[]>
   removeImageFromVariant(data: VariantImageInput[], context?: Context): Promise<void>
+
+  // Variant options
+  listProductVariantOptions(
+    filters?: FilterableProductVariantOptionProps,
+    config?: FindConfig<ProductVariantOptionDTO>,
+    context?: Context,
+  ): Promise<ProductVariantOptionDTO[]>
+  listOptionValuesForVariant(variantId: string, context?: Context): Promise<ProductOptionValueDTO[]>
+  /**
+   * Attaches each variant's Option Combination, resolved for display. Async because it lives in a
+   * pivot rather than on the variant row — one batched read for the whole set.
+   */
+  enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO>
+  enrichVariants(variants: ProductVariantDTO[], context?: Context): Promise<EnrichedProductVariantDTO[]>
+  /**
+   * Each variant's Option Combination as an id map — the lean form the storefront ships, where the
+   * picker only ever compares ids and the labels already travel once on the product's options.
+   */
+  listVariantOptionMaps(variantIds: string[], context?: Context): Promise<Record<string, Record<string, string>>>
+  /** How many of the product's variants carry each option value, keyed by option value id. */
+  countVariantsByOptionValue(productId: string, context?: Context): Promise<Record<string, number>>
+  /** The product's options with each value's variant usage attached. */
+  listProductScopedOptions(productId: string, context?: Context): Promise<ProductScopedOptionDTO[]>
+  /**
+   * The Option Combinations this product could sell, each naming the variant that has it or `null`
+   * while it is still available. Paginated and searched here because the count is the product of
+   * the option value counts.
+   */
+  listProductOptionCombinations(
+    filters: FilterableProductOptionCombinationProps,
+    config?: FindConfig<ProductOptionCombinationDTO>,
+    context?: Context,
+  ): Promise<ProductOptionCombinationPageDTO>
+  /** The storefront picker, precomputed over the variants the caller is actually shipping. */
+  buildProductPickerTargets(
+    productId: string,
+    variants: readonly PickerVariantDTO[],
+    context?: Context,
+  ): Promise<Record<string, Record<string, string | null>>>
 }

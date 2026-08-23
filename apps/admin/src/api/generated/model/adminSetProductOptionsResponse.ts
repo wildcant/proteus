@@ -4,8 +4,8 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
-import type { AdminProductOption } from './adminProductOption.ts';
+import type { AdminProductScopedOption } from './adminProductScopedOption.ts';
 
 export interface AdminSetProductOptionsResponse {
-  productOptions: AdminProductOption[];
+  productOptions: AdminProductScopedOption[];
 }

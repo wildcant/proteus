@@ -6,6 +6,7 @@ import {
   AdminProductListParams,
   AdminProductListResponse,
 } from '@proteus/http-schemas/admin'
+import { createProductWorkflow } from '@workflows/product/create-product.js'
 import type { HttpRequest, HttpResult } from '../../../server/ports.js'
 
 export const GetInput = { query: AdminProductListParams }
@@ -23,7 +24,7 @@ export const PostInput = { body: AdminCreateProduct }
 export const PostOutput = AdminCreateProductResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
-  const product = await productService.createProduct(req.body)
+  const { options, variants, ...productData } = req.body
+  const product = await createProductWorkflow.run({ product: productData, options, variants })
   return { status: 201, json: { product } }
 }

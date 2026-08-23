@@ -284,3 +284,143 @@ test('manage the variants associated with a product image', async ({ page, authe
   await navigate({ to: '/products/$id/variants/$variantId', params: { id: product.id, variantId: first.id } })
   await expect(page.getByText('No media')).toBeVisible()
 })
+
+test('variant options journey: create variants from the available combinations', async ({
+  page,
+  authenticate,
+  navigate,
+  factories,
+}) => {
+  await using product = await factories.create.product({ status: 'published' })
+  await using size = await factories.create.productOption({ renderAs: 'text' })
+  await using small = await factories.create.productOptionValue({ optionId: size.id, value: 'S', rank: 0 })
+  await using medium = await factories.create.productOptionValue({ optionId: size.id, value: 'M', rank: 1 })
+  await using link = await factories.create.productProductOption({ productId: product.id, optionId: size.id, rank: 0 })
+  await using offersSmall = await factories.create.productProductOptionValue({
+    productProductOptionId: link.id,
+    optionValueId: small.id,
+  })
+  await using offersMedium = await factories.create.productProductOptionValue({
+    productProductOptionId: link.id,
+    optionValueId: medium.id,
+  })
+  await authenticate({ as: 'admin' })
+
+  // Create — one variant is one combination, so the form is one field.
+  await navigate({ to: '/products/$id/variants/create', params: { id: product.id } })
+  const modal = page.getByRole('dialog').last()
+
+  // The combination is the variant, so submitting without one is refused before any request.
+  await modal.getByRole('button', { name: 'Create' }).click()
+  await expect(modal.getByText('Pick a combination.')).toBeVisible()
+
+  await modal.getByLabel('Combination').click()
+  await page.getByRole('option', { name: 'S', exact: true }).click()
+  await modal.getByLabel('SKU').fill('E2E-S')
+
+  // Closing a half-filled form warns before discarding it, and must then land on the product, not
+  // on `/variants`, which is not a page.
+  await modal.getByRole('button', { name: 'Cancel' }).click()
+  await expect(page.getByText('You have unsaved changes')).toBeVisible()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.waitForURL((url) => url.pathname === `/products/${product.id}`, { timeout: 10000 })
+
+  await navigate({ to: '/products/$id/variants/create', params: { id: product.id } })
+  const reopened = page.getByRole('dialog').last()
+  await reopened.getByLabel('Combination').click()
+  await page.getByRole('option', { name: 'S', exact: true }).click()
+  await reopened.getByRole('button', { name: 'Create' }).click()
+  await expect(page.getByText('Variant created successfully')).toBeVisible({ timeout: 10000 })
+
+  await page.waitForURL(new RegExp(`/products/${product.id}/variants/variant_`), { timeout: 10000 })
+  const generalCard = page.locator('[data-slot="variant-general-section"]')
+  // The title was never typed — the service took it from the combination's label.
+  await expect(generalCard.getByText('S', { exact: true }).first()).toBeVisible()
+  // Options live in the general section alongside the variant's own identifiers.
+  const sizeRow = generalCard.locator('[data-slot="section-row"]').filter({ hasText: size.title })
+  await expect(sizeRow.getByText('S', { exact: true })).toBeVisible()
+
+  // Creating again no longer offers "S": a variant holds that combination, so only "M" is left.
+  await navigate({ to: '/products/$id/variants/create', params: { id: product.id } })
+  const second = page.getByRole('dialog').last()
+  const combination = second.getByLabel('Combination')
+  await combination.click()
+
+  // Searching for something the product does not sell is not the same as the product having no
+  // options — the form must stay put rather than be replaced by the empty-product message.
+  // Waiting on the response matters: the combobox also filters locally, so an empty list alone
+  // proves nothing about what the server said.
+  await combination.fill('chartreuse')
+  await page.waitForResponse((response) => response.url().includes('label=chartreuse'))
+  await expect(page.getByText('No combinations left.')).toBeVisible()
+  await expect(combination).toBeVisible()
+  await expect(second.getByText('This product has no options yet')).toHaveCount(0)
+  await combination.fill('')
+
+  await expect(page.getByRole('option', { name: 'M', exact: true })).toBeVisible()
+  await expect(page.getByRole('option', { name: 'S', exact: true })).toHaveCount(0)
+  await page.getByRole('option', { name: 'M', exact: true }).click()
+  await second.getByRole('button', { name: 'Create' }).click()
+  await page.waitForURL(new RegExp(`/products/${product.id}/variants/variant_`), { timeout: 10000 })
+
+  // The variants table reads as the matrix it is: one column per option, filled from each variant's
+  // own resolved values.
+  await navigate({ to: '/products/$id', params: { id: product.id } })
+  const variantsTable = page.getByRole('table').last()
+  await expect(variantsTable.getByRole('columnheader', { name: size.title })).toBeVisible()
+
+  void offersSmall
+  void offersMedium
+})
+
+test('editing a variant is never offered a combination another variant holds', async ({
+  page,
+  authenticate,
+  navigate,
+  factories,
+}) => {
+  // The service still refuses a duplicate — that is covered by its own tests. What matters here is
+  // that the admin cannot produce one, so the shopkeeper never meets that error.
+  await using product = await factories.create.product({ status: 'published' })
+  await using size = await factories.create.productOption({ renderAs: 'text' })
+  await using small = await factories.create.productOptionValue({ optionId: size.id, value: 'S', rank: 0 })
+  await using medium = await factories.create.productOptionValue({ optionId: size.id, value: 'M', rank: 1 })
+  await using link = await factories.create.productProductOption({ productId: product.id, optionId: size.id, rank: 0 })
+  await using offersSmall = await factories.create.productProductOptionValue({
+    productProductOptionId: link.id,
+    optionValueId: small.id,
+  })
+  await using offersMedium = await factories.create.productProductOptionValue({
+    productProductOptionId: link.id,
+    optionValueId: medium.id,
+  })
+  await using smallVariant = await factories.create.productVariant({ productId: product.id, title: 'S' })
+  await using mediumVariant = await factories.create.productVariant({ productId: product.id, title: 'M' })
+  await using smallLink = await factories.create.productVariantOption({
+    variantId: smallVariant.id,
+    optionId: size.id,
+    optionValueId: small.id,
+  })
+  await using mediumLink = await factories.create.productVariantOption({
+    variantId: mediumVariant.id,
+    optionId: size.id,
+    optionValueId: medium.id,
+  })
+  await authenticate({ as: 'admin' })
+
+  await navigate({
+    to: '/products/$id/variants/$variantId/edit',
+    params: { id: product.id, variantId: mediumVariant.id },
+  })
+  const drawer = page.getByRole('dialog').last()
+  await drawer.getByLabel('Combination').click()
+
+  // Its own combination is offered; the one the other variant holds is not.
+  await expect(page.getByRole('option', { name: 'M', exact: true })).toBeVisible()
+  await expect(page.getByRole('option', { name: 'S', exact: true })).toHaveCount(0)
+
+  void offersSmall
+  void offersMedium
+  void smallLink
+  void mediumLink
+})

@@ -1,3 +1,5 @@
+import type { IProductModuleService } from '@core/types/index.js'
+import { Modules } from '@core/utils/index.js'
 import {
   AdminUpdateVariantPrices,
   AdminUpdateVariantPricesResponse,
@@ -10,6 +12,9 @@ export const PutInput = { params: VariantIdParams, body: AdminUpdateVariantPrice
 export const PutOutput = AdminUpdateVariantPricesResponse
 
 export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult<typeof PutOutput>> => {
-  const variant = await updateVariantPricesWorkflow.run({ variantId: req.params.variantId, data: req.body })
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
+  const updated = await updateVariantPricesWorkflow.run({ variantId: req.params.variantId, data: req.body })
+  const variant = await productService.enrichVariant(updated)
+
   return { status: 200, json: { variant } }
 }

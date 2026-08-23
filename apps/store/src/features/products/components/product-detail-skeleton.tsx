@@ -15,7 +15,23 @@ export function ProductDetailSkeleton() {
             <div className="h-11 w-3/4 animate-pulse bg-(--bg-subtle)" />
             <div className="h-5 w-24 animate-pulse bg-(--bg-subtle)" />
           </div>
-          <div className="h-24 animate-pulse bg-(--bg-subtle)" />
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <div className="h-3 w-12 animate-pulse bg-(--bg-subtle)" />
+              <div className="flex gap-2">
+                <div className="h-10 w-11 animate-pulse bg-(--bg-subtle)" />
+                <div className="h-10 w-11 animate-pulse bg-(--bg-subtle)" />
+                <div className="h-10 w-11 animate-pulse bg-(--bg-subtle)" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 w-16 animate-pulse bg-(--bg-subtle)" />
+              <div className="flex gap-2">
+                <div className="size-11 animate-pulse rounded-full bg-(--bg-subtle)" />
+                <div className="size-11 animate-pulse rounded-full bg-(--bg-subtle)" />
+              </div>
+            </div>
+          </div>
           <div className="h-11 animate-pulse bg-(--bg-subtle)" />
         </div>
       </div>

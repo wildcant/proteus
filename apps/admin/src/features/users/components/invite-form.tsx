@@ -17,17 +17,19 @@ export function InviteForm() {
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
         <RouteFocusModal.Header />
 
-        <RouteFocusModal.Body className="mx-auto w-full max-w-180 px-6 py-16">
-          <div className="flex items-end gap-x-3">
-            <form.AppField name="email">
-              {(field) => <field.TextField label="Email" type="email" autoFocus placeholder="user@example.com" />}
-            </form.AppField>
-            <Button type="submit" size="sm" disabled={isLoading}>
-              Send Invite
-            </Button>
-          </div>
-          <div className="mt-8">
-            <DataTable use={invites} heading="Pending Invites" />
+        <RouteFocusModal.Body>
+          <div className="mx-auto w-full max-w-180 px-6 py-16">
+            <div className="flex items-end gap-x-3">
+              <form.AppField name="email">
+                {(field) => <field.TextField label="Email" type="email" autoFocus placeholder="user@example.com" />}
+              </form.AppField>
+              <Button type="submit" size="sm" disabled={isLoading}>
+                Send Invite
+              </Button>
+            </div>
+            <div className="mt-8">
+              <DataTable use={invites} heading="Pending Invites" />
+            </div>
           </div>
         </RouteFocusModal.Body>
       </KeyboundForm>

@@ -1,15 +1,29 @@
 import { z } from 'zod'
+import { metadata } from '../../common.js'
+import { ProductOptionRenderAs } from './entities.js'
 
 const CreateOptionValue = z.object({
   value: z.string().min(1),
   rank: z.number().int().min(0).optional(),
-  metadata: z.string().nullable().optional(),
+  metadata: metadata.optional(),
+})
+
+/**
+ * A known `id` renames the value in place and keeps every variant link intact; without one the
+ * value is created. Values the payload leaves out are removed.
+ */
+const UpsertOptionValue = z.object({
+  id: z.string().optional(),
+  value: z.string().min(1),
+  rank: z.number().int().min(0).optional(),
+  metadata: metadata.optional(),
 })
 
 export const AdminCreateProductOption = z
   .object({
     title: z.string().min(1),
-    metadata: z.string().nullable().optional(),
+    renderAs: ProductOptionRenderAs.optional(),
+    metadata: metadata.optional(),
     values: z.array(CreateOptionValue).optional(),
   })
   .openapi('AdminCreateProductOption')
@@ -18,8 +32,9 @@ export type AdminCreateProductOptionBody = z.infer<typeof AdminCreateProductOpti
 export const AdminUpdateProductOption = z
   .object({
     title: z.string().min(1).optional(),
-    metadata: z.string().nullable().optional(),
-    values: z.array(CreateOptionValue).optional(),
+    renderAs: ProductOptionRenderAs.optional(),
+    metadata: metadata.optional(),
+    values: z.array(UpsertOptionValue).optional(),
   })
   .openapi('AdminUpdateProductOption')
 export type AdminUpdateProductOptionBody = z.infer<typeof AdminUpdateProductOption>

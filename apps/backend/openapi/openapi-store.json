@@ -1277,14 +1277,29 @@
                       "$ref": "#/components/schemas/StoreProductImage"
                     }
                   },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/StoreProductScopedOption"
+                    }
+                  },
                   "variants": {
                     "type": "array",
                     "items": {
                       "$ref": "#/components/schemas/StoreProductVariant"
                     }
+                  },
+                  "pickerTargets": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": ["string", "null"]
+                      }
+                    }
                   }
                 },
-                "required": ["images", "variants"]
+                "required": ["images", "options", "variants", "pickerTargets"]
               }
             ]
           }
@@ -1306,6 +1321,46 @@
         },
         "required": ["id", "url", "rank"]
       },
+      "StoreProductScopedOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "renderAs": {
+            "type": "string",
+            "enum": ["text", "swatch"]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductScopedOptionValue"
+            }
+          }
+        },
+        "required": ["id", "title", "renderAs", "values"]
+      },
+      "StoreProductScopedOptionValue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "rank": {
+            "type": ["number", "null"]
+          },
+          "swatchImageUrl": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": ["id", "value", "rank", "swatchImageUrl"]
+      },
       "StoreProductVariant": {
         "type": "object",
         "properties": {
@@ -1326,6 +1381,15 @@
             "items": {
               "type": "string"
             }
+          },
+          "optionValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "inStock": {
+            "type": "boolean"
           },
           "sku": {
             "type": ["string", "null"]
@@ -1358,6 +1422,8 @@
           "title",
           "thumbnail",
           "imageIds",
+          "optionValues",
+          "inStock",
           "sku",
           "barcode",
           "material",

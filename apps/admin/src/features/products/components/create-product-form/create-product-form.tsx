@@ -8,6 +8,7 @@ import { Tab } from './constants'
 import { ProductCreateAttributesForm } from './product-create-attributes-form'
 import { ProductCreateDetailsForm } from './product-create-details-form'
 import { ProductCreateOrganizeForm } from './product-create-organize-form'
+import { ProductCreateVariantsForm } from './product-create-variants-form'
 import { useProgressCreateProductForm } from './use-progress-create-product-form'
 
 export function CreateProductForm() {
@@ -24,8 +25,12 @@ export function CreateProductForm() {
 
   return (
     <RouteFocusModal.Form form={form}>
-      <KeyboundForm onSubmit={() => handleSave('publish')} onKeyDown={handleKeyDown} className="flex flex-1 flex-col">
-        <ProgressTabs value={tab} onValueChange={handleTabChange} className="flex-1">
+      <KeyboundForm
+        onSubmit={() => handleSave('publish')}
+        onKeyDown={handleKeyDown}
+        className="flex min-h-0 flex-1 flex-col"
+      >
+        <ProgressTabs value={tab} onValueChange={handleTabChange} className="min-h-0 flex-1">
           <RouteFocusModal.Header className="py-0 pr-0">
             <RouteFocusModal.Title className="sr-only">Create Product</RouteFocusModal.Title>
             <ProgressTabs.List>
@@ -38,18 +43,24 @@ export function CreateProductForm() {
               <ProgressTabs.Trigger value={Tab.ATTRIBUTES} status={tabState[Tab.ATTRIBUTES]}>
                 Attributes
               </ProgressTabs.Trigger>
+              <ProgressTabs.Trigger value={Tab.VARIANTS} status={tabState[Tab.VARIANTS]}>
+                Variants
+              </ProgressTabs.Trigger>
             </ProgressTabs.List>
           </RouteFocusModal.Header>
 
-          <RouteFocusModal.Body className="mx-auto w-full max-w-180 px-6 py-16">
-            <ProgressTabs.Content value={Tab.DETAILS} keepMounted>
+          <RouteFocusModal.Body>
+            <ProgressTabs.Content value={Tab.DETAILS} keepMounted className="mx-auto max-w-180 px-6 py-16">
               <ProductCreateDetailsForm form={form} groupRefs={groupRefs} />
             </ProgressTabs.Content>
-            <ProgressTabs.Content value={Tab.ORGANIZE} keepMounted>
+            <ProgressTabs.Content value={Tab.ORGANIZE} keepMounted className="mx-auto max-w-180 px-6 py-16">
               <ProductCreateOrganizeForm form={form} groupRefs={groupRefs} />
             </ProgressTabs.Content>
-            <ProgressTabs.Content value={Tab.ATTRIBUTES} keepMounted>
+            <ProgressTabs.Content value={Tab.ATTRIBUTES} keepMounted className="mx-auto max-w-180 px-6 py-16">
               <ProductCreateAttributesForm form={form} groupRefs={groupRefs} />
+            </ProgressTabs.Content>
+            <ProgressTabs.Content value={Tab.VARIANTS} keepMounted>
+              <ProductCreateVariantsForm form={form} groupRefs={groupRefs} />
             </ProgressTabs.Content>
           </RouteFocusModal.Body>
         </ProgressTabs>

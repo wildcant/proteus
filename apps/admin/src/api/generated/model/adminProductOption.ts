@@ -4,13 +4,16 @@
  * Admin API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminProductOptionMetadata } from './adminProductOptionMetadata.ts';
+import type { AdminProductOptionRenderAs } from './adminProductOptionRenderAs.ts';
 import type { AdminProductOptionValue } from './adminProductOptionValue.ts';
 
 export interface AdminProductOption {
   id: string;
   title: string;
+  renderAs: AdminProductOptionRenderAs;
   /** @nullable */
-  metadata: string | null;
+  metadata: AdminProductOptionMetadata;
   values: AdminProductOptionValue[];
   createdAt: string;
   updatedAt: string;

@@ -1,4 +1,4 @@
-import type { ProductStatusType } from './common.js'
+import type { ProductOptionRenderAs, ProductStatusType } from './common.js'
 
 export type CreateProductImageInput = {
   url: string
@@ -27,7 +27,7 @@ export type CreateProductDTO = {
   material?: string | null
   discountable?: boolean
   externalId?: string | null
-  metadata?: string | null
+  metadata?: Record<string, unknown> | null
   images?: CreateProductImageInput[]
 }
 
@@ -49,13 +49,12 @@ export type UpdateProductDTO = {
   material?: string | null
   discountable?: boolean
   externalId?: string | null
-  metadata?: string | null
+  metadata?: Record<string, unknown> | null
   images?: UpsertProductImageInput[]
 }
 
 export type CreateProductVariantDTO = {
   productId: string
-  title: string
   thumbnail?: string | null
   sku?: string | null
   barcode?: string | null
@@ -72,11 +71,15 @@ export type CreateProductVariantDTO = {
   height?: number | null
   width?: number | null
   variantRank?: number
-  metadata?: string | null
+  metadata?: Record<string, unknown> | null
+  /**
+   * The variant's Option Combination, keyed by option id. It must name every option the product
+   * offers, so only a product with no options takes `{}`.
+   */
+  optionValues: Record<string, string>
 }
 
 export type UpdateProductVariantDTO = {
-  title?: string
   thumbnail?: string | null
   sku?: string | null
   barcode?: string | null
@@ -93,24 +96,38 @@ export type UpdateProductVariantDTO = {
   height?: number | null
   width?: number | null
   variantRank?: number
-  metadata?: string | null
+  metadata?: Record<string, unknown> | null
+  /**
+   * The variant's Option Combination, keyed by option id. Omit to leave an existing one untouched;
+   * pass `{}` to clear it. When set it must name every option the product offers.
+   */
+  optionValues?: Record<string, string>
 }
 
 export type UpsertProductVariantDTO = CreateProductVariantDTO | ({ id: string } & UpdateProductVariantDTO)
 
 export type CreateProductOptionDTO = {
   title: string
-  metadata?: string | null
+  renderAs?: ProductOptionRenderAs
+  metadata?: Record<string, unknown> | null
   values?: Array<Omit<CreateProductOptionValueDTO, 'optionId'>>
 }
 
 export type UpdateProductOptionDTO = {
   title?: string
-  metadata?: string | null
-  values?: Array<Omit<CreateProductOptionValueDTO, 'optionId'>>
+  renderAs?: ProductOptionRenderAs
+  metadata?: Record<string, unknown> | null
+  values?: UpsertProductOptionValueInput[]
 }
 
+/**
+ * A value in an option's collection. A known `id` renames the value in place, keeping every
+ * variant link intact; without one the value is created.
+ */
+export type UpsertProductOptionValueInput = { id?: string } & Omit<CreateProductOptionValueDTO, 'optionId'>
+
 export type SetProductOptionsDTO = {
+  /** Array position sets each option's display rank on the product. */
   options: Array<{ optionId: string; valueIds: string[] }>
 }
 
@@ -118,26 +135,26 @@ export type CreateProductOptionValueDTO = {
   optionId: string
   value: string
   rank?: number
-  metadata?: string | null
+  metadata?: Record<string, unknown> | null
 }
 
 export type UpdateProductOptionValueDTO = {
   value?: string
   rank?: number
-  metadata?: string | null
+  metadata?: Record<string, unknown> | null
 }
 
 export type CreateProductImageDTO = {
   productId: string
   url: string
   rank?: number
-  metadata?: string | null
+  metadata?: Record<string, unknown> | null
 }
 
 export type UpdateProductImageDTO = {
   url?: string
   rank?: number
-  metadata?: string | null
+  metadata?: Record<string, unknown> | null
 }
 
 export type VariantImageInput = {

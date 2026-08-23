@@ -1,5 +1,6 @@
 export { DataTable } from './data-table'
 export { StatusCell } from './data-table-ui/status-cell'
+export { ThumbnailCell } from './data-table-ui/thumbnail-cell'
 export { useDefineTable } from './hooks/use-define-table'
 export type {
   CellRenderer,

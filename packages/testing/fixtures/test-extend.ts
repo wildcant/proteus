@@ -12,8 +12,13 @@ import {
   createPriceSet,
   createProduct,
   createProductImage,
+  createProductOption,
+  createProductOptionValue,
+  createProductProductOption,
+  createProductProductOptionValue,
   createProductVariant,
   createProductVariantImage,
+  createProductVariantOption,
   createProductVariantPriceSet,
   createProductWithPricing,
   createServiceZone,
@@ -32,7 +37,12 @@ import {
   deletePriceSetById,
   deleteProductById,
   deleteProductImageById,
+  deleteProductOptionById,
+  deleteProductOptionValueById,
+  deleteProductProductOptionById,
+  deleteProductProductOptionValueById,
   deleteProductVariantImageById,
+  deleteProductVariantOptionById,
   deleteProductVariantPriceSetById,
   deleteServiceZoneById,
   deleteShippingOptionById,
@@ -49,8 +59,13 @@ import {
   generatePriceSet,
   generateProduct,
   generateProductImage,
+  generateProductOption,
+  generateProductOptionValue,
+  generateProductProductOption,
+  generateProductProductOptionValue,
   generateProductVariant,
   generateProductVariantImage,
+  generateProductVariantOption,
   generateProductVariantPriceSet,
   generateServiceZone,
   generateShippingOption,
@@ -125,6 +140,11 @@ export type Factories = {
     productImage: typeof generateProductImage
     productVariant: typeof generateProductVariant
     productVariantImage: typeof generateProductVariantImage
+    productOption: typeof generateProductOption
+    productOptionValue: typeof generateProductOptionValue
+    productProductOption: typeof generateProductProductOption
+    productProductOptionValue: typeof generateProductProductOptionValue
+    productVariantOption: typeof generateProductVariantOption
     priceSet: typeof generatePriceSet
     price: typeof generatePrice
     productVariantPriceSet: typeof generateProductVariantPriceSet
@@ -147,6 +167,11 @@ export type Factories = {
     productImage: typeof createProductImage
     productVariant: typeof createProductVariant
     productVariantImage: typeof createProductVariantImage
+    productOption: typeof createProductOption
+    productOptionValue: typeof createProductOptionValue
+    productProductOption: typeof createProductProductOption
+    productProductOptionValue: typeof createProductProductOptionValue
+    productVariantOption: typeof createProductVariantOption
     priceSet: typeof createPriceSet
     price: typeof createPrice
     productVariantPriceSet: typeof createProductVariantPriceSet
@@ -169,6 +194,11 @@ export type Factories = {
     product: typeof deleteProductById
     productImage: typeof deleteProductImageById
     productVariantImage: typeof deleteProductVariantImageById
+    productOption: typeof deleteProductOptionById
+    productOptionValue: typeof deleteProductOptionValueById
+    productProductOption: typeof deleteProductProductOptionById
+    productProductOptionValue: typeof deleteProductProductOptionValueById
+    productVariantOption: typeof deleteProductVariantOptionById
     priceSet: typeof deletePriceSetById
     price: typeof deletePriceById
     productVariantPriceSet: typeof deleteProductVariantPriceSetById
@@ -199,6 +229,11 @@ export function createTest<RoutePath extends string = string>() {
         productImage: generateProductImage,
         productVariant: generateProductVariant,
         productVariantImage: generateProductVariantImage,
+        productOption: generateProductOption,
+        productOptionValue: generateProductOptionValue,
+        productProductOption: generateProductProductOption,
+        productProductOptionValue: generateProductProductOptionValue,
+        productVariantOption: generateProductVariantOption,
         priceSet: generatePriceSet,
         price: generatePrice,
         productVariantPriceSet: generateProductVariantPriceSet,
@@ -223,6 +258,11 @@ export function createTest<RoutePath extends string = string>() {
         productImage: createProductImage,
         productVariant: createProductVariant,
         productVariantImage: createProductVariantImage,
+        productOption: createProductOption,
+        productOptionValue: createProductOptionValue,
+        productProductOption: createProductProductOption,
+        productProductOptionValue: createProductProductOptionValue,
+        productVariantOption: createProductVariantOption,
         priceSet: createPriceSet,
         price: createPrice,
         productVariantPriceSet: createProductVariantPriceSet,
@@ -245,6 +285,11 @@ export function createTest<RoutePath extends string = string>() {
         product: deleteProductById,
         productImage: deleteProductImageById,
         productVariantImage: deleteProductVariantImageById,
+        productOption: deleteProductOptionById,
+        productOptionValue: deleteProductOptionValueById,
+        productProductOption: deleteProductProductOptionById,
+        productProductOptionValue: deleteProductProductOptionValueById,
+        productVariantOption: deleteProductVariantOptionById,
         priceSet: deletePriceSetById,
         price: deletePriceById,
         productVariantPriceSet: deleteProductVariantPriceSetById,

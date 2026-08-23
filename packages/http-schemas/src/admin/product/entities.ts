@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { timestamps } from '../../common.js'
+import { metadata, timestamps } from '../../common.js'
 
 export const ProductStatus = z.enum(['draft', 'proposed', 'published', 'rejected'])
 
@@ -32,7 +32,7 @@ export const AdminProduct = z
     material: z.string().nullable(),
     discountable: z.boolean(),
     externalId: z.string().nullable(),
-    metadata: z.string().nullable(),
+    metadata,
     ...timestamps.shape,
   })
   .openapi('AdminProduct')

@@ -1,14 +1,16 @@
 Fixes and improvements
-- when removing an option from product Options section it should validate there are no variants linked.
-- product variant creation form.
-- display product image in products table in admin
+
 
 Future features TODOs
-- Access Control Module Architecture
-- storage service: S3, R2, Minio
+- Access Control and Multi tenancy Module Architecture
+  - TODO: Read posts regarding tenant isolation patterns and tradeoffs and security
+    - https://learn.microsoft.com/en-us/azure/azure-sql/database/saas-tenancy-app-design-patterns?view=azuresql
+    - https://aws.amazon.com/blogs/apn/explore-saas-tenant-isolation-strategies-in-new-saas-whitepaper/
+    - https://www.youtube.com/watch?v=4_pxeE1Xv3Q
 - GLOBAL SHIPPING OPTIONS [COUNTRY CODE]: if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
 
 Future Infra TODOs
+- temporal as a workflow adapter, allow to trace/retry/persist/resume workflows (https://www.youtube.com/watch?v=WjzojcyNp4U) (https://hub.docker.com/r/temporalio/server) (https://docs.temporal.io/design-patterns/saga-pattern?language=typescript) (https://github.com/temporalio/samples-typescript/blob/main/saga/src/workflows.ts)
 - aws deployment
 - default indexes in all tables with deleted_at.
 - composing workflows
@@ -17,6 +19,7 @@ Future Infra TODOs
 - reusable workflow setup function for tests
 - features flags
 - event bus: investigate pgmq (see docs/research/event-subscriber-system/) and cloudflare queues
+  - Related video: https://www.youtube.com/watch?v=ACVevIlWEfM
 ![event](./subscriber-example.png)
 - investigate locking
   -  Context: Medusa's notification module uses DB queries for idempotency checks (query by idempotency_key, skip if already SUCCESS/PENDING). There's a race window where two concurrent requests with the same key could both pass the check before either creates a PENDING record. Medusa has a TODO to use Redis-based locking instead.

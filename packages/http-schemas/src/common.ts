@@ -23,6 +23,9 @@ export const stringToBigNumber = z
   .refine((s) => !new BigNumber(s).isNaN(), 'Invalid numeric value')
   .transform((s) => new BigNumber(s))
 
+/** Free-form key/value bag stored as jsonb. Modules still on `text()` keep their own schema. */
+export const metadata = z.record(z.string(), z.unknown()).nullable()
+
 export const IdParams = z.object({ id: z.string().min(1) })
 export type IdParams = z.infer<typeof IdParams>
 

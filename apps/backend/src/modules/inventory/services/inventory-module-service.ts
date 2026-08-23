@@ -125,21 +125,27 @@ export class InventoryModuleService implements IInventoryModuleService {
     })
   }
 
+  /**
+   * Stocked minus reserved for one inventory item, summed across the given locations — or across
+   * every location when `locationIds` is omitted. Zero when the item has no level.
+   */
+  async retrieveAvailableQuantity(inventoryItemId: string, locationIds?: string[], context?: Context): Promise<number> {
+    const levels = await this.inventoryLevelRepository.find(
+      { inventoryItemId, ...(locationIds ? { locationId: locationIds } : {}) },
+      undefined,
+      context,
+    )
+
+    return levels.reduce((sum, level) => sum + level.stockedQuantity - level.reservedQuantity, 0)
+  }
+
   async confirmInventory(
     inventoryItemId: string,
     locationIds: string[],
     quantity: number,
     context?: Context,
   ): Promise<boolean> {
-    const levels = await this.inventoryLevelRepository.find(
-      { inventoryItemId, locationId: locationIds },
-      undefined,
-      context,
-    )
-
-    const availableQuantity = levels.reduce((sum, level) => sum + level.stockedQuantity - level.reservedQuantity, 0)
-
-    return availableQuantity >= quantity
+    return (await this.retrieveAvailableQuantity(inventoryItemId, locationIds, context)) >= quantity
   }
 
   async adjustInventoryLevel(

@@ -11,12 +11,17 @@ type CheckboxColumn<T> = DataGridColumnBase<T> & {
   type: 'checkbox'
 }
 
+/** Derived or otherwise fixed: rendered, focusable for navigation, never editable. */
+type ReadonlyColumn<T> = DataGridColumnBase<T> & {
+  type: 'readonly'
+}
+
 type CurrencyColumn<T> = DataGridColumnBase<T> & {
   type: 'currency'
   currencyCode: string
 }
 
-export type DataGridColumn<T> = TextColumn<T> | CheckboxColumn<T> | CurrencyColumn<T>
+export type DataGridColumn<T> = TextColumn<T> | CheckboxColumn<T> | CurrencyColumn<T> | ReadonlyColumn<T>
 
 export type CellCoordinates = {
   row: number

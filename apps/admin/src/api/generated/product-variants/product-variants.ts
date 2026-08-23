@@ -9,6 +9,9 @@ import type {
   AdminBatchVariantImagesResponse,
   AdminCreateProductVariant,
   AdminCreateProductVariantResponse,
+  AdminCreateProductVariantsBatch,
+  AdminCreateProductVariantsBatchResponse,
+  AdminOptionCombinationListResponse,
   AdminProductVariantListResponse,
   AdminProductVariantResponse,
   AdminUpdateProductVariant,
@@ -16,6 +19,7 @@ import type {
   AdminUpdateVariantPrices,
   AdminUpdateVariantPricesResponse,
   DeleteResponse,
+  ListOptionCombinationsParams,
   ListProductVariantsParams
 } from '../model';
 
@@ -24,6 +28,19 @@ import type { BodyType } from '../../../lib/fetcher.ts';
 
 
 
+  /**
+ * @summary List the option combinations a product could sell
+ */
+export const listOptionCombinations = (
+    id: string,
+    params?: ListOptionCombinationsParams,
+ ) => {
+      return fetcher<AdminOptionCombinationListResponse>(
+      {url: `/admin/products/${id}/option-combinations`, method: 'GET',
+        params
+    },
+      );
+    }
   /**
  * @summary List product variants
  */
@@ -48,6 +65,20 @@ export const createProductVariant = (
       {url: `/admin/products/${id}/variants`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: adminCreateProductVariant
+    },
+      );
+    }
+  /**
+ * @summary Create several product variants at once
+ */
+export const createProductVariantsBatch = (
+    id: string,
+    adminCreateProductVariantsBatch?: BodyType<AdminCreateProductVariantsBatch>,
+ ) => {
+      return fetcher<AdminCreateProductVariantsBatchResponse>(
+      {url: `/admin/products/${id}/variants/batch`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminCreateProductVariantsBatch
     },
       );
     }
@@ -120,8 +151,10 @@ export const batchVariantImages = (
     },
       );
     }
-  export type ListProductVariantsResult = NonNullable<Awaited<ReturnType<typeof listProductVariants>>>
+  export type ListOptionCombinationsResult = NonNullable<Awaited<ReturnType<typeof listOptionCombinations>>>
+export type ListProductVariantsResult = NonNullable<Awaited<ReturnType<typeof listProductVariants>>>
 export type CreateProductVariantResult = NonNullable<Awaited<ReturnType<typeof createProductVariant>>>
+export type CreateProductVariantsBatchResult = NonNullable<Awaited<ReturnType<typeof createProductVariantsBatch>>>
 export type GetProductVariantResult = NonNullable<Awaited<ReturnType<typeof getProductVariant>>>
 export type UpdateProductVariantResult = NonNullable<Awaited<ReturnType<typeof updateProductVariant>>>
 export type DeleteProductVariantResult = NonNullable<Awaited<ReturnType<typeof deleteProductVariant>>>

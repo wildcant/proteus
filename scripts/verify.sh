@@ -23,7 +23,7 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-JOBS="typecheck lint conventions deps test"
+JOBS="typecheck lint conventions deps test admin"
 
 job_typecheck() { npm run typecheck; }
 
@@ -48,8 +48,14 @@ job_deps() {
   return $code
 }
 
-# Only the API tests run here — the full suite is ~96s and would dominate the gate.
-job_test() { npm run --workspace=backend test:api; }
+# The API tests plus the pure option-combination unit tests — the full suite is ~96s and would
+# dominate the gate. One vitest process, not two: every backend test file pulls in db-setup, and
+# the suite is not safe to run twice concurrently against the shared test database.
+job_test() { npm run --workspace=backend test:gate; }
+
+# The admin's pure logic — the variant matrix the create wizard enumerates and what the options
+# drawer says a change will destroy. No database and no browser, so it runs alongside the rest.
+job_admin() { npm run --workspace=admin test; }
 
 # CI mode: report formatting instead of applying it. Triggered by --ci or by the CI env
 # var that every CI provider sets, so the workflow file needs no extra wiring.
@@ -84,6 +90,7 @@ label_of() {
     conventions) echo "Env usage, error & schema conventions" ;;
     deps) echo "Dependency rules (backend, admin, store)" ;;
     test) echo "Backend API tests" ;;
+    admin) echo "Admin unit tests" ;;
   esac
 }
 
@@ -178,5 +185,5 @@ if [[ $failures -gt 0 ]]; then
 fi
 
 echo -e "${GREEN}✔${RESET} ${BOLD}All checks passed.${RESET}"
-echo -e "${DIM}  Only src/api tests ran. Full suite: npm run --workspace=backend test${RESET}"
+echo -e "${DIM}  Only src/api and pure unit tests ran. Full suite: npm run --workspace=backend test${RESET}"
 echo ""

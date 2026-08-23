@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { stringToBigNumber } from '../../common.js'
+import { metadata, stringToBigNumber } from '../../common.js'
 
 const CreateVariantPrice = z.object({
   amount: stringToBigNumber,
@@ -12,7 +12,6 @@ const UpdateVariantPrice = z.object({
 
 export const AdminCreateProductVariant = z
   .object({
-    title: z.string().min(1),
     thumbnail: z.string().nullable().optional(),
     sku: z.string().nullable().optional(),
     barcode: z.string().nullable().optional(),
@@ -29,7 +28,13 @@ export const AdminCreateProductVariant = z
     height: z.number().nullable().optional(),
     width: z.number().nullable().optional(),
     variantRank: z.number().optional(),
-    metadata: z.string().nullable().optional(),
+    /**
+     * The Option Combination this variant carries, keyed by option id. It must name every option
+     * the product offers, and must be one no other variant already has. Only a product with no
+     * options takes `{}`.
+     */
+    optionValues: z.record(z.string(), z.string()),
+    metadata: metadata.optional(),
     prices: z.array(CreateVariantPrice).optional(),
   })
   .openapi('AdminCreateProductVariant')
@@ -37,7 +42,6 @@ export type AdminCreateProductVariantBody = z.infer<typeof AdminCreateProductVar
 
 export const AdminUpdateProductVariant = z
   .object({
-    title: z.string().min(1).optional(),
     thumbnail: z.string().nullable().optional(),
     sku: z.string().nullable().optional(),
     barcode: z.string().nullable().optional(),
@@ -54,7 +58,13 @@ export const AdminUpdateProductVariant = z
     height: z.number().nullable().optional(),
     width: z.number().nullable().optional(),
     variantRank: z.number().optional(),
-    metadata: z.string().nullable().optional(),
+    /**
+     * The Option Combination to move this variant onto, keyed by option id. Omit to leave the
+     * existing one alone; send `{}` to clear it. When set it must name every option the product
+     * offers, and must be a combination no other variant already has.
+     */
+    optionValues: z.record(z.string(), z.string()).optional(),
+    metadata: metadata.optional(),
   })
   .openapi('AdminUpdateProductVariant')
 export type AdminUpdateProductVariantBody = z.infer<typeof AdminUpdateProductVariant>
@@ -65,3 +75,10 @@ export const AdminUpdateVariantPrices = z
   })
   .openapi('AdminUpdateVariantPrices')
 export type AdminUpdateVariantPricesBody = z.infer<typeof AdminUpdateVariantPrices>
+
+export const AdminCreateProductVariantsBatch = z
+  .object({
+    variants: z.array(AdminCreateProductVariant).min(1),
+  })
+  .openapi('AdminCreateProductVariantsBatch')
+export type AdminCreateProductVariantsBatchBody = z.infer<typeof AdminCreateProductVariantsBatch>

@@ -1,11 +1,11 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
-import { AdminProductOption } from '../product-option/entities.js'
+import { AdminProductScopedOption } from '../product-option/entities.js'
 import { AdminProductVariant } from '../product-variant/entities.js'
 import { AdminProduct, AdminProductImage } from './entities.js'
 
 const AdminProductDetail = AdminProduct.extend({
-  options: z.array(AdminProductOption).optional(),
+  options: z.array(AdminProductScopedOption).optional(),
   images: z.array(AdminProductImage).optional(),
 })
 

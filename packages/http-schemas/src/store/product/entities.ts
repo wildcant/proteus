@@ -20,6 +20,35 @@ export const StoreProductImage = z
   .openapi('StoreProductImage')
 export type StoreProductImage = z.infer<typeof StoreProductImage>
 
+export const StoreProductScopedOptionValue = z
+  .object({
+    id: z.string(),
+    value: z.string(),
+    rank: z.number().nullable(),
+    /**
+     * The image a swatch shows for this value — the first image of the first variant carrying it.
+     * Resolved here because it does not depend on what the shopper has selected.
+     */
+    swatchImageUrl: z.string().nullable(),
+  })
+  .openapi('StoreProductScopedOptionValue')
+export type StoreProductScopedOptionValue = z.infer<typeof StoreProductScopedOptionValue>
+
+/**
+ * A Product Option as this product offers it: only the values it sells, in its own display order.
+ * The storefront never sees the global option, so this is the only shape it knows.
+ */
+export const StoreProductScopedOption = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    /** How the picker draws this option's values. */
+    renderAs: z.enum(['text', 'swatch']),
+    values: z.array(StoreProductScopedOptionValue),
+  })
+  .openapi('StoreProductScopedOption')
+export type StoreProductScopedOption = z.infer<typeof StoreProductScopedOption>
+
 export const StoreProductVariant = z
   .object({
     id: z.string(),
@@ -28,6 +57,13 @@ export const StoreProductVariant = z
     thumbnail: z.string().nullable(),
     /** Ids into the product's `images`, in image rank order. Empty when the variant has no links. */
     imageIds: z.array(z.string()),
+    /**
+     * The variant's Option Combination, keyed by option id. Ids rather than labels: the picker only
+     * ever compares these, and the labels already ship once on `product.options`.
+     */
+    optionValues: z.record(z.string(), z.string()),
+    /** Whether every inventory item this variant needs covers its required quantity. */
+    inStock: z.boolean(),
     sku: z.string().nullable(),
     barcode: z.string().nullable(),
     material: z.string().nullable(),

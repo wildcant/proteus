@@ -1,4 +1,4 @@
-import { Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
+import { Badge, Card, CardAction, CardDescription, CardHeader, CardTitle } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
 import type { AdminProductVariant } from '#/api/generated/model'
@@ -6,7 +6,12 @@ import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { useDeleteProductVariant } from '#/features/products/api/product-variants'
 
-export function VariantGeneralSection({ productId, variant }: { productId: string; variant: AdminProductVariant }) {
+type VariantGeneralSectionProps = {
+  productId: string
+  variant: AdminProductVariant
+}
+
+export function VariantGeneralSection({ productId, variant }: VariantGeneralSectionProps) {
   const navigate = useNavigate()
   const { mutateAsync: deleteVariant } = useDeleteProductVariant(productId, variant.id)
 
@@ -17,9 +22,10 @@ export function VariantGeneralSection({ productId, variant }: { productId: strin
   }
 
   return (
-    <Card className="gap-0 divide-y py-0">
+    <Card data-slot="variant-general-section" className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>{variant.title}</CardTitle>
+        <CardDescription>Product Variant</CardDescription>
         <CardAction>
           <ActionMenu
             groups={[
@@ -30,12 +36,15 @@ export function VariantGeneralSection({ productId, variant }: { productId: strin
         </CardAction>
       </CardHeader>
       <SectionRow title="SKU" value={variant.sku} />
-      <SectionRow title="Barcode" value={variant.barcode} />
-      <SectionRow title="EAN" value={variant.ean} />
-      <SectionRow title="UPC" value={variant.upc} />
-      <SectionRow title="HS Code" value={variant.hsCode} />
-      <SectionRow title="Origin Country" value={variant.originCountry} />
-      <SectionRow title="Material" value={variant.material} />
+      {/* The Option Combination sits with the variant's own identifiers — it is what the variant
+       *is*. Already resolved and ordered by the API, so there is nothing to look up here. */}
+      {variant.optionValues.map((optionValue) => (
+        <SectionRow
+          key={optionValue.optionId}
+          title={optionValue.optionTitle}
+          value={<Badge variant="secondary">{optionValue.value}</Badge>}
+        />
+      ))}
     </Card>
   )
 }

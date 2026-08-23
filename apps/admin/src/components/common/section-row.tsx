@@ -12,6 +12,7 @@ export function SectionRow({ title, value, actions }: SectionRowProps) {
 
   return (
     <div
+      data-slot="section-row"
       className={cn('grid w-full grid-cols-2 items-center gap-4 px-6 py-4 text-muted-foreground text-sm', {
         'grid-cols-[1fr_1fr_28px]': !!actions,
       })}
