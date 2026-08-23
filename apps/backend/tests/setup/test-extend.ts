@@ -1,14 +1,19 @@
+import { defineAppConfig } from '@core/config/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { test as testBase } from 'vitest'
 import type { Logger } from '../../src/core/types/logger.js'
 import { noopLogger } from '../../src/framework/logger/noop-logger.js'
 import type { Database } from '../../src/schema.type.js'
+import type { HttpRequest } from '../../src/server/ports.js'
 import {
   generateAuthIdentityDTO,
+  generateConfirmAuthVerificationDTO,
   generateCreateAuthIdentityDTO,
   generateCreateAuthPasswordResetTokenDTO,
   generateCreateAuthVerificationDTO,
   generateCreateProviderIdentityDTO,
   generateProviderIdentityDTO,
+  generateRequestAuthVerificationDTO,
   generateUpdateAuthIdentityDTO,
   generateUpdateAuthVerificationDTO,
   generateUpdateProviderIdentityDTO,
@@ -62,23 +67,74 @@ import {
   generateCreatePriceDTO,
   generateCreatePriceSetDTO,
 } from '../factories/pricing-dto.js'
-import { generateCreateProductDTO, generateUpdateProductDTO } from '../factories/product-dto.js'
 import {
+  generateCreateProductDTO,
+  generateCreateProductOptionDTO,
+  generateCreateProductOptionValueDTO,
+  generateCreateProductVariantDTO,
+  generateSetProductOptionsDTO,
+  generateUpdateProductDTO,
+  generateUpdateProductVariantDTO,
+  generateVariantImageInputDTO,
+} from '../factories/product-dto.js'
+import {
+  addImageToVariant,
   addLineItem,
   addShippingMethod,
+  confirmAuthVerification,
   createCart,
   createCheckoutReadyCart,
   createPaymentSessionForCart,
+  createProduct,
+  createProductOption,
+  createProductVariant,
+  createProductVariants,
+  linkRepo,
+  listAuthVerifications,
+  listOrders,
+  listProductImages,
+  listProducts,
+  listProductVariantImages,
+  listProductVariants,
+  listReservationItems,
+  priceVariants,
+  requestAuthVerification,
+  retrievePaymentCollection,
+  retrieveProductVariant,
+  setProductOptions,
   stockVariant,
+  updateAuthIdentity,
+  updateAuthVerification,
+  updateProductVariant,
 } from '../factories/services/index.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
-import { makeRequest } from '../utils/make-request.js'
+import { type CreateApiOptions, createApi, type TestApi } from './create-api.js'
 import { db as dbInstance } from './db-setup.js'
+
+function makeRequest(overrides: Partial<HttpRequest> = {}): HttpRequest {
+  return {
+    params: {},
+    query: {},
+    validatedQuery: {},
+    body: undefined,
+    scope: {
+      resolve: (key: string) => {
+        if (key === ContainerRegistrationKeys.CONFIG_MODULE) return defineAppConfig()
+        throw new Error(`Unexpected resolve: ${key}`)
+      },
+    } as unknown as HttpRequest['scope'],
+    headers: {},
+    ...overrides,
+  }
+}
 
 export type Fixtures = {
   db: Database
   getDb: () => Database
   makeRequest: typeof makeRequest
+  /** Builds a bootstrapped container, and an Express server when definitions are passed.
+   *  Everything it creates is closed after the test. */
+  createApi: (options?: CreateApiOptions) => Promise<TestApi>
   factories: {
     customer: typeof generateCustomer
     user: typeof generateUser
@@ -93,6 +149,8 @@ export type Fixtures = {
       createProviderIdentity: typeof generateCreateProviderIdentityDTO
       updateProviderIdentity: typeof generateUpdateProviderIdentityDTO
       createAuthVerification: typeof generateCreateAuthVerificationDTO
+      requestAuthVerification: typeof generateRequestAuthVerificationDTO
+      confirmAuthVerification: typeof generateConfirmAuthVerificationDTO
       updateAuthVerification: typeof generateUpdateAuthVerificationDTO
       createAuthPasswordResetToken: typeof generateCreateAuthPasswordResetTokenDTO
       createCustomer: typeof generateCreateCustomerDTO
@@ -115,7 +173,13 @@ export type Fixtures = {
       createPriceSet: typeof generateCreatePriceSetDTO
       createPrice: typeof generateCreatePriceDTO
       createProduct: typeof generateCreateProductDTO
+      createProductOption: typeof generateCreateProductOptionDTO
+      createProductOptionValue: typeof generateCreateProductOptionValueDTO
+      createProductVariant: typeof generateCreateProductVariantDTO
       updateProduct: typeof generateUpdateProductDTO
+      updateProductVariant: typeof generateUpdateProductVariantDTO
+      setProductOptions: typeof generateSetProductOptionsDTO
+      variantImageInput: typeof generateVariantImageInputDTO
       createOrder: typeof generateCreateOrderDTO
       createOrderLineItem: typeof generateCreateOrderLineItemDTO
       createOrderShippingMethod: typeof generateCreateOrderShippingMethodDTO
@@ -140,8 +204,9 @@ export type Fixtures = {
       calculatedPriceSet: typeof generateCalculatedPriceSetDTO
     }
   }
-  /** Factories that build real state through the module services, for tests that run against
-   *  a bootstrapped container. Each takes that container as its first argument. */
+  /** The module services reached through factories, for tests that run against a bootstrapped
+   *  container. Each takes that container as its first argument, so no test resolves a service
+   *  itself: `create` arranges state, `update` mutates it mid-test, `read` is for assertions. */
   service: {
     create: {
       cart: typeof createCart
@@ -150,6 +215,32 @@ export type Fixtures = {
       variantStock: typeof stockVariant
       paymentSessionForCart: typeof createPaymentSessionForCart
       checkoutReadyCart: typeof createCheckoutReadyCart
+      product: typeof createProduct
+      productOption: typeof createProductOption
+      productVariant: typeof createProductVariant
+      productVariants: typeof createProductVariants
+      variantImages: typeof addImageToVariant
+      variantPrices: typeof priceVariants
+      authVerification: typeof requestAuthVerification
+      confirmedAuthVerification: typeof confirmAuthVerification
+    }
+    update: {
+      productOptions: typeof setProductOptions
+      productVariant: typeof updateProductVariant
+      authIdentity: typeof updateAuthIdentity
+      authVerification: typeof updateAuthVerification
+    }
+    read: {
+      authVerifications: typeof listAuthVerifications
+      orders: typeof listOrders
+      paymentCollection: typeof retrievePaymentCollection
+      reservationItems: typeof listReservationItems
+      linkRepo: typeof linkRepo
+      products: typeof listProducts
+      productVariants: typeof listProductVariants
+      productVariant: typeof retrieveProductVariant
+      productImages: typeof listProductImages
+      productVariantImages: typeof listProductVariantImages
     }
   }
   logger: Logger
@@ -164,6 +255,15 @@ export const test = testBase.extend<Fixtures>({
   },
   async makeRequest({ task: _ }, use) {
     await use(makeRequest)
+  },
+  async createApi({ getDb, logger }, use) {
+    const created: TestApi[] = []
+    await use(async (options) => {
+      const api = await createApi({ getDb, logger }, options)
+      created.push(api)
+      return api
+    })
+    await Promise.all(created.map((api) => api.close()))
   },
   async factories({ task: _ }, use) {
     await use({
@@ -182,6 +282,8 @@ export const test = testBase.extend<Fixtures>({
         createProviderIdentity: generateCreateProviderIdentityDTO,
         updateProviderIdentity: generateUpdateProviderIdentityDTO,
         createAuthVerification: generateCreateAuthVerificationDTO,
+        requestAuthVerification: generateRequestAuthVerificationDTO,
+        confirmAuthVerification: generateConfirmAuthVerificationDTO,
         updateAuthVerification: generateUpdateAuthVerificationDTO,
         createAuthPasswordResetToken: generateCreateAuthPasswordResetTokenDTO,
         createCustomer: generateCreateCustomerDTO,
@@ -204,7 +306,13 @@ export const test = testBase.extend<Fixtures>({
         createPriceSet: generateCreatePriceSetDTO,
         createPrice: generateCreatePriceDTO,
         createProduct: generateCreateProductDTO,
+        createProductOption: generateCreateProductOptionDTO,
+        createProductOptionValue: generateCreateProductOptionValueDTO,
+        createProductVariant: generateCreateProductVariantDTO,
         updateProduct: generateUpdateProductDTO,
+        updateProductVariant: generateUpdateProductVariantDTO,
+        setProductOptions: generateSetProductOptionsDTO,
+        variantImageInput: generateVariantImageInputDTO,
         createOrder: generateCreateOrderDTO,
         createOrderLineItem: generateCreateOrderLineItemDTO,
         createOrderShippingMethod: generateCreateOrderShippingMethodDTO,
@@ -239,6 +347,32 @@ export const test = testBase.extend<Fixtures>({
         variantStock: stockVariant,
         paymentSessionForCart: createPaymentSessionForCart,
         checkoutReadyCart: createCheckoutReadyCart,
+        product: createProduct,
+        productOption: createProductOption,
+        productVariant: createProductVariant,
+        productVariants: createProductVariants,
+        variantImages: addImageToVariant,
+        variantPrices: priceVariants,
+        authVerification: requestAuthVerification,
+        confirmedAuthVerification: confirmAuthVerification,
+      },
+      update: {
+        productOptions: setProductOptions,
+        productVariant: updateProductVariant,
+        authIdentity: updateAuthIdentity,
+        authVerification: updateAuthVerification,
+      },
+      read: {
+        authVerifications: listAuthVerifications,
+        orders: listOrders,
+        paymentCollection: retrievePaymentCollection,
+        reservationItems: listReservationItems,
+        linkRepo,
+        products: listProducts,
+        productVariants: listProductVariants,
+        productVariant: retrieveProductVariant,
+        productImages: listProductImages,
+        productVariantImages: listProductVariantImages,
       },
     })
   },

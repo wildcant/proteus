@@ -4,12 +4,7 @@ import { faker } from '@faker-js/faker'
 
 export function generateCreatePriceSetDTO(overrides?: Partial<CreatePriceSetDTO>): CreatePriceSetDTO {
   return {
-    prices: [
-      {
-        currencyCode: 'usd',
-        amount: new BigNumber(faker.commerce.price({ min: 1, max: 1000 })),
-      },
-    ],
+    prices: [generateCreatePriceDTO()],
     ...overrides,
   }
 }

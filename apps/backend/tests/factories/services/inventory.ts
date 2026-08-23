@@ -38,3 +38,14 @@ export async function stockVariant(container: AwilixContainer, options: StockVar
 
   return { inventoryItem, inventoryLevel }
 }
+
+// ---- Reads ----
+
+export async function listReservationItems(
+  container: AwilixContainer,
+  ...args: Parameters<IInventoryModuleService['listReservationItems']>
+) {
+  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+  return inventoryService.listReservationItems(...args)
+}

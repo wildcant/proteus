@@ -44,3 +44,11 @@ export async function createPaymentSessionForCart(container: AwilixContainer, op
 
   return { paymentCollection, paymentSession }
 }
+
+// ---- Reads ----
+
+export async function retrievePaymentCollection(container: AwilixContainer, paymentCollectionId: string) {
+  const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+
+  return paymentService.retrievePaymentCollection(paymentCollectionId)
+}

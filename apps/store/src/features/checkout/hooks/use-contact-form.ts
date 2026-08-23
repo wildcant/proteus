@@ -10,11 +10,11 @@ const contactSchema = UpdateCart.pick({ firstName: true, lastName: true }).exten
 
 export type ContactFormValues = z.infer<typeof contactSchema>
 
-const EMPTY_DEFAULTS: ContactFormValues = {
-  email: '',
-  firstName: '',
-  lastName: '',
-}
+// const EMPTY_DEFAULTS: ContactFormValues = {
+//   email: '',
+//   firstName: '',
+//   lastName: '',
+// }
 
 const TEST_DEFAULTS: ContactFormValues = {
   email: 'joe@mail.com',
