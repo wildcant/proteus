@@ -7,6 +7,7 @@
 import type { AdminUpdateProductOptionValuesItemMetadata } from './adminUpdateProductOptionValuesItemMetadata.ts';
 
 export type AdminUpdateProductOptionValuesItem = {
+  id?: string;
   /** @minLength 1 */
   value: string;
   /** @minimum 0 */

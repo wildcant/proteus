@@ -32,13 +32,14 @@ import {
 import { batchImageVariants, listImageVariants } from '#/api/generated/products/products'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
-const variantKeys = queryKeysFactory<'product-variants', ListProductVariantsParams & { productId: string }>(
+export const variantKeys = queryKeysFactory<'product-variants', ListProductVariantsParams & { productId: string }>(
   'product-variants',
 )
 
-const combinationKeys = queryKeysFactory<'option-combinations', ListOptionCombinationsParams & { productId: string }>(
+export const combinationKeys = queryKeysFactory<
   'option-combinations',
-)
+  ListOptionCombinationsParams & { productId: string }
+>('option-combinations')
 
 // Keyed by product + image, since an image's variant links are scoped to both.
 const imageVariantKeys = queryKeysFactory<'image-variants'>('image-variants')

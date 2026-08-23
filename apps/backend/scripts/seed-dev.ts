@@ -358,7 +358,6 @@ if (existingProducts.length > 0) {
     Object.keys(entry.colors).flatMap((color) =>
       SIZES.map((size) => ({
         productId: productFor(entry).id,
-        title: `${size} / ${color}`,
         sku: `${entry.skuPrefix}-${size}-${color.toUpperCase()}`,
         size,
         color,
@@ -378,9 +377,9 @@ if (existingProducts.length > 0) {
   }
 
   const createdVariants = await productService.createProductVariants(
-    variantSpecs.map(({ productId, title, sku, size, color }) => ({
+    // No title: it is derived from the Option Combination these values name.
+    variantSpecs.map(({ productId, sku, size, color }) => ({
       productId,
-      title,
       sku,
       optionValues: optionValuesFor(size, color),
     })),

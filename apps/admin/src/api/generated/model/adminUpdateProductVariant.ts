@@ -8,8 +8,6 @@ import type { AdminUpdateProductVariantMetadata } from './adminUpdateProductVari
 import type { AdminUpdateProductVariantOptionValues } from './adminUpdateProductVariantOptionValues.ts';
 
 export interface AdminUpdateProductVariant {
-  /** @minLength 1 */
-  title?: string;
   /** @nullable */
   thumbnail?: string | null;
   /** @nullable */

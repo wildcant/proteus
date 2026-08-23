@@ -2,6 +2,7 @@ import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { type GroupRefs, Tab } from './constants'
 import { ProductCreateMediaSection } from './product-create-details-media-section'
+import { ProductCreateVariantsSection } from './product-create-variants-section'
 import { detailsSchema } from './schemas'
 import { useRegisterCreateProductFormStep } from './use-register-create-product-form-step'
 
@@ -30,6 +31,7 @@ export const ProductCreateDetailsForm = withForm({
                 </form.AppField>
               </div>
               <ProductCreateMediaSection form={form} />
+              <ProductCreateVariantsSection form={form} />
             </div>
           )
         }}

@@ -38,7 +38,22 @@ create; the complement of the combinations already taken.
 _Avoid_: free combination, unused combination, matrix row
 
 **Variant Title**:
-A variant's display name, defaulting to its Option Combination's values joined in the product's
-option order (`"M / White"`) and overridable per variant. Copied onto cart line items and order
-items when a shopper adds to cart, so it is what they see in their order history for good.
+A variant's display name: its Option Combination's values joined in the product's option order
+(`"M / White"`), or the product's title when the product offers no options. Always derived, never
+written by hand — a title that could disagree with the combination is a title that will. Copied
+onto cart line items and order items when a shopper adds to cart, so it is what they see in their
+order history for good.
 _Avoid_: variant name, variant label
+
+**Variant Reconciliation Plan**:
+What a proposed set of Product-Scoped Options would do to a product's variants — which survive
+untouched, which are reassigned, which are created and which are deleted. Shown to the admin
+before it is applied, and computed the same way for a product that has no variants yet as for one
+that already sells.
+_Avoid_: diff, migration, matrix update
+
+**Reassignment**:
+Moving a variant onto a different Option Combination, whether the admin picks the new one or a
+Variant Reconciliation Plan derives it. A variant's identity — its SKU, price, images and order
+history — survives a reassignment; only which combination it stands for changes.
+_Avoid_: move, remap, re-link

@@ -8,6 +8,7 @@ import { useAppForm } from '#/lib/form-hook.ts'
 import type { SubmitFormParams } from '#/types/form.ts'
 import type { SubmitIntent } from '../components/create-product-form/constants'
 import { type ProductFormValues, productFormSchema } from '../components/create-product-form/schemas'
+import { resolveVariantsPayload } from '../components/create-product-form/variant-rows'
 
 export const productCreateFormOpts = formOptions({
   defaultValues: {
@@ -24,6 +25,7 @@ export const productCreateFormOpts = formOptions({
       width: null,
     },
     media: [],
+    variants: { hasVariants: false, options: [], rows: [] },
   } satisfies ProductFormValues as ProductFormValues,
   onSubmitMeta: {} as SubmitIntent,
 })
@@ -44,14 +46,19 @@ export function useCreateProductForm(params?: CreateProductFormParams) {
         // Staged files have to reach storage before the product can reference their URLs.
         const media = await uploadMedia(value.media)
 
-        // Parsing rather than casting also drops the image ids, which only updates accept.
-        const payload = AdminCreateProduct.parse({
-          ...value.details,
-          ...value.organize,
-          ...value.attributes,
-          ...resolveMediaPayload(media),
-          status,
-        })
+        // Parsing rather than casting also drops the image ids, which only updates accept. The
+        // variant half is spread after: it is enumerated rather than typed, so it has no stray
+        // keys to strip, and the schema's price pipeline would turn its amounts into BigNumbers.
+        const payload = {
+          ...AdminCreateProduct.omit({ options: true, variants: true }).parse({
+            ...value.details,
+            ...value.organize,
+            ...value.attributes,
+            ...resolveMediaPayload(media),
+            status,
+          }),
+          ...resolveVariantsPayload(value.variants),
+        }
 
         createMutation.mutate(payload, {
           onSuccess: (data) => {

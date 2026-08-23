@@ -34,6 +34,7 @@ export * from './adminCreateProductImagesItem.ts';
 export * from './adminCreateProductOption.ts';
 export * from './adminCreateProductOptionMetadata.ts';
 export * from './adminCreateProductOptionRenderAs.ts';
+export * from './adminCreateProductOptionsItem.ts';
 export * from './adminCreateProductOptionValuesItem.ts';
 export * from './adminCreateProductOptionValuesItemMetadata.ts';
 export * from './adminCreateProductResponse.ts';

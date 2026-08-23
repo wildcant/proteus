@@ -21,6 +21,7 @@ import type {
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
+  VariantReconciliationPlanDTO,
 } from './common.js'
 import type {
   CreateProductDTO,
@@ -119,6 +120,19 @@ export type IProductModuleService = {
 
   // Product-option linking
   setProductOptions(productId: string, data: SetProductOptionsDTO, context?: Context): Promise<void>
+  /** What a proposed set of options would do to the product's variants. Reads only. */
+  planProductOptionChange(
+    productId: string,
+    data: SetProductOptionsDTO,
+    context?: Context,
+  ): Promise<VariantReconciliationPlanDTO>
+  /** Moves variants onto the combinations a plan assigned them, retitling as it goes. */
+  applyVariantReassignments(
+    reassignments: ReadonlyArray<{ variantId: string; optionValues: Record<string, string> }>,
+    context?: Context,
+  ): Promise<void>
+  /** Brings every variant carrying one of these option values back in line with its combination. */
+  retitleVariantsCarrying(optionValueIds: string[], context?: Context): Promise<void>
   listProductOptionsForProduct(productId: string, context?: Context): Promise<ProductOptionWithValuesDTO[]>
   listAndCountProductsForOption(
     optionId: string,

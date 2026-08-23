@@ -35,9 +35,15 @@ export function EditVariantForm({ productId, variant }: EditVariantFormProps) {
           <RouteDrawer.Title>Edit Variant</RouteDrawer.Title>
         </RouteDrawer.Header>
         <RouteDrawer.Body className="space-y-4">
-          <form.AppField name="title">
-            {(field) => <field.TextField label="Title" autoFocus placeholder="Variant title" />}
-          </form.AppField>
+          {/* Derived from the combination below, so it is shown rather than edited. */}
+          <form.Subscribe selector={(state) => state.values.combination?.label}>
+            {(label) => (
+              <div>
+                <span className="mb-1.5 block font-medium text-sm">Title</span>
+                <p className="text-muted-foreground text-sm">{label || variant.title}</p>
+              </div>
+            )}
+          </form.Subscribe>
           <form.AppField name="material">
             {(field) => <field.TextField label="Material" placeholder="Optional" />}
           </form.AppField>

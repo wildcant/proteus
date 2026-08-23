@@ -1788,6 +1788,9 @@
             "items": {
               "type": "object",
               "properties": {
+                "id": {
+                  "type": "string"
+                },
                 "value": {
                   "type": "string",
                   "minLength": 1
@@ -1997,6 +2000,26 @@
           "midCode": {
             "type": "string"
           },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "optionId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "valueIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "required": ["optionId", "valueIds"]
+            }
+          },
           "originCountry": {
             "type": "string"
           },
@@ -2014,6 +2037,12 @@
             "type": "string",
             "minLength": 1
           },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCreateProductVariant"
+            }
+          },
           "weight": {
             "type": ["number", "null"]
           },
@@ -2022,6 +2051,82 @@
           }
         },
         "required": ["title"]
+      },
+      "AdminCreateProductVariant": {
+        "type": "object",
+        "properties": {
+          "thumbnail": {
+            "type": ["string", "null"]
+          },
+          "sku": {
+            "type": ["string", "null"]
+          },
+          "barcode": {
+            "type": ["string", "null"]
+          },
+          "ean": {
+            "type": ["string", "null"]
+          },
+          "upc": {
+            "type": ["string", "null"]
+          },
+          "allowBackorder": {
+            "type": "boolean"
+          },
+          "manageInventory": {
+            "type": "boolean"
+          },
+          "hsCode": {
+            "type": ["string", "null"]
+          },
+          "originCountry": {
+            "type": ["string", "null"]
+          },
+          "midCode": {
+            "type": ["string", "null"]
+          },
+          "material": {
+            "type": ["string", "null"]
+          },
+          "weight": {
+            "type": ["number", "null"]
+          },
+          "length": {
+            "type": ["number", "null"]
+          },
+          "height": {
+            "type": ["number", "null"]
+          },
+          "width": {
+            "type": ["number", "null"]
+          },
+          "variantRank": {
+            "type": "number"
+          },
+          "optionValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": ["object", "null"],
+            "additionalProperties": {}
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": ["amount"]
+            }
+          }
+        },
+        "required": ["optionValues"]
       },
       "AdminProductResponse": {
         "type": "object",
@@ -2437,86 +2542,6 @@
         },
         "required": ["variant"]
       },
-      "AdminCreateProductVariant": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "minLength": 1
-          },
-          "thumbnail": {
-            "type": ["string", "null"]
-          },
-          "sku": {
-            "type": ["string", "null"]
-          },
-          "barcode": {
-            "type": ["string", "null"]
-          },
-          "ean": {
-            "type": ["string", "null"]
-          },
-          "upc": {
-            "type": ["string", "null"]
-          },
-          "allowBackorder": {
-            "type": "boolean"
-          },
-          "manageInventory": {
-            "type": "boolean"
-          },
-          "hsCode": {
-            "type": ["string", "null"]
-          },
-          "originCountry": {
-            "type": ["string", "null"]
-          },
-          "midCode": {
-            "type": ["string", "null"]
-          },
-          "material": {
-            "type": ["string", "null"]
-          },
-          "weight": {
-            "type": ["number", "null"]
-          },
-          "length": {
-            "type": ["number", "null"]
-          },
-          "height": {
-            "type": ["number", "null"]
-          },
-          "width": {
-            "type": ["number", "null"]
-          },
-          "variantRank": {
-            "type": "number"
-          },
-          "optionValues": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "metadata": {
-            "type": ["object", "null"],
-            "additionalProperties": {}
-          },
-          "prices": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "amount": {
-                  "type": "string"
-                }
-              },
-              "required": ["amount"]
-            }
-          }
-        },
-        "required": ["optionValues"]
-      },
       "AdminCreateProductVariantsBatchResponse": {
         "type": "object",
         "properties": {
@@ -2578,10 +2603,6 @@
       "AdminUpdateProductVariant": {
         "type": "object",
         "properties": {
-          "title": {
-            "type": "string",
-            "minLength": 1
-          },
           "thumbnail": {
             "type": ["string", "null"]
           },

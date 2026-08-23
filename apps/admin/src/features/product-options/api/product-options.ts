@@ -23,6 +23,7 @@ import {
   setProductOptions,
   updateProductOption,
 } from '#/api/generated/product-options/product-options'
+import { combinationKeys, variantKeys } from '#/features/products/api/product-variants'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -76,6 +77,10 @@ export const useUpdateProductOption = (
       queryClient.invalidateQueries({ queryKey: productOptionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: productOptionKeys.lists() })
       queryClient.invalidateQueries({ queryKey: valuesForOptionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: productOptionsForProductKeys.all })
+      // Renaming a value retitles every variant carrying it.
+      queryClient.invalidateQueries({ queryKey: variantKeys.all })
+      queryClient.invalidateQueries({ queryKey: combinationKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {
@@ -152,6 +157,9 @@ export const useSetProductOptions = (
     mutationFn: (data: AdminSetProductOptions) => setProductOptions(productId, data),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productOptionsForProductKeys.detail(productId) })
+      // The save reconciles the variants: some were created, some reassigned, some deleted.
+      queryClient.invalidateQueries({ queryKey: variantKeys.all })
+      queryClient.invalidateQueries({ queryKey: combinationKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {

@@ -2,6 +2,7 @@ import { cn, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } fro
 import { useCallback, useRef } from 'react'
 import { CheckboxCell } from './cells/checkbox-cell'
 import { CurrencyCell } from './cells/currency-cell'
+import { ReadonlyCell } from './cells/readonly-cell'
 import { TextCell } from './cells/text-cell'
 import { DataGridSkeleton } from './data-grid-skeleton'
 import type { DataGridColumn } from './types'
@@ -138,6 +139,8 @@ function CellRenderer<T>({
       )
     case 'checkbox':
       return <CheckboxCell checked={Boolean(rawValue)} onToggle={onToggle} />
+    case 'readonly':
+      return <ReadonlyCell value={String(rawValue ?? '')} />
     case 'currency':
       return (
         <CurrencyCell

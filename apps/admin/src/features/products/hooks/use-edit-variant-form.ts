@@ -10,7 +10,6 @@ import type { SubmitFormParams } from '#/types/form.ts'
 
 const editVariantSchema = z.object({
   combination: z.custom<AdminOptionCombination>().nullable(),
-  title: z.string(),
   sku: z.string(),
   material: z.string(),
 })
@@ -30,7 +29,6 @@ export function useEditVariantForm({ productId, variant, current, params }: UseE
 
   const defaultValues: z.infer<typeof editVariantSchema> = {
     combination: current ?? null,
-    title: variant.title,
     sku: variant.sku ?? '',
     material: variant.material ?? '',
   }
@@ -39,13 +37,10 @@ export function useEditVariantForm({ productId, variant, current, params }: UseE
     defaultValues,
     validators: { onSubmit: editVariantSchema },
     onSubmit: ({ value }) => {
-      // Sending the title only when it was edited by hand is what lets the service retitle a
-      // variant that moved from M/White to L/White, rather than leaving the old name behind.
-      const titleWasEdited = form.state.fieldMeta.title?.isDirty ?? false
-
+      // No title is sent: it is derived from the combination, so moving a variant from M/White to
+      // L/White retitles it server-side.
       updateMutation.mutate(
         {
-          ...(titleWasEdited && value.title ? { title: value.title } : {}),
           sku: value.sku || null,
           material: value.material || null,
           ...(value.combination ? { optionValues: value.combination.optionValues } : {}),

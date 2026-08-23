@@ -17,6 +17,7 @@ export function useProgressCreateProductForm(form: ReturnType<typeof useCreatePr
     [Tab.DETAILS]: 'in-progress',
     [Tab.ORGANIZE]: 'not-started',
     [Tab.ATTRIBUTES]: 'not-started',
+    [Tab.VARIANTS]: 'not-started',
   })
 
   const groupRefs = useRef<Partial<Record<Tab, AnyFormGroupApi>>>({}) as GroupRefs

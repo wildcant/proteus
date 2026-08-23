@@ -5,7 +5,9 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AdminCreateProductImagesItem } from './adminCreateProductImagesItem.ts';
+import type { AdminCreateProductOptionsItem } from './adminCreateProductOptionsItem.ts';
 import type { AdminCreateProductStatus } from './adminCreateProductStatus.ts';
+import type { AdminCreateProductVariant } from './adminCreateProductVariant.ts';
 
 export interface AdminCreateProduct {
   description?: string;
@@ -19,6 +21,7 @@ export interface AdminCreateProduct {
   length?: number | null;
   material?: string;
   midCode?: string;
+  options?: AdminCreateProductOptionsItem[];
   originCountry?: string;
   status?: AdminCreateProductStatus;
   subtitle?: string;
@@ -26,6 +29,7 @@ export interface AdminCreateProduct {
   thumbnail?: string | null;
   /** @minLength 1 */
   title: string;
+  variants?: AdminCreateProductVariant[];
   /** @nullable */
   weight?: number | null;
   /** @nullable */

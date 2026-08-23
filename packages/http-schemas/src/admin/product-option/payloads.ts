@@ -8,6 +8,17 @@ const CreateOptionValue = z.object({
   metadata: metadata.optional(),
 })
 
+/**
+ * A known `id` renames the value in place and keeps every variant link intact; without one the
+ * value is created. Values the payload leaves out are removed.
+ */
+const UpsertOptionValue = z.object({
+  id: z.string().optional(),
+  value: z.string().min(1),
+  rank: z.number().int().min(0).optional(),
+  metadata: metadata.optional(),
+})
+
 export const AdminCreateProductOption = z
   .object({
     title: z.string().min(1),
@@ -23,7 +34,7 @@ export const AdminUpdateProductOption = z
     title: z.string().min(1).optional(),
     renderAs: ProductOptionRenderAs.optional(),
     metadata: metadata.optional(),
-    values: z.array(CreateOptionValue).optional(),
+    values: z.array(UpsertOptionValue).optional(),
   })
   .openapi('AdminUpdateProductOption')
 export type AdminUpdateProductOptionBody = z.infer<typeof AdminUpdateProductOption>

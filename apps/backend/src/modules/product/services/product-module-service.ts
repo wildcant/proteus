@@ -33,6 +33,7 @@ import type {
   UpdateProductOptionDTO,
   UpdateProductVariantDTO,
   UpsertProductImageInput,
+  UpsertProductOptionValueInput,
   UpsertProductVariantDTO,
   VariantImageInput,
   VariantOptionValueDTO,
@@ -52,10 +53,17 @@ import type { ProductVariantOptionRepository } from '../repositories/product-var
 import {
   buildCombinations,
   buildPickerTargets,
+  type CombinableOption,
+  combinationLabel,
   countCombinations,
   findCombination,
   MAX_OPTION_COMBINATIONS,
 } from '../utils/option-combinations.js'
+import {
+  MAX_VARIANTS_PER_PRODUCT,
+  planVariantReconciliation,
+  type VariantReconciliationPlan,
+} from '../utils/reconcile-variants.js'
 
 /** A resolved Option Combination ready to write: the pivot rows, plus the label a title falls back to. */
 type ResolvedCombination = {
@@ -225,18 +233,18 @@ export class ProductModuleService implements IProductModuleService {
     this.logger.debug(`Creating ${data.length} product variant(s)`)
     return this.withTransaction(context, async (ctx) => {
       const resolved = await this.resolveCombinationsForCreate(
-        data.map((variant) => ({
-          productId: variant.productId,
-          title: variant.title,
-          optionValues: variant.optionValues,
-        })),
+        data.map((variant) => ({ productId: variant.productId, optionValues: variant.optionValues })),
+        ctx,
+      )
+      const fallbackTitles = await this.productTitlesFor(
+        data.map((variant) => variant.productId),
         ctx,
       )
 
       const variants = await this.productVariantRepository.createMany(
         data.map(({ optionValues: _optionValues, ...variant }, index) => ({
           ...variant,
-          title: this.resolveVariantTitle(variant.title, resolved[index]) ?? '',
+          title: resolved[index]?.label || fallbackTitles.get(variant.productId) || '',
         })),
         ctx,
       )
@@ -298,10 +306,11 @@ export class ProductModuleService implements IProductModuleService {
       const existing = await this.productVariantRepository.find({ id: variantIds }, undefined, ctx)
       const resolved = optionValues ? await this.resolveCombinationsForUpdate(existing, optionValues, ctx) : []
 
-      // Retitling follows the combination when the caller sends no title of its own, so changing
-      // a variant from M/White to L/White does not leave a stale name behind.
-      const derivedTitle = this.resolveVariantTitle(columns.title, resolved[0])
-      const changes = { ...columns, ...(derivedTitle !== undefined ? { title: derivedTitle } : {}) }
+      // The title is derived, so it follows the combination — a variant moved from M/White to
+      // L/White must not keep advertising the old name onto new line items.
+      const combination = resolved[0]
+      const fallbackTitle = existing[0] ? await this.productTitleFor(existing[0].productId, ctx) : ''
+      const changes = { ...columns, ...(combination ? { title: combination.label || fallbackTitle } : {}) }
 
       // An options-only edit has no columns to set, which the repository's UPDATE would reject.
       const variants =
@@ -424,37 +433,7 @@ export class ProductModuleService implements IProductModuleService {
           : await this.productOptionRepository.findByIdOrFail(optionId, undefined, ctx)
 
       if (valueInputs) {
-        const existing = await this.productOptionValueRepository.find({ optionId }, undefined, ctx)
-
-        const newValueStrings = new Set(valueInputs.map((v) => v.value))
-        const removedValues = existing.filter((v) => !newValueStrings.has(v.value))
-
-        if (removedValues.length > 0) {
-          const removedValueIds = removedValues.map((v) => v.id)
-          const activeValueLinks = await this.productProductOptionValueRepository.find(
-            { optionValueId: removedValueIds },
-            undefined,
-            ctx,
-          )
-          if (activeValueLinks.length > 0) {
-            throw new AppError({
-              type: ErrorTypes.NOT_ALLOWED,
-              message:
-                'Cannot remove option value(s) that are currently used by products. Remove them from all products first.',
-            })
-          }
-        }
-
-        if (existing.length > 0) {
-          await this.productOptionValueRepository.softDelete(
-            existing.map((v) => v.id),
-            ctx,
-          )
-        }
-        const values = await this.productOptionValueRepository.createMany(
-          valueInputs.map((v, index) => ({ ...v, optionId, rank: v.rank ?? index })),
-          ctx,
-        )
+        const values = await this.replaceOptionValues(optionId, valueInputs, ctx)
         return { ...option, values }
       }
 
@@ -521,10 +500,13 @@ export class ProductModuleService implements IProductModuleService {
 
   // ── Product-Option Linking ────────────────────────────────────────────
 
+  /**
+   * Replaces which options a product offers and which of their values. Says nothing about the
+   * product's variants — `planProductOptionChange` answers what the change does to those, and
+   * `setProductOptionsWorkflow` applies both together.
+   */
   async setProductOptions(productId: string, data: SetProductOptionsDTO, context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.checkProductOptionsStillCoverVariants(productId, data, ctx)
-
       const existingLinks = await this.productProductOptionRepository.find({ productId }, undefined, ctx)
       if (existingLinks.length > 0) {
         const linkIds = existingLinks.map((l) => l.id)
@@ -551,6 +533,96 @@ export class ProductModuleService implements IProductModuleService {
           )
         }
       }
+    })
+  }
+
+  /**
+   * What a proposed set of options would do to the product's variants.
+   *
+   * Reads only — the caller decides whether to apply it. Both halves of the question come from the
+   * same place a variant write is validated against, so what the product would offer and what it
+   * would accept cannot drift.
+   */
+  async planProductOptionChange(
+    productId: string,
+    data: SetProductOptionsDTO,
+    context?: Context,
+  ): Promise<VariantReconciliationPlan> {
+    const [currentOptions, nextOptions] = await Promise.all([
+      this.listProductOptionsForProduct(productId, context),
+      this.resolveNextOptions(data, context),
+    ])
+
+    const variants = await this.productVariantRepository.find({ productId }, undefined, context)
+    const maps = await this.listVariantOptionMaps(
+      variants.map((variant) => variant.id),
+      context,
+    )
+
+    const plan = planVariantReconciliation({
+      currentOptions,
+      nextOptions,
+      variants: variants.map((variant) => ({
+        id: variant.id,
+        title: variant.title,
+        optionValues: maps[variant.id] ?? {},
+        createdAt: variant.createdAt,
+      })),
+    })
+
+    const total = plan.keep.length + plan.reassign.length + plan.create.length
+    if (total > MAX_VARIANTS_PER_PRODUCT) {
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: `These options would leave the product with ${total} variants, above the limit of ${MAX_VARIANTS_PER_PRODUCT}. Reduce the options or the values they offer.`,
+      })
+    }
+
+    return plan
+  }
+
+  /**
+   * Moves variants onto the combinations a plan assigned them, retitling as it goes.
+   *
+   * Separate from `updateProductVariants` because a reconciliation reassigns several variants at
+   * once and each lands somewhere different, which that method's single-combination contract
+   * deliberately refuses.
+   */
+  async applyVariantReassignments(
+    reassignments: ReadonlyArray<{ variantId: string; optionValues: Record<string, string> }>,
+    context?: Context,
+  ): Promise<void> {
+    if (reassignments.length === 0) return
+
+    return this.withTransaction(context, async (ctx) => {
+      await Promise.all(
+        reassignments.map(({ variantId, optionValues }) =>
+          this.replaceVariantOptionValues(
+            variantId,
+            Object.entries(optionValues).map(([optionId, optionValueId]) => ({ optionId, optionValueId })),
+            ctx,
+          ),
+        ),
+      )
+
+      const variants = await this.productVariantRepository.find(
+        { id: reassignments.map((entry) => entry.variantId) },
+        undefined,
+        ctx,
+      )
+      const enriched = await this.enrichVariants(variants, ctx)
+      const fallbackTitles = await this.productTitlesFor(
+        variants.map((variant) => variant.productId),
+        ctx,
+      )
+
+      await Promise.all(
+        enriched.map((variant) => {
+          const title = combinationLabel(variant.optionValues) || fallbackTitles.get(variant.productId) || ''
+          if (!title || title === variant.title) return undefined
+          return this.productVariantRepository.update(variant.id, { title }, ctx)
+        }),
+      )
     })
   }
 
@@ -766,6 +838,42 @@ export class ProductModuleService implements IProductModuleService {
     return counts
   }
 
+  /**
+   * Brings every variant carrying one of these option values back in line with its combination.
+   *
+   * Titles are derived, so a value rename that left them alone would make "derived" a lie — and a
+   * stale title is copied onto the next line item and kept in order history for good. Labels come
+   * from `combinationLabel` rather than being spelled again here, so there is one way to name a
+   * combination.
+   */
+  async retitleVariantsCarrying(optionValueIds: string[], context?: Context): Promise<void> {
+    if (optionValueIds.length === 0) return
+
+    const links = await this.productVariantOptionRepository.find({ optionValueId: optionValueIds }, undefined, context)
+    if (links.length === 0) return
+
+    const variants = await this.productVariantRepository.find(
+      { id: [...new Set(links.map((link) => link.variantId))] },
+      undefined,
+      context,
+    )
+    if (variants.length === 0) return
+
+    const enriched = await this.enrichVariants(variants, context)
+    const fallbackTitles = await this.productTitlesFor(
+      variants.map((variant) => variant.productId),
+      context,
+    )
+
+    await Promise.all(
+      enriched.map((variant) => {
+        const title = combinationLabel(variant.optionValues) || fallbackTitles.get(variant.productId) || ''
+        if (!title || title === variant.title) return undefined
+        return this.productVariantRepository.update(variant.id, { title }, context)
+      }),
+    )
+  }
+
   async enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO> {
     const [enriched] = await this.enrichVariants([variant], context)
     // A single input always yields a single output; the guard is for the compiler.
@@ -868,81 +976,28 @@ export class ProductModuleService implements IProductModuleService {
   // ── Helpers ───────────────────────────────────────────────────────────
 
   /**
-   * The values a `setProductOptions` payload would leave the product offering, keyed by option.
+   * The Product-Scoped Options a `setProductOptions` payload would leave behind, in payload order.
    *
    * An option listing no values offers all of them — the same rule `listProductOptionsForProduct`
-   * applies to the stored links, expressed here once for the incoming payload rather than at each
-   * place that needs to know what a save would drop.
+   * applies to the stored links, expressed once here for a payload that has not been saved yet.
    */
-  private async expandOfferedValues(data: SetProductOptionsDTO, context: Context): Promise<Map<string, Set<string>>> {
+  private async resolveNextOptions(data: SetProductOptionsDTO, context?: Context): Promise<CombinableOption[]> {
     const optionIds = data.options.map((option) => option.optionId)
-    if (optionIds.length === 0) return new Map()
+    if (optionIds.length === 0) return []
 
-    const allValues = await this.productOptionValueRepository.find({ optionId: optionIds }, undefined, context)
+    const [options, allValues] = await Promise.all([
+      this.productOptionRepository.find({ id: optionIds }, undefined, context),
+      this.productOptionValueRepository.find({ optionId: optionIds }, { order: { rank: 'ASC' } }, context),
+    ])
+    const optionById = new Map(options.map((option) => [option.id, option]))
 
-    return new Map(
-      data.options.map((option) => [
-        option.optionId,
-        new Set(
-          option.valueIds.length > 0
-            ? option.valueIds
-            : allValues.filter((value) => value.optionId === option.optionId).map((value) => value.id),
-        ),
-      ]),
-    )
-  }
-
-  /**
-   * Refuses a `setProductOptions` payload that drops an option or a value some variant still
-   * carries. Without this the product would keep variants whose combinations reference values the
-   * product no longer offers, and the storefront picker could not render them.
-   */
-  private async checkProductOptionsStillCoverVariants(
-    productId: string,
-    data: SetProductOptionsDTO,
-    context: Context,
-  ): Promise<void> {
-    const variants = await this.productVariantRepository.find({ productId }, undefined, context)
-    if (variants.length === 0) return
-
-    const links = await this.productVariantOptionRepository.find(
-      { variantId: variants.map((variant) => variant.id) },
-      undefined,
-      context,
-    )
-    if (links.length === 0) return
-
-    const offered = await this.expandOfferedValues(data, context)
-
-    const droppedOptionIds = [...new Set(links.map((link) => link.optionId))].filter(
-      (optionId) => !offered.has(optionId),
-    )
-    if (droppedOptionIds.length > 0) {
-      const titles = await this.productOptionRepository.find({ id: droppedOptionIds }, undefined, context)
-      throw new AppError({
-        type: ErrorTypes.NOT_ALLOWED,
-        message: `Cannot remove option(s) that are currently used by variants: ${titles
-          .map((option) => option.title)
-          .join(', ')}. Update the affected variants first.`,
-      })
-    }
-
-    const droppedValueIds = [
-      ...new Set(
-        links
-          .filter((link) => offered.get(link.optionId)?.has(link.optionValueId) === false)
-          .map((link) => link.optionValueId),
-      ),
-    ]
-    if (droppedValueIds.length > 0) {
-      const values = await this.productOptionValueRepository.find({ id: droppedValueIds }, undefined, context)
-      throw new AppError({
-        type: ErrorTypes.NOT_ALLOWED,
-        message: `Cannot remove option value(s) that are currently used by variants: ${values
-          .map((value) => value.value)
-          .join(', ')}. Update the affected variants first.`,
-      })
-    }
+    return data.options.flatMap((entry) => {
+      const option = optionById.get(entry.optionId)
+      if (!option) return []
+      const offered = allValues.filter((value) => value.optionId === entry.optionId)
+      const values = entry.valueIds.length > 0 ? offered.filter((value) => entry.valueIds.includes(value.id)) : offered
+      return { id: option.id, title: option.title, values }
+    })
   }
 
   /**
@@ -1153,16 +1208,19 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   /**
-   * A variant's title defaults to its combination's label, the way `resolveThumbnail` defaults a
-   * product's thumbnail from its images. Titles are copied onto cart line items and order items,
-   * so deriving them here keeps a shopper's order history consistent with the catalogue.
+   * What a variant of an option-less product is called. Its combination's label is empty and the
+   * column is NOT NULL, so the product's own name is the only thing left that identifies it on a
+   * line item.
    */
-  private resolveVariantTitle(
-    title: string | undefined,
-    resolved: ResolvedCombination | undefined,
-  ): string | undefined {
-    if (title !== undefined) return title
-    return resolved?.label || undefined
+  private async productTitlesFor(productIds: string[], context?: Context): Promise<Map<string, string>> {
+    const unique = [...new Set(productIds)]
+    if (unique.length === 0) return new Map()
+    const products = await this.productRepository.find({ id: unique }, undefined, context)
+    return new Map(products.map((product) => [product.id, product.title]))
+  }
+
+  private async productTitleFor(productId: string, context?: Context): Promise<string> {
+    return (await this.productTitlesFor([productId], context)).get(productId) ?? ''
   }
 
   /**
@@ -1199,6 +1257,64 @@ export class ProductModuleService implements IProductModuleService {
   ): string | null | undefined {
     if (!images) return data.thumbnail
     return data.thumbnail ?? images[0]?.url ?? null
+  }
+
+  /**
+   * Collection replacement for an option's values, shaped like `replaceProductImages`: entries
+   * carrying a known `id` are updated in place, entries without one are created, and values the
+   * caller left out are soft-deleted. Rank follows array order.
+   *
+   * Updating in place is what makes a *rename* expressible at all. Matching on the value string
+   * instead — as this did — turned "Blk" becoming "Black" into a delete plus an insert, which
+   * broke every variant link and was refused outright the moment a product used the value.
+   */
+  private async replaceOptionValues(
+    optionId: string,
+    valueInputs: UpsertProductOptionValueInput[],
+    context: Context,
+  ): Promise<ProductOptionValueDTO[]> {
+    const existing = await this.productOptionValueRepository.find({ optionId }, undefined, context)
+    const existingIds = new Set(existing.map((value) => value.id))
+
+    const keptIds = new Set<string>()
+    valueInputs.forEach((value) => {
+      if (value.id && existingIds.has(value.id)) keptIds.add(value.id)
+    })
+
+    const removedIds = existing.filter((value) => !keptIds.has(value.id)).map((value) => value.id)
+    if (removedIds.length > 0) {
+      // Values are global, so unlinking them from every product stays a deliberate act. This is a
+      // different question from a product dropping a value it offers, which reconciliation handles.
+      const activeValueLinks = await this.productProductOptionValueRepository.find(
+        { optionValueId: removedIds },
+        undefined,
+        context,
+      )
+      if (activeValueLinks.length > 0) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message:
+            'Cannot remove option value(s) that are currently used by products. Remove them from all products first.',
+        })
+      }
+      await this.productOptionValueRepository.softDelete(removedIds, context)
+    }
+
+    const renamedIds: string[] = []
+    await Promise.all(
+      valueInputs.map((input, rank) => {
+        const { id, ...columns } = input
+        if (!id || !existingIds.has(id)) {
+          return this.productOptionValueRepository.create({ ...columns, optionId, rank: columns.rank ?? rank }, context)
+        }
+        if (existing.some((value) => value.id === id && value.value !== columns.value)) renamedIds.push(id)
+        return this.productOptionValueRepository.update(id, { ...columns, rank: columns.rank ?? rank }, context)
+      }),
+    )
+
+    await this.retitleVariantsCarrying(renamedIds, context)
+
+    return this.productOptionValueRepository.find({ optionId }, { order: { rank: 'ASC' } }, context)
   }
 
   /**

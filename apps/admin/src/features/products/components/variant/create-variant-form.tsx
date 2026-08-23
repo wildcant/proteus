@@ -29,8 +29,8 @@ export function CreateVariantForm({ productId }: { productId: string }) {
     return (
       <>
         <RouteFocusModal.Header />
-        <RouteFocusModal.Body className="mx-auto w-full max-w-180 px-6 py-16">
-          <p className="text-muted-foreground text-sm">
+        <RouteFocusModal.Body>
+          <p className="mx-auto w-full max-w-180 px-6 py-16 text-muted-foreground text-sm">
             This product has no options yet. A variant is one combination of a product's option values, so{' '}
             <Link to="/products/$id/options" params={{ id: productId }} className="underline">
               add some options
@@ -47,60 +47,65 @@ export function CreateVariantForm({ productId }: { productId: string }) {
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <RouteFocusModal.Header />
 
-        <RouteFocusModal.Body className="mx-auto w-full max-w-180 space-y-6 px-6 py-10">
-          <div>
-            <h1 className="font-medium text-xl">Variant details</h1>
-            <p className="text-muted-foreground text-sm">
-              A variant is one combination of this product's option values. Combinations it already has are left out.
-            </p>
-          </div>
+        <RouteFocusModal.Body>
+          <div className="mx-auto w-full max-w-180 space-y-6 px-6 py-10">
+            <div>
+              <h1 className="font-medium text-xl">Variant details</h1>
+              <p className="text-muted-foreground text-sm">
+                A variant is one combination of this product's option values. Combinations it already has are left out.
+              </p>
+            </div>
 
-          {/* One field, because picking a combination is one choice. The list arrives already
+            {/* One field, because picking a combination is one choice. The list arrives already
               filtered to what is still available, so nothing here decides what may be picked. */}
-          <form.Field name="combination">
-            {(field) => {
-              // Not gated on `isTouched`: the requirement is only checked on submit, so a user who
-              // never opened the combobox is exactly who needs to see the message.
-              const isInvalid = !field.state.meta.isValid
+            <form.Field name="combination">
+              {(field) => {
+                // Not gated on `isTouched`: the requirement is only checked on submit, so a user who
+                // never opened the combobox is exactly who needs to see the message.
+                const isInvalid = !field.state.meta.isValid
 
-              return (
-                <Field data-invalid={isInvalid}>
-                  <label htmlFor="combination" className="mb-1.5 block font-medium text-sm">
-                    Combination
-                  </label>
-                  <SingleSelectCombobox
-                    id="combination"
-                    items={combinations.map((combination) => ({ id: combination.key, label: combination.label }))}
-                    value={field.state.value?.key ?? null}
-                    onValueChange={(key) => field.handleChange(combinationFor(key))}
-                    onInputValueChange={onSearchChange}
-                    disabled={isExhausted}
-                    placeholder="Search combinations..."
-                    emptyMessage="No combinations left."
-                    aria-invalid={isInvalid}
-                  />
-                  {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
-                  {isExhausted ? (
-                    <p className="mt-1.5 text-muted-foreground text-sm">
-                      Every combination of this product's options already has a variant.
-                    </p>
-                  ) : null}
-                </Field>
-              )
-            }}
-          </form.Field>
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <label htmlFor="combination" className="mb-1.5 block font-medium text-sm">
+                      Combination
+                    </label>
+                    <SingleSelectCombobox
+                      id="combination"
+                      items={combinations.map((combination) => ({ id: combination.key, label: combination.label }))}
+                      value={field.state.value?.key ?? null}
+                      onValueChange={(key) => field.handleChange(combinationFor(key))}
+                      onInputValueChange={onSearchChange}
+                      disabled={isExhausted}
+                      placeholder="Search combinations..."
+                      emptyMessage="No combinations left."
+                      aria-invalid={isInvalid}
+                    />
+                    {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+                    {isExhausted ? (
+                      <p className="mt-1.5 text-muted-foreground text-sm">
+                        Every combination of this product's options already has a variant.
+                      </p>
+                    ) : null}
+                  </Field>
+                )
+              }}
+            </form.Field>
 
-          {/* The placeholder is what the server would derive, so it shows what leaving this blank
-              will produce. */}
-          <form.Subscribe selector={(state) => state.values.combination?.label}>
-            {(label) => (
-              <form.AppField name="title">
-                {(field) => <field.TextField label="Title" placeholder={label ?? 'Optional'} />}
-              </form.AppField>
-            )}
-          </form.Subscribe>
+            {/* No title field: it is the combination's label. Shown read-only so the shopkeeper can
+              see what the variant will be called on a line item. */}
+            <form.Subscribe selector={(state) => state.values.combination?.label}>
+              {(label) => (
+                <div>
+                  <span className="mb-1.5 block font-medium text-sm">Title</span>
+                  <p className="text-muted-foreground text-sm">{label || 'Pick a combination to see the title.'}</p>
+                </div>
+              )}
+            </form.Subscribe>
 
-          <form.AppField name="sku">{(field) => <field.TextField label="SKU" placeholder="Optional" />}</form.AppField>
+            <form.AppField name="sku">
+              {(field) => <field.TextField label="SKU" placeholder="Optional" />}
+            </form.AppField>
+          </div>
         </RouteFocusModal.Body>
 
         <RouteFocusModal.Footer>

@@ -12,8 +12,6 @@ const UpdateVariantPrice = z.object({
 
 export const AdminCreateProductVariant = z
   .object({
-    /** Omit to take the Option Combination's label, e.g. `"M / White"`. */
-    title: z.string().min(1).optional(),
     thumbnail: z.string().nullable().optional(),
     sku: z.string().nullable().optional(),
     barcode: z.string().nullable().optional(),
@@ -44,8 +42,6 @@ export type AdminCreateProductVariantBody = z.infer<typeof AdminCreateProductVar
 
 export const AdminUpdateProductVariant = z
   .object({
-    /** Omit to let the title follow the Option Combination when `optionValues` changes. */
-    title: z.string().min(1).optional(),
     thumbnail: z.string().nullable().optional(),
     sku: z.string().nullable().optional(),
     barcode: z.string().nullable().optional(),

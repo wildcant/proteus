@@ -58,6 +58,14 @@ export function countCombinations(options: readonly CombinableOption[]): number 
 }
 
 /**
+ * What a set of resolved values is called. The one place a Variant Title is spelled — every other
+ * caller goes through here, so a title can never disagree with the combination it stands for.
+ */
+export function combinationLabel(values: ReadonlyArray<{ value: string }>): string {
+  return values.map((value) => value.value).join(' / ')
+}
+
+/**
  * Order-independent identity for a combination. The option is part of each pair, so a value used
  * under two different options cannot collide.
  */
@@ -104,7 +112,7 @@ export function buildCombinations({
 
     return {
       key,
-      label: values.map((value) => value.value).join(' / '),
+      label: combinationLabel(values),
       values,
       optionValues,
       variantId: variantIdByKey.get(key) ?? null,

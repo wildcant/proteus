@@ -95,8 +95,16 @@ RouteFocusModal.Header = ({ className, children, ...props }: React.HTMLAttribute
   </div>
 )
 
+/**
+ * The modal's scrolling region, always full width so the scrollbar sits against the window edge
+ * rather than against the content column.
+ *
+ * Centring and padding therefore belong on the children, not here — a body styled to a column
+ * would take its scrollbar with it. A body that manages its own height instead of scrolling, like
+ * the media grids, overrides `overflow` through `className`.
+ */
 RouteFocusModal.Body = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex-1 overflow-y-auto', className)} {...props}>
+  <div className={cn('w-full flex-1 overflow-y-auto', className)} {...props}>
     {children}
   </div>
 )

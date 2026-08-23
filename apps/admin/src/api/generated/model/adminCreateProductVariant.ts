@@ -9,8 +9,6 @@ import type { AdminCreateProductVariantOptionValues } from './adminCreateProduct
 import type { AdminCreateProductVariantPricesItem } from './adminCreateProductVariantPricesItem.ts';
 
 export interface AdminCreateProductVariant {
-  /** @minLength 1 */
-  title?: string;
   /** @nullable */
   thumbnail?: string | null;
   /** @nullable */

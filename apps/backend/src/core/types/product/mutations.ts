@@ -55,8 +55,6 @@ export type UpdateProductDTO = {
 
 export type CreateProductVariantDTO = {
   productId: string
-  /** Defaults to the Option Combination's label when omitted, e.g. `"M / White"`. */
-  title?: string
   thumbnail?: string | null
   sku?: string | null
   barcode?: string | null
@@ -82,8 +80,6 @@ export type CreateProductVariantDTO = {
 }
 
 export type UpdateProductVariantDTO = {
-  /** Omit to let the title follow the Option Combination when `optionValues` changes. */
-  title?: string
   thumbnail?: string | null
   sku?: string | null
   barcode?: string | null
@@ -121,8 +117,14 @@ export type UpdateProductOptionDTO = {
   title?: string
   renderAs?: ProductOptionRenderAs
   metadata?: Record<string, unknown> | null
-  values?: Array<Omit<CreateProductOptionValueDTO, 'optionId'>>
+  values?: UpsertProductOptionValueInput[]
 }
+
+/**
+ * A value in an option's collection. A known `id` renames the value in place, keeping every
+ * variant link intact; without one the value is created.
+ */
+export type UpsertProductOptionValueInput = { id?: string } & Omit<CreateProductOptionValueDTO, 'optionId'>
 
 export type SetProductOptionsDTO = {
   /** Array position sets each option's display rank on the product. */

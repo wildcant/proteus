@@ -38,6 +38,91 @@ test.beforeEach(async ({ getDb, logger }) => {
   productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 })
 
+test.describe('POST /admin/products', () => {
+  const createOptions = async (product: { id: string }) => {
+    const size = await productService.createProductOption({
+      title: `Size-${product.id}`,
+      values: [{ value: 'S' }, { value: 'M' }],
+    })
+    const colour = await productService.createProductOption({
+      title: `Colour-${product.id}`,
+      values: [{ value: 'Red' }, { value: 'Blue' }],
+    })
+    return { size, colour }
+  }
+
+  test('creates a product with its options and the full variant matrix in one call', async ({ expect, dto }) => {
+    // The options have to be linked before a variant can name a combination of them, which is why
+    // this is one call rather than the shopkeeper making three.
+    const scaffold = await productService.createProduct(dto.generate.createProduct())
+    const { size, colour } = await createOptions(scaffold)
+    const handler = applyMiddleware(findDefinition('POST', '/admin/products'))
+
+    const response = await handler<typeof productRoutes.PostOutput>(
+      makeRequest({
+        scope: container,
+        body: {
+          title: 'Enamel Mug',
+          options: [
+            { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+            { optionId: colour.id, valueIds: colour.values.map((value) => value.id) },
+          ],
+          variants: size.values.flatMap((sizeValue) =>
+            colour.values.map((colourValue) => ({
+              optionValues: { [size.id]: sizeValue.id, [colour.id]: colourValue.id },
+            })),
+          ),
+        },
+      }),
+    )
+
+    expect(response.status).toBe(201)
+    const created = response.json.product
+    const variants = await productService.listProductVariants({ productId: created.id })
+    expect(variants).toHaveLength(4)
+    // Titles are derived from the combination, so the shopkeeper never sent one.
+    expect(variants.map((variant) => variant.title).sort()).toEqual(['M / Blue', 'M / Red', 'S / Blue', 'S / Red'])
+  })
+
+  test('a variant naming a combination the options cannot produce takes the product with it', async ({
+    expect,
+    dto,
+  }) => {
+    const scaffold = await productService.createProduct(dto.generate.createProduct())
+    const { size, colour } = await createOptions(scaffold)
+    const before = await productService.listProducts()
+    const handler = applyMiddleware(findDefinition('POST', '/admin/products'))
+
+    const error = await handler<typeof productRoutes.PostOutput>(
+      makeRequest({
+        scope: container,
+        body: {
+          title: 'Doomed',
+          options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+          // Names Colour, which this product does not offer.
+          variants: [{ optionValues: { [colour.id]: colour.values[0]?.id ?? '' } }],
+        },
+      }),
+    ).catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    // Compensation ran: no half-built product left behind.
+    expect(await productService.listProducts()).toHaveLength(before.length)
+  })
+
+  test('a product with no options is created with no variants', async ({ expect }) => {
+    const handler = applyMiddleware(findDefinition('POST', '/admin/products'))
+
+    const response = await handler<typeof productRoutes.PostOutput>(
+      makeRequest({ scope: container, body: { title: 'Plain' } }),
+    )
+
+    expect(response.status).toBe(201)
+    expect(await productService.listProductVariants({ productId: response.json.product.id })).toEqual([])
+  })
+})
+
 test.describe('GET /admin/products/:id', () => {
   test('returns images ordered by rank', async ({ expect, dto }) => {
     const product = await productService.createProduct(
@@ -122,8 +207,8 @@ test.describe('POST /admin/products/:id/images/:imageId/variants/batch', () => {
     })
     const [image] = await productService.listProductImages({ productId: product.id })
     const [linked, unlinked] = await productService.createProductVariants([
-      { productId: product.id, title: 'Small', optionValues: {} },
-      { productId: product.id, title: 'Large', optionValues: {} },
+      { productId: product.id, optionValues: {} },
+      { productId: product.id, optionValues: {} },
     ])
     if (!image || !linked || !unlinked) throw new Error('Expected an image and two variants to exist')
 
@@ -210,9 +295,7 @@ test.describe('POST /admin/products/:id/variants/:variantId/images/batch', () =>
       { productId: product.id },
       { order: { rank: 'ASC' } },
     )
-    const [variant] = await productService.createProductVariants([
-      { productId: product.id, title: 'Small', optionValues: {} },
-    ])
+    const [variant] = await productService.createProductVariants([{ productId: product.id, optionValues: {} }])
     if (!linkedImage || !unlinkedImage || !variant) throw new Error('Expected two images and a variant to exist')
 
     await productService.addImageToVariant([{ imageId: linkedImage.id, variantId: variant.id }])
@@ -309,9 +392,7 @@ test.describe('GET /admin/products/:id/variants/:variantId', () => {
       images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
     })
     const images = await productService.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } })
-    const [variant] = await productService.createProductVariants([
-      { productId: product.id, title: 'Small', optionValues: {} },
-    ])
+    const [variant] = await productService.createProductVariants([{ productId: product.id, optionValues: {} }])
     const [first, second] = images
     if (!variant || !first || !second) throw new Error('Expected two images and a variant to exist')
 
@@ -347,8 +428,8 @@ test.describe('GET /admin/products/:id/images/:imageId/variants', () => {
       { order: { rank: 'ASC' } },
     )
     const [linked, unlinked] = await productService.createProductVariants([
-      { productId: product.id, title: 'Small', optionValues: {} },
-      { productId: product.id, title: 'Large', optionValues: {} },
+      { productId: product.id, optionValues: {} },
+      { productId: product.id, optionValues: {} },
     ])
     if (!imageA || !imageB || !linked || !unlinked) throw new Error('Expected two images and two variants to exist')
 

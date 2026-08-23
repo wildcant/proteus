@@ -97,6 +97,20 @@ export type ProductOptionCombinationDTO = {
   variantId: string | null
 }
 
+/** Why a variant cannot survive a change to its product's options. */
+export type VariantRemovalReason = 'value-dropped' | 'collapsed'
+
+/**
+ * What a proposed set of Product-Scoped Options would do to a product's variants. Structurally
+ * mirrors the module's pure planner, the way `ProductOptionCombinationDTO` mirrors its combinations.
+ */
+export type VariantReconciliationPlanDTO = {
+  keep: Array<{ variantId: string; combination: ProductOptionCombinationDTO }>
+  reassign: Array<{ variantId: string; fromLabel: string; combination: ProductOptionCombinationDTO }>
+  create: Array<{ combination: ProductOptionCombinationDTO; copyPricesFromVariantId: string | null }>
+  remove: Array<{ variantId: string; title: string; reason: VariantRemovalReason }>
+}
+
 export interface FilterableProductOptionCombinationProps
   extends BaseFilterable<FilterableProductOptionCombinationProps> {
   /**
