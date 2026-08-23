@@ -7,8 +7,24 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: proteus_test
+    # The data directory is tmpfs, so durability is already gone — turning the write-ahead
+    # machinery down costs nothing and keeps WAL from claiming half the volume. The vitest run
+    # holds one database per worker (see tests/setup/database-url.ts), each with its own client,
+    # which is what max_connections is raised for.
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - full_page_writes=off
+      - -c
+      - synchronous_commit=off
+      - -c
+      - max_wal_size=256MB
+      - -c
+      - max_connections=200
     tmpfs:
-      - /var/lib/postgresql/data
+      - /var/lib/postgresql/data:size=2g
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 2s

@@ -1,6 +1,6 @@
 # Test Suite: Migration Cost and Parallelism
 
-**Status:** findings only — nothing decided, nothing implemented.
+**Status:** both implemented. 190.33s → ~28s, all 611 tests passing, 10 consecutive clean runs.
 **Measured:** 2026-08-23, on Postgres 17 (Docker, `127.0.0.1:5433`), 8 logical cores.
 
 ## Summary
@@ -15,7 +15,7 @@ Two candidate fixes were measured against each other:
 | --- | --- | --- |
 | Today: drop schema + re-migrate | ~220ms | baseline |
 | Postgres template database (what Medusa does) | ~210–1750ms | **slower than the baseline for us** |
-| Migrate once + `TRUNCATE` per test | ~25ms | **~9× cheaper**, recommended to prototype |
+| Migrate once + `TRUNCATE` per test | ~25ms | **~9× cheaper** — prototyped, suite 190.33s → 69.01s |
 
 Separately, `fileParallelism: false` leaves 7 of 8 cores idle (the full run averages 0.4
 cores). That is a consequence of every test process sharing one database, and it is fixable
@@ -141,6 +141,26 @@ option B:  221ms once + 611 × 25ms         ≈  15s of reset
 suite:     190.70s  →  ~70s   (projection, not measured)
 ```
 
+**Measured after implementing it** — 55 files, 611 tests, all passing:
+
+```
+before:  190.33s wall   (setup 18.56s, import 22.94s, tests 144.00s)
+after:    69.01s wall   (setup 18.07s, import 20.48s, tests  24.97s)
+```
+
+The projection held. `tests` fell 144.00s → 24.97s (5.8×); everything else was untouched,
+which is the point — the win is entirely the reset.
+
+The reset being cheap was verified as load-bearing rather than assumed: commenting out the
+`TRUNCATE` and re-running `src/api/store/products` + `src/modules/product` fails 8 tests on
+leaked rows. With it, 120 pass.
+
+### What dominates now
+
+`setup 18.07s + import 20.48s ≈ 38.5s` of the 69.01s is per-file module loading — 55 files ×
+~700ms, paid serially. That is the number per-worker databases would attack, and it is now
+the majority of the run rather than a rounding error.
+
 ## Where the "migrate once" has to live
 
 Not in `setupFiles`. Vitest isolates the module registry per test file, so `db-setup.ts` is
@@ -228,24 +248,57 @@ lands on its own database instead of corrupting the shared one.
 - **Postgres connection limits.** 8 workers × the pool size each, plus the e2e server, against
   a default `max_connections` of 100. Worth checking before turning parallelism up.
 
-### Expected gain
+### Measured gain
 
-Unmeasured. The current run averages 0.4 cores on an 8-core machine and is dominated by
-waiting on Postgres, so there is a lot of headroom — but Postgres itself becomes the shared
-resource, and DDL-heavy work does not parallelise linearly. Treat "roughly 3×" as a
-hypothesis to test, not a projection.
+`WORKER_COUNT = min(availableParallelism() - 1, 8)` — 7 workers here. `globalSetup` provisions
+`proteus_test_1..7` (created once and left in place; `CREATE DATABASE` is a template copy and
+too expensive to repeat), migrates all seven in parallel, and `db-setup.ts` picks its own via
+`VITEST_POOL_ID`.
+
+```
+serial + TRUNCATE:    69.01s    95% CPU
+parallel + TRUNCATE:  ~28s     268% CPU
+```
+
+Ten consecutive full runs: 26.42s–30.45s, 611/611 every time. Against the original baseline
+that is **190.33s → ~28s, 6.8×**.
+
+The "roughly 3×" hypothesis was about right (2.5×); Postgres did not become the bottleneck.
+
+### Two things this needed that the plan did not anticipate
+
+**The test Postgres ran out of disk.** Its data directory is a 2 GB tmpfs, and `max_wal_size`
+defaults to 1 GB — leaving ~1 GB, of which `proteus_test` alone had bloated to 283 MB from
+611 schema drops per run. Seven more databases tipped it over, and the failure surfaces as
+`could not create file …: No space left on device` several hundred tests deep.
+`docker-compose.test.yml` now runs the container with `fsync=off`, `full_page_writes=off`,
+`synchronous_commit=off`, `max_wal_size=256MB` and `max_connections=200`. Durability is
+already gone on tmpfs, so none of that costs anything. Usage now plateaus at ~435 MB.
+
+**Per-worker databases do *not* make a stray second process harmless** — the claim made in the
+section above is wrong. `VITEST_POOL_ID` restarts at 1 for every run, so a second run claims
+the *same* `proteus_test_1..7` and its `globalSetup` drops the schema under the first. It
+shows up as `schema "public" does not exist` or a `DROP SCHEMA` deadlock, hundreds of tests
+from the cause. This was hit twice while measuring.
+
+`globalSetup` now takes a session-scoped `pg_try_advisory_lock` for the whole run and fails
+immediately, with the `pgrep -fl vitest` hint, if another run holds it. Postgres drops the
+lock when the connection dies, so a killed run leaves nothing stale. Runs are still strictly
+one-at-a-time — the lock only makes that legible instead of corrupting.
 
 ## Suggested sequencing
 
-1. **Prototype option B** behind the existing `db-setup.ts`. It is self-contained, needs no
-   changes to any test, and the measurement is a single full-suite run. Biggest win, lowest
-   risk.
-2. **Then per-worker databases.** This one touches the e2e story and connection limits, and
-   it is much easier to reason about once the per-test reset is cheap and the `globalSetup`
-   split already exists.
-3. Optionally, once parallelism is on, revisit whether the `verify.sh` gate still needs to
-   run API tests only (`npm run verify` is ~16s by design because the full suite is slow —
-   that trade-off changes if the full suite drops to ~30s).
+1. ~~**Prototype option B**~~ — done. `globalSetup` builds the schema
+   (`tests/setup/global-setup.ts`), `db-setup.ts`'s `beforeEach` truncates, and the migration
+   config both share moved to `tests/setup/db-migrations.ts`. No test file changed.
+2. ~~**Then per-worker databases.**~~ — done. `tests/setup/database-url.ts` derives the name
+   from `VITEST_POOL_ID` and is the single source of truth for `maxWorkers`; both test
+   postgres clients (`tests/setup/db-setup.ts` and `tests/db/client.ts`) go through it. With
+   no pool id — the Playwright e2e server, seed scripts — the unsuffixed `proteus_test` is
+   returned unchanged, so `dev:test` is untouched.
+3. **Still open:** whether `verify.sh` still needs to run API tests only. It was ~16s by
+   design because the full suite was slow; the full suite is now ~28s, so the trade-off has
+   changed.
 
 ## Reproducing these numbers
 
