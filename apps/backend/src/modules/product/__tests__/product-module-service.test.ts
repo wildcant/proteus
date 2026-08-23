@@ -974,6 +974,25 @@ test.describe('ProductModuleService variant options', () => {
     expect(plan.remove).toEqual([{ variantId: doomed.id, title: 'S / Blue', reason: 'collapsed' }])
   })
 
+  test('dropping every option collapses the matrix back to one option-less variant', async ({ expect, dto }) => {
+    // The round trip a shopkeeper actually makes: create without variations, add options, then
+    // change their mind. Without the collapse they are left with one nameless duplicate per
+    // combination, each titled after the product.
+    const { product, size, colour, combination } = await createProductWithOptions(dto.generate.createProduct())
+    await service.createProductVariant({ productId: product.id, optionValues: combination('S', 'Red') })
+    await service.createProductVariant({ productId: product.id, optionValues: combination('S', 'Blue') })
+    await service.createProductVariant({ productId: product.id, optionValues: combination('M', 'Red') })
+    await service.createProductVariant({ productId: product.id, optionValues: combination('M', 'Blue') })
+
+    const plan = await service.planProductOptionChange(product.id, { options: [] })
+
+    expect(plan.reassign).toHaveLength(1)
+    expect(plan.remove).toHaveLength(3)
+    expect(plan.remove.every((entry) => entry.reason === 'collapsed')).toBe(true)
+    expect(plan.keep).toEqual([])
+    expect(size.values.length + colour.values.length).toBeGreaterThan(0)
+  })
+
   test('planProductOptionChange refuses to leave the product above the variant ceiling', async ({ expect, dto }) => {
     const { product, size, colour } = await createProductWithOptions(dto.generate.createProduct())
     // A ceiling on writing variants, not on enumerating combinations — the two limits differ.

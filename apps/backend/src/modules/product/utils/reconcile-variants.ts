@@ -77,19 +77,28 @@ export function planVariantReconciliation({ currentOptions, nextOptions, variant
   )
 
   if (options.length === 0) {
-    for (const variant of byAge) {
-      if (Object.keys(variant.optionValues).length === 0) {
-        plan.keep.push({ variantId: variant.id, combination: NO_COMBINATION })
-        continue
+    // A product offering no options can sell exactly one combination — the empty one — so the same
+    // collapse rule applies here as anywhere else. Keeping them all would leave every survivor of
+    // dropping the last option standing for nothing, sharing the product's name and each other's.
+    const [survivor, ...collapsed] = byAge
+
+    if (survivor) {
+      const isAlreadyBare = Object.keys(survivor.optionValues).length === 0
+      if (isAlreadyBare) {
+        plan.keep.push({ variantId: survivor.id, combination: NO_COMBINATION })
+      } else {
+        plan.reassign.push({
+          variantId: survivor.id,
+          fromLabel: labelFor(currentOptions, survivor.optionValues),
+          combination: NO_COMBINATION,
+        })
       }
-      // No collapse here: two variants of an option-less product are two saleable things, not a
-      // collision, because there is no combination for them to collide on.
-      plan.reassign.push({
-        variantId: variant.id,
-        fromLabel: labelFor(currentOptions, variant.optionValues),
-        combination: NO_COMBINATION,
-      })
     }
+
+    for (const variant of collapsed) {
+      plan.remove.push({ variantId: variant.id, title: variant.title, reason: 'collapsed' })
+    }
+
     return plan
   }
 

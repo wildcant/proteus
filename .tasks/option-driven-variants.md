@@ -122,7 +122,7 @@ Not taken:
 | 4 | Variants colliding after an option is dropped collapse to the oldest by `createdAt`; the rest are removed. |
 | 5 | Missing combinations are created, seeded from the **most-overlapping** survivor. Diverges from Shopify's flat default: `XL / Charcoal` should inherit `M / Charcoal`'s price. |
 | 6 | An option offering zero values is not a dimension and is filtered out. Left in, it multiplies the count to zero and plans a catalogue wipe. |
-| 7 | `nextOptions: []` clears combinations without removing anything — two variants of an option-less product are two saleable things, not a collision. |
+| 7 | `nextOptions: []` collapses to a **single** option-less variant. A product offering no options can sell exactly one combination — the empty one — so dropping the last option merges its variants rather than leaving one nameless duplicate per combination, all sharing the product's title. |
 | 8 | **No plan endpoint.** Reconciliation happens inside the save. Creating is not destructive and needs no consent; removing is, and `variantCount` already tells the drawer how many variants a value holds. |
 | 9 | Flow A creates the **full** matrix, enumerated client-side from form state. A product that does not exist yet offers nothing, so there is no server state for the client to drift from — and the server validates every variant on create regardless. |
 | 10 | `variantRank` comes from the sortable list in the Details step. No migration. |
@@ -260,7 +260,7 @@ Decision 17: delete, do not deprecate.
 | 2 | Value dropped that variants carry | Those variants removed, not relabelled; confirmed first from `variantCount` |
 | 3 | Option dropped, two variants collide | Oldest by `createdAt` survives; rest removed as `collapsed` |
 | 4 | Option offering zero values | Filtered out — otherwise the count multiplies to zero and plans a catalogue wipe |
-| 5 | All options removed | Every variant keeps existing with an empty combination; no collapse, no removals |
+| 5 | All options removed | Collapses to one variant on the empty combination; the rest are removed as `collapsed` |
 | 6 | Product created with the variants toggle off | One option-less variant, titled after the product |
 | 7 | New variant needs a price | Copied from the most-overlapping survivor; `null` when there is none |
 | 8 | Write exceeds `MAX_VARIANTS_PER_PRODUCT` | Refused on both paths |

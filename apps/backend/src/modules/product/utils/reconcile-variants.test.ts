@@ -139,21 +139,42 @@ test.describe('planVariantReconciliation — an option is dropped', () => {
 })
 
 test.describe('planVariantReconciliation — the product stops offering options', () => {
-  test('clears every combination without deleting a single variant', ({ expect }) => {
+  test('collapses onto a single variant, because there is one empty combination to hold', ({ expect }) => {
     const plan = planVariantReconciliation({
       currentOptions: [SIZE],
       nextOptions: [],
       variants: [variant('var_s', 'S', { [SIZE_ID]: SMALL }), variant('var_m', 'M', { [SIZE_ID]: MEDIUM })],
     })
 
-    // Two variants of an option-less product are two saleable things, not a collision — there is
-    // no combination for them to collide on.
-    expect(plan.reassign.map((entry) => [entry.variantId, entry.combination.label])).toEqual([
-      ['var_s', ''],
-      ['var_m', ''],
-    ])
-    expect(plan.remove).toEqual([])
+    // A product offering no options has exactly one combination it can sell — the empty one — so
+    // the survivors of dropping every option merge rather than each becoming a nameless duplicate.
+    expect(plan.reassign.map((entry) => [entry.variantId, entry.combination.label])).toEqual([['var_s', '']])
+    expect(plan.remove).toEqual([{ variantId: 'var_m', title: 'M', reason: 'collapsed' }])
     expect(plan.create).toEqual([])
+  })
+
+  test('a product that already has its one option-less variant is left alone', ({ expect }) => {
+    const plan = planVariantReconciliation({
+      currentOptions: [],
+      nextOptions: [],
+      variants: [variant('var_only', 'Enamel Mug', {})],
+    })
+
+    expect(plan.keep.map((entry) => entry.variantId)).toEqual(['var_only'])
+    expect([plan.reassign, plan.create, plan.remove]).toEqual([[], [], []])
+  })
+
+  test('duplicate option-less variants collapse to the oldest', ({ expect }) => {
+    // Reachable only by writing around the invariant, but the reconciliation is where it gets
+    // corrected rather than carried forward.
+    const plan = planVariantReconciliation({
+      currentOptions: [],
+      nextOptions: [],
+      variants: [variant('var_first', 'Mug', {}), variant('var_second', 'Mug', {})],
+    })
+
+    expect(plan.keep.map((entry) => entry.variantId)).toEqual(['var_first'])
+    expect(plan.remove).toEqual([{ variantId: 'var_second', title: 'Mug', reason: 'collapsed' }])
   })
 
   test('an option offering no values is not a dimension and is ignored', ({ expect }) => {
