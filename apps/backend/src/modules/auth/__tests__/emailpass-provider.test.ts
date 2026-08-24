@@ -1,8 +1,10 @@
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { asValue, createContainer } from 'awilix'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { EmailpassProvider } from '../../../providers/auth-emailpass/emailpass.js'
+import * as models from '../models/index.js'
 import { AuthIdentityRepository } from '../repositories/auth-identity.js'
 import { AuthPasswordResetTokenRepository } from '../repositories/auth-password-reset-token.js'
 import { AuthVerificationRepository } from '../repositories/auth-verification.js'
@@ -11,6 +13,8 @@ import { AuthModuleService } from '../services/auth-module-service.js'
 import { AuthProviderService } from '../services/auth-provider-service.js'
 import { VerificationProviderService } from '../services/verification-provider-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let service: AuthModuleService
 
 // Use fast scrypt params for tests
@@ -18,9 +22,9 @@ const EMAIL_PASS_KEY = 'au_emailpass'
 const TEST_SCRYPT_OPTIONS = { logN: 1, r: 1, p: 1 }
 
 test.beforeEach(({ getDb, logger }) => {
-  const authIdentityRepository = new AuthIdentityRepository({ getDb })
-  const providerIdentityRepository = new ProviderIdentityRepository({ getDb })
-  const authVerificationRepository = new AuthVerificationRepository({ getDb })
+  const authIdentityRepository = new AuthIdentityRepository({ getDb, cascadeGraph })
+  const providerIdentityRepository = new ProviderIdentityRepository({ getDb, cascadeGraph })
+  const authVerificationRepository = new AuthVerificationRepository({ getDb, cascadeGraph })
   const authPasswordResetTokenRepository = new AuthPasswordResetTokenRepository({ getDb })
   const withTransaction = createWithTransaction(getDb)
 
@@ -90,8 +94,8 @@ test.describe('Emailpass provider — register', () => {
   })
 
   test('claimable identity claimed with new password', async ({ expect, getDb }) => {
-    const authIdentityRepo = new AuthIdentityRepository({ getDb })
-    const providerIdentityRepo = new ProviderIdentityRepository({ getDb })
+    const authIdentityRepo = new AuthIdentityRepository({ getDb, cascadeGraph })
+    const providerIdentityRepo = new ProviderIdentityRepository({ getDb, cascadeGraph })
 
     const identities = await authIdentityRepo.createMany([{ appMetadata: null }])
     const authIdentity = identities[0]

@@ -37,7 +37,13 @@ import {
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
 import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
-import { generateFulfillmentDTO, generateUpdateFulfillmentDTO } from '../factories/fulfillment-dto.js'
+import {
+  generateCreateFulfillmentSetDTO,
+  generateCreateGeoZoneDTO,
+  generateCreateServiceZoneDTO,
+  generateFulfillmentDTO,
+  generateUpdateFulfillmentDTO,
+} from '../factories/fulfillment-dto.js'
 import {
   generateCreateInventoryItemDTO,
   generateCreateInventoryLevelDTO,
@@ -245,6 +251,9 @@ export type Fixtures = {
       updateCartWithAddresses: typeof generateUpdateCartWithAddressesDTO
       fulfillment: typeof generateFulfillmentDTO
       updateFulfillment: typeof generateUpdateFulfillmentDTO
+      createFulfillmentSet: typeof generateCreateFulfillmentSetDTO
+      createServiceZone: typeof generateCreateServiceZoneDTO
+      createGeoZone: typeof generateCreateGeoZoneDTO
       updateCart: typeof generateUpdateCartDTO
       updateOrder: typeof generateUpdateOrderDTO
       inventoryLevel: typeof generateInventoryLevelDTO
@@ -424,6 +433,9 @@ export const test = testBase.extend<Fixtures>({
         updateCartWithAddresses: generateUpdateCartWithAddressesDTO,
         fulfillment: generateFulfillmentDTO,
         updateFulfillment: generateUpdateFulfillmentDTO,
+        createFulfillmentSet: generateCreateFulfillmentSetDTO,
+        createServiceZone: generateCreateServiceZoneDTO,
+        createGeoZone: generateCreateGeoZoneDTO,
         updateCart: generateUpdateCartDTO,
         updateOrder: generateUpdateOrderDTO,
         inventoryLevel: generateInventoryLevelDTO,

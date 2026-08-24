@@ -7,6 +7,7 @@ export { fileProviderDeclarations } from './provider-declarations.js'
 
 export default Module(Modules.FILE, {
   service: FileModuleService,
+  models: {},
   repositories: {},
   loaders: [loadFileProviders],
 })

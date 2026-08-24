@@ -1,5 +1,5 @@
 {
-  "id": "066c437a-9ab4-4f20-901c-9fbe1c253a3b",
+  "id": "921350fe-c120-41fb-b691-07bf1c34b37c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -122,12 +122,8 @@
           "name": "product_image_product_id_product_id_fk",
           "tableFrom": "product_image",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -317,12 +313,8 @@
           "name": "product_option_value_option_id_product_option_id_fk",
           "tableFrom": "product_option_value",
           "tableTo": "product_option",
-          "columnsFrom": [
-            "option_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["option_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -445,12 +437,8 @@
           "name": "product_product_option_product_id_product_id_fk",
           "tableFrom": "product_product_option",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -458,12 +446,8 @@
           "name": "product_product_option_option_id_product_option_id_fk",
           "tableFrom": "product_product_option",
           "tableTo": "product_option",
-          "columnsFrom": [
-            "option_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["option_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -579,12 +563,8 @@
           "name": "product_product_option_value_product_product_option_id_product_product_option_id_fk",
           "tableFrom": "product_product_option_value",
           "tableTo": "product_product_option",
-          "columnsFrom": [
-            "product_product_option_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_product_option_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -592,12 +572,8 @@
           "name": "product_product_option_value_option_value_id_product_option_value_id_fk",
           "tableFrom": "product_product_option_value",
           "tableTo": "product_option_value",
-          "columnsFrom": [
-            "option_value_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["option_value_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -881,12 +857,8 @@
           "name": "product_variant_image_variant_id_product_variant_id_fk",
           "tableFrom": "product_variant_image",
           "tableTo": "product_variant",
-          "columnsFrom": [
-            "variant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["variant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -894,12 +866,8 @@
           "name": "product_variant_image_image_id_product_image_id_fk",
           "tableFrom": "product_variant_image",
           "tableTo": "product_image",
-          "columnsFrom": [
-            "image_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["image_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1059,12 +1027,8 @@
           "name": "product_variant_option_variant_id_product_variant_id_fk",
           "tableFrom": "product_variant_option",
           "tableTo": "product_variant",
-          "columnsFrom": [
-            "variant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["variant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1072,12 +1036,8 @@
           "name": "product_variant_option_option_id_product_option_id_fk",
           "tableFrom": "product_variant_option",
           "tableTo": "product_option",
-          "columnsFrom": [
-            "option_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["option_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1085,13 +1045,9 @@
           "name": "product_variant_option_option_value_id_product_option_value_id_fk",
           "tableFrom": "product_variant_option",
           "tableTo": "product_option_value",
-          "columnsFrom": [
-            "option_value_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
+          "columnsFrom": ["option_value_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
@@ -1337,12 +1293,8 @@
           "name": "product_variant_product_id_product_id_fk",
           "tableFrom": "product_variant",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1358,10 +1310,7 @@
     "public.product_option_render_as": {
       "name": "product_option_render_as",
       "schema": "public",
-      "values": [
-        "text",
-        "swatch"
-      ]
+      "values": ["text", "swatch"]
     }
   },
   "schemas": {},

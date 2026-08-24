@@ -98,12 +98,6 @@ export class PricingModuleService implements IPricingModuleService {
 
   async deletePriceSets(priceSetIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      // Prices cascade-delete via FK onDelete: 'cascade', but soft-delete the prices first
-      const prices = await this.priceRepository.find({ priceSetId: priceSetIds }, undefined, ctx)
-      const priceIds = prices.map((price) => price.id)
-      if (priceIds.length) {
-        await this.priceRepository.softDelete(priceIds, ctx)
-      }
       await this.priceSetRepository.softDelete(priceSetIds, ctx)
     })
   }

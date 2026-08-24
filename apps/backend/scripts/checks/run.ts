@@ -10,11 +10,13 @@
  * A check is a `{ name, rule, run }` triple over the collected models. Add one to CHECKS below.
  */
 import { cascadeRelationshipIndex } from './cascade-relationship-index.js'
+import { modelBarrelReachable } from './model-barrel-reachable.js'
 import { collectModels } from './models.js'
 import { softDeleteIndexPredicate } from './soft-delete-index-predicate.js'
+import { standardTimestamps } from './standard-timestamps.js'
 import type { Check } from './types.js'
 
-const CHECKS: Check[] = [softDeleteIndexPredicate, cascadeRelationshipIndex]
+const CHECKS: Check[] = [softDeleteIndexPredicate, cascadeRelationshipIndex, modelBarrelReachable, standardTimestamps]
 
 const RED = '\x1b[0;31m'
 const GREEN = '\x1b[0;32m'
@@ -28,7 +30,7 @@ let failed = false
 
 // Every check runs even after one fails, so a single run reports every violation at once.
 for (const check of CHECKS) {
-  const violations = check.run(models)
+  const violations = await check.run(models)
 
   if (violations.length === 0) {
     console.info(`${GREEN}✔${RESET} ${check.name} — ${check.rule}.`)

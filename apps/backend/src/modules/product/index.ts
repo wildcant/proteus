@@ -1,5 +1,6 @@
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
+import * as models from './models/index.js'
 import { ProductRepository } from './repositories/product.js'
 import { ProductImageRepository } from './repositories/product-image.js'
 import { ProductOptionRepository } from './repositories/product-option.js'
@@ -13,6 +14,7 @@ import { ProductModuleService } from './services/product-module-service.js'
 
 export default Module(Modules.PRODUCT, {
   service: ProductModuleService,
+  models,
   repositories: {
     productRepository: ProductRepository,
     productVariantRepository: ProductVariantRepository,

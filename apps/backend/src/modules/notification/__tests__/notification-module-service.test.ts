@@ -1,11 +1,14 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-
+import * as models from '../models/index.js'
 import { NotificationRepository } from '../repositories/notification.js'
 import { NotificationModuleService } from '../services/notification-module-service.js'
 import type { NotificationProviderService } from '../services/notification-provider-service.js'
+
+const cascadeGraph = buildCascadeGraph(models)
 
 function createMockProviderService() {
   return {
@@ -24,7 +27,7 @@ test.beforeEach(({ getDb, logger }) => {
   mockProvider = createMockProviderService()
 
   service = new NotificationModuleService({
-    notificationRepository: new NotificationRepository({ getDb }),
+    notificationRepository: new NotificationRepository({ getDb, cascadeGraph }),
     notificationProviderService: mockProvider as unknown as NotificationProviderService,
     withTransaction: createWithTransaction(getDb),
     logger,

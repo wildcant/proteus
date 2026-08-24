@@ -1,5 +1,6 @@
 import { type AwilixContainer, asClass, asValue, createContainer } from 'awilix'
 import type { Database } from '../../schema.type.js'
+import { buildCascadeGraph } from '../db/cascade-graph.js'
 import type { Logger } from '../types/logger.js'
 import { ContainerRegistrationKeys } from '../utils/container.js'
 import type { ModuleDefinition } from '../utils/module.js'
@@ -19,6 +20,9 @@ export async function bootstrapModule<TOptions = Record<string, unknown>>(
     getDb: asValue(getDb),
     logger: asValue(logger),
     withTransaction: asValue(createWithTransaction(getDb)),
+    // Built once here and shared by the module's repositories. Scoped to this module's models
+    // because no foreign key crosses a module boundary, so module scope is already complete.
+    cascadeGraph: asValue(buildCascadeGraph(moduleDefinition.models)),
   })
 
   // Register repositories in the local container (private to this module)

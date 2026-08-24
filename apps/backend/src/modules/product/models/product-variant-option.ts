@@ -24,9 +24,12 @@ export const productVariantOptionTable = pgTable(
     optionId: text()
       .notNull()
       .references(() => productOptionTable.id, { onDelete: 'cascade' }),
+    // Restrict, not cascade: a global option value is shared, and a variant carrying it is the
+    // thing that makes it un-removable. Deleting the value is refused while any variant is size M
+    // rather than silently stripping those variants of their identity.
     optionValueId: text()
       .notNull()
-      .references(() => productOptionValueTable.id, { onDelete: 'cascade' }),
+      .references(() => productOptionValueTable.id, { onDelete: 'restrict' }),
     ...timestamps,
   },
   (table) => [

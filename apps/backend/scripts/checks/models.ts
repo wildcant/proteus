@@ -29,6 +29,38 @@ function typescriptFiles(directory: string): string[] {
   })
 }
 
+/** The barrel a module's models are reached through, whether or not the file exists yet. */
+export function barrelOf(module: string): string {
+  const { directory } = modelDirectories().find((entry) => entry.module === module) ?? { directory: MODULES_DIR }
+  return relative(BACKEND_ROOT, join(directory, 'index.ts'))
+}
+
+/**
+ * The tables each module's barrel actually re-exports. A model the barrel misses is invisible to
+ * the cascade graph, which is built from the barrel and nothing else — so the table would keep its
+ * foreign keys and quietly stop being reached by them.
+ *
+ * A missing barrel yields no tables rather than throwing: that is a violation to report, not a
+ * crash, and a module with no models at all has nothing to export.
+ */
+export async function collectBarrelTables(): Promise<Map<string, Set<PgTable>>> {
+  const barrels = new Map<string, Set<PgTable>>()
+
+  for (const { module, directory } of modelDirectories()) {
+    const tables = new Set<PgTable>()
+    barrels.set(module, tables)
+
+    const exports = await import(pathToFileURL(join(directory, 'index.ts')).href).catch(() => null)
+    if (!exports) continue
+
+    for (const value of Object.values(exports as Record<string, unknown>)) {
+      if (is(value, PgTable)) tables.add(value)
+    }
+  }
+
+  return barrels
+}
+
 function modelDirectories(): { module: string; directory: string }[] {
   const modules = readdirSync(MODULES_DIR, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())

@@ -1,7 +1,9 @@
 import { BigNumber } from '@core/db/bignum.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
+import * as models from '../models/index.js'
 import {
   OrderAddressRepository,
   OrderLineItemRepository,
@@ -11,15 +13,17 @@ import {
 } from '../repositories/index.js'
 import { OrderModuleService } from '../services/order-module-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let service: OrderModuleService
 
 test.beforeEach(({ getDb, logger }) => {
   service = new OrderModuleService({
-    orderRepository: new OrderRepository({ getDb }),
-    orderAddressRepository: new OrderAddressRepository({ getDb }),
-    orderLineItemRepository: new OrderLineItemRepository({ getDb }),
-    orderShippingMethodRepository: new OrderShippingMethodRepository({ getDb }),
-    orderTransactionRepository: new OrderTransactionRepository({ getDb }),
+    orderRepository: new OrderRepository({ getDb, cascadeGraph }),
+    orderAddressRepository: new OrderAddressRepository({ getDb, cascadeGraph }),
+    orderLineItemRepository: new OrderLineItemRepository({ getDb, cascadeGraph }),
+    orderShippingMethodRepository: new OrderShippingMethodRepository({ getDb, cascadeGraph }),
+    orderTransactionRepository: new OrderTransactionRepository({ getDb, cascadeGraph }),
     withTransaction: createWithTransaction(getDb),
     logger,
   })
@@ -376,6 +380,52 @@ test.describe('OrderModuleService', () => {
       expect(lineItems).toHaveLength(0)
       expect(shippingMethods).toHaveLength(0)
       expect(transactions).toHaveLength(0)
+    })
+
+    test('softDeleteOrders — hides line items, shipping methods and transactions', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({
+          items: [dto.generate.createOrderLineItem(), dto.generate.createOrderLineItem()],
+          shippingMethods: [dto.generate.createOrderShippingMethod()],
+        }),
+      )
+      await service.addOrderTransaction(dto.generate.createOrderTransaction({ orderId: order.id }))
+
+      await service.softDeleteOrders([order.id])
+
+      expect(await service.listOrderLineItems({ orderId: order.id })).toHaveLength(0)
+      expect(await service.listOrderShippingMethods({ orderId: order.id })).toHaveLength(0)
+      expect(await service.listOrderTransactions({ orderId: order.id })).toHaveLength(0)
+    })
+
+    test('restoreOrders — brings back everything that deletion hid', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({
+          items: [dto.generate.createOrderLineItem(), dto.generate.createOrderLineItem()],
+          shippingMethods: [dto.generate.createOrderShippingMethod()],
+        }),
+      )
+      await service.addOrderTransaction(dto.generate.createOrderTransaction({ orderId: order.id }))
+
+      await service.softDeleteOrders([order.id])
+      await service.restoreOrders([order.id])
+
+      expect(await service.listOrders({ id: order.id })).toHaveLength(1)
+      expect(await service.listOrderLineItems({ orderId: order.id })).toHaveLength(2)
+      expect(await service.listOrderShippingMethods({ orderId: order.id })).toHaveLength(1)
+      expect(await service.listOrderTransactions({ orderId: order.id })).toHaveLength(1)
+    })
+
+    test('softDeleteOrders — leaves another order untouched', async ({ expect, dto }) => {
+      const [deleted, kept] = await service.createOrders([
+        dto.generate.createOrder({ items: [dto.generate.createOrderLineItem()] }),
+        dto.generate.createOrder({ items: [dto.generate.createOrderLineItem()] }),
+      ])
+      if (!deleted || !kept) throw new Error('expected two orders')
+
+      await service.softDeleteOrders([deleted.id])
+
+      expect(await service.listOrderLineItems({ orderId: kept.id })).toHaveLength(1)
     })
   })
 

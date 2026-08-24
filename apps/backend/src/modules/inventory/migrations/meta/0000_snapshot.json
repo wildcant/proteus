@@ -278,12 +278,8 @@
           "name": "inventory_level_inventory_item_id_inventory_item_id_fk",
           "tableFrom": "inventory_level",
           "tableTo": "inventory_item",
-          "columnsFrom": [
-            "inventory_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["inventory_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -436,12 +432,8 @@
           "name": "reservation_item_inventory_item_id_inventory_item_id_fk",
           "tableFrom": "reservation_item",
           "tableTo": "inventory_item",
-          "columnsFrom": [
-            "inventory_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["inventory_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

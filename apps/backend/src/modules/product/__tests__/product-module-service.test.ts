@@ -1,8 +1,10 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { CreateProductDTO } from '@core/types/index.js'
+import type { CreateProductDTO, VariantImageInput } from '@core/types/index.js'
 import { test } from '@tests/setup/test-extend.js'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { buildSearchFilter } from '../../../core/utils/build-search-filter.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
+import * as models from '../models/index.js'
 import { ProductRepository } from '../repositories/product.js'
 import { ProductImageRepository } from '../repositories/product-image.js'
 import { ProductOptionRepository } from '../repositories/product-option.js'
@@ -14,18 +16,25 @@ import { ProductVariantImageRepository } from '../repositories/product-variant-i
 import { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
 import { ProductModuleService } from '../services/product-module-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let service: ProductModuleService
+/** Two rules have no service verb to reach them: the product module has no restore, and the
+ *  walker's restrict backstop only fires where the service's own pre-check has not already. */
+let productRepository: ProductRepository
+let productOptionRepository: ProductOptionRepository
+let productOptionValueRepository: ProductOptionValueRepository
 
 test.beforeEach(({ getDb, logger }) => {
-  const productRepository = new ProductRepository({ getDb })
-  const productVariantRepository = new ProductVariantRepository({ getDb })
-  const productOptionRepository = new ProductOptionRepository({ getDb })
-  const productOptionValueRepository = new ProductOptionValueRepository({ getDb })
-  const productProductOptionRepository = new ProductProductOptionRepository({ getDb })
-  const productProductOptionValueRepository = new ProductProductOptionValueRepository({ getDb })
-  const productImageRepository = new ProductImageRepository({ getDb })
-  const productVariantImageRepository = new ProductVariantImageRepository({ getDb })
-  const productVariantOptionRepository = new ProductVariantOptionRepository({ getDb })
+  productRepository = new ProductRepository({ getDb, cascadeGraph })
+  const productVariantRepository = new ProductVariantRepository({ getDb, cascadeGraph })
+  productOptionRepository = new ProductOptionRepository({ getDb, cascadeGraph })
+  productOptionValueRepository = new ProductOptionValueRepository({ getDb, cascadeGraph })
+  const productProductOptionRepository = new ProductProductOptionRepository({ getDb, cascadeGraph })
+  const productProductOptionValueRepository = new ProductProductOptionValueRepository({ getDb, cascadeGraph })
+  const productImageRepository = new ProductImageRepository({ getDb, cascadeGraph })
+  const productVariantImageRepository = new ProductVariantImageRepository({ getDb, cascadeGraph })
+  const productVariantOptionRepository = new ProductVariantOptionRepository({ getDb, cascadeGraph })
   const withTransaction = createWithTransaction(getDb)
   service = new ProductModuleService({
     productRepository,
@@ -916,7 +925,7 @@ test.describe('ProductModuleService variant options', () => {
     if (!small || !medium) throw new Error('Expected the Size option to carry two values')
 
     // Straight at the repository, since the DTO's map shape makes this unrepresentable.
-    const productVariantOptionRepository = new ProductVariantOptionRepository({ getDb })
+    const productVariantOptionRepository = new ProductVariantOptionRepository({ getDb, cascadeGraph })
     await productVariantOptionRepository.create({
       variantId: variant.id,
       optionId: size.id,
@@ -1045,5 +1054,185 @@ test.describe('ProductModuleService variant options', () => {
     const reordered = await service.listProductOptionsForProduct(product.id)
     expect(reordered.map((option) => option.id)).toEqual([colour.id, size.id])
     expect(reordered[0]?.renderAs).toBe('swatch')
+  })
+
+  // ---------------------------------------------------------------------------
+  // Cascade delete
+  //
+  // The product graph is the only one in the schema with a diamond — variant images hang off
+  // variants and off product images, both of which hang off the product — and the only one with
+  // a restrict relationship. These assert what a later read returns, never how the walk got there.
+  // ---------------------------------------------------------------------------
+
+  test.describe('Cascade delete', () => {
+    /** A product whose variant image is reachable through the variant *and* through the image. */
+    const createProductWithAVariantImage = async (
+      draft: CreateProductDTO,
+      linkImage: (overrides: VariantImageInput) => VariantImageInput,
+    ) => {
+      const product = await service.createProduct({ ...draft, images: [{ url: 'https://cdn.test/a.png' }] })
+      const [image] = await service.listProductImages({ productId: product.id })
+      if (!image) throw new Error('expected the product to have an image')
+
+      const variant = await service.createProductVariant({ productId: product.id, optionValues: {} })
+      await service.addImageToVariant([linkImage({ imageId: image.id, variantId: variant.id })])
+
+      return { product, image, variant }
+    }
+
+    test('deleteProducts — hides the variant images reachable by both paths', async ({ expect, dto }) => {
+      const { product, variant } = await createProductWithAVariantImage(
+        dto.generate.createProduct(),
+        dto.generate.variantImageInput,
+      )
+
+      await service.deleteProducts([product.id])
+
+      expect(await service.listProductVariants({ productId: product.id })).toHaveLength(0)
+      expect(await service.listProductImages({ productId: product.id })).toHaveLength(0)
+      expect(await service.listProductVariantImages({ variantId: variant.id })).toHaveLength(0)
+    })
+
+    test('restoring a product brings the variant images back exactly once', async ({ expect, dto }) => {
+      const { product, variant } = await createProductWithAVariantImage(
+        dto.generate.createProduct(),
+        dto.generate.variantImageInput,
+      )
+
+      await service.deleteProducts([product.id])
+      // The product module has no restore verb yet, so this reaches the repository directly.
+      await productRepository.restore([product.id])
+
+      expect(await service.listProductVariants({ productId: product.id })).toHaveLength(1)
+      expect(await service.listProductImages({ productId: product.id })).toHaveLength(1)
+      expect(await service.listProductVariantImages({ variantId: variant.id })).toHaveLength(1)
+    })
+
+    test('deleteProducts — hides the option links two hops down', async ({ expect, dto }) => {
+      const product = await service.createProduct(dto.generate.createProduct())
+      const size = await service.createProductOption({
+        title: `Size-${product.id}`,
+        values: [{ value: 'S' }, { value: 'M' }],
+      })
+      await service.setProductOptions(product.id, {
+        options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+      })
+      const small = size.values.find((value) => value.value === 'S')
+      if (!small) throw new Error('expected the option to carry the value "S"')
+      const variant = await service.createProductVariant({
+        productId: product.id,
+        optionValues: { [size.id]: small.id },
+      })
+
+      await service.deleteProducts([product.id])
+
+      expect(await service.listProductVariantOptions({ variantId: variant.id })).toHaveLength(0)
+      expect(await service.listProductOptionsForProduct(product.id)).toHaveLength(0)
+      // The option itself is shared, not owned: it survives the product that offered it.
+      expect(await service.listProductOptions({ id: size.id })).toHaveLength(1)
+    })
+
+    test('deleteProductOptions — refuses an option a product still offers', async ({ expect, dto }) => {
+      const product = await service.createProduct(dto.generate.createProduct())
+      const size = await service.createProductOption({ title: `Size-${product.id}`, values: [{ value: 'S' }] })
+      await service.setProductOptions(product.id, {
+        options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+      })
+
+      const error = await service.deleteProductOptions([size.id]).catch((e) => e)
+
+      expect(AppError.isError(error)).toBe(true)
+      expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
+      // The shopkeeper-facing wording: it says what to do, not which table objected.
+      expect(error.message).toContain('Remove them from all products first')
+      expect(await service.listProductOptions({ id: size.id })).toHaveLength(1)
+    })
+
+    test('the walker refuses it too, naming the relationship that blocked it', async ({ expect, dto }) => {
+      const product = await service.createProduct(dto.generate.createProduct())
+      const size = await service.createProductOption({ title: `Size-${product.id}`, values: [{ value: 'S' }] })
+      await service.setProductOptions(product.id, {
+        options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+      })
+
+      // Straight at the repository, past the service's pre-check: this is the backstop that holds
+      // when a future caller forgets to write one.
+      const error = await productOptionRepository.softDelete([size.id]).catch((e) => e)
+
+      expect(AppError.isError(error)).toBe(true)
+      expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
+      expect(error.message).toContain('product_product_option.option_id')
+      expect(await service.listProductOptions({ id: size.id })).toHaveLength(1)
+    })
+
+    test('a global option value carried by a variant cannot be deleted', async ({ expect, dto }) => {
+      const product = await service.createProduct(dto.generate.createProduct())
+      const size = await service.createProductOption({
+        title: `Size-${product.id}`,
+        values: [{ value: 'S' }, { value: 'M' }],
+      })
+      await service.setProductOptions(product.id, {
+        options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+      })
+      const small = size.values.find((value) => value.value === 'S')
+      if (!small) throw new Error('expected the option to carry the value "S"')
+      await service.createProductVariant({ productId: product.id, optionValues: { [size.id]: small.id } })
+
+      // Straight at the repository, past the service's own product-level pre-check: a variant
+      // being size S is what makes the value un-removable, and that holds however it is reached.
+      const error = await productOptionValueRepository.softDelete([small.id]).catch((e) => e)
+
+      expect(AppError.isError(error)).toBe(true)
+      expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
+      expect(error.message).toContain('product_variant_option.option_value_id')
+      expect(await service.listProductOptionValues({ id: small.id })).toHaveLength(1)
+    })
+
+    test('the same value is deletable once no variant carries it', async ({ expect, dto }) => {
+      const product = await service.createProduct(dto.generate.createProduct())
+      const size = await service.createProductOption({
+        title: `Size-${product.id}`,
+        values: [{ value: 'S' }, { value: 'M' }],
+      })
+      await service.setProductOptions(product.id, {
+        options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+      })
+      const small = size.values.find((value) => value.value === 'S')
+      if (!small) throw new Error('expected the option to carry the value "S"')
+      const variant = await service.createProductVariant({
+        productId: product.id,
+        optionValues: { [size.id]: small.id },
+      })
+
+      await service.deleteProductVariants([variant.id])
+      await productOptionValueRepository.softDelete([small.id])
+
+      expect(await service.listProductOptionValues({ id: small.id })).toHaveLength(0)
+    })
+
+    test('a hard delete blocked by the database reports the same not-allowed shape', async ({ expect, dto }) => {
+      const product = await service.createProduct(dto.generate.createProduct())
+      const size = await service.createProductOption({ title: `Size-${product.id}`, values: [{ value: 'S' }] })
+      await service.setProductOptions(product.id, {
+        options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
+      })
+
+      // Postgres raises one code for both directions of a foreign-key violation. This is the
+      // delete direction, which used to be reported as a 404 for a row that plainly exists.
+      const error = await productOptionRepository.delete([size.id]).catch((e) => e)
+
+      expect(AppError.isError(error)).toBe(true)
+      expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
+      expect(error.message).toContain('product_product_option')
+    })
+
+    test('an insert naming a parent that does not exist is still a not-found', async ({ expect }) => {
+      const error = await service
+        .createProductVariant({ productId: 'prod_does_not_exist', optionValues: {} })
+        .catch((e) => e)
+
+      expect(AppError.isError(error)).toBe(true)
+      expect(error.type).toBe(ErrorTypes.NOT_FOUND)
+    })
   })
 })

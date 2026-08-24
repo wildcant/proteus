@@ -359,14 +359,6 @@ export class ProductModuleService implements IProductModuleService {
 
   async deleteProductVariants(variantIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      // Option links go with the variant, so a deleted variant stops blocking an option unlink.
-      const optionLinks = await this.productVariantOptionRepository.find({ variantId: variantIds }, undefined, ctx)
-      if (optionLinks.length > 0) {
-        await this.productVariantOptionRepository.softDelete(
-          optionLinks.map((link) => link.id),
-          ctx,
-        )
-      }
       await this.productVariantRepository.softDelete(variantIds, ctx)
     })
   }
@@ -464,13 +456,6 @@ export class ProductModuleService implements IProductModuleService {
         })
       }
 
-      const values = await this.productOptionValueRepository.find({ optionId: optionIds }, undefined, ctx)
-      if (values.length > 0) {
-        await this.productOptionValueRepository.softDelete(
-          values.map((v) => v.id),
-          ctx,
-        )
-      }
       await this.productOptionRepository.softDelete(optionIds, ctx)
     })
   }
@@ -520,19 +505,10 @@ export class ProductModuleService implements IProductModuleService {
     return this.withTransaction(context, async (ctx) => {
       const existingLinks = await this.productProductOptionRepository.find({ productId }, undefined, ctx)
       if (existingLinks.length > 0) {
-        const linkIds = existingLinks.map((l) => l.id)
-        const existingValueLinks = await this.productProductOptionValueRepository.find(
-          { productProductOptionId: linkIds },
-          undefined,
+        await this.productProductOptionRepository.softDelete(
+          existingLinks.map((link) => link.id),
           ctx,
         )
-        if (existingValueLinks.length > 0) {
-          await this.productProductOptionValueRepository.softDelete(
-            existingValueLinks.map((v) => v.id),
-            ctx,
-          )
-        }
-        await this.productProductOptionRepository.softDelete(linkIds, ctx)
       }
 
       for (const [rank, { optionId, valueIds }] of data.options.entries()) {

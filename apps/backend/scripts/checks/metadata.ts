@@ -1,20 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { SQL } from 'drizzle-orm'
-import type { PgTable } from 'drizzle-orm/pg-core'
-import { getTableConfig, PgDialect } from 'drizzle-orm/pg-core'
+import { PgDialect } from 'drizzle-orm/pg-core'
 import { BACKEND_ROOT } from './models.js'
 
 const dialect = new PgDialect()
-
-export function tableName(table: PgTable): string {
-  return getTableConfig(table).name
-}
-
-/** A table is soft-deletable when it carries the `deletedAt` column from the `timestamps` helper. */
-export function isSoftDeletable(table: PgTable): boolean {
-  return getTableConfig(table).columns.some((column) => column.name === 'deletedAt')
-}
 
 export function renderPredicate(predicate: SQL | undefined): string | null {
   return predicate ? dialect.sqlToQuery(predicate).sql : null
@@ -38,11 +28,6 @@ export function columnName(indexed: unknown): string | null {
   if (typeof indexed !== 'object' || indexed === null || !('name' in indexed)) return null
   const { name } = indexed
   return typeof name === 'string' ? name : null
-}
-
-/** Drizzle reports a column by its JS property name; index names in this codebase are snake_case. */
-export function snakeCase(name: string): string {
-  return name.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase()
 }
 
 /** Best-effort `file:line` for a declaration, located by the name the author gave it. */

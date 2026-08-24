@@ -3,8 +3,9 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-
+import * as models from '../models/index.js'
 import {
   AccountHolderRepository,
   CaptureRepository,
@@ -16,6 +17,8 @@ import {
 } from '../repositories/index.js'
 import { PaymentModuleService } from '../services/payment-module-service.js'
 import type { PaymentProviderService } from '../services/payment-provider-service.js'
+
+const cascadeGraph = buildCascadeGraph(models)
 
 function createMockProviderService() {
   return {
@@ -49,13 +52,13 @@ test.beforeEach(({ getDb, logger }) => {
   mockProvider = createMockProviderService()
 
   service = new PaymentModuleService({
-    paymentCollectionRepository: new PaymentCollectionRepository({ getDb }),
-    paymentSessionRepository: new PaymentSessionRepository({ getDb }),
-    paymentRepository: new PaymentRepository({ getDb }),
-    captureRepository: new CaptureRepository({ getDb }),
-    refundRepository: new RefundRepository({ getDb }),
-    refundReasonRepository: new RefundReasonRepository({ getDb }),
-    accountHolderRepository: new AccountHolderRepository({ getDb }),
+    paymentCollectionRepository: new PaymentCollectionRepository({ getDb, cascadeGraph }),
+    paymentSessionRepository: new PaymentSessionRepository({ getDb, cascadeGraph }),
+    paymentRepository: new PaymentRepository({ getDb, cascadeGraph }),
+    captureRepository: new CaptureRepository({ getDb, cascadeGraph }),
+    refundRepository: new RefundRepository({ getDb, cascadeGraph }),
+    refundReasonRepository: new RefundReasonRepository({ getDb, cascadeGraph }),
+    accountHolderRepository: new AccountHolderRepository({ getDb, cascadeGraph }),
     paymentProviderService: mockProvider as unknown as PaymentProviderService,
     withTransaction: createWithTransaction(getDb),
     logger,

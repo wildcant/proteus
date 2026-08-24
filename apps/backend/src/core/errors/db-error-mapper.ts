@@ -39,6 +39,17 @@ const getConstraintInfo = (err: PgError) => {
   }
 }
 
+/**
+ * Names the table that blocked a delete, out of Postgres' detail line:
+ *
+ *     Key (id)=(opt_01H…) is still referenced from table "product_product_option".
+ *
+ * Null when the detail describes the other direction, or no detail came through at all.
+ */
+function blockingTable(err: PgError): string | null {
+  return err.detail?.match(/is still referenced from table "([^"]+)"/)?.[1] ?? null
+}
+
 export function dbErrorMapper(err: unknown): never {
   if (AppError.isError(err)) {
     throw err
@@ -68,8 +79,19 @@ export function dbErrorMapper(err: unknown): never {
         message: `Cannot be null: ${column}`,
       })
     }
-    // foreign_key_violation
+    // foreign_key_violation. One code, two opposite meanings, told apart by the detail: an insert
+    // names a parent that is not there, a delete leaves a child that still points at it. Reading
+    // it as "the referenced row is missing" either way turned an in-use delete into a 404.
     case '23503': {
+      const blocking = blockingTable(err)
+      if (blocking) {
+        throw new AppError({
+          // The walker's restrict check raises this same shape, so a caller sees one contract
+          // whether the refusal came from the database or from the application.
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cannot delete: still referenced from table "${blocking}"`,
+        })
+      }
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
         message: 'Referenced entity does not exist',

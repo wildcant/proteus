@@ -1,6 +1,7 @@
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
 import { loadProviders } from './loaders/providers.js'
+import * as models from './models/index.js'
 import { FulfillmentRepository } from './repositories/fulfillment.js'
 import { FulfillmentAddressRepository } from './repositories/fulfillment-address.js'
 import { FulfillmentItemRepository } from './repositories/fulfillment-item.js'
@@ -18,6 +19,7 @@ export { syncFulfillmentProviders } from './sync-providers.js'
 
 export default Module(Modules.FULFILLMENT, {
   service: FulfillmentModuleService,
+  models,
   repositories: {
     fulfillmentSetRepository: FulfillmentSetRepository,
     serviceZoneRepository: ServiceZoneRepository,

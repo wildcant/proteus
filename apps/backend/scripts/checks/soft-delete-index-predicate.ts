@@ -1,5 +1,6 @@
 import { getTableConfig } from 'drizzle-orm/pg-core'
-import { excludesSoftDeleted, isSoftDeletable, locate, snakeCase, tableName } from './metadata.js'
+import { isSoftDeletable, snakeCase, tableName } from '../../src/core/db/utils.js'
+import { excludesSoftDeleted, locate } from './metadata.js'
 import type { Check, Violation } from './types.js'
 
 /**

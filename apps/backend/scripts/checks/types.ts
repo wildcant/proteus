@@ -22,5 +22,6 @@ export type Check = {
   name: string
   /** One line stating the rule, printed when the check passes. */
   rule: string
-  run: (models: Model[]) => Violation[]
+  /** Async is allowed because a rule may need to import something — a module's barrel, say. */
+  run: (models: Model[]) => Violation[] | Promise<Violation[]>
 }

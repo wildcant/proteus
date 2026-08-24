@@ -1,5 +1,6 @@
 import { getTableConfig } from 'drizzle-orm/pg-core'
-import { columnName, locate, snakeCase, tableName } from './metadata.js'
+import { snakeCase, tableName } from '../../src/core/db/utils.js'
+import { columnName, locate } from './metadata.js'
 import type { Check, Violation } from './types.js'
 
 const TRAVERSED_ON_DELETE = new Set(['cascade', 'restrict'])

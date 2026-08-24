@@ -1,15 +1,19 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
+import * as models from '../models/index.js'
 import { InviteRepository } from '../repositories/invite.js'
 import { UserRepository } from '../repositories/user.js'
 import { UserModuleService } from '../services/user-module-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let service: UserModuleService
 
 test.beforeEach(({ getDb, logger }) => {
-  const inviteRepository = new InviteRepository({ getDb })
-  const userRepository = new UserRepository({ getDb })
+  const inviteRepository = new InviteRepository({ getDb, cascadeGraph })
+  const userRepository = new UserRepository({ getDb, cascadeGraph })
   const withTransaction = createWithTransaction(getDb)
   service = new UserModuleService({ inviteRepository, userRepository, withTransaction, logger })
 })
