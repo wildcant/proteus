@@ -12,9 +12,8 @@ type UpdateCartInput = UpdateCartBody & {
 
 export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>('update-cart', async (ctx, input) => {
   /**
-   * Validates the cart exists, hasn't been completed, and is in an active state.
-   * A completed or inactive cart must not accept further updates — doing so could
-   * corrupt an in-flight or finished order.
+   * Validates the cart exists and hasn't been completed. A completed cart is the record behind
+   * an order and must not accept further updates.
    */
   await ctx.step('validate-cart', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
@@ -24,13 +23,6 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>('upda
       throw new WorkflowTerminalError({
         type: ErrorTypes.NOT_ALLOWED,
         message: `Cart "${input.cartId}" is already completed`,
-      })
-    }
-
-    if (cart.status !== 'active') {
-      throw new WorkflowTerminalError({
-        type: ErrorTypes.NOT_ALLOWED,
-        message: `Cart "${input.cartId}" is not active (status: ${cart.status})`,
       })
     }
   })

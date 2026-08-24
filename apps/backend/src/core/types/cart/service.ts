@@ -2,12 +2,14 @@ import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
   CartAddressDTO,
+  CartAddressType,
   CartDTO,
   CartLineItemDTO,
   CartShippingMethodDTO,
   CartTotalsDTO,
   ComputeCartTotalsDTO,
   EnrichedCartLineItemDTO,
+  FilterableCartAddressProps,
   FilterableCartLineItemProps,
   FilterableCartProps,
   FilterableCartShippingMethodProps,
@@ -25,7 +27,6 @@ import type {
 
 export type ICartModuleService = {
   retrieveCart(cartId: string, config?: FindConfig<CartDTO>, context?: Context): Promise<CartDTO>
-  retrieveCartAddress(addressId: string, context?: Context): Promise<CartAddressDTO>
   listCarts(filters?: FilterableCartProps, config?: FindConfig<CartDTO>, context?: Context): Promise<CartDTO[]>
   listAndCountCarts(
     filters?: FilterableCartProps,
@@ -62,11 +63,16 @@ export type ICartModuleService = {
   ): Promise<CartShippingMethodDTO[]>
   deleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
 
-  // Addresses
-  createCartAddress(data: CreateCartAddressDTO, context?: Context): Promise<CartAddressDTO>
+  // Addresses — owned by the cart, so every one of these is scoped to a parent
+  listCartAddresses(
+    filters?: FilterableCartAddressProps,
+    config?: FindConfig<CartAddressDTO>,
+    context?: Context,
+  ): Promise<CartAddressDTO[]>
   updateCartAddress(addressId: string, data: UpdateCartAddressDTO, context?: Context): Promise<CartAddressDTO>
   upsertCartAddress(
-    existingAddressId: string | null,
+    cartId: string,
+    type: CartAddressType,
     data: CreateCartAddressDTO,
     context?: Context,
   ): Promise<CartAddressDTO>

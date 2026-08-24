@@ -114,7 +114,7 @@ test.describe('setProductOptionsWorkflow', () => {
     const completed = await service.create.cart(container)
     await service.create.lineItem(container, active.id, { variantId: medium.id })
     await service.create.lineItem(container, completed.id, { variantId: medium.id })
-    await service.update.cart(container, completed.id, { status: 'completed', completedAt: new Date() })
+    await service.update.cart(container, completed.id, { completedAt: new Date() })
 
     await setProductOptionsWorkflow.run({
       productId: product.id,

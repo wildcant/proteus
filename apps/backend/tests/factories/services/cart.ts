@@ -1,5 +1,9 @@
 import type { AwilixContainer } from 'awilix'
-import type { FilterableCartLineItemProps, FilterableCartProps } from '../../../src/core/types/cart/common.js'
+import type {
+  FilterableCartAddressProps,
+  FilterableCartLineItemProps,
+  FilterableCartProps,
+} from '../../../src/core/types/cart/common.js'
 import type {
   CreateCartDTO,
   CreateLineItemDTO,
@@ -42,7 +46,8 @@ export async function addShippingMethod(
   return shippingMethod
 }
 
-/** Attaches addresses to a cart, the way `update-cart` does mid-checkout. */
+/** Attaches addresses to a cart, the way `update-cart` does mid-checkout. Returns the rows the
+ *  cart now owns — the cart itself no longer points at them. */
 export async function addCartAddresses(
   container: AwilixContainer,
   cartId: string,
@@ -50,7 +55,8 @@ export async function addCartAddresses(
 ) {
   const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
-  return cartService.updateCartWithAddresses(cartId, generateUpdateCartWithAddressesDTO(overrides))
+  await cartService.updateCartWithAddresses(cartId, generateUpdateCartWithAddressesDTO(overrides))
+  return cartService.listCartAddresses({ cartId })
 }
 
 // ---- Update ----
@@ -82,8 +88,8 @@ export async function listLineItems(container: AwilixContainer, filters?: Filter
   return cartService.listLineItems(filters)
 }
 
-export async function retrieveCartAddress(container: AwilixContainer, addressId: string) {
+export async function listCartAddresses(container: AwilixContainer, filters?: FilterableCartAddressProps) {
   const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
-  return cartService.retrieveCartAddress(addressId)
+  return cartService.listCartAddresses(filters)
 }

@@ -73,11 +73,11 @@ test.describe('updateCartWorkflow', () => {
   test('creates no customer when no email is given', async ({ service, expect }) => {
     const { id: cartId } = await service.create.cart(container, { customerId: null, email: null })
 
-    const result = await updateCartWorkflow.run({ cartId, shippingAddress: SHIPPING_ADDRESS })
+    await updateCartWorkflow.run({ cartId, shippingAddress: SHIPPING_ADDRESS })
 
     expect(await service.read.customers(container)).toEqual([])
     expect(await service.read.cart(container, cartId)).toMatchObject({ customerId: null })
-    expect(result.shippingAddressId).not.toBeNull()
+    expect(await service.read.cartAddresses(container, { cartId })).toMatchObject([{ type: 'shipping' }])
   })
 
   test('rollback deletes a guest it created', async ({ service, expect }) => {

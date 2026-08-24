@@ -89,8 +89,6 @@ export const AdminOrder = z
     email: z.string().nullable(),
     customerId: z.string().nullable(),
     currencyCode: z.string(),
-    shippingAddressId: z.string().nullable(),
-    billingAddressId: z.string().nullable(),
     canceledAt: dateToIso.nullable(),
     ...timestamps.shape,
   })

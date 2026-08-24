@@ -23,7 +23,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     orderService.listOrderLineItems({ orderId: order.id }),
     orderService.listOrderShippingMethods({ orderId: order.id }),
     orderService.listOrderTransactions({ orderId: order.id }),
-    order.shippingAddressId ? orderService.retrieveOrderAddress(order.shippingAddressId) : Promise.resolve(null),
+    orderService.retrieveOrderAddress(order.id, 'shipping'),
   ])
 
   const enrichedLineItems = orderService.enrichLineItems(lineItems)

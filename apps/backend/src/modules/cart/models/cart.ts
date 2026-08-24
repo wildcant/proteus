@@ -1,9 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { index, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { index, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
-import { cartAddressTable } from './address.js'
-
-export const cartStatusEnum = pgEnum('cart_status', ['active', 'completed', 'abandoned'])
 
 export const cartTable = pgTable(
   'cart',
@@ -14,9 +11,7 @@ export const cartTable = pgTable(
     salesChannelId: text(),
     email: text(),
     currencyCode: text().notNull(),
-    status: cartStatusEnum().default('active').notNull(),
-    shippingAddressId: text().references(() => cartAddressTable.id),
-    billingAddressId: text().references(() => cartAddressTable.id),
+    /** Null while the cart is still being shopped; stamped once, when it becomes an order */
     completedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },

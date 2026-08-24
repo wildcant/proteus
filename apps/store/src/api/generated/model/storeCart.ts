@@ -16,11 +16,6 @@ export interface StoreCart {
   /** @nullable */
   email: string | null;
   currencyCode: string;
-  status: string;
-  /** @nullable */
-  shippingAddressId: string | null;
-  /** @nullable */
-  billingAddressId: string | null;
   /** @nullable */
   completedAt: string | null;
   createdAt: string;

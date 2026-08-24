@@ -3,11 +3,13 @@ import type { Context } from '../context.js'
 import type {
   ComputeOrderTotalsDTO,
   EnrichedOrderLineItemDTO,
+  FilterableOrderAddressProps,
   FilterableOrderLineItemProps,
   FilterableOrderProps,
   FilterableOrderShippingMethodProps,
   FilterableOrderTransactionProps,
   OrderAddressDTO,
+  OrderAddressType,
   OrderAllowedActions,
   OrderDTO,
   OrderFulfillmentStatus,
@@ -44,10 +46,19 @@ export type IOrderModuleService = {
   softDeleteOrders(ids: string[], context?: Context): Promise<void>
   restoreOrders(ids: string[], context?: Context): Promise<void>
 
-  // Addresses
-  retrieveOrderAddress(id: string, context?: Context): Promise<OrderAddressDTO>
-  createOrderAddress(data: CreateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO>
-  createOrderAddresses(data: CreateOrderAddressDTO[], context?: Context): Promise<OrderAddressDTO[]>
+  // Addresses — owned by the order, so every one of these is scoped to a parent
+  retrieveOrderAddress(orderId: string, type: OrderAddressType, context?: Context): Promise<OrderAddressDTO | null>
+  listOrderAddresses(
+    filters?: FilterableOrderAddressProps,
+    config?: FindConfig<OrderAddressDTO>,
+    context?: Context,
+  ): Promise<OrderAddressDTO[]>
+  createOrderAddress(
+    orderId: string,
+    type: OrderAddressType,
+    data: CreateOrderAddressDTO,
+    context?: Context,
+  ): Promise<OrderAddressDTO>
   updateOrderAddress(id: string, data: UpdateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO>
   deleteOrderAddresses(ids: string[], context?: Context): Promise<void>
 

@@ -1,7 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { index, pgEnum, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
-import { orderAddressTable } from './address.js'
 
 export const orderStatusEnum = pgEnum('order_status', ['pending', 'completed', 'canceled', 'archived'])
 
@@ -22,8 +21,6 @@ export const orderTable = pgTable(
     email: text(),
     customerId: text(),
     currencyCode: text().notNull(),
-    shippingAddressId: text().references(() => orderAddressTable.id),
-    billingAddressId: text().references(() => orderAddressTable.id),
     canceledAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },

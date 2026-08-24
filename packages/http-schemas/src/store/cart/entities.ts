@@ -9,9 +9,6 @@ export const StoreCart = z
     salesChannelId: z.string().nullable(),
     email: z.string().nullable(),
     currencyCode: z.string(),
-    status: z.string(),
-    shippingAddressId: z.string().nullable(),
-    billingAddressId: z.string().nullable(),
     completedAt: dateToIso.nullable(),
     ...timestamps.shape,
   })
@@ -76,6 +73,8 @@ export type StoreCartTotals = z.input<typeof StoreCartTotals>
 export const StoreCartAddress = z
   .object({
     id: z.string(),
+    cartId: z.string(),
+    type: z.enum(['shipping', 'billing']),
     customerId: z.string().nullable(),
     company: z.string().nullable(),
     firstName: z.string().nullable(),

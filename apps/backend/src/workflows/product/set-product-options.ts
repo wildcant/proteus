@@ -173,7 +173,7 @@ async function evictFromActiveCarts(container: StepContext['container'], variant
 
   const carts = await cartService.listCarts({
     id: [...new Set(lineItems.map((item) => item.cartId))],
-    status: 'active',
+    completedAt: null,
   })
   const activeCartIds = new Set(carts.map((cart) => cart.id))
 

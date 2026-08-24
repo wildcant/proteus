@@ -1,8 +1,6 @@
 import type { BigNumber } from '../../db/bignum.js'
 import type { BaseFilterable, OperatorMap } from '../common.js'
 
-export type CartStatus = 'active' | 'completed' | 'abandoned'
-
 export type CartDTO = {
   id: string
   regionId: string | null
@@ -10,9 +8,6 @@ export type CartDTO = {
   salesChannelId: string | null
   email: string | null
   currencyCode: string
-  status: CartStatus
-  shippingAddressId: string | null
-  billingAddressId: string | null
   completedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -24,7 +19,7 @@ export interface FilterableCartProps extends BaseFilterable<FilterableCartProps>
   customerId?: string | string[]
   email?: string | OperatorMap<string>
   currencyCode?: string | string[]
-  status?: CartStatus | CartStatus[]
+  completedAt?: Date | null | OperatorMap<Date>
   regionId?: string | string[]
   salesChannelId?: string | string[]
   createdAt?: OperatorMap<Date>
@@ -100,8 +95,13 @@ export type CartTotalsDTO = {
 
 export type EnrichedCartLineItemDTO = CartLineItemDTO & { lineTotal: BigNumber }
 
+/** Which of the cart's two address slots a row fills. */
+export type CartAddressType = 'shipping' | 'billing'
+
 export type CartAddressDTO = {
   id: string
+  cartId: string
+  type: CartAddressType
   customerId: string | null
   company: string | null
   firstName: string | null
@@ -116,4 +116,10 @@ export type CartAddressDTO = {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+}
+
+export interface FilterableCartAddressProps extends BaseFilterable<FilterableCartAddressProps> {
+  id?: string | string[]
+  cartId?: string | string[]
+  type?: CartAddressType | CartAddressType[]
 }

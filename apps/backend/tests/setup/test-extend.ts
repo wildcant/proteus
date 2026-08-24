@@ -109,10 +109,12 @@ import {
   fulfillOrder,
   linkRepo,
   listAuthVerifications,
+  listCartAddresses,
   listCarts,
   listCustomers,
   listLineItems,
   listNotifications,
+  listOrderAddresses,
   listOrderLineItems,
   listOrderShippingMethods,
   listOrders,
@@ -128,11 +130,9 @@ import {
   requestAuthVerification,
   retrieveAuthIdentity,
   retrieveCart,
-  retrieveCartAddress,
   retrieveCustomer,
   retrieveFulfillment,
   retrieveOrder,
-  retrieveOrderAddress,
   retrievePayment,
   retrievePaymentCollection,
   retrieveProductVariant,
@@ -305,7 +305,7 @@ export type Fixtures = {
     read: {
       authIdentity: typeof retrieveAuthIdentity
       cart: typeof retrieveCart
-      cartAddress: typeof retrieveCartAddress
+      cartAddresses: typeof listCartAddresses
       carts: typeof listCarts
       cartLineItems: typeof listLineItems
       customer: typeof retrieveCustomer
@@ -315,7 +315,7 @@ export type Fixtures = {
       fulfillment: typeof retrieveFulfillment
       order: typeof retrieveOrder
       orders: typeof listOrders
-      orderAddress: typeof retrieveOrderAddress
+      orderAddresses: typeof listOrderAddresses
       orderLineItems: typeof listOrderLineItems
       orderShippingMethods: typeof listOrderShippingMethods
       orderTransactions: typeof listOrderTransactions
@@ -486,7 +486,7 @@ export const test = testBase.extend<Fixtures>({
       read: {
         authIdentity: retrieveAuthIdentity,
         cart: retrieveCart,
-        cartAddress: retrieveCartAddress,
+        cartAddresses: listCartAddresses,
         carts: listCarts,
         cartLineItems: listLineItems,
         customer: retrieveCustomer,
@@ -496,7 +496,7 @@ export const test = testBase.extend<Fixtures>({
         fulfillment: retrieveFulfillment,
         order: retrieveOrder,
         orders: listOrders,
-        orderAddress: retrieveOrderAddress,
+        orderAddresses: listOrderAddresses,
         orderLineItems: listOrderLineItems,
         orderShippingMethods: listOrderShippingMethods,
         orderTransactions: listOrderTransactions,

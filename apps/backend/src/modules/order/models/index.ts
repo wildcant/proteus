@@ -1,5 +1,5 @@
 export type { CreateOrderAddress, OrderAddress } from './address.js'
-export { orderAddressTable } from './address.js'
+export { orderAddressTable, orderAddressTypeEnum } from './address.js'
 export type { CreateOrderLineItem, OrderLineItem } from './line-item.js'
 export { orderLineItemTable } from './line-item.js'
 export type { CreateOrder, Order } from './order.js'

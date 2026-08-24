@@ -1,6 +1,8 @@
-CREATE TYPE "public"."cart_status" AS ENUM('active', 'completed', 'abandoned');--> statement-breakpoint
+CREATE TYPE "public"."cart_address_type" AS ENUM('shipping', 'billing');--> statement-breakpoint
 CREATE TABLE "cart_address" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('caaddr_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
+	"cart_id" text NOT NULL,
+	"type" "cart_address_type" NOT NULL,
 	"customer_id" text,
 	"company" text,
 	"first_name" text,
@@ -24,9 +26,6 @@ CREATE TABLE "cart" (
 	"sales_channel_id" text,
 	"email" text,
 	"currency_code" text NOT NULL,
-	"status" "cart_status" DEFAULT 'active' NOT NULL,
-	"shipping_address_id" text,
-	"billing_address_id" text,
 	"completed_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -76,10 +75,10 @@ CREATE TABLE "cart_shipping_method" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
-ALTER TABLE "cart" ADD CONSTRAINT "cart_shipping_address_id_cart_address_id_fk" FOREIGN KEY ("shipping_address_id") REFERENCES "public"."cart_address"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cart" ADD CONSTRAINT "cart_billing_address_id_cart_address_id_fk" FOREIGN KEY ("billing_address_id") REFERENCES "public"."cart_address"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "cart_address" ADD CONSTRAINT "cart_address_cart_id_cart_id_fk" FOREIGN KEY ("cart_id") REFERENCES "public"."cart"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "cart_line_item" ADD CONSTRAINT "cart_line_item_cart_id_cart_id_fk" FOREIGN KEY ("cart_id") REFERENCES "public"."cart"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "cart_shipping_method" ADD CONSTRAINT "cart_shipping_method_cart_id_cart_id_fk" FOREIGN KEY ("cart_id") REFERENCES "public"."cart"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_cart_address_unique_cart_type" ON "cart_address" USING btree ("cart_id","type") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_cart_customer_id" ON "cart" USING btree ("customer_id") WHERE deleted_at IS NULL AND customer_id IS NOT NULL;--> statement-breakpoint
 CREATE INDEX "idx_cart_currency_code" ON "cart" USING btree ("currency_code") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_cart_region_id" ON "cart" USING btree ("region_id") WHERE deleted_at IS NULL AND region_id IS NOT NULL;--> statement-breakpoint

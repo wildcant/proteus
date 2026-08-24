@@ -1,6 +1,11 @@
 import type { AwilixContainer } from 'awilix'
+import type { FindConfig } from '../../../src/core/types/common.js'
 import type { ILinkService } from '../../../src/core/types/link/service.js'
-import type { FilterableOrderProps } from '../../../src/core/types/order/common.js'
+import type {
+  FilterableOrderAddressProps,
+  FilterableOrderProps,
+  OrderAddressDTO,
+} from '../../../src/core/types/order/common.js'
 import type { UpdateOrderDTO } from '../../../src/core/types/order/mutations.js'
 import type { IOrderModuleService } from '../../../src/core/types/order/service.js'
 import { ContainerRegistrationKeys, Modules } from '../../../src/core/utils/index.js'
@@ -107,8 +112,12 @@ export async function listOrderShippingMethods(container: AwilixContainer, order
   return orderService.listOrderShippingMethods({ orderId })
 }
 
-export async function retrieveOrderAddress(container: AwilixContainer, addressId: string) {
+export async function listOrderAddresses(
+  container: AwilixContainer,
+  filters?: FilterableOrderAddressProps,
+  config?: FindConfig<OrderAddressDTO>,
+) {
   const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
-  return orderService.retrieveOrderAddress(addressId)
+  return orderService.listOrderAddresses(filters, config)
 }

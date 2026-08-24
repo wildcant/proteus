@@ -1,4 +1,4 @@
-import type { StoreCompleteCartResponse } from '@proteus/http-schemas/store'
+import type { StoreCartDetailResponse, StoreCompleteCartResponse } from '@proteus/http-schemas/store'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -134,5 +134,48 @@ test.describe('POST /store/carts/:id/complete (concurrent)', () => {
     expect(response.status).not.toBe(200)
     expect(await service.read.orders(api.container)).toHaveLength(0)
     expect(await service.read.linkRepo(api.container, 'orderCart').findByCartId(cartId)).toBeNull()
+  })
+})
+
+/**
+ * The cart's addresses are rows the cart owns, keyed by `type`, rather than two columns pointing
+ * outward. This is the seam where that shape reaches a client, so it is asserted here.
+ */
+test.describe('GET /store/carts/:id', () => {
+  test('returns the cart’s shipping and billing addresses', async ({ dto, service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(api.container)
+    await service.create.cartAddresses(api.container, cart.id, {
+      shippingAddress: dto.generate.createCartAddress({ firstName: 'John', city: 'Springfield' }),
+      billingAddress: dto.generate.createCartAddress({ firstName: 'Jane', city: 'Shelbyville' }),
+    })
+
+    const { status, body } = await api.get<StoreCartDetailResponse>(`/store/carts/${cart.id}`)
+
+    expect(status).toBe(200)
+    expect(body.cart.shippingAddress).toMatchObject({
+      cartId: cart.id,
+      type: 'shipping',
+      firstName: 'John',
+      city: 'Springfield',
+    })
+    expect(body.cart.billingAddress).toMatchObject({
+      cartId: cart.id,
+      type: 'billing',
+      firstName: 'Jane',
+      city: 'Shelbyville',
+    })
+  })
+
+  test('returns null for a type the cart has not filled', async ({ dto, service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(api.container)
+    await service.create.cartAddresses(api.container, cart.id, {
+      shippingAddress: dto.generate.createCartAddress(),
+      billingAddress: undefined,
+    })
+
+    const { body } = await api.get<StoreCartDetailResponse>(`/store/carts/${cart.id}`)
+
+    expect(body.cart.shippingAddress).toMatchObject({ type: 'shipping' })
+    expect(body.cart.billingAddress).toBeNull()
   })
 })

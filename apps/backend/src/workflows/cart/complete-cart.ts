@@ -1,4 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { CartAddressDTO } from '@core/types/cart/common.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import type { IInventoryModuleService } from '@core/types/inventory/service.js'
@@ -6,7 +7,11 @@ import type { ILinkService } from '@core/types/link/service.js'
 import type { Logger } from '@core/types/logger.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { OrderDTO } from '@core/types/order/common.js'
-import type { CreateOrderLineItemDTO, CreateOrderShippingMethodDTO } from '@core/types/order/mutations.js'
+import type {
+  CreateOrderAddressDTO,
+  CreateOrderLineItemDTO,
+  CreateOrderShippingMethodDTO,
+} from '@core/types/order/mutations.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { PaymentSessionStatus } from '@core/types/payment/common.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
@@ -190,17 +195,15 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
       const cart = await cartService.retrieveCart(input.cartId)
 
-      const copyAddress = async (addressId: string | null) => {
-        if (!addressId) return undefined
-        const { id, createdAt, updatedAt, deletedAt, ...fields } = await cartService.retrieveCartAddress(addressId)
-        const [created] = await orderService.createOrderAddresses([fields])
-        return created?.id
+      /** The order's addresses are rows it owns, so they are nested into the creation payload
+       *  rather than created first and pointed at — the order has to exist before they can.
+       *  Copied field by field, so editing the cart's address later cannot rewrite the order's. */
+      const cartAddresses = await cartService.listCartAddresses({ cartId: input.cartId })
+      const snapshotAddress = (source: CartAddressDTO | undefined): CreateOrderAddressDTO | undefined => {
+        if (!source) return undefined
+        const { id, cartId, type, createdAt, updatedAt, deletedAt, ...fields } = source
+        return fields
       }
-
-      const [orderShippingAddressId, orderBillingAddressId] = await Promise.all([
-        copyAddress(cart.shippingAddressId),
-        copyAddress(cart.billingAddressId),
-      ])
 
       const lineItems = await cartService.listLineItems({ cartId: input.cartId })
       const orderLineItems: CreateOrderLineItemDTO[] = lineItems.map((item) => ({
@@ -237,8 +240,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         email: cart.email,
         customerId: cart.customerId,
         currencyCode: cart.currencyCode,
-        shippingAddressId: orderShippingAddressId,
-        billingAddressId: orderBillingAddressId,
+        shippingAddress: snapshotAddress(cartAddresses.find((address) => address.type === 'shipping')),
+        billingAddress: snapshotAddress(cartAddresses.find((address) => address.type === 'billing')),
         items: orderLineItems,
         shippingMethods: orderShippingMethods,
       })
@@ -319,17 +322,17 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     },
   )
 
-  /** Mark the cart as completed so it can't be modified or re-checked-out.
-   *  Placed before payment auth so a failure there still leaves the cart locked. */
+  /** Stamp `completedAt` so the cart can't be modified or re-checked-out — that timestamp is the
+   *  cart's only state. Placed before payment auth so a failure there still leaves it locked. */
   await ctx.step(
     'mark-cart-completed',
     async ({ container }) => {
       const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      await cartService.updateCart(input.cartId, { status: 'completed', completedAt: new Date() })
+      await cartService.updateCart(input.cartId, { completedAt: new Date() })
     },
     async (_result, { container }) => {
       const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      await cartService.updateCart(input.cartId, { status: 'active', completedAt: null })
+      await cartService.updateCart(input.cartId, { completedAt: null })
     },
   )
 
@@ -409,15 +412,12 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
       const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 
-      const [lineItems, shippingMethods, transactions] = await Promise.all([
+      const [lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([
         orderService.listOrderLineItems({ orderId: order.id }),
         orderService.listOrderShippingMethods({ orderId: order.id }),
         orderService.listOrderTransactions({ orderId: order.id }),
+        orderService.retrieveOrderAddress(order.id, 'shipping'),
       ])
-
-      const shippingAddress = order.shippingAddressId
-        ? await orderService.retrieveOrderAddress(order.shippingAddressId)
-        : null
 
       await notificationService.createNotification({
         to: order.email,

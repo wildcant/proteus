@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
@@ -81,6 +82,26 @@ test.describe('CartModuleService', () => {
       expect(lineItems.map((item) => item.id)).toEqual([kept.id])
     })
 
+    test('softDeleteCarts — hides the cart addresses', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+      await service.upsertCartAddress(cart.id, 'shipping', dto.generate.createCartAddress())
+      await service.upsertCartAddress(cart.id, 'billing', dto.generate.createCartAddress())
+
+      await service.softDeleteCarts([cart.id])
+
+      expect(await service.listCartAddresses({ cartId: cart.id })).toHaveLength(0)
+    })
+
+    test('restoreCarts — brings the addresses back', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+      await service.upsertCartAddress(cart.id, 'shipping', dto.generate.createCartAddress())
+
+      await service.softDeleteCarts([cart.id])
+      await service.restoreCarts([cart.id])
+
+      expect(await service.listCartAddresses({ cartId: cart.id })).toHaveLength(1)
+    })
+
     test('softDeleteCarts — leaves another cart untouched', async ({ expect, dto }) => {
       const deleted = await service.createCart(dto.generate.createCart())
       const kept = await service.createCart(dto.generate.createCart())
@@ -89,6 +110,95 @@ test.describe('CartModuleService', () => {
       await service.softDeleteCarts([deleted.id])
 
       expect(await service.listLineItems({ cartId: kept.id })).toHaveLength(1)
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // Completed carts
+  //
+  // `completedAt` is a cart's only state, so it is the thing every write guard consults. The
+  // positive case is covered by the cascade tests above, which add to live carts freely.
+  // ---------------------------------------------------------------------------
+
+  test.describe('Completed carts', () => {
+    test('addLineItems — refuses a cart that has been completed', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+      await service.updateCart(cart.id, { completedAt: new Date() })
+
+      await expect(service.addLineItems(cart.id, [dto.generate.createLineItem()])).rejects.toMatchObject({
+        type: ErrorTypes.NOT_ALLOWED,
+      })
+    })
+
+    test('addLineItem — refuses a cart that has been completed', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+      await service.updateCart(cart.id, { completedAt: new Date() })
+
+      await expect(service.addLineItem(cart.id, dto.generate.createLineItem())).rejects.toMatchObject({
+        type: ErrorTypes.NOT_ALLOWED,
+      })
+    })
+
+    test('addShippingMethods — refuses a cart that has been completed', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+      await service.updateCart(cart.id, { completedAt: new Date() })
+
+      await expect(service.addShippingMethods(cart.id, [dto.generate.createShippingMethod()])).rejects.toMatchObject({
+        type: ErrorTypes.NOT_ALLOWED,
+      })
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // Address ownership
+  //
+  // A cart owns its addresses rather than pointing at them, so `type` is what identifies a
+  // slot and replacing an address rewrites the row that holds it.
+  // ---------------------------------------------------------------------------
+
+  test.describe('Cart addresses', () => {
+    test('upsertCartAddress — fills a type, then replaces it in place', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+
+      const created = await service.upsertCartAddress(cart.id, 'shipping', dto.generate.createCartAddress())
+      const replaced = await service.upsertCartAddress(
+        cart.id,
+        'shipping',
+        dto.generate.createCartAddress({ city: 'Shelbyville' }),
+      )
+
+      expect(replaced.id).toBe(created.id)
+      expect(await service.listCartAddresses({ cartId: cart.id })).toMatchObject([
+        { type: 'shipping', city: 'Shelbyville' },
+      ])
+    })
+
+    test('upsertCartAddress — the two types are separate rows', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+
+      await service.upsertCartAddress(cart.id, 'shipping', dto.generate.createCartAddress())
+      await service.upsertCartAddress(cart.id, 'billing', dto.generate.createCartAddress())
+
+      const addresses = await service.listCartAddresses({ cartId: cart.id })
+      expect(addresses.map((address) => address.type).sort()).toEqual(['billing', 'shipping'])
+    })
+
+    test('upsertCartAddress — a type freed by a delete can be filled again', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+      const first = await service.upsertCartAddress(cart.id, 'shipping', dto.generate.createCartAddress())
+
+      // The unique index excludes soft-deleted rows, so the slot is released rather than burned.
+      await service.deleteCartAddresses([first.id])
+      const second = await service.upsertCartAddress(cart.id, 'shipping', dto.generate.createCartAddress())
+
+      expect(second.id).not.toBe(first.id)
+      expect(await service.listCartAddresses({ cartId: cart.id })).toHaveLength(1)
+    })
+
+    test('upsertCartAddress — refuses an address with no cart to belong to', async ({ expect, dto }) => {
+      await expect(
+        service.upsertCartAddress('cart_nonexistent', 'shipping', dto.generate.createCartAddress()),
+      ).rejects.toMatchObject({ type: ErrorTypes.NOT_FOUND })
     })
   })
 })

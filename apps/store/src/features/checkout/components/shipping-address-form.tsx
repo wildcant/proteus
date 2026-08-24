@@ -11,44 +11,55 @@ type ShippingAddressFormProps = {
   onComplete: () => void
 }
 
+type CartAddress = NonNullable<StoreCartDetailResponseCart['shippingAddress']>
+type AddressValues = ShippingAddressFormValues['shippingAddress']
+
+const ADDRESS_FIELDS = [
+  'firstName',
+  'lastName',
+  'address1',
+  'address2',
+  'company',
+  'city',
+  'countryCode',
+  'province',
+  'postalCode',
+  'phone',
+] as const satisfies readonly (keyof AddressValues)[]
+
+function toAddressValues(address: CartAddress): AddressValues {
+  return {
+    firstName: address.firstName ?? '',
+    lastName: address.lastName ?? '',
+    address1: address.address1 ?? '',
+    address2: address.address2 ?? '',
+    company: address.company ?? '',
+    city: address.city ?? '',
+    countryCode: address.countryCode ?? '',
+    province: address.province ?? '',
+    postalCode: address.postalCode ?? '',
+    phone: address.phone ?? '',
+  }
+}
+
+/** The cart holds one row per address type, so a shopper who reused their shipping address as
+ *  the billing one produced two rows with different ids. Only the fields say they are the same. */
+function isSameAddress(shipping: AddressValues, billing: AddressValues): boolean {
+  return ADDRESS_FIELDS.every((field) => shipping[field] === billing[field])
+}
+
 function getAddressDefaults(
   cart: Pick<StoreCartDetailResponseCart, 'shippingAddress' | 'billingAddress'>,
 ): ShippingAddressFormValues | undefined {
   if (!cart.shippingAddress) return undefined
 
-  const hasSeparateBilling = cart.billingAddress && cart.billingAddress.id !== cart.shippingAddress.id
-
-  const shippingAddress = {
-    firstName: cart.shippingAddress.firstName ?? '',
-    lastName: cart.shippingAddress.lastName ?? '',
-    address1: cart.shippingAddress.address1 ?? '',
-    address2: cart.shippingAddress.address2 ?? '',
-    company: cart.shippingAddress.company ?? '',
-    city: cart.shippingAddress.city ?? '',
-    countryCode: cart.shippingAddress.countryCode ?? '',
-    province: cart.shippingAddress.province ?? '',
-    postalCode: cart.shippingAddress.postalCode ?? '',
-    phone: cart.shippingAddress.phone ?? '',
-  }
+  const shippingAddress = toAddressValues(cart.shippingAddress)
+  const billingAddress = cart.billingAddress ? toAddressValues(cart.billingAddress) : shippingAddress
 
   return {
     shippingAddress,
-    sameAsBilling: !hasSeparateBilling,
-    billingAddress:
-      hasSeparateBilling && cart.billingAddress
-        ? {
-            firstName: cart.billingAddress.firstName ?? '',
-            lastName: cart.billingAddress.lastName ?? '',
-            address1: cart.billingAddress.address1 ?? '',
-            address2: cart.billingAddress.address2 ?? '',
-            company: cart.billingAddress.company ?? '',
-            city: cart.billingAddress.city ?? '',
-            countryCode: cart.billingAddress.countryCode ?? '',
-            province: cart.billingAddress.province ?? '',
-            postalCode: cart.billingAddress.postalCode ?? '',
-            phone: cart.billingAddress.phone ?? '',
-          }
-        : shippingAddress,
+    billingAddress,
+    sameAsBilling: isSameAddress(shippingAddress, billingAddress),
   }
 }
 

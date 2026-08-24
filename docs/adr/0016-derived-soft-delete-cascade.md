@@ -64,18 +64,30 @@ already complete; a global one would cost the isolation [ADR 0001](0001-per-modu
 buys for nothing. Cross-module cleanup stays the link layer's responsibility, per
 [ADR 0004](0004-link-modules-for-cross-module-joins.md).
 
-**Order and cart addresses become owned children.** They are the one relationship the walker cannot
-derive, because the pointer sits on the parent: the order holds `shipping_address_id`, so nothing
-removes the address when the order goes — not the database on a hard delete, and not the service on
-a soft one. Every discarded order leaves up to two rows behind forever.
+**Order and cart addresses are owned children.** They were the one relationship the walker could
+not derive, because the pointer sat on the parent: the order held `shipping_address_id`, so nothing
+removed the address when the order went — not the database on a hard delete, and not the service on
+a soft one. Every discarded order left up to two rows behind forever.
 
 The direction is inverted rather than given a cascade. Postgres cannot cascade forward: removing a
 row never affects the row it points at, and adding `on delete cascade` to the parent's pointer
 column reverses the meaning so that deleting the *address* deletes the *order*. Both were verified
 empirically. The edit that looks like a one-line fix for the orphan is a data-loss bug, and it is
-exactly the edit someone will reach for on seeing the pointer column — so the column goes. The
-address gains a non-nullable parent reference with `on delete cascade` and a role discriminator,
-with a partial unique index enforcing one address per role per parent.
+exactly the edit someone will reach for on seeing the pointer column — so the column went. Both
+pointer columns are dropped, and the address now carries:
+
+    orderId   — notNull, references order, on delete cascade
+    type      — enum: 'shipping' | 'billing'
+    liveUniqueIndex on (orderId, type)      -- partial: where deleted_at is null
+
+`cart_address` has the identical shape against `cart`. The unique index leads with the parent id,
+so it is also the index the cascade traverses. Being partial is what lets a type be filled again
+after its address is soft-deleted, rather than the slot staying held by a row nobody can read.
+
+**Customer address is deliberately left alone.** It keeps its `isDefaultShipping` /
+`isDefaultBilling` booleans rather than adopting this enum, because one customer address can be
+both defaults at once and an enum would force a duplicate row to say so. An order address is the
+opposite: it is a snapshot, duplication is free, and each snapshot is of exactly one type.
 
 ## Consequences
 
@@ -106,5 +118,16 @@ three that are not, cart and fulfillment cascade to their address while order do
 the same defect described above. Our own schema was already split, with customer and fulfillment
 inverted and order and cart not. Inverting the latter two makes all four consistent. The cost is
 that order creation must precede address creation, so the creation payload accepts nested addresses
-rather than identifiers, and an address can no longer be shared between the shipping and billing
-roles — which matches what the checkout already does.
+rather than identifiers, and one address can no longer serve as both the shipping and the billing
+address — which matches what the checkout already does.
+
+The address service surface follows the ownership: every method names the parent, because no
+caller holds an address id any more. Reads are `retrieveOrderAddress(orderId, type)` for one and
+`listOrderAddresses` / `listCartAddresses` for a parent's pair; writes are
+`createOrderAddress(orderId, type, data)` and `upsertCartAddress(cartId, type, data)`. A standalone
+address with no parent is no longer expressible, which is the point.
+
+`retrieveOrderAddress` returns null rather than throwing, unlike `retrieveOrder` and the other
+`retrieveX` methods — an order legitimately has no billing address, so absence is not an error. It
+mirrors `retrieveFulfillmentAddress(fulfillmentId)`, the address that was already inverted before
+this ADR. Cart has no single-address equivalent because both of its callers want the pair.

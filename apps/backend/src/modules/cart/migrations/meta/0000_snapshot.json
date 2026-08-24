@@ -1,5 +1,5 @@
 {
-  "id": "073d322d-b93e-421c-919c-6e9682d93db1",
+  "id": "3e3ec28f-11aa-488c-bb2e-04399f776f90",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,6 +14,19 @@
           "primaryKey": true,
           "notNull": true,
           "default": "CONCAT('caaddr_', REPLACE(gen_random_uuid()::text, '-', ''))"
+        },
+        "cart_id": {
+          "name": "cart_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "cart_address_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
         },
         "customer_id": {
           "name": "customer_id",
@@ -102,8 +115,41 @@
           "notNull": false
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
+      "indexes": {
+        "idx_cart_address_unique_cart_type": {
+          "name": "idx_cart_address_unique_cart_type",
+          "columns": [
+            {
+              "expression": "cart_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "cart_address_cart_id_cart_id_fk": {
+          "name": "cart_address_cart_id_cart_id_fk",
+          "tableFrom": "cart_address",
+          "tableTo": "cart",
+          "columnsFrom": ["cart_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -150,26 +196,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "cart_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'active'"
-        },
-        "shipping_address_id": {
-          "name": "shipping_address_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "billing_address_id": {
-          "name": "billing_address_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "completed_at": {
           "name": "completed_at",
@@ -264,26 +290,7 @@
           "with": {}
         }
       },
-      "foreignKeys": {
-        "cart_shipping_address_id_cart_address_id_fk": {
-          "name": "cart_shipping_address_id_cart_address_id_fk",
-          "tableFrom": "cart",
-          "tableTo": "cart_address",
-          "columnsFrom": ["shipping_address_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "cart_billing_address_id_cart_address_id_fk": {
-          "name": "cart_billing_address_id_cart_address_id_fk",
-          "tableFrom": "cart",
-          "tableTo": "cart_address",
-          "columnsFrom": ["billing_address_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -653,10 +660,10 @@
     }
   },
   "enums": {
-    "public.cart_status": {
-      "name": "cart_status",
+    "public.cart_address_type": {
+      "name": "cart_address_type",
       "schema": "public",
-      "values": ["active", "completed", "abandoned"]
+      "values": ["shipping", "billing"]
     }
   },
   "schemas": {},
