@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { boolean, doublePrecision, jsonb, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { boolean, doublePrecision, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveUniqueIndex } from '../../../core/db/indexes.js'
 
 export const ProductStatus = {
   DRAFT: 'draft',
@@ -35,7 +36,7 @@ export const productTable = pgTable(
     metadata: jsonb().$type<Record<string, unknown> | null>(),
     ...timestamps,
   },
-  (table) => [uniqueIndex('idx_product_handle').on(table.handle).where(sql`deleted_at IS NULL`)],
+  (table) => [liveUniqueIndex('idx_product_handle').on(table.handle)],
 )
 
 export type Product = typeof productTable.$inferSelect

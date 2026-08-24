@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { productImageTable } from './product-image.js'
 import { productVariantTable } from './product-variant.js'
 
@@ -17,11 +18,9 @@ export const productVariantImageTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_product_variant_image_variant_id').on(table.variantId),
-    index('idx_product_variant_image_image_id').on(table.imageId),
-    uniqueIndex('idx_product_variant_image_variant_id_image_id')
-      .on(table.variantId, table.imageId)
-      .where(sql`deleted_at IS NULL`),
+    liveIndex('idx_product_variant_image_variant_id').on(table.variantId),
+    liveIndex('idx_product_variant_image_image_id').on(table.imageId),
+    liveUniqueIndex('idx_product_variant_image_variant_id_image_id').on(table.variantId, table.imageId),
   ],
 )
 

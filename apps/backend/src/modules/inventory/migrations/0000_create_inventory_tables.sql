@@ -52,8 +52,8 @@ ALTER TABLE "inventory_level" ADD CONSTRAINT "inventory_level_inventory_item_id_
 ALTER TABLE "reservation_item" ADD CONSTRAINT "reservation_item_inventory_item_id_inventory_item_id_fk" FOREIGN KEY ("inventory_item_id") REFERENCES "public"."inventory_item"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_inventory_item_sku" ON "inventory_item" USING btree ("sku") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_inventory_level_item_location" ON "inventory_level" USING btree ("inventory_item_id","location_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_inventory_level_inventory_item_id" ON "inventory_level" USING btree ("inventory_item_id");--> statement-breakpoint
-CREATE INDEX "idx_inventory_level_location_id" ON "inventory_level" USING btree ("location_id");--> statement-breakpoint
-CREATE INDEX "idx_reservation_item_inventory_item_id" ON "reservation_item" USING btree ("inventory_item_id");--> statement-breakpoint
-CREATE INDEX "idx_reservation_item_location_id" ON "reservation_item" USING btree ("location_id");--> statement-breakpoint
-CREATE INDEX "idx_reservation_item_line_item_id" ON "reservation_item" USING btree ("line_item_id");
+CREATE INDEX "idx_inventory_level_inventory_item_id" ON "inventory_level" USING btree ("inventory_item_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_inventory_level_location_id" ON "inventory_level" USING btree ("location_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_reservation_item_inventory_item_id" ON "reservation_item" USING btree ("inventory_item_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_reservation_item_location_id" ON "reservation_item" USING btree ("location_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_reservation_item_line_item_id" ON "reservation_item" USING btree ("line_item_id") WHERE deleted_at IS NULL;

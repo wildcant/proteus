@@ -163,3 +163,11 @@ Tests construct services manually with injected repos. Vitest config at `apps/ba
 ## Documentation
 
 Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/middleware-and-openapi.md`.
+
+Work in progress lives in `.scratch/<feature>/` — the spec at `.scratch/<feature>/spec.md`, its tickets in
+`.scratch/<feature>/issues/`. That is the issue tracker for this repo; GitHub Issues is not used. Once the work
+has shipped, a distilled reference spec is written to `docs/specs/<feature>.md` marked `**Status:** shipped.` —
+the scratch folder stays as the working record.
+
+Domain vocabulary is in `CONTEXT.md` at the root. It is a glossary only: no implementation detail, no decisions.
+Decisions go in an ADR.

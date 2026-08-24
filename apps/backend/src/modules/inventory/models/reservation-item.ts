@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { boolean, index, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { inventoryItemTable } from './inventory-item.js'
 
 export const reservationItemTable = pgTable(
@@ -21,9 +22,9 @@ export const reservationItemTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_reservation_item_inventory_item_id').on(table.inventoryItemId),
-    index('idx_reservation_item_location_id').on(table.locationId),
-    index('idx_reservation_item_line_item_id').on(table.lineItemId),
+    liveIndex('idx_reservation_item_inventory_item_id').on(table.inventoryItemId),
+    liveIndex('idx_reservation_item_location_id').on(table.locationId),
+    liveIndex('idx_reservation_item_line_item_id').on(table.lineItemId),
   ],
 )
 

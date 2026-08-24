@@ -172,4 +172,10 @@ export class CustomerModuleService implements ICustomerModuleService {
       return this.customerAddressRepository.updateMany(addressIds, data, ctx)
     })
   }
+
+  async softDeleteCustomerAddresses(addressIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.customerAddressRepository.softDelete(addressIds, ctx)
+    })
+  }
 }

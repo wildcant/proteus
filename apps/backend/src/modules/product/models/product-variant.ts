@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { boolean, doublePrecision, integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { productTable } from './product.js'
 
 export const productVariantTable = pgTable(
@@ -31,11 +32,11 @@ export const productVariantTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_product_variant_product_id').on(table.productId),
-    uniqueIndex('idx_product_variant_sku').on(table.sku).where(sql`deleted_at IS NULL`),
-    uniqueIndex('idx_product_variant_barcode').on(table.barcode).where(sql`deleted_at IS NULL`),
-    uniqueIndex('idx_product_variant_ean').on(table.ean).where(sql`deleted_at IS NULL`),
-    uniqueIndex('idx_product_variant_upc').on(table.upc).where(sql`deleted_at IS NULL`),
+    liveIndex('idx_product_variant_product_id').on(table.productId),
+    liveUniqueIndex('idx_product_variant_sku').on(table.sku),
+    liveUniqueIndex('idx_product_variant_barcode').on(table.barcode),
+    liveUniqueIndex('idx_product_variant_ean').on(table.ean),
+    liveUniqueIndex('idx_product_variant_upc').on(table.upc),
   ],
 )
 

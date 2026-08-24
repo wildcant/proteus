@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { productOptionTable } from './product-option.js'
 import { productOptionValueTable } from './product-option-value.js'
 import { productVariantTable } from './product-variant.js'
@@ -29,15 +30,11 @@ export const productVariantOptionTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_product_variant_option_variant_id').on(table.variantId),
-    index('idx_product_variant_option_option_id').on(table.optionId),
-    index('idx_product_variant_option_option_value_id').on(table.optionValueId),
-    uniqueIndex('idx_product_variant_option_variant_option')
-      .on(table.variantId, table.optionId)
-      .where(sql`deleted_at IS NULL`),
-    uniqueIndex('idx_product_variant_option_variant_option_value')
-      .on(table.variantId, table.optionValueId)
-      .where(sql`deleted_at IS NULL`),
+    liveIndex('idx_product_variant_option_variant_id').on(table.variantId),
+    liveIndex('idx_product_variant_option_option_id').on(table.optionId),
+    liveIndex('idx_product_variant_option_option_value_id').on(table.optionValueId),
+    liveUniqueIndex('idx_product_variant_option_variant_option').on(table.variantId, table.optionId),
+    liveUniqueIndex('idx_product_variant_option_variant_option_value').on(table.variantId, table.optionValueId),
   ],
 )
 

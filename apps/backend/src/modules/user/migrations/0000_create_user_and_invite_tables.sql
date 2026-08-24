@@ -15,9 +15,9 @@ CREATE TABLE "user" (
 	"name" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"deleted_at" timestamp with time zone,
-	CONSTRAINT "user_email_unique" UNIQUE("email")
+	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX "idx_invite_email" ON "invite" USING btree ("email") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_invite_token" ON "invite" USING btree ("token") WHERE deleted_at IS NULL;
+CREATE INDEX "idx_invite_token" ON "invite" USING btree ("token") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_user_email" ON "user" USING btree ("email") WHERE deleted_at IS NULL;

@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { productOptionValueTable } from './product-option-value.js'
 import { productProductOptionTable } from './product-product-option.js'
 
@@ -23,11 +24,9 @@ export const productProductOptionValueTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_product_product_option_value_ppo_id').on(table.productProductOptionId),
-    index('idx_product_product_option_value_ov_id').on(table.optionValueId),
-    uniqueIndex('idx_product_product_option_value_ppo_ov')
-      .on(table.productProductOptionId, table.optionValueId)
-      .where(sql`deleted_at IS NULL`),
+    liveIndex('idx_product_product_option_value_ppo_id').on(table.productProductOptionId),
+    liveIndex('idx_product_product_option_value_ov_id').on(table.optionValueId),
+    liveUniqueIndex('idx_product_product_option_value_ppo_ov').on(table.productProductOptionId, table.optionValueId),
   ],
 )
 

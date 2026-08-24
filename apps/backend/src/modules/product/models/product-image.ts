@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
+import { integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { productTable } from './product.js'
 
 export const productImageTable = pgTable(
@@ -16,9 +17,9 @@ export const productImageTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_product_image_product_id').on(table.productId),
-    index('idx_product_image_url').on(table.url),
-    index('idx_product_image_rank_product_id').on(table.rank, table.productId),
+    liveIndex('idx_product_image_product_id').on(table.productId),
+    liveIndex('idx_product_image_url').on(table.url),
+    liveIndex('idx_product_image_rank_product_id').on(table.rank, table.productId),
   ],
 )
 

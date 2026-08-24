@@ -1,5 +1,5 @@
 {
-  "id": "d280afa1-cdd3-4862-b40c-e64f557ecca8",
+  "id": "112fb3ea-2080-4a87-968f-e6ae0b85ac2d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -251,6 +251,7 @@
             }
           ],
           "isUnique": false,
+          "where": "deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -266,6 +267,7 @@
             }
           ],
           "isUnique": false,
+          "where": "deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -276,8 +278,12 @@
           "name": "inventory_level_inventory_item_id_inventory_item_id_fk",
           "tableFrom": "inventory_level",
           "tableTo": "inventory_item",
-          "columnsFrom": ["inventory_item_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "inventory_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -387,6 +393,7 @@
             }
           ],
           "isUnique": false,
+          "where": "deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -402,6 +409,7 @@
             }
           ],
           "isUnique": false,
+          "where": "deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -417,6 +425,7 @@
             }
           ],
           "isUnique": false,
+          "where": "deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -427,8 +436,12 @@
           "name": "reservation_item_inventory_item_id_inventory_item_id_fk",
           "tableFrom": "reservation_item",
           "tableTo": "inventory_item",
-          "columnsFrom": ["inventory_item_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "inventory_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

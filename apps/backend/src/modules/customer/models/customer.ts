@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { boolean, pgEnum, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { boolean, pgEnum, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveUniqueIndex } from '../../../core/db/indexes.js'
 
 export const customerStatusEnum = pgEnum('customer_status', ['active', 'inactive'])
 
@@ -16,12 +17,8 @@ export const customerTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    uniqueIndex('idx_customer_unique_email_has_account_true')
-      .on(table.email)
-      .where(sql`has_account = true AND deleted_at IS NULL`),
-    uniqueIndex('idx_customer_unique_email_has_account_false')
-      .on(table.email)
-      .where(sql`has_account = false AND deleted_at IS NULL`),
+    liveUniqueIndex('idx_customer_unique_email_has_account_true', sql`has_account = true`).on(table.email),
+    liveUniqueIndex('idx_customer_unique_email_has_account_false', sql`has_account = false`).on(table.email),
   ],
 )
 

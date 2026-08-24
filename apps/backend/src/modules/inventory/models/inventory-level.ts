@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { integer, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { inventoryItemTable } from './inventory-item.js'
 
 export const inventoryLevelTable = pgTable(
@@ -18,11 +19,9 @@ export const inventoryLevelTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    uniqueIndex('idx_inventory_level_item_location')
-      .on(table.inventoryItemId, table.locationId)
-      .where(sql`deleted_at IS NULL`),
-    index('idx_inventory_level_inventory_item_id').on(table.inventoryItemId),
-    index('idx_inventory_level_location_id').on(table.locationId),
+    liveUniqueIndex('idx_inventory_level_item_location').on(table.inventoryItemId, table.locationId),
+    liveIndex('idx_inventory_level_inventory_item_id').on(table.inventoryItemId),
+    liveIndex('idx_inventory_level_location_id').on(table.locationId),
   ],
 )
 

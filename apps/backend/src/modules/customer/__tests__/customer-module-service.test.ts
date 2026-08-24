@@ -168,6 +168,42 @@ test.describe('CustomerModuleService', () => {
     spy.mockRestore()
   })
 
+  test('a new default billing address can be set after the old one is soft-deleted', async ({ expect, dto }) => {
+    const customer = await service.createCustomer(
+      dto.generate.createCustomer({ addresses: [dto.generate.createCustomerAddress({ isDefaultBilling: true })] }),
+    )
+    const [oldDefault] = await service.listCustomerAddresses({ customerId: customer.id })
+    if (!oldDefault) throw new Error('expected the customer to have an address')
+
+    await service.softDeleteCustomerAddresses([oldDefault.id])
+    const newDefault = await service.createCustomerAddress({
+      ...dto.generate.createCustomerAddress({ isDefaultBilling: true }),
+      customerId: customer.id,
+    })
+
+    expect(newDefault.isDefaultBilling).toBe(true)
+    const addresses = await service.listCustomerAddresses({ customerId: customer.id })
+    expect(addresses.map((a) => a.id)).toEqual([newDefault.id])
+  })
+
+  test('a new default shipping address can be set after the old one is soft-deleted', async ({ expect, dto }) => {
+    const customer = await service.createCustomer(
+      dto.generate.createCustomer({ addresses: [dto.generate.createCustomerAddress({ isDefaultShipping: true })] }),
+    )
+    const [oldDefault] = await service.listCustomerAddresses({ customerId: customer.id })
+    if (!oldDefault) throw new Error('expected the customer to have an address')
+
+    await service.softDeleteCustomerAddresses([oldDefault.id])
+    const newDefault = await service.createCustomerAddress({
+      ...dto.generate.createCustomerAddress({ isDefaultShipping: true }),
+      customerId: customer.id,
+    })
+
+    expect(newDefault.isDefaultShipping).toBe(true)
+    const addresses = await service.listCustomerAddresses({ customerId: customer.id })
+    expect(addresses.map((a) => a.id)).toEqual([newDefault.id])
+  })
+
   test('restoreCustomers', async ({ expect, dto }) => {
     const created = await service.createCustomer(dto.generate.createCustomer())
     await service.softDeleteCustomers([created.id])

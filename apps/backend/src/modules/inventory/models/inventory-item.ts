@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { boolean, integer, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveUniqueIndex } from '../../../core/db/indexes.js'
 
 export const inventoryItemTable = pgTable(
   'inventory_item',
@@ -22,7 +23,7 @@ export const inventoryItemTable = pgTable(
     metadata: text(),
     ...timestamps,
   },
-  (table) => [uniqueIndex('idx_inventory_item_sku').on(table.sku).where(sql`deleted_at IS NULL`)],
+  (table) => [liveUniqueIndex('idx_inventory_item_sku').on(table.sku)],
 )
 
 export type InventoryItem = typeof inventoryItemTable.$inferSelect

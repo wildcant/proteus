@@ -47,7 +47,9 @@ ALTER TABLE "auth_password_reset_token" ADD CONSTRAINT "auth_password_reset_toke
 ALTER TABLE "auth_password_reset_token" ADD CONSTRAINT "auth_password_reset_token_provider_identity_id_provider_identity_id_fk" FOREIGN KEY ("provider_identity_id") REFERENCES "public"."provider_identity"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "auth_verification" ADD CONSTRAINT "auth_verification_auth_identity_id_auth_identity_id_fk" FOREIGN KEY ("auth_identity_id") REFERENCES "public"."auth_identity"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "provider_identity" ADD CONSTRAINT "provider_identity_auth_identity_id_auth_identity_id_fk" FOREIGN KEY ("auth_identity_id") REFERENCES "public"."auth_identity"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_auth_password_reset_token_auth_identity" ON "auth_password_reset_token" USING btree ("auth_identity_id");--> statement-breakpoint
 CREATE INDEX "idx_auth_password_reset_token_provider_identity" ON "auth_password_reset_token" USING btree ("provider_identity_id");--> statement-breakpoint
 CREATE INDEX "idx_auth_password_reset_token_hash" ON "auth_password_reset_token" USING btree ("token_hash");--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_auth_verification_identity_entity" ON "auth_verification" USING btree ("auth_identity_id","entity_id","entity_type") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_provider_identity_auth_identity_id" ON "provider_identity" USING btree ("auth_identity_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_provider_identity_entity_provider" ON "provider_identity" USING btree ("entity_id","provider") WHERE deleted_at IS NULL;

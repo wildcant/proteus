@@ -87,6 +87,17 @@ test.describe('UserModuleService', () => {
     expect(users).toHaveLength(0)
   })
 
+  test('createUser reuses the email of a soft-deleted user', async ({ expect, dto }) => {
+    const input = dto.generate.createUser()
+    const created = await service.createUser(input)
+    await service.softDeleteUsers([created.id])
+
+    const replacement = await service.createUser(dto.generate.createUser({ email: input.email }))
+
+    expect(replacement.email).toBe(input.email)
+    expect(replacement.id).not.toBe(created.id)
+  })
+
   test('restoreUsers', async ({ expect, dto }) => {
     const created = await service.createUser(dto.generate.createUser())
     await service.softDeleteUsers([created.id])

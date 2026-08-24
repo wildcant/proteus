@@ -20,6 +20,7 @@ export const authPasswordResetTokenTable = pgTable(
     updatedAt: timestamp({ withTimezone: true }).default(sql`now()`).notNull(),
   },
   (table) => [
+    index('idx_auth_password_reset_token_auth_identity').on(table.authIdentityId),
     index('idx_auth_password_reset_token_provider_identity').on(table.providerIdentityId),
     index('idx_auth_password_reset_token_hash').on(table.tokenHash),
   ],
