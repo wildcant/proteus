@@ -41,7 +41,7 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>('c
       if (reservations.length === 0) return []
 
       const reservationIds = reservations.map((reservation) => reservation.id)
-      await inventoryService.deleteReservationItems(reservationIds)
+      await inventoryService.softDeleteReservationItems(reservationIds)
       return reservationIds
     },
     async (deletedIds, { container }) => {

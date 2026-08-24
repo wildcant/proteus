@@ -103,10 +103,10 @@ test.describe('PaymentModuleService', () => {
       expect(updated.id).toBe(created.id)
     })
 
-    test('deletePaymentCollections', async ({ expect, dto }) => {
+    test('softDeletePaymentCollections', async ({ expect, dto }) => {
       const created = await service.createPaymentCollection(dto.generate.createPaymentCollection())
 
-      await service.deletePaymentCollections([created.id])
+      await service.softDeletePaymentCollections([created.id])
 
       const error = await service.retrievePaymentCollection(created.id).catch((e) => e)
       expect(error.type).toBe(ErrorTypes.NOT_FOUND)
@@ -201,11 +201,11 @@ test.describe('PaymentModuleService', () => {
       expect(payment).toBeNull()
     })
 
-    test('deletePaymentSession removes session and calls provider', async ({ expect, dto }) => {
+    test('softDeletePaymentSession removes session and calls provider', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
 
-      await service.deletePaymentSession(session.id)
+      await service.softDeletePaymentSession(session.id)
 
       expect(mockProvider.deleteSession).toHaveBeenCalledOnce()
       // Collection should revert to not_paid (no sessions left)
@@ -387,10 +387,10 @@ test.describe('PaymentModuleService', () => {
       expect(updated.code).toBe('defective')
     })
 
-    test('deleteRefundReasons', async ({ expect, dto }) => {
+    test('softDeleteRefundReasons', async ({ expect, dto }) => {
       const created = await service.createRefundReason(dto.generate.createRefundReason())
 
-      await service.deleteRefundReasons([created.id])
+      await service.softDeleteRefundReasons([created.id])
 
       const result = await service.listRefundReasons()
       expect(result).toHaveLength(0)

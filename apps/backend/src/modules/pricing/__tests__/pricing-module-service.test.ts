@@ -63,11 +63,11 @@ test.describe('PricingModuleService', () => {
     expect(usdPrices[0]?.currencyCode).toBe('usd')
   })
 
-  test('deletePriceSets cascades to prices', async ({ expect, dto }) => {
+  test('softDeletePriceSets cascades to prices', async ({ expect, dto }) => {
     const [priceSet] = await service.createPriceSets([dto.generate.createPriceSet()])
     const priceSetId = priceSet?.id ?? ''
 
-    await service.deletePriceSets([priceSetId])
+    await service.softDeletePriceSets([priceSetId])
 
     const prices = await service.listPrices({ priceSetId })
     expect(prices).toHaveLength(0)

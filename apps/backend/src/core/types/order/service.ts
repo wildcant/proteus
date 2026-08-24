@@ -42,7 +42,6 @@ export type IOrderModuleService = {
   createOrders(data: CreateOrderDTO[], context?: Context): Promise<OrderDTO[]>
   updateOrder(id: string, data: UpdateOrderDTO, context?: Context): Promise<OrderDTO>
   updateOrders(ids: string[], data: UpdateOrderDTO, context?: Context): Promise<OrderDTO[]>
-  deleteOrders(ids: string[], context?: Context): Promise<void>
   softDeleteOrders(ids: string[], context?: Context): Promise<void>
   restoreOrders(ids: string[], context?: Context): Promise<void>
 
@@ -60,7 +59,7 @@ export type IOrderModuleService = {
     context?: Context,
   ): Promise<OrderAddressDTO>
   updateOrderAddress(id: string, data: UpdateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO>
-  deleteOrderAddresses(ids: string[], context?: Context): Promise<void>
+  softDeleteOrderAddresses(ids: string[], context?: Context): Promise<void>
 
   // Line items
   createOrderLineItems(orderId: string, items: CreateOrderLineItemDTO[], context?: Context): Promise<OrderLineItemDTO[]>

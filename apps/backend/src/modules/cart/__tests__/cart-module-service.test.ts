@@ -74,7 +74,7 @@ test.describe('CartModuleService', () => {
       if (!removed || !kept) throw new Error('expected two line items')
 
       // Deleted for its own reasons, so it carries its own timestamp and belongs to no cascade.
-      await service.deleteLineItems([removed.id])
+      await service.softDeleteLineItems([removed.id])
       await service.softDeleteCarts([cart.id])
       await service.restoreCarts([cart.id])
 
@@ -188,7 +188,7 @@ test.describe('CartModuleService', () => {
       const first = await service.upsertCartAddress(cart.id, 'shipping', dto.generate.createCartAddress())
 
       // The unique index excludes soft-deleted rows, so the slot is released rather than burned.
-      await service.deleteCartAddresses([first.id])
+      await service.softDeleteCartAddresses([first.id])
       const second = await service.upsertCartAddress(cart.id, 'shipping', dto.generate.createCartAddress())
 
       expect(second.id).not.toBe(first.id)

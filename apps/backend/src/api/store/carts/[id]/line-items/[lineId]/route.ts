@@ -23,7 +23,7 @@ export const DeleteOutput = DeleteResponse
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
   const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
-  await cartService.deleteLineItems([req.params.lineId])
+  await cartService.softDeleteLineItems([req.params.lineId])
 
   return { status: 200, json: { id: req.params.lineId, deleted: true } }
 }

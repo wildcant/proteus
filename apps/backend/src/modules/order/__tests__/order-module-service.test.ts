@@ -16,10 +16,12 @@ import { OrderModuleService } from '../services/order-module-service.js'
 const cascadeGraph = buildCascadeGraph(models)
 
 let service: OrderModuleService
+let orderRepository: OrderRepository
 
 test.beforeEach(({ getDb, logger }) => {
+  orderRepository = new OrderRepository({ getDb, cascadeGraph })
   service = new OrderModuleService({
-    orderRepository: new OrderRepository({ getDb, cascadeGraph }),
+    orderRepository,
     orderAddressRepository: new OrderAddressRepository({ getDb, cascadeGraph }),
     orderLineItemRepository: new OrderLineItemRepository({ getDb, cascadeGraph }),
     orderShippingMethodRepository: new OrderShippingMethodRepository({ getDb, cascadeGraph }),
@@ -211,14 +213,14 @@ test.describe('OrderModuleService', () => {
       expect(updated.city).toBe('New York')
     })
 
-    test('deleteOrderAddresses — hard deletes', async ({ expect, dto }) => {
+    test('softDeleteOrderAddresses — hides the address', async ({ expect, dto }) => {
       const order = await service.createOrder(
         dto.generate.createOrder({ shippingAddress: dto.generate.createOrderAddress() }),
       )
       const address = await service.retrieveOrderAddress(order.id, 'shipping')
       if (!address) throw new Error('expected the order to own a shipping address')
 
-      await service.deleteOrderAddresses([address.id])
+      await service.softDeleteOrderAddresses([address.id])
 
       await expect(service.updateOrderAddress(address.id, { city: 'X' })).rejects.toMatchObject({
         type: ErrorTypes.NOT_FOUND,
@@ -261,7 +263,9 @@ test.describe('OrderModuleService', () => {
       expect(await service.listOrderAddresses({ orderId: order.id })).toHaveLength(2)
     })
 
-    test('deleteOrders — the database takes the addresses with the order', async ({ expect, dto }) => {
+    // The service exposes no hard delete, so this reaches the repository directly: the database
+    // cascade is what removes the address rows, and only inversion made it reach them at all.
+    test('deleting the order row takes the addresses with it', async ({ expect, dto }) => {
       const order = await service.createOrder(
         dto.generate.createOrder({
           shippingAddress: dto.generate.createOrderAddress(),
@@ -269,7 +273,7 @@ test.describe('OrderModuleService', () => {
         }),
       )
 
-      await service.deleteOrders([order.id])
+      await orderRepository.delete([order.id])
 
       // `withDeleted` so a row merely hidden would still show up — only a real removal passes.
       expect(await service.listOrderAddresses({ orderId: order.id }, { withDeleted: true })).toHaveLength(0)
@@ -479,7 +483,7 @@ test.describe('OrderModuleService', () => {
   // ---------------------------------------------------------------------------
 
   test.describe('Cascade delete', () => {
-    test('deleteOrders — cascades to line items, shipping methods, and transactions', async ({ expect, dto }) => {
+    test('softDeleteOrders — cascades to line items, shipping methods, and transactions', async ({ expect, dto }) => {
       const order = await service.createOrder(
         dto.generate.createOrder({
           items: [dto.generate.createOrderLineItem()],
@@ -488,7 +492,7 @@ test.describe('OrderModuleService', () => {
       )
       await service.addOrderTransaction(dto.generate.createOrderTransaction({ orderId: order.id }))
 
-      await service.deleteOrders([order.id])
+      await service.softDeleteOrders([order.id])
 
       const lineItems = await service.listOrderLineItems({ orderId: order.id })
       const shippingMethods = await service.listOrderShippingMethods({ orderId: order.id })

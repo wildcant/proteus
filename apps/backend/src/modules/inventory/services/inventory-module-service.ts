@@ -104,7 +104,7 @@ export class InventoryModuleService implements IInventoryModuleService {
     })
   }
 
-  async deleteInventoryItems(itemIds: string[], context?: Context): Promise<void> {
+  async softDeleteInventoryItems(itemIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.inventoryItemRepository.softDelete(itemIds, ctx)
     })
@@ -177,7 +177,7 @@ export class InventoryModuleService implements IInventoryModuleService {
     })
   }
 
-  async deleteReservationItems(ids: string[], context?: Context): Promise<void> {
+  async softDeleteReservationItems(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.reservationItemRepository.softDelete(ids, ctx)
     })

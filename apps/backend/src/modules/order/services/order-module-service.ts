@@ -165,12 +165,6 @@ export class OrderModuleService implements IOrderModuleService {
     })
   }
 
-  async deleteOrders(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.orderRepository.delete(ids, ctx)
-    })
-  }
-
   async softDeleteOrders(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.orderRepository.softDelete(ids, ctx)
@@ -221,9 +215,9 @@ export class OrderModuleService implements IOrderModuleService {
     })
   }
 
-  async deleteOrderAddresses(ids: string[], context?: Context): Promise<void> {
+  async softDeleteOrderAddresses(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.orderAddressRepository.delete(ids, ctx)
+      await this.orderAddressRepository.softDelete(ids, ctx)
     })
   }
 

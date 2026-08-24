@@ -27,7 +27,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   // Remove existing shipping methods on the cart (replace strategy for MVP)
   const existing = await cartService.listShippingMethods({ cartId: req.params.id })
   if (existing.length > 0) {
-    await cartService.deleteShippingMethods(existing.map((sm) => sm.id))
+    await cartService.softDeleteShippingMethods(existing.map((sm) => sm.id))
   }
 
   // Add the new shipping method

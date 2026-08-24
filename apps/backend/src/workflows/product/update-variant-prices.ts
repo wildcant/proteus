@@ -41,7 +41,7 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
         const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
         const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
         await linkService.repo('productVariantPriceSet').softDelete([result.record.id])
-        await pricingService.deletePriceSets([result.record.priceSetId])
+        await pricingService.softDeletePriceSets([result.record.priceSetId])
       },
     )
 

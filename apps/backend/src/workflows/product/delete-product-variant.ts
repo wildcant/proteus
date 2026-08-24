@@ -20,13 +20,13 @@ export const deleteProductVariantWorkflow = createWorkflow<DeleteProductVariantI
       const dismissedPriceSetLinks = dismissed.productVariantPriceSet ?? []
       if (dismissedPriceSetLinks.length === 0) return
       const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
-      await pricingService.deletePriceSets(dismissedPriceSetLinks.map((link) => link.priceSetId))
+      await pricingService.softDeletePriceSets(dismissedPriceSetLinks.map((link) => link.priceSetId))
     })
 
     // Step 3: Delete variant
     await ctx.step('delete-variant', async ({ container }) => {
       const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-      await productService.deleteProductVariants([input.variantId])
+      await productService.softDeleteProductVariants([input.variantId])
     })
   },
 )

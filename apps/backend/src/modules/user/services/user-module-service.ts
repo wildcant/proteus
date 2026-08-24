@@ -90,12 +90,6 @@ export class UserModuleService implements IUserModuleService {
     })
   }
 
-  async deleteUsers(userIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.userRepository.delete(userIds, ctx)
-    })
-  }
-
   async softDeleteUsers(userIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.userRepository.softDelete(userIds, ctx)

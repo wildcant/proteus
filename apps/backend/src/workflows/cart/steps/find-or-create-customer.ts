@@ -102,7 +102,7 @@ export async function findOrCreateCustomerStep(
       const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
 
       if (result.created) {
-        await customerService.deleteCustomers([result.customer.id])
+        await customerService.softDeleteCustomers([result.customer.id])
       } else if (result.previousName) {
         await customerService.updateCustomer(result.customer.id, result.previousName)
       }

@@ -130,10 +130,10 @@ test.describe('ProductModuleService', () => {
     expect(updated.id).toBe(created.id)
   })
 
-  test('deleteProducts soft-deletes and excludes from list', async ({ expect, dto }) => {
+  test('softDeleteProducts soft-deletes and excludes from list', async ({ expect, dto }) => {
     const created = await service.createProduct(dto.generate.createProduct())
 
-    await service.deleteProducts([created.id])
+    await service.softDeleteProducts([created.id])
 
     const products = await service.listProducts()
     expect(products).toHaveLength(0)
@@ -150,7 +150,7 @@ test.describe('ProductModuleService', () => {
 
   test('retrieveProduct throws NOT_FOUND for soft-deleted product', async ({ expect, dto }) => {
     const created = await service.createProduct(dto.generate.createProduct())
-    await service.deleteProducts([created.id])
+    await service.softDeleteProducts([created.id])
 
     const error = await service.retrieveProduct(created.id).catch((e) => e)
 
@@ -937,14 +937,14 @@ test.describe('ProductModuleService variant options', () => {
     ).rejects.toThrow()
   })
 
-  test('deleteProductVariants releases the option links', async ({ expect, dto }) => {
+  test('softDeleteProductVariants releases the option links', async ({ expect, dto }) => {
     const { product, combination } = await createProductWithOptions(dto.generate.createProduct())
     const variant = await service.createProductVariant({
       productId: product.id,
       optionValues: combination('S', 'Red'),
     })
 
-    await service.deleteProductVariants([variant.id])
+    await service.softDeleteProductVariants([variant.id])
 
     expect(await service.listProductVariantOptions({ variantId: variant.id })).toEqual([])
   })
@@ -1080,13 +1080,13 @@ test.describe('ProductModuleService variant options', () => {
       return { product, image, variant }
     }
 
-    test('deleteProducts — hides the variant images reachable by both paths', async ({ expect, dto }) => {
+    test('softDeleteProducts — hides the variant images reachable by both paths', async ({ expect, dto }) => {
       const { product, variant } = await createProductWithAVariantImage(
         dto.generate.createProduct(),
         dto.generate.variantImageInput,
       )
 
-      await service.deleteProducts([product.id])
+      await service.softDeleteProducts([product.id])
 
       expect(await service.listProductVariants({ productId: product.id })).toHaveLength(0)
       expect(await service.listProductImages({ productId: product.id })).toHaveLength(0)
@@ -1099,7 +1099,7 @@ test.describe('ProductModuleService variant options', () => {
         dto.generate.variantImageInput,
       )
 
-      await service.deleteProducts([product.id])
+      await service.softDeleteProducts([product.id])
       // The product module has no restore verb yet, so this reaches the repository directly.
       await productRepository.restore([product.id])
 
@@ -1108,7 +1108,7 @@ test.describe('ProductModuleService variant options', () => {
       expect(await service.listProductVariantImages({ variantId: variant.id })).toHaveLength(1)
     })
 
-    test('deleteProducts — hides the option links two hops down', async ({ expect, dto }) => {
+    test('softDeleteProducts — hides the option links two hops down', async ({ expect, dto }) => {
       const product = await service.createProduct(dto.generate.createProduct())
       const size = await service.createProductOption({
         title: `Size-${product.id}`,
@@ -1124,7 +1124,7 @@ test.describe('ProductModuleService variant options', () => {
         optionValues: { [size.id]: small.id },
       })
 
-      await service.deleteProducts([product.id])
+      await service.softDeleteProducts([product.id])
 
       expect(await service.listProductVariantOptions({ variantId: variant.id })).toHaveLength(0)
       expect(await service.listProductOptionsForProduct(product.id)).toHaveLength(0)
@@ -1132,14 +1132,14 @@ test.describe('ProductModuleService variant options', () => {
       expect(await service.listProductOptions({ id: size.id })).toHaveLength(1)
     })
 
-    test('deleteProductOptions — refuses an option a product still offers', async ({ expect, dto }) => {
+    test('softDeleteProductOptions — refuses an option a product still offers', async ({ expect, dto }) => {
       const product = await service.createProduct(dto.generate.createProduct())
       const size = await service.createProductOption({ title: `Size-${product.id}`, values: [{ value: 'S' }] })
       await service.setProductOptions(product.id, {
         options: [{ optionId: size.id, valueIds: size.values.map((value) => value.id) }],
       })
 
-      const error = await service.deleteProductOptions([size.id]).catch((e) => e)
+      const error = await service.softDeleteProductOptions([size.id]).catch((e) => e)
 
       expect(AppError.isError(error)).toBe(true)
       expect(error.type).toBe(ErrorTypes.NOT_ALLOWED)
@@ -1204,7 +1204,7 @@ test.describe('ProductModuleService variant options', () => {
         optionValues: { [size.id]: small.id },
       })
 
-      await service.deleteProductVariants([variant.id])
+      await service.softDeleteProductVariants([variant.id])
       await productOptionValueRepository.softDelete([small.id])
 
       expect(await service.listProductOptionValues({ id: small.id })).toHaveLength(0)

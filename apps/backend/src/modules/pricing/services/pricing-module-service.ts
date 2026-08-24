@@ -96,7 +96,7 @@ export class PricingModuleService implements IPricingModuleService {
     })
   }
 
-  async deletePriceSets(priceSetIds: string[], context?: Context): Promise<void> {
+  async softDeletePriceSets(priceSetIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.priceSetRepository.softDelete(priceSetIds, ctx)
     })

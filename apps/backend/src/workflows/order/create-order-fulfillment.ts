@@ -156,7 +156,7 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
         )
 
         if (result.reservationIdsToDelete.length > 0) {
-          await inventoryService.deleteReservationItems(result.reservationIdsToDelete)
+          await inventoryService.softDeleteReservationItems(result.reservationIdsToDelete)
         }
 
         return result

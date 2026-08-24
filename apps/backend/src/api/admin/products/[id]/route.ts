@@ -36,6 +36,6 @@ export const DeleteOutput = DeleteResponse
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
-  await productService.deleteProducts([req.params.id])
+  await productService.softDeleteProducts([req.params.id])
   return { status: 200, json: { id: req.params.id, deleted: true } }
 }

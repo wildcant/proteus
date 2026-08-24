@@ -252,7 +252,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     },
     async (createdOrder, { container }) => {
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-      await orderService.deleteOrders([createdOrder.id])
+      await orderService.softDeleteOrders([createdOrder.id])
     },
   )
 
@@ -318,7 +318,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     async (ids, { container }) => {
       if (ids.length === 0) return
       const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-      await inventoryService.deleteReservationItems(ids)
+      await inventoryService.softDeleteReservationItems(ids)
     },
   )
 

@@ -55,7 +55,7 @@ export type IProductModuleService = {
   updateProducts(productIds: string[], data: UpdateProductDTO, context?: Context): Promise<ProductDTO[]>
   createProduct(data: CreateProductDTO, context?: Context): Promise<ProductDTO>
   updateProduct(productId: string, data: UpdateProductDTO, context?: Context): Promise<ProductDTO>
-  deleteProducts(productIds: string[], context?: Context): Promise<void>
+  softDeleteProducts(productIds: string[], context?: Context): Promise<void>
 
   // Variants
   createProductVariants(data: CreateProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]>
@@ -82,7 +82,7 @@ export type IProductModuleService = {
   ): Promise<ProductVariantDTO[]>
   updateProductVariant(variantId: string, data: UpdateProductVariantDTO, context?: Context): Promise<ProductVariantDTO>
   upsertProductVariants(data: UpsertProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]>
-  deleteProductVariants(variantIds: string[], context?: Context): Promise<void>
+  softDeleteProductVariants(variantIds: string[], context?: Context): Promise<void>
   /** The variant's own thumbnail, falling back to its product's. Null when the variant is unknown or neither carries an image. */
   resolveVariantThumbnail(variantId: string, context?: Context): Promise<string | null>
 
@@ -105,7 +105,7 @@ export type IProductModuleService = {
     data: UpdateProductOptionDTO,
     context?: Context,
   ): Promise<ProductOptionWithValuesDTO>
-  deleteProductOptions(optionIds: string[], context?: Context): Promise<void>
+  softDeleteProductOptions(optionIds: string[], context?: Context): Promise<void>
 
   // Option values
   createProductOptionValues(data: CreateProductOptionValueDTO[], context?: Context): Promise<ProductOptionValueDTO[]>

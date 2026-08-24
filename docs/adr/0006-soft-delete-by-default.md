@@ -21,6 +21,23 @@ Modules expose three operations:
 
 The filter is applied at the repository level — services and API routes don't think about it.
 
+### One verb per meaning on module services
+
+Repositories keep all three operations, but a module service exposes only `softDeleteX`, so a call
+site says which of the two happened without opening the implementation. Four operations keep the
+destructive verb, for two distinct reasons:
+
+- **File storage, payment methods and account holders** destroy the object at R2 or Stripe, where
+  retention is not ours to control, so calling them soft would misdescribe what happened. The
+  account-holder operation is a hybrid — it destroys at the provider *and* soft-deletes our local
+  record.
+- **Password reset tokens** are our own table, but a single-use bearer credential with no
+  `deleted_at` column at all: a retained token hash *is* the threat model, and restoring a consumed
+  credential has no legitimate meaning.
+
+Hard delete stays reachable through the repository for the cases that genuinely need it — the
+database performs the cascade, so there is exactly one implementation of that behaviour.
+
 ## Consequences
 
 - Accidental deletions are recoverable

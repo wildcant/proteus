@@ -94,7 +94,7 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
       async (variants, { container }) => {
         if (variants.length === 0) return
         const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.deleteProductVariants(variants.map((variant) => variant.id))
+        await productService.softDeleteProductVariants(variants.map((variant) => variant.id))
       },
     )
 
@@ -144,13 +144,13 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
         const dismissedPriceSetLinks = dismissed.productVariantPriceSet ?? []
         if (dismissedPriceSetLinks.length > 0) {
           const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
-          await pricingService.deletePriceSets(dismissedPriceSetLinks.map((link) => link.priceSetId))
+          await pricingService.softDeletePriceSets(dismissedPriceSetLinks.map((link) => link.priceSetId))
         }
 
         await evictFromActiveCarts(container, variantIds)
 
         const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.deleteProductVariants(variantIds)
+        await productService.softDeleteProductVariants(variantIds)
       },
       // Nothing to put back: a compensation only runs when a *later* step fails, and this is last.
       async () => undefined,
@@ -178,5 +178,5 @@ async function evictFromActiveCarts(container: StepContext['container'], variant
   const activeCartIds = new Set(carts.map((cart) => cart.id))
 
   const doomed = lineItems.filter((item) => activeCartIds.has(item.cartId)).map((item) => item.id)
-  if (doomed.length > 0) await cartService.deleteLineItems(doomed)
+  if (doomed.length > 0) await cartService.softDeleteLineItems(doomed)
 }

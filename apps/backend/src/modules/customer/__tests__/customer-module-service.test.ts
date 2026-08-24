@@ -119,10 +119,10 @@ test.describe('CustomerModuleService', () => {
     expect(updated.id).toBe(created.id)
   })
 
-  test('deleteCustomers', async ({ expect, dto }) => {
+  test('softDeleteCustomers', async ({ expect, dto }) => {
     const created = await service.createCustomer(dto.generate.createCustomer())
 
-    await service.deleteCustomers([created.id])
+    await service.softDeleteCustomers([created.id])
 
     const error = await service.retrieveCustomer(created.id).catch((e) => e)
     expect(AppError.isError(error)).toBe(true)
@@ -242,10 +242,6 @@ test.describe('CustomerModuleService', () => {
       expect(result).toEqual([])
     })
 
-    test('deleteCustomers with non-existent ids does not throw', async ({ expect }) => {
-      await expect(service.deleteCustomers(['cus_nonexistent'])).resolves.toBeUndefined()
-    })
-
     test('softDeleteCustomers with non-existent ids does not throw', async ({ expect }) => {
       await expect(service.softDeleteCustomers(['cus_nonexistent'])).resolves.toBeUndefined()
     })
@@ -268,10 +264,6 @@ test.describe('CustomerModuleService', () => {
       const result = await service.updateCustomers([], update)
 
       expect(result).toEqual([])
-    })
-
-    test('deleteCustomers with empty ids does not throw', async ({ expect }) => {
-      await expect(service.deleteCustomers([])).resolves.toBeUndefined()
     })
 
     test('softDeleteCustomers with empty ids does not throw', async ({ expect }) => {

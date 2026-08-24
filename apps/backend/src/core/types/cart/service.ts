@@ -38,7 +38,6 @@ export type ICartModuleService = {
   createCart(data: CreateCartDTO, context?: Context): Promise<CartDTO>
   updateCart(cartId: string, data: UpdateCartDTO, context?: Context): Promise<CartDTO>
   updateCartWithAddresses(cartId: string, data: UpdateCartWithAddressesDTO, context?: Context): Promise<CartDTO>
-  deleteCarts(cartIds: string[], context?: Context): Promise<void>
   softDeleteCarts(cartIds: string[], context?: Context): Promise<void>
   restoreCarts(cartIds: string[], context?: Context): Promise<void>
   listLineItems(
@@ -50,7 +49,7 @@ export type ICartModuleService = {
   updateLineItems(lineItemIds: string[], data: UpdateLineItemDTO, context?: Context): Promise<CartLineItemDTO[]>
   addLineItem(cartId: string, item: CreateLineItemDTO, context?: Context): Promise<CartLineItemDTO>
   updateLineItem(lineItemId: string, data: UpdateLineItemDTO, context?: Context): Promise<CartLineItemDTO>
-  deleteLineItems(lineItemIds: string[], context?: Context): Promise<void>
+  softDeleteLineItems(lineItemIds: string[], context?: Context): Promise<void>
   listShippingMethods(
     filters?: FilterableCartShippingMethodProps,
     config?: FindConfig<CartShippingMethodDTO>,
@@ -61,7 +60,7 @@ export type ICartModuleService = {
     methods: CreateShippingMethodDTO[],
     context?: Context,
   ): Promise<CartShippingMethodDTO[]>
-  deleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
+  softDeleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
 
   // Addresses — owned by the cart, so every one of these is scoped to a parent
   listCartAddresses(
@@ -76,7 +75,7 @@ export type ICartModuleService = {
     data: CreateCartAddressDTO,
     context?: Context,
   ): Promise<CartAddressDTO>
-  deleteCartAddresses(addressIds: string[], context?: Context): Promise<void>
+  softDeleteCartAddresses(addressIds: string[], context?: Context): Promise<void>
 
   // Computed
   enrichLineItem(lineItem: CartLineItemDTO): EnrichedCartLineItemDTO

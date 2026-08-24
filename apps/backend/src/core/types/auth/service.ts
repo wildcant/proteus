@@ -62,7 +62,6 @@ export type IAuthModuleService = {
   updateAuthIdentities(ids: string[], data: UpdateAuthIdentityDTO, context?: Context): Promise<AuthIdentityDTO[]>
   createAuthIdentity(data: CreateAuthIdentityDTO, context?: Context): Promise<AuthIdentityDTO>
   updateAuthIdentity(id: string, data: UpdateAuthIdentityDTO, context?: Context): Promise<AuthIdentityDTO>
-  deleteAuthIdentities(ids: string[], context?: Context): Promise<void>
   softDeleteAuthIdentities(ids: string[], context?: Context): Promise<void>
   restoreAuthIdentities(ids: string[], context?: Context): Promise<void>
 
@@ -90,7 +89,6 @@ export type IAuthModuleService = {
   ): Promise<ProviderIdentityDTO[]>
   createProviderIdentity(data: CreateProviderIdentityDTO, context?: Context): Promise<ProviderIdentityDTO>
   updateProviderIdentity(id: string, data: UpdateProviderIdentityDTO, context?: Context): Promise<ProviderIdentityDTO>
-  deleteProviderIdentities(ids: string[], context?: Context): Promise<void>
   softDeleteProviderIdentities(ids: string[], context?: Context): Promise<void>
   restoreProviderIdentities(ids: string[], context?: Context): Promise<void>
 
@@ -118,7 +116,6 @@ export type IAuthModuleService = {
   ): Promise<AuthVerificationDTO[]>
   createAuthVerification(data: CreateAuthVerificationDTO, context?: Context): Promise<AuthVerificationDTO>
   updateAuthVerification(id: string, data: UpdateAuthVerificationDTO, context?: Context): Promise<AuthVerificationDTO>
-  deleteAuthVerifications(ids: string[], context?: Context): Promise<void>
   softDeleteAuthVerifications(ids: string[], context?: Context): Promise<void>
   restoreAuthVerifications(ids: string[], context?: Context): Promise<void>
 
@@ -133,5 +130,5 @@ export type IAuthModuleService = {
   ): Promise<AuthPasswordResetTokenDTO>
   findAuthPasswordResetTokenByHash(tokenHash: string, context?: Context): Promise<AuthPasswordResetTokenDTO | null>
   deleteAuthPasswordResetTokensByProviderIdentity(providerIdentityId: string, context?: Context): Promise<void>
-  hardDeleteAuthPasswordResetToken(id: string, context?: Context): Promise<void>
+  deleteAuthPasswordResetToken(id: string, context?: Context): Promise<void>
 }

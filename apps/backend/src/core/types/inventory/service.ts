@@ -31,7 +31,7 @@ export type IInventoryModuleService = {
   createInventoryItem(data: CreateInventoryItemDTO, context?: Context): Promise<InventoryItemDTO>
   updateInventoryItem(itemId: string, data: UpdateInventoryItemDTO, context?: Context): Promise<InventoryItemDTO>
   createInventoryLevel(data: CreateInventoryLevelDTO, context?: Context): Promise<InventoryLevelDTO>
-  deleteInventoryItems(itemIds: string[], context?: Context): Promise<void>
+  softDeleteInventoryItems(itemIds: string[], context?: Context): Promise<void>
   listInventoryLevels(
     filters?: FilterableInventoryLevelProps,
     config?: FindConfig<InventoryLevelDTO>,
@@ -56,7 +56,7 @@ export type IInventoryModuleService = {
     context?: Context,
   ): Promise<InventoryLevelDTO>
   createReservationItems(data: CreateReservationItemDTO[], context?: Context): Promise<ReservationItemDTO[]>
-  deleteReservationItems(ids: string[], context?: Context): Promise<void>
+  softDeleteReservationItems(ids: string[], context?: Context): Promise<void>
   restoreReservationItems(ids: string[], context?: Context): Promise<void>
   listReservationItems(
     filters?: FilterableReservationItemProps,

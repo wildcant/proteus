@@ -126,9 +126,9 @@ test.describe('completeCartWorkflow', () => {
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
 
-    // The order's addresses go with the order, so a discarded checkout accumulates nothing. The
-    // compensation hard-deletes, so `withDeleted` would still surface a row that was only hidden.
-    expect(await service.read.orderAddresses(container, undefined, { withDeleted: true })).toEqual([])
+    // The order's addresses go with the order, so a discarded checkout leaves nothing readable
+    // behind: the compensation hides the order and the cascade takes its addresses with it.
+    expect(await service.read.orderAddresses(container)).toEqual([])
     // The cart keeps its own — those belong to a checkout the shopper can still resume.
     expect(await service.read.cartAddresses(container, { cartId: cart.id })).toHaveLength(2)
   })

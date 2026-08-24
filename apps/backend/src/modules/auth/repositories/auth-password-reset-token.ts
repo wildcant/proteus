@@ -42,7 +42,7 @@ export class AuthPasswordResetTokenRepository {
       .catch(dbErrorMapper)
   }
 
-  async hardDelete(ids: string[], context?: Context): Promise<void> {
+  async delete(ids: string[], context?: Context): Promise<void> {
     if (ids.length === 0) return
     const client = this.getClient(context)
     await client

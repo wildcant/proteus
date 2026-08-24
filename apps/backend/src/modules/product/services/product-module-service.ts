@@ -222,7 +222,7 @@ export class ProductModuleService implements IProductModuleService {
     })
   }
 
-  async deleteProducts(productIds: string[], context?: Context): Promise<void> {
+  async softDeleteProducts(productIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.productRepository.softDelete(productIds, ctx)
     })
@@ -357,7 +357,7 @@ export class ProductModuleService implements IProductModuleService {
     })
   }
 
-  async deleteProductVariants(variantIds: string[], context?: Context): Promise<void> {
+  async softDeleteProductVariants(variantIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.productVariantRepository.softDelete(variantIds, ctx)
     })
@@ -445,7 +445,7 @@ export class ProductModuleService implements IProductModuleService {
     })
   }
 
-  async deleteProductOptions(optionIds: string[], context?: Context): Promise<void> {
+  async softDeleteProductOptions(optionIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       const activeLinks = await this.productProductOptionRepository.find({ optionId: optionIds }, undefined, ctx)
       if (activeLinks.length > 0) {

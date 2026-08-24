@@ -30,7 +30,7 @@ export const createProductWorkflow = createWorkflow<CreateProductInput, ProductD
       },
       async (created, { container }) => {
         const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.deleteProducts([created.id])
+        await productService.softDeleteProducts([created.id])
       },
     )
 

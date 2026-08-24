@@ -151,12 +151,6 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
-  async deleteCarts(cartIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.cartRepository.softDelete(cartIds, ctx)
-    })
-  }
-
   async softDeleteCarts(cartIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartRepository.softDelete(cartIds, ctx)
@@ -218,7 +212,7 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
-  async deleteLineItems(lineItemIds: string[], context?: Context): Promise<void> {
+  async softDeleteLineItems(lineItemIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartLineItemRepository.softDelete(lineItemIds, ctx)
     })
@@ -246,7 +240,7 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
-  async deleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
+  async softDeleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartShippingMethodRepository.softDelete(shippingMethodIds, ctx)
     })
@@ -283,7 +277,7 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
-  async deleteCartAddresses(addressIds: string[], context?: Context): Promise<void> {
+  async softDeleteCartAddresses(addressIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartAddressRepository.softDelete(addressIds, ctx)
     })

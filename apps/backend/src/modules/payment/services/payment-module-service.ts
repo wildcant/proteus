@@ -161,12 +161,6 @@ export class PaymentModuleService implements IPaymentModuleService {
     })
   }
 
-  async deletePaymentCollections(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.paymentCollectionRepository.delete(ids, ctx)
-    })
-  }
-
   async softDeletePaymentCollections(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.paymentCollectionRepository.softDelete(ids, ctx)
@@ -305,11 +299,11 @@ export class PaymentModuleService implements IPaymentModuleService {
     }
   }
 
-  async deletePaymentSession(id: string, context?: Context): Promise<void> {
+  async softDeletePaymentSession(id: string, context?: Context): Promise<void> {
     const session = await this.paymentSessionRepository.findByIdOrFail(id, undefined, context)
 
     await this.paymentProviderService.deleteSession(session.providerId, { data: session.data })
-    await this.paymentSessionRepository.delete([session.id], context)
+    await this.paymentSessionRepository.softDelete([session.id], context)
     await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
   }
 
@@ -591,12 +585,6 @@ export class PaymentModuleService implements IPaymentModuleService {
   async updateRefundReason(id: string, data: UpdateRefundReasonDTO, context?: Context): Promise<RefundReasonDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.refundReasonRepository.update(id, data, ctx)
-    })
-  }
-
-  async deleteRefundReasons(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.refundReasonRepository.delete(ids, ctx)
     })
   }
 

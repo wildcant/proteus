@@ -88,23 +88,15 @@ test.describe('AuthModuleService — AuthIdentity', () => {
     expect(updated.id).toBe(created.id)
   })
 
-  test('deleteAuthIdentities', async ({ expect, dto }) => {
-    const created = await service.createAuthIdentity(dto.generate.createAuthIdentity())
-
-    await service.deleteAuthIdentities([created.id])
-
-    const error = await service.retrieveAuthIdentity(created.id).catch((e) => e)
-    expect(AppError.isError(error)).toBe(true)
-    expect(error.type).toBe(ErrorTypes.NOT_FOUND)
-  })
-
   test('softDeleteAuthIdentities', async ({ expect, dto }) => {
     const created = await service.createAuthIdentity(dto.generate.createAuthIdentity())
 
     await service.softDeleteAuthIdentities([created.id])
 
-    const list = await service.listAuthIdentities()
-    expect(list).toHaveLength(0)
+    const error = await service.retrieveAuthIdentity(created.id).catch((e) => e)
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.NOT_FOUND)
+    expect(await service.listAuthIdentities()).toHaveLength(0)
   })
 
   test('restoreAuthIdentities', async ({ expect, dto }) => {
@@ -149,17 +141,14 @@ test.describe('AuthModuleService — ProviderIdentity', () => {
     await service.softDeleteProviderIdentities([created.id])
     const afterSoftDelete = await service.listProviderIdentities()
     expect(afterSoftDelete).toHaveLength(0)
+    const error = await service.retrieveProviderIdentity(created.id).catch((e) => e)
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.NOT_FOUND)
 
     // Restore
     await service.restoreProviderIdentities([created.id])
     const afterRestore = await service.listProviderIdentities()
     expect(afterRestore).toHaveLength(1)
-
-    // Hard delete
-    await service.deleteProviderIdentities([created.id])
-    const error = await service.retrieveProviderIdentity(created.id).catch((e) => e)
-    expect(AppError.isError(error)).toBe(true)
-    expect(error.type).toBe(ErrorTypes.NOT_FOUND)
   })
 
   test('unique constraint on (entity_id, provider)', async ({ expect, dto }) => {
@@ -219,13 +208,10 @@ test.describe('AuthModuleService — AuthVerification', () => {
     // Soft delete + restore
     await service.softDeleteAuthVerifications([created.id])
     expect(await service.listAuthVerifications()).toHaveLength(0)
-    await service.restoreAuthVerifications([created.id])
-    expect(await service.listAuthVerifications()).toHaveLength(1)
-
-    // Hard delete
-    await service.deleteAuthVerifications([created.id])
     const error = await service.retrieveAuthVerification(created.id).catch((e) => e)
     expect(AppError.isError(error)).toBe(true)
+    await service.restoreAuthVerifications([created.id])
+    expect(await service.listAuthVerifications()).toHaveLength(1)
   })
 
   test('unique constraint on (auth_identity_id, entity_id, entity_type)', async ({ expect, dto }) => {
@@ -299,7 +285,7 @@ test.describe('AuthModuleService — AuthPasswordResetToken', () => {
     expect(await service.findAuthPasswordResetTokenByHash(hash2)).toBeNull()
   })
 
-  test('hardDelete removes token permanently', async ({ expect, dto }) => {
+  test('delete removes token permanently', async ({ expect, dto }) => {
     const authIdentity = await service.createAuthIdentity(dto.generate.createAuthIdentity())
     const providerIdentity = await service.createProviderIdentity(
       dto.generate.createProviderIdentity({ authIdentityId: authIdentity.id }),
@@ -314,7 +300,7 @@ test.describe('AuthModuleService — AuthPasswordResetToken', () => {
       }),
     )
 
-    await service.hardDeleteAuthPasswordResetToken(token.id)
+    await service.deleteAuthPasswordResetToken(token.id)
 
     expect(await service.findAuthPasswordResetTokenByHash(tokenHash)).toBeNull()
   })

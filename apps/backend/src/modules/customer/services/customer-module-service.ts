@@ -111,12 +111,6 @@ export class CustomerModuleService implements ICustomerModuleService {
     })
   }
 
-  async deleteCustomers(customerIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.customerRepository.delete(customerIds, ctx)
-    })
-  }
-
   async softDeleteCustomers(customerIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.customerRepository.softDelete(customerIds, ctx)

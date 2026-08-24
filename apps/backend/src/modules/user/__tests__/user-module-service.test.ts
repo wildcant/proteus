@@ -72,23 +72,15 @@ test.describe('UserModuleService', () => {
     expect(updated.id).toBe(created.id)
   })
 
-  test('deleteUsers', async ({ expect, dto }) => {
-    const created = await service.createUser(dto.generate.createUser())
-
-    await service.deleteUsers([created.id])
-
-    const error = await service.retrieveUser(created.id).catch((e) => e)
-    expect(AppError.isError(error)).toBe(true)
-    expect(error.type).toBe(ErrorTypes.NOT_FOUND)
-  })
-
   test('softDeleteUsers', async ({ expect, dto }) => {
     const created = await service.createUser(dto.generate.createUser())
 
     await service.softDeleteUsers([created.id])
 
-    const users = await service.listUsers()
-    expect(users).toHaveLength(0)
+    const error = await service.retrieveUser(created.id).catch((e) => e)
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.NOT_FOUND)
+    expect(await service.listUsers()).toHaveLength(0)
   })
 
   test('createUser reuses the email of a soft-deleted user', async ({ expect, dto }) => {
@@ -160,10 +152,6 @@ test.describe('UserModuleService', () => {
       expect(result).toEqual([])
     })
 
-    test('deleteUsers with non-existent ids does not throw', async ({ expect }) => {
-      await expect(service.deleteUsers(['usr_nonexistent'])).resolves.toBeUndefined()
-    })
-
     test('softDeleteUsers with non-existent ids does not throw', async ({ expect }) => {
       await expect(service.softDeleteUsers(['usr_nonexistent'])).resolves.toBeUndefined()
     })
@@ -186,10 +174,6 @@ test.describe('UserModuleService', () => {
       const result = await service.updateUsers([], update)
 
       expect(result).toEqual([])
-    })
-
-    test('deleteUsers with empty ids does not throw', async ({ expect }) => {
-      await expect(service.deleteUsers([])).resolves.toBeUndefined()
     })
 
     test('softDeleteUsers with empty ids does not throw', async ({ expect }) => {

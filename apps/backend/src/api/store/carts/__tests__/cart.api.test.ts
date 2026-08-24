@@ -124,7 +124,7 @@ test.describe('POST /store/carts/:id/complete (concurrent)', () => {
     // The mirror of the concurrent case, and the one ordering alone does not cover: the
     // order↔cart link succeeds and the payment-collection link fails. Without a shared
     // transaction the first row commits, the step throws so its compensation is never
-    // registered, and `create-order`'s compensation hard-deletes the order underneath it.
+    // registered, and `create-order`'s compensation hides the order underneath it.
     vi.spyOn(service.read.linkRepo(api.container, 'orderPaymentCollection'), 'create').mockRejectedValueOnce(
       new Error('payment collection link unavailable'),
     )
