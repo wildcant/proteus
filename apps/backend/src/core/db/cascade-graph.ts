@@ -1,6 +1,6 @@
 import { snakeCase } from '@proteus/utils'
 import { is } from 'drizzle-orm'
-import type { PgColumn } from 'drizzle-orm/pg-core'
+import type { ForeignKey, PgColumn } from 'drizzle-orm/pg-core'
 import { getTableConfig, PgTable } from 'drizzle-orm/pg-core'
 import { tableName } from './utils.js'
 
@@ -48,10 +48,11 @@ function tablesIn(models: Record<string, unknown>): PgTable[] {
  * Builds the inverse foreign-key index for a module's models barrel. Called once per module at
  * bootstrap; the repositories share the result.
  *
- * Two shapes the walker cannot follow are rejected here rather than silently under-cascaded: a
- * composite foreign key, because the walker matches one column against a set of parent ids, and a
- * reference to anything but the parent's primary key, because those ids are what it collects. The
- * schema has neither, and a build-time throw is what keeps it that way.
+ * The walker matches one column against a set of parent ids, so every edge has to name exactly
+ * one column on each side. A composite foreign key still can, as long as exactly one of the
+ * columns it references is the parent's primary key — the walker follows that pair and lets the
+ * database enforce the rest of the tuple. A reference to anything else is rejected at build time
+ * rather than silently under-cascaded, because ids are what the walker collects.
  */
 export function buildCascadeGraph(models: Record<string, unknown>): CascadeGraph {
   // Keyed by table name rather than by the table object, so a lookup succeeds whoever imported
@@ -67,20 +68,7 @@ export function buildCascadeGraph(models: Record<string, unknown>): CascadeGraph
       if (action !== 'cascade' && action !== 'restrict') continue
 
       const reference = foreignKey.reference()
-      const column = reference.columns[0]
-      const parentColumn = reference.foreignColumns[0]
-      if (!column || reference.columns.length > 1) {
-        throw new Error(
-          `${config.name} declares a composite foreign key, which the cascade walker cannot follow. ` +
-            'Split it into single-column references, or teach the walker about composites.',
-        )
-      }
-      if (!parentColumn?.primary) {
-        throw new Error(
-          `${config.name}.${column.name} references a column that is not a primary key, which the ` +
-            'cascade walker cannot follow — it collects parents by their id.',
-        )
-      }
+      const column = referencingPrimaryKey(config.name, reference)
 
       const edge: CascadeEdge = {
         table,
@@ -94,10 +82,48 @@ export function buildCascadeGraph(models: Record<string, unknown>): CascadeGraph
     }
   }
 
-  // A lookup hands back the index's own array, so both sides of the contract are readonly: a
-  // caller that appended to one would be editing the graph every later deletion is read from.
+  // Every array a lookup can hand back is frozen, hit and miss alike, so the `readonly` on the
+  // return type is true rather than a suggestion — a caller that appended to one would be editing
+  // the graph every later deletion is read from.
+  freeze(owned)
+  freeze(blockers)
+
   return {
     ownedChildrenOf: (table) => owned.get(tableName(table)) ?? NO_EDGES,
     blockersOf: (table) => blockers.get(tableName(table)) ?? NO_EDGES,
   }
+}
+
+function freeze(index: Map<string, CascadeEdge[]>): void {
+  for (const edges of index.values()) Object.freeze(edges)
+}
+
+/**
+ * The column of this reference the walker travels along: the one paired with the parent's primary
+ * key.
+ *
+ * A single-column foreign key has only one candidate. A composite one is followed through
+ * whichever column sits opposite the primary key, since that is the value the walker collected
+ * from the parent — the remaining columns narrow the match further, and leaving them to the
+ * database costs nothing a soft delete can observe.
+ */
+function referencingPrimaryKey(child: string, reference: ReturnType<ForeignKey['reference']>): PgColumn {
+  const pairs = reference.columns.map((column, position) => ({ column, parent: reference.foreignColumns[position] }))
+  const viaPrimaryKey = pairs.filter((pair) => pair.parent?.primary)
+
+  const [only] = viaPrimaryKey
+  if (viaPrimaryKey.length === 1 && only) return only.column
+
+  const named = pairs.map((pair) => pair.column.name).join(', ')
+  if (viaPrimaryKey.length === 0) {
+    throw new Error(
+      `${child} references ${tableName(reference.foreignTable)} through (${named}), none of which is a ` +
+        'primary key — the cascade walker collects parents by their id and would match nothing.',
+    )
+  }
+
+  throw new Error(
+    `${child} references ${tableName(reference.foreignTable)} through (${named}), more than one of which is a ` +
+      'primary key — the cascade walker follows a single column and cannot tell which one to travel.',
+  )
 }

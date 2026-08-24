@@ -54,7 +54,8 @@ export type IPaymentModuleService = {
     input: CreatePaymentSessionDTO,
     context?: Context,
   ): Promise<PaymentSessionDTO>
-  softDeletePaymentSession(id: string, context?: Context): Promise<void>
+  /** Destructive: the session is destroyed at the provider, so there is nothing to restore. */
+  deletePaymentSession(id: string, context?: Context): Promise<void>
   authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null>
 
   // Payment retrieval

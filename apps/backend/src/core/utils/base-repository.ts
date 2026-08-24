@@ -217,13 +217,13 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
     /**
      * Hides these rows and the children the schema declares they own, as one event.
      *
-     * The timestamp is computed once here and threaded down, because it is what identifies the
-     * event — restore matches on it, so a per-table value would put microseconds between the
-     * tables of one cascade and nothing would ever match again.
+     * The timestamp that identifies the event is taken by the walker, from the database. It used
+     * to be a `new Date()` computed here, which resolves only to the millisecond — two deletions
+     * inside one were indistinguishable, and restoring the second swept the first back with it.
      */
     async softDelete(ids: string[], context?: Context): Promise<void> {
       if (ids.length === 0) return
-      await softDeleteCascade(this.getClient_(context), this.#cascadeGraph, this.table, ids, new Date())
+      await softDeleteCascade(this.getClient_(context), this.#cascadeGraph, this.table, ids)
     }
 
     /** Brings back exactly what the matching `softDelete` hid, and nothing deleted before it. */

@@ -108,3 +108,29 @@ export function dbErrorMapper(err: unknown): never {
       throw err
   }
 }
+
+/**
+ * The same failures, told from the point of view of a restore.
+ *
+ * Clearing `deleted_at` puts a row back into every partial unique index that excludes hidden
+ * rows, so anything that took its slot while it was away surfaces as an ordinary unique
+ * violation. Reported as one, "slug \"blue-tee\" already exists" reads like a bad create and
+ * sends the reader looking for a duplicate request that never happened. The row being restored
+ * is the one that is late, and the message has to say so.
+ */
+export function restoreErrorMapper(err: unknown): never {
+  if (AppError.isError(err)) {
+    throw err
+  }
+
+  if (isPgError(err) && err.code === '23505') {
+    const info = getConstraintInfo(err)
+    const slot = info ? `${info.keys.map((k, i) => `${k} "${info.values[i] ?? ''}"`).join(', ')}` : 'a unique value'
+    throw new AppError({
+      type: ErrorTypes.DUPLICATE_ERROR,
+      message: `Cannot restore ${info?.table ?? 'the record'}: ${slot} was taken by another record while it was deleted`,
+    })
+  }
+
+  return dbErrorMapper(err)
+}

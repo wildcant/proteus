@@ -209,11 +209,11 @@ test.describe('PaymentModuleService', () => {
       expect(payment).toBeNull()
     })
 
-    test('softDeletePaymentSession removes session and calls provider', async ({ expect, dto }) => {
+    test('deletePaymentSession removes session and calls provider', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
 
-      await service.softDeletePaymentSession(session.id)
+      await service.deletePaymentSession(session.id)
 
       expect(mockProvider.deleteSession).toHaveBeenCalledOnce()
       // Collection should revert to not_paid (no sessions left)
@@ -537,7 +537,7 @@ test.describe('PaymentModuleService', () => {
       const spare = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
 
       // Deleted on its own, so it carries its own timestamp and was never part of the event below.
-      await service.softDeletePaymentSession(spare.id)
+      await service.deletePaymentSession(spare.id)
       await service.softDeletePaymentCollections([collection.id])
       await service.restorePaymentCollections([collection.id])
 

@@ -299,7 +299,14 @@ export class PaymentModuleService implements IPaymentModuleService {
     }
   }
 
-  async softDeletePaymentSession(id: string, context?: Context): Promise<void> {
+  /**
+   * Destroys the session at the provider, then hides our record of it.
+   *
+   * The destructive verb, not `softDelete`, and for the same reason `deleteAccountHolder` keeps
+   * it: the half that matters happens at Stripe, where retention is not ours to control. A
+   * `restore` would bring back a row describing a session that no longer exists.
+   */
+  async deletePaymentSession(id: string, context?: Context): Promise<void> {
     const session = await this.paymentSessionRepository.findByIdOrFail(id, undefined, context)
 
     await this.paymentProviderService.deleteSession(session.providerId, { data: session.data })

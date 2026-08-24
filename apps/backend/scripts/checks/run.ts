@@ -10,13 +10,22 @@
  * A check is a `{ name, rule, run }` triple over the collected models. Add one to CHECKS below.
  */
 import { cascadeRelationshipIndex } from './cascade-relationship-index.js'
+import { destroyOnlyChildren } from './destroy-only-children.js'
+import { guardOutsideItsClosure } from './guard-outside-its-closure.js'
 import { modelBarrelReachable } from './model-barrel-reachable.js'
 import { collectModels } from './models.js'
 import { softDeleteIndexPredicate } from './soft-delete-index-predicate.js'
 import { standardTimestamps } from './standard-timestamps.js'
 import type { Check } from './types.js'
 
-const CHECKS: Check[] = [softDeleteIndexPredicate, cascadeRelationshipIndex, modelBarrelReachable, standardTimestamps]
+const CHECKS: Check[] = [
+  softDeleteIndexPredicate,
+  cascadeRelationshipIndex,
+  modelBarrelReachable,
+  standardTimestamps,
+  destroyOnlyChildren,
+  guardOutsideItsClosure,
+]
 
 const RED = '\x1b[0;31m'
 const GREEN = '\x1b[0;32m'
@@ -37,11 +46,14 @@ for (const check of CHECKS) {
     continue
   }
 
-  failed = true
+  const warning = check.severity === 'warning'
+  const colour = warning ? YELLOW : RED
+  failed ||= !warning
+
   console.info('')
-  console.info(`${RED}${BOLD}${check.name}${RESET} ${DIM}${'━'.repeat(76 - check.name.length)}${RESET}`)
+  console.info(`${colour}${BOLD}${check.name}${RESET} ${DIM}${'━'.repeat(76 - check.name.length)}${RESET}`)
   console.info('')
-  console.info(`  ${RED}✖${RESET} Rule: ${check.rule}.`)
+  console.info(`  ${colour}${warning ? '!' : '✖'}${RESET} Rule: ${check.rule}.`)
   console.info('')
 
   for (const violation of violations) {
@@ -51,7 +63,7 @@ for (const check of CHECKS) {
     console.info('')
   }
 
-  console.info(`  Found ${RED}${violations.length}${RESET} violation(s).`)
+  console.info(`  Found ${colour}${violations.length}${RESET} ${warning ? 'warning(s)' : 'violation(s)'}.`)
   console.info('')
 }
 
