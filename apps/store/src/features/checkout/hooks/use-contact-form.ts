@@ -10,17 +10,17 @@ const contactSchema = UpdateCart.pick({ firstName: true, lastName: true }).exten
 
 export type ContactFormValues = z.infer<typeof contactSchema>
 
-const EMPTY_DEFAULTS: ContactFormValues = {
-  email: '',
-  firstName: '',
-  lastName: '',
-}
-
-// const TEST_DEFAULTS: ContactFormValues = {
-//   email: 'joe@mail.com',
-//   firstName: 'Joe',
-//   lastName: 'Doe',
+// const EMPTY_DEFAULTS: ContactFormValues = {
+//   email: '',
+//   firstName: '',
+//   lastName: '',
 // }
+
+const TEST_DEFAULTS: ContactFormValues = {
+  email: 'joe@mail.com',
+  firstName: 'Joe',
+  lastName: 'Doe',
+}
 
 export type ContactFormParams = SubmitFormParams & {
   defaultValues?: ContactFormValues
@@ -30,7 +30,7 @@ export function useContactForm(params?: ContactFormParams) {
   const updateCart = useUpdateCart()
 
   const form = useAppForm({
-    defaultValues: params?.defaultValues ?? EMPTY_DEFAULTS,
+    defaultValues: params?.defaultValues ?? TEST_DEFAULTS,
     validators: { onSubmit: contactSchema },
     onSubmit: async ({ value }) => {
       updateCart.mutate(value, {

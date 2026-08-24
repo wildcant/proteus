@@ -1,16 +1,23 @@
 import { z } from 'zod'
 
 const envSchema = z.object({
+  NODE_ENV: z.string().default('development'),
+  RUNTIME: z.enum(['node', 'workerd']).default('node'),
+
+  // Database
   POOLER_DATABASE_URL: z.string(),
   DIRECT_DATABASE_URL: z.string().default(''),
   MIGRATING: z.coerce.boolean().default(false),
-  RUNTIME: z.enum(['node', 'workerd']).default('node'),
-  MOCKS: z.coerce.boolean().default(false),
-  NODE_ENV: z.string().default('development'),
+
+  // Logger
   LOG_LEVEL: z.string().default('http'),
   LOG_FILE: z.string().default(''),
+
+  // Auth
   JWT_SECRET: z.string(),
   JWT_EXPIRES_IN: z.string().default('1d'),
+
+  // Stripe
   STRIPE_SECRET_KEY: z.string(),
   STRIPE_WEBHOOK_SECRET: z.string(),
 
@@ -18,18 +25,11 @@ const envSchema = z.object({
   // SENDGRID_API_KEY: z.string(),
   // SENDGRID_FROM: z.string(),
 
-  // Resend (development only)
+  // Resend
   RESEND_API_KEY: z.string(),
   RESEND_FROM: z.string(),
 
-  /**
-   * Forces which file provider the file module registers, overriding the NODE_ENV default.
-   * Set to `s3` to point a script or a local server at object storage.
-   */
-  FILE_PROVIDER: z.enum(['localfs', 's3']).optional(),
-
-  // S3-compatible file storage (production only — dev and test use the local filesystem
-  // provider). The s3 provider validates these at bootstrap and names any that are missing.
+  // S3-compatible file storage (production only — dev and test use the local filesystem provider).
   S3_FILE_URL: z.string().default(''),
   S3_REGION: z.string().default(''),
   S3_BUCKET: z.string().default(''),
@@ -46,7 +46,30 @@ const envSchema = z.object({
     .string()
     .transform((s) => s.split(',').map((u) => u.trim()))
     .pipe(z.array(z.url()).min(1)),
+
+  // ------------------------------ DEV ONLY ------------------------------
+
+  MOCKS: z.coerce.boolean().default(false),
+
+  /**
+   * Points the API at the toxiproxy in docker-compose.yml instead of Postgres directly, so every
+   * query carries injected latency. Set by `npm run dev:slow`; empty everywhere else. Ignored while
+   * migrating — those run against DIRECT_DATABASE_URL and have no reason to be slow.
+   */
+  SLOW_DATABASE_URL: z.string().default(''),
+
+  /**
+   * Forces which file provider the file module registers, overriding the NODE_ENV default.
+   * Set to `s3` to point a script or a local server at object storage.
+   */
+  FILE_PROVIDER: z.enum(['localfs', 's3']).optional(),
 })
+
+function resolveDatabaseUrl(env: z.infer<typeof envSchema>) {
+  if (env.MIGRATING) return env.DIRECT_DATABASE_URL
+  if (env.SLOW_DATABASE_URL) return env.SLOW_DATABASE_URL
+  return env.POOLER_DATABASE_URL
+}
 
 function createEnv() {
   const result = envSchema.safeParse(process.env)
@@ -58,7 +81,7 @@ function createEnv() {
 
   const env = {
     ...result.data,
-    DATABASE_URL: result.data.MIGRATING ? result.data.DIRECT_DATABASE_URL : result.data.POOLER_DATABASE_URL,
+    DATABASE_URL: resolveDatabaseUrl(result.data),
   }
 
   return env

@@ -1,71 +1,44 @@
-import type { NotificationDTO } from '@core/types/notification/common.js'
 import type { CreateNotificationDTO } from '@core/types/notification/mutations.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
-import { Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { createWorkflow, setWorkflowEngine } from '@core/workflows/types.js'
+import type { TestContainer } from '@tests/setup/create-container.js'
 import { test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
-import type { SendNotificationsInput } from '../steps/send-notifications.js'
 import { sendNotificationsStep } from '../steps/send-notifications.js'
 
-function setupWorkflowEngine(notificationService: Partial<INotificationModuleService>) {
-  const container = createContainer()
-  container.register({ [Modules.NOTIFICATION]: asValue(notificationService) })
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
-}
+let container: TestContainer
 
-function makeTestWorkflow(input: SendNotificationsInput) {
-  return createWorkflow<SendNotificationsInput, NotificationDTO[]>(
-    'test-send-notifications',
-    async (ctx, workflowInput) => {
-      return sendNotificationsStep(ctx, workflowInput)
-    },
-  ).run(input)
-}
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
 
 test.describe('sendNotificationsStep', () => {
-  test('calls createNotifications with provided data', async ({ dto, expect }) => {
-    const expectedNotification = dto.generate.notification()
-    const createCalls: CreateNotificationDTO[][] = []
+  test('persists the notifications it is given', async ({ dto, service, step, expect }) => {
+    const notification = dto.generate.createNotification({ channel: 'feed' })
 
-    setupWorkflowEngine({
-      createNotifications: async (data) => {
-        createCalls.push(data)
-        return [expectedNotification]
-      },
-    })
+    const created = await step.run(sendNotificationsStep, { notifications: [notification] })
 
-    const notifications: CreateNotificationDTO[] = [{ to: 'user@example.com', channel: 'email' }]
-    const result = await makeTestWorkflow({ notifications })
-
-    expect(createCalls).toHaveLength(1)
-    expect(createCalls[0]).toEqual(notifications)
-    expect(result).toEqual([expectedNotification])
+    expect(created).toHaveLength(1)
+    expect(await service.read.notifications(container)).toMatchObject([
+      { id: created[0]?.id, to: notification.to, channel: 'feed' },
+    ])
   })
 
-  test('has no compensation — rollback does not undo notifications', async ({ dto, expect }) => {
-    const createCalls: CreateNotificationDTO[][] = []
+  test('has no compensation — rollback leaves the notification sent', async ({ dto, service, step, expect }) => {
+    const notification = dto.generate.createNotification({ channel: 'feed' })
 
-    setupWorkflowEngine({
-      createNotifications: async (data) => {
-        createCalls.push(data)
-        return [dto.generate.notification()]
-      },
-    })
+    await step.runAndCompensate(sendNotificationsStep, { notifications: [notification] })
 
-    const failingWorkflow = createWorkflow<SendNotificationsInput, void>('test-no-compensation', async (ctx, input) => {
-      await sendNotificationsStep(ctx, input)
-      await ctx.step('deliberate-failure', async () => {
-        throw new Error('deliberate failure')
-      })
-    })
+    // A sent notification cannot be unsent, so the step registers no compensation.
+    expect(await service.read.notifications(container)).toHaveLength(1)
+  })
 
-    await expect(
-      failingWorkflow.run({ notifications: [{ to: 'user@example.com', channel: 'email' }] }),
-    ).rejects.toThrow('deliberate failure')
+  test('sends every notification in one call', async ({ dto, service, step, expect }) => {
+    const notifications: CreateNotificationDTO[] = [
+      dto.generate.createNotification({ channel: 'feed' }),
+      dto.generate.createNotification({ channel: 'feed' }),
+    ]
 
-    // createNotifications was called once during the step — no compensation call
-    expect(createCalls).toHaveLength(1)
+    await step.run(sendNotificationsStep, { notifications })
+
+    const persisted = await service.read.notifications(container)
+    expect(persisted.map((entry) => entry.to).sort()).toEqual(notifications.map((entry) => entry.to).sort())
   })
 })

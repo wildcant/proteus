@@ -1,82 +1,83 @@
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
-import { setWorkflowEngine } from '@core/workflows/types.js'
-import { test } from '@tests/setup/test-extend.js'
-import { asValue, createContainer } from 'awilix'
+import type { TestContainer } from '@tests/setup/create-container.js'
+import { type Fixtures, test } from '@tests/setup/test-extend.js'
+import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
 import { batchVariantImagesWorkflow } from '../batch-variant-images.js'
 
-const VARIANT = { id: 'variant_1', thumbnail: 'https://cdn.test/removed.png' }
-const ADDED_IMAGE = 'img_added'
-const REMOVED_IMAGE = 'img_removed'
+type Services = Fixtures['service']
 
-function setup() {
-  const productService = {
-    addImageToVariant: vi.fn().mockResolvedValue([{ id: 'pvimg_new' }]),
-    removeImageFromVariant: vi.fn().mockResolvedValue(undefined),
-    listProductVariantImages: vi
-      .fn()
-      .mockResolvedValue([{ id: 'pvimg_old', imageId: REMOVED_IMAGE, variantId: VARIANT.id }]),
-    listProductImages: vi.fn().mockResolvedValue([{ id: REMOVED_IMAGE, url: VARIANT.thumbnail }]),
-    listProductVariants: vi.fn().mockResolvedValue([VARIANT]),
-    updateProductVariants: vi.fn().mockResolvedValue([]),
-  }
+let container: TestContainer
 
-  const container = createContainer()
-  container.register({ [Modules.PRODUCT]: asValue(productService) })
-  setWorkflowEngine(createSimpleWorkflowEngine(), container)
+test.beforeEach(async ({ createTestContainer }) => {
+  container = await createTestContainer()
+})
 
-  return productService
+/** A variant carrying `linked` as its only image, with `spare` available to attach. */
+const variantShowingOneImage = async (service: Services) => {
+  const { product, images } = await service.create.product(container, {
+    images: [{ url: 'https://cdn.test/linked.png' }, { url: 'https://cdn.test/spare.png' }],
+  })
+  const [linked, spare] = images
+  assertDefined(linked)
+  assertDefined(spare)
+
+  const variant = await service.create.productVariant(container, product.id, { thumbnail: linked.url })
+  await service.create.variantImages(container, [{ imageId: linked.id, variantId: variant.id }])
+
+  return { variant, linked, spare }
 }
 
+const imageIdsOn = async (service: Services, variantId: string) =>
+  (await service.read.productVariantImages(container, { variantId })).map((entry) => entry.imageId).sort()
+
 test.describe('batchVariantImagesWorkflow', () => {
-  test('adds and removes image associations and clears a thumbnail that lost its image', async ({ expect }) => {
-    const productService = setup()
+  test('attaches, detaches, and drops a thumbnail whose image left', async ({ service, expect }) => {
+    const { variant, linked, spare } = await variantShowingOneImage(service)
 
     const result = await batchVariantImagesWorkflow.run({
-      variantId: VARIANT.id,
-      add: [ADDED_IMAGE],
-      remove: [REMOVED_IMAGE],
+      variantId: variant.id,
+      add: [spare.id],
+      remove: [linked.id],
     })
 
-    expect(result).toEqual({ added: [ADDED_IMAGE], removed: [REMOVED_IMAGE] })
-    expect(productService.addImageToVariant).toHaveBeenCalledWith([{ imageId: ADDED_IMAGE, variantId: VARIANT.id }])
-    expect(productService.removeImageFromVariant).toHaveBeenCalledWith([
-      { imageId: REMOVED_IMAGE, variantId: VARIANT.id },
-    ])
-    expect(productService.updateProductVariants).toHaveBeenCalledWith([VARIANT.id], { thumbnail: null })
+    expect(result).toEqual({ added: [spare.id], removed: [linked.id] })
+    expect(await imageIdsOn(service, variant.id)).toEqual([spare.id])
+    expect(await service.read.productVariant(container, variant.id)).toMatchObject({ thumbnail: null })
   })
 
-  test('leaves a thumbnail that points at an image the variant keeps', async ({ expect }) => {
-    const productService = setup()
-    productService.listProductImages.mockResolvedValue([{ id: REMOVED_IMAGE, url: 'https://cdn.test/other.png' }])
+  test('keeps a thumbnail that points at an image the variant still has', async ({ service, expect }) => {
+    const { variant, linked, spare } = await variantShowingOneImage(service)
+    // Thumbnail shows `spare`, but `linked` is the one being detached.
+    await service.update.productVariant(container, variant.id, { thumbnail: spare.url })
 
-    await batchVariantImagesWorkflow.run({ variantId: VARIANT.id, remove: [REMOVED_IMAGE] })
+    await batchVariantImagesWorkflow.run({ variantId: variant.id, remove: [linked.id] })
 
-    expect(productService.updateProductVariants).not.toHaveBeenCalled()
+    expect(await service.read.productVariant(container, variant.id)).toMatchObject({ thumbnail: spare.url })
   })
 
-  test('reports only the images that were actually linked', async ({ expect }) => {
-    const productService = setup()
-    productService.listProductVariantImages.mockResolvedValue([])
+  test('reports only the images that were actually attached', async ({ service, expect }) => {
+    const { variant, spare } = await variantShowingOneImage(service)
 
-    const result = await batchVariantImagesWorkflow.run({ variantId: VARIANT.id, remove: [REMOVED_IMAGE] })
+    // `spare` was never attached to this variant, so there is nothing to detach.
+    const result = await batchVariantImagesWorkflow.run({ variantId: variant.id, remove: [spare.id] })
 
     expect(result.removed).toEqual([])
-    expect(productService.removeImageFromVariant).toHaveBeenCalledWith([])
   })
 
-  test('rolls both sides back when a later step fails', async ({ expect }) => {
-    const productService = setup()
-    productService.listProductVariants.mockRejectedValue(new Error('boom'))
+  test('rolls both sides back when a later step fails', async ({ service, expect }) => {
+    const { variant, linked, spare } = await variantShowingOneImage(service)
+
+    // `clear-variant-thumbnail` runs after both pivot writes have committed.
+    vi.spyOn(container.resolve<IProductModuleService>(Modules.PRODUCT), 'listProductImages').mockRejectedValueOnce(
+      new Error('boom'),
+    )
 
     await expect(
-      batchVariantImagesWorkflow.run({ variantId: VARIANT.id, add: [ADDED_IMAGE], remove: [REMOVED_IMAGE] }),
+      batchVariantImagesWorkflow.run({ variantId: variant.id, add: [spare.id], remove: [linked.id] }),
     ).rejects.toThrow('boom')
 
-    expect(productService.removeImageFromVariant).toHaveBeenCalledWith([
-      { imageId: ADDED_IMAGE, variantId: VARIANT.id },
-    ])
-    expect(productService.addImageToVariant).toHaveBeenCalledWith([{ imageId: REMOVED_IMAGE, variantId: VARIANT.id }])
+    expect(await imageIdsOn(service, variant.id)).toEqual([linked.id])
   })
 })

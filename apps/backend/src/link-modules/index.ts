@@ -1,6 +1,7 @@
 import { type AwilixContainer, asValue } from 'awilix'
 import type { DbProvider } from '../core/db/ports.js'
 import { ContainerRegistrationKeys } from '../core/utils/index.js'
+import { createWithTransaction } from '../core/utils/with-transaction.js'
 import { CartPaymentCollectionRepository } from './repositories/cart-payment-collection.js'
 import { CartProductRepository } from './repositories/cart-product.js'
 import { OrderCartRepository } from './repositories/order-cart.js'
@@ -30,6 +31,7 @@ export function registerLinkService(sharedContainer: AwilixContainer): void {
     orderCart,
     orderPaymentCollection,
     orderFulfillment,
+    withTransaction: createWithTransaction(getDb),
   })
 
   sharedContainer.register({

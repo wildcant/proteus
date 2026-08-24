@@ -1,8 +1,6 @@
-import type { DbProvider } from '@core/db/ports.js'
+import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
-import type { AwilixContainer } from 'awilix'
 import request from 'supertest'
-import { bootstrapContainer } from '../../../container.js'
 import type { PreparedRoute, RouteHandler } from '../../../server/ports.js'
 import { createExpressApp } from '../express/app.js'
 import { createHonoApp } from '../hono/app.js'
@@ -27,22 +25,15 @@ const formDataWithMixedFields = () => {
   return formData
 }
 
-let container: AwilixContainer
+let api: TestApi
 
-test.beforeEach(async ({ getDb, logger }) => {
-  const dbProvider: DbProvider = {
-    getDb,
-    withConnection: (fn) => fn(),
-    shutdown: async () => {
-      // noop
-    },
-  }
-  container = await bootstrapContainer({ logger, dbProvider })
+test.beforeEach(async ({ createApi }) => {
+  api = await createApi()
 })
 
 test.describe('multipart file parsing', () => {
   test('express adapter only accepts the files field', async ({ logger, expect }) => {
-    const app = createExpressApp({ routes, container, logger, corsOrigins: [] })
+    const app = createExpressApp({ routes, container: api.container, logger, corsOrigins: [] })
 
     const webRequest = new Request('http://localhost/uploads', { method: 'POST', body: formDataWithMixedFields() })
     const body = Buffer.from(await webRequest.arrayBuffer())
@@ -56,7 +47,7 @@ test.describe('multipart file parsing', () => {
   })
 
   test('hono adapter only accepts the files field', async ({ logger, expect }) => {
-    const app = createHonoApp({ routes, container, logger, corsOrigins: [] })
+    const app = createHonoApp({ routes, container: api.container, logger, corsOrigins: [] })
 
     const response = await app.fetch(
       new Request('http://localhost/uploads', { method: 'POST', body: formDataWithMixedFields() }),

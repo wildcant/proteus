@@ -1,4 +1,5 @@
 import type { InventoryLevelDTO, ReservationItemDTO } from '@core/types/inventory/common.js'
+import type { CreateInventoryItemDTO, CreateInventoryLevelDTO } from '@core/types/inventory/mutations.js'
 import { faker } from '@faker-js/faker'
 
 export function generateReservationItemDTO(overrides?: Partial<ReservationItemDTO>): ReservationItemDTO {
@@ -30,6 +31,22 @@ export function generateInventoryLevelDTO(overrides?: Partial<InventoryLevelDTO>
     metadata: null,
     createdAt: faker.date.recent(),
     deletedAt: null,
+    ...overrides,
+  }
+}
+
+export function generateCreateInventoryItemDTO(overrides?: Partial<CreateInventoryItemDTO>): CreateInventoryItemDTO {
+  return {
+    sku: faker.string.alphanumeric(10).toUpperCase(),
+    ...overrides,
+  }
+}
+
+export function generateCreateInventoryLevelDTO(overrides?: Partial<CreateInventoryLevelDTO>): CreateInventoryLevelDTO {
+  return {
+    inventoryItemId: `iitem_${faker.string.alphanumeric(32)}`,
+    locationId: `sloc_${faker.string.alphanumeric(32)}`,
+    stockedQuantity: faker.number.int({ min: 0, max: 1000 }),
     ...overrides,
   }
 }

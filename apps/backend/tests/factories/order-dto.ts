@@ -6,6 +6,7 @@ import type {
   CreateOrderLineItemDTO,
   CreateOrderShippingMethodDTO,
   CreateOrderTransactionDTO,
+  UpdateOrderDTO,
 } from '@core/types/order/mutations.js'
 import { faker } from '@faker-js/faker'
 
@@ -104,6 +105,20 @@ export function generateCreateOrderAddressDTO(overrides?: Partial<CreateOrderAdd
     city: 'Springfield',
     countryCode: 'us',
     postalCode: '12345',
+    ...overrides,
+  }
+}
+
+/** Both address ids are real FKs to `order_address`, so they stay null — a generated id would
+ *  dangle. Every caller that means an address passes one it created. */
+export function generateUpdateOrderDTO(overrides?: Partial<UpdateOrderDTO>): UpdateOrderDTO {
+  return {
+    status: faker.helpers.arrayElement(['pending', 'completed', 'canceled', 'archived'] as const),
+    email: faker.internet.email(),
+    customerId: `cus_${faker.string.alphanumeric(32)}`,
+    shippingAddressId: null,
+    billingAddressId: null,
+    canceledAt: faker.date.recent(),
     ...overrides,
   }
 }

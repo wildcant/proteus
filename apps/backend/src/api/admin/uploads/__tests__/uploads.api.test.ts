@@ -1,41 +1,13 @@
-import type { DbProvider } from '@core/db/ports.js'
-import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { AdminCreatePresignedUploadUrl } from '@proteus/http-schemas/admin'
+import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
-import type { Express } from 'express'
-import request from 'supertest'
-import { bootstrapContainer } from '../../../../container.js'
-import { createExpressApp } from '../../../../framework/runtime/express/app.js'
 import uploadDefinitions from '../definitions.js'
 
-let expressApp: Express
+let api: TestApi
 
-test.beforeEach(async ({ getDb, logger }) => {
-  const dbProvider: DbProvider = {
-    getDb,
-    withConnection: (fn) => fn(),
-    shutdown: async () => {
-      // noop
-    },
-  }
-  const container = await bootstrapContainer({ logger, dbProvider })
-
-  const routes = uploadDefinitions
-    .filter((definition) => definition.matcher === '/admin/uploads/presigned-urls')
-    .map((definition) => ({
-      method: definition.method,
-      matcher: definition.matcher,
-      handler: applyMiddleware(definition),
-    }))
-
-  expressApp = createExpressApp({ routes, container, logger, corsOrigins: [] })
+test.beforeEach(async ({ createApi }) => {
+  api = await createApi({ definitions: uploadDefinitions })
 })
-
-const postPresignedUrl = (mimeType: string) =>
-  request(expressApp)
-    .post('/admin/uploads/presigned-urls')
-    .set('Content-Type', 'application/json')
-    .send({ originalName: 'logo.png', mimeType, size: 1024 })
 
 test.describe('POST /admin/uploads/presigned-urls', () => {
   // The pattern was previously anchored only at the start, so a valid prefix
@@ -52,7 +24,11 @@ test.describe('POST /admin/uploads/presigned-urls', () => {
 
   for (const mimeType of malformed) {
     test(`rejects ${JSON.stringify(mimeType)} with 400`, async ({ expect }) => {
-      const response = await postPresignedUrl(mimeType)
+      const response = await api.post('/admin/uploads/presigned-urls', {
+        originalName: 'logo.png',
+        mimeType,
+        size: 1024,
+      })
       expect(response.status).toBe(400)
     })
   }

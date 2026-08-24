@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "dotenvx run -f ../../.env.local -- tsx --watch src/index.ts",
+    "dev:slow": "./scripts/dev-slow-db.sh",
     "dev:test": "NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx watch src/index.ts --port 3010",
     "dev:workerd": "wrangler dev --test-scheduled --config wrangler.jsonc --env-file .env.workerd",
     "deploy": "wrangler deploy --config wrangler.jsonc",

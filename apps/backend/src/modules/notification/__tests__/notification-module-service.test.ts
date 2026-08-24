@@ -51,10 +51,12 @@ test.describe('NotificationModuleService', () => {
     })
 
     test('singular createNotification', async ({ expect, dto }) => {
-      const result = await service.createNotification(dto.generate.createNotification())
+      const input = dto.generate.createNotification()
+
+      const result = await service.createNotification(input)
 
       expect(result.id).toMatch(/^noti_/)
-      expect(result.to).toBe('user@example.com')
+      expect(result.to).toBe(input.to)
       expect(result.channel).toBe('feed')
       expect(result.status).toBe('success')
     })
@@ -287,12 +289,13 @@ test.describe('NotificationModuleService', () => {
 
   test.describe('retrieveNotification', () => {
     test('retrieves by ID', async ({ expect, dto }) => {
-      const created = await service.createNotification(dto.generate.createNotification())
+      const input = dto.generate.createNotification()
+      const created = await service.createNotification(input)
 
       const retrieved = await service.retrieveNotification(created.id)
 
       expect(retrieved.id).toBe(created.id)
-      expect(retrieved.to).toBe('user@example.com')
+      expect(retrieved.to).toBe(input.to)
     })
 
     test('throws NOT_FOUND for missing ID', async ({ expect }) => {

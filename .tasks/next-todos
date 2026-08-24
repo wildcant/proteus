@@ -1,8 +1,75 @@
 Fixes and improvements
+- CHECKOUT IDEMPOTENCY: spam-clicking Place Order creates one throwaway order per click until the unique index
+  rejects it (422); clicks landing between link-order and mark-cart-completed get 409. Confirmed under dev:slow,
+  so the "only ms on a local DB" caveat is settled — it is real, just not damaging: one order, one charge, no
+  oversell. Deferred; real fix is a lock on the cart (see "investigate locking").
+- create-order compensation orphans addresses: order_address is referenced *by* order (order/models/order.ts:25),
+  so no cascade reaches it and every rolled-back order leaves up to two rows. cart_address has the same shape.
+- display_id is a serial, so every rolled-back order burns an order number. Gaps are visible to shoppers once
+  a race discards five in a row. Only fixable by changing how the number is assigned.
+- SOFT DELETE CASCADE in BaseRepository: walk drizzle's FK metadata and soft-delete the children that declare
+  onDelete:'cascade', so the model stays the source of truth instead of each module service. Needs a
+  module-scoped table registry at bootstrap (no FK crosses modules today). Invert order_address/cart_address
+  onto the child so they are covered too. restore() needs the same walk, matched on deletedAt.
+- `idempotent` flag in core/workflows/types.ts:16 is dead — nothing reads it, no workflow sets it. Delete.
+- Stripe idempotencyKey is never populated — stripe-provider.ts:209 reads it off session context, nothing writes it.
+  Wire one before Stripe goes live.
+
+- INVENTORY IS NOT ACTUALLY RESERVED: placing an order does not reduce what the storefront offers.
+  - `createReservationItems` (apps/backend/src/modules/inventory/services/inventory-module-service.ts:173) writes a
+    reservation_item row and nothing else. `deleteReservationItems` / `restoreReservationItems` are the same.
+    Nothing in the codebase ever writes `inventory_level.reserved_quantity`.
+  - `retrieveAvailableQuantity` is `stocked - reserved`, so with reserved permanently 0 availability ignores every
+    order that has been placed but not yet fulfilled. Stock only moves at fulfillment, via `adjustInventoryLevel`,
+    which touches `stocked_quantity` only.
+  - Net effect: the same last unit can be sold an unbounded number of times. The concurrency test in
+    src/api/store/carts/__tests__/cart.api.test.ts passes on the `order_cart` unique index, not on inventory —
+    it proves one cart completes once, not that stock is respected across different carts.
+  - Fix is one decision: keep reserved_quantity as a maintained counter (increment on reserve, decrement on
+    release/fulfil, all inside the existing transaction) or drop the column and derive availability by summing
+    live reservation_item rows. Either way `confirmInventory` and `buildVariantStock` inherit it for free.
+
+- RESERVATIONS ARE KEYED TO CART LINE ITEMS, BUT READ BY ORDER LINE ITEM.
+  - complete-cart.ts:303 writes `lineItemId` from the *cart*'s line items (`cali_…`). cancel-order.ts:40 and
+    create-order-fulfillment.ts:138 both call `listReservationItems({ lineItemId })` with *order* line item ids
+    (`ordli_…`). They never match.
+  - Cancelling an order therefore never releases its stock — the reservation is stranded and the units stay
+    unsellable forever (and see above: they were never counted as reserved anyway).
+  - Fulfilling an order with managed inventory always throws `No reservation found for managed-inventory item
+    ordli_…` from compute-inventory-adjustments.ts, so fulfillment is impossible for any tracked variant.
+  - Decide where the mapping lives: re-key the reservation to the order line item in `reserve-inventory` (the
+    order already exists by then), or carry a `cartLineItemId` onto order_line_item and look up through it.
+  - Blocks the last two files of the workflow-test migration — see docs/backend-test-infrastructure.md.
 
 Future features TODOs
+- INVENTORY MODULE COMPLETION: the tables exist and checkout reads them, but there is no way to operate them.
+  - No stock location entity. `location_id` is free text on inventory_level and reservation_item — no table, no
+    FK, no validation. The seed hardcodes `loc_default`, test factories generate `sloc_*`, and the admin
+    fulfillment route (src/api/admin/orders/[id]/fulfillments/route.ts:11) takes whatever locationId the client
+    sends. complete-cart.ts:301 picks `locationIds[0] ?? ''` — an arbitrary location, and an empty string when the
+    variant has no levels at all.
+  - No admin surface. There are no routes under src/api/admin/inventory and no admin feature module. A shopkeeper
+    cannot create an inventory item, set or adjust a level, or see what is committed. Only scripts/seed-dev.ts
+    writes stock.
+  - Creating a variant does not create inventory. `createProductVariant` makes no inventory item and no
+    productVariantInventoryItem link, so every variant added through the admin is silently untracked and treated
+    as infinitely available. Only the seed wires the link up.
+  - `manageInventory` and `allowBackorder` are dead columns (product_variant.ts:19-20, plus
+    reservation_item.allow_backorder). Nothing reads them: every linked variant is treated as tracked and no
+    variant can ever backorder. Honouring them touches buildVariantStock, confirmInventory and complete-cart
+    together — see the TODO(inventory) notes in src/workflows/product/utils/build-variant-stock.ts and
+    src/api/store/products/[id]/route.ts.
+  - `incoming_quantity` is read by the availability projection and never written. There is no restock / purchase
+    order concept behind it.
+  - No low-stock signal. The seed writes a notification with `triggerType: 'inventory.low_stock'`, but nothing
+    emits one.
+  - `adjustInventoryLevel` throws when the item has no level at the given location, so fulfilling from a location
+    that was never stocked fails rather than falling back.
 - Allow customer to manage addresses.
 - Allow customer to see previous orders.
+- PRODUCT DISCOVERY: no ProductCategory / ProductCollection / ProductTag / ProductType, so the storefront has no navigation beyond a flat product list.
+  - order_line_item already snapshots productType and productHandle, implying a type entity that does not exist yet.
+  - ~4 tables including the pivots. Blocks category nav, collection landing pages, and tag filtering.
 - Access Control and Multi tenancy Module Architecture
   - TODO: Read posts regarding tenant isolation patterns and tradeoffs and security
     - https://learn.microsoft.com/en-us/azure/azure-sql/database/saas-tenancy-app-design-patterns?view=azuresql
@@ -18,16 +85,22 @@ Future Infra TODOs
 - composing workflows
 - ci workflow to handle deployment!
 - migration order in prod (first modules and then link modules, are there edge cases?).
-- reusable workflow setup function for tests
+- reusable workflow setup function for tests — done for 12 of 14 workflow test files (they now run against a real
+  container from `createTestContainer()`; see docs/backend-test-infrastructure.md). cancel-order and
+  create-order-fulfillment are still on mocks, blocked on the reservation keying bug above.
 - features flags
 - event bus: investigate pgmq (see docs/research/event-subscriber-system/) and cloudflare queues
   - Related video: https://www.youtube.com/watch?v=ACVevIlWEfM
 ![event](./subscriber-example.png)
+- NOTIFICATION QUEUE: order confirmation sends inside the checkout request. Can't just drop the await — on Workers
+  withConnection closes the DB client when the handler resolves. Module is already outbox-shaped (pending status,
+  src/jobs, per-minute cron). Also fixes failed sends never being retried.
 - investigate locking
   -  Context: Medusa's notification module uses DB queries for idempotency checks (query by idempotency_key, skip if already SUCCESS/PENDING). There's a race window where two concurrent requests with the same key could both pass the check before either creates a PENDING record. Medusa has a TODO to use Redis-based locking instead.
   - The DB unique constraint on idempotencyKey catches the second insert if both slip through, so for single-instance it's sufficient.
   - For multi-instance / high-concurrency: need distributed locking (Redis, or DB-level SELECT FOR UPDATE).
   - Decide: DB-only (current scale) vs Redis locking (future scale).
+  - https://www.youtube.com/watch?v=5_DyX3PnKxg
 
 Future nice to have TODOs
 - per item fullfilment and shipment.

@@ -54,7 +54,19 @@ export type DismissLinksResult<T extends DismissLinksInput = DismissLinksInput> 
   [R in LinkColumnRegistry[keyof T & keyof LinkColumnRegistry][number]]?: WritableLinkDTOMap[R][]
 }
 
+/** One link to create, keyed by the repository that owns it. `data` is narrowed to that
+ *  repository's payload, so the pair cannot be mismatched. */
+export type CreateLinksInput = {
+  [K in WritableLinkRepoKey]: { link: K; data: Partial<WritableLinkDTOMap[K]> }
+}[WritableLinkRepoKey]
+
 export type ILinkService = {
   repo<K extends keyof ILinkRepositoryMap>(name: K): ILinkRepositoryMap[K]
+  /** Creates several links atomically, in the given order. Link tables share one database, so
+   *  callers get all-or-nothing without handling a transaction themselves: if a later link
+   *  violates a constraint, the earlier ones roll back with it rather than being left behind
+   *  for a compensation that never runs. Order matters — put the most constrained link first
+   *  so it fails before the rest do any work. */
+  createMany(links: CreateLinksInput[], context?: Context): Promise<void>
   dismissLinks<T extends DismissLinksInput>(input: T, context?: Context): Promise<DismissLinksResult<T>>
 }

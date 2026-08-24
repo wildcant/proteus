@@ -2,11 +2,13 @@ import type {
   AuthIdentityDTO,
   AuthPasswordResetTokenDTO,
   AuthVerificationDTO,
+  ConfirmAuthVerificationDTO,
   CreateAuthIdentityDTO,
   CreateAuthPasswordResetTokenDTO,
   CreateAuthVerificationDTO,
   CreateProviderIdentityDTO,
   ProviderIdentityDTO,
+  RequestAuthVerificationDTO,
   UpdateAuthIdentityDTO,
   UpdateAuthVerificationDTO,
   UpdateProviderIdentityDTO,
@@ -95,11 +97,18 @@ export function generateCreateAuthVerificationDTO(
   }
 }
 
+/**
+ * `providerMetadata` is deliberately absent: it holds the verification provider's own state
+ * (the token hash), so any generated value would invalidate the code already issued.
+ */
 export function generateUpdateAuthVerificationDTO(
   overrides?: Partial<UpdateAuthVerificationDTO>,
 ): UpdateAuthVerificationDTO {
   return {
-    verifiedAt: new Date(),
+    // `token` is the only verification provider registered in provider-declarations.ts.
+    codeProvider: 'token',
+    verifiedAt: faker.date.recent(),
+    requestedAt: faker.date.recent(),
     ...overrides,
   }
 }
@@ -148,6 +157,36 @@ export function generateAuthPasswordResetTokenDTO(
     expiresAt: new Date(Date.now() + 3600_000),
     createdAt: faker.date.recent(),
     updatedAt: faker.date.recent(),
+    ...overrides,
+  }
+}
+
+export function generateRequestAuthVerificationDTO(
+  overrides?: Partial<RequestAuthVerificationDTO>,
+): RequestAuthVerificationDTO {
+  return {
+    // NOT NULL FK. Callers name the identity they just registered.
+    authIdentityId: `authid_${faker.string.alphanumeric(32)}`,
+    entityId: faker.internet.email(),
+    entityType: 'email',
+    // `token` is the only verification provider registered in provider-declarations.ts.
+    codeProvider: 'token',
+    metadata: { [faker.lorem.word()]: faker.lorem.word() },
+    ...overrides,
+  }
+}
+
+/**
+ * `authIdentityId` is deliberately absent: the verification provider decides whether it is
+ * required, and a generated one would be looked up instead of the caller's identity.
+ */
+export function generateConfirmAuthVerificationDTO(
+  overrides?: Partial<ConfirmAuthVerificationDTO>,
+): ConfirmAuthVerificationDTO {
+  return {
+    code: faker.string.numeric(6),
+    // `token` is the only verification provider registered in provider-declarations.ts.
+    codeProvider: 'token',
     ...overrides,
   }
 }
