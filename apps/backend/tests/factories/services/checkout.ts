@@ -4,9 +4,10 @@ import type {
   CreateCartDTO,
   CreateLineItemDTO,
   CreateShippingMethodDTO,
+  UpdateCartWithAddressesDTO,
 } from '../../../src/core/types/cart/mutations.js'
 import { generateCreateLineItemDTO } from '../cart-dto.js'
-import { addLineItem, addShippingMethod, createCart } from './cart.js'
+import { addCartAddresses, addLineItem, addShippingMethod, createCart } from './cart.js'
 import { type StockVariantOptions, stockVariant } from './inventory.js'
 import { createPaymentSessionForCart } from './payment.js'
 
@@ -19,6 +20,9 @@ export type CreateCheckoutReadyCartOptions = {
   inventory?: Omit<StockVariantOptions, 'variantId'> | null
   /** `null` leaves the cart without a payment collection, which `validate-cart-payments` rejects. */
   payment?: { providerId?: string } | null
+  /** Addresses attached before completion, the way `update-cart` does mid-checkout. Omitted
+   *  leaves the cart with none, which is what an order with no shipping address is made from. */
+  addresses?: Partial<UpdateCartWithAddressesDTO>
 }
 
 /**
@@ -39,6 +43,7 @@ export async function createCheckoutReadyCart(
   const cart = await createCart(container, options.cart)
   const lineItem = await addLineItem(container, cart.id, lineItemInput)
   const shippingMethod = await addShippingMethod(container, cart.id, options.shippingMethod)
+  const addresses = options.addresses ? await addCartAddresses(container, cart.id, options.addresses) : []
 
   // Exactly what this cart orders, so it completes deterministically whatever quantity the
   // generator picked, and a second reservation for the same cart is still an oversell.
@@ -67,6 +72,7 @@ export async function createCheckoutReadyCart(
     cart,
     lineItem,
     shippingMethod,
+    addresses,
     total,
     variantId: lineItem.variantId,
     inventoryItem: inventory?.inventoryItem ?? null,

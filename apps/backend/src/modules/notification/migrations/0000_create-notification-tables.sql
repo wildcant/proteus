@@ -31,7 +31,7 @@ CREATE TABLE "notification" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX "idx_notification_idempotency_key" ON "notification" USING btree ("idempotency_key") WHERE deleted_at IS NULL AND idempotency_key IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_notification_idempotency_key" ON "notification" USING btree ("idempotency_key") WHERE idempotency_key IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_notification_channel" ON "notification" USING btree ("channel") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_notification_status" ON "notification" USING btree ("status") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_notification_provider_id" ON "notification" USING btree ("provider_id") WHERE deleted_at IS NULL;--> statement-breakpoint

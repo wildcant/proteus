@@ -1,5 +1,6 @@
 import { BigNumber } from '@core/db/bignum.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
@@ -47,16 +48,23 @@ function createMockProviderService() {
 
 let service: PaymentModuleService
 let mockProvider: ReturnType<typeof createMockProviderService>
+/** Captures and refunds are only ever read as part of a payment, and a hidden payment cannot be
+ *  retrieved — so once the cascade reaches them there is no service-level read left to observe
+ *  them through. These two are how the second hop is asserted at all. */
+let captureRepository: CaptureRepository
+let refundRepository: RefundRepository
 
 test.beforeEach(({ getDb, logger }) => {
   mockProvider = createMockProviderService()
+  captureRepository = new CaptureRepository({ getDb, cascadeGraph })
+  refundRepository = new RefundRepository({ getDb, cascadeGraph })
 
   service = new PaymentModuleService({
     paymentCollectionRepository: new PaymentCollectionRepository({ getDb, cascadeGraph }),
     paymentSessionRepository: new PaymentSessionRepository({ getDb, cascadeGraph }),
     paymentRepository: new PaymentRepository({ getDb, cascadeGraph }),
-    captureRepository: new CaptureRepository({ getDb, cascadeGraph }),
-    refundRepository: new RefundRepository({ getDb, cascadeGraph }),
+    captureRepository,
+    refundRepository,
     refundReasonRepository: new RefundReasonRepository({ getDb, cascadeGraph }),
     accountHolderRepository: new AccountHolderRepository({ getDb, cascadeGraph }),
     paymentProviderService: mockProvider as unknown as PaymentProviderService,
@@ -489,6 +497,58 @@ test.describe('PaymentModuleService', () => {
       const result = await service.listPaymentProviders()
 
       expect(result).toEqual([{ id: 'system', isEnabled: true }])
+    })
+  })
+
+  test.describe('Cascade delete', () => {
+    /** A collection carrying one of everything the cascade has to reach. */
+    const paidCollection = async (dto: Fixtures['dto']) => {
+      const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+      const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+      const payment = await service.authorizePaymentSession(session.id)
+      assertDefined(payment)
+      await service.capturePayment({ paymentId: payment.id })
+      await service.refundPayment({ paymentId: payment.id, amount: new BigNumber(4000) })
+
+      return { collection, session, payment }
+    }
+
+    test('softDeletePaymentCollections — hides every table the collection owns', async ({ expect, dto }) => {
+      const { collection, payment } = await paidCollection(dto)
+      expect(await captureRepository.find({ paymentId: payment.id })).toHaveLength(1)
+      expect(await refundRepository.find({ paymentId: payment.id })).toHaveLength(1)
+
+      await service.softDeletePaymentCollections([collection.id])
+
+      // `withDeleted` gets past the hidden parent; its children are still read live, so empty
+      // arrays are the cascade having reached the first hop.
+      const hidden = await service.retrievePaymentCollection(collection.id, { withDeleted: true })
+      expect(hidden.paymentSessions).toHaveLength(0)
+      expect(hidden.payments).toHaveLength(0)
+
+      // A hop further down. Captures and refunds are only readable through a payment, and that
+      // payment is now hidden, so the repositories are the only thing left that can see them.
+      expect(await captureRepository.find({ paymentId: payment.id })).toHaveLength(0)
+      expect(await refundRepository.find({ paymentId: payment.id })).toHaveLength(0)
+    })
+
+    test('restorePaymentCollections — brings back exactly the matching event', async ({ expect, dto }) => {
+      const { collection, payment } = await paidCollection(dto)
+      const spare = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+
+      // Deleted on its own, so it carries its own timestamp and was never part of the event below.
+      await service.softDeletePaymentSession(spare.id)
+      await service.softDeletePaymentCollections([collection.id])
+      await service.restorePaymentCollections([collection.id])
+
+      const restored = await service.retrievePaymentCollection(collection.id)
+      expect(restored.payments).toHaveLength(1)
+      expect(await captureRepository.find({ paymentId: payment.id })).toHaveLength(1)
+      expect(await refundRepository.find({ paymentId: payment.id })).toHaveLength(1)
+
+      // The session the cascade hid comes back; the one hidden beforehand stays where it was.
+      expect(restored.paymentSessions).toHaveLength(1)
+      expect(restored.paymentSessions?.map((session) => session.id)).not.toContain(spare.id)
     })
   })
 })

@@ -1,10 +1,12 @@
 import { test } from '@tests/setup/test-extend.js'
+import { createContainer } from 'awilix'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import * as models from '../models/index.js'
 import { FulfillmentRepository } from '../repositories/fulfillment.js'
 import { FulfillmentAddressRepository } from '../repositories/fulfillment-address.js'
 import { FulfillmentItemRepository } from '../repositories/fulfillment-item.js'
+import { FulfillmentProviderRepository } from '../repositories/fulfillment-provider.js'
 import { FulfillmentSetRepository } from '../repositories/fulfillment-set.js'
 import { GeoZoneRepository } from '../repositories/geo-zone.js'
 import { ServiceZoneRepository } from '../repositories/service-zone.js'
@@ -12,7 +14,7 @@ import { ShippingOptionRepository } from '../repositories/shipping-option.js'
 import { ShippingOptionTypeRepository } from '../repositories/shipping-option-type.js'
 import { ShippingProfileRepository } from '../repositories/shipping-profile.js'
 import { FulfillmentModuleService } from '../services/fulfillment-module-service.js'
-import type { FulfillmentProviderService } from '../services/fulfillment-provider-service.js'
+import { FulfillmentProviderService } from '../services/fulfillment-provider-service.js'
 
 const cascadeGraph = buildCascadeGraph(models)
 
@@ -29,8 +31,11 @@ test.beforeEach(({ getDb, logger }) => {
     fulfillmentRepository: new FulfillmentRepository({ getDb, cascadeGraph }),
     fulfillmentItemRepository: new FulfillmentItemRepository({ getDb, cascadeGraph }),
     fulfillmentAddressRepository: new FulfillmentAddressRepository({ getDb, cascadeGraph }),
-    // Nothing here reaches a provider; the cascade is entirely between our own tables.
-    fulfillmentProviderService: undefined as unknown as FulfillmentProviderService,
+    fulfillmentProviderService: new FulfillmentProviderService({
+      container: createContainer(),
+      fulfillmentProviderRepository: new FulfillmentProviderRepository({ getDb, cascadeGraph }),
+      logger,
+    }),
     withTransaction: createWithTransaction(getDb),
     logger,
   })

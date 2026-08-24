@@ -2,11 +2,12 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { SQL } from 'drizzle-orm'
 import { PgDialect } from 'drizzle-orm/pg-core'
+import { NOT_SOFT_DELETED } from '../../src/core/db/utils.js'
 import { BACKEND_ROOT } from './models.js'
 
 const dialect = new PgDialect()
 
-export function renderPredicate(predicate: SQL | undefined): string | null {
+function renderPredicate(predicate: SQL | undefined): string | null {
   return predicate ? dialect.sqlToQuery(predicate).sql : null
 }
 
@@ -17,7 +18,7 @@ export function renderPredicate(predicate: SQL | undefined): string | null {
 export function excludesSoftDeleted(predicate: SQL | undefined): boolean {
   const rendered = renderPredicate(predicate)
   if (!rendered) return false
-  return rendered.toLowerCase().replace(/\s+/g, ' ').includes('deleted_at is null')
+  return rendered.toLowerCase().replace(/\s+/g, ' ').includes(NOT_SOFT_DELETED.toLowerCase())
 }
 
 /**
@@ -28,6 +29,11 @@ export function columnName(indexed: unknown): string | null {
   if (typeof indexed !== 'object' || indexed === null || !('name' in indexed)) return null
   const { name } = indexed
   return typeof name === 'string' ? name : null
+}
+
+/** A model file's source, for the rules that are about how a declaration is written. */
+export function sourceOf(file: string): string {
+  return readFileSync(join(BACKEND_ROOT, file), 'utf8')
 }
 
 /** Best-effort `file:line` for a declaration, located by the name the author gave it. */

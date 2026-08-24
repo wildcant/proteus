@@ -25,7 +25,7 @@ unit tests only (~20s); the full suite is `npm run --workspace=backend test`.
 | `tests/setup/run-step.ts` | `step.run` / `step.runAndCompensate` for a bare workflow step |
 | `tests/setup/test-extend.ts` | Every fixture: `db`, `getDb`, `logger`, `makeRequest`, `createApi`, `createTestContainer`, `step`, `dto`, `factories`, `service` |
 | `tests/factories/` | DTO generators, service factories, and the E2E-only DB factories |
-| `tests/utils/` | Leaf helpers — `assert-defined`, `decode-token`, `make-request` |
+| `tests/utils/` | Leaf helpers — `assert-defined`, `decode-token`, `auth-header` |
 
 ## Database lifecycle
 

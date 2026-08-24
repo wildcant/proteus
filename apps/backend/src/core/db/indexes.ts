@@ -1,6 +1,7 @@
 import type { SQL } from 'drizzle-orm'
 import { sql } from 'drizzle-orm'
 import { index, uniqueIndex } from 'drizzle-orm/pg-core'
+import { NOT_SOFT_DELETED } from './utils.js'
 
 /**
  * Index authoring helpers for soft-deletable tables.
@@ -24,7 +25,7 @@ import { index, uniqueIndex } from 'drizzle-orm/pg-core'
  * drizzle's plain `index()`, since there is nothing to filter on.
  */
 
-const notSoftDeleted = sql`deleted_at IS NULL`
+const notSoftDeleted = sql.raw(NOT_SOFT_DELETED)
 
 function livePredicate(extraPredicate?: SQL): SQL {
   return extraPredicate ? sql`${extraPredicate} AND ${notSoftDeleted}` : notSoftDeleted

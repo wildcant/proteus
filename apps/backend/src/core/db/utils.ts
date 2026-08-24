@@ -1,3 +1,4 @@
+import { snakeCase } from '@proteus/utils'
 import type { PgTable } from 'drizzle-orm/pg-core'
 import { getTableConfig } from 'drizzle-orm/pg-core'
 
@@ -11,16 +12,24 @@ import { getTableConfig } from 'drizzle-orm/pg-core'
  * the walker about what "soft-deletable" means passes a schema the walker then mishandles.
  */
 
+/**
+ * The soft-delete column, in the two spellings the codebase needs: drizzle knows it by its JS
+ * property name, the database by the snake_case one. Every place that decides what "soft-deleted"
+ * means reads it from here — the walker when it hides a row, the index helpers when they write a
+ * predicate, the checks when they verify one — so those three cannot drift into disagreeing.
+ */
+export const SOFT_DELETE_COLUMN = 'deletedAt'
+
+export const SOFT_DELETE_COLUMN_SQL = snakeCase(SOFT_DELETE_COLUMN)
+
+/** The predicate every index on a soft-deletable table carries, as the database spells it. */
+export const NOT_SOFT_DELETED = `${SOFT_DELETE_COLUMN_SQL} IS NULL`
+
 export function tableName(table: PgTable): string {
   return getTableConfig(table).name
 }
 
 /** A table is soft-deletable when it carries the `deletedAt` column from the `timestamps` helper. */
 export function isSoftDeletable(table: PgTable): boolean {
-  return getTableConfig(table).columns.some((column) => column.name === 'deletedAt')
-}
-
-/** Drizzle reports a column by its JS property name; the database knows it in snake_case. */
-export function snakeCase(name: string): string {
-  return name.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase()
+  return getTableConfig(table).columns.some((column) => column.name === SOFT_DELETE_COLUMN)
 }

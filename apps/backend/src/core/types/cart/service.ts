@@ -19,7 +19,6 @@ import type {
   CreateCartDTO,
   CreateLineItemDTO,
   CreateShippingMethodDTO,
-  UpdateCartAddressDTO,
   UpdateCartDTO,
   UpdateCartWithAddressesDTO,
   UpdateLineItemDTO,
@@ -62,13 +61,12 @@ export type ICartModuleService = {
   ): Promise<CartShippingMethodDTO[]>
   softDeleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
 
-  // Addresses — owned by the cart, so every one of these is scoped to a parent
+  // Addresses — owned by the cart, so reads and writes are scoped to a parent
   listCartAddresses(
     filters?: FilterableCartAddressProps,
     config?: FindConfig<CartAddressDTO>,
     context?: Context,
   ): Promise<CartAddressDTO[]>
-  updateCartAddress(addressId: string, data: UpdateCartAddressDTO, context?: Context): Promise<CartAddressDTO>
   upsertCartAddress(
     cartId: string,
     type: CartAddressType,

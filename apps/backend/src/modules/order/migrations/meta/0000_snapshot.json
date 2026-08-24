@@ -1,5 +1,5 @@
 {
-  "id": "d9ac5ee2-9516-41ab-b995-476217d8262f",
+  "id": "30fce3ad-8d75-4517-9435-59fcf8e8800e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -331,7 +331,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND variant_id IS NOT NULL",
+          "where": "variant_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -347,7 +347,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND product_id IS NOT NULL",
+          "where": "product_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -466,7 +466,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND shipping_option_id IS NOT NULL",
+          "where": "shipping_option_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -595,7 +595,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND customer_id IS NOT NULL",
+          "where": "customer_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

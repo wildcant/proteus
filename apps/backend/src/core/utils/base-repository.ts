@@ -217,13 +217,13 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
     /**
      * Hides these rows and the children the schema declares they own, as one event.
      *
-     * `deletedAt` is a parameter rather than a value computed here because the timestamp is what
-     * identifies the event — restore matches on it. A caller hiding two aggregates that belong to
-     * the same undo passes one value for both; everyone else lets it default.
+     * The timestamp is computed once here and threaded down, because it is what identifies the
+     * event — restore matches on it, so a per-table value would put microseconds between the
+     * tables of one cascade and nothing would ever match again.
      */
-    async softDelete(ids: string[], context?: Context, deletedAt: Date = new Date()): Promise<void> {
+    async softDelete(ids: string[], context?: Context): Promise<void> {
       if (ids.length === 0) return
-      await softDeleteCascade(this.getClient_(context), this.#cascadeGraph, this.table, ids, deletedAt)
+      await softDeleteCascade(this.getClient_(context), this.#cascadeGraph, this.table, ids, new Date())
     }
 
     /** Brings back exactly what the matching `softDelete` hid, and nothing deleted before it. */

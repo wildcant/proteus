@@ -1,6 +1,7 @@
+import { snakeCase } from '@proteus/utils'
 import { getTableConfig } from 'drizzle-orm/pg-core'
-import { isSoftDeletable, snakeCase, tableName } from '../../src/core/db/utils.js'
-import { excludesSoftDeleted, locate } from './metadata.js'
+import { isSoftDeletable, SOFT_DELETE_COLUMN_SQL, tableName } from '../../src/core/db/utils.js'
+import { excludesSoftDeleted, locate, sourceOf } from './metadata.js'
 import type { Check, Violation } from './types.js'
 
 /**
@@ -14,10 +15,17 @@ import type { Check, Violation } from './types.js'
  * Uniqueness declared inline (`text().unique()`) or as a table constraint (`unique().on(...)`)
  * compiles to a constraint, which cannot carry a predicate at all — so it is rejected outright
  * and must be re-declared as a partial unique index.
+ *
+ * A hand-written predicate is rejected even when it is correct. Checking that the clause is present
+ * only catches the author who forgot it; refusing the spelling altogether means the `liveIndex`
+ * helpers are the sole way to author an index, so there is no longer a version to forget.
  */
+/** Any `sql` fragment in a model naming the soft-delete column — the helpers never produce one. */
+const handWrittenPredicate = new RegExp(`sql\`[^\`]*${SOFT_DELETE_COLUMN_SQL}[^\`]*\``, 'i')
+
 export const softDeleteIndexPredicate: Check = {
   name: 'soft-delete-index-predicate',
-  rule: 'every index on a soft-deletable table excludes soft-deleted rows',
+  rule: 'every index on a soft-deletable table excludes soft-deleted rows, and gets that predicate from liveIndex',
   run: (models) => {
     const violations: Violation[] = []
 
@@ -52,6 +60,16 @@ export const softDeleteIndexPredicate: Check = {
           remedy: `declare it with ${helper} from core/db/indexes.js`,
         })
       }
+    }
+
+    for (const file of new Set(models.map((model) => model.file))) {
+      if (!handWrittenPredicate.test(sourceOf(file))) continue
+      violations.push({
+        location: locate(file, SOFT_DELETE_COLUMN_SQL),
+        message: `${file} spells the soft-delete predicate out by hand`,
+        remedy:
+          'drop the .where(...) and declare the index with liveIndex or liveUniqueIndex, which applies it for you',
+      })
     }
 
     return violations

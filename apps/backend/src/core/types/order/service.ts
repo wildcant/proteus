@@ -25,7 +25,6 @@ import type {
   CreateOrderLineItemDTO,
   CreateOrderShippingMethodDTO,
   CreateOrderTransactionDTO,
-  UpdateOrderAddressDTO,
   UpdateOrderDTO,
 } from './mutations.js'
 
@@ -45,7 +44,7 @@ export type IOrderModuleService = {
   softDeleteOrders(ids: string[], context?: Context): Promise<void>
   restoreOrders(ids: string[], context?: Context): Promise<void>
 
-  // Addresses — owned by the order, so every one of these is scoped to a parent
+  // Addresses — owned by the order, so reads and writes are scoped to a parent
   retrieveOrderAddress(orderId: string, type: OrderAddressType, context?: Context): Promise<OrderAddressDTO | null>
   listOrderAddresses(
     filters?: FilterableOrderAddressProps,
@@ -58,7 +57,6 @@ export type IOrderModuleService = {
     data: CreateOrderAddressDTO,
     context?: Context,
   ): Promise<OrderAddressDTO>
-  updateOrderAddress(id: string, data: UpdateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO>
   softDeleteOrderAddresses(ids: string[], context?: Context): Promise<void>
 
   // Line items

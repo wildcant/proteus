@@ -1,5 +1,5 @@
 {
-  "id": "a710c62c-aef0-4be9-a5d6-cc31f83ec730",
+  "id": "ad179077-620a-4e1c-baa2-afd9e7b03445",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -179,7 +179,7 @@
           "tableTo": "payment",
           "columnsFrom": ["payment_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -457,7 +457,7 @@
           "tableTo": "payment_collection",
           "columnsFrom": ["payment_collection_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -610,7 +610,7 @@
           "tableTo": "payment_collection",
           "columnsFrom": ["payment_collection_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "payment_payment_session_id_payment_session_id_fk": {
@@ -786,7 +786,7 @@
           "tableTo": "payment",
           "columnsFrom": ["payment_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "refund_refund_reason_id_refund_reason_id_fk": {

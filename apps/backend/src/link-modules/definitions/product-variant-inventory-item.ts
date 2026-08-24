@@ -1,6 +1,7 @@
 import { relations, sql } from 'drizzle-orm'
-import { index, integer, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { integer, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../core/db/indexes.js'
 import { inventoryItemTable, productVariantTable } from '../modules-definitions.js'
 
 export const productVariantInventoryItemTable = pgTable(
@@ -13,11 +14,9 @@ export const productVariantInventoryItemTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    uniqueIndex('idx_pvitem_variant_inventory')
-      .on(table.variantId, table.inventoryItemId)
-      .where(sql`deleted_at IS NULL`),
-    index('idx_pvitem_variant_id').on(table.variantId).where(sql`deleted_at IS NULL`),
-    index('idx_pvitem_inventory_item_id').on(table.inventoryItemId).where(sql`deleted_at IS NULL`),
+    liveUniqueIndex('idx_pvitem_variant_inventory').on(table.variantId, table.inventoryItemId),
+    liveIndex('idx_pvitem_variant_id').on(table.variantId),
+    liveIndex('idx_pvitem_inventory_item_id').on(table.inventoryItemId),
   ],
 )
 

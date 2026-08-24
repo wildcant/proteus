@@ -1,7 +1,8 @@
+import { snakeCase } from '@proteus/utils'
 import { is } from 'drizzle-orm'
 import type { PgColumn } from 'drizzle-orm/pg-core'
 import { getTableConfig, PgTable } from 'drizzle-orm/pg-core'
-import { snakeCase, tableName } from './utils.js'
+import { tableName } from './utils.js'
 
 /**
  * Which children a record owns, read off the schema instead of restated in a service.
@@ -28,10 +29,12 @@ export type CascadeEdge = {
 
 export type CascadeGraph = {
   /** Children that follow the parent into deletion. */
-  ownedChildrenOf: (table: PgTable) => CascadeEdge[]
+  ownedChildrenOf: (table: PgTable) => readonly CascadeEdge[]
   /** References that forbid the parent's deletion while they are live. */
-  blockersOf: (table: PgTable) => CascadeEdge[]
+  blockersOf: (table: PgTable) => readonly CascadeEdge[]
 }
+
+const NO_EDGES: readonly CascadeEdge[] = Object.freeze([])
 
 function tablesIn(models: Record<string, unknown>): PgTable[] {
   const tables: PgTable[] = []
@@ -40,8 +43,6 @@ function tablesIn(models: Record<string, unknown>): PgTable[] {
   }
   return tables
 }
-
-const EMPTY: CascadeEdge[] = []
 
 /**
  * Builds the inverse foreign-key index for a module's models barrel. Called once per module at
@@ -93,8 +94,10 @@ export function buildCascadeGraph(models: Record<string, unknown>): CascadeGraph
     }
   }
 
+  // A lookup hands back the index's own array, so both sides of the contract are readonly: a
+  // caller that appended to one would be editing the graph every later deletion is read from.
   return {
-    ownedChildrenOf: (table) => owned.get(tableName(table)) ?? EMPTY,
-    blockersOf: (table) => blockers.get(tableName(table)) ?? EMPTY,
+    ownedChildrenOf: (table) => owned.get(tableName(table)) ?? NO_EDGES,
+    blockersOf: (table) => blockers.get(tableName(table)) ?? NO_EDGES,
   }
 }

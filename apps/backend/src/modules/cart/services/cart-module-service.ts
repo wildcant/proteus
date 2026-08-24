@@ -20,7 +20,6 @@ import type {
   FilterableCartShippingMethodProps,
   FindConfig,
   ICartModuleService,
-  UpdateCartAddressDTO,
   UpdateCartDTO,
   UpdateCartWithAddressesDTO,
   UpdateLineItemDTO,
@@ -163,16 +162,6 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
-  /** A completed cart is the record behind an order, so nothing may be added to it. */
-  private assertNotCompleted(cart: CartDTO): void {
-    if (!cart.completedAt) return
-
-    throw new AppError({
-      type: ErrorTypes.NOT_ALLOWED,
-      message: `Cart ${cart.id} is already completed`,
-    })
-  }
-
   async listLineItems(
     filters?: FilterableCartLineItemProps,
     config?: FindConfig<CartLineItemDTO>,
@@ -254,12 +243,6 @@ export class CartModuleService implements ICartModuleService {
     return this.cartAddressRepository.find(filters, config, context)
   }
 
-  async updateCartAddress(addressId: string, data: UpdateCartAddressDTO, context?: Context): Promise<CartAddressDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      return this.cartAddressRepository.update(addressId, data, ctx)
-    })
-  }
-
   /** Replaces the cart's address of one type, which the partial unique index allows at most
    *  one of — so an existing row is rewritten rather than duplicated. */
   async upsertCartAddress(
@@ -302,5 +285,17 @@ export class CartModuleService implements ICartModuleService {
     const cartTotal = itemsTotal.plus(shippingTotal)
 
     return { itemsTotal, shippingTotal, cartTotal }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+
+  /** A completed cart is the record behind an order, so nothing may be added to it. */
+  private assertNotCompleted(cart: CartDTO): void {
+    if (!cart.completedAt) return
+
+    throw new AppError({
+      type: ErrorTypes.NOT_ALLOWED,
+      message: `Cart ${cart.id} is already completed`,
+    })
   }
 }

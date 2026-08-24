@@ -1,10 +1,10 @@
-import type { Column } from 'drizzle-orm'
 import { and, eq, inArray, isNull } from 'drizzle-orm'
-import type { PgTable } from 'drizzle-orm/pg-core'
+import type { PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { getTableConfig } from 'drizzle-orm/pg-core'
+import type { Database } from '../../schema.type.js'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
 import type { CascadeEdge, CascadeGraph } from './cascade-graph.js'
-import { isSoftDeletable, tableName } from './utils.js'
+import { isSoftDeletable, SOFT_DELETE_COLUMN, tableName } from './utils.js'
 
 /**
  * Walks a soft delete, and its undo, down the relationships the schema declares.
@@ -18,8 +18,7 @@ import { isSoftDeletable, tableName } from './utils.js'
  * on which tables happened to get one.
  */
 
-// biome-ignore lint/suspicious/noExplicitAny: drizzle's dynamic query builder requires untyped access
-type Client = any
+type Client = Database
 
 type Frontier = { table: PgTable; ids: string[] }[]
 
@@ -63,16 +62,24 @@ export async function restoreCascade(
 ): Promise<void> {
   const id = idColumn(root)
 
-  const rows: { id: string; deletedAt: Date | null }[] = await client
+  const rows = await client
     .select({ id, deletedAt: softDeleteColumn(root) })
     .from(root)
     .where(inArray(id, rootIds))
 
-  await client.update(root).set({ deletedAt: null }).where(inArray(id, rootIds))
+  const deletions = rows.map((row) => ({
+    id: String(row.id),
+    deletedAt: row.deletedAt instanceof Date ? row.deletedAt : null,
+  }))
+
+  await client
+    .update(root)
+    .set({ [SOFT_DELETE_COLUMN]: null })
+    .where(inArray(id, rootIds))
 
   // Serial rather than concurrent: these statements share one transaction, which cannot run them
   // in parallel. Restoring several orders at once is the only case, and it is not a hot path.
-  for (const event of groupByDeletion(rows)) {
+  for (const event of groupByDeletion(deletions)) {
     await restoreEvent(client, graph, root, event.ids, event.deletedAt)
   }
 }
@@ -103,18 +110,18 @@ async function restoreEvent(
         if (!isSoftDeletable(edge.table)) continue
 
         const childId = idColumn(edge.table)
-        const rows: { id: string }[] = await client
+        const rows = await client
           .select({ id: childId })
           .from(edge.table)
           .where(and(inArray(edge.column, ids), eq(softDeleteColumn(edge.table), deletedAt)))
 
-        const children = handled.claim(
-          edge.table,
-          rows.map((row) => row.id),
-        )
+        const children = handled.claim(edge.table, toIds(rows))
         if (children.length === 0) continue
 
-        await client.update(edge.table).set({ deletedAt: null }).where(inArray(childId, children))
+        await client
+          .update(edge.table)
+          .set({ [SOFT_DELETE_COLUMN]: null })
+          .where(inArray(childId, children))
         next.push({ table: edge.table, ids: children })
       }
     }
@@ -142,13 +149,13 @@ async function hideOrDestroy(client: Client, table: PgTable, ids: string[], dele
     return []
   }
 
-  const rows: { id: string }[] = await client
+  const rows = await client
     .update(table)
-    .set({ deletedAt })
+    .set({ [SOFT_DELETE_COLUMN]: deletedAt })
     .where(and(inArray(id, ids), isNull(softDeleteColumn(table))))
     .returning({ id })
 
-  return rows.map((row) => row.id)
+  return toIds(rows)
 }
 
 /**
@@ -180,12 +187,12 @@ async function assertNothingBlocks(client: Client, graph: CascadeGraph, table: P
  * timestamp. On a destroy-only table every row is live by definition.
  */
 async function liveChildIds(client: Client, edge: CascadeEdge, parentIds: string[]): Promise<string[]> {
-  const rows: { id: string }[] = await client
+  const rows = await client
     .select({ id: idColumn(edge.table) })
     .from(edge.table)
     .where(liveReferences(edge, parentIds))
 
-  return rows.map((row) => row.id)
+  return toIds(rows)
 }
 
 function liveReferences(edge: CascadeEdge, parentIds: string[]) {
@@ -212,7 +219,15 @@ class Handled {
   }
 }
 
-function idColumn(table: PgTable): Column {
+/**
+ * Columns are resolved from the table config at runtime, so drizzle types their values `unknown`.
+ * Every primary key in the schema is a text column, which is what makes this narrowing honest.
+ */
+function toIds(rows: { id: unknown }[]): string[] {
+  return rows.map((row) => String(row.id))
+}
+
+function idColumn(table: PgTable): PgColumn {
   const config = getTableConfig(table)
   const id = config.columns.find((column) => column.primary)
   if (!id) {
@@ -224,13 +239,13 @@ function idColumn(table: PgTable): Column {
   return id
 }
 
-function softDeleteColumn(table: PgTable): Column {
+function softDeleteColumn(table: PgTable): PgColumn {
   const config = getTableConfig(table)
-  const column = config.columns.find((candidate) => candidate.name === 'deletedAt')
+  const column = config.columns.find((candidate) => candidate.name === SOFT_DELETE_COLUMN)
   if (!column) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: `${config.name} has no deletedAt column`,
+      message: `${config.name} has no ${SOFT_DELETE_COLUMN} column`,
     })
   }
   return column

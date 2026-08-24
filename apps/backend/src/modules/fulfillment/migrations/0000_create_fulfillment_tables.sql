@@ -140,7 +140,7 @@ CREATE INDEX "idx_fulfillment_address_fulfillment_id" ON "fulfillment_address" U
 CREATE INDEX "idx_fulfillment_item_fulfillment_id" ON "fulfillment_item" USING btree ("fulfillment_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_fulfillment_set_type" ON "fulfillment_set" USING btree ("type") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_fulfillment_provider_id" ON "fulfillment" USING btree ("provider_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_fulfillment_shipping_option_id" ON "fulfillment" USING btree ("shipping_option_id") WHERE deleted_at IS NULL AND shipping_option_id IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_fulfillment_shipping_option_id" ON "fulfillment" USING btree ("shipping_option_id") WHERE shipping_option_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_geo_zone_service_zone_id" ON "geo_zone" USING btree ("service_zone_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_geo_zone_country_code" ON "geo_zone" USING btree ("country_code") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_service_zone_fulfillment_set_id" ON "service_zone" USING btree ("fulfillment_set_id") WHERE deleted_at IS NULL;--> statement-breakpoint

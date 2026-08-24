@@ -102,11 +102,11 @@ CREATE TABLE "refund" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
-ALTER TABLE "capture" ADD CONSTRAINT "capture_payment_id_payment_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payment"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payment_session" ADD CONSTRAINT "payment_session_payment_collection_id_payment_collection_id_fk" FOREIGN KEY ("payment_collection_id") REFERENCES "public"."payment_collection"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payment" ADD CONSTRAINT "payment_payment_collection_id_payment_collection_id_fk" FOREIGN KEY ("payment_collection_id") REFERENCES "public"."payment_collection"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "capture" ADD CONSTRAINT "capture_payment_id_payment_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payment"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "payment_session" ADD CONSTRAINT "payment_session_payment_collection_id_payment_collection_id_fk" FOREIGN KEY ("payment_collection_id") REFERENCES "public"."payment_collection"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "payment" ADD CONSTRAINT "payment_payment_collection_id_payment_collection_id_fk" FOREIGN KEY ("payment_collection_id") REFERENCES "public"."payment_collection"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment" ADD CONSTRAINT "payment_payment_session_id_payment_session_id_fk" FOREIGN KEY ("payment_session_id") REFERENCES "public"."payment_session"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "refund" ADD CONSTRAINT "refund_payment_id_payment_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payment"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "refund" ADD CONSTRAINT "refund_payment_id_payment_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payment"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "refund" ADD CONSTRAINT "refund_refund_reason_id_refund_reason_id_fk" FOREIGN KEY ("refund_reason_id") REFERENCES "public"."refund_reason"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_account_holder_provider_external" ON "account_holder" USING btree ("provider_id","external_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_capture_payment_id" ON "capture" USING btree ("payment_id") WHERE deleted_at IS NULL;--> statement-breakpoint

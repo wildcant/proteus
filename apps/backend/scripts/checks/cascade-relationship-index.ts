@@ -1,5 +1,6 @@
+import { snakeCase } from '@proteus/utils'
 import { getTableConfig } from 'drizzle-orm/pg-core'
-import { snakeCase, tableName } from '../../src/core/db/utils.js'
+import { tableName } from '../../src/core/db/utils.js'
 import { columnName, locate } from './metadata.js'
 import type { Check, Violation } from './types.js'
 

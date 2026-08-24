@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text } from 'drizzle-orm/pg-core'
+import { pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { priceSetTable } from './price-set.js'
 
 // TODO(pricing): add minQuantity, maxQuantity (bignum, nullable) for quantity tiers
@@ -20,8 +21,8 @@ export const priceTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_price_price_set_id').on(table.priceSetId).where(sql`deleted_at IS NULL`),
-    index('idx_price_currency_code').on(table.currencyCode).where(sql`deleted_at IS NULL`),
+    liveIndex('idx_price_price_set_id').on(table.priceSetId),
+    liveIndex('idx_price_currency_code').on(table.currencyCode),
   ],
 )
 

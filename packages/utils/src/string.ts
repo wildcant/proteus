@@ -1,0 +1,14 @@
+const wordPattern = new RegExp(['[A-Z][a-z]+', '[A-Z]+(?=[A-Z][a-z])', '[A-Z]+', '[a-z]+', '[0-9]+'].join('|'), 'g')
+
+export function words(string = '', pattern?: RegExp | string): string[] {
+  if (pattern === undefined) {
+    return string.match(wordPattern) || []
+  }
+  return string.match(pattern) || []
+}
+
+export function snakeCase(string = ''): string {
+  return words(string)
+    .map((word) => word.toLowerCase())
+    .join('_')
+}

@@ -23,7 +23,6 @@ builds one schema per vitest worker once per run; `db-setup.ts` `TRUNCATE`s ever
 - `apps/backend/tests/factories/{module}-dto.ts` — DTO generators, `generateCreateXDTO(overrides?)`
 - `apps/backend/tests/factories/services/` — service factories, container-first. **`cart.ts` is the reference implementation**
 - `apps/backend/tests/factories/db/` — direct Drizzle inserts, used by the E2E suite (see the `e2e-test` skill)
-- `apps/backend/tests/utils/make-request.ts` — builds an `HttpRequest`, for middleware/auth unit tests that call a handler directly
 - `apps/backend/vitest.config.ts` — aliases `@tests`, `@core`, `@framework`, `@workflows`; one worker per database
 
 ### Imports

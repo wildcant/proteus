@@ -1,5 +1,5 @@
 {
-  "id": "3e3ec28f-11aa-488c-bb2e-04399f776f90",
+  "id": "8b621be0-ddc9-41f6-9d75-4780d224e80f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -236,7 +236,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND customer_id IS NOT NULL",
+          "where": "customer_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -268,7 +268,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND region_id IS NOT NULL",
+          "where": "region_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -284,7 +284,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND sales_channel_id IS NOT NULL",
+          "where": "sales_channel_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -493,7 +493,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND variant_id IS NOT NULL",
+          "where": "variant_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -509,7 +509,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND product_id IS NOT NULL",
+          "where": "product_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -635,7 +635,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND shipping_option_id IS NOT NULL",
+          "where": "shipping_option_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

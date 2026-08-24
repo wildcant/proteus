@@ -79,12 +79,12 @@ ALTER TABLE "cart_address" ADD CONSTRAINT "cart_address_cart_id_cart_id_fk" FORE
 ALTER TABLE "cart_line_item" ADD CONSTRAINT "cart_line_item_cart_id_cart_id_fk" FOREIGN KEY ("cart_id") REFERENCES "public"."cart"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "cart_shipping_method" ADD CONSTRAINT "cart_shipping_method_cart_id_cart_id_fk" FOREIGN KEY ("cart_id") REFERENCES "public"."cart"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_cart_address_unique_cart_type" ON "cart_address" USING btree ("cart_id","type") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_cart_customer_id" ON "cart" USING btree ("customer_id") WHERE deleted_at IS NULL AND customer_id IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_cart_customer_id" ON "cart" USING btree ("customer_id") WHERE customer_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_cart_currency_code" ON "cart" USING btree ("currency_code") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_cart_region_id" ON "cart" USING btree ("region_id") WHERE deleted_at IS NULL AND region_id IS NOT NULL;--> statement-breakpoint
-CREATE INDEX "idx_cart_sales_channel_id" ON "cart" USING btree ("sales_channel_id") WHERE deleted_at IS NULL AND sales_channel_id IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_cart_region_id" ON "cart" USING btree ("region_id") WHERE region_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_cart_sales_channel_id" ON "cart" USING btree ("sales_channel_id") WHERE sales_channel_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_cart_line_item_cart_id" ON "cart_line_item" USING btree ("cart_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_cart_line_item_variant_id" ON "cart_line_item" USING btree ("variant_id") WHERE deleted_at IS NULL AND variant_id IS NOT NULL;--> statement-breakpoint
-CREATE INDEX "idx_cart_line_item_product_id" ON "cart_line_item" USING btree ("product_id") WHERE deleted_at IS NULL AND product_id IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_cart_line_item_variant_id" ON "cart_line_item" USING btree ("variant_id") WHERE variant_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_cart_line_item_product_id" ON "cart_line_item" USING btree ("product_id") WHERE product_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_cart_shipping_method_cart_id" ON "cart_shipping_method" USING btree ("cart_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_cart_shipping_method_option_id" ON "cart_shipping_method" USING btree ("shipping_option_id") WHERE deleted_at IS NULL AND shipping_option_id IS NOT NULL;
+CREATE INDEX "idx_cart_shipping_method_option_id" ON "cart_shipping_method" USING btree ("shipping_option_id") WHERE shipping_option_id IS NOT NULL AND deleted_at IS NULL;

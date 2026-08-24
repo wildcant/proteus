@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { integer, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { fulfillmentTable } from './fulfillment.js'
 
 export const fulfillmentItemTable = pgTable(
@@ -19,7 +20,7 @@ export const fulfillmentItemTable = pgTable(
     metadata: text(),
     ...timestamps,
   },
-  (table) => [index('idx_fulfillment_item_fulfillment_id').on(table.fulfillmentId).where(sql`deleted_at IS NULL`)],
+  (table) => [liveIndex('idx_fulfillment_item_fulfillment_id').on(table.fulfillmentId)],
 )
 
 export type FulfillmentItem = typeof fulfillmentItemTable.$inferSelect

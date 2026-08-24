@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 
 export const cartTable = pgTable(
   'cart',
@@ -16,12 +17,10 @@ export const cartTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_cart_customer_id').on(table.customerId).where(sql`deleted_at IS NULL AND customer_id IS NOT NULL`),
-    index('idx_cart_currency_code').on(table.currencyCode).where(sql`deleted_at IS NULL`),
-    index('idx_cart_region_id').on(table.regionId).where(sql`deleted_at IS NULL AND region_id IS NOT NULL`),
-    index('idx_cart_sales_channel_id')
-      .on(table.salesChannelId)
-      .where(sql`deleted_at IS NULL AND sales_channel_id IS NOT NULL`),
+    liveIndex('idx_cart_customer_id', sql`customer_id IS NOT NULL`).on(table.customerId),
+    liveIndex('idx_cart_currency_code').on(table.currencyCode),
+    liveIndex('idx_cart_region_id', sql`region_id IS NOT NULL`).on(table.regionId),
+    liveIndex('idx_cart_sales_channel_id', sql`sales_channel_id IS NOT NULL`).on(table.salesChannelId),
   ],
 )
 

@@ -70,8 +70,6 @@ export type CreateCartAddressDTO = {
   phone?: string | null | undefined
 }
 
-export type UpdateCartAddressDTO = Partial<CreateCartAddressDTO>
-
 export type UpdateCartWithAddressesDTO = {
   email?: string | null | undefined
   shippingAddress?: CreateCartAddressDTO | undefined

@@ -201,18 +201,6 @@ test.describe('OrderModuleService', () => {
       ).rejects.toMatchObject({ type: ErrorTypes.NOT_FOUND })
     })
 
-    test('updateOrderAddress — updates fields', async ({ expect, dto }) => {
-      const order = await service.createOrder(
-        dto.generate.createOrder({ shippingAddress: dto.generate.createOrderAddress() }),
-      )
-      const address = await service.retrieveOrderAddress(order.id, 'shipping')
-      if (!address) throw new Error('expected the order to own a shipping address')
-
-      const updated = await service.updateOrderAddress(address.id, { city: 'New York' })
-
-      expect(updated.city).toBe('New York')
-    })
-
     test('softDeleteOrderAddresses — hides the address', async ({ expect, dto }) => {
       const order = await service.createOrder(
         dto.generate.createOrder({ shippingAddress: dto.generate.createOrderAddress() }),
@@ -222,9 +210,8 @@ test.describe('OrderModuleService', () => {
 
       await service.softDeleteOrderAddresses([address.id])
 
-      await expect(service.updateOrderAddress(address.id, { city: 'X' })).rejects.toMatchObject({
-        type: ErrorTypes.NOT_FOUND,
-      })
+      expect(await service.retrieveOrderAddress(order.id, 'shipping')).toBeNull()
+      expect(await service.listOrderAddresses({ orderId: order.id })).toHaveLength(0)
     })
   })
 

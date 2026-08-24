@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text } from 'drizzle-orm/pg-core'
+import { pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { serviceZoneTable } from './service-zone.js'
 
 export const geoZoneTable = pgTable(
@@ -19,8 +20,8 @@ export const geoZoneTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_geo_zone_service_zone_id').on(table.serviceZoneId).where(sql`deleted_at IS NULL`),
-    index('idx_geo_zone_country_code').on(table.countryCode).where(sql`deleted_at IS NULL`),
+    liveIndex('idx_geo_zone_service_zone_id').on(table.serviceZoneId),
+    liveIndex('idx_geo_zone_country_code').on(table.countryCode),
   ],
 )
 

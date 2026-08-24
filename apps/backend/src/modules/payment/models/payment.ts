@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { index, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { paymentCollectionTable } from './payment-collection.js'
 import { paymentSessionTable } from './payment-session.js'
 
@@ -17,7 +18,7 @@ export const paymentTable = pgTable(
     metadata: jsonb().$type<Record<string, unknown> | null>(),
     paymentCollectionId: text()
       .notNull()
-      .references(() => paymentCollectionTable.id),
+      .references(() => paymentCollectionTable.id, { onDelete: 'cascade' }),
     paymentSessionId: text()
       .notNull()
       .references(() => paymentSessionTable.id),
@@ -26,9 +27,9 @@ export const paymentTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_payment_provider_id').on(table.providerId).where(sql`deleted_at IS NULL`),
-    index('idx_payment_collection_id').on(table.paymentCollectionId).where(sql`deleted_at IS NULL`),
-    index('idx_payment_session_id').on(table.paymentSessionId).where(sql`deleted_at IS NULL`),
+    liveIndex('idx_payment_provider_id').on(table.providerId),
+    liveIndex('idx_payment_collection_id').on(table.paymentCollectionId),
+    liveIndex('idx_payment_session_id').on(table.paymentSessionId),
   ],
 )
 

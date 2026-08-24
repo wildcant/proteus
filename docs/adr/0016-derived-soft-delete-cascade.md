@@ -121,11 +121,19 @@ that order creation must precede address creation, so the creation payload accep
 rather than identifiers, and one address can no longer serve as both the shipping and the billing
 address — which matches what the checkout already does.
 
-The address service surface follows the ownership: every method names the parent, because no
+The address service surface follows the ownership: reads and writes name the parent, because no
 caller holds an address id any more. Reads are `retrieveOrderAddress(orderId, type)` for one and
 `listOrderAddresses` / `listCartAddresses` for a parent's pair; writes are
 `createOrderAddress(orderId, type, data)` and `upsertCartAddress(cartId, type, data)`. A standalone
-address with no parent is no longer expressible, which is the point.
+address with no parent is no longer expressible, which is the point. Update-by-id is gone with it:
+`upsertCartAddress` already replaces a cart's address of a type in place, and an order's addresses
+are a record of what was true at purchase time, so nothing should be editing one after the fact.
+
+Soft delete is the exception, keeping the `softDeleteOrderAddresses(ids)` / `softDeleteCartAddresses(ids)`
+shape every other module service uses — including `softDeleteCustomerAddresses`, on an address that
+was already inverted before this ADR. Uniformity with twenty-odd sibling methods is worth more here
+than local consistency with the address surface, and the cascade means no production caller reaches
+for them anyway.
 
 `retrieveOrderAddress` returns null rather than throwing, unlike `retrieveOrder` and the other
 `retrieveX` methods — an order legitimately has no billing address, so absence is not an error. It

@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../core/db/columns.js'
+import { liveUniqueIndex } from '../../core/db/indexes.js'
 
 export const orderCartTable = pgTable(
   'order_cart',
@@ -11,11 +12,11 @@ export const orderCartTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    uniqueIndex('idx_order_cart').on(table.orderId, table.cartId).where(sql`deleted_at IS NULL`),
+    liveUniqueIndex('idx_order_cart').on(table.orderId, table.cartId),
     /** A cart is completed at most once, so it can back at most one order. Enforced here
      *  rather than in the workflow because concurrent completions each pass the
      *  `check-idempotency` read before any of them writes — only the database can arbitrate. */
-    uniqueIndex('idx_order_cart_cart_id').on(table.cartId).where(sql`deleted_at IS NULL`),
+    liveUniqueIndex('idx_order_cart_cart_id').on(table.cartId),
   ],
 )
 

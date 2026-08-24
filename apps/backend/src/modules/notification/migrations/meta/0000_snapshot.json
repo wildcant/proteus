@@ -1,5 +1,5 @@
 {
-  "id": "1f316a77-d556-40d3-8389-3a94259d0b35",
+  "id": "dd67a6b5-7eb0-4827-bea8-ef011dcbdacf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -200,7 +200,7 @@
             }
           ],
           "isUnique": true,
-          "where": "deleted_at IS NULL AND idempotency_key IS NOT NULL",
+          "where": "idempotency_key IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

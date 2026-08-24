@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { index, jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 export const paymentSessionStatusEnum = pgEnum('payment_session_status', [
   'pending',
   'authorized',
@@ -26,13 +27,13 @@ export const paymentSessionTable = pgTable(
     metadata: jsonb().$type<Record<string, unknown> | null>(),
     paymentCollectionId: text()
       .notNull()
-      .references(() => paymentCollectionTable.id),
+      .references(() => paymentCollectionTable.id, { onDelete: 'cascade' }),
     providerId: text().notNull(),
     status: paymentSessionStatusEnum().notNull().default('pending'),
 
     ...timestamps,
   },
-  (table) => [index('idx_payment_session_collection_id').on(table.paymentCollectionId).where(sql`deleted_at IS NULL`)],
+  (table) => [liveIndex('idx_payment_session_collection_id').on(table.paymentCollectionId)],
 )
 
 export type PaymentSession = typeof paymentSessionTable.$inferSelect

@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { boolean, index, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core'
+import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 
 export const inviteTable = pgTable(
   'invite',
@@ -13,10 +14,7 @@ export const inviteTable = pgTable(
     // TODO(RBAC): roles when RBAC is implemented
     ...timestamps,
   },
-  (table) => [
-    uniqueIndex('idx_invite_email').on(table.email).where(sql`deleted_at IS NULL`),
-    index('idx_invite_token').on(table.token).where(sql`deleted_at IS NULL`),
-  ],
+  (table) => [liveUniqueIndex('idx_invite_email').on(table.email), liveIndex('idx_invite_token').on(table.token)],
 )
 
 export type Invite = typeof inviteTable.$inferSelect

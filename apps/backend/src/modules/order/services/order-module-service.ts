@@ -26,7 +26,6 @@ import type {
   OrderTotals,
   OrderTransactionDTO,
   PaymentStatus,
-  UpdateOrderAddressDTO,
   UpdateOrderDTO,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
@@ -209,26 +208,10 @@ export class OrderModuleService implements IOrderModuleService {
     })
   }
 
-  async updateOrderAddress(id: string, data: UpdateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      return this.orderAddressRepository.update(id, data, ctx)
-    })
-  }
-
   async softDeleteOrderAddresses(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.orderAddressRepository.softDelete(ids, ctx)
     })
-  }
-
-  /** The two nested addresses of a creation payload, as rows the order already owns. */
-  private toAddressInputs(orderId: string, data: CreateOrderDTO | undefined): OrderAddressInput[] {
-    const inputs: OrderAddressInput[] = []
-
-    if (data?.shippingAddress) inputs.push({ ...data.shippingAddress, orderId, type: 'shipping' })
-    if (data?.billingAddress) inputs.push({ ...data.billingAddress, orderId, type: 'billing' })
-
-    return inputs
   }
 
   // ---------------------------------------------------------------------------
@@ -415,5 +398,19 @@ export class OrderModuleService implements IOrderModuleService {
     const outstandingTotal = orderTotal.minus(paidTotal)
 
     return { itemsTotal, shippingTotal, orderTotal, paidTotal, outstandingTotal }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  /** The two nested addresses of a creation payload, as rows the order already owns. */
+  private toAddressInputs(orderId: string, data: CreateOrderDTO | undefined): OrderAddressInput[] {
+    const inputs: OrderAddressInput[] = []
+
+    if (data?.shippingAddress) inputs.push({ ...data.shippingAddress, orderId, type: 'shipping' })
+    if (data?.billingAddress) inputs.push({ ...data.billingAddress, orderId, type: 'billing' })
+
+    return inputs
   }
 }
