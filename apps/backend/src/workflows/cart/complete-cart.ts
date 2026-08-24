@@ -30,24 +30,30 @@ const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
 // can produce duplicate orders. Add acquireLock/releaseLock steps once a locking module is available.
 export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>('complete-cart', async (ctx, input) => {
   /** If this cart was already completed (e.g. retry or concurrent request), return the
-   *  existing order instead of creating a duplicate. A linked order without `completedAt`
-   *  signals a partial failure that needs investigation, so we surface it as an error. */
+   *  existing order instead of creating a duplicate. */
   const existingOrder = await ctx.step('check-idempotency', async ({ container }) => {
     const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
     const orderCartLink = await linkService.repo('orderCart').findByCartId(input.cartId)
-    if (orderCartLink) {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      const cart = await cartService.retrieveCart(input.cartId)
-      if (!cart.completedAt) {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.UNEXPECTED_STATE,
-          message: `Cart "${input.cartId}" has a linked order but was never marked completed — a previous checkout may have partially failed`,
-        })
-      }
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-      return orderService.retrieveOrder(orderCartLink.orderId)
+    if (!orderCartLink) return null
+
+    const cartService = container.resolve<ICartModuleService>(Modules.CART)
+    const cart = await cartService.retrieveCart(input.cartId)
+
+    /** A linked order without `completedAt` is the winner of a concurrent completion still
+     *  in flight: it writes the link at `link-order` and stamps `completedAt` several steps
+     *  later. A checkout that genuinely died mid-way leaves byte-identical state, and nothing
+     *  readable here separates the two — so both get the same answer. The order cannot be
+     *  returned yet either way, because payment is not authorized until after this gap and
+     *  the whole run can still compensate away. */
+    if (!cart.completedAt) {
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.CONFLICT,
+        message: `Cart "${input.cartId}" is already being completed`,
+      })
     }
-    return null
+
+    const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+    return orderService.retrieveOrder(orderCartLink.orderId)
   })
 
   if (existingOrder) return existingOrder

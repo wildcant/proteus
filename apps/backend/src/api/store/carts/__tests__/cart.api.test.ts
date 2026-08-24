@@ -12,12 +12,13 @@ type CompletionBody = StoreCompleteCartResponse | ApiErrorBody
 const CONCURRENT_REQUESTS = 5
 
 /**
- * Which step the loser dies at depends on timing, so both outcomes are legitimate:
+ * Which step the loser dies at depends on timing, so all three outcomes are legitimate:
  * `duplicate_error` when it reaches `link-order` and hits the unique index on
  * `order_cart.cart_id`, `not_allowed` when it gets as far as `check-cart-not-completed`
- * after the winner has already stamped `completedAt`.
+ * after the winner has already stamped `completedAt`, and `conflict` when it re-enters
+ * `check-idempotency` in between the two.
  */
-const RACE_REJECTION_TYPES = ['duplicate_error', 'not_allowed']
+const RACE_REJECTION_TYPES = ['duplicate_error', 'not_allowed', 'conflict']
 
 let api: TestApi
 
@@ -89,6 +90,31 @@ test.describe('POST /store/carts/:id/complete (concurrent)', () => {
     // request would let the loser fall through to `check-idempotency` and return a 200.
     expect(rejectedTypes.length).toBeGreaterThan(0)
     expect(rejectedTypes.filter((type) => !RACE_REJECTION_TYPES.includes(type))).toEqual([])
+  })
+
+  /**
+   * The window the concurrent test cannot pin down, reconstructed directly: the winner has
+   * written the order↔cart link but has not reached `mark-cart-completed`. Locally that gap is
+   * a couple of milliseconds; with the database a network hop away it is hundreds, and every
+   * click landing in it used to get a 500 announcing a partial failure that had not happened.
+   */
+  test('reports a completion still in flight as a conflict, not a server error', async ({ service, expect }) => {
+    const { cart, order } = await service.create.order(api.container)
+
+    // Same state a losing request observes mid-race, minus the race. `customerId` is carried
+    // over because the generator would otherwise invent one, and `validateCartOwnership`
+    // rejects the request before the workflow this test is about ever runs.
+    await service.update.cart(api.container, cart.id, { completedAt: null, customerId: cart.customerId })
+
+    const { status, body } = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/complete`)
+
+    expect(status).toBe(409)
+    expect(body.type).toBe('conflict')
+
+    // The guard has to reject rather than hand back `order`: at this point in the winner's run
+    // payment is not authorized yet and the whole thing can still compensate away.
+    expect(await service.read.orders(api.container)).toHaveLength(1)
+    expect(await service.read.order(api.container, order.id)).toMatchObject({ id: order.id })
   })
 
   test('rolls back an earlier link when a later one fails', async ({ service, expect }) => {

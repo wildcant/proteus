@@ -1,8 +1,19 @@
 Fixes and improvements
-- CHECKOUT IDEMPOTENCY: nothing persists idempotency state on our side, so a double-clicked "Place Order" creates two orders.
-  - apps/backend/src/core/workflows/types.ts has an `idempotent` config flag, but no workflow_execution table or idempotency-key storage backs it.
-  - The Stripe provider passes idempotency keys to Stripe (apps/backend/src/providers/payment-stripe/stripe-provider.ts), which protects the charge but not the order record.
-  - Same problem family as "investigate locking" below — decide the storage + locking strategy once and apply it to both.
+- CHECKOUT IDEMPOTENCY: spam-clicking Place Order creates one throwaway order per click until the unique index
+  rejects it (422); clicks landing between link-order and mark-cart-completed get 409. Confirmed under dev:slow,
+  so the "only ms on a local DB" caveat is settled — it is real, just not damaging: one order, one charge, no
+  oversell. Deferred; real fix is a lock on the cart (see "investigate locking").
+- create-order compensation orphans addresses: order_address is referenced *by* order (order/models/order.ts:25),
+  so no cascade reaches it and every rolled-back order leaves up to two rows. cart_address has the same shape.
+- display_id is a serial, so every rolled-back order burns an order number. Gaps are visible to shoppers once
+  a race discards five in a row. Only fixable by changing how the number is assigned.
+- SOFT DELETE CASCADE in BaseRepository: walk drizzle's FK metadata and soft-delete the children that declare
+  onDelete:'cascade', so the model stays the source of truth instead of each module service. Needs a
+  module-scoped table registry at bootstrap (no FK crosses modules today). Invert order_address/cart_address
+  onto the child so they are covered too. restore() needs the same walk, matched on deletedAt.
+- `idempotent` flag in core/workflows/types.ts:16 is dead — nothing reads it, no workflow sets it. Delete.
+- Stripe idempotencyKey is never populated — stripe-provider.ts:209 reads it off session context, nothing writes it.
+  Wire one before Stripe goes live.
 
 - INVENTORY IS NOT ACTUALLY RESERVED: placing an order does not reduce what the storefront offers.
   - `createReservationItems` (apps/backend/src/modules/inventory/services/inventory-module-service.ts:173) writes a
@@ -81,6 +92,9 @@ Future Infra TODOs
 - event bus: investigate pgmq (see docs/research/event-subscriber-system/) and cloudflare queues
   - Related video: https://www.youtube.com/watch?v=ACVevIlWEfM
 ![event](./subscriber-example.png)
+- NOTIFICATION QUEUE: order confirmation sends inside the checkout request. Can't just drop the await — on Workers
+  withConnection closes the DB client when the handler resolves. Module is already outbox-shaped (pending status,
+  src/jobs, per-minute cron). Also fixes failed sends never being retried.
 - investigate locking
   -  Context: Medusa's notification module uses DB queries for idempotency checks (query by idempotency_key, skip if already SUCCESS/PENDING). There's a race window where two concurrent requests with the same key could both pass the check before either creates a PENDING record. Medusa has a TODO to use Redis-based locking instead.
   - The DB unique constraint on idempotencyKey catches the second insert if both slip through, so for single-instance it's sufficient.
