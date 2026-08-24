@@ -15,5 +15,21 @@ services:
       timeout: 5s
       retries: 10
 
+  # A second way in to the same Postgres, for making the API behave like its database is not on
+  # localhost. The proxy passes traffic through untouched until `npm run dev:slow` adds a latency
+  # toxic — toxiproxy's config file can declare proxies but not toxics, so that part is a curl.
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.12.0
+    command: ['-host=0.0.0.0', '-config=/config/toxiproxy.json']
+    volumes:
+      - ./toxiproxy.json:/config/toxiproxy.json:ro
+    ports:
+      # Control API, then the slow Postgres.
+      - '8474:8474'
+      - '5442:5442'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   proteus-dev-data:
