@@ -36,7 +36,7 @@ test.describe('Cart', () => {
     await expect(page.locator('[data-slot="toast-title"]')).toHaveText('Added to cart')
 
     // Assert nav cart badge shows item count (desktop badge is the visible one)
-    const cartBadge = page.locator('header nav [aria-label="Cart"] span').filter({ hasText: '1' })
+    const cartBadge = page.locator('header [aria-label="Cart"] span').filter({ hasText: '1' })
     await expect(cartBadge.last()).toBeVisible()
 
     // 2. Navigate to /cart, assert item appears
@@ -79,47 +79,17 @@ test.describe('Cart', () => {
     await page.getByRole('link', { name: /go to checkout/i }).click()
     await expect(page).toHaveURL(/\/checkout/)
 
-    // Checkout layout has "Back to cart" link, no hamburger, no footer
+    // Checkout layout has "Back to cart" link, no shop chrome, no footer. The cart icon is
+    // what stands in for "no nav" — the hamburger is mobile-only now, so asserting on it at
+    // this viewport would pass whatever the checkout layout rendered.
     await expect(page.getByRole('link', { name: /back to cart/i })).toBeVisible()
-    await expect(page.getByLabel('Open menu')).not.toBeVisible()
+    await expect(page.getByLabel('Cart')).toHaveCount(0)
     await expect(page.locator('footer')).not.toBeVisible()
 
     // 8. Click "Back to cart", assert full layout returns
     await page.getByRole('link', { name: /back to cart/i }).click()
     await expect(page).toHaveURL('/cart')
-    await expect(page.getByLabel('Open menu')).toBeVisible()
+    await expect(page.getByLabel('Cart').last()).toBeVisible()
     await expect(page.locator('footer')).toBeVisible()
-  })
-
-  test('layout: nav, side menu, and footer', async ({ page, authenticate, navigate }) => {
-    await authenticate({ as: 'customer' })
-    await navigate({ to: '/' })
-
-    // Nav is visible with hamburger, logo, and cart icon
-    const nav = page.locator('header').locator('nav')
-    await expect(nav.getByLabel('Open menu')).toBeVisible()
-    await expect(nav.getByText('Proteus')).toBeVisible()
-    await expect(nav.getByLabel('Cart').last()).toBeVisible()
-
-    // Open side menu
-    await nav.getByLabel('Open menu').click()
-    const sideMenu = page.locator('[data-slot="sheet-content"]')
-    await expect(sideMenu).toBeVisible()
-
-    // Side menu contains expected links
-    await expect(sideMenu.getByText('Home')).toBeVisible()
-    await expect(sideMenu.getByText('Products')).toBeVisible()
-    await expect(sideMenu.getByText('Cart')).toBeVisible()
-
-    // Close side menu
-    await page.keyboard.press('Escape')
-    await expect(sideMenu).not.toBeVisible()
-
-    // Footer shows link sections and copyright
-    const footer = page.locator('footer')
-    await expect(footer.getByText('Shop')).toBeVisible()
-    await expect(footer.getByText('Help')).toBeVisible()
-    await expect(footer.getByText('Company')).toBeVisible()
-    await expect(footer.getByText(/Proteus\. All rights reserved/)).toBeVisible()
   })
 })

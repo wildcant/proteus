@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { PRODUCTS_DEFAULT_LIMIT, PRODUCTS_DEFAULT_OFFSET, useSuspenseProducts } from '#/features/products/api/products'
-import { ProductCard } from './product-card'
+import { ProductGrid } from './product-grid'
 
 type ProductListProps = {
   /** The active search term. The route remounts this component when it changes. */
@@ -14,11 +14,7 @@ export function ProductList({ q }: ProductListProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-        {products.map((product, index) => (
-          <ProductCard key={product.id} product={product} priority={index < 4} />
-        ))}
-      </div>
+      <ProductGrid products={products} />
 
       {products.length === 0 && (
         <p className="py-20 text-center text-(--foreground-muted) text-sm">No products found.</p>

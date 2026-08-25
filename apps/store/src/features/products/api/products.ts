@@ -1,5 +1,5 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type { ListStoreProductsParams, StoreProductListResponse, StoreProductResponse } from '#/api/generated/model'
 import { getStoreProduct, listStoreProducts } from '#/api/generated/products/products'
 import { queryKeysFactory } from '#/lib/query-key-factory'
@@ -23,6 +23,20 @@ export const productsListQueryOptions = (query?: ListStoreProductsParams, option
 /** Suspends until products list resolves. Use inside a `<Suspense>` boundary. */
 export const useSuspenseProducts = (query?: ListStoreProductsParams, options?: ProductsListQueryOptions) => {
   const { data, ...rest } = useSuspenseQuery(productsListQueryOptions(query, options))
+  return { ...data, ...rest }
+}
+
+/**
+ * Non-suspending, for UI that re-queries while the shopper is still typing. `keepPreviousData`
+ * is the point: a suspending read blanks its boundary on every new term, so the grid would
+ * flash empty between keystrokes instead of the last results sitting there until the next
+ * ones land.
+ */
+export const useProducts = (query?: ListStoreProductsParams, options?: ProductsListQueryOptions) => {
+  const { data, ...rest } = useQuery({
+    ...productsListQueryOptions(query, options),
+    placeholderData: keepPreviousData,
+  })
   return { ...data, ...rest }
 }
 

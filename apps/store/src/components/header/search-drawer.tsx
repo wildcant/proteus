@@ -1,8 +1,9 @@
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '@proteus/ui'
 import { ChevronLeftIcon, XIcon } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { type CSSProperties, useEffect, useState } from 'react'
 import { Button } from '#/components/button'
 import { SearchForm } from '#/components/header/search-form'
+import { SearchResults } from '#/components/header/search-results'
 import { useModal } from '#/lib/modal-state'
 
 /**
@@ -15,13 +16,16 @@ import { useModal } from '#/lib/modal-state'
  *
  * Open state is the `?modal=search` param, read here rather than passed in — the panel is
  * URL state, so there is nothing for a parent to own. See `docs/adr/0019-modals-are-url-state.md`.
- *
- * TODO(search): the panel below the field is empty. Trending searches, recent searches and
- * the best-sellers grid are specced in `.scratch/store-design-system/issues/06-search-page.md`;
- * all three need backend that does not exist yet.
  */
 export function SearchDrawer() {
   const { isOpen, setOpen } = useModal('search')
+  const [term, setTerm] = useState('')
+
+  // The panel keeps its term while open so the results can read it, and drops it on close —
+  // reopening should be a fresh search, not the last one still on screen.
+  useEffect(() => {
+    if (!isOpen) setTerm('')
+  }, [isOpen])
 
   return (
     <Drawer open={isOpen} onOpenChange={setOpen} swipeDirection="up">
@@ -42,7 +46,7 @@ export function SearchDrawer() {
 
           {/* flex-1 so the field takes the width the chevron leaves on mobile; capped and
               auto-margined above lg, where it centres on the bar instead. */}
-          <SearchForm className="mx-auto flex-1 lg:max-w-lg" focusOnMount />
+          <SearchForm className="mx-auto flex-1 lg:max-w-lg" focusOnMount value={term} onChange={setTerm} />
 
           {/* Out of flow so the field centres against the viewport, not against the space left
               over beside it. */}
@@ -58,6 +62,10 @@ export function SearchDrawer() {
           >
             <XIcon className="h-5 w-5" />
           </DrawerClose>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10 sm:px-6 lg:px-8">
+          <SearchResults term={term} />
         </div>
       </DrawerContent>
     </Drawer>
