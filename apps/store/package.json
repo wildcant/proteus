@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@proteus/http-schemas": "*",
+    "@proteus/icons": "*",
     "@proteus/ui": "*",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-devtools": "latest",

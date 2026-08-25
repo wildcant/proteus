@@ -88,8 +88,8 @@ placeholder they can read.
 one accent; seven multicolour rectangles are the loudest thing on the page and the only place the
 palette breaks. Single-colour marks in `text-ink-subtle` sit down, and `currentColor` gets dark
 mode for free instead of needing a second set of assets. Mechanically it is also the cheap option:
-the marks are single-path `0 0 24 24` SVGs — lucide's exact geometry contract — so they inline as
-React components with no svgr plugin, no vite config change and no new dependency.
+the marks are single-path `0 0 24 24` SVGs, and `@proteus/icons` already renders each one as a solid
+fill on `currentColor`, so the footer supplies a token and nothing else.
 
 **The strip is aspirational today, and that is a real caveat.** `apps/backend/src/modules/payment/providers/`
 holds exactly one provider: `system`, labelled "Manual Payment", `isTestOnly = true`. The store
@@ -113,10 +113,13 @@ viewport detection and no first-paint flash. `display: none` also drops the hidd
 accessibility tree, so nothing is announced twice. The cost is a duplicated handful of links in the
 payload, which is the right trade at this size and would not be at thirty.
 
-**Assets are vendored, not depended on.** Fetched from simple-icons (CC0-1.0) into
-`.scratch/store-design-system/assets/`, with provenance in `assets/README.md`. This ticket copies
-the path data into the app. Sezzle is not in simple-icons and Discord is specific to the
-reference's own community programme; both are dropped. Klarna and Afterpay are BNPL we do not have.
+**Assets are vendored, not depended on — and they live in `packages/icons`.** Fetched from
+simple-icons (CC0-1.0) into `packages/icons/assets/{payment,social}/`, with provenance in
+`packages/icons/assets/README.md`. `@proteus/icons` generates a React component per asset, so this
+ticket imports marks rather than copying path data into the app; regenerating after an asset changes
+is `npm run --workspace=@proteus/icons build:icons`. Sezzle is not in simple-icons and Discord is
+specific to the reference's own community programme; both are dropped. Klarna and Afterpay are BNPL
+we do not have — Klarna is generated and simply unused until it is.
 
 ## Work
 
@@ -133,16 +136,22 @@ reference's own community programme; both are dropped. Klarna and Afterpay are B
 
   The panel animates with `animate-accordion-down` / `-up` off `--accordion-panel-height`, both of
   which come from `tw-animate-css` and `@base-ui/react`; both are already dependencies.
-- **`components/brand-marks.tsx` (new)** — `VisaMark`, `MastercardMark`, `AmexMark`, `PaypalMark`,
-  `ApplePayMark` and the six social marks, each a `<svg viewBox="0 0 24 24" fill="currentColor">`
-  around one path, with a `<title>` so the mark is not a silent image. Path data from
-  `.scratch/store-design-system/assets/`.
+- **Brand marks — nothing to build.** `@proteus/icons` is already a dependency of the store and
+  exports `VisaIcon`, `MastercardIcon`, `AmericanexpressIcon`, `PaypalIcon`, `ApplepayIcon` and the
+  six social marks (`InstagramIcon`, `FacebookIcon`, `XIcon`, `TiktokIcon`, `YoutubeIcon`,
+  `PinterestIcon`). Each takes `size`, `className` and `title`; every other SVG prop passes through.
+
+  Two things follow from how the package handles labelling. A mark with no `title` and no `aria-*`
+  renders `aria-hidden="true"` on its own, which is exactly what the payment strip wants — pass
+  nothing. And `XIcon` collides with lucide's `XIcon` (its close icon), so alias one of them at the
+  import if this file ever needs both.
 - **`components/footer.tsx`** — rewrite. The accordion tree and the static-column tree, one
   `sm:hidden` and the other `hidden sm:grid`, both fed from the same `footerColumns` constant so
   the two can never drift; payment and social rows; a single rule above the bottom bar. Tokens throughout: `border-line`, `text-ink-muted`,
   `bg-surface`. Column headings become `type-heading` at the small end rather than the hand-rolled
   `text-xs uppercase tracking-widest`. Social marks are `<a>`s with `aria-label`s and
-  `rel="noreferrer"`; payment marks are decorative and get `aria-hidden`.
+  `rel="noreferrer"`, the mark inside left untitled so it stays out of the accessibility tree and
+  the anchor is announced once; payment marks are decorative and likewise get no `title`.
 - **`components/footer.tsx` config** — `footerColumns` and `socialLinks` as module constants beside
   the component, typed against the router so a bad `to` is a typecheck error rather than a 404.
 

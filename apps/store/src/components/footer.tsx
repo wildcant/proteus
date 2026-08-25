@@ -1,3 +1,17 @@
+import {
+  AmericanexpressIcon,
+  ApplepayIcon,
+  FacebookIcon,
+  type Icon,
+  InstagramIcon,
+  MastercardIcon,
+  PaypalIcon,
+  PinterestIcon,
+  TiktokIcon,
+  VisaIcon,
+  XIcon,
+  YoutubeIcon,
+} from '@proteus/icons'
 import { Link } from '@tanstack/react-router'
 
 const columns = [
@@ -22,6 +36,24 @@ const columns = [
   },
 ]
 
+const paymentMarks = [
+  { label: 'Visa', mark: VisaIcon },
+  { label: 'Mastercard', mark: MastercardIcon },
+  { label: 'American Express', mark: AmericanexpressIcon },
+  { label: 'PayPal', mark: PaypalIcon },
+  { label: 'Apple Pay', mark: ApplepayIcon },
+]
+
+// Config-driven so the row disappears entirely until there are real accounts to link to.
+const socialLinks: { label: string; href: string; mark: Icon }[] = [
+  { label: 'Instagram', href: 'https://instagram.com', mark: InstagramIcon },
+  { label: 'Facebook', href: 'https://facebook.com', mark: FacebookIcon },
+  { label: 'X', href: 'https://x.com', mark: XIcon },
+  { label: 'TikTok', href: 'https://tiktok.com', mark: TiktokIcon },
+  { label: 'YouTube', href: 'https://youtube.com', mark: YoutubeIcon },
+  { label: 'Pinterest', href: 'https://pinterest.com', mark: PinterestIcon },
+]
+
 export function Footer() {
   const year = new Date().getFullYear()
 
@@ -43,6 +75,26 @@ export function Footer() {
               </ul>
             </div>
           ))}
+        </div>
+        <div className="mt-10 flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
+          <ul className="m-0 flex list-none items-center gap-3 p-0">
+            {paymentMarks.map(({ label, mark: Mark }) => (
+              <li key={label}>
+                <Mark size={28} title={label} className="text-ink-subtle" />
+              </li>
+            ))}
+          </ul>
+          {socialLinks.length > 0 && (
+            <ul className="m-0 flex list-none items-center gap-4 p-0">
+              {socialLinks.map(({ label, href, mark: Mark }) => (
+                <li key={label}>
+                  <a href={href} className="text-ink-muted hover:text-ink" aria-label={label}>
+                    <Mark size={20} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="mt-10 border-border border-t pt-6 text-center">
           <p className="m-0 text-(--foreground-muted) text-sm">&copy; {year} Proteus. All rights reserved.</p>

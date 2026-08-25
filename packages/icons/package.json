@@ -1,0 +1,21 @@
+{
+  "name": "@proteus/icons",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build:icons": "node ./src/build-icons/cli.ts --input=./assets --output=. --templateSrc=./scripts/export-template.ts --renderUniqueKey --iconFileExtension=.ts --exportFileName=index.ts --exportNameSuffix=Icon --importFileExtension=.ts && biome format --write ./icons"
+  },
+  "dependencies": {
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^24.10.1",
+    "minimist": "^1.2.8",
+    "svgson": "^5.3.1"
+  }
+}

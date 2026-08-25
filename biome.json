@@ -145,6 +145,16 @@
       }
     },
     {
+      "includes": ["packages/icons/src/build-icons/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["apps/backend/src/framework/logger/noop-logger.ts"],
       "linter": {
         "rules": {
