@@ -1,6 +1,7 @@
 // Re-exported so app packages can build render-prop components without taking a direct
 // dependency on @base-ui/react. Public API, not an internal: @base-ui/react/use-render.
 export { useRender } from '@base-ui/react/use-render'
+export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './components/ui/accordion.tsx'
 export {
   AlertDialog,
   AlertDialogAction,
