@@ -1,6 +1,7 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
+  AppliedProductOptionChangeDTO,
   EnrichedProductVariantDTO,
   FilterableProductImageProps,
   FilterableProductOptionCombinationProps,
@@ -22,6 +23,7 @@ import type {
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
+  VariantReassignmentDTO,
   VariantReconciliationPlanDTO,
 } from './common.js'
 import type {
@@ -122,7 +124,29 @@ export type IProductModuleService = {
   ): Promise<[ProductOptionValueDTO[], number]>
 
   // Product-option linking
+  /**
+   * Replaces which options a product offers and which of their values, and moves its variants onto
+   * them. Refused when the change does not fit the variants the product has — see
+   * `applyProductOptionChange` for the path that resolves that instead of refusing.
+   */
   setProductOptions(productId: string, data: SetProductOptionsDTO, context?: Context): Promise<void>
+  /**
+   * The same change, applied together with the variant moves it forces, as one transaction.
+   * Reports the variants it could not keep rather than removing them, because that reaches modules
+   * this one cannot.
+   */
+  applyProductOptionChange(
+    productId: string,
+    data: SetProductOptionsDTO,
+    context?: Context,
+  ): Promise<AppliedProductOptionChangeDTO>
+  /** Puts a product's options and its variants' combinations back as they were. Compensation only. */
+  revertProductOptionChange(
+    productId: string,
+    options: SetProductOptionsDTO,
+    combinations: readonly VariantReassignmentDTO[],
+    context?: Context,
+  ): Promise<void>
   /** What a proposed set of options would do to the product's variants. Reads only. */
   planProductOptionChange(
     productId: string,
@@ -130,10 +154,7 @@ export type IProductModuleService = {
     context?: Context,
   ): Promise<VariantReconciliationPlanDTO>
   /** Moves variants onto the combinations a plan assigned them, retitling as it goes. */
-  applyVariantReassignments(
-    reassignments: ReadonlyArray<{ variantId: string; optionValues: Record<string, string> }>,
-    context?: Context,
-  ): Promise<void>
+  applyVariantReassignments(reassignments: readonly VariantReassignmentDTO[], context?: Context): Promise<void>
   /** Brings every variant carrying one of these option values back in line with its combination. */
   retitleVariantsCarrying(optionValueIds: string[], context?: Context): Promise<void>
   listProductOptionsForProduct(productId: string, context?: Context): Promise<ProductOptionWithValuesDTO[]>

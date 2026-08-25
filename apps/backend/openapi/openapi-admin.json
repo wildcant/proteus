@@ -2006,7 +2006,8 @@
                   "items": {
                     "type": "string",
                     "minLength": 1
-                  }
+                  },
+                  "minItems": 1
                 }
               },
               "required": ["optionId", "valueIds"]
@@ -2298,7 +2299,8 @@
                   "items": {
                     "type": "string",
                     "minLength": 1
-                  }
+                  },
+                  "minItems": 1
                 }
               },
               "required": ["optionId", "valueIds"]

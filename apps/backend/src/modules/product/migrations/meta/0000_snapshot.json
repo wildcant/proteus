@@ -1,5 +1,5 @@
 {
-  "id": "921350fe-c120-41fb-b691-07bf1c34b37c",
+  "id": "ea0997e0-25ae-460d-a7d6-06fe4b7d5332",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -503,8 +503,8 @@
         }
       },
       "indexes": {
-        "idx_product_product_option_value_ppo_id": {
-          "name": "idx_product_product_option_value_ppo_id",
+        "idx_product_product_option_value_product_product_option_id": {
+          "name": "idx_product_product_option_value_product_product_option_id",
           "columns": [
             {
               "expression": "product_product_option_id",
@@ -519,8 +519,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_product_product_option_value_ov_id": {
-          "name": "idx_product_product_option_value_ov_id",
+        "idx_product_product_option_value_option_value_id": {
+          "name": "idx_product_product_option_value_option_value_id",
           "columns": [
             {
               "expression": "option_value_id",
@@ -535,8 +535,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_product_product_option_value_ppo_ov": {
-          "name": "idx_product_product_option_value_ppo_ov",
+        "idx_product_product_option_value_value_once_per_option": {
+          "name": "idx_product_product_option_value_value_once_per_option",
           "columns": [
             {
               "expression": "product_product_option_id",
@@ -574,7 +574,7 @@
           "tableTo": "product_option_value",
           "columnsFrom": ["option_value_id"],
           "columnsTo": ["id"],
-          "onDelete": "cascade",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
@@ -895,14 +895,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "option_id": {
-          "name": "option_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "option_value_id": {
-          "name": "option_value_id",
+        "product_product_option_value_id": {
+          "name": "product_product_option_value_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -945,11 +939,11 @@
           "method": "btree",
           "with": {}
         },
-        "idx_product_variant_option_option_id": {
-          "name": "idx_product_variant_option_option_id",
+        "idx_product_variant_option_product_product_option_value_id": {
+          "name": "idx_product_variant_option_product_product_option_value_id",
           "columns": [
             {
-              "expression": "option_id",
+              "expression": "product_product_option_value_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -961,24 +955,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_product_variant_option_option_value_id": {
-          "name": "idx_product_variant_option_option_value_id",
-          "columns": [
-            {
-              "expression": "option_value_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "deleted_at IS NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_product_variant_option_variant_option": {
-          "name": "idx_product_variant_option_variant_option",
+        "idx_product_variant_option_variant_value": {
+          "name": "idx_product_variant_option_variant_value",
           "columns": [
             {
               "expression": "variant_id",
@@ -987,29 +965,7 @@
               "nulls": "last"
             },
             {
-              "expression": "option_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "deleted_at IS NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_product_variant_option_variant_option_value": {
-          "name": "idx_product_variant_option_variant_option_value",
-          "columns": [
-            {
-              "expression": "variant_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "option_value_id",
+              "expression": "product_product_option_value_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1032,22 +988,13 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "product_variant_option_option_id_product_option_id_fk": {
-          "name": "product_variant_option_option_id_product_option_id_fk",
+        "product_variant_option_product_product_option_value_id_product_product_option_value_id_fk": {
+          "name": "product_variant_option_product_product_option_value_id_product_product_option_value_id_fk",
           "tableFrom": "product_variant_option",
-          "tableTo": "product_option",
-          "columnsFrom": ["option_id"],
+          "tableTo": "product_product_option_value",
+          "columnsFrom": ["product_product_option_value_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "product_variant_option_option_value_id_product_option_value_id_fk": {
-          "name": "product_variant_option_option_value_id_product_option_value_id_fk",
-          "tableFrom": "product_variant_option",
-          "tableTo": "product_option_value",
-          "columnsFrom": ["option_value_id"],
-          "columnsTo": ["id"],
-          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },

@@ -1,7 +1,7 @@
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { IPricingModuleService } from '@core/types/pricing/service.js'
-import type { ProductVariantDTO } from '@core/types/product/common.js'
+import type { AppliedProductOptionChangeDTO } from '@core/types/product/common.js'
 import type { SetProductOptionsDTO } from '@core/types/product/mutations.js'
 import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
@@ -14,18 +14,21 @@ type SetProductOptionsInput = { productId: string; data: SetProductOptionsDTO }
  *
  * A product's variants are derived from its options, so editing the options is not something to
  * refuse when variants exist — it is something the variant set has to follow. The plan is computed
- * before anything is written and never leaves this workflow: the admin has already consented to the
- * destructive half from `variantCount`, and what actually happens is whatever the data says at save
- * time.
+ * inside the module, alongside the write it describes, and never leaves this workflow: the admin
+ * has already consented to the destructive half from `variantCount`, and what actually happens is
+ * whatever the data says at save time.
  *
- * Creating and reassigning come before removing so that a compensation unwinds the cheap steps
- * first and the irreversible one is attempted last.
+ * The options and the variant moves they force are one step because they are one transaction —
+ * every ordering of them passes through a state where a variant has no value for an option its
+ * product offers. What is left here is only what the product module cannot do for itself: price
+ * sets, links and carts. Removing comes last, so that a compensation unwinds the cheap steps first
+ * and the irreversible one is attempted last.
  */
 export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, void>(
   'set-product-options',
   async (ctx, input) => {
-    // Step 1: work out what the change does, and remember what to put back
-    const { plan, previousOptions, previousCombinations } = await ctx.step('plan', async ({ container }) => {
+    // Step 1: remember what to put back, before anything moves
+    const { previousOptions, previousCombinations } = await ctx.step('capture', async ({ container }) => {
       const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
       const scoped = await productService.listProductOptionsForProduct(input.productId)
@@ -33,7 +36,6 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
       const maps = await productService.listVariantOptionMaps(variants.map((variant) => variant.id))
 
       return {
-        plan: await productService.planProductOptionChange(input.productId, input.data),
         previousOptions: {
           options: scoped.map((option) => ({
             optionId: option.id,
@@ -47,58 +49,24 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
       }
     })
 
-    // Step 2: the option links themselves
-    await ctx.step(
-      'set-options',
-      async ({ container }) => {
+    // Step 2: the options, and every variant move they force, as one transaction
+    const { plan, created } = await ctx.step(
+      'apply-options',
+      async ({ container }): Promise<AppliedProductOptionChangeDTO> => {
         const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.setProductOptions(input.productId, input.data)
+        return productService.applyProductOptionChange(input.productId, input.data)
       },
-      async (_result, { container }) => {
+      async (applied, { container }) => {
         const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.setProductOptions(input.productId, previousOptions)
-      },
-    )
-
-    // Step 3: variants that survive but stand for a different combination now
-    await ctx.step(
-      'reassign-variants',
-      async ({ container }) => {
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.applyVariantReassignments(
-          plan.reassign.map((entry) => ({
-            variantId: entry.variantId,
-            optionValues: entry.combination.optionValues,
-          })),
-        )
-      },
-      async (_result, { container }) => {
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.applyVariantReassignments(previousCombinations)
+        // Order matters: the options have to be back before a combination expressed in them can be.
+        await productService.revertProductOptionChange(input.productId, previousOptions, previousCombinations)
+        if (applied.created.length > 0) {
+          await productService.softDeleteProductVariants(applied.created.map((variant) => variant.id))
+        }
       },
     )
 
-    // Step 4: the combinations nothing covers yet, priced from the nearest survivor
-    const created = await ctx.step(
-      'create-variants',
-      async ({ container }): Promise<ProductVariantDTO[]> => {
-        if (plan.create.length === 0) return []
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        return productService.createProductVariants(
-          plan.create.map((entry) => ({
-            productId: input.productId,
-            optionValues: entry.combination.optionValues,
-          })),
-        )
-      },
-      async (variants, { container }) => {
-        if (variants.length === 0) return
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.softDeleteProductVariants(variants.map((variant) => variant.id))
-      },
-    )
-
-    // Step 5: copy each new variant's price from the survivor it shares most option values with
+    // Step 3: copy each new variant's price from the survivor it shares most option values with
     await ctx.step('copy-prices', async ({ container }) => {
       if (created.length === 0) return
       const sources = plan.create.map((entry) => entry.copyPricesFromVariantId)
@@ -131,7 +99,7 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
       )
     })
 
-    // Step 6: variants the change leaves no room for
+    // Step 4: variants the change leaves no room for
     await ctx.step(
       'remove-variants',
       async ({ container }) => {

@@ -396,15 +396,14 @@ test('editing a variant is never offered a combination another variant holds', a
   })
   await using smallVariant = await factories.create.productVariant({ productId: product.id, title: 'S' })
   await using mediumVariant = await factories.create.productVariant({ productId: product.id, title: 'M' })
+  // A variant carries the product's value, not the global one.
   await using smallLink = await factories.create.productVariantOption({
     variantId: smallVariant.id,
-    optionId: size.id,
-    optionValueId: small.id,
+    productProductOptionValueId: offersSmall.id,
   })
   await using mediumLink = await factories.create.productVariantOption({
     variantId: mediumVariant.id,
-    optionId: size.id,
-    optionValueId: medium.id,
+    productProductOptionValueId: offersMedium.id,
   })
   await authenticate({ as: 'admin' })
 

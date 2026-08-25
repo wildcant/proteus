@@ -110,6 +110,18 @@ export type PickerVariantDTO = {
   inStock: boolean
 }
 
+/**
+ * Moving a variant onto a different Option Combination.
+ *
+ * Its identity — SKU, price, images, order history — survives; only which combination it stands
+ * for changes. The map is empty when the variant is moving onto no combination at all, which is
+ * what every option-less product's variant carries.
+ */
+export type VariantReassignmentDTO = {
+  variantId: string
+  optionValues: Record<string, string>
+}
+
 /** Why a variant cannot survive a change to its product's options. */
 export type VariantRemovalReason = 'value-dropped' | 'collapsed'
 
@@ -122,6 +134,18 @@ export type VariantReconciliationPlanDTO = {
   reassign: Array<{ variantId: string; fromLabel: string; combination: ProductOptionCombinationDTO }>
   create: Array<{ combination: ProductOptionCombinationDTO; copyPricesFromVariantId: string | null }>
   remove: Array<{ variantId: string; title: string; reason: VariantRemovalReason }>
+}
+
+/**
+ * What `applyProductOptionChange` did, and the one thing it deliberately did not do.
+ *
+ * `plan.remove` is a report rather than a record: removing a variant reaches price sets, links and
+ * carts, which the module cannot touch, so the caller removes them once that cleanup is done.
+ */
+export type AppliedProductOptionChangeDTO = {
+  plan: VariantReconciliationPlanDTO
+  /** The variants the change created, in `plan.create` order, so prices can be copied onto them. */
+  created: ProductVariantDTO[]
 }
 
 export interface FilterableProductOptionCombinationProps
@@ -262,11 +286,15 @@ export interface FilterableProductImageProps extends BaseFilterable<FilterablePr
   url?: string | OperatorMap<string>
 }
 
+/**
+ * A variant's option value as the pivot stores it — pointing at the **product's** option and
+ * value, not the global ones. Every other shape here speaks global ids; this is the one place the
+ * product layer surfaces, because it mirrors the table.
+ */
 export type ProductVariantOptionDTO = {
   id: string
   variantId: string
-  optionId: string
-  optionValueId: string
+  productProductOptionValueId: string
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -275,8 +303,7 @@ export type ProductVariantOptionDTO = {
 export interface FilterableProductVariantOptionProps extends BaseFilterable<FilterableProductVariantOptionProps> {
   id?: string | string[]
   variantId?: string | string[]
-  optionId?: string | string[]
-  optionValueId?: string | string[]
+  productProductOptionValueId?: string | string[]
 }
 
 export type ProductVariantImageDTO = {

@@ -66,6 +66,12 @@ Each module at `apps/backend/src/modules/{name}/` follows an identical layout:
 
 Modules: cart, customer, fulfillment, inventory, payment, product, user.
 
+A module too large for one service class splits internally: the module service constructs the
+collaborator from its own injected dependencies and keeps it private. Nothing registers or exports
+it, so the module's public surface stays exactly one service — see `ProductOptionService` inside
+`product`. Splitting into two *modules* is usually not the alternative, because the cascade graph is
+built per module from one models barrel, so tables with foreign keys between them must share one.
+
 ### Two-Container Bootstrap
 
 `src/container.ts` creates a shared Awilix container. Each module gets a private local container with its repos. Only the module's service is exposed to the shared container. Modules cannot access each other's internals.
@@ -162,7 +168,7 @@ Tests construct services manually with injected repos. Vitest config at `apps/ba
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/middleware-and-openapi.md`, `docs/soft-delete-cascade.md`.
+Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/middleware-and-openapi.md`, `docs/soft-delete-cascade.md`, `docs/product-options.md`.
 
 Work in progress lives in `.scratch/<feature>/` — the spec at `.scratch/<feature>/spec.md`, its tickets in
 `.scratch/<feature>/issues/`. That is the issue tracker for this repo; GitHub Issues is not used. Once the work

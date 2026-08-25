@@ -87,8 +87,7 @@ CREATE TABLE "product_variant_image" (
 CREATE TABLE "product_variant_option" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('pvopt_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"variant_id" text NOT NULL,
-	"option_id" text NOT NULL,
-	"option_value_id" text NOT NULL,
+	"product_product_option_value_id" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -125,12 +124,11 @@ ALTER TABLE "product_option_value" ADD CONSTRAINT "product_option_value_option_i
 ALTER TABLE "product_product_option" ADD CONSTRAINT "product_product_option_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_product_option" ADD CONSTRAINT "product_product_option_option_id_product_option_id_fk" FOREIGN KEY ("option_id") REFERENCES "public"."product_option"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_product_option_value" ADD CONSTRAINT "product_product_option_value_product_product_option_id_product_product_option_id_fk" FOREIGN KEY ("product_product_option_id") REFERENCES "public"."product_product_option"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "product_product_option_value" ADD CONSTRAINT "product_product_option_value_option_value_id_product_option_value_id_fk" FOREIGN KEY ("option_value_id") REFERENCES "public"."product_option_value"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_product_option_value" ADD CONSTRAINT "product_product_option_value_option_value_id_product_option_value_id_fk" FOREIGN KEY ("option_value_id") REFERENCES "public"."product_option_value"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_variant_image" ADD CONSTRAINT "product_variant_image_variant_id_product_variant_id_fk" FOREIGN KEY ("variant_id") REFERENCES "public"."product_variant"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_variant_image" ADD CONSTRAINT "product_variant_image_image_id_product_image_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."product_image"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_variant_option" ADD CONSTRAINT "product_variant_option_variant_id_product_variant_id_fk" FOREIGN KEY ("variant_id") REFERENCES "public"."product_variant"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "product_variant_option" ADD CONSTRAINT "product_variant_option_option_id_product_option_id_fk" FOREIGN KEY ("option_id") REFERENCES "public"."product_option"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "product_variant_option" ADD CONSTRAINT "product_variant_option_option_value_id_product_option_value_id_fk" FOREIGN KEY ("option_value_id") REFERENCES "public"."product_option_value"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_variant_option" ADD CONSTRAINT "product_variant_option_product_product_option_value_id_product_product_option_value_id_fk" FOREIGN KEY ("product_product_option_value_id") REFERENCES "public"."product_product_option_value"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_variant" ADD CONSTRAINT "product_variant_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_product_image_product_id" ON "product_image" USING btree ("product_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_image_url" ON "product_image" USING btree ("url") WHERE deleted_at IS NULL;--> statement-breakpoint
@@ -141,18 +139,16 @@ CREATE UNIQUE INDEX "idx_product_option_value_option_id_value" ON "product_optio
 CREATE INDEX "idx_product_product_option_product_id" ON "product_product_option" USING btree ("product_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_product_option_option_id" ON "product_product_option" USING btree ("option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_product_option_product_option" ON "product_product_option" USING btree ("product_id","option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_product_product_option_value_ppo_id" ON "product_product_option_value" USING btree ("product_product_option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_product_product_option_value_ov_id" ON "product_product_option_value" USING btree ("option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_product_product_option_value_ppo_ov" ON "product_product_option_value" USING btree ("product_product_option_id","option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_product_option_value_product_product_option_id" ON "product_product_option_value" USING btree ("product_product_option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_product_option_value_option_value_id" ON "product_product_option_value" USING btree ("option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_product_product_option_value_value_once_per_option" ON "product_product_option_value" USING btree ("product_product_option_id","option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_handle" ON "product" USING btree ("handle") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_variant_image_variant_id" ON "product_variant_image" USING btree ("variant_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_variant_image_image_id" ON "product_variant_image" USING btree ("image_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_variant_image_variant_id_image_id" ON "product_variant_image" USING btree ("variant_id","image_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_variant_option_variant_id" ON "product_variant_option" USING btree ("variant_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_product_variant_option_option_id" ON "product_variant_option" USING btree ("option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_product_variant_option_option_value_id" ON "product_variant_option" USING btree ("option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_product_variant_option_variant_option" ON "product_variant_option" USING btree ("variant_id","option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_product_variant_option_variant_option_value" ON "product_variant_option" USING btree ("variant_id","option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_variant_option_product_product_option_value_id" ON "product_variant_option" USING btree ("product_product_option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_product_variant_option_variant_value" ON "product_variant_option" USING btree ("variant_id","product_product_option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_variant_product_id" ON "product_variant" USING btree ("product_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_variant_sku" ON "product_variant" USING btree ("sku") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_variant_barcode" ON "product_variant" USING btree ("barcode") WHERE deleted_at IS NULL;--> statement-breakpoint

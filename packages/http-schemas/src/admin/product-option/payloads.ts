@@ -39,14 +39,25 @@ export const AdminUpdateProductOption = z
   .openapi('AdminUpdateProductOption')
 export type AdminUpdateProductOptionBody = z.infer<typeof AdminUpdateProductOption>
 
-const SetProductOptionEntry = z.object({
+/**
+ * One option a product offers, and which of its values.
+ *
+ * `valueIds` must name at least one: an option a product offers with nothing to choose from is not
+ * a dimension the product varies along — drop the option instead. It used to mean "every value the
+ * option has", which made deselecting the last value a silent widening rather than the removal the
+ * shopkeeper intended.
+ *
+ * Exported because product creation takes the same entry. Two copies drifted once already, which
+ * is the whole argument for one.
+ */
+export const AdminSetProductOptionEntry = z.object({
   optionId: z.string().min(1),
-  valueIds: z.array(z.string().min(1)),
+  valueIds: z.array(z.string().min(1)).min(1),
 })
 
 export const AdminSetProductOptions = z
   .object({
-    options: z.array(SetProductOptionEntry),
+    options: z.array(AdminSetProductOptionEntry),
   })
   .openapi('AdminSetProductOptions')
 export type AdminSetProductOptionsBody = z.infer<typeof AdminSetProductOptions>

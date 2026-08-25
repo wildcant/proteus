@@ -1,14 +1,10 @@
 import { z } from 'zod'
+import { AdminSetProductOptionEntry } from '../product-option/payloads.js'
 import { AdminCreateProductVariant } from '../product-variant/payloads.js'
 import { ProductStatus } from './entities.js'
 
 const AdminCreateProductImage = z.object({ url: z.string().min(1) })
 
-/** Which options the new product offers. An empty `valueIds` offers every value the option has. */
-const AdminCreateProductOptionEntry = z.object({
-  optionId: z.string().min(1),
-  valueIds: z.array(z.string().min(1)),
-})
 export const AdminUpsertProductImage = z.object({ id: z.string().optional(), url: z.string().min(1) })
 
 export const AdminCreateProduct = z
@@ -23,7 +19,7 @@ export const AdminCreateProduct = z
     material: z.string().optional(),
     midCode: z.string().optional(),
     /** Array position sets each option's display rank on the product. */
-    options: z.array(AdminCreateProductOptionEntry).optional(),
+    options: z.array(AdminSetProductOptionEntry).optional(),
     originCountry: z.string().optional(),
     status: ProductStatus.optional(),
     subtitle: z.string().optional(),

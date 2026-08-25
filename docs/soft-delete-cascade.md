@@ -251,10 +251,13 @@ underneath the things still using it.
 ```mermaid
 flowchart TD
   PO["product_option"] --> POV["product_option_value"]
-  PO --> PVO["product_variant_option"]
   PPO["product_product_option"] -. blocks .-> PO
-  PVO2["product_variant_option"] -. blocks .-> POV
+  PPOV["product_product_option_value"] -. blocks .-> POV
 ```
+
+Both guards sit in the **product** layer and point up at the **global** one: a product offering an
+option is what makes that option un-deletable, and a product offering a value is what makes that
+value un-deletable. See [Product Options](product-options.md).
 
 Refusal raises `NOT_ALLOWED` (400) naming the relationship, e.g.:
 
@@ -267,9 +270,11 @@ origin.
 
 ## Overlap — a guard inside its own closure
 
-A closure can hold both a guard and the table it guards. `product_option` is the live example: one
-deletion of it reaches `product_option_value` and `product_variant_option`, and the second guards
-the first.
+A closure can hold both a guard and the table it guards. **The codebase has no instance of this
+today**, and `guard-outside-its-closure` reports none. It had exactly one until
+[ADR 0018](adr/0018-layered-product-options.md): `product_variant_option` declared
+`option_id → cascade` alongside `option_value_id → restrict`, so deleting a `product_option`
+reached both `product_option_value` and the row guarding it.
 
 ```mermaid
 flowchart TD
@@ -277,6 +282,10 @@ flowchart TD
   R --> H["product_variant_option"]
   H -. blocks .-> V
 ```
+
+The fix was not a rule about ordering but a schema that cannot express the shape: guards now point
+only upward across a layer boundary, so no closure can reach one. The mechanism below stays, because
+it is what makes the *next* such pair deterministic rather than dependent on export order.
 
 This used to be the bug on this page. The restrict check was interleaved with the hiding, and its
 "is anything live referencing this?" query excludes rows already hidden — so:
@@ -292,7 +301,7 @@ cascade *would* hide still blocks. Pinned from both directions by
 `src/core/db/__tests__/cascade-walker.test.ts`, which runs the same fixture under two barrel
 orderings.
 
-Deterministic, but still worth noticing: an author who wrote two `cascade` edges expecting both
+Deterministic, but still worth noticing: an author who writes two `cascade` edges expecting both
 children to go instead gets a deletion refused whenever a guard row exists. So
 `guard-outside-its-closure` **warns** — it does not fail the build, because the fix is a schema
 redesign rather than a line to change. Opt out by recording the guard relationship in its `ALLOWED`

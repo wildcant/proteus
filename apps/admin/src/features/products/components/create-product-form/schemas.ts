@@ -31,7 +31,9 @@ export const attributesSchema = AdminCreateProduct.pick({
 export const variantsSchema = z.object({
   /** Off means the product is not sold in variations; one variant is created for it. */
   hasVariants: z.boolean(),
-  options: z.array(z.object({ optionId: z.string().min(1), valueIds: z.array(z.string().min(1)) })),
+  // `valueIds` needs at least one, matching the endpoint. The selector already drops an option when
+  // its last value is deselected, so this is the form agreeing rather than a second gate.
+  options: z.array(z.object({ optionId: z.string().min(1), valueIds: z.array(z.string().min(1)).min(1) })),
   rows: z.array(
     z.object({
       key: z.string(),

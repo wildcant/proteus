@@ -1,4 +1,9 @@
 import { snakeCase } from '@proteus/utils'
+import type { PgTable } from 'drizzle-orm/pg-core'
+
+/** What `getTableConfig` hands back — resolved once per table and passed down. */
+type TableConfig = ReturnType<typeof getTableConfig>
+
 import { getTableConfig } from 'drizzle-orm/pg-core'
 import { isSoftDeletable, SOFT_DELETE_COLUMN_SQL, tableName } from '../../src/core/db/utils.js'
 import { excludesSoftDeleted, locate, sourceOf } from './metadata.js'
@@ -32,34 +37,7 @@ export const softDeleteIndexPredicate: Check = {
     for (const { file, table } of models) {
       if (!isSoftDeletable(table)) continue
       const config = getTableConfig(table)
-
-      for (const column of config.columns) {
-        if (!column.isUnique) continue
-        violations.push({
-          location: locate(file, `${column.name}:`),
-          message: `${config.name}.${column.name} is declared unique inline`,
-          remedy: `replace .unique() with liveUniqueIndex('idx_${config.name}_${snakeCase(column.name)}').on(table.${column.name}) in the table's extras`,
-        })
-      }
-
-      for (const constraint of config.uniqueConstraints) {
-        violations.push({
-          location: locate(file, constraint.name ?? 'unique('),
-          message: `${config.name} declares the unique constraint "${constraint.name}"`,
-          remedy: 'a constraint cannot carry a predicate — declare it with liveUniqueIndex instead',
-        })
-      }
-
-      for (const index of config.indexes) {
-        const { name, unique, where } = index.config
-        if (excludesSoftDeleted(where)) continue
-        const helper = unique ? 'liveUniqueIndex' : 'liveIndex'
-        violations.push({
-          location: locate(file, name ?? config.name),
-          message: `${tableName(table)} index "${name ?? '(unnamed)'}" does not exclude soft-deleted rows`,
-          remedy: `declare it with ${helper} from core/db/indexes.js`,
-        })
-      }
+      violations.push(...inlineUniqueness(file, config), ...predicatelessUniqueness(file, table, config))
     }
 
     for (const file of new Set(models.map((model) => model.file))) {
@@ -74,4 +52,34 @@ export const softDeleteIndexPredicate: Check = {
 
     return violations
   },
+}
+
+/** Uniqueness declared on the column itself, which compiles to a constraint and cannot be partial. */
+function inlineUniqueness(file: string, config: TableConfig): Violation[] {
+  return config.columns
+    .filter((column) => column.isUnique)
+    .map((column) => ({
+      location: locate(file, `${column.name}:`),
+      message: `${config.name}.${column.name} is declared unique inline`,
+      remedy: `replace .unique() with liveUniqueIndex('idx_${config.name}_${snakeCase(column.name)}').on(table.${column.name}) in the table's extras`,
+    }))
+}
+
+/** Uniqueness declared in the table's extras that keeps holding its slot against hidden rows. */
+function predicatelessUniqueness(file: string, table: PgTable, config: TableConfig): Violation[] {
+  const constraints = config.uniqueConstraints.map((constraint) => ({
+    location: locate(file, constraint.name ?? 'unique('),
+    message: `${config.name} declares the unique constraint "${constraint.name}"`,
+    remedy: 'a constraint cannot carry a predicate — declare it with liveUniqueIndex instead',
+  }))
+
+  const indexes = config.indexes
+    .filter((index) => !excludesSoftDeleted(index.config.where))
+    .map((index) => ({
+      location: locate(file, index.config.name ?? config.name),
+      message: `${tableName(table)} index "${index.config.name ?? '(unnamed)'}" does not exclude soft-deleted rows`,
+      remedy: `declare it with ${index.config.unique ? 'liveUniqueIndex' : 'liveIndex'} from core/db/indexes.js`,
+    }))
+
+  return [...constraints, ...indexes]
 }

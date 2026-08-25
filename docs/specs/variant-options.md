@@ -7,7 +7,9 @@ records what shipped; the superseded positions are kept under [History](#history
 reasoning behind them still explains the shape of the code.
 
 Vocabulary follows `CONTEXT.md`. Rationale for the projection layer is in
-[ADR 0015](../adr/0015-server-computed-option-projections.md).
+[ADR 0015](../adr/0015-server-computed-option-projections.md). The tables underneath, and the
+deletion and integrity rules over them, are in [Product Options](../product-options.md) and
+[ADR 0018](../adr/0018-layered-product-options.md) — which narrows two of the positions below.
 
 **Status:** shipped.
 
@@ -299,7 +301,7 @@ type AdminOptionCombination = {
 optionValues: Record<string, string>     // create: required. update: omit = leave, {} = clear
 
 // Product create accepts the whole thing at once
-options?: Array<{ optionId: string; valueIds: string[] }>
+options?: Array<{ optionId: string; valueIds: string[] }>   // valueIds: at least one (I4)
 variants?: AdminCreateProductVariant[]
 
 // Store — the id map, plus precomputed answers
@@ -408,6 +410,9 @@ unit suite because it has no pure logic left.
   are only corrected the next time options are edited. The UI cannot reach this.
 - **Per-product value rank** does not exist, so the first value is a global fact shared by every
   product offering that option.
+- **I2, I3 and I4 are service rules**, so anything reaching a repository directly can break them.
+  [ADR 0018](../adr/0018-layered-product-options.md) records why they were not pushed into the
+  schema, and what that costs.
 
 ### History
 
@@ -416,7 +421,7 @@ Six positions from the earlier documents were superseded:
 | Superseded | By |
 | --- | --- |
 | Title optional on write, derived only when omitted | Always derived, removed from the payloads. A title that *can* disagree with its combination eventually will. |
-| A guard refusing option or value removal | Refusing made it impossible to add an option to a selling product. The guard became reconciliation. |
+| A guard refusing option or value removal | Refusing made it impossible to add an option to a selling product. The guard became reconciliation — then came back narrowed in [ADR 0018](../adr/0018-layered-product-options.md), refusing only a change that would leave a variant nowhere to be. |
 | A service helper deriving titles, another expanding payload values | Both deleted; one label implementation, and the expansion moved into option resolution. |
 | Admin and store unit configs deleted, all pure logic serverside | The wizard reintroduced pure client logic, so the admin suite is back and gated. The store still has none. |
 | The combinations endpoint would also serve the create wizard | The wizard has no product id, and the drawer needs no preview. That endpoint remains, paginated and searched, for the comboboxes only. |

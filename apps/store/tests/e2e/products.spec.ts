@@ -96,6 +96,8 @@ async function createProductWithOptions(factories: Factories) {
     }),
   )
 
+  const offeredByValueId = new Map(offered.map((offeredValue) => [offeredValue.optionValueId, offeredValue]))
+
   const combinations = [
     { title: 'S / Black', size: sizeValues.S, colour: colourValues.Black, image: black },
     { title: 'S / White', size: sizeValues.S, colour: colourValues.White, image: white },
@@ -105,18 +107,17 @@ async function createProductWithOptions(factories: Factories) {
   const built = await Promise.all(
     combinations.map(async (combination) => {
       const variant = await factories.create.productVariant({ productId: product.id, title: combination.title })
-      const links = [
-        await factories.create.productVariantOption({
-          variantId: variant.id,
-          optionId: size.id,
-          optionValueId: combination.size.id,
+      // A variant carries the product's value, not the global one.
+      const links = await Promise.all(
+        [combination.size, combination.colour].map((value) => {
+          const offeredValue = offeredByValueId.get(value.id)
+          if (!offeredValue) throw new Error(`Expected the product to offer option value "${value.id}"`)
+          return factories.create.productVariantOption({
+            variantId: variant.id,
+            productProductOptionValueId: offeredValue.id,
+          })
         }),
-        await factories.create.productVariantOption({
-          variantId: variant.id,
-          optionId: colour.id,
-          optionValueId: combination.colour.id,
-        }),
-      ]
+      )
       const image = await factories.create.productVariantImage({
         variantId: variant.id,
         imageId: combination.image.id,

@@ -57,6 +57,11 @@ test.describe('countCombinations', () => {
   })
 
   test('an option offering no values collapses the count to zero', ({ expect }) => {
+    // I4 makes this state unreachable through the service — an option a product offers must offer a
+    // value. It stays covered here because the pure layer is the last line of defence against the
+    // one path that skips the service, and because `planVariantReconciliation` filters on it for
+    // exactly this reason: left in, it multiplies the count to zero and plans a deletion of
+    // everything. See docs/product-options.md.
     expect(countCombinations([SIZE, option('opt_fit', 'Fit', [])])).toBe(0)
   })
 
@@ -167,6 +172,7 @@ test.describe('buildCombinations', () => {
 
   test('an option offering no values yields nothing rather than a partial row', ({ expect }) => {
     // The fold would otherwise emit combinations missing that option, which the service rejects.
+    // Unreachable through the service since I4, and kept for the same reason as the count above.
     expect(buildCombinations({ options: [SIZE, option('opt_fit', 'Fit', [])], variants: [] })).toEqual([])
   })
 })
