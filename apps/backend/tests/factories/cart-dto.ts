@@ -18,9 +18,6 @@ export function generateCartDTO(overrides?: Partial<CartDTO>): CartDTO {
     salesChannelId: null,
     email: faker.internet.email(),
     currencyCode: faker.finance.currencyCode().toLowerCase(),
-    status: 'active',
-    shippingAddressId: null,
-    billingAddressId: null,
     completedAt: null,
     createdAt: faker.date.recent(),
     updatedAt: faker.date.recent(),
@@ -32,6 +29,8 @@ export function generateCartDTO(overrides?: Partial<CartDTO>): CartDTO {
 export function generateCartAddressDTO(overrides?: Partial<CartAddressDTO>): CartAddressDTO {
   return {
     id: `caaddr_${faker.string.alphanumeric(32)}`,
+    cartId: `cart_${faker.string.alphanumeric(32)}`,
+    type: 'shipping',
     customerId: null,
     company: faker.company.name(),
     firstName: faker.person.firstName(),
@@ -163,8 +162,6 @@ export function generateCreateShippingMethodDTO(overrides?: Partial<CreateShippi
   }
 }
 
-/** Both address ids are real FKs to `cart_address`, so they stay null — a generated id would
- *  dangle. Every caller that means an address passes one it created. */
 export function generateUpdateCartDTO(overrides?: Partial<UpdateCartDTO>): UpdateCartDTO {
   return {
     regionId: `reg_${faker.string.alphanumeric(32)}`,
@@ -172,9 +169,6 @@ export function generateUpdateCartDTO(overrides?: Partial<UpdateCartDTO>): Updat
     salesChannelId: `sc_${faker.string.alphanumeric(32)}`,
     email: faker.internet.email(),
     currencyCode: 'usd',
-    status: faker.helpers.arrayElement(['active', 'completed', 'abandoned'] as const),
-    shippingAddressId: null,
-    billingAddressId: null,
     completedAt: faker.date.recent(),
     ...overrides,
   }

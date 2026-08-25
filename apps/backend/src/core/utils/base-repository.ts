@@ -2,6 +2,8 @@ import type { Column, InferInsertModel, InferSelectModel, SQL } from 'drizzle-or
 import { and, asc, count, desc, eq, getTableColumns, inArray, isNull } from 'drizzle-orm'
 import type { PgTable } from 'drizzle-orm/pg-core'
 import type { Database } from '../../schema.type.js'
+import type { CascadeGraph } from '../db/cascade-graph.js'
+import { restoreCascade, softDeleteCascade } from '../db/cascade-walker.js'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
 import { dbErrorMapper } from '../errors/db-error-mapper.js'
 import type { FindConfig, OperatorMap } from '../types/common.js'
@@ -28,10 +30,12 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
 
   class Repository {
     #getDb: () => Database
+    #cascadeGraph: CascadeGraph
     protected readonly table: TTable = table
 
-    constructor({ getDb }: { getDb: () => Database }) {
+    constructor({ getDb, cascadeGraph }: { getDb: () => Database; cascadeGraph: CascadeGraph }) {
       this.#getDb = getDb
+      this.#cascadeGraph = cascadeGraph
     }
 
     protected getClient(context?: Context) {
@@ -210,19 +214,22 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
       await client.delete(this.table).where(inArray(this.table.id, ids))
     }
 
+    /**
+     * Hides these rows and the children the schema declares they own, as one event.
+     *
+     * The timestamp that identifies the event is taken by the walker, from the database. It used
+     * to be a `new Date()` computed here, which resolves only to the millisecond — two deletions
+     * inside one were indistinguishable, and restoring the second swept the first back with it.
+     */
     async softDelete(ids: string[], context?: Context): Promise<void> {
       if (ids.length === 0) return
-      const client = this.getClient_(context)
-      await client
-        .update(this.table)
-        .set({ deletedAt: new Date() })
-        .where(and(inArray(this.table.id, ids), isNull(this.table.deletedAt)))
+      await softDeleteCascade(this.getClient_(context), this.#cascadeGraph, this.table, ids)
     }
 
+    /** Brings back exactly what the matching `softDelete` hid, and nothing deleted before it. */
     async restore(ids: string[], context?: Context): Promise<void> {
       if (ids.length === 0) return
-      const client = this.getClient_(context)
-      await client.update(this.table).set({ deletedAt: null }).where(inArray(this.table.id, ids))
+      await restoreCascade(this.getClient_(context), this.#cascadeGraph, this.table, ids)
     }
   }
 

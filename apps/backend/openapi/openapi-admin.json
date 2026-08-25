@@ -525,12 +525,6 @@
           "currencyCode": {
             "type": "string"
           },
-          "shippingAddressId": {
-            "type": ["string", "null"]
-          },
-          "billingAddressId": {
-            "type": ["string", "null"]
-          },
           "canceledAt": {
             "type": ["string", "null"],
             "format": "date-time"
@@ -556,8 +550,6 @@
           "email",
           "customerId",
           "currencyCode",
-          "shippingAddressId",
-          "billingAddressId",
           "canceledAt",
           "createdAt",
           "updatedAt",
@@ -2014,7 +2006,8 @@
                   "items": {
                     "type": "string",
                     "minLength": 1
-                  }
+                  },
+                  "minItems": 1
                 }
               },
               "required": ["optionId", "valueIds"]
@@ -2306,7 +2299,8 @@
                   "items": {
                     "type": "string",
                     "minLength": 1
-                  }
+                  },
+                  "minItems": 1
                 }
               },
               "required": ["optionId", "valueIds"]

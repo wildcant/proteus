@@ -155,15 +155,6 @@
           "currencyCode": {
             "type": "string"
           },
-          "status": {
-            "type": "string"
-          },
-          "shippingAddressId": {
-            "type": ["string", "null"]
-          },
-          "billingAddressId": {
-            "type": ["string", "null"]
-          },
           "completedAt": {
             "type": ["string", "null"],
             "format": "date-time"
@@ -188,9 +179,6 @@
           "salesChannelId",
           "email",
           "currencyCode",
-          "status",
-          "shippingAddressId",
-          "billingAddressId",
           "completedAt",
           "createdAt",
           "updatedAt",
@@ -438,6 +426,13 @@
           "id": {
             "type": "string"
           },
+          "cartId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["shipping", "billing"]
+          },
           "customerId": {
             "type": ["string", "null"]
           },
@@ -486,6 +481,8 @@
         },
         "required": [
           "id",
+          "cartId",
+          "type",
           "customerId",
           "company",
           "firstName",

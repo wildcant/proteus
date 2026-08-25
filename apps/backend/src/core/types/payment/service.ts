@@ -45,7 +45,6 @@ export type IPaymentModuleService = {
     data: UpdatePaymentCollectionDTO,
     context?: Context,
   ): Promise<PaymentCollectionDTO>
-  deletePaymentCollections(ids: string[], context?: Context): Promise<void>
   softDeletePaymentCollections(ids: string[], context?: Context): Promise<void>
   restorePaymentCollections(ids: string[], context?: Context): Promise<void>
 
@@ -55,6 +54,7 @@ export type IPaymentModuleService = {
     input: CreatePaymentSessionDTO,
     context?: Context,
   ): Promise<PaymentSessionDTO>
+  /** Destructive: the session is destroyed at the provider, so there is nothing to restore. */
   deletePaymentSession(id: string, context?: Context): Promise<void>
   authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null>
 
@@ -96,7 +96,6 @@ export type IPaymentModuleService = {
   updateRefundReasons(ids: string[], data: UpdateRefundReasonDTO, context?: Context): Promise<RefundReasonDTO[]>
   createRefundReason(data: CreateRefundReasonDTO, context?: Context): Promise<RefundReasonDTO>
   updateRefundReason(id: string, data: UpdateRefundReasonDTO, context?: Context): Promise<RefundReasonDTO>
-  deleteRefundReasons(ids: string[], context?: Context): Promise<void>
   softDeleteRefundReasons(ids: string[], context?: Context): Promise<void>
   restoreRefundReasons(ids: string[], context?: Context): Promise<void>
 }

@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { jsonb, pgEnum, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { jsonb, pgEnum, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveUniqueIndex } from '../../../core/db/indexes.js'
 
 /** How the storefront should draw an option's values. */
 export const productOptionRenderAsEnum = pgEnum('product_option_render_as', ['text', 'swatch'])
@@ -14,7 +15,7 @@ export const productOptionTable = pgTable(
     metadata: jsonb().$type<Record<string, unknown> | null>(),
     ...timestamps,
   },
-  (table) => [uniqueIndex('idx_product_option_title').on(table.title).where(sql`deleted_at IS NULL`)],
+  (table) => [liveUniqueIndex('idx_product_option_title').on(table.title)],
 )
 
 export type ProductOption = typeof productOptionTable.$inferSelect

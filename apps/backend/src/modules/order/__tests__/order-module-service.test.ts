@@ -1,7 +1,9 @@
 import { BigNumber } from '@core/db/bignum.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
+import * as models from '../models/index.js'
 import {
   OrderAddressRepository,
   OrderLineItemRepository,
@@ -11,15 +13,19 @@ import {
 } from '../repositories/index.js'
 import { OrderModuleService } from '../services/order-module-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let service: OrderModuleService
+let orderRepository: OrderRepository
 
 test.beforeEach(({ getDb, logger }) => {
+  orderRepository = new OrderRepository({ getDb, cascadeGraph })
   service = new OrderModuleService({
-    orderRepository: new OrderRepository({ getDb }),
-    orderAddressRepository: new OrderAddressRepository({ getDb }),
-    orderLineItemRepository: new OrderLineItemRepository({ getDb }),
-    orderShippingMethodRepository: new OrderShippingMethodRepository({ getDb }),
-    orderTransactionRepository: new OrderTransactionRepository({ getDb }),
+    orderRepository,
+    orderAddressRepository: new OrderAddressRepository({ getDb, cascadeGraph }),
+    orderLineItemRepository: new OrderLineItemRepository({ getDb, cascadeGraph }),
+    orderShippingMethodRepository: new OrderShippingMethodRepository({ getDb, cascadeGraph }),
+    orderTransactionRepository: new OrderTransactionRepository({ getDb, cascadeGraph }),
     withTransaction: createWithTransaction(getDb),
     logger,
   })
@@ -135,37 +141,143 @@ test.describe('OrderModuleService', () => {
   // ---------------------------------------------------------------------------
 
   test.describe('Order Address', () => {
-    test('createOrderAddress — creates a snapshot address', async ({ expect, dto }) => {
-      const address = await service.createOrderAddress(dto.generate.createOrderAddress())
+    test('createOrder — snapshots the addresses nested in the payload', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({
+          shippingAddress: dto.generate.createOrderAddress(),
+          billingAddress: dto.generate.createOrderAddress({ firstName: 'Jane' }),
+        }),
+      )
 
-      expect(address.id).toMatch(/^ordaddr_/)
-      expect(address.firstName).toBe('John')
-      expect(address.lastName).toBe('Doe')
+      const addresses = await service.listOrderAddresses({ orderId: order.id })
+
+      expect(addresses.map((address) => address.type).sort()).toEqual(['billing', 'shipping'])
+      expect(addresses.every((address) => address.id.startsWith('ordaddr_'))).toBe(true)
+      expect(addresses.find((address) => address.type === 'shipping')).toMatchObject({ firstName: 'John' })
+      expect(addresses.find((address) => address.type === 'billing')).toMatchObject({ firstName: 'Jane' })
     })
 
-    test('createOrderAddresses — bulk create', async ({ expect, dto }) => {
-      const addresses = await service.createOrderAddresses([
-        dto.generate.createOrderAddress(),
-        dto.generate.createOrderAddress({ firstName: 'Jane' }),
-      ])
+    test('retrieveOrderAddress — returns the address filling that type', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({ shippingAddress: dto.generate.createOrderAddress() }),
+      )
 
-      expect(addresses).toHaveLength(2)
-    })
-
-    test('updateOrderAddress — updates fields', async ({ expect, dto }) => {
-      const address = await service.createOrderAddress(dto.generate.createOrderAddress())
-      const updated = await service.updateOrderAddress(address.id, { city: 'New York' })
-
-      expect(updated.city).toBe('New York')
-    })
-
-    test('deleteOrderAddresses — hard deletes', async ({ expect, dto }) => {
-      const address = await service.createOrderAddress(dto.generate.createOrderAddress())
-      await service.deleteOrderAddresses([address.id])
-
-      await expect(service.updateOrderAddress(address.id, { city: 'X' })).rejects.toMatchObject({
-        type: ErrorTypes.NOT_FOUND,
+      expect(await service.retrieveOrderAddress(order.id, 'shipping')).toMatchObject({
+        orderId: order.id,
+        type: 'shipping',
       })
+    })
+
+    test('retrieveOrderAddress — null when the order has no address of that type', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({ shippingAddress: dto.generate.createOrderAddress() }),
+      )
+
+      // Absence is legal — an order can ship without a separate billing address — so this is a
+      // null rather than the not-found throw the other retrieve methods use.
+      expect(await service.retrieveOrderAddress(order.id, 'billing')).toBeNull()
+    })
+
+    test('createOrderAddress — fills one type on an existing order', async ({ expect, dto }) => {
+      const order = await service.createOrder(dto.generate.createOrder())
+      const address = await service.createOrderAddress(order.id, 'shipping', dto.generate.createOrderAddress())
+
+      expect(address).toMatchObject({ orderId: order.id, type: 'shipping', lastName: 'Doe' })
+    })
+
+    test('createOrderAddress — refuses a second address of the same type', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({ shippingAddress: dto.generate.createOrderAddress() }),
+      )
+
+      await expect(
+        service.createOrderAddress(order.id, 'shipping', dto.generate.createOrderAddress()),
+      ).rejects.toMatchObject({ type: ErrorTypes.DUPLICATE_ERROR })
+    })
+
+    test('createOrderAddress — refuses an address with no order to belong to', async ({ expect, dto }) => {
+      await expect(
+        service.createOrderAddress('ord_nonexistent', 'shipping', dto.generate.createOrderAddress()),
+      ).rejects.toMatchObject({ type: ErrorTypes.NOT_FOUND })
+    })
+
+    test('softDeleteOrderAddresses — hides the address', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({ shippingAddress: dto.generate.createOrderAddress() }),
+      )
+      const address = await service.retrieveOrderAddress(order.id, 'shipping')
+      if (!address) throw new Error('expected the order to own a shipping address')
+
+      await service.softDeleteOrderAddresses([address.id])
+
+      expect(await service.retrieveOrderAddress(order.id, 'shipping')).toBeNull()
+      expect(await service.listOrderAddresses({ orderId: order.id })).toHaveLength(0)
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // Address ownership
+  //
+  // The order used to point at its addresses, so nothing removed them when it went and every
+  // rolled-back checkout left up to two rows behind. These assert what a later read gives back.
+  // ---------------------------------------------------------------------------
+
+  test.describe('Address ownership', () => {
+    test('softDeleteOrders — hides the order addresses', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({
+          shippingAddress: dto.generate.createOrderAddress(),
+          billingAddress: dto.generate.createOrderAddress(),
+        }),
+      )
+
+      await service.softDeleteOrders([order.id])
+
+      expect(await service.listOrderAddresses({ orderId: order.id })).toHaveLength(0)
+    })
+
+    test('restoreOrders — brings the addresses back', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({
+          shippingAddress: dto.generate.createOrderAddress(),
+          billingAddress: dto.generate.createOrderAddress(),
+        }),
+      )
+
+      await service.softDeleteOrders([order.id])
+      await service.restoreOrders([order.id])
+
+      expect(await service.listOrderAddresses({ orderId: order.id })).toHaveLength(2)
+    })
+
+    // The service exposes no hard delete, so this reaches the repository directly: the database
+    // cascade is what removes the address rows, and only inversion made it reach them at all.
+    test('deleting the order row takes the addresses with it', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({
+          shippingAddress: dto.generate.createOrderAddress(),
+          billingAddress: dto.generate.createOrderAddress(),
+        }),
+      )
+
+      await orderRepository.delete([order.id])
+
+      // `withDeleted` so a row merely hidden would still show up — only a real removal passes.
+      expect(await service.listOrderAddresses({ orderId: order.id }, { withDeleted: true })).toHaveLength(0)
+    })
+
+    test('softDeleteOrders — leaves another order’s addresses alone', async ({ expect, dto }) => {
+      const bothAddresses = () =>
+        dto.generate.createOrder({
+          shippingAddress: dto.generate.createOrderAddress(),
+          billingAddress: dto.generate.createOrderAddress(),
+        })
+      const deleted = await service.createOrder(bothAddresses())
+      const kept = await service.createOrder(bothAddresses())
+
+      await service.softDeleteOrders([deleted.id])
+
+      expect(await service.listOrderAddresses({ orderId: kept.id })).toHaveLength(2)
     })
   })
 
@@ -358,7 +470,7 @@ test.describe('OrderModuleService', () => {
   // ---------------------------------------------------------------------------
 
   test.describe('Cascade delete', () => {
-    test('deleteOrders — cascades to line items, shipping methods, and transactions', async ({ expect, dto }) => {
+    test('softDeleteOrders — cascades to line items, shipping methods, and transactions', async ({ expect, dto }) => {
       const order = await service.createOrder(
         dto.generate.createOrder({
           items: [dto.generate.createOrderLineItem()],
@@ -367,7 +479,7 @@ test.describe('OrderModuleService', () => {
       )
       await service.addOrderTransaction(dto.generate.createOrderTransaction({ orderId: order.id }))
 
-      await service.deleteOrders([order.id])
+      await service.softDeleteOrders([order.id])
 
       const lineItems = await service.listOrderLineItems({ orderId: order.id })
       const shippingMethods = await service.listOrderShippingMethods({ orderId: order.id })
@@ -376,6 +488,52 @@ test.describe('OrderModuleService', () => {
       expect(lineItems).toHaveLength(0)
       expect(shippingMethods).toHaveLength(0)
       expect(transactions).toHaveLength(0)
+    })
+
+    test('softDeleteOrders — hides line items, shipping methods and transactions', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({
+          items: [dto.generate.createOrderLineItem(), dto.generate.createOrderLineItem()],
+          shippingMethods: [dto.generate.createOrderShippingMethod()],
+        }),
+      )
+      await service.addOrderTransaction(dto.generate.createOrderTransaction({ orderId: order.id }))
+
+      await service.softDeleteOrders([order.id])
+
+      expect(await service.listOrderLineItems({ orderId: order.id })).toHaveLength(0)
+      expect(await service.listOrderShippingMethods({ orderId: order.id })).toHaveLength(0)
+      expect(await service.listOrderTransactions({ orderId: order.id })).toHaveLength(0)
+    })
+
+    test('restoreOrders — brings back everything that deletion hid', async ({ expect, dto }) => {
+      const order = await service.createOrder(
+        dto.generate.createOrder({
+          items: [dto.generate.createOrderLineItem(), dto.generate.createOrderLineItem()],
+          shippingMethods: [dto.generate.createOrderShippingMethod()],
+        }),
+      )
+      await service.addOrderTransaction(dto.generate.createOrderTransaction({ orderId: order.id }))
+
+      await service.softDeleteOrders([order.id])
+      await service.restoreOrders([order.id])
+
+      expect(await service.listOrders({ id: order.id })).toHaveLength(1)
+      expect(await service.listOrderLineItems({ orderId: order.id })).toHaveLength(2)
+      expect(await service.listOrderShippingMethods({ orderId: order.id })).toHaveLength(1)
+      expect(await service.listOrderTransactions({ orderId: order.id })).toHaveLength(1)
+    })
+
+    test('softDeleteOrders — leaves another order untouched', async ({ expect, dto }) => {
+      const [deleted, kept] = await service.createOrders([
+        dto.generate.createOrder({ items: [dto.generate.createOrderLineItem()] }),
+        dto.generate.createOrder({ items: [dto.generate.createOrderLineItem()] }),
+      ])
+      if (!deleted || !kept) throw new Error('expected two orders')
+
+      await service.softDeleteOrders([deleted.id])
+
+      expect(await service.listOrderLineItems({ orderId: kept.id })).toHaveLength(1)
     })
   })
 

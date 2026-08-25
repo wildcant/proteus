@@ -18,10 +18,6 @@ export interface AdminOrder {
   customerId: string | null;
   currencyCode: string;
   /** @nullable */
-  shippingAddressId: string | null;
-  /** @nullable */
-  billingAddressId: string | null;
-  /** @nullable */
   canceledAt: string | null;
   createdAt: string;
   updatedAt: string;

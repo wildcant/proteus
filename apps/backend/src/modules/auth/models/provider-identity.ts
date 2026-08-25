@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { jsonb, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { authIdentityTable } from './auth-identity.js'
 
 export const providerIdentityTable = pgTable(
@@ -17,9 +18,8 @@ export const providerIdentityTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    uniqueIndex('idx_provider_identity_entity_provider')
-      .on(table.entityId, table.provider)
-      .where(sql`deleted_at IS NULL`),
+    liveIndex('idx_provider_identity_auth_identity_id').on(table.authIdentityId),
+    liveUniqueIndex('idx_provider_identity_entity_provider').on(table.entityId, table.provider),
   ],
 )
 

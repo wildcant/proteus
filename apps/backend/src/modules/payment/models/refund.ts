@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { index, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { paymentTable } from './payment.js'
 import { refundReasonTable } from './refund-reason.js'
 
@@ -15,12 +16,12 @@ export const refundTable = pgTable(
     note: text(),
     paymentId: text()
       .notNull()
-      .references(() => paymentTable.id),
+      .references(() => paymentTable.id, { onDelete: 'cascade' }),
     refundReasonId: text().references(() => refundReasonTable.id),
 
     ...timestamps,
   },
-  (table) => [index('idx_refund_payment_id').on(table.paymentId).where(sql`deleted_at IS NULL`)],
+  (table) => [liveIndex('idx_refund_payment_id').on(table.paymentId)],
 )
 
 export type Refund = typeof refundTable.$inferSelect

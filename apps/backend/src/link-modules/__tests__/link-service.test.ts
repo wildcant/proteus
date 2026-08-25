@@ -1,5 +1,7 @@
 import { test } from '@tests/setup/test-extend.js'
+import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../core/utils/with-transaction.js'
+import * as models from '../definitions/index.js'
 import { CartPaymentCollectionRepository } from '../repositories/cart-payment-collection.js'
 import { CartProductRepository } from '../repositories/cart-product.js'
 import { OrderCartRepository } from '../repositories/order-cart.js'
@@ -9,19 +11,21 @@ import { ProductVariantInventoryItemRepository } from '../repositories/product-v
 import { ProductVariantPriceSetRepository } from '../repositories/product-variant-price-set.js'
 import { LinkService } from '../services/link-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let linkService: LinkService
 let productVariantPriceSet: ProductVariantPriceSetRepository
 let productVariantInventoryItem: ProductVariantInventoryItemRepository
 let cartPaymentCollection: CartPaymentCollectionRepository
 
 test.beforeEach(({ getDb }) => {
-  productVariantPriceSet = new ProductVariantPriceSetRepository({ getDb })
-  productVariantInventoryItem = new ProductVariantInventoryItemRepository({ getDb })
-  cartPaymentCollection = new CartPaymentCollectionRepository({ getDb })
+  productVariantPriceSet = new ProductVariantPriceSetRepository({ getDb, cascadeGraph })
+  productVariantInventoryItem = new ProductVariantInventoryItemRepository({ getDb, cascadeGraph })
+  cartPaymentCollection = new CartPaymentCollectionRepository({ getDb, cascadeGraph })
   const cartProduct = new CartProductRepository({ getDb })
-  const orderCart = new OrderCartRepository({ getDb })
-  const orderPaymentCollection = new OrderPaymentCollectionRepository({ getDb })
-  const orderFulfillment = new OrderFulfillmentRepository({ getDb })
+  const orderCart = new OrderCartRepository({ getDb, cascadeGraph })
+  const orderPaymentCollection = new OrderPaymentCollectionRepository({ getDb, cascadeGraph })
+  const orderFulfillment = new OrderFulfillmentRepository({ getDb, cascadeGraph })
 
   linkService = new LinkService({
     withTransaction: createWithTransaction(getDb),

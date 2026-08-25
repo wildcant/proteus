@@ -33,7 +33,6 @@ export type ICustomerModuleService = {
   updateCustomers(customerIds: string[], data: UpdateCustomerDTO, context?: Context): Promise<CustomerDTO[]>
   createCustomer(data: CreateCustomerDTO, context?: Context): Promise<CustomerDTO>
   updateCustomer(customerId: string, data: UpdateCustomerDTO, context?: Context): Promise<CustomerDTO>
-  deleteCustomers(customerIds: string[], context?: Context): Promise<void>
   softDeleteCustomers(customerIds: string[], context?: Context): Promise<void>
   restoreCustomers(customerIds: string[], context?: Context): Promise<void>
 
@@ -48,6 +47,7 @@ export type ICustomerModuleService = {
     data: UpdateCustomerAddressDTO,
     context?: Context,
   ): Promise<CustomerAddressDTO[]>
+  softDeleteCustomerAddresses(addressIds: string[], context?: Context): Promise<void>
   createCustomerAddress(data: CreateCustomerAddressDTO, context?: Context): Promise<CustomerAddressDTO>
   updateCustomerAddress(
     addressId: string,

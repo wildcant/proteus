@@ -1,16 +1,19 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
-import { vi } from 'vitest'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
+import * as models from '../models/index.js'
 import { CustomerRepository } from '../repositories/customer.js'
 import { CustomerAddressRepository } from '../repositories/customer-address.js'
 import { CustomerModuleService } from '../services/customer-module-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let service: CustomerModuleService
 
 test.beforeEach(({ getDb, logger }) => {
-  const customerRepository = new CustomerRepository({ getDb })
-  const customerAddressRepository = new CustomerAddressRepository({ getDb })
+  const customerRepository = new CustomerRepository({ getDb, cascadeGraph })
+  const customerAddressRepository = new CustomerAddressRepository({ getDb, cascadeGraph })
   const withTransaction = createWithTransaction(getDb)
   service = new CustomerModuleService({ customerRepository, customerAddressRepository, withTransaction, logger })
 })
@@ -116,10 +119,10 @@ test.describe('CustomerModuleService', () => {
     expect(updated.id).toBe(created.id)
   })
 
-  test('deleteCustomers', async ({ expect, dto }) => {
+  test('softDeleteCustomers', async ({ expect, dto }) => {
     const created = await service.createCustomer(dto.generate.createCustomer())
 
-    await service.deleteCustomers([created.id])
+    await service.softDeleteCustomers([created.id])
 
     const error = await service.retrieveCustomer(created.id).catch((e) => e)
     expect(AppError.isError(error)).toBe(true)
@@ -145,27 +148,40 @@ test.describe('CustomerModuleService', () => {
     expect(addresses).toHaveLength(0)
   })
 
-  test('softDeleteCustomers rolls back when address soft-delete fails', async ({ expect, dto }) => {
-    const created = await service.createCustomer(
-      dto.generate.createCustomer({
-        addresses: [dto.generate.createCustomerAddress({ isDefaultShipping: true })],
-      }),
+  test('a new default billing address can be set after the old one is soft-deleted', async ({ expect, dto }) => {
+    const customer = await service.createCustomer(
+      dto.generate.createCustomer({ addresses: [dto.generate.createCustomerAddress({ isDefaultBilling: true })] }),
     )
+    const [oldDefault] = await service.listCustomerAddresses({ customerId: customer.id })
+    if (!oldDefault) throw new Error('expected the customer to have an address')
 
-    const spy = vi
-      .spyOn(CustomerAddressRepository.prototype, 'softDeleteByCustomerIds')
-      .mockRejectedValueOnce(new Error('address soft-delete failed'))
+    await service.softDeleteCustomerAddresses([oldDefault.id])
+    const newDefault = await service.createCustomerAddress({
+      ...dto.generate.createCustomerAddress({ isDefaultBilling: true }),
+      customerId: customer.id,
+    })
 
-    const error = await service.softDeleteCustomers([created.id]).catch((e) => e)
+    expect(newDefault.isDefaultBilling).toBe(true)
+    const addresses = await service.listCustomerAddresses({ customerId: customer.id })
+    expect(addresses.map((a) => a.id)).toEqual([newDefault.id])
+  })
 
-    expect(error).toBeInstanceOf(Error)
-    expect(error.message).toBe('address soft-delete failed')
+  test('a new default shipping address can be set after the old one is soft-deleted', async ({ expect, dto }) => {
+    const customer = await service.createCustomer(
+      dto.generate.createCustomer({ addresses: [dto.generate.createCustomerAddress({ isDefaultShipping: true })] }),
+    )
+    const [oldDefault] = await service.listCustomerAddresses({ customerId: customer.id })
+    if (!oldDefault) throw new Error('expected the customer to have an address')
 
-    // Customer should still be active — transaction rolled back
-    const customer = await service.retrieveCustomer(created.id)
-    expect(customer.id).toBe(created.id)
+    await service.softDeleteCustomerAddresses([oldDefault.id])
+    const newDefault = await service.createCustomerAddress({
+      ...dto.generate.createCustomerAddress({ isDefaultShipping: true }),
+      customerId: customer.id,
+    })
 
-    spy.mockRestore()
+    expect(newDefault.isDefaultShipping).toBe(true)
+    const addresses = await service.listCustomerAddresses({ customerId: customer.id })
+    expect(addresses.map((a) => a.id)).toEqual([newDefault.id])
   })
 
   test('restoreCustomers', async ({ expect, dto }) => {
@@ -226,10 +242,6 @@ test.describe('CustomerModuleService', () => {
       expect(result).toEqual([])
     })
 
-    test('deleteCustomers with non-existent ids does not throw', async ({ expect }) => {
-      await expect(service.deleteCustomers(['cus_nonexistent'])).resolves.toBeUndefined()
-    })
-
     test('softDeleteCustomers with non-existent ids does not throw', async ({ expect }) => {
       await expect(service.softDeleteCustomers(['cus_nonexistent'])).resolves.toBeUndefined()
     })
@@ -252,10 +264,6 @@ test.describe('CustomerModuleService', () => {
       const result = await service.updateCustomers([], update)
 
       expect(result).toEqual([])
-    })
-
-    test('deleteCustomers with empty ids does not throw', async ({ expect }) => {
-      await expect(service.deleteCustomers([])).resolves.toBeUndefined()
     })
 
     test('softDeleteCustomers with empty ids does not throw', async ({ expect }) => {

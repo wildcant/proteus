@@ -149,8 +149,7 @@ export function generateProductVariantOption(
   return {
     id: `pvopt_${faker.string.alphanumeric(32)}`,
     variantId: `variant_${faker.string.alphanumeric(32)}`,
-    optionId: `opt_${faker.string.alphanumeric(32)}`,
-    optionValueId: `optval_${faker.string.alphanumeric(32)}`,
+    productProductOptionValueId: `prodoptval_${faker.string.alphanumeric(32)}`,
     createdAt: faker.date.recent(),
     updatedAt: faker.date.recent(),
     deletedAt: null,

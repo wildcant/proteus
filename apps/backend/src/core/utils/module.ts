@@ -12,6 +12,12 @@ export type ModuleDefinition = {
   key: string
   service: Constructor
   repositories: Record<string, Constructor>
+  /**
+   * The module's models barrel, passed whole. Bootstrap filters it to drizzle tables and builds
+   * the inverse foreign-key index the cascade walker follows, so what a soft delete reaches is
+   * a fact about the schema rather than a list a service has to keep in step.
+   */
+  models: Record<string, unknown>
   loaders?: LoaderFunction[]
 }
 
@@ -20,6 +26,7 @@ export function Module<const Key extends string, const Service extends Construct
   config: {
     service: Service
     repositories: Record<string, Constructor>
+    models: Record<string, unknown>
     loaders?: LoaderFunction[]
   },
 ): ModuleDefinition {

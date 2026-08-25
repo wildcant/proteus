@@ -111,23 +111,15 @@ export class CustomerModuleService implements ICustomerModuleService {
     })
   }
 
-  async deleteCustomers(customerIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.customerRepository.delete(customerIds, ctx)
-    })
-  }
-
   async softDeleteCustomers(customerIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.customerRepository.softDelete(customerIds, ctx)
-      await this.customerAddressRepository.softDeleteByCustomerIds(customerIds, ctx)
     })
   }
 
   async restoreCustomers(customerIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.customerRepository.restore(customerIds, ctx)
-      await this.customerAddressRepository.restoreByCustomerIds(customerIds, ctx)
     })
   }
 
@@ -170,6 +162,12 @@ export class CustomerModuleService implements ICustomerModuleService {
   ): Promise<CustomerAddressDTO[]> {
     return this.withTransaction(context, async (ctx) => {
       return this.customerAddressRepository.updateMany(addressIds, data, ctx)
+    })
+  }
+
+  async softDeleteCustomerAddresses(addressIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.customerAddressRepository.softDelete(addressIds, ctx)
     })
   }
 }

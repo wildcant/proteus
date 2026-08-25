@@ -10,16 +10,15 @@ export const GetOutput = StoreCartDetailResponse
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
 
-  const [cart, lineItems, shippingMethods] = await Promise.all([
+  const [cart, lineItems, shippingMethods, addresses] = await Promise.all([
     cartService.retrieveCart(req.params.id),
     cartService.listLineItems({ cartId: req.params.id }),
     cartService.listShippingMethods({ cartId: req.params.id }),
+    cartService.listCartAddresses({ cartId: req.params.id }),
   ])
 
-  const [shippingAddress, billingAddress] = await Promise.all([
-    cart.shippingAddressId ? cartService.retrieveCartAddress(cart.shippingAddressId) : null,
-    cart.billingAddressId ? cartService.retrieveCartAddress(cart.billingAddressId) : null,
-  ])
+  const shippingAddress = addresses.find((address) => address.type === 'shipping') ?? null
+  const billingAddress = addresses.find((address) => address.type === 'billing') ?? null
 
   const totals = cartService.computeCartTotals({ lineItems, shippingMethods })
   const enrichedItems = cartService.enrichLineItems(lineItems)

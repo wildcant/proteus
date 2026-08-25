@@ -7,7 +7,7 @@ export type IPricingModuleService = {
   createPriceSet(data: CreatePriceSetDTO, context?: Context): Promise<PriceSetDTO>
   createPriceSets(data: CreatePriceSetDTO[], context?: Context): Promise<PriceSetDTO[]>
   upsertPriceSets(data: UpsertPriceSetDTO[], context?: Context): Promise<PriceSetDTO[]>
-  deletePriceSets(priceSetIds: string[], context?: Context): Promise<void>
+  softDeletePriceSets(priceSetIds: string[], context?: Context): Promise<void>
   addPrice(priceSetId: string, price: CreatePriceDTO, context?: Context): Promise<PriceDTO>
   addPrices(priceSetId: string, prices: CreatePriceDTO[], context?: Context): Promise<PriceDTO[]>
   updatePrice(priceId: string, data: UpdatePriceDTO, context?: Context): Promise<PriceDTO>

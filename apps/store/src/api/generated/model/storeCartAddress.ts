@@ -4,12 +4,15 @@
  * Store API
  * OpenAPI spec version: 0.1.0
  */
+import type { StoreCartAddressType } from './storeCartAddressType.ts';
 
 /**
  * @nullable
  */
 export type StoreCartAddress = {
   id: string;
+  cartId: string;
+  type: StoreCartAddressType;
   /** @nullable */
   customerId: string | null;
   /** @nullable */

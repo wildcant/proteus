@@ -1,6 +1,7 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
+  AppliedProductOptionChangeDTO,
   EnrichedProductVariantDTO,
   FilterableProductImageProps,
   FilterableProductOptionCombinationProps,
@@ -22,6 +23,7 @@ import type {
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
+  VariantReassignmentDTO,
   VariantReconciliationPlanDTO,
 } from './common.js'
 import type {
@@ -55,7 +57,7 @@ export type IProductModuleService = {
   updateProducts(productIds: string[], data: UpdateProductDTO, context?: Context): Promise<ProductDTO[]>
   createProduct(data: CreateProductDTO, context?: Context): Promise<ProductDTO>
   updateProduct(productId: string, data: UpdateProductDTO, context?: Context): Promise<ProductDTO>
-  deleteProducts(productIds: string[], context?: Context): Promise<void>
+  softDeleteProducts(productIds: string[], context?: Context): Promise<void>
 
   // Variants
   createProductVariants(data: CreateProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]>
@@ -82,7 +84,7 @@ export type IProductModuleService = {
   ): Promise<ProductVariantDTO[]>
   updateProductVariant(variantId: string, data: UpdateProductVariantDTO, context?: Context): Promise<ProductVariantDTO>
   upsertProductVariants(data: UpsertProductVariantDTO[], context?: Context): Promise<ProductVariantDTO[]>
-  deleteProductVariants(variantIds: string[], context?: Context): Promise<void>
+  softDeleteProductVariants(variantIds: string[], context?: Context): Promise<void>
   /** The variant's own thumbnail, falling back to its product's. Null when the variant is unknown or neither carries an image. */
   resolveVariantThumbnail(variantId: string, context?: Context): Promise<string | null>
 
@@ -105,7 +107,7 @@ export type IProductModuleService = {
     data: UpdateProductOptionDTO,
     context?: Context,
   ): Promise<ProductOptionWithValuesDTO>
-  deleteProductOptions(optionIds: string[], context?: Context): Promise<void>
+  softDeleteProductOptions(optionIds: string[], context?: Context): Promise<void>
 
   // Option values
   createProductOptionValues(data: CreateProductOptionValueDTO[], context?: Context): Promise<ProductOptionValueDTO[]>
@@ -122,7 +124,29 @@ export type IProductModuleService = {
   ): Promise<[ProductOptionValueDTO[], number]>
 
   // Product-option linking
+  /**
+   * Replaces which options a product offers and which of their values, and moves its variants onto
+   * them. Refused when the change does not fit the variants the product has — see
+   * `applyProductOptionChange` for the path that resolves that instead of refusing.
+   */
   setProductOptions(productId: string, data: SetProductOptionsDTO, context?: Context): Promise<void>
+  /**
+   * The same change, applied together with the variant moves it forces, as one transaction.
+   * Reports the variants it could not keep rather than removing them, because that reaches modules
+   * this one cannot.
+   */
+  applyProductOptionChange(
+    productId: string,
+    data: SetProductOptionsDTO,
+    context?: Context,
+  ): Promise<AppliedProductOptionChangeDTO>
+  /** Puts a product's options and its variants' combinations back as they were. Compensation only. */
+  revertProductOptionChange(
+    productId: string,
+    options: SetProductOptionsDTO,
+    combinations: readonly VariantReassignmentDTO[],
+    context?: Context,
+  ): Promise<void>
   /** What a proposed set of options would do to the product's variants. Reads only. */
   planProductOptionChange(
     productId: string,
@@ -130,10 +154,7 @@ export type IProductModuleService = {
     context?: Context,
   ): Promise<VariantReconciliationPlanDTO>
   /** Moves variants onto the combinations a plan assigned them, retitling as it goes. */
-  applyVariantReassignments(
-    reassignments: ReadonlyArray<{ variantId: string; optionValues: Record<string, string> }>,
-    context?: Context,
-  ): Promise<void>
+  applyVariantReassignments(reassignments: readonly VariantReassignmentDTO[], context?: Context): Promise<void>
   /** Brings every variant carrying one of these option values back in line with its combination. */
   retitleVariantsCarrying(optionValueIds: string[], context?: Context): Promise<void>
   listProductOptionsForProduct(productId: string, context?: Context): Promise<ProductOptionWithValuesDTO[]>

@@ -52,7 +52,7 @@ function setup(generate: Fixtures['dto']['generate'], orderOverrides?: Partial<O
   const inventoryService = {
     adjustInventoryLevel: vi.fn().mockResolvedValue(undefined),
     listReservationItems: vi.fn().mockResolvedValue(reservations),
-    deleteReservationItems: vi.fn().mockResolvedValue(undefined),
+    softDeleteReservationItems: vi.fn().mockResolvedValue(undefined),
   }
 
   const container = createContainer()
@@ -104,7 +104,7 @@ test.describe('createOrderFulfillmentWorkflow', () => {
     })
     expect(services.orderService.updateFulfillmentStatus).toHaveBeenCalledWith(services.order.id, 'fulfilled')
     expect(services.inventoryService.adjustInventoryLevel).toHaveBeenCalledWith('iitem_abc', 'sloc_abc', -2)
-    expect(services.inventoryService.deleteReservationItems).toHaveBeenCalledWith([services.reservations[0]?.id])
+    expect(services.inventoryService.softDeleteReservationItems).toHaveBeenCalledWith([services.reservations[0]?.id])
   })
 
   test('rejects when order status is not pending', async ({ dto, expect }) => {
@@ -158,7 +158,7 @@ test.describe('createOrderFulfillmentWorkflow', () => {
     })
 
     expect(services.inventoryService.adjustInventoryLevel).not.toHaveBeenCalled()
-    expect(services.inventoryService.deleteReservationItems).not.toHaveBeenCalled()
+    expect(services.inventoryService.softDeleteReservationItems).not.toHaveBeenCalled()
   })
 
   test('computes inventory deduction using requiredQuantity from variant-inventory link', async ({ dto, expect }) => {

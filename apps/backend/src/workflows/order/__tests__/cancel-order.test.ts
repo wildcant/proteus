@@ -57,7 +57,7 @@ function setup(
 
   const inventoryService = {
     listReservationItems: vi.fn().mockResolvedValue(reservations),
-    deleteReservationItems: vi.fn().mockResolvedValue(undefined),
+    softDeleteReservationItems: vi.fn().mockResolvedValue(undefined),
     restoreReservationItems: vi.fn().mockResolvedValue(undefined),
   }
 
@@ -116,7 +116,7 @@ test.describe('cancelOrderWorkflow', () => {
     expect(services.inventoryService.listReservationItems).toHaveBeenCalledWith({
       lineItemId: [services.lineItems[0]?.id],
     })
-    expect(services.inventoryService.deleteReservationItems).toHaveBeenCalledWith([services.reservations[0]?.id])
+    expect(services.inventoryService.softDeleteReservationItems).toHaveBeenCalledWith([services.reservations[0]?.id])
     expect(services.orderService.cancelOrder).toHaveBeenCalledWith(services.order.id)
   })
 
@@ -204,7 +204,7 @@ test.describe('cancelOrderWorkflow', () => {
 
     expect(result.status).toBe('canceled')
     expect(services.inventoryService.listReservationItems).not.toHaveBeenCalled()
-    expect(services.inventoryService.deleteReservationItems).not.toHaveBeenCalled()
+    expect(services.inventoryService.softDeleteReservationItems).not.toHaveBeenCalled()
   })
 
   test('skips reservation deletion when no reservations exist', async ({ dto, expect }) => {
@@ -214,7 +214,7 @@ test.describe('cancelOrderWorkflow', () => {
     const result = await cancelOrderWorkflow.run({ orderId: services.order.id })
 
     expect(result.status).toBe('canceled')
-    expect(services.inventoryService.deleteReservationItems).not.toHaveBeenCalled()
+    expect(services.inventoryService.softDeleteReservationItems).not.toHaveBeenCalled()
   })
 
   test('compensation: restores order and reservations when cancel-payments fails', async ({ dto, expect }) => {
@@ -232,7 +232,7 @@ test.describe('cancelOrderWorkflow', () => {
 
   test('compensation: restores order when delete-reservations fails', async ({ dto, expect }) => {
     const services = setup(dto.generate)
-    services.inventoryService.deleteReservationItems.mockRejectedValue(new Error('inventory unavailable'))
+    services.inventoryService.softDeleteReservationItems.mockRejectedValue(new Error('inventory unavailable'))
 
     await expect(cancelOrderWorkflow.run({ orderId: services.order.id })).rejects.toThrow('inventory unavailable')
 

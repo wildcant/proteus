@@ -1,6 +1,7 @@
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
 import { loadProviders } from './loaders/providers.js'
+import * as models from './models/index.js'
 import { AccountHolderRepository } from './repositories/account-holder.js'
 import { CaptureRepository } from './repositories/capture.js'
 import { PaymentRepository } from './repositories/payment.js'
@@ -16,6 +17,7 @@ export { syncPaymentProviders } from './sync-providers.js'
 
 export default Module(Modules.PAYMENT, {
   service: PaymentModuleService,
+  models,
   repositories: {
     paymentCollectionRepository: PaymentCollectionRepository,
     paymentSessionRepository: PaymentSessionRepository,

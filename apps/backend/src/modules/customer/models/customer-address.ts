@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { boolean, index, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { boolean, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { customerTable } from './customer.js'
 
 export const customerAddressTable = pgTable(
@@ -27,13 +28,13 @@ export const customerAddressTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_customer_address_customer_id').on(table.customerId),
-    uniqueIndex('idx_customer_address_unique_customer_billing')
-      .on(table.customerId)
-      .where(sql`is_default_billing = true`),
-    uniqueIndex('idx_customer_address_unique_customer_shipping')
-      .on(table.customerId)
-      .where(sql`is_default_shipping = true`),
+    liveIndex('idx_customer_address_customer_id').on(table.customerId),
+    liveUniqueIndex('idx_customer_address_unique_customer_billing', sql`is_default_billing = true`).on(
+      table.customerId,
+    ),
+    liveUniqueIndex('idx_customer_address_unique_customer_shipping', sql`is_default_shipping = true`).on(
+      table.customerId,
+    ),
   ],
 )
 

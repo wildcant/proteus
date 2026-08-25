@@ -1,5 +1,5 @@
 {
-  "id": "cabe0550-fef0-41f9-a2e9-c44aed2e09b2",
+  "id": "30fce3ad-8d75-4517-9435-59fcf8e8800e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,6 +14,19 @@
           "primaryKey": true,
           "notNull": true,
           "default": "CONCAT('ordaddr_', REPLACE(gen_random_uuid()::text, '-', ''))"
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "order_address_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
         },
         "customer_id": {
           "name": "customer_id",
@@ -102,8 +115,41 @@
           "notNull": false
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
+      "indexes": {
+        "idx_order_address_unique_order_type": {
+          "name": "idx_order_address_unique_order_type",
+          "columns": [
+            {
+              "expression": "order_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "order_address_order_id_order_id_fk": {
+          "name": "order_address_order_id_order_id_fk",
+          "tableFrom": "order_address",
+          "tableTo": "order",
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -285,7 +331,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND variant_id IS NOT NULL",
+          "where": "variant_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -301,7 +347,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND product_id IS NOT NULL",
+          "where": "product_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -420,7 +466,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND shipping_option_id IS NOT NULL",
+          "where": "shipping_option_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -494,18 +540,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "shipping_address_id": {
-          "name": "shipping_address_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "billing_address_id": {
-          "name": "billing_address_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "canceled_at": {
           "name": "canceled_at",
           "type": "timestamp with time zone",
@@ -561,7 +595,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND customer_id IS NOT NULL",
+          "where": "customer_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -599,26 +633,7 @@
           "with": {}
         }
       },
-      "foreignKeys": {
-        "order_shipping_address_id_order_address_id_fk": {
-          "name": "order_shipping_address_id_order_address_id_fk",
-          "tableFrom": "order",
-          "tableTo": "order_address",
-          "columnsFrom": ["shipping_address_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "order_billing_address_id_order_address_id_fk": {
-          "name": "order_billing_address_id_order_address_id_fk",
-          "tableFrom": "order",
-          "tableTo": "order_address",
-          "columnsFrom": ["billing_address_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -746,6 +761,11 @@
     }
   },
   "enums": {
+    "public.order_address_type": {
+      "name": "order_address_type",
+      "schema": "public",
+      "values": ["shipping", "billing"]
+    },
     "public.order_fulfillment_status": {
       "name": "order_fulfillment_status",
       "schema": "public",

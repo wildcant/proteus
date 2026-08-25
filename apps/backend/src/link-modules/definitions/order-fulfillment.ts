@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../core/db/columns.js'
+import { liveUniqueIndex } from '../../core/db/indexes.js'
 
 export const orderFulfillmentTable = pgTable(
   'order_fulfillment',
@@ -10,9 +11,7 @@ export const orderFulfillmentTable = pgTable(
     fulfillmentId: text().notNull(),
     ...timestamps,
   },
-  (table) => [
-    uniqueIndex('idx_order_fulfillment').on(table.orderId, table.fulfillmentId).where(sql`deleted_at IS NULL`),
-  ],
+  (table) => [liveUniqueIndex('idx_order_fulfillment').on(table.orderId, table.fulfillmentId)],
 )
 
 export type OrderFulfillment = typeof orderFulfillmentTable.$inferSelect

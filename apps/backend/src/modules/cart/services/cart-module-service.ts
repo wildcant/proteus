@@ -2,6 +2,7 @@ import { BigNumber } from '../../../core/db/bignum.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   CartAddressDTO,
+  CartAddressType,
   CartDTO,
   CartLineItemDTO,
   CartShippingMethodDTO,
@@ -13,12 +14,12 @@ import type {
   CreateLineItemDTO,
   CreateShippingMethodDTO,
   EnrichedCartLineItemDTO,
+  FilterableCartAddressProps,
   FilterableCartLineItemProps,
   FilterableCartProps,
   FilterableCartShippingMethodProps,
   FindConfig,
   ICartModuleService,
-  UpdateCartAddressDTO,
   UpdateCartDTO,
   UpdateCartWithAddressesDTO,
   UpdateLineItemDTO,
@@ -65,10 +66,6 @@ export class CartModuleService implements ICartModuleService {
 
   async retrieveCart(cartId: string, config?: FindConfig<CartDTO>, context?: Context): Promise<CartDTO> {
     return this.cartRepository.findByIdOrFail(cartId, config, context)
-  }
-
-  async retrieveCartAddress(addressId: string, context?: Context): Promise<CartAddressDTO> {
-    return this.cartAddressRepository.findByIdOrFail(addressId, undefined, context)
   }
 
   async listCarts(filters?: FilterableCartProps, config?: FindConfig<CartDTO>, context?: Context): Promise<CartDTO[]> {
@@ -136,26 +133,20 @@ export class CartModuleService implements ICartModuleService {
       }
 
       if (data.shippingAddress) {
-        const address = await this.upsertCartAddress(cart.shippingAddressId, data.shippingAddress, ctx)
-        updateData.shippingAddressId = address.id
+        await this.upsertCartAddress(cartId, 'shipping', data.shippingAddress, ctx)
       }
 
       if (data.billingAddress) {
-        const address = await this.upsertCartAddress(cart.billingAddressId, data.billingAddress, ctx)
-        updateData.billingAddressId = address.id
+        await this.upsertCartAddress(cartId, 'billing', data.billingAddress, ctx)
       }
 
+      // The addresses are rows of their own now, so the cart itself only changes when the
+      // payload names a cart column.
       if (Object.keys(updateData).length === 0) {
         return cart
       }
 
       return this.cartRepository.update(cartId, updateData, ctx)
-    })
-  }
-
-  async deleteCarts(cartIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.cartRepository.softDelete(cartIds, ctx)
     })
   }
 
@@ -182,13 +173,7 @@ export class CartModuleService implements ICartModuleService {
   async addLineItems(cartId: string, items: CreateLineItemDTO[], context?: Context): Promise<CartLineItemDTO[]> {
     return this.withTransaction(context, async (ctx) => {
       const cart = await this.cartRepository.findByIdOrFail(cartId, undefined, ctx)
-
-      if (cart.status !== 'active') {
-        throw new AppError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart ${cartId} is not active (current status: ${cart.status})`,
-        })
-      }
+      this.assertNotCompleted(cart)
 
       const inputs = items.map((item) => ({ ...item, cartId }))
       return this.cartLineItemRepository.createMany(inputs, ctx)
@@ -204,13 +189,7 @@ export class CartModuleService implements ICartModuleService {
   async addLineItem(cartId: string, item: CreateLineItemDTO, context?: Context): Promise<CartLineItemDTO> {
     return this.withTransaction(context, async (ctx) => {
       const cart = await this.cartRepository.findByIdOrFail(cartId, undefined, ctx)
-
-      if (cart.status !== 'active') {
-        throw new AppError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart ${cartId} is not active (current status: ${cart.status})`,
-        })
-      }
+      this.assertNotCompleted(cart)
 
       return this.cartLineItemRepository.create({ ...item, cartId }, ctx)
     })
@@ -222,7 +201,7 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
-  async deleteLineItems(lineItemIds: string[], context?: Context): Promise<void> {
+  async softDeleteLineItems(lineItemIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartLineItemRepository.softDelete(lineItemIds, ctx)
     })
@@ -243,51 +222,45 @@ export class CartModuleService implements ICartModuleService {
   ): Promise<CartShippingMethodDTO[]> {
     return this.withTransaction(context, async (ctx) => {
       const cart = await this.cartRepository.findByIdOrFail(cartId, undefined, ctx)
-
-      if (cart.status !== 'active') {
-        throw new AppError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart ${cartId} is not active (current status: ${cart.status})`,
-        })
-      }
+      this.assertNotCompleted(cart)
 
       const inputs = methods.map((method) => ({ ...method, cartId }))
       return this.cartShippingMethodRepository.createMany(inputs, ctx)
     })
   }
 
-  async deleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
+  async softDeleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartShippingMethodRepository.softDelete(shippingMethodIds, ctx)
     })
   }
 
-  async createCartAddress(data: CreateCartAddressDTO, context?: Context): Promise<CartAddressDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      return this.cartAddressRepository.create(data, ctx)
-    })
+  async listCartAddresses(
+    filters?: FilterableCartAddressProps,
+    config?: FindConfig<CartAddressDTO>,
+    context?: Context,
+  ): Promise<CartAddressDTO[]> {
+    return this.cartAddressRepository.find(filters, config, context)
   }
 
-  async updateCartAddress(addressId: string, data: UpdateCartAddressDTO, context?: Context): Promise<CartAddressDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      return this.cartAddressRepository.update(addressId, data, ctx)
-    })
-  }
-
+  /** Replaces the cart's address of one type, which the partial unique index allows at most
+   *  one of — so an existing row is rewritten rather than duplicated. */
   async upsertCartAddress(
-    existingAddressId: string | null,
+    cartId: string,
+    type: CartAddressType,
     data: CreateCartAddressDTO,
     context?: Context,
   ): Promise<CartAddressDTO> {
     return this.withTransaction(context, async (ctx) => {
-      if (existingAddressId) {
-        return this.cartAddressRepository.update(existingAddressId, data, ctx)
+      const existing = await this.cartAddressRepository.findOne({ cartId, type }, undefined, ctx)
+      if (existing) {
+        return this.cartAddressRepository.update(existing.id, data, ctx)
       }
-      return this.cartAddressRepository.create(data, ctx)
+      return this.cartAddressRepository.create({ ...data, cartId, type }, ctx)
     })
   }
 
-  async deleteCartAddresses(addressIds: string[], context?: Context): Promise<void> {
+  async softDeleteCartAddresses(addressIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartAddressRepository.softDelete(addressIds, ctx)
     })
@@ -312,5 +285,17 @@ export class CartModuleService implements ICartModuleService {
     const cartTotal = itemsTotal.plus(shippingTotal)
 
     return { itemsTotal, shippingTotal, cartTotal }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+
+  /** A completed cart is the record behind an order, so nothing may be added to it. */
+  private assertNotCompleted(cart: CartDTO): void {
+    if (!cart.completedAt) return
+
+    throw new AppError({
+      type: ErrorTypes.NOT_ALLOWED,
+      message: `Cart ${cart.id} is already completed`,
+    })
   }
 }

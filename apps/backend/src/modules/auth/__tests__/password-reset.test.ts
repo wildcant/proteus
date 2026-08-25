@@ -3,8 +3,10 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { asValue, createContainer } from 'awilix'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { EmailpassProvider } from '../../../providers/auth-emailpass/emailpass.js'
+import * as models from '../models/index.js'
 import { AuthIdentityRepository } from '../repositories/auth-identity.js'
 import { AuthPasswordResetTokenRepository } from '../repositories/auth-password-reset-token.js'
 import { AuthVerificationRepository } from '../repositories/auth-verification.js'
@@ -13,15 +15,17 @@ import { AuthModuleService } from '../services/auth-module-service.js'
 import { AuthProviderService } from '../services/auth-provider-service.js'
 import { VerificationProviderService } from '../services/verification-provider-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let service: AuthModuleService
 
 const EMAIL_PASS_KEY = 'au_emailpass'
 const TEST_SCRYPT_OPTIONS = { logN: 1, r: 1, p: 1 }
 
 test.beforeEach(({ getDb, logger }) => {
-  const authIdentityRepository = new AuthIdentityRepository({ getDb })
-  const providerIdentityRepository = new ProviderIdentityRepository({ getDb })
-  const authVerificationRepository = new AuthVerificationRepository({ getDb })
+  const authIdentityRepository = new AuthIdentityRepository({ getDb, cascadeGraph })
+  const providerIdentityRepository = new ProviderIdentityRepository({ getDb, cascadeGraph })
+  const authVerificationRepository = new AuthVerificationRepository({ getDb, cascadeGraph })
   const authPasswordResetTokenRepository = new AuthPasswordResetTokenRepository({ getDb })
   const withTransaction = createWithTransaction(getDb)
 
@@ -270,5 +274,52 @@ test.describe('password reset end-to-end', () => {
       body: { email: 'e2e@example.com', password: 'new-password' },
     })
     expect(newAuth.success).toBe(true)
+  })
+})
+
+test.describe('Cascade delete', () => {
+  // The token table has no soft-delete column, which is a decision rather than an oversight: a
+  // retained token hash is the threat model, so the cascade destroys these rather than hiding
+  // them. Observable as the token no longer being findable, and no longer being consumable.
+
+  test('soft-deleting an auth identity destroys its reset tokens', async ({ expect }) => {
+    const identity = await registerUser('destroyed@example.com', 'password123')
+    const token = await service.createPasswordResetToken({ provider: 'emailpass', entityId: 'destroyed@example.com' })
+    assertDefined(token)
+    const tokenHash = crypto.createHash('sha256').update(token.jti).digest('hex')
+
+    await service.softDeleteAuthIdentities([identity.id])
+
+    expect(await service.findAuthPasswordResetTokenByHash(tokenHash)).toBeNull()
+  })
+
+  test('restoring the auth identity does not bring the token back', async ({ expect }) => {
+    const identity = await registerUser('unrestorable@example.com', 'password123')
+    const token = await service.createPasswordResetToken({
+      provider: 'emailpass',
+      entityId: 'unrestorable@example.com',
+    })
+    assertDefined(token)
+
+    await service.softDeleteAuthIdentities([identity.id])
+    await service.restoreAuthIdentities([identity.id])
+
+    const error = await service
+      .consumePasswordResetToken({ jti: token.jti, provider: 'emailpass', entityId: 'unrestorable@example.com' })
+      .catch((e) => e)
+
+    expect(AppError.isError(error)).toBe(true)
+    expect(error.type).toBe(ErrorTypes.UNAUTHORIZED)
+  })
+
+  test('soft-deleting a provider identity destroys its reset tokens too', async ({ expect }) => {
+    await registerUser('provider@example.com', 'password123')
+    const token = await service.createPasswordResetToken({ provider: 'emailpass', entityId: 'provider@example.com' })
+    assertDefined(token)
+    const tokenHash = crypto.createHash('sha256').update(token.jti).digest('hex')
+
+    await service.softDeleteProviderIdentities([token.providerIdentity.id])
+
+    expect(await service.findAuthPasswordResetTokenByHash(tokenHash)).toBeNull()
   })
 })

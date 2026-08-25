@@ -33,10 +33,7 @@ test.describe('completeCartWorkflow', () => {
     })
 
     expect(await service.read.reservationItems(container)).toHaveLength(1)
-    expect(await service.read.cart(container, cart.id)).toMatchObject({
-      status: 'completed',
-      completedAt: expect.any(Date),
-    })
+    expect(await service.read.cart(container, cart.id)).toMatchObject({ completedAt: expect.any(Date) })
   })
 
   test('a second completion returns the first order instead of making another', async ({ service, expect }) => {
@@ -63,21 +60,25 @@ test.describe('completeCartWorkflow', () => {
 
   test('snapshots the address rather than pointing at the cart’s', async ({ dto, service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
-    const withAddress = await service.create.cartAddresses(container, cart.id, {
+    const cartAddresses = await service.create.cartAddresses(container, cart.id, {
       shippingAddress: dto.generate.createCartAddress({
         firstName: 'John',
         lastName: 'Smith',
         city: 'Springfield',
       }),
     })
-    assertDefined(withAddress.shippingAddressId)
+    const cartShippingAddress = cartAddresses.find((address) => address.type === 'shipping')
+    assertDefined(cartShippingAddress)
 
     const order = await completeCartWorkflow.run({ cartId: cart.id })
 
-    assertDefined(order.shippingAddressId)
+    const orderAddresses = await service.read.orderAddresses(container, { orderId: order.id })
+    const orderShippingAddress = orderAddresses.find((address) => address.type === 'shipping')
+    assertDefined(orderShippingAddress)
     // A copy, not a reference: editing the cart address later must not rewrite the order.
-    expect(order.shippingAddressId).not.toBe(withAddress.shippingAddressId)
-    expect(await service.read.orderAddress(container, order.shippingAddressId)).toMatchObject({
+    expect(orderShippingAddress.id).not.toBe(cartShippingAddress.id)
+    expect(orderShippingAddress).toMatchObject({
+      orderId: order.id,
       firstName: 'John',
       lastName: 'Smith',
       city: 'Springfield',
@@ -86,11 +87,12 @@ test.describe('completeCartWorkflow', () => {
 
   test('completes a cart that has no addresses', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
-    expect(await service.read.cart(container, cart.id)).toMatchObject({ shippingAddressId: null })
+    expect(await service.read.cartAddresses(container, { cartId: cart.id })).toEqual([])
 
     const order = await completeCartWorkflow.run({ cartId: cart.id })
 
-    expect(order).toMatchObject({ shippingAddressId: null, billingAddressId: null, status: 'pending' })
+    expect(order).toMatchObject({ status: 'pending' })
+    expect(await service.read.orderAddresses(container, { orderId: order.id })).toEqual([])
   })
 
   test('a failure after the order exists unwinds every earlier step', async ({ service, expect }) => {
@@ -107,7 +109,28 @@ test.describe('completeCartWorkflow', () => {
     expect(await service.read.orders(container)).toEqual([])
     expect(await service.read.linkRepo(container, 'orderCart').findByCartId(cart.id)).toBeNull()
     expect(await service.read.reservationItems(container)).toEqual([])
-    expect(await service.read.cart(container, cart.id)).toMatchObject({ status: 'active', completedAt: null })
+    expect(await service.read.cart(container, cart.id)).toMatchObject({ completedAt: null })
+  })
+
+  test('a rolled-back checkout leaves no address rows behind', async ({ dto, service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+    await service.create.cartAddresses(container, cart.id, {
+      shippingAddress: dto.generate.createCartAddress(),
+      billingAddress: dto.generate.createCartAddress(),
+    })
+
+    vi.spyOn(
+      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
+      'authorizePaymentSession',
+    ).mockRejectedValueOnce(new Error('provider unavailable'))
+
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
+
+    // The order's addresses go with the order, so a discarded checkout leaves nothing readable
+    // behind: the compensation hides the order and the cascade takes its addresses with it.
+    expect(await service.read.orderAddresses(container)).toEqual([])
+    // The cart keeps its own — those belong to a checkout the shopper can still resume.
+    expect(await service.read.cartAddresses(container, { cartId: cart.id })).toHaveLength(2)
   })
 
   test('refuses a line item with no variant', async ({ service, expect }) => {

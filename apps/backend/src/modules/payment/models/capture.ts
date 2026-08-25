@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { index, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { paymentTable } from './payment.js'
 
 export const captureTable = pgTable(
@@ -13,11 +14,11 @@ export const captureTable = pgTable(
     metadata: jsonb().$type<Record<string, unknown> | null>(),
     paymentId: text()
       .notNull()
-      .references(() => paymentTable.id),
+      .references(() => paymentTable.id, { onDelete: 'cascade' }),
 
     ...timestamps,
   },
-  (table) => [index('idx_capture_payment_id').on(table.paymentId).where(sql`deleted_at IS NULL`)],
+  (table) => [liveIndex('idx_capture_payment_id').on(table.paymentId)],
 )
 
 export type Capture = typeof captureTable.$inferSelect

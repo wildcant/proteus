@@ -1,7 +1,10 @@
+CREATE TYPE "public"."order_address_type" AS ENUM('shipping', 'billing');--> statement-breakpoint
 CREATE TYPE "public"."order_fulfillment_status" AS ENUM('unfulfilled', 'fulfilled', 'shipped', 'delivered');--> statement-breakpoint
 CREATE TYPE "public"."order_status" AS ENUM('pending', 'completed', 'canceled', 'archived');--> statement-breakpoint
 CREATE TABLE "order_address" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('ordaddr_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
+	"order_id" text NOT NULL,
+	"type" "order_address_type" NOT NULL,
 	"customer_id" text,
 	"company" text,
 	"first_name" text,
@@ -65,8 +68,6 @@ CREATE TABLE "order" (
 	"email" text,
 	"customer_id" text,
 	"currency_code" text NOT NULL,
-	"shipping_address_id" text,
-	"billing_address_id" text,
 	"canceled_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -85,18 +86,18 @@ CREATE TABLE "order_transaction" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
+ALTER TABLE "order_address" ADD CONSTRAINT "order_address_order_id_order_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."order"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_line_item" ADD CONSTRAINT "order_line_item_order_id_order_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."order"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_shipping_method" ADD CONSTRAINT "order_shipping_method_order_id_order_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."order"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order" ADD CONSTRAINT "order_shipping_address_id_order_address_id_fk" FOREIGN KEY ("shipping_address_id") REFERENCES "public"."order_address"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order" ADD CONSTRAINT "order_billing_address_id_order_address_id_fk" FOREIGN KEY ("billing_address_id") REFERENCES "public"."order_address"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_transaction" ADD CONSTRAINT "order_transaction_order_id_order_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."order"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_order_address_unique_order_type" ON "order_address" USING btree ("order_id","type") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_line_item_order_id" ON "order_line_item" USING btree ("order_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_order_line_item_variant_id" ON "order_line_item" USING btree ("variant_id") WHERE deleted_at IS NULL AND variant_id IS NOT NULL;--> statement-breakpoint
-CREATE INDEX "idx_order_line_item_product_id" ON "order_line_item" USING btree ("product_id") WHERE deleted_at IS NULL AND product_id IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_order_line_item_variant_id" ON "order_line_item" USING btree ("variant_id") WHERE variant_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_order_line_item_product_id" ON "order_line_item" USING btree ("product_id") WHERE product_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_shipping_method_order_id" ON "order_shipping_method" USING btree ("order_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_order_shipping_method_option_id" ON "order_shipping_method" USING btree ("shipping_option_id") WHERE deleted_at IS NULL AND shipping_option_id IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_order_shipping_method_option_id" ON "order_shipping_method" USING btree ("shipping_option_id") WHERE shipping_option_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_display_id" ON "order" USING btree ("display_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_order_customer_id" ON "order" USING btree ("customer_id") WHERE deleted_at IS NULL AND customer_id IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_order_customer_id" ON "order" USING btree ("customer_id") WHERE customer_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_currency_code" ON "order" USING btree ("currency_code") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_status" ON "order" USING btree ("status") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_transaction_order_id" ON "order_transaction" USING btree ("order_id") WHERE deleted_at IS NULL;--> statement-breakpoint

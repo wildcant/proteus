@@ -37,6 +37,6 @@ export const DeleteOutput = DeleteResponse
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
   const service = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
-  await service.deleteServiceZones([req.params.zoneId])
+  await service.softDeleteServiceZones([req.params.zoneId])
   return { status: 200, json: { id: req.params.zoneId, deleted: true } }
 }

@@ -12,8 +12,6 @@ export type OrderDTO = {
   email: string | null
   customerId: string | null
   currencyCode: string
-  shippingAddressId: string | null
-  billingAddressId: string | null
   canceledAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -31,8 +29,13 @@ export interface FilterableOrderProps extends BaseFilterable<FilterableOrderProp
   createdAt?: OperatorMap<Date>
 }
 
+/** Which of the order's two address slots a snapshot fills. */
+export type OrderAddressType = 'shipping' | 'billing'
+
 export type OrderAddressDTO = {
   id: string
+  orderId: string
+  type: OrderAddressType
   customerId: string | null
   company: string | null
   firstName: string | null
@@ -47,6 +50,12 @@ export type OrderAddressDTO = {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+}
+
+export interface FilterableOrderAddressProps extends BaseFilterable<FilterableOrderAddressProps> {
+  id?: string | string[]
+  orderId?: string | string[]
+  type?: OrderAddressType | OrderAddressType[]
 }
 
 export type OrderLineItemDTO = {

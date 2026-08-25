@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, pgEnum, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgEnum, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
-import { orderAddressTable } from './address.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 
 export const orderStatusEnum = pgEnum('order_status', ['pending', 'completed', 'canceled', 'archived'])
 
@@ -22,16 +22,14 @@ export const orderTable = pgTable(
     email: text(),
     customerId: text(),
     currencyCode: text().notNull(),
-    shippingAddressId: text().references(() => orderAddressTable.id),
-    billingAddressId: text().references(() => orderAddressTable.id),
     canceledAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
   (table) => [
-    index('idx_order_display_id').on(table.displayId).where(sql`deleted_at IS NULL`),
-    index('idx_order_customer_id').on(table.customerId).where(sql`deleted_at IS NULL AND customer_id IS NOT NULL`),
-    index('idx_order_currency_code').on(table.currencyCode).where(sql`deleted_at IS NULL`),
-    index('idx_order_status').on(table.status).where(sql`deleted_at IS NULL`),
+    liveIndex('idx_order_display_id').on(table.displayId),
+    liveIndex('idx_order_customer_id', sql`customer_id IS NOT NULL`).on(table.customerId),
+    liveIndex('idx_order_currency_code').on(table.currencyCode),
+    liveIndex('idx_order_status').on(table.status),
   ],
 )
 

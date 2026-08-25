@@ -161,12 +161,6 @@ export class PaymentModuleService implements IPaymentModuleService {
     })
   }
 
-  async deletePaymentCollections(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.paymentCollectionRepository.delete(ids, ctx)
-    })
-  }
-
   async softDeletePaymentCollections(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.paymentCollectionRepository.softDelete(ids, ctx)
@@ -305,11 +299,18 @@ export class PaymentModuleService implements IPaymentModuleService {
     }
   }
 
+  /**
+   * Destroys the session at the provider, then hides our record of it.
+   *
+   * The destructive verb, not `softDelete`, and for the same reason `deleteAccountHolder` keeps
+   * it: the half that matters happens at Stripe, where retention is not ours to control. A
+   * `restore` would bring back a row describing a session that no longer exists.
+   */
   async deletePaymentSession(id: string, context?: Context): Promise<void> {
     const session = await this.paymentSessionRepository.findByIdOrFail(id, undefined, context)
 
     await this.paymentProviderService.deleteSession(session.providerId, { data: session.data })
-    await this.paymentSessionRepository.delete([session.id], context)
+    await this.paymentSessionRepository.softDelete([session.id], context)
     await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
   }
 
@@ -591,12 +592,6 @@ export class PaymentModuleService implements IPaymentModuleService {
   async updateRefundReason(id: string, data: UpdateRefundReasonDTO, context?: Context): Promise<RefundReasonDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.refundReasonRepository.update(id, data, ctx)
-    })
-  }
-
-  async deleteRefundReasons(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.refundReasonRepository.delete(ids, ctx)
     })
   }
 

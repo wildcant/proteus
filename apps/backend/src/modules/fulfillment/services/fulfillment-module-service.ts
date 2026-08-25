@@ -150,12 +150,6 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     })
   }
 
-  async deleteFulfillmentSets(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.fulfillmentSetRepository.delete(ids, ctx)
-    })
-  }
-
   async softDeleteFulfillmentSets(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.fulfillmentSetRepository.softDelete(ids, ctx)
@@ -231,9 +225,9 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     })
   }
 
-  async deleteServiceZones(ids: string[], context?: Context): Promise<void> {
+  async softDeleteServiceZones(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.serviceZoneRepository.delete(ids, ctx)
+      await this.serviceZoneRepository.softDelete(ids, ctx)
     })
   }
 
@@ -285,9 +279,9 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     })
   }
 
-  async deleteGeoZones(ids: string[], context?: Context): Promise<void> {
+  async softDeleteGeoZones(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.geoZoneRepository.delete(ids, ctx)
+      await this.geoZoneRepository.softDelete(ids, ctx)
     })
   }
 
@@ -330,9 +324,9 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     })
   }
 
-  async deleteShippingProfiles(ids: string[], context?: Context): Promise<void> {
+  async softDeleteShippingProfiles(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.shippingProfileRepository.delete(ids, ctx)
+      await this.shippingProfileRepository.softDelete(ids, ctx)
     })
   }
 
@@ -378,9 +372,9 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     })
   }
 
-  async deleteShippingOptionTypes(ids: string[], context?: Context): Promise<void> {
+  async softDeleteShippingOptionTypes(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.shippingOptionTypeRepository.delete(ids, ctx)
+      await this.shippingOptionTypeRepository.softDelete(ids, ctx)
     })
   }
 
@@ -442,12 +436,6 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
   async updateShippingOption(id: string, data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.shippingOptionRepository.update(id, data, ctx) as Promise<ShippingOptionDTO>
-    })
-  }
-
-  async deleteShippingOptions(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.shippingOptionRepository.delete(ids, ctx)
     })
   }
 

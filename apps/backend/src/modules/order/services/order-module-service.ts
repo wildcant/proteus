@@ -9,6 +9,7 @@ import type {
   CreateOrderShippingMethodDTO,
   CreateOrderTransactionDTO,
   EnrichedOrderLineItemDTO,
+  FilterableOrderAddressProps,
   FilterableOrderLineItemProps,
   FilterableOrderProps,
   FilterableOrderShippingMethodProps,
@@ -16,6 +17,7 @@ import type {
   FindConfig,
   IOrderModuleService,
   OrderAddressDTO,
+  OrderAddressType,
   OrderAllowedActions,
   OrderDTO,
   OrderFulfillmentStatus,
@@ -24,7 +26,6 @@ import type {
   OrderTotals,
   OrderTransactionDTO,
   PaymentStatus,
-  UpdateOrderAddressDTO,
   UpdateOrderDTO,
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
@@ -34,6 +35,9 @@ import type { OrderAddressRepository } from '../repositories/order-address.js'
 import type { OrderLineItemRepository } from '../repositories/order-line-item.js'
 import type { OrderShippingMethodRepository } from '../repositories/order-shipping-method.js'
 import type { OrderTransactionRepository } from '../repositories/order-transaction.js'
+
+/** An address row on its way into the database: the caller's fields, plus the order that owns it. */
+type OrderAddressInput = CreateOrderAddressDTO & { orderId: string; type: OrderAddressType }
 
 type InjectedDependencies = {
   orderRepository: OrderRepository
@@ -101,6 +105,11 @@ export class OrderModuleService implements IOrderModuleService {
     return this.withTransaction(context, async (ctx) => {
       const order = await this.orderRepository.create(data, ctx)
 
+      const addressInputs = this.toAddressInputs(order.id, data)
+      if (addressInputs.length) {
+        await this.orderAddressRepository.createMany(addressInputs, ctx)
+      }
+
       const lineItemInputs = (data.items ?? []).map((item) => ({ ...item, orderId: order.id }))
       if (lineItemInputs.length) {
         await this.orderLineItemRepository.createMany(lineItemInputs, ctx)
@@ -119,6 +128,11 @@ export class OrderModuleService implements IOrderModuleService {
     this.logger.debug(`Creating ${data.length} order(s)`)
     return this.withTransaction(context, async (ctx) => {
       const orders = await this.orderRepository.createMany(data, ctx)
+
+      const addressInputs = orders.flatMap((order, i) => this.toAddressInputs(order.id, data[i]))
+      if (addressInputs.length) {
+        await this.orderAddressRepository.createMany(addressInputs, ctx)
+      }
 
       const lineItemInputs = orders.flatMap((order, i) =>
         (data[i]?.items ?? []).map((item) => ({ ...item, orderId: order.id })),
@@ -150,12 +164,6 @@ export class OrderModuleService implements IOrderModuleService {
     })
   }
 
-  async deleteOrders(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.orderRepository.delete(ids, ctx)
-    })
-  }
-
   async softDeleteOrders(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.orderRepository.softDelete(ids, ctx)
@@ -172,31 +180,37 @@ export class OrderModuleService implements IOrderModuleService {
   // Addresses
   // ---------------------------------------------------------------------------
 
-  async retrieveOrderAddress(id: string, context?: Context): Promise<OrderAddressDTO> {
-    return this.orderAddressRepository.findByIdOrFail(id, undefined, context)
+  /** Null rather than a throw: an order legitimately has no billing address, or none at all. */
+  async retrieveOrderAddress(
+    orderId: string,
+    type: OrderAddressType,
+    context?: Context,
+  ): Promise<OrderAddressDTO | null> {
+    return this.orderAddressRepository.findOne({ orderId, type }, undefined, context)
   }
 
-  async createOrderAddress(data: CreateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO> {
+  async listOrderAddresses(
+    filters?: FilterableOrderAddressProps,
+    config?: FindConfig<OrderAddressDTO>,
+    context?: Context,
+  ): Promise<OrderAddressDTO[]> {
+    return this.orderAddressRepository.find(filters, config, context)
+  }
+
+  async createOrderAddress(
+    orderId: string,
+    type: OrderAddressType,
+    data: CreateOrderAddressDTO,
+    context?: Context,
+  ): Promise<OrderAddressDTO> {
     return this.withTransaction(context, async (ctx) => {
-      return this.orderAddressRepository.create(data, ctx)
+      return this.orderAddressRepository.create({ ...data, orderId, type }, ctx)
     })
   }
 
-  async createOrderAddresses(data: CreateOrderAddressDTO[], context?: Context): Promise<OrderAddressDTO[]> {
+  async softDeleteOrderAddresses(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      return this.orderAddressRepository.createMany(data, ctx)
-    })
-  }
-
-  async updateOrderAddress(id: string, data: UpdateOrderAddressDTO, context?: Context): Promise<OrderAddressDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      return this.orderAddressRepository.update(id, data, ctx)
-    })
-  }
-
-  async deleteOrderAddresses(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.orderAddressRepository.delete(ids, ctx)
+      await this.orderAddressRepository.softDelete(ids, ctx)
     })
   }
 
@@ -384,5 +398,19 @@ export class OrderModuleService implements IOrderModuleService {
     const outstandingTotal = orderTotal.minus(paidTotal)
 
     return { itemsTotal, shippingTotal, orderTotal, paidTotal, outstandingTotal }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  /** The two nested addresses of a creation payload, as rows the order already owns. */
+  private toAddressInputs(orderId: string, data: CreateOrderDTO | undefined): OrderAddressInput[] {
+    const inputs: OrderAddressInput[] = []
+
+    if (data?.shippingAddress) inputs.push({ ...data.shippingAddress, orderId, type: 'shipping' })
+    if (data?.billingAddress) inputs.push({ ...data.billingAddress, orderId, type: 'billing' })
+
+    return inputs
   }
 }

@@ -26,6 +26,7 @@ export * from './resetPasswordResponse.ts';
 export * from './storeCalculatedPrice.ts';
 export * from './storeCart.ts';
 export * from './storeCartAddress.ts';
+export * from './storeCartAddressType.ts';
 export * from './storeCartDetailResponse.ts';
 export * from './storeCartDetailResponseCart.ts';
 export * from './storeCartInventoryResponse.ts';

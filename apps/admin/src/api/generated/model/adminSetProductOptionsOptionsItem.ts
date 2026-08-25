@@ -8,6 +8,9 @@
 export type AdminSetProductOptionsOptionsItem = {
   /** @minLength 1 */
   optionId: string;
-  /** @items.minLength 1 */
+  /**
+     * @minItems 1
+     * @items.minLength 1
+     */
   valueIds: string[];
 };

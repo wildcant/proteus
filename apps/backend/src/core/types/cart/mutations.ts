@@ -35,8 +35,6 @@ export type CreateCartDTO = {
   salesChannelId?: string | null | undefined
   email?: string | null | undefined
   currencyCode: string
-  shippingAddressId?: string | null | undefined
-  billingAddressId?: string | null | undefined
   items?: CreateLineItemDTO[] | undefined
 }
 
@@ -55,9 +53,6 @@ export type UpdateCartDTO = {
   salesChannelId?: string | null | undefined
   email?: string | null | undefined
   currencyCode?: string | undefined
-  status?: 'active' | 'completed' | 'abandoned' | undefined
-  shippingAddressId?: string | null | undefined
-  billingAddressId?: string | null | undefined
   completedAt?: Date | null | undefined
 }
 
@@ -74,8 +69,6 @@ export type CreateCartAddressDTO = {
   postalCode?: string | null | undefined
   phone?: string | null | undefined
 }
-
-export type UpdateCartAddressDTO = Partial<CreateCartAddressDTO>
 
 export type UpdateCartWithAddressesDTO = {
   email?: string | null | undefined

@@ -1,5 +1,6 @@
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
+import * as models from './models/index.js'
 import { CartRepository } from './repositories/cart.js'
 import { CartAddressRepository } from './repositories/cart-address.js'
 import { CartLineItemRepository } from './repositories/cart-line-item.js'
@@ -8,6 +9,7 @@ import { CartModuleService } from './services/cart-module-service.js'
 
 export default Module(Modules.CART, {
   service: CartModuleService,
+  models,
   repositories: {
     cartRepository: CartRepository,
     cartAddressRepository: CartAddressRepository,

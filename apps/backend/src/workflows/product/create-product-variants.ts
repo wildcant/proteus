@@ -25,7 +25,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       },
       async (created, { container }) => {
         const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        await productService.deleteProductVariants(created.map((variant) => variant.id))
+        await productService.softDeleteProductVariants(created.map((variant) => variant.id))
       },
     )
 
@@ -54,7 +54,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       async (created, { container }) => {
         if (created.length === 0) return
         const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
-        await pricingService.deletePriceSets(created.map((link) => link.priceSetId))
+        await pricingService.softDeletePriceSets(created.map((link) => link.priceSetId))
       },
     )
 

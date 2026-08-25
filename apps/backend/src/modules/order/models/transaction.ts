@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text } from 'drizzle-orm/pg-core'
+import { pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { orderTable } from './order.js'
 
 export const orderTransactionTable = pgTable(
@@ -18,8 +19,8 @@ export const orderTransactionTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_order_transaction_order_id').on(table.orderId).where(sql`deleted_at IS NULL`),
-    index('idx_order_transaction_reference').on(table.reference, table.referenceId).where(sql`deleted_at IS NULL`),
+    liveIndex('idx_order_transaction_order_id').on(table.orderId),
+    liveIndex('idx_order_transaction_reference').on(table.reference, table.referenceId),
   ],
 )
 

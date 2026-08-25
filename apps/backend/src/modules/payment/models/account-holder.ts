@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { jsonb, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveUniqueIndex } from '../../../core/db/indexes.js'
 
 export const accountHolderTable = pgTable(
   'account_holder',
@@ -14,11 +15,7 @@ export const accountHolderTable = pgTable(
 
     ...timestamps,
   },
-  (table) => [
-    uniqueIndex('idx_account_holder_provider_external')
-      .on(table.providerId, table.externalId)
-      .where(sql`deleted_at IS NULL`),
-  ],
+  (table) => [liveUniqueIndex('idx_account_holder_provider_external').on(table.providerId, table.externalId)],
 )
 
 export type AccountHolder = typeof accountHolderTable.$inferSelect

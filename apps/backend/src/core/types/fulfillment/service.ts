@@ -59,7 +59,6 @@ export type IFulfillmentModuleService = {
   updateFulfillmentSets(ids: string[], data: UpdateFulfillmentSetDTO, context?: Context): Promise<FulfillmentSetDTO[]>
   createFulfillmentSet(data: CreateFulfillmentSetDTO, context?: Context): Promise<FulfillmentSetDTO>
   updateFulfillmentSet(id: string, data: UpdateFulfillmentSetDTO, context?: Context): Promise<FulfillmentSetDTO>
-  deleteFulfillmentSets(ids: string[], context?: Context): Promise<void>
   softDeleteFulfillmentSets(ids: string[], context?: Context): Promise<void>
 
   // ServiceZone
@@ -73,7 +72,7 @@ export type IFulfillmentModuleService = {
   updateServiceZones(ids: string[], data: UpdateServiceZoneDTO, context?: Context): Promise<ServiceZoneDTO[]>
   createServiceZone(data: CreateServiceZoneDTO, context?: Context): Promise<ServiceZoneDTO>
   updateServiceZone(id: string, data: UpdateServiceZoneDTO, context?: Context): Promise<ServiceZoneDTO>
-  deleteServiceZones(ids: string[], context?: Context): Promise<void>
+  softDeleteServiceZones(ids: string[], context?: Context): Promise<void>
 
   // GeoZone
   createGeoZones(data: CreateGeoZoneDTO[], context?: Context): Promise<GeoZoneDTO[]>
@@ -85,7 +84,7 @@ export type IFulfillmentModuleService = {
   updateGeoZones(ids: string[], data: UpdateGeoZoneDTO, context?: Context): Promise<GeoZoneDTO[]>
   createGeoZone(data: CreateGeoZoneDTO, context?: Context): Promise<GeoZoneDTO>
   updateGeoZone(id: string, data: UpdateGeoZoneDTO, context?: Context): Promise<GeoZoneDTO>
-  deleteGeoZones(ids: string[], context?: Context): Promise<void>
+  softDeleteGeoZones(ids: string[], context?: Context): Promise<void>
 
   // ShippingProfile
   createShippingProfiles(data: CreateShippingProfileDTO[], context?: Context): Promise<ShippingProfileDTO[]>
@@ -101,7 +100,7 @@ export type IFulfillmentModuleService = {
   ): Promise<ShippingProfileDTO[]>
   createShippingProfile(data: CreateShippingProfileDTO, context?: Context): Promise<ShippingProfileDTO>
   updateShippingProfile(id: string, data: UpdateShippingProfileDTO, context?: Context): Promise<ShippingProfileDTO>
-  deleteShippingProfiles(ids: string[], context?: Context): Promise<void>
+  softDeleteShippingProfiles(ids: string[], context?: Context): Promise<void>
 
   // ShippingOptionType
   createShippingOptionTypes(data: CreateShippingOptionTypeDTO[], context?: Context): Promise<ShippingOptionTypeDTO[]>
@@ -121,7 +120,7 @@ export type IFulfillmentModuleService = {
     data: UpdateShippingOptionTypeDTO,
     context?: Context,
   ): Promise<ShippingOptionTypeDTO>
-  deleteShippingOptionTypes(ids: string[], context?: Context): Promise<void>
+  softDeleteShippingOptionTypes(ids: string[], context?: Context): Promise<void>
 
   // ShippingOption
   createShippingOptions(data: CreateShippingOptionDTO[], context?: Context): Promise<ShippingOptionDTO[]>
@@ -139,7 +138,6 @@ export type IFulfillmentModuleService = {
   updateShippingOptions(ids: string[], data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO[]>
   createShippingOption(data: CreateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO>
   updateShippingOption(id: string, data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO>
-  deleteShippingOptions(ids: string[], context?: Context): Promise<void>
   softDeleteShippingOptions(ids: string[], context?: Context): Promise<void>
 
   // FulfillmentProvider

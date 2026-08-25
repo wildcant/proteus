@@ -255,7 +255,7 @@ export class AuthModuleService implements IAuthModuleService {
 
     if (record.expiresAt < new Date()) {
       // Clean up expired token before rejecting
-      await this.authPasswordResetTokenRepository.hardDelete([record.id])
+      await this.authPasswordResetTokenRepository.delete([record.id])
       throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Invalid or expired reset token' })
     }
 
@@ -266,7 +266,7 @@ export class AuthModuleService implements IAuthModuleService {
     }
 
     // Single-use: hard-delete the token atomically
-    await this.authPasswordResetTokenRepository.hardDelete([record.id])
+    await this.authPasswordResetTokenRepository.delete([record.id])
 
     return {
       authIdentityId: record.authIdentityId,
@@ -327,12 +327,6 @@ export class AuthModuleService implements IAuthModuleService {
   async updateAuthIdentity(id: string, data: UpdateAuthIdentityDTO, context?: Context): Promise<AuthIdentityDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.authIdentityRepository.update(id, data, ctx)
-    })
-  }
-
-  async deleteAuthIdentities(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.authIdentityRepository.delete(ids, ctx)
     })
   }
 
@@ -407,12 +401,6 @@ export class AuthModuleService implements IAuthModuleService {
     })
   }
 
-  async deleteProviderIdentities(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.providerIdentityRepository.delete(ids, ctx)
-    })
-  }
-
   async softDeleteProviderIdentities(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.providerIdentityRepository.softDelete(ids, ctx)
@@ -484,12 +472,6 @@ export class AuthModuleService implements IAuthModuleService {
     })
   }
 
-  async deleteAuthVerifications(ids: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.authVerificationRepository.delete(ids, ctx)
-    })
-  }
-
   async softDeleteAuthVerifications(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.authVerificationRepository.softDelete(ids, ctx)
@@ -527,9 +509,9 @@ export class AuthModuleService implements IAuthModuleService {
     })
   }
 
-  async hardDeleteAuthPasswordResetToken(id: string, context?: Context): Promise<void> {
+  async deleteAuthPasswordResetToken(id: string, context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.authPasswordResetTokenRepository.hardDelete([id], ctx)
+      await this.authPasswordResetTokenRepository.delete([id], ctx)
     })
   }
 }

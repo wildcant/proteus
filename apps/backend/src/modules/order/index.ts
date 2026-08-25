@@ -1,5 +1,6 @@
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
+import * as models from './models/index.js'
 import { OrderRepository } from './repositories/order.js'
 import { OrderAddressRepository } from './repositories/order-address.js'
 import { OrderLineItemRepository } from './repositories/order-line-item.js'
@@ -9,6 +10,7 @@ import { OrderModuleService } from './services/order-module-service.js'
 
 export default Module(Modules.ORDER, {
   service: OrderModuleService,
+  models,
   repositories: {
     orderRepository: OrderRepository,
     orderAddressRepository: OrderAddressRepository,

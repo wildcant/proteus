@@ -17,7 +17,6 @@ export type IUserModuleService = {
   updateUsers(userIds: string[], data: UpdateUserDTO, context?: Context): Promise<UserDTO[]>
   createUser(data: CreateUserDTO, context?: Context): Promise<UserDTO>
   updateUser(userId: string, data: UpdateUserDTO, context?: Context): Promise<UserDTO>
-  deleteUsers(userIds: string[], context?: Context): Promise<void>
   softDeleteUsers(userIds: string[], context?: Context): Promise<void>
   restoreUsers(userIds: string[], context?: Context): Promise<void>
 

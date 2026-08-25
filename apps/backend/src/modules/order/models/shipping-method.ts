@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { index, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { orderTable } from './order.js'
 
 export const orderShippingMethodTable = pgTable(
@@ -19,10 +20,8 @@ export const orderShippingMethodTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_order_shipping_method_order_id').on(table.orderId).where(sql`deleted_at IS NULL`),
-    index('idx_order_shipping_method_option_id')
-      .on(table.shippingOptionId)
-      .where(sql`deleted_at IS NULL AND shipping_option_id IS NOT NULL`),
+    liveIndex('idx_order_shipping_method_order_id').on(table.orderId),
+    liveIndex('idx_order_shipping_method_option_id', sql`shipping_option_id IS NOT NULL`).on(table.shippingOptionId),
   ],
 )
 

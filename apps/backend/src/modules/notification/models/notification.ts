@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { index, jsonb, pgEnum, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { jsonb, pgEnum, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import type { NotificationChannel } from '../../../core/types/notification/common.js'
 
 export const notificationStatusEnum = pgEnum('notification_status', ['pending', 'success', 'failure'])
@@ -39,13 +40,11 @@ export const notificationTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    uniqueIndex('idx_notification_idempotency_key')
-      .on(table.idempotencyKey)
-      .where(sql`deleted_at IS NULL AND idempotency_key IS NOT NULL`),
-    index('idx_notification_channel').on(table.channel).where(sql`deleted_at IS NULL`),
-    index('idx_notification_status').on(table.status).where(sql`deleted_at IS NULL`),
-    index('idx_notification_provider_id').on(table.providerId).where(sql`deleted_at IS NULL`),
-    index('idx_notification_receiver_id').on(table.receiverId).where(sql`deleted_at IS NULL`),
+    liveUniqueIndex('idx_notification_idempotency_key', sql`idempotency_key IS NOT NULL`).on(table.idempotencyKey),
+    liveIndex('idx_notification_channel').on(table.channel),
+    liveIndex('idx_notification_status').on(table.status),
+    liveIndex('idx_notification_provider_id').on(table.providerId),
+    liveIndex('idx_notification_receiver_id').on(table.receiverId),
   ],
 )
 

@@ -37,6 +37,10 @@ job_conventions() {
   ./scripts/check-env-usage.sh || code=1
   ./scripts/check-generic-errors.sh || code=1
   ./scripts/check-datetime-schema.sh || code=1
+  # Schema rules that grep cannot express — cascade relationships and index predicates only
+  # exist once drizzle has built the table, so this one imports the models. See
+  # apps/backend/scripts/checks/run.ts.
+  npm run --workspace=backend --silent check:schema || code=1
   return $code
 }
 

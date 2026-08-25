@@ -1,15 +1,19 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
+import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
+import * as models from '../models/index.js'
 import { CustomerRepository } from '../repositories/customer.js'
 import { CustomerAddressRepository } from '../repositories/customer-address.js'
 import { CustomerModuleService } from '../services/customer-module-service.js'
 
+const cascadeGraph = buildCascadeGraph(models)
+
 let service: CustomerModuleService
 
 test.beforeEach(({ getDb, logger }) => {
-  const customerRepository = new CustomerRepository({ getDb })
-  const customerAddressRepository = new CustomerAddressRepository({ getDb })
+  const customerRepository = new CustomerRepository({ getDb, cascadeGraph })
+  const customerAddressRepository = new CustomerAddressRepository({ getDb, cascadeGraph })
   const withTransaction = createWithTransaction(getDb)
   service = new CustomerModuleService({ customerRepository, customerAddressRepository, withTransaction, logger })
 })

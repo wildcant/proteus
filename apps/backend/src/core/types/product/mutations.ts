@@ -127,7 +127,13 @@ export type UpdateProductOptionDTO = {
 export type UpsertProductOptionValueInput = { id?: string } & Omit<CreateProductOptionValueDTO, 'optionId'>
 
 export type SetProductOptionsDTO = {
-  /** Array position sets each option's display rank on the product. */
+  /**
+   * Array position sets each option's display rank on the product.
+   *
+   * `valueIds` must name at least one value. An option a product offers with nothing to choose
+   * from is not a dimension the product varies along, and it multiplies the combination count to
+   * zero — drop the option instead. The service refuses an empty one; the type cannot say so.
+   */
   options: Array<{ optionId: string; valueIds: string[] }>
 }
 

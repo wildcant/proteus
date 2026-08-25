@@ -242,7 +242,7 @@ export class InventoryModuleService implements IInventoryModuleService {
     })
   }
 
-  async deleteInventoryItems(ids: string[], context: Context) {
+  async softDeleteInventoryItems(ids: string[], context: Context) {
     return this.withTransaction(context, async (ctx) => {
       await this.inventoryItemRepository.softDelete(ids, ctx)
     })
@@ -252,7 +252,7 @@ export class InventoryModuleService implements IInventoryModuleService {
 
 Key patterns:
 - Read methods (`retrieve`, `list`) delegate directly to the repository — no transaction needed
-- Write methods (`create`, `update`, `delete`) wrap in `this.withTransaction` for atomicity
+- Write methods (`create`, `update`, `softDelete`) wrap in `this.withTransaction` for atomicity
 - `InjectedDependencies` keys must exactly match the keys in the `Module()` definition's `repositories` object, plus `withTransaction` (auto-registered by bootstrap)
 - The service implements the interface from `core/types/`
 

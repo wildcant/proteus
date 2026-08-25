@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { boolean, index, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 import { cartTable } from './cart.js'
 
 export const cartLineItemTable = pgTable(
@@ -35,13 +36,9 @@ export const cartLineItemTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('idx_cart_line_item_cart_id').on(table.cartId).where(sql`deleted_at IS NULL`),
-    index('idx_cart_line_item_variant_id')
-      .on(table.variantId)
-      .where(sql`deleted_at IS NULL AND variant_id IS NOT NULL`),
-    index('idx_cart_line_item_product_id')
-      .on(table.productId)
-      .where(sql`deleted_at IS NULL AND product_id IS NOT NULL`),
+    liveIndex('idx_cart_line_item_cart_id').on(table.cartId),
+    liveIndex('idx_cart_line_item_variant_id', sql`variant_id IS NOT NULL`).on(table.variantId),
+    liveIndex('idx_cart_line_item_product_id', sql`product_id IS NOT NULL`).on(table.productId),
   ],
 )
 

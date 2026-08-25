@@ -68,7 +68,7 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
     },
     async (collection, { container }) => {
       const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
-      await paymentService.deletePaymentCollections([collection.id])
+      await paymentService.softDeletePaymentCollections([collection.id])
     },
   )
 

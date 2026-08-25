@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { jsonb, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveUniqueIndex } from '../../../core/db/indexes.js'
 import { authIdentityTable } from './auth-identity.js'
 
 export const authVerificationTable = pgTable(
@@ -19,9 +20,7 @@ export const authVerificationTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    uniqueIndex('idx_auth_verification_identity_entity')
-      .on(table.authIdentityId, table.entityId, table.entityType)
-      .where(sql`deleted_at IS NULL`),
+    liveUniqueIndex('idx_auth_verification_identity_entity').on(table.authIdentityId, table.entityId, table.entityType),
   ],
 )
 

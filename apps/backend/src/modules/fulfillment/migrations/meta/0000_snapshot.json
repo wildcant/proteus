@@ -1,5 +1,5 @@
 {
-  "id": "27aec54c-7419-49f6-8d1f-fff1d3c5de23",
+  "id": "747198c9-152b-4630-8b6e-8bf599c645e9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -500,7 +500,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND shipping_option_id IS NOT NULL",
+          "where": "shipping_option_id IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

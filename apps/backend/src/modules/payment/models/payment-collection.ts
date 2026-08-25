@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { index, jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
+import { liveIndex } from '../../../core/db/indexes.js'
 
 export const paymentCollectionStatusEnum = pgEnum('payment_collection_status', [
   'not_paid',
@@ -26,7 +27,7 @@ export const paymentCollectionTable = pgTable(
 
     ...timestamps,
   },
-  (table) => [index('idx_payment_collection_status').on(table.status).where(sql`deleted_at IS NULL`)],
+  (table) => [liveIndex('idx_payment_collection_status').on(table.status)],
 )
 
 export type PaymentCollection = typeof paymentCollectionTable.$inferSelect
