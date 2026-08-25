@@ -32,6 +32,7 @@
     "db:migrate:test": "dotenvx run -f ../../.env.test -- npm run db:migrate",
     "db:seed:providers:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-providers.ts",
     "db:restore:staging": "./scripts/restore-staging-db.sh",
+    "db:diagram": "dotenvx run -f ../../.env.local -- ./scripts/db-diagram/run.sh",
     "openapi:dump": "curl -s http://localhost:3000/admin/openapi.json | python3 -m json.tool > openapi/openapi-admin.json && curl -s http://localhost:3000/store/openapi.json | python3 -m json.tool > openapi/openapi-store.json && echo 'Saved openapi/openapi-admin.json and openapi/openapi-store.json'",
     "openapi:dump:offline": "dotenvx run -f ../../.env.test -- tsx scripts/openapi-dump.ts",
     "check:schema": "tsx scripts/checks/run.ts",
