@@ -13,7 +13,7 @@ export function ForgotPasswordForm(props: ForgotPasswordFormParams) {
           {(field) => <field.TextField label="Email" type="email" autoComplete="email" autoFocus />}
         </form.AppField>
       </div>
-      <Button type="submit" disabled={isPending} className="mt-6 w-full">
+      <Button type="submit" disabled={isPending} className="mt-6 h-14 w-full font-semibold text-base">
         {isPending ? 'Sending...' : 'Send reset link'}
       </Button>
     </Form>
