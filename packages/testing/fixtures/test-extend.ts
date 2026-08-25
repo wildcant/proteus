@@ -124,7 +124,9 @@ const customer = definePersona('customer', {
   },
   async verifySession({ page, session }) {
     await page.goto('/account', { waitUntil: 'networkidle' })
-    await expect(page.getByRole('button', { name: session.email })).toBeVisible({
+    // The Details panel is the only place the signed-in customer's email appears, and it is
+    // customer-scoped, so seeing it proves the restored session still resolves /store/customers/me.
+    await expect(page.getByText(session.email).first()).toBeVisible({
       timeout: 2_000,
     })
   },

@@ -24,6 +24,13 @@ export type SVGElementType =
 
 export type IconNode = [tag: SVGElementType, attributes: Record<string, string>, children?: IconNode][]
 
+/**
+ * Presentation attributes an asset declares on its own root — `fill`, `stroke`, `strokeWidth`, a
+ * `viewBox` off the default grid. They sit over the runtime defaults and under the caller's props,
+ * so an outline mark keeps its paint while a caller can still override any of it.
+ */
+export type IconAttributes = Record<string, string>
+
 export type IconProps = Omit<SVGProps<SVGSVGElement>, 'ref'> & {
   size?: string | number
   /**

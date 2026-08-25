@@ -1,6 +1,6 @@
+import { ShoppingBagIcon } from '@proteus/icons'
 import { formatPrice, Popover, PopoverContent, PopoverTrigger } from '@proteus/ui'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
-import { ShoppingBagIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '#/components/button'
 import { useCart } from '#/features/cart/api/cart'

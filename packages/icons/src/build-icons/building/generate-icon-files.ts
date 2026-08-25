@@ -27,7 +27,7 @@ export const generateIconFiles = async ({
   const icons = Object.entries(iconNodes)
 
   await Promise.all(
-    icons.map(async ([iconName, { label, children }]) => {
+    icons.map(async ([iconName, { label, attributes, children }]) => {
       const svgFile = sourceByName.get(iconName)
 
       if (!svgFile) {
@@ -38,6 +38,7 @@ export const generateIconFiles = async ({
         componentName: toPascalCase(iconName),
         iconName,
         label,
+        attributes,
         children: toIconNode(children),
         getSvg: () => readSvg(svgFile, iconsDirectory),
       })

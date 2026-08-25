@@ -12,6 +12,8 @@ export type SvgNode = {
 export type ParsedIcon = {
   /** Text of the source `<title>`, e.g. `American Express`. Kept for documentation only. */
   label: string
+  /** Presentation attributes lifted off the source root, e.g. `fill`/`stroke` for an outline mark. */
+  attributes: Record<string, string>
   children: SvgNode[]
 }
 
@@ -21,6 +23,7 @@ export type ExportTemplateOptions = {
   componentName: string
   iconName: string
   label: string
+  attributes: Record<string, string>
   children: IconNode
   getSvg: () => Promise<string>
 }

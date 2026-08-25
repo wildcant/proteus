@@ -1,5 +1,6 @@
+import { UserIcon } from '@proteus/icons'
 import { Link } from '@tanstack/react-router'
-import { MenuIcon, UserIcon } from 'lucide-react'
+import { MenuIcon } from 'lucide-react'
 import { Button } from '#/components/button'
 import { Nav } from '#/components/header/nav'
 import { SearchDrawer } from '#/components/header/search-drawer'
@@ -47,6 +48,7 @@ export function Header() {
               <UserIcon className="h-5 w-5" />
             </Button>
           </Link>
+
           <CartDropdown />
         </div>
       </div>

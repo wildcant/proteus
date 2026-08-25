@@ -1,17 +1,6 @@
-import type { Page } from '@playwright/test'
 import { createCheckoutInfrastructure } from 'backend/test'
 import { expect, test } from '../setup/test-extend.js'
-
-async function fillShippingAddress(page: Page) {
-  await page.getByLabel('First name').fill('John')
-  await page.getByLabel('Last name').fill('Doe')
-  await page.getByLabel('Address').fill('123 Main St')
-  await page.getByLabel('City').fill('Austin')
-  await page.getByLabel('Country').selectOption('us')
-  await page.getByLabel('State / Province').fill('TX')
-  await page.getByLabel('Postal code').fill('78701')
-  await page.getByLabel('Phone').fill('5551234567')
-}
+import { fillShippingAddress } from '../setup/utils.js'
 
 let disposeInfra: () => Promise<void>
 

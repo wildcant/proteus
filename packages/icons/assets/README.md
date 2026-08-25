@@ -17,9 +17,9 @@ non-alphanumeric boundary, so `american-express.svg` gives you `AmericanExpressI
 **Basenames must be unique across the whole tree.** Output is flat, so `payment/foo.svg` and
 `social/foo.svg` would overwrite each other. The generator throws rather than letting one win.
 
-**The geometry must fit `0 0 24 24`.** The runtime supplies its own root attributes and does not read
-the source viewBox, so an asset drawn on a different grid renders cropped or adrift with no error.
-This is the one requirement nothing checks for you — verify it before dropping a file in.
+**The geometry must fit its declared viewBox.** The root's `viewBox` is carried through to the
+component, so an asset on a different grid scales rather than crops. Nothing checks that the artwork
+actually fills the box it declares, though — verify that before dropping a file in.
 
 Artwork that is not square is the awkward case, because the root box is. Wrap it in a `<g>` with a
 fitting transform rather than rewriting every coordinate. All three payment badges are 100×60 and
@@ -27,17 +27,25 @@ share the same one: `transform="translate(0,4.8) scale(0.24)"` — `0.24` takes 
 and `4.8` centres that band in the 24-tall box. The generator preserves groups and their transforms,
 so the fit survives regeneration.
 
-Declare `viewBox="0 0 24 24"` on the root anyway, even though nothing reads it. It costs nothing and
-it means opening the file in a browser shows what the component will actually render.
+Prefer the `0 0 24 24` box even when a transform is what gets you there: every other mark is on that
+grid, so a stray one makes `size` mean something different for one icon than for the rest.
 
-**Solid fills, not strokes.** The runtime paints `fill="currentColor"` on the root and sets no stroke
-geometry, which is what lets a caller tint a mark with `text-*` and get dark mode for free. A stroked
-outline drawn with `fill="none" stroke="…"` will not tint, and will usually not show up at all.
+**The root's paint is yours; declare it there.** Attributes on the source `<svg>` — `fill`, `stroke`,
+`stroke-width`, `viewBox` — land on the rendered root, over the runtime's defaults and under the
+caller's props. Declare nothing and you get `fill="currentColor"` and no stroke, which is what a
+solid mark wants. An outline mark declares `fill="none" stroke="currentColor" stroke-width="…"` and
+keeps it.
 
-An asset may carry its own `fill` values instead, and every `payment/` badge does. The trade is that
-it opts out of tinting entirely: `text-*` on the caller is a no-op, and the mark does not follow the
-colour scheme. Right for a card scheme, which is only recognisable in its own colours; wrong for
-anything the design system is meant to paint — which is why `social/` stays on `currentColor`.
+Paint with `currentColor` wherever you can: it is what lets a caller tint a mark with `text-*` and
+get dark mode for free. An asset may carry fixed colours instead, and every `payment/` badge does.
+The trade is that it opts out of tinting entirely — `text-*` on the caller is a no-op and the mark
+does not follow the colour scheme. Right for a card scheme, which is only recognisable in its own
+colours; wrong for anything the design system is meant to paint, which is why `social/` stays on
+`currentColor`.
+
+Four root attributes are the runtime's and are dropped rather than merged: `xmlns`, `width`/`height`
+(the `size` prop sets those), `class` (it would fight the caller's), and `role`/`aria-*` (a mark is
+decorative unless the caller passes a `title`).
 
 **A `<title>` is optional and never rendered.** The generator lifts it out and uses the text for the
 component's JSDoc; leaving it in the icon node would emit an empty `<title>` and give every mark a
@@ -72,6 +80,12 @@ The reference also carries Discord, which is specific to its own community progr
 
 Note that `XIcon` collides with lucide's `XIcon`, its close icon. Alias one of them in any file that
 needs both.
+
+### loose
+
+`shopping-bag` — the header cart mark, a 1.5-weight outline from
+[heroicons](https://github.com/tailwindlabs/heroicons) (MIT). The first asset here that is not a
+brand mark, and the first stroked one.
 
 ## Licensing
 
