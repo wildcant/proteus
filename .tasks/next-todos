@@ -95,6 +95,21 @@ Future features TODOs
     under src/api and no address UI in apps/store. Address book + a "use a saved address" picker at
     checkout come first.
 - Allow customer to see previous orders.
+- LEGAL PAGES + MARKETING CONSENT: no privacy policy, terms, or returns policy exists, and nothing can go live without them.
+  - Practically mandatory, for three separate reasons: Stripe/PayPal require a published privacy policy in their terms
+    and hold accounts at review without one; CalOPPA requires one for any commercial site collecting PII from California
+    residents with NO revenue threshold; GDPR Arts. 13-14 require a notice at the point of collection the moment an EU/UK
+    shopper signs up. CCPA/CPRA's "Do Not Sell or Share" duty only bites above ~$25M revenue / 100k consumers.
+  - Live defect today: register-form.tsx renders "By creating an account, you agree to our Privacy Policy and Terms of
+    Use." as PLAIN TEXT. The documents do not exist and the words are not links, so we assert agreement to something
+    unreachable. Either write them and link, or drop the sentence — the current state is worse than silence.
+  - Footer Help/Company links all point at `/` for the same reason (see components/footer.tsx). Static content routes
+    are the shared prerequisite.
+  - Marketing consent is a SEPARATE consent from the privacy policy and needs storage we do not have: a
+    `customer.acceptsMarketing` column, the field on StoreSignupBody, and the signup route threading it into
+    customerData. Under GDPR it must be opt-in and unticked by default — never pre-checked.
+  - Selling into the EU also drags in a 14-day right of withdrawal with pre-contractual disclosure, and a cookie banner
+    if we ever add non-essential cookies. Get a lawyer to review before taking live payments.
 - PRODUCT DISCOVERY: no ProductCategory / ProductCollection / ProductTag / ProductType, so the storefront has no navigation beyond a flat product list.
   - order_line_item already snapshots productType and productHandle, implying a type entity that does not exist yet.
   - ~4 tables including the pivots. Blocks category nav, collection landing pages, and tag filtering.
