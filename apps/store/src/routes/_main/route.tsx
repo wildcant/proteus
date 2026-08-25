@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { CartMismatchBanner } from '../../components/cart-mismatch-banner'
 import { Footer } from '../../components/footer'
-import { Nav } from '../../components/nav'
+import { Header } from '../../components/header/header'
 
 export const Route = createFileRoute('/_main')({
   ssr: true,
@@ -11,7 +11,7 @@ export const Route = createFileRoute('/_main')({
 function MainLayout() {
   return (
     <>
-      <Nav />
+      <Header />
       <CartMismatchBanner />
       <Outlet />
       <Footer />

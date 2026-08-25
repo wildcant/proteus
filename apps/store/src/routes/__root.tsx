@@ -4,6 +4,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { modalSearchSchema } from '#/lib/modal-state'
 import manropeFont from '../assets/fonts/Manrope-VariableFont_wght.woff2?url'
 import appCss from '../styles.css?url'
 
@@ -11,6 +12,8 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   ssr: true,
+  // Declared here so every route inherits it — see src/lib/modal-state.ts.
+  validateSearch: modalSearchSchema,
   head: () => ({
     meta: [
       {

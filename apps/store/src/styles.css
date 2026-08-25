@@ -24,6 +24,7 @@
   --color-surface: var(--surface);
   --color-surface-subtle: var(--surface-subtle);
   --color-line: var(--line);
+  --color-accent: var(--accent);
   --color-sale: var(--sale);
   --color-positive: var(--positive);
 
@@ -73,6 +74,17 @@
   --surface: #ffffff;
   --surface-subtle: #f4f5f6;
   --line: #dee0e3;
+  /* The only hue in the system. It exists so a count badge can separate itself from the
+     cluster of ink-coloured icons it sits in; everything else stays neutral. Pair it with
+     text-surface, never text-white — the token inverts per scheme, and white numerals on
+     the lifted dark blue fall under 4.5:1.
+
+     This shadows shadcn's own --accent, which is a near-white hover surface paired with a
+     near-black --accent-foreground. Only DropdownMenu and Combobox consume that pair and
+     the store renders neither, so the names can coexist — but the first store screen to
+     import one of those needs --accent-foreground repointed here too, or its focused item
+     lands as near-black on brand blue. */
+  --accent: #004eba;
   --sale: #dc0428;
   --positive: #009966;
 
@@ -106,6 +118,7 @@
   --surface: #0d1012;
   --surface-subtle: #1b1d22;
   --line: #2e3238;
+  --accent: #7aa9ff;
   --sale: #ff8fa5;
   --positive: #00e890;
 }
@@ -119,6 +132,7 @@
     --surface: #0d1012;
     --surface-subtle: #1b1d22;
     --line: #2e3238;
+    --accent: #7aa9ff;
     --sale: #ff8fa5;
     --positive: #00e890;
   }

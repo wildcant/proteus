@@ -2,10 +2,15 @@ import { useState } from 'react'
 import { PRODUCTS_DEFAULT_LIMIT, PRODUCTS_DEFAULT_OFFSET, useSuspenseProducts } from '#/features/products/api/products'
 import { ProductCard } from './product-card'
 
-export function ProductList() {
+type ProductListProps = {
+  /** The active search term. The route remounts this component when it changes. */
+  q?: string
+}
+
+export function ProductList({ q }: ProductListProps) {
   const [offset, setOffset] = useState(PRODUCTS_DEFAULT_OFFSET)
   const limit = PRODUCTS_DEFAULT_LIMIT
-  const { products, count } = useSuspenseProducts({ offset, limit })
+  const { products, count } = useSuspenseProducts({ offset, limit, q })
 
   return (
     <>

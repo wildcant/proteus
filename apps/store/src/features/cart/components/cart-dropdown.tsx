@@ -155,9 +155,16 @@ export function CartDropdown() {
   )
 }
 
+/**
+ * The one hue in the bar. An ink badge disappears into the cluster of ink-coloured icons
+ * it sits in, which is the whole reason this reaches for the accent.
+ *
+ * `text-surface` rather than `text-white`: the token inverts per scheme, so the numerals
+ * stay dark on the lifted blue in dark mode, where white would fall under 4.5:1.
+ */
 function CartBadge({ count }: { count: number }) {
   return (
-    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 font-bold text-[10px] text-background leading-none">
+    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-bold text-[10px] text-surface leading-none">
       {count > 99 ? '99+' : String(count)}
     </span>
   )
