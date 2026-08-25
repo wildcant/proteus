@@ -1,5 +1,7 @@
+import { Link } from '@tanstack/react-router'
 import { LogOutIcon } from 'lucide-react'
 import { Button } from '#/components/button'
+import { Panel } from '#/components/panel'
 import { useSuspenseMe } from '#/features/account/api/customer'
 import { DetailsPanel } from '#/features/account/components/details-panel'
 import { OrdersPanel } from '#/features/account/components/orders-panel'
@@ -21,6 +23,7 @@ export function AccountDetail() {
       <div className="mt-10 grid gap-4 lg:grid-cols-3">
         <OrdersPanel className="lg:col-span-2" />
         <div className="flex flex-col gap-4">
+          <Panel title="Address Book" chevron render={<Link to="/account/addresses" />} />
           <DetailsPanel firstName={customer.firstName} lastName={customer.lastName} email={customer.email} />
           <PasswordPanel email={customer.email} />
         </div>

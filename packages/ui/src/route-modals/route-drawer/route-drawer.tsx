@@ -1,6 +1,8 @@
+import { useNavigate } from '@tanstack/react-router'
+import { XIcon } from 'lucide-react'
+import { type PropsWithChildren, useEffect, useState } from 'react'
+import { Button } from '#/components/ui/button.tsx'
 import {
-  Button,
-  cn,
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -8,10 +10,8 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from '@proteus/ui'
-import { useNavigate } from '@tanstack/react-router'
-import { XIcon } from 'lucide-react'
-import { type PropsWithChildren, useEffect, useState } from 'react'
+} from '#/components/ui/drawer.tsx'
+import { cn } from '#/lib/utils.ts'
 import { RouteModalForm } from '../route-modal-form/route-modal-form'
 import { RouteModalProvider } from '../route-modal-provider/route-provider'
 
@@ -19,6 +19,14 @@ type RouteDrawerProps = PropsWithChildren<{
   prev?: string | number
   /** `wide` fits a data table; it still yields to the viewport on small screens. */
   size?: 'default' | 'wide'
+  /** Merged onto the panel. The store overrides the shadow, which its flat system has no use for. */
+  className?: string
+  /**
+   * Merged onto the panel's inline style, after the size. `--drawer-content-width` and
+   * `--drawer-inset` live here rather than in `className` because `DrawerContent` sets both
+   * behind a `data-[swipe-axis=x]:` selector, which outranks any plain utility class.
+   */
+  style?: React.CSSProperties
 }>
 
 /**
@@ -31,7 +39,7 @@ type RouteDrawerProps = PropsWithChildren<{
  * Compound API: `.Header`, `.Title`, `.Description`, `.Body`, `.Footer`,
  * `.Close`, `.Form` (unsaved-changes guard).
  */
-export function RouteDrawer({ prev = '..', size = 'default', children }: RouteDrawerProps) {
+export function RouteDrawer({ prev = '..', size = 'default', className, style, children }: RouteDrawerProps) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
 
@@ -57,11 +65,15 @@ export function RouteDrawer({ prev = '..', size = 'default', children }: RouteDr
     <Drawer open={open} onOpenChange={handleOpenChange} swipeDirection="right">
       <RouteModalProvider prev={prev}>
         <DrawerContent
-          className="shadow-lg data-[swipe-direction=right]:rounded-lg data-[swipe-direction=right]:border"
+          className={cn(
+            'shadow-lg data-[swipe-direction=right]:rounded-lg data-[swipe-direction=right]:border',
+            className,
+          )}
           style={
             {
               '--drawer-inset': '8px',
               '--drawer-content-width': size === 'wide' ? 'min(720px, calc(100dvw - 16px))' : '560px',
+              ...style,
             } as React.CSSProperties
           }
         >

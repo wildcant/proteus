@@ -1,8 +1,5 @@
-import { Button, TagInput } from '@proteus/ui'
+import { Button, KeyboundForm, RouteDrawer, TagInput, useRouteModal } from '@proteus/ui'
 import type { AdminProductOption } from '#/api/generated/model'
-import { KeyboundForm } from '#/components/modals/keybound-form'
-import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
-import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
 import { useEditProductOptionForm } from '#/features/product-options/hooks/use-edit-product-option-form'
 
 export function EditProductOptionForm({ option }: { option: AdminProductOption }) {

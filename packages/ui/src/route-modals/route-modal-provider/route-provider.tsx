@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
+import '../router-types.ts'
 import { type PropsWithChildren, useCallback, useMemo, useState } from 'react'
 import { RouteModalProviderContext } from './route-modal-context'
 

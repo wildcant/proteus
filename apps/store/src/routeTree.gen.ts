@@ -25,8 +25,12 @@ import { Route as MainProductsRouteRouteImport } from './routes/_main/products/r
 import { Route as MainProductsIndexRouteImport } from './routes/_main/products/index'
 import { Route as MainProductsProductIdRouteImport } from './routes/_main/products/$productId'
 import { Route as MainAuthedAccountIndexRouteImport } from './routes/_main/_authed/account/index'
+import { Route as MainAuthedAccountAddressesRouteRouteImport } from './routes/_main/_authed/account/addresses/route'
 import { Route as MainOrderOrderIdConfirmedRouteImport } from './routes/_main/order/$orderId/confirmed'
+import { Route as MainAuthedAccountAddressesIndexRouteImport } from './routes/_main/_authed/account/addresses/index'
+import { Route as MainAuthedAccountAddressesNewRouteImport } from './routes/_main/_authed/account/addresses/new'
 import { Route as MainAuthedAccountOrdersOrderIdRouteImport } from './routes/_main/_authed/account/orders/$orderId'
+import { Route as MainAuthedAccountAddressesAddressIdEditRouteImport } from './routes/_main/_authed/account/addresses/$addressId/edit'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
@@ -104,17 +108,41 @@ const MainAuthedAccountIndexRoute = MainAuthedAccountIndexRouteImport.update({
   path: '/account/',
   getParentRoute: () => MainAuthedRouteRoute,
 } as any)
+const MainAuthedAccountAddressesRouteRoute =
+  MainAuthedAccountAddressesRouteRouteImport.update({
+    id: '/account/addresses',
+    path: '/account/addresses',
+    getParentRoute: () => MainAuthedRouteRoute,
+  } as any)
 const MainOrderOrderIdConfirmedRoute =
   MainOrderOrderIdConfirmedRouteImport.update({
     id: '/order/$orderId/confirmed',
     path: '/order/$orderId/confirmed',
     getParentRoute: () => MainRouteRoute,
   } as any)
+const MainAuthedAccountAddressesIndexRoute =
+  MainAuthedAccountAddressesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => MainAuthedAccountAddressesRouteRoute,
+  } as any)
+const MainAuthedAccountAddressesNewRoute =
+  MainAuthedAccountAddressesNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => MainAuthedAccountAddressesRouteRoute,
+  } as any)
 const MainAuthedAccountOrdersOrderIdRoute =
   MainAuthedAccountOrdersOrderIdRouteImport.update({
     id: '/account/orders/$orderId',
     path: '/account/orders/$orderId',
     getParentRoute: () => MainAuthedRouteRoute,
+  } as any)
+const MainAuthedAccountAddressesAddressIdEditRoute =
+  MainAuthedAccountAddressesAddressIdEditRouteImport.update({
+    id: '/$addressId/edit',
+    path: '/$addressId/edit',
+    getParentRoute: () => MainAuthedAccountAddressesRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -129,9 +157,13 @@ export interface FileRoutesByFullPath {
   '/cart': typeof MainCartRoute
   '/products/$productId': typeof MainProductsProductIdRoute
   '/products/': typeof MainProductsIndexRoute
+  '/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/account/': typeof MainAuthedAccountIndexRoute
+  '/account/addresses/new': typeof MainAuthedAccountAddressesNewRoute
   '/account/orders/$orderId': typeof MainAuthedAccountOrdersOrderIdRoute
+  '/account/addresses/': typeof MainAuthedAccountAddressesIndexRoute
+  '/account/addresses/$addressId/edit': typeof MainAuthedAccountAddressesAddressIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof MainIndexRoute
@@ -146,7 +178,10 @@ export interface FileRoutesByTo {
   '/products': typeof MainProductsIndexRoute
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/account': typeof MainAuthedAccountIndexRoute
+  '/account/addresses/new': typeof MainAuthedAccountAddressesNewRoute
   '/account/orders/$orderId': typeof MainAuthedAccountOrdersOrderIdRoute
+  '/account/addresses': typeof MainAuthedAccountAddressesIndexRoute
+  '/account/addresses/$addressId/edit': typeof MainAuthedAccountAddressesAddressIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -165,9 +200,13 @@ export interface FileRoutesById {
   '/_main/': typeof MainIndexRoute
   '/_main/products/$productId': typeof MainProductsProductIdRoute
   '/_main/products/': typeof MainProductsIndexRoute
+  '/_main/_authed/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/_main/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/_main/_authed/account/': typeof MainAuthedAccountIndexRoute
+  '/_main/_authed/account/addresses/new': typeof MainAuthedAccountAddressesNewRoute
   '/_main/_authed/account/orders/$orderId': typeof MainAuthedAccountOrdersOrderIdRoute
+  '/_main/_authed/account/addresses/': typeof MainAuthedAccountAddressesIndexRoute
+  '/_main/_authed/account/addresses/$addressId/edit': typeof MainAuthedAccountAddressesAddressIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -183,9 +222,13 @@ export interface FileRouteTypes {
     | '/cart'
     | '/products/$productId'
     | '/products/'
+    | '/account/addresses'
     | '/order/$orderId/confirmed'
     | '/account/'
+    | '/account/addresses/new'
     | '/account/orders/$orderId'
+    | '/account/addresses/'
+    | '/account/addresses/$addressId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -200,7 +243,10 @@ export interface FileRouteTypes {
     | '/products'
     | '/order/$orderId/confirmed'
     | '/account'
+    | '/account/addresses/new'
     | '/account/orders/$orderId'
+    | '/account/addresses'
+    | '/account/addresses/$addressId/edit'
   id:
     | '__root__'
     | '/_auth'
@@ -218,9 +264,13 @@ export interface FileRouteTypes {
     | '/_main/'
     | '/_main/products/$productId'
     | '/_main/products/'
+    | '/_main/_authed/account/addresses'
     | '/_main/order/$orderId/confirmed'
     | '/_main/_authed/account/'
+    | '/_main/_authed/account/addresses/new'
     | '/_main/_authed/account/orders/$orderId'
+    | '/_main/_authed/account/addresses/'
+    | '/_main/_authed/account/addresses/$addressId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -343,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainAuthedAccountIndexRouteImport
       parentRoute: typeof MainAuthedRouteRoute
     }
+    '/_main/_authed/account/addresses': {
+      id: '/_main/_authed/account/addresses'
+      path: '/account/addresses'
+      fullPath: '/account/addresses'
+      preLoaderRoute: typeof MainAuthedAccountAddressesRouteRouteImport
+      parentRoute: typeof MainAuthedRouteRoute
+    }
     '/_main/order/$orderId/confirmed': {
       id: '/_main/order/$orderId/confirmed'
       path: '/order/$orderId/confirmed'
@@ -350,12 +407,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainOrderOrderIdConfirmedRouteImport
       parentRoute: typeof MainRouteRoute
     }
+    '/_main/_authed/account/addresses/': {
+      id: '/_main/_authed/account/addresses/'
+      path: '/'
+      fullPath: '/account/addresses/'
+      preLoaderRoute: typeof MainAuthedAccountAddressesIndexRouteImport
+      parentRoute: typeof MainAuthedAccountAddressesRouteRoute
+    }
+    '/_main/_authed/account/addresses/new': {
+      id: '/_main/_authed/account/addresses/new'
+      path: '/new'
+      fullPath: '/account/addresses/new'
+      preLoaderRoute: typeof MainAuthedAccountAddressesNewRouteImport
+      parentRoute: typeof MainAuthedAccountAddressesRouteRoute
+    }
     '/_main/_authed/account/orders/$orderId': {
       id: '/_main/_authed/account/orders/$orderId'
       path: '/account/orders/$orderId'
       fullPath: '/account/orders/$orderId'
       preLoaderRoute: typeof MainAuthedAccountOrdersOrderIdRouteImport
       parentRoute: typeof MainAuthedRouteRoute
+    }
+    '/_main/_authed/account/addresses/$addressId/edit': {
+      id: '/_main/_authed/account/addresses/$addressId/edit'
+      path: '/$addressId/edit'
+      fullPath: '/account/addresses/$addressId/edit'
+      preLoaderRoute: typeof MainAuthedAccountAddressesAddressIdEditRouteImport
+      parentRoute: typeof MainAuthedAccountAddressesRouteRoute
     }
   }
 }
@@ -392,12 +470,34 @@ const CheckoutRouteRouteWithChildren = CheckoutRouteRoute._addFileChildren(
   CheckoutRouteRouteChildren,
 )
 
+interface MainAuthedAccountAddressesRouteRouteChildren {
+  MainAuthedAccountAddressesNewRoute: typeof MainAuthedAccountAddressesNewRoute
+  MainAuthedAccountAddressesIndexRoute: typeof MainAuthedAccountAddressesIndexRoute
+  MainAuthedAccountAddressesAddressIdEditRoute: typeof MainAuthedAccountAddressesAddressIdEditRoute
+}
+
+const MainAuthedAccountAddressesRouteRouteChildren: MainAuthedAccountAddressesRouteRouteChildren =
+  {
+    MainAuthedAccountAddressesNewRoute: MainAuthedAccountAddressesNewRoute,
+    MainAuthedAccountAddressesIndexRoute: MainAuthedAccountAddressesIndexRoute,
+    MainAuthedAccountAddressesAddressIdEditRoute:
+      MainAuthedAccountAddressesAddressIdEditRoute,
+  }
+
+const MainAuthedAccountAddressesRouteRouteWithChildren =
+  MainAuthedAccountAddressesRouteRoute._addFileChildren(
+    MainAuthedAccountAddressesRouteRouteChildren,
+  )
+
 interface MainAuthedRouteRouteChildren {
+  MainAuthedAccountAddressesRouteRoute: typeof MainAuthedAccountAddressesRouteRouteWithChildren
   MainAuthedAccountIndexRoute: typeof MainAuthedAccountIndexRoute
   MainAuthedAccountOrdersOrderIdRoute: typeof MainAuthedAccountOrdersOrderIdRoute
 }
 
 const MainAuthedRouteRouteChildren: MainAuthedRouteRouteChildren = {
+  MainAuthedAccountAddressesRouteRoute:
+    MainAuthedAccountAddressesRouteRouteWithChildren,
   MainAuthedAccountIndexRoute: MainAuthedAccountIndexRoute,
   MainAuthedAccountOrdersOrderIdRoute: MainAuthedAccountOrdersOrderIdRoute,
 }

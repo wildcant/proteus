@@ -1,5 +1,5 @@
+import { RouteFocusModal } from '@proteus/ui'
 import { createFileRoute } from '@tanstack/react-router'
-import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
 import { CreateVariantForm } from '#/features/products/components/variant/create-variant-form'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/variants/create')({

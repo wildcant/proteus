@@ -1,3 +1,7 @@
+import type { AnyFormApi } from '@tanstack/form-core'
+import { useSelector } from '@tanstack/react-form'
+import { useBlocker } from '@tanstack/react-router'
+import type { PropsWithChildren } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -7,11 +11,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@proteus/ui'
-import type { AnyFormApi } from '@tanstack/form-core'
-import { useBlocker } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
-import type { PropsWithChildren } from 'react'
+} from '#/components/ui/alert-dialog.tsx'
 
 type RouteModalFormProps = PropsWithChildren<{
   form: AnyFormApi
@@ -33,7 +33,7 @@ type RouteModalFormProps = PropsWithChildren<{
  * Used as `RouteFocusModal.Form` / `RouteDrawer.Form` in the compound API.
  */
 export const RouteModalForm = ({ form, blockSearchParams: blockSearch = false, children }: RouteModalFormProps) => {
-  const isDirty = useStore(form.store, (s) => s.isDirty)
+  const isDirty = useSelector(form.store, (s) => s.isDirty)
 
   const blocker = useBlocker({
     shouldBlockFn: ({ current, next }) => {

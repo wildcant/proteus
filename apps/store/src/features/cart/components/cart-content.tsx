@@ -4,8 +4,6 @@ import { Button } from '#/components/button'
 import { useSuspenseCart } from '#/features/cart/api/cart'
 import { CartItem } from '#/features/cart/components/cart-item'
 import { EmptyCart } from '#/features/cart/components/empty-cart'
-import { Step } from '#/features/checkout/constants'
-import { isGuest } from '#/lib/auth-token'
 
 export function CartContent() {
   const { cart } = useSuspenseCart()
@@ -53,11 +51,7 @@ export function CartContent() {
             </div>
           </dl>
 
-          <Button
-            render={<Link to="/checkout" search={{ step: isGuest() ? Step.CONTACT : Step.ADDRESS }} />}
-            variant="outline"
-            className="mt-6 w-full"
-          >
+          <Button render={<Link to="/checkout" />} variant="outline" className="mt-6 w-full">
             Go to checkout
           </Button>
         </aside>

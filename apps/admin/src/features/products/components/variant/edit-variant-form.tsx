@@ -1,8 +1,5 @@
-import { Button } from '@proteus/ui'
+import { Button, KeyboundForm, RouteDrawer, useRouteModal } from '@proteus/ui'
 import type { AdminProductVariant } from '#/api/generated/model'
-import { KeyboundForm } from '#/components/modals/keybound-form'
-import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
-import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
 import { useEditVariantForm } from '#/features/products/hooks/use-edit-variant-form'
 import { useOptionCombinationSearch } from '#/features/products/hooks/use-option-combination-search'
 

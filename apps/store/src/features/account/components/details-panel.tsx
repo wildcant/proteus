@@ -1,4 +1,4 @@
-import { AccountPanel } from '#/features/account/components/account-panel'
+import { Panel } from '#/components/panel'
 
 type DetailsPanelProps = {
   /** Both halves are nullable on the customer record — a guest checkout never asks for them. */
@@ -15,7 +15,7 @@ export function DetailsPanel({ firstName, lastName, email }: DetailsPanelProps) 
   const name = [firstName, lastName].filter(Boolean).join(' ')
 
   return (
-    <AccountPanel title="Details">
+    <Panel title="Details">
       <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
         {name ? (
           <>
@@ -26,6 +26,6 @@ export function DetailsPanel({ firstName, lastName, email }: DetailsPanelProps) 
         <dt className="text-ink-muted">Email</dt>
         <dd className="truncate text-ink">{email}</dd>
       </dl>
-    </AccountPanel>
+    </Panel>
   )
 }

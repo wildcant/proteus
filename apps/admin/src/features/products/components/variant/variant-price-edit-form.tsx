@@ -1,11 +1,8 @@
-import { Button } from '@proteus/ui'
+import { Button, KeyboundForm, RouteFocusModal, useRouteModal } from '@proteus/ui'
 import { useCallback, useMemo, useState } from 'react'
 import type { AdminProductVariant, AdminUpdateVariantPricesPricesItem } from '#/api/generated/model'
 import { DataGrid } from '#/components/data-grid'
 import type { DataGridColumn } from '#/components/data-grid/types'
-import { KeyboundForm } from '#/components/modals/keybound-form'
-import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
-import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
 import { useUpdateVariantPrices } from '#/features/products/api/product-variants'
 
 type PriceRow = {

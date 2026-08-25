@@ -723,6 +723,200 @@
         },
         "required": ["id", "hasAccount", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
       },
+      "StoreCustomerAddressListResponse": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCustomerAddress"
+            }
+          }
+        },
+        "required": ["addresses"]
+      },
+      "StoreCustomerAddress": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "addressName": {
+            "type": ["string", "null"]
+          },
+          "isDefaultShipping": {
+            "type": "boolean"
+          },
+          "isDefaultBilling": {
+            "type": "boolean"
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "city": {
+            "type": ["string", "null"]
+          },
+          "countryCode": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "postalCode": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "customerId",
+          "addressName",
+          "isDefaultShipping",
+          "isDefaultBilling",
+          "company",
+          "firstName",
+          "lastName",
+          "address1",
+          "address2",
+          "city",
+          "countryCode",
+          "province",
+          "postalCode",
+          "phone",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "StoreCustomerAddressResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/StoreCustomerAddress"
+          }
+        },
+        "required": ["address"]
+      },
+      "StoreCreateAddress": {
+        "type": "object",
+        "properties": {
+          "addressName": {
+            "type": ["string", "null"]
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": "string",
+            "minLength": 1
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1
+          },
+          "countryCode": {
+            "type": "string",
+            "minLength": 2
+          },
+          "postalCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": ["address1", "city", "countryCode", "postalCode"]
+      },
+      "StoreUpdateAddress": {
+        "type": "object",
+        "properties": {
+          "addressName": {
+            "type": ["string", "null"]
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": "string",
+            "minLength": 1
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1
+          },
+          "countryCode": {
+            "type": "string",
+            "minLength": 2
+          },
+          "postalCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
       "StoreOrderListResponse": {
         "type": "object",
         "properties": {
@@ -2307,6 +2501,136 @@
           },
           "400": {
             "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/customers/me/addresses": {
+      "get": {
+        "operationId": "listStoreCustomerAddresses",
+        "summary": "List the authenticated customer's addresses",
+        "tags": ["Customers"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCustomerAddressListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createStoreCustomerAddress",
+        "summary": "Add an address to the address book",
+        "tags": ["Customers"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreCreateAddress"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCustomerAddressResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/customers/me/addresses/{id}": {
+      "patch": {
+        "operationId": "updateStoreCustomerAddress",
+        "summary": "Update an address in the address book",
+        "tags": ["Customers"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreUpdateAddress"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCustomerAddressResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteStoreCustomerAddress",
+        "summary": "Remove an address from the address book",
+        "tags": ["Customers"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
           }
         }
       }

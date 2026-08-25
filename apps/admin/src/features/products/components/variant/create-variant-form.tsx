@@ -1,8 +1,5 @@
-import { Button, toast } from '@proteus/ui'
+import { Button, KeyboundForm, RouteFocusModal, toast, useRouteModal } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
-import { KeyboundForm } from '#/components/modals/keybound-form'
-import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
-import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
 import { useCreateVariantForm } from '#/features/products/hooks/use-create-variant-form'
 import { useOptionCombinationSearch } from '#/features/products/hooks/use-option-combination-search'
 

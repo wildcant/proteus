@@ -153,20 +153,41 @@ await step.runAndCompensate(setAuthAppMetadataStep, { authIdentityId, actorType:
 expect(await service.read.authIdentity(api.container, authIdentityId)).toMatchObject({ appMetadata: null })
 ```
 
-## The Three Factory Layers
+## The Four Factory Layers
 
 Each has a distinct job. Do not mix them.
 
 ### 1. DTO generators — `tests/factories/{module}-dto.ts`
 `generateCreateXDTO(overrides?: Partial<CreateXDTO>): CreateXDTO`. Pure, no container, no I/O.
+The **service** shape.
 
-### 2. Service factories — `tests/factories/services/{module}.ts`
+### 2. HTTP body generators — `tests/factories/http/{scope}-{module}.ts`
+`generateStoreCreateXBody(overrides?: Partial<StoreCreateXBody>): StoreCreateXBody`. Pure. The
+**wire** shape, typed from `@proteus/http-schemas`, reached through the `http` fixture:
+`http.store.createAddress({ isDefault: true })`.
+
+A wire body is not a service DTO and the difference is the whole point. `StoreCreateAddress`
+requires `address1`, `city`, `countryCode` and `postalCode`; `CreateCustomerAddressDTO` leaves
+every column nullable. Without a generator, a test asserting on `isDefault` still has to invent
+four values it does not care about — exactly what rule 3 forbids.
+
+Filenames carry the scope (`store-customer.ts`, `admin-product.ts`) because
+`@proteus/http-schemas` splits the same way, and the fixture nests to match
+(`http.store.*`, `http.admin.*`).
+
+**`create` bodies only.** A PATCH body means "absent = leave alone", so a generator that fakes
+every field turns each update into a full overwrite and hides which field is under test. Write
+update bodies as partial literals where every key is load-bearing — the same exception the
+update-DTO rule already carries.
+
+### 3. Service factories — `tests/factories/services/{module}.ts`
 Take a container, resolve the service themselves, call a DTO generator, persist. This is what
-test files use.
+test files use to **arrange** state. Layer 2 is for the request under test; layer 3 is for the
+rows that have to already exist.
 
-### 3. DB factories — `tests/factories/db/`
+### 4. DB factories — `tests/factories/db/`
 Direct Drizzle inserts with `Symbol.asyncDispose`. These belong to the **E2E** suite, which has
-no container. Backend integration tests use layer 2 instead — see the `e2e-test` skill.
+no container. Backend integration tests use layer 3 instead — see the `e2e-test` skill.
 
 ## DTO Generator Rules
 

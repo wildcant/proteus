@@ -165,6 +165,37 @@ export class CustomerModuleService implements ICustomerModuleService {
     })
   }
 
+  /**
+   * Promotes one address to the customer's default, clearing whichever address held the slot.
+   *
+   * The two partial unique indexes on `customer_address` make a second default a database error
+   * rather than a last-write-wins, so the previous holder has to be released in the same
+   * transaction as the promotion. Two calls from a route would leave a window where the write
+   * fails, and a failure halfway through would leave the customer with no default at all.
+   *
+   * Both flags move together because the storefront offers one checkbox; keeping them separate
+   * on the model is what leaves room to split them later without a migration.
+   */
+  async setDefaultAddress(customerId: string, addressId: string, context?: Context): Promise<CustomerAddressDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const addresses = await this.customerAddressRepository.find({ customerId }, undefined, ctx)
+
+      const stale = addresses
+        .filter((address) => address.id !== addressId && (address.isDefaultShipping || address.isDefaultBilling))
+        .map((address) => address.id)
+
+      if (stale.length > 0) {
+        await this.customerAddressRepository.updateMany(
+          stale,
+          { isDefaultShipping: false, isDefaultBilling: false },
+          ctx,
+        )
+      }
+
+      return this.customerAddressRepository.update(addressId, { isDefaultShipping: true, isDefaultBilling: true }, ctx)
+    })
+  }
+
   async softDeleteCustomerAddresses(addressIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.customerAddressRepository.softDelete(addressIds, ctx)

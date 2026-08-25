@@ -43,7 +43,7 @@ panel is one tall block with its empty state centred in it.
 | Panel | Us | Why |
 |---|---|---|
 | Orders | **ship, in full** | `GET /store/orders` exists, is customer-scoped and paginated, and returns `displayId`, `status`, `fulfillmentStatus`, `createdAt`, `total` and item thumbnails — everything a row needs |
-| Address Book | **blocked** | `customer_address` is modelled in the backend but no `/store/customers/me/addresses` endpoint exists. `.tasks/next-todos` already has this as a prerequisite for the checkout address picker |
+| Address Book | **ship** | unblocked by `06-address-book.md`, which adds `/store/customers/me/addresses`. The panel links to `/account/addresses` |
 | Returns | **blocked** | there is no returns concept anywhere — `apps/backend/src/modules/order/models/` is address, line-item, order, shipping-method, transaction |
 | Details | ship, read-only | `GET /store/customers/me` is the only method on that route; there is no update endpoint, so the panel shows name and email and does not pretend to edit them |
 | Password | ship | `useRequestPasswordReset` already exists and the emailed-link flow works for a signed-in customer too. This is the same pattern Shopify uses, and it needs no new endpoint |
@@ -125,12 +125,12 @@ reads fine and costs nothing.
 
 ## Blocked, and tracked elsewhere
 
-Address Book needs `/store/customers/me/addresses` (list, create, update, delete) — now specced in
-`06-address-book.md` — and Returns needs
-a returns concept in the order module. Both are backend tickets, and the address one is already on
-`.tasks/next-todos` as the blocker for the "use a saved address" picker at checkout — the same
-endpoint serves both, so it is worth doing before this page ships its second column in full. Until
-then the right column is Details, Password and sign out.
+Returns needs a returns concept in the order module, which does not exist — the order module is
+address, line-item, order, shipping-method and transaction. That is a backend ticket of its own.
+
+Address Book was blocked here for the same shape of reason and is not any more: `06-address-book.md`
+shipped `/store/customers/me/addresses`, and the panel links to `/account/addresses`. The right
+column is Address Book, Details and Password, with sign out below the rule.
 
 ## Constraint
 

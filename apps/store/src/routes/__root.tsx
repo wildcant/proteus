@@ -4,6 +4,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { SHOW_DEVTOOLS } from '#/env.ts'
 import { modalSearchSchema } from '#/lib/modal-state'
 import manropeFont from '../assets/fonts/Manrope-VariableFont_wght.woff2?url'
 import appCss from '../styles.css?url'
@@ -70,17 +71,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="wrap-anywhere font-sans antialiased selection:bg-[rgba(79,184,178,0.24)]">
         {children}
         <Toaster />
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        {!!SHOW_DEVTOOLS && (
+          <TanStackDevtools
+            config={{
+              position: 'bottom-right',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

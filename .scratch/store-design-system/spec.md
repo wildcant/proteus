@@ -85,7 +85,11 @@ consistent than the reference's own "Log In" / "Sign up" — two different verbs
 - `04-footer.md` — link columns, monochrome payment and social marks, no placeholder links
 - `05-account-page.md` — orders panel, panel grid, read-only details, emailed password reset
 - `06-address-book.md` — the missing store address endpoints, plus the route-modal components moving to `packages/ui`
+- `07-cart-drawer.md` — the bag as a right-edge panel on `?modal=cart`, auto-opened by the add
+  mutation; deletes the header popover. Drops the free-shipping bar, the cross-sell rail and the
+  estimated-shipping line for want of anything behind them, and carries the variant options line
+  onto the line item, which needs `AddLineItem` widened. `/cart` is left alone
 
-Then PLP (grid gap, header, card), then PDP, cart and checkout. The 4:5 product
+Then PLP (grid gap, header, card), then PDP, the `/cart` page and checkout. The 4:5 product
 image, the `gap: 24px 4px` contact-sheet grid and the muted-eyebrow-plus-display-title page header
 are the three patterns with the most left to give.

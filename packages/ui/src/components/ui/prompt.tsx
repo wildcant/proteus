@@ -1,3 +1,4 @@
+import * as React from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -7,10 +8,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  Input,
-  Label,
-} from '@proteus/ui'
-import * as React from 'react'
+} from '#/components/ui/alert-dialog.tsx'
+import { Input } from '#/components/ui/input.tsx'
+import { Label } from '#/components/ui/label.tsx'
 
 export type PromptProps = {
   title: string

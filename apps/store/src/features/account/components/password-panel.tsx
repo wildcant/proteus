@@ -1,5 +1,5 @@
 import { Button } from '#/components/button'
-import { AccountPanel } from '#/features/account/components/account-panel'
+import { Panel } from '#/components/panel'
 import { useRequestPasswordReset } from '#/features/auth/api/auth'
 
 /**
@@ -11,7 +11,7 @@ export function PasswordPanel({ email }: { email: string }) {
   const requestReset = useRequestPasswordReset()
 
   return (
-    <AccountPanel title="Password" description="We email you a link rather than asking for your current password.">
+    <Panel title="Password" description="We email you a link rather than asking for your current password.">
       {requestReset.isSuccess ? (
         <p className="mt-6 text-ink text-sm">
           Reset link sent to <span className="font-semibold">{email}</span>. Check your inbox.
@@ -26,6 +26,6 @@ export function PasswordPanel({ email }: { email: string }) {
           {requestReset.isPending ? 'Sending...' : 'Send a reset link'}
         </Button>
       )}
-    </AccountPanel>
+    </Panel>
   )
 }

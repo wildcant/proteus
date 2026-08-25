@@ -5,7 +5,9 @@ import { expect } from './test-extend.js'
 export async function fillShippingAddress(page: Page) {
   await page.getByLabel('First name').fill('John')
   await page.getByLabel('Last name').fill('Doe')
-  await page.getByLabel('Address').fill('123 Main St')
+  // Exact: 'Billing address same as shipping' is a real label now that the checkbox carries an
+  // htmlFor, and a loose match would hit it too.
+  await page.getByLabel('Address', { exact: true }).fill('123 Main St')
   await page.getByLabel('City').fill('Austin')
   await page.getByLabel('Country').selectOption('us')
   await page.getByLabel('State / Province').fill('TX')
@@ -43,4 +45,24 @@ export async function placeOrder(page: Page): Promise<string> {
   const displayId = orderNumber.replace(/\D/g, '')
   expect(displayId, `Could not read a display id out of "${orderNumber}"`).not.toBe('')
   return displayId
+}
+
+/**
+ * Fills the address-book drawer. `label` and `city` are what the specs assert on; the rest is
+ * arbitrary but must be a real US state, the same constraint `fillShippingAddress` carries.
+ */
+export async function fillAddressForm(page: Page, { label, city }: { label: string; city: string }) {
+  await page.getByLabel('Label (e.g. Home)').fill(label)
+  await page.getByLabel('First name').fill('John')
+  await page.getByLabel('Last name').fill('Doe')
+  await page.getByLabel('Address', { exact: true }).fill('123 Main St')
+  await page.getByLabel('City').fill(city)
+  await page.getByLabel('Country').selectOption('us')
+  await page.getByLabel('State / Province').fill('TX')
+  await page.getByLabel('Postal code').fill('78701')
+  // By role, not by label: Base UI renders a span[role=checkbox] plus a hidden native input, and
+  // the label's htmlFor associates both, so getByLabel matches two elements. Only the span is in
+  // the accessibility tree — the input carries aria-hidden — so the role selector is both
+  // unambiguous and the layer this should be asserting against.
+  await page.getByRole('checkbox', { name: 'Make this my main address' }).check()
 }

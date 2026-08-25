@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
-import { AUTHED_STEPS, STEPS, Step } from '#/features/checkout/constants'
+import { AUTHED_STEPS, STEPS, type Step } from '#/features/checkout/constants'
 import { isGuest } from '#/lib/auth-token'
 
 export function useCheckoutProgress(cart: StoreCartDetailResponseCart) {
@@ -23,8 +23,6 @@ export function useCheckoutProgress(cart: StoreCartDetailResponseCart) {
     return order.indexOf(step) + 1
   }
 
-  const defaultStep = isGuestCheckout ? Step.CONTACT : Step.ADDRESS
-
   return {
     isGuest: isGuestCheckout,
     hasContact,
@@ -33,6 +31,5 @@ export function useCheckoutProgress(cart: StoreCartDetailResponseCart) {
     goToStep,
     lastShippingMethod,
     stepNumber,
-    defaultStep,
   }
 }

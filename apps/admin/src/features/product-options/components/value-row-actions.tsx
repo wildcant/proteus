@@ -1,8 +1,15 @@
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, toast } from '@proteus/ui'
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  toast,
+  usePrompt,
+} from '@proteus/ui'
 import { EllipsisIcon } from 'lucide-react'
 import type { AdminProductOption, AdminProductOptionValue } from '#/api/generated/model'
 import { useUpdateProductOption } from '#/features/product-options/api/product-options'
-import { usePrompt } from '#/hooks/use-prompt.tsx'
 
 export function ValueRowActions({ option, value }: { option: AdminProductOption; value: AdminProductOptionValue }) {
   const { mutate: update } = useUpdateProductOption(option.id)

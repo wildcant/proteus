@@ -7,7 +7,9 @@ import { CheckoutSkeleton } from '#/features/checkout/components/checkout-skelet
 import { STEPS, Step } from '#/features/checkout/constants'
 
 const checkoutSearchSchema = z.object({
-  step: z.enum(STEPS).catch(Step.CONTACT),
+  // Optional, so the cart can link to `/checkout` without choosing a step — which of them a
+  // shopper starts on is checkout's rule, not the cart's. `CheckoutContent` resolves it.
+  step: z.enum(STEPS).default(Step.CONTACT).catch(Step.CONTACT),
 })
 
 export const Route = createFileRoute('/_checkout/checkout')({

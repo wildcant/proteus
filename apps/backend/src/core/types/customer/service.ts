@@ -47,6 +47,7 @@ export type ICustomerModuleService = {
     data: UpdateCustomerAddressDTO,
     context?: Context,
   ): Promise<CustomerAddressDTO[]>
+  setDefaultAddress(customerId: string, addressId: string, context?: Context): Promise<CustomerAddressDTO>
   softDeleteCustomerAddresses(addressIds: string[], context?: Context): Promise<void>
   createCustomerAddress(data: CreateCustomerAddressDTO, context?: Context): Promise<CustomerAddressDTO>
   updateCustomerAddress(

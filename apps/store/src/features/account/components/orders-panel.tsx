@@ -6,7 +6,7 @@ import { Suspense, useState } from 'react'
 import type { StoreOrderFulfillmentStatus, StoreOrderListResponseOrdersItem } from '#/api/generated/model'
 import { Button } from '#/components/button'
 import { Pagination } from '#/components/pagination'
-import { AccountPanel } from '#/features/account/components/account-panel'
+import { Panel } from '#/components/panel'
 import { ORDERS_DEFAULT_OFFSET, ordersPageQuery, useSuspenseOrders } from '#/features/orders/api/orders'
 
 /** The wire values are lowercase single words; the shopper reads a phrase. */
@@ -23,11 +23,11 @@ const fulfillmentLabels: Record<StoreOrderFulfillmentStatus, string> = {
  */
 export function OrdersPanel({ className }: { className?: string }) {
   return (
-    <AccountPanel title="Orders" className={className}>
+    <Panel title="Orders" className={className}>
       <Suspense fallback={<OrdersFallback />}>
         <OrderList />
       </Suspense>
-    </AccountPanel>
+    </Panel>
   )
 }
 

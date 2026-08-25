@@ -1,7 +1,7 @@
 import { formatPrice } from '@proteus/ui'
 import { getRouteApi, Link } from '@tanstack/react-router'
-import { AddToCart } from '#/features/cart/components/add-to-cart'
 import { useSuspenseProduct } from '#/features/products/api/products'
+import { AddToCart } from '#/features/products/components/add-to-cart'
 import { ProductGallery } from '#/features/products/components/product-gallery'
 import { ProductSpecs } from '#/features/products/components/product-specs'
 import { VariantPicker } from '#/features/products/components/variant-picker'

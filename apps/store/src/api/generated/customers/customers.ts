@@ -5,10 +5,16 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
-  CustomerResponse
+  CustomerResponse,
+  DeleteResponse,
+  StoreCreateAddress,
+  StoreCustomerAddressListResponse,
+  StoreCustomerAddressResponse,
+  StoreUpdateAddress
 } from '../model';
 
 import { fetcher } from '../../fetcher.ts';
+import type { BodyType } from '../../fetcher.ts';
 
 
 
@@ -23,4 +29,57 @@ export const getStoreCustomerMe = (
     },
       );
     }
+  /**
+ * @summary List the authenticated customer's addresses
+ */
+export const listStoreCustomerAddresses = (
+
+ ) => {
+      return fetcher<StoreCustomerAddressListResponse>(
+      {url: `/store/customers/me/addresses`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * @summary Add an address to the address book
+ */
+export const createStoreCustomerAddress = (
+    storeCreateAddress?: BodyType<StoreCreateAddress>,
+ ) => {
+      return fetcher<StoreCustomerAddressResponse>(
+      {url: `/store/customers/me/addresses`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: storeCreateAddress
+    },
+      );
+    }
+  /**
+ * @summary Update an address in the address book
+ */
+export const updateStoreCustomerAddress = (
+    id: string,
+    storeUpdateAddress?: BodyType<StoreUpdateAddress>,
+ ) => {
+      return fetcher<StoreCustomerAddressResponse>(
+      {url: `/store/customers/me/addresses/${id}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: storeUpdateAddress
+    },
+      );
+    }
+  /**
+ * @summary Remove an address from the address book
+ */
+export const deleteStoreCustomerAddress = (
+    id: string,
+ ) => {
+      return fetcher<DeleteResponse>(
+      {url: `/store/customers/me/addresses/${id}`, method: 'DELETE'
+    },
+      );
+    }
   export type GetStoreCustomerMeResult = NonNullable<Awaited<ReturnType<typeof getStoreCustomerMe>>>
+export type ListStoreCustomerAddressesResult = NonNullable<Awaited<ReturnType<typeof listStoreCustomerAddresses>>>
+export type CreateStoreCustomerAddressResult = NonNullable<Awaited<ReturnType<typeof createStoreCustomerAddress>>>
+export type UpdateStoreCustomerAddressResult = NonNullable<Awaited<ReturnType<typeof updateStoreCustomerAddress>>>
+export type DeleteStoreCustomerAddressResult = NonNullable<Awaited<ReturnType<typeof deleteStoreCustomerAddress>>>

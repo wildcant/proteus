@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createRoot } from 'react-dom/client'
-import { type PromptProps, RenderPrompt } from '#/components/prompt.tsx'
+import { type PromptProps, RenderPrompt } from '#/components/ui/prompt.tsx'
 
 export function usePrompt() {
   const currentPromptPromise = React.useRef<Promise<boolean> | null>(null)

@@ -1,6 +1,7 @@
 import { NativeSelectOption } from '@proteus/ui'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { Button } from '#/components/button'
+import { CountryOptions } from '#/components/form/country-options'
 import { Form } from '#/components/form/form.tsx'
 import {
   type ShippingAddressFormValues,
@@ -99,14 +100,7 @@ export function ShippingAddressForm({ cart, onComplete }: ShippingAddressFormPro
           {(field) => (
             <field.SelectField label="Country">
               <NativeSelectOption value="">Select country</NativeSelectOption>
-              <NativeSelectOption value="us">United States</NativeSelectOption>
-              <NativeSelectOption value="ca">Canada</NativeSelectOption>
-              <NativeSelectOption value="gb">United Kingdom</NativeSelectOption>
-              <NativeSelectOption value="de">Germany</NativeSelectOption>
-              <NativeSelectOption value="fr">France</NativeSelectOption>
-              <NativeSelectOption value="au">Australia</NativeSelectOption>
-              <NativeSelectOption value="se">Sweden</NativeSelectOption>
-              <NativeSelectOption value="dk">Denmark</NativeSelectOption>
+              <CountryOptions />
             </field.SelectField>
           )}
         </form.AppField>
@@ -159,14 +153,7 @@ export function ShippingAddressForm({ cart, onComplete }: ShippingAddressFormPro
                   {(field) => (
                     <field.SelectField label="Country">
                       <NativeSelectOption value="">Select country</NativeSelectOption>
-                      <NativeSelectOption value="us">United States</NativeSelectOption>
-                      <NativeSelectOption value="ca">Canada</NativeSelectOption>
-                      <NativeSelectOption value="gb">United Kingdom</NativeSelectOption>
-                      <NativeSelectOption value="de">Germany</NativeSelectOption>
-                      <NativeSelectOption value="fr">France</NativeSelectOption>
-                      <NativeSelectOption value="au">Australia</NativeSelectOption>
-                      <NativeSelectOption value="se">Sweden</NativeSelectOption>
-                      <NativeSelectOption value="dk">Denmark</NativeSelectOption>
+                      <CountryOptions />
                     </field.SelectField>
                   )}
                 </form.AppField>

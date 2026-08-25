@@ -21,6 +21,7 @@ builds one schema per vitest worker once per run; `db-setup.ts` `TRUNCATE`s ever
 - `apps/backend/tests/setup/run-step.ts` — `step.run` / `step.runAndCompensate` for a bare workflow step
 - `apps/backend/tests/setup/setup-test-env.ts` — console spy (`console.error`/`console.warn` **throw**), loaded via `setupFiles`
 - `apps/backend/tests/factories/{module}-dto.ts` — DTO generators, `generateCreateXDTO(overrides?)`
+- `apps/backend/tests/factories/http/` — request-body generators for the HTTP layer, reached as `http.store.createAddress(...)`
 - `apps/backend/tests/factories/services/` — service factories, container-first. **`cart.ts` is the reference implementation**
 - `apps/backend/tests/factories/db/` — direct Drizzle inserts, used by the E2E suite (see the `e2e-test` skill)
 - `apps/backend/vitest.config.ts` — aliases `@tests`, `@core`, `@framework`, `@workflows`; one worker per database
@@ -52,8 +53,12 @@ the second run exits immediately naming the collision.
    service is how a mid-workflow failure is forced, and it is the only use. Every query and
    mutation goes through `service.create.*` / `service.update.*` / `service.read.*`; a
    `container.resolve` not immediately followed by `vi.spyOn` means a factory is missing.
-3. **Never write a DTO literal.** Build it with a generator and pass only the fields the test
-   asserts on. A field the test does not name should be faked, not hardcoded.
+3. **Never write a DTO or request-body literal.** Build it with a generator and pass only the
+   fields the test asserts on. A field the test does not name should be faked, not hardcoded.
+   Service DTOs come from `dto.generate.*`, request bodies from `http.{scope}.*` — a POST body
+   with required fields the test does not care about needs a generator just as much as a
+   persisted row does. A body whose every key *is* the subject (`{ title: 'Plain' }`) is a
+   payload, not a literal, and stays inline.
 4. **A factory that only forwards its arguments is not worth writing.** If it has a DTO,
    it generates one; if it has no DTO, it exists to keep `container.resolve` out of the test.
 5. **Assertions must be able to fail.** No vacuous `expect`s — mutate the code and confirm
