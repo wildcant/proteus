@@ -9,22 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as CheckoutRouteRouteImport } from './routes/_checkout/route'
 import { Route as MainRouteRouteImport } from './routes/_main/route'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
+import { Route as AuthVerifyRouteImport } from './routes/_auth/verify'
 import { Route as CheckoutCheckoutRouteImport } from './routes/_checkout/checkout'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainAuthedRouteRouteImport } from './routes/_main/_authed/route'
 import { Route as MainCartRouteImport } from './routes/_main/cart'
 import { Route as MainForgotPasswordRouteImport } from './routes/_main/forgot-password'
-import { Route as MainLoginRouteImport } from './routes/_main/login'
 import { Route as MainProductsRouteRouteImport } from './routes/_main/products/route'
 import { Route as MainResetPasswordRouteImport } from './routes/_main/reset-password'
-import { Route as MainVerifyRouteImport } from './routes/_main/verify'
 import { Route as MainAuthedAccountRouteImport } from './routes/_main/_authed/account'
 import { Route as MainProductsIndexRouteImport } from './routes/_main/products/index'
 import { Route as MainProductsProductIdRouteImport } from './routes/_main/products/$productId'
 import { Route as MainOrderOrderIdConfirmedRouteImport } from './routes/_main/order/$orderId/confirmed'
 
+const AuthRouteRoute = AuthRouteRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutRouteRoute = CheckoutRouteRouteImport.update({
   id: '/_checkout',
   getParentRoute: () => rootRouteImport,
@@ -32,6 +38,21 @@ const CheckoutRouteRoute = CheckoutRouteRouteImport.update({
 const MainRouteRoute = MainRouteRouteImport.update({
   id: '/_main',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthVerifyRoute = AuthVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => AuthRouteRoute,
 } as any)
 const CheckoutCheckoutRoute = CheckoutCheckoutRouteImport.update({
   id: '/checkout',
@@ -57,11 +78,6 @@ const MainForgotPasswordRoute = MainForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => MainRouteRoute,
 } as any)
-const MainLoginRoute = MainLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => MainRouteRoute,
-} as any)
 const MainProductsRouteRoute = MainProductsRouteRouteImport.update({
   id: '/products',
   path: '/products',
@@ -70,11 +86,6 @@ const MainProductsRouteRoute = MainProductsRouteRouteImport.update({
 const MainResetPasswordRoute = MainResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
-  getParentRoute: () => MainRouteRoute,
-} as any)
-const MainVerifyRoute = MainVerifyRouteImport.update({
-  id: '/verify',
-  path: '/verify',
   getParentRoute: () => MainRouteRoute,
 } as any)
 const MainAuthedAccountRoute = MainAuthedAccountRouteImport.update({
@@ -102,12 +113,13 @@ const MainOrderOrderIdConfirmedRoute =
 export interface FileRoutesByFullPath {
   '/': typeof MainIndexRoute
   '/products': typeof MainProductsRouteRouteWithChildren
+  '/login': typeof AuthLoginRoute
+  '/signup': typeof AuthSignupRoute
+  '/verify': typeof AuthVerifyRoute
   '/checkout': typeof CheckoutCheckoutRoute
   '/cart': typeof MainCartRoute
   '/forgot-password': typeof MainForgotPasswordRoute
-  '/login': typeof MainLoginRoute
   '/reset-password': typeof MainResetPasswordRoute
-  '/verify': typeof MainVerifyRoute
   '/account': typeof MainAuthedAccountRoute
   '/products/$productId': typeof MainProductsProductIdRoute
   '/products/': typeof MainProductsIndexRoute
@@ -115,12 +127,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof MainIndexRoute
+  '/login': typeof AuthLoginRoute
+  '/signup': typeof AuthSignupRoute
+  '/verify': typeof AuthVerifyRoute
   '/checkout': typeof CheckoutCheckoutRoute
   '/cart': typeof MainCartRoute
   '/forgot-password': typeof MainForgotPasswordRoute
-  '/login': typeof MainLoginRoute
   '/reset-password': typeof MainResetPasswordRoute
-  '/verify': typeof MainVerifyRoute
   '/account': typeof MainAuthedAccountRoute
   '/products/$productId': typeof MainProductsProductIdRoute
   '/products': typeof MainProductsIndexRoute
@@ -128,16 +141,18 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_auth': typeof AuthRouteRouteWithChildren
   '/_checkout': typeof CheckoutRouteRouteWithChildren
   '/_main': typeof MainRouteRouteWithChildren
   '/_main/_authed': typeof MainAuthedRouteRouteWithChildren
   '/_main/products': typeof MainProductsRouteRouteWithChildren
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/signup': typeof AuthSignupRoute
+  '/_auth/verify': typeof AuthVerifyRoute
   '/_checkout/checkout': typeof CheckoutCheckoutRoute
   '/_main/cart': typeof MainCartRoute
   '/_main/forgot-password': typeof MainForgotPasswordRoute
-  '/_main/login': typeof MainLoginRoute
   '/_main/reset-password': typeof MainResetPasswordRoute
-  '/_main/verify': typeof MainVerifyRoute
   '/_main/': typeof MainIndexRoute
   '/_main/_authed/account': typeof MainAuthedAccountRoute
   '/_main/products/$productId': typeof MainProductsProductIdRoute
@@ -149,12 +164,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/products'
+    | '/login'
+    | '/signup'
+    | '/verify'
     | '/checkout'
     | '/cart'
     | '/forgot-password'
-    | '/login'
     | '/reset-password'
-    | '/verify'
     | '/account'
     | '/products/$productId'
     | '/products/'
@@ -162,28 +178,31 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
+    | '/signup'
+    | '/verify'
     | '/checkout'
     | '/cart'
     | '/forgot-password'
-    | '/login'
     | '/reset-password'
-    | '/verify'
     | '/account'
     | '/products/$productId'
     | '/products'
     | '/order/$orderId/confirmed'
   id:
     | '__root__'
+    | '/_auth'
     | '/_checkout'
     | '/_main'
     | '/_main/_authed'
     | '/_main/products'
+    | '/_auth/login'
+    | '/_auth/signup'
+    | '/_auth/verify'
     | '/_checkout/checkout'
     | '/_main/cart'
     | '/_main/forgot-password'
-    | '/_main/login'
     | '/_main/reset-password'
-    | '/_main/verify'
     | '/_main/'
     | '/_main/_authed/account'
     | '/_main/products/$productId'
@@ -192,12 +211,20 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthRouteRoute: typeof AuthRouteRouteWithChildren
   CheckoutRouteRoute: typeof CheckoutRouteRouteWithChildren
   MainRouteRoute: typeof MainRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_checkout': {
       id: '/_checkout'
       path: ''
@@ -211,6 +238,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof MainRouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/signup': {
+      id: '/_auth/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/verify': {
+      id: '/_auth/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof AuthVerifyRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
     '/_checkout/checkout': {
       id: '/_checkout/checkout'
@@ -247,13 +295,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainForgotPasswordRouteImport
       parentRoute: typeof MainRouteRoute
     }
-    '/_main/login': {
-      id: '/_main/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof MainLoginRouteImport
-      parentRoute: typeof MainRouteRoute
-    }
     '/_main/products': {
       id: '/_main/products'
       path: '/products'
@@ -266,13 +307,6 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof MainResetPasswordRouteImport
-      parentRoute: typeof MainRouteRoute
-    }
-    '/_main/verify': {
-      id: '/_main/verify'
-      path: '/verify'
-      fullPath: '/verify'
-      preLoaderRoute: typeof MainVerifyRouteImport
       parentRoute: typeof MainRouteRoute
     }
     '/_main/_authed/account': {
@@ -305,6 +339,22 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthRouteRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignupRoute: typeof AuthSignupRoute
+  AuthVerifyRoute: typeof AuthVerifyRoute
+}
+
+const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+  AuthSignupRoute: AuthSignupRoute,
+  AuthVerifyRoute: AuthVerifyRoute,
+}
+
+const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
+  AuthRouteRouteChildren,
+)
 
 interface CheckoutRouteRouteChildren {
   CheckoutCheckoutRoute: typeof CheckoutCheckoutRoute
@@ -348,9 +398,7 @@ interface MainRouteRouteChildren {
   MainProductsRouteRoute: typeof MainProductsRouteRouteWithChildren
   MainCartRoute: typeof MainCartRoute
   MainForgotPasswordRoute: typeof MainForgotPasswordRoute
-  MainLoginRoute: typeof MainLoginRoute
   MainResetPasswordRoute: typeof MainResetPasswordRoute
-  MainVerifyRoute: typeof MainVerifyRoute
   MainIndexRoute: typeof MainIndexRoute
   MainOrderOrderIdConfirmedRoute: typeof MainOrderOrderIdConfirmedRoute
 }
@@ -360,9 +408,7 @@ const MainRouteRouteChildren: MainRouteRouteChildren = {
   MainProductsRouteRoute: MainProductsRouteRouteWithChildren,
   MainCartRoute: MainCartRoute,
   MainForgotPasswordRoute: MainForgotPasswordRoute,
-  MainLoginRoute: MainLoginRoute,
   MainResetPasswordRoute: MainResetPasswordRoute,
-  MainVerifyRoute: MainVerifyRoute,
   MainIndexRoute: MainIndexRoute,
   MainOrderOrderIdConfirmedRoute: MainOrderOrderIdConfirmedRoute,
 }
@@ -372,6 +418,7 @@ const MainRouteRouteWithChildren = MainRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  AuthRouteRoute: AuthRouteRouteWithChildren,
   CheckoutRouteRoute: CheckoutRouteRouteWithChildren,
   MainRouteRoute: MainRouteRouteWithChildren,
 }

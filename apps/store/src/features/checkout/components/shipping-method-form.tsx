@@ -1,5 +1,6 @@
 import { Field, FieldLabel, formatPrice, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { Button } from '#/components/button'
+import { Form } from '#/components/form/form.tsx'
 import { useShippingOptions } from '#/features/checkout/api/checkout'
 import { useShippingMethodForm } from '#/features/checkout/hooks/use-shipping-method-form'
 
@@ -33,12 +34,7 @@ export function ShippingMethodForm({ cartId, currencyCode, selectedMethodId, onC
   }
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault()
-        form.handleSubmit()
-      }}
-    >
+    <Form onSubmit={form.handleSubmit}>
       <form.AppField name="shippingOptionId">
         {(field) => (
           <RadioGroup value={field.state.value} onValueChange={(value) => field.handleChange(value)}>
@@ -64,6 +60,6 @@ export function ShippingMethodForm({ cartId, currencyCode, selectedMethodId, onC
       </Button>
 
       {!!error && <p className="mt-2 text-red-600 text-sm">{error.message}</p>}
-    </form>
+    </Form>
   )
 }

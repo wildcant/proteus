@@ -32,6 +32,7 @@ import {
   deleteFulfillmentProviderById,
   deleteFulfillmentSetById,
   deleteGeoZoneById,
+  deleteNotificationsByIds,
   deletePaymentProviderById,
   deletePriceById,
   deletePriceSetById,
@@ -72,6 +73,8 @@ import {
   generateShippingOptionType,
   generateShippingProfile,
   generateUser,
+  retrieveCustomer,
+  retrieveNotification,
 } from 'backend/test'
 import { type AuthenticateFunction, combinePersonas, definePersona } from 'playwright-persona'
 import { generateLoginFormValues, generateRegisterFormValues } from '../factories/form-values.js'
@@ -159,6 +162,10 @@ export type Factories = {
     loginForm: typeof generateLoginFormValues
     customerSignupForm: typeof generateRegisterFormValues
   }
+  read: {
+    customer: typeof retrieveCustomer
+    notification: typeof retrieveNotification
+  }
   create: {
     cart: typeof createCart
     customer: typeof createCustomer
@@ -189,6 +196,7 @@ export type Factories = {
   }
   destroy: {
     cart: typeof deleteCartById
+    notification: typeof deleteNotificationsByIds
     customer: typeof deleteCustomerById
     user: typeof deleteUserById
     product: typeof deleteProductById
@@ -250,6 +258,10 @@ export function createTest<RoutePath extends string = string>() {
         loginForm: generateLoginFormValues,
         customerSignupForm: generateRegisterFormValues,
       },
+      read: {
+        customer: retrieveCustomer,
+        notification: retrieveNotification,
+      },
       create: {
         cart: createCart,
         customer: createCustomer,
@@ -280,6 +292,7 @@ export function createTest<RoutePath extends string = string>() {
       },
       destroy: {
         cart: deleteCartById,
+        notification: deleteNotificationsByIds,
         customer: deleteCustomerById,
         user: deleteUserById,
         product: deleteProductById,

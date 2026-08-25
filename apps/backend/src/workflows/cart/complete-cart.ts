@@ -15,7 +15,7 @@ import type {
 import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { PaymentSessionStatus } from '@core/types/payment/common.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys, Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { env } from '../../env.js'
 import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
@@ -422,7 +422,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       await notificationService.createNotification({
         to: order.email,
         channel: 'email',
-        template: 'order-confirmation',
+        template: NotificationTemplates.ORDER_CONFIRMATION,
         data: prepareOrderConfirmationData({
           order,
           lineItems: orderService.enrichLineItems(lineItems),

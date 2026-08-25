@@ -35,15 +35,13 @@
             "minLength": 1
           },
           "firstName": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "lastName": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           }
         },
-        "required": ["email", "password", "firstName", "lastName"]
+        "required": ["email", "password"]
       },
       "StoreLoginBody": {
         "type": "object",

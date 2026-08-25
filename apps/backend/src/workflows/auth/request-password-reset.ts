@@ -2,7 +2,7 @@ import { generateResetJwtToken, getAuthJwtConfig } from '@core/auth/utils/genera
 import { AppError } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/auth/service.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { env } from '../../env.js'
 
@@ -51,7 +51,7 @@ export const requestPasswordResetWorkflow = createWorkflow<RequestPasswordResetI
       await notificationService.createNotification({
         to: input.email,
         channel: 'email',
-        template: 'reset-password',
+        template: NotificationTemplates.RESET_PASSWORD,
         data: { email: input.email, resetLink },
       })
     })

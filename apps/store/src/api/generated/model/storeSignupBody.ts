@@ -9,8 +9,6 @@ export interface StoreSignupBody {
   email: string;
   /** @minLength 1 */
   password: string;
-  /** @minLength 1 */
-  firstName: string;
-  /** @minLength 1 */
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
 }

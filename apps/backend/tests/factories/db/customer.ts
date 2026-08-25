@@ -61,6 +61,12 @@ export async function createCustomer(overrides?: Partial<CreateCustomer>) {
   }
 }
 
+/** The customer with this email, or null. Signup creates the row only after verification. */
+export async function retrieveCustomer(filters: { email: string }) {
+  const rows = await db.select().from(customerTable).where(eq(customerTable.email, filters.email)).limit(1)
+  return rows[0] ?? null
+}
+
 export async function deleteCustomerById(customerId: string) {
   await db.delete(authIdentityTable).where(sql`app_metadata->>'customerId' = ${customerId}`)
   await db.delete(customerTable).where(eq(customerTable.id, customerId))

@@ -1,6 +1,7 @@
 import { NativeSelectOption } from '@proteus/ui'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { Button } from '#/components/button'
+import { Form } from '#/components/form/form.tsx'
 import {
   type ShippingAddressFormValues,
   useShippingAddressForm,
@@ -70,9 +71,8 @@ export function ShippingAddressForm({ cart, onComplete }: ShippingAddressFormPro
   })
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault()
+    <Form
+      onSubmit={() => {
         if (form.getFieldValue('sameAsBilling')) {
           form.setFieldValue('billingAddress', form.getFieldValue('shippingAddress'))
         }
@@ -184,6 +184,6 @@ export function ShippingAddressForm({ cart, onComplete }: ShippingAddressFormPro
       </Button>
 
       {!!error && <p className="mt-2 text-red-600 text-sm">{error.message}</p>}
-    </form>
+    </Form>
   )
 }

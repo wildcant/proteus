@@ -1,6 +1,7 @@
 import { Field, FieldLabel, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { CreditCardIcon } from 'lucide-react'
 import { Button } from '#/components/button'
+import { Form } from '#/components/form/form.tsx'
 import { usePaymentProviders } from '#/features/checkout/api/checkout'
 import { usePaymentForm } from '#/features/checkout/hooks/use-payment-form'
 
@@ -31,12 +32,7 @@ export function PaymentForm({ cartId, onComplete }: PaymentFormProps) {
   }
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault()
-        form.handleSubmit()
-      }}
-    >
+    <Form onSubmit={form.handleSubmit}>
       <form.AppField name="providerId">
         {(field) => (
           <RadioGroup value={field.state.value} onValueChange={(value) => field.handleChange(value)}>
@@ -67,6 +63,6 @@ export function PaymentForm({ cartId, onComplete }: PaymentFormProps) {
       </Button>
 
       {!!error && <p className="mt-2 text-red-600 text-sm">{error.message}</p>}
-    </form>
+    </Form>
   )
 }

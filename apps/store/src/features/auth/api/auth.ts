@@ -2,13 +2,7 @@ import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import {
-  authResetPassword,
-  authUpdatePassword,
-  authVerificationConfirm,
-  storeAuthLogin,
-  storeAuthSignup,
-} from '#/api/generated/auth/auth'
+import { authResetPassword, authUpdatePassword, storeAuthLogin, storeAuthSignup } from '#/api/generated/auth/auth'
 import type {
   AuthenticateResponse,
   ResetPasswordBody,
@@ -16,7 +10,6 @@ import type {
   StoreLoginBody,
   StoreSignupBody,
   UpdatePasswordResponse,
-  VerificationConfirmResponse,
 } from '#/api/generated/model'
 import { clearToken, setToken } from '#/lib/auth-token'
 import { clearCartId } from '#/lib/cart-id'
@@ -85,19 +78,6 @@ export const useUpdatePassword = (
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: 'Failed to update password', description: error.message })
-      onError?.(...args)
-    },
-  })
-}
-
-export const useVerifyEmail = (options?: UseMutationOptions<VerificationConfirmResponse, Error, { code: string }>) => {
-  const { onError, ...rest } = options ?? {}
-  return useMutation({
-    ...rest,
-    mutationFn: (payload: { code: string }) => authVerificationConfirm(payload),
-    onError: (...args) => {
-      const [error] = args
-      toast.add({ type: 'error', title: 'Failed to verify email', description: error.message })
       onError?.(...args)
     },
   })

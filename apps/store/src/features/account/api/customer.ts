@@ -1,6 +1,6 @@
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { getStoreCustomerMe } from '#/api/generated/customers/customers'
-import { getToken } from '#/lib/auth-token'
+import { isRegistered } from '#/lib/auth-token'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const CUSTOMERS_QUERY_KEY = 'customers' as const
@@ -11,7 +11,9 @@ export const customerMeQueryOptions = (options?: CustomerMeOptions) =>
   queryOptions({
     queryKey: customersQueryKeys.detail('me'),
     queryFn: () => getStoreCustomerMe(),
-    enabled: Boolean(getToken()),
+    // An unregistered signup token can never satisfy this endpoint, and the 401 would
+    // clear the session. See isRegistered().
+    enabled: isRegistered(),
     ...options,
   })
 

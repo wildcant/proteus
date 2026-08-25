@@ -14,30 +14,113 @@
 
 @theme {
   --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
-  /* Registered so `text-foreground-muted` resolves; the value itself is themed on :root below. */
+
+  /* Colours are registered as indirections so the values themselves can be themed
+     on :root below. */
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-disabled: var(--ink-disabled);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-line: var(--line);
+  --color-sale: var(--sale);
+  --color-positive: var(--positive);
+
+  /* Kept so the ~25 existing `text-foreground-muted` usages keep resolving. */
   --color-foreground-muted: var(--foreground-muted);
 }
 
-:root {
-  --foreground: #171717;
-  --foreground-muted: #737373;
-  --border: #e5e5e5;
-  --bg-subtle: #f5f5f5;
+/* Display type roles. These are whole roles, not sizes: weight, leading, tracking and
+   case travel together, which is what lets one typeface cover both the display and the
+   body voice.
+
+   Deliberately not named `text-*`. tailwind-merge classifies an unrecognised `text-x`
+   as a colour, so a custom `text-display` would be dropped whenever cn() also saw a
+   text colour on the same element. Body and meta need no role at all — 14px and 12px
+   are exactly Tailwind's stock `text-sm` and `text-xs`. */
+@utility type-display {
+  font-size: clamp(2rem, 1.65rem + 1.5vw, 3rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
 
+@utility type-title {
+  font-size: clamp(1.5rem, 1.32rem + 0.75vw, 2rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+@utility type-heading {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+:root {
+  /* Ink is #0d1012, not pure black. True black reads harsh against product
+     photography, and every neutral below is tuned against this one. */
+  --ink: #0d1012;
+  --ink-muted: #767a7f;
+  --ink-subtle: #9fa3a8;
+  --ink-disabled: #bec2c6;
+  --surface: #ffffff;
+  --surface-subtle: #f4f5f6;
+  --line: #dee0e3;
+  --sale: #dc0428;
+  --positive: #009966;
+
+  /* Square is the system, not an override. packages/ui derives --radius-sm through
+     --radius-4xl with calc() off this, so zeroing it squares every shadcn primitive
+     at once. */
+  --radius: 0rem;
+
+  /* shadcn base, repointed at the palette above so untouched primitives inherit it. */
+  --primary: var(--ink);
+  --primary-foreground: var(--surface);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--ink);
+  --destructive: var(--sale);
+  --muted-foreground: var(--ink-muted);
+
+  /* Pre-existing store aliases, repointed at the same values. */
+  --foreground: var(--ink);
+  --foreground-muted: var(--ink-muted);
+  --bg-subtle: var(--surface-subtle);
+}
+
+/* The palette is designed light-first; these are the high-contrast counterparts.
+   --sale and --positive lift rather than invert, so they stay legible on dark. */
 :root[data-theme="dark"] {
-  --foreground: #f5f5f5;
-  --foreground-muted: #a3a3a3;
-  --border: #2e2e2e;
-  --bg-subtle: #1a1a1a;
+  --ink: #f4f5f6;
+  --ink-muted: #9fa3a8;
+  --ink-subtle: #767a7f;
+  --ink-disabled: #575b60;
+  --surface: #0d1012;
+  --surface-subtle: #1b1d22;
+  --line: #2e3238;
+  --sale: #ff8fa5;
+  --positive: #00e890;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --foreground: #f5f5f5;
-    --foreground-muted: #a3a3a3;
-    --border: #2e2e2e;
-    --bg-subtle: #1a1a1a;
+    --ink: #f4f5f6;
+    --ink-muted: #9fa3a8;
+    --ink-subtle: #767a7f;
+    --ink-disabled: #575b60;
+    --surface: #0d1012;
+    --surface-subtle: #1b1d22;
+    --line: #2e3238;
+    --sale: #ff8fa5;
+    --positive: #00e890;
   }
 }
 
@@ -53,31 +136,25 @@ body,
 
 body {
   margin: 0;
-  color: var(--foreground);
+  color: var(--ink);
   font-family: var(--font-sans);
-  background-color: #fff;
+  /* Body copy runs at 14px — the density the storefront is designed around. Set on
+     body, not html, so Tailwind's rem-based spacing scale is unaffected. */
+  font-size: 0.875rem;
+  line-height: 1.4;
+  background-color: var(--surface);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-:root[data-theme="dark"] body {
-  background-color: #0a0a0a;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) body {
-    background-color: #0a0a0a;
-  }
-}
-
 a:not([data-slot="button"]) {
-  color: var(--foreground);
+  color: var(--ink);
   text-decoration: none;
 }
 
 a:not([data-slot="button"]):hover {
-  color: var(--foreground-muted);
+  color: var(--ink-muted);
 }
 
 button,

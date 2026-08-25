@@ -1,4 +1,5 @@
 import type { INotificationModuleService } from '@core/types/notification/service.js'
+import { NotificationTemplates } from '@core/utils/index.js'
 import { env } from '../../env.js'
 
 export async function sendVerificationEmail(
@@ -10,7 +11,7 @@ export async function sendVerificationEmail(
   await notificationService.createNotification({
     to: email,
     channel: 'email',
-    template: 'verify-email',
+    template: NotificationTemplates.VERIFY_EMAIL,
     data: { email, verifyLink },
   })
 }

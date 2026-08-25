@@ -1,5 +1,6 @@
 import { UpdateCart } from '@proteus/http-schemas/store'
 import { z } from 'zod'
+import { PREFILL_FORMS } from '#/env.ts'
 import { useUpdateCart } from '#/features/checkout/api/checkout'
 import type { SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
@@ -23,23 +24,29 @@ const EMPTY_ADDRESS: ShippingAddressFormValues['shippingAddress'] = {
   phone: '',
 }
 
-// const TEST_ADDRESS_DEFAULT = {
-//   firstName: 'John',
-//   lastName: 'Doe',
-//   address1: '123 Main St',
-//   address2: '',
-//   company: '',
-//   city: 'Austin',
-//   countryCode: 'us',
-//   province: 'TX',
-//   postalCode: '78701',
-//   phone: '5551234567',
-// }
+const TEST_ADDRESS: ShippingAddressFormValues['shippingAddress'] = {
+  firstName: 'Joe',
+  lastName: 'Doe',
+  address1: '123 Main St',
+  address2: '',
+  company: '',
+  city: 'Austin',
+  countryCode: 'us',
+  province: 'TX',
+  postalCode: '78701',
+  phone: '5551234567',
+}
 
 const EMPTY_DEFAULTS: ShippingAddressFormValues = {
   sameAsBilling: true,
   shippingAddress: EMPTY_ADDRESS,
   billingAddress: EMPTY_ADDRESS,
+}
+
+const TEST_DEFAULTS: ShippingAddressFormValues = {
+  sameAsBilling: true,
+  shippingAddress: TEST_ADDRESS,
+  billingAddress: TEST_ADDRESS,
 }
 
 export type ShippingAddressFormParams = SubmitFormParams & {
@@ -50,7 +57,7 @@ export function useShippingAddressForm(params?: ShippingAddressFormParams) {
   const updateCart = useUpdateCart()
 
   const form = useAppForm({
-    defaultValues: params?.defaultValues ?? EMPTY_DEFAULTS,
+    defaultValues: params?.defaultValues ?? (PREFILL_FORMS ? TEST_DEFAULTS : EMPTY_DEFAULTS),
     validators: { onSubmit: shippingAddressSchema },
     onSubmit: async ({ value }) => {
       updateCart.mutate(

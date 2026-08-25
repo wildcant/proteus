@@ -1,11 +1,12 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { customerMeQueryOptions } from '#/features/account/api/customer'
-import { getToken } from '#/lib/auth-token'
+import { isRegistered } from '#/lib/auth-token'
 
 export const Route = createFileRoute('/_main/_authed')({
   beforeLoad: ({ context }) => {
-    const token = getToken()
-    if (!token) {
+    // isRegistered, not getToken: an unverified signup token cannot satisfy any
+    // customer-scoped endpoint, so letting it through only renders a broken page.
+    if (!isRegistered()) {
       throw redirect({ to: '/login' })
     }
 
