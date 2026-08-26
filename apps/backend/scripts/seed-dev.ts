@@ -31,8 +31,280 @@ const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
 const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
+// --- Catalogue ---
+// One catalogue drives products, option values, variants, prices and images, so a colourway is
+// described once and everything downstream derives from it, including the list of photos to
+// upload. Photos live in `seed-images/` (committed, see its README for provenance).
+const APPAREL_SIZES = ['Small', 'Medium', 'Large', 'X-Large']
+const SHOE_SIZES = ['4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']
+
+type CatalogEntry = {
+  title: string
+  handle: string
+  description: string
+  skuPrefix: string
+  price: number
+  /** Which global size option the product draws from. Garments and shoes do not share a scale. */
+  sizeOption: 'Size' | 'Shoe Size'
+  /** The subset of that option's values this product is stocked in. */
+  sizes: string[]
+  /** Colourway to its photos in gallery order. The first photo becomes that colourway's thumbnail. */
+  colors: Record<string, string[]>
+}
+
+const CATALOG: CatalogEntry[] = [
+  {
+    title: 'Hoodie',
+    handle: 'hoodie',
+    description:
+      "This hoodie is the perfect choice for comfort and warmth. Meticulously crafted from 100% cotton, the hoodie features a soft, plush fleece interior and a unisex sizing design. Soft and lightweight, it's sure to be your go-to for chilly days.",
+    skuPrefix: 'HOODIE',
+    price: 9000,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    colors: {
+      Green: ['hoodie-green-01.jpg', 'hoodie-green-02.jpg', 'hoodie-green-03.jpg'],
+      Olive: ['hoodie-olive-01.jpg', 'hoodie-olive-02.jpg', 'hoodie-olive-03.jpg'],
+      Ocean: ['hoodie-ocean-01.jpg', 'hoodie-ocean-02.jpg', 'hoodie-ocean-03.jpg'],
+      Purple: ['hoodie-purple-01.jpg', 'hoodie-purple-02.jpg', 'hoodie-purple-03.jpg'],
+      Red: ['hoodie-red-01.jpg', 'hoodie-red-02.jpg', 'hoodie-red-03.jpg'],
+    },
+  },
+  {
+    title: "Men's T-shirt",
+    handle: 'mens-t-shirt',
+    description:
+      'Crafted from organic cotton, this classic T-shirt features a relaxed fit, crew neckline and timeless look. Enjoy the breathable comfort of 100% organic cotton.',
+    skuPrefix: 'MENS-TSHIRT',
+    price: 4000,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    colors: {
+      Green: ['mens-t-shirt-green-01.jpg', 'mens-t-shirt-green-02.jpg', 'mens-t-shirt-green-03.jpg'],
+      Olive: ['mens-t-shirt-olive-01.jpg', 'mens-t-shirt-olive-02.jpg', 'mens-t-shirt-olive-03.jpg'],
+      Ocean: ['mens-t-shirt-ocean-01.jpg', 'mens-t-shirt-ocean-02.jpg', 'mens-t-shirt-ocean-03.jpg'],
+      Purple: ['mens-t-shirt-purple-01.jpg', 'mens-t-shirt-purple-02.jpg', 'mens-t-shirt-purple-03.jpg'],
+      Red: ['mens-t-shirt-red-01.jpg', 'mens-t-shirt-red-02.jpg', 'mens-t-shirt-red-03.jpg'],
+    },
+  },
+  {
+    title: "Men's Crewneck",
+    handle: 'mens-crewneck',
+    description:
+      "This high-quality crewneck is perfect for your everyday look. Made with 100% cotton, it's soft, comfortable, and undeniably stylish. Full sleeved for a classic look and effortlessly versatile, this cotton crewneck is a must-have in any wardrobe.",
+    skuPrefix: 'MENS-CREW',
+    price: 12000,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large'],
+    colors: {
+      Green: [
+        'mens-crewneck-green-01.jpg',
+        'mens-crewneck-green-02.jpg',
+        'mens-crewneck-green-03.jpg',
+        'mens-crewneck-green-04.jpg',
+      ],
+      Olive: [
+        'mens-crewneck-olive-01.jpg',
+        'mens-crewneck-olive-02.jpg',
+        'mens-crewneck-olive-03.jpg',
+        'mens-crewneck-olive-04.jpg',
+      ],
+      Ocean: [
+        'mens-crewneck-ocean-01.jpg',
+        'mens-crewneck-ocean-02.jpg',
+        'mens-crewneck-ocean-03.jpg',
+        'mens-crewneck-ocean-04.jpg',
+      ],
+      Purple: [
+        'mens-crewneck-purple-01.jpg',
+        'mens-crewneck-purple-02.jpg',
+        'mens-crewneck-purple-03.jpg',
+        'mens-crewneck-purple-04.jpg',
+      ],
+      Red: [
+        'mens-crewneck-red-01.jpg',
+        'mens-crewneck-red-02.jpg',
+        'mens-crewneck-red-03.jpg',
+        'mens-crewneck-red-04.jpg',
+      ],
+    },
+  },
+  {
+    title: 'Sweatpants',
+    handle: 'sweatpants',
+    description:
+      'Soft and comfortable sweatpants in stylish shades. They are perfect for lounging with their cozy stretch fabric that offers just the right amount of warmth. Enjoy the ultimate relaxation experience!',
+    skuPrefix: 'SWEATPANTS',
+    price: 3500,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large'],
+    colors: {
+      Green: ['sweatpants-green-01.jpg', 'sweatpants-green-02.jpg', 'sweatpants-green-03.jpg'],
+      Olive: ['sweatpants-olive-01.jpg', 'sweatpants-olive-02.jpg', 'sweatpants-olive-03.jpg'],
+      Ocean: ['sweatpants-ocean-01.jpg', 'sweatpants-ocean-02.jpg', 'sweatpants-ocean-03.jpg'],
+      Purple: ['sweatpants-purple-01.jpg', 'sweatpants-purple-02.jpg', 'sweatpants-purple-03.jpg'],
+      Red: ['sweatpants-red-01.jpg', 'sweatpants-red-02.jpg', 'sweatpants-red-03.jpg'],
+    },
+  },
+  {
+    title: 'Shorts',
+    handle: 'shorts',
+    description:
+      'These shorts are designed to help you reach peak performance. Constructed with high performance nylon fabric in a variety of shades, they are built to last and provide maximum comfort.',
+    skuPrefix: 'SHORTS',
+    price: 4500,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large'],
+    colors: {
+      Green: ['shorts-green-01.jpg'],
+      Olive: ['shorts-olive-01.jpg'],
+      Ocean: ['shorts-ocean-01.jpg'],
+      Purple: ['shorts-purple-01.jpg'],
+      Red: ['shorts-red-01.jpg'],
+    },
+  },
+  {
+    title: 'High Top Sneakers',
+    handle: 'high-top-sneakers',
+    description:
+      'These stylish and durable high top sneakers are perfect for any casual look, offering superior comfort and protection with their foam cushioning and reinforced heel support.',
+    skuPrefix: 'HIGHTOP',
+    price: 18000,
+    sizeOption: 'Shoe Size',
+    sizes: ['6', '7', '8', '9', '10'],
+    colors: {
+      White: ['high-top-sneakers-white-01.jpg'],
+    },
+  },
+  {
+    title: 'White Leather Sneakers',
+    handle: 'white-leather-sneakers',
+    description:
+      'A pared-back leather sneaker on a cupsole, finished with a gum outsole. Understated enough for every day, sturdy enough to keep wearing.',
+    skuPrefix: 'WHITELEATHER',
+    price: 9000,
+    sizeOption: 'Shoe Size',
+    sizes: ['4', '5', '6', '7', '8'],
+    colors: {
+      White: ['white-leather-sneakers-white-01.jpg'],
+    },
+  },
+  {
+    title: 'Gray Leather Sneakers',
+    handle: 'grey-leather-sneakers',
+    description:
+      'These gray leather sneakers combine comfort and style for the perfect professional look. The breathable leather material ensures breathability and provides a comfortable fit, perfect for the office and other formal occasions. The handmade design is stylish and guaranteed to last.',
+    skuPrefix: 'GREYLEATHER',
+    price: 100000,
+    sizeOption: 'Shoe Size',
+    sizes: ['4', '5', '6', '7', '8', '9', '10', '11', '12'],
+    colors: {
+      Grey: ['grey-leather-sneakers-grey-01.jpg'],
+    },
+  },
+  {
+    title: 'Gray Runners',
+    handle: 'grey-runners',
+    description:
+      'These gray runners are the perfect choice for running enthusiasts. These shoes provide superior breathability and comfort, so you can run longer with less fatigue. The lightweight design and airy mesh material make these shoes durable and lightweight, giving you the support you need for peak performance.',
+    skuPrefix: 'RUNNERS',
+    price: 3000,
+    sizeOption: 'Shoe Size',
+    sizes: ['4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'],
+    colors: {
+      Grey: ['grey-runners-grey-01.jpg'],
+    },
+  },
+  {
+    title: 'Canvas Sneakers',
+    handle: 'canvas-sneakers',
+    description:
+      'These high-quality canvas sneakers offer a comfortable fit and superior breathability, thanks to their cushioning midsoles and durable construction. An array of stylish colors adds to the appeal, making them perfect for casual wear. Slip them on and enjoy reliable performance and style that lasts.',
+    skuPrefix: 'CANVAS',
+    price: 4000,
+    sizeOption: 'Shoe Size',
+    sizes: ['4', '5', '6', '7', '8', '9', '10', '11', '12'],
+    colors: {
+      Green: ['canvas-sneakers-green-01.jpg'],
+      Olive: ['canvas-sneakers-olive-01.jpg'],
+      Ocean: ['canvas-sneakers-ocean-01.jpg'],
+      Purple: ['canvas-sneakers-purple-01.jpg'],
+      Red: ['canvas-sneakers-red-01.jpg'],
+    },
+  },
+  {
+    title: "Women's T-shirt",
+    handle: 'womens-t-shirt',
+    description:
+      'Crafted from organic cotton, this classic T-shirt features a relaxed fit, crew neckline and timeless look. Enjoy the breathable comfort of 100% organic cotton.',
+    skuPrefix: 'WOMENS-TSHIRT',
+    price: 4000,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    colors: {
+      Green: ['womens-t-shirt-green-01.jpg'],
+      Olive: ['womens-t-shirt-olive-01.jpg'],
+      Ocean: ['womens-t-shirt-ocean-01.jpg'],
+      Purple: ['womens-t-shirt-purple-01.jpg'],
+      Red: ['womens-t-shirt-red-01.jpg'],
+    },
+  },
+  {
+    title: "Women's Crewneck",
+    handle: 'womens-crewneck',
+    description:
+      "This high-quality crewneck is perfect for your everyday look. Made with 100% cotton, it's soft, comfortable, and undeniably stylish. Full sleeved for a classic look and effortlessly versatile, this cotton crewneck is a must-have in any wardrobe.",
+    skuPrefix: 'WOMENS-CREW',
+    price: 12000,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large'],
+    colors: {
+      Green: ['womens-crewneck-green-01.jpg', 'womens-crewneck-green-02.jpg', 'womens-crewneck-green-03.jpg'],
+      Olive: ['womens-crewneck-olive-01.jpg', 'womens-crewneck-olive-02.jpg', 'womens-crewneck-olive-03.jpg'],
+      Ocean: ['womens-crewneck-ocean-01.jpg', 'womens-crewneck-ocean-02.jpg', 'womens-crewneck-ocean-03.jpg'],
+      Purple: ['womens-crewneck-purple-01.jpg', 'womens-crewneck-purple-02.jpg', 'womens-crewneck-purple-03.jpg'],
+      Red: ['womens-crewneck-red-01.jpg', 'womens-crewneck-red-02.jpg', 'womens-crewneck-red-03.jpg'],
+    },
+  },
+  {
+    title: 'Workout Shirt',
+    handle: 'workout-shirt',
+    description:
+      "This high-performance workout shirt made from high-quality Nylon is designed with comfort and durability in mind. Its breathable mesh construction keeps your body temperature regulated while you exercise, while the antistatic and antibacterial finish ensures it will remain light and soft to the touch, wash after wash. With its lightweight design and adjustable straps, it's sure to stay in place during even the toughest workouts.",
+    skuPrefix: 'WORKOUT',
+    price: 1000,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large'],
+    colors: {
+      Green: ['workout-shirt-green-01.jpg'],
+      Olive: ['workout-shirt-olive-01.jpg'],
+      Ocean: ['workout-shirt-ocean-01.jpg'],
+      Purple: ['workout-shirt-purple-01.jpg'],
+      Red: ['workout-shirt-red-01.jpg'],
+    },
+  },
+  {
+    title: 'Leggings',
+    handle: 'leggings',
+    description:
+      'These sporty and lightweight leggings are designed for comfort and ease of movement. Its moisture-wicking fabric and strong seams keep you feeling cool and secure. Available in an array of colors, these leggings are an ideal choice to look stylish while exercising.',
+    skuPrefix: 'LEGGINGS',
+    price: 2000,
+    sizeOption: 'Size',
+    sizes: ['Small', 'Medium', 'Large'],
+    colors: {
+      Green: ['leggings-green-01.jpg', 'leggings-green-02.jpg'],
+      Olive: ['leggings-olive-01.jpg', 'leggings-olive-02.jpg'],
+      Ocean: ['leggings-ocean-01.jpg', 'leggings-ocean-02.jpg'],
+      Purple: ['leggings-purple-01.jpg', 'leggings-purple-02.jpg'],
+      Red: ['leggings-red-01.jpg', 'leggings-red-02.jpg'],
+    },
+  },
+]
+
+const galleryOf = (entry: CatalogEntry) => Object.values(entry.colors).flat()
+
 // --- Seed images ---
-// Product photos live in `seed-images/` (committed, see its README for provenance).
 const SEED_IMAGE_SOURCE_DIR = path.join(process.cwd(), 'seed-images')
 const SEED_IMAGE_DIR = path.join(process.cwd(), 'static', 'seed')
 // Mirrors the default in `src/providers/file-localfs/local-file-provider.ts`.
@@ -45,17 +317,8 @@ const MIME_TYPE_BY_EXTENSION: Record<string, string> = {
   '.webp': 'image/webp',
 }
 
-const SEED_IMAGES = {
-  tshirtBlackFront: 'tshirt-black-front.jpg',
-  tshirtBlackBack: 'tshirt-black-back.jpg',
-  tshirtWhiteFront: 'tshirt-white-front.jpg',
-  tshirtWhiteFlat: 'tshirt-white-flat.jpg',
-  sweatshirtWhite: 'sweatshirt-white.jpg',
-  sweatshirtBlack: 'sweatshirt-black.jpg',
-  sweatpantsGrey: 'sweatpants-grey.jpg',
-  sweatpantsStreet: 'sweatpants-street.jpg',
-  shortsDenim: 'shorts-denim.jpg',
-} as const
+// A photo shared by two colourways would otherwise be uploaded twice.
+const SEED_IMAGES = [...new Set(CATALOG.flatMap(galleryOf))]
 
 /**
  * Copies the photos into the gitignored `static/` root so they serve through the same `/static`
@@ -66,18 +329,16 @@ async function copySeedImages(): Promise<Map<string, string>> {
   await fs.mkdir(SEED_IMAGE_DIR, { recursive: true })
 
   await Promise.all(
-    Object.values(SEED_IMAGES).map((file) =>
-      fs.copyFile(path.join(SEED_IMAGE_SOURCE_DIR, file), path.join(SEED_IMAGE_DIR, file)),
-    ),
+    SEED_IMAGES.map((file) => fs.copyFile(path.join(SEED_IMAGE_SOURCE_DIR, file), path.join(SEED_IMAGE_DIR, file))),
   )
 
-  console.info(`Copied ${Object.keys(SEED_IMAGES).length} seed images to ${SEED_IMAGE_DIR}`)
-  return new Map(Object.values(SEED_IMAGES).map((file) => [file, `${STATIC_BASE_URL}/seed/${file}`]))
+  console.info(`Copied ${SEED_IMAGES.length} seed images to ${SEED_IMAGE_DIR}`)
+  return new Map(SEED_IMAGES.map((file) => [file, `${STATIC_BASE_URL}/seed/${file}`]))
 }
 
 /** Pushes the photos through the file module, so they land wherever uploads land. */
 async function uploadSeedImages(): Promise<Map<string, string>> {
-  const files = Object.values(SEED_IMAGES)
+  const files = SEED_IMAGES
 
   const uploaded = await fileService.createFiles(
     await Promise.all(
@@ -278,71 +539,6 @@ const existingProducts = await productService.listProducts()
 if (existingProducts.length > 0) {
   console.info(`Skipped products (${existingProducts.length} already exist)`)
 } else {
-  // One catalogue drives products, option values, variants, prices and images, so a colourway is
-  // described once and everything downstream derives from it.
-  const SIZES = ['S', 'M', 'L', 'XL']
-
-  type CatalogEntry = {
-    title: string
-    handle: string
-    description: string
-    skuPrefix: string
-    price: number
-    /** Colourway to its photos in gallery order. The first photo becomes that colourway's thumbnail. */
-    colors: Record<string, string[]>
-  }
-
-  const CATALOG: CatalogEntry[] = [
-    {
-      title: 'Classic T-Shirt',
-      handle: 't-shirt',
-      description:
-        'Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.',
-      skuPrefix: 'SHIRT',
-      price: 2500,
-      colors: {
-        Black: [SEED_IMAGES.tshirtBlackFront, SEED_IMAGES.tshirtBlackBack],
-        White: [SEED_IMAGES.tshirtWhiteFront, SEED_IMAGES.tshirtWhiteFlat],
-      },
-    },
-    {
-      title: 'Vintage Sweatshirt',
-      handle: 'sweatshirt',
-      description:
-        'Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.',
-      skuPrefix: 'SWEATSHIRT',
-      price: 4500,
-      colors: {
-        White: [SEED_IMAGES.sweatshirtWhite],
-        Black: [SEED_IMAGES.sweatshirtBlack],
-      },
-    },
-    {
-      title: 'Classic Sweatpants',
-      handle: 'sweatpants',
-      description:
-        'Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.',
-      skuPrefix: 'SWEATPANTS',
-      price: 3500,
-      colors: {
-        Grey: [SEED_IMAGES.sweatpantsGrey, SEED_IMAGES.sweatpantsStreet],
-      },
-    },
-    {
-      title: 'Vintage Shorts',
-      handle: 'shorts',
-      description:
-        'Reimagine the feeling of classic shorts. With our cotton shorts, everyday essentials no longer have to be ordinary.',
-      skuPrefix: 'SHORTS',
-      price: 3000,
-      colors: {
-        Blue: [SEED_IMAGES.shortsDenim],
-      },
-    },
-  ]
-
-  const galleryOf = (entry: CatalogEntry) => Object.values(entry.colors).flat()
-
   const createdProducts = await productService.createProducts(
     CATALOG.map((entry) => {
       const [thumbnail] = galleryOf(entry)
@@ -366,11 +562,16 @@ if (existingProducts.length > 0) {
   console.info(`Seeded ${createdProducts.length} products`)
 
   // --- Options (global) ---
+  // Colour ranks follow first appearance in the catalogue, which keeps the swatch order stable.
   const colorValues = [...new Set(CATALOG.flatMap((entry) => Object.keys(entry.colors)))]
 
-  const sizeOption = await productService.createProductOption({
+  const apparelSizeOption = await productService.createProductOption({
     title: 'Size',
-    values: SIZES.map((value, rank) => ({ value, rank })),
+    values: APPAREL_SIZES.map((value, rank) => ({ value, rank })),
+  })
+  const shoeSizeOption = await productService.createProductOption({
+    title: 'Shoe Size',
+    values: SHOE_SIZES.map((value, rank) => ({ value, rank })),
   })
   const colorOption = await productService.createProductOption({
     title: 'Color',
@@ -380,23 +581,24 @@ if (existingProducts.length > 0) {
   })
   console.info('Seeded global product options')
 
+  const sizeOptionFor = (entry: CatalogEntry) => (entry.sizeOption === 'Shoe Size' ? shoeSizeOption : apparelSizeOption)
+
   // --- Link options to products ---
-  // Each product exposes every size, but only the colourways it actually has photos for.
-  const sizeValueIds = sizeOption.values.map((value) => value.id)
-  const colorValueIdByName = new Map(colorOption.values.map((value) => [value.value, value.id]))
+  // A product exposes only the sizes it is stocked in and the colourways it has photos for.
+  type Option = { values: { id: string; value: string }[] }
+  const valueIdFor = (option: Option, name: string) => option.values.find((value) => value.value === name)?.id
+  const valueIdsFor = (option: Option, names: string[]) =>
+    names.flatMap((name) => {
+      const id = valueIdFor(option, name)
+      return id ? [id] : []
+    })
 
   await Promise.all(
     CATALOG.map((entry) =>
       productService.setProductOptions(productFor(entry).id, {
         options: [
-          { optionId: sizeOption.id, valueIds: sizeValueIds },
-          {
-            optionId: colorOption.id,
-            valueIds: Object.keys(entry.colors).flatMap((color) => {
-              const valueId = colorValueIdByName.get(color)
-              return valueId ? [valueId] : []
-            }),
-          },
+          { optionId: sizeOptionFor(entry).id, valueIds: valueIdsFor(sizeOptionFor(entry), entry.sizes) },
+          { optionId: colorOption.id, valueIds: valueIdsFor(colorOption, Object.keys(entry.colors)) },
         ],
       }),
     ),
@@ -405,11 +607,15 @@ if (existingProducts.length > 0) {
 
   // --- Variants ---
   // Every product is now size x colour, so each variant maps onto exactly one colourway gallery.
+  // `X-Large` would otherwise put a second separator inside the SKU.
+  const skuToken = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+
   const variantSpecs = CATALOG.flatMap((entry) =>
     Object.keys(entry.colors).flatMap((color) =>
-      SIZES.map((size) => ({
+      entry.sizes.map((size) => ({
+        entry,
         productId: productFor(entry).id,
-        sku: `${entry.skuPrefix}-${size}-${color.toUpperCase()}`,
+        sku: `${entry.skuPrefix}-${skuToken(size)}-${skuToken(color)}`,
         size,
         color,
         price: entry.price,
@@ -418,21 +624,20 @@ if (existingProducts.length > 0) {
   )
 
   // The option tuple rides along on the variant, so there is no second pass to link them.
-  const sizeValueIdByName = new Map(sizeOption.values.map((value) => [value.value, value.id]))
-
-  const optionValuesFor = (size: string, color: string) => {
-    const sizeValueId = sizeValueIdByName.get(size)
-    const colorValueId = colorValueIdByName.get(color)
+  const optionValuesFor = (entry: CatalogEntry, size: string, color: string) => {
+    const sizeOption = sizeOptionFor(entry)
+    const sizeValueId = valueIdFor(sizeOption, size)
+    const colorValueId = valueIdFor(colorOption, color)
     if (!sizeValueId || !colorValueId) throw new Error(`Missing option value for "${size} / ${color}"`)
     return { [sizeOption.id]: sizeValueId, [colorOption.id]: colorValueId }
   }
 
   const createdVariants = await productService.createProductVariants(
     // No title: it is derived from the Option Combination these values name.
-    variantSpecs.map(({ productId, sku, size, color }) => ({
+    variantSpecs.map(({ entry, productId, sku, size, color }) => ({
       productId,
       sku,
-      optionValues: optionValuesFor(size, color),
+      optionValues: optionValuesFor(entry, size, color),
     })),
   )
   console.info(`Seeded ${createdVariants.length} product variants with their option values`)
@@ -510,7 +715,7 @@ if (existingProducts.length > 0) {
   // Create inventory levels (all items at a single default location with stock). One SKU is left
   // with nothing on hand so the storefront's sold-out option state is reachable without editing
   // the database by hand.
-  const SOLD_OUT_SKU = 'SHIRT-XL-BLACK'
+  const SOLD_OUT_SKU = 'MENS-TSHIRT-XLARGE-GREEN'
 
   await inventoryService.createInventoryLevels(
     createdItems.map((item) => ({
@@ -535,11 +740,11 @@ if (existingProducts.length > 0) {
   // --- Cart with line items (for testing payment endpoints) ---
   const existingCarts = await cartService.listCarts()
   if (existingCarts.length === 0) {
-    const tshirt = productByHandle.get('t-shirt')
-    const sweatshirt = productByHandle.get('sweatshirt')
-    const tshirtVariant = createdVariants.find((v) => v.sku === 'SHIRT-M-BLACK')
-    const sweatshirtVariant = createdVariants.find((v) => v.sku === 'SWEATSHIRT-L-WHITE')
-    if (!tshirt || !sweatshirt || !tshirtVariant || !sweatshirtVariant) {
+    const tshirt = productByHandle.get('mens-t-shirt')
+    const hoodie = productByHandle.get('hoodie')
+    const tshirtVariant = createdVariants.find((v) => v.sku === 'MENS-TSHIRT-MEDIUM-GREEN')
+    const hoodieVariant = createdVariants.find((v) => v.sku === 'HOODIE-LARGE-OLIVE')
+    if (!tshirt || !hoodie || !tshirtVariant || !hoodieVariant) {
       throw new Error('Expected the seeded catalog to contain the cart line item variants')
     }
 
@@ -549,28 +754,28 @@ if (existingProducts.length > 0) {
         email: 'test@example.com',
         items: [
           {
-            title: 'Classic T-Shirt (M / Black)',
+            title: "Men's T-shirt (Medium / Green)",
             quantity: 2,
-            unitPrice: new BigNumber(2500),
+            unitPrice: new BigNumber(4000),
             variantId: tshirtVariant.id,
             variantSku: tshirtVariant.sku,
             productId: tshirt.id,
-            productTitle: 'Classic T-Shirt',
+            productTitle: "Men's T-shirt",
           },
           {
-            title: 'Vintage Sweatshirt (L / White)',
+            title: 'Hoodie (Large / Olive)',
             quantity: 1,
-            unitPrice: new BigNumber(4500),
-            variantId: sweatshirtVariant.id,
-            variantSku: sweatshirtVariant.sku,
-            productId: sweatshirt.id,
-            productTitle: 'Vintage Sweatshirt',
+            unitPrice: new BigNumber(9000),
+            variantId: hoodieVariant.id,
+            variantSku: hoodieVariant.sku,
+            productId: hoodie.id,
+            productTitle: 'Hoodie',
           },
         ],
       },
     ])) as [Awaited<ReturnType<typeof cartService.createCarts>>[number]]
 
-    console.info(`Seeded cart ${cart.id} with 2 line items (total: $95.00)`)
+    console.info(`Seeded cart ${cart.id} with 2 line items (total: $170.00)`)
   } else {
     console.info(`Skipped cart (${existingCarts.length} already exist)`)
   }
@@ -679,7 +884,7 @@ if (seedNotifications && (await notificationService.listNotifications({ channel:
       receiverId: DEV_ADMIN_ID,
       data: {
         title: 'New order received',
-        description: 'Order #1042 for $95.00 from customer@example.com.',
+        description: 'Order #1042 for $170.00 from customer@example.com.',
       },
       idempotencyKey: `seed-notif-2-${now}`,
     },
@@ -692,7 +897,7 @@ if (seedNotifications && (await notificationService.listNotifications({ channel:
       receiverId: DEV_ADMIN_ID,
       data: {
         title: 'Low stock alert',
-        description: 'Classic T-Shirt (M / Black) has only 3 units remaining.',
+        description: "Men's T-shirt (X-Large / Green) has only 3 units remaining.",
       },
       idempotencyKey: `seed-notif-3-${now}`,
     },
@@ -706,7 +911,7 @@ if (seedNotifications && (await notificationService.listNotifications({ channel:
       receiverId: DEV_ADMIN_ID,
       data: {
         title: 'Payment captured',
-        description: 'Payment of $95.00 captured for order #1042.',
+        description: 'Payment of $170.00 captured for order #1042.',
       },
       idempotencyKey: `seed-notif-4-${now}`,
     },
