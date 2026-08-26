@@ -20,7 +20,6 @@ import { Route as AuthVerifyRouteImport } from './routes/_auth/verify'
 import { Route as CheckoutCheckoutRouteImport } from './routes/_checkout/checkout'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainAuthedRouteRouteImport } from './routes/_main/_authed/route'
-import { Route as MainCartRouteImport } from './routes/_main/cart'
 import { Route as MainProductsRouteRouteImport } from './routes/_main/products/route'
 import { Route as MainProductsIndexRouteImport } from './routes/_main/products/index'
 import { Route as MainProductsProductIdRouteImport } from './routes/_main/products/$productId'
@@ -81,11 +80,6 @@ const MainIndexRoute = MainIndexRouteImport.update({
 } as any)
 const MainAuthedRouteRoute = MainAuthedRouteRouteImport.update({
   id: '/_authed',
-  getParentRoute: () => MainRouteRoute,
-} as any)
-const MainCartRoute = MainCartRouteImport.update({
-  id: '/cart',
-  path: '/cart',
   getParentRoute: () => MainRouteRoute,
 } as any)
 const MainProductsRouteRoute = MainProductsRouteRouteImport.update({
@@ -154,7 +148,6 @@ export interface FileRoutesByFullPath {
   '/signup': typeof AuthSignupRoute
   '/verify': typeof AuthVerifyRoute
   '/checkout': typeof CheckoutCheckoutRoute
-  '/cart': typeof MainCartRoute
   '/products/$productId': typeof MainProductsProductIdRoute
   '/products/': typeof MainProductsIndexRoute
   '/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
@@ -173,7 +166,6 @@ export interface FileRoutesByTo {
   '/signup': typeof AuthSignupRoute
   '/verify': typeof AuthVerifyRoute
   '/checkout': typeof CheckoutCheckoutRoute
-  '/cart': typeof MainCartRoute
   '/products/$productId': typeof MainProductsProductIdRoute
   '/products': typeof MainProductsIndexRoute
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
@@ -196,7 +188,6 @@ export interface FileRoutesById {
   '/_auth/signup': typeof AuthSignupRoute
   '/_auth/verify': typeof AuthVerifyRoute
   '/_checkout/checkout': typeof CheckoutCheckoutRoute
-  '/_main/cart': typeof MainCartRoute
   '/_main/': typeof MainIndexRoute
   '/_main/products/$productId': typeof MainProductsProductIdRoute
   '/_main/products/': typeof MainProductsIndexRoute
@@ -219,7 +210,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/checkout'
-    | '/cart'
     | '/products/$productId'
     | '/products/'
     | '/account/addresses'
@@ -238,7 +228,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/checkout'
-    | '/cart'
     | '/products/$productId'
     | '/products'
     | '/order/$orderId/confirmed'
@@ -260,7 +249,6 @@ export interface FileRouteTypes {
     | '/_auth/signup'
     | '/_auth/verify'
     | '/_checkout/checkout'
-    | '/_main/cart'
     | '/_main/'
     | '/_main/products/$productId'
     | '/_main/products/'
@@ -356,13 +344,6 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof MainAuthedRouteRouteImport
-      parentRoute: typeof MainRouteRoute
-    }
-    '/_main/cart': {
-      id: '/_main/cart'
-      path: '/cart'
-      fullPath: '/cart'
-      preLoaderRoute: typeof MainCartRouteImport
       parentRoute: typeof MainRouteRoute
     }
     '/_main/products': {
@@ -522,7 +503,6 @@ const MainProductsRouteRouteWithChildren =
 interface MainRouteRouteChildren {
   MainAuthedRouteRoute: typeof MainAuthedRouteRouteWithChildren
   MainProductsRouteRoute: typeof MainProductsRouteRouteWithChildren
-  MainCartRoute: typeof MainCartRoute
   MainIndexRoute: typeof MainIndexRoute
   MainOrderOrderIdConfirmedRoute: typeof MainOrderOrderIdConfirmedRoute
 }
@@ -530,7 +510,6 @@ interface MainRouteRouteChildren {
 const MainRouteRouteChildren: MainRouteRouteChildren = {
   MainAuthedRouteRoute: MainAuthedRouteRouteWithChildren,
   MainProductsRouteRoute: MainProductsRouteRouteWithChildren,
-  MainCartRoute: MainCartRoute,
   MainIndexRoute: MainIndexRoute,
   MainOrderOrderIdConfirmedRoute: MainOrderOrderIdConfirmedRoute,
 }

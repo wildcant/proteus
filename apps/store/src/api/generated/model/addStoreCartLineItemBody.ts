@@ -15,4 +15,6 @@ export type AddStoreCartLineItemBody = {
   productId?: string;
   productTitle?: string;
   variantSku?: string;
+  variantTitle?: string;
+  variantOptionValues?: string;
 };

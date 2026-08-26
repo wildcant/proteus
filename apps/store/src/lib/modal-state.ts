@@ -20,7 +20,7 @@ import { z } from 'zod'
  * hand-off for free — the menu's search trigger sets `modal` to `search`, and the menu closing
  * is the same navigation that opens the panel.
  */
-export const MODAL_NAMES = ['menu', 'search'] as const
+export const MODAL_NAMES = ['menu', 'search', 'cart'] as const
 
 export type ModalName = (typeof MODAL_NAMES)[number]
 

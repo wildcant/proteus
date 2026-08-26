@@ -1,21 +1,11 @@
 import { BACKEND_TIMEOUT } from '@proteus/testing'
-import { createCheckoutInfrastructure } from 'backend/test'
 import { expect, test } from '../setup/test-extend.js'
 import { placeOrder } from '../setup/utils.js'
 
-let disposeInfra: () => Promise<void>
-
 test.describe('Orders', () => {
   // Orders have no factory — the checkout workflow is the only thing that writes one, so this
-  // spec needs the shipping options and payment providers that flow depends on.
-  test.beforeAll(async () => {
-    const infra = await createCheckoutInfrastructure()
-    disposeInfra = infra[Symbol.asyncDispose]
-  })
-  test.afterAll(async () => {
-    await disposeInfra()
-  })
-  test.describe.configure({ mode: 'serial', timeout: 60_000 })
+  // drives the whole flow through the UI, which is slow.
+  test.describe.configure({ timeout: 60_000 })
 
   test('a customer with an order sees it in the panel and can open its detail', async ({
     page,
@@ -25,6 +15,7 @@ test.describe('Orders', () => {
     cleanup,
   }) => {
     await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+    await using shipping = await factories.create.shippingOptionWithZone()
 
     await authenticate({ as: 'customer' })
 
@@ -35,11 +26,15 @@ test.describe('Orders', () => {
 
     await navigate({ to: '/products/$productId', params: { productId: product.id } })
     await page.getByRole('button', { name: /add to cart/i }).click()
-    await expect(page.locator('[data-slot="toast-title"]')).toHaveText('Added to cart')
 
-    await navigate({ to: '/cart' })
-    await page.getByRole('link', { name: /go to checkout/i }).click()
-    const displayId = await placeOrder(page)
+    // Adding opens the cart panel — that is the confirmation now, in place of a toast, and it
+    // is also the way to checkout, so this order is placed without ever leaving the product.
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await expect(cartPanel).toBeVisible()
+    await expect(cartPanel.getByText(product.title)).toBeVisible()
+
+    await cartPanel.getByRole('link', { name: /checkout/i }).click()
+    const displayId = await placeOrder(page, shipping.name)
 
     await navigate({ to: '/account' })
 

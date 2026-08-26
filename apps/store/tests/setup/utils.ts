@@ -20,13 +20,16 @@ export async function fillShippingAddress(page: Page) {
  * order's display number. Orders have no factory — the checkout workflow is the only thing that
  * writes one — so any spec that needs an existing order has to place it through the UI.
  */
-export async function placeOrder(page: Page): Promise<string> {
+export async function placeOrder(page: Page, shippingOptionName: string): Promise<string> {
   await expect(page).toHaveURL(/step=address/, { timeout: 10_000 })
   await fillShippingAddress(page)
   await page.getByRole('button', { name: /continue to delivery/i }).click()
 
   await expect(page).toHaveURL(/step=delivery/, { timeout: 10_000 })
-  const shippingOption = page.getByRole('radio').first()
+  // By name, not `.first()`: tests run in parallel and each creates its own US shipping option,
+  // so the delivery step lists a neighbour's too — and picking it means selecting a row that
+  // disappears when that test disposes its fixtures.
+  const shippingOption = page.getByRole('radio', { name: shippingOptionName })
   await expect(shippingOption).toBeVisible({ timeout: 10_000 })
   await shippingOption.click()
   await page.getByRole('button', { name: /continue to payment/i }).click()

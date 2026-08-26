@@ -150,6 +150,34 @@ Backend tests are integration tests against a real Postgres database. Custom Vit
 
 Tests construct services manually with injected repos. Vitest config at `apps/backend/vitest.config.ts` runs tests sequentially (`fileParallelism: false`). Path aliases: `@tests/*`, `@core/*`.
 
+### Test data comes from factories, per test
+
+Every row a test needs is created **by that test** and disposed with it. `apps/store/playwright.config.ts`
+sets `fullyParallel: true`, so specs run concurrently against one database and each test's rows are
+visible to the others.
+
+- **Never create fixture data in `beforeAll`/`afterAll`.** Two specs owning one set of shared rows is
+  a race: whichever finishes first tears down what the other is still using. This has already caused
+  `Entity with id "so_..." not found` in checkout. Use `await using` so the lifetime is the test's.
+- **Look for an existing factory before writing setup by hand.** `factories.create.*` and
+  `factories.destroy.*` come from the `factories` fixture; `apps/backend/tests/factories/db/` is the
+  full list. `shippingOptionWithZone` already existed while two specs hand-rolled it in `beforeAll`.
+- **Composed factories return their parts plus `Symbol.asyncDispose`, and take `Partial` overrides per
+  entity.** `db/product-with-pricing.ts` is the reference; `db/shipping-option-with-zone.ts` follows it.
+  A composition used by more than one spec belongs in `db/`; one specific to a single spec stays in
+  that spec — see `createProductWithColourways` in `tests/e2e/products.spec.ts` — and returns a
+  disposable the same way.
+- **Anything globally unique, or listed in the UI, must be unique per test.** Product option titles are
+  unique by title, so they are suffixed with the product id. Shipping options are listed together at
+  the delivery step, so their name carries a random suffix.
+- **Select the row you created — never `.first()`.** A neighbouring test's row may render first and
+  will vanish when that test disposes it. Assert against the factory's own return value:
+  `getByRole('radio', { name: shipping.name })`.
+
+Global setup (`packages/testing/fixtures/global-setup.ts`) is for provider registrations and schema
+only — it truncates every table and seeds payment/fulfillment/notification providers. Merchant or
+catalogue data is fixture data and does not belong there.
+
 ## Code Style
 
 - **Biome** for linting and formatting (spaces, 120 char lines, single quotes, no semicolons, trailing commas)

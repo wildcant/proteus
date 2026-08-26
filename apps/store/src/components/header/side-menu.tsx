@@ -7,10 +7,11 @@ import { SearchBarTrigger } from '#/components/header/search-triggers'
 import { ThemeToggle } from '#/components/theme-toggle'
 import { useModal } from '#/lib/modal-state'
 
+/** No `Cart` entry: the bag sits in the header at every width, and a nav link that opens a modal
+ *  is a weaker copy of a control already on screen. */
 const menuLinks = [
   { to: '/' as const, label: 'Home' },
   { to: '/products' as const, label: 'Products' },
-  { to: '/cart' as const, label: 'Cart' },
   { to: '/account' as const, label: 'Account' },
 ]
 

@@ -1,7 +1,10 @@
 import { expect, test } from '../setup/test-extend.js'
 
+/** The panel is the only drawer this spec ever opens, so the shared slot is unambiguous here. */
+const PANEL = '[data-slot="drawer-popup"]'
+
 test.describe('Cart', () => {
-  test('full cart journey: add, view, update, remove, checkout layout', async ({
+  test('full cart journey: add, review in the panel, remove, checkout, and back', async ({
     page,
     authenticate,
     navigate,
@@ -32,64 +35,160 @@ test.describe('Cart', () => {
     await expect(addToCartButton).toBeVisible()
     await addToCartButton.click()
 
-    // Assert toast appears
-    await expect(page.locator('[data-slot="toast-title"]')).toHaveText('Added to cart')
+    // The panel is the confirmation now, in place of the toast
+    const panel = page.locator(PANEL)
+    await expect(panel).toBeVisible()
+    await expect(panel.getByText(productA.title)).toBeVisible()
 
-    // Assert nav cart badge shows item count (desktop badge is the visible one)
+    // Assert nav cart badge shows item count. One bag at every width now, so no `.last()`:
+    // this should fail the day a second `aria-label="Cart"` reappears.
     const cartBadge = page.locator('header [aria-label="Cart"] span').filter({ hasText: '1' })
-    await expect(cartBadge.last()).toBeVisible()
+    await expect(cartBadge).toBeVisible()
 
-    // 2. Navigate to /cart, assert item appears
-    await navigate({ to: '/cart' })
-    await expect(page.getByText(productA.title)).toBeVisible()
-    await expect(page.getByText('$25.00 each')).toBeVisible()
+    // 2. The panel *is* the cart — there is no page to navigate to. Unit price and the summary
+    // are both on it, so reviewing the bag never leaves the product.
+    // Scoped to the row: at quantity one the unit price and the cart total are the same number,
+    // so an unscoped `$25.00` matches both.
+    const rowA = panel.getByRole('listitem').filter({ hasText: productA.title })
+    await expect(rowA.getByText('$25.00')).toBeVisible()
+    await expect(panel.getByRole('heading', { name: 'Order summary' })).toBeVisible()
+    await expect(panel.getByText('Total', { exact: true })).toBeVisible()
 
-    // Assert totals are displayed
-    const orderSummary = page.locator('aside')
-    await expect(orderSummary.getByText('Items total')).toBeVisible()
-    await expect(orderSummary.getByText('Total', { exact: true })).toBeVisible()
-
-    // 3. Change quantity
-    const quantitySelect = page.getByLabel(`Quantity for ${productA.title}`)
-    await quantitySelect.selectOption('3')
-
-    // Wait for line total to update — 3 × $25.00 = $75.00
-    const lineTotal = page.locator('section').getByText('$75.00')
-    await expect(lineTotal).toBeVisible({ timeout: 5000 })
-
-    // 4. Navigate to second product, add to cart
+    // 3. Add a second product. The panel reopens carrying both.
     await navigate({ to: '/products/$productId', params: { productId: productB.id } })
     await expect(page.getByRole('heading', { name: productB.title })).toBeVisible()
     await page.getByRole('button', { name: /add to cart/i }).click()
-    await expect(page.locator('[data-slot="toast-title"]')).toHaveText('Added to cart')
+    await expect(panel.getByText(productB.title)).toBeVisible()
+    await expect(panel.getByText(productA.title)).toBeVisible()
 
-    // 5. Return to /cart, assert both items appear
-    await navigate({ to: '/cart' })
-    await expect(page.getByText(productA.title)).toBeVisible()
-    await expect(page.getByText(productB.title)).toBeVisible()
+    // 4. Remove the second item from the panel; the first survives
+    await panel.getByRole('button', { name: `Remove ${productB.title}` }).click()
+    await expect(panel.getByText(productB.title)).not.toBeVisible()
+    await expect(panel.getByText(productA.title)).toBeVisible()
 
-    // 6. Remove second item
-    await page.getByRole('button', { name: `Remove ${productB.title}` }).click()
-
-    // Assert it disappears, first item remains
-    await expect(page.getByText(productB.title)).not.toBeVisible({ timeout: 5000 })
-    await expect(page.getByText(productA.title)).toBeVisible()
-
-    // 7. Click "Go to checkout", assert checkout layout
-    await page.getByRole('link', { name: /go to checkout/i }).click()
+    // 5. Checkout from the panel
+    await panel.getByRole('link', { name: /checkout/i }).click()
     await expect(page).toHaveURL(/\/checkout/)
 
-    // Checkout layout has "Back to cart" link, no shop chrome, no footer. The cart icon is
-    // what stands in for "no nav" — the hamburger is mobile-only now, so asserting on it at
-    // this viewport would pass whatever the checkout layout rendered.
+    // Checkout layout has "Back to cart", no shop chrome, no footer. The bag is what stands in
+    // for "no nav" — the hamburger is mobile-only, so asserting on it here would pass whatever
+    // the checkout layout rendered.
     await expect(page.getByRole('link', { name: /back to cart/i })).toBeVisible()
     await expect(page.getByLabel('Cart')).toHaveCount(0)
     await expect(page.locator('footer')).not.toBeVisible()
 
-    // 8. Click "Back to cart", assert full layout returns
+    // 6. "Back to cart" lands on the catalogue with the panel open, which is where the cart
+    // lives now. Full layout returns with it.
     await page.getByRole('link', { name: /back to cart/i }).click()
-    await expect(page).toHaveURL('/cart')
-    await expect(page.getByLabel('Cart').last()).toBeVisible()
+    await expect(page).toHaveURL('/products?modal=cart')
+    await expect(panel).toBeVisible()
+    await expect(panel.getByText(productA.title)).toBeVisible()
+    // Exact: the panel is open, so a substring `Cart` also matches its `Close cart` button.
+    await expect(page.getByLabel('Cart', { exact: true })).toBeVisible()
     await expect(page.locator('footer')).toBeVisible()
+  })
+
+  test('the panel is URL state: adding opens it, back and the ✕ both close it', async ({
+    page,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+
+    cleanup.add(async () => {
+      const cartId = await page.evaluate(() => localStorage.getItem('proteus_store_cart_id'))
+      if (cartId) await factories.destroy.cart(cartId)
+    })
+
+    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await page.getByRole('button', { name: /add to cart/i }).click()
+
+    // Opening is caused by the mutation, and it lands in the address bar
+    const panel = page.locator(PANEL)
+    await expect(panel).toBeVisible()
+    await expect(panel.getByText(product.title)).toBeVisible()
+    await expect(page).toHaveURL(new RegExp(`/products/${product.id}\\?modal=cart$`))
+
+    // Opening pushed, so hardware back closes it
+    await page.goBack()
+    await expect(panel).not.toBeVisible()
+    await expect(page).toHaveURL(`/products/${product.id}`)
+
+    // Closing with the ✕ replaces rather than pushes, so there is no entry to go forward into
+    await page.getByLabel('Cart', { exact: true }).click()
+    await expect(panel).toBeVisible()
+    await panel.getByLabel('Close cart').click()
+    await expect(panel).not.toBeVisible()
+    await expect(page).toHaveURL(`/products/${product.id}`)
+
+    await page.goForward()
+    await expect(panel).not.toBeVisible()
+  })
+
+  test('the panel stepper raises the quantity and removes the row at one', async ({
+    page,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+
+    cleanup.add(async () => {
+      const cartId = await page.evaluate(() => localStorage.getItem('proteus_store_cart_id'))
+      if (cartId) await factories.destroy.cart(cartId)
+    })
+
+    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await page.getByRole('button', { name: /add to cart/i }).click()
+
+    const panel = page.locator(PANEL)
+    // The count is an <output>, which is what puts it in the status role.
+    const quantity = panel.getByRole('status')
+    await expect(quantity).toHaveText('1')
+
+    // The total follows the stepper. $50.00 is unambiguous where $25.00 is not — at quantity one
+    // the unit price and the total are the same number.
+    await panel.getByLabel(`Increase quantity for ${product.title}`).click()
+    await expect(quantity).toHaveText('2')
+    await expect(panel.getByText('$50.00')).toBeVisible()
+
+    await panel.getByLabel(`Decrease quantity for ${product.title}`).click()
+    await expect(quantity).toHaveText('1')
+
+    // At one the decrement *is* the remove, and says so
+    await expect(panel.getByLabel(`Decrease quantity for ${product.title}`)).toHaveCount(0)
+    await panel.getByLabel(`Remove ${product.title}`).click()
+    await expect(panel.getByText('Your bag is empty')).toBeVisible()
+  })
+
+  test('the row names the chosen variant, and a cold open never shows the empty state', async ({
+    page,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithOption()
+
+    cleanup.add(async () => {
+      const cartId = await page.evaluate(() => localStorage.getItem('proteus_store_cart_id'))
+      if (cartId) await factories.destroy.cart(cartId)
+    })
+
+    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await page.getByRole('button', { name: /add to cart/i }).click()
+
+    // The options line only renders once `AddLineItem` carries `variantOptionValues`, so this is
+    // also the assertion that proves the payload change took.
+    const panel = page.locator(PANEL)
+    await expect(panel.getByText(product.optionValue.value)).toBeVisible()
+
+    // A cold open: `?modal=cart` reached by a full page load, with the cart already populated but
+    // the query cache empty. `useCart` does not suspend, so without the skeleton branch the panel
+    // would render "Your bag is empty" for the width of a request.
+    await navigate({ to: '/products', search: { modal: 'cart' } })
+    await expect(panel).toBeVisible()
+    await expect(panel.getByText('Your bag is empty')).toBeHidden()
+    await expect(panel.getByText(product.title)).toBeVisible()
   })
 })

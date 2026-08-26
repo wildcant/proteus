@@ -11,7 +11,9 @@ test.describe('Header', () => {
     await expect(header.getByText('Proteus')).toBeVisible()
     await expect(header.getByRole('link', { name: 'Shop all' })).toBeVisible()
     await expect(header.getByLabel('Search products')).toBeVisible()
-    await expect(header.getByLabel('Cart').last()).toBeVisible()
+    // No `.last()`: the bag is one button at every width now, so a second `aria-label="Cart"`
+    // should fail this rather than be silently absorbed.
+    await expect(header.getByLabel('Cart')).toBeVisible()
     // Rendered but display:none above lg — the rail is the desktop navigation, and the
     // magnifier is redundant next to the inline control. `exact` because the control's own
     // label is "Search products", which a substring match would also pick up.
@@ -71,10 +73,11 @@ test.describe('Header', () => {
     const sideMenu = page.locator('[data-slot="drawer-popup"]')
     await expect(sideMenu).toBeVisible()
 
-    // Side menu carries the expected links
+    // Side menu carries the expected links. No `Cart` row: the bag is in the header at every
+    // width, so the menu does not restate it.
     await expect(sideMenu.getByText('Home')).toBeVisible()
     await expect(sideMenu.getByText('Products')).toBeVisible()
-    await expect(sideMenu.getByText('Cart')).toBeVisible()
+    await expect(sideMenu.getByText('Account')).toBeVisible()
 
     // Following a row closes the menu with no explicit dismissal — a plain <Link> drops the
     // search params, and `modal` is one of them

@@ -89,7 +89,12 @@ consistent than the reference's own "Log In" / "Sign up" — two different verbs
   mutation; deletes the header popover. Drops the free-shipping bar, the cross-sell rail and the
   estimated-shipping line for want of anything behind them, and carries the variant options line
   onto the line item, which needs `AddLineItem` widened. `/cart` is left alone
+- `08-checkout.md` — the five-step `?step=` accordion collapses into one page on a full-bleed
+  white/grey split; the address commits on blur, which is what unlocks the shipping rates. Wires
+  the shipping-options query to the cart's address instead of the endpoint's `?? 'us'` fallback,
+  and renders `address2`, which the checkout has never had. Drops the wallets, the discount field
+  and the terms line for want of anything behind them; the saved-address picker is deferred
 
-Then PLP (grid gap, header, card), then PDP, the `/cart` page and checkout. The 4:5 product
+Then PLP (grid gap, header, card), then PDP and the `/cart` page. The 4:5 product
 image, the `gap: 24px 4px` contact-sheet grid and the muted-eyebrow-plus-display-title page header
 are the three patterns with the most left to give.

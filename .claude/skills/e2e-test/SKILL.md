@@ -24,6 +24,10 @@ Both share the `@proteus/testing` package (`packages/testing/`) for fixtures, fa
 - **Use `await using`** with `Symbol.asyncDispose` for automatic cleanup — never leave orphaned test data
 - **Use `cleanup` fixture** for side-effect data the app creates during the test (e.g. `cleanup.add(() => deleteProductById(id))`)
 - **Auth uses `playwright-persona`** — `authenticate({ as: 'admin' })` or `authenticate({ as: 'customer' })` with automatic session caching
+- **Never create fixture data in `beforeAll`/`afterAll`** — specs run in parallel (`fullyParallel: true`) against one database, so shared rows owned by two specs race and one tears down what the other is using. Create per test with `await using`.
+- **Check `apps/backend/tests/factories/db/` before hand-rolling setup** — a composed factory may already exist (`shippingOptionWithZone`, `productWithPricing`). Composed factories take `Partial` overrides per entity and return their parts plus `Symbol.asyncDispose`; `db/product-with-pricing.ts` is the reference.
+- **Make globally-unique or UI-listed values unique per test** — option titles are suffixed with the product id, shipping option names with a random string, because other tests' rows render alongside yours.
+- **Select the row you created, never `.first()`** — a neighbour's row may render first and disappear when that test disposes it: `getByRole('radio', { name: shipping.name })`.
 
 ### Running tests
 ```bash

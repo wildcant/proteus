@@ -2,7 +2,6 @@ import { test as base, expect } from '@playwright/test'
 import { interpolatePath } from '@tanstack/react-router'
 import {
   createCart,
-  createCheckoutInfrastructure,
   createCustomer,
   createFulfillmentProvider,
   createFulfillmentSet,
@@ -20,11 +19,12 @@ import {
   createProductVariantImage,
   createProductVariantOption,
   createProductVariantPriceSet,
+  createProductWithOption,
   createProductWithPricing,
   createServiceZone,
-  createShippingInfrastructure,
   createShippingOption,
   createShippingOptionType,
+  createShippingOptionWithZone,
   createShippingProfile,
   createUser,
   deleteCartById,
@@ -184,9 +184,9 @@ export type Factories = {
     priceSet: typeof createPriceSet
     price: typeof createPrice
     productVariantPriceSet: typeof createProductVariantPriceSet
+    productWithOption: typeof createProductWithOption
     productWithPricing: typeof createProductWithPricing
-    checkoutInfrastructure: typeof createCheckoutInfrastructure
-    shippingInfrastructure: typeof createShippingInfrastructure
+    shippingOptionWithZone: typeof createShippingOptionWithZone
     fulfillmentProvider: typeof createFulfillmentProvider
     fulfillmentSet: typeof createFulfillmentSet
     serviceZone: typeof createServiceZone
@@ -280,9 +280,9 @@ export function createTest<RoutePath extends string = string>() {
         priceSet: createPriceSet,
         price: createPrice,
         productVariantPriceSet: createProductVariantPriceSet,
+        productWithOption: createProductWithOption,
         productWithPricing: createProductWithPricing,
-        checkoutInfrastructure: createCheckoutInfrastructure,
-        shippingInfrastructure: createShippingInfrastructure,
+        shippingOptionWithZone: createShippingOptionWithZone,
         fulfillmentProvider: createFulfillmentProvider,
         fulfillmentSet: createFulfillmentSet,
         serviceZone: createServiceZone,

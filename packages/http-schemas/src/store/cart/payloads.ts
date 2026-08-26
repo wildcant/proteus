@@ -50,6 +50,15 @@ export const AddLineItem = z.object({
   productId: z.string().optional(),
   productTitle: z.string().optional(),
   variantSku: z.string().optional(),
+  /**
+   * The chosen variant, carried from the PDP so the cart can name it back. Both columns
+   * already exist on `cart_line_item` and both are already on `StoreCartLineItem`; this
+   * payload was the only thing dropping them, which is why every line item written so far
+   * has them null.
+   */
+  variantTitle: z.string().optional(),
+  /** The option values joined for display, e.g. `Black · S · Slim Fit`. */
+  variantOptionValues: z.string().optional(),
 })
 export type AddLineItemBody = z.infer<typeof AddLineItem>
 

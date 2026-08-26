@@ -9,8 +9,10 @@ test.describe('Footer', () => {
     // one tree is displayed at a given width. Filter on visibility rather than `.first()`, which
     // would keep passing the day one of the two stops rendering.
     const footer = page.locator('footer')
-    await expect(footer.getByText('Shop').filter({ visible: true })).toBeVisible()
-    await expect(footer.getByText('Account').filter({ visible: true })).toBeVisible()
+    // By role, not text: `getByText('Account')` is a substring match and also catches the
+    // "Create account" link, which made this a strict-mode violation rather than an assertion.
+    await expect(footer.getByRole('heading', { name: 'Shop' })).toBeVisible()
+    await expect(footer.getByRole('heading', { name: 'Account' })).toBeVisible()
     await expect(footer.getByText(/Proteus\. All rights reserved/)).toBeVisible()
 
     // Desktop Chrome is above `sm`, so the columns are open with no trigger to press

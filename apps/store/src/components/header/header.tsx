@@ -6,7 +6,8 @@ import { Nav } from '#/components/header/nav'
 import { SearchDrawer } from '#/components/header/search-drawer'
 import { SearchBarTrigger, SearchIconTrigger } from '#/components/header/search-triggers'
 import { Wordmark } from '#/components/header/wordmark'
-import { CartDropdown } from '#/features/cart/components/cart-dropdown'
+import { CartDrawer } from '#/features/cart/components/cart-drawer'
+import { CartTrigger } from '#/features/cart/components/cart-trigger'
 import { useModal } from '#/lib/modal-state'
 import { SideMenu } from './side-menu'
 
@@ -49,12 +50,13 @@ export function Header() {
             </Button>
           </Link>
 
-          <CartDropdown />
+          <CartTrigger />
         </div>
       </div>
 
       <SideMenu />
       <SearchDrawer />
+      <CartDrawer />
     </header>
   )
 }

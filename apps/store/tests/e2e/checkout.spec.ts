@@ -1,17 +1,7 @@
-import { createCheckoutInfrastructure } from 'backend/test'
 import { expect, test } from '../setup/test-extend.js'
 import { fillShippingAddress } from '../setup/utils.js'
 
-let disposeInfra: () => Promise<void>
-
 test.describe('Checkout', () => {
-  test.beforeAll(async () => {
-    const infra = await createCheckoutInfrastructure()
-    disposeInfra = infra[Symbol.asyncDispose]
-  })
-  test.afterAll(async () => {
-    await disposeInfra()
-  })
   test.describe.configure({ mode: 'serial', timeout: 60_000 })
 
   test('guest checkout: full flow from product to order confirmation', async ({
@@ -23,6 +13,7 @@ test.describe('Checkout', () => {
     await using product = await factories.create.productWithPricing({
       price: { amount: '25.00' },
     })
+    await using shipping = await factories.create.shippingOptionWithZone()
 
     cleanup.add(async () => {
       const cartId = await page.evaluate(() => localStorage.getItem('proteus_store_cart_id'))
@@ -32,14 +23,23 @@ test.describe('Checkout', () => {
     // 1. Add product to cart as guest
     await navigate({ to: '/products/$productId', params: { productId: product.id } })
     await page.getByRole('button', { name: /add to cart/i }).click()
-    await expect(page.locator('[data-slot="toast-title"]')).toHaveText('Added to cart')
 
-    // 2. Go to cart, verify product appears
-    await navigate({ to: '/cart' })
-    await expect(page.getByText(product.title)).toBeVisible()
+    // Adding opens the cart panel — that is the confirmation now, in place of a toast, and it
+    // is the stronger assertion: it proves the item reached the cart, not just that a mutation
+    // resolved. Dismissed explicitly so the close control is exercised somewhere in this spec.
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await expect(cartPanel).toBeVisible()
+    await expect(cartPanel.getByText(product.title)).toBeVisible()
+    await cartPanel.getByLabel('Close cart').click()
 
-    // 3. Click "Go to checkout" — guest lands on contact step
-    await page.getByRole('link', { name: /go to checkout/i }).click()
+    // 2. Reopen from the bag. The panel is the only cart surface now, so this is also the
+    // assertion that it survives being closed and reopened rather than only rendering on the
+    // mutation that populated it.
+    await page.getByLabel('Cart', { exact: true }).click()
+    await expect(cartPanel.getByText(product.title)).toBeVisible()
+
+    // 3. Check out from the panel — guest lands on contact step
+    await cartPanel.getByRole('link', { name: /checkout/i }).click()
     await expect(page).toHaveURL(/step=contact/)
 
     // 4. Contact step: fill email and submit
@@ -52,9 +52,9 @@ test.describe('Checkout', () => {
     await fillShippingAddress(page)
     await page.getByRole('button', { name: /continue to delivery/i }).click()
 
-    // 6. Delivery step: wait for shipping options to load, select first
+    // 6. Delivery step: select the option this test created — other tests' options are listed too
     await expect(page).toHaveURL(/step=delivery/, { timeout: 10000 })
-    const shippingRadio = page.getByRole('radio').first()
+    const shippingRadio = page.getByRole('radio', { name: shipping.name })
     await expect(shippingRadio).toBeVisible({ timeout: 10000 })
     await shippingRadio.click()
     await page.getByRole('button', { name: /continue to payment/i }).click()
@@ -80,6 +80,7 @@ test.describe('Checkout', () => {
     await using product = await factories.create.productWithPricing({
       price: { amount: '35.00' },
     })
+    await using shipping = await factories.create.shippingOptionWithZone()
     await using customer = await factories.create.customer({ hasAccount: true })
 
     cleanup.add(async () => {
@@ -90,21 +91,24 @@ test.describe('Checkout', () => {
     // 1. Add product to cart as guest
     await navigate({ to: '/products/$productId', params: { productId: product.id } })
     await page.getByRole('button', { name: /add to cart/i }).click()
-    await expect(page.locator('[data-slot="toast-title"]')).toHaveText('Added to cart')
 
-    // 2. Log in — cart transfer happens automatically on login success
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await expect(cartPanel).toBeVisible()
+    await expect(cartPanel.getByText(product.title)).toBeVisible()
+
+    // 2. Log in — the `navigate` below is a full page load, so it dismisses the panel for us — cart transfer happens automatically on login success
     await navigate({ to: '/login' })
     await page.getByLabel('Email').fill(customer.email)
     await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
     await page.getByRole('button', { name: /sign in/i }).click()
     await expect(page).toHaveURL('/account', { timeout: 15000 })
 
-    // 3. Verify cart was transferred — product is still in cart
-    await navigate({ to: '/cart' })
-    await expect(page.getByText(product.title)).toBeVisible()
+    // 3. Verify cart was transferred — the bag on /account still carries the guest's item
+    await page.getByLabel('Cart', { exact: true }).click()
+    await expect(cartPanel.getByText(product.title)).toBeVisible()
 
-    // 4. Go to checkout — authenticated user skips contact, lands on address step
-    await page.getByRole('link', { name: /go to checkout/i }).click()
+    // 4. Check out — authenticated user skips contact, lands on address step
+    await cartPanel.getByRole('link', { name: /checkout/i }).click()
     await expect(page).toHaveURL(/step=address/)
 
     // Contact step heading should not be visible (skipped for authenticated users)
@@ -114,9 +118,9 @@ test.describe('Checkout', () => {
     await fillShippingAddress(page)
     await page.getByRole('button', { name: /continue to delivery/i }).click()
 
-    // 6. Delivery step: select first shipping option
+    // 6. Delivery step: select the option this test created — other tests' options are listed too
     await expect(page).toHaveURL(/step=delivery/, { timeout: 10000 })
-    const shippingRadio = page.getByRole('radio').first()
+    const shippingRadio = page.getByRole('radio', { name: shipping.name })
     await expect(shippingRadio).toBeVisible({ timeout: 10000 })
     await shippingRadio.click()
     await page.getByRole('button', { name: /continue to payment/i }).click()

@@ -30,6 +30,15 @@
 
   /* Kept so the ~25 existing `text-foreground-muted` usages keep resolving. */
   --color-foreground-muted: var(--foreground-muted);
+
+  /* The system's one shadow, and it exists for a single job: lifting a pinned panel footer off
+     the content that scrolls up to meet it. Cast upward, because that is the only edge content
+     arrives from.
+
+     Built on --ink rather than a literal black so it inverts with the scheme — a black shadow on
+     the dark surface would be invisible, and the footer would lose its edge exactly where the
+     panel is hardest to read. */
+  --shadow-panel: 0 -8px 24px -8px color-mix(in oklab, var(--ink) 20%, transparent);
 }
 
 /* Display type roles. These are whole roles, not sizes: weight, leading, tracking and
@@ -39,29 +48,39 @@
    Deliberately not named `text-*`. tailwind-merge classifies an unrecognised `text-x`
    as a colour, so a custom `text-display` would be dropped whenever cn() also saw a
    text colour on the same element. Body and meta need no role at all — 14px and 12px
-   are exactly Tailwind's stock `text-sm` and `text-xs`. */
-@utility type-display {
-  font-size: clamp(2rem, 1.65rem + 1.5vw, 3rem);
-  font-weight: 800;
-  line-height: 0.9;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-}
+   are exactly Tailwind's stock `text-sm` and `text-xs`.
 
-@utility type-title {
-  font-size: clamp(1.5rem, 1.32rem + 0.75vw, 2rem);
-  font-weight: 800;
-  line-height: 0.9;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-}
+   The doubled class is what makes a role stick. cn() cannot relate `type-heading` to
+   `text-base`, so when a primitive hardcodes one — `DrawerTitle` ships
+   `font-medium text-base` — both survive the merge and only the cascade separates them,
+   which the core utility was winning. Doubling lifts the role to specificity 0,2,0 and it
+   outranks any single utility regardless of emission order. Written as plain rules rather
+   than `@utility` because that is the only way to double the selector; the cost is variant
+   support (`lg:type-heading`), which nothing uses. */
+@layer utilities {
+  .type-display.type-display {
+    font-size: clamp(2rem, 1.65rem + 1.5vw, 3rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
 
-@utility type-heading {
-  font-size: 1.25rem;
-  font-weight: 800;
-  line-height: 0.94;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+  .type-title.type-title {
+    font-size: clamp(1.5rem, 1.32rem + 0.75vw, 2rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  .type-heading.type-heading {
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 0.94;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
 }
 
 :root {
@@ -169,6 +188,22 @@ a:not([data-slot="button"]) {
 
 a:not([data-slot="button"]):hover {
   color: var(--ink-muted);
+}
+
+/* The drawer primitive ships a 10% black scrim behind a 4px backdrop blur. That is too weak to
+   separate a panel from the page it covers — the blur smears the background without darkening it,
+   so the panel and the page read at the same depth and a 1px border ends up doing all the work.
+
+   80% rather than something politer: at half opacity the page behind stays legible enough to keep
+   competing for attention, and a panel that has to argue with the page it covers is the difference
+   between a surface and an overlay. The reference storefront runs its bag scrim at exactly this.
+
+   Set here rather than in packages/ui so the admin app keeps its own scrim: this is a storefront
+   judgement about overlays over product photography, not a fix to the primitive. Only the colour
+   is touched; `opacity` stays on the utility, which is what animates the panel's swipe progress. */
+[data-slot="drawer-overlay"] {
+  background-color: color-mix(in oklab, black 80%, transparent);
+  backdrop-filter: none;
 }
 
 button,

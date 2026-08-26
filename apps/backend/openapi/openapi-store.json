@@ -2118,6 +2118,12 @@
                   },
                   "variantSku": {
                     "type": "string"
+                  },
+                  "variantTitle": {
+                    "type": "string"
+                  },
+                  "variantOptionValues": {
+                    "type": "string"
                   }
                 },
                 "required": ["title", "quantity", "unitPrice"]

@@ -57,3 +57,30 @@ Moving a variant onto a different Option Combination, whether the admin picks th
 Variant Reconciliation Plan derives it. A variant's identity — its SKU, price, images and order
 history — survives a reassignment; only which combination it stands for changes.
 _Avoid_: move, remap, re-link
+
+### Storefront language
+
+**Locale**:
+A BCP 47 tag naming both the language the storefront renders Store Copy in and the regional
+conventions it formats numbers and dates with — `es-US` is Spanish words with US number and date
+conventions. It selects copy and formatting and nothing else: every Locale shows the same catalogue
+at the same prices, and a shopper's currency and delivery country come from their cart and their
+address regardless of which Locale they are reading in.
+_Avoid_: market, region, language (as a system concept), i18n
+
+**Message Catalog**:
+The Store Copy translations for one language, keyed by the language subtag alone — `es-US` and
+`es-MX` share one. Distinct from the product catalogue, which is merchandise; a Message Catalog
+holds no merchandise and the catalogue holds no translations.
+_Avoid_: catalog (unqualified), translations, locale file
+
+**Store Copy**:
+Text the storefront itself authors — labels, headings, button text, validation messages, its own
+toast titles. The only text a Locale can change.
+_Avoid_: content, strings, UI text
+
+**Merchant Text**:
+Text that reaches the shopper from the backend — product titles and descriptions, Product Option
+titles and values, Variant Titles, shipping option names, payment provider labels, API error
+messages. The storefront cannot translate it; only the backend that owns it can.
+_Avoid_: catalogue copy, dynamic content, server strings
