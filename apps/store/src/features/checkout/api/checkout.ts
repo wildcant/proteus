@@ -1,5 +1,6 @@
+import type { StoreShippingOptionListResponse } from '@proteus/http-schemas/store'
 import { toast } from '@proteus/ui'
-import type { UseMutationOptions } from '@tanstack/react-query'
+import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   addStoreCartShippingMethod,
@@ -11,6 +12,7 @@ import type {
   AddStoreCartShippingMethodBody,
   CreateStorePaymentCollectionBody,
   CreateStorePaymentSessionBody,
+  ListStoreCartShippingOptionsParams,
   StoreCompleteCartResponse,
   StoreCreateCartShippingMethodResponse,
   StoreCreatePaymentCollectionResponse,
@@ -29,14 +31,15 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const checkoutQueryKeys = queryKeysFactory('checkout')
 
-export const useShippingOptions = (cartId: string | null) => {
+export const useShippingOptions = (
+  cartId: string,
+  params: ListStoreCartShippingOptionsParams,
+  options?: Partial<UseQueryOptions<StoreShippingOptionListResponse, Error>>,
+) => {
   return useQuery({
-    queryKey: [...checkoutQueryKeys.all, 'shipping-options', cartId],
-    queryFn: () => {
-      if (!cartId) throw new Error('No cart')
-      return listStoreCartShippingOptions(cartId)
-    },
-    enabled: !!cartId,
+    queryKey: [...checkoutQueryKeys.all, 'shipping-options', cartId, params],
+    queryFn: () => listStoreCartShippingOptions(cartId, params),
+    enabled: !!cartId && !!params && !!(options?.enabled ?? true),
   })
 }
 

@@ -120,6 +120,11 @@
   --ring: var(--ink);
   --destructive: var(--sale);
   --muted-foreground: var(--ink-muted);
+  /* Checkout's account menu is the store's first popover. Repointed here rather than overridden
+     on the component so the next one inherits it, and through --surface/--ink rather than the
+     literals, so both schemes are covered by the blocks below. */
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
 
   /* Pre-existing store aliases, repointed at the same values. */
   --foreground: var(--ink);

@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
-import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
   createStoreCustomerAddress,
   deleteStoreCustomerAddress,
@@ -30,6 +30,16 @@ export const addressesQueryOptions = () =>
 export const useSuspenseAddresses = () => {
   const { data, ...rest } = useSuspenseQuery(addressesQueryOptions())
   return { addresses: data.addresses, ...rest }
+}
+
+/**
+ * The non-suspending twin, for a surface the list does not own. Checkout reads it beside the cart
+ * and must not hold the page on it — and a guest, for whom the query is disabled, must reach the
+ * address form with no wait at all.
+ */
+export const useAddresses = () => {
+  const { data, ...rest } = useQuery(addressesQueryOptions())
+  return { addresses: data?.addresses ?? [], ...rest }
 }
 
 export const useCreateAddress = (

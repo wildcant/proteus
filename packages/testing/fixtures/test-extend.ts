@@ -87,7 +87,7 @@ type NavigateOptions<RoutePath extends string> = {
 
 type NavigateFunction<RoutePath extends string> = (options: NavigateOptions<RoutePath>) => Promise<void>
 
-type CleanupFunction = {
+export type CleanupFunction = {
   add: (fn: () => Promise<void>) => void
 }
 

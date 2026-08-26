@@ -1,18 +1,36 @@
 import type { Page } from '@playwright/test'
+import type { CleanupFunction, Factories } from '@proteus/testing'
 import { expect } from './test-extend.js'
 
-/** Fills the checkout's shipping-address step. The values are arbitrary but must be a real US state. */
+/**
+ * Disposes the cart the browser made, at the end of the test that made it.
+ *
+ * Carts have no factory — the storefront creates one on the first add to cart — so the only place
+ * the id exists is the page's own storage, and it has to be read back out before the page closes.
+ */
+export function disposeCartAfterTest(page: Page, factories: Factories, cleanup: CleanupFunction) {
+  cleanup.add(async () => {
+    const cartId = await page.evaluate(() => localStorage.getItem('proteus_store_cart_id'))
+    if (cartId) await factories.destroy.cart(cartId)
+  })
+}
+
+/** Fills the checkout's delivery block. The values are arbitrary but must be a real US state. */
 export async function fillShippingAddress(page: Page) {
+  await page.getByLabel('Country').selectOption('us')
   await page.getByLabel('First name').fill('John')
   await page.getByLabel('Last name').fill('Doe')
-  // Exact: 'Billing address same as shipping' is a real label now that the checkbox carries an
-  // htmlFor, and a loose match would hit it too.
+  // Exact: 'Apartment, suite, etc.' and 'Billing address same as shipping' are both real labels
+  // containing the word, and a loose match would hit them too.
   await page.getByLabel('Address', { exact: true }).fill('123 Main St')
   await page.getByLabel('City').fill('Austin')
-  await page.getByLabel('Country').selectOption('us')
   await page.getByLabel('State / Province').fill('TX')
   await page.getByLabel('Postal code').fill('78701')
   await page.getByLabel('Phone').fill('5551234567')
+  // There is no "Continue to delivery" button any more: the address is written to the cart when
+  // focus leaves the block, and `fill()` does not blur on its own. This line is the whole
+  // commit-on-blur decision expressed as a test — drop it and the rates never load.
+  await page.getByLabel('Phone').blur()
 }
 
 /**
@@ -21,26 +39,27 @@ export async function fillShippingAddress(page: Page) {
  * writes one — so any spec that needs an existing order has to place it through the UI.
  */
 export async function placeOrder(page: Page, shippingOptionName: string): Promise<string> {
-  await expect(page).toHaveURL(/step=address/, { timeout: 10_000 })
+  await expect(page.getByRole('heading', { name: 'Delivery' })).toBeVisible({ timeout: 10_000 })
   await fillShippingAddress(page)
-  await page.getByRole('button', { name: /continue to delivery/i }).click()
 
-  await expect(page).toHaveURL(/step=delivery/, { timeout: 10_000 })
   // By name, not `.first()`: tests run in parallel and each creates its own US shipping option,
-  // so the delivery step lists a neighbour's too — and picking it means selecting a row that
+  // so the list carries a neighbour's too — and picking it means selecting a row that
   // disappears when that test disposes its fixtures.
+  //
+  // Waiting for it to appear is also the assertion that the blur above reached the cart and that
+  // the rates were quoted against the address, which the old `?step=delivery` never claimed.
   const shippingOption = page.getByRole('radio', { name: shippingOptionName })
   await expect(shippingOption).toBeVisible({ timeout: 10_000 })
   await shippingOption.click()
-  await page.getByRole('button', { name: /continue to payment/i }).click()
 
-  await expect(page).toHaveURL(/step=payment/, { timeout: 10_000 })
+  // Selecting is the write now, so the order cannot be placed until it lands. The summary saying
+  // something other than "Enter shipping address" is what says it did.
+  await expect(page.getByRole('complementary').getByText('Enter shipping address')).toBeHidden({ timeout: 10_000 })
+
   const paymentOption = page.getByRole('radio', { name: /manual payment/i })
   await expect(paymentOption).toBeVisible({ timeout: 10_000 })
   await paymentOption.click()
-  await page.getByRole('button', { name: /continue to review/i }).click()
 
-  await expect(page).toHaveURL(/step=review/, { timeout: 10_000 })
   await page.getByRole('button', { name: /place order/i }).click()
 
   await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 15_000 })

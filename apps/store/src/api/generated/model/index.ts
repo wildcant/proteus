@@ -84,7 +84,6 @@ export * from './storeProductVariant.ts';
 export * from './storeProductVariantOptionValues.ts';
 export * from './storeShippingOption.ts';
 export * from './storeShippingOptionListResponse.ts';
-export * from './storeShippingOptionPriceType.ts';
 export * from './storeSignupBody.ts';
 export * from './storeUpdateAddress.ts';
 export * from './storeUpdateCartLineItemResponse.ts';

@@ -111,8 +111,17 @@ Use the generic parameter when the caller needs the mutation response (e.g., `Su
 
 | Hook | Schema | Body type | File |
 |------|--------|-----------|------|
-| `useShippingMethodForm` | `AddCartShippingMethod` | `AddStoreCartShippingMethodBody` | `apps/store/src/features/checkout/hooks/use-shipping-method-form.ts` |
-| `useShippingAddressForm` | `CartAddressInput.extend(...)` | `UpdateStoreCartBodyShippingAddress & { sameAsBilling }` | `apps/store/src/features/checkout/hooks/use-shipping-address-form.ts` |
-| `usePaymentForm` | `CreatePaymentSession` | `CreateStorePaymentSessionBody` (multi-mutation) | `apps/store/src/features/checkout/hooks/use-payment-form.ts` |
+| `useContactForm` | `z.object({ email })` | `UpdateStoreCartBody` (commit on blur, no submit) | `apps/store/src/features/checkout/hooks/use-contact-form.ts` |
+| `useShippingAddressForm` | `UpdateCart.pick(...).extend(...)` | `UpdateStoreCartBodyShippingAddress & { sameAsBilling }` | `apps/store/src/features/checkout/hooks/use-shipping-address-form.ts` |
+| `usePlaceOrder` | none — nothing to validate | three sequential mutations behind one button | `apps/store/src/features/checkout/hooks/use-place-order.ts` |
 | `useCreateProductForm` | `productFormSchema` | `ProductFormValues` (multi-step) | `apps/admin/src/features/products/hooks/use-create-product-form.ts` |
 | `useRegisterForm` | `StoreSignupBody` | inline | `apps/store/src/features/auth/hooks/use-register-form.ts` |
+
+### Sections with no submit
+
+The store's checkout is one page with one button, so its sections have no submit of their own. The
+hook still owns everything that is not rendering: `useContactForm` and `useShippingAddressForm`
+expose a `commit` that the section hangs on a bubbled `focusout`, and a `validate` the page's one
+button calls to mark fields it does not render. A section that only *chooses* — a radio that writes
+on select — has no form at all, and its mutation goes in a plain hook beside them rather than in
+the component: see `use-shipping-method-choice.ts`.

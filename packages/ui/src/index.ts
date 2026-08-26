@@ -112,6 +112,7 @@ export { Label } from './components/ui/label.tsx'
 export { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from './components/ui/native-select.tsx'
 export {
   Popover,
+  PopoverArrow,
   PopoverContent,
   PopoverDescription,
   PopoverHeader,

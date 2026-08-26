@@ -20,16 +20,16 @@ export const CreateCart = z.object({
 export type CreateCartBody = z.infer<typeof CreateCart>
 
 export const CartAddressInput = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  firstName: z.string().nullable(),
+  lastName: z.string().nullable(),
   address1: z.string().min(1, 'Address is required'),
-  address2: z.string().optional(),
-  company: z.string().optional(),
+  address2: z.string().optional().nullable(),
+  company: z.string().optional().nullable(),
   city: z.string().min(1, 'City is required'),
   countryCode: z.string().length(2, 'Country is required'),
-  province: z.string().optional(),
+  province: z.string().optional().nullable(),
   postalCode: z.string().min(1, 'Postal code is required'),
-  phone: z.string().optional(),
+  phone: z.string().optional().nullable(),
 })
 export type CartAddressInputBody = z.infer<typeof CartAddressInput>
 

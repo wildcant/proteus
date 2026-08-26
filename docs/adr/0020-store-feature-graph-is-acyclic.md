@@ -44,6 +44,8 @@ graph TD
   account --> orders
   products --> cart
   checkout --> cart
+  checkout --> auth
+  checkout --> address
   auth --> cart
   account -. route link .-> address
 
@@ -67,12 +69,25 @@ between features is free, importing between them is not.
 | `orders` | — | Reads `/store/orders`; owes nothing to the rest. Leaf. |
 | `address` | — | Saved addresses stand alone; the account page only links to them. Leaf. |
 | `products` | `cart` | `AddToCart` lives with the PDP that renders it and calls the cart's `api`. |
-| `checkout` | `cart` | Checkout turns a cart into an order. |
+| `checkout` | `cart`, `auth`, `address` | Checkout turns a cart into an order, is where a shopper signs in or out mid-purchase, and ships to an address they have already saved. |
 | `auth` | `cart` | Signing in transfers the guest cart. |
 | `account` | `auth`, `orders` | The dashboard composes them. `address` is reached by route link rather than import, so it is deliberately not declared — add it the day the dashboard actually renders address data. |
 
 The direction follows the domain, and that is what makes it stable: a cart is meaningful with no
-checkout, so `checkout → cart` and never the reverse.
+checkout, so `checkout → cart` and never the reverse. `checkout → auth` reads the same way — signing
+in is meaningful with no order in progress, and checkout is one of the places it is offered.
+
+`checkout → address` came later, when the delivery section learned to offer a saved address
+instead of ten empty inputs. It reads the same way as the others: an address book is meaningful
+with no order in progress, and checkout is one of the places its rows get used. The account
+dashboard's arrow to `address` stays dotted — it still only links.
+
+`checkout → account` was considered and rejected when the checkout header needed to name the
+signed-in shopper. The email it wanted is on the cart already: `carts/route.ts` copies it off the
+customer record when a signed-in shopper's cart is created, and `transfer-cart-customer.ts` when a
+guest cart is claimed. Reading it there is not only the smaller graph, it is the more correct
+source — the header should show the address the order will be placed under, and a customer's
+account email and their cart's email can differ.
 
 When two features genuinely need the same thing, the answer is not an edge between them — it is
 that the thing was never feature-specific. Move it down to a shared layer. `AccountPanel` became

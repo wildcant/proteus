@@ -1,6 +1,6 @@
 import { Field, FieldError } from '@proteus/ui'
 import { useId } from 'react'
-import { FloatingLabelInput } from '#/components/input.tsx'
+import { FloatingLabelInput } from '#/components/form/input.tsx'
 import { useFieldContext } from '#/lib/form-context.ts'
 import { isFieldRequired } from '#/lib/schema-required.ts'
 
@@ -9,9 +9,11 @@ type TextFieldProps = Pick<
   'type' | 'disabled' | 'autoComplete' | 'autoFocus' | 'className'
 > & {
   label: string
+  /** A note about why the field is asked for, behind a `?` at the end of the field. */
+  help?: string
 }
 
-export function TextField({ label, className, ...inputProps }: TextFieldProps) {
+export function TextField({ label, help, className, ...inputProps }: TextFieldProps) {
   const field = useFieldContext<string>()
   const id = useId()
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
@@ -22,6 +24,7 @@ export function TextField({ label, className, ...inputProps }: TextFieldProps) {
       <FloatingLabelInput
         id={id}
         label={label}
+        help={help}
         required={isRequired}
         name={field.name}
         value={field.state.value}

@@ -1,5 +1,6 @@
 import { toast } from '@proteus/ui'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { z } from 'zod'
 import { Button } from '#/components/button'
 import { AuthHeading } from '#/features/auth/components/auth-heading'
 import { LoginForm } from '#/features/auth/components/login-form'
@@ -7,17 +8,29 @@ import { VerifyPending } from '#/features/auth/components/verify-pending'
 import { useAuthSuccess } from '#/features/auth/hooks/use-auth-success'
 import { isRegistered } from '#/lib/auth-token'
 
+const loginSearchSchema = z.object({
+  // Where to return to once signed in — without it, a shopper who taps Sign in mid-checkout lands
+  // on /account with the checkout gone. Same-site paths only, or the sign-in page is an open
+  // redirect; `.catch` rather than a throw, since a hand-edited `?redirect=` is not an error page.
+  redirect: z
+    .string()
+    .refine((value) => value.startsWith('/') && !value.startsWith('//'), 'Must be a path on this site')
+    .optional()
+    .catch(undefined),
+})
+
 export const Route = createFileRoute('/_auth/login')({
-  beforeLoad: () => {
-    // isRegistered, not getToken: signup leaves an unregistered token behind, and its
-    // holder still needs this page to verify or to sign in as someone else.
-    if (isRegistered()) throw redirect({ to: '/account' })
+  validateSearch: loginSearchSchema,
+  beforeLoad: ({ search }) => {
+    if (!isRegistered()) return
+    throw redirect({ to: search.redirect ?? '/account' })
   },
   component: LoginPage,
 })
 
 function LoginPage() {
-  const { isVerifyPending, handleSuccess } = useAuthSuccess()
+  const { redirect: redirectTo } = Route.useSearch()
+  const { isVerifyPending, handleSuccess } = useAuthSuccess({ redirectTo })
 
   return (
     <main className="mt-10 flex w-full max-w-md flex-col items-center">

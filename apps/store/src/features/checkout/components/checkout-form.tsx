@@ -1,85 +1,32 @@
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
-import { Step } from '#/features/checkout/constants'
-import { useCheckoutProgress } from '#/features/checkout/hooks/use-checkout-progress'
-import { AddressSummary } from './address-summary'
-import { CheckoutStep } from './checkout-step'
-import { ContactForm } from './contact-form'
-import { PaymentForm } from './payment-form'
-import { ReviewStep } from './review-step'
-import { ShippingAddressForm } from './shipping-address-form'
-import { ShippingMethodForm } from './shipping-method-form'
+import { Form } from '#/components/form/form'
+import { useCheckoutData } from '#/features/checkout/hooks/use-checkout-data'
+import { useCheckoutForm } from '../hooks/use-checkout-form'
+import { ContactSection } from './contact/contact-section'
+import { DeliverySection } from './delivery/delivery-section'
+import { PaymentSection } from './payment/payment-section'
+import { ShippingMethodSection } from './shipping/shipping-method-section'
 
 type CheckoutFormProps = {
   cart: StoreCartDetailResponseCart
-  step: string
 }
 
-export function CheckoutForm({ cart, step }: CheckoutFormProps) {
-  const { isGuest, hasContact, hasAddress, hasShipping, goToStep, lastShippingMethod, stepNumber } =
-    useCheckoutProgress(cart)
+export function CheckoutForm({ cart }: CheckoutFormProps) {
+  const data = useCheckoutData({ cart })
+  const { form, isLoading, placeOrder } = useCheckoutForm({ data })
 
   return (
-    <div className="space-y-6">
-      {isGuest ? (
-        <CheckoutStep
-          title="Contact"
-          stepNumber={stepNumber(Step.CONTACT)}
-          isOpen={step === Step.CONTACT}
-          isComplete={hasContact}
-          onEdit={() => goToStep(Step.CONTACT)}
-          summary={<p>{cart.email}</p>}
-        >
-          <ContactForm cart={cart} onComplete={() => goToStep(Step.ADDRESS)} />
-        </CheckoutStep>
-      ) : null}
+    <Form onSubmit={placeOrder}>
+      <form.AppForm>
+        <div className="space-y-8">
+          <ContactSection form={form} {...data} />
+          <DeliverySection form={form} {...data} />
+          <ShippingMethodSection form={form} {...data} />
+          <PaymentSection form={form} {...data} />
 
-      <CheckoutStep
-        title="Shipping Address"
-        stepNumber={stepNumber(Step.ADDRESS)}
-        isOpen={step === Step.ADDRESS}
-        isComplete={hasAddress}
-        onEdit={() => goToStep(Step.ADDRESS)}
-        summary={<AddressSummary cart={cart} />}
-      >
-        <ShippingAddressForm cart={cart} onComplete={() => goToStep(Step.DELIVERY)} />
-      </CheckoutStep>
-
-      <CheckoutStep
-        title="Delivery"
-        stepNumber={stepNumber(Step.DELIVERY)}
-        isOpen={step === Step.DELIVERY}
-        isComplete={hasShipping}
-        onEdit={() => goToStep(Step.DELIVERY)}
-        summary={lastShippingMethod && <p>{lastShippingMethod.name}</p>}
-      >
-        <ShippingMethodForm
-          cartId={cart.id}
-          currencyCode={cart.currencyCode}
-          selectedMethodId={lastShippingMethod?.shippingOptionId ?? undefined}
-          onComplete={() => goToStep(Step.PAYMENT)}
-        />
-      </CheckoutStep>
-
-      <CheckoutStep
-        title="Payment"
-        stepNumber={stepNumber(Step.PAYMENT)}
-        isOpen={step === Step.PAYMENT}
-        isComplete={step === Step.REVIEW}
-        onEdit={() => goToStep(Step.PAYMENT)}
-        summary={<p>Payment method selected</p>}
-      >
-        <PaymentForm cartId={cart.id} onComplete={() => goToStep(Step.REVIEW)} />
-      </CheckoutStep>
-
-      <CheckoutStep
-        title="Review"
-        stepNumber={stepNumber(Step.REVIEW)}
-        isOpen={step === Step.REVIEW}
-        isComplete={false}
-        onEdit={() => goToStep(Step.REVIEW)}
-      >
-        <ReviewStep />
-      </CheckoutStep>
-    </div>
+          <form.SubmitButton className="w-full">{isLoading ? 'Placing order...' : 'Place order'}</form.SubmitButton>
+        </div>
+      </form.AppForm>
+    </Form>
   )
 }

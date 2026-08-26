@@ -1,7 +1,7 @@
 import { Button as BaseButton, cn } from '@proteus/ui'
 import type { ComponentProps } from 'react'
 
-type ButtonProps = ComponentProps<typeof BaseButton>
+export type ButtonProps = ComponentProps<typeof BaseButton>
 
 /** Colour and treatment. Applied whatever the size, so icon buttons stay on-brand too. */
 const variantStyles: Record<string, string> = {

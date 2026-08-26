@@ -44,6 +44,7 @@ export function useEditVariantMediaForm(
       } catch (error) {
         // Only the thumbnail write throws here — `mutate` reports its own failures via callbacks.
         params?.onError?.(error instanceof Error ? error.message : 'Failed to update the variant thumbnail')
+      } finally {
         params?.onSettled?.()
       }
     },

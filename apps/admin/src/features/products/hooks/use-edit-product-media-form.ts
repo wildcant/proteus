@@ -28,6 +28,7 @@ export function useEditProductMediaForm(product: AdminProductResponseProduct, pa
       } catch (error) {
         // Only the upload throws here — `mutate` reports its own failures through the callbacks.
         params?.onError?.(error instanceof Error ? error.message : 'Failed to upload media')
+      } finally {
         params?.onSettled?.()
       }
     },

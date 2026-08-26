@@ -95,6 +95,16 @@ consistent than the reference's own "Log In" / "Sign up" — two different verbs
   and renders `address2`, which the checkout has never had. Drops the wallets, the discount field
   and the terms line for want of anything behind them; the saved-address picker is deferred
 
-Then PLP (grid gap, header, card), then PDP and the `/cart` page. The 4:5 product
+- `09-product-detail.md` — the gallery becomes a full-bleed snap carousel on the phone and a
+  `[half, half, full]` mosaic at `lg:`; the thumbnail rail's job moves to a dot row. Swatches go from
+  44px circles to 4:5 tiles, the size values go from wrapped pills to a zero-gap 4-column grid, and
+  both pickers become radio groups. The action bar pins to the bottom of the phone viewport, which
+  collides with the `Toaster` lane — so `Toaster` gains a `viewportClassName` pass-through, the one
+  `packages/ui` change — and needs a 52px `QuantityStepper` size to stand beside it. Drops the
+  reviews, both product rails, the tabs, the
+  size guide, the wishlist, the BNPL strip and the delivery promises for want of anything behind
+  them; keeps the quantity stepper and the specs table, which the reference does not have
+
+Then PLP (grid gap, header, card) and the `/cart` page. The 4:5 product
 image, the `gap: 24px 4px` contact-sheet grid and the muted-eyebrow-plus-display-title page header
 are the three patterns with the most left to give.

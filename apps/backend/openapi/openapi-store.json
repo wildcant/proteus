@@ -557,10 +557,6 @@
           "name": {
             "type": "string"
           },
-          "priceType": {
-            "type": "string",
-            "enum": ["flat", "calculated"]
-          },
           "amount": {
             "type": ["number", "null"]
           },
@@ -576,41 +572,9 @@
           "providerId": {
             "type": "string"
           },
-          "data": {},
-          "metadata": {
-            "type": ["string", "null"]
-          },
-          "isEnabled": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": ["string", "null"],
-            "format": "date-time"
-          }
+          "data": {}
         },
-        "required": [
-          "id",
-          "name",
-          "priceType",
-          "amount",
-          "serviceZoneId",
-          "shippingProfileId",
-          "shippingOptionTypeId",
-          "providerId",
-          "metadata",
-          "isEnabled",
-          "createdAt",
-          "updatedAt",
-          "deletedAt"
-        ]
+        "required": ["id", "name", "amount", "serviceZoneId", "shippingProfileId", "shippingOptionTypeId", "providerId"]
       },
       "StoreCreateCartShippingMethodResponse": {
         "type": "object",
@@ -1967,22 +1931,20 @@
                     "type": "object",
                     "properties": {
                       "firstName": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": ["string", "null"]
                       },
                       "lastName": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": ["string", "null"]
                       },
                       "address1": {
                         "type": "string",
                         "minLength": 1
                       },
                       "address2": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "company": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "city": {
                         "type": "string",
@@ -1994,14 +1956,14 @@
                         "maxLength": 2
                       },
                       "province": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "postalCode": {
                         "type": "string",
                         "minLength": 1
                       },
                       "phone": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       }
                     },
                     "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
@@ -2010,22 +1972,20 @@
                     "type": "object",
                     "properties": {
                       "firstName": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": ["string", "null"]
                       },
                       "lastName": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": ["string", "null"]
                       },
                       "address1": {
                         "type": "string",
                         "minLength": 1
                       },
                       "address2": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "company": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "city": {
                         "type": "string",
@@ -2037,14 +1997,14 @@
                         "maxLength": 2
                       },
                       "province": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "postalCode": {
                         "type": "string",
                         "minLength": 1
                       },
                       "phone": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       }
                     },
                     "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
