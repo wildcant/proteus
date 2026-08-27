@@ -19,7 +19,7 @@ export const orderTable = pgTable(
     displayId: serial().notNull(),
     status: orderStatusEnum().default('pending').notNull(),
     fulfillmentStatus: orderFulfillmentStatusEnum().default('unfulfilled').notNull(),
-    email: text(),
+    email: text().notNull(),
     customerId: text(),
     currencyCode: text().notNull(),
     canceledAt: timestamp({ withTimezone: true }),

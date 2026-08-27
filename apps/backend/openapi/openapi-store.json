@@ -925,6 +925,9 @@
       "StoreOrderItemSummary": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "title": {
             "type": "string"
           },
@@ -935,7 +938,7 @@
             "type": "number"
           }
         },
-        "required": ["title", "thumbnail", "quantity"]
+        "required": ["id", "title", "thumbnail", "quantity"]
       },
       "StoreOrder": {
         "type": "object",
@@ -955,7 +958,7 @@
             "enum": ["unfulfilled", "fulfilled", "shipped", "delivered"]
           },
           "email": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "currencyCode": {
             "type": "string"
@@ -1024,10 +1027,16 @@
       "StoreOrderLineItem": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "title": {
             "type": "string"
           },
           "variantTitle": {
+            "type": ["string", "null"]
+          },
+          "variantOptionValues": {
             "type": ["string", "null"]
           },
           "thumbnail": {
@@ -1045,7 +1054,16 @@
             "description": "Numeric string (arbitrary precision)"
           }
         },
-        "required": ["title", "variantTitle", "thumbnail", "quantity", "unitPrice", "lineTotal"]
+        "required": [
+          "id",
+          "title",
+          "variantTitle",
+          "variantOptionValues",
+          "thumbnail",
+          "quantity",
+          "unitPrice",
+          "lineTotal"
+        ]
       },
       "StoreOrderAddress": {
         "type": ["object", "null"],

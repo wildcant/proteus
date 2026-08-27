@@ -65,7 +65,7 @@ CREATE TABLE "order" (
 	"display_id" serial NOT NULL,
 	"status" "order_status" DEFAULT 'pending' NOT NULL,
 	"fulfillment_status" "order_fulfillment_status" DEFAULT 'unfulfilled' NOT NULL,
-	"email" text,
+	"email" text NOT NULL,
 	"customer_id" text,
 	"currency_code" text NOT NULL,
 	"canceled_at" timestamp with time zone,

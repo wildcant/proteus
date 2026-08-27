@@ -1,27 +1,22 @@
 import { formatPrice } from '@proteus/ui'
 import { formatDatetime } from '@proteus/utils'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
+import { Panel } from '#/components/panel'
 
+/**
+ * What was paid and when, and nothing that implies how. The order module stores no card brand
+ * or last four — `transaction` records amounts, not instruments — so a "Payment method" heading
+ * over a status was a lie of placement.
+ */
 export function PaymentDetails({ order }: { order: StoreOrderResponseOrder }) {
   return (
-    <section>
-      <h3 className="font-bold text-foreground text-xl">Payment</h3>
-
-      <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div>
-          <p className="font-semibold text-foreground text-sm">Payment method</p>
-          <p className="mt-1 text-(--foreground-muted) text-sm">
-            {order.paymentStatus === 'captured' ? 'Payment received' : 'Awaiting payment'}
-          </p>
-        </div>
-
-        <div>
-          <p className="font-semibold text-foreground text-sm">Payment details</p>
-          <p className="mt-1 text-(--foreground-muted) text-sm">
-            {formatPrice(order.totals.orderTotal, order.currencyCode)} paid at {formatDatetime(order.createdAt)}
-          </p>
-        </div>
-      </div>
-    </section>
+    <Panel title="Payment">
+      <p className="mt-6 text-ink text-sm">
+        {order.paymentStatus === 'captured' ? 'Payment received' : 'Awaiting payment'}
+      </p>
+      <p className="mt-1 text-ink-muted text-sm">
+        {formatPrice(order.totals.orderTotal, order.currencyCode)} on {formatDatetime(order.createdAt)}
+      </p>
+    </Panel>
   )
 }

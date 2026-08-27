@@ -18,6 +18,7 @@ import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { env } from '../../env.js'
+import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
 import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
 import { prepareOrderConfirmationData } from './utils/prepare-order-confirmation-data.js'
 
@@ -172,8 +173,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
   })
 
   /** Every order needs an email for receipts and communication. Reject early
-   *  before any side effects if the guest never provided one. */
-  await ctx.step('validate-cart-email', async ({ container }) => {
+   *  before any side effects if the guest never provided one. The validated address is returned
+   *  rather than re-read at `create-order`, so the order's non-null `email` is narrowed here
+   *  instead of asserted there. */
+  const email = await ctx.step('validate-cart-email', async ({ container }) => {
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
     const cart = await cartService.retrieveCart(input.cartId)
     if (!cart.email) {
@@ -182,6 +185,34 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         message: `Cart "${input.cartId}" has no email — an email is required to complete checkout`,
       })
     }
+    return cart.email
+  })
+
+  /** Tells an operator when a checkout unwinds — the one event in this workflow nobody hears
+   *  about today. The step is compensation-only: the forward path is a no-op, so this writes
+   *  nothing on a successful checkout.
+   *
+   *  Registered here, in front of every step that has a compensation, because compensations run
+   *  in reverse registration order. Notifying last means the notification describes a rollback
+   *  that has already finished rather than one still in progress. */
+  await notifyOnFailureStep(ctx, {
+    notifications: [
+      {
+        // TODO(rbac): one configured address until there is a role to ask for.
+        to: env.ADMIN_NOTIFICATION_EMAIL,
+        channel: 'feed',
+        template: NotificationTemplates.CHECKOUT_FAILED,
+        data: {
+          title: 'Checkout failed',
+          description: `Cart "${input.cartId}" could not be completed. The order, its reservations and the cart lock were rolled back.`,
+        },
+        triggerType: 'cart.completion.failed',
+        resourceType: 'cart',
+        resourceId: input.cartId,
+        // A retried workflow must not stack up alerts for the same cart.
+        idempotencyKey: `checkout-failed:${input.cartId}`,
+      },
+    ],
   })
 
   /** Snapshot the cart into an immutable order record.
@@ -237,7 +268,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       }))
 
       const createdOrder = await orderService.createOrder({
-        email: cart.email,
+        email,
         customerId: cart.customerId,
         currencyCode: cart.currencyCode,
         shippingAddress: snapshotAddress(cartAddresses.find((address) => address.type === 'shipping')),
@@ -406,11 +437,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
   await ctx.step('send-order-confirmation', async ({ container }) => {
     const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
 
-    try {
-      if (!order.email) return
+    const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 
+    try {
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-      const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 
       const [lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([
         orderService.listOrderLineItems({ orderId: order.id }),
@@ -439,6 +469,28 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     } catch (error) {
       logger.error(`[complete-cart] Failed to send order confirmation for order "${order.id}"`)
       logger.error(error instanceof Error ? error : String(error))
+
+      /** Written here rather than through `notifyOnFailureStep`, which only ever runs on
+       *  compensation: this step is built never to throw, so there is no rollback for it to hang
+       *  off. The shopper is already looking at a confirmed order — only an operator can act on
+       *  this. Best-effort for the same reason the send is: a failed alert must not become the
+       *  throw that refunds a valid order. */
+      await notificationService
+        .createNotification({
+          // TODO(rbac): one configured address until there is a role to ask for.
+          to: env.ADMIN_NOTIFICATION_EMAIL,
+          channel: 'feed',
+          template: NotificationTemplates.ORDER_CONFIRMATION_FAILED,
+          data: {
+            title: 'Order confirmation not sent',
+            description: `Order #${order.displayId} was placed and paid for, but the confirmation email to ${order.email} could not be sent.`,
+          },
+          triggerType: 'order.confirmation.failed',
+          resourceType: 'order',
+          resourceId: order.id,
+          idempotencyKey: `order-confirmation-failed:${order.id}`,
+        })
+        .catch((notifyError) => logger.error(notifyError instanceof Error ? notifyError : String(notifyError)))
     }
   })
 

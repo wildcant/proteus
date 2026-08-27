@@ -6,6 +6,7 @@
  */
 
 export interface StoreOrderItemSummary {
+  id: string;
   title: string;
   /** @nullable */
   thumbnail: string | null;

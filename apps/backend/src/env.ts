@@ -42,6 +42,16 @@ const envSchema = z.object({
   ADMIN_URL: z.url(),
   STORE_URL: z.url(),
 
+  /**
+   * Where the backend sends operator alerts — a rolled-back checkout, a confirmation email that
+   * never went out. One address, because there are no roles to ask for yet.
+   *
+   * TODO(rbac): replace with the users holding the role that cares about failed checkouts. The
+   * default matches the dev seed's admin, so a fresh environment works without editing `.env` —
+   * which also means a deploy that never sets it alerts nobody.
+   */
+  ADMIN_NOTIFICATION_EMAIL: z.email().default('admin@example.com'),
+
   CORS_ORIGIN: z
     .string()
     .transform((s) => s.split(',').map((u) => u.trim()))

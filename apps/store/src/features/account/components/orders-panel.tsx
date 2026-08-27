@@ -3,19 +3,12 @@ import { formatDate } from '@proteus/utils'
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, PackageIcon } from 'lucide-react'
 import { Suspense, useState } from 'react'
-import type { StoreOrderFulfillmentStatus, StoreOrderListResponseOrdersItem } from '#/api/generated/model'
+import type { StoreOrderListResponseOrdersItem } from '#/api/generated/model'
 import { Button } from '#/components/button'
 import { Pagination } from '#/components/pagination'
 import { Panel } from '#/components/panel'
 import { ORDERS_DEFAULT_OFFSET, ordersPageQuery, useSuspenseOrders } from '#/features/orders/api/orders'
-
-/** The wire values are lowercase single words; the shopper reads a phrase. */
-const fulfillmentLabels: Record<StoreOrderFulfillmentStatus, string> = {
-  unfulfilled: 'Preparing',
-  fulfilled: 'Ready to ship',
-  shipped: 'Shipped',
-  delivered: 'Delivered',
-}
+import { fulfillmentLabels } from '#/features/orders/fulfillment-labels'
 
 /**
  * The panel chrome renders straight away and only the list suspends, so paging does not blank
@@ -86,7 +79,7 @@ function OrderThumbnails({ items }: { items: StoreOrderListResponseOrdersItem['i
   return (
     <div className="flex shrink-0 items-center gap-1">
       {shown.map((item) => (
-        <div key={item.title} className="size-12 overflow-hidden bg-surface">
+        <div key={item.id} className="size-12 overflow-hidden bg-surface">
           {item.thumbnail ? (
             <img src={item.thumbnail} alt="" className="size-full object-cover" />
           ) : (

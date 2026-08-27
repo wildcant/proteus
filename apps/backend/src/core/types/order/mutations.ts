@@ -55,7 +55,7 @@ export type CreateOrderTransactionDTO = {
 /** Addresses are nested rather than referenced: an order owns its addresses, so it has to exist
  *  before they can. `createOrder` writes the order and its addresses in one transaction. */
 export type CreateOrderDTO = {
-  email?: string | null | undefined
+  email: string
   customerId?: string | null | undefined
   currencyCode: string
   shippingAddress?: CreateOrderAddressDTO | undefined
@@ -66,7 +66,7 @@ export type CreateOrderDTO = {
 
 export type UpdateOrderDTO = {
   status?: OrderStatus | undefined
-  email?: string | null | undefined
+  email?: string | undefined
   customerId?: string | null | undefined
   canceledAt?: Date | null | undefined
 }

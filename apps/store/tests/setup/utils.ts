@@ -15,18 +15,37 @@ export function disposeCartAfterTest(page: Page, factories: Factories, cleanup: 
   })
 }
 
+/**
+ * What `fillShippingAddress` types. Exported so a spec asserting the address came back on the
+ * order can read the same values rather than retyping the strings beside them.
+ *
+ * `countryName` is the rendered country, not the code the form selects — an order prints
+ * "United States", never "US".
+ */
+export const SHIPPING_ADDRESS = {
+  countryCode: 'us',
+  countryName: 'United States',
+  firstName: 'John',
+  lastName: 'Doe',
+  address1: '123 Main St',
+  city: 'Austin',
+  province: 'TX',
+  postalCode: '78701',
+  phone: '5551234567',
+} as const
+
 /** Fills the checkout's delivery block. The values are arbitrary but must be a real US state. */
 export async function fillShippingAddress(page: Page) {
-  await page.getByLabel('Country').selectOption('us')
-  await page.getByLabel('First name').fill('John')
-  await page.getByLabel('Last name').fill('Doe')
+  await page.getByLabel('Country').selectOption(SHIPPING_ADDRESS.countryCode)
+  await page.getByLabel('First name').fill(SHIPPING_ADDRESS.firstName)
+  await page.getByLabel('Last name').fill(SHIPPING_ADDRESS.lastName)
   // Exact: 'Apartment, suite, etc.' and 'Billing address same as shipping' are both real labels
   // containing the word, and a loose match would hit them too.
-  await page.getByLabel('Address', { exact: true }).fill('123 Main St')
-  await page.getByLabel('City').fill('Austin')
-  await page.getByLabel('State / Province').fill('TX')
-  await page.getByLabel('Postal code').fill('78701')
-  await page.getByLabel('Phone').fill('5551234567')
+  await page.getByLabel('Address', { exact: true }).fill(SHIPPING_ADDRESS.address1)
+  await page.getByLabel('City').fill(SHIPPING_ADDRESS.city)
+  await page.getByLabel('State / Province').fill(SHIPPING_ADDRESS.province)
+  await page.getByLabel('Postal code').fill(SHIPPING_ADDRESS.postalCode)
+  await page.getByLabel('Phone').fill(SHIPPING_ADDRESS.phone)
   // There is no "Continue to delivery" button any more: the address is written to the cart when
   // focus leaves the block, and `fill()` does not blur on its own. This line is the whole
   // commit-on-blur decision expressed as a test — drop it and the rates never load.
@@ -63,7 +82,8 @@ export async function placeOrder(page: Page, shippingOptionName: string): Promis
   await page.getByRole('button', { name: /place order/i }).click()
 
   await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 15_000 })
-  const orderNumber = await page.getByText(/order number:/i).innerText()
+  // Both order routes print the number the same way, so this read works on either of them.
+  const orderNumber = await page.getByRole('heading', { name: /^#\d+$/ }).innerText()
   const displayId = orderNumber.replace(/\D/g, '')
   expect(displayId, `Could not read a display id out of "${orderNumber}"`).not.toBe('')
   return displayId

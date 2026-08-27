@@ -114,4 +114,20 @@ consistent than the reference's own "Log In" / "Sign up" — two different verbs
   backend change: `parseOrder` learns comma-separated columns, because `createdAt` alone cannot
   stabilise the pager when `createMany` gives a whole seeded catalogue one `now()`
 
+- `11-order-details.md` — the last pre-redesign surface: two routes (`/order/$orderId/confirmed` and
+  `/account/orders/$orderId`) over one body, which becomes the account dashboard's `Panel` grid at
+  the dashboard's width. Adds the fulfilment status, which the detail page has never shown, renders
+  `address2`, `province`, `phone` and a country *name*, and carries the variant options line onto
+  the order row. Three schema corrections ride with it: `variantOptionValues` and `id` on the store
+  line item — the second fixing a React key collision on any order holding two variants of one
+  product — and `email` going non-null through column, DTO and schema, because `complete-cart`'s
+  `validate-cart-email` step has always rejected a cart without one. Both routes gain a real
+  `errorComponent` in place of a dead `if (!order)` branch. Then the two ways checkout can lose a
+  customer quietly both start reaching the admin feed: `notifyOnFailureStep` on the rollback path —
+  its first production caller — and a write from the `catch` that swallows a failed confirmation
+  send, both to a configured `ADMIN_NOTIFICATION_EMAIL` that a `TODO(rbac)` will replace with a role
+  lookup, plus a test that injects a plain `Error` mid-workflow and asserts the feed row lands. The
+  reference gives nothing here: its order history is auth-gated and its tracking and returns are
+  both third-party portals, so the ticket records that and does not re-scrape
+
 Then the `/cart` page and the home page, which is still a single `<h1>`.
