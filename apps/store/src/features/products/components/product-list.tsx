@@ -1,47 +1,40 @@
-import { useState } from 'react'
-import { PRODUCTS_DEFAULT_LIMIT, PRODUCTS_DEFAULT_OFFSET, useSuspenseProducts } from '#/features/products/api/products'
-import { ProductCard } from './product-card'
+import { getRouteApi, useRouterState } from '@tanstack/react-router'
+import { Pagination } from '#/components/pagination'
+import { PRODUCTS_DEFAULT_LIMIT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
+import { ProductEmpty } from './product-empty'
+import { ProductGrid } from './product-grid'
+
+const route = getRouteApi('/_main/')
 
 export function ProductList() {
-  const [offset, setOffset] = useState(PRODUCTS_DEFAULT_OFFSET)
-  const limit = PRODUCTS_DEFAULT_LIMIT
-  const { products, count } = useSuspenseProducts({ offset, limit })
+  const { q, sort, offset } = route.useSearch()
+  const navigate = route.useNavigate()
+  const { products, count } = useSuspenseProducts(productsPageQuery({ q, sort, offset }))
+
+  /**
+   * Paging no longer suspends: `offset` is a loader dep, so the loader has already awaited the
+   * next page by the time the navigation commits and the grid simply keeps showing the previous
+   * one. Without this the Next button looks broken on a slow connection.
+   */
+  const isNavigating = useRouterState({ select: (state) => state.isLoading })
+
+  if (products.length === 0) return <ProductEmpty q={q} />
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-        {products.map((product, index) => (
-          <ProductCard key={product.id} product={product} priority={index < 4} />
-        ))}
+      <div aria-busy={isNavigating} className={isNavigating ? 'opacity-60 transition-opacity' : undefined}>
+        <ProductGrid products={products} />
       </div>
 
-      {products.length === 0 && (
-        <p className="py-20 text-center text-(--foreground-muted) text-sm">No products found.</p>
-      )}
-
-      {count > limit && (
-        <div className="mt-12 flex items-center justify-center gap-6 text-(--foreground-muted) text-sm">
-          <button
-            type="button"
-            className="hover:text-foreground disabled:opacity-40"
-            disabled={offset === 0}
-            onClick={() => setOffset(Math.max(0, offset - limit))}
-          >
-            Previous
-          </button>
-          <span>
-            {Math.floor(offset / limit) + 1} / {Math.ceil(count / limit)}
-          </span>
-          <button
-            type="button"
-            className="hover:text-foreground disabled:opacity-40"
-            disabled={offset + limit >= count}
-            onClick={() => setOffset(offset + limit)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        offset={offset ?? 0}
+        limit={PRODUCTS_DEFAULT_LIMIT}
+        count={count}
+        // Page 1 is written as `undefined`, not `offset=0`, so the default stays out of the URL
+        // the way `sort`'s does.
+        onOffsetChange={(next) => navigate({ search: (previous) => ({ ...previous, offset: next || undefined }) })}
+        className="mt-12"
+      />
     </>
   )
 }

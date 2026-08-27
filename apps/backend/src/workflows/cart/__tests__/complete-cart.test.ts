@@ -1,9 +1,11 @@
+import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/index.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
+import { env } from '../../../env.js'
 import { completeCartWorkflow } from '../complete-cart.js'
 
 let container: TestContainer
@@ -140,6 +142,59 @@ test.describe('completeCartWorkflow', () => {
     })
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('has no variant')
+  })
+
+  test('an unexpected failure mid-workflow leaves an operator a feed notification', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+
+    vi.spyOn(
+      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
+      'authorizePaymentSession',
+    ).mockRejectedValueOnce(new Error('provider unavailable'))
+
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
+
+    // The rollback itself is covered above. What is asserted here is the row it leaves behind:
+    // a checkout that unwinds is the one failure nobody used to hear about.
+    expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
+      {
+        to: env.ADMIN_NOTIFICATION_EMAIL,
+        channel: 'feed',
+        resourceType: 'cart',
+        resourceId: cart.id,
+        // The keys the admin's notification item actually renders.
+        data: { title: 'Checkout failed', description: expect.stringContaining(cart.id) },
+      },
+    ])
+  })
+
+  test('a confirmation that fails to send notifies an operator and still returns the order', async ({
+    service,
+    expect,
+  }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+
+    // `Once`, so only the shopper's confirmation fails — the feed row written from the catch is
+    // the second call and has to get through.
+    vi.spyOn(
+      container.resolve<INotificationModuleService>(Modules.NOTIFICATION),
+      'createNotification',
+    ).mockRejectedValueOnce(new Error('mail provider unavailable'))
+
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
+
+    // The payment is authorized by now, so the send is built never to throw. That is also why
+    // `notifyOnFailureStep` cannot cover this case: no throw, no rollback, no compensation.
+    expect(order).toMatchObject({ id: expect.any(String) })
+    expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
+      {
+        to: env.ADMIN_NOTIFICATION_EMAIL,
+        channel: 'feed',
+        resourceType: 'order',
+        resourceId: order.id,
+        data: { title: 'Order confirmation not sent', description: expect.stringContaining(order.email) },
+      },
+    ])
   })
 
   test('refuses a cart with no email', async ({ service, expect }) => {

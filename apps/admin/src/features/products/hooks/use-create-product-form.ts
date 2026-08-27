@@ -71,6 +71,7 @@ export function useCreateProductForm(params?: CreateProductFormParams) {
       } catch (error) {
         // The upload and the parse throw; `mutate` reports its own failures through the callbacks.
         params?.onError?.(error instanceof Error ? error.message : 'Failed to create product')
+      } finally {
         params?.onSettled?.()
       }
     },

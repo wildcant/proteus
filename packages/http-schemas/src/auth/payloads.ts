@@ -30,7 +30,9 @@ export type ResetPasswordBody = z.infer<typeof ResetPasswordBody>
 
 export const UpdatePasswordBody = z
   .object({
-    password: z.string().min(1),
+    // Message set explicitly, as on StoreSignupBody: this schema also validates the
+    // storefront's reset form, and Zod's default reads "Too small: expected string...".
+    password: z.string().min(1, 'Enter a new password'),
   })
   .openapi('UpdatePasswordBody')
 export type UpdatePasswordBody = z.infer<typeof UpdatePasswordBody>

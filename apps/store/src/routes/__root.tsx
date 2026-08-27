@@ -1,9 +1,12 @@
 import { Toaster } from '@proteus/ui'
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { formDevtoolsPlugin } from '@tanstack/react-form-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { SHOW_DEVTOOLS } from '#/env.ts'
+import { modalSearchSchema } from '#/lib/modal-state'
 import manropeFont from '../assets/fonts/Manrope-VariableFont_wght.woff2?url'
 import appCss from '../styles.css?url'
 
@@ -11,6 +14,8 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   ssr: true,
+  // Declared here so every route inherits it — see src/lib/modal-state.ts.
+  validateSearch: modalSearchSchema,
   head: () => ({
     meta: [
       {
@@ -66,18 +71,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="wrap-anywhere font-sans antialiased selection:bg-[rgba(79,184,178,0.24)]">
         {children}
-        <Toaster />
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        {/* The PDP's action bar owns the bottom-4 lane on the phone, and a failed add-to-cart
+            toast would land on top of the button you press to retry it. */}
+        <Toaster viewportClassName="bottom-20 lg:bottom-4" />
+        {!!SHOW_DEVTOOLS && (
+          <TanStackDevtools
+            config={{
+              position: 'bottom-right',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              formDevtoolsPlugin(),
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

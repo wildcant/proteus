@@ -1,9 +1,16 @@
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, toast } from '@proteus/ui'
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  toast,
+  usePrompt,
+} from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { EllipsisIcon } from 'lucide-react'
 import type { AdminProductOption } from '#/api/generated/model'
 import { useDeleteProductOption } from '#/features/product-options/api/product-options'
-import { usePrompt } from '#/hooks/use-prompt.tsx'
 
 export function OptionRowActions({ option }: { option: AdminProductOption }) {
   const { mutate: remove } = useDeleteProductOption(option.id)

@@ -9,7 +9,7 @@ export type OrderDTO = {
   displayId: number
   status: OrderStatus
   fulfillmentStatus: OrderFulfillmentStatus
-  email: string | null
+  email: string
   customerId: string | null
   currencyCode: string
   canceledAt: Date | null

@@ -1,4 +1,4 @@
-import { Card, CardAction, CardHeader, CardTitle, StatusBadge } from '@proteus/ui'
+import { Card, CardAction, CardHeader, CardTitle, StatusBadge, usePrompt } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
 import type { AdminProduct } from '#/api/generated/model'
@@ -6,7 +6,6 @@ import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { useDeleteProduct } from '#/features/products/api/products'
 import { productStatusColors } from '#/features/products/constants'
-import { usePrompt } from '#/hooks/use-prompt.tsx'
 
 export function ProductGeneralSection({ product }: { product: AdminProduct }) {
   const navigate = useNavigate()

@@ -4,12 +4,10 @@
  * Store API
  * OpenAPI spec version: 0.1.0
  */
-import type { StoreShippingOptionPriceType } from './storeShippingOptionPriceType.ts';
 
 export interface StoreShippingOption {
   id: string;
   name: string;
-  priceType: StoreShippingOptionPriceType;
   /** @nullable */
   amount: number | null;
   serviceZoneId: string;
@@ -18,11 +16,4 @@ export interface StoreShippingOption {
   shippingOptionTypeId: string | null;
   providerId: string;
   data?: unknown;
-  /** @nullable */
-  metadata: string | null;
-  isEnabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-  /** @nullable */
-  deletedAt: string | null;
 }

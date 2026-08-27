@@ -7,6 +7,7 @@ export const StoreOrderFulfillmentStatus = z.enum(['unfulfilled', 'fulfilled', '
 
 export const StoreOrderItemSummary = z
   .object({
+    id: z.string(),
     title: z.string(),
     thumbnail: z.string().nullable(),
     quantity: z.number(),
@@ -16,8 +17,10 @@ export type StoreOrderItemSummary = z.input<typeof StoreOrderItemSummary>
 
 export const StoreOrderLineItem = z
   .object({
+    id: z.string(),
     title: z.string(),
     variantTitle: z.string().nullable(),
+    variantOptionValues: z.string().nullable(),
     thumbnail: z.string().nullable(),
     quantity: z.number(),
     unitPrice: bigNumberToString,
@@ -65,7 +68,7 @@ export const StoreOrder = z
     displayId: z.number(),
     status: StoreOrderStatus,
     fulfillmentStatus: StoreOrderFulfillmentStatus,
-    email: z.string().nullable(),
+    email: z.string(),
     currencyCode: z.string(),
     createdAt: dateToIso,
     ...timestamps.pick({ updatedAt: true }).shape,

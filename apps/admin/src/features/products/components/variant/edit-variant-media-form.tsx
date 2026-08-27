@@ -1,10 +1,18 @@
-import { Button, Checkbox, CommandBar, CommandBarCommand, CommandBarSeparator, CommandBarValue, cn } from '@proteus/ui'
+import {
+  Button,
+  Checkbox,
+  CommandBar,
+  CommandBarCommand,
+  CommandBarSeparator,
+  CommandBarValue,
+  cn,
+  KeyboundForm,
+  RouteFocusModal,
+  useRouteModal,
+} from '@proteus/ui'
 import { ImageIcon, PlusIcon, StarIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { AdminProductImage, AdminProductVariantResponseVariant } from '#/api/generated/model'
-import { KeyboundForm } from '#/components/modals/keybound-form'
-import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
-import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
 import { useEditVariantMediaForm } from '#/features/products/hooks/use-edit-variant-media-form'
 
 type EditVariantMediaFormProps = {

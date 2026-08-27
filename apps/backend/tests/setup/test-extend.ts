@@ -44,6 +44,7 @@ import {
   generateFulfillmentDTO,
   generateUpdateFulfillmentDTO,
 } from '../factories/fulfillment-dto.js'
+import { generateStoreCreateAddressBody } from '../factories/http/index.js'
 import {
   generateCreateInventoryItemDTO,
   generateCreateInventoryLevelDTO,
@@ -100,17 +101,21 @@ import {
   createCart,
   createCheckoutReadyCart,
   createCustomer,
+  createCustomerAddress,
   createOrder,
   createPaymentSessionForCart,
   createProduct,
   createProductOption,
+  createProducts,
   createProductVariant,
   createProductVariants,
+  createSellableVariant,
   fulfillOrder,
   linkRepo,
   listAuthVerifications,
   listCartAddresses,
   listCarts,
+  listCustomerAddresses,
   listCustomers,
   listLineItems,
   listNotifications,
@@ -192,6 +197,15 @@ export type Fixtures = {
     user: typeof generateUser
     product: typeof generateProduct
   }
+  /** Request bodies for the HTTP layer, grouped by the API scope they belong to — the same split
+   *  `@proteus/http-schemas` makes between `./store` and `./admin`. A wire body is not a service
+   *  DTO: it has its own required fields, so a test that posts one needs a generator for the same
+   *  reason a test that persists one does. */
+  http: {
+    store: {
+      createAddress: typeof generateStoreCreateAddressBody
+    }
+  }
   dto: {
     generate: {
       authIdentity: typeof generateAuthIdentityDTO
@@ -272,6 +286,7 @@ export type Fixtures = {
       cart: typeof createCart
       cartAddresses: typeof addCartAddresses
       customer: typeof createCustomer
+      customerAddress: typeof createCustomerAddress
       lineItem: typeof addLineItem
       shippingMethod: typeof addShippingMethod
       variantStock: typeof stockVariant
@@ -280,10 +295,12 @@ export type Fixtures = {
       capturedPayment: typeof capturePayment
       canceledPayment: typeof cancelPayment
       checkoutReadyCart: typeof createCheckoutReadyCart
+      sellableVariant: typeof createSellableVariant
       order: typeof createOrder
       fulfilledOrder: typeof fulfillOrder
       shippedOrder: typeof shipOrder
       product: typeof createProduct
+      products: typeof createProducts
       productOption: typeof createProductOption
       productVariant: typeof createProductVariant
       productVariants: typeof createProductVariants
@@ -309,6 +326,7 @@ export type Fixtures = {
       carts: typeof listCarts
       cartLineItems: typeof listLineItems
       customer: typeof retrieveCustomer
+      customerAddresses: typeof listCustomerAddresses
       customers: typeof listCustomers
       authVerifications: typeof listAuthVerifications
       notifications: typeof listNotifications
@@ -371,6 +389,13 @@ export const test = testBase.extend<Fixtures>({
       customer: generateCustomer,
       user: generateUser,
       product: generateProduct,
+    })
+  },
+  async http({ task: _ }, use) {
+    await use({
+      store: {
+        createAddress: generateStoreCreateAddressBody,
+      },
     })
   },
   async dto({ task: _ }, use) {
@@ -453,6 +478,7 @@ export const test = testBase.extend<Fixtures>({
         cart: createCart,
         cartAddresses: addCartAddresses,
         customer: createCustomer,
+        customerAddress: createCustomerAddress,
         lineItem: addLineItem,
         shippingMethod: addShippingMethod,
         variantStock: stockVariant,
@@ -461,10 +487,12 @@ export const test = testBase.extend<Fixtures>({
         capturedPayment: capturePayment,
         canceledPayment: cancelPayment,
         checkoutReadyCart: createCheckoutReadyCart,
+        sellableVariant: createSellableVariant,
         order: createOrder,
         fulfilledOrder: fulfillOrder,
         shippedOrder: shipOrder,
         product: createProduct,
+        products: createProducts,
         productOption: createProductOption,
         productVariant: createProductVariant,
         productVariants: createProductVariants,
@@ -490,6 +518,7 @@ export const test = testBase.extend<Fixtures>({
         carts: listCarts,
         cartLineItems: listLineItems,
         customer: retrieveCustomer,
+        customerAddresses: listCustomerAddresses,
         customers: listCustomers,
         authVerifications: listAuthVerifications,
         notifications: listNotifications,

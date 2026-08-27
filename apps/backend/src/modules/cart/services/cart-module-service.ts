@@ -5,6 +5,7 @@ import type {
   CartAddressType,
   CartDTO,
   CartLineItemDTO,
+  CartLineItemPlanDTO,
   CartShippingMethodDTO,
   CartTotalsDTO,
   ComputeCartTotalsDTO,
@@ -183,6 +184,23 @@ export class CartModuleService implements ICartModuleService {
   async updateLineItems(lineItemIds: string[], data: UpdateLineItemDTO, context?: Context): Promise<CartLineItemDTO[]> {
     return this.withTransaction(context, async (ctx) => {
       return this.cartLineItemRepository.updateMany(lineItemIds, data, ctx)
+    })
+  }
+
+  async applyLineItemPlan(cartId: string, plan: CartLineItemPlanDTO, context?: Context): Promise<CartLineItemDTO[]> {
+    return this.withTransaction(context, async (ctx) => {
+      const cart = await this.cartRepository.findByIdOrFail(cartId, undefined, ctx)
+      this.assertNotCompleted(cart)
+
+      const created = await this.cartLineItemRepository.createMany(
+        plan.create.map((item) => ({ ...item, cartId })),
+        ctx,
+      )
+      const merged = await Promise.all(
+        plan.merge.map((update) => this.cartLineItemRepository.update(update.id, update.data, ctx)),
+      )
+
+      return [...created, ...merged]
     })
   }
 

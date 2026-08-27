@@ -1,8 +1,15 @@
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, toast } from '@proteus/ui'
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  toast,
+  usePrompt,
+} from '@proteus/ui'
 import { EllipsisIcon, LinkIcon, RefreshCwIcon, TrashIcon } from 'lucide-react'
 import type { AdminInvite } from '#/api/generated/model'
 import { useDeleteInvite, useResendInvite } from '#/features/users/api/invites'
-import { usePrompt } from '#/hooks/use-prompt.tsx'
 
 type InviteRowActionsProps = {
   invite: AdminInvite

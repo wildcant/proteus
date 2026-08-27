@@ -1,7 +1,7 @@
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { InviteDTO } from '@core/types/user/invite-common.js'
 import type { IUserModuleService } from '@core/types/user/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { env } from '../../env.js'
 
@@ -23,7 +23,7 @@ export const createInviteWorkflow = createWorkflow<CreateInviteInput, InviteDTO>
       await notificationService.createNotification({
         to: invite.email,
         channel: 'email',
-        template: 'admin-invitation',
+        template: NotificationTemplates.ADMIN_INVITATION,
         data: { email: invite.email, inviteLink },
       })
     })

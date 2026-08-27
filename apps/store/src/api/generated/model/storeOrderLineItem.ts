@@ -6,9 +6,12 @@
  */
 
 export interface StoreOrderLineItem {
+  id: string;
   title: string;
   /** @nullable */
   variantTitle: string | null;
+  /** @nullable */
+  variantOptionValues: string | null;
   /** @nullable */
   thumbnail: string | null;
   quantity: number;

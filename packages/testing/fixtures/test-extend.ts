@@ -2,7 +2,6 @@ import { test as base, expect } from '@playwright/test'
 import { interpolatePath } from '@tanstack/react-router'
 import {
   createCart,
-  createCheckoutInfrastructure,
   createCustomer,
   createFulfillmentProvider,
   createFulfillmentSet,
@@ -20,11 +19,12 @@ import {
   createProductVariantImage,
   createProductVariantOption,
   createProductVariantPriceSet,
+  createProductWithOption,
   createProductWithPricing,
   createServiceZone,
-  createShippingInfrastructure,
   createShippingOption,
   createShippingOptionType,
+  createShippingOptionWithZone,
   createShippingProfile,
   createUser,
   deleteCartById,
@@ -32,6 +32,7 @@ import {
   deleteFulfillmentProviderById,
   deleteFulfillmentSetById,
   deleteGeoZoneById,
+  deleteNotificationsByIds,
   deletePaymentProviderById,
   deletePriceById,
   deletePriceSetById,
@@ -72,6 +73,8 @@ import {
   generateShippingOptionType,
   generateShippingProfile,
   generateUser,
+  retrieveCustomer,
+  retrieveNotification,
 } from 'backend/test'
 import { type AuthenticateFunction, combinePersonas, definePersona } from 'playwright-persona'
 import { generateLoginFormValues, generateRegisterFormValues } from '../factories/form-values.js'
@@ -84,7 +87,7 @@ type NavigateOptions<RoutePath extends string> = {
 
 type NavigateFunction<RoutePath extends string> = (options: NavigateOptions<RoutePath>) => Promise<void>
 
-type CleanupFunction = {
+export type CleanupFunction = {
   add: (fn: () => Promise<void>) => void
 }
 
@@ -121,7 +124,9 @@ const customer = definePersona('customer', {
   },
   async verifySession({ page, session }) {
     await page.goto('/account', { waitUntil: 'networkidle' })
-    await expect(page.getByRole('button', { name: session.email })).toBeVisible({
+    // The Details panel is the only place the signed-in customer's email appears, and it is
+    // customer-scoped, so seeing it proves the restored session still resolves /store/customers/me.
+    await expect(page.getByText(session.email).first()).toBeVisible({
       timeout: 2_000,
     })
   },
@@ -159,6 +164,10 @@ export type Factories = {
     loginForm: typeof generateLoginFormValues
     customerSignupForm: typeof generateRegisterFormValues
   }
+  read: {
+    customer: typeof retrieveCustomer
+    notification: typeof retrieveNotification
+  }
   create: {
     cart: typeof createCart
     customer: typeof createCustomer
@@ -175,9 +184,9 @@ export type Factories = {
     priceSet: typeof createPriceSet
     price: typeof createPrice
     productVariantPriceSet: typeof createProductVariantPriceSet
+    productWithOption: typeof createProductWithOption
     productWithPricing: typeof createProductWithPricing
-    checkoutInfrastructure: typeof createCheckoutInfrastructure
-    shippingInfrastructure: typeof createShippingInfrastructure
+    shippingOptionWithZone: typeof createShippingOptionWithZone
     fulfillmentProvider: typeof createFulfillmentProvider
     fulfillmentSet: typeof createFulfillmentSet
     serviceZone: typeof createServiceZone
@@ -189,6 +198,7 @@ export type Factories = {
   }
   destroy: {
     cart: typeof deleteCartById
+    notification: typeof deleteNotificationsByIds
     customer: typeof deleteCustomerById
     user: typeof deleteUserById
     product: typeof deleteProductById
@@ -250,6 +260,10 @@ export function createTest<RoutePath extends string = string>() {
         loginForm: generateLoginFormValues,
         customerSignupForm: generateRegisterFormValues,
       },
+      read: {
+        customer: retrieveCustomer,
+        notification: retrieveNotification,
+      },
       create: {
         cart: createCart,
         customer: createCustomer,
@@ -266,9 +280,9 @@ export function createTest<RoutePath extends string = string>() {
         priceSet: createPriceSet,
         price: createPrice,
         productVariantPriceSet: createProductVariantPriceSet,
+        productWithOption: createProductWithOption,
         productWithPricing: createProductWithPricing,
-        checkoutInfrastructure: createCheckoutInfrastructure,
-        shippingInfrastructure: createShippingInfrastructure,
+        shippingOptionWithZone: createShippingOptionWithZone,
         fulfillmentProvider: createFulfillmentProvider,
         fulfillmentSet: createFulfillmentSet,
         serviceZone: createServiceZone,
@@ -280,6 +294,7 @@ export function createTest<RoutePath extends string = string>() {
       },
       destroy: {
         cart: deleteCartById,
+        notification: deleteNotificationsByIds,
         customer: deleteCustomerById,
         user: deleteUserById,
         product: deleteProductById,

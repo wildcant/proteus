@@ -35,15 +35,13 @@
             "minLength": 1
           },
           "firstName": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "lastName": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           }
         },
-        "required": ["email", "password", "firstName", "lastName"]
+        "required": ["email", "password"]
       },
       "StoreLoginBody": {
         "type": "object",
@@ -559,10 +557,6 @@
           "name": {
             "type": "string"
           },
-          "priceType": {
-            "type": "string",
-            "enum": ["flat", "calculated"]
-          },
           "amount": {
             "type": ["number", "null"]
           },
@@ -578,41 +572,9 @@
           "providerId": {
             "type": "string"
           },
-          "data": {},
-          "metadata": {
-            "type": ["string", "null"]
-          },
-          "isEnabled": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": ["string", "null"],
-            "format": "date-time"
-          }
+          "data": {}
         },
-        "required": [
-          "id",
-          "name",
-          "priceType",
-          "amount",
-          "serviceZoneId",
-          "shippingProfileId",
-          "shippingOptionTypeId",
-          "providerId",
-          "metadata",
-          "isEnabled",
-          "createdAt",
-          "updatedAt",
-          "deletedAt"
-        ]
+        "required": ["id", "name", "amount", "serviceZoneId", "shippingProfileId", "shippingOptionTypeId", "providerId"]
       },
       "StoreCreateCartShippingMethodResponse": {
         "type": "object",
@@ -725,6 +687,200 @@
         },
         "required": ["id", "hasAccount", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
       },
+      "StoreCustomerAddressListResponse": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCustomerAddress"
+            }
+          }
+        },
+        "required": ["addresses"]
+      },
+      "StoreCustomerAddress": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "addressName": {
+            "type": ["string", "null"]
+          },
+          "isDefaultShipping": {
+            "type": "boolean"
+          },
+          "isDefaultBilling": {
+            "type": "boolean"
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "city": {
+            "type": ["string", "null"]
+          },
+          "countryCode": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "postalCode": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "customerId",
+          "addressName",
+          "isDefaultShipping",
+          "isDefaultBilling",
+          "company",
+          "firstName",
+          "lastName",
+          "address1",
+          "address2",
+          "city",
+          "countryCode",
+          "province",
+          "postalCode",
+          "phone",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "StoreCustomerAddressResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/StoreCustomerAddress"
+          }
+        },
+        "required": ["address"]
+      },
+      "StoreCreateAddress": {
+        "type": "object",
+        "properties": {
+          "addressName": {
+            "type": ["string", "null"]
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": "string",
+            "minLength": 1
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1
+          },
+          "countryCode": {
+            "type": "string",
+            "minLength": 2
+          },
+          "postalCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": ["address1", "city", "countryCode", "postalCode"]
+      },
+      "StoreUpdateAddress": {
+        "type": "object",
+        "properties": {
+          "addressName": {
+            "type": ["string", "null"]
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "firstName": {
+            "type": ["string", "null"]
+          },
+          "lastName": {
+            "type": ["string", "null"]
+          },
+          "address2": {
+            "type": ["string", "null"]
+          },
+          "province": {
+            "type": ["string", "null"]
+          },
+          "phone": {
+            "type": ["string", "null"]
+          },
+          "address1": {
+            "type": "string",
+            "minLength": 1
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1
+          },
+          "countryCode": {
+            "type": "string",
+            "minLength": 2
+          },
+          "postalCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
       "StoreOrderListResponse": {
         "type": "object",
         "properties": {
@@ -769,6 +925,9 @@
       "StoreOrderItemSummary": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "title": {
             "type": "string"
           },
@@ -779,7 +938,7 @@
             "type": "number"
           }
         },
-        "required": ["title", "thumbnail", "quantity"]
+        "required": ["id", "title", "thumbnail", "quantity"]
       },
       "StoreOrder": {
         "type": "object",
@@ -799,7 +958,7 @@
             "enum": ["unfulfilled", "fulfilled", "shipped", "delivered"]
           },
           "email": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "currencyCode": {
             "type": "string"
@@ -868,10 +1027,16 @@
       "StoreOrderLineItem": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "title": {
             "type": "string"
           },
           "variantTitle": {
+            "type": ["string", "null"]
+          },
+          "variantOptionValues": {
             "type": ["string", "null"]
           },
           "thumbnail": {
@@ -889,7 +1054,16 @@
             "description": "Numeric string (arbitrary precision)"
           }
         },
-        "required": ["title", "variantTitle", "thumbnail", "quantity", "unitPrice", "lineTotal"]
+        "required": [
+          "id",
+          "title",
+          "variantTitle",
+          "variantOptionValues",
+          "thumbnail",
+          "quantity",
+          "unitPrice",
+          "lineTotal"
+        ]
       },
       "StoreOrderAddress": {
         "type": ["object", "null"],
@@ -1656,31 +1830,16 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "title": {
+                        "variantId": {
                           "type": "string",
                           "minLength": 1
                         },
                         "quantity": {
                           "type": "integer",
                           "exclusiveMinimum": 0
-                        },
-                        "unitPrice": {
-                          "type": "string"
-                        },
-                        "variantId": {
-                          "type": "string"
-                        },
-                        "productId": {
-                          "type": "string"
-                        },
-                        "productTitle": {
-                          "type": "string"
-                        },
-                        "variantSku": {
-                          "type": "string"
                         }
                       },
-                      "required": ["title", "quantity", "unitPrice"]
+                      "required": ["variantId", "quantity"]
                     }
                   }
                 }
@@ -1775,22 +1934,20 @@
                     "type": "object",
                     "properties": {
                       "firstName": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": ["string", "null"]
                       },
                       "lastName": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": ["string", "null"]
                       },
                       "address1": {
                         "type": "string",
                         "minLength": 1
                       },
                       "address2": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "company": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "city": {
                         "type": "string",
@@ -1802,14 +1959,14 @@
                         "maxLength": 2
                       },
                       "province": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "postalCode": {
                         "type": "string",
                         "minLength": 1
                       },
                       "phone": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       }
                     },
                     "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
@@ -1818,22 +1975,20 @@
                     "type": "object",
                     "properties": {
                       "firstName": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": ["string", "null"]
                       },
                       "lastName": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": ["string", "null"]
                       },
                       "address1": {
                         "type": "string",
                         "minLength": 1
                       },
                       "address2": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "company": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "city": {
                         "type": "string",
@@ -1845,14 +2000,14 @@
                         "maxLength": 2
                       },
                       "province": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "postalCode": {
                         "type": "string",
                         "minLength": 1
                       },
                       "phone": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       }
                     },
                     "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
@@ -1904,31 +2059,16 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "title": {
+                  "variantId": {
                     "type": "string",
                     "minLength": 1
                   },
                   "quantity": {
                     "type": "integer",
                     "exclusiveMinimum": 0
-                  },
-                  "unitPrice": {
-                    "type": "string"
-                  },
-                  "variantId": {
-                    "type": "string"
-                  },
-                  "productId": {
-                    "type": "string"
-                  },
-                  "productTitle": {
-                    "type": "string"
-                  },
-                  "variantSku": {
-                    "type": "string"
                   }
                 },
-                "required": ["title", "quantity", "unitPrice"]
+                "required": ["variantId", "quantity"]
               }
             }
           }
@@ -1987,9 +2127,6 @@
                   "quantity": {
                     "type": "integer",
                     "exclusiveMinimum": 0
-                  },
-                  "unitPrice": {
-                    "type": "string"
                   }
                 }
               }
@@ -2309,6 +2446,136 @@
           },
           "400": {
             "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/customers/me/addresses": {
+      "get": {
+        "operationId": "listStoreCustomerAddresses",
+        "summary": "List the authenticated customer's addresses",
+        "tags": ["Customers"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCustomerAddressListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createStoreCustomerAddress",
+        "summary": "Add an address to the address book",
+        "tags": ["Customers"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreCreateAddress"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCustomerAddressResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/customers/me/addresses/{id}": {
+      "patch": {
+        "operationId": "updateStoreCustomerAddress",
+        "summary": "Update an address in the address book",
+        "tags": ["Customers"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreUpdateAddress"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCustomerAddressResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteStoreCustomerAddress",
+        "summary": "Remove an address from the address book",
+        "tags": ["Customers"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
           }
         }
       }

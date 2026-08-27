@@ -6,10 +6,15 @@ import type {
   CreateShippingMethodDTO,
   UpdateCartWithAddressesDTO,
 } from '../../../src/core/types/cart/mutations.js'
+import type { CreatePriceDTO } from '../../../src/core/types/pricing/mutations.js'
+import type { CreateProductDTO } from '../../../src/core/types/product/mutations.js'
 import { generateCreateLineItemDTO } from '../cart-dto.js'
+import { generateCreatePriceDTO } from '../pricing-dto.js'
 import { addCartAddresses, addLineItem, addShippingMethod, createCart } from './cart.js'
 import { type StockVariantOptions, stockVariant } from './inventory.js'
 import { createPaymentSessionForCart } from './payment.js'
+import { priceVariants } from './pricing.js'
+import { createProduct, createProductVariant, type VariantOverrides } from './product.js'
 
 export type CreateCheckoutReadyCartOptions = {
   cart?: Partial<CreateCartDTO>
@@ -79,5 +84,42 @@ export async function createCheckoutReadyCart(
     inventoryLevel: inventory?.inventoryLevel ?? null,
     paymentCollection: payment?.paymentCollection ?? null,
     paymentSession: payment?.paymentSession ?? null,
+  }
+}
+
+export type CreateSellableVariantOptions = {
+  product?: Partial<CreateProductDTO>
+  variant?: VariantOverrides
+  price?: Partial<CreatePriceDTO>
+  /** Stock behind the variant. `null` leaves it untracked, which the storefront counts as buyable. */
+  inventory?: Omit<StockVariantOptions, 'variantId'> | null
+}
+
+/**
+ * A product a shopper can actually put in their bag: published, with a variant, a price in some
+ * currency, and stock behind it. `add-to-cart` refuses anything missing one of those, so a test
+ * about merging or quantities needs all four standing before it reaches its own subject.
+ *
+ * The price is returned rather than left to be read back, because it is the number the workflow
+ * is supposed to write onto the line item — the assertion every pricing test makes.
+ */
+export async function createSellableVariant(container: AwilixContainer, options: CreateSellableVariantOptions = {}) {
+  const { product } = await createProduct(container, { status: 'published', ...options.product })
+  const variant = await createProductVariant(container, product.id, options.variant)
+
+  const price = generateCreatePriceDTO(options.price)
+  const [priceSet] = await priceVariants(container, [variant.id], { prices: [price] })
+  if (!priceSet) throw new Error('priceVariants returned no rows')
+
+  const stock =
+    options.inventory === null ? null : await stockVariant(container, { ...options.inventory, variantId: variant.id })
+
+  return {
+    product,
+    variant,
+    price,
+    priceSet,
+    inventoryItem: stock?.inventoryItem ?? null,
+    inventoryLevel: stock?.inventoryLevel ?? null,
   }
 }

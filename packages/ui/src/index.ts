@@ -1,3 +1,7 @@
+// Re-exported so app packages can build render-prop components without taking a direct
+// dependency on @base-ui/react. Public API, not an internal: @base-ui/react/use-render.
+export { useRender } from '@base-ui/react/use-render'
+export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './components/ui/accordion.tsx'
 export {
   AlertDialog,
   AlertDialogAction,
@@ -108,12 +112,14 @@ export { Label } from './components/ui/label.tsx'
 export { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from './components/ui/native-select.tsx'
 export {
   Popover,
+  PopoverArrow,
   PopoverContent,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
 } from './components/ui/popover.tsx'
+export { type PromptProps, RenderPrompt } from './components/ui/prompt.tsx'
 export { RadioGroup, RadioGroupItem } from './components/ui/radio-group.tsx'
 export { Separator } from './components/ui/separator.tsx'
 export {
@@ -168,5 +174,11 @@ export { TagInput, type TagInputItem } from './components/ui/tag-input.tsx'
 export { Textarea } from './components/ui/textarea.tsx'
 export { Toaster, toast, useToastManager } from './components/ui/toast.tsx'
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/ui/tooltip.tsx'
+export { usePrompt } from './hooks/use-prompt.tsx'
 export { cn } from './lib/utils.ts'
+export { KeyboundForm } from './route-modals/keybound-form.tsx'
+export { RouteDrawer } from './route-modals/route-drawer/route-drawer.tsx'
+export { RouteFocusModal } from './route-modals/route-focus-modal/route-focus-modal.tsx'
+export { RouteModalForm } from './route-modals/route-modal-form/route-modal-form.tsx'
+export { useRouteModal } from './route-modals/route-modal-provider/use-route-modal.tsx'
 export { formatAmount, formatPrice, getCurrencySymbol } from './utils/pricing.ts'

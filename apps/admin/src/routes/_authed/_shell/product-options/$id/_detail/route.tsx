@@ -1,4 +1,4 @@
-import { Badge, Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
+import { Badge, Card, CardAction, CardHeader, CardTitle, usePrompt } from '@proteus/ui'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
@@ -10,7 +10,6 @@ import { PageLayout } from '#/components/layout/page-layout'
 import { productOptionQueryOptions, useDeleteProductOption } from '#/features/product-options/api/product-options'
 import { useOptionProductsTable } from '#/features/product-options/hooks/use-option-products-table'
 import { useOptionValuesTable } from '#/features/product-options/hooks/use-option-values-table'
-import { usePrompt } from '#/hooks/use-prompt'
 
 export const Route = createFileRoute('/_authed/_shell/product-options/$id/_detail')({
   pendingComponent: () => <SingleColumnPageSkeleton sections={2} />,

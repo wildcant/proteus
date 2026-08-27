@@ -1,4 +1,9 @@
-import type { StoreCartDetailResponse, StoreCompleteCartResponse } from '@proteus/http-schemas/store'
+import { BigNumber } from '@core/db/bignum.js'
+import type {
+  StoreCartDetailResponse,
+  StoreCompleteCartResponse,
+  StoreCreateCartLineItemResponse,
+} from '@proteus/http-schemas/store'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -102,8 +107,8 @@ test.describe('POST /store/carts/:id/complete (concurrent)', () => {
     const { cart, order } = await service.create.order(api.container)
 
     // Same state a losing request observes mid-race, minus the race. `customerId` is carried
-    // over because the generator would otherwise invent one, and `validateCartOwnership`
-    // rejects the request before the workflow this test is about ever runs.
+    // over because the generator invents one for every field left unpinned, and this test is
+    // about the completion window, not about the cart changing hands.
     await service.update.cart(api.container, cart.id, { completedAt: null, customerId: cart.customerId })
 
     const { status, body } = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/complete`)
@@ -177,5 +182,77 @@ test.describe('GET /store/carts/:id', () => {
 
     expect(body.cart.shippingAddress).toMatchObject({ type: 'shipping' })
     expect(body.cart.billingAddress).toBeNull()
+  })
+})
+
+/**
+ * The line item is the shop's record of a sale, so the payload names the pick and nothing else.
+ * Everything printed on the line — its title, its option values, above all its price — is read
+ * off the catalogue by `add-to-cart`.
+ */
+test.describe('POST /store/carts/:id/line-items', () => {
+  test('prices the line from the catalogue, whatever the payload says', async ({ service, expect }) => {
+    const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
+    const { variant } = await service.create.sellableVariant(api.container, {
+      price: { amount: new BigNumber('80'), currencyCode: 'usd' },
+      inventory: { level: { stockedQuantity: 10 } },
+    })
+
+    const { status, body } = await api.post<StoreCreateCartLineItemResponse>(
+      `/store/carts/${cart.id}/line-items`,
+      // `unitPrice` is what a tampered client would send. The schema strips it rather than
+      // rejecting, so the request still succeeds — at the price the shop is asking.
+      { variantId: variant.id, quantity: 1, unitPrice: '0.01' },
+    )
+
+    expect(status).toBe(201)
+    expect(body.lineItem.unitPrice).toBe('80')
+    expect(body.lineItem.lineTotal).toBe('80')
+  })
+
+  test('merges a repeat add into the line the cart already holds', async ({ service, expect }) => {
+    const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
+    const { variant } = await service.create.sellableVariant(api.container, {
+      inventory: { level: { stockedQuantity: 10 } },
+    })
+    const first = await api.post<StoreCreateCartLineItemResponse>(`/store/carts/${cart.id}/line-items`, {
+      variantId: variant.id,
+      quantity: 1,
+    })
+
+    const { status, body } = await api.post<StoreCreateCartLineItemResponse>(`/store/carts/${cart.id}/line-items`, {
+      variantId: variant.id,
+      quantity: 2,
+    })
+
+    // The same row comes back, not a second one — the bug this workflow was written for.
+    expect(status).toBe(201)
+    expect(body.lineItem.id).toBe(first.body.lineItem.id)
+    expect(body.lineItem.quantity).toBe(3)
+    expect(await service.read.cartLineItems(api.container, { cartId: cart.id })).toHaveLength(1)
+  })
+
+  test('reports an addition it cannot stock as a conflict', async ({ service, expect }) => {
+    const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
+    const { variant } = await service.create.sellableVariant(api.container, {
+      inventory: { level: { stockedQuantity: 1 } },
+    })
+
+    const { status, body } = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/line-items`, {
+      variantId: variant.id,
+      quantity: 2,
+    })
+
+    expect(status).toBe(409)
+    expect(body.type).toBe('conflict')
+    expect(await service.read.cartLineItems(api.container, { cartId: cart.id })).toEqual([])
+  })
+
+  test('rejects a payload naming no variant', async ({ expect, service }) => {
+    const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
+
+    const { status } = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/line-items`, { quantity: 1 })
+
+    expect(status).toBe(400)
   })
 })

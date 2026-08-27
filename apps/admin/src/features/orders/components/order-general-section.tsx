@@ -1,11 +1,10 @@
-import { Card, CardAction, CardHeader, CardTitle, StatusBadge } from '@proteus/ui'
+import { Card, CardAction, CardHeader, CardTitle, StatusBadge, usePrompt } from '@proteus/ui'
 import { formatDatetime } from '@proteus/utils'
 import { ArchiveIcon, CheckCircleIcon, XCircleIcon } from 'lucide-react'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { useArchiveOrder, useCancelOrder, useCompleteOrder } from '#/features/orders/api/orders'
 import { fulfillmentStatusColors, orderStatusColors } from '#/features/orders/constants'
-import { usePrompt } from '#/hooks/use-prompt'
 
 export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder }) {
   const { mutateAsync: complete } = useCompleteOrder(order.id)

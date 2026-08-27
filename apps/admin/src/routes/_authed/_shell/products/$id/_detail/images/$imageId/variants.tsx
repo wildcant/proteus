@@ -1,6 +1,6 @@
+import { RouteDrawer } from '@proteus/ui'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { RouteDrawer } from '#/components/modals/route-drawer/route-drawer'
 import { imageVariantsQueryOptions } from '#/features/products/api/product-variants'
 import { productQueryOptions } from '#/features/products/api/products'
 import { ManageImageVariantsForm } from '#/features/products/components/media/manage-image-variants-form'

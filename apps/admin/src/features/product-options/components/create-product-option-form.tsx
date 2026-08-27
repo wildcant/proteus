@@ -1,7 +1,4 @@
-import { Button, TagInput } from '@proteus/ui'
-import { KeyboundForm } from '#/components/modals/keybound-form'
-import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
-import { useRouteModal } from '#/components/modals/route-modal-provider/use-route-modal'
+import { Button, KeyboundForm, RouteFocusModal, TagInput, useRouteModal } from '@proteus/ui'
 import { useCreateProductOptionForm } from '#/features/product-options/hooks/use-create-product-option-form'
 
 export function CreateProductOptionForm() {

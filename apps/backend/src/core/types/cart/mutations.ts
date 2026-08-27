@@ -29,6 +29,23 @@ export type UpdateLineItemDTO = {
   unitPrice?: BigNumber | undefined
 }
 
+/** One line item and the patch meant for it alone. */
+export type LineItemUpdateDTO = {
+  id: string
+  data: UpdateLineItemDTO
+}
+
+/**
+ * An addition to a cart, split into the lines it starts and the lines it raises.
+ *
+ * Both halves land on `cart_line_item`, so they are written together or not at all — a cart
+ * holding half of an addition is worse than one that refused it outright.
+ */
+export type CartLineItemPlanDTO = {
+  create: CreateLineItemDTO[]
+  merge: LineItemUpdateDTO[]
+}
+
 export type CreateCartDTO = {
   regionId?: string | null | undefined
   customerId?: string | null | undefined

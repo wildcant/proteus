@@ -12,8 +12,7 @@ export interface StoreOrder {
   displayId: number;
   status: StoreOrderStatus;
   fulfillmentStatus: StoreOrderFulfillmentStatus;
-  /** @nullable */
-  email: string | null;
+  email: string;
   currencyCode: string;
   createdAt: string;
   updatedAt: string;

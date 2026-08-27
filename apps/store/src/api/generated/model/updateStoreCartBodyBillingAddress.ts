@@ -6,14 +6,16 @@
  */
 
 export type UpdateStoreCartBodyBillingAddress = {
-  /** @minLength 1 */
-  firstName: string;
-  /** @minLength 1 */
-  lastName: string;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  lastName: string | null;
   /** @minLength 1 */
   address1: string;
-  address2?: string;
-  company?: string;
+  /** @nullable */
+  address2?: string | null;
+  /** @nullable */
+  company?: string | null;
   /** @minLength 1 */
   city: string;
   /**
@@ -21,8 +23,10 @@ export type UpdateStoreCartBodyBillingAddress = {
      * @maxLength 2
      */
   countryCode: string;
-  province?: string;
+  /** @nullable */
+  province?: string | null;
   /** @minLength 1 */
   postalCode: string;
-  phone?: string;
+  /** @nullable */
+  phone?: string | null;
 };

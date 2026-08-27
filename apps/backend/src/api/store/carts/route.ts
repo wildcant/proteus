@@ -2,6 +2,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService, ICustomerModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { CreateCart, StoreCreateCartResponse } from '@proteus/http-schemas/store'
+import { addToCartWorkflow } from '@workflows/cart/add-to-cart.js'
 
 import type { HttpRequest, HttpResult } from '../../../server/ports.js'
 
@@ -29,7 +30,14 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     email = customer.email
   }
 
-  const cart = await cartService.createCart({ ...req.body, currencyCode, customerId, email })
+  const { items, ...body } = req.body
+  const cart = await cartService.createCart({ ...body, currencyCode, customerId, email })
+
+  // Through the workflow rather than straight into `createCart`, so a cart born with items is
+  // priced and merged by the same rules as one filled a click at a time.
+  if (items?.length) {
+    await addToCartWorkflow.run({ cartId: cart.id, items })
+  }
 
   return { status: 201, json: { cart } }
 }

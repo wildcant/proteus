@@ -1,6 +1,7 @@
 import type { StoreOrderListResponse, StoreOrderResponse } from '@proteus/http-schemas/store'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
+import { assertDefined } from '@tests/utils/assert-defined.js'
 import { authHeader } from '@tests/utils/auth-header.js'
 import orderDefinitions from '../definitions.js'
 
@@ -74,6 +75,20 @@ test.describe('GET /store/orders/:id', () => {
     })
   })
 
+  test('carries the line item id and its option values', async ({ service, expect }) => {
+    const { order } = await service.create.order(api.container, { lineItem: { variantOptionValues: 'M · Olive' } })
+    const [orderLineItem] = await service.read.orderLineItems(api.container, order.id)
+    assertDefined(orderLineItem)
+
+    const { body } = await retrieve(order.id)
+
+    // Both keys were dropped by the response schema until the order page needed them: the id is
+    // what the storefront keys a row by, and the option values are what it prints under the title.
+    expect(body).toMatchObject({
+      order: { lineItems: [{ id: orderLineItem.id, variantOptionValues: 'M · Olive' }] },
+    })
+  })
+
   test('a guest may retrieve an order', async ({ service, expect }) => {
     const { order } = await service.create.order(api.container)
 
@@ -130,8 +145,13 @@ test.describe('GET /store/orders', () => {
 
     const { body } = await list(authHeader('customer', customer.id))
 
+    const [orderLineItem] = await service.read.orderLineItems(api.container, order.id)
+    assertDefined(orderLineItem)
+
+    // The id is in the summary for the same reason it is in the detail: the thumbnail strip keys
+    // by it, and two variants of one product share a title.
     expect(body).toMatchObject({
-      orders: [{ id: order.id, items: [{ title: lineItem.title, quantity: lineItem.quantity }] }],
+      orders: [{ id: order.id, items: [{ id: orderLineItem.id, title: lineItem.title, quantity: lineItem.quantity }] }],
     })
   })
 })

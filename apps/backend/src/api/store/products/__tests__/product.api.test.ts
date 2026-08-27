@@ -2,6 +2,7 @@ import type { TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import type * as productByIdRoutes from '../[id]/route.js'
 import productDefinitions from '../definitions.js'
+import type * as productRoutes from '../route.js'
 
 type Services = Fixtures['service']
 
@@ -284,5 +285,78 @@ test.describe('GET /store/products/:id options', () => {
     const inStockByVariantId = new Map(response.body.product.variants.map((v) => [v.id, v.inStock]))
     expect(inStockByVariantId.get(small.id)).toBe(true)
     expect(inStockByVariantId.get(medium.id)).toBe(false)
+  })
+})
+
+test.describe('GET /store/products pagination', () => {
+  /**
+   * Ten published products written in one `createProducts` call. `timestamps` defaults `createdAt`
+   * to `now()`, which Postgres resolves to transaction time, so every row here shares one
+   * timestamp to the microsecond — the collision an offset pager has to survive.
+   */
+  const createCollidingCatalogue = async (service: Services) => {
+    const products = await service.create.products(
+      api.container,
+      Array.from({ length: 10 }, () => ({ status: 'published' as const })),
+    )
+    return products.map((product) => product.id)
+  }
+
+  const pageIds = async (query: string) => {
+    const response = await api.get<typeof productRoutes.GetOutput>(`/store/products?${query}`)
+    return response.body.products.map((product) => product.id)
+  }
+
+  test('the seeded catalogue really does share one createdAt', async ({ expect, service }) => {
+    // Guards the premise of the test below: if inserts ever stop colliding, the disjointness
+    // assertion would start passing for a reason that has nothing to do with the tiebreaker.
+    const ids = await createCollidingCatalogue(service)
+    const rows = await service.read.products(api.container, { id: ids })
+
+    const timestamps = new Set(rows.map((row) => row.createdAt.getTime()))
+    expect(timestamps.size).toBe(1)
+  })
+
+  /**
+   * The order Postgres itself puts these ids in. Read back through the service rather than sorted
+   * in JS, so the expectation uses the database's own collation and cannot disagree with it.
+   */
+  const idsInTiebreakerOrder = async (service: Services, ids: string[]) => {
+    const rows = await service.read.products(api.container, { id: ids }, { order: { id: 'ASC' } })
+    return rows.map((row) => row.id)
+  }
+
+  test('falls back to the id tiebreaker when every row shares a createdAt', async ({ expect, service }) => {
+    const ids = await createCollidingCatalogue(service)
+    const expected = await idsInTiebreakerOrder(service, ids)
+
+    // Without a second column there is no usable ORDER BY at all, and the rows come back in
+    // insert order — which is what makes this assertion able to fail.
+    expect(await pageIds('limit=10&order=-createdAt,id')).toEqual(expected)
+  })
+
+  test('two pages follow one total order, so no row repeats or goes missing', async ({ expect, service }) => {
+    const ids = await createCollidingCatalogue(service)
+    const expected = await idsInTiebreakerOrder(service, ids)
+
+    const first = await pageIds('limit=5&offset=0&order=-createdAt,id')
+    const second = await pageIds('limit=5&offset=5&order=-createdAt,id')
+
+    expect(first).toEqual(expected.slice(0, 5))
+    expect(second).toEqual(expected.slice(5))
+    expect(first.filter((id) => second.includes(id))).toEqual([])
+  })
+
+  test('a single-column order still parses the way it always did', async ({ expect, service }) => {
+    // Titles are the subject, so they are given rather than faked — and they are plain ASCII so
+    // the expected order does not depend on the database's collation.
+    await service.create.products(
+      api.container,
+      ['Charlie', 'Alpha', 'Bravo'].map((title) => ({ title, status: 'published' as const })),
+    )
+
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products?limit=10&order=title')
+
+    expect(response.body.products.map((product) => product.title)).toEqual(['Alpha', 'Bravo', 'Charlie'])
   })
 })

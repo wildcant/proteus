@@ -1,6 +1,6 @@
+import { RouteFocusModal } from '@proteus/ui'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { RouteFocusModal } from '#/components/modals/route-focus-modal/route-focus-modal'
 import { productVariantQueryOptions } from '#/features/products/api/product-variants'
 import { productQueryOptions } from '#/features/products/api/products'
 import { EditVariantMediaForm } from '#/features/products/components/variant/edit-variant-media-form'

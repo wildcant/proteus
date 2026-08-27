@@ -15,6 +15,7 @@ import type {
   FilterableCartShippingMethodProps,
 } from './common.js'
 import type {
+  CartLineItemPlanDTO,
   CreateCartAddressDTO,
   CreateCartDTO,
   CreateLineItemDTO,
@@ -46,6 +47,12 @@ export type ICartModuleService = {
   ): Promise<CartLineItemDTO[]>
   addLineItems(cartId: string, items: CreateLineItemDTO[], context?: Context): Promise<CartLineItemDTO[]>
   updateLineItems(lineItemIds: string[], data: UpdateLineItemDTO, context?: Context): Promise<CartLineItemDTO[]>
+  /**
+   * Writes an addition: the lines it starts and the lines it raises, in one transaction. Both
+   * halves are rows of the same table, so the database keeps them together — the caller needs no
+   * compensation to undo a half-applied addition, and gets none.
+   */
+  applyLineItemPlan(cartId: string, plan: CartLineItemPlanDTO, context?: Context): Promise<CartLineItemDTO[]>
   addLineItem(cartId: string, item: CreateLineItemDTO, context?: Context): Promise<CartLineItemDTO>
   updateLineItem(lineItemId: string, data: UpdateLineItemDTO, context?: Context): Promise<CartLineItemDTO>
   softDeleteLineItems(lineItemIds: string[], context?: Context): Promise<void>

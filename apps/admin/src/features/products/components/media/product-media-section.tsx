@@ -13,6 +13,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  usePrompt,
 } from '@proteus/ui'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ImageIcon, PencilIcon, StarIcon } from 'lucide-react'
@@ -21,7 +22,6 @@ import type { AdminProductResponseProduct } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { useUpdateProduct } from '#/features/products/api/products'
 import { getProductMedia } from '#/features/products/media.ts'
-import { usePrompt } from '#/hooks/use-prompt.tsx'
 
 export function ProductMediaSection({ product }: { product: AdminProductResponseProduct }) {
   const navigate = useNavigate()

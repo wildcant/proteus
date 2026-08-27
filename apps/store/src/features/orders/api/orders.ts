@@ -7,6 +7,21 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
 const ORDERS_QUERY_KEY = 'orders' as const
 export const ordersQueryKeys = queryKeysFactory(ORDERS_QUERY_KEY)
 
+/** Five rows is what the account panel shows before it pages. */
+export const ORDERS_DEFAULT_LIMIT = 5
+export const ORDERS_DEFAULT_OFFSET = 0
+
+/**
+ * One page of the customer's orders, newest first. Built here rather than at each call site so
+ * the account route's prefetch and the panel's read produce the identical query key — a
+ * mismatched key would refetch on mount and waterfall behind the greeting anyway.
+ */
+export const ordersPageQuery = (offset: number = ORDERS_DEFAULT_OFFSET): ListStoreOrdersParams => ({
+  offset,
+  limit: ORDERS_DEFAULT_LIMIT,
+  order: '-createdAt',
+})
+
 type OrdersListQueryOptions = Omit<
   UseQueryOptions<StoreOrderListResponse, Error, StoreOrderListResponse>,
   'queryFn' | 'queryKey'

@@ -9,6 +9,7 @@ import type {
   FilterableProductVariantImageProps,
   FilterableProductVariantProps,
   IProductModuleService,
+  ProductDTO,
   ProductImageDTO,
   SetProductOptionsDTO,
   UpdateProductVariantDTO,
@@ -41,6 +42,16 @@ export async function createProduct(container: AwilixContainer, overrides?: Part
     : []
 
   return { product, images }
+}
+
+/**
+ * Several products in one `createProducts` call, so every row lands in a single insert and
+ * therefore shares one `now()` — which is what makes a `createdAt` tiebreaker testable.
+ */
+export async function createProducts(container: AwilixContainer, overrides: Partial<CreateProductDTO>[] = [{}, {}]) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+
+  return productService.createProducts(overrides.map((product) => generateCreateProductDTO(product)))
 }
 
 export async function createProductOption(container: AwilixContainer, overrides?: Partial<CreateProductOptionDTO>) {
@@ -99,10 +110,14 @@ export async function updateProductVariant(
 
 // ---- Reads ----
 
-export async function listProducts(container: AwilixContainer, filters?: FilterableProductProps) {
+export async function listProducts(
+  container: AwilixContainer,
+  filters?: FilterableProductProps,
+  config?: FindConfig<ProductDTO>,
+) {
   const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
-  return productService.listProducts(filters)
+  return productService.listProducts(filters, config)
 }
 
 export async function listProductVariants(container: AwilixContainer, filters?: FilterableProductVariantProps) {
