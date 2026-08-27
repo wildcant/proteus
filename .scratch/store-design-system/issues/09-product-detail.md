@@ -427,7 +427,14 @@ reference's meta role (400 · 12px · muted, `reference.md:48`) with no hand-rol
   `size='sm'` (`quantity-stepper.tsx:74`), and its `cellSize` map tops out at `md` / `size-10` /
   40px (`:20-24`). A 40px stepper against a 52px button leaves a 12px step in a bar whose two
   controls sit on one line — the reference's own are 54 and 54. So `cellSize` gains
-  `lg: { button: 'size-13', count: 'w-9', glyph: 'size-4' }`, and the PDP passes `size="lg"`.
+  `lg: { button: 'h-12.5 w-13', count: 'w-9', glyph: 'size-4' }`, and the PDP passes `size="lg"`.
+
+  > **Correction (2026-08-26).** This line first read `button: 'size-13'`, which overshoots. The
+  > `boxed` frame is a `border border-line` on the wrapper, and the wrapper sets no height of its
+  > own, so the control renders at *cell + 2px* — `size-13` would come out 54px against the
+  > button's 52. The cells have to be 50px for the outer edges to agree, which is `h-12.5`, and the
+  > width stays `w-13` because only the height has to match. The 52px target in the sentence above
+  > is the one that matters and is unchanged.
 
   This is a store-local change — `QuantityStepper` lives in `apps/store/src/features/cart/`, not in
   `packages/ui` — and it is additive: the cart drawer and the cart page keep `sm`. The rejected

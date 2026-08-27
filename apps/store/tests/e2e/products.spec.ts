@@ -54,6 +54,35 @@ async function createProductWithColourways(factories: Factories) {
 }
 
 /**
+ * One variant, two images, and no variant/image links — which is what makes the page fall back to
+ * the whole product gallery and gives the carousel more than one slide to move between.
+ */
+async function createProductWithTwoImages(factories: Factories) {
+  const product = await factories.create.product({ status: 'published' })
+  const images = [
+    await factories.create.productImage({ productId: product.id, url: 'https://cdn.test/first.png', rank: 0 }),
+    await factories.create.productImage({ productId: product.id, url: 'https://cdn.test/second.png', rank: 1 }),
+  ]
+  const variant = await factories.create.productVariant({ productId: product.id, title: 'Only' })
+  const priceSet = await factories.create.priceSet()
+  const price = await factories.create.price({ priceSetId: priceSet.id, currencyCode: 'usd' })
+  const priceLink = await factories.create.productVariantPriceSet({ variantId: variant.id, priceSetId: priceSet.id })
+
+  return {
+    product,
+    images,
+    variant,
+    [Symbol.asyncDispose]: async () => {
+      await factories.destroy.productVariantPriceSet(priceLink.id)
+      await factories.destroy.price(price.id)
+      await factories.destroy.priceSet(priceSet.id)
+      // Variants and images cascade from the product.
+      await factories.destroy.product(product.id)
+    },
+  }
+}
+
+/**
  * One product offering Size (S/M) then Colour (Black/White), with three variants: S/Black, S/White
  * and M/Black. M/White is deliberately absent so the picker has an unavailable combination to show.
  */
@@ -195,12 +224,16 @@ test.describe('Products', () => {
       search: { variant: catalog.blackVariant.id },
     })
 
-    const mainImage = page.getByRole('img', { name: catalog.product.title })
-    await expect(mainImage).toHaveAttribute('src', catalog.black.url)
+    // Every slide is a titled image now, so the claim is about the whole strip rather than about
+    // a hero that no longer exists: the count proves the other colourway's photo is gone.
+    const gallery = page.getByRole('list', { name: `${catalog.product.title} images` })
+    await expect(gallery.getByRole('img')).toHaveCount(1)
+    await expect(gallery.getByRole('img')).toHaveAttribute('src', catalog.black.url)
 
     await page.getByLabel('Variant').selectOption(catalog.whiteVariant.id)
 
-    await expect(mainImage).toHaveAttribute('src', catalog.white.url)
+    await expect(gallery.getByRole('img')).toHaveCount(1)
+    await expect(gallery.getByRole('img')).toHaveAttribute('src', catalog.white.url)
     await expect(page).toHaveURL(new RegExp(`variant=${catalog.whiteVariant.id}`))
   })
   test('renders a picker per option and follows the selection', async ({ page, authenticate, navigate, factories }) => {
@@ -213,16 +246,21 @@ test.describe('Products', () => {
       search: { variant: catalog.sBlack.id },
     })
 
-    // Size renders as a text row, Colour as image swatches.
-    await expect(page.getByRole('button', { name: 'S', exact: true })).toHaveAttribute('aria-pressed', 'true')
-    const white = page.getByRole('button', { name: 'White' })
-    await expect(white).toHaveAttribute('aria-pressed', 'false')
+    // Size renders as a text grid, Colour as image swatches. Both are native radio groups.
+    await expect(page.getByRole('radio', { name: 'S', exact: true })).toBeChecked()
+    const white = page.getByRole('radio', { name: 'White' })
+    await expect(white).not.toBeChecked()
 
-    await white.click()
+    // The radio is `sr-only`, so it paints nothing and cannot be the hit target. The swatch label
+    // is what a shopper clicks, and `htmlFor` forwards it to the radio behind.
+    await page.locator(`label[for="${await white.getAttribute('id')}"]`).click()
 
-    await expect(white).toHaveAttribute('aria-pressed', 'true')
+    await expect(white).toBeChecked()
     await expect(page).toHaveURL(new RegExp(`variant=${catalog.sWhite.id}`))
-    await expect(page.getByRole('img', { name: catalog.product.title })).toHaveAttribute('src', catalog.white.url)
+
+    const gallery = page.getByRole('list', { name: `${catalog.product.title} images` })
+    await expect(gallery.getByRole('img')).toHaveCount(1)
+    await expect(gallery.getByRole('img')).toHaveAttribute('src', catalog.white.url)
   })
 
   test('a combination no variant covers is disabled', async ({ page, authenticate, navigate, factories }) => {
@@ -236,9 +274,30 @@ test.describe('Products', () => {
       search: { variant: catalog.mBlack.id },
     })
 
-    await expect(page.getByRole('button', { name: 'White' })).toBeDisabled()
+    await expect(page.getByRole('radio', { name: 'White' })).toBeDisabled()
     // Size stays open, so the shopper is never stranded.
-    await expect(page.getByRole('button', { name: 'S', exact: true })).toBeEnabled()
+    await expect(page.getByRole('radio', { name: 'S', exact: true })).toBeEnabled()
+  })
+
+  test('the gallery dots move the carousel', async ({ page, authenticate, navigate, factories }) => {
+    await using catalog = await createProductWithTwoImages(factories)
+    await authenticate({ as: 'customer' })
+
+    // The dots are `lg:hidden` and playwright.config.ts declares one project at 1280, so this test
+    // has to set its own viewport — the carousel only exists below `lg`.
+    await page.setViewportSize({ width: 390, height: 844 })
+    await navigate({ to: '/products/$productId', params: { productId: catalog.product.id } })
+
+    const scroller = page.getByRole('list', { name: `${catalog.product.title} images` })
+    await expect(scroller.getByRole('img')).toHaveCount(2)
+
+    await page.getByRole('button', { name: 'Show image 2' }).click()
+
+    // A slide per viewport width, so "slide 2 is in view" is scrollLeft === one clientWidth.
+    await expect
+      .poll(() => scroller.evaluate((element) => Math.round(element.scrollLeft / element.clientWidth)))
+      .toBe(1)
+    await expect(page.getByRole('button', { name: 'Show image 2' })).toHaveAttribute('aria-current', 'true')
   })
 
   test('a product whose variants carry no options keeps the variant select', async ({

@@ -19,6 +19,11 @@ type VariantPickerProps = {
  * swatch shows — are all resolved server-side, so this only renders. Products whose variants carry
  * no option values fall back to a plain list of variant titles, so the page never degrades to an
  * empty picker.
+ *
+ * Each option is one native radio group. A toggle button per value would give every value its own
+ * tab stop and announce seven independent pressed/unpressed controls rather than one choice of
+ * seven; sharing `name={option.id}` is what makes the browser hand back roving focus, arrow-key
+ * traversal and `disabled` skipping for free.
  */
 export function VariantPicker({
   options,
@@ -34,90 +39,153 @@ export function VariantPicker({
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      {options.map((option) => (
-        <fieldset key={option.id} className="border-0 p-0">
-          <legend className="mb-2 block text-foreground-muted text-xs uppercase tracking-[0.18em]">
-            {option.title}
-            {option.renderAs === 'swatch' && (
-              <span className="ml-2 text-foreground normal-case tracking-normal">
-                {option.values.find((value) => targets[value.id] === selectedVariant.id)?.value}
-              </span>
+    <div className="flex flex-col gap-6">
+      {options.map((option) => {
+        const selectedValue = option.values.find((value) => targets[value.id] === selectedVariant.id)
+
+        return (
+          <fieldset key={option.id} className="border-0 p-0">
+            {/* The value is not in here. A legend carrying the current selection changes the
+                group's accessible name on every click; the name belongs under the strip. */}
+            <legend className="mb-2 block text-ink">{option.title}</legend>
+
+            <div className={option.renderAs === 'swatch' ? 'flex flex-wrap gap-2' : 'grid grid-cols-4'}>
+              {option.values.map((value) => {
+                // A value pointing at the variant you are on is how "selected" is expressed; a null
+                // target means no purchasable variant carries it alongside the current selection.
+                const target = targets[value.id] ?? null
+                const props = {
+                  id: value.id,
+                  name: option.id,
+                  label: value.value,
+                  isSelected: target === selectedVariant.id,
+                  isAvailable: target !== null,
+                  onSelect: () => target && onVariantChange(target),
+                }
+                return option.renderAs === 'swatch' ? (
+                  <SwatchValue key={value.id} {...props} imageUrl={value.swatchImageUrl} />
+                ) : (
+                  <TextValue key={value.id} {...props} />
+                )
+              })}
+            </div>
+
+            {option.renderAs === 'swatch' && !!selectedValue && (
+              <p className="mt-2 text-ink-subtle text-xs">{selectedValue.value}</p>
             )}
-          </legend>
-          <div className="flex flex-wrap gap-2">
-            {option.values.map((value) => {
-              // A value pointing at the variant you are on is how "selected" is expressed; a null
-              // target means no purchasable variant carries it alongside the current selection.
-              const target = targets[value.id] ?? null
-              const props = {
-                label: value.value,
-                isSelected: target === selectedVariant.id,
-                isAvailable: target !== null,
-                onSelect: () => target && onVariantChange(target),
-              }
-              return option.renderAs === 'swatch' ? (
-                <SwatchValue key={value.id} {...props} imageUrl={value.swatchImageUrl} />
-              ) : (
-                <TextValue key={value.id} {...props} />
-              )
-            })}
-          </div>
-        </fieldset>
-      ))}
+          </fieldset>
+        )
+      })}
     </div>
   )
 }
 
 type ValueProps = {
+  /** The option value's own id — unique per product, so it is safe as a DOM id. */
+  id: string
+  /** Shared across one option's values, which is the only thing that makes them one group. */
+  name: string
   label: string
   isSelected: boolean
   isAvailable: boolean
   onSelect: () => void
 }
 
-function TextValue({ label, isSelected, isAvailable, onSelect }: ValueProps) {
+/**
+ * The visually-hidden control.
+ *
+ * `sr-only` rather than a transparent overlay: `htmlFor` already makes the label a real pointer
+ * target that forwards its clicks to the radio, so covering the cell buys nothing and costs the
+ * label its own `:hover` — an input painted on top owns the pointer, which forces every hover rule
+ * through `peer-hover` and leaves the cursor on a control nobody can see.
+ *
+ * It comes first and carries `peer` so the label — its next sibling — can react to it: hiding the
+ * input hides the platform's own focus ring, and painting that back is the one part of a native
+ * radio that does not come free. Same mechanism `components/form/input.tsx` uses for its floating
+ * label.
+ */
+function ValueInput({
+  id,
+  name,
+  isSelected,
+  isAvailable,
+  onSelect,
+  ariaLabel,
+}: Omit<ValueProps, 'label'> & { ariaLabel?: string }) {
   return (
-    <button
-      type="button"
-      aria-pressed={isSelected}
+    <input
+      id={id}
+      type="radio"
+      name={name}
+      className="peer sr-only"
+      checked={isSelected}
       disabled={!isAvailable}
-      onClick={onSelect}
-      className={cn(
-        'min-w-11 border px-3 py-2 text-sm -outline-offset-2 transition-colors focus-visible:outline focus-visible:outline-foreground',
-        isSelected ? 'border-foreground bg-foreground text-background' : 'border-border text-foreground',
-        !isSelected && isAvailable && 'hover:border-foreground',
-        // Struck through rather than merely dimmed, so "sold out" reads differently from "muted".
-        !isAvailable && 'cursor-not-allowed text-foreground-muted line-through opacity-50',
-      )}
-    >
-      {label}
-    </button>
+      onChange={onSelect}
+      aria-label={ariaLabel}
+    />
   )
 }
 
-function SwatchValue({ label, isSelected, isAvailable, onSelect, imageUrl }: ValueProps & { imageUrl: string | null }) {
+/**
+ * A size cell.
+ *
+ * The grid runs at zero gap on purpose: the 1px borders meet and the values read as one table
+ * rather than as four loose buttons. Four columns at every width — the label is 12px, which is what
+ * lets a seven-size run hold four columns on a 390px phone.
+ */
+function TextValue(props: ValueProps) {
+  const { id, label, isSelected, isAvailable } = props
+
   return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={isSelected}
-      disabled={!isAvailable}
-      onClick={onSelect}
-      className={cn(
-        'size-11 overflow-hidden rounded-full border-2 -outline-offset-2 transition-colors focus-visible:outline focus-visible:outline-foreground',
-        isSelected ? 'border-foreground' : 'border-transparent',
-        !isAvailable && 'cursor-not-allowed opacity-40',
-      )}
-    >
-      {imageUrl ? (
-        <img src={imageUrl} alt="" className="size-full object-cover" />
-      ) : (
-        <span className="flex size-full items-center justify-center bg-(--bg-subtle) text-[10px] text-foreground-muted uppercase">
-          {label.slice(0, 2)}
-        </span>
-      )}
-    </button>
+    <div className="relative">
+      <ValueInput {...props} />
+      <label
+        htmlFor={id}
+        className={cn(
+          'flex h-13 cursor-pointer items-end justify-start border border-line px-2 py-1 text-xs uppercase transition-colors peer-focus-visible:outline peer-focus-visible:outline-ink peer-focus-visible:-outline-offset-2 peer-disabled:cursor-not-allowed',
+          isSelected && 'border-ink bg-ink font-bold text-surface',
+          !isSelected && isAvailable && 'hover:border-ink',
+          // Struck through rather than merely dimmed, so "sold out" reads differently from "muted".
+          // Never-offered collapses into the same treatment: the response cannot tell them apart.
+          !isAvailable && 'text-ink-muted line-through',
+        )}
+      >
+        {label}
+      </label>
+    </div>
+  )
+}
+
+/**
+ * A colourway tile.
+ *
+ * 4:5 rather than a disc: `swatchImageUrl` is a photograph of the garment, and a 44px circle crops
+ * it to an average colour the catalogue does not actually store. The border is 2px in both states
+ * so nothing shifts when the selection moves.
+ */
+function SwatchValue(props: ValueProps & { imageUrl: string | null }) {
+  const { id, label, isSelected, isAvailable, imageUrl } = props
+
+  return (
+    <div className="relative w-12">
+      <ValueInput {...props} ariaLabel={label} />
+      <label
+        htmlFor={id}
+        className={cn(
+          'block cursor-pointer overflow-hidden border-2 transition-colors peer-focus-visible:outline peer-focus-visible:outline-ink peer-focus-visible:-outline-offset-2 peer-disabled:cursor-not-allowed',
+          isSelected ? 'border-ink' : 'border-transparent',
+          !isAvailable && 'opacity-40',
+        )}
+      >
+        {imageUrl ? (
+          <img src={imageUrl} alt="" className="aspect-4/5 w-full object-cover" />
+        ) : (
+          <span className="flex aspect-4/5 w-full items-center justify-center bg-surface-subtle text-[10px] text-ink-muted uppercase">
+            {label.slice(0, 2)}
+          </span>
+        )}
+      </label>
+    </div>
   )
 }
 
@@ -133,7 +201,7 @@ function VariantSelect({ variants, selectedVariant, onVariantChange }: VariantSe
 
   return (
     <div>
-      <label htmlFor="variant-select" className="mb-2 block text-foreground-muted text-xs uppercase tracking-[0.18em]">
+      <label htmlFor="variant-select" className="mb-2 block text-ink-muted text-xs">
         Variant
       </label>
       <NativeSelect

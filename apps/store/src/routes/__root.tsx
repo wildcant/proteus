@@ -71,7 +71,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="wrap-anywhere font-sans antialiased selection:bg-[rgba(79,184,178,0.24)]">
         {children}
-        <Toaster />
+        {/* The PDP's action bar owns the bottom-4 lane on the phone, and a failed add-to-cart
+            toast would land on top of the button you press to retry it. */}
+        <Toaster viewportClassName="bottom-20 lg:bottom-4" />
         {!!SHOW_DEVTOOLS && (
           <TanStackDevtools
             config={{

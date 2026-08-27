@@ -2,7 +2,7 @@ import { cn } from '@proteus/ui'
 import { Loader2Icon, MinusIcon, PlusIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-type StepperSize = 'xs' | 'sm' | 'md'
+type StepperSize = 'xs' | 'sm' | 'md' | 'lg'
 type StepperVariant = 'boxed' | 'bare'
 
 /** Tap target, and the control's visual pitch with it. The count cell is narrower than the
@@ -21,6 +21,10 @@ const cellSize: Record<StepperSize, { button: string; count: string; glyph: stri
   xs: { button: 'size-8', count: 'w-6', glyph: 'size-3.5' },
   sm: { button: 'size-9', count: 'w-7', glyph: 'size-3.5' },
   md: { button: 'size-10', count: 'w-7', glyph: 'size-4' },
+  // The PDP's action bar puts the stepper on one line with the 52px add button, and anything
+  // shorter leaves a step in a row whose two controls are meant to read as a pair. 50 rather than
+  // 52 because the boxed frame is outside the cells: 50 + two 1px borders is the button's height.
+  lg: { button: 'h-12.5 w-13', count: 'w-9', glyph: 'size-4' },
 }
 
 /** Hover affordance. The boxed control can fill its cell because the frame contains the fill;

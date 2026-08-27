@@ -35,7 +35,7 @@ const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LI
 // One catalogue drives products, option values, variants, prices and images, so a colourway is
 // described once and everything downstream derives from it, including the list of photos to
 // upload. Photos live in `seed-images/` (committed, see its README for provenance).
-const APPAREL_SIZES = ['Small', 'Medium', 'Large', 'X-Large']
+const APPAREL_SIZES = ['S', 'M', 'L', 'XL']
 const SHOE_SIZES = ['4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']
 
 type CatalogEntry = {
@@ -61,7 +61,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'HOODIE',
     price: 9000,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    sizes: ['S', 'M', 'L', 'XL'],
     colors: {
       Green: ['hoodie-green-01.jpg', 'hoodie-green-02.jpg', 'hoodie-green-03.jpg'],
       Olive: ['hoodie-olive-01.jpg', 'hoodie-olive-02.jpg', 'hoodie-olive-03.jpg'],
@@ -78,7 +78,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'MENS-TSHIRT',
     price: 4000,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    sizes: ['S', 'M', 'L', 'XL'],
     colors: {
       Green: ['mens-t-shirt-green-01.jpg', 'mens-t-shirt-green-02.jpg', 'mens-t-shirt-green-03.jpg'],
       Olive: ['mens-t-shirt-olive-01.jpg', 'mens-t-shirt-olive-02.jpg', 'mens-t-shirt-olive-03.jpg'],
@@ -95,7 +95,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'MENS-CREW',
     price: 12000,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large'],
+    sizes: ['S', 'M', 'L'],
     colors: {
       Green: [
         'mens-crewneck-green-01.jpg',
@@ -137,7 +137,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'SWEATPANTS',
     price: 3500,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large'],
+    sizes: ['S', 'M', 'L'],
     colors: {
       Green: ['sweatpants-green-01.jpg', 'sweatpants-green-02.jpg', 'sweatpants-green-03.jpg'],
       Olive: ['sweatpants-olive-01.jpg', 'sweatpants-olive-02.jpg', 'sweatpants-olive-03.jpg'],
@@ -154,7 +154,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'SHORTS',
     price: 4500,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large'],
+    sizes: ['S', 'M', 'L'],
     colors: {
       Green: ['shorts-green-01.jpg'],
       Olive: ['shorts-olive-01.jpg'],
@@ -240,7 +240,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'WOMENS-TSHIRT',
     price: 4000,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    sizes: ['S', 'M', 'L', 'XL'],
     colors: {
       Green: ['womens-t-shirt-green-01.jpg'],
       Olive: ['womens-t-shirt-olive-01.jpg'],
@@ -257,7 +257,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'WOMENS-CREW',
     price: 12000,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large'],
+    sizes: ['S', 'M', 'L'],
     colors: {
       Green: ['womens-crewneck-green-01.jpg', 'womens-crewneck-green-02.jpg', 'womens-crewneck-green-03.jpg'],
       Olive: ['womens-crewneck-olive-01.jpg', 'womens-crewneck-olive-02.jpg', 'womens-crewneck-olive-03.jpg'],
@@ -274,7 +274,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'WORKOUT',
     price: 1000,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large'],
+    sizes: ['S', 'M', 'L'],
     colors: {
       Green: ['workout-shirt-green-01.jpg'],
       Olive: ['workout-shirt-olive-01.jpg'],
@@ -291,7 +291,7 @@ const CATALOG: CatalogEntry[] = [
     skuPrefix: 'LEGGINGS',
     price: 2000,
     sizeOption: 'Size',
-    sizes: ['Small', 'Medium', 'Large'],
+    sizes: ['S', 'M', 'L'],
     colors: {
       Green: ['leggings-green-01.jpg', 'leggings-green-02.jpg'],
       Olive: ['leggings-olive-01.jpg', 'leggings-olive-02.jpg'],
@@ -596,9 +596,12 @@ if (existingProducts.length > 0) {
   await Promise.all(
     CATALOG.map((entry) =>
       productService.setProductOptions(productFor(entry).id, {
+        // Colour first: payload order is the option's rank (`setProductOptions`), and rank is what
+        // orders the storefront's pickers and the cart line's `Green · M`. The colourway decides
+        // which photos the page shows, so it is the choice made before the size.
         options: [
-          { optionId: sizeOptionFor(entry).id, valueIds: valueIdsFor(sizeOptionFor(entry), entry.sizes) },
           { optionId: colorOption.id, valueIds: valueIdsFor(colorOption, Object.keys(entry.colors)) },
+          { optionId: sizeOptionFor(entry).id, valueIds: valueIdsFor(sizeOptionFor(entry), entry.sizes) },
         ],
       }),
     ),
@@ -607,7 +610,8 @@ if (existingProducts.length > 0) {
 
   // --- Variants ---
   // Every product is now size x colour, so each variant maps onto exactly one colourway gallery.
-  // `X-Large` would otherwise put a second separator inside the SKU.
+  // Option values are free text, so anything non-alphanumeric would put a second separator inside
+  // the SKU and make the prefix/size/colour split ambiguous to read back.
   const skuToken = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '')
 
   const variantSpecs = CATALOG.flatMap((entry) =>
@@ -715,7 +719,7 @@ if (existingProducts.length > 0) {
   // Create inventory levels (all items at a single default location with stock). One SKU is left
   // with nothing on hand so the storefront's sold-out option state is reachable without editing
   // the database by hand.
-  const SOLD_OUT_SKU = 'MENS-TSHIRT-XLARGE-GREEN'
+  const SOLD_OUT_SKU = 'MENS-TSHIRT-XL-GREEN'
 
   await inventoryService.createInventoryLevels(
     createdItems.map((item) => ({
@@ -742,8 +746,8 @@ if (existingProducts.length > 0) {
   if (existingCarts.length === 0) {
     const tshirt = productByHandle.get('mens-t-shirt')
     const hoodie = productByHandle.get('hoodie')
-    const tshirtVariant = createdVariants.find((v) => v.sku === 'MENS-TSHIRT-MEDIUM-GREEN')
-    const hoodieVariant = createdVariants.find((v) => v.sku === 'HOODIE-LARGE-OLIVE')
+    const tshirtVariant = createdVariants.find((v) => v.sku === 'MENS-TSHIRT-M-GREEN')
+    const hoodieVariant = createdVariants.find((v) => v.sku === 'HOODIE-L-OLIVE')
     if (!tshirt || !hoodie || !tshirtVariant || !hoodieVariant) {
       throw new Error('Expected the seeded catalog to contain the cart line item variants')
     }
@@ -754,7 +758,7 @@ if (existingProducts.length > 0) {
         email: 'test@example.com',
         items: [
           {
-            title: "Men's T-shirt (Medium / Green)",
+            title: "Men's T-shirt (Green / M)",
             quantity: 2,
             unitPrice: new BigNumber(4000),
             variantId: tshirtVariant.id,
@@ -763,7 +767,7 @@ if (existingProducts.length > 0) {
             productTitle: "Men's T-shirt",
           },
           {
-            title: 'Hoodie (Large / Olive)',
+            title: 'Hoodie (Olive / L)',
             quantity: 1,
             unitPrice: new BigNumber(9000),
             variantId: hoodieVariant.id,
@@ -897,7 +901,7 @@ if (seedNotifications && (await notificationService.listNotifications({ channel:
       receiverId: DEV_ADMIN_ID,
       data: {
         title: 'Low stock alert',
-        description: "Men's T-shirt (X-Large / Green) has only 3 units remaining.",
+        description: "Men's T-shirt (Green / XL) has only 3 units remaining.",
       },
       idempotencyKey: `seed-notif-3-${now}`,
     },

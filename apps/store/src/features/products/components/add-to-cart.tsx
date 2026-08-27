@@ -66,15 +66,25 @@ export function AddToCart({ product, selectedVariant }: AddToCartProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-3">
-        <QuantityStepper label={product.title} value={quantity} onChange={setQuantity} min={1} max={MAX_QUANTITY} />
+    // Pinned to the phone viewport from first paint rather than revealed once the inline button
+    // scrolls away: this is the page's entire job, and the reveal pattern costs a scroll observer
+    // to take the primary action off the first screen. `z-40` sits under the header's `z-50` —
+    // they are at opposite edges, and a bar outranking a sticky header is a bug waiting for a
+    // short viewport. The page's own gutters are restated here because `fixed` escapes them.
+    <div className="fixed inset-x-0 bottom-4 z-40 flex gap-2 px-4 sm:px-6 lg:static lg:z-auto lg:px-0">
+      <QuantityStepper
+        label={product.title}
+        value={quantity}
+        onChange={setQuantity}
+        min={1}
+        max={MAX_QUANTITY}
+        size="lg"
+      />
 
-        <Button className="h-11 flex-1" disabled={addLineItem.isPending || !selectedVariant} onClick={handleAddToCart}>
-          {addLineItem.isPending ? <Loader2Icon className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Add to cart
-        </Button>
-      </div>
+      <Button className="flex-1" disabled={addLineItem.isPending || !selectedVariant} onClick={handleAddToCart}>
+        {addLineItem.isPending ? <Loader2Icon className="mr-2 size-4 animate-spin" /> : null}
+        Add to cart
+      </Button>
     </div>
   )
 }

@@ -165,12 +165,20 @@ function ToastList() {
   ))
 }
 
-function Toaster({ children, toastManager = toast, ...props }: ToastPrimitive.Provider.Props) {
+type ToasterProps = ToastPrimitive.Provider.Props & {
+  /**
+   * Moves the toast lane. The viewport is otherwise unreachable from a consumer, and an app with
+   * a bottom-pinned control — the storefront's PDP action bar — needs the toasts to clear it.
+   */
+  viewportClassName?: string
+}
+
+function Toaster({ children, toastManager = toast, viewportClassName, ...props }: ToasterProps) {
   return (
     <ToastProvider toastManager={toastManager} {...props}>
       {children}
       <ToastPortal>
-        <ToastViewport>
+        <ToastViewport className={viewportClassName}>
           <ToastList />
         </ToastViewport>
       </ToastPortal>
