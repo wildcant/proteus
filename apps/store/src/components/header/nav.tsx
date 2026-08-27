@@ -6,7 +6,7 @@ import { Link } from '@tanstack/react-router'
  * destination that exists. It is laid out to take N entries, which is what lets a later
  * categories ticket fill it without touching this file.
  */
-const railLinks = [{ to: '/products' as const, label: 'Shop all' }]
+const railLinks = [{ to: '/' as const, label: 'Shop all' }]
 
 /**
  * The storefront's primary navigation, and the only part of the header that is navigation

@@ -1,25 +1,40 @@
-import { useState } from 'react'
+import { getRouteApi, useRouterState } from '@tanstack/react-router'
 import { Pagination } from '#/components/pagination'
-import { PRODUCTS_DEFAULT_LIMIT, PRODUCTS_DEFAULT_OFFSET, useSuspenseProducts } from '#/features/products/api/products'
+import { PRODUCTS_DEFAULT_LIMIT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
+import { ProductEmpty } from './product-empty'
 import { ProductGrid } from './product-grid'
 
-type ProductListProps = {
-  /** The active search term. The route remounts this component when it changes. */
-  q?: string
-}
+const route = getRouteApi('/_main/')
 
-export function ProductList({ q }: ProductListProps) {
-  const [offset, setOffset] = useState(PRODUCTS_DEFAULT_OFFSET)
-  const limit = PRODUCTS_DEFAULT_LIMIT
-  const { products, count } = useSuspenseProducts({ offset, limit, q })
+export function ProductList() {
+  const { q, sort, offset } = route.useSearch()
+  const navigate = route.useNavigate()
+  const { products, count } = useSuspenseProducts(productsPageQuery({ q, sort, offset }))
+
+  /**
+   * Paging no longer suspends: `offset` is a loader dep, so the loader has already awaited the
+   * next page by the time the navigation commits and the grid simply keeps showing the previous
+   * one. Without this the Next button looks broken on a slow connection.
+   */
+  const isNavigating = useRouterState({ select: (state) => state.isLoading })
+
+  if (products.length === 0) return <ProductEmpty q={q} />
 
   return (
     <>
-      <ProductGrid products={products} />
+      <div aria-busy={isNavigating} className={isNavigating ? 'opacity-60 transition-opacity' : undefined}>
+        <ProductGrid products={products} />
+      </div>
 
-      {products.length === 0 && <p className="py-20 text-center text-ink-muted text-sm">No products found.</p>}
-
-      <Pagination offset={offset} limit={limit} count={count} onOffsetChange={setOffset} className="mt-12" />
+      <Pagination
+        offset={offset ?? 0}
+        limit={PRODUCTS_DEFAULT_LIMIT}
+        count={count}
+        // Page 1 is written as `undefined`, not `offset=0`, so the default stays out of the URL
+        // the way `sort`'s does.
+        onOffsetChange={(next) => navigate({ search: (previous) => ({ ...previous, offset: next || undefined }) })}
+        className="mt-12"
+      />
     </>
   )
 }

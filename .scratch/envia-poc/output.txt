@@ -1,0 +1,375 @@
+➜  proteus git:(feat/store-redesign) ✗ node .scratch/envia-poc/envia-poc.mjs --generate
+Envia sandbox probe (Colombia) — token b289b178…79d0
+api https://api-test.envia.com | queries https://queries.envia.com | geocodes https://geocodes.envia.com
+
+================================================================================================
+1. getFulfillmentOptions()  —  GET /carrier (Queries API)
+================================================================================================
+status: 401 in 506ms
+payload: {
+  "statusCode": 401,
+  "error": "Unauthorized",
+  "message": "User token is invalid."
+}
+
+================================================================================================
+2. validateFulfillmentData()  —  GET /zipcode/CO/{postalCode} (Geocodes API)
+================================================================================================
+status: 200 in 562ms
+normalised for the rate call: {
+  "city": "05001000",
+  "state": "AN",
+  "country": "CO",
+  "postalCode": "050001",
+  "locality": "Medellín",
+  "suburbs": [
+    "05001000"
+  ]
+}
+
+DANE code matches the one hardcoded in the lane: true
+
+bogus postal code: 200 -> []
+
+================================================================================================
+3. calculatePrice()  —  POST /ship/rate (one call per carrier, in parallel, per lane)
+================================================================================================
+request body for one carrier:
+{
+  "origin": {
+    "name": "Proteus Bodega",
+    "company": "Proteus",
+    "email": "bodega@proteus.test",
+    "phone": "3001234567",
+    "street": "Carrera 7",
+    "number": "71-21",
+    "district": "Usaquen",
+    "city": "11001000",
+    "state": "DC",
+    "country": "CO",
+    "postalCode": "110111",
+    "reference": ""
+  },
+  "destination": {
+    "name": "Juana Cliente",
+    "company": "",
+    "email": "juana@example.test",
+    "phone": "3009876543",
+    "street": "Carrera 43A",
+    "number": "1-50",
+    "district": "El Poblado",
+    "city": "05001000",
+    "state": "AN",
+    "country": "CO",
+    "postalCode": "050001",
+    "reference": ""
+  },
+  "packages": [
+    {
+      "content": "Merchandise",
+      "amount": 1,
+      "type": "box",
+      "weight": 1.5,
+      "insurance": 0,
+      "declaredValue": 50000,
+      "weightUnit": "KG",
+      "lengthUnit": "CM",
+      "dimensions": {
+        "length": 20,
+        "width": 15,
+        "height": 10
+      }
+    }
+  ],
+  "shipment": {
+    "type": 1,
+    "carrier": "coordinadora"
+  },
+  "settings": {
+    "currency": "COP"
+  }
+}
+
+--- inter-city Bogota->Medellin — 11 carriers in 7066ms wall clock
+  cabify                 929ms  ERR 1105 Only local coverage is available in Bogotá and Medellín.
+  coordinadora          1093ms  1 rate(s)
+  deprisa                879ms  ERR 1125 Service provided not available or incorrect
+  dhl                   1757ms  1 rate(s)
+  fedex                 1882ms  1 rate(s)
+  interRapidisimo       1421ms  10 rate(s)
+  lastMile               995ms  ERR 1129 Cobertura solo en bogotá
+  mensajerosUrbanos      896ms  ERR 1146 There is no coverage in the requested city
+  noventa9Minutos       7063ms  ERR 1126 No applicable coverage found
+  serviEntrega          1914ms  3 rate(s)
+  tcc                   1197ms  ERR 1300 Error: Bad Gateway
+
+  16 rates, sorted by price:
+    interRapidisimo     mensajeria_od              60 COP  eta 2026-08-28
+    interRapidisimo     mensajeria_do              60 COP  eta 2026-08-28
+    interRapidisimo     mensajeria_oo              60 COP  eta 2026-08-28
+    interRapidisimo     same_day                   70 COP  eta 2026-08-26
+    interRapidisimo     express_small              70 COP  eta 2026-08-27
+    interRapidisimo     ground_small_cod           70 COP  eta 2026-08-28
+    interRapidisimo     ground                     70 COP  eta 2026-08-31
+    interRapidisimo     express                    70 COP  eta 2026-08-28
+    interRapidisimo     express_cod                70 COP  eta 2026-08-28
+    coordinadora        ground                    620 COP  eta 2026-09-02
+    fedex               ground                   4340 COP  eta 2026-09-01
+    serviEntrega        doc_unitario            15600 COP  eta 2026-09-01
+    serviEntrega        premier                 15990 COP  eta 2026-09-01
+    interRapidisimo     ground_small            18700 COP  eta 2026-08-31
+    serviEntrega        industrial              39240 COP  eta 2026-09-01
+    dhl                 ground                  40950 COP  eta 2026-08-28
+
+--- intra-city Bogota->Bogota — 11 carriers in 1757ms wall clock
+  cabify                 660ms  ERR 1105 Only local coverage is available in Bogotá and Medellín.
+  coordinadora           955ms  1 rate(s)
+  deprisa                712ms  ERR 1125 Service provided not available or incorrect
+  dhl                   1391ms  1 rate(s)
+  fedex                 1177ms  1 rate(s)
+  interRapidisimo       1322ms  10 rate(s)
+  lastMile               798ms  ERR 1129 Cobertura solo en bogotá
+  mensajerosUrbanos     1482ms  1 rate(s)
+  noventa9Minutos       1116ms  1 rate(s)
+  serviEntrega          1755ms  3 rate(s)
+  tcc                    890ms  ERR 1300 Error: Bad Gateway
+
+  18 rates, sorted by price:
+    interRapidisimo     mensajeria_od              60 COP  eta 2026-08-28
+    interRapidisimo     mensajeria_do              60 COP  eta 2026-08-28
+    interRapidisimo     mensajeria_oo              60 COP  eta 2026-08-28
+    interRapidisimo     same_day                   70 COP  eta 2026-08-26
+    interRapidisimo     express_small              70 COP  eta 2026-08-27
+    interRapidisimo     ground_small_cod           70 COP  eta 2026-08-28
+    interRapidisimo     ground                     70 COP  eta 2026-08-31
+    interRapidisimo     express                    70 COP  eta 2026-08-28
+    interRapidisimo     express_cod                70 COP  eta 2026-08-28
+    coordinadora        ground                    620 COP  eta 2026-09-02
+    noventa9Minutos     local_next_day           4170 COP  eta 2026-08-24
+    fedex               ground                   4340 COP  eta 2026-09-01
+    serviEntrega        doc_unitario             9000 COP  eta 2026-09-01
+    serviEntrega        premier                  9230 COP  eta 2026-09-01
+    mensajerosUrbanos   ground                  14720 COP  eta 2026-08-26
+    interRapidisimo     ground_small            18700 COP  eta 2026-08-31
+    serviEntrega        industrial              23400 COP  eta 2026-09-01
+    dhl                 ground                  33090 COP  eta 2026-08-28
+
+================================================================================================
+3b. Carrier coverage audit — does the sandbox honour the docs table for CO?
+================================================================================================
+carrier             inter-city Bogota->Medellin                     intra-city Bogota->Bogota                       
+cabify              x  1105 Only local coverage is available in Bog x  1105 Only local coverage is available in Bog 
+coordinadora        ok 1                                            ok 1                                            
+deprisa             x  1125 Service provided not available or incor x  1125 Service provided not available or incor 
+dhl                 ok 1                                            ok 1                                            
+fedex               ok 1                                            ok 1                                            
+interRapidisimo     ok 10                                           ok 10                                           
+lastMile            x  1129 Cobertura solo en bogotá                x  1129 Cobertura solo en bogotá                
+mensajerosUrbanos   x  1146 There is no coverage in the requested c ok 1                                            
+noventa9Minutos     x  1126 No applicable coverage found            ok 1                                            
+serviEntrega        ok 3                                            ok 3                                            
+tcc                 x  1300 Error: Bad Gateway                      x  1300 Error: Bad Gateway                      
+
+quoted on at least one lane: 7/11 — coordinadora, dhl, fedex, interRapidisimo, mensajerosUrbanos, noventa9Minutos, serviEntrega
+never quoted:                4/11 — cabify, deprisa, lastMile, tcc
+
+full cheapest rate: {
+  "carrierId": 144,
+  "carrier": "interRapidisimo",
+  "carrierDescription": "InterRapidisimo",
+  "serviceId": 633,
+  "service": "mensajeria_od",
+  "serviceDescription": "Mensajería Oficina - Domicilio",
+  "dropOff": 0,
+  "dropOffDescription": "Puerta a puerta",
+  "branchType": null,
+  "zone": null,
+  "deliveryEstimate": "1-2 días",
+  "deliveryDate": {
+    "date": "2026-08-28",
+    "dateDifference": 2,
+    "timeUnit": "days",
+    "time": "20:00"
+  },
+  "quantity": 1,
+  "basePrice": 60,
+  "basePriceTaxes": 0,
+  "extendedFare": 0,
+  "insurance": 0,
+  "additionalServices": 0,
+  "additionalServicesTaxes": 0,
+  "additionalCharges": 0,
+  "additionalChargesTaxes": 0,
+  "importFee": 0,
+  "customKeyCost": 0,
+  "taxes": 0,
+  "totalPrice": 60,
+  "currency": "COP",
+  "smsCost": 0,
+  "whatsappCost": 0,
+  "customKey": false,
+  "cashOnDeliveryCommission": 0,
+  "cashOnDeliveryAmount": 0,
+  "calculatedDeclaredValue": 0,
+  "isMps": false,
+  "shipmentTaxes": [],
+  "branches": [],
+  "costSummary": [
+    {
+      "quantity": 1,
+      "basePrice": 60,
+      "basePriceTaxes": 0,
+      "extendedFare": 0,
+      "insurance": 0,
+      "additionalServices": 0,
+      "additionalServicesTaxes": 0,
+      "additionalCharges": 0,
+      "additionalChargesTaxes": 0,
+      "taxes": 0,
+      "totalPrice": 60,
+      "costAdditionalServices": [],
+      "costAdditionalCharges": [],
+      "currency": "COP",
+      "customKey": false,
+      "cashOnDeliveryCommission": 0,
+      "cashOnDeliveryAmount": 0,
+      "customKeyCommission": 0,
+      "smsCommission": 0,
+      "securityDeposit": false,
+      "securityWeight": "1.5",
+      "importFee": 0,
+      "whatsappCommission": 0,
+      "folio": null,
+      "calculatedDeclaredValue": 0
+    }
+  ],
+  "packageDetails": {
+    "totalWeight": 1.5,
+    "weightUnit": "KG",
+    "details": [
+      {
+        "appliedWeightType": "declared",
+        "weightUnit": "KG",
+        "weight": 1.5,
+        "content": "Merchandise"
+      }
+    ]
+  },
+  "landedCostId": null,
+  "classifiedHsCodes": [],
+  "landedCostTotal": null
+}
+
+fields the current interface has no home for: [
+  "carrierId",
+  "carrierDescription",
+  "serviceId",
+  "serviceDescription",
+  "dropOff",
+  "dropOffDescription",
+  "deliveryEstimate",
+  "deliveryDate",
+  "quantity",
+  "basePrice",
+  "basePriceTaxes",
+  "extendedFare",
+  "insurance",
+  "additionalServices",
+  "additionalServicesTaxes",
+  "additionalCharges",
+  "additionalChargesTaxes",
+  "importFee",
+  "customKeyCost",
+  "taxes",
+  "currency",
+  "smsCost",
+  "whatsappCost",
+  "customKey",
+  "cashOnDeliveryCommission",
+  "cashOnDeliveryAmount",
+  "calculatedDeclaredValue",
+  "isMps",
+  "shipmentTaxes",
+  "branches",
+  "costSummary",
+  "packageDetails",
+  "classifiedHsCodes"
+]
+
+================================================================================================
+4. createFulfillment()  —  POST /ship/generate
+================================================================================================
+buying: interRapidisimo / mensajeria_od @ 60 COP
+status: 200 in 1256ms
+payload: {
+  "meta": "generate",
+  "data": [
+    {
+      "carrier": "interRapidisimo",
+      "service": "mensajeria_od",
+      "shipmentId": 181149,
+      "trackingNumber": "INTESBX869734",
+      "folio": "",
+      "trackUrl": "https://envia.com/rastreo?label=INTESBX869734",
+      "label": "https://s3.us-east-2.amazonaws.com/envia-staging/uploads/interRapidisimo/INTESBX86973461556a8f98473d8e2.pdf",
+      "packages": [
+        {
+          "trackingNumber": "INTESBX869734",
+          "trackUrl": "https://envia.com/rastreo?label=INTESBX869734",
+          "content": "Merchandise",
+          "weight": 1.5,
+          "weightUnit": "KG"
+        }
+      ],
+      "additionalFiles": [],
+      "totalPrice": 60,
+      "currentBalance": 3701910,
+      "currency": "COP"
+    }
+  ]
+}
+
+================================================================================================
+5. cancelFulfillment()  —  POST /ship/cancel
+================================================================================================
+status: 200 in 2460ms
+payload: {
+  "meta": "cancel",
+  "data": [
+    {
+      "carrier": "interRapidisimo",
+      "service": "mensajeria_od",
+      "trackingNumber": "INTESBX869734",
+      "folio": null,
+      "ecommerce": null,
+      "refundedAmount": 60,
+      "currency": "COP",
+      "balanceReturned": 1,
+      "balanceReturnDate": "2026-08-26 19:52:09"
+    }
+  ]
+}
+
+================================================================================================
+6. (no interface method)  —  GET /webhooks
+================================================================================================
+status: 401 in 373ms
+payload: {
+  "statusCode": 401,
+  "error": "Unauthorized",
+  "message": "User token is invalid."
+}
+
+================================================================================================
+FIT REPORT — IFulfillmentProvider
+================================================================================================
+PARTIAL   getFulfillmentOptions    Queries API rejects the sandbox token (401) and has no -test host — the option list has to be hardcoded (CO_CARRIERS) or read with a production token
+FITS      validateFulfillmentData  postal code -> DANE code + state, which the CO rate call requires; a genuine use for this method
+PARTIAL   n/a — carrier coverage   7/11 documented CO carriers quote; cabify, deprisa, lastMile, tcc recognised but never returned a rate
+PARTIAL   calculatePrice           16 rates from 11 calls (7066ms on the inter-city lane), but the interface returns a single { amount } — carrier+service must arrive via optionData to pick one row
+FITS      canCalculate             true for every Envia option; rates are always live
+FITS      createFulfillment        trackingNumber + label PDF + trackUrl all fit in the opaque { data } blob
+FITS      cancelFulfillment        cancel by carrier + trackingNumber, both of which we stored in the data blob; balance refunded
+GAP       n/a — tracking updates   Envia pushes delivery status via webhook; IFulfillmentProvider has no hook for inbound events
+
+➜  proteus git:(feat/store-redesign) ✗ 

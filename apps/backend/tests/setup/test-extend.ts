@@ -106,6 +106,7 @@ import {
   createPaymentSessionForCart,
   createProduct,
   createProductOption,
+  createProducts,
   createProductVariant,
   createProductVariants,
   createSellableVariant,
@@ -299,6 +300,7 @@ export type Fixtures = {
       fulfilledOrder: typeof fulfillOrder
       shippedOrder: typeof shipOrder
       product: typeof createProduct
+      products: typeof createProducts
       productOption: typeof createProductOption
       productVariant: typeof createProductVariant
       productVariants: typeof createProductVariants
@@ -490,6 +492,7 @@ export const test = testBase.extend<Fixtures>({
         fulfilledOrder: fulfillOrder,
         shippedOrder: shipOrder,
         product: createProduct,
+        products: createProducts,
         productOption: createProductOption,
         productVariant: createProductVariant,
         productVariants: createProductVariants,

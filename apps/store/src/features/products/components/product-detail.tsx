@@ -33,10 +33,10 @@ export function ProductDetail() {
     // `pb-28` clears the action bar pinned over the bottom of the phone viewport; at `lg` the bar
     // is back inside the panel and the page only needs its own bottom margin.
     <main className="mx-auto w-full max-w-350 px-4 pt-6 pb-28 sm:px-6 lg:px-8 lg:pb-24">
-      {/* The reference has no breadcrumb because it has a mega-nav to go back to. `/products` is
+      {/* The reference has no breadcrumb because it has a mega-nav to go back to. `/` is
           our only listing, so this is the only way back from a PDP reached by search or by link. */}
       <nav className="mb-6 text-ink-muted text-xs">
-        <Link to="/products" className="hover:text-ink">
+        <Link to="/" className="hover:text-ink">
           Products
         </Link>
         <span className="mx-2">/</span>

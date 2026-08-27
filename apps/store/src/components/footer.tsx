@@ -15,7 +15,7 @@ const footerColumns = [
     title: 'Shop',
     links: [
       { label: 'Home', to: '/' as const },
-      { label: 'All products', to: '/products' as const },
+      { label: 'All products', to: '/' as const },
     ],
   },
   {

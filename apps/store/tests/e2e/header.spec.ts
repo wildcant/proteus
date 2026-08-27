@@ -82,7 +82,7 @@ test.describe('Header', () => {
     // Following a row closes the menu with no explicit dismissal — a plain <Link> drops the
     // search params, and `modal` is one of them
     await sideMenu.getByText('Products').click()
-    await expect(page).toHaveURL('/products')
+    await expect(page).toHaveURL('/')
     await expect(sideMenu).not.toBeVisible()
 
     // Search hands off in a single navigation: the menu closes as the panel opens. Both
@@ -90,7 +90,7 @@ test.describe('Header', () => {
     // its searchbox role — the drawer selector matches the menu's trigger button too.
     await header.getByLabel('Open menu').click()
     await sideMenu.getByLabel('Search products').click()
-    await expect(page).toHaveURL('/products?modal=search')
+    await expect(page).toHaveURL('/?modal=search')
     await expect(page.getByRole('searchbox', { name: 'Search products' })).toBeFocused()
     await page.keyboard.press('Escape')
   })
@@ -109,12 +109,12 @@ test.describe('Header', () => {
     await using other = await factories.create.product({ status: 'published', title: `${otherTerm} cap` })
     await authenticate({ as: 'customer' })
 
-    await navigate({ to: '/products' })
+    await navigate({ to: '/' })
 
     // Opening the panel is a navigation that keeps the page it opened over — the root-level
     // `modal` param merges with this route's own `q` rather than replacing it.
     await page.locator('header').getByLabel('Search products').click()
-    await expect(page).toHaveURL('/products?modal=search')
+    await expect(page).toHaveURL('/?modal=search')
 
     const panel = page.locator('[data-slot="drawer-popup"]')
     const search = panel.getByLabel('Search products')
@@ -128,7 +128,7 @@ test.describe('Header', () => {
     await panel.getByRole('link', { name: new RegExp(`View all.*${matchTerm}`) }).click()
 
     // Landing on a search with no `modal` is what closes the panel
-    await expect(page).toHaveURL(`/products?q=${matchTerm}`)
+    await expect(page).toHaveURL(`/?q=${matchTerm}`)
     await expect(page.locator('[data-slot="drawer-popup"]')).not.toBeVisible()
     await expect(page.getByText(match.title)).toBeVisible()
     await expect(page.getByText(other.title)).not.toBeVisible()

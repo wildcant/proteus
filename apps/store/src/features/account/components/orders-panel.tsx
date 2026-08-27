@@ -109,7 +109,7 @@ function OrdersEmpty() {
         You haven't made any orders yet. When you make an order it'll show up here.
       </p>
       {/* One link, not the reference's gendered pair: there is no category taxonomy behind it. */}
-      <Button render={<Link to="/products" />} className="mt-8">
+      <Button render={<Link to="/" />} className="mt-8">
         Shop all products
       </Button>
     </div>

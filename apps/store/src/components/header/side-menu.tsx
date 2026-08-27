@@ -11,7 +11,7 @@ import { useModal } from '#/lib/modal-state'
  *  is a weaker copy of a control already on screen. */
 const menuLinks = [
   { to: '/' as const, label: 'Home' },
-  { to: '/products' as const, label: 'Products' },
+  { to: '/' as const, label: 'Products' },
   { to: '/account' as const, label: 'Account' },
 ]
 

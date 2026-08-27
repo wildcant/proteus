@@ -43,7 +43,7 @@ export function SearchForm({ className, focusOnMount, value, onChange }: SearchF
             const trimmed = value.trim()
             // No explicit close: this search carries no `modal`, so landing on it is what
             // shuts the panel. One navigation, not two racing each other.
-            navigate({ to: '/products', search: trimmed ? { q: trimmed } : {} })
+            navigate({ to: '/', search: trimmed ? { q: trimmed } : {} })
           }}
         />
       }

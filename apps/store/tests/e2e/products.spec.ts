@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import type { Page } from '@playwright/test'
 import type { Factories } from '@proteus/testing'
 import { expect, test } from '../setup/test-extend.js'
 
@@ -191,14 +192,41 @@ async function createProductWithOptions(factories: Factories) {
   }
 }
 
+/**
+ * `count` published products whose titles all carry one random token, so `?q=<token>` narrows the
+ * global catalogue down to exactly this test's rows. Every other spec is seeding products into the
+ * same database while this one runs, so an unscoped listing is not something to assert order on.
+ */
+async function createCatalogue(factories: Factories, count: number) {
+  const token = faker.string.alpha({ length: 10, casing: 'lower' })
+  const products = await Promise.all(
+    Array.from({ length: count }, (_, index) =>
+      factories.create.product({ status: 'published', title: `${token} ${index}` }),
+    ),
+  )
+
+  return {
+    token,
+    titles: products.map((product) => product.title),
+    [Symbol.asyncDispose]: async () => {
+      await Promise.all(products.map((product) => product[Symbol.asyncDispose]()))
+    },
+  }
+}
+
 test.describe('Products', () => {
   test('product list page shows seeded products', async ({ page, authenticate, navigate, factories }) => {
     await using product = await factories.create.product({ status: 'published' })
     await authenticate({ as: 'customer' })
 
-    await navigate({ to: '/products' })
+    // Searched rather than browsed: the list is one page of twelve over a catalogue every other
+    // spec is seeding into at the same time, so an unscoped `/` is not somewhere this row
+    // is guaranteed to appear.
+    await navigate({ to: '/', search: { q: product.title } })
 
-    await expect(page.getByText(product.title)).toBeVisible()
+    // The card's heading, not any text: on a search the page's own `h1` echoes the term, which
+    // here is the title.
+    await expect(page.locator('main').getByRole('heading', { level: 3, name: product.title })).toBeVisible()
   })
 
   test('product detail page shows product info', async ({ page, authenticate, navigate, factories }) => {
@@ -312,5 +340,76 @@ test.describe('Products', () => {
     await navigate({ to: '/products/$productId', params: { productId: catalog.product.id } })
 
     await expect(page.getByLabel('Variant')).toBeVisible()
+  })
+})
+
+test.describe('Product list', () => {
+  /** The card title is an `h3`. Scoped to `main` because the footer's column headings are too. */
+  const cardTitles = (page: Page) => page.locator('main').getByRole('heading', { level: 3 }).allTextContents()
+
+  test('sorting round-trips through the URL and reorders the grid', async ({
+    page,
+    authenticate,
+    navigate,
+    factories,
+  }) => {
+    const token = faker.string.alpha({ length: 10, casing: 'lower' })
+    await using alpha = await factories.create.product({ status: 'published', title: `${token} alpha` })
+    await using zulu = await factories.create.product({ status: 'published', title: `${token} zulu` })
+    await authenticate({ as: 'customer' })
+
+    await navigate({ to: '/', search: { q: token } })
+
+    await page.getByLabel('Sort by').selectOption('za')
+    await expect(page).toHaveURL(`/?q=${token}&sort=za`)
+    await expect.poll(() => cardTitles(page)).toEqual([zulu.title, alpha.title])
+
+    await page.getByLabel('Sort by').selectOption('az')
+    await expect(page).toHaveURL(`/?q=${token}&sort=az`)
+    await expect.poll(() => cardTitles(page)).toEqual([alpha.title, zulu.title])
+
+    // The default is absent from the URL, never written into it — the rule `header.spec.ts`'s
+    // `toHaveURL('/?q=...')` assertions depend on.
+    await page.getByLabel('Sort by').selectOption('newest')
+    await expect(page).toHaveURL(`/?q=${token}`)
+  })
+
+  test('paging round-trips through the URL and survives a reload', async ({
+    page,
+    authenticate,
+    navigate,
+    factories,
+  }) => {
+    // One more than a full page, so Next has somewhere to go.
+    await using catalogue = await createCatalogue(factories, 13)
+    await authenticate({ as: 'customer' })
+
+    await navigate({ to: '/', search: { q: catalogue.token } })
+    await expect.poll(() => cardTitles(page)).toHaveLength(12)
+    const firstPage = await cardTitles(page)
+
+    await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page).toHaveURL(`/?q=${catalogue.token}&offset=12`)
+    await expect.poll(() => cardTitles(page)).toHaveLength(1)
+    const secondPage = await cardTitles(page)
+
+    // The assertion that would have caught the missing ORDER BY: without one, an offset pager is
+    // free to repeat a row from page 1 on page 2 and drop another entirely.
+    expect(firstPage.filter((title) => secondPage.includes(title))).toEqual([])
+    expect(new Set([...firstPage, ...secondPage])).toEqual(new Set(catalogue.titles))
+
+    await page.reload()
+    await expect.poll(() => cardTitles(page)).toEqual(secondPage)
+  })
+
+  test('a search that matches nothing says so, with the term', async ({ page, authenticate, navigate }) => {
+    // Random, because parallel specs are seeding products the whole time this runs.
+    const term = faker.string.alpha({ length: 10, casing: 'lower' })
+    await authenticate({ as: 'customer' })
+
+    await navigate({ to: '/', search: { q: term } })
+
+    await expect(page.getByText(`No products match \u201c${term}\u201d.`)).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Clear search' })).toBeVisible()
   })
 })

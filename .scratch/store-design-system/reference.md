@@ -67,11 +67,35 @@ Password fields carry an inline-end reveal toggle. Search input is filled `#f4f5
 **Product card** — 4:5 image (`object-fit: cover`, radius 0), then title at 14px and price at 14px.
 No border, no shadow, no card chrome.
 
-**PLP grid** — 4 columns at 1440px, `gap: 24px 4px`. The near-zero column gap is deliberate: images
-almost touch, so the page reads as a contact sheet rather than a set of cards.
+**PLP grid** — measured 2026-08-26 at four widths. `gap: 24px 4px` at every one; the near-zero
+column gap is deliberate: images almost touch, so the page reads as a contact sheet rather than a
+set of cards.
 
-**PLP header** — muted eyebrow ("Mens"), huge display title ("ALL PRODUCTS"), result count, then a
-one-line description. Left filter rail with hairline dividers.
+| | 390 | 768 | 1024 | 1440 |
+|---|---|---|---|---|
+| Columns | 2 × 185 | 3 × 248 | 3 × 219 | 4 × 247 |
+| Page gutter | 8px | 8px | 40px | 40px |
+| Filter rail | hidden | hidden | 240px | 320px |
+| `h1` | 32.25px | 37.92px | 41.76px | 48px |
+
+Their display clamp resolves to the same values our `type-display`
+(`clamp(2rem, 1.65rem + 1.5vw, 3rem)`) does — 37.92 and 41.76 agree to the hundredth of a pixel.
+
+**PLP card** — 4:5 image, then a details block padded 16px above `lg` and `8px 0` below it. Inside:
+title 14px/400 ink, fit line 14px/400 `#767a7f` at `margin-top: 4px`, colour name the same, price
+14px/**700** at `margin-top: 16px`. Two `<img>` stacked absolutely for the hover swap, a 44×44
+wishlist button inset at the top right, and a badge pill (`#f4f5f6` on ink, `padding: 5px 8px`)
+overlaid at the image's bottom left.
+
+**PLP header** — muted eyebrow ("mens", 12px), huge display title ("ALL PRODUCTS"), result count,
+then a one-line description, on a 24px rhythm. Left filter rail with hairline dividers; eleven
+groups, `Sort By` first and open by default, each trigger 14px/400 capitalize with a chevron, each
+option row 44px with the label at 14px `#767a7f` and a 24px left inset. Below `lg` the rail
+collapses into a `position: sticky` bar carrying `sort`, the result count and `filter`, and the
+count leaves the page header to sit in it.
+
+**PLP pagination** — `Load more` (52px ink), `view all` below it, then "Viewing 1 - 60 of 1066
+products" in 14px `#767a7f`.
 
 **Login** — centered ~448px column on bare white. No card, no border, no panel; the form floats.
 

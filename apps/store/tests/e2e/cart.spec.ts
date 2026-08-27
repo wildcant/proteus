@@ -80,7 +80,7 @@ test.describe('Cart', () => {
     // 6. "Back to cart" lands on the catalogue with the panel open, which is where the cart
     // lives now. Full layout returns with it.
     await page.getByRole('link', { name: /back to cart/i }).click()
-    await expect(page).toHaveURL('/products?modal=cart')
+    await expect(page).toHaveURL('/?modal=cart')
     await expect(panel).toBeVisible()
     await expect(panel.getByText(productA.title)).toBeVisible()
     // Exact: the panel is open, so a substring `Cart` also matches its `Close cart` button.
@@ -186,7 +186,7 @@ test.describe('Cart', () => {
     // A cold open: `?modal=cart` reached by a full page load, with the cart already populated but
     // the query cache empty. `useCart` does not suspend, so without the skeleton branch the panel
     // would render "Your bag is empty" for the width of a request.
-    await navigate({ to: '/products', search: { modal: 'cart' } })
+    await navigate({ to: '/', search: { modal: 'cart' } })
     await expect(panel).toBeVisible()
     await expect(panel.getByText('Your bag is empty')).toBeHidden()
     await expect(panel.getByText(product.title)).toBeVisible()

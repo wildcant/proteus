@@ -23,7 +23,7 @@ export function SearchBestSellers() {
           put theirs — this row is a shortcut into the catalogue, not the tail of a result set. */}
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="type-heading m-0 text-ink">Best sellers</h2>
-        <Link to="/products" className="shrink-0 font-medium text-ink text-sm underline">
+        <Link to="/" className="shrink-0 font-medium text-ink text-sm underline">
           View all
         </Link>
       </div>

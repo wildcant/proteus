@@ -23,7 +23,6 @@ import { Route as MainAuthedRouteRouteImport } from './routes/_main/_authed/rout
 import { Route as MainProductsRouteRouteImport } from './routes/_main/products/route'
 import { Route as CheckoutCheckoutIndexRouteImport } from './routes/_checkout/checkout/index'
 import { Route as CheckoutCheckoutAddressesRouteRouteImport } from './routes/_checkout/checkout/addresses/route'
-import { Route as MainProductsIndexRouteImport } from './routes/_main/products/index'
 import { Route as MainProductsProductIdRouteImport } from './routes/_main/products/$productId'
 import { Route as CheckoutCheckoutAddressesNewRouteImport } from './routes/_checkout/checkout/addresses/new'
 import { Route as MainAuthedAccountIndexRouteImport } from './routes/_main/_authed/account/index'
@@ -102,11 +101,6 @@ const CheckoutCheckoutAddressesRouteRoute =
     path: '/addresses',
     getParentRoute: () => CheckoutCheckoutRouteRoute,
   } as any)
-const MainProductsIndexRoute = MainProductsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => MainProductsRouteRoute,
-} as any)
 const MainProductsProductIdRoute = MainProductsProductIdRouteImport.update({
   id: '/$productId',
   path: '/$productId',
@@ -178,7 +172,6 @@ export interface FileRoutesByFullPath {
   '/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/products/$productId': typeof MainProductsProductIdRoute
   '/checkout/': typeof CheckoutCheckoutIndexRoute
-  '/products/': typeof MainProductsIndexRoute
   '/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
@@ -191,6 +184,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof MainIndexRoute
+  '/products': typeof MainProductsRouteRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/reset-password': typeof AuthResetPasswordRoute
@@ -199,7 +193,6 @@ export interface FileRoutesByTo {
   '/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/products/$productId': typeof MainProductsProductIdRoute
   '/checkout': typeof CheckoutCheckoutIndexRoute
-  '/products': typeof MainProductsIndexRoute
   '/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/account': typeof MainAuthedAccountIndexRoute
@@ -226,7 +219,6 @@ export interface FileRoutesById {
   '/_checkout/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/_main/products/$productId': typeof MainProductsProductIdRoute
   '/_checkout/checkout/': typeof CheckoutCheckoutIndexRoute
-  '/_main/products/': typeof MainProductsIndexRoute
   '/_main/_authed/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/_checkout/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
   '/_main/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
@@ -251,7 +243,6 @@ export interface FileRouteTypes {
     | '/checkout/addresses'
     | '/products/$productId'
     | '/checkout/'
-    | '/products/'
     | '/account/addresses'
     | '/checkout/addresses/new'
     | '/order/$orderId/confirmed'
@@ -264,6 +255,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/products'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -272,7 +264,6 @@ export interface FileRouteTypes {
     | '/checkout/addresses'
     | '/products/$productId'
     | '/checkout'
-    | '/products'
     | '/checkout/addresses/new'
     | '/order/$orderId/confirmed'
     | '/account'
@@ -298,7 +289,6 @@ export interface FileRouteTypes {
     | '/_checkout/checkout/addresses'
     | '/_main/products/$productId'
     | '/_checkout/checkout/'
-    | '/_main/products/'
     | '/_main/_authed/account/addresses'
     | '/_checkout/checkout/addresses/new'
     | '/_main/order/$orderId/confirmed'
@@ -415,13 +405,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/checkout/addresses'
       preLoaderRoute: typeof CheckoutCheckoutAddressesRouteRouteImport
       parentRoute: typeof CheckoutCheckoutRouteRoute
-    }
-    '/_main/products/': {
-      id: '/_main/products/'
-      path: '/'
-      fullPath: '/products/'
-      preLoaderRoute: typeof MainProductsIndexRouteImport
-      parentRoute: typeof MainProductsRouteRoute
     }
     '/_main/products/$productId': {
       id: '/_main/products/$productId'
@@ -599,12 +582,10 @@ const MainAuthedRouteRouteWithChildren = MainAuthedRouteRoute._addFileChildren(
 
 interface MainProductsRouteRouteChildren {
   MainProductsProductIdRoute: typeof MainProductsProductIdRoute
-  MainProductsIndexRoute: typeof MainProductsIndexRoute
 }
 
 const MainProductsRouteRouteChildren: MainProductsRouteRouteChildren = {
   MainProductsProductIdRoute: MainProductsProductIdRoute,
-  MainProductsIndexRoute: MainProductsIndexRoute,
 }
 
 const MainProductsRouteRouteWithChildren =

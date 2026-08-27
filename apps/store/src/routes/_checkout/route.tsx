@@ -12,7 +12,7 @@ function CheckoutLayout() {
       <header className="border-line border-b bg-surface">
         <div className="mx-auto grid w-full max-w-350 grid-cols-3 items-center px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <Link
-            to="/products"
+            to="/"
             search={{ modal: 'cart' }}
             className="inline-flex items-center gap-1.5 font-medium text-ink-muted text-sm no-underline hover:text-ink"
           >

@@ -105,6 +105,13 @@ consistent than the reference's own "Log In" / "Sign up" — two different verbs
   size guide, the wishlist, the BNPL strip and the delivery promises for want of anything behind
   them; keeps the quantity stepper and the specs table, which the reference does not have
 
-Then PLP (grid gap, header, card) and the `/cart` page. The 4:5 product
-image, the `gap: 24px 4px` contact-sheet grid and the muted-eyebrow-plus-display-title page header
-are the three patterns with the most left to give.
+- `10-product-list.md` — the grid becomes a contact sheet (`gap: 24px 4px`), the card goes 4:5 and
+  gains the fit line `product.subtitle` has always carried, and the page finally gets a header:
+  muted eyebrow, `type-display` title, result count. The reference's eleven-group filter rail is
+  dropped whole — there is no taxonomy, no option filtering and no price param — and its one
+  backable job becomes a `NativeSelect` in a sticky bar. `sort` and `offset` become URL state, which
+  is what makes the loader able to SSR the page a link actually points at. Carries a six-line
+  backend change: `parseOrder` learns comma-separated columns, because `createdAt` alone cannot
+  stabilise the pager when `createMany` gives a whole seeded catalogue one `now()`
+
+Then the `/cart` page and the home page, which is still a single `<h1>`.

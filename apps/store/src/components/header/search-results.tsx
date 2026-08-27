@@ -49,7 +49,7 @@ export function SearchResults({ term }: SearchResultsProps) {
 
       {/* The panel is a preview; the PLP is where the full result set lives. */}
       <div className="mt-8 flex justify-end border-line border-t pt-6">
-        <Link to="/products" search={{ q: debouncedTerm }} className="font-medium text-ink text-sm underline">
+        <Link to="/" search={{ q: debouncedTerm }} className="font-medium text-ink text-sm underline">
           View all &ldquo;{debouncedTerm}&rdquo;
         </Link>
       </div>

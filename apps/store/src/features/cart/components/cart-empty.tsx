@@ -12,7 +12,7 @@ export function CartEmpty() {
       <ShoppingBagIcon className="mb-4 h-10 w-10 text-ink-subtle" />
       <h2 className="type-heading m-0 text-ink">Your bag is empty</h2>
       <p className="m-0 mt-2 mb-6 text-ink-muted text-sm">There are no products in your bag</p>
-      <Button render={<Link to="/products" />} className="w-full">
+      <Button render={<Link to="/" />} className="w-full">
         Browse products
       </Button>
     </div>

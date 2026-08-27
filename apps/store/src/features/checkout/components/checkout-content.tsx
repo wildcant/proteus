@@ -14,7 +14,7 @@ export function CheckoutContent() {
   // Nothing to check out, and no cart page to land on. The catalogue is the honest destination:
   // opening the panel over it would only say "empty" a second time.
   if (!cart || cart.items.length === 0) {
-    return <Navigate to="/products" />
+    return <Navigate to="/" />
   }
 
   return (

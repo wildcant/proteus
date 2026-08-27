@@ -9,7 +9,7 @@ type ProductGalleryProps = {
   /** Opens the gallery on this image, and stands in as the only image when `images` is empty. */
   thumbnail: string | null
   alt: string
-  /** Replays the strip and returns it to the variant's own photo when the colourway changes. */
+  /** Returns the strip to the variant's own photo when the colourway changes. */
   variantId: string | undefined
 }
 
@@ -63,9 +63,7 @@ export function ProductGallery({ images, thumbnail, alt, variantId }: ProductGal
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Keyed so a colourway change replays the strip instead of hard-swapping the photos. */}
       <ul
-        key={variantId}
         ref={scroller}
         // A scrollable region has to be reachable by keyboard — the dots alone do not make it so,
         // and arrow-key scrolling is the only way through the strip without a pointer. The mosaic
@@ -77,7 +75,7 @@ export function ProductGallery({ images, thumbnail, alt, variantId }: ProductGal
           if (clientWidth === 0) return
           setActiveIndex(Math.round(scrollLeft / clientWidth))
         }}
-        className="fade-in scrollbar-none flex animate-in snap-x snap-mandatory overflow-x-auto -outline-offset-2 duration-300 focus-visible:outline focus-visible:outline-ink motion-reduce:animate-none lg:grid lg:grid-cols-2 lg:gap-1 lg:overflow-visible"
+        className="scrollbar-none flex snap-x snap-mandatory overflow-x-auto -outline-offset-2 focus-visible:outline focus-visible:outline-ink lg:grid lg:grid-cols-2 lg:gap-1 lg:overflow-visible"
       >
         {slides.map((image, index) => (
           <li

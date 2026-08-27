@@ -18,9 +18,14 @@ export function CartTrigger() {
   const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0
 
   return (
-    <Button variant="ghost" size="icon" aria-label="Cart" className="relative" onClick={() => setOpen(true)}>
-      <ShoppingBagIcon className="h-5 w-5" />
-      {itemCount > 0 && <CartBadge count={itemCount} />}
+    <Button variant="ghost" size="icon" aria-label="Cart" onClick={() => setOpen(true)}>
+      {/* The badge hangs off the *glyph's* corner, so it anchors to this wrapper rather than to
+          the button. `size="icon"` is 32px around a 20px bag, and offsets measured from the
+          button's own corner land six pixels inside the bag, burying it under the counter. */}
+      <span className="relative flex">
+        <ShoppingBagIcon className="h-5 w-5" />
+        {itemCount > 0 && <CartBadge count={itemCount} />}
+      </span>
     </Button>
   )
 }
@@ -34,7 +39,7 @@ export function CartTrigger() {
  */
 function CartBadge({ count }: { count: number }) {
   return (
-    <span className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-bold text-[10px] text-surface leading-none">
+    <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-bold text-[10px] text-surface leading-none">
       {count > 99 ? '99+' : String(count)}
     </span>
   )
