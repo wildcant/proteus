@@ -1812,31 +1812,16 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "title": {
+                        "variantId": {
                           "type": "string",
                           "minLength": 1
                         },
                         "quantity": {
                           "type": "integer",
                           "exclusiveMinimum": 0
-                        },
-                        "unitPrice": {
-                          "type": "string"
-                        },
-                        "variantId": {
-                          "type": "string"
-                        },
-                        "productId": {
-                          "type": "string"
-                        },
-                        "productTitle": {
-                          "type": "string"
-                        },
-                        "variantSku": {
-                          "type": "string"
                         }
                       },
-                      "required": ["title", "quantity", "unitPrice"]
+                      "required": ["variantId", "quantity"]
                     }
                   }
                 }
@@ -2056,37 +2041,16 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "title": {
+                  "variantId": {
                     "type": "string",
                     "minLength": 1
                   },
                   "quantity": {
                     "type": "integer",
                     "exclusiveMinimum": 0
-                  },
-                  "unitPrice": {
-                    "type": "string"
-                  },
-                  "variantId": {
-                    "type": "string"
-                  },
-                  "productId": {
-                    "type": "string"
-                  },
-                  "productTitle": {
-                    "type": "string"
-                  },
-                  "variantSku": {
-                    "type": "string"
-                  },
-                  "variantTitle": {
-                    "type": "string"
-                  },
-                  "variantOptionValues": {
-                    "type": "string"
                   }
                 },
-                "required": ["title", "quantity", "unitPrice"]
+                "required": ["variantId", "quantity"]
               }
             }
           }
@@ -2145,9 +2109,6 @@
                   "quantity": {
                     "type": "integer",
                     "exclusiveMinimum": 0
-                  },
-                  "unitPrice": {
-                    "type": "string"
                   }
                 }
               }

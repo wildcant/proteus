@@ -1,6 +1,7 @@
 import type { CartLineItemDTO } from '@core/types/cart/common.js'
 import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
 import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
+import { indexVariantInventory } from './variant-inventory.js'
 
 export type ConfirmInventoryItem = {
   lineItemId: string
@@ -16,49 +17,31 @@ export type ConfirmInventoryResult = {
   items: ConfirmInventoryItem[]
 }
 
+/**
+ * What a cart already holding its line items needs confirmed in stock.
+ *
+ * Keyed by line item, unlike {@link prepareVariantInventoryChecks}, because the reservations
+ * `complete-cart` writes from this point back at the row they were taken for.
+ */
 export function prepareConfirmInventoryInput(data: {
   cartId: string
   lineItems: CartLineItemDTO[]
   mappings: ProductVariantInventoryItemDTO[]
   levels: InventoryLevelDTO[]
 }): ConfirmInventoryResult {
-  const levelsByInventoryItem = new Map<string, InventoryLevelDTO[]>()
-  for (const level of data.levels) {
-    const existing = levelsByInventoryItem.get(level.inventoryItemId) ?? []
-    existing.push(level)
-    levelsByInventoryItem.set(level.inventoryItemId, existing)
-  }
+  const backingByVariantId = indexVariantInventory(data.mappings, data.levels)
 
-  const mappingsByVariant = new Map<string, ProductVariantInventoryItemDTO[]>()
-  for (const mapping of data.mappings) {
-    const existing = mappingsByVariant.get(mapping.variantId) ?? []
-    existing.push(mapping)
-    mappingsByVariant.set(mapping.variantId, existing)
-  }
+  const items = data.lineItems.flatMap((lineItem) => {
+    const variantId = lineItem.variantId
+    if (!variantId) return []
 
-  const items: ConfirmInventoryItem[] = []
-
-  for (const li of data.lineItems) {
-    if (!li.variantId) {
-      continue
-    }
-
-    const variantMappings = mappingsByVariant.get(li.variantId) ?? []
-
-    for (const mapping of variantMappings) {
-      const levels = levelsByInventoryItem.get(mapping.inventoryItemId) ?? []
-      const locationIds = levels.map((l) => l.locationId)
-
-      items.push({
-        lineItemId: li.id,
-        variantId: li.variantId,
-        inventoryItemId: mapping.inventoryItemId,
-        requiredQuantity: mapping.requiredQuantity,
-        quantity: li.quantity,
-        locationIds,
-      })
-    }
-  }
+    return (backingByVariantId.get(variantId) ?? []).map((backing) => ({
+      ...backing,
+      lineItemId: lineItem.id,
+      variantId,
+      quantity: lineItem.quantity,
+    }))
+  })
 
   return { cartId: data.cartId, items }
 }

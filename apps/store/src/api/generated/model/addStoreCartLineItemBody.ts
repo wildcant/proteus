@@ -7,14 +7,7 @@
 
 export type AddStoreCartLineItemBody = {
   /** @minLength 1 */
-  title: string;
+  variantId: string;
   /** @exclusiveMinimum 0 */
   quantity: number;
-  unitPrice: string;
-  variantId?: string;
-  productId?: string;
-  productTitle?: string;
-  variantSku?: string;
-  variantTitle?: string;
-  variantOptionValues?: string;
 };

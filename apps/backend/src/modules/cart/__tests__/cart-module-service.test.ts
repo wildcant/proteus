@@ -150,6 +150,55 @@ test.describe('CartModuleService', () => {
   })
 
   // ---------------------------------------------------------------------------
+  // Line item plans
+  //
+  // An addition writes two kinds of row at once — the lines it starts and the lines it raises.
+  // Both are rows of `cart_line_item`, so one transaction covers them and the caller needs no
+  // compensation. These assert that boundary holds.
+  // ---------------------------------------------------------------------------
+
+  test.describe('Line item plans', () => {
+    test('applyLineItemPlan — creates and raises in one call', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+      const held = await service.addLineItem(cart.id, dto.generate.createLineItem({ quantity: 1 }))
+
+      const written = await service.applyLineItemPlan(cart.id, {
+        create: [dto.generate.createLineItem({ quantity: 2 })],
+        merge: [{ id: held.id, data: { quantity: 4 } }],
+      })
+
+      expect(written).toHaveLength(2)
+      const lineItems = await service.listLineItems({ cartId: cart.id })
+      expect(lineItems).toHaveLength(2)
+      expect(lineItems.find((lineItem) => lineItem.id === held.id)).toMatchObject({ quantity: 4 })
+    })
+
+    test('applyLineItemPlan — writes nothing when one of the raises fails', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+
+      // The half-applied addition the workflow used to need a compensation for: the new line is
+      // written, then a line that is not there any more is raised.
+      await expect(
+        service.applyLineItemPlan(cart.id, {
+          create: [dto.generate.createLineItem()],
+          merge: [{ id: 'cali_gone', data: { quantity: 2 } }],
+        }),
+      ).rejects.toMatchObject({ type: ErrorTypes.NOT_FOUND })
+
+      expect(await service.listLineItems({ cartId: cart.id })).toEqual([])
+    })
+
+    test('applyLineItemPlan — refuses a cart that has been completed', async ({ expect, dto }) => {
+      const cart = await service.createCart(dto.generate.createCart())
+      await service.updateCart(cart.id, { completedAt: new Date() })
+
+      await expect(
+        service.applyLineItemPlan(cart.id, { create: [dto.generate.createLineItem()], merge: [] }),
+      ).rejects.toMatchObject({ type: ErrorTypes.NOT_ALLOWED })
+    })
+  })
+
+  // ---------------------------------------------------------------------------
   // Address ownership
   //
   // A cart owns its addresses rather than pointing at them, so `type` is what identifies a

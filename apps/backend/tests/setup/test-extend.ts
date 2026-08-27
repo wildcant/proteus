@@ -108,6 +108,7 @@ import {
   createProductOption,
   createProductVariant,
   createProductVariants,
+  createSellableVariant,
   fulfillOrder,
   linkRepo,
   listAuthVerifications,
@@ -293,6 +294,7 @@ export type Fixtures = {
       capturedPayment: typeof capturePayment
       canceledPayment: typeof cancelPayment
       checkoutReadyCart: typeof createCheckoutReadyCart
+      sellableVariant: typeof createSellableVariant
       order: typeof createOrder
       fulfilledOrder: typeof fulfillOrder
       shippedOrder: typeof shipOrder
@@ -483,6 +485,7 @@ export const test = testBase.extend<Fixtures>({
         capturedPayment: capturePayment,
         canceledPayment: cancelPayment,
         checkoutReadyCart: createCheckoutReadyCart,
+        sellableVariant: createSellableVariant,
         order: createOrder,
         fulfilledOrder: fulfillOrder,
         shippedOrder: shipOrder,
