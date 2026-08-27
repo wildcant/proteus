@@ -40,9 +40,11 @@ test.describe('Cart', () => {
     await expect(panel).toBeVisible()
     await expect(panel.getByText(productA.title)).toBeVisible()
 
-    // Assert nav cart badge shows item count. One bag at every width now, so no `.last()`:
-    // this should fail the day a second `aria-label="Cart"` reappears.
-    const cartBadge = page.locator('header [aria-label="Cart"] span').filter({ hasText: '1' })
+    // Assert nav cart badge shows item count. Matched by text rather than by `span`: the badge
+    // hangs off a positioning wrapper that is a `<span>` too, so a CSS match catches both, while
+    // `getByText` resolves to the innermost element carrying the count. Still no `.last()` — one
+    // bag at every width now, so this should fail the day a second `aria-label="Cart"` reappears.
+    const cartBadge = page.locator('header').getByLabel('Cart', { exact: true }).getByText('1', { exact: true })
     await expect(cartBadge).toBeVisible()
 
     // 2. The panel *is* the cart — there is no page to navigate to. Unit price and the summary

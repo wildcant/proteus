@@ -8,7 +8,10 @@ export function generateProduct(overrides?: Partial<CreateProduct>): CreateProdu
   return {
     id: `prod_${faker.string.alphanumeric(32)}`,
     title,
-    handle: faker.helpers.slugify(title).toLowerCase(),
+    // Handles are globally unique (`idx_product_handle`), and `faker.commerce.productName()` only
+    // spans ~9.7k slugs. A spec seeding a catalogue draws a dozen of them at once while the other
+    // parallel specs seed their own, which collides often enough to fail a run outright.
+    handle: `${faker.helpers.slugify(title).toLowerCase()}-${faker.string.alphanumeric(8)}`,
     subtitle: faker.commerce.productAdjective(),
     description: faker.commerce.productDescription(),
     isGiftcard: faker.datatype.boolean(),
