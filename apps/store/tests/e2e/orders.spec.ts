@@ -46,7 +46,7 @@ test.describe('Orders', () => {
 
     // The detail is its own route, not the confirmation page: no "Thank you!" six months on.
     await expect(page).toHaveURL(/\/account\/orders\/ord_/)
-    await expect(page.getByRole('heading', { name: `#${displayId}` })).toBeVisible()
+    await expect(page.getByRole('heading', { name: `Order #${displayId}` })).toBeVisible()
     await expect(page.getByRole('heading', { name: /thank you/i })).not.toBeVisible()
     await expect(page.getByText(product.title).first()).toBeVisible()
 

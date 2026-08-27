@@ -33,11 +33,15 @@ export function OrderItems({ order }: { order: StoreOrderResponseOrder }) {
             </span>
           </div>
 
-          <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
+          {/* Stacked below `sm`, side by side above it. Sharing one row with the line total left
+              the title about ninety pixels on a 320px phone, which broke product names mid-word
+              and wrapped prices between their own digits — a price split across two lines is
+              unreadable for the moment it takes to find the rest of it. */}
+          <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="min-w-0">
               {/* No line-clamp: truncating what someone bought on the record of them buying it
                   is not a trade worth making. */}
-              <p className="m-0 text-ink text-sm">{item.title}</p>
+              <p className="wrap-break-word m-0 text-ink text-sm">{item.title}</p>
               {/* `variantOptionValues` is the same string the cart drawer and the checkout summary
                   showed. `variantTitle` is what orders placed before that column have. */}
               {!!(item.variantOptionValues ?? item.variantTitle) && (
@@ -47,12 +51,14 @@ export function OrderItems({ order }: { order: StoreOrderResponseOrder }) {
                   it out because the shopper is still holding the cart that set it; a receipt read
                   six months later cannot. At one, it is noise. */}
               {item.quantity > 1 && (
-                <p className="m-0 mt-0.5 text-ink-muted text-xs tabular-nums">
+                <p className="m-0 mt-0.5 whitespace-nowrap text-ink-muted text-xs tabular-nums">
                   {formatPrice(item.unitPrice, order.currencyCode)} each
                 </p>
               )}
             </div>
-            <span className="shrink-0 font-medium text-ink text-sm tabular-nums">
+            {/* Right-aligned at both widths. Stacked under the details it would otherwise read as
+                a fourth meta line rather than the row's total. */}
+            <span className="shrink-0 self-end whitespace-nowrap font-medium text-ink text-sm tabular-nums sm:self-auto">
               {formatPrice(item.lineTotal, order.currencyCode)}
             </span>
           </div>

@@ -2,7 +2,7 @@ import { formatDate } from '@proteus/utils'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSuspenseOrder } from '#/features/orders/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
-import { fulfillmentLabels } from '#/features/orders/fulfillment-labels'
+import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'
 
 const route = getRouteApi('/_main/order/$orderId/confirmed')
 
@@ -25,11 +25,10 @@ export function OrderConfirmedContent() {
         We have sent the order confirmation details to <span className="text-ink">{order.email}</span>.
       </p>
 
-      <p className="mt-8 text-ink-muted text-sm">Order</p>
-      <h2 className="type-title mt-2 text-ink">#{order.displayId}</h2>
-      <p className="mt-2 text-ink-muted text-sm">
-        Placed {formatDate(order.createdAt)} · {fulfillmentLabels[order.fulfillmentStatus]}
-      </p>
+      <h2 className="type-title mt-8 text-ink">Order #{order.displayId}</h2>
+      <p className="mt-2 text-ink-muted text-sm">Placed {formatDate(order.createdAt)}</p>
+
+      <OrderProgressTrack order={order} className="mt-6" />
 
       <OrderDetails order={order} />
     </main>

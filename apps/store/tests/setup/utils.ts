@@ -83,7 +83,7 @@ export async function placeOrder(page: Page, shippingOptionName: string): Promis
 
   await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 15_000 })
   // Both order routes print the number the same way, so this read works on either of them.
-  const orderNumber = await page.getByRole('heading', { name: /^#\d+$/ }).innerText()
+  const orderNumber = await page.getByRole('heading', { name: /^Order #\d+$/ }).innerText()
   const displayId = orderNumber.replace(/\D/g, '')
   expect(displayId, `Could not read a display id out of "${orderNumber}"`).not.toBe('')
   return displayId

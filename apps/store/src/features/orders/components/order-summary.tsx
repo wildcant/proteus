@@ -15,19 +15,19 @@ export function OrderSummary({ order, className }: { order: StoreOrderResponseOr
       <dl className="m-0 mt-6 flex flex-col gap-3 border-line border-t pt-6">
         <div className="flex items-baseline justify-between gap-4">
           <dt className="text-ink-muted text-sm">Subtotal</dt>
-          <dd className="m-0 font-medium text-ink text-sm tabular-nums">
+          <dd className="m-0 whitespace-nowrap font-medium text-ink text-sm tabular-nums">
             {formatPrice(order.totals.itemsTotal, order.currencyCode)}
           </dd>
         </div>
         <div className="flex items-baseline justify-between gap-4">
           <dt className="text-ink-muted text-sm">Shipping</dt>
-          <dd className="m-0 font-medium text-ink text-sm tabular-nums">
+          <dd className="m-0 whitespace-nowrap font-medium text-ink text-sm tabular-nums">
             {formatPrice(order.totals.shippingTotal, order.currencyCode)}
           </dd>
         </div>
         <div className="mt-2 flex items-baseline justify-between gap-4">
           <dt className="font-bold text-base text-ink">Total</dt>
-          <dd className="m-0 font-bold text-base text-ink tabular-nums">
+          <dd className="m-0 whitespace-nowrap font-bold text-base text-ink tabular-nums">
             {formatPrice(order.totals.orderTotal, order.currencyCode)}
           </dd>
         </div>

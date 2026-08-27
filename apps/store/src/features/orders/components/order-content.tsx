@@ -4,7 +4,7 @@ import { ChevronLeftIcon } from 'lucide-react'
 import { Button } from '#/components/button'
 import { useSuspenseOrder } from '#/features/orders/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
-import { fulfillmentLabels } from '#/features/orders/fulfillment-labels'
+import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'
 
 const route = getRouteApi('/_main/_authed/account/orders/$orderId')
 
@@ -24,13 +24,15 @@ export function OrderContent() {
         Account
       </Button>
 
-      <p className="mt-6 text-ink-muted text-sm">Order</p>
-      <h1 className="type-title mt-2 text-ink">#{order.displayId}</h1>
-      {/* The status is the new half. A line, not a pill: the list this was opened from renders
-          the same phrase in muted text, and a badge here would disagree with it. */}
-      <p className="mt-2 text-ink-muted text-sm">
-        Placed {formatDate(order.createdAt)} · {fulfillmentLabels[order.fulfillmentStatus]}
-      </p>
+      {/* The word that was an eyebrow above the number is inside the heading now. A screen
+          reader announced the old pair as "heading level one, number one", because the eyebrow
+          was a separate paragraph and the number alone is not a name for anything. */}
+      <h1 className="type-title mt-6 text-ink">Order #{order.displayId}</h1>
+      <p className="mt-2 text-ink-muted text-sm">Placed {formatDate(order.createdAt)}</p>
+
+      {/* The status was the second half of the line above. It is the question this page is
+          opened to answer, so it gets its own row and shows how far along it is. */}
+      <OrderProgressTrack order={order} className="mt-6" />
 
       <OrderDetails order={order} />
     </main>
