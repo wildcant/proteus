@@ -9,7 +9,6 @@ import * as lineItemRoutes from './[id]/line-items/route.js'
 import * as cartByIdRoutes from './[id]/route.js'
 import * as shippingMethodRoutes from './[id]/shipping-methods/route.js'
 import * as shippingOptionRoutes from './[id]/shipping-options/route.js'
-import { validateCartOwnership } from './middlewares.js'
 import * as cartRoutes from './route.js'
 
 export default [
@@ -30,7 +29,6 @@ export default [
     matcher: '/store/carts/:id',
     handler: cartByIdRoutes.GET,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: cartByIdRoutes.GetInput,
     operationId: 'getStoreCart',
     summary: 'Retrieve a cart with line items',
@@ -42,7 +40,6 @@ export default [
     matcher: '/store/carts/:id',
     handler: cartByIdRoutes.POST,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: cartByIdRoutes.PostInput,
     operationId: 'updateStoreCart',
     summary: 'Update a cart',
@@ -54,7 +51,6 @@ export default [
     matcher: '/store/carts/:id/line-items',
     handler: lineItemRoutes.POST,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: lineItemRoutes.PostInput,
     operationId: 'addStoreCartLineItem',
     summary: 'Add a line item to a cart',
@@ -66,7 +62,6 @@ export default [
     matcher: '/store/carts/:id/line-items/:lineId',
     handler: lineItemByIdRoutes.POST,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: lineItemByIdRoutes.PostInput,
     operationId: 'updateStoreCartLineItem',
     summary: 'Update a cart line item',
@@ -78,7 +73,6 @@ export default [
     matcher: '/store/carts/:id/line-items/:lineId',
     handler: lineItemByIdRoutes.DELETE,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: lineItemByIdRoutes.DeleteInput,
     operationId: 'deleteStoreCartLineItem',
     summary: 'Remove a line item from a cart',
@@ -90,7 +84,6 @@ export default [
     matcher: '/store/carts/:id/shipping-options',
     handler: shippingOptionRoutes.GET,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: shippingOptionRoutes.GetInput,
     operationId: 'listStoreCartShippingOptions',
     summary: 'List available shipping options for a cart',
@@ -102,7 +95,6 @@ export default [
     matcher: '/store/carts/:id/shipping-methods',
     handler: shippingMethodRoutes.POST,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: shippingMethodRoutes.PostInput,
     operationId: 'addStoreCartShippingMethod',
     summary: 'Select a shipping method for a cart',
@@ -114,7 +106,6 @@ export default [
     matcher: '/store/carts/:id/complete',
     handler: completeRoutes.POST,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: completeRoutes.PostInput,
     operationId: 'completeStoreCart',
     summary: 'Complete a cart (authorize payment and mark as completed)',
@@ -126,7 +117,6 @@ export default [
     matcher: '/store/carts/:id/inventory',
     handler: inventoryRoutes.GET,
     auth: 'optional',
-    middlewares: [validateCartOwnership()],
     input: inventoryRoutes.GetInput,
     operationId: 'checkStoreCartInventory',
     summary: 'Check inventory availability for a cart',

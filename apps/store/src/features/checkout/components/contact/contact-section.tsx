@@ -10,12 +10,13 @@ import { ContactForm } from './contact-form'
 type ContactSectionProps = Pick<CheckoutData, 'isGuestCheckout'> & {
   cart: StoreCartDetailResponseCart
   form: CheckoutForm
+  onSignOut: () => void
 }
 export function ContactSection(props: ContactSectionProps) {
-  const { isGuestCheckout, cart, form } = props
+  const { isGuestCheckout, cart, form, onSignOut } = props
 
   if (!isGuestCheckout) {
-    return <CheckoutAccount email={cart.email} />
+    return <CheckoutAccount email={cart.email} onSignOut={onSignOut} />
   }
 
   return (

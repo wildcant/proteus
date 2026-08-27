@@ -1,4 +1,4 @@
-import type { CreatePaymentSessionBody, StorePaymentProvider } from '@proteus/http-schemas/store'
+import type { CreatePaymentSessionBody } from '@proteus/http-schemas/store'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { InfoIcon } from 'lucide-react'
 import type { CreateStorePaymentCollectionBody } from '#/api/generated/model'
@@ -32,7 +32,7 @@ export const PaymentForm = withForm({
 
     return (
       <FieldGroup>
-        <form.Field name="paymentProvider">
+        <form.Field name="paymentProviderId">
           {(field) => {
             const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
             return (
@@ -40,9 +40,9 @@ export const PaymentForm = withForm({
                 <RadioGroup
                   name={field.name}
                   value={field.state.value}
-                  onValueChange={(value: StorePaymentProvider) => {
-                    field.handleChange(value)
-                    createPaymentSession({ providerId: value.id })
+                  onValueChange={(providerId: string) => {
+                    field.handleChange(providerId)
+                    createPaymentSession({ providerId })
                   }}
                   disabled={isLoading}
                 >
@@ -50,7 +50,7 @@ export const PaymentForm = withForm({
                     <Field key={provider.id} orientation="horizontal">
                       <FieldLabel className="flex w-full cursor-pointer flex-col items-start gap-2 border border-line p-4 has-data-checked:border-ink has-data-checked:bg-transparent has-data-checked:ring-1 has-data-checked:ring-ink has-data-checked:ring-inset">
                         <span className="flex items-center gap-3">
-                          <RadioGroupItem value={provider} />
+                          <RadioGroupItem value={provider.id} />
                           <span className="font-medium text-ink text-sm">{provider.label}</span>
                         </span>
                         {!!provider.isTestOnly && (

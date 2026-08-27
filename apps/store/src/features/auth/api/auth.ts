@@ -12,7 +12,6 @@ import type {
   UpdatePasswordResponse,
 } from '#/api/generated/model'
 import { clearToken, setToken } from '#/lib/auth-token'
-import { clearCartId } from '#/lib/cart-id'
 
 export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Error, StoreLoginBody>) => {
   const { onSuccess, onError, ...rest } = options ?? {}
@@ -83,14 +82,23 @@ export const useUpdatePassword = (
   })
 }
 
-export const useLogout = () => {
+export type LogoutParams = {
+  /** Where to land instead of the home page — checkout passes its own path, so signing out of the
+   *  wrong account does not also throw away the order being placed. Must be a route a guest can
+   *  reach: the navigation happens after the token is gone. */
+  redirectTo?: string
+}
+
+export const useLogout = (params?: LogoutParams) => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
   return () => {
+    // The cart id outlives the session on purpose: signing out ends the session, not the shop.
+    // Store cart routes are unauthenticated, so the cart stays readable and the shopper keeps
+    // what they had. See the detach TODO in .tasks/next-todos for what this costs.
     clearToken()
-    clearCartId()
     queryClient.resetQueries()
-    navigate({ to: '/' })
+    navigate({ to: params?.redirectTo ?? '/' })
   }
 }

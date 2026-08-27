@@ -88,10 +88,20 @@ function withNamespaceAuth(definition: RouteDefinition): RouteDefinition {
   return copy
 }
 
+/**
+ * Bound to loopback explicitly, not to the wildcard `listen(0)` gives you by default.
+ *
+ * A wildcard bind is granted a port another process already holds on `127.0.0.1` — SO_REUSEADDR
+ * is on by default and BSD only rejects a wildcard-versus-wildcard clash — and BSD then routes an
+ * incoming connection to the *most specific* listener. Supertest always dials `127.0.0.1`, so on a
+ * machine running an editor and a dev server the neighbour answers the test's request: 404s from
+ * routes that are mounted, storefront HTML in `response.body`. Asking for loopback makes the kernel
+ * see the real conflict and hand out a free port instead.
+ */
 const listen = (app: Express) =>
   new Promise<Server>((resolve) => {
     const server = createServer(app)
-    server.listen(0, () => resolve(server))
+    server.listen(0, '127.0.0.1', () => resolve(server))
   })
 
 export async function createApi(

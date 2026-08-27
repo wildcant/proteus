@@ -15,6 +15,73 @@ Fixes and improvements
 - Stripe idempotencyKey is never populated — stripe-provider.ts:209 reads it off session context, nothing writes it.
   Wire one before Stripe goes live.
 
+- STALE SHIPPING METHOD AND PAYMENT SESSION SURVIVE AN ADDRESS CHANGE (payment-provider gap): changing the
+  cart's shipping address leaves the previously chosen shipping method and the payment collection/session on the
+  cart, quoted against the address that is gone. Nothing invalidates them.
+  - Two ways in. Signing out mid-checkout: useCheckoutForm.signOut resets the form, so the shopper must re-enter
+    an address, but the cart keeps the row and the collection. And "Use a different address" at the delivery
+    step, which has the same hole with no sign-out involved. The address seam is the real one; sign-out is a
+    route into it.
+  - WRONG AMOUNT CAN BE AUTHORIZED. store/payment-collections/[id]/payment-sessions/route.ts creates the session
+    with `amount: collection.amount` — snapshotted when the collection was created, i.e. while the old shipping
+    method was still on the cart. complete-cart.ts `validate-cart-payments` resolves one collection through
+    linkService.repo('cartPaymentCollection').findByCartId and checks only that the session status is in
+    PROCESSABLE_STATUSES. It never compares the collection amount to the cart's current total.
+  - WRONG RATE CAN SHIP. complete-cart.ts `validate-shipping` re-fetches each method's option and asserts
+    option.isEnabled, nothing more. A method quoted for the previous address — different country, different
+    zone — passes.
+  - Compounding: payment-form.tsx calls createPaymentSession on every radio change, and usePaymentSession calls
+    createCollection first each time, so repeated selections can link more than one collection to a cart while
+    findByCartId reads a single one. Worth confirming whether createPaymentCollectionForCartWorkflow is
+    idempotent per cart.
+  - Visible symptom now: after sign-out the summary's Shipping line still shows a price (it renders "Enter
+    shipping address" only when cart.shippingMethods is empty) while the radio group beside it is blank.
+  - No primitive exists to fix it from the client. There is no DELETE for a shipping method or a payment session
+    in src/api/store. POST /store/carts/:id/shipping-methods replaces (soft-deletes existing, then adds) but
+    cannot clear, and updateCartWorkflow upserts addresses and touches neither methods nor payments.
+  - Three shapes, pick one when this is picked up:
+    1. Invalidate at the address seam — updateCartWorkflow drops shipping methods and the payment collection when
+       the shipping address changes. Covers both routes in, no new endpoints. This is what Medusa does, via
+       refreshCartShippingMethodsWorkflow, which re-lists each method's option for the current cart context and
+       deletes any that no longer resolves or no longer prices. Leaves a window at sign-out where the cart is
+       untouched until the guest types an address.
+    2. Clear at the sign-out seam — new store endpoints, called from signOut. No mismatch window, but two
+       endpoints that exist only for logout, and the "use a different address" path stays broken.
+    3. Stop creating the session eagerly — move collection + session creation out of the payment radio's
+       onValueChange back to place-order time, so there is never a stale session to reset. Kills the wrong-amount
+       bug at the root and reduces the problem to shipping methods alone. This is how it worked before the
+       one-page checkout refactor.
+  - Whichever is chosen, complete-cart should also assert the collection amount equals the cart total. That is
+    the check that would have caught all of this, and it is missing regardless of which seam gets the fix.
+
+- CART OWNERSHIP IS UNGUARDED: any request holding a cart id can read and mutate that cart, including one
+  belonging to a registered customer — so the cart carries their email, phone and full postal address to whoever
+  has the id. `validateCartOwnership` used to reject this; it was deleted deliberately, because with it in place
+  signing out mid-checkout left a cart id that 403s on every fetch and the shopper lost their basket.
+  - This matches Medusa exactly. Its store cart routes carry no `authenticate` at all (only
+    POST /store/carts/:id/customer does) and its handlers are typed `MedusaRequest`, not
+    `AuthenticatedMedusaRequest`. The cart id is the bearer token, by design — /store/orders *is* authenticated,
+    so the asymmetry is a decision, not an oversight. Medusa has no detach/release operation anywhere: no route,
+    no workflow, no step, no SDK method, and no code path that ever sets a cart's customer_id to null.
+  - Proper fix is to restore the guard and pair it with a detach, so sign-out releases the cart instead of
+    orphaning it: DELETE /store/carts/:id/customer, symmetric with the existing POST, authorized by the guard so
+    only the owner can release. Null `customerId` *and* `email`, and soft-delete the cart_address rows — a
+    sign-out on a shared device must not leave the last shopper's address prefilled in checkout.
+  - Null both or it undoes itself, and this one is live today, not future work: updateCartWorkflow already runs
+    findOrCreateCustomerStep, whose findRegisteredCustomer does listCustomers({ email, hasAccount: true }) and
+    returns the account. update-cart.ts then writes { customerId, email } back onto the cart. So a cart with
+    customerId nulled but the email kept re-attaches to the registered customer the moment the signed-out guest
+    retypes their own address at the contact field. (The `TODO(guest)` in carts/route.ts is a different gap —
+    cart *creation* not resolving guest emails. Medusa behaves the same way on the update path.)
+  - The primitive is already sanctioned upstream even though the operation isn't: Medusa's `updateCartsStep`
+    types customer_id and email as `string | null`, the column is nullable, and the step snapshots customer_id
+    for compensation. A detach workflow is transfer-cart-customer.ts with the customer id swapped for null.
+  - Take the customer id from the auth context only, never the body — that is what Medusa's transfer does.
+  - Re-price after detaching only if we ever add customer-group pricing; Medusa runs refreshCartItemsWorkflow
+    with force_refresh because its pricing and promotion context include customer.* and customer.groups.*.
+  - Worth an ADR when it lands: restoring the guard is a named departure from Medusa, and soft-deleting the
+    addresses is a second one (Medusa's transfer leaves addresses and shipping methods untouched).
+
 - INVENTORY IS NOT ACTUALLY RESERVED: placing an order does not reduce what the storefront offers.
   - `createReservationItems` (apps/backend/src/modules/inventory/services/inventory-module-service.ts:173) writes a
     reservation_item row and nothing else. `deleteReservationItems` / `restoreReservationItems` are the same.

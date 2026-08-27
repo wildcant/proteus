@@ -1,7 +1,6 @@
 import { MoreVerticalIcon } from 'lucide-react'
 import { Button } from '#/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/popover'
-import { useLogout } from '#/features/auth/api/auth'
 
 type CheckoutAccountProps = {
   /** The cart's email, which for a signed-in shopper is the customer's: `carts/route.ts` copies it
@@ -9,6 +8,9 @@ type CheckoutAccountProps = {
    *  cart is claimed. Read from the cart rather than from `/customers/me` deliberately — this is
    *  the address the order will be placed under, and those two can differ. */
   email: string | null
+  /** Ends the session. Owned by the form hook, which has to clear the fields this row's owner
+   *  filled before the token goes — see `useCheckoutForm`. */
+  onSignOut: () => void
 }
 
 /**
@@ -16,9 +18,7 @@ type CheckoutAccountProps = {
  * given us their email, so this reads it back rather than asking again — and offers the one thing
  * they might be here to change: that it is the wrong account.
  */
-export function CheckoutAccount({ email }: CheckoutAccountProps) {
-  const logout = useLogout()
-
+export function CheckoutAccount({ email, onSignOut }: CheckoutAccountProps) {
   // Both paths that create a cart for a signed-in shopper set the email, so this is unreachable in
   // practice; if it ever is reached the order cannot be completed anyway — `validate-cart-email`
   // rejects it — and that message belongs in the Place order slot, not in a half-drawn header.
@@ -47,7 +47,7 @@ export function CheckoutAccount({ email }: CheckoutAccountProps) {
         <PopoverContent>
           <Button
             variant="ghost"
-            onClick={logout}
+            onClick={onSignOut}
             className="h-10 w-full justify-start px-3 hover:bg-transparent dark:hover:bg-transparent"
           >
             Sign out

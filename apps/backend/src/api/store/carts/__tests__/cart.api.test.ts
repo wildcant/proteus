@@ -102,8 +102,8 @@ test.describe('POST /store/carts/:id/complete (concurrent)', () => {
     const { cart, order } = await service.create.order(api.container)
 
     // Same state a losing request observes mid-race, minus the race. `customerId` is carried
-    // over because the generator would otherwise invent one, and `validateCartOwnership`
-    // rejects the request before the workflow this test is about ever runs.
+    // over because the generator invents one for every field left unpinned, and this test is
+    // about the completion window, not about the cart changing hands.
     await service.update.cart(api.container, cart.id, { completedAt: null, customerId: cart.customerId })
 
     const { status, body } = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/complete`)

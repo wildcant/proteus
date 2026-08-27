@@ -1,4 +1,4 @@
-import { CartAddressInput, type StoreShippingOption } from '@proteus/http-schemas/store'
+import { CartAddressInput } from '@proteus/http-schemas/store'
 import {
   Field,
   FieldError,
@@ -28,7 +28,7 @@ export const ShippingMethodForm = withForm({
     const { mutate: selectMethod } = useSelectShippingMethod()
     const selectPaymentMethod = (payload: AddStoreCartShippingMethodBody) =>
       selectMethod(payload, {
-        onError: () => form.resetField('shippingOption'),
+        onError: () => form.resetField('shippingOptionId'),
       })
 
     const { data, isLoading } = useShippingOptions(
@@ -66,7 +66,7 @@ export const ShippingMethodForm = withForm({
 
     return (
       <FieldGroup>
-        <form.Field name="shippingOption">
+        <form.Field name="shippingOptionId">
           {(field) => {
             const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
             return (
@@ -74,9 +74,9 @@ export const ShippingMethodForm = withForm({
                 <RadioGroup
                   name={field.name}
                   value={field.state.value}
-                  onValueChange={(value: StoreShippingOption) => {
-                    field.handleChange(value)
-                    selectPaymentMethod({ shippingOptionId: value.id })
+                  onValueChange={(shippingOptionId: string) => {
+                    field.handleChange(shippingOptionId)
+                    selectPaymentMethod({ shippingOptionId })
                   }}
                   disabled={isLoading}
                 >
@@ -84,7 +84,7 @@ export const ShippingMethodForm = withForm({
                     <Field key={option.id} orientation="horizontal">
                       <FieldLabel className="flex w-full cursor-pointer items-center justify-between gap-3 border border-line p-4 has-data-checked:border-ink has-data-checked:bg-transparent has-data-checked:ring-1 has-data-checked:ring-ink has-data-checked:ring-inset">
                         <span className="flex items-center gap-3">
-                          <RadioGroupItem value={option} />
+                          <RadioGroupItem value={option.id} />
                           <span className="font-medium text-ink text-sm">{option.name}</span>
                         </span>
                         <span className="font-medium text-ink text-sm tabular-nums">

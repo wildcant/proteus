@@ -16,9 +16,9 @@ const FEATURE_GRAPH = {
   orders: [],
   address: [],
   auth: ['cart'],
-  checkout: ['cart', 'auth', 'address'],
-  products: ['cart'],
   account: ['auth', 'orders'],
+  checkout: ['cart', 'auth', 'address', 'account'],
+  products: ['cart'],
 }
 
 const DECLARED_FEATURES = Object.keys(FEATURE_GRAPH).join('|')
