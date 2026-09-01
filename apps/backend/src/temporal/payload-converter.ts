@@ -7,7 +7,11 @@ import {
   type PayloadConverterWithEncoding,
   UndefinedPayloadConverter,
 } from '@temporalio/common'
-import { BigNumber } from '../core/db/bignum.js'
+// Straight from the package, not the `../core/db/bignum.js` re-export: that module also defines a
+// Drizzle `customType` and so drags `drizzle-orm/pg-core` into everything that loads it — including
+// the Temporal workflow sandbox bundle, which loads this file. The re-export is the same class
+// object, so `BigNumber.isBigNumber` is unaffected.
+import BigNumber from 'bignumber.js'
 import { AppError, ErrorTypes } from '../core/errors/app-error.js'
 
 /**
@@ -43,6 +47,21 @@ import { AppError, ErrorTypes } from '../core/errors/app-error.js'
  * Anything that is neither JSON-safe nor one of the two registered types throws, naming the JSON
  * path of the offending value. Silent degradation is the failure mode this whole file is here to
  * prevent, so a `Map`, a class instance, a function or a `Symbol` is an error, not a `{}`.
+ *
+ * ## Contract edges worth knowing before you rely on this
+ *
+ * - **The prototype is not preserved, because it cannot be lost.** Only plain `Object.prototype`
+ *   objects encode at all; a null-prototype object throws rather than coming back silently
+ *   carrying `Object.prototype`. That matters — `core/auth/utils/token.ts` builds a decoded JWT as
+ *   `Object.assign(Object.create(null), decoded)` precisely to keep it inert to prototype lookups,
+ *   and quietly restoring the prototype on the way back would reverse that decision with no signal.
+ * - **Decode drops keys sitting alongside a tag.** `{ __p: 'date', v: '…', x: 9 }` decodes to a
+ *   `Date`; the `x` is gone. The encoder reserves `__p`, so nothing this converter writes can reach
+ *   that state — a hand-written payload is the only way in, and there the tag is the intent.
+ * - **`new BigNumber(Infinity)` round-trips, a plain `Infinity` throws.** That asymmetry is
+ *   deliberate, not an oversight: `BigNumber` has a lossless textual form for infinity
+ *   (`'Infinity'`, which `stringToBigNumber` reads back), while a JSON number does not — JSON
+ *   writes it as `null`, and on a money path that is a value change, not a rounding.
  */
 
 const TAG_KEY = '__p'
@@ -119,17 +138,25 @@ function encodeObject(value: object, path: string): unknown {
   }
 
   if (Array.isArray(value)) {
-    return value.map((item, index) => {
+    const items: unknown[] = []
+    for (let index = 0; index < value.length; index += 1) {
       const itemPath = `${path}[${index}]`
-      // An array is positional: `JSON.stringify` writes a hole as `null`, turning "absent" into a
-      // value. Unlike an object property (below) there is nothing equivalent to drop.
-      if (item === undefined) throw encodeError(itemPath, 'unsupported type undefined in array')
-      return encodeValue(item, itemPath)
-    })
+      // An array is positional: `JSON.stringify` writes both an explicit `undefined` and a hole as
+      // `null`, turning "absent" into a value. Unlike an object property (below) there is nothing
+      // equivalent to drop. The hole has to be tested for by index — `Array.prototype.map` skips
+      // holes without ever calling its callback, so reading the element cannot see one.
+      if (!(index in value) || value[index] === undefined) {
+        throw encodeError(itemPath, 'unsupported type undefined in array')
+      }
+      items.push(encodeValue(value[index], itemPath))
+    }
+    return items
   }
 
-  const prototype = Object.getPrototypeOf(value)
-  if (prototype !== null && prototype !== Object.prototype) return unsupported(value, path)
+  // Only plain objects. A null prototype is rejected along with every other exotic one: it would
+  // otherwise encode fine and decode as an ordinary object, which is this file's one remaining
+  // silent degradation — and a deliberate one where it is used (see the doc block above).
+  if (Object.getPrototypeOf(value) !== Object.prototype) return unsupported(value, path)
 
   if (Object.hasOwn(value, TAG_KEY)) {
     throw encodeError(path, `object uses the reserved key '${TAG_KEY}'`)
@@ -174,7 +201,15 @@ function decodeTagged(tag: unknown, raw: unknown, path: string): Date | BigNumbe
       return date
     }
     case BIGNUM_TAG:
-      return stringToBigNumber.parse(raw)
+      // `stringToBigNumber` refines on `!new BigNumber(s).isNaN()`, but bignumber.js@11 throws from
+      // the constructor on unparseable input instead of yielding NaN — so the failure escapes the
+      // schema as a bare `Error` that `AppError.isError` rejects and that names no path. Restate it
+      // in this file's own shape, as the date branch above does.
+      try {
+        return stringToBigNumber.parse(raw)
+      } catch {
+        throw decodeError(path, `invalid number '${raw}'`)
+      }
     default:
       throw decodeError(path, `unknown tag '${String(tag)}'`)
   }
@@ -187,7 +222,11 @@ function unsupported(value: unknown, path: string): never {
 /** The name a developer would recognise in the error: `Map`, `Foo`, `function`, `symbol`. */
 function describeType(value: unknown): string {
   if (typeof value !== 'object' || value === null) return typeof value
-  return Object.getPrototypeOf(value)?.constructor?.name ?? 'object'
+  const prototype = Object.getPrototypeOf(value)
+  // Named rather than left as the bare `object` the constructor lookup would give, because
+  // "unsupported type object" on a value that looks exactly like a plain object reads as a bug.
+  if (prototype === null) return 'null-prototype object'
+  return prototype.constructor?.name ?? 'object'
 }
 
 function encodeError(path: string, detail: string): AppError {

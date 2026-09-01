@@ -76,6 +76,16 @@ const order: OrderDTO = {
 /** 20 significant digits — past what a JS float can hold without rounding. */
 const wideBigNumber = new BigNumber('12345678901234567890')
 
+/**
+ * Below 1e-7 and at or above 1e21, bignumber.js switches `toString()` to exponential notation
+ * while `toFixed()` stays plain — `'1e-8'` vs `'0.00000001'`, `'1e+21'` vs
+ * `'1000000000000000000000'`. That band is the *only* place the two disagree, so it is the only
+ * place a `toFixed()` → `toString()` slip can be caught. Every other BigNumber in this file
+ * renders identically either way and proves nothing about which one the converter calls.
+ */
+const tinyBigNumber = new BigNumber('0.00000001')
+const hugeBigNumber = new BigNumber('1e21')
+
 const roundTrips: { name: string; value: unknown }[] = [
   { name: 'CartDTO', value: cart },
   { name: 'CartLineItemDTO', value: lineItem },
@@ -84,6 +94,8 @@ const roundTrips: { name: string; value: unknown }[] = [
   { name: 'null', value: null },
   { name: 'a Date nested inside an array', value: [createdAt, updatedAt] },
   { name: 'a BigNumber with 20 significant digits', value: wideBigNumber },
+  { name: 'a BigNumber small enough that toString() goes exponential', value: tinyBigNumber },
+  { name: 'a BigNumber large enough that toString() goes exponential', value: hugeBigNumber },
   { name: 'an empty object', value: {} },
   { name: 'an empty array', value: [] },
   {
@@ -120,6 +132,23 @@ const unsupported: { name: string; value: unknown; message: string }[] = [
     name: 'an undefined array element',
     value: { lines: [undefined] },
     message: 'step output at .lines[0]: unsupported type undefined in array',
+  },
+  {
+    // A hole reads as `undefined` but `Array.prototype.map` never visits it, so this case only
+    // fails if the encoder tests the index rather than the element. `JSON.stringify` writes it
+    // as `null` — the same value change as the explicit `undefined` above.
+    name: 'an array hole',
+    // biome-ignore lint/suspicious/noSparseArray: the hole is the case under test
+    value: { lines: [, 1] },
+    message: 'step output at .lines[0]: unsupported type undefined in array',
+  },
+  {
+    // Rejected rather than silently re-prototyped: `core/auth/utils/token.ts` makes decoded JWTs
+    // null-prototype on purpose, and handing one back with `Object.prototype` attached would undo
+    // that with no signal.
+    name: 'a null-prototype object',
+    value: { decoded: Object.assign(Object.create(null), { sub: 'usr_01' }) },
+    message: 'step output at .decoded: unsupported type null-prototype object',
   },
   {
     name: 'a value already using the tag key',
@@ -185,16 +214,20 @@ describe('payloadConverter', () => {
       expect(encoded(createdAt)).toStrictEqual({ __p: 'date', v: dateToIso.parse(createdAt) })
     })
 
-    it('encodes a BigNumber exactly as bigNumberToString does', () => {
-      expect(encoded(lineItem.unitPrice)).toStrictEqual({
-        __p: 'bignum',
-        v: bigNumberToString.parse(lineItem.unitPrice),
-      })
+    // The last two entries are what give this assertion teeth. `19.99` and the 20-digit value
+    // render the same through `toFixed()` and `toString()`, so on their own the parity check
+    // passes no matter which the converter calls; only the exponential-range values can fail it.
+    it.each([
+      { name: '19.99', value: lineItem.unitPrice, wire: '19.99' },
+      { name: '20 significant digits', value: wideBigNumber, wire: '12345678901234567890' },
+      { name: '1e-8, which toString() renders as 1e-8', value: tinyBigNumber, wire: '0.00000001' },
+      { name: '1e21, which toString() renders as 1e+21', value: hugeBigNumber, wire: '1000000000000000000000' },
+    ])('encodes $name exactly as bigNumberToString does', ({ value, wire }) => {
+      expect(encoded(value)).toStrictEqual({ __p: 'bignum', v: bigNumberToString.parse(value) })
 
-      // Pinned literal as well as the parity check: 20 significant digits is past what a float
-      // holds, so this is what catches a value that took a detour through Number().
-      expect(encoded(wideBigNumber)).toStrictEqual({ __p: 'bignum', v: '12345678901234567890' })
-      expect(bigNumberToString.parse(wideBigNumber)).toBe('12345678901234567890')
+      // Pinned literal as well as the parity check, so the test still fails if both paths drift
+      // together — and, at 20 digits, if either takes a detour through Number().
+      expect(encoded(value)).toStrictEqual({ __p: 'bignum', v: wire })
     })
   })
 
@@ -211,8 +244,26 @@ describe('payloadConverter', () => {
         wire: { at: { __p: 'date', v: 'yesterday' } },
         message: "invalid date 'yesterday'",
       },
+      {
+        // bignumber.js throws from its own constructor here rather than producing NaN, so without
+        // the converter catching it this escapes as a bare `[BigNumber Error] Not a number` with
+        // no path — asymmetric with the date case directly above.
+        name: 'an unparseable number',
+        wire: { at: { __p: 'bignum', v: 'abc' } },
+        message: "invalid number 'abc'",
+      },
     ])('throws on $name', ({ wire, message }) => {
       expect(() => payloadConverter.fromPayload(wirePayload(wire))).toThrowError(`step payload at .at: ${message}`)
+    })
+
+    it('reports an undecodable number as an AppError, like every other conversion failure', () => {
+      try {
+        payloadConverter.fromPayload(wirePayload({ at: { __p: 'bignum', v: 'abc' } }))
+        expect.unreachable('converter accepted an unparseable bignum')
+      } catch (error) {
+        expect(AppError.isError(error)).toBe(true)
+        expect(error).toMatchObject({ type: ErrorTypes.INVALID_DATA })
+      }
     })
   })
 })

@@ -56,10 +56,14 @@ module.exports = {
       name: 'no-direct-bignumber-import',
       comment:
         'Only src/core/db/bignum.ts may import from bignumber.js. ' +
-        'All other code should use the BigNumber wrapper.',
+        'All other code should use the BigNumber wrapper. ' +
+        'The exceptions are modules that must not pull drizzle-orm in through the wrapper: ' +
+        'packages/http-schemas has no business depending on backend internals at all, and ' +
+        'src/temporal/payload-converter.ts is bundled into the Temporal workflow sandbox, ' +
+        'where the wrapper would drag drizzle-orm/pg-core along with it.',
       severity: 'error',
       from: {
-        pathNot: '^src/core/db/bignum\\.ts$|packages/http-schemas/',
+        pathNot: '^src/core/db/bignum\\.ts$|^src/temporal/payload-converter\\.ts$|packages/http-schemas/',
       },
       to: {
         path: 'bignumber\\.js',
