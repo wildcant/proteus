@@ -1,5 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { z } from 'zod'
+// This module is a public entrypoint (`@proteus/http-schemas/common`), so it cannot rely on a
+// namespace index having installed `.openapi()` first. The call is idempotent.
+import './openapi-setup.js'
 
 export const dateToIso = z
   .date()

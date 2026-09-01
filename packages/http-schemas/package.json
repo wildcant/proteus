@@ -7,6 +7,7 @@
   },
   "exports": {
     "./admin": "./src/admin/index.ts",
+    "./common": "./src/common.ts",
     "./auth": "./src/auth/index.ts",
     "./store": "./src/store/index.ts"
   },
