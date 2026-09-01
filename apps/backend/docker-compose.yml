@@ -31,5 +31,53 @@ services:
       postgres:
         condition: service_healthy
 
+  # Temporal shares the postgres service above rather than bringing its own: one database server,
+  # three databases (`proteus`, `temporal`, `temporal_visibility`). auto-setup creates the two it
+  # needs on first boot and runs their schema migrations, so there is nothing to seed by hand.
+  # `npm run db:reset` only drops `proteus`, so workflow history survives a database reset —
+  # `docker compose down -v` is the command that wipes it, along with everything else.
+  temporal:
+    image: temporalio/auto-setup:1.29.0
+    ports:
+      - '7233:7233'
+    environment:
+      DB: postgres12
+      DB_PORT: '5432'
+      POSTGRES_USER: postgres
+      POSTGRES_PWD: postgres
+      POSTGRES_SEEDS: postgres
+      DBNAME: temporal
+      VISIBILITY_DBNAME: temporal_visibility
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'temporal', 'operator', 'cluster', 'health', '--address', 'temporal:7233']
+      # auto-setup migrates two schemas before the frontend listens, so the first probe is late
+      # rather than slow — start_period keeps those failures from counting against `retries`.
+      interval: 5s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+  temporal-ui:
+    image: temporalio/ui:2.53.3
+    ports:
+      - '8080:8080'
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CORS_ORIGINS: http://localhost:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8080/']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
 volumes:
   proteus-dev-data:

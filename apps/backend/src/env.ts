@@ -39,6 +39,14 @@ const envSchema = z.object({
   /** Required for Cloudflare R2 and other S3-compatible services; empty for AWS. */
   S3_ENDPOINT: z.string().default(''),
 
+  /**
+   * Temporal connection settings only. Which engine runs a workflow is not configured here —
+   * `RUNTIME` decides that (ADR-0009 follow-up), so pointing at a different cluster and switching
+   * engines stay separate knobs.
+   */
+  TEMPORAL_ADDRESS: z.string().default('localhost:7233'),
+  TEMPORAL_NAMESPACE: z.string().default('default'),
+
   ADMIN_URL: z.url(),
   STORE_URL: z.url(),
 
