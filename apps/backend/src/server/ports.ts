@@ -25,6 +25,15 @@ export type HttpRequest<T = object> = {
   query: Record<string, unknown>
   validatedQuery: T extends { query: infer Q } ? InferQuery<Q> : Record<string, unknown>
   body: T extends { body: infer B } ? InferField<B> : unknown
+  /**
+   * The request body exactly as it arrived, before any parsing. Only routes verifying a
+   * signature over the transmitted bytes need it — everything else reads `body`, and a
+   * re-serialisation of `body` is not a substitute: it differs from what was signed.
+   *
+   * Absent when the platform adapter had no body to read, and when a route handler is called
+   * directly rather than over HTTP.
+   */
+  rawBody?: Uint8Array
   files?: File[]
   scope: AwilixContainer
   headers: Record<string, string>

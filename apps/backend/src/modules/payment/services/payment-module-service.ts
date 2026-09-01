@@ -425,6 +425,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       const provider = await this.paymentProviderService.refundPayment(payment.providerId, {
         amount: refundAmount,
+        currencyCode: payment.currencyCode,
         data: payment.data ?? undefined,
       })
 
