@@ -165,6 +165,16 @@
       }
     },
     {
+      "includes": ["apps/backend/src/temporal/__tests__/payload-converter.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useNamingConvention": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": [
         "**/src/routes/**",
         "**/*.config*.ts",
