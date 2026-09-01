@@ -431,9 +431,6 @@
             "type": "string",
             "enum": ["shipping", "billing"]
           },
-          "customerId": {
-            "type": ["string", "null"]
-          },
           "company": {
             "type": ["string", "null"]
           },
@@ -481,7 +478,6 @@
           "id",
           "cartId",
           "type",
-          "customerId",
           "company",
           "firstName",
           "lastName",

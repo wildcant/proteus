@@ -102,7 +102,6 @@ export type CartAddressDTO = {
   id: string
   cartId: string
   type: CartAddressType
-  customerId: string | null
   company: string | null
   firstName: string | null
   lastName: string | null

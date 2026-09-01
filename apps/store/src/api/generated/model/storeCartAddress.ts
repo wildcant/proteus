@@ -14,8 +14,6 @@ export type StoreCartAddress = {
   cartId: string;
   type: StoreCartAddressType;
   /** @nullable */
-  customerId: string | null;
-  /** @nullable */
   company: string | null;
   /** @nullable */
   firstName: string | null;

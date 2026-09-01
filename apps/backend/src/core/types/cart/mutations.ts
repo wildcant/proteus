@@ -74,7 +74,6 @@ export type UpdateCartDTO = {
 }
 
 export type CreateCartAddressDTO = {
-  customerId?: string | null | undefined
   company?: string | null | undefined
   firstName?: string | null | undefined
   lastName?: string | null | undefined

@@ -3,7 +3,6 @@ CREATE TABLE "cart_address" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('caaddr_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"cart_id" text NOT NULL,
 	"type" "cart_address_type" NOT NULL,
-	"customer_id" text,
 	"company" text,
 	"first_name" text,
 	"last_name" text,

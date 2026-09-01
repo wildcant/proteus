@@ -2,7 +2,6 @@ import type { BigNumber } from '../../db/bignum.js'
 import type { OrderStatus } from './common.js'
 
 export type CreateOrderAddressDTO = {
-  customerId?: string | null | undefined
   company?: string | null | undefined
   firstName?: string | null | undefined
   lastName?: string | null | undefined

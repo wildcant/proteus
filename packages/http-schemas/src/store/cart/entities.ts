@@ -75,7 +75,6 @@ export const StoreCartAddress = z
     id: z.string(),
     cartId: z.string(),
     type: z.enum(['shipping', 'billing']),
-    customerId: z.string().nullable(),
     company: z.string().nullable(),
     firstName: z.string().nullable(),
     lastName: z.string().nullable(),

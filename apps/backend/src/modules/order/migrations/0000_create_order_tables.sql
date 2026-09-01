@@ -5,7 +5,6 @@ CREATE TABLE "order_address" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('ordaddr_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"order_id" text NOT NULL,
 	"type" "order_address_type" NOT NULL,
-	"customer_id" text,
 	"company" text,
 	"first_name" text,
 	"last_name" text,

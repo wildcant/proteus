@@ -31,7 +31,6 @@ export function generateCartAddressDTO(overrides?: Partial<CartAddressDTO>): Car
     id: `caaddr_${faker.string.alphanumeric(32)}`,
     cartId: `cart_${faker.string.alphanumeric(32)}`,
     type: 'shipping',
-    customerId: null,
     company: faker.company.name(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
@@ -114,7 +113,6 @@ export function generateCreateCartDTO(overrides?: Partial<CreateCartDTO>): Creat
  *  checkout almost always references one, and several workflows reject items without it. */
 export function generateCreateCartAddressDTO(overrides?: Partial<CreateCartAddressDTO>): CreateCartAddressDTO {
   return {
-    customerId: null,
     company: faker.company.name(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),

@@ -1,5 +1,5 @@
 {
-  "id": "8b621be0-ddc9-41f6-9d75-4780d224e80f",
+  "id": "cbd37a95-2d68-4c18-a9a6-c71d0a0caa7c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -27,12 +27,6 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
-        },
-        "customer_id": {
-          "name": "customer_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "company": {
           "name": "company",

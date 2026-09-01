@@ -36,7 +36,6 @@ export type OrderAddressDTO = {
   id: string
   orderId: string
   type: OrderAddressType
-  customerId: string | null
   company: string | null
   firstName: string | null
   lastName: string | null

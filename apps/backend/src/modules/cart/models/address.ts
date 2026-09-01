@@ -15,7 +15,6 @@ export const cartAddressTable = pgTable(
       .notNull()
       .references(() => cartTable.id, { onDelete: 'cascade' }),
     type: cartAddressTypeEnum().notNull(),
-    customerId: text(),
     company: text(),
     firstName: text(),
     lastName: text(),

@@ -21,7 +21,6 @@ export const orderAddressTable = pgTable(
       .notNull()
       .references(() => orderTable.id, { onDelete: 'cascade' }),
     type: orderAddressTypeEnum().notNull(),
-    customerId: text(),
     company: text(),
     firstName: text(),
     lastName: text(),
