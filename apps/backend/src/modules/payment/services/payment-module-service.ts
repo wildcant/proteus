@@ -287,7 +287,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       // Some providers authorize and capture in one step
       if (status === 'captured') {
-        await this.capturePayment({ paymentId: payment.id, amount: payment.amount }, context)
+        await this.capturePayment({ paymentId: payment.id }, context)
       }
 
       await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
@@ -326,8 +326,15 @@ export class PaymentModuleService implements IPaymentModuleService {
   // Payment lifecycle
   // ---------------------------------------------------------------------------
 
+  /**
+   * Takes the whole authorization. A capture is all-or-nothing: no gateway adapter here can take
+   * part of one — Stripe's capture call carries no `amount_to_capture` and charges the entire
+   * intent — so a partial capture would write a Capture row for less than the shopper was
+   * actually charged and leave the ledger disagreeing with the money. Refunds are the partial
+   * operation; see *Partial capture* in the spec's Out of Scope.
+   */
   async capturePayment(data: CreateCaptureDTO, context?: Context): Promise<PaymentDTO> {
-    this.logger.debug(`Capturing payment "${data.paymentId}"${data.amount ? ` for amount ${data.amount}` : ''}`)
+    this.logger.debug(`Capturing payment "${data.paymentId}"`)
     return this.withTransaction(context, async (ctx) => {
       const payment = await this.paymentRepository.findByIdOrFail(data.paymentId, undefined, ctx)
 
@@ -338,23 +345,19 @@ export class PaymentModuleService implements IPaymentModuleService {
         })
       }
 
-      // Supports partial captures — default to whatever remains
+      // Read from the capture rows rather than `capturedAt`, because the rows are the ledger: they
+      // decide both what is taken and whether there is anything left to take.
       const existingCaptures = await this.captureRepository.find({ paymentId: payment.id }, undefined, ctx)
       const alreadyCaptured = existingCaptures.reduce((sum, c) => sum.plus(c.amount), new BigNumber(0))
-      const remaining = payment.amount.minus(alreadyCaptured)
-      const captureAmount = data.amount ?? remaining
+      const captureAmount = payment.amount.minus(alreadyCaptured)
 
+      // Nothing outstanding means the money is already taken. A gateway redelivering its own
+      // completed-charge event lands here, so this has to be a refusal the caller can recognise
+      // rather than a second charge.
       if (captureAmount.isLessThanOrEqualTo(0)) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
           message: `Payment "${payment.id}" has already been fully captured.`,
-        })
-      }
-
-      if (captureAmount.isGreaterThan(remaining)) {
-        throw new AppError({
-          type: ErrorTypes.INVALID_DATA,
-          message: `Capture amount ${captureAmount.toFixed()} exceeds remaining capturable amount ${remaining.toFixed()}.`,
         })
       }
 
@@ -371,11 +374,8 @@ export class PaymentModuleService implements IPaymentModuleService {
         data: payment.data ?? undefined,
       })
 
-      // Mark payment as fully captured once all funds are accounted for
-      const totalCaptured = alreadyCaptured.plus(captureAmount)
-      if (totalCaptured.isGreaterThanOrEqualTo(payment.amount)) {
-        await this.paymentRepository.update(payment.id, { capturedAt: new Date() }, ctx)
-      }
+      // The capture took everything outstanding, so this is the first and only one.
+      await this.paymentRepository.update(payment.id, { capturedAt: new Date() }, ctx)
 
       await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
 
@@ -425,6 +425,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       const provider = await this.paymentProviderService.refundPayment(payment.providerId, {
         amount: refundAmount,
+        currencyCode: payment.currencyCode,
         data: payment.data ?? undefined,
       })
 

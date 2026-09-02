@@ -52,9 +52,12 @@ job_deps() {
   return $code
 }
 
-# The API tests plus the pure option-combination unit tests — the full suite is ~96s and would
-# dominate the gate. One vitest process, not two: every backend test file pulls in db-setup, and
-# the suite is not safe to run twice concurrently against the shared test database.
+# The API tests plus the unit tests worth gating — the option-combination matrix, the Stripe
+# adapter's currency and status tables, which decide what a shopper is charged, and the platform
+# adapters, which decide whether a webhook signature can be verified at all. The full
+# suite is ~96s and would dominate the gate. One vitest process, not two: every backend test file
+# pulls in db-setup, and the suite is not safe to run twice concurrently against the shared test
+# database.
 job_test() { npm run --workspace=backend test:gate; }
 
 # The admin's pure logic — the variant matrix the create wizard enumerates and what the options

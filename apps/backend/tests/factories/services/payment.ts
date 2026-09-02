@@ -46,10 +46,10 @@ export async function createPaymentSessionForCart(container: AwilixContainer, op
 }
 
 /** Takes the money for real, so the payment carries a capture the way a completed order's does. */
-export async function capturePayment(container: AwilixContainer, paymentId: string, amount?: BigNumber) {
+export async function capturePayment(container: AwilixContainer, paymentId: string) {
   const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
-  return paymentService.capturePayment({ paymentId, amount })
+  return paymentService.capturePayment({ paymentId })
 }
 
 export async function cancelPayment(container: AwilixContainer, paymentId: string) {

@@ -1,3 +1,4 @@
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IPaymentModuleService } from '@core/types/index.js'
 import type { Logger } from '@core/types/logger.js'
 import type { PaymentActions } from '@core/types/payment/common.js'
@@ -5,13 +6,25 @@ import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { ProviderParams, WebhookReceivedResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
 
-const SKIP_ACTIONS: Set<PaymentActions> = new Set([
-  'not_supported',
-  'canceled',
-  'failed',
-  'requires_more',
-  'pending_authorization',
-])
+/**
+ * What this route does with each action a provider can report. Total over `PaymentActions`, so
+ * an action added to the union has to be given an answer here rather than falling through a
+ * skip set that never heard of it — which is how `pending` used to reach the processing path
+ * while `pending_authorization` was skipped.
+ */
+const ACTION_HANDLING: Record<PaymentActions, 'process' | 'skip'> = {
+  authorized: 'process',
+  captured: 'process',
+  canceled: 'skip',
+  failed: 'skip',
+  // biome-ignore lint/style/useNamingConvention: mirrors the PaymentActions union member
+  not_supported: 'skip',
+  pending: 'skip',
+  // biome-ignore lint/style/useNamingConvention: mirrors the PaymentActions union member
+  pending_authorization: 'skip',
+  // biome-ignore lint/style/useNamingConvention: mirrors the PaymentActions union member
+  requires_more: 'skip',
+}
 
 export const PostInput = { params: ProviderParams }
 export const PostOutput = WebhookReceivedResponse
@@ -20,18 +33,24 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const logger = req.scope.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
+  // The provider verifies a signature over these bytes. Without them there is nothing to verify
+  // against, and passing a re-serialisation of the parsed body would only fake having them.
+  if (!req.rawBody) {
+    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Webhook request carried no body' })
+  }
+
   const { action, data } = await paymentService.getWebhookActionAndData({
     provider: req.params.provider,
     payload: {
       data: (req.body ?? {}) as Record<string, unknown>,
-      rawData: JSON.stringify(req.body ?? {}),
+      rawData: req.rawBody,
       headers: req.headers,
     },
   })
 
   logger.info(`Webhook from "${req.params.provider}": action="${action}", sessionId="${data?.sessionId}"`)
 
-  if (SKIP_ACTIONS.has(action) || !data?.sessionId) {
+  if (ACTION_HANDLING[action] === 'skip' || !data?.sessionId) {
     return { status: 200, json: { received: true } }
   }
 
@@ -39,8 +58,14 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   if (action === 'authorized' || action === 'captured') {
     const payment = await paymentService.authorizePaymentSession(data.sessionId)
 
-    if (action === 'captured' && payment) {
-      await paymentService.capturePayment({ paymentId: payment.id, amount: data.amount })
+    // Only if the money is not already taken. Stripe redelivers an event until it is
+    // acknowledged, and `authorizePaymentSession` captures the payment itself when the intent
+    // already reports a completed charge — so by here the capture may well have happened.
+    // Capturing again cannot take the money twice (`capturePayment` refuses), but it would answer
+    // 4xx, which Stripe retries for three days before disabling the endpoint. A capture takes the
+    // whole authorization, so `capturedAt` settles it: it is set by the only capture there can be.
+    if (action === 'captured' && payment && !payment.capturedAt) {
+      await paymentService.capturePayment({ paymentId: payment.id })
     }
   }
 

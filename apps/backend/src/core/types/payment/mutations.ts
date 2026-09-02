@@ -54,9 +54,9 @@ export type CreatePaymentDTO = {
 // Capture
 // ---------------------------------------------------------------------------
 
+/** No `amount`: a capture takes the whole authorization. See `PaymentModuleService.capturePayment`. */
 export type CreateCaptureDTO = {
   paymentId: string
-  amount?: BigNumber | undefined
   capturedBy?: string | undefined
 }
 
@@ -136,7 +136,8 @@ export type ProviderWebhookPayload = {
   provider: string
   payload: {
     data: Record<string, unknown>
-    rawData: string | Buffer
+    /** The unmodified request body bytes, as the gateway sent and signed them. */
+    rawData: string | Uint8Array
     headers: Record<string, string>
   }
 }
@@ -205,6 +206,8 @@ export type DeletePaymentOutput = {
 
 export type RefundPaymentInput = {
   amount: BigNumber
+  /** The payment's currency. A provider counting in a smallest unit needs it to convert. */
+  currencyCode: string
   data?: Record<string, unknown> | undefined
   context?: Record<string, unknown> | undefined
 }

@@ -52,7 +52,7 @@ Bring the Stripe provider and the payment module wiring around it to behavioural
 - A shopper whose bank requires a 3D Secure challenge completes it and the order is created.
 - A shopper paying with a method that settles later (bank transfer, voucher, redirect) gets an order immediately, and the Payment is recorded when the funds are confirmed.
 - A returning customer can save a card and pay with it next time.
-- A merchant captures, partially captures, refunds, partially refunds and cancels payments, and every one of those operations is safe to retry.
+- A merchant captures, refunds, partially refunds and cancels payments, and every one of those operations is safe to retry.
 - A Stripe webhook is cryptographically verified, is ignored when it belongs to another integration sharing the same Stripe account, and does not race the shopper's own checkout request.
 - A developer misconfiguring the provider finds out when the server boots, not when the first shopper tries to pay.
 
@@ -107,7 +107,7 @@ Stories 1–40 are the gateway and payment-module half. Stories 41–73 are the 
 16. As a returning customer, I want my saved cards to belong to me and not leak between accounts, so that my payment details stay private.
 17. As a guest shopper, I want checkout to work without any saved-card machinery, so that the feature does not block anonymous purchases.
 18. As a merchant, I want to capture an authorized payment when I ship, so that I only take money for goods I actually send.
-19. As a merchant, I want to capture part of an authorization when I ship part of an order, so that partial fulfilment is supported.
+19. ~~As a merchant, I want to capture part of an authorization when I ship part of an order, so that partial fulfilment is supported.~~ **Withdrawn: partial capture is not supported.** See *Partial capture* under *Out of Scope*. Struck in place rather than deleted, so that every story keeps the number it was given.
 20. As a merchant, I want to refund a captured payment in full or in part, so that I can resolve returns and disputes.
 21. As a merchant, I want to cancel an authorization I will not fulfil, so that the shopper's funds are released.
 22. As a merchant, I want a capture that the gateway has already performed to be recognised as successful rather than reported as an error, so that duplicate webhooks do not create false failures.
@@ -312,9 +312,8 @@ Two correctness fixes fall out of this work: a capture that fails because the in
 
 - A completed charge reports the amount actually received, not the intent's nominal amount.
 - An authorization reports the capturable amount, not the intent's nominal amount.
-- A partially funded intent reports the amount still outstanding.
 
-Using the nominal amount for all three, as the adapter does today, is wrong wherever partial capture is involved.
+Using the nominal amount for both, as the adapter does today, works only by coincidence: with full captures only, a succeeded intent's received amount equals its nominal one. Read the field that means what is being asked, so nothing depends on the two agreeing — they stop agreeing the moment the gateway is configured for overcapture or multicapture, and it fails silently when they do.
 
 ### Provider configuration and validation
 
@@ -496,7 +495,7 @@ No provider-level test seam is introduced. Adapter behaviour — status mapping,
 - API tests against a real database with per-test factory data: the cart, order and product API tests.
 - Fake provider facade wired into the payment module service for orchestration-level assertions: the existing payment module service test. That test stays as it is; this work does not move it to the new seam.
 
-**Coverage the tests must give.** Correct smallest-unit amount and stable idempotency key reaching the gateway for session creation, update, capture and refund. Each row of the status mapping table. A `processing` intent for a card completing the cart, and for an asynchronous method type creating an order with no Payment. The deferred backfill: a later webhook creating the Payment against an existing order. A verified webhook doing work and an unverified one being rejected with a client error. A webhook with no Payment Session identifier being ignored. Webhook amounts read from the received and capturable fields under partial capture. A capture against a cancelled authorization failing. A retried transient gateway failure succeeding without a second charge. A missing API key failing at boot.
+**Coverage the tests must give.** Correct smallest-unit amount and stable idempotency key reaching the gateway for session creation, update, capture and refund. Each row of the status mapping table. A `processing` intent for a card completing the cart, and for an asynchronous method type creating an order with no Payment. The deferred backfill: a later webhook creating the Payment against an existing order. A verified webhook doing work and an unverified one being rejected with a client error. A webhook with no Payment Session identifier being ignored. Webhook amounts read from the received and capturable fields rather than the intent's nominal amount. A capture against a cancelled authorization failing. A retried transient gateway failure succeeding without a second charge. A missing API key failing at boot.
 
 ### Seams — storefront and wallet
 
@@ -535,7 +534,8 @@ No provider-level test seam is introduced. Adapter behaviour — status mapping,
 - **A general-purpose event bus module and a locking module.** See the accepted divergence in *Webhook deferral*. This spec builds the webhook deferral behaviour, not reusable infrastructure for either.
 - **A distributed lock around cart completion.** The existing `TODO(locking)` remains open.
 - **Admin UI** for saved payment methods or Account Holders. Store-facing routes only.
-- **Multi-currency pricing.** The currency conversion helpers must handle any currency correctly, but nothing else about multi-currency selling changes.
+- **Partial capture.** Captures are all-or-nothing. Two independent reasons, either of which is enough. The adapter cannot do it: `capturePayment` calls Stripe with no `amount_to_capture`, so the whole intent is charged whatever the module recorded — capturing 40 of a 100 authorization takes 100 from the shopper and writes a Capture row of 40. And there is nothing to capture partially against: `create-order-fulfillment` rejects any order that is not `unfulfilled` and then marks it `fulfilled`, so an order is fulfilled exactly once. The admin capture route therefore rejects a body carrying `amount` rather than ignoring it, and `CreateCaptureDTO` has no field to express one. Partial *refunds* are unaffected and stay — they work against what was captured, and Stripe supports them natively.
+- **Multi-currency pricing.** The currency conversion helpers must handle any currency correctly, but nothing else about multi-currency selling changes. **Known defect, deferred to whoever owns multi-currency:** the three-decimal round trip is lossy upward. Stripe accepts a three-decimal amount only as a multiple of ten, so `toSmallestUnit` rounds up — a 19.995 KWD total is sent as `20000` and read back as `20.000`. The shopper is charged 0.005 KWD more than the order total while the Payment row records the lower figure. Not reachable today: multi-currency pricing is out of scope and no three-decimal currency is sold. Two candidate fixes, so the decision is not re-derived from scratch — round the stored total to what the gateway can actually charge, or reject a total the currency cannot represent. Rounding down is not among them: it would charge a fraction less than the shopper agreed to.
 - **Migrating the existing payment module service test** to the API seam. It stays where it is.
 
 ## Constraints

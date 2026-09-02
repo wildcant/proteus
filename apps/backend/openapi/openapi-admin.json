@@ -1606,11 +1606,8 @@
       },
       "AdminCapturePayment": {
         "type": "object",
-        "properties": {
-          "amount": {
-            "type": "string"
-          }
-        }
+        "properties": {},
+        "additionalProperties": false
       },
       "AdminRefundPayment": {
         "type": "object",
