@@ -41,8 +41,10 @@ await checkoutWorkflow.run({ cartId: 'cart_123' })
 The engine follows the same ports & adapters pattern as the rest of the codebase:
 
 ```
-types.ts          — Port interfaces (WorkflowEngine, WorkflowContext, etc.)
-simple-adapter.ts — In-process adapter (runs steps sequentially, compensates on error)
+types.ts            — Port interfaces (WorkflowEngine, WorkflowContext, etc.)
+engine-selection.ts — Which adapter a composition root wires, derived from RUNTIME
+simple-adapter.ts   — In-process adapter (runs steps sequentially, compensates on error)
+temporal-adapter.ts — Durable adapter (runs each step as a Temporal Activity)
 ```
 
 ### Key types
@@ -104,7 +106,8 @@ createWorkflow('my-workflow', handler)
 createWorkflow({ name: 'my-workflow', idempotent: true }, handler)
 ```
 
-The `idempotent` flag is metadata for engines that support deduplication (the simple adapter ignores it).
+The `idempotent` flag declares that every step of the workflow is safe to run twice. The simple
+adapter ignores it; the Temporal adapter gives such a workflow a default retry policy.
 
 ### DI container access
 
@@ -126,7 +129,76 @@ await ctx.step('fetch-data', async ({ container }) => {
 3. Runs compensations in reverse order, swallowing compensation errors
 4. Re-throws the original error after compensation completes
 
-This is sufficient for single-process deployments. A distributed adapter (e.g. Temporal, Inngest) could implement the same `WorkflowEngine` interface with durable execution, retries, and async step orchestration.
+This is sufficient for single-process deployments, and it is what the workerd build uses.
+
+## Temporal adapter
+
+`createTemporalWorkflowEngine(options)` runs the same workflows durably, with **no change to any
+workflow file**. A workflow author writes `ctx.step` exactly as before.
+
+### How a closure crosses a process boundary
+
+A step action is a closure over handler-local variables; a Temporal Activity is a name-registered
+function taking serializable arguments. The closure cannot be shipped, so the outputs are shipped
+instead. Every workflow runs as an execution of one generic driver:
+
+```ts
+let outputs = []
+while (true) {
+  const r = await executeActivity('advanceWorkflow', { name, input, outputs, fingerprint })
+  if (r.done) return r.output
+  outputs.push(r.output)
+}
+```
+
+The `advanceWorkflow` Activity runs in the Worker process, with the DI container. It looks the
+workflow up by name in `src/temporal/registry.ts`, re-executes its handler from the top with a
+replay `ctx` whose `step()` returns stored outputs for completed steps and executes exactly the
+next one, then stops. Compensation is the same replay, backwards.
+
+Two consequences worth knowing before writing a workflow:
+
+- **Handler bodies must stay pure between steps.** The glue re-runs on every replay —
+  `complete-cart`'s 14 steps cost 91 glue executions. `Date.now()`, `Math.random()` or a service
+  call between steps corrupts a replay rather than failing it.
+- **Memoization keys on call index, not step name**, so a `ctx.step` inside a loop works.
+
+### What is different from the simple adapter, and what is not
+
+| | Simple | Temporal |
+|---|---|---|
+| Step order, compensation order, swallowed compensation errors | same | same |
+| Error a caller catches (class, message, `AppError.type`) | same | same |
+| Default retry | none | none (`maximumAttempts: 1`) |
+| Survives the process dying mid-workflow | no | yes |
+
+Retry is opt-in because today's steps are not idempotent, and it is configured on the adapter
+rather than on `ctx.step`, because the port does not change:
+
+```ts
+createTemporalWorkflowEngine({ retry: { 'complete-cart': { 'authorize-payment': { maximumAttempts: 3 } } } })
+```
+
+`createWorkflow({ name, idempotent: true })` opts a whole workflow into a default policy.
+`WorkflowTerminalError` never retries, whatever the policy says.
+
+### Shape fingerprint
+
+The driver carries a rolling hash of the step names completed so far. If a deploy adds, removes or
+reorders a step under a running execution, the stored outputs no longer line up; the Activity
+throws non-retryably instead of replaying into the wrong step. Temporal Worker Versioning is the
+real answer and is the recorded follow-up.
+
+### Choosing an engine
+
+`resolveWorkflowEngineName` derives it from `RUNTIME` — `workerd` cannot load
+`@temporalio/core-bridge`, so it gets the simple adapter; `node` gets Temporal. There is no
+`WORKFLOW_ENGINE` env var. A composition root pins the other one through
+`projectConfig.workflows.engine`: the Worker process pins `simple` so nested `.run()` calls stay
+in-process, and the test container pins `simple` so the suite needs no Temporal server.
+
+`check:deps` enforces the boundary — `no-temporal-in-workerd` fails if `src/index.workerd.ts` can
+reach `@temporalio/*` or `src/temporal/` at all.
 
 ## Testing
 
@@ -144,4 +216,6 @@ setWorkflowEngine(createSimpleWorkflowEngine(), container)
 const result = await myWorkflow.run({ cartId: 'cart_1' })
 ```
 
-Tests live in `__tests__/simple-adapter.test.ts`.
+Tests live in `__tests__/simple-adapter.test.ts`. The Temporal adapter's own tests are
+`src/temporal/__tests__/` — `replay.test.ts` for the replay mechanism with no server, and
+`temporal-adapter.test.ts` against `@temporalio/testing`'s time-skipping server.
