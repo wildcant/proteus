@@ -38,6 +38,45 @@ describe('customerMessageForStripeError', () => {
     expect(messages).toEqual(new Set([DECLINED_MESSAGE]))
   })
 
+  /**
+   * The test the deny-list version could not fail.
+   *
+   * Stripe publishes around thirty decline codes. Naming the sensitive ones and letting the rest
+   * through leaves the oracle standing one code to the left: `pickup_card` is a common mapping
+   * for a card reported lost or stolen, and under a deny-list it arrives with its own wording
+   * while `generic_decline` arrives with another. Only an allow-list closes that.
+   */
+  test.each([
+    ['pickup_card'],
+    ['restricted_card'],
+    ['security_violation'],
+    ['stop_payment_order'],
+    ['card_velocity_exceeded'],
+    ['revocation_of_authorization'],
+    ['a_code_stripe_has_not_published_yet'],
+  ])('collapses the decline code %p, which no list names', (code) => {
+    expect(customerMessageForStripeError(cardError(code, `Stripe's own wording for ${code}.`))).toBe(DECLINED_MESSAGE)
+  })
+
+  test('is indistinguishable across every decline but the four a shopper can act on', () => {
+    // The whole rule in one assertion: hand it Stripe's distinct wording for a spread of codes
+    // and exactly one string comes back for all of them.
+    const declines = [
+      'generic_decline',
+      'lost_card',
+      'stolen_card',
+      'pickup_card',
+      'security_violation',
+      'issuer_not_available',
+      'try_again_later',
+    ]
+
+    const messages = new Set(
+      declines.map((code) => customerMessageForStripeError(cardError(code, `Distinct: ${code}`))),
+    )
+    expect(messages.size).toBe(1)
+  })
+
   test('reads identically for a lost card and a generic decline', () => {
     expect(customerMessageForStripeError(cardError('lost_card'))).toBe(
       customerMessageForStripeError(cardError('generic_decline')),
@@ -54,6 +93,30 @@ describe('customerMessageForStripeError', () => {
 
     for (const [code, message] of actionable) {
       expect(customerMessageForStripeError(cardError(code, message))).toBe(message)
+    }
+
+    // And the same codes are the only ones that get this treatment: swap one for a neighbour and
+    // the shopper is told nothing about why.
+    expect(
+      customerMessageForStripeError(cardError('withdrawal_count_limit_exceeded', 'You have exceeded the balance')),
+    ).toBe(DECLINED_MESSAGE)
+  })
+
+  test('leaves a mistyped card saying what was mistyped, not that the bank refused', () => {
+    // Not an issuer decline: a `card_error` without `card_declined` is a fact about what the
+    // shopper typed. Collapsing these would send someone to their bank over a typo, and they
+    // carry nothing to probe for.
+    const typed: [string, string][] = [
+      ['incorrect_number', 'Your card number is incorrect.'],
+      ['invalid_expiry_year', "Your card's expiration year is invalid."],
+      ['incomplete_cvc', "Your card's security code is incomplete."],
+    ]
+
+    for (const [code, message] of typed) {
+      expect(
+        customerMessageForStripeError({ type: 'card_error', code, message }),
+        `${code} should keep Stripe's own wording`,
+      ).toBe(message)
     }
   })
 

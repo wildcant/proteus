@@ -29,39 +29,28 @@ export type StripeFailure = {
 /** What every failure we cannot explain says. Never a gateway string. */
 export const GENERIC_FAILURE_MESSAGE = 'We could not process your payment. Please try again or use a different card.'
 
-/** The one string the whole sensitive set collapses to. */
+/** The one string every issuer decline collapses to, except the four a shopper can act on. */
 export const DECLINED_MESSAGE = 'Your card was declined. Please try another card or contact your bank.'
 
 const AUTHENTICATION_FAILED_MESSAGE =
   'We could not authenticate your card with your bank. Please try again or use a different card.'
 
 /**
- * The decline codes that must be indistinguishable from one another on screen.
+ * The only issuer declines whose reason the shopper is told. Everything else collapses.
  *
- * The subtlety that makes this correct is that the *target* is in the set too. Overriding only
- * the sensitive four — `fraudulent`, `lost_card`, `stolen_card`, `merchant_blacklist` — does not
- * merge the buckets, it swaps which one is the odd one out: a prober sends a stolen card, reads
- * the generic string, sends a random card, reads Stripe's own "Your card was declined." and
- * separates them exactly as before. Every code here produces `DECLINED_MESSAGE`, so there is
- * nothing left to compare.
+ * An allow-list, and it has to be one. A deny-list naming the sensitive codes does not merge the
+ * buckets, it swaps which one is the odd one out: a prober sends a stolen card, reads the generic
+ * string, sends a random card, reads Stripe's own "Your card was declined." and separates them
+ * exactly as before. A deny-list *plus* the obvious neighbours is no better — Stripe publishes
+ * around thirty decline codes, and `pickup_card`, `restricted_card`, `security_violation`,
+ * `stop_payment_order`, `card_velocity_exceeded` and `revocation_of_authorization` would each
+ * still arrive in the shopper's hands with their own distinct wording. `pickup_card` is a common
+ * mapping for a card reported lost or stolen, so the oracle survives the deny-list intact.
  *
- * Stripe.js rewrites decline messages in the browser and does so non-uniformly, which is why this
- * cannot be delegated to the SDK.
- */
-const INDISTINGUISHABLE_DECLINE_CODES: ReadonlySet<string> = new Set([
-  'generic_decline',
-  'do_not_honor',
-  'call_issuer',
-  'transaction_not_allowed',
-  'fraudulent',
-  'lost_card',
-  'stolen_card',
-  'merchant_blacklist',
-])
-
-/**
- * Declines where Stripe's own message tells the shopper something they can act on, and is better
- * copy than anything we would hardcode. Passed through verbatim, localised by Stripe.
+ * These four are here because Stripe's message tells the shopper something they can do about it,
+ * and none of them says anything about the card's history that the shopper does not already know.
+ * Stripe.js rewrites decline messages in the browser and does so non-uniformly, which is why none
+ * of this can be delegated to the SDK.
  */
 const ACTIONABLE_DECLINE_CODES: ReadonlySet<string> = new Set([
   'insufficient_funds',
@@ -69,6 +58,17 @@ const ACTIONABLE_DECLINE_CODES: ReadonlySet<string> = new Set([
   'incorrect_cvc',
   'processing_error',
 ])
+
+/**
+ * The code Stripe uses for "the issuer said no". It is the only card error that carries a
+ * `decline_code`, and the only one the rule above applies to.
+ *
+ * Every other `card_error` code — `incorrect_number`, `invalid_expiry_year`, `incomplete_cvc` and
+ * the rest — is a fact about what the shopper typed, not an opinion the issuer holds about their
+ * card. Those pass through: they carry nothing to probe for, and replacing "Your card number is
+ * incorrect" with "Your card was declined" would send a shopper to their bank over a typo.
+ */
+const ISSUER_DECLINE_CODE = 'card_declined'
 
 /**
  * What the shopper is told.
@@ -84,12 +84,12 @@ export function customerMessageForStripeError(error: StripeFailure | null | unde
   if (error.code === 'payment_intent_authentication_failure') return AUTHENTICATION_FAILED_MESSAGE
 
   if (error.type === 'card_error') {
+    if (error.code !== ISSUER_DECLINE_CODE) return error.message ?? DECLINED_MESSAGE
+
     const declineCode = error.decline_code
-    if (declineCode && INDISTINGUISHABLE_DECLINE_CODES.has(declineCode)) return DECLINED_MESSAGE
     if (declineCode && ACTIONABLE_DECLINE_CODES.has(declineCode)) return error.message ?? DECLINED_MESSAGE
-    // A card error Stripe declined to give a decline code for. Its message is still card-shaped
-    // and shopper-safe — `incomplete_number`, `invalid_expiry_year` and the rest arrive here.
-    return error.message ?? DECLINED_MESSAGE
+    // Every other decline — named, unnamed, and every code Stripe adds after this is written.
+    return DECLINED_MESSAGE
   }
 
   if (error.type === 'validation_error') return error.message ?? GENERIC_FAILURE_MESSAGE

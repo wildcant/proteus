@@ -1,5 +1,7 @@
 import { BigNumber } from '@core/db/bignum.js'
+import type { IPaymentModuleService } from '@core/types/index.js'
 import type { Logger } from '@core/types/logger.js'
+import { Modules } from '@core/utils/index.js'
 import { noopLogger } from '@framework/logger/noop-logger.js'
 import type { StoreCreatePaymentSessionResponse, StoreUpdatePaymentSessionResponse } from '@proteus/http-schemas/store'
 import { type GatewayCall, stripeGateway } from '@tests/mocks/stripe.js'
@@ -130,6 +132,49 @@ test.describe('POST /store/payment-collections/:id/payment-sessions (stripe)', (
     const { body } = await createSession(collection.id)
 
     expect(intentCreateParams().metadata).toEqual({ sessionId: body.paymentSession.id })
+  })
+
+  /**
+   * The retry path, at the seam that can see the gateway.
+   *
+   * Every Place order press comes through this route, so a shopper who is declined and reaches
+   * for a second card is retrying. Two intents, only one confirmed, and cart completion
+   * authorizing whichever session row came back first is how the shopper ends up holding an
+   * authorization against a card that bought nothing.
+   */
+  test('a second press supersedes the first attempt rather than opening a second one', async ({ service, expect }) => {
+    // The state a deferred intent is actually created in: nothing has confirmed it yet. The
+    // suite's default is `requires_capture`, which is where a *confirmed* card lands — and a
+    // session that has reached that point is money, so it is deliberately not superseded.
+    stripeGateway.statusOnCreate = 'requires_payment_method'
+    const collection = await collectionWorth('19.99', 'usd', service)
+
+    const first = await createSession(collection.id)
+    const second = await createSession(collection.id)
+
+    // Two intents exist at the gateway — that part is unavoidable, a confirmed intent cannot be
+    // reused — but only one session survives, so completion has nothing to pick wrongly between.
+    expect(stripeGateway.callsTo('paymentIntents.create')).toHaveLength(2)
+    expect(second.body.paymentSession.id).not.toBe(first.body.paymentSession.id)
+
+    const paymentService = api.container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+    const after = await paymentService.retrievePaymentCollection(collection.id)
+    expect(after.paymentSessions?.map((session) => session.id)).toEqual([second.body.paymentSession.id])
+  })
+
+  test('cancels the superseded intent, so three cards leave no authorization standing', async ({ service, expect }) => {
+    stripeGateway.statusOnCreate = 'requires_payment_method'
+    const collection = await collectionWorth('19.99', 'usd', service)
+
+    const first = await createSession(collection.id)
+    const second = await createSession(collection.id)
+    await createSession(collection.id)
+
+    // The abandoned attempts, by id and in order — a hold on a card that bought nothing is the
+    // thing being prevented, so it is the intent ids that are asserted rather than a count.
+    const cancelled = stripeGateway.callsTo('paymentIntents.cancel').map((call) => call.params.id)
+    expect(cancelled).toEqual([first.body.paymentSession.data.id, second.body.paymentSession.data.id])
+    expect(stripeGateway.intents.get(String(cancelled[0]))?.status).toBe('canceled')
   })
 
   test('reports a processing intent as pending, the same status the webhook path reports', async ({

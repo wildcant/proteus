@@ -351,6 +351,85 @@ test.describe('PaymentModuleService', () => {
       expect(afterCapture.completedAt).toBeInstanceOf(Date)
     })
 
+    /**
+     * The retry path. Every Place order press opens a session, so without this a shopper who is
+     * declined and reaches for a second card leaves two — two intents at the gateway, one of them
+     * confirmed, and cart completion authorizing whichever row came back first.
+     */
+    test.describe('replacePaymentSession', () => {
+      test('abandons the previous attempt instead of adding to it', async ({ expect, dto }) => {
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+        const first = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        const second = await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id)).toEqual([second.id])
+        expect(first.id).not.toBe(second.id)
+      })
+
+      test('cancels the abandoned attempt at the gateway rather than forgetting it', async ({ expect, dto }) => {
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+        await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        // A forgotten session is an authorization left standing against the shopper's card.
+        expect(mockProvider.deleteSession).toHaveBeenCalledTimes(1)
+      })
+
+      test('leaves no authorization standing when a shopper tries three cards', async ({ expect, dto }) => {
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+
+        await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+        await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+        const third = await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id)).toEqual([third.id])
+        expect(mockProvider.deleteSession).toHaveBeenCalledTimes(2)
+      })
+
+      test('will not abandon a session that has become money', async ({ expect, dto }) => {
+        // The guard on the status set. An authorized session is a claim on the shopper's funds
+        // that the collection's own totals are already accounting for; cancelling it quietly
+        // would leave the ledger describing money that no longer exists.
+        const collection = await service.createPaymentCollection(
+          dto.generate.createPaymentCollection({ amount: new BigNumber(20000) }),
+        )
+        const authorized = await service.createPaymentSession(
+          collection.id,
+          dto.generate.createPaymentSession({ amount: new BigNumber(10000) }),
+        )
+        await service.authorizePaymentSession(authorized.id)
+
+        const opened = await service.replacePaymentSession(
+          collection.id,
+          dto.generate.createPaymentSession({ amount: new BigNumber(10000) }),
+        )
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id).sort()).toEqual([authorized.id, opened.id].sort())
+        expect(mockProvider.deleteSession).not.toHaveBeenCalled()
+      })
+
+      test('refuses to open a new attempt when the old one cannot be cancelled', async ({ expect, dto }) => {
+        // Opening a second attempt while the first may have taken money is worse than refusing:
+        // the shopper sees the failure and can press again, and the cancel carries a stable
+        // idempotency key, so the retry is the same operation rather than a new one.
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+        const first = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+        mockProvider.deleteSession.mockRejectedValueOnce(new Error('gateway refused the cancellation'))
+
+        await expect(service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())).rejects.toThrow(
+          /gateway refused the cancellation/,
+        )
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id)).toEqual([first.id])
+      })
+    })
+
     test('partial authorization sets partially_authorized', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(
         dto.generate.createPaymentCollection({ amount: new BigNumber(20000) }),

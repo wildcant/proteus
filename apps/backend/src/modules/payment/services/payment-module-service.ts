@@ -14,6 +14,7 @@ import type {
   PaymentProviderDTO,
   PaymentProviderMeta,
   PaymentSessionDTO,
+  PaymentSessionStatus,
   RefundReasonDTO,
 } from '../../../core/types/payment/common.js'
 import type {
@@ -42,6 +43,20 @@ import type { PaymentSessionRepository } from '../repositories/payment-session.j
 import type { RefundRepository } from '../repositories/refund.js'
 import type { RefundReasonRepository } from '../repositories/refund-reason.js'
 import type { PaymentProviderService } from './payment-provider-service.js'
+
+/**
+ * The statuses in which a session has not become money and can safely be abandoned.
+ *
+ * `authorized`, `captured` and `pending_authorization` are deliberately absent: each of those is
+ * a claim on the shopper's funds that something else in the system is accounting for, and
+ * quietly cancelling one would leave the ledger describing money that no longer exists.
+ */
+const SUPERSEDABLE_SESSION_STATUSES: ReadonlySet<PaymentSessionStatus> = new Set([
+  'pending',
+  'requires_more',
+  'error',
+  'canceled',
+])
 
 type InjectedDependencies = {
   paymentCollectionRepository: PaymentCollectionRepository
@@ -179,6 +194,47 @@ export class PaymentModuleService implements IPaymentModuleService {
   // ---------------------------------------------------------------------------
   // PaymentSession lifecycle
   // ---------------------------------------------------------------------------
+
+  /**
+   * Opens a session for a collection, abandoning every attempt on it that has not become money.
+   *
+   * `createPaymentSession` adds; this replaces, and the caller picks. Adding is the module's
+   * default because a collection can legitimately carry several sessions — that is how one total
+   * is split across two providers — so the module cannot decide for everyone.
+   *
+   * A checkout wants the other thing. Every Place order press opens a session, so a shopper who
+   * is declined and reaches for a second card would otherwise leave two: two intents at the
+   * gateway, one of them confirmed, and cart completion authorizing whichever the database
+   * happened to return first. The observed failure is the worse half — the second card is
+   * authorized at Stripe, the server authorizes the first, completion fails, and the shopper is
+   * left holding an authorization against a card that bought nothing.
+   *
+   * Superseded sessions are cancelled at the gateway rather than merely forgotten, so a shopper
+   * who tries three cards leaves no authorization standing against any of them.
+   */
+  async replacePaymentSession(
+    paymentCollectionId: string,
+    input: CreatePaymentSessionDTO,
+    context?: Context,
+  ): Promise<PaymentSessionDTO> {
+    const collection = await this.retrievePaymentCollection(paymentCollectionId, undefined, context)
+    const superseded = (collection.paymentSessions ?? []).filter((session) =>
+      SUPERSEDABLE_SESSION_STATUSES.has(session.status),
+    )
+
+    // Sequential rather than `Promise.all`: each of these recomputes the collection's status, so
+    // running them together would have two writers on one row.
+    for (const session of superseded) {
+      this.logger.debug(`Superseding payment session "${session.id}" (${session.status}) before opening a new one`)
+      // Deliberately not swallowed. A cancellation that fails is the one case where opening a
+      // second attempt is worse than refusing: the first may have taken money. The shopper sees
+      // the failure and can press again — the cancel carries a stable idempotency key, so the
+      // second attempt at it is the same operation rather than a new one.
+      await this.deletePaymentSession(session.id, context)
+    }
+
+    return this.createPaymentSession(paymentCollectionId, input, context)
+  }
 
   async createPaymentSession(
     paymentCollectionId: string,

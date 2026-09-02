@@ -45,8 +45,14 @@ function publishableKeyOf(publicConfig: Record<string, unknown>): string {
  * with `capture_method: 'manual'`, so a confirmed card lands there and `completeCart` authorizes
  * it. `processing` is a method that will settle later — the order is placed and the webhook
  * reconciles it.
+ *
+ * It writes the log line for a failure rather than only returning one, and that is deliberate:
+ * this is where **both** paths converge on a terminal intent. A decline reached through
+ * `confirmPayment`'s error and a decline read back off the intent after a redirect are the same
+ * event to a shopper and to on-call, and logging at each call site left the redirect leg — the
+ * one no local card can reach — writing nothing at all.
  */
-function outcomeForIntent(intent: PaymentIntent): ConfirmOutcome {
+function outcomeForIntent(intent: PaymentIntent, source: string): ConfirmOutcome {
   if (intent.status === 'requires_capture' || intent.status === 'succeeded') {
     return { kind: 'succeeded', reference: intent.id }
   }
@@ -54,7 +60,9 @@ function outcomeForIntent(intent: PaymentIntent): ConfirmOutcome {
 
   // requires_payment_method, requires_confirmation, requires_action, canceled. The shopper did not
   // pay, and `last_payment_error` is the only thing that can say why in their own terms.
-  return { kind: 'failed', customerMessage: customerMessageForStripeError(intent.last_payment_error) }
+  const failure = intent.last_payment_error
+  logPaymentFailure(source, { ...logFieldsForStripeError(failure), intentStatus: intent.status, intent: intent.id })
+  return { kind: 'failed', customerMessage: customerMessageForStripeError(failure) }
 }
 
 function StripeRoot({ context, children }: { context: PaymentAdapterContext; children: React.ReactNode }) {
@@ -178,7 +186,7 @@ function useStripeConfirm(): Confirm {
       // that resolves without either an error or an intent must not read as success.
       if (!paymentIntent) return { kind: 'redirecting' }
 
-      return outcomeForIntent(paymentIntent)
+      return outcomeForIntent(paymentIntent, 'Stripe confirmation left the payment unpaid')
     },
     [stripe, elements],
   )
@@ -205,7 +213,7 @@ function useStripeResumeRedirect() {
         return { kind: 'failed', customerMessage: customerMessageForStripeError(error) }
       }
 
-      return outcomeForIntent(paymentIntent)
+      return outcomeForIntent(paymentIntent, 'Stripe returned from a redirect unpaid')
     },
     [stripe],
   )

@@ -34,7 +34,15 @@ export type FakeIntent = {
   // biome-ignore lint/style/useNamingConvention: the Stripe wire field
   client_secret: string
   // biome-ignore lint/style/useNamingConvention: the Stripe wire field
-  last_payment_error: { type: string; code?: string; decline_code?: string; message?: string } | null
+  last_payment_error: {
+    type: string
+    code?: string
+    // biome-ignore lint/style/useNamingConvention: the Stripe wire field
+    decline_code?: string
+    message?: string
+    // biome-ignore lint/style/useNamingConvention: the Stripe wire field
+    request_log_url?: string
+  } | null
 }
 
 /** One recorded call at the gateway boundary. `index` is what a spec takes a watermark from. */

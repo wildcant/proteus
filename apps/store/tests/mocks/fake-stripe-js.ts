@@ -70,10 +70,21 @@ export const FAKE_STRIPE_JS = String.raw`
     '<fieldset><legend>Payment method</legend>' +
     '<label><input type="radio" name="method" value="card" checked> Card</label>' +
     '<label><input type="radio" name="method" value="redirect"> Test redirect method</label>' +
+    '<label><input type="radio" name="method" value="redirect-declined"> Test redirect method (declined)</label>' +
     '</fieldset>' +
     '<label><span>Card number</span><input id="number" autocomplete="cc-number" inputmode="numeric"></label>' +
     '<label><span>Expiration</span><input id="expiry" autocomplete="cc-exp" value="12 / 34"></label>' +
     '<label><span>CVC</span><input id="cvc" autocomplete="cc-csc" value="123"></label>'
+
+  function declineError(declineCode, message) {
+    return {
+      type: 'card_error',
+      code: 'card_declined',
+      decline_code: declineCode,
+      message: message,
+      request_log_url: 'https://dashboard.stripe.com/test/logs/req_fake_' + declineCode,
+    }
+  }
 
   /** One mounted element. The frame is same-origin so the fake can read what was typed. */
   function FakeElement(group, type) {
@@ -173,16 +184,6 @@ export const FAKE_STRIPE_JS = String.raw`
     return Promise.resolve({ selectedPaymentMethod: 'card' })
   }
 
-  function declineError(declineCode, message) {
-    return {
-      type: 'card_error',
-      code: 'card_declined',
-      decline_code: declineCode,
-      message: message,
-      request_log_url: 'https://dashboard.stripe.com/test/logs/req_fake_' + declineCode,
-    }
-  }
-
   /** The challenge, in the top document. Resolves to whichever button the shopper presses. */
   function runAuthenticationChallenge() {
     return new Promise(function (resolve) {
@@ -255,12 +256,19 @@ export const FAKE_STRIPE_JS = String.raw`
       var payment = elements.getElement('payment')
       var values = payment ? payment.values() : { method: 'card', number: '' }
 
-      if (values.method === 'redirect') {
-        return advanceIntent(clientSecret, 'requires_capture').then(function () {
+      if (values.method === 'redirect' || values.method === 'redirect-declined') {
+        // The leg that has no local card to reach it: the shopper is declined *at the redirect
+        // provider*, so nothing comes back as an error — the intent itself carries the reason and
+        // the return route has to read it off the intent.
+        var declined = values.method === 'redirect-declined'
+        var status = declined ? 'requires_payment_method' : 'requires_capture'
+        var lastPaymentError = declined ? declineError('lost_card', 'Your card has been reported lost.') : null
+
+        return advanceIntent(clientSecret, status, lastPaymentError).then(function () {
           var url = new URL(args.confirmParams.return_url)
           url.searchParams.set('payment_intent', intent.id)
           url.searchParams.set('payment_intent_client_secret', clientSecret)
-          url.searchParams.set('redirect_status', 'succeeded')
+          url.searchParams.set('redirect_status', declined ? 'failed' : 'succeeded')
           window.location.assign(url.toString())
           // The tab is leaving; the adapter must never see this settle.
           return new Promise(function () {})

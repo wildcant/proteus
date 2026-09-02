@@ -56,6 +56,19 @@ export type IPaymentModuleService = {
     input: CreatePaymentSessionDTO,
     context?: Context,
   ): Promise<PaymentSessionDTO>
+  /**
+   * Opens a session, abandoning every attempt on the collection that has not become money and
+   * cancelling it at the gateway.
+   *
+   * The operation a checkout wants, where each Place order press is the same shopper trying
+   * again. `createPaymentSession` is the one a split payment wants, where each session is a
+   * different part of one total.
+   */
+  replacePaymentSession(
+    paymentCollectionId: string,
+    input: CreatePaymentSessionDTO,
+    context?: Context,
+  ): Promise<PaymentSessionDTO>
   /** Re-prices an open session. `data.amount` must be a server-computed total, never one a
    *  browser supplied. An unchanged amount does not reach the provider. */
   updatePaymentSession(id: string, data: UpdatePaymentSessionDTO, context?: Context): Promise<PaymentSessionDTO>

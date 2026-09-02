@@ -246,7 +246,7 @@ test.describe('Checkout — card payment', () => {
     // keeps a card in place, and only one of those two paths is exercised by every other spec.
     await page
       .frameLocator('[data-testid="fake-stripe-frame"]')
-      .getByRole('radio', { name: 'Test redirect method' })
+      .getByRole('radio', { name: 'Test redirect method', exact: true })
       .check()
 
     await page.getByRole('button', { name: /place order/i }).click()
@@ -304,6 +304,112 @@ test.describe('Checkout — card payment', () => {
     expect(declines.some((entry) => entry.includes('lost_card'))).toBe(true)
     expect(declines.some((entry) => entry.includes('generic_decline'))).toBe(true)
     expect(declines.every((entry) => entry.includes('dashboard.stripe.com'))).toBe(true)
+  })
+
+  /**
+   * The path the decline spec stopped one step short of.
+   *
+   * Every press opens a session, so without the checkout route replacing rather than adding, a
+   * shopper who is declined and reaches for another card leaves two intents — the browser
+   * confirms the second and the server authorizes the first. The order never appears and the good
+   * card carries a hold for the full amount.
+   */
+  test('a declined shopper pays with the next card, and every abandoned attempt is cancelled', async ({
+    page,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+    await using shipping = await factories.create.shippingOptionWithZone()
+
+    disposeCartAfterTest(page, factories, cleanup)
+    await useFakeStripe(page)
+
+    const watermark = await gatewayWatermark()
+
+    await addToCartAndCheckout(page, navigate, product.id)
+    await page.getByLabel('Email').fill('retry-after-decline@example.com')
+    await page.getByLabel('Email').blur()
+    await fillShippingAddress(page)
+    await selectShipping(page, shipping.name)
+    await choosePayment(page, 'Stripe')
+
+    // Three cards, because "three cards leave three intents" is the shape of the bug: each press
+    // must abandon the last attempt, not stack on it.
+    await fillCard(page, FAKE_CARDS.declinedGeneric)
+    await page.getByRole('button', { name: /place order/i }).click()
+    await expect(page.getByRole('alert')).toContainText('declined')
+
+    await fillCard(page, FAKE_CARDS.declinedLostCard)
+    await page.getByRole('button', { name: /place order/i }).click()
+    await expect(page.getByRole('alert')).toContainText('declined')
+
+    await fillCard(page, FAKE_CARDS.succeeds)
+    await page.getByRole('button', { name: /place order/i }).click()
+
+    // The order the first two presses could not produce.
+    await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
+
+    const creates = await intentsSince(watermark)
+    expect(creates).toHaveLength(3)
+
+    // The two the shopper walked away from carry no hold, and the one they paid with is the one
+    // the server authorized — asserted at the gateway, where the money actually is.
+    const [firstAttempt, secondAttempt, paidWith] = creates
+    expect((await intentFor(firstAttempt)).status).toBe('canceled')
+    expect((await intentFor(secondAttempt)).status).toBe('canceled')
+    await expectAuthorizedAt(paidWith, toCents(await readOrderTotal(page)))
+  })
+
+  /**
+   * The other half of AC 9, on the leg no local card can reach.
+   *
+   * A shopper declined at a redirect provider comes back to a terminal-but-failed intent, so
+   * nothing is thrown and nothing is returned as an error — the reason is on the intent, and only
+   * reading it off there writes the decline down.
+   */
+  test('a redirect method that comes back declined says so, and the decline reaches the log', async ({
+    page,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+    await using shipping = await factories.create.shippingOptionWithZone()
+
+    disposeCartAfterTest(page, factories, cleanup)
+    await useFakeStripe(page)
+
+    const logged: string[] = []
+    page.on('console', (message) => {
+      if (message.type() === 'error') logged.push(message.text())
+    })
+
+    await addToCartAndCheckout(page, navigate, product.id)
+    await page.getByLabel('Email').fill('redirect-declined@example.com')
+    await page.getByLabel('Email').blur()
+    await fillShippingAddress(page)
+    await selectShipping(page, shipping.name)
+    await choosePayment(page, 'Stripe')
+
+    await page
+      .frameLocator('[data-testid="fake-stripe-frame"]')
+      .getByRole('radio', { name: 'Test redirect method (declined)' })
+      .check()
+
+    await page.getByRole('button', { name: /place order/i }).click()
+
+    await expect(page).toHaveURL(/\/checkout-return\?/, { timeout: 20_000 })
+    await expect(page.getByRole('heading', { name: /payment did not finish/i })).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByRole('alert')).toContainText('declined')
+
+    // Correct copy on screen was already true before this was fixed; the log was empty. On-call
+    // needs the decline code and the link that opens the exact request in the dashboard.
+    const declines = logged.filter((entry) => entry.includes('returned from a redirect unpaid'))
+    expect(declines).toHaveLength(1)
+    expect(declines[0]).toContain('lost_card')
+    expect(declines[0]).toContain('dashboard.stripe.com')
   })
 
   test('there is exactly one control over whether billing matches shipping', async ({
@@ -425,12 +531,21 @@ async function addLineItemOutOfBand(page: Page, variantId: string) {
  * to be captured. This is the half the browser cannot fake — the server read it back from here.
  */
 async function expectAuthorizedAt(created: GatewayCall | undefined, cents: number) {
-  const sessionId = created?.params['metadata[sessionId]']
-  expect(sessionId, 'no PaymentIntent was created, or it carried no session id').toBeTruthy()
-
-  const intent = await gatewayIntentForSession(String(sessionId))
+  const intent = await intentFor(created)
   expect(intent.status).toBe('requires_capture')
   expect(intent.amount_capturable).toBe(cents)
+}
+
+/**
+ * The intent a recorded `create` call opened.
+ *
+ * Found through the session id in its metadata, because the call log records what was sent rather
+ * than what came back — the same link the adapter itself relies on.
+ */
+async function intentFor(created: GatewayCall | undefined) {
+  const sessionId = created?.params['metadata[sessionId]']
+  expect(sessionId, 'no PaymentIntent was created, or it carried no session id').toBeTruthy()
+  return gatewayIntentForSession(String(sessionId))
 }
 
 async function intentsSince(watermark: number): Promise<GatewayCall[]> {
