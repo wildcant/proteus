@@ -1,5 +1,5 @@
 export { ConfigManager } from './config-manager.js'
-export type { ConfigModule, HttpConfig, InputConfig } from './types.js'
+export type { ConfigModule, HttpConfig, InputConfig, WorkflowEngineName, WorkflowsConfig } from './types.js'
 
 import { ConfigManager } from './config-manager.js'
 import type { InputConfig } from './types.js'
