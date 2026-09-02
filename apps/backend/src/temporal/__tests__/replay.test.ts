@@ -4,7 +4,13 @@ import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { vi } from 'vitest'
 import { chainStepFingerprint } from '../fingerprint.js'
-import { advanceWorkflow, compensateWorkflow, StepExecutionError, StepSequenceChangedError } from '../replay.js'
+import {
+  advanceWorkflow,
+  ConcurrentStepError,
+  compensateWorkflow,
+  StepExecutionError,
+  StepSequenceChangedError,
+} from '../replay.js'
 import type { StepOutput } from '../types.js'
 
 /**
@@ -107,6 +113,32 @@ test.describe('replay', () => {
     expect(output).toEqual([2, 4, 6])
     // Name-keyed memoization would have run the action once and reused its output three times.
     expect(seen).toEqual([1, 2, 3])
+  })
+
+  test('refuses two steps in flight at once rather than silently double-executing one', async ({ expect }) => {
+    const second = vi.fn(async () => 'second')
+
+    const workflow = createWorkflow<void, void>('concurrent', async (ctx) => {
+      await Promise.all([
+        ctx.step('first', async () => {
+          await new Promise((resolve) => setTimeout(resolve, 50))
+          return 'first'
+        }),
+        ctx.step('second', second),
+      ])
+    })
+
+    const failure = await advanceWorkflow(erase(workflow), makeContext(), {
+      name: 'concurrent',
+      input: undefined,
+      outputs: [],
+      fingerprint: null,
+    }).catch((error: unknown) => error)
+
+    expect((failure as StepExecutionError).original).toBeInstanceOf(ConcurrentStepError)
+    // The part that matters: one Activity records one output, so the second action running here
+    // would be executed again on the next advance — a double charge with nothing in history.
+    expect(second).not.toHaveBeenCalled()
   })
 
   test('reports the failing step and rethrows the original error', async ({ expect }) => {

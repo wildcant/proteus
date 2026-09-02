@@ -53,8 +53,15 @@ export type CompensateWorkflowInput = {
   outputs: StepOutput[]
 }
 
-/** How many prior steps had a compensation and were unwound. Returned for the Worker log only. */
-export type CompensateWorkflowResult = { compensated: string[] }
+/**
+ * What the unwind managed to do. Reported so the Worker can log it — a compensation that throws is
+ * swallowed so the rest still run, which is the simple adapter's behaviour and must stay, but
+ * swallowing it silently means a rollback can fail completely and leave no trace anywhere.
+ */
+export type CompensateWorkflowResult = {
+  compensated: string[]
+  failed: { step: string; message: string }[]
+}
 
 /**
  * The original error, flattened so it can cross the Temporal boundary and be rebuilt on the other

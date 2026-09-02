@@ -162,6 +162,9 @@ Two consequences worth knowing before writing a workflow:
   `complete-cart`'s 14 steps cost 91 glue executions. `Date.now()`, `Math.random()` or a service
   call between steps corrupts a replay rather than failing it.
 - **Memoization keys on call index, not step name**, so a `ctx.step` inside a loop works.
+- **One step at a time.** `Promise.all([ctx.step(a), ctx.step(b)])` would run both actions in one
+  attempt and record only one; the replay rejects the second call rather than letting the other be
+  executed twice. Steps inside a step action are fine — it is `ctx.step` itself that is sequential.
 
 ### What is different from the simple adapter, and what is not
 
@@ -170,7 +173,8 @@ Two consequences worth knowing before writing a workflow:
 | Step order, compensation order, swallowed compensation errors | same | same |
 | Error a caller catches (class, message, `AppError.type`) | same | same |
 | Default retry | none | none (`maximumAttempts: 1`) |
-| Survives the process dying mid-workflow | no | yes |
+| Survives the Worker restarting *between* steps | no | yes |
+| Survives the Worker dying *during* a step | no | no — see below |
 
 Retry is opt-in because today's steps are not idempotent, and it is configured on the adapter
 rather than on `ctx.step`, because the port does not change:
@@ -179,8 +183,28 @@ rather than on `ctx.step`, because the port does not change:
 createTemporalWorkflowEngine({ retry: { 'complete-cart': { 'authorize-payment': { maximumAttempts: 3 } } } })
 ```
 
+`maximumAttempts` is required. Temporal reads both an absent value and `0` as *unlimited*, so a
+policy meant to tune backoff alone would opt a card authorization into retrying forever;
+`createTemporalWorkflowEngine` rejects such a policy at the composition root.
+
 `createWorkflow({ name, idempotent: true })` opts a whole workflow into a default policy.
 `WorkflowTerminalError` never retries, whatever the policy says.
+
+### What retry does not cover
+
+Retry is arranged only *after* a first attempt has reported which step failed, so two things fall
+outside it. Both are deliberate; neither is obvious from the option name.
+
+- **A Worker that dies mid-step gets no retry, opted in or not.** The activity hits
+  `startToCloseTimeout` (5 minutes by default) and fails as a `TimeoutFailure`, which names no
+  step, so there is no policy to look up — the execution compensates and fails instead of resuming.
+  That is right for a half-run non-idempotent step and wrong for one declared safe to repeat, which
+  is the case retry classically exists for. Changing it is a decision, not a patch: the driver
+  knows the step *index* even when it cannot know the name.
+- **Backoff restarts on the retry.** The retry is a second Activity invocation whose first attempt
+  fires immediately, so `{ maximumAttempts: 3, initialInterval: '30s' }` waits `[0s, 30s]` rather
+  than the `[30s, 60s]` a single Temporal policy would. `startToCloseTimeout` is likewise per
+  invocation, not per logical step.
 
 ### Shape fingerprint
 

@@ -40,6 +40,23 @@ export class StepSequenceChangedError extends Error {
   }
 }
 
+/**
+ * Raised when a handler asks for two steps at once.
+ *
+ * The whole replay rests on `ctx.step` being sequential: `index` advances per call, and there is
+ * one slot for the step being executed. `Promise.all([ctx.step(a), ctx.step(b)])` would run both
+ * actions inside one Activity, record only whichever settled last, and re-execute the other on the
+ * next advance — a double execution with no error anywhere and no trace in history. No workflow
+ * does this today, and this is what keeps that true: the invariant is load-bearing enough to
+ * assert rather than to document.
+ */
+export class ConcurrentStepError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ConcurrentStepError'
+  }
+}
+
 /** Carries the failing step's name out of the replay so the Activity can name it in the failure. */
 export class StepExecutionError extends Error {
   readonly step: string | null
@@ -88,6 +105,8 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
   let chain: string | null = null
   let outcome: ReplayOutcome | undefined
   let executed: ReplayResult['executed']
+  /** The first uncompleted step reached, if any. Guards the invariant — see `ConcurrentStepError`. */
+  let nextStep: string | undefined
 
   /**
    * The handler is abandoned rather than unwound once the target step is done: `step()` returns a
@@ -129,6 +148,15 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
         }
         return stored as T
       }
+
+      if (nextStep !== undefined) {
+        throw new ConcurrentStepError(
+          `Workflow "${definition.name}" asked for step "${name}" while "${nextStep}" was already the ` +
+            'first uncompleted one. Steps must be awaited one at a time: two in flight at once run ' +
+            'both actions in a single attempt, record only one, and re-execute the other.',
+        )
+      }
+      nextStep = name
 
       if (onNextStep === 'stop') {
         outcome = { kind: 'reached', step: name, fingerprint: chain }
@@ -226,7 +254,9 @@ export async function advanceWorkflow(
  * instead of from an in-memory stack.
  *
  * Compensation errors are swallowed, exactly as in `simple-adapter.ts`: every compensation gets
- * its turn, and the failure the caller sees is the one that started the rollback.
+ * its turn, and the failure the caller sees is the one that started the rollback. They are
+ * *reported*, though — a rollback that fails every compensation and says nothing is the one
+ * outcome here that looks identical to a rollback that worked.
  *
  * The fingerprint is deliberately *not* checked here. A mismatch is already an incident, and the
  * only thing worse than unwinding with the deployed handler is not unwinding at all.
@@ -242,14 +272,18 @@ export async function compensateWorkflow(
   const result = await replay({ definition, input, stepContext, outputs, fingerprint: null, onNextStep: 'stop' })
 
   const compensated: string[] = []
+  const failed: CompensateWorkflowResult['failed'] = []
+
   for (const entry of [...result.completed].reverse()) {
     try {
       await entry.compensation(entry.output, stepContext)
       compensated.push(entry.name)
-    } catch {
-      // Swallowed so the remaining compensations still run — matching the simple adapter.
+    } catch (error) {
+      // Swallowed so the remaining compensations still run — matching the simple adapter — but
+      // handed back rather than dropped.
+      failed.push({ step: entry.name, message: error instanceof Error ? error.message : String(error) })
     }
   }
 
-  return { compensated }
+  return { compensated, failed }
 }

@@ -50,6 +50,17 @@ function run<TInput, TOutput>(workflow: WorkflowDefinition<TInput, TOutput>, inp
   return engine.run(workflow, input, { container })
 }
 
+/** The classes are the SDK's, so the chain is walked structurally rather than with `instanceof`. */
+function causeChain(error: unknown): string[] {
+  const names: string[] = []
+  let current: unknown = error
+  while (current instanceof Error && names.length < 8) {
+    names.push(current.name)
+    current = current.cause
+  }
+  return names
+}
+
 describe('temporal workflow engine', () => {
   beforeAll(async () => {
     testEnv = await createTemporalTestEnvironment()
@@ -365,6 +376,85 @@ describe('temporal workflow engine', () => {
       // index 0 — so nothing rolls back. A shape change against an in-flight execution is an
       // incident, and Worker Versioning is the real fix (recorded as a follow-up in ILLO-12).
       expect(compensateAuthorize).not.toHaveBeenCalled()
+    },
+    TEST_TIMEOUT,
+  )
+
+  it('refuses a retry policy that does not bound its attempts', async () => {
+    // Temporal reads both of these as unlimited, so a policy meant to tune backoff alone would
+    // opt a card authorization into retrying forever — the exact outcome the default of 1 exists
+    // to prevent, arrived at by omission. Rejected where it is written, not where it fires.
+    expect(() =>
+      createTemporalWorkflowEngine({ retry: { 'complete-cart': { 'authorize-payment': { initialInterval: '1s' } } } }),
+    ).toThrowError(/retry\["complete-cart"\]\["authorize-payment"\] needs an explicit maximumAttempts/)
+
+    expect(() =>
+      createTemporalWorkflowEngine({ retry: { 'complete-cart': { 'authorize-payment': { maximumAttempts: 0 } } } }),
+    ).toThrowError(/needs an explicit maximumAttempts/)
+
+    // The same policy reaches every step of an `idempotent: true` workflow, so it is checked too.
+    expect(() => createTemporalWorkflowEngine({ idempotentRetry: { backoffCoefficient: 2 } })).toThrowError(
+      /idempotentRetry needs an explicit maximumAttempts/,
+    )
+
+    expect(() =>
+      createTemporalWorkflowEngine({
+        retry: { 'complete-cart': { 'authorize-payment': { maximumAttempts: 1 } } },
+        idempotentRetry: { maximumAttempts: 2 },
+      }),
+    ).not.toThrow()
+  })
+
+  it(
+    'rebuilds a plain AppError with its type, which is what most route handlers read',
+    async () => {
+      const workflow = register(
+        createWorkflow<void, void>('plain-app-error', async (ctx) => {
+          await ctx.step('lookup', async () => {
+            // Not a WorkflowTerminalError: services throw bare AppErrors, and `errorHandler` reads
+            // `type` off either one to choose a status.
+            throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Variant "var_01" not found' })
+          })
+        }),
+      )
+
+      const failure = await run(workflow, undefined).catch((error: unknown) => error)
+
+      expect(AppError.isError(failure)).toBe(true)
+      expect(failure).toMatchObject({ type: ErrorTypes.NOT_FOUND, message: 'Variant "var_01" not found' })
+      expect(failure).not.toBeInstanceOf(WorkflowTerminalError)
+    },
+    TEST_TIMEOUT,
+  )
+
+  it(
+    'passes an infrastructure failure through untouched instead of dressing it as an AppError',
+    async () => {
+      // One millisecond, so the step cannot finish in time and the failure comes from Temporal
+      // rather than from a step. Dressing a timeout as an `AppError` would hand a route handler a
+      // business-looking status for an infrastructure problem.
+      const impatient = createTemporalWorkflowEngine({
+        connect: async () => ({ client: testEnv.client, close: async () => undefined }),
+        startToCloseTimeout: '1ms',
+      })
+
+      const workflow = register(
+        createWorkflow<void, void>('times-out', async (ctx) => {
+          await ctx.step('slow', async () => {
+            await new Promise((resolve) => setTimeout(resolve, 2_000))
+          })
+        }),
+      )
+
+      const failure = await impatient.run(workflow, undefined, { container }).catch((error: unknown) => error)
+      await impatient.close()
+
+      // Untouched means the caller gets Temporal's own failure, not a rewritten one: the class is
+      // the SDK's and the timeout is still readable down the cause chain. `errorHandler` maps that
+      // to a 500, which is the honest answer for infrastructure.
+      expect(AppError.isError(failure)).toBe(false)
+      expect(failure).toMatchObject({ name: 'WorkflowFailedError' })
+      expect(causeChain(failure)).toContain('TimeoutFailure')
     },
     TEST_TIMEOUT,
   )

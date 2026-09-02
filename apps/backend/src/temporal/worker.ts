@@ -39,7 +39,14 @@ const worker = await Worker.create({
  */
 function handleSignal(signal: string) {
   if (worker.getState() !== 'RUNNING') {
-    console.info(`[temporal-worker] received ${signal}, already draining`)
+    // Deliberately not escalating to a force-exit. A step is mid-flight and there is no
+    // `shutdownForceTime`, because killing it here is the one thing durability cannot recover
+    // from: the activity would be lost and, at `maximumAttempts: 1`, never retried. Says so, so an
+    // operator watching a slow drain knows it is waiting on a step rather than hung.
+    console.info(
+      `[temporal-worker] received ${signal}, already draining — waiting for the in-flight step. ` +
+        'SIGKILL to stop now, at the cost of that step.',
+    )
     return
   }
 

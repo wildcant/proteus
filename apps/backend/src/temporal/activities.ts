@@ -6,6 +6,7 @@ import { isTerminal, toStepApplicationFailure } from './failures.js'
 import type { WorkflowRegistry } from './registry.js'
 import {
   advanceWorkflow as advanceReplay,
+  ConcurrentStepError,
   compensateWorkflow as compensateReplay,
   StepExecutionError,
   StepSequenceChangedError,
@@ -90,11 +91,18 @@ export function createWorkflowActivities(deps: {
       const definition = resolve(input.name)
       const result = await compensateReplay(definition, stepContext, input.input, input.outputs)
 
-      log()?.debug(
+      const logger = log()
+      logger?.debug(
         result.compensated.length
           ? `[temporal] ${input.name} rolled back: ${result.compensated.join(', ')}`
           : `[temporal] ${input.name} had nothing to roll back`,
       )
+
+      // At error level, not debug: a compensation that threw has left something behind — an order,
+      // a reservation, an authorized payment — and nothing else in the system will mention it.
+      for (const failure of result.failed) {
+        logger?.error(`[temporal] ${input.name} could not roll back "${failure.step}": ${failure.message}`)
+      }
 
       return result
     },
@@ -113,13 +121,22 @@ function asStepFailure(error: unknown): unknown {
     return toStepApplicationFailure({
       error: error.original,
       step: error.step,
-      nonRetryable: isTerminal(error.original) || error.original instanceof StepSequenceChangedError,
+      nonRetryable: isTerminal(error.original) || isDeployOrCodeFault(error.original),
     })
   }
 
-  if (error instanceof StepSequenceChangedError) {
+  if (isDeployOrCodeFault(error)) {
     return toStepApplicationFailure({ error, step: null, nonRetryable: true })
   }
 
   return error
+}
+
+/**
+ * A changed step sequence and a concurrent `ctx.step` are both facts about the code that is
+ * deployed, not about the attempt. Running them again produces the same answer against state that
+ * has moved on, so they are never retried.
+ */
+function isDeployOrCodeFault(error: unknown): boolean {
+  return error instanceof StepSequenceChangedError || error instanceof ConcurrentStepError
 }

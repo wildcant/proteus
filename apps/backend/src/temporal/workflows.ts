@@ -124,12 +124,20 @@ async function compensate(driver: DriverInput, outputs: StepOutput[]): Promise<v
 
 /**
  * How many attempts are left for the *second* invocation, given one has already been spent.
- * `undefined` means "do not retry"; `0` is Temporal's own encoding for unlimited and is passed
- * through unchanged.
+ * `undefined` means "do not retry", and every path that is not an explicit finite count above one
+ * lands there.
+ *
+ * The unset and zero cases are the ones that matter. Temporal reads `maximumAttempts: 0` — and an
+ * absent `maximumAttempts` — as *unlimited*, so passing either through would turn a policy that
+ * only meant to tune backoff into infinite retries of a card authorization. Defaulting the other
+ * way costs a retry that someone has to ask for again, explicitly; defaulting Temporal's way
+ * charges a shopper twice. `createTemporalWorkflowEngine` already rejects such a policy at the
+ * composition root, where the mistake is legible; this is the same rule restated where the
+ * decision is actually taken, because the driver's input is data and data can arrive from
+ * anywhere.
  */
 function remainingAttempts(policy: RetryPolicy | undefined): number | undefined {
-  if (!policy) return undefined
-  if (policy.maximumAttempts === undefined || policy.maximumAttempts === 0) return 0
-  if (policy.maximumAttempts <= 1) return undefined
-  return policy.maximumAttempts - 1
+  const attempts = policy?.maximumAttempts
+  if (typeof attempts !== 'number' || !Number.isFinite(attempts) || attempts <= 1) return undefined
+  return Math.floor(attempts) - 1
 }
