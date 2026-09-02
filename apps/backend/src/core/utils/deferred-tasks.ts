@@ -1,3 +1,4 @@
+import type { DbProvider } from '../db/ports.js'
 import type { Logger } from '../types/logger.js'
 
 export type DeferredTasksConfig = {
@@ -8,6 +9,12 @@ export type DeferredTasksConfig = {
   /** Wait before the second attempt; doubled for each one after it. */
   backoffMs: number
 }
+
+/**
+ * Hands work back to a platform that would otherwise cancel it once the response is delivered.
+ * Absent on Node, where the process outlives the response and nothing needs handing back.
+ */
+export type WaitUntil = (work: Promise<unknown>) => void
 
 /**
  * Runs work after the response that asked for it has already gone out.
@@ -22,20 +29,27 @@ export type DeferredTasksConfig = {
  * the same event into two concurrent runs, and the guards that make webhook processing safe to
  * repeat — "is there anything left to capture?" — are read-then-write and lose that race. Ordering
  * by name closes it inside one process. It is not a distributed lock, and the spec is explicit
- * that this codebase does not have one yet: two API instances behind a load balancer can still
- * take the same event at the same moment.
+ * that this codebase does not have one yet: two instances, or two workerd isolates, can still take
+ * the same event at the same moment.
+ *
+ * **Every task opens its own database connection.** A deferred task runs after its request has
+ * been answered, and on workerd the per-request client is closed the instant that happens — so a
+ * task reusing it would find it shut. `withConnection` is a passthrough on Node and a fresh client
+ * on workerd, so this is the one place that has to remember, rather than every caller.
  *
  * What it deliberately is not: durable. A process that dies with tasks pending loses them, and
  * the gateway's own redelivery is what covers that.
  */
 export class DeferredTasks {
   #config: DeferredTasksConfig
+  #dbProvider: DbProvider
   #logger: Logger
   #inFlight = new Set<Promise<void>>()
   #queues = new Map<string, Promise<void>>()
 
-  constructor(config: DeferredTasksConfig, logger: Logger) {
+  constructor(config: DeferredTasksConfig, dbProvider: DbProvider, logger: Logger) {
     this.#config = config
+    this.#dbProvider = dbProvider
     this.#logger = logger
   }
 
@@ -44,8 +58,12 @@ export class DeferredTasks {
    *
    * `name` is a serialization key as well as a label: pick one that identifies the *thing* being
    * worked on — a session id, not a delivery id — or two tasks that must not overlap will.
+   *
+   * `waitUntil` comes from the request that scheduled this, when the platform supplies one.
+   * Without it on workerd the task is cancelled before its first attempt and the whole route
+   * becomes a 200 that does nothing.
    */
-  run(name: string, task: () => Promise<void>): void {
+  run(name: string, task: () => Promise<void>, waitUntil?: WaitUntil): void {
     const queued = this.#queues.get(name) ?? Promise.resolve()
     const settled = queued.then(() => this.#attempt(name, task))
 
@@ -58,6 +76,8 @@ export class DeferredTasks {
       // that is still waiting behind it.
       if (this.#queues.get(name) === settled) this.#queues.delete(name)
     })
+
+    waitUntil?.(settled)
   }
 
   /**
@@ -77,7 +97,7 @@ export class DeferredTasks {
 
     for (let attempt = 1; attempt <= this.#config.attempts; attempt++) {
       try {
-        await task()
+        await this.#dbProvider.withConnection(task)
         return
       } catch (error) {
         const last = attempt === this.#config.attempts

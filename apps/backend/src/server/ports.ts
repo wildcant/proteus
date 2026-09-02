@@ -34,6 +34,15 @@ export type HttpRequest<T = object> = {
    * directly rather than over HTTP.
    */
   rawBody?: Uint8Array
+  /**
+   * Keeps work alive past the response, on a platform that would otherwise cancel it.
+   *
+   * workerd tears down pending async work the moment a `fetch` handler's response is delivered,
+   * so anything scheduled for after the response has to be handed back through the execution
+   * context or it silently never runs. Node has no such context and needs none — the process
+   * outlives the response — so this is absent there and callers must work without it.
+   */
+  waitUntil?: (work: Promise<unknown>) => void
   files?: File[]
   scope: AwilixContainer
   headers: Record<string, string>

@@ -61,9 +61,14 @@ describe('loadProviders', () => {
   test('leaves nothing registered, so the failure cannot be deferred to the first payment', async () => {
     const container = loaderContainer()
 
-    await loadProviders({ container, options: { providers: [stripeConfigured({ webhookSecret: 'whsec_x' })] } }).catch(
-      () => undefined,
-    )
+    // Blank rather than absent, deliberately. `new Stripe(undefined)` throws on its own, so a
+    // *missing* key would leave nothing registered even with the loader's validation removed —
+    // and the test would pass for a reason that has nothing to do with what it is checking.
+    // `new Stripe('   ')` succeeds, so only the loader's own check can stop this one.
+    await loadProviders({
+      container,
+      options: { providers: [stripeConfigured({ ...complete, apiKey: '   ' })] },
+    }).catch(() => undefined)
 
     // The failure mode this replaces: a provider that registers happily on a blank key and
     // reports it as a declined card, in front of a shopper, hours after the deploy.

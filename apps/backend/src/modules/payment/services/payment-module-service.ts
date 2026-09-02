@@ -421,9 +421,12 @@ export class PaymentModuleService implements IPaymentModuleService {
         })
       }
 
-      // Written before the gateway call so its id can key that call. A crash between the two
-      // rolls the row back, and the retry opens a new one — the key is the second line of
-      // defence here, not the first: the outstanding-amount check above is.
+      // The outstanding-amount check above is what stops a second charge here; the key is not.
+      // This row is created inside the transaction, so a crash between the insert and the
+      // gateway's acknowledgement rolls it back and the retry keys off a *different* row id. That
+      // is survivable only because a capture takes the whole authorization: the check refuses the
+      // retry when the first attempt landed, and Stripe refuses a second capture on an intent it
+      // has already captured. A refund has neither backstop — see `refundPayment`.
       const capture = await this.captureRepository.create(
         {
           paymentId: payment.id,
@@ -476,7 +479,16 @@ export class PaymentModuleService implements IPaymentModuleService {
         })
       }
 
-      const refund = await this.refundRepository.create(
+      // Keyed off the refund row's id, this would not survive a rollback: the retry after a crash
+      // inserts a new row, presents a new key, and Stripe makes a *second* refund. Nothing
+      // upstream objects, because the rolled-back row is gone from `alreadyRefunded` too and a
+      // partial refund never trips `charge_already_refunded`. So the key is composed from three
+      // values that a rollback cannot change — which payment, how much was already refunded
+      // before this one, and how much this one is for. Two genuine partial refunds of the same
+      // amount still differ, because the second sees the first in `alreadyRefunded`.
+      const refundKey = idempotencyKeyFor('refund', payment.id, alreadyRefunded.toFixed(), refundAmount.toFixed())
+
+      await this.refundRepository.create(
         {
           paymentId: payment.id,
           amount: refundAmount,
@@ -491,9 +503,7 @@ export class PaymentModuleService implements IPaymentModuleService {
         amount: refundAmount,
         currencyCode: payment.currencyCode,
         data: payment.data ?? undefined,
-        // Two refunds against one payment are two operations and must not deduplicate, so the
-        // key is the refund row's, not the payment's.
-        context: { idempotencyKey: idempotencyKeyFor('refund', refund.id) },
+        context: { idempotencyKey: refundKey },
       })
 
       // Provider may return updated payment data (e.g. refund reference id)

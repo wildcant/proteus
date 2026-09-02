@@ -65,7 +65,15 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   // `completeCart` is still creating the order — and processing it immediately races that. The
   // delay is what the reference implementation gets from an event bus; the divergence, and why
   // there is no distributed lock behind it, is recorded in the spec.
-  deferred.run(`payment-webhook:${sessionId}`, () => processAuthorizedSession(paymentService, action, sessionId))
+  //
+  // `req.waitUntil` is what keeps the work alive on workerd, which cancels pending async work as
+  // soon as this handler's response is delivered. Without it the gateway gets a 200 and nothing
+  // is captured — and it stops redelivering, because a 200 is what it was waiting for.
+  deferred.run(
+    `payment-webhook:${sessionId}`,
+    () => processAuthorizedSession(paymentService, action, sessionId),
+    req.waitUntil,
+  )
 
   return { status: 200, json: { received: true } }
 }

@@ -44,7 +44,9 @@ export async function bootstrapContainer(deps: { logger: Logger; dbProvider: DbP
   // route cannot reach into a module's private container.
   const configModule: ConfigModule = container.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
   container.register({
-    [ContainerRegistrationKeys.DEFERRED_TASKS]: asValue(new DeferredTasks(configModule.projectConfig.webhooks, logger)),
+    [ContainerRegistrationKeys.DEFERRED_TASKS]: asValue(
+      new DeferredTasks(configModule.projectConfig.webhooks, dbProvider, logger),
+    ),
   })
 
   await bootstrapModule(container, authModule, authProviderDeclarations)

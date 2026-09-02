@@ -118,27 +118,26 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
     const id = input.data?.id as string
-    // Already succeeded (e.g. auto-capture or duplicate webhook) — treat as success
+    // A capture the gateway has already performed — auto-capture, or a redelivered webhook — is
+    // the one refusal that is not a failure. Only that one: see `settledAt`.
     await this.gateway(
       'capturePayment',
       () => this.stripe.paymentIntents.capture(id, {}, this.idempotencyKey(input.context)),
-      hasCode('payment_intent_unexpected_state'),
+      this.settledAt(id, 'succeeded'),
     )
     return { data: { id } }
   }
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
     const id = input.data?.id as string
-    const intent = await this.gateway('cancelPayment.retrieve', () => this.stripe.paymentIntents.retrieve(id))
-    if (intent.status === 'canceled') {
-      return { data: { id } }
-    }
-    // An intent that reached a terminal state between the read above and this write is already
-    // where the cancel was trying to put it.
+    // No pre-flight read. It cost a round trip and bought a time-of-check race: an intent can be
+    // captured between the read and the cancel, and the cancel would then be refused for a reason
+    // the read said could not happen. Cancelling an already-cancelled intent is refused with
+    // `payment_intent_unexpected_state`, which is the case `settledAt` recognises.
     await this.gateway(
       'cancelPayment',
       () => this.stripe.paymentIntents.cancel(id, {}, this.idempotencyKey(input.context)),
-      hasCode('payment_intent_unexpected_state'),
+      this.settledAt(id, 'canceled'),
     )
     return { data: { id } }
   }
@@ -157,7 +156,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
           { payment_intent: id, amount: toSmallestUnit(input.amount, input.currencyCode) },
           this.idempotencyKey(input.context),
         ),
-      hasCode('charge_already_refunded'),
+      alreadyRefunded,
     )
     return { data: { id } }
   }
@@ -206,7 +205,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     const signature = payload.headers['stripe-signature']
     if (!signature) throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Missing stripe-signature header' })
 
-    const event = this.verifyEvent(payload.rawData, signature)
+    const event = await this.verifyEvent(payload.rawData, signature)
 
     // Every event this adapter acts on carries a PaymentIntent, and `PAYMENT_INTENT_EVENTS`
     // is what guarantees the cast below. Anything else — a Stripe account shared with another
@@ -277,12 +276,12 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     /** A failure this call asked for anyway: the gateway is already in the state it wanted.
      *  Answering `true` returns `undefined` instead of throwing, and logs nothing — a gateway
      *  redelivering its own completed event would otherwise fill the log with non-failures. */
-    isSettled: (error: Stripe.errors.StripeError) => boolean,
+    isSettled: (error: Stripe.errors.StripeError) => Promise<boolean>,
   ): Promise<T | undefined>
   private async gateway<T>(
     operation: string,
     call: () => Promise<T>,
-    isSettled?: (error: Stripe.errors.StripeError) => boolean,
+    isSettled?: (error: Stripe.errors.StripeError) => Promise<boolean>,
   ): Promise<T | undefined> {
     const attempts = this.config.retryAttempts ?? DEFAULT_RETRY_ATTEMPTS
     const backoffMs = this.config.retryBackoffMs ?? DEFAULT_RETRY_BACKOFF_MS
@@ -291,7 +290,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
       try {
         return await call()
       } catch (error) {
-        if (isStripeError(error) && isSettled?.(error)) {
+        if (isStripeError(error) && isSettled && (await isSettled(error))) {
           this.logger.debug(`[stripe] ${operation}: already settled at the gateway (${error.code})`)
           return undefined
         }
@@ -310,6 +309,45 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     }
   }
 
+  /**
+   * Recognises the one refusal that means the gateway is already where the call was trying to put
+   * it — and nothing else.
+   *
+   * The trap: Stripe answers `payment_intent_unexpected_state` to a capture against a *cancelled*
+   * intent, and to one still requiring a payment method, still confirming, still processing, or
+   * waiting on an action. Reading the code alone calls every one of those a success, and the
+   * ledger then records a capture the gateway never made. So the intent's real status decides,
+   * and only the status this operation was driving towards counts as settled.
+   */
+  private settledAt(id: string, ...settled: Stripe.PaymentIntent.Status[]) {
+    return async (error: Stripe.errors.StripeError): Promise<boolean> => {
+      if (error.code !== 'payment_intent_unexpected_state') return false
+      const status = await this.intentStatusOf(error, id)
+      return status !== undefined && settled.includes(status)
+    }
+  }
+
+  /**
+   * Stripe usually attaches the offending intent to the error, which saves the round trip. When it
+   * does not, ask — and if asking fails, answer `undefined` so the caller treats the original
+   * failure as a failure. Guessing in the other direction is what writes phantom money.
+   */
+  private async intentStatusOf(
+    error: Stripe.errors.StripeError,
+    id: string,
+  ): Promise<Stripe.PaymentIntent.Status | undefined> {
+    const attached = error.payment_intent
+    if (attached?.status) return attached.status
+
+    try {
+      const intent = await this.stripe.paymentIntents.retrieve(id)
+      return intent.status
+    } catch (retrieveError) {
+      this.logger.error(gatewayFailureLog(`settledAt(${id})`, retrieveError))
+      return undefined
+    }
+  }
+
   private idempotencyKey(context?: Record<string, unknown>): Stripe.RequestOptions | undefined {
     const key = context?.idempotencyKey as string | undefined
     return key ? { idempotencyKey: key } : undefined
@@ -323,9 +361,12 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
    * A payload that does not verify is the caller's problem, not ours: it comes back as a client
    * error so Stripe stops redelivering something that can never verify.
    */
-  private verifyEvent(rawData: string | Uint8Array, signature: string): Stripe.Event {
+  private async verifyEvent(rawData: string | Uint8Array, signature: string): Promise<Stripe.Event> {
     try {
-      return this.stripe.webhooks.constructEvent(rawData, signature, this.config.webhookSecret)
+      // `constructEvent`, the synchronous one, throws `CryptoProviderOnlySupportsAsyncError` on
+      // any runtime without node:crypto — workerd falls back to SubtleCrypto, which has no
+      // synchronous digest. A validly signed event answered 500 there and 200 on Node.
+      return await this.stripe.webhooks.constructEventAsync(rawData, signature, this.config.webhookSecret)
     } catch (error) {
       if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
         throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Webhook signature verification failed' })
@@ -335,6 +376,11 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
   }
 }
 
-/** Reads the gateway's own error code, which only `gateway()` still sees — what it rethrows is
- *  our error, carrying our code and none of Stripe's wording. */
-const hasCode = (code: string) => (error: Stripe.errors.StripeError) => error.code === code
+/**
+ * A refund the gateway has already made in full. Unlike the intent-state codes this one names its
+ * own outcome exactly, so the code is the whole answer and no status read is needed.
+ *
+ * Reads the gateway's own error code, which only `gateway()` still sees — what it rethrows is our
+ * error, carrying our code and none of Stripe's wording.
+ */
+const alreadyRefunded = async (error: Stripe.errors.StripeError) => error.code === 'charge_already_refunded'
