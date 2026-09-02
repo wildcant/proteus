@@ -1,5 +1,6 @@
+import { BigNumber } from '@core/db/bignum.js'
 import { type FakeIntent, signWebhook, stripeGateway, webhookEventBody } from '@tests/mocks/stripe.js'
-import type { TestApi } from '@tests/setup/create-api.js'
+import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -12,6 +13,10 @@ vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeMod
 /** The DI key the Stripe adapter is registered under, and so the `:provider` segment the
  *  gateway's webhook endpoint is configured with. */
 const STRIPE_PROVIDER = 'pp_stripe_default'
+
+/** The two rejections the route can answer with, which are only told apart by what they say. */
+const SIGNATURE_REJECTION = 'Webhook signature verification failed'
+const MISSING_HEADER_REJECTION = 'Missing stripe-signature header'
 
 let api: TestApi
 
@@ -56,6 +61,27 @@ async function paymentFor(service: Fixtures['service'], paymentCollectionId: str
   return payment
 }
 
+/**
+ * A session Stripe has already charged, with no Payment behind it yet — a shopper who closed the
+ * tab after confirming, whose first news of the charge is the webhook itself.
+ */
+async function chargedSessionWithoutPayment(service: Fixtures['service']) {
+  stripeGateway.statusOnCreate = 'succeeded'
+
+  const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
+  const { paymentCollection, paymentSession } = await service.create.paymentSessionForCart(api.container, {
+    cartId: cart.id,
+    amount: new BigNumber('19.99'),
+    currencyCode: 'usd',
+    providerId: STRIPE_PROVIDER,
+  })
+
+  const intent = stripeGateway.intentForSession(paymentSession.id)
+  assertDefined(intent)
+
+  return { paymentCollectionId: paymentCollection.id, intent, total: new BigNumber('19.99') }
+}
+
 test.describe('POST /hooks/payment/:provider', () => {
   test('captures the amount the event reports, converted back to major units', async ({ service, expect }) => {
     const { session, intent, total } = await authorizedOrder(service)
@@ -78,7 +104,37 @@ test.describe('POST /hooks/payment/:provider', () => {
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
   })
 
-  test('rejects a body altered after it was signed', async ({ service, expect }) => {
+  test('captures once when the same event is delivered twice', async ({ service, expect }) => {
+    const { session, intent, total } = await authorizedOrder(service)
+    const body = succeededEvent(intent)
+
+    const first = await postWebhook(body, signedHeaders(body))
+    const second = await postWebhook(body, signedHeaders(body))
+
+    // Stripe redelivers until it is acknowledged, and answers a 4xx by retrying for three days
+    // and then disabling the endpoint. A replay has to be a 200, not an error about money that
+    // was already taken.
+    expect([first.status, second.status]).toEqual([200, 200])
+
+    const payment = await paymentFor(service, session.paymentCollectionId)
+    expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
+  })
+
+  test('captures once when the charge is already complete before any payment exists', async ({ service, expect }) => {
+    // The other way the same double capture used to surface: no Payment yet, so authorizing the
+    // session creates one and captures it in the same call, leaving nothing for the route to take.
+    const { paymentCollectionId, intent, total } = await chargedSessionWithoutPayment(service)
+    const body = succeededEvent(intent)
+
+    const response = await postWebhook(body, signedHeaders(body))
+
+    expect(response.status).toBe(200)
+
+    const payment = await paymentFor(service, paymentCollectionId)
+    expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
+  })
+
+  test('rejects a body altered after it was signed, and says so', async ({ service, expect }) => {
     const { session, intent } = await authorizedOrder(service)
     const signed = succeededEvent(intent)
 
@@ -86,17 +142,27 @@ test.describe('POST /hooks/payment/:provider', () => {
     // produces. Stripe signed the bytes, not the meaning.
     const altered = JSON.stringify(JSON.parse(signed))
     const response = await postWebhook(altered, signedHeaders(signed))
+    const body = response.body as ApiErrorBody
 
+    // The reason matters as much as the status: a route that never received the raw bytes at all
+    // also answers 400, and this case has to fail for its own reason rather than that one.
     expect(response.status).toBe(400)
+    expect(body.message).toBe(SIGNATURE_REJECTION)
     expect((await paymentFor(service, session.paymentCollectionId)).capturedAt).toBeNull()
   })
 
-  test('rejects a request with no stripe-signature header', async ({ service, expect }) => {
+  test('rejects a request with no stripe-signature header, for a different reason again', async ({
+    service,
+    expect,
+  }) => {
     const { session, intent } = await authorizedOrder(service)
 
     const response = await postWebhook(succeededEvent(intent), {})
+    const body = response.body as ApiErrorBody
 
     expect(response.status).toBe(400)
+    expect(body.message).toBe(MISSING_HEADER_REJECTION)
+    expect(body.message).not.toBe(SIGNATURE_REJECTION)
     expect((await paymentFor(service, session.paymentCollectionId)).capturedAt).toBeNull()
   })
 
