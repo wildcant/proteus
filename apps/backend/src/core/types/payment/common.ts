@@ -113,6 +113,17 @@ export type RefundReasonDTO = {
   deletedAt: Date | null
 }
 
+/**
+ * What the storefront is told about a provider beyond its row: the label and test-only flag from
+ * the provider class, and the client-safe configuration its adapter boots from.
+ */
+export type PaymentProviderMeta = {
+  label: string
+  isTestOnly: boolean
+  /** Allowlisted, publishable values only. Empty for a provider with nothing to publish. */
+  publicConfig: Record<string, unknown>
+}
+
 export type PaymentProviderDTO = {
   id: string
   isEnabled: boolean

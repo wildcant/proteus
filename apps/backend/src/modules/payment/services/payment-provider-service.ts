@@ -3,7 +3,11 @@ import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
-import type { FilterablePaymentProviderProps, PaymentProviderDTO } from '../../../core/types/payment/common.js'
+import type {
+  FilterablePaymentProviderProps,
+  PaymentProviderDTO,
+  PaymentProviderMeta,
+} from '../../../core/types/payment/common.js'
 import type {
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
@@ -62,10 +66,12 @@ export class PaymentProviderService {
     }
   }
 
-  getProviderMeta(providerId: string): { label: string; isTestOnly: boolean } {
+  getProviderMeta(providerId: string): PaymentProviderMeta {
     const provider = this.retrieveProvider(providerId)
     const klass = provider.constructor as typeof AbstractPaymentProvider
-    return { label: klass.label, isTestOnly: klass.isTestOnly }
+    // `?? {}` rather than a stub on every provider: a gateway with nothing publishable publishes
+    // nothing, exactly as the optional saved-method operations work.
+    return { label: klass.label, isTestOnly: klass.isTestOnly, publicConfig: provider.getPublicConfig?.() ?? {} }
   }
 
   // -- Provider table CRUD --

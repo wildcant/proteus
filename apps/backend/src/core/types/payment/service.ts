@@ -8,6 +8,7 @@ import type {
   PaymentDTO,
   PaymentMethodDTO,
   PaymentProviderDTO,
+  PaymentProviderMeta,
   PaymentSessionDTO,
   RefundReasonDTO,
 } from './common.js'
@@ -76,7 +77,7 @@ export type IPaymentModuleService = {
     config?: FindConfig<PaymentProviderDTO>,
     context?: Context,
   ): Promise<PaymentProviderDTO[]>
-  getProviderMeta(providerId: string): { label: string; isTestOnly: boolean }
+  getProviderMeta(providerId: string): PaymentProviderMeta
 
   // Webhooks
   getWebhookActionAndData(data: ProviderWebhookPayload): Promise<WebhookActionResult>

@@ -27,7 +27,7 @@ const stripeConfigured = (options: Record<string, unknown>): ProviderConfig => (
   options,
 })
 
-const complete = { apiKey: 'sk_test_x', webhookSecret: 'whsec_x' }
+const complete = { apiKey: 'sk_test_x', webhookSecret: 'whsec_x', publishableKey: 'pk_test_x' }
 
 describe('loadProviders', () => {
   test('registers a fully configured provider', async () => {
@@ -38,17 +38,20 @@ describe('loadProviders', () => {
     expect(container.resolve('pp_stripe_default')).toBeDefined()
   })
 
-  test.each([['apiKey'], ['webhookSecret']])('refuses to start when "%s" is missing', async (missing) => {
-    const options: Record<string, unknown> = { ...complete }
-    delete options[missing]
-    const container = loaderContainer()
+  test.each([['apiKey'], ['webhookSecret'], ['publishableKey']])(
+    'refuses to start when "%s" is missing',
+    async (missing) => {
+      const options: Record<string, unknown> = { ...complete }
+      delete options[missing]
+      const container = loaderContainer()
 
-    // Names the provider and the option, because the operator reading this line is looking at a
-    // deploy log and has nothing else to go on.
-    await expect(loadProviders({ container, options: { providers: [stripeConfigured(options)] } })).rejects.toThrow(
-      new RegExp(`"stripe".+"${missing}"`),
-    )
-  })
+      // Names the provider and the option, because the operator reading this line is looking at a
+      // deploy log and has nothing else to go on.
+      await expect(loadProviders({ container, options: { providers: [stripeConfigured(options)] } })).rejects.toThrow(
+        new RegExp(`"stripe".+"${missing}"`),
+      )
+    },
+  )
 
   test('refuses to start on a malformed credential, not only a missing one', async () => {
     const container = loaderContainer()

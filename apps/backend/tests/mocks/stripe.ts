@@ -142,6 +142,12 @@ export async function stripeModuleMock() {
   class FakeStripe {
     static errors = ActualStripe.errors
 
+    /**
+     * The adapter asks for the fetch client explicitly, because the default one does not exist on
+     * workerd. The fake makes no HTTP calls, so it only has to answer the question.
+     */
+    static createFetchHttpClient = ActualStripe.createFetchHttpClient
+
     /** Stripe's real webhook helper — verification is the thing under test, not a stub. */
     webhooks: StripeSdk['webhooks']
 

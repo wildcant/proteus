@@ -3,6 +3,12 @@ import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 export type StripeOptions = {
   apiKey: string
   webhookSecret: string
+  /**
+   * The browser's half of the key pair. Not a secret — it is served to every storefront by
+   * `GET /store/payment-providers` — but required all the same: without it the card form has
+   * nothing to boot Stripe.js with.
+   */
+  publishableKey: string
   /** Attempts for a write the gateway failed transiently. Includes the first. */
   retryAttempts?: number
   /** Wait before the second attempt; doubled, with jitter, for each one after it. */
@@ -10,7 +16,7 @@ export type StripeOptions = {
 }
 
 /** Nothing here has a safe default: a blank key is a live deployment that cannot take money. */
-const REQUIRED_OPTIONS = ['apiKey', 'webhookSecret'] as const
+const REQUIRED_OPTIONS = ['apiKey', 'webhookSecret', 'publishableKey'] as const
 
 /**
  * Run by the provider loader before the adapter is constructed.

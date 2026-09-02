@@ -12,6 +12,7 @@ import type {
   PaymentDTO,
   PaymentMethodDTO,
   PaymentProviderDTO,
+  PaymentProviderMeta,
   PaymentSessionDTO,
   RefundReasonDTO,
 } from '../../../core/types/payment/common.js'
@@ -551,7 +552,7 @@ export class PaymentModuleService implements IPaymentModuleService {
     return this.paymentProviderService.list(filters, config, context)
   }
 
-  getProviderMeta(providerId: string): { label: string; isTestOnly: boolean } {
+  getProviderMeta(providerId: string): PaymentProviderMeta {
     return this.paymentProviderService.getProviderMeta(providerId)
   }
 

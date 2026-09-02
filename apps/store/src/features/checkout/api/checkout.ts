@@ -18,11 +18,13 @@ import type {
   StoreCreatePaymentCollectionResponse,
   StoreCreatePaymentSessionResponse,
   StoreUpdateCartResponse,
+  StoreUpdatePaymentSessionResponse,
   UpdateStoreCartBody,
 } from '#/api/generated/model'
 import {
   createStorePaymentCollection,
   createStorePaymentSession,
+  updateStorePaymentSession,
 } from '#/api/generated/payment-collections/payment-collections'
 import { listStorePaymentProviders } from '#/api/generated/payments/payments'
 import { cartQueryKeys } from '#/features/cart/api/cart'
@@ -128,6 +130,28 @@ export const useCreatePaymentSession = (
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: 'Failed to create payment session', description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+/**
+ * Re-prices an open session from the cart's server-side total.
+ *
+ * The body is empty by design: the browser names the session and is told what the cart came to.
+ * See `useOpenPaymentSession` for why every place-order press ends with this call.
+ */
+export const useRepricePaymentSession = (
+  options?: UseMutationOptions<StoreUpdatePaymentSessionResponse, Error, { collectionId: string; sessionId: string }>,
+) => {
+  const { onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
+    mutationFn: ({ collectionId, sessionId }: { collectionId: string; sessionId: string }) =>
+      updateStorePaymentSession(collectionId, sessionId, {}),
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to price the payment', description: error.message })
       onError?.(...args)
     },
   })

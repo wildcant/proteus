@@ -7,6 +7,15 @@ export const StorePaymentProvider = z
     isEnabled: z.boolean(),
     label: z.string(),
     isTestOnly: z.boolean(),
+    /**
+     * What the storefront's adapter for this provider boots from — Stripe's publishable key,
+     * later Mercado Pago's public key and locale. Assembled server-side from an allowlist per
+     * provider, so enabling a provider stays a backend concern with no storefront rebuild.
+     *
+     * Deliberately open-shaped: only the provider's own client adapter reads it, and a schema
+     * that enumerated Stripe's keys would have to change for every provider added.
+     */
+    publicConfig: z.record(z.string(), z.unknown()),
   })
   .openapi('StorePaymentProvider')
 export type StorePaymentProvider = z.input<typeof StorePaymentProvider>

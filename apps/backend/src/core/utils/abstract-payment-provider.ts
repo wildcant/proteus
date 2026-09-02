@@ -196,6 +196,16 @@ export abstract class AbstractPaymentProvider<TConfig = Record<string, unknown>>
    */
   abstract getWebhookActionAndData(data: ProviderWebhookPayload['payload']): Promise<WebhookActionResult>
 
+  /**
+   * The client-safe subset of this provider's options, served to storefronts by
+   * `GET /store/payment-providers` so the client adapter needs no environment variable.
+   *
+   * **Name every key.** Returning a spread of `this.config` publishes whatever the deployment
+   * configured, which for most gateways includes an API key. Providers with nothing publishable
+   * leave this unimplemented and are served `{}`.
+   */
+  getPublicConfig?(): Record<string, unknown>
+
   // Optional methods — providers override if supported
   createAccountHolder?(input: CreateAccountHolderInput): Promise<CreateAccountHolderOutput>
   deleteAccountHolder?(input: DeleteAccountHolderInput): Promise<DeleteAccountHolderOutput>
