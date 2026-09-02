@@ -17,11 +17,19 @@ type Input = { cartId: string }
 declare const container: { resolve: (key: string) => { load: (id: string) => Promise<string> } }
 declare const chunks: AsyncIterable<string>
 declare function loadCart(id: string): Promise<{ total: number }>
+declare const db: { query: (context: unknown) => Promise<number> }
+declare function loadCartWith(context: unknown, id: string): Promise<{ total: number }>
 
 /** Type arguments on purpose: every real workflow has them, so the check has to see through them. */
 export const impureWorkflow = createWorkflow<Input, string>('impure-fixture', async (ctx, input) => {
   // await-outside-step: I/O between steps re-runs on every replay.
   const cart = await loadCart(input.cartId)
+
+  // await-outside-step, handed `ctx` so it looks like a shared step helper. Passing the context is
+  // not what makes something a step — these are raw I/O, and only the `…Step` naming convention
+  // separates them from `notifyOnFailureStep` and friends.
+  const rows = await db.query(ctx)
+  const other = await loadCartWith(ctx, input.cartId)
 
   // wall-clock: a different value on every replay.
   const startedAt = new Date()
@@ -49,7 +57,7 @@ export const impureWorkflow = createWorkflow<Input, string>('impure-fixture', as
   const recorded = await ctx.step<string>('record', async () => {
     // Everything in here is fine: a step action runs once and its output is stored.
     const at = new Date()
-    return `${at.toISOString()} ${cart.total} ${startedAt.getTime()} ${stamp} ${nonce} ${traceId} ${region}`
+    return `${at.toISOString()} ${cart.total} ${rows} ${other.total} ${startedAt.getTime()} ${stamp} ${nonce} ${traceId} ${region}`
   })
 
   return `${recorded} ${await cartService.load(input.cartId)}`

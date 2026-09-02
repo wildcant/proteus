@@ -63,10 +63,12 @@ re-runs on every replay: `complete-cart`'s 14 steps cost 91 glue executions acro
 `Date.now()` there does not fail — it produces a different value every replay and the workflow
 proceeds on it. Because the consequence is corruption rather than an error, purity is checked rather
 than documented: `scripts/checks/replay-purity.ts` parses every handler and rejects `await` (other
-than `ctx.step` or a helper handed `ctx`), `new Date()`, `Date.now()`, `Math.random()`, `crypto.*`,
-`process.env` and `container.*` outside a `ctx.step` callback. It runs in `verify.sh`'s `conventions`
-job, and it checks itself first against a deliberately impure fixture — a checker that has silently
-stopped matching produces the same output as a clean tree.
+than `ctx.step`, or a helper whose name ends in `Step` *and* which is handed `ctx`), `new Date()`,
+`Date.now()`, `Math.random()`, `crypto.*`, `process.env` and `container.*` outside a `ctx.step`
+callback. Being handed the context is not on its own enough to be a step: `await db.query(ctx)` is
+raw I/O and is reported. It runs in `verify.sh`'s `conventions` job, and it checks itself first
+against a deliberately impure fixture — a checker that has silently stopped matching produces the
+same output as a clean tree.
 
 Two things it deliberately does not do. It does not follow imports: helpers under
 `src/workflows/*/utils/` are pure by convention and trusted. And it does not police step
@@ -168,8 +170,25 @@ which is the point.
 ## Evidence
 
 - **Parity.** `npm run --workspace=backend test` (simple) and `npm run --workspace=backend test:temporal`
-  run the same 70 files and the same assertions and both report **827 passed, 3 skipped**. Neither
+  run the same 71 files and the same assertions and both report **828 passed, 3 skipped**. Neither
   needs an environment variable; both pin the engine through `projectConfig.workflows.engine`.
+
+  **How much of that number is adapter evidence.** At most 24 of the 71 files can route through the
+  pinned engine — 15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a
+  workflow, and the engine-pin probe below. Review round 1 put the assertions that genuinely
+  round-trip through Temporal at roughly 120–250 of the ~830. The rest are engine-blind rather than
+  incidentally passing: `src/temporal/__tests__` and the other `src/core/workflows/__tests__` files
+  build their own engines, and the module, core, framework and provider tests never reach a workflow
+  at all. So the claim is "no behavioural divergence anywhere the adapter is reachable", not "828
+  assertions' worth of adapter coverage". Do not restate the headline without this.
+
+- **The run is on the engine it says it is.** `src/core/workflows/__tests__/engine-pin.test.ts` runs a
+  one-step workflow and asserts *where the step body executed* — `Context.current()` resolves only
+  inside a Temporal Activity — so `test:temporal` degrading into a second run of the simple suite
+  fails loudly instead of passing in four minutes. It asserts whichever engine the run pins, so the
+  default suite is equally protected against silently acquiring a Temporal dependency. Residual: a
+  test that passes its own `config.projectConfig.workflows.engine` still gets that engine, because
+  the pin is a default rather than an override.
 - **Resume.** `npm run --workspace=backend temporal:crash-resume` starts `complete-cart`, stops the
   Worker after 8 steps, starts a new one, and prints from Temporal's history which OS process ran each
   step: 1–8 on the first pid, 9–14 on the second, no step twice, order created.

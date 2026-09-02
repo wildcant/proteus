@@ -11,7 +11,7 @@ import { createPaymentSessionForCart } from '../../tests/factories/services/paym
  * Built from `tests/factories/` rather than a second copy of the same graph. Both scripts here need
  * a checkout a workflow can actually complete — a variant, a price, stock, a shipping method, an
  * email, addresses and a processable payment session — and that graph already exists, is already
- * exercised by 70 test files, and moves whenever the modules do. A private copy in `scripts/` would
+ * exercised by the whole backend suite, and moves whenever the modules do. A private copy in `scripts/` would
  * be the thing that silently stops matching what checkout requires.
  *
  * The line-item count is the reason this is not just `createCheckoutReadyCart`: the payload

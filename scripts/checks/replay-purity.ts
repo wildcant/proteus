@@ -274,11 +274,30 @@ function inspect(node: ts.Node, ctx: string, name: string, at: (node: ts.Node) =
  * to share one — `notifyOnFailureStep`, `findOrCreateCustomerStep` and `setAuthAppMetadataStep` all
  * take the context and call `ctx.step` themselves. Anything else awaited in the pure region is I/O
  * the replay would repeat.
+ *
+ * The callee has to be *named* like a step helper as well as be handed the context. Taking "`ctx`
+ * appears somewhere in the argument list" as the whole test let `await db.query(ctx)` and
+ * `await loadCart(ctx, input.id)` through — raw I/O in the pure region, admitted by the shape of an
+ * argument list rather than by anything about the callee, which is precisely what this rule exists
+ * to catch. The naming convention is what separates the two, all three real helpers follow it, and a
+ * new helper that does not is a rename away from passing rather than a hole.
  */
 function isAllowedAwait(expression: ts.Expression, ctx: string): boolean {
   if (!ts.isCallExpression(expression)) return false
   if (asStepCall(expression, ctx)) return true
-  return expression.arguments.some((argument) => ts.isIdentifier(argument) && argument.text === ctx)
+
+  const takesContext = expression.arguments.some((argument) => ts.isIdentifier(argument) && argument.text === ctx)
+  return takesContext && STEP_HELPER.test(calleeName(expression) ?? '')
+}
+
+/** What a shared `ctx.step` wrapper is called: `notifyOnFailureStep`, `findOrCreateCustomerStep`, … */
+const STEP_HELPER = /Step$/
+
+/** The name a call is made through — `helper(…)` or `helpers.named(…)`. */
+function calleeName(call: ts.CallExpression): string | undefined {
+  if (ts.isIdentifier(call.expression)) return call.expression.text
+  if (ts.isPropertyAccessExpression(call.expression)) return call.expression.name.text
+  return undefined
 }
 
 /** `object.property`, or any property of `object` when `property` is omitted. */

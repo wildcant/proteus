@@ -178,7 +178,7 @@ handler body, outside every `ctx.step` callback, these are rejected:
 
 | Rejected | Instead |
 |---|---|
-| `await` anything | `await ctx.step(…)`, or `await someStep(ctx, …)` — a helper handed `ctx` that calls `ctx.step` itself, like `notifyOnFailureStep` |
+| `await` anything | `await ctx.step(…)`, or `await someStep(ctx, …)` — a helper whose name ends in `Step` **and** which is handed `ctx`, like `notifyOnFailureStep`. Being handed `ctx` is not enough on its own: `await db.query(ctx)` is still raw I/O |
 | `for await (…)` | collect inside a step action, iterate the result synchronously |
 | `new Date()`, `Date.now()` | take the timestamp inside a step action, where it is recorded once and replayed |
 | `Math.random()`, `crypto.*` | generate inside a step action, so every replay sees the same value |
@@ -339,12 +339,27 @@ suite runs a second time with the engine pinned to Temporal, asserting exactly t
 
 ```bash
 docker compose -f apps/backend/docker-compose.yml up -d --wait   # Temporal
-npm run --workspace=backend test              # 70 files, engine pinned to simple
-npm run --workspace=backend test:temporal     # the same 70 files, pinned to temporal
+npm run --workspace=backend test              # 71 files, engine pinned to simple
+npm run --workspace=backend test:temporal     # the same 71 files, pinned to temporal
 ```
 
-Both report 827 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
+Both report 828 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
 between them is an adapter bug by definition, not a difference of opinion between two test suites.
+
+**What that number is and is not.** At most 24 of the 71 files can route through the pinned engine:
+15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a workflow, and
+`__tests__/engine-pin.test.ts`. Roughly 120–250 of the ~830 assertions genuinely round-trip through
+Temporal; the rest are engine-blind — `src/temporal/__tests__` and the other files here build their
+own engines, and the module, core, framework and provider tests never reach a workflow. So it is
+evidence of no divergence anywhere the adapter is reachable, not 828 assertions of adapter coverage.
+If you quote the headline, quote this with it.
+
+`__tests__/engine-pin.test.ts` is what keeps the claim honest: it runs a one-step workflow and
+asserts *where the step body executed*, because `Context.current()` resolves only inside a Temporal
+Activity. Without it, `test:temporal` silently becoming a second run of the simple suite would look
+exactly like success. It asserts whichever engine the run pins, so both suites are covered. It does
+not catch a test that passes its own `config.projectConfig.workflows.engine` — the pin is a default,
+not an override.
 
 Neither run reads an environment variable to decide. `tests/setup/workflow-engine.ts` holds the
 default the container pins, `vitest.temporal.config.ts` adds one setup file that flips it, and both
