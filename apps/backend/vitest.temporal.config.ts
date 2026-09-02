@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import { testAliases, testConfig } from './vitest.config.js'
+import { testAliases, testConfig, testSetupFiles } from './vitest.config.js'
 
 /**
  * The parity suite (D5): the *existing* backend tests, run again with the engine pinned to Temporal.
@@ -17,7 +17,7 @@ export default defineConfig({
   resolve: { alias: testAliases },
   test: {
     ...testConfig,
-    setupFiles: [...(testConfig?.setupFiles as string[]), './tests/setup/pin-temporal-engine.ts'],
+    setupFiles: [...testSetupFiles, './tests/setup/pin-temporal-engine.ts'],
     /**
      * Every step is a task-queue round trip now, and the first workflow in a process also builds the
      * sandbox bundle and connects twice. The default 5s budget measures Temporal rather than the

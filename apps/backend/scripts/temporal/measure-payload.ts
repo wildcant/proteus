@@ -1,13 +1,13 @@
 import { Client, Connection } from '@temporalio/client'
 import { NativeConnection, Worker } from '@temporalio/worker'
 import { ulid } from 'ulid'
-import { completeCartWorkflow } from '../../src/workflows/cart/complete-cart.js'
+import { env } from '../../src/env.js'
 import { createWorkflowActivities } from '../../src/temporal/activities.js'
 import { PAYLOAD_CONVERTER_PATH, PROTEUS_WORKFLOW_TYPE, WORKFLOWS_PATH } from '../../src/temporal/config.js'
 import { createWorkerContainer } from '../../src/temporal/container.js'
 import { workflowRegistry } from '../../src/temporal/registry.js'
 import type { DriverInput } from '../../src/temporal/types.js'
-import { env } from '../../src/env.js'
+import { completeCartWorkflow } from '../../src/workflows/cart/complete-cart.js'
 import { seedCheckoutCart } from './checkout-cart.js'
 
 /**

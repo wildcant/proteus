@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process'
 import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
-import { Client, Connection } from '@temporalio/client'
+import { Client, Connection, type WorkflowHandle } from '@temporalio/client'
 import { ulid } from 'ulid'
 import { env } from '../../src/env.js'
 import { PAYLOAD_CONVERTER_PATH, PROTEUS_WORKFLOW_TYPE, TEMPORAL_TASK_QUEUE } from '../../src/temporal/config.js'
@@ -39,9 +39,18 @@ import { seedCheckoutCart } from './checkout-cart.js'
  * invented address.
  */
 
-/** How many steps to let the first Worker finish before it is stopped. Nothing special about 6 — it
- *  is past `create-order`, so the checkout has already written something a rollback would undo. */
-const STEPS_BEFORE_STOP = 6
+/** How many steps to let the first Worker finish before it is stopped. Past `create-order`, so the
+ *  checkout has already written something a rollback would have to undo. */
+const STEPS_BEFORE_STOP = 8
+
+/**
+ * Enough line items that the steps take long enough to interrupt.
+ *
+ * Against a one-item cart the whole 14-step checkout finishes in a couple of hundred milliseconds —
+ * faster than this script can watch history and signal a process — and the demo ends up showing one
+ * Worker doing everything. A realistic cart is also the more honest thing to demonstrate.
+ */
+const LINE_ITEMS = 25
 
 /** Short, because `--hard` waits out this timeout on purpose and five minutes is a long demo. */
 const STEP_TIMEOUT_SECONDS = 20
@@ -59,7 +68,7 @@ let worker: ReturnType<typeof startWorker> | undefined
 
 try {
   console.info('› seeding a checkout-ready cart')
-  const { cartId } = await seedCheckoutCart(container, { lineItems: 3 })
+  const { cartId } = await seedCheckoutCart(container, { lineItems: LINE_ITEMS })
 
   console.info('› starting Worker #1')
   worker = startWorker('#1')
@@ -80,7 +89,7 @@ try {
   })
   console.info(`› started ${workflowId}`)
 
-  const before = await waitForCompletedSteps(workflowId, STEPS_BEFORE_STOP)
+  const before = await waitForStopPoint(workflowId)
   console.info(`› ${before} step(s) done — ${hard ? 'SIGKILLing' : 'draining'} Worker #1 (pid ${worker.pid})`)
 
   await worker.stop(hard ? 'SIGKILL' : 'SIGTERM')
@@ -159,17 +168,46 @@ function startWorker(label: string): RunningWorker {
   }
 }
 
-/** Polls history until the driver has recorded `count` completed steps. */
-async function waitForCompletedSteps(workflowId: string, count: number): Promise<number> {
-  for (let attempt = 0; attempt < 300; attempt += 1) {
-    const done = (await completedSteps(workflowId)).length
-    if (done >= count) return done
-    await delay(100)
+/**
+ * Blocks until the Worker should be stopped, and answers with how many steps it had finished.
+ *
+ * Draining is the case durability covers, so the default only waits for the checkout to have written
+ * something a rollback would have to undo. `--hard` additionally waits for a step to be *in flight*,
+ * because a SIGKILL between two steps loses nothing and demonstrates nothing.
+ *
+ * "In flight" comes from `describe()`, not from history: Temporal does not persist an
+ * `ActivityTaskStarted` event until the activity finishes, so history cannot see a step that is
+ * currently running — `pendingActivities` on the description can, and its `lastStartedTime` is what
+ * separates a step a Worker is running from one still queued.
+ *
+ * No sleep between attempts: each call is itself a network round trip, and a step against a local
+ * database is faster than any interval worth writing down. Even so the window is narrow enough that
+ * `--hard` can miss it, which `report` says out loud rather than papering over.
+ */
+async function waitForStopPoint(workflowId: string): Promise<number> {
+  const handle = client.workflow.getHandle(workflowId)
+
+  for (let attempt = 0; attempt < 2_000; attempt += 1) {
+    const description = await handle.describe()
+    if (description.status.name !== 'RUNNING') return advancedSteps(await handle.fetchHistory()).length
+
+    const steps = advancedSteps(await handle.fetchHistory()).length
+    if (steps < STEPS_BEFORE_STOP) continue
+    // `lastStartedTime` is the filter that matters: a pending activity that is merely *scheduled* is
+    // still sitting in the task queue, so killing the Worker loses nothing and the next one picks it
+    // up. Only one a Worker has actually started can be lost with it.
+    const running = (description.raw.pendingActivities ?? []).some((activity) => activity.lastStartedTime)
+    if (!hard || running) return steps
   }
-  throw new Error(`Timed out waiting for ${count} completed steps`)
+
+  throw new Error(`Timed out waiting for ${STEPS_BEFORE_STOP} completed steps`)
 }
 
 type CompletedStep = { step: string; identity: string; attempt: number }
+
+/** What `fetchHistory` returns. Named from the call rather than imported, because the SDK's history
+ *  type is generated and not re-exported under a stable name. */
+type WorkflowHistory = Awaited<ReturnType<WorkflowHandle['fetchHistory']>>
 
 /**
  * Which steps completed, and which Worker ran each — read out of Temporal's history rather than out
@@ -178,8 +216,7 @@ type CompletedStep = { step: string; identity: string; attempt: number }
  * `ActivityTaskStarted` carries the Worker's identity (`pid@host`); `ActivityTaskCompleted` carries
  * the step name, inside a payload encoded with the same converter production uses.
  */
-async function completedSteps(workflowId: string): Promise<CompletedStep[]> {
-  const history = await client.workflow.getHandle(workflowId).fetchHistory()
+function advancedSteps(history: WorkflowHistory): CompletedStep[] {
   const started = new Map<string, { identity: string; attempt: number }>()
   const steps: CompletedStep[] = []
 
@@ -199,8 +236,10 @@ async function completedSteps(workflowId: string): Promise<CompletedStep[]> {
     const payload = completed.result?.payloads?.[0]
     if (!payload) continue
 
+    // The unwind's `compensateWorkflow` completes on this queue too, and its result is a different
+    // shape — so the step name, not the absence of `done`, is what identifies an advance.
     const decoded = payloadConverter.fromPayload<AdvanceWorkflowResult>(payload)
-    if (decoded.done) continue
+    if (decoded.done || typeof decoded.step !== 'string') continue
 
     const who = started.get(String(completed.scheduledEventId))
     steps.push({ step: decoded.step, identity: who?.identity ?? '(unknown)', attempt: who?.attempt ?? 1 })
@@ -210,7 +249,7 @@ async function completedSteps(workflowId: string): Promise<CompletedStep[]> {
 }
 
 async function report(workflowId: string, outcome: { ok: boolean; error?: unknown }): Promise<void> {
-  const steps = await completedSteps(workflowId)
+  const steps = advancedSteps(await client.workflow.getHandle(workflowId).fetchHistory())
   const workers = [...new Set(steps.map((step) => step.identity))]
 
   console.info('')
@@ -231,11 +270,16 @@ async function report(workflowId: string, outcome: { ok: boolean; error?: unknow
   const repeated = names.filter((name, index) => names.indexOf(name) !== index)
 
   console.info(`  ${steps.length} step(s) completed across ${workers.length} Worker process(es).`)
-  console.info(
-    repeated.length === 0
-      ? '  No step ran twice: the second Worker resumed from the next uncompleted one.'
-      : `  ✖ These steps ran more than once: ${[...new Set(repeated)].join(', ')}`,
-  )
+
+  if (repeated.length > 0) {
+    console.info(`  ✖ These steps ran more than once: ${[...new Set(repeated)].join(', ')}`)
+  } else if (workers.length > 1) {
+    console.info('  No step ran twice: the new Worker resumed from the next uncompleted one, in a')
+    console.info('  different OS process, with nothing carried over but Temporal history.')
+  } else if (outcome.ok) {
+    console.info('  One Worker did all of it — the execution finished before the stop landed, so this')
+    console.info(`  run shows nothing. Re-run it, or lower STEPS_BEFORE_STOP (${STEPS_BEFORE_STOP}).`)
+  }
 
   if (outcome.ok) {
     console.info('  The workflow completed and returned the order.')
@@ -246,8 +290,9 @@ async function report(workflowId: string, outcome: { ok: boolean; error?: unknow
   console.info('')
   console.info(`  The workflow failed: ${message}`)
   if (hard) {
-    console.info('  Expected with --hard. The step in flight died with its Worker, so it hit')
-    console.info(`  startToCloseTimeout (${STEP_TIMEOUT_SECONDS}s), failed as a TimeoutFailure that names no`)
-    console.info('  step, and the execution compensated instead of resuming. See ADR-0021.')
+    console.info('  This is the documented half. The step in flight died with its Worker, so it hit')
+    console.info(`  startToCloseTimeout (${STEP_TIMEOUT_SECONDS}s) and failed as a TimeoutFailure — which names no`)
+    console.info('  step, so no retry policy could be looked up and the execution compensated instead')
+    console.info('  of resuming. Deliberate, and a consequence of maximumAttempts: 1. See ADR-0021.')
   }
 }

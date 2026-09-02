@@ -17,11 +17,14 @@ export const testAliases = {
   '@workflows': resolve(__dirname, './src/workflows'),
 }
 
+/** Named separately so the parity config can append to it without widening its type back to a union. */
+export const testSetupFiles = ['./tests/setup/setup-test-env.ts']
+
 export const testConfig: ViteUserConfig['test'] = {
   env: testEnv ?? {},
   include: ['./src/**/*.test.{ts,tsx}'],
   globalSetup: ['./tests/setup/global-setup.ts'],
-  setupFiles: ['./tests/setup/setup-test-env.ts'],
+  setupFiles: testSetupFiles,
   // One database per worker (see tests/setup/database-url.ts) is what makes this safe.
   maxWorkers: WORKER_COUNT,
   restoreMocks: true,
