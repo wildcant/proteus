@@ -5,6 +5,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AdminCapturePayment {
-  amount?: string;
-}
+export interface AdminCapturePayment { [key: string]: unknown }

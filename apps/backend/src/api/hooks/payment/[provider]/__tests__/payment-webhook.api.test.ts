@@ -83,7 +83,7 @@ async function chargedSessionWithoutPayment(service: Fixtures['service']) {
 }
 
 test.describe('POST /hooks/payment/:provider', () => {
-  test('captures the amount the event reports, converted back to major units', async ({ service, expect }) => {
+  test('captures the authorization in full when the charge succeeds', async ({ service, expect }) => {
     const { session, intent, total } = await authorizedOrder(service)
     const body = succeededEvent(intent)
 
@@ -96,9 +96,9 @@ test.describe('POST /hooks/payment/:provider', () => {
 
     expect(response.status).toBe(200)
 
-    // The intent reports the total in cents; the payment is recorded in dollars. Passing the
-    // smallest-unit integer upward is rejected as exceeding the capturable amount, which is how
-    // this failed on every real webhook.
+    // A capture takes the whole authorization and nothing about the event's own amount decides
+    // it, so the row is the payment's total in major units — dollars, where the intent counts
+    // cents. What the event reports is read for the action, not the money.
     const payment = await paymentFor(service, session.paymentCollectionId)
     expect(payment.capturedAt).not.toBeNull()
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])

@@ -19,7 +19,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const payment = await paymentService.authorizePaymentSession(session.id)
 
   if (payment) {
-    await paymentService.capturePayment({ paymentId: payment.id, amount: collection.amount })
+    await paymentService.capturePayment({ paymentId: payment.id })
   }
 
   const updated = await paymentService.retrievePaymentCollection(collection.id)

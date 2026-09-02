@@ -241,23 +241,31 @@ test.describe('PaymentModuleService', () => {
       expect(captured.captures[0]?.amount).toEqual(new BigNumber(10000))
     })
 
-    test('capturePayment partial capture', async ({ expect, dto }) => {
+    /**
+     * Replaces a partial-capture test. Partial capture is gone — see *Partial capture* in the
+     * spec's Out of Scope — so its premise no longer exists: there is no state in which a payment
+     * is captured for part of its amount. What is worth pinning instead is the refusal that
+     * replaces it, because the webhook route's acknowledgement of a redelivered event depends on
+     * a second capture being refused rather than taking the money again.
+     */
+    test('capturePayment refuses a second capture', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
       const authorized = await service.authorizePaymentSession(session.id)
       assertDefined(authorized)
+      await service.capturePayment({ paymentId: authorized.id })
 
-      const firstCapture = await service.capturePayment({ paymentId: authorized.id, amount: new BigNumber(4000) })
+      await expect(service.capturePayment({ paymentId: authorized.id })).rejects.toMatchObject({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: `Payment "${authorized.id}" has already been fully captured.`,
+      })
 
-      expect(firstCapture.capturedAt).toBeNull()
-      expect(firstCapture.captures).toHaveLength(1)
-      assertDefined(firstCapture.captures)
-      expect(firstCapture.captures[0]?.amount).toEqual(new BigNumber(4000))
-
-      const secondCapture = await service.capturePayment({ paymentId: authorized.id, amount: new BigNumber(6000) })
-
-      expect(secondCapture.capturedAt).toBeInstanceOf(Date)
-      expect(secondCapture.captures).toHaveLength(2)
+      // The gateway was asked once and the ledger holds one row for the whole authorization.
+      expect(mockProvider.capturePayment).toHaveBeenCalledOnce()
+      const payment = await service.retrievePayment(authorized.id)
+      expect(payment.captures).toHaveLength(1)
+      assertDefined(payment.captures)
+      expect(payment.captures[0]?.amount).toEqual(new BigNumber(10000))
     })
 
     test('refundPayment full refund', async ({ expect, dto }) => {

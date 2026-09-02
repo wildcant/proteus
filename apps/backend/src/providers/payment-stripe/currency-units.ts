@@ -51,6 +51,13 @@ export function toSmallestUnit(amount: BigNumber, currencyCode: string): number 
 
   // Stripe only accepts three-decimal amounts as a multiple of ten. Rounding up rather than
   // to nearest, so the charge is never a fraction short of what the shopper agreed to.
+  //
+  // TODO(multi-currency): this round trip is lossy upward. A 19.995 KWD total is sent as 20000
+  // and read back as 20.000, so the shopper is charged 0.005 KWD more than the order total while
+  // the Payment row records the lower figure. Unreachable today — no three-decimal currency is
+  // sold — and the fix belongs with multi-currency pricing, which owns the choice between
+  // rounding the stored total to what the gateway can charge and rejecting a total the currency
+  // cannot represent. See *Multi-currency pricing* in `.scratch/checkout-payment/spec.md`.
   if (exponent === 3) {
     return scaled.dividedBy(10).integerValue(BigNumber.ROUND_CEIL).multipliedBy(10).toNumber()
   }

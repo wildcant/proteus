@@ -58,14 +58,14 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   if (action === 'authorized' || action === 'captured') {
     const payment = await paymentService.authorizePaymentSession(data.sessionId)
 
-    // Only what is still outstanding. Stripe redelivers an event until it is acknowledged, and
-    // `authorizePaymentSession` captures the payment itself when the intent already reports a
-    // completed charge — so by here the money may well be taken. Capturing again cannot take it
-    // twice (`capturePayment` guards that) but it does answer 4xx, which Stripe retries for
-    // three days before disabling the endpoint. `capturedAt` is set only once the full amount is
-    // accounted for, so a partially captured payment still captures its remainder.
+    // Only if the money is not already taken. Stripe redelivers an event until it is
+    // acknowledged, and `authorizePaymentSession` captures the payment itself when the intent
+    // already reports a completed charge — so by here the capture may well have happened.
+    // Capturing again cannot take the money twice (`capturePayment` refuses), but it would answer
+    // 4xx, which Stripe retries for three days before disabling the endpoint. A capture takes the
+    // whole authorization, so `capturedAt` settles it: it is set by the only capture there can be.
     if (action === 'captured' && payment && !payment.capturedAt) {
-      await paymentService.capturePayment({ paymentId: payment.id, amount: data.amount })
+      await paymentService.capturePayment({ paymentId: payment.id })
     }
   }
 

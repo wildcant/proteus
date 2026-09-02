@@ -54,9 +54,9 @@ export type CreatePaymentDTO = {
 // Capture
 // ---------------------------------------------------------------------------
 
+/** No `amount`: a capture takes the whole authorization. See `PaymentModuleService.capturePayment`. */
 export type CreateCaptureDTO = {
   paymentId: string
-  amount?: BigNumber | undefined
   capturedBy?: string | undefined
 }
 
