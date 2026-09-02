@@ -1,5 +1,7 @@
 import Stripe from 'stripe'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
+import type { Logger } from '../../core/types/logger.js'
+import type { PaymentActions } from '../../core/types/payment/common.js'
 import type {
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
@@ -30,12 +32,9 @@ import type {
 } from '../../core/types/payment/mutations.js'
 import { AbstractPaymentProvider } from '../../core/utils/abstract-payment-provider.js'
 import { fromSmallestUnit, toSmallestUnit } from './currency-units.js'
+import { classifyGatewayError, gatewayFailureLog, toAppError } from './errors.js'
+import { type StripeOptions, validateStripeOptions } from './options.js'
 import { paymentActionOf, paymentSessionStatusOf } from './status-map.js'
-
-type StripeOptions = {
-  apiKey: string
-  webhookSecret: string
-}
 
 /**
  * The events whose `data.object` is a PaymentIntent. Which of them means what is not decided
@@ -51,31 +50,56 @@ const PAYMENT_INTENT_EVENTS: ReadonlySet<string> = new Set([
   'payment_intent.processing',
 ])
 
+const DEFAULT_RETRY_ATTEMPTS = 3
+const DEFAULT_RETRY_BACKOFF_MS = 100
+
 function isStripeError(error: unknown): error is Stripe.errors.StripeError {
   return error instanceof Stripe.errors.StripeError
+}
+
+/**
+ * The amount a webhook reports, read from the field that means what the caller is asking.
+ *
+ * A completed charge is asked what it took, and an authorization what is left to take. Reading
+ * the intent's nominal `amount` for both agrees with those today only because captures are
+ * all-or-nothing — and stops agreeing, silently, the day the account is configured for
+ * overcapture or multicapture.
+ */
+function webhookAmountOf(action: PaymentActions, intent: Stripe.PaymentIntent): number {
+  if (action === 'captured') return intent.amount_received
+  if (action === 'authorized') return intent.amount_capturable
+  return intent.amount
 }
 
 export class StripeProviderService extends AbstractPaymentProvider<StripeOptions> {
   static identifier = 'stripe'
   static label = 'Stripe'
 
+  static validateOptions(options: Record<string, unknown>): void {
+    validateStripeOptions(StripeProviderService.identifier, options)
+  }
+
   private stripe: Stripe
+  private logger: Logger
 
   constructor(container: Record<string, unknown>, config: StripeOptions) {
     super(container, config)
     this.stripe = new Stripe(config.apiKey)
+    this.logger = container.logger as Logger
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
-    const intent = await this.stripe.paymentIntents.create(
-      {
-        amount: toSmallestUnit(input.amount, input.currencyCode),
-        currency: input.currencyCode,
-        metadata: { sessionId: (input.data?.sessionId as string) ?? '' },
-        // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
-        capture_method: 'manual',
-      },
-      this.idempotencyKey(input.context),
+    const intent = await this.gateway('initiatePayment', () =>
+      this.stripe.paymentIntents.create(
+        {
+          amount: toSmallestUnit(input.amount, input.currencyCode),
+          currency: input.currencyCode,
+          metadata: { sessionId: (input.data?.sessionId as string) ?? '' },
+          // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+          capture_method: 'manual',
+        },
+        this.idempotencyKey(input.context),
+      ),
     )
 
     return {
@@ -86,38 +110,36 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
   }
 
   async authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
-    const intent = await this.stripe.paymentIntents.retrieve(input.data?.id as string)
+    const intent = await this.gateway('authorizePayment', () =>
+      this.stripe.paymentIntents.retrieve(input.data?.id as string),
+    )
     return { status: paymentSessionStatusOf(intent), data: { id: intent.id } }
   }
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
     const id = input.data?.id as string
-    try {
-      await this.stripe.paymentIntents.capture(id, {}, this.idempotencyKey(input.context))
-    } catch (error) {
-      // Already succeeded (e.g. auto-capture or duplicate webhook) — treat as success
-      if (isStripeError(error) && error.code === 'payment_intent_unexpected_state') {
-        return { data: { id } }
-      }
-      throw error
-    }
+    // Already succeeded (e.g. auto-capture or duplicate webhook) — treat as success
+    await this.gateway(
+      'capturePayment',
+      () => this.stripe.paymentIntents.capture(id, {}, this.idempotencyKey(input.context)),
+      hasCode('payment_intent_unexpected_state'),
+    )
     return { data: { id } }
   }
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
     const id = input.data?.id as string
-    try {
-      const intent = await this.stripe.paymentIntents.retrieve(id)
-      if (intent.status === 'canceled') {
-        return { data: { id } }
-      }
-      await this.stripe.paymentIntents.cancel(id, {}, this.idempotencyKey(input.context))
-    } catch (error) {
-      if (isStripeError(error) && error.code === 'payment_intent_unexpected_state') {
-        return { data: { id } }
-      }
-      throw error
+    const intent = await this.gateway('cancelPayment.retrieve', () => this.stripe.paymentIntents.retrieve(id))
+    if (intent.status === 'canceled') {
+      return { data: { id } }
     }
+    // An intent that reached a terminal state between the read above and this write is already
+    // where the cancel was trying to put it.
+    await this.gateway(
+      'cancelPayment',
+      () => this.stripe.paymentIntents.cancel(id, {}, this.idempotencyKey(input.context)),
+      hasCode('payment_intent_unexpected_state'),
+    )
     return { data: { id } }
   }
 
@@ -127,23 +149,23 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
 
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const id = input.data?.id as string
-    try {
-      await this.stripe.refunds.create(
-        // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
-        { payment_intent: id, amount: toSmallestUnit(input.amount, input.currencyCode) },
-        this.idempotencyKey(input.context),
-      )
-    } catch (error) {
-      if (isStripeError(error) && error.code === 'charge_already_refunded') {
-        return { data: { id } }
-      }
-      throw error
-    }
+    await this.gateway(
+      'refundPayment',
+      () =>
+        this.stripe.refunds.create(
+          // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+          { payment_intent: id, amount: toSmallestUnit(input.amount, input.currencyCode) },
+          this.idempotencyKey(input.context),
+        ),
+      hasCode('charge_already_refunded'),
+    )
     return { data: { id } }
   }
 
   async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {
-    const intent = await this.stripe.paymentIntents.retrieve(input.data?.id as string)
+    const intent = await this.gateway('retrievePayment', () =>
+      this.stripe.paymentIntents.retrieve(input.data?.id as string),
+    )
     return { data: intent as unknown as Record<string, unknown> }
   }
 
@@ -164,12 +186,19 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     }
     if (input.currencyCode !== undefined) updateParams.currency = input.currencyCode
 
-    await this.stripe.paymentIntents.update(input.data?.id as string, updateParams, this.idempotencyKey(input.context))
-    return { data: { id: input.data?.id } }
+    const intent = await this.gateway('updatePayment', () =>
+      this.stripe.paymentIntents.update(input.data?.id as string, updateParams, this.idempotencyKey(input.context)),
+    )
+
+    // The whole blob, not just the id: the storefront is mid-checkout holding the client secret
+    // this carries, and a partial one would strand it with nothing to confirm against.
+    return { data: { id: intent.id, clientSecret: intent.client_secret } }
   }
 
   async getPaymentStatus(input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
-    const intent = await this.stripe.paymentIntents.retrieve(input.data?.id as string)
+    const intent = await this.gateway('getPaymentStatus', () =>
+      this.stripe.paymentIntents.retrieve(input.data?.id as string),
+    )
     return { status: paymentSessionStatusOf(intent) }
   }
 
@@ -192,38 +221,94 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
       return { action: 'not_supported' }
     }
 
+    const action = paymentActionOf(intent)
+
     // Back to the major unit here, at the adapter's edge: nothing above this line knows
     // Stripe counts in cents.
-    const amount = fromSmallestUnit(intent.amount, intent.currency)
+    const amount = fromSmallestUnit(webhookAmountOf(action, intent), intent.currency)
 
-    return { action: paymentActionOf(intent), data: { sessionId, amount } }
+    return { action, data: { sessionId, amount } }
   }
 
   // -- Optional: saved payment methods --
 
   async listPaymentMethods(input: ListPaymentMethodsInput): Promise<ListPaymentMethodsOutput> {
     const customerId = (input.context?.accountHolder as Record<string, unknown>)?.data as Record<string, unknown>
-    const methods = await this.stripe.paymentMethods.list({
-      customer: (customerId?.id as string) ?? '',
-    })
+    const methods = await this.gateway('listPaymentMethods', () =>
+      this.stripe.paymentMethods.list({
+        customer: (customerId?.id as string) ?? '',
+      }),
+    )
     return methods.data.map((pm) => ({ id: pm.id, data: pm as unknown as Record<string, unknown> }))
   }
 
   async savePaymentMethod(input: SavePaymentMethodInput): Promise<SavePaymentMethodOutput> {
     const customerId = (input.context?.accountHolder as Record<string, unknown>)?.data as Record<string, unknown>
-    const setupIntent = await this.stripe.setupIntents.create({
-      customer: (customerId?.id as string) ?? '',
-      ...(input.data as Stripe.SetupIntentCreateParams),
-    })
+    const setupIntent = await this.gateway('savePaymentMethod', () =>
+      this.stripe.setupIntents.create({
+        customer: (customerId?.id as string) ?? '',
+        ...(input.data as Stripe.SetupIntentCreateParams),
+      }),
+    )
     return { id: setupIntent.id, data: setupIntent as unknown as Record<string, unknown> }
   }
 
   async deletePaymentMethod(input: DeletePaymentMethodInput): Promise<DeletePaymentMethodOutput> {
-    await this.stripe.paymentMethods.detach(input.data?.id as string)
+    await this.gateway('deletePaymentMethod', () => this.stripe.paymentMethods.detach(input.data?.id as string))
     return {}
   }
 
   // -- Helpers --
+
+  /**
+   * Every call to the vendor SDK goes through here, which is what makes the three guarantees
+   * below true of all of them rather than of the ones somebody remembered.
+   *
+   * 1. A connection or throttling failure is retried, and the caller's idempotency key is
+   *    unchanged across attempts — which is the only reason retrying a write is safe at all.
+   * 2. The failure is logged whole: type, code, decline code and the dashboard link.
+   * 3. What escapes is our own error carrying a code, never Stripe's — whose messages include
+   *    `"Invalid API Key provided: sk_test_*****dkey"` and `"No such PaymentMethod: 'pm_…'"`.
+   */
+  private async gateway<T>(operation: string, call: () => Promise<T>): Promise<T>
+  private async gateway<T>(
+    operation: string,
+    call: () => Promise<T>,
+    /** A failure this call asked for anyway: the gateway is already in the state it wanted.
+     *  Answering `true` returns `undefined` instead of throwing, and logs nothing — a gateway
+     *  redelivering its own completed event would otherwise fill the log with non-failures. */
+    isSettled: (error: Stripe.errors.StripeError) => boolean,
+  ): Promise<T | undefined>
+  private async gateway<T>(
+    operation: string,
+    call: () => Promise<T>,
+    isSettled?: (error: Stripe.errors.StripeError) => boolean,
+  ): Promise<T | undefined> {
+    const attempts = this.config.retryAttempts ?? DEFAULT_RETRY_ATTEMPTS
+    const backoffMs = this.config.retryBackoffMs ?? DEFAULT_RETRY_BACKOFF_MS
+
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await call()
+      } catch (error) {
+        if (isStripeError(error) && isSettled?.(error)) {
+          this.logger.debug(`[stripe] ${operation}: already settled at the gateway (${error.code})`)
+          return undefined
+        }
+
+        this.logger.error(gatewayFailureLog(operation, error))
+
+        if (classifyGatewayError(error) !== 'retry' || attempt >= attempts) {
+          throw toAppError(error)
+        }
+
+        // Jittered so a gateway blip does not turn every waiting request into one synchronised
+        // retry storm the moment it clears.
+        const wait = backoffMs * 2 ** (attempt - 1)
+        await new Promise((resolve) => setTimeout(resolve, wait * (0.5 + Math.random() / 2)))
+      }
+    }
+  }
 
   private idempotencyKey(context?: Record<string, unknown>): Stripe.RequestOptions | undefined {
     const key = context?.idempotencyKey as string | undefined
@@ -249,3 +334,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     }
   }
 }
+
+/** Reads the gateway's own error code, which only `gateway()` still sees — what it rethrows is
+ *  our error, carrying our code and none of Stripe's wording. */
+const hasCode = (code: string) => (error: Stripe.errors.StripeError) => error.code === code

@@ -26,11 +26,13 @@ import type {
   DeletePaymentMethodDTO,
   ProviderWebhookPayload,
   UpdatePaymentCollectionDTO,
+  UpdatePaymentSessionDTO,
   UpdateRefundReasonDTO,
   WebhookActionResult,
 } from '../../../core/types/payment/mutations.js'
 import type { IPaymentModuleService } from '../../../core/types/payment/service.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
+import { idempotencyKeyFor } from '../idempotency-keys.js'
 import type { AccountHolderRepository } from '../repositories/account-holder.js'
 import type { CaptureRepository } from '../repositories/capture.js'
 import type { PaymentRepository } from '../repositories/payment.js'
@@ -209,7 +211,9 @@ export class PaymentModuleService implements IPaymentModuleService {
         amount,
         currencyCode,
         data: { ...input.data, sessionId: session.id },
-        context: input.context,
+        // The session row is written first precisely so its id can key this call: a retry after
+        // a crash mid-create presents the same key and cannot open a second intent.
+        context: { ...input.context, idempotencyKey: idempotencyKeyFor('initiate', session.id) },
       })
 
       const updated = await this.paymentSessionRepository.update(
@@ -227,10 +231,60 @@ export class PaymentModuleService implements IPaymentModuleService {
     } catch (error) {
       await this.paymentSessionRepository.delete([session.id], context)
       await this.paymentProviderService
-        .deleteSession(input.providerId, { data: session.data })
+        .deleteSession(input.providerId, {
+          data: session.data,
+          context: { idempotencyKey: idempotencyKeyFor('cancel', session.id) },
+        })
         .catch((e) => this.logger.error(e))
       throw error
     }
+  }
+
+  /**
+   * Re-prices an open session against a total the caller has already computed server-side.
+   *
+   * With deferred creation the session is normally opened at the total it will be charged at, so
+   * this path is the exception rather than the defence: a redirect return, or a retry, can still
+   * find a session that predates a cart change. The full provider blob comes back because the
+   * storefront is mid-checkout holding a client secret from it — returning a partial one would
+   * strand it.
+   */
+  async updatePaymentSession(id: string, data: UpdatePaymentSessionDTO, context?: Context): Promise<PaymentSessionDTO> {
+    const session = await this.paymentSessionRepository.findByIdOrFail(id, undefined, context)
+
+    const amount = data.amount ?? session.amount
+    const currencyCode = data.currencyCode ?? session.currencyCode
+
+    // Nothing changed, so nothing is sent. The gateway charges for the round trip in latency the
+    // shopper is waiting on, and an update to the amount already on the intent buys nothing.
+    if (amount.isEqualTo(session.amount) && currencyCode === session.currencyCode) {
+      this.logger.debug(`Payment session "${id}" already stands at ${amount.toFixed()} ${currencyCode}; not updating`)
+      return session
+    }
+
+    this.logger.debug(`Updating payment session "${id}" to ${amount.toFixed()} ${currencyCode}`)
+
+    const provider = await this.paymentProviderService.updateSession(session.providerId, {
+      amount,
+      currencyCode,
+      data: session.data,
+      // Two updates to different totals are two operations; the target is part of the key so the
+      // gateway does not reject the second as a replay of the first with changed parameters.
+      context: {
+        ...(session.context ?? {}),
+        idempotencyKey: idempotencyKeyFor('update', session.id, amount.toFixed(), currencyCode),
+      },
+    })
+
+    const updated = await this.paymentSessionRepository.update(
+      session.id,
+      { amount, currencyCode, data: provider.data ?? session.data },
+      context,
+    )
+
+    await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
+
+    return updated
   }
 
   async authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null> {
@@ -294,7 +348,10 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       return this.retrievePaymentWithRelations_(payment.id, context)
     } catch (error) {
-      await this.paymentProviderService.cancelPayment(session.providerId, { data: session.data })
+      await this.paymentProviderService.cancelPayment(session.providerId, {
+        data: session.data,
+        context: { idempotencyKey: idempotencyKeyFor('cancel', session.id) },
+      })
       throw error
     }
   }
@@ -309,7 +366,10 @@ export class PaymentModuleService implements IPaymentModuleService {
   async deletePaymentSession(id: string, context?: Context): Promise<void> {
     const session = await this.paymentSessionRepository.findByIdOrFail(id, undefined, context)
 
-    await this.paymentProviderService.deleteSession(session.providerId, { data: session.data })
+    await this.paymentProviderService.deleteSession(session.providerId, {
+      data: session.data,
+      context: { idempotencyKey: idempotencyKeyFor('cancel', session.id) },
+    })
     await this.paymentSessionRepository.softDelete([session.id], context)
     await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
   }
@@ -361,7 +421,10 @@ export class PaymentModuleService implements IPaymentModuleService {
         })
       }
 
-      await this.captureRepository.create(
+      // Written before the gateway call so its id can key that call. A crash between the two
+      // rolls the row back, and the retry opens a new one — the key is the second line of
+      // defence here, not the first: the outstanding-amount check above is.
+      const capture = await this.captureRepository.create(
         {
           paymentId: payment.id,
           amount: captureAmount,
@@ -372,6 +435,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       await this.paymentProviderService.capturePayment(payment.providerId, {
         data: payment.data ?? undefined,
+        context: { idempotencyKey: idempotencyKeyFor('capture', capture.id) },
       })
 
       // The capture took everything outstanding, so this is the first and only one.
@@ -412,7 +476,7 @@ export class PaymentModuleService implements IPaymentModuleService {
         })
       }
 
-      await this.refundRepository.create(
+      const refund = await this.refundRepository.create(
         {
           paymentId: payment.id,
           amount: refundAmount,
@@ -427,6 +491,9 @@ export class PaymentModuleService implements IPaymentModuleService {
         amount: refundAmount,
         currencyCode: payment.currencyCode,
         data: payment.data ?? undefined,
+        // Two refunds against one payment are two operations and must not deduplicate, so the
+        // key is the refund row's, not the payment's.
+        context: { idempotencyKey: idempotencyKeyFor('refund', refund.id) },
       })
 
       // Provider may return updated payment data (e.g. refund reference id)
@@ -451,6 +518,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       await this.paymentProviderService.cancelPayment(payment.providerId, {
         data: payment.data ?? undefined,
+        context: { idempotencyKey: idempotencyKeyFor('cancel', payment.paymentSessionId) },
       })
 
       await this.paymentRepository.update(payment.id, { canceledAt: new Date() }, ctx)

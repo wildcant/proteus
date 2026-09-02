@@ -29,6 +29,8 @@ import type {
   RefundPaymentOutput,
   SavePaymentMethodInput,
   SavePaymentMethodOutput,
+  UpdatePaymentInput,
+  UpdatePaymentOutput,
   WebhookActionResult,
 } from '../../../core/types/payment/mutations.js'
 import type { IPaymentProvider } from '../../../core/types/payment/provider.js'
@@ -97,6 +99,16 @@ export class PaymentProviderService {
     this.logger.debug(`Creating session via provider "${providerId}" for ${input.amount} ${input.currencyCode}`)
     const provider = this.retrieveProvider(providerId)
     return provider.initiatePayment(input)
+  }
+
+  /**
+   * Reachable at last. The provider's update method had no delegate, so a cart total that changed
+   * after the session was opened could never reach the gateway.
+   */
+  async updateSession(providerId: string, input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
+    this.logger.debug(`Updating session via provider "${providerId}" to ${input.amount} ${input.currencyCode}`)
+    const provider = this.retrieveProvider(providerId)
+    return provider.updatePayment(input)
   }
 
   async deleteSession(providerId: string, input: DeletePaymentInput): Promise<DeletePaymentOutput> {

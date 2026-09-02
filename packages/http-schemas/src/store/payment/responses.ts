@@ -15,3 +15,8 @@ export const StoreCreatePaymentSessionResponse = z
   .object({ paymentSession: StorePaymentSession })
   .openapi('StoreCreatePaymentSessionResponse')
 export type StoreCreatePaymentSessionResponse = z.input<typeof StoreCreatePaymentSessionResponse>
+
+export const StoreUpdatePaymentSessionResponse = z
+  .object({ paymentSession: StorePaymentSession })
+  .openapi('StoreUpdatePaymentSessionResponse')
+export type StoreUpdatePaymentSessionResponse = z.input<typeof StoreUpdatePaymentSessionResponse>

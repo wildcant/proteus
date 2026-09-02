@@ -8,7 +8,9 @@ import type {
   CreateStorePaymentCollectionBody,
   CreateStorePaymentSessionBody,
   StoreCreatePaymentCollectionResponse,
-  StoreCreatePaymentSessionResponse
+  StoreCreatePaymentSessionResponse,
+  StoreUpdatePaymentSessionResponse,
+  UpdateStorePaymentSessionBody
 } from '../model';
 
 import { fetcher } from '../../fetcher.ts';
@@ -43,5 +45,21 @@ export const createStorePaymentSession = (
     },
       );
     }
+  /**
+ * @summary Re-price a payment session from the cart's server-side total
+ */
+export const updateStorePaymentSession = (
+    id: string,
+    sessionId: string,
+    updateStorePaymentSessionBody?: BodyType<UpdateStorePaymentSessionBody>,
+ ) => {
+      return fetcher<StoreUpdatePaymentSessionResponse>(
+      {url: `/store/payment-collections/${id}/payment-sessions/${sessionId}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: updateStorePaymentSessionBody
+    },
+      );
+    }
   export type CreateStorePaymentCollectionResult = NonNullable<Awaited<ReturnType<typeof createStorePaymentCollection>>>
 export type CreateStorePaymentSessionResult = NonNullable<Awaited<ReturnType<typeof createStorePaymentSession>>>
+export type UpdateStorePaymentSessionResult = NonNullable<Awaited<ReturnType<typeof updateStorePaymentSession>>>
