@@ -17,12 +17,15 @@
     "openapi:generate": "npm run --workspace=backend openapi:dump:offline && npm run --workspace=admin openapi:client && npm run --workspace=store openapi:client",
     "typecheck": "npm run --workspace=backend typecheck && npm run --workspace=store typecheck && npm run --workspace=admin typecheck",
     "verify": "./scripts/verify.sh",
+    "check:workflow-purity": "tsx scripts/checks/replay-purity.ts",
     "sync-secrets:admin": "./scripts/sync-secrets.sh proteus-admin",
     "sync-secrets:backend": "./scripts/sync-secrets.sh proteus-backend",
     "sync-secrets:store": "./scripts/sync-secrets.sh proteus",
     "pull-keys": "npx wrangler r2 object get dotenv-keys/.env.keys --file=.env.keys --remote"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.4"
+    "@biomejs/biome": "2.5.4",
+    "tsx": "^4.19.0",
+    "typescript": "^6.0.2"
   }
 }

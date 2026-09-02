@@ -41,6 +41,10 @@ job_conventions() {
   # exist once drizzle has built the table, so this one imports the models. See
   # apps/backend/scripts/checks/run.ts.
   npm run --workspace=backend --silent check:schema || code=1
+  # Replay purity — the rule the Temporal adapter rests on. Parses the workflow handlers, so it
+  # cannot be a grep; run from the root because `typescript` resolves to the 7.x native compiler
+  # inside apps/backend and that ships no JS API. See scripts/checks/replay-purity.ts.
+  npm run --silent check:workflow-purity || code=1
   return $code
 }
 

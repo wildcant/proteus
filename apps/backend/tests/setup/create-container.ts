@@ -11,6 +11,18 @@ import type { AwilixContainer } from 'awilix'
 import { appConfigInput } from '../../src/config.js'
 import { bootstrapContainer } from '../../src/container.js'
 import type { Database } from '../../src/schema.type.js'
+import { pinnedTestWorkflowEngine } from './workflow-engine.js'
+
+/**
+ * Loaded only when the run actually pins Temporal.
+ *
+ * A static import would pull `@temporalio/worker` — and through it the native `core-bridge` — into
+ * every test file that merely builds a container, including the default suite, which is meant to
+ * need nothing but Postgres.
+ */
+function attachToTemporal() {
+  return import('./temporal-parity.js').then((module) => module.createParityWorkflowEngine())
+}
 
 /** What tests annotate with, so no test file imports awilix to name the thing it was handed. */
 export type TestContainer = AwilixContainer
@@ -43,13 +55,22 @@ export async function createTestContainer(
     },
   }
 
-  const container = await bootstrapContainer({ logger, dbProvider, config: withPinnedEngine(options.config) })
+  const config = withPinnedEngine(options.config)
+  const parity = config.projectConfig?.workflows?.engine === 'temporal' ? await attachToTemporal() : undefined
+
+  const container = await bootstrapContainer({
+    logger,
+    dbProvider,
+    config,
+    ...(parity ? { createTemporalWorkflowEngine: () => parity.engine } : {}),
+  })
 
   let closed = false
   const close = async () => {
     if (closed) return
     closed = true
     await container.dispose()
+    await parity?.close()
   }
 
   try {
@@ -64,12 +85,13 @@ export async function createTestContainer(
 }
 
 /**
- * Pins the simple workflow engine unless the caller asked for another one.
+ * Pins a workflow engine unless the caller asked for one.
  *
- * `RUNTIME` is `node` under vitest, so the derived default would be Temporal and every workflow
- * test would need a running server and Worker. The parity suite is what runs these same tests
- * against Temporal, and it does it by passing `config.projectConfig.workflows.engine` — so this
- * only supplies a default, it does not override.
+ * `RUNTIME` is `node` under vitest, so the derived default would be Temporal and every workflow test
+ * would need a running server and Worker. Which one the run pins comes from
+ * `workflow-engine.ts` — `simple` for `npm test`, `temporal` for `npm run test:temporal`, both
+ * through `projectConfig.workflows.engine` and neither through the environment (D4). This only
+ * supplies a default; a test that names an engine still gets the one it named.
  */
 function withPinnedEngine(config: InputConfig | undefined): InputConfig {
   const base = config ?? appConfigInput
@@ -77,7 +99,7 @@ function withPinnedEngine(config: InputConfig | undefined): InputConfig {
     ...base,
     projectConfig: {
       ...base.projectConfig,
-      workflows: { engine: base.projectConfig?.workflows?.engine ?? 'simple' },
+      workflows: { engine: base.projectConfig?.workflows?.engine ?? pinnedTestWorkflowEngine() },
     },
   }
 }
