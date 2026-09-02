@@ -70,6 +70,24 @@ module.exports = {
       },
     },
     {
+      name: 'no-temporal-in-workerd',
+      comment:
+        'The workerd bundle must not reach Temporal. @temporalio/worker pulls in ' +
+        '@temporalio/core-bridge, a native addon workerd cannot load, so a stray import here is a ' +
+        'broken deploy rather than dead weight. src/container.ts therefore takes the Temporal ' +
+        'engine as an injected factory instead of importing the adapter, exactly as it takes its ' +
+        'logger and dbProvider — this rule is what keeps that boundary deliberate rather than ' +
+        'incidental. Reachability, not a direct import: the hazard is transitive.',
+      severity: 'error',
+      from: {
+        path: '^src/index\\.workerd\\.ts$',
+      },
+      to: {
+        path: '@temporalio/|^src/temporal/|^src/core/workflows/temporal-adapter\\.ts$',
+        reachable: true,
+      },
+    },
+    {
       name: 'no-circular',
       comment: 'No circular dependencies allowed.',
       severity: 'error',

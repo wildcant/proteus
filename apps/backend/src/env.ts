@@ -40,9 +40,11 @@ const envSchema = z.object({
   S3_ENDPOINT: z.string().default(''),
 
   /**
-   * Temporal connection settings only. Which engine runs a workflow is not configured here —
-   * `RUNTIME` decides that (ADR-0009 follow-up), so pointing at a different cluster and switching
-   * engines stay separate knobs.
+   * Temporal connection settings only. Which engine runs a workflow is not configured here:
+   * `RUNTIME` decides it — `workerd` cannot load Temporal's native Worker and keeps the in-process
+   * adapter, `node` gets Temporal — and a composition root can pin the other one through
+   * `projectConfig.workflows.engine`. See `core/workflows/engine-selection.ts`. Pointing at a
+   * different cluster and choosing an engine stay separate knobs.
    */
   TEMPORAL_ADDRESS: z.string().default('localhost:7233'),
   TEMPORAL_NAMESPACE: z.string().default('default'),

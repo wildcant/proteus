@@ -8,6 +8,7 @@ import type { InputConfig } from '@core/config/types.js'
 import type { DbProvider } from '@core/db/ports.js'
 import type { Logger } from '@core/types/logger.js'
 import type { AwilixContainer } from 'awilix'
+import { appConfigInput } from '../../src/config.js'
 import { bootstrapContainer } from '../../src/container.js'
 import type { Database } from '../../src/schema.type.js'
 
@@ -42,7 +43,7 @@ export async function createTestContainer(
     },
   }
 
-  const container = await bootstrapContainer({ logger, dbProvider, config: options.config })
+  const container = await bootstrapContainer({ logger, dbProvider, config: withPinnedEngine(options.config) })
 
   let closed = false
   const close = async () => {
@@ -60,4 +61,23 @@ export async function createTestContainer(
   }
 
   return { container, close }
+}
+
+/**
+ * Pins the simple workflow engine unless the caller asked for another one.
+ *
+ * `RUNTIME` is `node` under vitest, so the derived default would be Temporal and every workflow
+ * test would need a running server and Worker. The parity suite is what runs these same tests
+ * against Temporal, and it does it by passing `config.projectConfig.workflows.engine` — so this
+ * only supplies a default, it does not override.
+ */
+function withPinnedEngine(config: InputConfig | undefined): InputConfig {
+  const base = config ?? appConfigInput
+  return {
+    ...base,
+    projectConfig: {
+      ...base.projectConfig,
+      workflows: { engine: base.projectConfig?.workflows?.engine ?? 'simple' },
+    },
+  }
 }

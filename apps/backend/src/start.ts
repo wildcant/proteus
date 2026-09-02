@@ -7,7 +7,7 @@ import type { Logger } from './core/types/logger.js'
 import type { CronScheduler } from './core/types/scheduler.js'
 import { ContainerRegistrationKeys } from './core/utils/index.js'
 import { env } from './env.js'
-import { container } from './framework/runtime/container.node.js'
+import { closeWorkflowEngine, container } from './framework/runtime/container.node.js'
 import { createExpressApp } from './framework/runtime/express/app.js'
 import { jobs } from './jobs/index.js'
 import { prepareRoutes } from './routes.js'
@@ -86,6 +86,7 @@ export async function start(options?: StartOptions): Promise<StartResult> {
       server.close((error) => (error ? reject(error) : resolve()))
     })
     await scheduler.shutdown()
+    await closeWorkflowEngine()
     await dbProvider.shutdown()
     await container.dispose()
   }

@@ -1,29 +1,17 @@
-import { TestWorkflowEnvironment } from '@temporalio/testing'
-import { DefaultLogger, Runtime, Worker } from '@temporalio/worker'
+import type { TestWorkflowEnvironment } from '@temporalio/testing'
+import { Worker } from '@temporalio/worker'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import * as activities from '../activities.js'
-import { TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
+import { ping } from '../activities.js'
+import { PAYLOAD_CONVERTER_PATH, TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
 import { pingWorkflow } from '../workflows.js'
-
-/**
- * Booting the time-skipping test server downloads its binary on first run and building the
- * workflow bundle is a webpack pass, so the setup budget is minutes, not the default 5 seconds.
- */
-const BOOT_TIMEOUT = 180_000
+import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT } from './temporal-test-env.js'
 
 let testEnv: TestWorkflowEnvironment
 
 describe('pingWorkflow', () => {
   beforeAll(async () => {
-    // `setup-test-env.ts` turns console.error/warn into thrown errors, and the SDK logs at WARN
-    // while the test server starts. Routing its logs to console.info keeps them readable without
-    // failing a test for something the SDK considers routine.
-    Runtime.install({
-      logger: new DefaultLogger('WARN', ({ level, message }) => console.info(`[temporal] ${level} ${message}`)),
-    })
-
-    testEnv = await TestWorkflowEnvironment.createTimeSkipping()
-  }, BOOT_TIMEOUT)
+    testEnv = await createTemporalTestEnvironment()
+  }, TEMPORAL_BOOT_TIMEOUT)
 
   afterAll(async () => {
     await testEnv?.teardown()
@@ -36,7 +24,8 @@ describe('pingWorkflow', () => {
         connection: testEnv.nativeConnection,
         taskQueue: TEMPORAL_TASK_QUEUE,
         workflowsPath: WORKFLOWS_PATH,
-        activities,
+        dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
+        activities: { ping },
       })
 
       const output = await worker.runUntil(
@@ -51,6 +40,6 @@ describe('pingWorkflow', () => {
       // back from an Activity execution rather than from the workflow calling a local function.
       expect(output).toBe('pong: proteus (activity ping, attempt 1)')
     },
-    BOOT_TIMEOUT,
+    TEMPORAL_BOOT_TIMEOUT,
   )
 })
