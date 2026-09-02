@@ -74,6 +74,15 @@ export abstract class AbstractPaymentProvider<TConfig = Record<string, unknown>>
   /** Whether this provider is for testing/development only. */
   static isTestOnly = false
 
+  /**
+   * Checked by the provider loader before the provider is constructed, so a deployment missing a
+   * credential fails at boot rather than at the first payment — which is in front of a shopper,
+   * as an unexplained failure, however long after the deploy that caused it. Throw to refuse
+   * startup, naming the provider and the option. Optional: a provider with nothing to check does
+   * not implement it.
+   */
+  static validateOptions?(options: Record<string, unknown>): void
+
   protected config: TConfig
   protected container: Record<string, unknown>
 

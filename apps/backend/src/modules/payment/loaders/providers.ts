@@ -17,7 +17,12 @@ export type PaymentModuleOptions = {
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: provider constructors accept varied dependency shapes
-type ProviderConstructor = (new (...args: any[]) => AbstractPaymentProvider) & { identifier: string }
+type AnyProviderConstructor = new (...args: any[]) => AbstractPaymentProvider
+
+type ProviderConstructor = AnyProviderConstructor & {
+  identifier: string
+  validateOptions?: (options: Record<string, unknown>) => void
+}
 
 export const SYSTEM_PROVIDER_KEY = 'system_default'
 
@@ -67,6 +72,9 @@ export async function loadProviders({
 
       for (const ServiceClass of providerExports.services) {
         const Klass = ServiceClass as ProviderConstructor
+        // Before the constructor, not inside it: a provider whose SDK client is happy to be built
+        // from a blank key would otherwise register cleanly and fail at the first charge.
+        Klass.validateOptions?.(providerOptions ?? {})
         const instance = new Klass(container.cradle, providerOptions ?? {})
         container.register({ [`pp_${Klass.identifier}_${id}`]: asValue(instance) })
       }

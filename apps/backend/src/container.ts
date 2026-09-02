@@ -8,9 +8,10 @@ import { asFunction, asValue, createContainer } from 'awilix'
 import { appConfig } from './config.js'
 import { bootstrapModule } from './core/bootstrap/index.js'
 import { defineAppConfig } from './core/config/index.js'
-import type { InputConfig } from './core/config/types.js'
+import type { ConfigModule, InputConfig } from './core/config/types.js'
 import type { DbProvider } from './core/db/ports.js'
 import type { Logger } from './core/types/logger.js'
+import { DeferredTasks } from './core/utils/deferred-tasks.js'
 import { ContainerRegistrationKeys } from './core/utils/index.js'
 import { createSimpleWorkflowEngine } from './core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from './core/workflows/types.js'
@@ -37,6 +38,15 @@ export async function bootstrapContainer(deps: { logger: Logger; dbProvider: DbP
     [ContainerRegistrationKeys.LOGGER]: asValue(logger),
     [ContainerRegistrationKeys.DB_PROVIDER]: asValue(dbProvider),
     [ContainerRegistrationKeys.GET_DB]: asValue(dbProvider.getDb),
+  })
+
+  // Registered here rather than inside a module: the payment webhook route is the caller, and a
+  // route cannot reach into a module's private container.
+  const configModule: ConfigModule = container.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
+  container.register({
+    [ContainerRegistrationKeys.DEFERRED_TASKS]: asValue(
+      new DeferredTasks(configModule.projectConfig.webhooks, dbProvider, logger),
+    ),
   })
 
   await bootstrapModule(container, authModule, authProviderDeclarations)

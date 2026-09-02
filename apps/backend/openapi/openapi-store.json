@@ -1290,6 +1290,15 @@
           "deletedAt"
         ]
       },
+      "StoreUpdatePaymentSessionResponse": {
+        "type": "object",
+        "properties": {
+          "paymentSession": {
+            "$ref": "#/components/schemas/StorePaymentSession"
+          }
+        },
+        "required": ["paymentSession"]
+      },
       "StorePaymentProviderListResponse": {
         "type": "object",
         "properties": {
@@ -2750,6 +2759,62 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreCreatePaymentSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/payment-collections/{id}/payment-sessions/{sessionId}": {
+      "patch": {
+        "operationId": "updateStorePaymentSession",
+        "summary": "Re-price a payment session from the cart's server-side total",
+        "tags": ["Payment Collections"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "sessionId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreUpdatePaymentSessionResponse"
                 }
               }
             }

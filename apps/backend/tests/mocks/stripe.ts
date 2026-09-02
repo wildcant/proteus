@@ -17,7 +17,17 @@ export type GatewayCall = { method: string; params: Record<string, unknown> }
 export type FakeIntent = {
   id: string
   status: StripeSdk.PaymentIntent.Status
+  /** The intent's nominal total. What was actually taken, or is left to take, is below. */
   amount: number
+  /**
+   * What the charge actually took, and what an authorization has left to take. Kept apart from
+   * `amount` because reading `amount` for either is only right by coincidence — see
+   * `webhookAmountOf` in the adapter.
+   */
+  // biome-ignore lint/style/useNamingConvention: the Stripe field the adapter reads
+  amount_received: number
+  // biome-ignore lint/style/useNamingConvention: the Stripe field the adapter reads
+  amount_capturable: number
   currency: string
   metadata: Record<string, string>
   // biome-ignore lint/style/useNamingConvention: the Stripe field the adapter reads
@@ -40,6 +50,9 @@ export const stripeGateway = {
   calls: [] as GatewayCall[],
   intents: new Map<string, FakeIntent>(),
 
+  /** Errors queued per method, thrown one per call before the method does anything. */
+  failures: new Map<string, unknown[]>(),
+
   /**
    * The state a created intent lands in. `requires_capture` is what a manual-capture intent
    * reaches once the shopper has confirmed it, which is where most of these tests start.
@@ -49,7 +62,16 @@ export const stripeGateway = {
   reset() {
     this.calls = []
     this.intents = new Map()
+    this.failures = new Map()
     this.statusOnCreate = 'requires_capture'
+  },
+
+  /**
+   * Makes the next call (or calls) to `method` throw. One queued error per call, in order, so a
+   * test can say "fail once, then work" — which is the shape every retry assertion needs.
+   */
+  failNext(method: string, ...errors: unknown[]) {
+    this.failures.set(method, [...(this.failures.get(method) ?? []), ...errors])
   },
 
   callsTo(method: string): GatewayCall[] {
@@ -78,6 +100,20 @@ export function webhookEventBody(type: string, intent: FakeIntent, id = 'evt_tes
 }
 
 /**
+ * What Stripe reports as received and as capturable for an intent in a given state. A test that
+ * needs the two to disagree with the nominal amount overrides them on the event body it builds;
+ * this only keeps an untouched intent self-consistent.
+ */
+function settledAmounts(status: StripeSdk.PaymentIntent.Status, amount: number) {
+  return {
+    // biome-ignore lint/style/useNamingConvention: the Stripe field the adapter reads
+    amount_received: status === 'succeeded' ? amount : 0,
+    // biome-ignore lint/style/useNamingConvention: the Stripe field the adapter reads
+    amount_capturable: status === 'requires_capture' ? amount : 0,
+  }
+}
+
+/**
  * The module factory. Test files register it with:
  *
  * ```ts
@@ -96,6 +132,13 @@ export async function stripeModuleMock() {
     return intent
   }
 
+  /** Throws whatever `failNext` queued for this method, once per queued error. */
+  function throwIfQueued(method: string) {
+    const queued = stripeGateway.failures.get(method)
+    if (!queued?.length) return
+    throw queued.shift()
+  }
+
   class FakeStripe {
     static errors = ActualStripe.errors
 
@@ -109,6 +152,7 @@ export async function stripeModuleMock() {
     paymentIntents = {
       create: async (params: IntentCreateParams, options?: unknown) => {
         stripeGateway.calls.push({ method: 'paymentIntents.create', params: { ...params, options } })
+        throwIfQueued('paymentIntents.create')
 
         nextIntentId += 1
         const intent: FakeIntent = {
@@ -119,6 +163,7 @@ export async function stripeModuleMock() {
           metadata: params.metadata ?? {},
           // biome-ignore lint/style/useNamingConvention: the Stripe field the adapter reads
           client_secret: `pi_fake_${nextIntentId}_secret`,
+          ...settledAmounts(stripeGateway.statusOnCreate, params.amount),
         }
         stripeGateway.intents.set(intent.id, intent)
         return intent
@@ -126,28 +171,35 @@ export async function stripeModuleMock() {
 
       retrieve: async (id: string) => {
         stripeGateway.calls.push({ method: 'paymentIntents.retrieve', params: { id } })
+        throwIfQueued('paymentIntents.retrieve')
         return requireIntent(id)
       },
 
       capture: async (id: string, params?: unknown, options?: unknown) => {
         stripeGateway.calls.push({ method: 'paymentIntents.capture', params: { id, params, options } })
+        throwIfQueued('paymentIntents.capture')
         const intent = requireIntent(id)
         intent.status = 'succeeded'
+        Object.assign(intent, settledAmounts('succeeded', intent.amount))
         return intent
       },
 
       cancel: async (id: string, params?: unknown, options?: unknown) => {
         stripeGateway.calls.push({ method: 'paymentIntents.cancel', params: { id, params, options } })
+        throwIfQueued('paymentIntents.cancel')
         const intent = requireIntent(id)
         intent.status = 'canceled'
+        Object.assign(intent, settledAmounts('canceled', intent.amount))
         return intent
       },
 
       update: async (id: string, params: { amount?: number; currency?: string }, options?: unknown) => {
         stripeGateway.calls.push({ method: 'paymentIntents.update', params: { id, ...params, options } })
+        throwIfQueued('paymentIntents.update')
         const intent = requireIntent(id)
         if (params.amount !== undefined) intent.amount = params.amount
         if (params.currency !== undefined) intent.currency = params.currency
+        Object.assign(intent, settledAmounts(intent.status, intent.amount))
         return intent
       },
     }
@@ -155,6 +207,7 @@ export async function stripeModuleMock() {
     refunds = {
       create: async (params: { amount: number }, options?: unknown) => {
         stripeGateway.calls.push({ method: 'refunds.create', params: { ...params, options } })
+        throwIfQueued('refunds.create')
         return { id: 're_fake', ...params }
       },
     }

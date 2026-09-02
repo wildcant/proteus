@@ -22,6 +22,7 @@ import type {
   DeletePaymentMethodDTO,
   ProviderWebhookPayload,
   UpdatePaymentCollectionDTO,
+  UpdatePaymentSessionDTO,
   UpdateRefundReasonDTO,
   WebhookActionResult,
 } from './mutations.js'
@@ -54,6 +55,9 @@ export type IPaymentModuleService = {
     input: CreatePaymentSessionDTO,
     context?: Context,
   ): Promise<PaymentSessionDTO>
+  /** Re-prices an open session. `data.amount` must be a server-computed total, never one a
+   *  browser supplied. An unchanged amount does not reach the provider. */
+  updatePaymentSession(id: string, data: UpdatePaymentSessionDTO, context?: Context): Promise<PaymentSessionDTO>
   /** Destructive: the session is destroyed at the provider, so there is nothing to restore. */
   deletePaymentSession(id: string, context?: Context): Promise<void>
   authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null>
