@@ -1,4 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { createWorkflow, type WorkflowDefinition, WorkflowTerminalError } from '@core/workflows/types.js'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
@@ -158,6 +159,55 @@ test.describe('replay', () => {
     expect(failure).toBeInstanceOf(StepExecutionError)
     expect(failure).toMatchObject({ step: 'boom' })
     expect((failure as StepExecutionError).original).toBeInstanceOf(WorkflowTerminalError)
+  })
+
+  test('abandons a handler that wrapped a step in try/catch, where the simple adapter recovers', async ({ expect }) => {
+    /**
+     * The one divergence between the two engines that ordinary code can reach by accident, pinned
+     * here so it cannot drift silently. `scripts/checks/replay-purity.ts` rejects this shape and
+     * `core/workflows/readme.md` documents it; this is the evidence behind both.
+     *
+     * A factory, so each engine gets a handler with its own recording arrays and neither run can
+     * see the other's.
+     */
+    const makeWorkflow = () => {
+      const ran: string[] = []
+
+      const workflow = createWorkflow<void, string>('recovers-in-handler', async (ctx) => {
+        try {
+          return await ctx.step('charge', async () => {
+            throw new Error('step blew up')
+          })
+        } catch {
+          ran.push('catch')
+          return 'handler-caught-it'
+        } finally {
+          ran.push('finally')
+        }
+      })
+
+      return { workflow, ran }
+    }
+
+    const underSimple = makeWorkflow()
+    await expect(createSimpleWorkflowEngine().run(underSimple.workflow, undefined, makeContext())).resolves.toBe(
+      'handler-caught-it',
+    )
+    expect(underSimple.ran).toEqual(['catch', 'finally'])
+
+    const underReplay = makeWorkflow()
+    const failure = await advanceWorkflow(erase(underReplay.workflow), makeContext(), {
+      name: 'recovers-in-handler',
+      input: undefined,
+      outputs: [],
+      fingerprint: null,
+    }).catch((error: unknown) => error)
+
+    // The handler stopped at the `await` and was never resumed, so neither clause ran and the
+    // failure reaches the caller instead of the handler's recovery value.
+    expect(failure).toBeInstanceOf(StepExecutionError)
+    expect(failure).toMatchObject({ step: 'charge' })
+    expect(underReplay.ran).toEqual([])
   })
 
   test('runs compensations in reverse order, swallowing their errors', async ({ expect }) => {

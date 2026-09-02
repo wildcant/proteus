@@ -79,5 +79,52 @@ services:
       retries: 12
       start_period: 10s
 
+  # What makes `npm run dev` work with no extra setup. `RUNTIME` defaults to `node`, so
+  # `engine-selection.ts` resolves the Temporal engine and every `createWorkflow(...).run()` becomes
+  # a task on the `proteus` queue. Nothing polling that queue is not an error — `workflow.execute`
+  # has no execution timeout, so the HTTP request simply never returns. This is what polls it.
+  #
+  # `npm run --workspace=backend worker` is still the way to iterate on Worker code itself; this
+  # service and that command run the same entrypoint, through the same script.
+  worker:
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile.worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    environment:
+      # dotenvx leaves an already-set variable alone, so these win over `.env.local` without
+      # `--overload`. Both addresses are the same services the host reaches on localhost; inside the
+      # network they are service names.
+      POOLER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
+      DIRECT_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
+      TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      # The Worker resolves the same secrets the API does, and reads them the same way — `npm run
+      # setup` (specifically `pull-keys`) has to have produced `.env.keys`, exactly as it must for
+      # `npm run dev`.
+      - ../../.env.local:/app/.env.local:ro
+      - ../../.env.keys:/app/.env.keys:ro
+      # Source only. `node_modules` stays the image's, because `@temporalio/core-bridge` is a native
+      # addon and the host's build is for the host's platform.
+      - ./src:/app/apps/backend/src:ro
+      - ../../packages:/app/packages:ro
+      # `upload-files` writes through the localfs provider in dev, and the API serves what it wrote.
+      # Without this the two disagree about where the file went.
+      - ./static:/app/apps/backend/static
+    healthcheck:
+      # Asks Temporal whether the queue has a poller, rather than whether a process exists — a
+      # Worker that booted and failed to connect is exactly the case the second one misses.
+      test: ['CMD', 'npm', 'run', '--workspace=backend', '--silent', 'temporal:worker-ready']
+      interval: 5s
+      timeout: 20s
+      retries: 12
+      # The workflow bundle is a webpack pass over the sandbox entrypoint, so the first probe is
+      # late rather than slow — the same reason `temporal` above needs one.
+      start_period: 60s
+
 volumes:
   proteus-dev-data:

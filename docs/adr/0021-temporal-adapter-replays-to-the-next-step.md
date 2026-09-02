@@ -170,17 +170,29 @@ which is the point.
 ## Evidence
 
 - **Parity.** `npm run --workspace=backend test` (simple) and `npm run --workspace=backend test:temporal`
-  run the same 71 files and the same assertions and both report **828 passed, 3 skipped**. Neither
+  run the same 72 files and the same assertions and both report **830 passed, 3 skipped**. Neither
   needs an environment variable; both pin the engine through `projectConfig.workflows.engine`.
 
-  **How much of that number is adapter evidence.** At most 24 of the 71 files can route through the
+  **How much of that number is adapter evidence.** At most 24 of the 72 files can route through the
   pinned engine — 15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a
   workflow, and the engine-pin probe below. Review round 1 put the assertions that genuinely
   round-trip through Temporal at roughly 120–250 of the ~830. The rest are engine-blind rather than
   incidentally passing: `src/temporal/__tests__` and the other `src/core/workflows/__tests__` files
   build their own engines, and the module, core, framework and provider tests never reach a workflow
-  at all. So the claim is "no behavioural divergence anywhere the adapter is reachable", not "828
+  at all. So the claim is "no behavioural divergence anywhere the adapter is reachable", not "830
   assertions' worth of adapter coverage". Do not restate the headline without this.
+
+  **For two workflows the suite proves a topology production does not deploy.** `create-product` and
+  `complete-customer-auth` call another workflow's `.run()` from inside a step.
+  `src/temporal/container.ts` pins the **simple** engine on the production Worker's container, so
+  there that nested run is inline, in the Activity. The parity harness runs its Activities against
+  the *test* container, which `test:temporal` pins to `temporal` — `tests/setup/temporal-parity.ts`
+  says so itself — so under the suite the same nested run is a second Temporal execution. A green
+  `POST /admin/products` under `test:temporal` is therefore evidence about a shape production does
+  not use. `src/temporal/__tests__/nested-workflow.test.ts` covers the deployed shape directly: it
+  pins the Worker's global engine to `simple` as `container.ts` does, and asserts that the nested
+  workflow's steps run inside the outer execution's Activity and that none of them reach an Activity
+  or Temporal history of their own.
 
 - **The run is on the engine it says it is.** `src/core/workflows/__tests__/engine-pin.test.ts` runs a
   one-step workflow and asserts *where the step body executed* — `Context.current()` resolves only
@@ -192,7 +204,7 @@ which is the point.
 - **Resume.** `npm run --workspace=backend temporal:crash-resume` starts `complete-cart`, stops the
   Worker after 8 steps, starts a new one, and prints from Temporal's history which OS process ran each
   step: 1–8 on the first pid, 9–14 on the second, no step twice, order created.
-- **Purity.** `npm run check:workflow-purity` reports 26 workflows checked and all 7 rules still
+- **Purity.** `npm run check:workflow-purity` reports 26 workflows checked and all 8 rules still
   tripping on the fixture.
 
 ## Risks
@@ -212,6 +224,21 @@ which is the point.
   promise including a rejected one, so if Temporal is unreachable at first use, every later `run()`
   rejects with that same original error until the API process restarts. Pre-existing; the fix is to
   clear the handle on rejection.
+- **A nested workflow gets materially less durability than the other 24.** The Worker's `simple` pin
+  buys `create-product` and `complete-customer-auth` the failure and compensation shape they were
+  written against, and it costs them durable execution: the nested workflow's steps are not journaled,
+  so nothing about them survives the Activity. A Worker lost part-way through the nested run resumes
+  by re-executing the whole nested workflow from its first step, and the nested workflow's own
+  compensation stack — ordinary in-process memory — dies with the process rather than unwinding.
+  `src/core/workflows/readme.md` gives the rationale for the pin; this is its price. Removing the pin
+  is not the fix, because that trades this for a different failure shape in an Activity; a child
+  workflow started through Temporal's own `startChild` is, and it is a port change.
+- **The abandoned handler is observable to ordinary code.** A handler that wraps `ctx.step` in its
+  own `try` recovers under the simple adapter and is abandoned under Temporal, because the replay
+  returns a promise that never settles and the `catch`/`finally` is never reached. It is rejected by
+  `scripts/checks/replay-purity.ts` (`try-around-step`) rather than documented alone, for the same
+  reason purity is: nothing about it fails loudly. Making the replay reject into the handler instead
+  was refused — the handler would resume and go on calling steps inside a failed replay.
 - **Two adapters, two behaviours, one codebase.** A bug reproducible only on Cloudflare, or only on
   Node, is now possible. The parity suite is the mitigation, and it is why it matters more than it
   looks. See ADR-0022.
@@ -220,6 +247,8 @@ which is the point.
 
 - `apps/backend/src/core/workflows/readme.md` — how to write a workflow against either adapter
 - `apps/backend/src/temporal/` — the driver, the replay, the Activities, the converter
-- `scripts/checks/replay-purity.ts` — the purity rule and why it lives at the repo root
+- `scripts/checks/replay-purity.ts` — the purity rule, the `try`-around-`ctx.step` rule, and why
+  they live at the repo root
+- `apps/backend/src/temporal/__tests__/nested-workflow.test.ts` — the production nested topology
 - ADR-0009 — the port this adapter implements
 - ADR-0022 — which runtime gets which adapter, and what that costs

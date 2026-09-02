@@ -11,6 +11,18 @@
  *     Inside a `createWorkflow` handler, everything outside a `ctx.step` callback
  *     must be pure and synchronous.
  *
+ * A second invariant rides along, for the same reason it is checked rather than written down. Once
+ * the step it was replaying to is done, the handler is *abandoned*: `src/temporal/replay.ts` hands
+ * back a promise that never settles, so the handler simply stops at its next `await`. A `try` the
+ * handler wrapped around that `ctx.step` therefore never reaches its `catch` or its `finally` —
+ * while the simple adapter rejects into the handler and both do run. Ordinary recovery code, two
+ * behaviours, no error anywhere.
+ *
+ *     A handler must not wrap a `ctx.step` call in its own `try`.
+ *
+ * A `try` *inside* a step action is the legal form and stays legal: it runs Worker-local, once, on
+ * both engines, which is where a recovery path belongs.
+ *
  * Scope is single-file and syntactic. Helpers under `src/workflows/*∕utils/` are pure by convention
  * and are trusted (ADR-0021, D11); what this owns is the handler body. Step *concurrency* is not
  * here either — `src/temporal/replay.ts` asserts that at runtime, where it can see two `ctx.step`
@@ -46,6 +58,7 @@ import * as ts from 'typescript'
 /** Stable ids, so the fixture pass can assert every rule still fires rather than just "something did". */
 type PurityRule =
   | 'await-outside-step'
+  | 'try-around-step'
   | 'wall-clock'
   | 'randomness'
   | 'crypto'
@@ -73,6 +86,7 @@ type Report = {
 /** Every rule the fixture is written to trip. A rule missing from here is how this check would rot. */
 const EXPECTED_IN_FIXTURE: PurityRule[] = [
   'await-outside-step',
+  'try-around-step',
   'wall-clock',
   'randomness',
   'crypto',
@@ -216,6 +230,23 @@ function inspect(node: ts.Node, ctx: string, name: string, at: (node: ts.Node) =
     )
   }
 
+  // Not a purity rule but the same failure shape: silent, and only on one of the two engines. The
+  // `try` is reported, rather than the `ctx.step` inside it, because the `try` is the part to move.
+  if (ts.isTryStatement(node) && containsStepCall(node.tryBlock, ctx)) {
+    const guards = [node.catchClause ? 'catch' : '', node.finallyBlock ? 'finally' : '']
+      .filter(Boolean)
+      .map((clause) => `\`${clause}\``)
+      .join(' and its ')
+
+    report(
+      'try-around-step',
+      `wraps a \`${ctx}.step(…)\` call in its own \`try\`, whose ${guards} runs under the simple adapter ` +
+        'and never under Temporal',
+      `handle the failure inside the \`${ctx}.step(…)\` action, where it runs on both engines — or let the ` +
+        'step throw and let the workflow compensate',
+    )
+  }
+
   if (ts.isForOfStatement(node) && node.awaitModifier) {
     report(
       'await-outside-step',
@@ -266,6 +297,30 @@ function inspect(node: ts.Node, ctx: string, name: string, at: (node: ts.Node) =
     )
   }
 
+  return found
+}
+
+/**
+ * Whether a step is reached anywhere under `block` — at any depth, including inside another step's
+ * action, because a `try` in the pure region wraps everything below it regardless of nesting.
+ *
+ * A shared `…Step(ctx, …)` helper counts as well as a literal `ctx.step(…)`. The helper calls
+ * `ctx.step` itself, so wrapping one in a `try` abandons the handler at exactly the same await, and
+ * this check is single-file and cannot see that by following the import.
+ */
+function containsStepCall(block: ts.Block, ctx: string): boolean {
+  let found = false
+
+  const visit = (node: ts.Node) => {
+    if (found) return
+    if (ts.isCallExpression(node) && isAllowedAwait(node, ctx)) {
+      found = true
+      return
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(block)
   return found
 }
 

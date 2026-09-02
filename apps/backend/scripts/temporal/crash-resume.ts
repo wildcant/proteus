@@ -22,10 +22,16 @@ import { seedCheckoutCart } from './checkout-cart.js'
  * losing the process loses the checkout, mid-payment and all.
  *
  *   docker compose -f apps/backend/docker-compose.yml up -d --wait
+ *   docker compose -f apps/backend/docker-compose.yml stop worker
  *   docker compose -f apps/backend/docker-compose.test.yml up -d --wait
  *   npm run --workspace=backend db:migrate:test
  *   npm run --workspace=backend temporal:crash-resume
  *   npm run --workspace=backend temporal:crash-resume -- --hard
+ *
+ * The `stop worker` line is load-bearing. The dev stack's Worker polls `TEMPORAL_TASK_QUEUE`, the
+ * same queue this script's own Workers use, so leaving it running means the step "lost" below is
+ * picked up by a Worker this script cannot stop — every step still completes and the demo proves
+ * nothing.
  *
  * `--hard` is the other half of the truth. The default stops the Worker with SIGTERM, which drains
  * the step in flight before exiting — that is the case durability covers, and the one AC3's evidence

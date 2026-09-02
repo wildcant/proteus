@@ -184,10 +184,14 @@ handler body, outside every `ctx.step` callback, these are rejected:
 | `Math.random()`, `crypto.*` | generate inside a step action, so every replay sees the same value |
 | `process.env` | the validated `env` object from `src/env.ts`, read once at startup |
 | `container.*` | resolve services inside a step action, which is handed the container |
+| a `try` wrapping `ctx.step(…)` | handle the failure inside the step action, or let the step throw and let the workflow compensate — see the `try`/`catch` row below |
 
 `new Date(iso)` is a parse and is allowed; it is the zero-argument form that reads a clock. The step
 *name* argument is inside the checked region too, because it is rebuilt on every replay like the rest
 of the glue.
+
+The last row is not about purity — it is the abandoned-handler divergence in the table below, checked
+here because it fails the same silent way. A `try` *inside* a step action is untouched by it.
 
 What it does not do: it does not follow imports, so helpers under `src/workflows/*/utils/` are trusted
 to be pure; and it does not police step concurrency, which the replay asserts at runtime instead. It
@@ -206,6 +210,7 @@ root has the 6.x that the admin and store apps build with.
 | Step order, compensation order, swallowed compensation errors | same | same |
 | `AppError` and `WorkflowTerminalError` a caller catches (class, message, `type`) | same | same |
 | A *custom* `Error` subclass thrown by a step | arrives as itself | arrives as `Error` with the same `name` and `message` |
+| A handler's own `try` around `ctx.step` | the `catch`/`finally` runs | **never runs** — the handler is abandoned at that `await` |
 | Default retry | none | none (`maximumAttempts: 1`) |
 | Survives the Worker restarting *between* steps | no | yes |
 | Survives the Worker dying *during* a step | no | no — see below |
@@ -216,6 +221,17 @@ adapter knows how to rebuild survive as classes. Anything else crosses the wire 
 and comes back as a plain `Error`, so `catch (e) { if (e instanceof MyError) … }` on a bespoke class
 thrown from a step will not hold. Match on `error.name` if you need that —
 `tests/setup/run-step.ts` does exactly this for its own injected sentinel.
+
+The `try` row is the sharper one, because the code that trips it looks entirely ordinary. Once the
+step it was replaying to is done, the replay hands the handler a promise that never settles
+(`src/temporal/replay.ts`) — the handler stops at that `await` and is never resumed, so a `catch` it
+wrote around `ctx.step` does not run and neither does a `finally`. The simple adapter rejects into
+the handler, so both do. A recovery path written that way therefore recovers on workerd and fails
+the checkout on Node. It is **rejected by `check:workflow-purity`** rather than left to this table:
+`try` *inside* the step action is the form that works on both engines, and it is what the two
+`catch` sites in `src/workflows/` already use. Changing the replay to reject into the handler was
+considered and refused — the handler would resume and keep calling steps inside a failed replay,
+which is a larger change than the divergence it removes.
 
 Retry is opt-in because today's steps are not idempotent, and it is configured on the adapter
 rather than on `ctx.step`, because the port does not change:
@@ -306,6 +322,13 @@ breaking that is a port change, and a port change is an ADR.
 `projectConfig.workflows.engine`: the Worker process pins `simple` so nested `.run()` calls stay
 in-process, and the test container pins whichever engine the suite is proving.
 
+That pin has a price, and `create-product` and `complete-customer-auth` are the two workflows paying
+it. A nested run stays inline, so **its steps are not journaled**: nothing about them reaches Temporal
+history, a Worker lost part-way through re-executes the whole nested workflow from its first step, and
+the nested workflow's own compensation stack dies with the process instead of unwinding. Those two get
+the durability of the outer workflow's steps and no more, where the other 24 get it for every step.
+`src/temporal/__tests__/nested-workflow.test.ts` pins that shape; ADR-0021 records it as a residual.
+
 `check:deps` enforces the boundary — `no-temporal-in-workerd` fails if `src/index.workerd.ts` can
 reach `@temporalio/*` or `src/temporal/` at all.
 
@@ -329,8 +352,9 @@ const result = await myWorkflow.run({ cartId: 'cart_1' })
 ```
 
 Tests live in `__tests__/simple-adapter.test.ts`. The Temporal adapter's own tests are
-`src/temporal/__tests__/` — `replay.test.ts` for the replay mechanism with no server, and
-`temporal-adapter.test.ts` against `@temporalio/testing`'s time-skipping server.
+`src/temporal/__tests__/` — `replay.test.ts` for the replay mechanism with no server,
+`temporal-adapter.test.ts` against `@temporalio/testing`'s time-skipping server, and
+`nested-workflow.test.ts` for the production Worker's topology, which the parity suite does not run.
 
 ### The parity suite
 
@@ -339,20 +363,31 @@ suite runs a second time with the engine pinned to Temporal, asserting exactly t
 
 ```bash
 docker compose -f apps/backend/docker-compose.yml up -d --wait   # Temporal
-npm run --workspace=backend test              # 71 files, engine pinned to simple
-npm run --workspace=backend test:temporal     # the same 71 files, pinned to temporal
+npm run --workspace=backend test              # 72 files, engine pinned to simple
+npm run --workspace=backend test:temporal     # the same 72 files, pinned to temporal
 ```
 
-Both report 828 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
+Both report 830 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
 between them is an adapter bug by definition, not a difference of opinion between two test suites.
 
-**What that number is and is not.** At most 24 of the 71 files can route through the pinned engine:
+**What that number is and is not.** At most 24 of the 72 files can route through the pinned engine:
 15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a workflow, and
 `__tests__/engine-pin.test.ts`. Roughly 120–250 of the ~830 assertions genuinely round-trip through
 Temporal; the rest are engine-blind — `src/temporal/__tests__` and the other files here build their
 own engines, and the module, core, framework and provider tests never reach a workflow. So it is
-evidence of no divergence anywhere the adapter is reachable, not 828 assertions of adapter coverage.
+evidence of no divergence anywhere the adapter is reachable, not 830 assertions of adapter coverage.
 If you quote the headline, quote this with it.
+
+**And for two workflows it proves a topology production does not deploy.** `create-product` and
+`complete-customer-auth` call another workflow's `.run()` from inside a step. On the production
+Worker that nested run is inline, because `src/temporal/container.ts` pins `simple` there. The parity
+harness runs its Activities against the *test* container, which `test:temporal` pins to `temporal`,
+so under the suite the same nested run is a second Temporal execution — `tests/setup/temporal-parity.ts`
+says as much in its own comment. A green `POST /admin/products` under `test:temporal` is therefore
+evidence about a shape that is not deployed. `src/temporal/__tests__/nested-workflow.test.ts` covers
+the deployed one: Worker pinned `simple`, nested `.run()` inline inside an Activity, asserted on both
+counts — that the inner steps run in the outer execution's Activity, and that none of them reach an
+Activity or a history entry of their own.
 
 `__tests__/engine-pin.test.ts` is what keeps the claim honest: it runs a one-step workflow and
 asserts *where the step body executed*, because `Context.current()` resolves only inside a Temporal
@@ -374,12 +409,19 @@ has to keep working for contributors who have not started Temporal.
 
 ```bash
 docker compose -f apps/backend/docker-compose.yml up -d --wait
+docker compose -f apps/backend/docker-compose.yml stop worker   # it owns the same queue
 docker compose -f apps/backend/docker-compose.test.yml up -d --wait
 npm run --workspace=backend db:migrate:test
 npm run --workspace=backend temporal:crash-resume
 ```
 
-Starts `complete-cart`, stops the Worker mid-run, starts a new one, and prints from Temporal's own
-history which OS process ran each of the 14 steps. Pass `--hard` to send SIGKILL instead of draining,
+Stopping the `worker` service is not optional here. It polls `proteus`, which is the queue this
+script's own Workers use, so leaving it up means the step the script just "lost" is picked straight
+back up by a Worker it does not control — the demo still passes and proves nothing. (The parity suite
+needs no such care: `tests/setup/temporal-parity.ts` gives each vitest process its own queue, and
+`measure-payload.ts` does the same.)
+
+The script starts `complete-cart`, stops the Worker mid-run, starts a new one, and prints from
+Temporal's own history which OS process ran each of the 14 steps. Pass `--hard` to send SIGKILL instead of draining,
 which demonstrates the other half — a step lost with its Worker is not retried, and the execution
 compensates. Both behaviours are explained in ADR-0021.
