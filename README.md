@@ -199,6 +199,17 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 | [0009](docs/adr/0009-workflow-engine-and-step-pattern.md) | Workflow engine + step pattern | Cross-module orchestration with compensation — standard async/await, no DAG infrastructure |
 | [0010](docs/adr/0010-payment-provider-driven-port.md) | Payment provider as driven port | `IPaymentProvider` interface + `AbstractPaymentProvider` base class — add providers without touching module logic |
 | [0011](docs/adr/0011-module-loaders-and-module-provider.md) | Module loaders + ModuleProvider | Runtime adapter registration at boot time — loaders run after DI setup, before the service is exposed |
+| [0012](docs/adr/0012-single-auth-identity-per-email.md) | One auth identity per email | An address is one person; roles are app metadata on that identity, not separate accounts |
+| [0013](docs/adr/0013-selective-ssr.md) | Selective SSR for the store | Only the routes that need crawlable HTML pay for a server render |
+| [0014](docs/adr/0014-dual-file-upload-strategy.md) | Dual file upload strategy | Multipart for small files, presigned URLs for large ones — one API, two transports |
+| [0015](docs/adr/0015-server-computed-option-projections.md) | Server-computed option projections | The variant matrix is derived once on the server, not reassembled by every client |
+| [0016](docs/adr/0016-derived-soft-delete-cascade.md) | Derived soft-delete cascade | The cascade is read off the schema graph, so a new table cannot be forgotten |
+| [0017](docs/adr/0017-cart-state-is-a-timestamp.md) | Cart state is a timestamp | `completedAt` is the whole state machine — no status column to disagree with it |
+| [0018](docs/adr/0018-layered-product-options.md) | Layered product options | Global option definitions, per-product scoping, per-variant values |
+| [0019](docs/adr/0019-modals-are-url-state.md) | Modals are URL state | Open/closed lives in search params, so back, refresh and a shared link all behave |
+| [0020](docs/adr/0020-store-feature-graph-is-acyclic.md) | Store feature graph is acyclic | Declared feature DAG enforced by dependency-cruiser, so a latent cycle cannot accumulate |
+| [0021](docs/adr/0021-temporal-adapter-replays-to-the-next-step.md) | Temporal adapter replays to the next step | Durable execution with zero changes to 26 workflows — the handler is re-entered per step, so purity between steps is enforced |
+| [0022](docs/adr/0022-durable-execution-is-a-runtime-split.md) | Durable execution is a runtime split | Cloudflare cannot load Temporal's native Worker, so it has no durability — accepted, documented, and covered by a parity suite |
 
 ---
 
