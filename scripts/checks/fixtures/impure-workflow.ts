@@ -63,6 +63,44 @@ export const impureWorkflow = createWorkflow<Input, string>('impure-fixture', as
   return `${recorded} ${await cartService.load(input.cartId)}`
 })
 
+/**
+ * try-around-step, in the shape a workflow author actually writes: an ordinary recovery path around
+ * a step that might fail. Under the simple adapter the `catch` runs and this returns `'recovered'`;
+ * under Temporal the handler is abandoned at the `await` and the `catch` never runs, so the same
+ * code fails the workflow instead. The `try`/`catch` *inside* the step action is the legal form and
+ * must keep passing — it runs Worker-local, once, on both engines.
+ */
+export const tryAroundStepWorkflow = createWorkflow<Input, string>('try-around-step-fixture', async (ctx, input) => {
+  try {
+    return await ctx.step('charge', async () => {
+      try {
+        const cart = await loadCart(input.cartId)
+        return `charged ${cart.total}`
+      } catch {
+        return 'declined'
+      }
+    })
+  } catch {
+    return 'recovered'
+  }
+})
+
+/** A `finally` is abandoned for the same reason a `catch` is, so the rule has to cover it too. */
+export const finallyAroundStepWorkflow = createWorkflow<Input, string>(
+  'finally-around-step-fixture',
+  async (ctx, input) => {
+    let outcome = 'pending'
+
+    try {
+      outcome = await ctx.step('settle', async () => `settled ${input.cartId}`)
+    } finally {
+      outcome = `${outcome} (cleaned up)`
+    }
+
+    return outcome
+  },
+)
+
 /** No type arguments, so the untyped call form is covered too. */
 export const untypedImpureWorkflow = createWorkflow('untyped-impure-fixture', async (ctx, input: Input) => {
   await ctx.step('start', async () => input.cartId)

@@ -4,25 +4,50 @@ Standalone API server built with Ports & Adapters architecture, Drizzle ORM, and
 
 ## Temporal (local stack)
 
-Temporal runs in the dev Compose stack so a durable workflow engine is available locally without
-extra setup. Nothing in the application uses it yet — `createWorkflow(...).run()` still goes through
-the in-process simple adapter (`src/core/workflows/simple-adapter.ts`). This stage is infrastructure
-plus a throwaway `ping` workflow that proves the round-trip.
+**On Node, Temporal is the engine that runs your workflows.** `RUNTIME` defaults to `node`, and
+`src/core/workflows/engine-selection.ts` resolves `node` to the Temporal adapter — so under
+`npm run dev` every `createWorkflow(...).run()` becomes an execution on the `proteus` task queue and
+is executed step by step by a Worker. The in-process simple adapter
+(`src/core/workflows/simple-adapter.ts`) is what `npm run dev:workerd` and the Cloudflare deployment
+get, because workerd cannot load Temporal's native Worker. Which engine runs is never an env var —
+see `src/core/workflows/readme.md`.
 
 ### Starting it
 
 ```bash
-docker compose -f apps/backend/docker-compose.yml up -d --wait   # postgres, temporal, temporal-ui
-npm run --workspace=backend worker                               # in one shell
-npm run --workspace=backend temporal:ping                        # in another
+docker compose -f apps/backend/docker-compose.yml up -d --wait   # postgres, temporal, temporal-ui, worker
+npm run --workspace=backend dev
 ```
 
-The UI is at <http://localhost:8080>; the gRPC frontend is at `localhost:7233`. `temporal:ping`
-starts a workflow, waits for it, and prints what the activity returned — the execution and its full
-history then show up in the UI.
+That is the whole setup. The stack includes a **`worker` service** that polls `proteus`, so a
+workflow route works with nothing started by hand. `--wait` returns once the Worker is actually
+polling — the healthcheck asks Temporal for the queue's pollers rather than checking that a process
+exists, because a queue nobody polls does not fail a request, it hangs it: `workflow.execute` is
+called with no execution timeout.
+
+The `worker` service builds `Dockerfile.worker` and bind-mounts `src/` over the image, so editing a
+step action needs only `docker compose -f apps/backend/docker-compose.yml restart worker`. A
+dependency change needs `--build`. It reads `.env.local` the same way the API does, so
+`npm run setup` (which fetches `.env.keys`) must have run first — the same precondition `npm run dev`
+already has. Compose overrides only the two addresses that differ inside the network: Postgres and
+Temporal are reached by service name rather than on `localhost`.
+
+**Iterating on Worker code itself is what `npm run --workspace=backend worker` is for.** It runs the
+same entrypoint through the same script, on the host, with no container in the loop:
+
+```bash
+docker compose -f apps/backend/docker-compose.yml stop worker   # don't let two Workers share the queue
+npm run --workspace=backend worker
+```
+
+The UI is at <http://localhost:8080>; the gRPC frontend is at `localhost:7233`. Every execution and
+its full history show up there — including the one a route just dispatched.
+`npm run --workspace=backend temporal:ping` is a standalone round-trip probe left from the first
+stage.
 
 The Worker needs `@temporalio/core-bridge`, a native addon, so it is a **Node-only** process.
-`npm run dev:workerd` and the Cloudflare deployment neither run nor bundle it.
+`npm run dev:workerd` and the Cloudflare deployment neither run nor bundle it — which is also why the
+container carries its own `node_modules` instead of mounting the host's.
 
 ### It shares the Postgres you already have
 
@@ -41,9 +66,15 @@ connection settings, and nothing more. Which engine executes a workflow is not a
 
 ### Tests
 
-`src/temporal/__tests__/ping.test.ts` runs the round-trip against `@temporalio/testing`'s
-time-skipping test server, which the SDK starts in-process. It needs no Compose stack, so
-`npm run verify` keeps working for contributors who have never started Temporal.
+Everything under `src/temporal/__tests__/` runs against `@temporalio/testing`'s time-skipping test
+server, which the SDK starts in-process, or against no server at all (`replay.test.ts`). None of them
+need the Compose stack, so `npm run verify` keeps working for contributors who have never started
+Temporal.
+
+The suite that does need it is the parity run — `npm run --workspace=backend test:temporal`, the
+whole backend suite a second time with the engine pinned to Temporal. It is deliberately outside
+`verify.sh` for the same reason. `src/core/workflows/readme.md` explains what its number does and
+does not prove.
 
 ## Date Handling
 
