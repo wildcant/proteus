@@ -1,0 +1,35 @@
+# The Temporal Worker, for the dev Compose stack only. Never built for deployment.
+#
+# It exists because `RUNTIME` defaults to `node` and `node` resolves to the Temporal engine, so
+# `npm run dev` dispatches every workflow to the `proteus` task queue — and a queue nobody polls
+# does not fail, it hangs. D4 promised `npm run dev` works with no extra setup, so the Worker joins
+# the stack Temporal is already in.
+#
+# The image carries its own `node_modules` rather than mounting the host's: `@temporalio/core-bridge`
+# is a native addon, and the host's copy is built for the host's platform. Source is bind-mounted
+# over it (see docker-compose.yml), so editing a step action needs `docker compose restart worker`
+# rather than a rebuild; only a dependency change needs `--build`.
+FROM node:22-bookworm-slim
+
+WORKDIR /app
+
+# Manifests first, so the install layer survives every source change and is rebuilt only when a
+# package.json or the lockfile moves. `npm ci` needs every workspace's manifest, not just the
+# backend's, because the lockfile describes the whole tree.
+COPY package.json package-lock.json ./
+COPY apps/backend/package.json apps/backend/
+COPY apps/admin/package.json apps/admin/
+COPY apps/store/package.json apps/store/
+COPY packages/http-schemas/package.json packages/http-schemas/
+COPY packages/icons/package.json packages/icons/
+COPY packages/testing/package.json packages/testing/
+COPY packages/ui/package.json packages/ui/
+COPY packages/utils/package.json packages/utils/
+
+RUN npm ci
+
+COPY . .
+
+# The same command a contributor runs by hand, so the containerised Worker and the manual one cannot
+# drift. `tsx` and `dotenvx` come from the script; nothing is compiled ahead of time here either.
+CMD ["npm", "run", "--workspace=backend", "worker"]

@@ -41,8 +41,10 @@ await checkoutWorkflow.run({ cartId: 'cart_123' })
 The engine follows the same ports & adapters pattern as the rest of the codebase:
 
 ```
-types.ts          — Port interfaces (WorkflowEngine, WorkflowContext, etc.)
-simple-adapter.ts — In-process adapter (runs steps sequentially, compensates on error)
+types.ts            — Port interfaces (WorkflowEngine, WorkflowContext, etc.)
+engine-selection.ts — Which adapter a composition root wires, derived from RUNTIME
+simple-adapter.ts   — In-process adapter (runs steps sequentially, compensates on error)
+temporal-adapter.ts — Durable adapter (runs each step as a Temporal Activity)
 ```
 
 ### Key types
@@ -104,7 +106,8 @@ createWorkflow('my-workflow', handler)
 createWorkflow({ name: 'my-workflow', idempotent: true }, handler)
 ```
 
-The `idempotent` flag is metadata for engines that support deduplication (the simple adapter ignores it).
+The `idempotent` flag declares that every step of the workflow is safe to run twice. The simple
+adapter ignores it; the Temporal adapter gives such a workflow a default retry policy.
 
 ### DI container access
 
@@ -126,7 +129,212 @@ await ctx.step('fetch-data', async ({ container }) => {
 3. Runs compensations in reverse order, swallowing compensation errors
 4. Re-throws the original error after compensation completes
 
-This is sufficient for single-process deployments. A distributed adapter (e.g. Temporal, Inngest) could implement the same `WorkflowEngine` interface with durable execution, retries, and async step orchestration.
+This is sufficient for single-process deployments, and it is what the workerd build uses.
+
+## Temporal adapter
+
+`createTemporalWorkflowEngine(options)` runs the same workflows durably, with **no change to any
+workflow file**. A workflow author writes `ctx.step` exactly as before.
+
+### How a closure crosses a process boundary
+
+A step action is a closure over handler-local variables; a Temporal Activity is a name-registered
+function taking serializable arguments. The closure cannot be shipped, so the outputs are shipped
+instead. Every workflow runs as an execution of one generic driver:
+
+```ts
+let outputs = []
+while (true) {
+  const r = await executeActivity('advanceWorkflow', { name, input, outputs, fingerprint })
+  if (r.done) return r.output
+  outputs.push(r.output)
+}
+```
+
+The `advanceWorkflow` Activity runs in the Worker process, with the DI container. It looks the
+workflow up by name in `src/temporal/registry.ts`, re-executes its handler from the top with a
+replay `ctx` whose `step()` returns stored outputs for completed steps and executes exactly the
+next one, then stops. Compensation is the same replay, backwards.
+
+Two consequences worth knowing before writing a workflow:
+
+- **Handler bodies must stay pure between steps.** The glue re-runs on every replay —
+  `complete-cart`'s 14 steps cost 91 glue executions. `Date.now()`, `Math.random()` or a service
+  call between steps corrupts a replay rather than failing it. This is a checked rule, not advice:
+  see [The purity rule](#the-purity-rule) below.
+- **Memoization keys on call index, not step name**, so a `ctx.step` inside a loop works.
+- **One step at a time.** `Promise.all([ctx.step(a), ctx.step(b)])` would run both actions in one
+  attempt and record only one; the replay rejects the second call rather than letting the other be
+  executed twice. Steps inside a step action are fine — it is `ctx.step` itself that is sequential.
+
+### The purity rule
+
+> Inside a `createWorkflow` handler, everything outside a `ctx.step` callback must be pure and
+> synchronous.
+
+`scripts/replay-purity.ts` parses every handler under `src/workflows/` and enforces it. It
+runs in `verify.sh`'s `conventions` job, or on its own with `npm run check:workflow-purity`. In the
+handler body, outside every `ctx.step` callback, these are rejected:
+
+| Rejected | Instead |
+|---|---|
+| `await` anything | `await ctx.step(…)`, or `await someStep(ctx, …)` — a helper whose name ends in `Step` **and** which is handed `ctx`, like `notifyOnFailureStep`. Being handed `ctx` is not enough on its own: `await db.query(ctx)` is still raw I/O |
+| `for await (…)` | collect inside a step action, iterate the result synchronously |
+| `new Date()`, `Date.now()` | take the timestamp inside a step action, where it is recorded once and replayed |
+| `Math.random()`, `crypto.*` | generate inside a step action, so every replay sees the same value |
+| `process.env` | the validated `env` object from `src/env.ts`, read once at startup |
+| `container.*` | resolve services inside a step action, which is handed the container |
+| a `try` wrapping `ctx.step(…)` | handle the failure inside the step action, or let the step throw and let the workflow compensate — see the `try`/`catch` row below |
+
+`new Date(iso)` is a parse and is allowed; it is the zero-argument form that reads a clock. The step
+*name* argument is inside the checked region too, because it is rebuilt on every replay like the rest
+of the glue.
+
+The last row is not about purity — it is the abandoned-handler divergence in the table below, checked
+here because it fails the same silent way. A `try` *inside* a step action is untouched by it.
+
+What it does not do: it does not follow imports, so helpers under `src/workflows/*/utils/` are trusted
+to be pure; and it does not police step concurrency, which the replay asserts at runtime instead. It
+checks itself against `scripts/fixtures/impure-workflow.ts` before checking anything else — a
+rule that has silently stopped matching produces exactly the output of a clean tree, and that fixture
+is what tells the two apart.
+
+It lives in this workspace because it reads only this workspace, and it can only live here because
+`typescript` is pinned repo-wide to 6.x — the last line whose npm package is a JS library rather than
+a wrapper around the Go binary, and so the last one that can turn source text into a tree. The
+backend was on 7.x until the check moved; unifying the version is what made the move possible.
+
+### What is different from the simple adapter, and what is not
+
+| | Simple | Temporal |
+|---|---|---|
+| Step order, compensation order, swallowed compensation errors | same | same |
+| `AppError` and `WorkflowTerminalError` a caller catches (class, message, `type`) | same | same |
+| A *custom* `Error` subclass thrown by a step | arrives as itself | arrives as `Error` with the same `name` and `message` |
+| A handler's own `try` around `ctx.step` | the `catch`/`finally` runs | **never runs** — the handler is abandoned at that `await` |
+| Default retry | none | none (`maximumAttempts: 1`) |
+| Survives the Worker restarting *between* steps | no | yes |
+| Survives the Worker dying *during* a step | no | no — see below |
+| Accumulated payload per run | none | O(n²) — see below |
+
+The one row that is not "same" for an ordinary caller is the third: only the two error shapes the
+adapter knows how to rebuild survive as classes. Anything else crosses the wire as `{ name, message }`
+and comes back as a plain `Error`, so `catch (e) { if (e instanceof MyError) … }` on a bespoke class
+thrown from a step will not hold. Match on `error.name` if you need that —
+`tests/setup/run-step.ts` does exactly this for its own injected sentinel.
+
+The `try` row is the sharper one, because the code that trips it looks entirely ordinary. Once the
+step it was replaying to is done, the replay hands the handler a promise that never settles
+(`src/temporal/replay.ts`) — the handler stops at that `await` and is never resumed, so a `catch` it
+wrote around `ctx.step` does not run and neither does a `finally`. The simple adapter rejects into
+the handler, so both do. A recovery path written that way therefore recovers on workerd and fails
+the checkout on Node. It is **rejected by `check:workflow-purity`** rather than left to this table:
+`try` *inside* the step action is the form that works on both engines, and it is what the two
+`catch` sites in `src/workflows/` already use. Changing the replay to reject into the handler was
+considered and refused — the handler would resume and keep calling steps inside a failed replay,
+which is a larger change than the divergence it removes.
+
+Retry is opt-in because today's steps are not idempotent, and it is configured on the adapter
+rather than on `ctx.step`, because the port does not change:
+
+```ts
+createTemporalWorkflowEngine({ retry: { 'complete-cart': { 'authorize-payment': { maximumAttempts: 3 } } } })
+```
+
+`maximumAttempts` is required. Temporal reads both an absent value and `0` as *unlimited*, so a
+policy meant to tune backoff alone would opt a card authorization into retrying forever;
+`createTemporalWorkflowEngine` rejects such a policy at the composition root.
+
+`createWorkflow({ name, idempotent: true })` opts a whole workflow into a default policy.
+`WorkflowTerminalError` never retries, whatever the policy says.
+
+### What retry does not cover
+
+Retry is arranged only *after* a first attempt has reported which step failed, so two things fall
+outside it. Both are deliberate; neither is obvious from the option name.
+
+- **A Worker that dies mid-step gets no retry, opted in or not.** The activity hits
+  `startToCloseTimeout` (5 minutes by default) and fails as a `TimeoutFailure`, which names no
+  step, so there is no policy to look up — the execution compensates and fails instead of resuming.
+  That is right for a half-run non-idempotent step and wrong for one declared safe to repeat, which
+  is the case retry classically exists for. Changing it is a decision, not a patch: the driver
+  knows the step *index* even when it cannot know the name.
+- **Backoff restarts on the retry.** The retry is a second Activity invocation whose first attempt
+  fires immediately, so `{ maximumAttempts: 3, initialInterval: '30s' }` waits `[0s, 30s]` rather
+  than the `[30s, 60s]` a single Temporal policy would. `startToCloseTimeout` is likewise per
+  invocation, not per logical step.
+
+### Accumulated payload
+
+Every `advanceWorkflow` call carries every prior step's output, so request *k* ships outputs
+1..*k*-1 and the bytes over a run grow with the square of the step count. Temporal enforces a hard
+2 MiB per-message gRPC limit, so what matters is the **largest single request**, not the total.
+
+Measured, not modelled — `npm run --workspace=backend measure:workflow-payload -- 1 10 25 50 100`
+runs real `complete-cart` executions and reads the encoded bytes out of Temporal's history:
+
+| line items | largest request | total shipped | % of 2 MiB |
+|---|---|---|---|
+| 1 | 1.7 KiB | 12.6 KiB | 0.08% |
+| 25 | 2.7 KiB | 17.6 KiB | 0.13% |
+| 100 | 5.9 KiB | 33.4 KiB | 0.29% |
+
+The largest request grows by ~43 B per line item and would reach 2 MiB at roughly 48,000 of them. The
+`OrderDTO` and `PaymentDTO` that dominate the payload are fixed-size; the only per-item term is
+`reserve-inventory`'s list of reservation ids. **This does not bind for `complete-cart`** — but a
+workflow whose step output grows with its input is a different question, and that script is how to
+answer it. Full numbers and the escape hatch: ADR-0021.
+
+### Shape fingerprint
+
+The driver carries a rolling hash of the step names completed so far. If a deploy adds, removes or
+reorders a step under a running execution, the stored outputs no longer line up; the Activity
+throws non-retryably instead of replaying into the wrong step. Temporal Worker Versioning is the
+real answer and is the recorded follow-up.
+
+### Adding a Temporal feature to the port later
+
+The port is frozen in this scope (ADR-0009's signatures, unchanged), but it was shaped so it can grow
+without breaking any of the 72 existing `ctx.step` call sites. If `sleep`, `childWorkflow` or
+`signal` is ever needed, the path is already open:
+
+1. **Add it as an optional member of `WorkflowContext`.** It is an interface, so `sleep?(ms): Promise<void>`
+   is additive; the simple adapter leaves it undefined and a workflow that needs it checks.
+2. **If `step` itself needs configuration, add an overload** — `step(config, action, compensation)`
+   beside the existing `step(name, action, compensation)`. The name is the first parameter precisely
+   so a config object can take its place without touching a call site.
+3. **New adapter knobs go in the options object**, not the factory's arity:
+   `createTemporalWorkflowEngine(opts)` already takes one, which is why per-step retry could be added
+   in this scope without changing the port.
+4. **Negotiate the capability at wiring time, not at request time.** A workflow that declares it needs
+   a Temporal-only feature should fail at `setWorkflowEngine()`, when the composition root is choosing
+   an engine — not at the first shopper's checkout on workerd. Not implemented; nothing here
+   precludes it, and `WorkflowConfig` is where such a declaration would go, next to `idempotent`.
+
+The thing not to do is let a Temporal concept reach a workflow file. `src/workflows/` has zero
+imports from `src/temporal/` today and should keep it — a feature that cannot be expressed without
+breaking that is a port change, and a port change is an ADR.
+
+### Choosing an engine
+
+`resolveWorkflowEngineName` derives it from `RUNTIME` — `workerd` cannot load
+`@temporalio/core-bridge`, so it gets the simple adapter; `node` gets Temporal. There is no
+`WORKFLOW_ENGINE` env var. A composition root pins the other one through
+`projectConfig.workflows.engine`: the Worker process pins `simple` so nested `.run()` calls stay
+in-process, and the test container pins whichever engine the suite is proving.
+
+That pin has a price, and `create-product` and `complete-customer-auth` are the two workflows paying
+it. A nested run stays inline, so **its steps are not journaled**: nothing about them reaches Temporal
+history, a Worker lost part-way through re-executes the whole nested workflow from its first step, and
+the nested workflow's own compensation stack dies with the process instead of unwinding. Those two get
+the durability of the outer workflow's steps and no more, where the other 24 get it for every step.
+`src/temporal/__tests__/nested-workflow.server.test.ts` pins that shape; ADR-0021 records it as a residual.
+
+`check:deps` enforces the boundary — `no-temporal-in-workerd` fails if `src/index.workerd.ts` can
+reach `@temporalio/*` or `src/temporal/` at all.
+
+**A workerd deployment therefore has no durable execution.** That is deliberate and recorded as an
+accepted limitation in ADR-0022, along with the table of what each runtime does and does not get.
 
 ## Testing
 
@@ -144,4 +352,81 @@ setWorkflowEngine(createSimpleWorkflowEngine(), container)
 const result = await myWorkflow.run({ cartId: 'cart_1' })
 ```
 
-Tests live in `__tests__/simple-adapter.test.ts`.
+Tests live in `__tests__/simple-adapter.test.ts`. The Temporal adapter's own tests are
+`src/temporal/__tests__/` — `replay.test.ts` for the replay mechanism with no server,
+`temporal-adapter.server.test.ts` against `@temporalio/testing`'s time-skipping server, and
+`nested-workflow.server.test.ts` for the production Worker's topology, which the parity suite does not run.
+
+### The parity suite
+
+Correctness of the Temporal adapter is not argued from its own unit tests. The *existing* backend
+suite runs a second time with the engine pinned to Temporal, asserting exactly the same things:
+
+```bash
+docker compose -f apps/backend/docker-compose.yml up -d --wait   # Temporal
+npm run --workspace=backend test              # 70 files, engine pinned to simple
+npm run --workspace=backend test:temporal     # the same 70 files, pinned to temporal
+```
+
+Neither run includes `src/**/*.server.test.ts` — the three files that boot a Temporal server of their
+own. `npm run --workspace=backend test:temporal:server` runs those, and it is the file set that keeps
+the two runs above identical to each other.
+
+Both report 820 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
+between them is an adapter bug by definition, not a difference of opinion between two test suites.
+
+**What that number is and is not.** At most 24 of the 70 files can route through the pinned engine:
+15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a workflow, and
+`__tests__/engine-pin.test.ts`. Roughly 120–250 of the ~820 assertions genuinely round-trip through
+Temporal; the rest are engine-blind — `src/temporal/__tests__` and the other files here build their
+own engines, and the module, core, framework and provider tests never reach a workflow. So it is
+evidence of no divergence anywhere the adapter is reachable, not 820 assertions of adapter coverage.
+If you quote the headline, quote this with it.
+
+**And for two workflows it proves a topology production does not deploy.** `create-product` and
+`complete-customer-auth` call another workflow's `.run()` from inside a step. On the production
+Worker that nested run is inline, because `src/temporal/container.ts` pins `simple` there. The parity
+harness runs its Activities against the *test* container, which `test:temporal` pins to `temporal`,
+so under the suite the same nested run is a second Temporal execution — `tests/setup/temporal-parity.ts`
+says as much in its own comment. A green `POST /admin/products` under `test:temporal` is therefore
+evidence about a shape that is not deployed. `src/temporal/__tests__/nested-workflow.server.test.ts` covers
+the deployed one: Worker pinned `simple`, nested `.run()` inline inside an Activity, asserted on both
+counts — that the inner steps run in the outer execution's Activity, and that none of them reach an
+Activity or a history entry of their own.
+
+`__tests__/engine-pin.test.ts` is what keeps the claim honest: it runs a one-step workflow and
+asserts *where the step body executed*, because `Context.current()` resolves only inside a Temporal
+Activity. Without it, `test:temporal` silently becoming a second run of the simple suite would look
+exactly like success. It asserts whichever engine the run pins, so both suites are covered. It does
+not catch a test that passes its own `config.projectConfig.workflows.engine` — the pin is a default,
+not an override.
+
+Neither run reads an environment variable to decide. `tests/setup/workflow-engine.ts` holds the
+default the container pins, `vitest.temporal.config.ts` adds one setup file that flips it, and both
+travel through `projectConfig.workflows.engine`. The Worker lives in the vitest process
+(`tests/setup/temporal-parity.ts`) because each vitest worker owns its own database, so a Worker
+started anywhere else would run steps against the wrong one.
+
+`test:temporal` is **not** in `verify.sh`'s default job list: it needs Docker, and `npm run verify`
+has to keep working for contributors who have not started Temporal.
+
+### Seeing durability actually work
+
+```bash
+docker compose -f apps/backend/docker-compose.yml up -d --wait
+docker compose -f apps/backend/docker-compose.yml stop worker   # it owns the same queue
+docker compose -f apps/backend/docker-compose.test.yml up -d --wait
+npm run --workspace=backend db:migrate:test
+npm run --workspace=backend temporal:crash-resume
+```
+
+Stopping the `worker` service is not optional here. It polls `proteus`, which is the queue this
+script's own Workers use, so leaving it up means the step the script just "lost" is picked straight
+back up by a Worker it does not control — the demo still passes and proves nothing. (The parity suite
+needs no such care: `tests/setup/temporal-parity.ts` gives each vitest process its own queue, and
+`measure-payload.ts` does the same.)
+
+The script starts `complete-cart`, stops the Worker mid-run, starts a new one, and prints from
+Temporal's own history which OS process ran each of the 14 steps. Pass `--hard` to send SIGKILL instead of draining,
+which demonstrates the other half — a step lost with its Worker is not retried, and the execution
+compensates. Both behaviours are explained in ADR-0021.

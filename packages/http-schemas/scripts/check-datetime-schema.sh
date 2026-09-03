@@ -4,7 +4,11 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Self-locating, so the check behaves the same from the workspace, the repo root, or
+# `npm run --workspace=...`. Violations still print repo-relative paths: `src/foo.ts` alone
+# would not say which workspace it is in.
+WORKSPACE="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "$WORKSPACE/../.." && pwd)"
 
 # Colors
 RED='\033[0;31m'
@@ -15,7 +19,7 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-SEARCH_DIR="$REPO_ROOT/packages/http-schemas/src"
+SEARCH_DIR="$WORKSPACE/src"
 
 # The one file that defines dateToIso itself
 ALLOWED_FILES=(

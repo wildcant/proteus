@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import type {
   StoreCartDetailResponse,
   StoreCompleteCartResponse,

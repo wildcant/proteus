@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import type { CalculatedPriceSetDTO, CreatePriceDTO, CreatePriceSetDTO } from '@core/types/index.js'
 import { faker } from '@faker-js/faker'
 

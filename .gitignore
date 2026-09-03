@@ -13,5 +13,4 @@ apps/backend/static
 .wrangler
 .env.workerd
 
-.vscode
 .playwright-mcp

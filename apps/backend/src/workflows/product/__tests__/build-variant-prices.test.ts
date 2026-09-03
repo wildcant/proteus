@@ -1,5 +1,5 @@
 import { test } from '@tests/setup/test-extend.js'
-import { BigNumber } from '../../../core/db/bignum.js'
+import { BigNumber } from '../../../core/bignumber.js'
 import { buildVariantPrices } from '../utils/build-variant-prices.js'
 
 test.describe('buildVariantPrices', () => {

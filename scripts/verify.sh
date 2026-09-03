@@ -35,12 +35,21 @@ job_lint() { npm exec -- biome check --error-on-warnings .; }
 job_conventions() {
   local code=0
   ./scripts/check-env-usage.sh || code=1
-  ./scripts/check-generic-errors.sh || code=1
-  ./scripts/check-datetime-schema.sh || code=1
+  # Both of these inspect exactly one workspace, so they live in it and are invoked through it. The
+  # env check stays here because it spans backend and store.
+  npm run --workspace=backend --silent check:errors || code=1
+  npm run --workspace=@proteus/http-schemas --silent check:datetime || code=1
   # Schema rules that grep cannot express — cascade relationships and index predicates only
   # exist once drizzle has built the table, so this one imports the models. See
   # apps/backend/scripts/checks/run.ts.
   npm run --workspace=backend --silent check:schema || code=1
+  # Replay purity — the rule the Temporal adapter rests on. Parses the workflow handlers, so it
+  # cannot be a grep. See apps/backend/scripts/replay-purity.ts.
+  npm run --workspace=backend --silent check:workflow-purity || code=1
+  # The Worker's workflow list is generated from src/workflows/ rather than typed by hand, so this
+  # is the step that notices when the two have drifted. --check never writes, so it behaves the same
+  # here and under --ci. See scripts/generate-workflow-registry.ts.
+  npm run --workspace=backend --silent check:workflow-registry || code=1
   return $code
 }
 

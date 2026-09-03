@@ -9,7 +9,7 @@
     "ignoreUnknown": false,
     "includes": [
       "**",
-      "!**/src/routeTree.gen.ts",
+      "!**/*.gen.ts",
       "!**/src/api/generated",
       "!apps/backend/deps-analyzer/dependency-graph.svg",
       "!apps/backend/worker-configuration.d.ts"
@@ -160,6 +160,16 @@
         "rules": {
           "suspicious": {
             "noEmptyBlockStatements": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/backend/src/temporal/__tests__/payload-converter.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useNamingConvention": "off"
           }
         }
       }

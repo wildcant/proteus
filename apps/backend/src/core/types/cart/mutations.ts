@@ -1,4 +1,4 @@
-import type { BigNumber } from '../../db/bignum.js'
+import type { BigNumber } from '../../bignumber.js'
 
 export type CreateLineItemDTO = {
   title: string

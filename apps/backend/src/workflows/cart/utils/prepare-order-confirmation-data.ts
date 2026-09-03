@@ -1,4 +1,4 @@
-import type { BigNumber } from '@core/db/bignum.js'
+import type { BigNumber } from '@core/bignumber.js'
 import type { EnrichedOrderLineItemDTO, OrderAddressDTO, OrderDTO, OrderTotals } from '@core/types/order/common.js'
 import { formatDate } from '@proteus/utils'
 

@@ -1,5 +1,5 @@
 import type { AwilixContainer } from 'awilix'
-import type { BigNumber } from '../../../src/core/db/bignum.js'
+import type { BigNumber } from '../../../src/core/bignumber.js'
 import type { ILinkService } from '../../../src/core/types/link/service.js'
 import type { IPaymentModuleService } from '../../../src/core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules } from '../../../src/core/utils/index.js'

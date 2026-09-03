@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService, IFulfillmentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'

@@ -3,10 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:datetime": "./scripts/check-datetime-schema.sh"
   },
   "exports": {
     "./admin": "./src/admin/index.ts",
+    "./common": "./src/common.ts",
     "./auth": "./src/auth/index.ts",
     "./store": "./src/store/index.ts"
   },
