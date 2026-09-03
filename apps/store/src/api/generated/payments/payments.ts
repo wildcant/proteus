@@ -5,13 +5,48 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
-  StorePaymentProviderListResponse
+  DeleteResponse,
+  StorePaymentProviderListResponse,
+  StoreSavedMethodListResponse
 } from '../model';
 
 import { fetcher } from '../../fetcher.ts';
 
 
 
+  /**
+ * @summary List the authenticated customer's saved payment methods
+ */
+export const listStorePaymentMethods = (
+
+ ) => {
+      return fetcher<StoreSavedMethodListResponse>(
+      {url: `/store/payment-methods`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * @summary Remove a saved payment method
+ */
+export const deleteStorePaymentMethod = (
+    id: string,
+ ) => {
+      return fetcher<DeleteResponse>(
+      {url: `/store/payment-methods/${id}`, method: 'DELETE'
+    },
+      );
+    }
+  /**
+ * @summary Nominate the default payment method
+ */
+export const setStoreDefaultPaymentMethod = (
+    id: string,
+ ) => {
+      return fetcher<StoreSavedMethodListResponse>(
+      {url: `/store/payment-methods/${id}/default`, method: 'POST'
+    },
+      );
+    }
   /**
  * @summary List enabled payment providers
  */
@@ -23,4 +58,7 @@ export const listStorePaymentProviders = (
     },
       );
     }
-  export type ListStorePaymentProvidersResult = NonNullable<Awaited<ReturnType<typeof listStorePaymentProviders>>>
+  export type ListStorePaymentMethodsResult = NonNullable<Awaited<ReturnType<typeof listStorePaymentMethods>>>
+export type DeleteStorePaymentMethodResult = NonNullable<Awaited<ReturnType<typeof deleteStorePaymentMethod>>>
+export type SetStoreDefaultPaymentMethodResult = NonNullable<Awaited<ReturnType<typeof setStoreDefaultPaymentMethod>>>
+export type ListStorePaymentProvidersResult = NonNullable<Awaited<ReturnType<typeof listStorePaymentProviders>>>

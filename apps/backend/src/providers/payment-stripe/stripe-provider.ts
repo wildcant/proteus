@@ -9,6 +9,10 @@ import type {
   CancelPaymentOutput,
   CapturePaymentInput,
   CapturePaymentOutput,
+  CreateAccountHolderInput,
+  CreateAccountHolderOutput,
+  DeleteAccountHolderInput,
+  DeleteAccountHolderOutput,
   DeletePaymentInput,
   DeletePaymentMethodInput,
   DeletePaymentMethodOutput,
@@ -26,6 +30,8 @@ import type {
   RetrievePaymentOutput,
   SavePaymentMethodInput,
   SavePaymentMethodOutput,
+  SetDefaultPaymentMethodInput,
+  SetDefaultPaymentMethodOutput,
   UpdatePaymentInput,
   UpdatePaymentOutput,
   WebhookActionResult,
@@ -34,6 +40,7 @@ import { AbstractPaymentProvider } from '../../core/utils/abstract-payment-provi
 import { fromSmallestUnit, toSmallestUnit } from './currency-units.js'
 import { classifyGatewayError, gatewayFailureLog, toAppError } from './errors.js'
 import { type StripeOptions, validateStripeOptions } from './options.js'
+import { defaultMethodIdOf, toSavedMethods } from './saved-methods.js'
 import { paymentActionOf, paymentSessionStatusOf } from './status-map.js'
 
 /**
@@ -53,8 +60,56 @@ const PAYMENT_INTENT_EVENTS: ReadonlySet<string> = new Set([
 const DEFAULT_RETRY_ATTEMPTS = 3
 const DEFAULT_RETRY_BACKOFF_MS = 100
 
+/**
+ * How many stored cards one wallet read asks for. Explicit, because Stripe's own default is ten
+ * and a shopper with an eleventh would silently not be shown it.
+ */
+const SAVED_METHOD_LIMIT = 50
+
 function isStripeError(error: unknown): error is Stripe.errors.StripeError {
   return error instanceof Stripe.errors.StripeError
+}
+
+/** The intent parameters a shopper's wallet contributes, and nothing else the intent needs. */
+type WalletIntentParams = Pick<Stripe.PaymentIntentCreateParams, 'setup_future_usage' | 'payment_method'>
+
+/** Omits the key entirely when there is no value, rather than sending `undefined` as a field. */
+function optional(name: string, value: unknown): Record<string, string> {
+  return typeof value === 'string' && value !== '' ? { [name]: value } : {}
+}
+
+/**
+ * The gateway's id for an account holder, or a refusal.
+ *
+ * `@medusajs/payment-stripe` falls back to `''` here, and an empty customer id is not an error at
+ * Stripe — it is a request scoped to nobody, which for a listing means the whole account. A
+ * wallet operation with no account holder is a bug in the caller and says so.
+ */
+function accountHolderIdOf(context: Record<string, unknown> | undefined): string {
+  const holder = context?.accountHolder as { externalId?: unknown } | undefined
+  const id = holder?.externalId
+
+  if (typeof id !== 'string' || id === '') {
+    throw new AppError({
+      type: ErrorTypes.INVALID_ARGUMENT,
+      message: 'A saved-method operation reached the Stripe adapter with no account holder.',
+    })
+  }
+
+  return id
+}
+
+function methodIdOf(data: Record<string, unknown> | undefined): string {
+  const id = data?.id
+
+  if (typeof id !== 'string' || id === '') {
+    throw new AppError({
+      type: ErrorTypes.INVALID_ARGUMENT,
+      message: 'A saved-method operation reached the Stripe adapter with no payment method id.',
+    })
+  }
+
+  return id
 }
 
 /**
@@ -115,6 +170,10 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
+    const context = input.context ?? {}
+    const customerId = (context.accountHolder as { externalId?: unknown } | undefined)?.externalId
+    const walletParams = await this.walletParamsFor(context)
+
     const intent = await this.gateway('initiatePayment', () =>
       this.stripe.paymentIntents.create(
         {
@@ -123,8 +182,10 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
           metadata: { sessionId: (input.data?.sessionId as string) ?? '' },
           // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
           capture_method: 'manual',
+          ...optional('customer', customerId),
+          ...walletParams,
         },
-        this.idempotencyKey(input.context),
+        this.idempotencyKey(context),
       ),
     )
 
@@ -135,11 +196,68 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     }
   }
 
+  /**
+   * What the shopper's wallet adds to the intent: the card they chose, and whether to keep it.
+   *
+   * Both are gated on there being an account holder, because both are meaningless without one —
+   * a guest has no wallet to charge from and nothing to save into. And the chosen card's
+   * ownership is checked *before* the intent exists rather than after: an intent naming another
+   * customer's payment method should never be created at all.
+   */
+  private async walletParamsFor(context: Record<string, unknown>): Promise<WalletIntentParams> {
+    // Consent is a property of the session, never of how many cards are already stored: the
+    // shopper with an empty wallet is precisely the one saving their first.
+    const consented = context.savePaymentMethod === true && context.accountHolder !== undefined
+    // `on_session`, not `off_session`: the shopper is present for every charge this wallet is
+    // for. Off-session charging is a different feature with a stronger authentication cost.
+    // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+    const save: WalletIntentParams = consented ? { setup_future_usage: 'on_session' } : {}
+
+    const chosenMethodId = context.paymentMethodId
+    if (typeof chosenMethodId !== 'string' || chosenMethodId === '') return save
+
+    const customerId = accountHolderIdOf(context)
+    await this.assertOwned(customerId, chosenMethodId)
+
+    // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+    return { ...save, payment_method: chosenMethodId }
+  }
+
   async authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
     const intent = await this.gateway('authorizePayment', () =>
       this.stripe.paymentIntents.retrieve(input.data?.id as string),
     )
+
+    await this.markRedisplayable(intent)
+
     return { status: paymentSessionStatusOf(intent), data: { id: intent.id } }
+  }
+
+  /**
+   * Makes a card the shopper agreed to save actually reappear in their wallet.
+   *
+   * `setup_future_usage` attaches the method to the Customer, and that is all it does: on the
+   * current API version the attached method's `allow_redisplay` stays `unspecified`, and the
+   * customer-scoped listing filters that out. Medusa's provider sets neither, which is why a card
+   * can be attached to a customer and invisible to every selector — saved, in the sense that
+   * nobody can ever see it. Setting it is its own call, and this is the first moment after the
+   * browser's confirmation that the server sees the method at all.
+   *
+   * Best-effort on purpose. The shopper has paid by the time this runs; a card that does not
+   * redisplay is worth a log line, not a failed order.
+   */
+  private async markRedisplayable(intent: Stripe.PaymentIntent): Promise<void> {
+    if (!intent.setup_future_usage || !intent.customer) return
+
+    const methodId = typeof intent.payment_method === 'string' ? intent.payment_method : intent.payment_method?.id
+    if (!methodId) return
+
+    await this.gateway('setAllowRedisplay', () =>
+      this.stripe.paymentMethods.update(methodId, {
+        // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+        allow_redisplay: 'always',
+      }),
+    ).catch((error) => this.logger.error(error))
   }
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
@@ -255,23 +373,83 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     return { action, data: { sessionId, amount } }
   }
 
+  // -- Optional: account holders --
+
+  /**
+   * The Stripe Customer a saved card hangs off.
+   *
+   * Created only when the module asks, which it only does for a shopper with an account — a
+   * guest leaves nothing here. The idempotency key is the module's, derived from the Proteus
+   * customer id, so two checkouts opening at the same moment cannot leave two Customers behind.
+   */
+  async createAccountHolder(input: CreateAccountHolderInput): Promise<CreateAccountHolderOutput> {
+    const context = input.context ?? {}
+    const customer = await this.gateway('createAccountHolder', () =>
+      this.stripe.customers.create(
+        {
+          ...optional('email', context.email),
+          ...optional('name', context.name),
+          // The link back, for anyone reading this Customer in the Stripe dashboard. Nothing
+          // reads it programmatically: `account_holder` is where the mapping is authoritative.
+          metadata: { customerId: String(context.customerId ?? '') },
+        },
+        this.idempotencyKey(context),
+      ),
+    )
+
+    return { id: customer.id, data: { id: customer.id } }
+  }
+
+  async deleteAccountHolder(input: DeleteAccountHolderInput): Promise<DeleteAccountHolderOutput> {
+    const id = input.data?.id
+    if (typeof id !== 'string' || id === '') {
+      throw new AppError({
+        type: ErrorTypes.INVALID_ARGUMENT,
+        message: 'deleteAccountHolder was given no gateway customer id.',
+      })
+    }
+
+    await this.gateway('deleteAccountHolder', () => this.stripe.customers.del(id))
+    return {}
+  }
+
   // -- Optional: saved payment methods --
 
+  /**
+   * The customer's redisplayable cards, through the customer-scoped listing.
+   *
+   * Two deliberate differences from `@medusajs/payment-stripe`, both of which are the difference
+   * between a wallet that works and one that quietly does not:
+   *
+   * - The **customer-scoped** endpoint, not `paymentMethods.list({ customer })`. The generic one
+   *   takes a customer id that can be an empty string, and an empty string is not an error — it
+   *   is a request for every payment method on the account.
+   * - An explicit `allow_redisplay: 'always'` filter. Stripe attaches methods a shopper never
+   *   agreed to redisplay, and listing those puts a card in a selector that the shopper never
+   *   consented to see again.
+   */
   async listPaymentMethods(input: ListPaymentMethodsInput): Promise<ListPaymentMethodsOutput> {
-    const customerId = (input.context?.accountHolder as Record<string, unknown>)?.data as Record<string, unknown>
-    const methods = await this.gateway('listPaymentMethods', () =>
-      this.stripe.paymentMethods.list({
-        customer: (customerId?.id as string) ?? '',
-      }),
-    )
-    return methods.data.map((pm) => ({ id: pm.id, data: pm as unknown as Record<string, unknown> }))
+    const customerId = accountHolderIdOf(input.context)
+
+    const [customer, methods] = await Promise.all([
+      this.gateway('retrieveAccountHolder', () => this.stripe.customers.retrieve(customerId)),
+      this.gateway('listPaymentMethods', () =>
+        this.stripe.customers.listPaymentMethods(customerId, {
+          limit: SAVED_METHOD_LIMIT,
+          // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+          allow_redisplay: 'always',
+        }),
+      ),
+    ])
+
+    return toSavedMethods(methods.data, defaultMethodIdOf(customer))
   }
 
   async savePaymentMethod(input: SavePaymentMethodInput): Promise<SavePaymentMethodOutput> {
-    const customerId = (input.context?.accountHolder as Record<string, unknown>)?.data as Record<string, unknown>
+    const customerId = accountHolderIdOf(input.context)
     const setupIntent = await this.gateway('savePaymentMethod', () =>
       this.stripe.setupIntents.create({
-        customer: (customerId?.id as string) ?? '',
+        customer: customerId,
         ...(input.data as Stripe.SetupIntentCreateParams),
       }),
     )
@@ -279,11 +457,54 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
   }
 
   async deletePaymentMethod(input: DeletePaymentMethodInput): Promise<DeletePaymentMethodOutput> {
-    await this.gateway('deletePaymentMethod', () => this.stripe.paymentMethods.detach(input.data?.id as string))
+    const customerId = accountHolderIdOf(input.context)
+    const methodId = methodIdOf(input.data)
+
+    await this.assertOwned(customerId, methodId)
+    await this.gateway('deletePaymentMethod', () => this.stripe.paymentMethods.detach(methodId))
+    return {}
+  }
+
+  /**
+   * The default lives on the Stripe Customer, which is the field Stripe itself treats as one.
+   *
+   * No Proteus table and no migration: a second copy of "which card is default" is a second
+   * thing to keep in step, and the gateway's copy is the one that decides.
+   */
+  async setDefaultPaymentMethod(input: SetDefaultPaymentMethodInput): Promise<SetDefaultPaymentMethodOutput> {
+    const customerId = accountHolderIdOf(input.context)
+    const methodId = methodIdOf(input.data)
+
+    await this.assertOwned(customerId, methodId)
+    await this.gateway('setDefaultPaymentMethod', () =>
+      this.stripe.customers.update(customerId, {
+        // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+        invoice_settings: { default_payment_method: methodId },
+      }),
+    )
     return {}
   }
 
   // -- Helpers --
+
+  /**
+   * Ownership, asked of the gateway rather than inferred from the route's authentication.
+   *
+   * "Authenticated and scoped to the requesting customer" is necessary and not sufficient: the id
+   * in the path is whatever was typed, and `@medusajs/payment-stripe` detaches whatever it is
+   * handed. `customers.retrievePaymentMethod` is the check that cannot be skipped by accident,
+   * because the customer is part of the URL rather than a filter someone remembered to apply.
+   *
+   * Stripe answers a method that does not exist with `resource_missing`, and one that exists but
+   * belongs to somebody else with a bare 404 — it declines to confirm another customer's method
+   * is real. `classifyGatewayError` collapses both into the one answer the wallet has for either:
+   * that card is gone, refresh.
+   */
+  private async assertOwned(customerId: string, methodId: string): Promise<Stripe.PaymentMethod> {
+    return this.gateway('retrievePaymentMethod', () =>
+      this.stripe.customers.retrievePaymentMethod(customerId, methodId),
+    )
+  }
 
   /**
    * Every call to the vendor SDK goes through here, which is what makes the three guarantees

@@ -33,6 +33,8 @@ import type {
   RefundPaymentOutput,
   SavePaymentMethodInput,
   SavePaymentMethodOutput,
+  SetDefaultPaymentMethodInput,
+  SetDefaultPaymentMethodOutput,
   UpdatePaymentInput,
   UpdatePaymentOutput,
   WebhookActionResult,
@@ -190,6 +192,16 @@ export class PaymentProviderService {
     const provider = this.retrieveProvider(providerId)
     if (!provider.deletePaymentMethod) return undefined
     return provider.deletePaymentMethod(input)
+  }
+
+  /** `undefined` when this gateway has no notion of a default — the caller decides what that means. */
+  async setDefaultPaymentMethod(
+    providerId: string,
+    input: SetDefaultPaymentMethodInput,
+  ): Promise<SetDefaultPaymentMethodOutput | undefined> {
+    const provider = this.retrieveProvider(providerId)
+    if (!provider.setDefaultPaymentMethod) return undefined
+    return provider.setDefaultPaymentMethod(input)
   }
 
   async getWebhookActionAndData(

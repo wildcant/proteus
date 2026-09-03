@@ -11,7 +11,7 @@
  * key replayed with different parameters, so two different operations against one session row
  * must not collide on that row's id.
  */
-export type GatewayWrite = 'initiate' | 'update' | 'capture' | 'cancel' | 'refund'
+export type GatewayWrite = 'initiate' | 'update' | 'capture' | 'cancel' | 'refund' | 'accountHolder'
 
 /**
  * `rowId` must be a durable identifier — a Payment Session, Capture or Refund id — never a value

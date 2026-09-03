@@ -1,5 +1,5 @@
 import { BigNumber } from '@core/db/bignum.js'
-import { ErrorTypes } from '@core/errors/app-error.js'
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -21,6 +21,10 @@ import type { PaymentProviderService } from '../services/payment-provider-servic
 
 const cascadeGraph = buildCascadeGraph(models)
 
+/** Two fixed instants, so "most recent" is a fact about the data and not about the clock. */
+const OLDER = new Date('2026-01-01T00:00:00Z')
+const NEWER = new Date('2026-06-01T00:00:00Z')
+
 function createMockProviderService() {
   return {
     createSession: vi.fn().mockResolvedValue({
@@ -38,9 +42,10 @@ function createMockProviderService() {
     refundPayment: vi.fn().mockResolvedValue({ data: {} }),
     createAccountHolder: vi.fn().mockResolvedValue({ id: 'acct_ext_1', data: {} }),
     deleteAccountHolder: vi.fn().mockResolvedValue({ data: {} }),
-    listPaymentMethods: vi.fn().mockResolvedValue([{ id: 'pm_1', data: { last4: '4242' } }]),
+    listPaymentMethods: vi.fn().mockResolvedValue([]),
     savePaymentMethod: vi.fn().mockResolvedValue({ id: 'pm_saved_1', data: { last4: '4242' } }),
     deletePaymentMethod: vi.fn().mockResolvedValue({}),
+    setDefaultPaymentMethod: vi.fn().mockResolvedValue({}),
     list: vi.fn().mockResolvedValue([]),
     getWebhookActionAndData: vi.fn().mockResolvedValue({ action: 'authorized' }),
   }
@@ -528,32 +533,132 @@ test.describe('PaymentModuleService', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // PaymentMethods (provider-managed, no DB table)
+  // The wallet (provider-managed, no DB table)
   // ---------------------------------------------------------------------------
 
-  test.describe('PaymentMethods', () => {
-    test('createPaymentMethods', async ({ expect }) => {
-      const result = await service.createPaymentMethods([
-        { providerId: 'system', data: { token: 'tok_123' }, context: {} },
+  test.describe('The wallet', () => {
+    /** A customer id per test: the account holder table is unique on (provider, customer). */
+    const customerId = () => `cus_${Math.random().toString(36).slice(2)}`
+
+    test("lists the customer's methods, default first and then most recent", async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      mockProvider.listPaymentMethods.mockResolvedValue([
+        { id: 'pm_old', brand: 'visa', last4: '1111', expMonth: 1, expYear: 2030, isDefault: false, createdAt: OLDER },
+        { id: 'pm_new', brand: 'visa', last4: '2222', expMonth: 1, expYear: 2030, isDefault: false, createdAt: NEWER },
+        {
+          id: 'pm_default',
+          brand: 'amex',
+          last4: '3333',
+          expMonth: 1,
+          expYear: 2030,
+          isDefault: true,
+          createdAt: OLDER,
+        },
       ])
+      await service.ensureAccountHolders({ customerId: customer })
 
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual({ id: 'pm_saved_1', data: { last4: '4242' }, providerId: 'system' })
-      expect(mockProvider.savePaymentMethod).toHaveBeenCalledOnce()
+      const result = await service.listSavedMethods(customer)
+
+      // The default leads even though it is the oldest — otherwise the two surfaces that render
+      // this list would each have to decide, and could disagree.
+      expect(result.map((method) => method.id)).toEqual(['pm_default', 'pm_new', 'pm_old'])
     })
 
-    test('listPaymentMethods', async ({ expect }) => {
-      const result = await service.listPaymentMethods({ providerId: 'system', context: { customerId: 'cus_1' } })
+    test('lists nothing for a customer with no account holder, without asking a gateway', async ({ expect }) => {
+      const result = await service.listSavedMethods(customerId())
 
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual({ id: 'pm_1', data: { last4: '4242' }, providerId: 'system' })
-      expect(mockProvider.listPaymentMethods).toHaveBeenCalledOnce()
+      expect(result).toEqual([])
+      expect(mockProvider.listPaymentMethods).not.toHaveBeenCalled()
     })
 
-    test('deletePaymentMethods', async ({ expect }) => {
-      await service.deletePaymentMethods([{ id: 'pm_1', providerId: 'system' }])
+    test('detaches through the provider holding the account', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      await service.ensureAccountHolders({ customerId: customer })
+
+      await service.deleteSavedMethod(customer, 'pm_1')
 
       expect(mockProvider.deletePaymentMethod).toHaveBeenCalledOnce()
+    })
+
+    test('answers payment_method_unavailable when no provider holds the method', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      await service.ensureAccountHolders({ customerId: customer })
+      mockProvider.deletePaymentMethod.mockRejectedValue(
+        new AppError({
+          type: ErrorTypes.CONFLICT,
+          code: 'payment_method_unavailable',
+          message: 'That payment method is no longer available.',
+        }),
+      )
+
+      await expect(service.deleteSavedMethod(customer, 'pm_stranger')).rejects.toMatchObject({
+        type: ErrorTypes.CONFLICT,
+        code: 'payment_method_unavailable',
+      })
+    })
+
+    test('a provider without setDefaultPaymentMethod needs no stub and does not break', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      await service.ensureAccountHolders({ customerId: customer })
+      // What `PaymentProviderService` answers for a provider that does not implement it at all.
+      mockProvider.setDefaultPaymentMethod.mockResolvedValue(undefined)
+
+      // The call is refused rather than throwing a TypeError, and the wallet's other operations
+      // are unaffected — which is the whole promise of the operation being optional.
+      await expect(service.setDefaultSavedMethod(customer, 'pm_1')).rejects.toMatchObject({
+        code: 'payment_method_unavailable',
+      })
+      await expect(service.listSavedMethods(customer)).resolves.toBeDefined()
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // Account holders
+  // ---------------------------------------------------------------------------
+
+  test.describe('ensureAccountHolders', () => {
+    const customerId = () => `cus_${Math.random().toString(36).slice(2)}`
+
+    test('creates one on first need and reuses it on the next checkout', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+
+      const first = await service.ensureAccountHolders({ customerId: customer, email: 'ada@example.com' })
+      const second = await service.ensureAccountHolders({ customerId: customer, email: 'ada@example.com' })
+
+      expect(first).toHaveLength(1)
+      expect(second.map((holder) => holder.id)).toEqual(first.map((holder) => holder.id))
+      expect(mockProvider.createAccountHolder).toHaveBeenCalledOnce()
+    })
+
+    test('two checkouts opening at the same moment still leave one', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+
+      // The read-then-write both of these perform passes for both of them; the unique index on
+      // (provider, customer) is what decides, and the loser has to read the winner's row.
+      const [first, second] = await Promise.all([
+        service.ensureAccountHolders({ customerId: customer }),
+        service.ensureAccountHolders({ customerId: customer }),
+      ])
+
+      expect(first[0]?.id).toBe(second[0]?.id)
+      expect(await service.listAccountHolders({ customerId: customer })).toHaveLength(1)
+    })
+
+    test('creates nothing for a provider with no account-holder concept', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      mockProvider.createAccountHolder.mockResolvedValue(undefined)
+
+      const holders = await service.ensureAccountHolders({ customerId: customer })
+
+      expect(holders).toEqual([])
+      expect(await service.listAccountHolders({ customerId: customer })).toEqual([])
     })
   })
 

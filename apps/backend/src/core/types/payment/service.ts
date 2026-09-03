@@ -2,25 +2,24 @@ import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
   AccountHolderDTO,
-  FilterablePaymentMethodProps,
+  FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
   PaymentDTO,
-  PaymentMethodDTO,
   PaymentProviderDTO,
   PaymentProviderMeta,
   PaymentSessionDTO,
   RefundReasonDTO,
+  SavedMethodDTO,
 } from './common.js'
 import type {
   CreateAccountHolderDTO,
   CreateCaptureDTO,
   CreatePaymentCollectionDTO,
-  CreatePaymentMethodDTO,
   CreatePaymentSessionDTO,
   CreateRefundDTO,
   CreateRefundReasonDTO,
-  DeletePaymentMethodDTO,
+  EnsureAccountHoldersDTO,
   ProviderWebhookPayload,
   UpdatePaymentCollectionDTO,
   UpdatePaymentSessionDTO,
@@ -97,16 +96,24 @@ export type IPaymentModuleService = {
 
   // AccountHolder
   createAccountHolder(input: CreateAccountHolderDTO, context?: Context): Promise<AccountHolderDTO>
+  /**
+   * The customer's account holder at every provider that has the concept, created on first need.
+   *
+   * The caller decides whether the customer is an *account*: Proteus gives every guest a Customer
+   * row, and a guest must leave nothing behind at a gateway.
+   */
+  ensureAccountHolders(input: EnsureAccountHoldersDTO, context?: Context): Promise<AccountHolderDTO[]>
+  listAccountHolders(
+    filters?: FilterableAccountHolderProps,
+    config?: FindConfig<AccountHolderDTO>,
+    context?: Context,
+  ): Promise<AccountHolderDTO[]>
   deleteAccountHolder(id: string, context?: Context): Promise<void>
 
-  // PaymentMethods (provider-managed, no DB table)
-  listPaymentMethods(
-    filters: FilterablePaymentMethodProps,
-    config?: FindConfig<PaymentMethodDTO>,
-    context?: Context,
-  ): Promise<PaymentMethodDTO[]>
-  createPaymentMethods(data: CreatePaymentMethodDTO[], context?: Context): Promise<PaymentMethodDTO[]>
-  deletePaymentMethods(data: DeletePaymentMethodDTO[], context?: Context): Promise<void>
+  // The wallet (provider-managed, no DB table). Ownership is verified at the gateway, per write.
+  listSavedMethods(customerId: string, context?: Context): Promise<SavedMethodDTO[]>
+  deleteSavedMethod(customerId: string, methodId: string, context?: Context): Promise<void>
+  setDefaultSavedMethod(customerId: string, methodId: string, context?: Context): Promise<void>
 
   // RefundReasons
   createRefundReasons(data: CreateRefundReasonDTO[], context?: Context): Promise<RefundReasonDTO[]>

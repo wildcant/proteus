@@ -132,6 +132,8 @@ export type PaymentProviderDTO = {
 export type AccountHolderDTO = {
   id: string
   providerId: string
+  /** The Proteus Customer this holder stands for. Null for a holder created without one. */
+  customerId: string | null
   externalId: string
   email: string | null
   data: Record<string, unknown>
@@ -145,6 +147,29 @@ export type PaymentMethodDTO = {
   id: string
   data: Record<string, unknown>
   providerId: string
+}
+
+/**
+ * A stored card, in the checkout's vocabulary rather than a gateway's.
+ *
+ * Every field here is one any card network answers for, which is what lets the storefront render
+ * a Stripe wallet and a Mercado Pago one with the same row component. The gateway's own object
+ * stops at the adapter: nothing above it can leak a raw field because nothing above it is given
+ * one.
+ *
+ * `createdAt` is the exception that is not shown — it exists so the wallet has one definition of
+ * "most recent" to order by. `orderSavedMethods` is that definition, and it is applied once.
+ */
+export type SavedMethodDTO = {
+  id: string
+  brand: string
+  last4: string
+  expMonth: number
+  expYear: number
+  /** The default the *gateway* holds, not one Proteus stores. See `setDefaultPaymentMethod`. */
+  isDefault: boolean
+  /** When the gateway says the method was stored. Ordering only; never served to a storefront. */
+  createdAt: Date
 }
 
 // ---------------------------------------------------------------------------
@@ -199,4 +224,10 @@ export interface FilterablePaymentProviderProps extends BaseFilterable<Filterabl
 export interface FilterablePaymentMethodProps {
   providerId: string
   context: Record<string, unknown>
+}
+
+export interface FilterableAccountHolderProps extends BaseFilterable<FilterableAccountHolderProps> {
+  id?: string | string[]
+  providerId?: string | string[]
+  customerId?: string | string[]
 }
