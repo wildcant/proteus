@@ -1,4 +1,4 @@
-import { cn, FieldLabel, RadioGroupItem } from '@proteus/ui'
+import { cn, FieldLabel, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { Trash2Icon } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { StoreSavedMethod } from '#/api/generated/model'
@@ -143,3 +143,30 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
 /** Quiet text actions, square and borderless until they matter. */
 const TEXT_BUTTON_CLASS =
   'border border-transparent px-2.5 py-1.5 font-medium text-ink-muted text-xs hover:text-ink disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink'
+
+/**
+ * What the wallet looks like while it is being read, on both surfaces that read one.
+ *
+ * It lives beside the row for the same reason the row lives here at all: it stands in for
+ * `SavedCardRow`, and a placeholder written separately from the row drifts from it. It had —
+ * twice, verbatim, once per surface — and both copies froze the row at a flat `h-15` while the
+ * row itself is content plus `p-4`, so the list jumped when the cards arrived.
+ *
+ * So the envelope *is* `ROW_CLASS`; there is no height here to be wrong. Only the content is
+ * stood in for: the network mark at the `h-6 w-10` `NetworkMark` draws itself at, and one line of
+ * card text. `aria-hidden` because a placeholder names nothing, and two announced empty rows are
+ * worse than the silence before the list arrives.
+ */
+export function WalletSkeleton() {
+  return (
+    <div className="flex flex-col" data-testid="wallet-skeleton" aria-hidden="true">
+      {Array.from({ length: 2 }, (_, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: placeholder rows have no identity
+        <div key={index} className={ROW_CLASS}>
+          <Skeleton className="h-6 w-10 shrink-0" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+      ))}
+    </div>
+  )
+}
