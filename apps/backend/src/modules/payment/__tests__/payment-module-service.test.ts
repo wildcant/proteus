@@ -58,11 +58,14 @@ let mockProvider: ReturnType<typeof createMockProviderService>
  *  them through. These two are how the second hop is asserted at all. */
 let captureRepository: CaptureRepository
 let refundRepository: RefundRepository
+/** Held so the concurrency tests can force the interleave a shared database client prevents. */
+let accountHolderRepository: AccountHolderRepository
 
 test.beforeEach(({ getDb, logger }) => {
   mockProvider = createMockProviderService()
   captureRepository = new CaptureRepository({ getDb, cascadeGraph })
   refundRepository = new RefundRepository({ getDb, cascadeGraph })
+  accountHolderRepository = new AccountHolderRepository({ getDb, cascadeGraph })
 
   service = new PaymentModuleService({
     paymentCollectionRepository: new PaymentCollectionRepository({ getDb, cascadeGraph }),
@@ -71,7 +74,7 @@ test.beforeEach(({ getDb, logger }) => {
     captureRepository,
     refundRepository,
     refundReasonRepository: new RefundReasonRepository({ getDb, cascadeGraph }),
-    accountHolderRepository: new AccountHolderRepository({ getDb, cascadeGraph }),
+    accountHolderRepository,
     paymentProviderService: mockProvider as unknown as PaymentProviderService,
     withTransaction: createWithTransaction(getDb),
     logger,
@@ -635,19 +638,64 @@ test.describe('PaymentModuleService', () => {
       expect(mockProvider.createAccountHolder).toHaveBeenCalledOnce()
     })
 
-    test('two checkouts opening at the same moment still leave one', async ({ expect }) => {
+    /**
+     * Both callers see an empty wallet, which is what "at the same moment" means and what timing
+     * alone cannot produce here.
+     *
+     * `Promise.all` over two `ensureAccountHolders` looks like a race and is not one: the two
+     * calls share a database client, so the first INSERT commits before the second SELECT is
+     * issued and the second simply finds the row. Stubbing the lookup is the only way to reach
+     * the interleave the criterion names — and the recovery branch it exists to protect.
+     *
+     * Two calls stubbed, one per caller. Everything after them, including the recovery's own
+     * read-back, goes to the real database, so the duplicate is a real unique violation and the
+     * winner is a real row.
+     */
+    function bothSeeAnEmptyWallet() {
+      vi.spyOn(accountHolderRepository, 'find').mockResolvedValueOnce([]).mockResolvedValueOnce([])
+    }
+
+    test('two checkouts at the same moment leave one, when the gateway replays its own id', async ({ expect }) => {
       const customer = customerId()
       mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      // What Stripe does with a replayed idempotency key: both callers are handed the same
+      // Customer. The loser's insert therefore collides on (provider, external) first — the
+      // index that has nothing to do with the customer, and the order a real race produces.
+      bothSeeAnEmptyWallet()
 
-      // The read-then-write both of these perform passes for both of them; the unique index on
-      // (provider, customer) is what decides, and the loser has to read the winner's row.
       const [first, second] = await Promise.all([
         service.ensureAccountHolders({ customerId: customer }),
         service.ensureAccountHolders({ customerId: customer }),
       ])
 
+      // The loser read the winner's row rather than failing the shopper's checkout.
+      expect(first[0]?.id).toBeDefined()
       expect(first[0]?.id).toBe(second[0]?.id)
       expect(await service.listAccountHolders({ customerId: customer })).toHaveLength(1)
+    })
+
+    test('two checkouts at the same moment leave one, when the gateway hands out two ids', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      // A gateway that does not replay — or a key that has expired at it. The external ids now
+      // differ, so (provider, external) cannot collide and (provider, customer) is the index that
+      // refuses the loser. The read-back has to find the winner under this order too.
+      mockProvider.createAccountHolder
+        .mockResolvedValueOnce({ id: 'acct_ext_first', data: {} })
+        .mockResolvedValueOnce({ id: 'acct_ext_second', data: {} })
+      bothSeeAnEmptyWallet()
+
+      const [first, second] = await Promise.all([
+        service.ensureAccountHolders({ customerId: customer }),
+        service.ensureAccountHolders({ customerId: customer }),
+      ])
+
+      expect(first[0]?.id).toBeDefined()
+      expect(first[0]?.id).toBe(second[0]?.id)
+      const surviving = await service.listAccountHolders({ customerId: customer })
+      expect(surviving).toHaveLength(1)
+      // Whichever won, the row both callers hold is the row that exists.
+      expect(surviving[0]?.id).toBe(first[0]?.id)
     })
 
     test('creates nothing for a provider with no account-holder concept', async ({ expect }) => {

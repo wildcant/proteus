@@ -215,6 +215,43 @@ test.describe('paying with a saved card', () => {
     expect(stripeGateway.callsTo('paymentIntents.create')).toHaveLength(intentsBefore)
   })
 
+  test('answers a named card with no account holder the way it answers a stale one', async ({ service, expect }) => {
+    // The shopper whose session expired between the selector rendering and Place order: still
+    // naming the card they picked, no longer anyone the gateway can be asked about.
+    const guest = await service.create.customer(api.container, { hasAccount: false })
+    const checkout = await payableCart(service)
+    assertDefined(checkout.paymentCollection)
+
+    const { status, body } = await openSession(
+      checkout.paymentCollection.id,
+      { data: { paymentMethodId: 'pm_from_a_previous_session' } },
+      authHeader('customer', guest.id),
+    )
+
+    expect(status).toBe(409)
+    expect(body).toMatchObject({ type: 'conflict', code: 'payment_method_unavailable' })
+    // The 400 this used to answer carried "A saved-method operation reached the Stripe adapter
+    // with no account holder" — an internal string, in front of a shopper, on a status the
+    // storefront's stale-method branch does not listen for.
+    const message = 'message' in body ? body.message : ''
+    expect(message).not.toContain('Stripe')
+    expect(message).not.toContain('pm_from_a_previous_session')
+    expect(stripeGateway.callsTo('paymentIntents.create')).toHaveLength(0)
+  })
+
+  test('answers an unauthenticated caller naming a card the same way', async ({ service, expect }) => {
+    const checkout = await payableCart(service)
+    assertDefined(checkout.paymentCollection)
+
+    const { status, body } = await openSession(checkout.paymentCollection.id, {
+      data: { paymentMethodId: 'pm_from_a_previous_session' },
+    })
+
+    expect(status).toBe(409)
+    expect(body).toMatchObject({ code: 'payment_method_unavailable' })
+    expect(stripeGateway.callsTo('paymentIntents.create')).toHaveLength(0)
+  })
+
   test('ignores an account holder the browser supplies', async ({ service, expect }) => {
     const victim = await shopperWithCard(service)
     const attacker = await shopperWithCard(service)

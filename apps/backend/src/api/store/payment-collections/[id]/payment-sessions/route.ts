@@ -1,3 +1,5 @@
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import { PAYMENT_METHOD_UNAVAILABLE } from '@core/errors/payment-method-code.js'
 import type { AccountHolderDTO, IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { CreatePaymentSession, IdParams, StoreCreatePaymentSessionResponse } from '@proteus/http-schemas/store'
@@ -42,6 +44,23 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
 
   const wallet = walletChoiceOf(req.body.data)
   const accountHolder = await accountHolderFor(req, req.body.providerId)
+
+  // A named saved card with no account holder to check it against, answered the way the wallet
+  // answers every other card it cannot act on.
+  //
+  // The reachable path is not a broken client: a shopper whose session expires between the
+  // selector rendering and Place order being pressed arrives here unauthenticated, still naming
+  // the card they picked. That id is stale in exactly the sense the wallet means, and it is the
+  // 409 the storefront listens for to refetch and reset the selection. Left to fall through, the
+  // adapter refuses it as a programming error and the shopper reads the words "the Stripe
+  // adapter" in a 400.
+  if (wallet.paymentMethodId && !accountHolder) {
+    throw new AppError({
+      type: ErrorTypes.CONFLICT,
+      code: PAYMENT_METHOD_UNAVAILABLE,
+      message: 'That payment method is no longer available.',
+    })
+  }
 
   const session = await paymentService.replacePaymentSession(collection.id, {
     providerId: req.body.providerId,
