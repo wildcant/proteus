@@ -1,0 +1,191 @@
+/**
+ * Writes the import list the Temporal Worker registers workflows from.
+ *
+ * The list has to exist as real static imports, and generating it is the only part that changes.
+ * Three things depend on those imports being in the module graph rather than discovered at runtime:
+ *
+ * - **The handler closures have to be in the Worker process.** The sandboxed driver carries a
+ *   workflow *name*; `advanceWorkflow` looks that name up in a map of closures which exist only
+ *   because something imported the module that built them.
+ * - **`tsx --watch` reloads the Worker off that same graph.** Editing a step action restarts the
+ *   Worker because `worker.ts` → `registry.ts` → `registry.gen.ts` → the file just edited.
+ * - **`tsc` and `check:deps` can see it.** A dependency-cruiser rule cannot follow a directory scan.
+ *
+ * So this is deliberately *not* the runtime scan the old hand-written list warned against. The
+ * artifact is committed, so every environment runs the identical file, and `--check` fails the
+ * verify gate when it drifts from the source tree.
+ *
+ * Parsing lives in `workflow-source.ts`, which also owns the `typescript` import and explains why
+ * the repo is pinned to the 6.x line for it.
+ */
+
+import { readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { collect, exportedBindingOf, findCreateWorkflowCalls, parse, workflowNameOf } from './workflow-source.js'
+
+const RED = '\x1b[0;31m'
+const GREEN = '\x1b[0;32m'
+const YELLOW = '\x1b[0;33m'
+const DIM = '\x1b[2m'
+const BOLD = '\x1b[1m'
+const RESET = '\x1b[0m'
+
+type Discovered = {
+  /** The `export const` the definition is bound to, i.e. what the generated file imports. */
+  binding: string
+  /** The runtime name the driver looks up. Only used to reject duplicates before they reach the Map. */
+  name: string
+  /** Module specifier relative to the generated file, `.js` as everything else in this backend. */
+  module: string
+  /** `file:line`, so a rejection prints a clickable location. */
+  location: string
+}
+
+type Problem = { location: string; message: string; remedy: string }
+
+/** Repo root, because `collect` yields repo-relative paths and the module specifiers derive from them. */
+const root = fileURLToPath(new URL('../../../', import.meta.url))
+const WORKFLOWS_DIR = `${root}apps/backend/src/workflows`
+const OUTPUT = `${root}apps/backend/src/temporal/registry.gen.ts`
+
+function discover(): { workflows: Discovered[]; problems: Problem[] } {
+  const workflows: Discovered[] = []
+  const problems: Problem[] = []
+
+  for (const file of collect(WORKFLOWS_DIR, root)) {
+    const source = parse(file)
+
+    for (const call of findCreateWorkflowCalls(source)) {
+      const location = `${file.path}:${source.getLineAndCharacterOfPosition(call.getStart(source)).line + 1}`
+      const binding = exportedBindingOf(call)
+      const name = workflowNameOf(call)
+
+      if (!binding) {
+        problems.push({
+          location,
+          message: 'a createWorkflow(…) call that is not assigned to an exported top-level const',
+          remedy: 'export it as `export const nameWorkflow = createWorkflow(…)`, or it can never be registered',
+        })
+        continue
+      }
+
+      if (!name) {
+        problems.push({
+          location,
+          message: `${binding} does not name itself with a string literal`,
+          remedy: "pass the name inline — createWorkflow('the-name', …) — so it can be read without running the code",
+        })
+        continue
+      }
+
+      // `file.path` is repo-relative (`apps/backend/src/workflows/cart/add-to-cart.ts`); the generated
+      // file sits in `src/temporal/`, one directory over from `src/workflows/`.
+      const module = file.path.replace('apps/backend/src/workflows/', '../workflows/').replace(/\.ts$/, '.js')
+      workflows.push({ binding, name, module, location })
+    }
+  }
+
+  return { workflows: workflows.sort((a, b) => a.module.localeCompare(b.module)), problems }
+}
+
+/** Two workflows answering to one name is a lookup that silently resolves to whichever was registered last. */
+function duplicates(workflows: Discovered[]): Problem[] {
+  const seen = new Map<string, Discovered>()
+  const problems: Problem[] = []
+
+  for (const workflow of workflows) {
+    const first = seen.get(workflow.name)
+    if (first) {
+      problems.push({
+        location: workflow.location,
+        message: `two workflows are named "${workflow.name}" — also at ${first.location}`,
+        remedy: 'rename one; the driver looks workflows up by this name and cannot tell them apart',
+      })
+      continue
+    }
+    seen.set(workflow.name, workflow)
+  }
+
+  return problems
+}
+
+function render(workflows: Discovered[]): string {
+  const imports = workflows.map((workflow) => `import { ${workflow.binding} } from '${workflow.module}'`).join('\n')
+  const entries = workflows.map((workflow) => `  ${workflow.binding},`).join('\n')
+
+  return `// GENERATED by \`npm run workflows:generate\`. Do not edit — your change will be overwritten.
+//
+// Every workflow \`src/workflows/\` defines, as static imports, so the handler closures exist in the
+// Worker process and \`tsx --watch\` has a module graph to reload from. \`npm run verify\` fails when
+// this file drifts from the source tree.
+
+import type { WorkflowDefinition } from '../core/workflows/types.js'
+${imports}
+
+export const GENERATED_WORKFLOWS: WorkflowDefinition<never, unknown>[] = [
+${entries}
+]
+`
+}
+
+function heading(title: string): void {
+  console.info('')
+  console.info(`${RED}${BOLD}${title}${RESET} ${DIM}${'━'.repeat(Math.max(0, 76 - title.length))}${RESET}`)
+  console.info('')
+}
+
+function report(problems: Problem[]): void {
+  heading('workflow-registry')
+  for (const problem of problems) {
+    console.info(`  ${DIM}${problem.location}${RESET}`)
+    console.info(`    ${problem.message}`)
+    console.info(`    ${YELLOW}→${RESET} ${problem.remedy}`)
+    console.info('')
+  }
+}
+
+const checking = process.argv.includes('--check')
+const { workflows, problems } = discover()
+const allProblems = [...problems, ...duplicates(workflows)]
+
+if (allProblems.length > 0) {
+  report(allProblems)
+  process.exit(1)
+}
+
+/** Absent on the first run, and an empty string then differs from any render, which is the right answer. */
+function existingOutput(): string {
+  try {
+    return readFileSync(OUTPUT, 'utf8')
+  } catch {
+    return ''
+  }
+}
+
+const rendered = render(workflows)
+const existing = existingOutput()
+
+if (checking) {
+  if (existing !== rendered) {
+    heading('workflow-registry')
+    console.info(`  ${RED}✖${RESET} src/temporal/registry.gen.ts is out of date with src/workflows/.`)
+    console.info(`    ${DIM}${workflows.length} workflows found in the source tree.${RESET}`)
+    console.info(`    ${YELLOW}→${RESET} run \`npm run workflows:generate\` and commit the result`)
+    console.info('')
+    process.exit(1)
+  }
+  console.info(
+    `${GREEN}✔${RESET} workflow-registry — registry.gen.ts matches src/workflows/. ${DIM}${workflows.length} workflows.${RESET}`,
+  )
+} else {
+  // Only write on a real change: an unconditional write bumps the mtime and re-triggers every watcher
+  // pointed at this file, which on the dev Worker means a second restart for nothing.
+  if (existing === rendered) {
+    console.info(`${GREEN}✔${RESET} workflow-registry — already current. ${DIM}${workflows.length} workflows.${RESET}`)
+  } else {
+    writeFileSync(OUTPUT, rendered)
+    console.info(
+      `${GREEN}✔${RESET} workflow-registry — wrote registry.gen.ts. ${DIM}${workflows.length} workflows.${RESET}`,
+    )
+  }
+}

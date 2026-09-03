@@ -9,7 +9,7 @@
     "ignoreUnknown": false,
     "includes": [
       "**",
-      "!**/src/routeTree.gen.ts",
+      "!**/*.gen.ts",
       "!**/src/api/generated",
       "!apps/backend/deps-analyzer/dependency-graph.svg",
       "!apps/backend/worker-configuration.d.ts"

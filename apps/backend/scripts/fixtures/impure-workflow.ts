@@ -3,14 +3,17 @@
  * `../replay-purity.ts` knows how to detect, plus one it cannot see into.
  *
  * Deliberately outside `apps/backend/src/` so it is never registered, never imported by application
- * code, never typechecked as part of the backend, and never mistaken for a real workflow. The check
- * runs over this file first and fails if any rule stops firing — a checker that has quietly stopped
- * matching reads exactly like a clean tree, and this is the only thing that tells the two apart.
+ * code, and never mistaken for a real workflow: both the registry generator and the purity check's
+ * own second pass read `src/workflows/` only, and this is not in it. It *is* typechecked — the
+ * backend's tsconfig has no exclude — and that is fine, because every rule below is a runtime
+ * impurity rather than a type error. The check runs over this file first and fails if any rule stops
+ * firing — a checker that has quietly stopped matching reads exactly like a clean tree, and this is
+ * the only thing that tells the two apart.
  *
  * Do not fix the code below. Every line here is the point.
  */
 
-import { createWorkflow } from '../../../apps/backend/src/core/workflows/types.js'
+import { createWorkflow } from '../../src/core/workflows/types.js'
 
 type Input = { cartId: string }
 

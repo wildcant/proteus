@@ -40,20 +40,16 @@
  * the wrong trade. A plugin's diagnostics are also one fixed sentence each, where the checks in this
  * repo print what is wrong *and* what to do instead.
  *
- * ## Why at the repo root, and not `apps/backend/scripts/checks/`
+ * ## Where the parser comes from
  *
- * Where D11 expected it, `typescript` resolves to `apps/backend/node_modules/typescript`, which is
- * 7.x — the native compiler, shipping no JS API: no `createSourceFile`, no `SyntaxKind`. A check
- * there would have to bring its own parser as a new dependency. At the repo root `typescript`
- * resolves to the 6.x that `apps/admin` and `apps/store` already build with, so the check costs
- * nothing but a declaration in the root `package.json` — and it sits beside `check-env-usage.sh`
- * and the other two convention checks `verify.sh` already runs, which is the same job it joins.
+ * Plain `typescript`, pinned repo-wide to 6.x — the last line whose npm package is a JS library
+ * rather than a wrapper around the Go binary. `workflow-source.ts` carries the full reasoning; the
+ * short version is that 7.x can no longer turn source text into a tree.
  */
 
-import { readdirSync, readFileSync } from 'node:fs'
-import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as ts from 'typescript'
+import { collect, findCreateWorkflowCalls, parse, type SourceFileInput, workflowNameOf } from './workflow-source.js'
 
 /** Stable ids, so the fixture pass can assert every rule still fires rather than just "something did". */
 type PurityRule =
@@ -74,8 +70,6 @@ type Violation = {
   /** What the author should do about it. */
   remedy: string
 }
-
-type SourceFileInput = { path: string; source: string }
 
 type Report = {
   /** Workflow names found, in file order. The count is the check's own coverage claim. */
@@ -115,7 +109,7 @@ function analyze(files: SourceFileInput[]): Report {
   const violations: Violation[] = []
 
   for (const file of files) {
-    const source = ts.createSourceFile(file.path, file.source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+    const source = parse(file)
 
     for (const call of findCreateWorkflowCalls(source)) {
       workflows.push(workflowNameOf(call) ?? '(unnamed)')
@@ -124,36 +118,6 @@ function analyze(files: SourceFileInput[]): Report {
   }
 
   return { workflows, violations }
-}
-
-function findCreateWorkflowCalls(source: ts.SourceFile): ts.CallExpression[] {
-  const found: ts.CallExpression[] = []
-
-  const visit = (node: ts.Node) => {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'createWorkflow') {
-      found.push(node)
-    }
-    ts.forEachChild(node, visit)
-  }
-
-  visit(source)
-  return found
-}
-
-/** `createWorkflow('name', …)` or `createWorkflow({ name: 'name', idempotent: true }, …)`. */
-function workflowNameOf(call: ts.CallExpression): string | undefined {
-  const first = call.arguments[0]
-  if (!first) return undefined
-  if (ts.isStringLiteralLike(first)) return first.text
-  if (!ts.isObjectLiteralExpression(first)) return undefined
-
-  for (const property of first.properties) {
-    if (!ts.isPropertyAssignment(property)) continue
-    if (property.name.getText() !== 'name') continue
-    if (ts.isStringLiteralLike(property.initializer)) return property.initializer.text
-  }
-
-  return undefined
 }
 
 function analyzeHandler(call: ts.CallExpression, name: string, source: ts.SourceFile, path: string): Violation[] {
@@ -366,25 +330,6 @@ function propertyName(node: ts.Node): string {
   return ts.isPropertyAccessExpression(node) ? node.name.text : '?'
 }
 
-/** Every `.ts` under `directory`, minus `__tests__` — those hold deliberately odd handlers. */
-function collect(directory: string, root: string): SourceFileInput[] {
-  const files: SourceFileInput[] = []
-
-  const walk = (current: string) => {
-    for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      const path = join(current, entry.name)
-      if (entry.isDirectory()) {
-        if (entry.name !== '__tests__') walk(path)
-      } else if (entry.name.endsWith('.ts')) {
-        files.push({ path: relative(root, path), source: readFileSync(path, 'utf8') })
-      }
-    }
-  }
-
-  walk(resolve(directory))
-  return files
-}
-
 function heading(title: string): void {
   console.info('')
   console.info(`${RED}${BOLD}${title}${RESET} ${DIM}${'━'.repeat(Math.max(0, 76 - title.length))}${RESET}`)
@@ -406,9 +351,11 @@ function print(violation: Violation): void {
  *    output of a codebase with nothing wrong in it, and this is what tells the two apart.
  * 2. The workflows. The count is printed on success, so "it passed" also says how much it read.
  */
-const root = fileURLToPath(new URL('../..', import.meta.url))
+/** Repo root, so a violation still prints `apps/backend/src/workflows/...` and stays clickable. */
+const root = fileURLToPath(new URL('../../../', import.meta.url))
+const scripts = fileURLToPath(new URL('.', import.meta.url))
 
-const fixture = analyze(collect(`${root}/scripts/checks/fixtures`, root))
+const fixture = analyze(collect(`${scripts}/fixtures`, root))
 const missing = EXPECTED_IN_FIXTURE.filter((rule) => !fixture.violations.some((found) => found.rule === rule))
 
 const workflows = analyze(collect(`${root}/apps/backend/src/workflows`, root))
@@ -417,7 +364,7 @@ if (missing.length > 0) {
   heading('replay-purity — the check itself')
   console.info(`  ${RED}✖${RESET} The impure fixture no longer trips every rule, so this check proves nothing.`)
   console.info('')
-  console.info(`  ${DIM}scripts/checks/fixtures/impure-workflow.ts${RESET}`)
+  console.info(`  ${DIM}apps/backend/scripts/fixtures/impure-workflow.ts${RESET}`)
   console.info(`    nothing was reported for: ${missing.join(', ')}`)
   console.info(
     `    ${YELLOW}→${RESET} restore the fixture case, or drop the rule from EXPECTED_IN_FIXTURE if it went on purpose`,

@@ -1,31 +1,6 @@
 import { AppError, ErrorTypes } from '../core/errors/app-error.js'
 import type { WorkflowDefinition } from '../core/workflows/types.js'
-import { requestPasswordResetWorkflow } from '../workflows/auth/request-password-reset.js'
-import { addToCartWorkflow } from '../workflows/cart/add-to-cart.js'
-import { completeCartWorkflow } from '../workflows/cart/complete-cart.js'
-import { confirmInventoryWorkflow } from '../workflows/cart/confirm-inventory-workflow.js'
-import { transferCartCustomerWorkflow } from '../workflows/cart/transfer-cart-customer.js'
-import { updateCartWorkflow } from '../workflows/cart/update-cart.js'
-import { completeCustomerAuthWorkflow } from '../workflows/customer/complete-customer-auth.js'
-import { createCustomerAccountWorkflow } from '../workflows/customer/create-customer-account.js'
-import { deleteFilesWorkflow } from '../workflows/file/delete-files.js'
-import { uploadFilesWorkflow } from '../workflows/file/upload-files.js'
-import { cancelOrderWorkflow } from '../workflows/order/cancel-order.js'
-import { createOrderFulfillmentWorkflow } from '../workflows/order/create-order-fulfillment.js'
-import { createOrderShipmentWorkflow } from '../workflows/order/create-order-shipment.js'
-import { markOrderDeliveredWorkflow } from '../workflows/order/mark-order-delivered.js'
-import { createPaymentCollectionForCartWorkflow } from '../workflows/payment/create-payment-collection-for-cart.js'
-import { batchImageVariantsWorkflow } from '../workflows/product/batch-image-variants.js'
-import { batchVariantImagesWorkflow } from '../workflows/product/batch-variant-images.js'
-import { createProductWorkflow } from '../workflows/product/create-product.js'
-import { createProductVariantsWorkflow } from '../workflows/product/create-product-variants.js'
-import { deleteProductVariantWorkflow } from '../workflows/product/delete-product-variant.js'
-import { setProductOptionsWorkflow } from '../workflows/product/set-product-options.js'
-import { updateProductVariantWorkflow } from '../workflows/product/update-product-variant.js'
-import { updateVariantPricesWorkflow } from '../workflows/product/update-variant-prices.js'
-import { acceptInviteWorkflow } from '../workflows/user/accept-invite.js'
-import { createInviteWorkflow } from '../workflows/user/create-invite.js'
-import { resendInviteWorkflow } from '../workflows/user/resend-invite.js'
+import { GENERATED_WORKFLOWS } from './registry.gen.js'
 
 /**
  * Name → handler, so the replay Activity can find a workflow it was only handed the *name* of.
@@ -36,9 +11,21 @@ import { resendInviteWorkflow } from '../workflows/user/resend-invite.js'
  * non-retryably rather than falling back to something, because "the deploy forgot a workflow" and
  * "the workflow legitimately does not exist" look identical from inside the Activity.
  *
- * Deliberately not built by scanning `src/workflows/` at runtime: an import list is checked by the
- * type system and by `check:deps`, and a missing entry shows up as a failed execution with a name
- * in it rather than as a directory that silently resolved differently in another environment.
+ * The list itself lives in `registry.gen.ts` and is written by `npm run workflows:generate`, which
+ * parses `src/workflows/` for `createWorkflow` calls. It is still an import list, and still a
+ * committed file — that is the point. Static imports are what put the closures in this process at
+ * all, what gives `tsx --watch` a module graph to reload the Worker from, and what lets `tsc` and
+ * `check:deps` see the edge. What generating it removes is only the step where a human remembers to
+ * add a line.
+ *
+ * Still not a runtime scan of the directory, for the reason that has not changed: a directory can
+ * resolve differently in another environment, and nothing would say so. A generated artifact is
+ * identical everywhere because it is in git, and `npm run verify` fails when it drifts from the
+ * source tree rather than letting the difference reach a deploy.
+ *
+ * The duplicate check below survives that move. It now catches a generator bug rather than a typo,
+ * which is a smaller risk but a worse failure — two workflows under one name is a lookup that
+ * silently resolves to whichever was registered last.
  */
 export type WorkflowRegistry = {
   get(name: string): WorkflowDefinition<unknown, unknown> | undefined
@@ -64,31 +51,4 @@ export function createWorkflowRegistry(definitions: WorkflowDefinition<never, un
   }
 }
 
-export const workflowRegistry = createWorkflowRegistry([
-  requestPasswordResetWorkflow,
-  addToCartWorkflow,
-  completeCartWorkflow,
-  confirmInventoryWorkflow,
-  transferCartCustomerWorkflow,
-  updateCartWorkflow,
-  completeCustomerAuthWorkflow,
-  createCustomerAccountWorkflow,
-  deleteFilesWorkflow,
-  uploadFilesWorkflow,
-  cancelOrderWorkflow,
-  createOrderFulfillmentWorkflow,
-  createOrderShipmentWorkflow,
-  markOrderDeliveredWorkflow,
-  createPaymentCollectionForCartWorkflow,
-  batchImageVariantsWorkflow,
-  batchVariantImagesWorkflow,
-  createProductWorkflow,
-  createProductVariantsWorkflow,
-  deleteProductVariantWorkflow,
-  setProductOptionsWorkflow,
-  updateProductVariantWorkflow,
-  updateVariantPricesWorkflow,
-  acceptInviteWorkflow,
-  createInviteWorkflow,
-  resendInviteWorkflow,
-])
+export const workflowRegistry = createWorkflowRegistry(GENERATED_WORKFLOWS)

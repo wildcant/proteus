@@ -74,10 +74,12 @@
       "problemMatcher": []
     },
     {
-      // `worker:dev`, not `worker` — `tsx --watch` restarts on any file the Worker imports, and
-      // `registry.ts` imports every workflow, so editing a step action reloads it in ~5s. The SIGTERM
-      // handler in `worker.ts` drains the in-flight step first, so a restart mid-execution finishes
-      // that step rather than losing it.
+      // `worker:dev`, not `worker` — it boots via `worker.dev.ts`, which regenerates `registry.gen.ts`
+      // and then runs the Worker under `tsx watch`. That generated file imports every workflow, so
+      // editing a step action reloads in ~5s; `--include` on `src/workflows/**` is what makes a
+      // brand-new workflow file reload too, since the watcher otherwise only follows modules already
+      // in the graph. The SIGTERM handler in `worker.ts` drains the in-flight step first, so a restart
+      // mid-execution finishes that step rather than losing it.
       "label": "dev: worker",
       "type": "shell",
       "command": "npm run --workspace=backend worker:dev",
