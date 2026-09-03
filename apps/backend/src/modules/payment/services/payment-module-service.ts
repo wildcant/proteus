@@ -1,31 +1,31 @@
 import { BigNumber } from '../../../core/db/bignum.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import { PAYMENT_METHOD_UNAVAILABLE } from '../../../core/errors/payment-method-code.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
   AccountHolderDTO,
-  FilterablePaymentMethodProps,
+  FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
   PaymentCollectionStatus,
   PaymentDTO,
-  PaymentMethodDTO,
   PaymentProviderDTO,
   PaymentProviderMeta,
   PaymentSessionDTO,
   PaymentSessionStatus,
   RefundReasonDTO,
+  SavedMethodDTO,
 } from '../../../core/types/payment/common.js'
 import type {
   CreateAccountHolderDTO,
   CreateCaptureDTO,
   CreatePaymentCollectionDTO,
-  CreatePaymentMethodDTO,
   CreatePaymentSessionDTO,
   CreateRefundDTO,
   CreateRefundReasonDTO,
-  DeletePaymentMethodDTO,
+  EnsureAccountHoldersDTO,
   ProviderWebhookPayload,
   UpdatePaymentCollectionDTO,
   UpdatePaymentSessionDTO,
@@ -42,6 +42,7 @@ import type { PaymentCollectionRepository } from '../repositories/payment-collec
 import type { PaymentSessionRepository } from '../repositories/payment-session.js'
 import type { RefundRepository } from '../repositories/refund.js'
 import type { RefundReasonRepository } from '../repositories/refund-reason.js'
+import { orderSavedMethods } from '../saved-methods.js'
 import type { PaymentProviderService } from './payment-provider-service.js'
 
 /**
@@ -627,19 +628,99 @@ export class PaymentModuleService implements IPaymentModuleService {
   async createAccountHolder(input: CreateAccountHolderDTO, context?: Context): Promise<AccountHolderDTO> {
     const provider = await this.paymentProviderService.createAccountHolder(input.providerId, {
       data: input.data,
-      context: { email: input.email },
+      context: { email: input.email, customerId: input.customerId },
     })
 
     return this.accountHolderRepository.create(
       {
         providerId: input.providerId,
         externalId: provider?.id ?? input.externalId,
+        customerId: input.customerId ?? null,
         email: input.email ?? null,
         data: provider?.data ?? input.data ?? {},
         metadata: input.metadata ?? null,
       },
       context,
     )
+  }
+
+  async listAccountHolders(
+    filters?: FilterableAccountHolderProps,
+    config?: FindConfig<AccountHolderDTO>,
+    context?: Context,
+  ): Promise<AccountHolderDTO[]> {
+    return this.accountHolderRepository.find(filters, config, context)
+  }
+
+  /**
+   * The customer's account holder at every enabled provider that has the concept, created on
+   * first need and never twice.
+   *
+   * Lazy because nothing at a gateway should exist for a shopper who has not reached the payment
+   * step, and a guest must leave no trace there at all — which is why the caller, not this
+   * module, decides whether a Customer row is an *account* (`hasAccount`). By the time it is
+   * called the answer is yes.
+   *
+   * Idempotent in both directions, because one is not enough. The gateway is given a key derived
+   * from the customer id, so two checkouts opening at once cannot leave two Stripe Customers;
+   * the unique index on (provider, customer) decides which of the two rows survives, and the
+   * loser reads back the winner's. A read-then-write alone would let both callers through.
+   */
+  async ensureAccountHolders(input: EnsureAccountHoldersDTO, context?: Context): Promise<AccountHolderDTO[]> {
+    const existing = await this.accountHolderRepository.find({ customerId: input.customerId }, undefined, context)
+    const providers = await this.paymentProviderService.list({ isEnabled: true }, undefined, context)
+    const missing = providers.filter((provider) => !existing.some((holder) => holder.providerId === provider.id))
+
+    const created = await Promise.all(
+      missing.map((provider) => this.createAccountHolderFor_(provider.id, input, context)),
+    )
+
+    return [...existing, ...created.filter((holder): holder is AccountHolderDTO => holder !== null)]
+  }
+
+  /** Null when the provider has no account-holder concept: nothing to create, nothing to store. */
+  private async createAccountHolderFor_(
+    providerId: string,
+    input: EnsureAccountHoldersDTO,
+    context?: Context,
+  ): Promise<AccountHolderDTO | null> {
+    const provider = await this.paymentProviderService.createAccountHolder(providerId, {
+      context: {
+        customerId: input.customerId,
+        email: input.email,
+        name: input.name,
+        idempotencyKey: idempotencyKeyFor('accountHolder', input.customerId, providerId),
+      },
+    })
+
+    if (!provider) return null
+
+    try {
+      return await this.accountHolderRepository.create(
+        {
+          providerId,
+          externalId: provider.id,
+          customerId: input.customerId,
+          email: input.email ?? null,
+          data: provider.data ?? {},
+          metadata: null,
+        },
+        context,
+      )
+    } catch (error) {
+      // Lost the race against a concurrent checkout. Both asked the gateway with the same
+      // idempotency key, so both are holding the same external id and either row would do — but
+      // only one may exist, so this one reads the winner's rather than failing the shopper.
+      if (!AppError.isError(error) || error.type !== ErrorTypes.DUPLICATE_ERROR) throw error
+
+      const winner = await this.accountHolderRepository.findOne(
+        { providerId, customerId: input.customerId },
+        undefined,
+        context,
+      )
+      if (!winner) throw error
+      return winner
+    }
   }
 
   async deleteAccountHolder(id: string, context?: Context): Promise<void> {
@@ -653,50 +734,98 @@ export class PaymentModuleService implements IPaymentModuleService {
   }
 
   // ---------------------------------------------------------------------------
-  // PaymentMethods (provider-managed, no DB table)
+  // The wallet (provider-managed, no DB table)
   // ---------------------------------------------------------------------------
 
-  async listPaymentMethods(
-    filters: FilterablePaymentMethodProps,
-    _config?: FindConfig<PaymentMethodDTO>,
-    _context?: Context,
-  ): Promise<PaymentMethodDTO[]> {
-    const result = await this.paymentProviderService.listPaymentMethods(filters.providerId, {
-      context: filters.context,
-    })
+  /**
+   * Everything the customer has stored, at every provider they hold an account with.
+   *
+   * Keyed by the customer rather than by a provider, because a wallet is the shopper's and a
+   * caller that had to name the provider would be guessing on their behalf. Ordering is applied
+   * here, once, over the merged list — see `orderSavedMethods`.
+   */
+  async listSavedMethods(customerId: string, context?: Context): Promise<SavedMethodDTO[]> {
+    const holders = await this.accountHolderRepository.find({ customerId }, undefined, context)
 
-    if (!result) return []
-
-    return result.map((pm) => ({
-      id: pm.id,
-      data: pm.data ?? {},
-      providerId: filters.providerId,
-    }))
-  }
-
-  async createPaymentMethods(data: CreatePaymentMethodDTO[], _context?: Context): Promise<PaymentMethodDTO[]> {
-    const results = await Promise.all(
-      data.map(async (item) => {
-        const saved = await this.paymentProviderService.savePaymentMethod(item.providerId, {
-          data: item.data,
-          context: item.context,
-        })
-        if (!saved) return null
-        return { id: saved.id, data: saved.data ?? {}, providerId: item.providerId }
-      }),
-    )
-    return results.filter((r): r is PaymentMethodDTO => r !== null)
-  }
-
-  async deletePaymentMethods(data: DeletePaymentMethodDTO[], _context?: Context): Promise<void> {
-    await Promise.all(
-      data.map((item) =>
-        this.paymentProviderService.deletePaymentMethod(item.providerId, {
-          data: { id: item.id, ...item.data },
-          context: item.context,
+    const lists = await Promise.all(
+      holders.map((holder) =>
+        this.paymentProviderService.listPaymentMethods(holder.providerId, {
+          context: { accountHolder: holder },
         }),
       ),
     )
+
+    return orderSavedMethods(lists.flatMap((list) => list ?? []))
+  }
+
+  /**
+   * Detaches a method the customer holds.
+   *
+   * The account holders are the candidates, and each provider is asked about the id in turn —
+   * the gateway decides whether it is theirs, not a filter written here. A method no provider
+   * claims is answered the same way a stale one is, because from the wallet's point of view they
+   * are the same thing: refresh, the card is gone.
+   */
+  async deleteSavedMethod(customerId: string, methodId: string, context?: Context): Promise<void> {
+    await this.overOwningProvider_(
+      customerId,
+      methodId,
+      (holder) =>
+        this.paymentProviderService.deletePaymentMethod(holder.providerId, {
+          data: { id: methodId },
+          context: { accountHolder: holder },
+        }),
+      context,
+    )
+  }
+
+  /** Nominates the customer's default. Stored by the gateway, never by Proteus. */
+  async setDefaultSavedMethod(customerId: string, methodId: string, context?: Context): Promise<void> {
+    await this.overOwningProvider_(
+      customerId,
+      methodId,
+      (holder) =>
+        this.paymentProviderService.setDefaultPaymentMethod(holder.providerId, {
+          data: { id: methodId },
+          context: { accountHolder: holder },
+        }),
+      context,
+    )
+  }
+
+  /**
+   * Runs a wallet write against whichever of the customer's providers owns the method.
+   *
+   * `undefined` from the delegate means the provider does not have the operation at all, which
+   * is indistinguishable here from "not this provider's method" — both mean "ask the next one".
+   * That is what keeps `setDefaultPaymentMethod` genuinely optional: a provider without it needs
+   * no stub, and nothing here calls a method that is not there.
+   */
+  private async overOwningProvider_<T>(
+    customerId: string,
+    methodId: string,
+    write: (holder: AccountHolderDTO) => Promise<T | undefined>,
+    context?: Context,
+  ): Promise<void> {
+    const holders = await this.accountHolderRepository.find({ customerId }, undefined, context)
+
+    for (const holder of holders) {
+      try {
+        const result = await write(holder)
+        if (result !== undefined) return
+      } catch (error) {
+        // Only the gateway's "that is not this customer's method" moves on to the next provider.
+        // Anything else — the gateway is down, our key is wrong — is the caller's answer.
+        if (!AppError.isError(error) || error.code !== PAYMENT_METHOD_UNAVAILABLE) throw error
+        this.logger.debug(`Payment method "${methodId}" is not held at provider "${holder.providerId}"`)
+      }
+    }
+
+    throw new AppError({
+      type: ErrorTypes.CONFLICT,
+      code: PAYMENT_METHOD_UNAVAILABLE,
+      message: 'That payment method is no longer available.',
+    })
   }
 
   // ---------------------------------------------------------------------------

@@ -20,6 +20,27 @@ export const StorePaymentProvider = z
   .openapi('StorePaymentProvider')
 export type StorePaymentProvider = z.input<typeof StorePaymentProvider>
 
+/**
+ * A stored card, in the same neutral shape whatever gateway holds it.
+ *
+ * Mirrors the storefront port's `SavedMethod` exactly, and deliberately carries no gateway field:
+ * the projection happens in the provider adapter, so a raw Stripe object cannot reach here even
+ * by accident. Expiry is *shown* from `expMonth`/`expYear` and *judged* by the storefront — the
+ * gateway lists expired cards, and whether a card has expired is the issuer's business.
+ */
+export const StoreSavedMethod = z
+  .object({
+    id: z.string(),
+    brand: z.string(),
+    last4: z.string(),
+    expMonth: z.number().int(),
+    expYear: z.number().int(),
+    /** Held by the gateway, on the customer, not by a Proteus table. */
+    isDefault: z.boolean(),
+  })
+  .openapi('StoreSavedMethod')
+export type StoreSavedMethod = z.input<typeof StoreSavedMethod>
+
 export const StorePaymentSession = z
   .object({
     id: z.string(),

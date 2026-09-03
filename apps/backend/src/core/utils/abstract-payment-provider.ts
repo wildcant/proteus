@@ -26,6 +26,8 @@ import type {
   RetrievePaymentOutput,
   SavePaymentMethodInput,
   SavePaymentMethodOutput,
+  SetDefaultPaymentMethodInput,
+  SetDefaultPaymentMethodOutput,
   UpdatePaymentInput,
   UpdatePaymentOutput,
   WebhookActionResult,
@@ -212,4 +214,5 @@ export abstract class AbstractPaymentProvider<TConfig = Record<string, unknown>>
   listPaymentMethods?(input: ListPaymentMethodsInput): Promise<ListPaymentMethodsOutput>
   savePaymentMethod?(input: SavePaymentMethodInput): Promise<SavePaymentMethodOutput>
   deletePaymentMethod?(input: DeletePaymentMethodInput): Promise<DeletePaymentMethodOutput>
+  setDefaultPaymentMethod?(input: SetDefaultPaymentMethodInput): Promise<SetDefaultPaymentMethodOutput>
 }

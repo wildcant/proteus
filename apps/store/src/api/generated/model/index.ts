@@ -83,6 +83,8 @@ export * from './storeProductScopedOptionRenderAs.ts';
 export * from './storeProductScopedOptionValue.ts';
 export * from './storeProductVariant.ts';
 export * from './storeProductVariantOptionValues.ts';
+export * from './storeSavedMethod.ts';
+export * from './storeSavedMethodListResponse.ts';
 export * from './storeShippingOption.ts';
 export * from './storeShippingOptionListResponse.ts';
 export * from './storeSignupBody.ts';

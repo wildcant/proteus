@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
+import { PAYMENT_METHOD_UNAVAILABLE } from '../../core/errors/payment-method-code.js'
 
 /**
  * Classifying what the gateway threw, and answering with a code instead of its message.
@@ -54,7 +55,12 @@ function isStripeError(error: unknown): error is Stripe.errors.StripeError {
  */
 function isPaymentMethodGone(error: Stripe.errors.StripeError): boolean {
   if (error.code === 'payment_method_unactivated') return true
-  return error.code === 'resource_missing' && error.param === 'payment_method'
+  if (error.code === 'resource_missing' && error.param === 'payment_method') return true
+  // A method that exists but is not this customer's. `customers.retrievePaymentMethod` answers it
+  // with a bare 404 — no code, no param — because Stripe will not confirm that another
+  // customer's payment method is real. For a wallet the two failures mean the same thing, so
+  // telling them apart would only give a prober something to tell apart.
+  return error.statusCode === 404 && error.code === undefined
 }
 
 export function classifyGatewayError(error: unknown): GatewayErrorBucket {
@@ -127,7 +133,7 @@ const ANSWER_BY_BUCKET: Record<GatewayErrorBucket, { type: ErrorTypes; code: str
   },
   paymentMethod: {
     type: ErrorTypes.CONFLICT,
-    code: 'payment_method_unavailable',
+    code: PAYMENT_METHOD_UNAVAILABLE,
     message: 'That payment method is no longer available.',
   },
   card: {
