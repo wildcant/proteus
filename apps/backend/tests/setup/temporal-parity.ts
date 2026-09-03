@@ -10,7 +10,11 @@ import { env } from '../../src/env.js'
 // and a TypeScript-aware `require` hook, because Temporal loads `payloadConverterPath` with
 // `require()` and this repo ships `.ts` with no build step.
 import { installTemporalRuntime, installTypeScriptRequireHook } from '../../src/temporal/__tests__/temporal-test-env.js'
-import { createWorkflowActivities, type WorkflowActivities } from '../../src/temporal/activities.js'
+import {
+  createWorkflowActivities,
+  type RegisteredWorkflowActivities,
+  withStepActivities,
+} from '../../src/temporal/activities.js'
 import { PAYLOAD_CONVERTER_PATH, WORKFLOWS_PATH } from '../../src/temporal/config.js'
 import type { WorkflowRegistry } from '../../src/temporal/registry.js'
 
@@ -50,7 +54,7 @@ type Attached = {
   container: AwilixContainer
   /** Names this container has run, so an Activity can find a handler the driver only names. */
   definitions: Map<string, WorkflowDefinition<unknown, unknown>>
-  activities: WorkflowActivities
+  activities: RegisteredWorkflowActivities
 }
 
 type Harness = {
@@ -135,7 +139,7 @@ async function start(): Promise<Harness> {
  * container, so an Activity serving two tests at once still runs each one's steps against the
  * database and the registrations that test set up.
  */
-function routedActivities(): WorkflowActivities {
+function routedActivities(): RegisteredWorkflowActivities {
   const target = (): Attached => {
     const workflowId = Context.current().info.workflowExecution?.workflowId ?? ''
     const key = workflowId.slice(0, workflowId.indexOf(PREFIX_SEPARATOR))
@@ -151,10 +155,14 @@ function routedActivities(): WorkflowActivities {
     return found
   }
 
-  return {
+  // Through `withStepActivities`, like every other Worker: the dispatcher has to answer to the step
+  // names too, because that is what the driver schedules. A throwaway workflow registered by a test
+  // is not in that set — nothing could have registered its step names before this Worker booted —
+  // so its rows fall back to `advanceWorkflow`, which is all parity ever needed.
+  return withStepActivities({
     advanceWorkflow: (input) => target().activities.advanceWorkflow(input),
     compensateWorkflow: (input) => target().activities.compensateWorkflow(input),
-  }
+  })
 }
 
 /**

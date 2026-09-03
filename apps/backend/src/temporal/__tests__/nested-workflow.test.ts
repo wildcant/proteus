@@ -6,7 +6,7 @@ import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { type AwilixContainer, createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { createWorkflowActivities } from '../activities.js'
+import { createWorkflowActivities, withStepActivities } from '../activities.js'
 import { PAYLOAD_CONVERTER_PATH, TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
 import type { WorkflowRegistry } from '../registry.js'
 import type { AdvanceWorkflowInput } from '../types.js'
@@ -70,13 +70,16 @@ describe('nested workflows on a Worker pinned to the simple engine', () => {
       taskQueue: TEMPORAL_TASK_QUEUE,
       workflowsPath: WORKFLOWS_PATH,
       dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
-      activities: {
-        ...activities,
+      // The spy has to be applied *through* `withStepActivities`, not spread over its result: every
+      // alias is a reference to the original `advanceWorkflow`, and the driver schedules the alias
+      // rather than the base name for every step after the first.
+      activities: withStepActivities({
         advanceWorkflow: (input: AdvanceWorkflowInput) => {
           advanced.push(input)
           return activities.advanceWorkflow(input)
         },
-      },
+        compensateWorkflow: activities.compensateWorkflow,
+      }),
     })
     workerRun = worker.run()
     // Marks it handled, so a shutdown-time rejection cannot surface as an unhandled one.

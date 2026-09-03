@@ -45,7 +45,22 @@ export type AdvanceWorkflowInput = {
 
 export type AdvanceWorkflowResult =
   | { done: true; output: unknown }
-  | { done: false; step: string; output: unknown; fingerprint: string }
+  | {
+      done: false
+      step: string
+      output: unknown
+      fingerprint: string
+      /**
+       * The step the *next* advance will run, or `null` if the replay could not see one.
+       *
+       * Purely an observability channel: the driver cannot name the Activity it is scheduling,
+       * because the name only exists once the handler has replayed up to that `ctx.step` — which
+       * happens inside the Activity. So each advance reports the name one ahead, and the driver
+       * spends it on the following call's `summary`. Nothing about the execution depends on it, and
+       * `null` costs only a label.
+       */
+      next: string | null
+    }
 
 export type CompensateWorkflowInput = {
   name: string

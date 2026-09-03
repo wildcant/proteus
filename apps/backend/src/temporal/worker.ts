@@ -4,6 +4,7 @@ import { createWorkflowActivities, ping } from './activities.js'
 import { PAYLOAD_CONVERTER_PATH, TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from './config.js'
 import { createWorkerContainer } from './container.js'
 import { workflowRegistry } from './registry.js'
+import { STEP_ACTIVITY_NAMES } from './step-names.js'
 
 /**
  * Worker entrypoint — `npm run --workspace=backend worker`.
@@ -18,13 +19,20 @@ const { container, shutdown } = await createWorkerContainer()
 
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS })
 
+/**
+ * The step-name aliases are in here too — one Activity type per `ctx.step` name, all of them
+ * `advanceWorkflow`. They exist so the Temporal UI can label a timeline row with the step it ran
+ * rather than fourteen rows of `advanceWorkflow`; see `step-names.ts`.
+ */
+const activities = { ping, ...createWorkflowActivities({ container, registry: workflowRegistry }) }
+
 const worker = await Worker.create({
   connection,
   namespace: env.TEMPORAL_NAMESPACE,
   taskQueue: TEMPORAL_TASK_QUEUE,
   workflowsPath: WORKFLOWS_PATH,
   dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
-  activities: { ping, ...createWorkflowActivities({ container, registry: workflowRegistry }) },
+  activities,
 })
 
 /**
@@ -59,7 +67,7 @@ process.on('SIGINT', () => handleSignal('SIGINT'))
 
 console.info(
   `[temporal-worker] polling '${TEMPORAL_TASK_QUEUE}' on ${env.TEMPORAL_ADDRESS} (namespace ${env.TEMPORAL_NAMESPACE}) ` +
-    `with ${workflowRegistry.names().length} workflows registered`,
+    `with ${workflowRegistry.names().length} workflows and ${STEP_ACTIVITY_NAMES.size} step activities registered`,
 )
 
 await worker.run()

@@ -11,6 +11,7 @@ import {
   StepExecutionError,
   StepSequenceChangedError,
 } from './replay.js'
+import { STEP_ACTIVITY_NAMES } from './step-names.js'
 import type {
   AdvanceWorkflowInput,
   AdvanceWorkflowResult,
@@ -33,8 +34,31 @@ export type WorkflowActivities = {
   compensateWorkflow(input: CompensateWorkflowInput): Promise<CompensateWorkflowResult>
 }
 
+/**
+ * The two real Activities plus one alias per `ctx.step` name, every alias being `advanceWorkflow`
+ * under another name. The aliases exist only to be *scheduled*: the Temporal UI labels a timeline
+ * row with the Activity type, so scheduling `authorize-payment` is what makes the row say
+ * `authorize-payment` instead of `advanceWorkflow`.
+ */
+export type RegisteredWorkflowActivities = WorkflowActivities & {
+  [stepName: string]: WorkflowActivities['advanceWorkflow'] | WorkflowActivities['compensateWorkflow']
+}
+
 /** The full activity surface the Worker registers and `workflows.ts` proxies. */
 export type Activities = WorkflowActivities & { ping: typeof ping }
+
+/**
+ * Adds the step-name aliases to an activity map. Every Worker in the process registers its
+ * activities through here, which is what makes registration and the lookahead filter one decision
+ * instead of two: this spreads `STEP_ACTIVITY_NAMES`, and `advanceWorkflow` below reports a
+ * lookahead only for a name in that same set. A name that is not registered is never reported, so
+ * it is never scheduled, so it cannot fail as `ActivityNotFound`.
+ */
+export function withStepActivities(activities: WorkflowActivities): RegisteredWorkflowActivities {
+  const registered: RegisteredWorkflowActivities = { ...activities }
+  for (const name of STEP_ACTIVITY_NAMES) registered[name] = activities.advanceWorkflow
+  return registered
+}
 
 /**
  * The two Activities that actually run Proteus code.
@@ -47,7 +71,7 @@ export type Activities = WorkflowActivities & { ping: typeof ping }
 export function createWorkflowActivities(deps: {
   container: AwilixContainer
   registry: WorkflowRegistry
-}): WorkflowActivities {
+}): RegisteredWorkflowActivities {
   const { container, registry } = deps
   const stepContext = { container }
 
@@ -70,7 +94,7 @@ export function createWorkflowActivities(deps: {
       : undefined
   }
 
-  return {
+  return withStepActivities({
     async advanceWorkflow(input) {
       const definition = resolve(input.name)
 
@@ -81,7 +105,11 @@ export function createWorkflowActivities(deps: {
             ? `[temporal] ${input.name} finished after ${input.outputs.length} step(s)`
             : `[temporal] ${input.name} completed step ${input.outputs.length + 1} "${result.step}"`,
         )
-        return result
+
+        // The lookahead is a promise to the driver that it may schedule an Activity by this name,
+        // so it is only kept for a name this Worker actually registered.
+        if (result.done || !result.next) return result
+        return STEP_ACTIVITY_NAMES.has(result.next) ? result : { ...result, next: null }
       } catch (error) {
         throw asStepFailure(error)
       }
@@ -106,7 +134,7 @@ export function createWorkflowActivities(deps: {
 
       return result
     },
-  }
+  })
 }
 
 /**

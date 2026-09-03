@@ -84,6 +84,15 @@ type ReplayResult = {
   completed: CompletedStep[]
   /** Set only when `onNextStep` was `execute` and the action resolved. */
   executed?: { step: string; output: unknown; fingerprint: string }
+  /**
+   * The name of the step *after* the executed one, read off the handler before abandoning it.
+   *
+   * Nothing in the execution needs this — it exists so the driver can label the Activity it is
+   * about to schedule, which is otherwise `advanceWorkflow` fourteen times in a row in the Temporal
+   * UI. Absent when the executed step was the last one, when the handler threw in the glue that
+   * follows it, or when nothing was executed at all.
+   */
+  lookahead?: string
 }
 
 type ReplayOptions = {
@@ -105,6 +114,7 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
   let chain: string | null = null
   let outcome: ReplayOutcome | undefined
   let executed: ReplayResult['executed']
+  let lookahead: string | undefined
   /** The first uncompleted step reached, if any. Guards the invariant — see `ConcurrentStepError`. */
   let nextStep: string | undefined
 
@@ -150,6 +160,15 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
       }
 
       if (nextStep !== undefined) {
+        // The handler gets exactly one more `ctx.step` after the executed one resolved, and this is
+        // it: the lookahead. Its action is never run — the name is the whole point — so the double
+        // execution `ConcurrentStepError` exists to prevent cannot happen on this path.
+        if (executed) {
+          lookahead = name
+          release()
+          return abandoned
+        }
+
         throw new ConcurrentStepError(
           `Workflow "${definition.name}" asked for step "${name}" while "${nextStep}" was already the ` +
             'first uncompleted one. Steps must be awaited one at a time: two in flight at once run ' +
@@ -168,12 +187,23 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
         const output = await action(stepContext)
         executed = { step: name, output, fingerprint: chain }
         outcome = { kind: 'reached', step: name, fingerprint: chain }
-      } catch (error) {
-        outcome = { kind: 'threw', step: name, error }
-      }
 
-      release()
-      return abandoned
+        // Deliberately *not* abandoned here, unlike every other exit from this function. Handing
+        // back the real output lets the handler run its glue as far as the next `ctx.step`, whose
+        // name is what labels the following Activity. That glue is the same glue the next attempt
+        // would replay anyway, so this costs nothing beyond running it one step earlier — and it
+        // is pure and synchronous, which `scripts/checks/replay-purity.ts` enforces rather than
+        // hopes for. A handler that awaits something non-`ctx.step` here would stall this Activity
+        // until `startToCloseTimeout` instead of being abandoned, which is exactly what that
+        // check's `await-outside-step` rule is for.
+        return output as T
+      } catch (error) {
+        // A failed step abandons as before: rethrowing into the handler would run its `catch` and
+        // `finally`, which the simple adapter does and this one deliberately does not.
+        outcome = { kind: 'threw', step: name, error }
+        release()
+        return abandoned
+      }
     },
   }
 
@@ -181,6 +211,12 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
     stopped,
     definition.handler(ctx, input).then(
       (output) => {
+        // Reached during the lookahead: the handler had no further step and ran to its return
+        // inside the Activity that executed the last one. That step is this replay's outcome, and
+        // overwriting it here would drop its output on the floor. The next advance replays into
+        // the same return with the output stored and reports `done` then.
+        if (executed) return
+
         // Fewer `ctx.step` calls than there are stored outputs means steps were removed under a
         // running execution — the same hazard the fingerprint catches, one index further on.
         outcome =
@@ -196,6 +232,12 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
             : { kind: 'returned', output }
       },
       (error) => {
+        // Same reasoning as above, and the more important half: glue that throws *after* a step
+        // succeeded must not fail that step. Its output is already earned and has to reach history,
+        // or the next attempt re-runs an action that has already had its effect. The throw is not
+        // lost — the next advance replays into it with no step in flight and reports it there.
+        if (executed) return
+
         outcome = { kind: 'threw', step: null, error }
       },
     ),
@@ -210,7 +252,7 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
     })
   }
 
-  return { outcome, completed, ...(executed ? { executed } : {}) }
+  return { outcome, completed, ...(executed ? { executed } : {}), ...(lookahead ? { lookahead } : {}) }
 }
 
 /**
@@ -245,7 +287,13 @@ export async function advanceWorkflow(
     })
   }
 
-  return { done: false, step: executed.step, output: executed.output, fingerprint: executed.fingerprint }
+  return {
+    done: false,
+    step: executed.step,
+    output: executed.output,
+    fingerprint: executed.fingerprint,
+    next: result.lookahead ?? null,
+  }
 }
 
 /**

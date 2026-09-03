@@ -1,7 +1,19 @@
-import { ApplicationFailure, proxyActivities, type RetryPolicy, TemporalFailure } from '@temporalio/workflow'
+import {
+  type ActivityOptions,
+  ApplicationFailure,
+  proxyActivities,
+  type RetryPolicy,
+  TemporalFailure,
+} from '@temporalio/workflow'
 import type { Activities } from './activities.js'
 import { readStepFailureDetail, STEP_FAILURE_TYPE } from './failure-details.js'
-import type { AdvanceWorkflowInput, DriverInput, StepFailureDetail, StepOutput } from './types.js'
+import type {
+  AdvanceWorkflowInput,
+  AdvanceWorkflowResult,
+  DriverInput,
+  StepFailureDetail,
+  StepOutput,
+} from './types.js'
 
 /**
  * Workflow code is bundled into a deterministic isolate with no filesystem, no network and no
@@ -30,14 +42,23 @@ export async function pingWorkflow(name: string): Promise<string> {
 export async function proteusWorkflow(driver: DriverInput): Promise<unknown> {
   const outputs: StepOutput[] = []
   let fingerprint: string | null = null
+  /**
+   * The name of the step the next Activity will run, reported by the previous one's lookahead and
+   * spent on that Activity's label. `null` for the first, which is the one Activity nothing can
+   * name in advance: no step has run, so no replay has reached a `ctx.step` yet. Naming it would
+   * mean running handler glue in the process that starts the execution, which is the one thing this
+   * driver exists to avoid.
+   */
+  let next: string | null = null
 
   try {
     for (;;) {
-      const result = await advance(driver, { name: driver.name, input: driver.input, outputs, fingerprint })
+      const result = await advance(driver, { name: driver.name, input: driver.input, outputs, fingerprint }, next)
       if (result.done) return result.output
 
       outputs.push({ value: result.output })
       fingerprint = result.fingerprint
+      next = result.next
     }
   } catch (error) {
     await compensate(driver, outputs)
@@ -76,15 +97,26 @@ function asWorkflowFailure(error: unknown): unknown {
  * invocations rather than one policy: attempt one, then the remaining attempts under the policy
  * that step opted into. Temporal owns the backoff and the durability of the second invocation,
  * which is the point of doing it this way rather than looping here.
+ *
+ * `step` is the name the *previous* advance reported, and scheduling under that name is what makes
+ * the Temporal UI label the row `authorize-payment` rather than `advanceWorkflow` — the UI takes
+ * the label from the Activity type, so nothing short of changing the type moves it. The Worker
+ * registers one alias of `advanceWorkflow` per step name and only ever reports a name it
+ * registered, so this cannot schedule something nothing will answer.
  */
-async function advance(driver: DriverInput, input: AdvanceWorkflowInput) {
-  const once = proxyActivities<Activities>({
+async function advance(driver: DriverInput, input: AdvanceWorkflowInput, step: string | null) {
+  /** 1-based, so the id reads in execution order: `3-authorize-payment`. */
+  const position = input.outputs.length + 1
+  const type = step ?? ADVANCE_ACTIVITY
+
+  const once = advanceActivity(type, {
     startToCloseTimeout: driver.startToCloseTimeout,
     retry: { maximumAttempts: 1 },
+    activityId: `${position}-${type}`,
   })
 
   try {
-    return await once.advanceWorkflow(input)
+    return await once(input)
   } catch (error) {
     const detail = readStepFailureDetail(error)
     if (!detail || detail.nonRetryable || !detail.step) throw error
@@ -93,13 +125,39 @@ async function advance(driver: DriverInput, input: AdvanceWorkflowInput) {
     const remaining = remainingAttempts(policy)
     if (policy === undefined || remaining === undefined) throw error
 
-    const retried = proxyActivities<Activities>({
+    const retried = advanceActivity(type, {
       startToCloseTimeout: driver.startToCloseTimeout,
       retry: { ...policy, maximumAttempts: remaining },
+      // A distinct id because this is a second Activity, not a second attempt of the first, and
+      // Temporal rejects a duplicate. It keeps the first invocation's `type`: the failure names the
+      // step, but nothing here can tell whether that name is one the Worker registered, and
+      // scheduling an unregistered type would turn a retryable failure into `ActivityNotFound`.
+      // `summary` carries the name instead, which is the only label this row can otherwise get.
+      activityId: `${position}-${type}-retry`,
+      ...(step ? {} : { summary: detail.step }),
     })
 
-    return await retried.advanceWorkflow(input)
+    return await retried(input)
   }
+}
+
+/** The Activity every alias is an alias of, and the fallback type when no step name is known. */
+const ADVANCE_ACTIVITY = 'advanceWorkflow'
+
+type AdvanceActivity = (input: AdvanceWorkflowInput) => Promise<AdvanceWorkflowResult>
+
+/**
+ * `proxyActivities` turns a property name into the scheduled Activity type, which is the whole
+ * mechanism here — the type has to be a value, not a fixed method name, so the proxy is indexed
+ * rather than called through `Activities`.
+ */
+function advanceActivity(type: string, options: ActivityOptions): AdvanceActivity {
+  const activity = proxyActivities<Record<string, AdvanceActivity>>(options)[type]
+  if (activity) return activity
+
+  // Unreachable: the proxy answers every property. It is checked because `noUncheckedIndexedAccess`
+  // cannot know that, and a non-null assertion is not allowed here.
+  throw ApplicationFailure.nonRetryable(`[temporal] could not proxy an Activity named "${type}"`)
 }
 
 /**

@@ -142,6 +142,78 @@ test.describe('replay', () => {
     expect(second).not.toHaveBeenCalled()
   })
 
+  test('names the step the next advance will run, without running it', async ({ expect }) => {
+    const second = vi.fn(async () => 'second')
+
+    const workflow = createWorkflow<void, string>('lookahead', async (ctx) => {
+      const one = await ctx.step('first', async () => 'first')
+      const two = await ctx.step('second', second)
+      return `${one}/${two}`
+    })
+
+    const result = await advanceWorkflow(erase(workflow), makeContext(), {
+      name: 'lookahead',
+      input: undefined,
+      outputs: [],
+      fingerprint: null,
+    })
+
+    // The label the driver puts on the *next* Activity, which is the only reason this exists.
+    expect(result).toMatchObject({ done: false, step: 'first', output: 'first', next: 'second' })
+    // Reading the name must not cost an execution: that would be the double-run the whole
+    // one-step-per-Activity design is built to prevent.
+    expect(second).not.toHaveBeenCalled()
+  })
+
+  test('keeps the last step as its own outcome when the handler returns during the lookahead', async ({ expect }) => {
+    const workflow = createWorkflow<void, string>('two-steps', async (ctx) => {
+      const one = await ctx.step('first', async () => 'A')
+      const two = await ctx.step('second', async () => 'B')
+      return `${one}${two}`
+    })
+
+    const last = await advanceWorkflow(erase(workflow), makeContext(), {
+      name: 'two-steps',
+      input: undefined,
+      outputs: stored('A'),
+      fingerprint: chainStepFingerprint(null, 'first'),
+    })
+
+    // The handler runs to its `return` inside this Activity, having no third step to look ahead to.
+    // Reporting that return here would finish the workflow with "B" never recorded — right answer,
+    // missing history, and nothing to compensate `second` from.
+    expect(last).toMatchObject({ done: false, step: 'second', output: 'B', next: null })
+
+    const { output, outputs } = await runToCompletion(workflow, undefined)
+    expect(output).toBe('AB')
+    expect(outputs).toEqual(['A', 'B'])
+  })
+
+  test('does not fail a step because the glue after it threw', async ({ expect }) => {
+    const workflow = createWorkflow<void, string>('glue-throws', async (ctx) => {
+      const one = await ctx.step('first', async () => 'earned')
+      if (one === 'earned') throw new Error('glue exploded')
+      return one
+    })
+
+    const advance = (outputs: StepOutput[], fingerprint: string | null) =>
+      advanceWorkflow(erase(workflow), makeContext(), { name: 'glue-throws', input: undefined, outputs, fingerprint })
+
+    // The step succeeded and its output has to reach history, or the next attempt re-runs an action
+    // that has already had its effect. The lookahead saw the throw instead of a step name.
+    const first = await advance([], null)
+    expect(first).toMatchObject({ done: false, step: 'first', output: 'earned', next: null })
+
+    // Not swallowed, just deferred: the next advance replays into the same throw with no step in
+    // flight and reports it as a between-steps failure.
+    const failure = await advance(stored('earned'), chainStepFingerprint(null, 'first')).catch(
+      (error: unknown) => error,
+    )
+    expect(failure).toBeInstanceOf(StepExecutionError)
+    expect((failure as StepExecutionError).step).toBeNull()
+    expect((failure as StepExecutionError).original).toMatchObject({ message: 'glue exploded' })
+  })
+
   test('reports the failing step and rethrows the original error', async ({ expect }) => {
     const workflow = createWorkflow<void, void>('failing', async (ctx) => {
       await ctx.step('boom', async () => {
