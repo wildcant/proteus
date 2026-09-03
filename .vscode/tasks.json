@@ -1,0 +1,117 @@
+{
+  // Run with: Cmd+Shift+P → "Tasks: Run Task" → "dev", or bind it (see README).
+  //
+  // `presentation.group` is the whole trick: every task sharing the group name "dev" opens as a
+  // split pane in one terminal group rather than as its own tab, which is the four-pane layout.
+  // `panel: "dedicated"` keeps each pane bound to its own task across reruns, so a restarted store
+  // reuses the store pane instead of stacking a new one beside it.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // The one to run. Infra first and in sequence, because the API and the Worker both fail on a
+      // cold Postgres and the Worker additionally needs Temporal reachable to register itself.
+      "label": "dev",
+      "dependsOn": ["dev: infra", "dev: apps"],
+      "dependsOrder": "sequence",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      // Split out from `dev` only so the four below start in parallel while still sitting behind
+      // the infra step — `dependsOrder` applies per task, so one list cannot mix the two orders.
+      "label": "dev: apps",
+      "dependsOn": ["dev: api", "dev: worker", "dev: store", "dev: admin", "dev: open"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      // Runs alongside the four rather than after them, because it waits on the ports itself —
+      // sequencing it would mean nothing starts until the browser is open. Deliberately outside the
+      // "dev" presentation group: a fifth member would split the terminal five ways for a task that
+      // exits after a few seconds. Delete it from `dev: apps` above to stop opening tabs.
+      "label": "dev: open",
+      "type": "shell",
+      "command": "./scripts/dev-open.sh",
+      "presentation": { "reveal": "silent", "panel": "shared", "close": true },
+      "problemMatcher": []
+    },
+    {
+      // Stopping the compose Worker is not tidiness. It polls `proteus` and so does the pane below;
+      // whichever is free claims the task, so leaving both up means edits appear to apply at random.
+      // `--wait` blocks on the healthchecks, which is what makes the sequence above worth having.
+      "label": "dev: infra",
+      "type": "shell",
+      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui && docker compose -f apps/backend/docker-compose.yml stop worker",
+      "presentation": { "reveal": "silent", "panel": "shared", "close": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: api",
+      "type": "shell",
+      "command": "npm run --workspace=backend dev",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+    {
+      // `worker:dev`, not `worker` — `tsx --watch` restarts on any file the Worker imports, and
+      // `registry.ts` imports every workflow, so editing a step action reloads it in ~5s. The SIGTERM
+      // handler in `worker.ts` drains the in-flight step first, so a restart mid-execution finishes
+      // that step rather than losing it.
+      "label": "dev: worker",
+      "type": "shell",
+      "command": "npm run --workspace=backend worker:dev",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: store",
+      "type": "shell",
+      "command": "npm run --workspace=store dev",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: admin",
+      "type": "shell",
+      "command": "npm run --workspace=admin dev",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -84,8 +84,14 @@ services:
   # a task on the `proteus` queue. Nothing polling that queue is not an error — `workflow.execute`
   # has no execution timeout, so the HTTP request simply never returns. This is what polls it.
   #
-  # `npm run --workspace=backend worker` is still the way to iterate on Worker code itself; this
-  # service and that command run the same entrypoint, through the same script.
+  # Iterating on workflow or Worker code means running it on the host instead: `worker:dev` is the
+  # same entrypoint under `tsx --watch`, so an edit restarts it in ~5s rather than by hand. Stop this
+  # service first — both poll `proteus`, and whichever is free claims the task. The VS Code `dev`
+  # task does that stop for you.
+  #
+  # Watch mode deliberately does not live in here. The bind mount below carries host writes into the
+  # container, but not the filesystem events that a watcher needs, so `--watch` in this service would
+  # look like it worked and then never fire.
   worker:
     build:
       context: ../..

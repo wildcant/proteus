@@ -218,7 +218,7 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 ### Prerequisites
 
 - Node.js 20+
-- Docker (for local PostgreSQL)
+- Docker (PostgreSQL, Temporal, and the Temporal UI)
 
 ### Setup
 
@@ -226,7 +226,7 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 # Install dependencies
 npm install
 
-# Start local Postgres
+# Start local Postgres (the dev task below does this for you; needed here for the migrations)
 npm run --workspace=backend db:start
 
 # Run database migrations
@@ -238,20 +238,36 @@ npm run --workspace=backend db:seed:dev
 
 ### Running
 
-**Backend API:**
+In VS Code, press **`Cmd+Shift+B`**. That is the whole dev session.
 
-```bash
-npm run --workspace=backend dev
-# API at http://localhost:3000
-# Swagger UI at http://localhost:3000/admin/docs/ and /store/docs/
-```
+It runs the `dev` task from `.vscode/tasks.json`, which brings up Postgres, Temporal and the Temporal
+UI in Docker, then opens four terminal panes side by side — API, Worker, store, admin — and opens the
+store, admin and Temporal UI in your browser once each one actually answers. From the Command Palette
+the same task is `Tasks: Run Task` → `dev`.
 
-**Store:**
+| | URL | Pane |
+|---|---|---|
+| API | http://localhost:3000 (Swagger at `/admin/docs/`, `/store/docs/`) | `npm run --workspace=backend dev` |
+| Temporal Worker | — polls the `proteus` task queue | `npm run --workspace=backend worker:dev` |
+| Store | http://localhost:3001 | `npm run --workspace=store dev` |
+| Admin | http://localhost:3002 | `npm run --workspace=admin dev` |
+| Temporal UI | http://localhost:8088 | Docker |
 
-```bash
-npm run --workspace=store dev
-# Store at http://localhost:3001
-```
+Every pane reloads itself. The Worker runs under `tsx --watch`, so editing a workflow, a step action
+or any service beneath one restarts it in about five seconds — and because `worker.ts` drains on
+SIGTERM, a restart mid-execution finishes the in-flight step instead of losing it. There is nothing
+to restart by hand.
+
+`Tasks: Terminate Task` → `All Running Tasks` stops the four panes and leaves Docker up, which is
+what you usually want between sessions. `npm run --workspace=backend db:stop` takes the containers
+down too.
+
+**Running a piece on its own**
+
+The task is a convenience, not a requirement — each pane is just an npm script, and the table above
+lists them. Note that `dev` stops the containerised Worker on the way up, because it and
+`worker:dev` both poll `proteus` and whichever is free claims the task; start it again with
+`docker compose -f apps/backend/docker-compose.yml start worker` if you want that one instead.
 
 ### Common tasks
 

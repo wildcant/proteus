@@ -12,6 +12,7 @@
     "dev:test": "NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx watch src/index.ts --port 3010",
     "dev:workerd": "wrangler dev --test-scheduled --config wrangler.jsonc --env-file .env.workerd",
     "worker": "dotenvx run -f ../../.env.local -- tsx src/temporal/worker.ts",
+    "worker:dev": "dotenvx run -f ../../.env.local -- tsx --watch src/temporal/worker.ts",
     "temporal:ping": "dotenvx run -f ../../.env.local -- tsx src/temporal/ping.ts",
     "temporal:worker-ready": "dotenvx run -f ../../.env.local --quiet -- tsx scripts/temporal/worker-ready.ts",
     "measure:workflow-payload": "NODE_ENV=test dotenvx run -f ../../.env.test -- tsx scripts/temporal/measure-payload.ts",
