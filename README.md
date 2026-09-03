@@ -269,6 +269,29 @@ lists them. Note that `dev` stops the containerised Worker on the way up, becaus
 `worker:dev` both poll `proteus` and whichever is free claims the task; start it again with
 `docker compose -f apps/backend/docker-compose.yml start worker` if you want that one instead.
 
+**The workerd session**
+
+`Tasks: Run Task` → `dev: workerd` is the same session against the runtime that actually ships to
+Cloudflare: the API runs under `wrangler dev` on 8787, and the two Vite panes point at it instead of
+at 3000.
+
+| | URL | Pane |
+|---|---|---|
+| API | http://localhost:8787 (cron trigger at `/__scheduled`) | `npm run --workspace=backend dev:workerd` |
+| Store | http://localhost:3001 | `npm run --workspace=store dev:workerd` |
+| Admin | http://localhost:3002 | `npm run --workspace=admin dev:workerd` |
+
+Three panes, not four, and only Postgres in Docker. `resolveWorkflowEngineName` returns `simple` for
+workerd, so there is no Temporal Worker to run and no history for the Temporal UI to show — a
+workflow here executes in-process, with compensation on failure but none of the durability. That is
+not a limitation of the dev setup, it is what the deployed Worker does: `@temporalio/*` reaches
+`@temporalio/core-bridge`, a native addon workerd cannot load, so `dependency-cruiser` fails the
+build if anything reachable from `src/index.workerd.ts` so much as imports it.
+
+It shares 3001 and 3002 with `dev`, so run one session or the other, not both. `wrangler dev` reads
+`apps/backend/.env.workerd`, which is gitignored and generated from `.env.local`; the task creates it
+if it is missing, but after editing `.env.local` you need `npm run gen:workerd-env` yourself.
+
 ### Common tasks
 
 ```bash

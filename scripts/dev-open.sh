@@ -13,11 +13,20 @@
 set -uo pipefail
 
 # Temporal's UI is 8088 on the host and 8080 inside the container — the host port is the one to open.
-readonly TARGETS=(
-  "store|http://localhost:3001"
-  "admin|http://localhost:3002"
-  "temporal-ui|http://localhost:8088"
-)
+#
+# Overridable because the workerd session opens a different set: it resolves the `simple` workflow
+# engine, so there is no Temporal Worker and no history for the Temporal UI to show. Space-separated
+# `name|url` pairs, which is why neither field may contain a space.
+if [[ -n "${DEV_OPEN_TARGETS:-}" ]]; then
+  read -ra TARGETS <<<"$DEV_OPEN_TARGETS"
+else
+  TARGETS=(
+    "store|http://localhost:3001"
+    "admin|http://localhost:3002"
+    "temporal-ui|http://localhost:8088"
+  )
+fi
+readonly TARGETS
 
 # Vite is the slow one, and a cold TanStack Router route generation can push it past 20s on a first
 # run after `npm install`. Sixty one-second attempts is far more headroom than that needs and still

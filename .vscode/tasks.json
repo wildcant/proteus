@@ -1,10 +1,22 @@
 {
-  // Run with: Cmd+Shift+P → "Tasks: Run Task" → "dev", or bind it (see README).
+  // Two dev sessions live in here.
   //
-  // `presentation.group` is the whole trick: every task sharing the group name "dev" opens as a
-  // split pane in one terminal group rather than as its own tab, which is the four-pane layout.
+  //   `dev`          — Node runtime. Four panes: API, Temporal Worker, store, admin.
+  //   `dev: workerd` — workerd runtime. Three panes: API under `wrangler dev`, store, admin.
+  //
+  // Both run from Cmd+Shift+P → "Tasks: Run Task". `dev` additionally answers to Cmd+Shift+B, not
+  // through a keybinding but by being the default build task below — and VS Code allows exactly one
+  // of those, so `dev: workerd` cannot have it too. Workspaces cannot ship keybindings either
+  // (keybindings.json is user-level only), so a shortcut for the workerd session is something each
+  // person adds to their own keybindings.json:
+  //
+  //   { "key": "...", "command": "workbench.action.tasks.runTask", "args": "dev: workerd" }
+  //
+  // `presentation.group` is the whole trick: every task sharing a group name opens as a split pane
+  // in one terminal group rather than as its own tab, which is the four- and three-pane layout.
   // `panel: "dedicated"` keeps each pane bound to its own task across reruns, so a restarted store
-  // reuses the store pane instead of stacking a new one beside it.
+  // reuses the store pane instead of stacking a new one beside it. The two sessions use different
+  // group names so a leftover pane from one never splits into the other's group.
   "version": "2.0.0",
   "tasks": [
     {
@@ -104,6 +116,103 @@
       "isBackground": true,
       "presentation": {
         "group": "dev",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+
+    {
+      // The same session against the runtime that actually ships to Cloudflare. Three panes, not
+      // four: `resolveWorkflowEngineName` returns `simple` for workerd, so no Temporal Worker exists
+      // to run — `@temporalio/*` reaches a native addon workerd cannot load and is kept out of that
+      // bundle entirely. A workflow here runs in-process, with compensation but no durability.
+      //
+      // Mutually exclusive with `dev`: the store and admin panes bind the same 3001/3002. Stop one
+      // session before starting the other.
+      "label": "dev: workerd",
+      "dependsOn": ["dev: workerd infra", "dev: workerd apps"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      // Split out for the same reason `dev: apps` is — one list cannot mix sequence and parallel.
+      "label": "dev: workerd apps",
+      "dependsOn": ["dev: workerd api", "dev: workerd store", "dev: workerd admin", "dev: workerd open"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      // Postgres only. Temporal and its UI are dead weight for this session, and the compose Worker
+      // needs no stopping because nothing here enqueues onto `proteus` for it to claim.
+      //
+      // `wrangler dev` reads `.env.workerd`, which is gitignored and generated from `.env.local`, so
+      // a fresh clone has no such file and starts with an undefined DATABASE_URL. The guard covers
+      // missing and empty — the two fatal cases — and never truncates a good file, which an
+      // unconditional regenerate would do whenever dotenvx fails. It does not cover *stale*: after
+      // editing `.env.local`, rerun `npm run gen:workerd-env` yourself.
+      "label": "dev: workerd infra",
+      "type": "shell",
+      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres && { [ -s apps/backend/.env.workerd ] || npm run gen:workerd-env; }",
+      "presentation": { "reveal": "silent", "panel": "shared", "close": true },
+      "problemMatcher": []
+    },
+    {
+      // No Temporal UI to open, and no API URL either: the backend has no health route, so `curl
+      // --fail` against it would 404 forever and never open. `wrangler dev` announces its own
+      // readiness in the pane.
+      "label": "dev: workerd open",
+      "type": "shell",
+      "command": "DEV_OPEN_TARGETS='store|http://localhost:3001 admin|http://localhost:3002' ./scripts/dev-open.sh",
+      "presentation": { "reveal": "silent", "panel": "shared", "close": true },
+      "problemMatcher": []
+    },
+    {
+      // Serves on 8787, which is why the two Vite panes below pin VITE_BACKEND_URL to it rather than
+      // to the Node API's 3000. `--test-scheduled` exposes the cron trigger at `/__scheduled` so the
+      // jobs in `src/jobs/` can be fired by hand instead of waiting on the minute tick.
+      "label": "dev: workerd api",
+      "type": "shell",
+      "command": "npm run --workspace=backend dev:workerd",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev-workerd",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: workerd store",
+      "type": "shell",
+      "command": "npm run --workspace=store dev:workerd",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev-workerd",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: workerd admin",
+      "type": "shell",
+      "command": "npm run --workspace=admin dev:workerd",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev-workerd",
         "panel": "dedicated",
         "reveal": "always",
         "focus": false,
