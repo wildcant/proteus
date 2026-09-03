@@ -152,10 +152,18 @@ const TEXT_BUTTON_CLASS =
  * twice, verbatim, once per surface — and both copies froze the row at a flat `h-15` while the
  * row itself is content plus `p-4`, so the list jumped when the cards arrived.
  *
- * So the envelope *is* `ROW_CLASS`; there is no height here to be wrong. Only the content is
- * stood in for: the network mark at the `h-6 w-10` `NetworkMark` draws itself at, and one line of
- * card text. `aria-hidden` because a placeholder names nothing, and two announced empty rows are
- * worse than the silence before the list arrives.
+ * So the envelope *is* `ROW_CLASS` and there is no height figure here: the row comes out at its
+ * tallest child plus `p-4`, which is the rule a real row measures by.
+ *
+ * Which makes *which child is tallest* the whole of getting this right, and it is not the network
+ * mark. Remove is a **sibling** of `FieldLabel` rather than something inside it — see the comment
+ * on the row above — so it is a direct child of this same flex box, and at `size-8` it stands 8px
+ * over the `h-6` mark buried in the label. A placeholder that stands in for the mark and the text
+ * but not the button is 8px short of every row it replaces, which is the whole reason the third
+ * shape is here. All three, and a single-line row and a placeholder row both measure 66.
+ *
+ * `aria-hidden` because a placeholder names nothing, and two announced empty rows are worse than
+ * the silence before the list arrives.
  */
 export function WalletSkeleton() {
   return (
@@ -165,6 +173,7 @@ export function WalletSkeleton() {
         <div key={index} className={ROW_CLASS}>
           <Skeleton className="h-6 w-10 shrink-0" />
           <Skeleton className="h-4 w-32" />
+          <Skeleton className="ml-auto size-8 shrink-0" />
         </div>
       ))}
     </div>
