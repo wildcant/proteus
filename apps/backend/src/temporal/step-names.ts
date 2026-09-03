@@ -23,9 +23,11 @@ import { type WorkflowRegistry, workflowRegistry } from './registry.js'
  * The names are found by regex over `handler.toString()` rather than by parsing the files. Two
  * reasons, and the second is why this is not the cheap option taken over the rigorous one:
  *
- * - **The TypeScript API is not available here.** `typescript` resolves to 7.x inside
- *   `apps/backend` — the native compiler, which ships no JS API. That is why
- *   `scripts/checks/replay-purity.ts` lives at the repo root instead, and a Worker cannot import it.
+ * - **The source tree is not the subject here — the loaded closures are.** This has to answer for the
+ *   workflows *this process actually registered*, synchronously at module load, because
+ *   `Worker.create` reads the activity map once. `scripts/replay-purity.ts` can parse files because
+ *   it runs over the repo at verify time; a Worker asking the filesystem what it is running would be
+ *   answering from a different source than the one it registered from, and the two can disagree.
  * - **A miss costs a label, not a step.** `advanceWorkflow` reports a lookahead only for a name in
  *   this set, so a name this regex cannot see — one built from a template literal, say — is never
  *   scheduled as an Activity type and the driver falls back. The failure mode is the duller row, not

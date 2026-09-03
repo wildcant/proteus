@@ -55,15 +55,15 @@ history, per-step resume and the Temporal UI.
 
 **A bug can now be reproducible on one runtime and not the other.** That is the real cost of this
 decision, and it is why D5 made acceptance a *parity suite* rather than a set of adapter unit tests:
-`npm run --workspace=backend test:temporal` runs the existing 69 test files with the same assertions
-against Temporal, and both runs report 817 passed / 3 skipped. Same tests, same expectations, two
+`npm run --workspace=backend test:temporal` runs the existing 70 test files with the same assertions
+against Temporal, and both runs report 820 passed / 3 skipped. Same tests, same expectations, two
 engines — a divergence is an adapter bug by definition. It stays out of `verify.sh`'s default job
 list because it needs Docker, and `verify.sh` has to keep working for contributors who have not
 started Temporal.
 
-Read that number for what it is. At most 24 of the 69 files can reach the pinned engine — the
+Read that number for what it is. At most 24 of the 70 files can reach the pinned engine — the
 workflow tests, the API tests whose routes dispatch a workflow, and the engine-pin probe — so it is
-evidence that nothing diverges *where the adapter is reachable*, not 817 assertions of adapter
+evidence that nothing diverges *where the adapter is reachable*, not 820 assertions of adapter
 coverage. ADR-0021's Evidence section carries the breakdown. What the suite does cover is the whole
 surface a workerd deployment and a Node deployment share, which is what this decision put at risk.
 

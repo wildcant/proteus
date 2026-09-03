@@ -93,7 +93,15 @@ export function createTemporalWorkflowEngine(options: TemporalWorkflowEngineOpti
   let handle: Promise<TemporalClientHandle> | undefined
 
   async function client(): Promise<Client> {
-    handle ??= connect()
+    // Caching the promise is what makes concurrent first calls share one connection instead of
+    // racing to open several. Caching a *rejected* one would be a different thing entirely: a
+    // Temporal that was unreachable at first use would fail every later run with that same stale
+    // error until the process restarted, long after the server came back. So the handle is cleared
+    // on the way out, and the next caller gets a fresh attempt rather than a replayed failure.
+    handle ??= connect().catch((error: unknown) => {
+      handle = undefined
+      throw error
+    })
     return (await handle).client
   }
 

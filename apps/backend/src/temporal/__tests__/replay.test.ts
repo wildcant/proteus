@@ -236,7 +236,7 @@ test.describe('replay', () => {
   test('abandons a handler that wrapped a step in try/catch, where the simple adapter recovers', async ({ expect }) => {
     /**
      * The one divergence between the two engines that ordinary code can reach by accident, pinned
-     * here so it cannot drift silently. `scripts/checks/replay-purity.ts` rejects this shape and
+     * here so it cannot drift silently. `scripts/replay-purity.ts` rejects this shape and
      * `core/workflows/readme.md` documents it; this is the evidence behind both.
      *
      * A factory, so each engine gets a handler with its own recording arrays and neither run can

@@ -192,7 +192,7 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
         // back the real output lets the handler run its glue as far as the next `ctx.step`, whose
         // name is what labels the following Activity. That glue is the same glue the next attempt
         // would replay anyway, so this costs nothing beyond running it one step earlier — and it
-        // is pure and synchronous, which `scripts/checks/replay-purity.ts` enforces rather than
+        // is pure and synchronous, which `scripts/replay-purity.ts` enforces rather than
         // hopes for. A handler that awaits something non-`ctx.step` here would stall this Activity
         // until `startToCloseTimeout` instead of being abandoned, which is exactly what that
         // check's `await-outside-step` rule is for.

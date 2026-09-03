@@ -172,7 +172,7 @@ Two consequences worth knowing before writing a workflow:
 > Inside a `createWorkflow` handler, everything outside a `ctx.step` callback must be pure and
 > synchronous.
 
-`scripts/checks/replay-purity.ts` parses every handler under `src/workflows/` and enforces it. It
+`scripts/replay-purity.ts` parses every handler under `src/workflows/` and enforces it. It
 runs in `verify.sh`'s `conventions` job, or on its own with `npm run check:workflow-purity`. In the
 handler body, outside every `ctx.step` callback, these are rejected:
 
@@ -195,13 +195,14 @@ here because it fails the same silent way. A `try` *inside* a step action is unt
 
 What it does not do: it does not follow imports, so helpers under `src/workflows/*/utils/` are trusted
 to be pure; and it does not police step concurrency, which the replay asserts at runtime instead. It
-checks itself against `scripts/checks/fixtures/impure-workflow.ts` before checking anything else — a
+checks itself against `scripts/fixtures/impure-workflow.ts` before checking anything else — a
 rule that has silently stopped matching produces exactly the output of a clean tree, and that fixture
 is what tells the two apart.
 
-It lives at the repo root rather than in `apps/backend/scripts/checks/` for one reason: `typescript`
-resolves to 7.x inside `apps/backend` — the native compiler, which ships no JS parser API — while the
-root has the 6.x that the admin and store apps build with.
+It lives in this workspace because it reads only this workspace, and it can only live here because
+`typescript` is pinned repo-wide to 6.x — the last line whose npm package is a JS library rather than
+a wrapper around the Go binary, and so the last one that can turn source text into a tree. The
+backend was on 7.x until the check moved; unifying the version is what made the move possible.
 
 ### What is different from the simple adapter, and what is not
 
@@ -363,23 +364,23 @@ suite runs a second time with the engine pinned to Temporal, asserting exactly t
 
 ```bash
 docker compose -f apps/backend/docker-compose.yml up -d --wait   # Temporal
-npm run --workspace=backend test              # 69 files, engine pinned to simple
-npm run --workspace=backend test:temporal     # the same 69 files, pinned to temporal
+npm run --workspace=backend test              # 70 files, engine pinned to simple
+npm run --workspace=backend test:temporal     # the same 70 files, pinned to temporal
 ```
 
 Neither run includes `src/**/*.server.test.ts` — the three files that boot a Temporal server of their
 own. `npm run --workspace=backend test:temporal:server` runs those, and it is the file set that keeps
 the two runs above identical to each other.
 
-Both report 817 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
+Both report 820 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
 between them is an adapter bug by definition, not a difference of opinion between two test suites.
 
-**What that number is and is not.** At most 24 of the 69 files can route through the pinned engine:
+**What that number is and is not.** At most 24 of the 70 files can route through the pinned engine:
 15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a workflow, and
-`__tests__/engine-pin.test.ts`. Roughly 120–250 of the ~817 assertions genuinely round-trip through
+`__tests__/engine-pin.test.ts`. Roughly 120–250 of the ~820 assertions genuinely round-trip through
 Temporal; the rest are engine-blind — `src/temporal/__tests__` and the other files here build their
 own engines, and the module, core, framework and provider tests never reach a workflow. So it is
-evidence of no divergence anywhere the adapter is reachable, not 817 assertions of adapter coverage.
+evidence of no divergence anywhere the adapter is reachable, not 820 assertions of adapter coverage.
 If you quote the headline, quote this with it.
 
 **And for two workflows it proves a topology production does not deploy.** `create-product` and
