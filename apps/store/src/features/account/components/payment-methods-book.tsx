@@ -1,4 +1,4 @@
-import { RadioGroup, Skeleton } from '@proteus/ui'
+import { RadioGroup } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { ChevronLeftIcon } from 'lucide-react'
 import { Button } from '#/components/button'
@@ -7,7 +7,7 @@ import {
   useRemovePaymentMethod,
   useSetDefaultPaymentMethod,
 } from '#/features/account/api/payment-methods'
-import { SavedCardRow } from '#/features/account/components/saved-card-row'
+import { SavedCardRow, WalletSkeleton } from '#/features/account/components/saved-card-row'
 import { isUsable } from '#/features/account/payment-methods/expiry'
 import { savedMethodName } from '#/features/account/payment-methods/row'
 
@@ -114,17 +114,6 @@ function WalletUnavailable({ onRetry }: { onRetry: () => void }) {
       <Button variant="link" className="mt-2" onClick={onRetry}>
         Try again
       </Button>
-    </div>
-  )
-}
-
-function WalletSkeleton() {
-  return (
-    <div className="flex flex-col">
-      {Array.from({ length: 2 }, (_, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: placeholder rows have no identity
-        <Skeleton key={index} className="-mt-px h-15 w-full first:mt-0" />
-      ))}
     </div>
   )
 }

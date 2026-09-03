@@ -386,7 +386,9 @@ test.describe('Checkout — saved cards', () => {
 
     await signIn(page, customer)
     const gatewayCustomer = await openAccountWallet(page, customer.id)
-    const removed = await seedSavedCard(gatewayCustomer.id, { last4: '1701', ...futureExpiry(), isDefault: true })
+    // The card about to be removed. Unbound: the assertions below name the survivor, so there is
+    // nothing left to compare this one against.
+    await seedSavedCard(gatewayCustomer.id, { last4: '1701', ...futureExpiry(), isDefault: true })
     const survivor = await seedSavedCard(gatewayCustomer.id, {
       brand: 'mastercard',
       last4: '1702',
@@ -423,7 +425,7 @@ test.describe('Checkout — saved cards', () => {
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
     const [created] = await intentsSince(sessions, watermark)
-    expect(created?.params.payment_method).not.toBe(removed.id)
+    expect(created?.params.payment_method).toBe(survivor.id)
   })
 })
 

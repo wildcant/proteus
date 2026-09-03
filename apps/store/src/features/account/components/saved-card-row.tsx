@@ -1,4 +1,4 @@
-import { cn, FieldLabel, RadioGroupItem } from '@proteus/ui'
+import { cn, FieldLabel, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { Trash2Icon } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { StoreSavedMethod } from '#/api/generated/model'
@@ -143,3 +143,39 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
 /** Quiet text actions, square and borderless until they matter. */
 const TEXT_BUTTON_CLASS =
   'border border-transparent px-2.5 py-1.5 font-medium text-ink-muted text-xs hover:text-ink disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink'
+
+/**
+ * What the wallet looks like while it is being read, on both surfaces that read one.
+ *
+ * It lives beside the row for the same reason the row lives here at all: it stands in for
+ * `SavedCardRow`, and a placeholder written separately from the row drifts from it. It had —
+ * twice, verbatim, once per surface — and both copies froze the row at a flat `h-15` while the
+ * row itself is content plus `p-4`, so the list jumped when the cards arrived.
+ *
+ * So the envelope *is* `ROW_CLASS` and there is no height figure here: the row comes out at its
+ * tallest child plus `p-4`, which is the rule a real row measures by.
+ *
+ * Which makes *which child is tallest* the whole of getting this right, and it is not the network
+ * mark. Remove is a **sibling** of `FieldLabel` rather than something inside it — see the comment
+ * on the row above — so it is a direct child of this same flex box, and at `size-8` it stands 8px
+ * over the `h-6` mark buried in the label. A placeholder that stands in for the mark and the text
+ * but not the button is 8px short of every row it replaces, which is the whole reason the third
+ * shape is here. All three, and a single-line row and a placeholder row both measure 66.
+ *
+ * `aria-hidden` because a placeholder names nothing, and two announced empty rows are worse than
+ * the silence before the list arrives.
+ */
+export function WalletSkeleton() {
+  return (
+    <div className="flex flex-col" data-testid="wallet-skeleton" aria-hidden="true">
+      {Array.from({ length: 2 }, (_, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: placeholder rows have no identity
+        <div key={index} className={ROW_CLASS}>
+          <Skeleton className="h-6 w-10 shrink-0" />
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="ml-auto size-8 shrink-0" />
+        </div>
+      ))}
+    </div>
+  )
+}

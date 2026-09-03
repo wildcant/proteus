@@ -1,7 +1,7 @@
-import { cn, FieldLabel, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
+import { cn, FieldLabel, RadioGroup, RadioGroupItem } from '@proteus/ui'
 import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { AcceptedNetworks } from '#/components/payment-network'
-import { SavedCardRow } from '#/features/account/components/saved-card-row'
+import { SavedCardRow, WalletSkeleton } from '#/features/account/components/saved-card-row'
 import { isUsable } from '#/features/account/payment-methods/expiry'
 import { ROW_CLASS, ROW_LABEL_CLASS, ROW_SELECTED_CLASS, savedMethodName } from '#/features/account/payment-methods/row'
 import { usePaymentControllerContext } from './payment-controller'
@@ -274,17 +274,6 @@ function SelectorNotice({ children }: { children: string }) {
     <p role="status" className="m-0 mb-3 border border-line border-l-2 border-l-ink bg-surface p-3 text-ink text-sm">
       {children}
     </p>
-  )
-}
-
-function WalletSkeleton() {
-  return (
-    <div className="flex flex-col" data-testid="wallet-skeleton" aria-hidden="true">
-      {Array.from({ length: 2 }, (_, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: placeholder rows have no identity
-        <Skeleton key={index} className="-mt-px h-15 w-full first:mt-0" />
-      ))}
-    </div>
   )
 }
 
