@@ -9,13 +9,20 @@ import { createWorkflow, type WorkflowContext } from '@core/workflows/types.js'
 export type WorkflowStep<TInput, TOutput> = (ctx: WorkflowContext, input: TInput) => Promise<TOutput>
 
 /**
- * The failure `runStepAndCompensate` injects. A distinct type so the helper can swallow its own
- * scaffolding while still surfacing anything the step under test throws.
+ * The failure `runStepAndCompensate` injects, recognised by name rather than by class.
+ *
+ * `instanceof` would be the obvious way and it does not survive the Temporal adapter: a step failure
+ * that is neither an `AppError` nor a `WorkflowTerminalError` crosses the wire as `{ name, message }`
+ * and is rebuilt as a plain `Error`, so the class the Worker threw is gone by the time the caller
+ * sees it (`src/temporal/failures.ts`). The name is what both engines preserve, which is what lets
+ * one helper swallow its own scaffolding under either one.
  */
+const DELIBERATE_FAILURE = 'DeliberateFailure'
+
 class DeliberateFailure extends Error {
   constructor() {
     super('deliberate failure to trigger compensation')
-    this.name = 'DeliberateFailure'
+    this.name = DELIBERATE_FAILURE
   }
 }
 
@@ -42,7 +49,7 @@ export async function runStepAndCompensate<TInput>(step: WorkflowStep<TInput, un
   try {
     await workflow.run(input)
   } catch (error) {
-    if (error instanceof DeliberateFailure) return
+    if (error instanceof Error && error.name === DELIBERATE_FAILURE) return
     throw error
   }
 }

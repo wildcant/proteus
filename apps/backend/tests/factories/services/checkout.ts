@@ -1,5 +1,5 @@
 import type { AwilixContainer } from 'awilix'
-import { BigNumber } from '../../../src/core/db/bignum.js'
+import { BigNumber } from '../../../src/core/bignumber.js'
 import type {
   CreateCartDTO,
   CreateLineItemDTO,

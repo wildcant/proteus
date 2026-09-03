@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'

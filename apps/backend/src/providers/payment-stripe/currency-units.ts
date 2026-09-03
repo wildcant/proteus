@@ -1,4 +1,4 @@
-import { BigNumber } from '../../core/db/bignum.js'
+import { BigNumber } from '../../core/bignumber.js'
 
 /**
  * Currencies whose smallest unit is not one hundredth of the major unit.

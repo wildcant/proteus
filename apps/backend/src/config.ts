@@ -1,6 +1,12 @@
 import { defineAppConfig } from '@core/config/index.js'
+import type { InputConfig } from '@core/config/types.js'
 
-export const appConfig = defineAppConfig({
+/**
+ * The raw input, exported alongside the loaded config so a second composition root can start from
+ * the same project settings and change one of them — the Temporal Worker pins its own workflow
+ * engine that way, and so does the test container.
+ */
+export const appConfigInput: InputConfig = {
   projectConfig: {
     http: {
       /**
@@ -23,4 +29,6 @@ export const appConfig = defineAppConfig({
       },
     },
   },
-})
+}
+
+export const appConfig = defineAppConfig(appConfigInput)

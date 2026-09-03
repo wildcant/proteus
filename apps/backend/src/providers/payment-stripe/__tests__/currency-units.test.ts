@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import { test } from '@tests/setup/test-extend.js'
 import { fromSmallestUnit, toSmallestUnit } from '../currency-units.js'
 

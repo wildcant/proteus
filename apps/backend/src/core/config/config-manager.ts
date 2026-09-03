@@ -45,6 +45,9 @@ export class ConfigManager {
           attempts: webhookInput?.attempts ?? DEFAULT_WEBHOOK_CONFIG.attempts,
           backoffMs: webhookInput?.backoffMs ?? DEFAULT_WEBHOOK_CONFIG.backoffMs,
         },
+        // No default: an unset engine means "derive it", which only the composition root can do
+        // (it is the one thing here that depends on the runtime).
+        workflows: { engine: input.projectConfig?.workflows?.engine },
       },
       featureFlags: input.featureFlags ?? {},
     }

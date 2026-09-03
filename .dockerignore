@@ -1,0 +1,31 @@
+# Build context for apps/backend/Dockerfile.worker, whose context is this repo root.
+#
+# node_modules is the load-bearing entry: the image installs its own, and copying the host's would
+# both dwarf the context and shadow it with binaries built for the wrong platform.
+node_modules
+**/node_modules
+
+.git
+.env.keys
+.env.keys.production
+
+# Bind-mounted at runtime instead, so uploads land where the API can serve them.
+apps/backend/static
+
+# Build output and local caches — none of it is what the Worker runs.
+**/dist
+**/build
+**/.output
+**/.vinxi
+**/.tanstack
+**/.wrangler
+**/.turbo
+**/.vite
+**/coverage
+**/playwright-report
+**/test-results
+
+.scratch
+.tasks
+.playwright-mcp
+.vscode

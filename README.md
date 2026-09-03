@@ -199,6 +199,17 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 | [0009](docs/adr/0009-workflow-engine-and-step-pattern.md) | Workflow engine + step pattern | Cross-module orchestration with compensation — standard async/await, no DAG infrastructure |
 | [0010](docs/adr/0010-payment-provider-driven-port.md) | Payment provider as driven port | `IPaymentProvider` interface + `AbstractPaymentProvider` base class — add providers without touching module logic |
 | [0011](docs/adr/0011-module-loaders-and-module-provider.md) | Module loaders + ModuleProvider | Runtime adapter registration at boot time — loaders run after DI setup, before the service is exposed |
+| [0012](docs/adr/0012-single-auth-identity-per-email.md) | One auth identity per email | An address is one person; roles are app metadata on that identity, not separate accounts |
+| [0013](docs/adr/0013-selective-ssr.md) | Selective SSR for the store | Only the routes that need crawlable HTML pay for a server render |
+| [0014](docs/adr/0014-dual-file-upload-strategy.md) | Dual file upload strategy | Multipart for small files, presigned URLs for large ones — one API, two transports |
+| [0015](docs/adr/0015-server-computed-option-projections.md) | Server-computed option projections | The variant matrix is derived once on the server, not reassembled by every client |
+| [0016](docs/adr/0016-derived-soft-delete-cascade.md) | Derived soft-delete cascade | The cascade is read off the schema graph, so a new table cannot be forgotten |
+| [0017](docs/adr/0017-cart-state-is-a-timestamp.md) | Cart state is a timestamp | `completedAt` is the whole state machine — no status column to disagree with it |
+| [0018](docs/adr/0018-layered-product-options.md) | Layered product options | Global option definitions, per-product scoping, per-variant values |
+| [0019](docs/adr/0019-modals-are-url-state.md) | Modals are URL state | Open/closed lives in search params, so back, refresh and a shared link all behave |
+| [0020](docs/adr/0020-store-feature-graph-is-acyclic.md) | Store feature graph is acyclic | Declared feature DAG enforced by dependency-cruiser, so a latent cycle cannot accumulate |
+| [0021](docs/adr/0021-temporal-adapter-replays-to-the-next-step.md) | Temporal adapter replays to the next step | Durable execution with zero changes to 26 workflows — the handler is re-entered per step, so purity between steps is enforced |
+| [0022](docs/adr/0022-durable-execution-is-a-runtime-split.md) | Durable execution is a runtime split | Cloudflare cannot load Temporal's native Worker, so it has no durability — accepted, documented, and covered by a parity suite |
 
 ---
 
@@ -207,7 +218,7 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 ### Prerequisites
 
 - Node.js 20+
-- Docker (for local PostgreSQL)
+- Docker (PostgreSQL, Temporal, and the Temporal UI)
 
 ### Setup
 
@@ -215,7 +226,7 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 # Install dependencies
 npm install
 
-# Start local Postgres
+# Start local Postgres (the dev task below does this for you; needed here for the migrations)
 npm run --workspace=backend db:start
 
 # Run database migrations
@@ -227,20 +238,59 @@ npm run --workspace=backend db:seed:dev
 
 ### Running
 
-**Backend API:**
+In VS Code, press **`Cmd+Shift+B`**. That is the whole dev session.
 
-```bash
-npm run --workspace=backend dev
-# API at http://localhost:3000
-# Swagger UI at http://localhost:3000/admin/docs/ and /store/docs/
-```
+It runs the `dev` task from `.vscode/tasks.json`, which brings up Postgres, Temporal and the Temporal
+UI in Docker, then opens four terminal panes side by side — API, Worker, store, admin — and opens the
+store, admin and Temporal UI in your browser once each one actually answers. From the Command Palette
+the same task is `Tasks: Run Task` → `dev`.
 
-**Store:**
+| | URL | Pane |
+|---|---|---|
+| API | http://localhost:3000 (Swagger at `/admin/docs/`, `/store/docs/`) | `npm run --workspace=backend dev` |
+| Temporal Worker | — polls the `proteus` task queue | `npm run --workspace=backend worker:dev` |
+| Store | http://localhost:3001 | `npm run --workspace=store dev` |
+| Admin | http://localhost:3002 | `npm run --workspace=admin dev` |
+| Temporal UI | http://localhost:8088 | Docker |
 
-```bash
-npm run --workspace=store dev
-# Store at http://localhost:3001
-```
+Every pane reloads itself. The Worker runs under `tsx --watch`, so editing a workflow, a step action
+or any service beneath one restarts it in about five seconds — and because `worker.ts` drains on
+SIGTERM, a restart mid-execution finishes the in-flight step instead of losing it. There is nothing
+to restart by hand.
+
+`Tasks: Terminate Task` → `All Running Tasks` stops the four panes and leaves Docker up, which is
+what you usually want between sessions. `npm run --workspace=backend db:stop` takes the containers
+down too.
+
+**Running a piece on its own**
+
+The task is a convenience, not a requirement — each pane is just an npm script, and the table above
+lists them. Note that `dev` stops the containerised Worker on the way up, because it and
+`worker:dev` both poll `proteus` and whichever is free claims the task; start it again with
+`docker compose -f apps/backend/docker-compose.yml start worker` if you want that one instead.
+
+**The workerd session**
+
+`Tasks: Run Task` → `dev: workerd` is the same session against the runtime that actually ships to
+Cloudflare: the API runs under `wrangler dev` on 8787, and the two Vite panes point at it instead of
+at 3000.
+
+| | URL | Pane |
+|---|---|---|
+| API | http://localhost:8787 (cron trigger at `/__scheduled`) | `npm run --workspace=backend dev:workerd` |
+| Store | http://localhost:3001 | `npm run --workspace=store dev:workerd` |
+| Admin | http://localhost:3002 | `npm run --workspace=admin dev:workerd` |
+
+Three panes, not four, and only Postgres in Docker. `resolveWorkflowEngineName` returns `simple` for
+workerd, so there is no Temporal Worker to run and no history for the Temporal UI to show — a
+workflow here executes in-process, with compensation on failure but none of the durability. That is
+not a limitation of the dev setup, it is what the deployed Worker does: `@temporalio/*` reaches
+`@temporalio/core-bridge`, a native addon workerd cannot load, so `dependency-cruiser` fails the
+build if anything reachable from `src/index.workerd.ts` so much as imports it.
+
+It shares 3001 and 3002 with `dev`, so run one session or the other, not both. `wrangler dev` reads
+`apps/backend/.env.workerd`, which is gitignored and generated from `.env.local`; the task creates it
+if it is missing, but after editing `.env.local` you need `npm run gen:workerd-env` yourself.
 
 ### Common tasks
 

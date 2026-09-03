@@ -1,4 +1,4 @@
-import type { BigNumber } from '../../db/bignum.js'
+import type { BigNumber } from '../../bignumber.js'
 import type { PaymentActions, PaymentSessionStatus, SavedMethodDTO } from './common.js'
 
 // ---------------------------------------------------------------------------

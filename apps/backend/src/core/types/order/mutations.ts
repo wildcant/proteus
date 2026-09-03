@@ -1,4 +1,4 @@
-import type { BigNumber } from '../../db/bignum.js'
+import type { BigNumber } from '../../bignumber.js'
 import type { OrderStatus } from './common.js'
 
 export type CreateOrderAddressDTO = {

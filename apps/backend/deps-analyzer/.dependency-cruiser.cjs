@@ -55,14 +55,36 @@ module.exports = {
     {
       name: 'no-direct-bignumber-import',
       comment:
-        'Only src/core/db/bignum.ts may import from bignumber.js. ' +
-        'All other code should use the BigNumber wrapper.',
+        'Only src/core/bignumber.ts may import from bignumber.js. ' +
+        'All other code should use the BigNumber wrapper. That wrapper deliberately holds nothing ' +
+        'but the class: the Drizzle column type lives next door in src/core/db/bignum.ts, so code ' +
+        'that only needs the value type — the Temporal workflow sandbox bundle included — does not ' +
+        'drag drizzle-orm/pg-core in with it. The one exception is packages/http-schemas, which has ' +
+        'no business depending on backend internals at all.',
       severity: 'error',
       from: {
-        pathNot: '^src/core/db/bignum\\.ts$|packages/http-schemas/',
+        pathNot: '^src/core/bignumber\\.ts$|packages/http-schemas/',
       },
       to: {
         path: 'bignumber\\.js',
+      },
+    },
+    {
+      name: 'no-temporal-in-workerd',
+      comment:
+        'The workerd bundle must not reach Temporal. @temporalio/worker pulls in ' +
+        '@temporalio/core-bridge, a native addon workerd cannot load, so a stray import here is a ' +
+        'broken deploy rather than dead weight. src/container.ts therefore takes the Temporal ' +
+        'engine as an injected factory instead of importing the adapter, exactly as it takes its ' +
+        'logger and dbProvider — this rule is what keeps that boundary deliberate rather than ' +
+        'incidental. Reachability, not a direct import: the hazard is transitive.',
+      severity: 'error',
+      from: {
+        path: '^src/index\\.workerd\\.ts$',
+      },
+      to: {
+        path: '@temporalio/|^src/temporal/|^src/core/workflows/temporal-adapter\\.ts$',
+        reachable: true,
       },
     },
     {

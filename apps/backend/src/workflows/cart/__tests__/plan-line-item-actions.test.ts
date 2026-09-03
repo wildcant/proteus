@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import type { CreateLineItemDTO } from '@core/types/cart/mutations.js'
 import { test } from '@tests/setup/test-extend.js'
 import { type MergeableLineItem, planLineItemActions } from '../utils/plan-line-item-actions.js'

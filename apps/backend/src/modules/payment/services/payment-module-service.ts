@@ -1,4 +1,4 @@
-import { BigNumber } from '../../../core/db/bignum.js'
+import { BigNumber } from '../../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import { PAYMENT_METHOD_UNAVAILABLE } from '../../../core/errors/payment-method-code.js'
 import type { FindConfig } from '../../../core/types/common.js'
