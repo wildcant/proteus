@@ -1,4 +1,4 @@
-import type { BigNumber } from '@core/db/bignum.js'
+import type { BigNumber } from '@core/bignumber.js'
 import type { CreateLineItemDTO } from '@core/types/cart/mutations.js'
 import type { EnrichedProductVariantDTO, ProductDTO } from '@core/types/product/common.js'
 

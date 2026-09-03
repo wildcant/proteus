@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { CartDTO, CartLineItemDTO } from '@core/types/cart/common.js'
 import type { OrderDTO } from '@core/types/order/common.js'

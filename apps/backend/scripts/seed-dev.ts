@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { BigNumber } from '../src/core/db/bignum.js'
+import { BigNumber } from '../src/core/bignumber.js'
 import type {
   IAuthModuleService,
   ICartModuleService,

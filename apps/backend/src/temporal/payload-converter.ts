@@ -7,11 +7,7 @@ import {
   type PayloadConverterWithEncoding,
   UndefinedPayloadConverter,
 } from '@temporalio/common'
-// Straight from the package, not the `../core/db/bignum.js` re-export: that module also defines a
-// Drizzle `customType` and so drags `drizzle-orm/pg-core` into everything that loads it — including
-// the Temporal workflow sandbox bundle, which loads this file. The re-export is the same class
-// object, so `BigNumber.isBigNumber` is unaffected.
-import BigNumber from 'bignumber.js'
+import { BigNumber } from '../core/bignumber.js'
 import { AppError, ErrorTypes } from '../core/errors/app-error.js'
 
 /**

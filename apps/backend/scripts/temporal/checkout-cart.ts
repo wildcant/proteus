@@ -1,6 +1,6 @@
 import type { AwilixContainer } from 'awilix'
 import { ulid } from 'ulid'
-import { BigNumber } from '../../src/core/db/bignum.js'
+import { BigNumber } from '../../src/core/bignumber.js'
 import { addCartAddresses, addLineItem, addShippingMethod, createCart } from '../../tests/factories/services/cart.js'
 import { createSellableVariant } from '../../tests/factories/services/checkout.js'
 import { createPaymentSessionForCart } from '../../tests/factories/services/payment.js'

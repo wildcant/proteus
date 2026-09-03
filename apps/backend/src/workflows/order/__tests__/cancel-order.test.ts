@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import type { OrderDTO } from '@core/types/order/common.js'
 import type { PaymentCollectionDTO } from '@core/types/payment/common.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'

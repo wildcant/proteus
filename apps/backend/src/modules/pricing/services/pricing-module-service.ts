@@ -1,4 +1,4 @@
-import type { BigNumber } from '../../../core/db/bignum.js'
+import type { BigNumber } from '../../../core/bignumber.js'
 import type {
   CalculatedPriceSetDTO,
   Context,

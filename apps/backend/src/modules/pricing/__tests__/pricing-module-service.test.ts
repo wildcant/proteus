@@ -1,5 +1,5 @@
 import { test } from '@tests/setup/test-extend.js'
-import { BigNumber } from '../../../core/db/bignum.js'
+import { BigNumber } from '../../../core/bignumber.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import * as models from '../models/index.js'

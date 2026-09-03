@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/index.js'
 import type { TestContainer } from '@tests/setup/create-container.js'

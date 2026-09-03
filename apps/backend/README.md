@@ -40,7 +40,7 @@ docker compose -f apps/backend/docker-compose.yml stop worker   # don't let two 
 npm run --workspace=backend worker
 ```
 
-The UI is at <http://localhost:8080>; the gRPC frontend is at `localhost:7233`. Every execution and
+The UI is at <http://localhost:8088>; the gRPC frontend is at `localhost:7233`. Every execution and
 its full history show up there — including the one a route just dispatched.
 `npm run --workspace=backend temporal:ping` is a standalone round-trip probe left from the first
 stage.

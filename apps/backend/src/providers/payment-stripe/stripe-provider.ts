@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { BigNumber } from '../../core/db/bignum.js'
+import { BigNumber } from '../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import type { PaymentSessionStatus } from '../../core/types/payment/common.js'
 import type {

@@ -1,4 +1,4 @@
-import { BigNumber } from '@core/db/bignum.js'
+import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '@core/workflows/temporal-adapter.js'
 import { createWorkflow, type WorkflowDefinition, WorkflowTerminalError } from '@core/workflows/types.js'
