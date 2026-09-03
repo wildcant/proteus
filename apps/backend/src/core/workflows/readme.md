@@ -327,7 +327,7 @@ it. A nested run stays inline, so **its steps are not journaled**: nothing about
 history, a Worker lost part-way through re-executes the whole nested workflow from its first step, and
 the nested workflow's own compensation stack dies with the process instead of unwinding. Those two get
 the durability of the outer workflow's steps and no more, where the other 24 get it for every step.
-`src/temporal/__tests__/nested-workflow.test.ts` pins that shape; ADR-0021 records it as a residual.
+`src/temporal/__tests__/nested-workflow.server.test.ts` pins that shape; ADR-0021 records it as a residual.
 
 `check:deps` enforces the boundary — `no-temporal-in-workerd` fails if `src/index.workerd.ts` can
 reach `@temporalio/*` or `src/temporal/` at all.
@@ -353,8 +353,8 @@ const result = await myWorkflow.run({ cartId: 'cart_1' })
 
 Tests live in `__tests__/simple-adapter.test.ts`. The Temporal adapter's own tests are
 `src/temporal/__tests__/` — `replay.test.ts` for the replay mechanism with no server,
-`temporal-adapter.test.ts` against `@temporalio/testing`'s time-skipping server, and
-`nested-workflow.test.ts` for the production Worker's topology, which the parity suite does not run.
+`temporal-adapter.server.test.ts` against `@temporalio/testing`'s time-skipping server, and
+`nested-workflow.server.test.ts` for the production Worker's topology, which the parity suite does not run.
 
 ### The parity suite
 
@@ -363,19 +363,23 @@ suite runs a second time with the engine pinned to Temporal, asserting exactly t
 
 ```bash
 docker compose -f apps/backend/docker-compose.yml up -d --wait   # Temporal
-npm run --workspace=backend test              # 72 files, engine pinned to simple
-npm run --workspace=backend test:temporal     # the same 72 files, pinned to temporal
+npm run --workspace=backend test              # 69 files, engine pinned to simple
+npm run --workspace=backend test:temporal     # the same 69 files, pinned to temporal
 ```
 
-Both report 830 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
+Neither run includes `src/**/*.server.test.ts` — the three files that boot a Temporal server of their
+own. `npm run --workspace=backend test:temporal:server` runs those, and it is the file set that keeps
+the two runs above identical to each other.
+
+Both report 817 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
 between them is an adapter bug by definition, not a difference of opinion between two test suites.
 
-**What that number is and is not.** At most 24 of the 72 files can route through the pinned engine:
+**What that number is and is not.** At most 24 of the 69 files can route through the pinned engine:
 15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a workflow, and
-`__tests__/engine-pin.test.ts`. Roughly 120–250 of the ~830 assertions genuinely round-trip through
+`__tests__/engine-pin.test.ts`. Roughly 120–250 of the ~817 assertions genuinely round-trip through
 Temporal; the rest are engine-blind — `src/temporal/__tests__` and the other files here build their
 own engines, and the module, core, framework and provider tests never reach a workflow. So it is
-evidence of no divergence anywhere the adapter is reachable, not 830 assertions of adapter coverage.
+evidence of no divergence anywhere the adapter is reachable, not 817 assertions of adapter coverage.
 If you quote the headline, quote this with it.
 
 **And for two workflows it proves a topology production does not deploy.** `create-product` and
@@ -384,7 +388,7 @@ Worker that nested run is inline, because `src/temporal/container.ts` pins `simp
 harness runs its Activities against the *test* container, which `test:temporal` pins to `temporal`,
 so under the suite the same nested run is a second Temporal execution — `tests/setup/temporal-parity.ts`
 says as much in its own comment. A green `POST /admin/products` under `test:temporal` is therefore
-evidence about a shape that is not deployed. `src/temporal/__tests__/nested-workflow.test.ts` covers
+evidence about a shape that is not deployed. `src/temporal/__tests__/nested-workflow.server.test.ts` covers
 the deployed one: Worker pinned `simple`, nested `.run()` inline inside an Activity, asserted on both
 counts — that the inner steps run in the outer execution's Activity, and that none of them reach an
 Activity or a history entry of their own.

@@ -66,15 +66,27 @@ connection settings, and nothing more. Which engine executes a workflow is not a
 
 ### Tests
 
-Everything under `src/temporal/__tests__/` runs against `@temporalio/testing`'s time-skipping test
-server, which the SDK starts in-process, or against no server at all (`replay.test.ts`). None of them
-need the Compose stack, so `npm run verify` keeps working for contributors who have never started
-Temporal.
+Three runs, and only one of them is `npm test`.
 
-The suite that does need it is the parity run — `npm run --workspace=backend test:temporal`, the
-whole backend suite a second time with the engine pinned to Temporal. It is deliberately outside
-`verify.sh` for the same reason. `src/core/workflows/readme.md` explains what its number does and
-does not prove.
+| Command | What it runs | What it needs |
+|---|---|---|
+| `npm test` | the whole suite, engine pinned to `simple` | Postgres |
+| `npm run test:temporal:server` | `src/**/*.server.test.ts` — the adapter against a real server | a downloaded test-server binary |
+| `npm run test:temporal` | the `npm test` files again, engine pinned to `temporal` | Postgres + the Compose stack |
+
+`*.server.test.ts` is a **separate run on purpose**. Those three files each boot
+`@temporalio/testing`'s time-skipping server, which downloads a binary on first use and
+webpack-bundles the workflow sandbox — minutes, and a network dependency on a cold cache. They cover
+the seam between this adapter and the SDK, which moves when the SDK version does and not otherwise,
+so paying that on every `npm test` buys very little. Name a new one `*.server.test.ts` and it lands
+in that run automatically; `vitest.config.ts` excludes the glob so it cannot drift back.
+
+The replay mechanism and the payload converter keep the plain `.test.ts` suffix and stay in
+`npm test`: they cover the same code with no server at all, which is where the edge cases belong.
+
+Neither the default run nor `verify.sh` needs the Compose stack. The parity run does, which is why
+it is deliberately outside `verify.sh` — `src/core/workflows/readme.md` explains what its number does
+and does not prove.
 
 ## Date Handling
 

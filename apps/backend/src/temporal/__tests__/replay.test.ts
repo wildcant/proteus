@@ -19,7 +19,7 @@ import type { StepOutput } from '../types.js'
  *
  * Everything here is what the `advanceWorkflow` Activity does between receiving a list of stored
  * outputs and returning the next one — the part where a workflow written against the in-process
- * adapter has to behave identically. `temporal-adapter.test.ts` covers the same ground through a
+ * adapter has to behave identically. `temporal-adapter.server.test.ts` covers the same ground through a
  * real server; this covers it in milliseconds, which is why the edge cases live here.
  */
 
