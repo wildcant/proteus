@@ -2,11 +2,13 @@ import type { Page } from '@playwright/test'
 import type { FileRouteTypes } from '../../src/routeTree.gen'
 import {
   type GatewayCall,
-  gatewayCallsSince,
   gatewayIntentForSession,
   gatewayWalletFor,
   gatewayWatermark,
+  intentsCreatedBy,
+  type PaymentSessionTracker,
   seedSavedCard,
+  trackPaymentSessions,
   useFakeStripe,
 } from '../mocks/fake-gateway.js'
 import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
@@ -62,6 +64,7 @@ test.describe('Checkout — saved cards', () => {
       isDefault: true,
     })
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
     await reachPaymentStep(page, navigate, product.id, shipping.name)
 
@@ -76,7 +79,7 @@ test.describe('Checkout — saved cards', () => {
     // The id that reached the gateway is the one the shopper pressed — read off the gateway's own
     // call log rather than inferred from the page, and asserted against the *other* card too so a
     // selector that always sends the default would fail here.
-    const [created] = await intentsSince(watermark)
+    const [created] = await intentsSince(sessions, watermark)
     expect(created?.params.payment_method).toBe(chosen.id)
     expect(created?.params.payment_method).not.toBe(preferred.id)
     expect((await intentFor(created)).status).toBe('requires_capture')
@@ -290,6 +293,7 @@ test.describe('Checkout — saved cards', () => {
     await signIn(page, customer)
     const gatewayCustomer = await openAccountWallet(page, customer.id)
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
     await reachPaymentStep(page, navigate, product.id, shipping.name)
 
@@ -301,7 +305,7 @@ test.describe('Checkout — saved cards', () => {
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
     // Consent reached the gateway as `setup_future_usage`, against the shopper's account holder.
-    const [created] = await intentsSince(watermark)
+    const [created] = await intentsSince(sessions, watermark)
     expect(created?.params.setup_future_usage).toBe('on_session')
     expect(created?.params.customer).toBe(gatewayCustomer.id)
 
@@ -355,9 +359,15 @@ async function fillCard(page: Page, number: string) {
   await page.frameLocator('[data-testid="fake-stripe-frame"]').getByLabel('Card number').fill(number)
 }
 
-async function intentsSince(watermark: number): Promise<GatewayCall[]> {
-  const calls = await gatewayCallsSince(watermark)
-  return calls.filter((call) => call.method === 'paymentIntents.create')
+/**
+ * The intents *this* checkout opened.
+ *
+ * Filtered by the session ids the page was handed rather than by a watermark alone: spec files
+ * run concurrently and the gateway's call log is one object, so a watermark on its own scoops up
+ * a neighbouring file's intents. See `trackPaymentSessions`.
+ */
+async function intentsSince(tracker: PaymentSessionTracker, watermark: number): Promise<GatewayCall[]> {
+  return intentsCreatedBy(tracker, watermark)
 }
 
 /** The intent a recorded `create` call opened, found through the session id in its metadata. */

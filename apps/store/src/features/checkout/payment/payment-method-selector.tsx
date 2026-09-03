@@ -46,7 +46,7 @@ export function PaymentMethodSelector({ adapter, context }: PaymentMethodSelecto
         // A gateway with no wallet gets the empty render, which is the correct one for it: there
         // is nothing to list, and nothing to consent to keeping. `savedMethods` is optional on the
         // port in exactly the way `IPaymentProvider`'s method operations are.
-        <NewMethodPanel adapter={adapter} canSaveMethod={false} standalone />
+        <NewMethodPanel adapter={adapter} canSaveMethod={false} continuesSelection={false} />
       )}
     </adapter.Root>
   )
@@ -139,7 +139,7 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
       <>
         {!!failed && <SelectorNotice>We couldn't load your saved cards. Enter a card below to pay.</SelectorNotice>}
         {!!staleNotice && <SelectorNotice>{STALE_METHOD_NOTICE}</SelectorNotice>}
-        <NewMethodPanel adapter={adapter} canSaveMethod={canSaveMethod} standalone>
+        <NewMethodPanel adapter={adapter} canSaveMethod={canSaveMethod} continuesSelection={false}>
           {consent}
         </NewMethodPanel>
       </>
@@ -174,7 +174,7 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
       </RadioGroup>
 
       {!!usingNewMethod && (
-        <NewMethodPanel adapter={adapter} canSaveMethod={canSaveMethod}>
+        <NewMethodPanel adapter={adapter} canSaveMethod={canSaveMethod} continuesSelection>
           {consent}
         </NewMethodPanel>
       )}
@@ -197,43 +197,48 @@ function NewMethodRow({ selected }: { selected: boolean }) {
   const radioId = useId()
 
   return (
-    <FieldLabel
-      htmlFor={radioId}
-      className={cn(ROW_CLASS, 'cursor-pointer', selected && ROW_SELECTED_CLASS)}
-      data-testid="new-method-row"
-    >
-      <RadioGroupItem id={radioId} value={NEW_METHOD_VALUE} aria-label="Use a different card" />
-      <span className="min-w-0 flex-1 font-medium text-ink text-sm">Use a different card</span>
-      <AcceptedNetworks />
-    </FieldLabel>
+    // The same envelope-plus-label structure a saved card row uses, rather than `ROW_CLASS` on the
+    // label itself: `FieldLabel` ships `w-fit`, so a row built that way stops at its own text and
+    // the network strip lands short of where every other row's right edge is.
+    <div className={cn(ROW_CLASS, selected && ROW_SELECTED_CLASS)} data-testid="new-method-row">
+      <FieldLabel htmlFor={radioId} className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+        <RadioGroupItem id={radioId} value={NEW_METHOD_VALUE} aria-label="Use a different card" />
+        <span className="min-w-0 flex-1 font-medium text-ink text-sm">Use a different card</span>
+        <AcceptedNetworks />
+      </FieldLabel>
+    </div>
   )
 }
 
 /**
  * The opened panel: the gateway's own form, then the consent to keep the card.
  *
- * `standalone` is the empty render — there is no row above it to continue, so an envelope here
- * would be drawn around nothing. Otherwise the panel is the selected row extended downwards: one
- * ink border with no top edge, which is why the Payment Element's `--selected` accordion state is
- * deliberately not given a second heavy border. Two envelopes stack black rectangles.
+ * Always the row above it extended downwards — a fill, an inset, and no top edge, so the row and
+ * the panel draw one envelope rather than two stacked boxes. That is also why the Payment
+ * Element's `--selected` accordion state is deliberately left unbordered inside here.
+ *
+ * `continuesSelection` is which row it is continuing. The "use a different card" row is the
+ * shopper's selection and carries the ink border, so the panel finishes it in ink. In the empty
+ * render there is no such row — the panel hangs off the provider row, which is filled rather than
+ * bordered — so a hairline is the honest edge for it.
  */
 function NewMethodPanel({
   adapter,
   canSaveMethod,
-  standalone,
+  continuesSelection,
   children,
 }: {
   adapter: StorePaymentAdapter
   canSaveMethod: boolean
-  standalone?: boolean
+  continuesSelection: boolean
   children?: ReactNode
 }) {
   return (
     <div
       data-testid="new-method-panel"
       className={cn(
-        'flex flex-col gap-4',
-        !standalone && 'relative z-1 -mt-px border border-ink border-t-0 bg-surface-subtle p-4',
+        'relative z-1 -mt-px flex flex-col gap-4 border border-t-0 bg-surface-subtle p-4',
+        continuesSelection ? 'border-ink' : 'border-line',
       )}
     >
       <adapter.NewMethodForm canSaveMethod={canSaveMethod} />

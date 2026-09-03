@@ -67,6 +67,46 @@ export async function intentsCreatedSince(since: number): Promise<GatewayCall[]>
   return calls.filter((call) => call.method === 'paymentIntents.create')
 }
 
+export type PaymentSessionTracker = { ids: () => string[] }
+
+/**
+ * The payment sessions this page opened.
+ *
+ * The gateway's call log is one object shared by the whole run, and Playwright runs spec *files*
+ * concurrently — so "the intents created since my watermark" stopped meaning "my intents" the
+ * moment a second file started opening sessions. The session id is the link the adapter itself
+ * uses to find an intent, so filtering on it is exact rather than approximate.
+ *
+ * Register it before the checkout starts: it reads responses as they arrive, and cannot see one
+ * that landed before it was attached.
+ */
+export function trackPaymentSessions(page: Page): PaymentSessionTracker {
+  const ids: string[] = []
+
+  page.on('response', (response) => {
+    if (!response.url().includes('/payment-sessions') || !response.ok()) return
+    void response
+      .json()
+      .then((body: { paymentSession?: { id?: string } }) => {
+        const id = body?.paymentSession?.id
+        if (typeof id === 'string' && !ids.includes(id)) ids.push(id)
+      })
+      // A body already consumed, or one that is not JSON. Neither is a session id.
+      .catch(() => undefined)
+  })
+
+  return { ids: () => [...ids] }
+}
+
+/** The `paymentIntents.create` calls this page's own sessions produced, oldest first. */
+export async function intentsCreatedBy(tracker: PaymentSessionTracker, since: number): Promise<GatewayCall[]> {
+  const mine = tracker.ids()
+  const calls = await gatewayCallsSince(since)
+  return calls.filter(
+    (call) => call.method === 'paymentIntents.create' && mine.includes(String(call.params['metadata[sessionId]'])),
+  )
+}
+
 /** A stored card as the fake gateway holds it. The wire shape, so the fields are Stripe's. */
 export type GatewayPaymentMethod = {
   id: string

@@ -26,3 +26,13 @@ export const ROW_CLASS =
 
 /** What a row looks like when its surface's radio is on it: a full ink border, no layout shift. */
 export const ROW_SELECTED_CLASS = 'z-2 border-ink bg-surface-subtle ring-1 ring-ink ring-inset'
+
+/**
+ * A row whose *own* surface is open beneath it, so the real choice is made further down.
+ *
+ * Filled but not bordered, and for the same reason the Payment Element's `--selected` accordion
+ * state is left unbordered inside an open panel: the list should carry exactly one ink envelope,
+ * around the thing being paid with. A provider row and the card row inside it both drawing one
+ * stacks two black rectangles and makes the shopper look twice to find their own selection.
+ */
+export const ROW_OPEN_CLASS = 'z-1 bg-surface-subtle'

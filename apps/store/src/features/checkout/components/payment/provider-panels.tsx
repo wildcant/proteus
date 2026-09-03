@@ -64,7 +64,11 @@ export function ActiveProviderPanel({
   }
 
   return (
-    <div className="border border-line bg-surface-subtle p-4" data-testid="payment-panel">
+    // No box of its own. The payment step is *one* bordered list — provider rows, then the saved
+    // cards, then "use a different card" — and a wrapper here made the whole wallet a panel
+    // nested inside the provider list, which is the shape the spec rules out. The rows draw their
+    // own edges and collapse against the row above, so this only has to not get in the way.
+    <div data-testid="payment-panel" className="relative -mt-px">
       <PaymentMethodSelector adapter={adapter} context={context} />
     </div>
   )
