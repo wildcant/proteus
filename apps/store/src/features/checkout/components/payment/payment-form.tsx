@@ -1,11 +1,27 @@
-import { Field, FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
+import type { StorePaymentProvider } from '@proteus/http-schemas/store'
+import { cn, FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
+import { Fragment } from 'react'
+import { ROW_CLASS, ROW_OPEN_CLASS, ROW_SELECTED_CLASS } from '#/features/account/payment-methods/row'
 import { usePaymentProviders } from '#/features/checkout/api/checkout'
 import { withForm } from '#/lib/form-hook'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
 import { checkoutFormOpts } from '../../hooks/use-checkout-form'
+import { resolvePaymentAdapter } from '../../payment/registry'
 import { ActiveProviderPanel, SoleProvider, TestOnlyNotice } from './provider-panels'
 
 type PaymentFormProps = Pick<CheckoutData, 'cart' | 'customer'>
+
+/**
+ * How a provider row is drawn, which depends on whether the choice ends there.
+ *
+ * A provider with no client adapter — the system provider takes no card details — *is* the
+ * selection, so it carries the ink border. One that opens its own surface is only the way in to
+ * the real choice, and the row beneath it is what gets bordered.
+ */
+function providerRowState(provider: StorePaymentProvider, chosenId: string): string | false {
+  if (provider.id !== chosenId) return false
+  return resolvePaymentAdapter(provider.id) ? ROW_OPEN_CLASS : ROW_SELECTED_CLASS
+}
 
 /**
  * The payment step.
@@ -35,35 +51,51 @@ export const PaymentForm = withForm({
           {(field) => {
             const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
             const selected = providers.find((provider) => provider.id === field.state.value)
-            const [soleProvider] = providers
+            // Defined only on the render that draws no rows, and the trailing panel below is
+            // guarded on the same value rather than on a second expression that happens to agree
+            // with it today. Two Elements groups mounted at once is not a subtle thing to debug.
+            const soleProvider = providers.length === 1 ? providers[0] : undefined
 
             return (
               <FieldSet>
                 {/* A single provider is not a choice, so it is not offered as one. */}
-                {soleProvider && providers.length === 1 ? (
+                {soleProvider ? (
                   <SoleProvider provider={soleProvider} onSelect={field.handleChange} value={field.state.value} />
                 ) : (
+                  /* One flat list, one row style: the provider rows are the same row the saved
+                     cards are, and the selected provider's surface opens directly beneath its own
+                     row rather than below the whole group. `gap-0` because the rows collapse
+                     their own hairlines against each other. */
                   <RadioGroup
+                    className="gap-0"
                     name={field.name}
                     value={field.state.value}
                     onValueChange={(providerId: string) => field.handleChange(providerId)}
                   >
                     {providers.map((provider) => (
-                      <Field key={provider.id} orientation="horizontal">
-                        <FieldLabel className="flex w-full cursor-pointer flex-col items-start gap-2 border border-line p-4 has-data-checked:border-ink has-data-checked:bg-transparent has-data-checked:ring-1 has-data-checked:ring-ink has-data-checked:ring-inset">
-                          <span className="flex items-center gap-3">
-                            <RadioGroupItem value={provider.id} />
-                            <span className="font-medium text-ink text-sm">{provider.label}</span>
-                          </span>
-                          {!!provider.isTestOnly && <TestOnlyNotice />}
-                        </FieldLabel>
-                      </Field>
+                      <Fragment key={provider.id}>
+                        <div className={cn(ROW_CLASS, providerRowState(provider, field.state.value))}>
+                          <div className="flex min-w-0 flex-1 flex-col gap-2">
+                            <FieldLabel className="flex cursor-pointer items-center gap-3 has-data-checked:bg-transparent">
+                              <RadioGroupItem value={provider.id} />
+                              <span className="font-medium text-ink text-sm">{provider.label}</span>
+                            </FieldLabel>
+                            {!!provider.isTestOnly && <TestOnlyNotice />}
+                          </div>
+                        </div>
+                        {provider.id === field.state.value && (
+                          <ActiveProviderPanel provider={provider} cart={cart} customer={customer} />
+                        )}
+                      </Fragment>
                     ))}
                   </RadioGroup>
                 )}
 
                 {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
-                {!!selected && <ActiveProviderPanel provider={selected} cart={cart} customer={customer} />}
+                {/* Only for the sole-provider render, which draws no row to open beneath. */}
+                {!!selected && !!soleProvider && (
+                  <ActiveProviderPanel provider={selected} cart={cart} customer={customer} />
+                )}
               </FieldSet>
             )
           }}

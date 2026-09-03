@@ -28,6 +28,15 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
             <ShippingMethodSection form={form} {...data} />
             <PaymentSection form={form} {...data} />
 
+            {/* A checkout-level slot, not part of the selector: the line is not provider-specific
+                and must not move when a second provider is added. Plain text rather than links,
+                for the reason the footer's legal column does not exist yet — `/terms`, `/privacy`
+                and `/cookies` are not routes, and a link that quietly lands on the home page is a
+                bug the shopper walks into rather than a placeholder they can read. */}
+            <p className="m-0 text-ink-muted text-xs">
+              By placing your order you agree to our Terms and Conditions, Privacy Notice and Cookie Policy.
+            </p>
+
             {/* Beneath the button, not under a field: a decline is not something the shopper
                 mistyped, and the press that produced it is what they are looking at. */}
             {!!paymentError && (

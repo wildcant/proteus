@@ -50,12 +50,31 @@ export const FAKE_STRIPE_JS = String.raw`
     })
   }
 
-  function advanceIntent(clientSecret, status, lastPaymentError) {
+  function advanceIntent(clientSecret, status, lastPaymentError, card) {
     return fetch(GATEWAY + '/intents/' + intentIdOf(clientSecret) + '/confirm', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ status: status, lastPaymentError: lastPaymentError || null }),
+      body: JSON.stringify({ status: status, lastPaymentError: lastPaymentError || null, card: card || null }),
     }).then(function (response) { return response.json() })
+  }
+
+  /**
+   * The card, as the gateway would hold it after a confirmation.
+   *
+   * The network comes off the first digit, which is how a real issuer identifier range works at
+   * the resolution these specs need: a spec asserting a saved Visa should type a Visa.
+   */
+  function cardOf(values) {
+    var number = String(values.number || '')
+    var first = number.charAt(0)
+    var brand = first === '4' ? 'visa' : first === '5' ? 'mastercard' : first === '3' ? 'amex' : 'unknown'
+    var expiry = String(values.expiry || '12 / 34').split('/')
+    return {
+      brand: brand,
+      last4: number.slice(-4),
+      expMonth: Number(String(expiry[0]).trim()) || 12,
+      expYear: 2000 + (Number(String(expiry[1]).trim()) || 34),
+    }
   }
 
   var FRAME_STYLES =
@@ -125,9 +144,11 @@ export const FAKE_STRIPE_JS = String.raw`
     if (!doc) return { method: 'card', number: '' }
     var checked = doc.querySelector('input[name="method"]:checked')
     var number = doc.getElementById('number')
+    var expiry = doc.getElementById('expiry')
     return {
       method: checked ? checked.value : 'card',
       number: number ? String(number.value).replace(/\s+/g, '') : '',
+      expiry: expiry ? String(expiry.value) : '',
     }
   }
 
@@ -232,11 +253,39 @@ export const FAKE_STRIPE_JS = String.raw`
   FakeStripe.prototype.confirmPayment = function (args) {
     var elements = args.elements
     var clientSecret = args.clientSecret
-    record('stripe.confirmPayment', { clientSecret: clientSecret, amount: elements.options.amount, confirmParams: args.confirmParams })
+    record('stripe.confirmPayment', {
+      clientSecret: clientSecret,
+      amount: elements ? elements.options.amount : null,
+      confirmParams: args.confirmParams,
+    })
 
     return loadIntent(clientSecret).then(function (intent) {
       if (!intent) {
         return { error: { type: 'invalid_request_error', code: 'resource_missing', message: 'No such PaymentIntent' } }
+      }
+
+      /**
+       * A saved card: no Elements group, because the card is already at the gateway and this is
+       * the id of it. Nothing on the page collected anything, so there is nothing to validate and
+       * no amount to reconcile — the real Stripe.js has nothing to compare against here either.
+       */
+      if (!elements) {
+        var savedMethod = args.confirmParams && args.confirmParams.payment_method
+        if (!savedMethod) {
+          return { error: { type: 'invalid_request_error', message: 'No payment method was named' } }
+        }
+        if (intent.payment_method && intent.payment_method !== savedMethod) {
+          return {
+            error: {
+              type: 'invalid_request_error',
+              code: 'payment_method_mismatch',
+              message: 'The PaymentIntent was created against a different payment method.',
+            },
+          }
+        }
+        return advanceIntent(clientSecret, 'requires_capture').then(function (updated) {
+          return { paymentIntent: updated }
+        })
       }
 
       // The real Stripe.js refuses this too. Without it, an Elements group left at the total the
@@ -294,13 +343,13 @@ export const FAKE_STRIPE_JS = String.raw`
               },
             }
           }
-          return advanceIntent(clientSecret, 'requires_capture').then(function (updated) {
+          return advanceIntent(clientSecret, 'requires_capture', null, cardOf(values)).then(function (updated) {
             return { paymentIntent: updated }
           })
         })
       }
 
-      return advanceIntent(clientSecret, 'requires_capture').then(function (updated) {
+      return advanceIntent(clientSecret, 'requires_capture', null, cardOf(values)).then(function (updated) {
         return { paymentIntent: updated }
       })
     })

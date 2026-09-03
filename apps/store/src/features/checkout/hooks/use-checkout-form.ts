@@ -154,9 +154,9 @@ export function useCheckoutForm(params: CheckoutFormParams) {
  */
 function paymentFailureMessage(outcome: { kind: 'failed'; customerMessage: string } | { kind: 'staleMethod' }): string {
   if (outcome.kind === 'failed') return outcome.customerMessage
-  // No wallet exists yet, so nothing can be stale — kept because the port has the case and the
-  // checkout must not fall through to a blank error if an adapter ever returns it.
-  return 'That saved card is no longer available. Please enter a card.'
+  // The selector has already refetched the wallet and dropped the selection back to the new-method
+  // form by the time this renders — see `usePlaceOrder`. This is the half that says why.
+  return 'That saved card is no longer available. Please choose another card or enter a new one.'
 }
 
 export type CheckoutForm = ReturnType<typeof useCheckoutForm>['form']

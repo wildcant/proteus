@@ -105,12 +105,33 @@ export type StorePaymentAdapter = {
   NewMethodForm: FC<{ canSaveMethod: boolean }>
   /**
    * Optional in exactly the way `IPaymentProvider`'s method operations are: a gateway without a
-   * wallet needs no stubs. Populated in ILLO-24; absent here and for Mercado Pago's first cut.
+   * wallet needs no stubs, and gets the selector's empty render — nothing to list, and nothing to
+   * consent to keeping. Absent for Mercado Pago's first cut.
+   *
+   * The list itself is provider-neutral and comes from our own API, which projects every
+   * provider's methods to this shape. What an adapter declares by implementing this is that its
+   * gateway *has* a wallet at all, which is the thing the selector branches on.
    */
   savedMethods?: {
-    useList: () => { methods: SavedMethod[]; isLoading: boolean; failed: boolean; refetch: () => void }
-    remove: (id: string) => Promise<void>
-    setDefault: (id: string) => Promise<void>
+    /**
+     * One hook, not a list plus loose mutations, because they share a cache: a removal that does
+     * not write the list the selector reads is how the checkout and the account page came to
+     * disagree about what a shopper owns. A second removal path is now something you would have
+     * to add on purpose.
+     *
+     * Nominating a default is deliberately absent. It is a call to our own API against a neutral
+     * id, which the account page already makes directly; putting it here would be a second
+     * implementation of one wallet operation with nobody exercising it.
+     */
+    useWallet: () => {
+      methods: readonly SavedMethod[]
+      isLoading: boolean
+      failed: boolean
+      /** Resolves once the refetch has landed, so a caller can order work after it. */
+      refetch: () => Promise<void>
+      /** Resolves once the gateway has detached the card and the shared cache agrees. */
+      remove: (id: string) => Promise<void>
+    }
   }
   /**
    * Must be called inside `Root`, which is where a gateway's SDK context lives. Returns a stable

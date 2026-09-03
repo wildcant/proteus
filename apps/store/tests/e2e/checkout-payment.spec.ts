@@ -5,6 +5,9 @@ import {
   gatewayCallsSince,
   gatewayIntentForSession,
   gatewayWatermark,
+  intentsCreatedBy,
+  type PaymentSessionTracker,
+  trackPaymentSessions,
   useFakeStripe,
 } from '../mocks/fake-gateway.js'
 import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
@@ -39,6 +42,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
 
     await addToCartAndCheckout(page, navigate, product.id)
@@ -52,7 +56,7 @@ test.describe('Checkout — card payment', () => {
     // implementation had already created an intent — on the radio press, at whatever the cart
     // totalled then. Asserted against the gateway's own log, not inferred from the page.
     await fillCard(page, FAKE_CARDS.succeeds)
-    expect(await intentsSince(watermark)).toHaveLength(0)
+    expect(await intentsSince(sessions, watermark)).toHaveLength(0)
 
     const total = await readTotal(page)
     await page.getByRole('button', { name: /place order/i }).click()
@@ -60,16 +64,18 @@ test.describe('Checkout — card payment', () => {
 
     // Exactly one, created now, priced by the server at the total the shopper was shown, in the
     // smallest unit and with the manual capture the backend's authorize step depends on.
-    const intents = await intentsSince(watermark)
+    const intents = await intentsSince(sessions, watermark)
     expect(intents).toHaveLength(1)
     expect(intents[0]?.params.amount).toBe(String(toCents(total)))
     expect(intents[0]?.params.currency).toBe('usd')
     expect(intents[0]?.params.capture_method).toBe('manual')
 
-    // A guest leaves nothing behind at the gateway. Nothing here creates a Customer, and the fake
-    // gateway has no customer endpoint at all — an attempt would fail the run loudly.
+    // A guest leaves nothing behind at the gateway: no Stripe Customer, so no stored method and
+    // nothing redisplayable. Asked about this shopper by email rather than about the log as a
+    // whole, because a spec in another file is creating account holders at the same moment.
     const calls = await gatewayCallsSince(watermark)
-    expect(calls.filter((call) => call.method.startsWith('customers'))).toHaveLength(0)
+    const created = calls.filter((call) => call.method === 'customers.create')
+    expect(created.map((call) => call.params.email)).not.toContain('card-guest@example.com')
 
     // Authorized, not merely created. Read at the gateway rather than off the page: the order's
     // shopper-facing payment line reads from captures, and nothing has been captured yet.
@@ -89,6 +95,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
 
     await signIn(page, navigate, customer)
@@ -107,12 +114,12 @@ test.describe('Checkout — card payment', () => {
 
     // Nothing has been created for them either — the empty-wallet state is not a reason to open
     // an intent early any more than the guest state is.
-    expect(await intentsSince(watermark)).toHaveLength(0)
+    expect(await intentsSince(sessions, watermark)).toHaveLength(0)
 
     await fillCard(page, FAKE_CARDS.succeeds)
     await page.getByRole('button', { name: /place order/i }).click()
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
-    expect(await intentsSince(watermark)).toHaveLength(1)
+    expect(await intentsSince(sessions, watermark)).toHaveLength(1)
   })
 
   test('a mistyped card stops in the browser and never reaches our server', async ({
@@ -127,6 +134,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
 
     await addToCartAndCheckout(page, navigate, product.id)
@@ -149,7 +157,12 @@ test.describe('Checkout — card payment', () => {
     await expect(page.getByRole('alert')).toContainText('card number is incomplete')
     await expect(page).toHaveURL(/\/checkout$/)
     expect(paymentRequests).toHaveLength(0)
-    expect(await gatewayCallsSince(watermark)).toHaveLength(0)
+    // And so nothing of ours reached the gateway either. Asked two ways, because the log is shared
+    // with spec files running concurrently and "no gateway call at all" is no longer a claim this
+    // page can make about it: no session was opened, so none of the gateway's calls can be ours,
+    // and no intent carries one of this page's session ids.
+    expect(sessions.ids()).toHaveLength(0)
+    expect(await intentsSince(sessions, watermark)).toHaveLength(0)
   })
 
   test('the amount charged is the cart total at the press, not the one the form mounted with', async ({
@@ -164,6 +177,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
 
     await addToCartAndCheckout(page, navigate, product.id)
@@ -187,7 +201,7 @@ test.describe('Checkout — card payment', () => {
     const orderTotal = await readOrderTotal(page)
     expect(orderTotal).not.toBe(mountedTotal)
 
-    const intents = await intentsSince(watermark)
+    const intents = await intentsSince(sessions, watermark)
     expect(intents).toHaveLength(1)
     expect(intents[0]?.params.amount).toBe(String(toCents(orderTotal)))
   })
@@ -199,6 +213,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
 
     await addToCartAndCheckout(page, navigate, product.id)
@@ -216,7 +231,7 @@ test.describe('Checkout — card payment', () => {
 
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    const [intent] = await intentsSince(watermark)
+    const [intent] = await intentsSince(sessions, watermark)
     await expectAuthorizedAt(intent, toCents(await readOrderTotal(page)))
   })
 
@@ -232,6 +247,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
 
     await addToCartAndCheckout(page, navigate, product.id)
@@ -254,7 +270,7 @@ test.describe('Checkout — card payment', () => {
     await expect(page).toHaveURL(/\/checkout-return\?/, { timeout: 20_000 })
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    const [intent] = await intentsSince(watermark)
+    const [intent] = await intentsSince(sessions, watermark)
     await expectAuthorizedAt(intent, toCents(await readOrderTotal(page)))
   })
 
@@ -326,6 +342,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const sessions = trackPaymentSessions(page)
     const watermark = await gatewayWatermark()
 
     await addToCartAndCheckout(page, navigate, product.id)
@@ -351,7 +368,7 @@ test.describe('Checkout — card payment', () => {
     // The order the first two presses could not produce.
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    const creates = await intentsSince(watermark)
+    const creates = await intentsSince(sessions, watermark)
     expect(creates).toHaveLength(3)
 
     // The two the shopper walked away from carry no hold, and the one they paid with is the one
@@ -548,7 +565,13 @@ async function intentFor(created: GatewayCall | undefined) {
   return gatewayIntentForSession(String(sessionId))
 }
 
-async function intentsSince(watermark: number): Promise<GatewayCall[]> {
-  const calls = await gatewayCallsSince(watermark)
-  return calls.filter((call) => call.method === 'paymentIntents.create')
+/**
+ * The intents *this* checkout opened.
+ *
+ * Filtered by the session ids the page was handed rather than by a watermark alone: spec files
+ * run concurrently and the gateway's call log is one object, so a watermark on its own now scoops
+ * up a neighbouring file's intents. See `trackPaymentSessions`.
+ */
+async function intentsSince(tracker: PaymentSessionTracker, watermark: number): Promise<GatewayCall[]> {
+  return intentsCreatedBy(tracker, watermark)
 }

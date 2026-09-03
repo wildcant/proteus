@@ -28,6 +28,7 @@ import { Route as MainProductsProductIdRouteImport } from './routes/_main/produc
 import { Route as CheckoutCheckoutAddressesNewRouteImport } from './routes/_checkout/checkout/addresses/new'
 import { Route as MainAuthedAccountIndexRouteImport } from './routes/_main/_authed/account/index'
 import { Route as MainAuthedAccountAddressesRouteRouteImport } from './routes/_main/_authed/account/addresses/route'
+import { Route as MainAuthedAccountPaymentMethodsRouteImport } from './routes/_main/_authed/account/payment-methods'
 import { Route as MainOrderOrderIdConfirmedRouteImport } from './routes/_main/order/$orderId/confirmed'
 import { Route as CheckoutCheckoutAddressesAddressIdEditRouteImport } from './routes/_checkout/checkout/addresses/$addressId/edit'
 import { Route as MainAuthedAccountAddressesIndexRouteImport } from './routes/_main/_authed/account/addresses/index'
@@ -129,6 +130,12 @@ const MainAuthedAccountAddressesRouteRoute =
     path: '/account/addresses',
     getParentRoute: () => MainAuthedRouteRoute,
   } as any)
+const MainAuthedAccountPaymentMethodsRoute =
+  MainAuthedAccountPaymentMethodsRouteImport.update({
+    id: '/account/payment-methods',
+    path: '/account/payment-methods',
+    getParentRoute: () => MainAuthedRouteRoute,
+  } as any)
 const MainOrderOrderIdConfirmedRoute =
   MainOrderOrderIdConfirmedRouteImport.update({
     id: '/order/$orderId/confirmed',
@@ -181,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/checkout/': typeof CheckoutCheckoutIndexRoute
   '/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
+  '/account/payment-methods': typeof MainAuthedAccountPaymentMethodsRoute
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/account/': typeof MainAuthedAccountIndexRoute
   '/checkout/addresses/$addressId/edit': typeof CheckoutCheckoutAddressesAddressIdEditRoute
@@ -202,6 +210,7 @@ export interface FileRoutesByTo {
   '/products/$productId': typeof MainProductsProductIdRoute
   '/checkout': typeof CheckoutCheckoutIndexRoute
   '/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
+  '/account/payment-methods': typeof MainAuthedAccountPaymentMethodsRoute
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/account': typeof MainAuthedAccountIndexRoute
   '/checkout/addresses/$addressId/edit': typeof CheckoutCheckoutAddressesAddressIdEditRoute
@@ -230,6 +239,7 @@ export interface FileRoutesById {
   '/_checkout/checkout/': typeof CheckoutCheckoutIndexRoute
   '/_main/_authed/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/_checkout/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
+  '/_main/_authed/account/payment-methods': typeof MainAuthedAccountPaymentMethodsRoute
   '/_main/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/_main/_authed/account/': typeof MainAuthedAccountIndexRoute
   '/_checkout/checkout/addresses/$addressId/edit': typeof CheckoutCheckoutAddressesAddressIdEditRoute
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/checkout/'
     | '/account/addresses'
     | '/checkout/addresses/new'
+    | '/account/payment-methods'
     | '/order/$orderId/confirmed'
     | '/account/'
     | '/checkout/addresses/$addressId/edit'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/checkout'
     | '/checkout/addresses/new'
+    | '/account/payment-methods'
     | '/order/$orderId/confirmed'
     | '/account'
     | '/checkout/addresses/$addressId/edit'
@@ -303,6 +315,7 @@ export interface FileRouteTypes {
     | '/_checkout/checkout/'
     | '/_main/_authed/account/addresses'
     | '/_checkout/checkout/addresses/new'
+    | '/_main/_authed/account/payment-methods'
     | '/_main/order/$orderId/confirmed'
     | '/_main/_authed/account/'
     | '/_checkout/checkout/addresses/$addressId/edit'
@@ -453,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainAuthedAccountAddressesRouteRouteImport
       parentRoute: typeof MainAuthedRouteRoute
     }
+    '/_main/_authed/account/payment-methods': {
+      id: '/_main/_authed/account/payment-methods'
+      path: '/account/payment-methods'
+      fullPath: '/account/payment-methods'
+      preLoaderRoute: typeof MainAuthedAccountPaymentMethodsRouteImport
+      parentRoute: typeof MainAuthedRouteRoute
+    }
     '/_main/order/$orderId/confirmed': {
       id: '/_main/order/$orderId/confirmed'
       path: '/order/$orderId/confirmed'
@@ -586,6 +606,7 @@ const MainAuthedAccountAddressesRouteRouteWithChildren =
 
 interface MainAuthedRouteRouteChildren {
   MainAuthedAccountAddressesRouteRoute: typeof MainAuthedAccountAddressesRouteRouteWithChildren
+  MainAuthedAccountPaymentMethodsRoute: typeof MainAuthedAccountPaymentMethodsRoute
   MainAuthedAccountIndexRoute: typeof MainAuthedAccountIndexRoute
   MainAuthedAccountOrdersOrderIdRoute: typeof MainAuthedAccountOrdersOrderIdRoute
 }
@@ -593,6 +614,7 @@ interface MainAuthedRouteRouteChildren {
 const MainAuthedRouteRouteChildren: MainAuthedRouteRouteChildren = {
   MainAuthedAccountAddressesRouteRoute:
     MainAuthedAccountAddressesRouteRouteWithChildren,
+  MainAuthedAccountPaymentMethodsRoute: MainAuthedAccountPaymentMethodsRoute,
   MainAuthedAccountIndexRoute: MainAuthedAccountIndexRoute,
   MainAuthedAccountOrdersOrderIdRoute: MainAuthedAccountOrdersOrderIdRoute,
 }

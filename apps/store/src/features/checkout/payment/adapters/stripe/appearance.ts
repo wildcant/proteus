@@ -69,7 +69,14 @@ export function appearanceFor(tokens: ThemeTokens): Appearance {
       spacingUnit: '4px',
     },
     rules: {
-      // The accordion item, written as the twin of the store's own payment row.
+      /**
+       * The accordion item, written as the twin of `ROW_CLASS` in `payment-methods/row.ts`: one
+       * hairline, square, 16px in, no shadow, filling on hover. Both sides are the same row drawn
+       * in two places we cannot share a stylesheet across, so a change to one is a change to the
+       * other — and this side is the constrained one, because the Appearance API decides which
+       * properties exist at all. `min-height` is not among them, which is why `ROW_CLASS` gives
+       * its height to `p-4` rather than to a minimum only one side could honour.
+       */
       '.AccordionItem': {
         backgroundColor: tokens['--surface'],
         border: `1px solid ${tokens['--line']}`,
@@ -83,10 +90,18 @@ export function appearanceFor(tokens: ThemeTokens): Appearance {
         color: tokens['--ink'],
       },
       '.AccordionItem:hover': { backgroundColor: tokens['--surface-subtle'] },
-      // The radio mark, matched to the store's own radio SVG.
-      '.RadioIconOuter': { stroke: tokens['--ink-subtle'], strokeWidth: '1' },
-      '.RadioIconOuterChecked': { stroke: tokens['--ink'] },
-      '.RadioIconInner': { fill: tokens['--ink'] },
+      /**
+       * The radio mark, matched to the store's own — which is a *filled* mark rather than a ring:
+       * `RadioGroupItem` paints the whole circle ink and punches a surface-coloured dot out of it.
+       * Stripe's default is the opposite (a ring with a filled centre), and the two sat side by
+       * side in one list looking like two different controls.
+       *
+       * `--checked` is the modifier Stripe recognises. It was written as `RadioIconOuterChecked`,
+       * which is not a rule name, so the checked state was silently never styled at all.
+       */
+      '.RadioIconOuter': { fill: tokens['--surface'], stroke: tokens['--line'], strokeWidth: '1' },
+      '.RadioIconOuter--checked': { fill: tokens['--ink'], stroke: tokens['--ink'] },
+      '.RadioIconInner': { fill: tokens['--surface'] },
       // Inputs are white on the panel's subtle fill, with hairline borders.
       '.Input': {
         backgroundColor: tokens['--surface'],

@@ -78,13 +78,25 @@ export function usePlaceOrder(cartId: string) {
         return { kind: 'failed', customerMessage: 'The payment form is still loading. Please try again.' }
       }
 
-      return confirm({
-        chosenMethodId: null,
-        saveMethod: false,
+      // What the shopper decided in the selector, read at the press rather than held in the form:
+      // nothing in the checkout schema needs to know a card id, and a field for one would be a
+      // second place the list has to be kept in step with.
+      const wallet = controller.wallet()
+
+      const outcome = await confirm({
+        chosenMethodId: wallet?.chosenMethodId ?? null,
+        saveMethod: wallet?.saveMethod ?? false,
         createSession,
         returnUrl,
         contact: { email: values.email, phone: values.shippingAddress.phone || null },
       })
+
+      // The card they picked is gone, or was never theirs. Refetch the wallet and put them back
+      // on the new-method form: offering them the same dead card to press again is the worst of
+      // the options. The message beside the button is the checkout form's.
+      if (outcome.kind === 'staleMethod') wallet?.resetForStaleMethod()
+
+      return outcome
     },
     [controller, open, updateCart],
   )

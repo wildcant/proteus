@@ -1,10 +1,17 @@
 import { createServer, type Server } from 'node:http'
 import {
   advanceIntent,
+  type CardDetails,
   callsSince,
+  createPaymentMethod,
   type FakeIntentStatus,
+  type FakePaymentMethod,
+  findCustomerForProteusCustomer,
+  getCustomer,
   getIntent,
   getIntentForSession,
+  listPaymentMethodsFor,
+  updateCustomer,
 } from './stripe-gateway-state.js'
 
 /**
@@ -68,11 +75,62 @@ async function route(request: import('node:http').IncomingMessage, url: URL) {
       confirmMatch[1],
       body.status as FakeIntentStatus,
       (body.lastPaymentError as never) ?? null,
+      // The card the browser confirmed with. A shopper who consented to keep it leaves a stored
+      // method behind, which is the only way one is ever created — there is no route that saves a
+      // card, here or in the real API.
+      body.card as CardDetails | undefined,
     )
     return intent ? json(intent) : json({ error: 'no such intent' }, 404)
   }
 
+  // The gateway customer standing for a Proteus customer, so a spec can seed a wallet without
+  // buying something first. The link is the metadata the adapter writes at creation.
+  if (request.method === 'GET' && url.pathname === '/customers') {
+    const customer = findCustomerForProteusCustomer(url.searchParams.get('customerId') ?? '')
+    return customer ? json(customer) : json({ error: 'no gateway customer for that Proteus customer' }, 404)
+  }
+
+  const walletMatch = url.pathname.match(/^\/customers\/([^/]+)\/payment-methods$/)
+  if (walletMatch?.[1]) return wallet(request, walletMatch[1])
+
   return json({ error: 'not found' }, 404)
+}
+
+/**
+ * A shopper's stored cards, seeded and read directly.
+ *
+ * Seeding here rather than through the UI because the states the wallet specs need — expired,
+ * expiring this month, a default that is not the newest — cannot be produced by paying, and would
+ * take a purchase each if they could. The save-at-checkout path has its own spec.
+ */
+async function wallet(request: import('node:http').IncomingMessage, customerId: string) {
+  if (!getCustomer(customerId)) return json({ error: 'no such customer' }, 404)
+  if (request.method === 'GET') return json(listPaymentMethodsFor(customerId, {}))
+  if (request.method !== 'POST') return json({ error: 'not found' }, 404)
+
+  const body = (await readJson(request)) as SeedCard
+  const method = createPaymentMethod({
+    customer: customerId,
+    brand: body.brand,
+    last4: body.last4,
+    expMonth: body.expMonth,
+    expYear: body.expYear,
+    // Seeded cards are redisplayable by default: a spec that wants one is asking for a card the
+    // shopper already agreed to keep. Anything else has to say so.
+    allowRedisplay: body.allowRedisplay ?? 'always',
+  })
+  if (body.isDefault) updateCustomer(customerId, { defaultPaymentMethod: method.id })
+  return json(method, 201)
+}
+
+/** What a spec asks for when it seeds a stored card. */
+type SeedCard = {
+  brand: string
+  last4: string
+  expMonth: number
+  expYear: number
+  allowRedisplay?: FakePaymentMethod['allow_redisplay']
+  isDefault?: boolean
 }
 
 export function startFakeGatewayServer(): Server {
