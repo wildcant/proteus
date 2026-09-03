@@ -393,6 +393,8 @@ Three properties this buys, each a requirement rather than a nicety:
 
 **Validation against Mercado Pago, on paper, before we build it.** The Phase 2 adapter's `useConfirm` calls `createSession({ token, paymentMethodId, issuerId, installments, payerEmail })` from the Payment Brick's `onSubmit` and reads a terminal status straight out of the returned provider data — no client-side confirmation step. Its `NewMethodForm` renders the Brick, which draws its own method list. Its `savedMethods` is absent in the first cut. If any of those three cannot be expressed in the contract above, the contract is wrong and this is when we find out. No Mercado Pago code is written.
 
+**Done, in ILLO-23: [`mercado-pago-port-validation.md`](./mercado-pago-port-validation.md).** All three claims fit the contract as built. Two fields moved as a result — `createSession` returns the server-priced amount alongside the opaque blob, and the shopper's contact details are passed per confirmation rather than held on the adapter context. One unknown is recorded there rather than discovered in Phase 2: installments have nowhere to be displayed.
+
 ### Provider public configuration
 
 `GET /store/payment-providers` currently returns `{ id, label, isTestOnly, isEnabled }`. It gains a `publicConfig` object per provider, carrying the values the client adapter needs to boot — Stripe's publishable key, later Mercado Pago's public key and locale.

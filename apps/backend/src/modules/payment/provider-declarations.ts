@@ -14,6 +14,7 @@ export const paymentProviderDeclarations: PaymentModuleOptions = {
       options: {
         apiKey: env.STRIPE_SECRET_KEY,
         webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+        publishableKey: env.STRIPE_PUBLISHABLE_KEY,
       },
     },
   ],

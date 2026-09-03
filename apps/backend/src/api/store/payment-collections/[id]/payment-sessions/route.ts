@@ -6,11 +6,20 @@ import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 export const PostInput = { params: IdParams, body: CreatePaymentSession }
 export const PostOutput = StoreCreatePaymentSessionResponse
 
+/**
+ * Opens the session for a checkout.
+ *
+ * `replacePaymentSession`, not `createPaymentSession`: every Place order press comes through
+ * here, so a shopper who is declined and reaches for a second card is retrying rather than paying
+ * twice. The previous attempt is abandoned and cancelled at the gateway before this one opens.
+ * The admin's mark-as-paid route keeps the additive operation — its session is not a retry of
+ * anything.
+ */
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
   const collection = await paymentService.retrievePaymentCollection(req.params.id)
 
-  const session = await paymentService.createPaymentSession(collection.id, {
+  const session = await paymentService.replacePaymentSession(collection.id, {
     providerId: req.body.providerId,
     amount: collection.amount,
     currencyCode: collection.currencyCode,

@@ -65,6 +65,7 @@ export * from './storePaymentCollectionMetadata.ts';
 export * from './storePaymentCollectionStatus.ts';
 export * from './storePaymentProvider.ts';
 export * from './storePaymentProviderListResponse.ts';
+export * from './storePaymentProviderPublicConfig.ts';
 export * from './storePaymentSession.ts';
 export * from './storePaymentSessionContext.ts';
 export * from './storePaymentSessionData.ts';

@@ -18,6 +18,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-pass
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as AuthVerifyRouteImport } from './routes/_auth/verify'
 import { Route as CheckoutCheckoutRouteRouteImport } from './routes/_checkout/checkout/route'
+import { Route as CheckoutCheckoutReturnRouteImport } from './routes/_checkout/checkout-return'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainAuthedRouteRouteImport } from './routes/_main/_authed/route'
 import { Route as MainProductsRouteRouteImport } from './routes/_main/products/route'
@@ -74,6 +75,11 @@ const AuthVerifyRoute = AuthVerifyRouteImport.update({
 const CheckoutCheckoutRouteRoute = CheckoutCheckoutRouteRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => CheckoutRouteRoute,
+} as any)
+const CheckoutCheckoutReturnRoute = CheckoutCheckoutReturnRouteImport.update({
+  id: '/checkout-return',
+  path: '/checkout-return',
   getParentRoute: () => CheckoutRouteRoute,
 } as any)
 const MainIndexRoute = MainIndexRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/signup': typeof AuthSignupRoute
   '/verify': typeof AuthVerifyRoute
+  '/checkout-return': typeof CheckoutCheckoutReturnRoute
   '/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/products/$productId': typeof MainProductsProductIdRoute
   '/checkout/': typeof CheckoutCheckoutIndexRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/signup': typeof AuthSignupRoute
   '/verify': typeof AuthVerifyRoute
+  '/checkout-return': typeof CheckoutCheckoutReturnRoute
   '/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/products/$productId': typeof MainProductsProductIdRoute
   '/checkout': typeof CheckoutCheckoutIndexRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/signup': typeof AuthSignupRoute
   '/_auth/verify': typeof AuthVerifyRoute
+  '/_checkout/checkout-return': typeof CheckoutCheckoutReturnRoute
   '/_main/': typeof MainIndexRoute
   '/_checkout/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/_main/products/$productId': typeof MainProductsProductIdRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/verify'
+    | '/checkout-return'
     | '/checkout/addresses'
     | '/products/$productId'
     | '/checkout/'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/verify'
+    | '/checkout-return'
     | '/checkout/addresses'
     | '/products/$productId'
     | '/checkout'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_auth/signup'
     | '/_auth/verify'
+    | '/_checkout/checkout-return'
     | '/_main/'
     | '/_checkout/checkout/addresses'
     | '/_main/products/$productId'
@@ -369,6 +381,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutCheckoutRouteRouteImport
+      parentRoute: typeof CheckoutRouteRoute
+    }
+    '/_checkout/checkout-return': {
+      id: '/_checkout/checkout-return'
+      path: '/checkout-return'
+      fullPath: '/checkout-return'
+      preLoaderRoute: typeof CheckoutCheckoutReturnRouteImport
       parentRoute: typeof CheckoutRouteRoute
     }
     '/_main/': {
@@ -534,10 +553,12 @@ const CheckoutCheckoutRouteRouteWithChildren =
 
 interface CheckoutRouteRouteChildren {
   CheckoutCheckoutRouteRoute: typeof CheckoutCheckoutRouteRouteWithChildren
+  CheckoutCheckoutReturnRoute: typeof CheckoutCheckoutReturnRoute
 }
 
 const CheckoutRouteRouteChildren: CheckoutRouteRouteChildren = {
   CheckoutCheckoutRouteRoute: CheckoutCheckoutRouteRouteWithChildren,
+  CheckoutCheckoutReturnRoute: CheckoutCheckoutReturnRoute,
 }
 
 const CheckoutRouteRouteWithChildren = CheckoutRouteRoute._addFileChildren(

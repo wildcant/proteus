@@ -34,6 +34,16 @@ import type {
 export interface IPaymentProvider {
   getIdentifier(): string
 
+  /**
+   * The subset of this provider's configuration that is safe to hand a browser, so the client
+   * adapter can boot without a storefront environment variable of its own.
+   *
+   * Implementations name every key they return. Spreading the options object here puts the API
+   * key and the webhook secret in a storefront — see `getPublicConfig` on the Stripe adapter.
+   * Optional: a provider with nothing publishable does not implement it, and is served `{}`.
+   */
+  getPublicConfig?(): Record<string, unknown>
+
   // Core payment lifecycle
   initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput>
   authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput>

@@ -1325,9 +1325,13 @@
           },
           "isTestOnly": {
             "type": "boolean"
+          },
+          "publicConfig": {
+            "type": "object",
+            "additionalProperties": {}
           }
         },
-        "required": ["id", "isEnabled", "label", "isTestOnly"]
+        "required": ["id", "isEnabled", "label", "isTestOnly", "publicConfig"]
       },
       "StoreProductListResponse": {
         "type": "object",

@@ -84,8 +84,34 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
 
   constructor(container: Record<string, unknown>, config: StripeOptions) {
     super(container, config)
-    this.stripe = new Stripe(config.apiKey)
+    /**
+     * The fetch client, explicitly, rather than letting the SDK pick one per runtime.
+     *
+     * Two reasons, the second load-bearing. `fetch` is the HTTP client Node and workerd both
+     * have, so a gateway call takes the same code path in the server and in the Workers
+     * deployment. And it is the client the e2e server can stand a fake gateway in front of: the
+     * SDK's Node client, intercepted, leaves the request hanging — which would leave the whole
+     * submit sequence unverifiable end to end.
+     *
+     * Wrapped rather than passed bare because the SDK binds whatever function it is handed, and
+     * this provider is constructed while the container is built — before anything a runtime
+     * installs afterwards. Resolving `fetch` per call is what lets a replacement be seen at all.
+     */
+    this.stripe = new Stripe(config.apiKey, {
+      httpClient: Stripe.createFetchHttpClient((input, init) => fetch(input, init)),
+    })
     this.logger = container.logger as Logger
+  }
+
+  /**
+   * The one option a browser is allowed to see, written out rather than spread.
+   *
+   * `StripeOptions` also holds `apiKey` and `webhookSecret`. `{ ...this.config }` would put both
+   * on a public endpoint, and would keep doing so silently as options are added — which is why
+   * this names its key and `payment-provider.api.test.ts` asserts the response has no other.
+   */
+  getPublicConfig(): { publishableKey: string } {
+    return { publishableKey: this.config.publishableKey }
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
