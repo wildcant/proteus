@@ -51,12 +51,15 @@ export const PaymentForm = withForm({
           {(field) => {
             const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
             const selected = providers.find((provider) => provider.id === field.state.value)
-            const [soleProvider] = providers
+            // Defined only on the render that draws no rows, and the trailing panel below is
+            // guarded on the same value rather than on a second expression that happens to agree
+            // with it today. Two Elements groups mounted at once is not a subtle thing to debug.
+            const soleProvider = providers.length === 1 ? providers[0] : undefined
 
             return (
               <FieldSet>
                 {/* A single provider is not a choice, so it is not offered as one. */}
-                {soleProvider && providers.length === 1 ? (
+                {soleProvider ? (
                   <SoleProvider provider={soleProvider} onSelect={field.handleChange} value={field.state.value} />
                 ) : (
                   /* One flat list, one row style: the provider rows are the same row the saved
@@ -73,7 +76,7 @@ export const PaymentForm = withForm({
                       <Fragment key={provider.id}>
                         <div className={cn(ROW_CLASS, providerRowState(provider, field.state.value))}>
                           <div className="flex min-w-0 flex-1 flex-col gap-2">
-                            <FieldLabel className="flex cursor-pointer items-center gap-3">
+                            <FieldLabel className="flex cursor-pointer items-center gap-3 has-data-checked:bg-transparent">
                               <RadioGroupItem value={provider.id} />
                               <span className="font-medium text-ink text-sm">{provider.label}</span>
                             </FieldLabel>
@@ -89,8 +92,8 @@ export const PaymentForm = withForm({
                 )}
 
                 {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
-                {/* Only for the sole-provider render, which draws no rows to open beneath. */}
-                {!!selected && providers.length === 1 && (
+                {/* Only for the sole-provider render, which draws no row to open beneath. */}
+                {!!selected && !!soleProvider && (
                   <ActiveProviderPanel provider={selected} cart={cart} customer={customer} />
                 )}
               </FieldSet>

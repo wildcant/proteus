@@ -1,7 +1,7 @@
 import { toast } from '@proteus/ui'
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import type { StoreSavedMethod } from '#/api/generated/model'
+import type { StoreSavedMethod, StoreSavedMethodListResponse } from '#/api/generated/model'
 import {
   deleteStorePaymentMethod,
   listStorePaymentMethods,
@@ -56,8 +56,8 @@ export function usePaymentMethods() {
   // Both are stable across renders on purpose: the checkout selector registers this handle with
   // the place-order controller from an effect, and a fresh array or callback each render would
   // re-register on every keystroke elsewhere in the checkout.
-  const refetchWallet = useCallback(() => {
-    void refetch()
+  const refetchWallet = useCallback(async () => {
+    await refetch()
   }, [refetch])
 
   return {
@@ -72,23 +72,54 @@ export function usePaymentMethods() {
 const NO_METHODS: readonly StoreSavedMethod[] = Object.freeze([])
 
 /**
- * Detaches a card.
+ * Detaches a card — the one removal path, for both surfaces.
  *
- * The list is invalidated rather than written to, because the surfaces that show a removal
- * immediately do it optimistically in their own state — the checkout selector drops the row and
- * moves the selection itself. Invalidating keeps the cache honest for the next mount without
- * making the visible list wait on a round trip.
+ * The cache is **written**, not merely invalidated, and the write is what makes AC 8 true across a
+ * navigation. Invalidating alone marks the list stale and refetches in the background, so a
+ * surface that mounts before that refetch lands reads a wallet still holding the removed card —
+ * and the checkout selector, mounting fresh, would auto-select it. Writing the card out first
+ * means every surface agrees the moment the gateway says it is gone.
+ *
+ * The invalidation still follows, unawaited, so the list reconciles against the gateway. Awaiting
+ * it is what made the account row sit at "Removing…" for two round trips instead of one, and it
+ * would turn the checkout's optimistic drop into a blocking wait.
  */
 export function useRemovePaymentMethod() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (methodId: string) => deleteStorePaymentMethod(methodId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: paymentMethodsQueryKeys.all }),
-    onError: (error: Error) => {
-      toast.add({ type: 'error', title: 'Failed to remove card', description: error.message })
+    onSuccess: (_response, methodId) => {
+      queryClient.setQueryData(paymentMethodsQueryKeys.lists(), (current: StoreSavedMethodListResponse | undefined) =>
+        current ? { paymentMethods: current.paymentMethods.filter((method) => method.id !== methodId) } : current,
+      )
+      void queryClient.invalidateQueries({ queryKey: paymentMethodsQueryKeys.all })
     },
+    // No toast. The row that failed renders its own retryable message, and the shopper is looking
+    // straight at it — a toast on top is the same news told twice, which is the call this codebase
+    // already makes for a stale method one file away in `checkout.ts`.
   })
+}
+
+/**
+ * The wallet and the operation the checkout performs on it, as one hook.
+ *
+ * Bundled because they share a cache: a removal that did not write the list the selector reads is
+ * how the two surfaces came to disagree about what a shopper owns. Handing an adapter one hook
+ * rather than a list and a loose mutation makes a second removal path something you would have to
+ * add on purpose.
+ */
+export function useWallet() {
+  const { methods, isLoading, failed, refetch } = usePaymentMethods()
+  const removeMethod = useRemovePaymentMethod()
+
+  return {
+    methods,
+    isLoading,
+    failed,
+    refetch,
+    remove: (methodId: string) => removeMethod.mutateAsync(methodId).then(() => undefined),
+  }
 }
 
 /**
@@ -105,7 +136,7 @@ export function useSetDefaultPaymentMethod() {
     mutationFn: (methodId: string) => setStoreDefaultPaymentMethod(methodId),
     onSuccess: (response) => {
       queryClient.setQueryData(paymentMethodsQueryKeys.lists(), response)
-      queryClient.invalidateQueries({ queryKey: paymentMethodsQueryKeys.all })
+      void queryClient.invalidateQueries({ queryKey: paymentMethodsQueryKeys.all })
     },
     onError: (error: Error) => {
       toast.add({ type: 'error', title: 'Failed to set default card', description: error.message })

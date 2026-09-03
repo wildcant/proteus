@@ -4,7 +4,7 @@ import { useId, useState } from 'react'
 import type { StoreSavedMethod } from '#/api/generated/model'
 import { NetworkMark } from '#/components/payment-network'
 import { expiryStatus, formatExpiry } from '../payment-methods/expiry'
-import { ROW_CLASS, ROW_SELECTED_CLASS, savedMethodName } from '../payment-methods/row'
+import { ROW_CLASS, ROW_LABEL_CLASS, ROW_SELECTED_CLASS, savedMethodName } from '../payment-methods/row'
 
 /**
  * One stored card, rendered by one component wherever a stored card appears.
@@ -88,7 +88,10 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
 
   return (
     <div
-      className={cn(ROW_CLASS, checked && ROW_SELECTED_CLASS, expired && 'bg-surface-subtle')}
+      // An expired card does not wear the selection envelope even when it is the shopper's default
+      // and its radio is honestly checked: the envelope says "this is what you are paying with",
+      // and a struck-through row wearing it reads as a card about to be charged.
+      className={cn(ROW_CLASS, checked && !expired && ROW_SELECTED_CLASS, expired && 'bg-surface-subtle')}
       data-testid="saved-card-row"
       data-method-id={method.id}
     >
@@ -97,10 +100,7 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
         fires the label's control on every click, so a shopper trying to remove a card would
         select it instead — and at checkout, select it and then remove it.
       */}
-      <FieldLabel
-        htmlFor={radioId}
-        className={cn('flex min-w-0 flex-1 items-center gap-3', expired ? 'cursor-not-allowed' : 'cursor-pointer')}
-      >
+      <FieldLabel htmlFor={radioId} className={cn(ROW_LABEL_CLASS, expired ? 'cursor-not-allowed' : 'cursor-pointer')}>
         <RadioGroupItem id={radioId} value={method.id} disabled={expired} aria-label={chooseLabel} />
         <NetworkMark brand={method.brand} />
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">

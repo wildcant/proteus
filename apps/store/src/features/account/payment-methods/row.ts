@@ -20,9 +20,27 @@ export function savedMethodName(method: StoreSavedMethod): string {
  * The shared row envelope: one hairline, collapsed against its neighbour so the stack reads as a
  * single ruled list rather than a column of separate boxes. Every colour is a `@proteus/ui` token
  * — neither this nor the Appearance config writes a colour literal the other also writes.
+ *
+ * **This side moved to match the gateway's, not the other way round.** `.AccordionItem` in
+ * `appearance.ts` is the twin of this class, and the Appearance API decides which properties exist
+ * at all: `padding` is settable there and `min-height` is not. A row whose height came from
+ * `min-h-15` could therefore never be matched from the other side, so the height is content plus
+ * `p-4` on both — 16px, the same figure the Appearance config writes. Hover is the same story in
+ * reverse: the gateway's rows filled on hover and ours did not, and a list where half the rows
+ * respond to the cursor is the seam AC 9 is about.
  */
 export const ROW_CLASS =
-  'relative -mt-px flex min-h-15 items-center gap-3 border border-line bg-surface px-4 py-3 first:mt-0 has-[:focus-visible]:z-3'
+  'relative -mt-px flex items-center gap-3 border border-line bg-surface p-4 first:mt-0 hover:bg-surface-subtle has-[:focus-visible]:z-3'
+
+/**
+ * Undoes `FieldLabel`'s own `has-data-checked:bg-primary/5`.
+ *
+ * The primitive paints a second fill over the *label* whenever it contains a checked control, and
+ * a label is narrower than the row that holds it — measured at 430px inside a 500px row, so the
+ * selected row's fill stopped 70px short of its own right edge, just before the Remove control.
+ * The row already says it is selected. Same class of `FieldLabel` leakage as its `w-fit`.
+ */
+export const ROW_LABEL_CLASS = 'flex min-w-0 flex-1 items-center gap-3 has-data-checked:bg-transparent'
 
 /** What a row looks like when its surface's radio is on it: a full ink border, no layout shift. */
 export const ROW_SELECTED_CLASS = 'z-2 border-ink bg-surface-subtle ring-1 ring-ink ring-inset'

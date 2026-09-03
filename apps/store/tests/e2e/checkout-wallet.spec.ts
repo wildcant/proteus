@@ -15,6 +15,7 @@ import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
 import { expect, test } from '../setup/test-extend.js'
 import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
 import {
+  delayWalletReads,
   detachCardOutOfBand,
   futureExpiry,
   lastMonthExpiry,
@@ -22,6 +23,9 @@ import {
   refocusTab,
   signIn,
   thisMonthExpiry,
+  walkBackToPaymentStep,
+  walkToAccountWallet,
+  walletSnapshot,
 } from '../setup/wallet.js'
 
 /**
@@ -31,12 +35,13 @@ import {
  * created, never `.first()`" rule matters more than anywhere else: each card is seeded with a
  * `last4` unique to its test and selected by the accessible name built from it.
  *
- * Serial for the same reason the card-payment specs are: the gateway's call log is one object in
- * the test server, and reads are watermarked rather than reset so a neighbouring file can never
- * lose its evidence to one of these.
+ * Parallel, deliberately: `trackPaymentSessions` keys every gateway assertion on the session ids
+ * this page was handed, so a neighbour's intents are already invisible to it. Serialising on top
+ * of that buys nothing and costs failure isolation — one red spec would skip every spec after it
+ * in the file, which is the opposite of what a reviewer needs.
  */
 test.describe('Checkout — saved cards', () => {
-  test.describe.configure({ mode: 'serial', timeout: 90_000 })
+  test.describe.configure({ timeout: 90_000 })
 
   test('the default card is pre-selected, and the card the shopper picks is the one charged', async ({
     page,
@@ -319,6 +324,107 @@ test.describe('Checkout — saved cards', () => {
     await page.goto('/account/payment-methods')
     await expect(page.getByRole('radio', { name: /Visa ending in 4242/ })).toBeVisible()
   })
+
+  /**
+   * The two surfaces, after the one operation that changes what a shopper owns.
+   *
+   * AC 8 is the ticket's central claim and the shared row component cannot carry it alone: the
+   * disagreement lives below the components, in whether a removal wrote the list the other surface
+   * reads. Both specs navigate client-side on purpose — a page load would discard the cache and
+   * with it the thing being tested.
+   */
+  test('a card removed at checkout is gone on the account page, without a page load', async ({
+    page,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+    await using shipping = await factories.create.shippingOptionWithZone()
+    await using customer = await factories.create.customer({ hasAccount: true })
+
+    disposeCartAfterTest(page, factories, cleanup)
+    await useFakeStripe(page)
+
+    await signIn(page, customer)
+    const gatewayCustomer = await openAccountWallet(page, customer.id)
+    await seedSavedCard(gatewayCustomer.id, { last4: '1601', ...futureExpiry(), isDefault: true })
+    const survivor = await seedSavedCard(gatewayCustomer.id, {
+      brand: 'mastercard',
+      last4: '1602',
+      ...futureExpiry(),
+    })
+
+    await reachPaymentStep(page, navigate, product.id, shipping.name)
+    await page.getByRole('button', { name: 'Remove Visa ending in 1601' }).click()
+    await page.getByRole('button', { name: 'Remove', exact: true }).click()
+    await expect(page.getByRole('radio', { name: 'Pay with Visa ending in 1601' })).toHaveCount(0)
+
+    // Held open so the account page is judged on what it renders *from cache*, which is where the
+    // two surfaces disagreed. Its own refetch corrects the render a moment later, and a retrying
+    // assertion would happily wait for that and call it a pass.
+    await delayWalletReads(page, 3_000)
+    await walkToAccountWallet(page)
+
+    await expect(page.getByTestId('saved-card-row')).not.toHaveCount(0)
+    const onArrival = await walletSnapshot(page)
+    expect(onArrival.map((row) => row.id)).toEqual([survivor.id])
+  })
+
+  test('a card removed at checkout stays gone on the way back, and nothing is selected onto it', async ({
+    page,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+    await using shipping = await factories.create.shippingOptionWithZone()
+    await using customer = await factories.create.customer({ hasAccount: true })
+
+    disposeCartAfterTest(page, factories, cleanup)
+    await useFakeStripe(page)
+
+    await signIn(page, customer)
+    const gatewayCustomer = await openAccountWallet(page, customer.id)
+    const removed = await seedSavedCard(gatewayCustomer.id, { last4: '1701', ...futureExpiry(), isDefault: true })
+    const survivor = await seedSavedCard(gatewayCustomer.id, {
+      brand: 'mastercard',
+      last4: '1702',
+      ...futureExpiry(),
+    })
+
+    const sessions = trackPaymentSessions(page)
+    const watermark = await gatewayWatermark()
+
+    await reachPaymentStep(page, navigate, product.id, shipping.name)
+    await page.getByRole('button', { name: 'Remove Visa ending in 1701' }).click()
+    await page.getByRole('button', { name: 'Remove', exact: true }).click()
+    await expect(page.getByRole('radio', { name: 'Pay with Mastercard ending in 1702' })).toBeChecked()
+
+    // Leave and come back. The selector remounts with no memory of the removal, so the only thing
+    // standing between the shopper and the card they just deleted is the shared cache.
+    await delayWalletReads(page, 3_000)
+    await walkBackToPaymentStep(page)
+    await fillDeliveryAndChooseStripe(page, shipping.name)
+
+    // Sampled once, while the wallet read is still held open: this is what the step renders from
+    // cache, before any refetch can tidy it up. The removed card must not be there at all — and
+    // `autoSelected` latches on the first render, so a card that is merely corrected away a moment
+    // later has already become the id Place order would send.
+    await expect(page.getByTestId('saved-card-row')).not.toHaveCount(0)
+    const onArrival = await walletSnapshot(page)
+    expect(onArrival.map((row) => row.id)).toEqual([survivor.id])
+    expect(onArrival.filter((row) => row.checked).map((row) => row.id)).toEqual([survivor.id])
+
+    // And the step is one they can actually pay from: something is selected, and it is the card
+    // that still exists. The end state of the bug was no row checked and no card form either — a
+    // payment step whose only outcome was a `409`.
+    await page.getByRole('button', { name: /place order/i }).click()
+    await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
+
+    const [created] = await intentsSince(sessions, watermark)
+    expect(created?.params.payment_method).not.toBe(removed.id)
+  })
 })
 
 // ---------------------------------------------------------------------------------------------
@@ -340,6 +446,17 @@ async function reachPaymentStep(page: Page, navigate: Navigate, productId: strin
   await cartPanel.getByRole('link', { name: /checkout/i }).click()
   await expect(page).toHaveURL(/\/checkout/)
 
+  await fillDeliveryAndChooseStripe(page, shippingName)
+}
+
+/**
+ * The checkout's own steps, from a freshly mounted form to a rendered payment step.
+ *
+ * Its own function because a shopper who leaves the checkout and comes back is handed an empty
+ * address form — the cart holds the address, the form does not restore it — so the return leg has
+ * to walk the same steps rather than pick up where it left off.
+ */
+async function fillDeliveryAndChooseStripe(page: Page, shippingName: string) {
   await fillShippingAddress(page)
 
   // By name, never `.first()`: specs run in parallel and each creates its own US option.

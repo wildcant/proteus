@@ -13,7 +13,9 @@ import { futureExpiry, openAccountWallet, renderedCardIds, signIn } from '../set
  * asserting each in isolation and hoping.
  */
 test.describe('Account — payment methods', () => {
-  test.describe.configure({ mode: 'serial', timeout: 90_000 })
+  // Parallel: nothing here reads the gateway's shared call log, and every card is seeded with a
+  // `last4` unique to its own test. Serialising would only cost failure isolation.
+  test.describe.configure({ timeout: 90_000 })
 
   test('a customer with nothing saved is told where cards come from, not offered a form', async ({
     page,

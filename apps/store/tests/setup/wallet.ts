@@ -85,8 +85,71 @@ export async function refocusTab(page: Page) {
 
 /** The ids of the saved-card rows on screen, in the order they are rendered. */
 export async function renderedCardIds(page: Page): Promise<string[]> {
-  const ids = await page
-    .getByTestId('saved-card-row')
-    .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-method-id') ?? ''))
-  return ids
+  return (await walletSnapshot(page)).map((row) => row.id)
+}
+
+/**
+ * One point-in-time read of the rows and the selection.
+ *
+ * Point-in-time is the whole value of it. `expect(locator).toHaveCount(0)` retries until it is
+ * true, so it passes the moment a refetch corrects a wrong render — and a wrong render corrected
+ * a moment later is exactly the bug: the shopper is shown a card they removed, and the selector
+ * latches onto it, before the correction arrives. Pair it with `delayWalletReads` so the sample
+ * lands inside that window.
+ */
+export async function walletSnapshot(page: Page): Promise<{ id: string; checked: boolean }[]> {
+  return page.getByTestId('saved-card-row').evaluateAll((rows) =>
+    rows.map((row) => ({
+      id: row.getAttribute('data-method-id') ?? '',
+      checked: row.querySelector('[role="radio"]')?.getAttribute('aria-checked') === 'true',
+    })),
+  )
+}
+
+/**
+ * Walks to the account wallet the way a shopper does — through the header, with no page load.
+ *
+ * A `goto` would discard the query cache and hide the very thing these specs are about: whether
+ * the two surfaces agree about a card that was just removed. The disagreement lives *in* the
+ * cache, so the navigation has to be one that keeps it.
+ */
+export async function walkToAccountWallet(page: Page) {
+  await page.getByRole('link', { name: 'Back to cart' }).click()
+  await expect(page).toHaveURL(/\/\?modal=cart/)
+
+  // The cart opens over the page and covers the header, so it has to go before the account link
+  // is reachable.
+  await page.getByRole('button', { name: 'Close cart' }).click()
+  await page.getByRole('banner').getByRole('link', { name: 'Account' }).click()
+  await expect(page).toHaveURL('/account')
+
+  await page.getByRole('link', { name: 'Payment Methods' }).click()
+  await expect(page).toHaveURL('/account/payment-methods')
+}
+
+/**
+ * Back to the payment step without a page load, the way a shopper who changed their mind gets
+ * there — and the shape that resurrected a removed card from cache and auto-selected it.
+ */
+export async function walkBackToPaymentStep(page: Page) {
+  await page.getByRole('link', { name: 'Back to cart' }).click()
+  await expect(page).toHaveURL(/\/\?modal=cart/)
+
+  const cartPanel = page.locator('[data-slot="drawer-popup"]')
+  await expect(cartPanel).toBeVisible()
+  await cartPanel.getByRole('link', { name: /checkout/i }).click()
+  await expect(page).toHaveURL(/\/checkout/)
+}
+
+/**
+ * Holds the wallet read open, so what a surface renders *from cache* is observable.
+ *
+ * Without it the refetch lands in tens of milliseconds and a stale first paint is invisible to an
+ * assertion — which is exactly how the resurrected-card bug reached review.
+ */
+export async function delayWalletReads(page: Page, ms = 1_500) {
+  await page.route('**/store/payment-methods', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, ms))
+    await route.continue()
+  })
 }

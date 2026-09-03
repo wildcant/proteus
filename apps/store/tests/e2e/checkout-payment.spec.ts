@@ -157,8 +157,11 @@ test.describe('Checkout — card payment', () => {
     await expect(page.getByRole('alert')).toContainText('card number is incomplete')
     await expect(page).toHaveURL(/\/checkout$/)
     expect(paymentRequests).toHaveLength(0)
-    // And so nothing of ours reached the gateway either — asked about this page's own sessions,
-    // because a spec in another file is opening its own at the same moment.
+    // And so nothing of ours reached the gateway either. Asked two ways, because the log is shared
+    // with spec files running concurrently and "no gateway call at all" is no longer a claim this
+    // page can make about it: no session was opened, so none of the gateway's calls can be ours,
+    // and no intent carries one of this page's session ids.
+    expect(sessions.ids()).toHaveLength(0)
     expect(await intentsSince(sessions, watermark)).toHaveLength(0)
   })
 

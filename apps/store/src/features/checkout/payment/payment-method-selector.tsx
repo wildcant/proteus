@@ -3,7 +3,7 @@ import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useStat
 import { AcceptedNetworks } from '#/components/payment-network'
 import { SavedCardRow } from '#/features/account/components/saved-card-row'
 import { isUsable } from '#/features/account/payment-methods/expiry'
-import { ROW_CLASS, ROW_SELECTED_CLASS, savedMethodName } from '#/features/account/payment-methods/row'
+import { ROW_CLASS, ROW_LABEL_CLASS, ROW_SELECTED_CLASS, savedMethodName } from '#/features/account/payment-methods/row'
 import { usePaymentControllerContext } from './payment-controller'
 import { SaveMethodConsent } from './save-method-consent'
 import type { PaymentAdapterContext, StorePaymentAdapter } from './types'
@@ -59,7 +59,7 @@ type WalletProps = {
 }
 
 function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
-  const { methods, isLoading, failed, refetch } = savedMethods.useList()
+  const { methods, isLoading, failed, refetch, remove } = savedMethods.useWallet()
   const { registerWallet } = usePaymentControllerContext()
 
   /** `null` is the new-method form, which is where every shopper starts before auto-selection. */
@@ -94,17 +94,36 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
   }, [isLoading, visible])
 
   /**
+   * The shopper's selection, reconciled against what the wallet actually holds.
+   *
+   * A refetch can drop the chosen card for reasons this component never saw — removed in another
+   * tab, detached by the gateway, expired out from under a long-open step. Without this the row
+   * simply disappears and `chosen` keeps pointing at it, which leaves a payment step with nothing
+   * checked, no card form, and a dead id on its way to Place order.
+   *
+   * Separate from `dropRow` on purpose: that handles the removal this component performed, and
+   * this handles every other way the card can leave.
+   */
+  useEffect(() => {
+    if (isLoading || chosen === null || visible.some((method) => method.id === chosen)) return
+    setChosen(visible.find((method) => isUsable(method))?.id ?? null)
+  }, [isLoading, visible, chosen])
+
+  /**
    * The chosen card is gone at the gateway. Refetch, and put the shopper on a new card rather than
    * letting them press Place order on the same dead id.
    *
    * `autoSelected` is already true by now, so the refetch cannot quietly move them onto some other
    * card on the way back.
+   *
+   * `removed` is cleared only once the refetch has landed. Clearing it first recomputes the visible
+   * list from a cache that still holds every card removed this session — so the shopper would watch
+   * their removed cards reappear under a notice telling them a card is no longer available.
    */
   const resetForStaleMethod = useCallback(() => {
     setChosen(null)
     setStaleNotice(true)
-    setRemoved([])
-    refetch()
+    void refetch().finally(() => setRemoved([]))
   }, [refetch])
 
   useEffect(() => {
@@ -116,8 +135,11 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
 
   /**
    * Optimistic against a *completed* detach: the card is already gone at the gateway by the time
-   * this runs, so dropping the row beats refetching the whole list and reflowing it under the
+   * this runs, so dropping the row beats waiting on a refetch and reflowing the list under the
    * shopper's cursor. If they were paying with it, move them to the next card they can use.
+   *
+   * `remove` has already written the card out of the shared cache by now, so this is belt to that
+   * braces — it also covers a refetch that was in flight before the detach landed.
    */
   const dropRow = (methodId: string) => {
     setRemoved((previous) => [...previous, methodId])
@@ -166,7 +188,7 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
             method={method}
             checked={method.id === chosen}
             chooseLabel={`Pay with ${savedMethodName(method)}`}
-            onRemove={() => savedMethods.remove(method.id).then(() => dropRow(method.id))}
+            onRemove={() => remove(method.id).then(() => dropRow(method.id))}
           />
         ))}
 
@@ -201,7 +223,7 @@ function NewMethodRow({ selected }: { selected: boolean }) {
     // label itself: `FieldLabel` ships `w-fit`, so a row built that way stops at its own text and
     // the network strip lands short of where every other row's right edge is.
     <div className={cn(ROW_CLASS, selected && ROW_SELECTED_CLASS)} data-testid="new-method-row">
-      <FieldLabel htmlFor={radioId} className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+      <FieldLabel htmlFor={radioId} className={cn(ROW_LABEL_CLASS, 'cursor-pointer')}>
         <RadioGroupItem id={radioId} value={NEW_METHOD_VALUE} aria-label="Use a different card" />
         <span className="min-w-0 flex-1 font-medium text-ink text-sm">Use a different card</span>
         <AcceptedNetworks />

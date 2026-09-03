@@ -1,8 +1,7 @@
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe, type PaymentIntent, type Stripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { useCallback, useMemo } from 'react'
-import { deleteStorePaymentMethod, setStoreDefaultPaymentMethod } from '#/api/generated/payments/payments'
-import { usePaymentMethods } from '#/features/account/api/payment-methods'
+import { useWallet } from '#/features/account/api/payment-methods'
 import { logPaymentFailure } from '../../log'
 import { isStaleMethodError } from '../../session-errors'
 import type { Confirm, ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from '../../types'
@@ -266,16 +265,13 @@ async function confirmNewCard({
 /**
  * The wallet, as this adapter's half of the port.
  *
- * The list is our own API's, not Stripe's: `GET /store/payment-methods` projects every provider's
- * methods to the neutral shape and applies the one ordering in the system, so the account page and
- * this selector cannot present two different ideas of "your cards". What implementing this
- * declares is that this gateway *has* a wallet — the fact the selector branches on.
+ * The whole of it is our own API's, not Stripe's: `GET /store/payment-methods` projects every
+ * provider's methods to the neutral shape and applies the one ordering in the system, and the
+ * removal goes through the same hook the account page uses, against the same cache. What
+ * implementing this declares is that this gateway *has* a wallet — the fact the selector branches
+ * on — not that it holds a second copy of one.
  */
-const stripeSavedMethods: NonNullable<StorePaymentAdapter['savedMethods']> = {
-  useList: usePaymentMethods,
-  remove: (id) => deleteStorePaymentMethod(id).then(() => undefined),
-  setDefault: (id) => setStoreDefaultPaymentMethod(id).then(() => undefined),
-}
+const stripeSavedMethods: NonNullable<StorePaymentAdapter['savedMethods']> = { useWallet }
 
 /**
  * The other half of `redirect: 'if_required'`.
