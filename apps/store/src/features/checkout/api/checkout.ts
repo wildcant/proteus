@@ -30,6 +30,7 @@ import { listStorePaymentProviders } from '#/api/generated/payments/payments'
 import { cartQueryKeys } from '#/features/cart/api/cart'
 import { clearCartId, getCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
+import { isStaleMethodError, rethrowAsStaleMethod } from '../payment/session-errors'
 
 const checkoutQueryKeys = queryKeysFactory('checkout')
 
@@ -126,10 +127,17 @@ export const useCreatePaymentSession = (
   return useMutation({
     ...rest,
     mutationFn: ({ collectionId, ...payload }: CreateStorePaymentSessionBody & { collectionId: string }) =>
-      createStorePaymentSession(collectionId, payload),
+      // Raised here rather than at the call site, so every caller of this mutation sees the one
+      // refusal the wallet can recover from as its own type rather than as a status code.
+      createStorePaymentSession(collectionId, payload).catch(rethrowAsStaleMethod),
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create payment session', description: error.message })
+      // A stale saved card is the one refusal the checkout recovers from in place: the wallet
+      // refetches and the selection resets to the new-method form, with a message beside the
+      // button that says so. A toast on top of that is the same news told twice.
+      if (!isStaleMethodError(error)) {
+        toast.add({ type: 'error', title: 'Failed to create payment session', description: error.message })
+      }
       onError?.(...args)
     },
   })

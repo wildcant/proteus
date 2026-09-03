@@ -105,10 +105,15 @@ export type StorePaymentAdapter = {
   NewMethodForm: FC<{ canSaveMethod: boolean }>
   /**
    * Optional in exactly the way `IPaymentProvider`'s method operations are: a gateway without a
-   * wallet needs no stubs. Populated in ILLO-24; absent here and for Mercado Pago's first cut.
+   * wallet needs no stubs, and gets the selector's empty render — nothing to list, and nothing to
+   * consent to keeping. Absent for Mercado Pago's first cut.
+   *
+   * The list itself is provider-neutral and comes from our own API, which projects every
+   * provider's methods to this shape. What an adapter declares by implementing this is that its
+   * gateway *has* a wallet at all, which is the thing the selector branches on.
    */
   savedMethods?: {
-    useList: () => { methods: SavedMethod[]; isLoading: boolean; failed: boolean; refetch: () => void }
+    useList: () => { methods: readonly SavedMethod[]; isLoading: boolean; failed: boolean; refetch: () => void }
     remove: (id: string) => Promise<void>
     setDefault: (id: string) => Promise<void>
   }

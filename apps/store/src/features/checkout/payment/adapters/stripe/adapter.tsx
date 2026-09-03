@@ -1,7 +1,10 @@
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe, type PaymentIntent, type Stripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { useCallback, useMemo } from 'react'
+import { deleteStorePaymentMethod, setStoreDefaultPaymentMethod } from '#/api/generated/payments/payments'
+import { usePaymentMethods } from '#/features/account/api/payment-methods'
 import { logPaymentFailure } from '../../log'
+import { isStaleMethodError } from '../../session-errors'
 import type { Confirm, ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from '../../types'
 import { appearanceFor, useThemeTokens } from './appearance'
 import { customerMessageForStripeError, GENERIC_FAILURE_MESSAGE, logFieldsForStripeError } from './errors'
@@ -114,12 +117,15 @@ function StripeRoot({ context, children }: { context: PaymentAdapterContext; chi
  * is separate work.
  */
 function StripeNewMethodForm(_props: { canSaveMethod: boolean }) {
-  // `canSaveMethod` is part of the port and is unused here on purpose. Saving a card needs an
-  // Account Holder, which nothing creates yet; ILLO-24 owns the consent control and what it means.
+  // `canSaveMethod` is part of the port and is unused here on purpose: this gateway draws no
+  // consent control of its own, so the selector renders one inside the panel — see
+  // `SaveMethodConsent`. An adapter whose SDK draws its own would read the flag here instead.
   return (
     <PaymentElement
       options={{
-        layout: { type: 'accordion', defaultCollapsed: false, radios: 'always', spacedAccordionItems: true },
+        // Unspaced, because the store's list is one ruled stack rather than a column of cards:
+        // spacing here left the gateway's rows floating inside a list whose own rows are flush.
+        layout: { type: 'accordion', defaultCollapsed: false, radios: 'always', spacedAccordionItems: false },
         fields: { billingDetails: { name: 'auto', email: 'never', phone: 'never', address: 'if_required' } },
         wallets: { link: 'never', applePay: 'never', googlePay: 'never' },
         terms: { card: 'never' },
@@ -128,52 +134,62 @@ function StripeNewMethodForm(_props: { canSaveMethod: boolean }) {
   )
 }
 
+/**
+ * The confirmation, in two flows that end at the same place.
+ *
+ * What they must agree on lives outside the branch: both open the session through the injected
+ * `createSession`, both answer through `outcomeForIntent`, and both classify a failure through
+ * the same sanitising rules. What differs is only what genuinely differs — a new card is in the
+ * Element and has to be validated and submitted from it; a saved card is already at the gateway
+ * and this is the id of it, so there is nothing on this page to validate and no Elements group to
+ * confirm from. The reference implementation had these as two functions that quietly drifted, and
+ * one of them ended up reading a raw gateway string out to a shopper.
+ */
 function useStripeConfirm(): Confirm {
   const stripe = useStripe()
   const elements = useElements()
 
   return useCallback(
-    async ({ createSession, returnUrl, contact }) => {
+    async ({ chosenMethodId, saveMethod, createSession, returnUrl, contact }) => {
       if (!stripe || !elements) return { kind: 'failed', customerMessage: GENERIC_FAILURE_MESSAGE }
 
       // Step one, and before anything of ours: a card the shopper mistyped is caught here and no
-      // request leaves the browser, so an abandoned checkout leaves nothing behind at all.
-      const { error: submitError } = await elements.submit()
-      if (submitError) return { kind: 'failed', customerMessage: customerMessageForStripeError(submitError) }
+      // request leaves the browser, so an abandoned checkout leaves nothing behind at all. A saved
+      // card skips it — the Element is unmounted, and there is nothing to validate.
+      if (!chosenMethodId) {
+        const { error: submitError } = await elements.submit()
+        if (submitError) return { kind: 'failed', customerMessage: customerMessageForStripeError(submitError) }
+      }
 
       // Step two: the session is opened now — this is the press that creates the PaymentIntent.
-      const opened = await createSession()
+      // The two wallet facts travel in the provider data blob, which the route reads and the
+      // server acts on; neither is trusted past its shape, and the account holder they act against
+      // is resolved from the session's own authentication rather than from anything sent here.
+      const opened = await createSession({
+        savePaymentMethod: saveMethod,
+        ...(chosenMethodId ? { paymentMethodId: chosenMethodId } : {}),
+      }).catch((error: unknown) => {
+        // The card is gone or was never theirs. The selector refetches and resets; nothing here
+        // knows the API's code for it, because `createSession` is the checkout's and so is that.
+        if (isStaleMethodError(error)) return null
+        throw error
+      })
+      if (!opened) return { kind: 'staleMethod' }
+
       const clientSecret = opened.data.clientSecret
       if (typeof clientSecret !== 'string') {
         throw new Error('The payment session carries no clientSecret, so there is nothing to confirm against')
       }
 
-      // The server priced the cart; Stripe.js refuses a confirmation whose Elements amount
-      // disagrees with the intent's, and the cart may well have changed since this form mounted.
-      await elements.update({
-        amount: toSmallestUnit(opened.amount, opened.currencyCode),
-        currency: opened.currencyCode.toLowerCase(),
-      })
-
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        clientSecret,
-        // `if_required` keeps a card in place and sends a redirect method away. Both paths end at
-        // the same component — see the checkout return route.
-        redirect: 'if_required',
-        confirmParams: {
-          // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
-          return_url: returnUrl,
-          // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
-          payment_method_data: {
-            // A field the Payment Element is told never to collect must be supplied here instead.
-            // These two are exactly the fields the checkout already has, which is why they are
-            // `'never'` rather than asked for a second time inside the card panel.
+      const { error, paymentIntent } = chosenMethodId
+        ? await stripe.confirmPayment({
+            clientSecret,
+            // No `elements` here: the card is already at the gateway and this is the id of it.
+            redirect: 'if_required',
             // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
-            billing_details: { email: contact.email, phone: contact.phone },
-          },
-        },
-      })
+            confirmParams: { return_url: returnUrl, payment_method: chosenMethodId },
+          })
+        : await confirmNewCard({ stripe, elements, clientSecret, opened, returnUrl, contact, saveMethod })
 
       if (error) {
         // Everything the shopper is not told. `lost_card` and `generic_decline` read identically
@@ -190,6 +206,75 @@ function useStripeConfirm(): Confirm {
     },
     [stripe, elements],
   )
+}
+
+/** The new-card leg: everything that only exists because a card was typed on this page. */
+async function confirmNewCard({
+  stripe,
+  elements,
+  clientSecret,
+  opened,
+  returnUrl,
+  contact,
+  saveMethod,
+}: {
+  stripe: Stripe
+  elements: NonNullable<ReturnType<typeof useElements>>
+  clientSecret: string
+  opened: { amount: string; currencyCode: string }
+  returnUrl: string
+  contact: { email: string; phone: string | null }
+  saveMethod: boolean
+}) {
+  // The server priced the cart; Stripe.js refuses a confirmation whose Elements options disagree
+  // with the intent's, and the cart may well have changed since this form mounted. The same is
+  // true of `setupFutureUsage`, which the server sets on the intent from the shopper's consent —
+  // an Elements group that disagrees about it is refused just as an amount mismatch is.
+  await elements.update({
+    amount: toSmallestUnit(opened.amount, opened.currencyCode),
+    currency: opened.currencyCode.toLowerCase(),
+    setupFutureUsage: saveMethod ? 'on_session' : null,
+  })
+
+  return stripe.confirmPayment({
+    elements,
+    clientSecret,
+    // `if_required` keeps a card in place and sends a redirect method away. Both paths end at the
+    // same component — see the checkout return route.
+    redirect: 'if_required',
+    confirmParams: {
+      // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+      return_url: returnUrl,
+      // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+      payment_method_data: {
+        // A field the Payment Element is told never to collect must be supplied here instead.
+        // These two are exactly the fields the checkout already has, which is why they are
+        // `'never'` rather than asked for a second time inside the card panel.
+        // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+        billing_details: { email: contact.email, phone: contact.phone },
+        // The browser's half of `allow_redisplay`. The server sets it again after the charge,
+        // because a card attached through `setup_future_usage` lands as `unspecified` and the
+        // customer-scoped listing filters that straight back out — but saying so here means the
+        // shopper's answer is on the confirmation itself rather than only on a follow-up call.
+        // biome-ignore lint/style/useNamingConvention: Stripe SDK parameter
+        allow_redisplay: saveMethod ? 'always' : 'unspecified',
+      },
+    },
+  })
+}
+
+/**
+ * The wallet, as this adapter's half of the port.
+ *
+ * The list is our own API's, not Stripe's: `GET /store/payment-methods` projects every provider's
+ * methods to the neutral shape and applies the one ordering in the system, so the account page and
+ * this selector cannot present two different ideas of "your cards". What implementing this
+ * declares is that this gateway *has* a wallet — the fact the selector branches on.
+ */
+const stripeSavedMethods: NonNullable<StorePaymentAdapter['savedMethods']> = {
+  useList: usePaymentMethods,
+  remove: (id) => deleteStorePaymentMethod(id).then(() => undefined),
+  setDefault: (id) => setStoreDefaultPaymentMethod(id).then(() => undefined),
 }
 
 /**
@@ -227,6 +312,7 @@ export const stripeAdapter: StorePaymentAdapter = {
   id: 'stripe',
   Root: StripeRoot,
   NewMethodForm: StripeNewMethodForm,
+  savedMethods: stripeSavedMethods,
   useConfirm: useStripeConfirm,
   useResumeRedirect: useStripeResumeRedirect,
 }

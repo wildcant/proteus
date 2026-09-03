@@ -1,12 +1,21 @@
 import { HttpResponse, http } from 'msw'
 import {
   advanceIntent,
+  createCustomer,
   createIntent,
+  deleteCustomer,
+  detachPaymentMethod,
   type FakeIntent,
+  findCustomerForProteusCustomer,
+  getCustomer,
   getIntent,
+  getPaymentMethod,
+  listPaymentMethodsFor,
   recordCall,
   settledAmounts,
+  updateCustomer,
   updateIntent,
+  updatePaymentMethod,
 } from './stripe-gateway-state.js'
 
 /**
@@ -50,12 +59,14 @@ function stripeError(status: number, error: Record<string, unknown>) {
   return HttpResponse.json({ error }, { status })
 }
 
-const noSuchIntent = (id: string) =>
+const noSuchResource = (kind: string, id: string) =>
   stripeError(404, {
     type: 'invalid_request_error',
     code: 'resource_missing',
-    message: `No such payment_intent: '${id}'`,
+    message: `No such ${kind}: '${id}'`,
   })
+
+const noSuchIntent = (id: string) => noSuchResource('payment_intent', id)
 
 export const stripeHandlers = [
   http.post('https://api.stripe.com/v1/payment_intents', async ({ request }) => {
@@ -67,6 +78,9 @@ export const stripeHandlers = [
       currency: params.currency ?? 'usd',
       metadata: metadataOf(params),
       captureMethod: params.capture_method ?? 'automatic',
+      ...(params.customer ? { customer: params.customer } : {}),
+      ...(params.setup_future_usage ? { setupFutureUsage: params.setup_future_usage } : {}),
+      ...(params.payment_method ? { paymentMethod: params.payment_method } : {}),
     })
     return HttpResponse.json(intent)
   }),
@@ -122,6 +136,123 @@ export const stripeHandlers = [
     const body = await formParams(request)
     recordCall('refunds.create', { ...body }, idempotencyKeyOf(request))
     return HttpResponse.json({ id: 're_fake', object: 'refund', ...body })
+  }),
+
+  // -- Account holders and their stored cards ---------------------------------------------------
+  //
+  // A guest must never reach any of these: nothing is created at the gateway for a shopper without
+  // an account, which is what "guests leave no trace" means in the only sense that matters. The
+  // guest spec asserts that by counting `customers.*` calls in the log below.
+
+  http.post('https://api.stripe.com/v1/customers', async ({ request }) => {
+    const params = await formParams(request)
+    recordCall('customers.create', { ...params }, idempotencyKeyOf(request))
+
+    // The adapter reuses a stored external id, so a second create for one Proteus customer means
+    // the idempotency it promises has broken. Answering with the existing row is what the real
+    // gateway does with a repeated idempotency key.
+    const metadata = metadataOf(params)
+    const existing = metadata.customerId ? findCustomerForProteusCustomer(metadata.customerId) : undefined
+    if (existing) return HttpResponse.json(existing)
+
+    return HttpResponse.json(
+      createCustomer({
+        ...(params.email ? { email: params.email } : {}),
+        ...(params.name ? { name: params.name } : {}),
+        metadata,
+      }),
+    )
+  }),
+
+  http.get('https://api.stripe.com/v1/customers/:id', ({ params, request }) => {
+    const id = String(params.id)
+    recordCall('customers.retrieve', { id }, idempotencyKeyOf(request))
+
+    const customer = getCustomer(id)
+    return customer ? HttpResponse.json(customer) : noSuchResource('customer', id)
+  }),
+
+  http.post('https://api.stripe.com/v1/customers/:id', async ({ params, request }) => {
+    const id = String(params.id)
+    const body = await formParams(request)
+    recordCall('customers.update', { id, ...body }, idempotencyKeyOf(request))
+
+    const updated = updateCustomer(id, {
+      ...(body.email === undefined ? {} : { email: body.email }),
+      ...(body.name === undefined ? {} : { name: body.name }),
+      ...(body['invoice_settings[default_payment_method]'] === undefined
+        ? {}
+        : { defaultPaymentMethod: body['invoice_settings[default_payment_method]'] }),
+    })
+    return updated ? HttpResponse.json(updated) : noSuchResource('customer', id)
+  }),
+
+  http.delete('https://api.stripe.com/v1/customers/:id', ({ params, request }) => {
+    const id = String(params.id)
+    recordCall('customers.del', { id }, idempotencyKeyOf(request))
+
+    const deleted = deleteCustomer(id)
+    return deleted ? HttpResponse.json({ id, object: 'customer', deleted: true }) : noSuchResource('customer', id)
+  }),
+
+  http.get('https://api.stripe.com/v1/customers/:id/payment_methods', ({ params, request }) => {
+    const id = String(params.id)
+    const query = new URL(request.url).searchParams
+    recordCall(
+      'customers.listPaymentMethods',
+      { id, ...Object.fromEntries(query.entries()) },
+      idempotencyKeyOf(request),
+    )
+
+    if (!getCustomer(id)) return noSuchResource('customer', id)
+
+    const data = listPaymentMethodsFor(id, {
+      ...(query.get('allow_redisplay') ? { allowRedisplay: String(query.get('allow_redisplay')) } : {}),
+      ...(query.get('limit') ? { limit: Number(query.get('limit')) } : {}),
+    })
+    // biome-ignore lint/style/useNamingConvention: the Stripe wire field
+    return HttpResponse.json({ object: 'list', data, has_more: false })
+  }),
+
+  /**
+   * The ownership check, and the reason it cannot be skipped by accident: the customer is part of
+   * the URL rather than a filter someone remembered to apply.
+   *
+   * Two different refusals, exactly as the gateway gives them — `resource_missing` for a method
+   * that does not exist, and a bare 404 for one that exists but belongs to somebody else. Stripe
+   * declines to confirm another customer's payment method is real, and the adapter collapses both
+   * into the same answer, so both have to be reachable here.
+   */
+  http.get('https://api.stripe.com/v1/customers/:customer/payment_methods/:id', ({ params, request }) => {
+    const customerId = String(params.customer)
+    const id = String(params.id)
+    recordCall('customers.retrievePaymentMethod', { customer: customerId, id }, idempotencyKeyOf(request))
+
+    const method = getPaymentMethod(id)
+    if (!method) return noSuchResource('payment_method', id)
+    if (method.customer !== customerId) {
+      return stripeError(404, { type: 'invalid_request_error', message: 'No such PaymentMethod' })
+    }
+    return HttpResponse.json(method)
+  }),
+
+  http.post('https://api.stripe.com/v1/payment_methods/:id/detach', ({ params, request }) => {
+    const id = String(params.id)
+    recordCall('paymentMethods.detach', { id }, idempotencyKeyOf(request))
+
+    const detached = detachPaymentMethod(id)
+    return detached ? HttpResponse.json(detached) : noSuchResource('payment_method', id)
+  }),
+
+  http.post('https://api.stripe.com/v1/payment_methods/:id', async ({ params, request }) => {
+    const id = String(params.id)
+    const body = await formParams(request)
+    recordCall('paymentMethods.update', { id, ...body }, idempotencyKeyOf(request))
+
+    const updated = updatePaymentMethod(id, {
+      ...(body.allow_redisplay ? { allowRedisplay: body.allow_redisplay as 'always' | 'limited' | 'unspecified' } : {}),
+    })
+    return updated ? HttpResponse.json(updated) : noSuchResource('payment_method', id)
   }),
 ]
 
