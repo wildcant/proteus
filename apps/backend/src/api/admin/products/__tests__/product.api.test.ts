@@ -1,3 +1,4 @@
+import { BigNumber } from '@core/bignumber.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -6,7 +7,9 @@ import type * as imageVariantRoutes from '../[id]/images/[imageId]/variants/rout
 import type * as optionCombinationRoutes from '../[id]/option-combinations/route.js'
 import type * as productByIdRoutes from '../[id]/route.js'
 import type * as variantImageBatchRoutes from '../[id]/variants/[variantId]/images/batch/route.js'
+import type * as variantPricesRoutes from '../[id]/variants/[variantId]/prices/route.js'
 import type * as variantByIdRoutes from '../[id]/variants/[variantId]/route.js'
+import type * as variantRoutes from '../[id]/variants/route.js'
 import productDefinitions from '../definitions.js'
 import type * as productRoutes from '../route.js'
 
@@ -268,6 +271,28 @@ test.describe('POST /admin/products/:id/variants', () => {
     expect(body.type).toBe(ErrorTypes.INVALID_DATA)
     expect(body.message).toContain('optionValues')
   })
+
+  test('stores a price per currency the body carries', async ({ expect, service }) => {
+    const { product } = await service.create.product(api.container)
+    const response = await api.post<typeof variantRoutes.PostOutput>(`/admin/products/${product.id}/variants`, {
+      optionValues: {},
+      prices: [
+        { currencyCode: 'usd', amount: '2800' },
+        { currencyCode: 'cop', amount: '12000000' },
+      ],
+    })
+
+    expect(response.status).toBe(201)
+    const prices = response.body.variant.prices ?? []
+    expect(
+      prices
+        .map((price) => ({ currencyCode: price.currencyCode, amount: price.amount }))
+        .sort((a, b) => a.currencyCode.localeCompare(b.currencyCode)),
+    ).toEqual([
+      { currencyCode: 'cop', amount: '12000000' },
+      { currencyCode: 'usd', amount: '2800' },
+    ])
+  })
 })
 
 test.describe('GET /admin/products/:id/variants/:variantId', () => {
@@ -402,5 +427,88 @@ test.describe('GET /admin/products/:id/option-combinations', () => {
 
     expect(response.body.totalCombinations).toBe(0)
     expect(response.body.combinations).toEqual([])
+  })
+})
+
+test.describe('PUT /admin/products/:id/variants/:variantId/prices', () => {
+  /** A variant priced in both markets — the state a single-currency edit has to leave intact. */
+  const createDualPricedVariant = async (service: Services) => {
+    const { product } = await service.create.product(api.container)
+    const [variant] = await service.create.productVariants(api.container, product.id)
+    if (!variant) throw new Error('Expected a variant to exist')
+
+    const [priceSet] = await service.create.variantPrices(api.container, [variant.id], {
+      prices: [
+        { currencyCode: 'usd', amount: new BigNumber(2800) },
+        { currencyCode: 'cop', amount: new BigNumber(12000000) },
+      ],
+    })
+    if (!priceSet) throw new Error('Expected a price set to exist')
+
+    const priceIn = async (currencyCode: string) => {
+      const prices = await service.read.prices(api.container, priceSet.id)
+      return prices.find((price) => price.currencyCode === currencyCode)
+    }
+
+    return { product, variant, priceSet, priceIn }
+  }
+
+  test('editing the dollar price leaves the peso price where it was', async ({ expect, service }) => {
+    const { product, variant, priceIn } = await createDualPricedVariant(service)
+    const before = await priceIn('cop')
+    const usd = await priceIn('usd')
+    if (!before || !usd) throw new Error('Expected the variant to be priced in both currencies')
+
+    const response = await api.put(`/admin/products/${product.id}/variants/${variant.id}/prices`, {
+      prices: [{ id: usd.id, currencyCode: 'usd', amount: '3500' }],
+    })
+
+    expect(response.status).toBe(200)
+    expect(await priceIn('usd')).toMatchObject({ amount: new BigNumber(3500) })
+    // Same row, not a re-created one: a currency the edit never mentioned is not the edit's business.
+    expect(await priceIn('cop')).toMatchObject({ id: before.id, amount: before.amount })
+  })
+
+  test('editing the peso price leaves the dollar price where it was', async ({ expect, service }) => {
+    const { product, variant, priceIn } = await createDualPricedVariant(service)
+    const before = await priceIn('usd')
+    const cop = await priceIn('cop')
+    if (!before || !cop) throw new Error('Expected the variant to be priced in both currencies')
+
+    const response = await api.put(`/admin/products/${product.id}/variants/${variant.id}/prices`, {
+      prices: [{ id: cop.id, currencyCode: 'cop', amount: '13500000' }],
+    })
+
+    expect(response.status).toBe(200)
+    expect(await priceIn('cop')).toMatchObject({ amount: new BigNumber(13500000) })
+    expect(await priceIn('usd')).toMatchObject({ id: before.id, amount: before.amount })
+  })
+
+  test('adds a currency the variant was not priced in yet', async ({ expect, service }) => {
+    const { product } = await service.create.product(api.container)
+    const [variant] = await service.create.productVariants(api.container, product.id)
+    if (!variant) throw new Error('Expected a variant to exist')
+
+    const response = await api.put<typeof variantPricesRoutes.PutOutput>(
+      `/admin/products/${product.id}/variants/${variant.id}/prices`,
+      { prices: [{ currencyCode: 'cop', amount: '12000000' }] },
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.body.variant.prices).toMatchObject([{ currencyCode: 'cop', amount: '12000000' }])
+  })
+
+  test('a price with no currency code never reaches the workflow', async ({ expect, service }) => {
+    const { product } = await service.create.product(api.container)
+    const [variant] = await service.create.productVariants(api.container, product.id)
+    if (!variant) throw new Error('Expected a variant to exist')
+
+    const { status, body } = await api.put(`/admin/products/${product.id}/variants/${variant.id}/prices`, {
+      prices: [{ amount: '3500' }],
+    })
+
+    expect(status).toBe(400)
+    expect(body.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(body.message).toContain('currencyCode')
   })
 })
