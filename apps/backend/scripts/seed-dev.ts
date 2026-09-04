@@ -558,15 +558,15 @@ const MARKETS: Market[] = [
 const STORE_NAME = 'Proteus'
 
 /**
- * Catalogue prices are US cents. A price is stored in its currency's minor unit, and the storefront
- * scales by the digit count `Intl` gives that currency — the Colombian peso has none, so its minor
- * unit is the peso itself. The rate is round rather than accurate: this is seed data.
+ * A price is stored in whole currency units — `amount` is a `numeric`, and `formatPrice` hands it
+ * to `Intl` unscaled — so the peso price is the dollar price times the rate, with nothing to
+ * convert between minor and major units. The rate is round rather than accurate: this is seed data.
  */
 const COP_PER_USD = 4000
 
-function amountIn(currencyCode: string, usdCents: number): number {
-  if (currencyCode === 'usd') return usdCents
-  if (currencyCode === 'cop') return (usdCents / 100) * COP_PER_USD
+function amountIn(currencyCode: string, usdAmount: number): number {
+  if (currencyCode === 'usd') return usdAmount
+  if (currencyCode === 'cop') return usdAmount * COP_PER_USD
   throw new Error(`No seed conversion for currency "${currencyCode}"`)
 }
 
