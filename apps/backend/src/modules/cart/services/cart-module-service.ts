@@ -253,6 +253,12 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
+  async restoreShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.cartShippingMethodRepository.restore(shippingMethodIds, ctx)
+    })
+  }
+
   async listCartAddresses(
     filters?: FilterableCartAddressProps,
     config?: FindConfig<CartAddressDTO>,
@@ -281,6 +287,12 @@ export class CartModuleService implements ICartModuleService {
   async softDeleteCartAddresses(addressIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartAddressRepository.softDelete(addressIds, ctx)
+    })
+  }
+
+  async restoreCartAddresses(addressIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.cartAddressRepository.restore(addressIds, ctx)
     })
   }
 

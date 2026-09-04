@@ -32,6 +32,12 @@ export const CartAddressInput = z.object({
 export type CartAddressInputBody = z.infer<typeof CartAddressInput>
 
 export const UpdateCart = z.object({
+  /**
+   * The market the shopper is switching to. Naming it reprices the whole cart into that region's
+   * currency, so it is the region's id rather than a currency: the currency is the region's to
+   * decide, and a payload free to name its own would be naming the money the shopper is charged in.
+   */
+  regionId: z.string().min(1).optional(),
   email: z.email().optional(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
