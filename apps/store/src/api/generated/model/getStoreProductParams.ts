@@ -5,19 +5,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListStoreProductsParams = {
-/**
- * @minimum 0
- * @nullable
- */
-offset?: number | null;
-/**
- * @minimum 1
- * @maximum 100
- */
-limit?: number;
-order?: string;
-q?: string;
+export type GetStoreProductParams = {
 /**
  * ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.
  * @minLength 2
