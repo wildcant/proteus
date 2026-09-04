@@ -6,7 +6,6 @@
  */
 
 export type ListStoreCartShippingOptionsParams = {
-countryCode?: string;
 province?: string;
 city?: string;
 postalCode?: string;

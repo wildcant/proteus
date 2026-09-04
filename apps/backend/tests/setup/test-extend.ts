@@ -39,6 +39,7 @@ import {
 import {
   createCountry,
   createRegion,
+  createShippingOptionWithZone,
   createStore,
   createStoreCurrency,
   generateCustomer,
@@ -212,6 +213,9 @@ export type Fixtures = {
       country: typeof createCountry
       store: typeof createStore
       storeCurrency: typeof createStoreCurrency
+      /** A shipping option and the whole zone chain that makes it offerable. Shared with the
+       *  browser suite, which reaches the same factory through its own fixtures. */
+      shippingOptionWithZone: typeof createShippingOptionWithZone
     }
   }
   /** Request bodies for the HTTP layer, grouped by the API scope they belong to — the same split
@@ -411,6 +415,7 @@ export const test = testBase.extend<Fixtures>({
         country: createCountry,
         store: createStore,
         storeCurrency: createStoreCurrency,
+        shippingOptionWithZone: createShippingOptionWithZone,
       },
     })
   },

@@ -33,9 +33,10 @@ export const ShippingMethodForm = withForm({
 
     const { data, isLoading } = useShippingOptions(
       cart.id,
+      // No country: the endpoint reads it off the cart, so sending the one being typed here
+      // would be a second answer to a question the cart has already settled.
       {
         city: shippingAddress.city,
-        countryCode: shippingAddress.countryCode,
         postalCode: shippingAddress.postalCode,
         province: shippingAddress.province ?? undefined,
       },
