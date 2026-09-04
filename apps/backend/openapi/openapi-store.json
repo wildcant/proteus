@@ -641,6 +641,40 @@
         },
         "required": ["cart"]
       },
+      "StoreCountryListResponse": {
+        "type": "object",
+        "properties": {
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCountry"
+            }
+          }
+        },
+        "required": ["countries"]
+      },
+      "StoreCountry": {
+        "type": "object",
+        "properties": {
+          "iso2": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2, lowercased. What a country is selected by everywhere else."
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The country name as a shopper reads it. Listings come sorted by it."
+          },
+          "currencyCode": {
+            "type": ["string", "null"],
+            "description": "ISO 4217, lowercased, from the owning region. Null only for a country no region owns."
+          },
+          "localeCode": {
+            "type": ["string", "null"],
+            "description": "BCP 47 tag, e.g. es-CO — the URL segment, the document language, and the tag every number and date formatter is given. Null on the same countries currencyCode is."
+          }
+        },
+        "required": ["iso2", "displayName", "currencyCode", "localeCode"]
+      },
       "CustomerResponse": {
         "type": "object",
         "properties": {
@@ -2420,6 +2454,42 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/countries": {
+      "get": {
+        "operationId": "listStoreCountries",
+        "summary": "List countries, sellable ones by default",
+        "tags": ["Countries"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["sellable", "all"],
+              "default": "sellable",
+              "description": "Which listing to return. \"sellable\" (the default) is the countries the store sells to, each with a currency and locale. \"all\" is the whole ISO 3166-1 table, for a form that has to accept an address anywhere; the countries outside a region carry null currency and locale."
+            },
+            "required": false,
+            "description": "Which listing to return. \"sellable\" (the default) is the countries the store sells to, each with a currency and locale. \"all\" is the whole ISO 3166-1 table, for a form that has to accept an address anywhere; the countries outside a region carry null currency and locale.",
+            "name": "scope",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCountryListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }

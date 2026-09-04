@@ -28,6 +28,7 @@ import authDefinitions from './api/auth/definitions.js'
 import hookDefinitions from './api/hooks/definitions.js'
 import storeAuthDefinitions from './api/store/auth/definitions.js'
 import storeCartDefinitions from './api/store/carts/definitions.js'
+import storeCountryDefinitions from './api/store/countries/definitions.js'
 import storeCustomerDefinitions from './api/store/customers/definitions.js'
 import storeOrderDefinitions from './api/store/orders/definitions.js'
 import storePaymentCollectionDefinitions from './api/store/payment-collections/definitions.js'
@@ -67,6 +68,7 @@ export const storeDefinitions: RouteDefinition[] = [
   ...storeAuthDefinitions,
   ...authDefinitions.filter((d) => storeSharedAuthRoutes.has(d.matcher)),
   ...storeCartDefinitions,
+  ...storeCountryDefinitions,
   ...storeCustomerDefinitions,
   ...storeOrderDefinitions,
   ...storePaymentCollectionDefinitions,

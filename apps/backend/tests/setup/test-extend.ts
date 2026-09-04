@@ -36,7 +36,15 @@ import {
   generateCustomerDTO,
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
-import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
+import {
+  createCountry,
+  createRegion,
+  createStore,
+  createStoreCurrency,
+  generateCustomer,
+  generateProduct,
+  generateUser,
+} from '../factories/db/index.js'
 import {
   generateCreateFulfillmentSetDTO,
   generateCreateGeoZoneDTO,
@@ -196,6 +204,15 @@ export type Fixtures = {
     customer: typeof generateCustomer
     user: typeof generateUser
     product: typeof generateProduct
+    /** Rows written straight to the database, for tables no module service writes yet — region,
+     *  country and store are seeded, and their admin write paths are separate features. Each
+     *  returns a disposable, so a spec's rows live and die with it. */
+    create: {
+      region: typeof createRegion
+      country: typeof createCountry
+      store: typeof createStore
+      storeCurrency: typeof createStoreCurrency
+    }
   }
   /** Request bodies for the HTTP layer, grouped by the API scope they belong to — the same split
    *  `@proteus/http-schemas` makes between `./store` and `./admin`. A wire body is not a service
@@ -389,6 +406,12 @@ export const test = testBase.extend<Fixtures>({
       customer: generateCustomer,
       user: generateUser,
       product: generateProduct,
+      create: {
+        region: createRegion,
+        country: createCountry,
+        store: createStore,
+        storeCurrency: createStoreCurrency,
+      },
     })
   },
   async http({ task: _ }, use) {

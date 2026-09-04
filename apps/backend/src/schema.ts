@@ -15,6 +15,11 @@ export {
   productVariantPriceSetTable,
 } from './link-modules/definitions/product-variant-price-set.js'
 export { cartLineItemProductRelations } from './link-modules/definitions/readonly/index.js'
+export {
+  type CreateRegionPaymentProvider,
+  regionPaymentProviderRelations,
+  regionPaymentProviderTable,
+} from './link-modules/definitions/region-payment-provider.js'
 
 // Modules
 export * from './modules/auth/models/index.js'
@@ -26,4 +31,6 @@ export * from './modules/notification/models/index.js'
 export * from './modules/payment/models/index.js'
 export * from './modules/pricing/models/index.js'
 export * from './modules/product/models/index.js'
+export * from './modules/region/models/index.js'
+export * from './modules/store/models/index.js'
 export * from './modules/user/models/index.js'
