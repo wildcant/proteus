@@ -1,7 +1,8 @@
 import { ShoppingBagIcon } from '@proteus/icons'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger, formatPrice } from '@proteus/ui'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@proteus/ui'
 import { ChevronDownIcon } from 'lucide-react'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
+import { useFormatters } from '#/lib/use-formatters'
 
 type CheckoutSummaryProps = {
   cart: StoreCartDetailResponseCart
@@ -47,6 +48,8 @@ function CheckoutSummaryPanel({ cart }: CheckoutSummaryProps) {
  * the one number a shopper checks before paying is readable without opening anything.
  */
 export function CheckoutSummaryDisclosure({ cart }: CheckoutSummaryProps) {
+  const { formatPrice } = useFormatters()
+
   return (
     <Collapsible className="lg:hidden">
       <CollapsibleTrigger className="group flex h-16 w-full cursor-pointer items-center justify-between gap-4 border-line border-b bg-surface-subtle px-4 text-ink">
@@ -72,6 +75,8 @@ export function CheckoutSummaryDisclosure({ cart }: CheckoutSummaryProps) {
  */
 
 function CheckoutSummaryBody({ cart }: CheckoutSummaryProps) {
+  const { formatPrice } = useFormatters()
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <ul className="m-0 -mt-2 flex min-h-0 flex-1 list-none flex-col gap-4 overflow-y-auto p-0 pt-2">

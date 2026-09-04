@@ -1,17 +1,17 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
-import { DEFAULT_LOCALE_CODE, joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
-import { loadMarketLocaleCodes } from '#/lib/market-locales'
+import { DEFAULT_MARKET, joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
+import { loadSellableMarkets } from '#/lib/sellable-markets'
 import { routeTree } from './routeTree.gen'
 
 export async function getRouter() {
   const queryClient = new QueryClient()
 
-  const localeCodes = await loadMarketLocaleCodes()
+  const markets = await loadSellableMarkets()
   // One per router, and the server builds a router per request, so this is request state even
   // though the rewrite closes over it. `input` fills in the market; see below.
-  const market: MarketContext = { localeCode: DEFAULT_LOCALE_CODE, localeCodes, resolvedFromUrl: false }
+  const market: MarketContext = { current: DEFAULT_MARKET, markets, resolvedFromUrl: false }
 
   const router = createTanStackRouter({
     routeTree,
@@ -28,9 +28,9 @@ export async function getRouter() {
       // for. An unroutable first segment is left alone so it reaches the route tree and comes
       // back as a not-found rather than a redirect to somewhere plausible.
       input: ({ url }) => {
-        const split = splitMarketSegment(url.pathname, market.localeCodes)
+        const split = splitMarketSegment(url.pathname, market.markets)
         if (!split) return undefined
-        market.localeCode = split.localeCode
+        market.current = split.market
         market.resolvedFromUrl = true
         url.pathname = split.rest
         return url
@@ -44,7 +44,7 @@ export async function getRouter() {
       // the address the shopper actually typed.
       output: ({ url }) => {
         if (!market.resolvedFromUrl) return undefined
-        url.pathname = joinMarketSegment(market.localeCode, url.pathname)
+        url.pathname = joinMarketSegment(market.current.localeCode, url.pathname)
         return url
       },
     },

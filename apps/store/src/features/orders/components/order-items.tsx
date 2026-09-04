@@ -1,6 +1,6 @@
-import { formatPrice } from '@proteus/ui'
 import { PackageIcon } from 'lucide-react'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
+import { useFormatters } from '#/lib/use-formatters'
 
 /**
  * The checkout summary's row, on the record of the checkout that produced it — same 4:5 cover,
@@ -14,6 +14,8 @@ import type { StoreOrderResponseOrder } from '#/api/generated/model'
  * A package, not the checkout summary's shopping bag: a bag is the thing you are still carrying.
  */
 export function OrderItems({ order }: { order: StoreOrderResponseOrder }) {
+  const { formatPrice } = useFormatters()
+
   return (
     <ul className="m-0 flex list-none flex-col gap-4 p-0">
       {order.lineItems.map((item) => (

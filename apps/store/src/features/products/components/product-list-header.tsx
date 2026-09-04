@@ -1,6 +1,7 @@
 import { getRouteApi } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { PRODUCT_SORT_DEFAULT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
+import { useMarket } from '#/lib/use-market'
 import { ProductSort } from './product-sort'
 
 const route = getRouteApi('/_main/')
@@ -52,7 +53,8 @@ export function ProductListHeader() {
 
 function ResultCount() {
   const { q, sort, offset } = route.useSearch()
-  const { count } = useSuspenseProducts(productsPageQuery({ q, sort, offset }))
+  const { current } = useMarket()
+  const { count } = useSuspenseProducts(productsPageQuery({ q, sort, offset, countryCode: current.iso2 }))
 
   return (
     <p className="text-ink-muted text-sm">

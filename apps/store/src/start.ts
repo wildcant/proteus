@@ -1,13 +1,13 @@
 import { createMiddleware, createStart } from '@tanstack/react-start'
 import {
-  DEFAULT_LOCALE_CODE,
+  DEFAULT_MARKET,
   joinMarketSegment,
   looksLikeMarketSegment,
   marketCookie,
   readMarketCookie,
   splitMarketSegment,
 } from '#/lib/market'
-import { loadMarketLocaleCodes } from '#/lib/market-locales'
+import { loadSellableMarkets } from '#/lib/sellable-markets'
 
 /**
  * What a document request answers with now depends on the market cookie, and the product list
@@ -38,14 +38,15 @@ const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ r
   // under the page that issued them.
   if (handlerType !== 'router') return next()
 
-  const localeCodes = await loadMarketLocaleCodes()
+  const markets = await loadSellableMarkets()
   const url = new URL(request.url)
-  const fromUrl = splitMarketSegment(url.pathname, localeCodes)
+  const fromUrl = splitMarketSegment(url.pathname, markets)
 
   if (fromUrl) {
-    // Choosing a market by its URL is what persists it, so a later visit to `/` lands there.
+    // Choosing a market by its URL is what persists it, so a later visit to `/` lands there — and
+    // it is what makes the market control's document navigation the whole of the switch.
     const result = await next()
-    result.response.headers.append('set-cookie', marketCookie(fromUrl.localeCode, url.protocol === 'https:'))
+    result.response.headers.append('set-cookie', marketCookie(fromUrl.market.localeCode, url.protocol === 'https:'))
     return withCookieVary(result)
   }
 
@@ -57,7 +58,8 @@ const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ r
   const remembered = readMarketCookie(request.headers.get('cookie'))
   // A cookie naming a market the store no longer sells in is stale, not fatal — drop back to the
   // default rather than showing a shopper a not-found for a link that used to work.
-  const target = remembered && localeCodes.includes(remembered) ? remembered : DEFAULT_LOCALE_CODE
+  const isSellable = markets.some((market) => market.localeCode === remembered)
+  const target = remembered && isSellable ? remembered : DEFAULT_MARKET.localeCode
 
   url.pathname = joinMarketSegment(target, url.pathname)
   // `vary` for the same reason as above, and `no-store` because where this redirect points is one

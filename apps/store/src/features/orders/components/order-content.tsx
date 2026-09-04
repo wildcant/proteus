@@ -1,10 +1,10 @@
-import { formatDate } from '@proteus/utils'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { ChevronLeftIcon } from 'lucide-react'
 import { Button } from '#/components/button'
 import { useSuspenseOrder } from '#/features/orders/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
 import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'
+import { useFormatters } from '#/lib/use-formatters'
 
 const route = getRouteApi('/_main/_authed/account/orders/$orderId')
 
@@ -16,6 +16,7 @@ const route = getRouteApi('/_main/_authed/account/orders/$orderId')
 export function OrderContent() {
   const { orderId } = route.useParams()
   const { order } = useSuspenseOrder(orderId)
+  const { formatDate } = useFormatters()
 
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">

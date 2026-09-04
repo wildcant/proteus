@@ -21,6 +21,7 @@ import type {
 } from '#/api/generated/model'
 import { getCartId, setCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
+import { useMarket } from '#/lib/use-market'
 
 const CART_QUERY_KEY = 'cart' as const
 export const cartQueryKeys = queryKeysFactory(CART_QUERY_KEY)
@@ -55,12 +56,16 @@ export const useCart = (options?: CartQueryOptions) => {
 
 export const useCreateCart = (options?: UseMutationOptions<StoreCreateCartResponse, Error, void>) => {
   const queryClient = useQueryClient()
+  const { current } = useMarket()
   const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
     ...rest,
     mutationFn: async () => {
-      const response = await createStoreCart({})
+      // The market a cart is opened in is the market it keeps: the country picks the region, the
+      // region owns the currency, and the cart carries that currency for the rest of its life.
+      // Nothing re-reads this later, so it is the one moment it can be got right.
+      const response = await createStoreCart({}, { countryCode: current.iso2 })
       setCartId(response.cart.id)
       return response
     },
@@ -80,6 +85,7 @@ export const useAddLineItem = (
   options?: UseMutationOptions<StoreCreateCartLineItemResponse, Error, AddStoreCartLineItemBody>,
 ) => {
   const queryClient = useQueryClient()
+  const { current } = useMarket()
   const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
@@ -87,7 +93,8 @@ export const useAddLineItem = (
     mutationFn: async (payload: AddStoreCartLineItemBody) => {
       let cartId = getCartId()
       if (!cartId) {
-        const cartResponse = await createStoreCart({})
+        // Same as `useCreateCart`: the first add is where a shopper's cart gets its currency.
+        const cartResponse = await createStoreCart({}, { countryCode: current.iso2 })
         cartId = cartResponse.cart.id
         setCartId(cartId)
       }
