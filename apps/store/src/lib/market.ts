@@ -1,11 +1,13 @@
 /**
- * A Market is the country a shopper is shopping in. It carries three fields and each does a
+ * A Market is the country a shopper is shopping in. It carries four fields and each does a
  * different job: `localeCode` is the URL segment, the document language attribute, and the tag
  * every number and date formatter is handed; `iso2` is what the store API selects a region — and
- * therefore a currency — by; `displayName` is what the market control shows.
+ * therefore a currency — by; `displayName` is what the market control shows; `currencyCode` is
+ * the money this market settles in, which is how a page can tell that the cart it is holding
+ * belongs to another one.
  *
  * They travel together because they are one row of the country endpoint's answer, and splitting
- * them into three lists would mean three chances to hand one market's name to another's prices.
+ * them into four lists would mean four chances to hand one market's name to another's prices.
  *
  * Everything here is pure and isomorphic — the server resolves a market per request, the client
  * reads the one the server resolved, and both need the same parsing.
@@ -17,6 +19,12 @@ export type Market = {
   iso2: string
   /** The country as a shopper reads it. What the market control lists. */
   displayName: string
+  /**
+   * ISO 4217, lowercased, from the region behind this country. Never sent anywhere — the region
+   * decides what a request is priced in — it is read to compare against the currency a cart is
+   * already carrying, which is the one market signal a cart's own response exposes.
+   */
+  currencyCode: string
 }
 
 /**
@@ -26,7 +34,12 @@ export type Market = {
  * that can only be learned from the country endpoint is no default at all. The backend owns which
  * markets exist; this owns only which one a storefront with no other information shows.
  */
-export const DEFAULT_MARKET: Market = { localeCode: 'en-US', iso2: 'us', displayName: 'United States' }
+export const DEFAULT_MARKET: Market = {
+  localeCode: 'en-US',
+  iso2: 'us',
+  displayName: 'United States',
+  currencyCode: 'usd',
+}
 
 /** Where the resolved locale code is persisted, so a later visit to `/` lands on the same market. */
 export const MARKET_COOKIE = 'proteus_store_market'

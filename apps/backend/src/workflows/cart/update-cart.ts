@@ -6,6 +6,7 @@ import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.
 import type { ILinkService } from '@core/types/link/service.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import type { IPricingModuleService } from '@core/types/pricing/service.js'
+import type { RegionDTO } from '@core/types/region/common.js'
 import type { IRegionModuleService } from '@core/types/region/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -68,6 +69,38 @@ type PreviousLineItemPrice = { id: string; unitPrice: BigNumber }
 /** The payment collection's terms before the switch, or null when the cart has none yet. */
 type PreviousPaymentCollection = { id: string; amount: BigNumber; currencyCode: string } | null
 
+/**
+ * The market a switch names, however the caller named it — or null when it named none.
+ *
+ * Two spellings for one question, because two callers hold different halves of the answer. A
+ * server-side caller has the region id and passes it. The storefront has only the country segment
+ * in its own URL, by design: it sends the market it already knows and the region and its currency
+ * are resolved here, in the one place that owns what a market means.
+ */
+async function resolveNamedRegion(
+  regionService: IRegionModuleService,
+  named: { regionId?: string; countryCode?: string },
+): Promise<RegionDTO | null> {
+  // Retrieving rather than listing, so an id naming no region is a 404 instead of a cart quietly
+  // repriced into nothing.
+  if (named.regionId) return regionService.retrieveRegion(named.regionId)
+  if (!named.countryCode) return null
+
+  const countryCode = named.countryCode.toLowerCase()
+  // One read for both failures, the way the pricing middleware reads the same input: an unknown
+  // ISO code and a country outside every region are the same answer to a storefront, which only
+  // offers the countries `GET /store/countries` lists.
+  const [country] = await regionService.listCountries({ id: countryCode })
+  if (!country?.regionId) {
+    throw new WorkflowTerminalError({
+      type: ErrorTypes.INVALID_DATA,
+      message: `No region sells to country "${countryCode}"`,
+    })
+  }
+
+  return regionService.retrieveRegion(country.regionId)
+}
+
 export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>('update-cart', async (ctx, input) => {
   /**
    * Validates the cart exists and hasn't been completed. A completed cart is the record behind
@@ -96,14 +129,12 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>('upda
    * same numbers and drop shipping methods that still apply, for nothing.
    */
   const regionChange = await ctx.step<RegionChange | null>('resolve-region-change', async ({ container }) => {
-    if (!input.regionId || input.regionId === cart.regionId) return null
-
     const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
     const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
-    // Retrieving rather than listing, so an id naming no region is a 404 instead of a cart
-    // quietly repriced into nothing.
-    const region = await regionService.retrieveRegion(input.regionId)
+    const region = await resolveNamedRegion(regionService, input)
+    if (!region || region.id === cart.regionId) return null
+
     const countries = await regionService.listCountries({ regionId: region.id }, { order: { id: 'ASC' } })
     const countryCodes = countries.map((country) => country.id)
 

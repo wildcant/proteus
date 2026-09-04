@@ -39,11 +39,19 @@ async function fetchMarkets(): Promise<Array<Market>> {
   if (!response.ok) throw new Error(`GET /store/countries failed: ${response.status}`)
 
   const { countries } = StoreCountryListResponse.parse(await response.json())
-  // A sellable country always carries a locale code — the seed fails naming the country when one
-  // does not — so this filter is a type narrowing, not a silent drop.
+  // A sellable country always carries a locale code and a currency — both come from the region
+  // that makes it sellable, and the seed fails naming the country when the locale is missing — so
+  // this filter is a type narrowing, not a silent drop.
   const markets = countries.flatMap((country) =>
-    country.localeCode
-      ? [{ localeCode: country.localeCode, iso2: country.iso2, displayName: country.displayName }]
+    country.localeCode && country.currencyCode
+      ? [
+          {
+            localeCode: country.localeCode,
+            iso2: country.iso2,
+            displayName: country.displayName,
+            currencyCode: country.currencyCode,
+          },
+        ]
       : [],
   )
 

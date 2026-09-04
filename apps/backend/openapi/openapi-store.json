@@ -1975,6 +1975,11 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "countryCode": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                  },
                   "regionId": {
                     "type": "string",
                     "minLength": 1

@@ -123,6 +123,25 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       })
     }
 
+    /** A session carries its own amount and currency, copied off the collection when it was
+     *  opened. A market switch restates the collection and cannot touch the session — deleting it
+     *  is a call to the provider with nothing to compensate it — so a session opened before the
+     *  switch would otherwise authorize the old money against the new cart. Comparing is the
+     *  non-destructive half, and it is the half that has to happen before `authorize-payment`
+     *  charges anyone.
+     *
+     *  Named in both currencies, and actionable: the shopper's way out is to pick their payment
+     *  method again, which opens a session at what the cart now says. */
+    if (!session.amount.isEqualTo(collection.amount) || session.currencyCode !== collection.currencyCode) {
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.INVALID_DATA,
+        message:
+          `Payment session "${session.id}" was opened for ${session.amount} ${session.currencyCode.toUpperCase()} ` +
+          `but this cart is now ${collection.amount} ${collection.currencyCode.toUpperCase()} — ` +
+          'select your payment method again to open a new payment session',
+      })
+    }
+
     return {
       sessionId: session.id,
       paymentCollectionId: cartPaymentLink.paymentCollectionId,
