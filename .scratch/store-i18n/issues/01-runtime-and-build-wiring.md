@@ -69,9 +69,7 @@ carved out — this file may default-export.
 plugins: [ …, tanstackStart(), lingui(), viteReact({ babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] } }) ]
 ```
 
-`vite.config.static.ts` is deliberately **not** wired. `deploy:static` is unsupported and this
-change breaks it; put a comment at the top of that file saying so rather than leaving it to be
-discovered by whoever runs it next.
+There is one Vite config to wire and one deploy target behind it — the edge Worker.
 
 **`src/types/po.d.ts`** — the first `.d.ts` in the repo, so there is no convention to follow.
 `@lingui/vite-plugin` ships only `dist/index.mjs` and `dist/index.d.mts` — no ambient client types —

@@ -4,6 +4,10 @@
 is not re-derived later. `.scratch/store-i18n/` ships first and must land before this is planned in
 detail.
 
+Two of the named divergences below were corrected after the markets feature shipped: proteus now
+has a `store` module, and the storefront now fetches its routable set rather than compiling it in.
+The language-country segment shape this spec assumes is unchanged — markets adopted it.
+
 ## Why
 
 `.scratch/store-i18n/` translates **Store Copy** — the text the storefront authors. It cannot touch
@@ -62,13 +66,19 @@ by URL at the CDN, and React Query keys off the URL too — a header would need 
 two Locales share one cache entry. A query param is naturally cache-keyed. Worth confirming when
 this is designed properly.
 
-**No `store` module here.** proteus has no Store entity, so `store_locale` has no home. Supported
-Locales need somewhere else — config, a new module, or a table inside the translation module.
+**A `store` module now exists.** This section originally said proteus had no Store entity and that
+`store_locale` therefore had no home. The markets feature added
+`apps/backend/src/modules/store/` with `Store` and `StoreCurrency`, so a `store_locale` table
+alongside them is now the obvious placement rather than an open question — worth confirming when
+this is designed properly, but no longer a divergence.
 
-**The routable Locale set stays static in the storefront.** `GET /store/locales` answers "which
-Locales have Merchant Text translations" and gates picker entries; it does not decide which URLs
-exist. See the reasoning in `.scratch/store-i18n/spec.md` — routing must resolve synchronously at
-boot on every SSR request.
+**The routable Locale set is fetched by the storefront, not compiled into it.** Also inverted by
+markets: `apps/store/src/lib/sellable-markets.ts` reads the routable segments from
+`GET /store/countries` and caches the answer per server instance, with a compiled-in default market
+as the fallback when the backend is unreachable. `GET /store/locales` still answers a different
+question — "which Locales have Merchant Text translations" — and still gates picker entries rather
+than deciding which URLs exist. What has changed is that "the storefront cannot fetch this" is no
+longer the reason why.
 
 ## Open questions for when this is planned
 
