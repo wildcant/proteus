@@ -2111,11 +2111,15 @@
             "items": {
               "type": "object",
               "properties": {
+                "currencyCode": {
+                  "type": "string",
+                  "minLength": 1
+                },
                 "amount": {
                   "type": "string"
                 }
               },
-              "required": ["amount"]
+              "required": ["currencyCode", "amount"]
             }
           }
         },
@@ -2677,11 +2681,15 @@
                 "id": {
                   "type": "string"
                 },
+                "currencyCode": {
+                  "type": "string",
+                  "minLength": 1
+                },
                 "amount": {
                   "type": "string"
                 }
               },
-              "required": ["amount"]
+              "required": ["currencyCode", "amount"]
             }
           }
         },

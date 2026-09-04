@@ -116,7 +116,12 @@ export class PaymentModuleService implements IPaymentModuleService {
     const collection = await this.paymentCollectionRepository.findByIdOrFail(id, config, context)
 
     const [sessions, payments] = await Promise.all([
-      this.paymentSessionRepository.find({ paymentCollectionId: id }, undefined, context),
+      // Newest first, and ordered at all. A collection can hold several live sessions — picking a
+      // payment method again opens one beside the one already there, and nothing removes the old
+      // one — so a caller reading "the" session off this array is choosing between them. Without
+      // an ORDER BY that choice is heap order, which means whether a shopper can check out comes
+      // down to which row Postgres happens to return first.
+      this.paymentSessionRepository.find({ paymentCollectionId: id }, { order: { createdAt: 'DESC' } }, context),
       this.paymentRepository.find({ paymentCollectionId: id }, undefined, context),
     ])
 

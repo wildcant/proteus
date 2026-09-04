@@ -1,6 +1,7 @@
 import { getRouteApi, useRouterState } from '@tanstack/react-router'
 import { Pagination } from '#/components/pagination'
 import { PRODUCTS_DEFAULT_LIMIT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
+import { useMarket } from '#/lib/use-market'
 import { ProductEmpty } from './product-empty'
 import { ProductGrid } from './product-grid'
 
@@ -9,7 +10,8 @@ const route = getRouteApi('/_main/')
 export function ProductList() {
   const { q, sort, offset } = route.useSearch()
   const navigate = route.useNavigate()
-  const { products, count } = useSuspenseProducts(productsPageQuery({ q, sort, offset }))
+  const { current } = useMarket()
+  const { products, count } = useSuspenseProducts(productsPageQuery({ q, sort, offset, countryCode: current.iso2 }))
 
   /**
    * Paging no longer suspends: `offset` is a loader dep, so the loader has already awaited the

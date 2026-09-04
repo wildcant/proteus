@@ -44,13 +44,13 @@ test.describe('Auth', () => {
     await expect(page.getByRole('heading', { name: /email verified/i })).toBeVisible({ timeout: BACKEND_TIMEOUT })
 
     await page.getByRole('link', { name: /^sign in$/i }).click()
-    await expect(page).toHaveURL('/login')
+    await expect(page).toHaveURL('/en-US/login')
 
     await page.getByRole('textbox', { name: 'Email' }).fill(registration.email)
     await page.getByRole('textbox', { name: 'Password' }).fill(registration.password)
     await page.getByRole('button', { name: /sign in/i }).click()
 
-    await expect(page).toHaveURL('/account', { timeout: BACKEND_TIMEOUT })
+    await expect(page).toHaveURL('/en-US/account', { timeout: BACKEND_TIMEOUT })
   })
 
   test('signing in before verifying returns to the check your email step', async ({
@@ -84,7 +84,7 @@ test.describe('Auth', () => {
     await page.getByRole('button', { name: /sign in/i }).click()
 
     await expect(page.getByRole('heading', { name: /check your email/i })).toBeVisible({ timeout: BACKEND_TIMEOUT })
-    await expect(page).not.toHaveURL('/account')
+    await expect(page).not.toHaveURL('/en-US/account')
 
     // The sign-in attempt sends a fresh link rather than reusing the signup one.
     const resent = await pollDatabase(async () => {
@@ -105,11 +105,11 @@ test.describe('Auth', () => {
 
     await navigate({ to: '/login' })
     await page.getByRole('link', { name: /forgot password/i }).click()
-    await expect(page).toHaveURL('/forgot-password')
+    await expect(page).toHaveURL('/en-US/forgot-password')
 
     await page.getByRole('button', { name: /send reset link/i }).click()
     await expect(page.getByText(/invalid email address/i)).toBeVisible()
-    await expect(page).toHaveURL('/forgot-password')
+    await expect(page).toHaveURL('/en-US/forgot-password')
 
     await page.getByRole('textbox', { name: 'Email' }).fill(customer.email)
     await page.getByRole('button', { name: /send reset link/i }).click()
@@ -135,7 +135,7 @@ test.describe('Auth', () => {
     await expect(page.getByRole('heading', { name: /password updated/i })).toBeVisible({ timeout: BACKEND_TIMEOUT })
 
     await page.getByRole('link', { name: /^sign in$/i }).click()
-    await expect(page).toHaveURL('/login')
+    await expect(page).toHaveURL('/en-US/login')
 
     // The old password must stop working, or the reset added a credential instead of replacing one.
     await page.getByRole('textbox', { name: 'Email' }).fill(customer.email)
@@ -145,7 +145,7 @@ test.describe('Auth', () => {
 
     await page.getByRole('textbox', { name: 'Password' }).fill(newPassword)
     await page.getByRole('button', { name: /sign in/i }).click()
-    await expect(page).toHaveURL('/account', { timeout: BACKEND_TIMEOUT })
+    await expect(page).toHaveURL('/en-US/account', { timeout: BACKEND_TIMEOUT })
   })
 
   test('login with invalid credentials', async ({ page, navigate, factories }) => {
@@ -161,6 +161,6 @@ test.describe('Auth', () => {
 
   test('unauthenticated access redirects to login', async ({ page, navigate }) => {
     await navigate({ to: '/account' })
-    await expect(page).toHaveURL('/login')
+    await expect(page).toHaveURL('/en-US/login')
   })
 })

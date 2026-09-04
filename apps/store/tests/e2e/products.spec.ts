@@ -361,17 +361,17 @@ test.describe('Product list', () => {
     await navigate({ to: '/', search: { q: token } })
 
     await page.getByLabel('Sort by').selectOption('za')
-    await expect(page).toHaveURL(`/?q=${token}&sort=za`)
+    await expect(page).toHaveURL(`/en-US?q=${token}&sort=za`)
     await expect.poll(() => cardTitles(page)).toEqual([zulu.title, alpha.title])
 
     await page.getByLabel('Sort by').selectOption('az')
-    await expect(page).toHaveURL(`/?q=${token}&sort=az`)
+    await expect(page).toHaveURL(`/en-US?q=${token}&sort=az`)
     await expect.poll(() => cardTitles(page)).toEqual([alpha.title, zulu.title])
 
     // The default is absent from the URL, never written into it — the rule `header.spec.ts`'s
-    // `toHaveURL('/?q=...')` assertions depend on.
+    // `toHaveURL('/en-US?q=...')` assertions depend on.
     await page.getByLabel('Sort by').selectOption('newest')
-    await expect(page).toHaveURL(`/?q=${token}`)
+    await expect(page).toHaveURL(`/en-US?q=${token}`)
   })
 
   test('paging round-trips through the URL and survives a reload', async ({
@@ -389,7 +389,7 @@ test.describe('Product list', () => {
     const firstPage = await cardTitles(page)
 
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page).toHaveURL(`/?q=${catalogue.token}&offset=12`)
+    await expect(page).toHaveURL(`/en-US?q=${catalogue.token}&offset=12`)
     await expect.poll(() => cardTitles(page)).toHaveLength(1)
     const secondPage = await cardTitles(page)
 

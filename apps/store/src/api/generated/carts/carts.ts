@@ -8,6 +8,7 @@ import type {
   AddStoreCartLineItemBody,
   AddStoreCartShippingMethodBody,
   CreateStoreCartBody,
+  CreateStoreCartParams,
   DeleteResponse,
   ListStoreCartShippingOptionsParams,
   StoreCartDetailResponse,
@@ -34,11 +35,13 @@ import type { BodyType } from '../../fetcher.ts';
  */
 export const createStoreCart = (
     createStoreCartBody?: BodyType<CreateStoreCartBody>,
+    params?: CreateStoreCartParams,
  ) => {
       return fetcher<StoreCreateCartResponse>(
       {url: `/store/carts`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: createStoreCartBody
+      data: createStoreCartBody,
+        params
     },
       );
     }

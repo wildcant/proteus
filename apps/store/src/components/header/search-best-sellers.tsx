@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { SEARCH_RESULTS_LIMIT } from '#/components/header/constants'
 import { useProducts } from '#/features/products/api/products'
 import { ProductGrid } from '#/features/products/components/product-grid'
+import { useMarket } from '#/lib/use-market'
 
 /**
  * What fills the panel before the shopper has typed anything.
@@ -13,7 +14,9 @@ import { ProductGrid } from '#/features/products/components/product-grid'
  * those lands. See `.scratch/store-design-system/issues/03-header.md`.
  */
 export function SearchBestSellers() {
-  const { products } = useProducts({ limit: SEARCH_RESULTS_LIMIT })
+  const { current } = useMarket()
+  // The row shows prices, so it is a priced request like any other and carries the market.
+  const { products } = useProducts({ limit: SEARCH_RESULTS_LIMIT, countryCode: current.iso2 })
 
   if (!products?.length) return null
 

@@ -108,7 +108,7 @@ export function resolveVariantsPayload(variants: {
       optionValues: row.optionValues,
       variantRank: index,
       ...(row.sku ? { sku: row.sku } : {}),
-      ...(row.price ? { prices: [{ amount: row.price }] } : {}),
+      ...(row.price ? { prices: [{ currencyCode: 'usd', amount: row.price }] } : {}),
     })),
   }
 }

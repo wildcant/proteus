@@ -1,6 +1,7 @@
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
+import { MarketSelect } from '#/components/market-select'
 
 /**
  * Every slot the storefront can actually back. A column is two or three real routes or it is
@@ -126,9 +127,14 @@ export function Footer() {
         </div>
 
         {/* The only rule below the columns. The legal links slot in beside the copyright here
-            once `/terms`, `/privacy` and `/returns` exist. */}
-        <div className="mt-10 border-line border-t pt-6 lg:flex lg:items-center lg:justify-between">
+            once `/terms`, `/privacy` and `/returns` exist.
+
+            The market control lives on this bar rather than in the header because it belongs with
+            the store's other standing facts, and because it is the one place that renders at every
+            width without competing for the header's three columns. */}
+        <div className="mt-10 flex flex-col items-center gap-4 border-line border-t pt-6 lg:flex-row lg:justify-between">
           <p className="m-0 text-center text-ink-muted lg:text-left">&copy; {year} Proteus. All rights reserved.</p>
+          <MarketSelect />
         </div>
       </div>
     </footer>

@@ -1,7 +1,8 @@
-import { cn, formatPrice } from '@proteus/ui'
+import { cn } from '@proteus/ui'
+import { useCountryName } from '#/api/countries'
 import type { StoreOrderAddress, StoreOrderResponseOrder } from '#/api/generated/model'
-import { countryName } from '#/components/form/countries'
 import { Panel } from '#/components/panel'
+import { useFormatters } from '#/lib/use-formatters'
 
 /**
  * The address in full — `address2`, `province` and `phone` included, and the country as a name.
@@ -11,6 +12,11 @@ import { Panel } from '#/components/panel'
  * it used to have were never going to be three columns.
  */
 export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
+  const { formatPrice } = useFormatters()
+  // Through the full ISO listing, not the markets the store sells in today: an order is a record
+  // of where a parcel went, and the store closing a market later does not turn that country back
+  // into a two-letter code on the shopper's receipt.
+  const countryName = useCountryName()
   const address = order.shippingAddress
   const shippingMethod = order.shippingMethods[0]
 
@@ -18,7 +24,7 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
     <Panel title="Delivery">
       {address ? (
         <div className="mt-6 flex flex-col gap-0.5 text-ink-muted text-sm">
-          {addressLines(address).map(({ field, value }) => (
+          {addressLines(address, countryName).map(({ field, value }) => (
             <p key={field} className="m-0">
               {value}
             </p>
@@ -64,8 +70,14 @@ type AddressLine = { field: string; value: string }
  * Joined rather than templated so an address missing any one part closes the gap instead of
  * printing a stray comma — every field on `StoreOrderAddress` is nullable. Keyed by field rather
  * than by value, because two lines of an address are allowed to read the same.
+ *
+ * `countryName` is passed in rather than read here, so this stays the pure function it was: the
+ * name now comes from a request, and a hook would make every caller of this a component.
  */
-function addressLines(address: NonNullable<StoreOrderAddress>): AddressLine[] {
+function addressLines(
+  address: NonNullable<StoreOrderAddress>,
+  countryName: (code: string | null | undefined) => string | undefined,
+): AddressLine[] {
   const locality = [[address.city, address.province].filter(Boolean).join(', '), address.postalCode]
     .filter(Boolean)
     .join(' ')
@@ -76,7 +88,7 @@ function addressLines(address: NonNullable<StoreOrderAddress>): AddressLine[] {
     { field: 'address1', value: address.address1 ?? '' },
     { field: 'address2', value: address.address2 ?? '' },
     { field: 'locality', value: locality },
-    { field: 'country', value: address.countryCode ? countryName(address.countryCode) : '' },
+    { field: 'country', value: countryName(address.countryCode) ?? '' },
     { field: 'phone', value: address.phone ?? '' },
   ]
 

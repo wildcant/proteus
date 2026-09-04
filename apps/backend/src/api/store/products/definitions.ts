@@ -1,5 +1,6 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { searchable, Tags } from '@framework/http/types.js'
+import { StorePricingContextParams } from '@proteus/http-schemas/store'
 import type { ProductDTO } from '../../../core/types/product/common.js'
 import { setPricingContext } from '../middlewares.js'
 import * as productByIdRoutes from './[id]/route.js'
@@ -12,7 +13,7 @@ export default [
     handler: productRoutes.GET,
     auth: 'public',
     middlewares: [setPricingContext()],
-    input: productRoutes.GetInput,
+    input: { ...productRoutes.GetInput, contextQuery: StorePricingContextParams },
     searchableColumns: searchable<ProductDTO>('title'),
     operationId: 'listStoreProducts',
     summary: 'List published products',
@@ -25,7 +26,7 @@ export default [
     handler: productByIdRoutes.GET,
     auth: 'public',
     middlewares: [setPricingContext()],
-    input: productByIdRoutes.GetInput,
+    input: { ...productByIdRoutes.GetInput, contextQuery: StorePricingContextParams },
     operationId: 'getStoreProduct',
     summary: 'Retrieve a product with variants',
     tags: [Tags.PRODUCTS],

@@ -34,3 +34,15 @@ export async function createPaymentProvider(overrides?: Partial<CreatePaymentPro
 export async function deletePaymentProviderById(id: string) {
   await db.delete(paymentProviderTable).where(eq(paymentProviderTable.id, id))
 }
+
+/**
+ * Flips `isEnabled` on a provider row the payment module's loader already seeded.
+ *
+ * A test cannot register a provider of its own — the loader owns the module's private container —
+ * so a *disabled* provider has to be made by disabling a real one. Doing it this way is also what
+ * makes the assertion mean something: the provider is still registered and still linked, so it
+ * would come back if the enabled filter stopped applying.
+ */
+export async function setPaymentProviderEnabled(id: string, isEnabled: boolean) {
+  await db.update(paymentProviderTable).set({ isEnabled }).where(eq(paymentProviderTable.id, id))
+}

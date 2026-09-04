@@ -13,10 +13,13 @@ import type {
   IPaymentModuleService,
   IPricingModuleService,
   IProductModuleService,
+  IRegionModuleService,
+  IStoreModuleService,
   IUserModuleService,
 } from '../src/core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '../src/core/utils/index.js'
 import { container } from '../src/framework/runtime/container.node.js'
+import { amountIn, MARKETS, seedMarkets } from './seed/markets.js'
 
 const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
 const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
@@ -29,6 +32,8 @@ const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
 const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
 // --- Catalogue ---
@@ -534,6 +539,11 @@ if (customerIdentity) {
   }
 }
 
+// --- Markets: regions, the ISO country table, and the store that trades in them ---
+// Shared with the end-to-end seed, which needs the same markets and nothing else. See
+// scripts/seed/markets.ts.
+await seedMarkets({ regionService, storeService, paymentService, linkService })
+
 // --- Products ---
 const existingProducts = await productService.listProducts()
 if (existingProducts.length > 0) {
@@ -647,8 +657,14 @@ if (existingProducts.length > 0) {
   console.info(`Seeded ${createdVariants.length} product variants with their option values`)
 
   // --- Prices ---
+  // One price per market currency, so a variant is buyable from either region without a fallback.
   const priceSets = await pricingService.createPriceSets(
-    variantSpecs.map((spec) => ({ prices: [{ currencyCode: 'usd', amount: new BigNumber(spec.price) }] })),
+    variantSpecs.map((spec) => ({
+      prices: MARKETS.map((market) => ({
+        currencyCode: market.currencyCode,
+        amount: new BigNumber(amountIn(market.currencyCode, spec.price)),
+      })),
+    })),
   )
 
   await Promise.all(
@@ -793,18 +809,13 @@ if (existingShippingOptions.length === 0) {
   const fulfillmentSet = await fulfillmentService.createFulfillmentSet({ name: 'Default Shipping', type: 'shipping' })
 
   const serviceZone = await fulfillmentService.createServiceZone({
-    name: 'Worldwide',
+    name: 'Markets',
     fulfillmentSetId: fulfillmentSet.id,
-    geoZones: [
-      { type: 'country', countryCode: 'us' },
-      { type: 'country', countryCode: 'ca' },
-      { type: 'country', countryCode: 'gb' },
-      { type: 'country', countryCode: 'de' },
-      { type: 'country', countryCode: 'fr' },
-      { type: 'country', countryCode: 'au' },
-      { type: 'country', countryCode: 'se' },
-      { type: 'country', countryCode: 'dk' },
-    ],
+    // The zone covers exactly the sellable countries. A zone reaching further would offer
+    // shipping to a country no region prices, and checkout would have nothing to charge in.
+    geoZones: MARKETS.flatMap((market) =>
+      market.countries.map((country) => ({ type: 'country' as const, countryCode: country.iso2 })),
+    ),
   })
 
   const standardType = await fulfillmentService.createShippingOptionType({

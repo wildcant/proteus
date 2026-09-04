@@ -1,12 +1,22 @@
 import { z } from 'zod'
 import { metadata, stringToBigNumber } from '../../common.js'
 
+/**
+ * A price is only meaningful alongside the currency it is quoted in, so the code travels with it
+ * rather than being assumed downstream. A price set holds one price per currency.
+ */
 const CreateVariantPrice = z.object({
+  currencyCode: z.string().min(1),
   amount: stringToBigNumber,
 })
 
+/**
+ * `id` names the row to overwrite. Omitting it prices a currency the variant does not have yet —
+ * currencies this payload leaves out are kept as they are, not dropped.
+ */
 const UpdateVariantPrice = z.object({
   id: z.string().optional(),
+  currencyCode: z.string().min(1),
   amount: stringToBigNumber,
 })
 

@@ -7,5 +7,7 @@
 
 export type AdminUpdateVariantPricesPricesItem = {
   id?: string;
+  /** @minLength 1 */
+  currencyCode: string;
   amount: string;
 };

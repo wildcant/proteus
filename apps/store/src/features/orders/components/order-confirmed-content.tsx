@@ -1,8 +1,8 @@
-import { formatDate } from '@proteus/utils'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSuspenseOrder } from '#/features/orders/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
 import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'
+import { useFormatters } from '#/lib/use-formatters'
 
 const route = getRouteApi('/_main/order/$orderId/confirmed')
 
@@ -16,6 +16,7 @@ const route = getRouteApi('/_main/order/$orderId/confirmed')
 export function OrderConfirmedContent() {
   const { orderId } = route.useParams()
   const { order } = useSuspenseOrder(orderId)
+  const { formatDate } = useFormatters()
 
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-12 pb-16 sm:px-6 lg:px-8">

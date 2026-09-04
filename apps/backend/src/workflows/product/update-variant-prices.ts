@@ -5,6 +5,7 @@ import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import type { AdminUpdateVariantPricesBody } from '@proteus/http-schemas/admin'
+import { mergeVariantPrices } from './utils/merge-variant-prices.js'
 
 type UpdateVariantPricesInput = {
   variantId: string
@@ -55,18 +56,16 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
         await pricingService.upsertPriceSets([
           {
             id: variantAndPriceSetLink.record.priceSetId,
-            prices: input.data.prices.map((price) => ({
-              id: price.id,
-              currencyCode: 'usd',
-              amount: price.amount,
-            })),
+            prices: mergeVariantPrices(prevPrices, input.data.prices),
           },
         ])
 
         return { prevPrices }
       },
+      // The recorded list is the price set's whole prior contents, in every currency it quoted —
+      // so replaying it puts the amounts back and drops whatever the edit added. An empty one is
+      // not a no-op: it means the set had no prices, and the edit's must go.
       async ({ prevPrices }, { container }) => {
-        if (prevPrices.length === 0) return
         const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
         await pricingService.upsertPriceSets([
           {

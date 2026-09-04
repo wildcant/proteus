@@ -55,10 +55,44 @@ test.describe('Orders', () => {
     await expect(page.getByText(product.optionValue.value)).toBeVisible()
 
     // The address the checkout submitted, back on the record of it — including the country as a
-    // name rather than the `US` the page used to print. Asserted against the page rather than a
-    // scoped panel: this is the only address on it.
-    await expect(page.getByText(SHIPPING_ADDRESS.address1)).toBeVisible()
-    await expect(page.getByText(`${SHIPPING_ADDRESS.city}, ${SHIPPING_ADDRESS.province}`)).toBeVisible()
-    await expect(page.getByText(SHIPPING_ADDRESS.countryName)).toBeVisible()
+    // name rather than the `US` the page used to print. Scoped to `main`: the footer's market
+    // control names the same country, so an unscoped read now matches the shopper's address and
+    // the market they are buying in. Narrower than it was, not weaker — it is the address on the
+    // order this asserts, and `main` is where that lives.
+    const orderDetail = page.getByRole('main')
+    await expect(orderDetail.getByText(SHIPPING_ADDRESS.address1)).toBeVisible()
+    await expect(orderDetail.getByText(`${SHIPPING_ADDRESS.city}, ${SHIPPING_ADDRESS.province}`)).toBeVisible()
+    await expect(orderDetail.getByText(SHIPPING_ADDRESS.countryName)).toBeVisible()
+  })
+
+  test('an order delivered where the store no longer sells still names the country', async ({
+    page,
+    navigate,
+    factories,
+  }) => {
+    await using customer = await factories.create.customer({ hasAccount: true })
+    // France is in the ISO table and in no region: the store does not sell there, and the
+    // checkout can no longer address a parcel to it. This is the record of one placed when it
+    // could — which is the only way the storefront ever holds a country it does not sell to.
+    await using order = await factories.create.order({
+      order: { customerId: customer.id, email: customer.email, currencyCode: 'usd' },
+      shippingAddress: { countryCode: 'fr', address1: '8 Rue de Rivoli', city: 'Paris', postalCode: '75001' },
+    })
+
+    await navigate({ to: '/login' })
+    await page.getByLabel('Email').fill(customer.email)
+    await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
+    await page.getByRole('button', { name: /sign in/i }).click()
+    await expect(page).toHaveURL('/en-US/account', { timeout: 15_000 })
+
+    await navigate({ to: '/account/orders/$orderId', params: { orderId: order.id } })
+
+    // The name, resolved through the whole ISO table rather than the markets the store sells in
+    // today. Reading the sellable list here would have printed "FR" — a shopper's own receipt
+    // turning into a code because the merchant closed a market afterwards.
+    const orderDetail = page.getByRole('main')
+    await expect(orderDetail.getByText('8 Rue de Rivoli')).toBeVisible({ timeout: BACKEND_TIMEOUT })
+    await expect(orderDetail.getByText('France')).toBeVisible()
+    await expect(orderDetail.getByText('FR', { exact: true })).toHaveCount(0)
   })
 })

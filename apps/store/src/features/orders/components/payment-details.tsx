@@ -1,7 +1,6 @@
-import { formatPrice } from '@proteus/ui'
-import { formatDatetime } from '@proteus/utils'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
 import { Panel } from '#/components/panel'
+import { useFormatters } from '#/lib/use-formatters'
 
 /**
  * What was paid and when, and nothing that implies how. The order module stores no card brand
@@ -9,7 +8,8 @@ import { Panel } from '#/components/panel'
  * over a status was a lie of placement.
  */
 export function PaymentDetails({ order }: { order: StoreOrderResponseOrder }) {
-  const { headline, detail } = paymentLines(order)
+  const formatters = useFormatters()
+  const { headline, detail } = paymentLines(order, formatters)
 
   return (
     <Panel title="Payment">
@@ -34,7 +34,10 @@ export function PaymentDetails({ order }: { order: StoreOrderResponseOrder }) {
  * timestamp — so it is only printed where the two coincide. An order still awaiting payment has
  * no moment to name, and printing the amount "on" the day it was placed would read as paid.
  */
-function paymentLines(order: StoreOrderResponseOrder): { headline: string; detail: string } {
+function paymentLines(
+  order: StoreOrderResponseOrder,
+  { formatPrice, formatDatetime }: ReturnType<typeof useFormatters>,
+): { headline: string; detail: string } {
   const total = formatPrice(order.totals.orderTotal, order.currencyCode)
   const captured = { headline: 'Payment received', detail: `${total} on ${formatDatetime(order.createdAt)}` }
 
