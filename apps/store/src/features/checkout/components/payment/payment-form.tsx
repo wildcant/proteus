@@ -17,7 +17,7 @@ export const PaymentForm = withForm({
   ...checkoutFormOpts,
   props: {} as PaymentFormProps,
   render: function PaymentForm({ form, cart }) {
-    const { data, isLoading } = usePaymentProviders()
+    const { data, isLoading } = usePaymentProviders(cart.id)
     const { createPaymentSession } = usePaymentSession({
       collectionValues: { cartId: cart.id },
     })

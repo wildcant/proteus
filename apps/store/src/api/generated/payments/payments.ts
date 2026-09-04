@@ -13,14 +13,14 @@ import { fetcher } from '../../fetcher.ts';
 
 
   /**
- * @summary List enabled payment providers
+ * @summary List the payment providers the cart’s region offers
  */
-export const listStorePaymentProviders = (
-
+export const listStoreCartPaymentProviders = (
+    id: string,
  ) => {
       return fetcher<StorePaymentProviderListResponse>(
-      {url: `/store/payment-providers`, method: 'GET'
+      {url: `/store/carts/${id}/payment-providers`, method: 'GET'
     },
       );
     }
-  export type ListStorePaymentProvidersResult = NonNullable<Awaited<ReturnType<typeof listStorePaymentProviders>>>
+  export type ListStoreCartPaymentProvidersResult = NonNullable<Awaited<ReturnType<typeof listStoreCartPaymentProviders>>>

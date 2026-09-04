@@ -7,6 +7,7 @@ import * as customerRoutes from './[id]/customer/route.js'
 import * as inventoryRoutes from './[id]/inventory/route.js'
 import * as lineItemByIdRoutes from './[id]/line-items/[lineId]/route.js'
 import * as lineItemRoutes from './[id]/line-items/route.js'
+import * as paymentProviderRoutes from './[id]/payment-providers/route.js'
 import * as cartByIdRoutes from './[id]/route.js'
 import * as shippingMethodRoutes from './[id]/shipping-methods/route.js'
 import * as shippingOptionRoutes from './[id]/shipping-options/route.js'
@@ -90,6 +91,17 @@ export default [
     summary: 'List available shipping options for a cart',
     tags: [Tags.CARTS],
     output: shippingOptionRoutes.GetOutput,
+  },
+  {
+    method: 'GET',
+    matcher: '/store/carts/:id/payment-providers',
+    handler: paymentProviderRoutes.GET,
+    auth: 'optional',
+    input: paymentProviderRoutes.GetInput,
+    operationId: 'listStoreCartPaymentProviders',
+    summary: 'List the payment providers the cart’s region offers',
+    tags: [Tags.PAYMENTS],
+    output: paymentProviderRoutes.GetOutput,
   },
   {
     method: 'POST',
