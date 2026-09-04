@@ -1,12 +1,15 @@
-import type { TestApi } from '@tests/setup/create-api.js'
+import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import type * as productByIdRoutes from '../[id]/route.js'
 import productDefinitions from '../definitions.js'
 import type * as productRoutes from '../route.js'
 
 type Services = Fixtures['service']
+type Factories = Fixtures['factories']
 
 let api: TestApi
+/** Held for the market specs below, which sell the `us` country through this region. */
+let usRegionId: string
 
 /**
  * The store's default market, because every route here is priced: with no region to fall back on,
@@ -17,6 +20,7 @@ let api: TestApi
 test.beforeEach(async ({ createApi, factories }) => {
   api = await createApi({ definitions: productDefinitions })
   const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
+  usRegionId = region.id
   await factories.create.store({ defaultRegionId: region.id })
 })
 
@@ -298,6 +302,21 @@ test.describe('GET /store/products/:id options', () => {
 
 test.describe('GET /store/products pagination', () => {
   /**
+   * The listing carries only what the request's currency can price, so a pager fixture needs a
+   * priced variant on every row — an unpriced catalogue leaves no page to assert an order
+   * against. The price factory writes USD, which is the currency these specs resolve.
+   */
+  const priceEveryProduct = async (service: Services, productIds: string[]) => {
+    const variants = await Promise.all(
+      productIds.map((productId) => service.create.productVariants(api.container, productId)),
+    )
+    await service.create.variantPrices(
+      api.container,
+      variants.flat().map((variant) => variant.id),
+    )
+  }
+
+  /**
    * Ten published products written in one `createProducts` call. `timestamps` defaults `createdAt`
    * to `now()`, which Postgres resolves to transaction time, so every row here shares one
    * timestamp to the microsecond — the collision an offset pager has to survive.
@@ -306,6 +325,10 @@ test.describe('GET /store/products pagination', () => {
     const products = await service.create.products(
       api.container,
       Array.from({ length: 10 }, () => ({ status: 'published' as const })),
+    )
+    await priceEveryProduct(
+      service,
+      products.map((product) => product.id),
     )
     return products.map((product) => product.id)
   }
@@ -358,13 +381,149 @@ test.describe('GET /store/products pagination', () => {
   test('a single-column order still parses the way it always did', async ({ expect, service }) => {
     // Titles are the subject, so they are given rather than faked — and they are plain ASCII so
     // the expected order does not depend on the database's collation.
-    await service.create.products(
+    const products = await service.create.products(
       api.container,
       ['Charlie', 'Alpha', 'Bravo'].map((title) => ({ title, status: 'published' as const })),
+    )
+    await priceEveryProduct(
+      service,
+      products.map((product) => product.id),
     )
 
     const response = await api.get<typeof productRoutes.GetOutput>('/store/products?limit=10&order=title')
 
     expect(response.body.products.map((product) => product.title)).toEqual(['Alpha', 'Bravo', 'Charlie'])
+  })
+})
+
+/**
+ * Two markets, and a product each of them can and cannot price.
+ *
+ * The admin writes one price row per variant, hardcoded to USD, so a product with no price in
+ * the shopper's currency is the ordinary outcome for anything a merchant adds — not the
+ * impossible one it was while every product had a USD price and every request resolved USD.
+ * The seed prices every variant in both currencies, which is exactly why nothing else here
+ * sees this.
+ */
+test.describe('GET /store/products across markets', () => {
+  test.beforeEach(async ({ factories }) => {
+    await factories.create.country({ id: 'us', regionId: usRegionId, localeCode: 'en-US' })
+    const colombia = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', regionId: colombia.id, localeCode: 'es-CO' })
+  })
+
+  /**
+   * `usdOnly` is what the admin produces today. `bothMarkets` is the seeded shape, and it is the
+   * control: it says the filter drops one product rather than emptying the catalogue.
+   */
+  const createCatalogue = async (factories: Factories) => {
+    const usdOnly = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
+    const bothMarkets = await factories.create.productWithPricing({
+      prices: [
+        { amount: '120', currencyCode: 'usd' },
+        { amount: '480000', currencyCode: 'cop' },
+      ],
+    })
+    return { usdOnly, bothMarkets }
+  }
+
+  test('omits a product the market cannot price', async ({ expect, factories }) => {
+    const { usdOnly, bothMarkets } = await createCatalogue(factories)
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=co')
+
+    const ids = response.body.products.map((product) => product.id)
+    expect(ids).not.toContain(usdOnly.id)
+    expect(ids).toContain(bothMarkets.id)
+  })
+
+  test('counts what it returns, so no page promises a row the shopper cannot reach', async ({ expect, factories }) => {
+    await createCatalogue(factories)
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=co')
+
+    expect(response.body.count).toBe(1)
+    expect(response.body.products).toHaveLength(1)
+  })
+
+  test('lists both products in the market both are priced in', async ({ expect, factories }) => {
+    const { usdOnly, bothMarkets } = await createCatalogue(factories)
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=us')
+
+    const ids = response.body.products.map((product) => product.id)
+    expect(ids).toEqual(expect.arrayContaining([usdOnly.id, bothMarkets.id]))
+    expect(response.body.count).toBe(2)
+  })
+
+  test("quotes the starting price in each market's own currency", async ({ expect, factories }) => {
+    const { bothMarkets } = await createCatalogue(factories)
+
+    const us = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=us')
+    const co = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=co')
+
+    expect(us.body.products.find((product) => product.id === bothMarkets.id)?.startingPrice).toMatchObject({
+      currencyCode: 'usd',
+      calculatedAmount: '120',
+    })
+    expect(co.body.products.find((product) => product.id === bothMarkets.id)?.startingPrice).toMatchObject({
+      currencyCode: 'cop',
+      calculatedAmount: '480000',
+    })
+  })
+})
+
+test.describe('GET /store/products/:id across markets', () => {
+  test.beforeEach(async ({ factories }) => {
+    await factories.create.country({ id: 'us', regionId: usRegionId, localeCode: 'en-US' })
+    const colombia = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', regionId: colombia.id, localeCode: 'es-CO' })
+  })
+
+  test('refuses a product with no price in the market, as not-found', async ({ expect, factories }) => {
+    // Every variant would be dropped for having no price, leaving a page with no amount, no
+    // picker and nothing to add to a cart. The store does not sell it here, so it says so.
+    const usdOnly = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
+    const response = await api.get<ApiErrorBody>(`/store/products/${usdOnly.id}?countryCode=co`)
+
+    expect(response.status).toBe(404)
+    expect(response.body.type).toBe('not_found')
+  })
+
+  test('answers an unpriced product exactly as it answers an unknown id', async ({ expect, factories }) => {
+    const usdOnly = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
+
+    const unpriced = await api.get<ApiErrorBody>(`/store/products/${usdOnly.id}?countryCode=co`)
+    const unknown = await api.get<ApiErrorBody>('/store/products/prod_does_not_exist?countryCode=co')
+
+    expect(unpriced.status).toBe(unknown.status)
+    expect(unpriced.body.type).toBe(unknown.body.type)
+    expect(unpriced.body.code).toBe(unknown.body.code)
+  })
+
+  test('returns the same product in the market it is priced in', async ({ expect, factories }) => {
+    const usdOnly = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
+    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${usdOnly.id}?countryCode=us`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.product.variants).toHaveLength(1)
+    expect(response.body.product.variants[0]?.calculatedPrice).toMatchObject({
+      currencyCode: 'usd',
+      calculatedAmount: '100',
+    })
+  })
+
+  test('a product priced in both markets is unaffected in either', async ({ expect, factories }) => {
+    const bothMarkets = await factories.create.productWithPricing({
+      prices: [
+        { amount: '120', currencyCode: 'usd' },
+        { amount: '480000', currencyCode: 'cop' },
+      ],
+    })
+
+    const us = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${bothMarkets.id}?countryCode=us`)
+    const co = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${bothMarkets.id}?countryCode=co`)
+
+    expect(us.status).toBe(200)
+    expect(co.status).toBe(200)
+    expect(us.body.product.variants[0]?.calculatedPrice.calculatedAmount).toBe('120')
+    expect(co.body.product.variants[0]?.calculatedPrice.calculatedAmount).toBe('480000')
   })
 })
