@@ -8,8 +8,16 @@ type Services = Fixtures['service']
 
 let api: TestApi
 
-test.beforeEach(async ({ createApi }) => {
+/**
+ * The store's default market, because every route here is priced: with no region to fall back on,
+ * `setPricingContext` has no currency to quote and refuses the request before the handler runs.
+ * USD is what the price factories write, so these specs read the same as they did when the
+ * currency was hardcoded.
+ */
+test.beforeEach(async ({ createApi, factories }) => {
   api = await createApi({ definitions: productDefinitions })
+  const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
+  await factories.create.store({ defaultRegionId: region.id })
 })
 
 test.describe('GET /store/products/:id', () => {

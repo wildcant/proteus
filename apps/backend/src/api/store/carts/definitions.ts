@@ -1,5 +1,6 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
+import { StorePricingContextParams } from '@proteus/http-schemas/store'
 import { setPricingContext } from '../middlewares.js'
 import * as completeRoutes from './[id]/complete/route.js'
 import * as customerRoutes from './[id]/customer/route.js'
@@ -18,7 +19,7 @@ export default [
     handler: cartRoutes.POST,
     auth: 'optional',
     middlewares: [setPricingContext()],
-    input: cartRoutes.PostInput,
+    input: { ...cartRoutes.PostInput, contextQuery: StorePricingContextParams },
     operationId: 'createStoreCart',
     summary: 'Create a cart',
     tags: [Tags.CARTS],

@@ -29,7 +29,8 @@ export type HttpRequest<T = object> = {
   scope: AwilixContainer
   headers: Record<string, string>
   authContext?: AuthContext
-  pricingContext?: { currencyCode: string }
+  /** The market this request is priced in, resolved by `setPricingContext`. */
+  pricingContext?: { currencyCode: string; regionId: string }
 }
 
 export type HttpResult<T = unknown> = {

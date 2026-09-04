@@ -10,8 +10,8 @@ export const PostInput = { body: CreateCart }
 export const PostOutput = StoreCreateCartResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const currencyCode = req.pricingContext?.currencyCode
-  if (!currencyCode) {
+  const pricingContext = req.pricingContext
+  if (!pricingContext) {
     throw new AppError({
       type: ErrorTypes.INVALID_DATA,
       message: 'pricingContext missing — setPricingContext middleware not applied',
@@ -31,7 +31,16 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   }
 
   const { items, ...body } = req.body
-  const cart = await cartService.createCart({ ...body, currencyCode, customerId, email })
+  // The region is stamped on the cart, not just its currency: it is what later requests read back
+  // when the shopper returns without a country segment, and what a repricing slice will compare
+  // against to decide the cart has changed market.
+  const cart = await cartService.createCart({
+    ...body,
+    currencyCode: pricingContext.currencyCode,
+    regionId: pricingContext.regionId,
+    customerId,
+    email,
+  })
 
   // Through the workflow rather than straight into `createCart`, so a cart born with items is
   // priced and merged by the same rules as one filled a click at a time.
