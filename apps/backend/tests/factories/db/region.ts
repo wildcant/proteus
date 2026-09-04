@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
-import type { CreateCountry, CreateRegion } from '../../../src/schema.js'
-import { countryTable, regionTable } from '../../../src/schema.js'
+import type { CreateCountry, CreateRegion, CreateRegionPaymentProvider } from '../../../src/schema.js'
+import { countryTable, regionPaymentProviderTable, regionTable } from '../../../src/schema.js'
 import { db } from '../../db/client.js'
 
 // --- Region ---
@@ -75,4 +75,27 @@ export async function createCountry(overrides: Partial<CreateCountry> & Pick<Cre
 
 export async function deleteCountryById(id: string) {
   await db.delete(countryTable).where(eq(countryTable.id, id))
+}
+
+// --- RegionPaymentProvider ---
+
+/**
+ * Which payment providers a region offers. Both sides are required — a link means nothing without
+ * the pair it names — so this takes them rather than inventing ids no provider row would match.
+ */
+export async function createRegionPaymentProvider(values: CreateRegionPaymentProvider) {
+  const result = await db.insert(regionPaymentProviderTable).values(values).returning()
+  const link = result[0]
+  if (!link) throw new Error('RegionPaymentProvider insert returned no rows')
+
+  return {
+    ...link,
+    [Symbol.asyncDispose]: async () => {
+      await deleteRegionPaymentProviderById(link.id)
+    },
+  }
+}
+
+export async function deleteRegionPaymentProviderById(id: string) {
+  await db.delete(regionPaymentProviderTable).where(eq(regionPaymentProviderTable.id, id))
 }

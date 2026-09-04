@@ -1,10 +1,11 @@
-import { formatPrice } from '@proteus/ui'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { useSuspenseProduct } from '#/features/products/api/products'
 import { AddToCart } from '#/features/products/components/add-to-cart'
 import { ProductGallery } from '#/features/products/components/product-gallery'
 import { ProductSpecs } from '#/features/products/components/product-specs'
 import { VariantPicker } from '#/features/products/components/variant-picker'
+import { useFormatters } from '#/lib/use-formatters'
+import { useMarket } from '#/lib/use-market'
 
 const route = getRouteApi('/_main/products/$productId')
 
@@ -12,7 +13,9 @@ export function ProductDetail() {
   const { productId } = route.useParams()
   const { variant: variantId } = route.useSearch()
   const navigate = route.useNavigate()
-  const { product } = useSuspenseProduct(productId)
+  const { current } = useMarket()
+  const { formatPrice } = useFormatters()
+  const { product } = useSuspenseProduct(productId, { countryCode: current.iso2 })
 
   if (!product) {
     return (

@@ -55,10 +55,13 @@ test.describe('Orders', () => {
     await expect(page.getByText(product.optionValue.value)).toBeVisible()
 
     // The address the checkout submitted, back on the record of it — including the country as a
-    // name rather than the `US` the page used to print. Asserted against the page rather than a
-    // scoped panel: this is the only address on it.
-    await expect(page.getByText(SHIPPING_ADDRESS.address1)).toBeVisible()
-    await expect(page.getByText(`${SHIPPING_ADDRESS.city}, ${SHIPPING_ADDRESS.province}`)).toBeVisible()
-    await expect(page.getByText(SHIPPING_ADDRESS.countryName)).toBeVisible()
+    // name rather than the `US` the page used to print. Scoped to `main`: the footer's market
+    // control names the same country, so an unscoped read now matches the shopper's address and
+    // the market they are buying in. Narrower than it was, not weaker — it is the address on the
+    // order this asserts, and `main` is where that lives.
+    const orderDetail = page.getByRole('main')
+    await expect(orderDetail.getByText(SHIPPING_ADDRESS.address1)).toBeVisible()
+    await expect(orderDetail.getByText(`${SHIPPING_ADDRESS.city}, ${SHIPPING_ADDRESS.province}`)).toBeVisible()
+    await expect(orderDetail.getByText(SHIPPING_ADDRESS.countryName)).toBeVisible()
   })
 })

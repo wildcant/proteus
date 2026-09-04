@@ -1,20 +1,32 @@
 /**
- * A Market is the country a shopper is shopping in, named by its locale code. The locale code is
- * one field doing three jobs: the URL segment, the document language attribute, and the tag every
- * number and date formatter is handed.
+ * A Market is the country a shopper is shopping in. It carries three fields and each does a
+ * different job: `localeCode` is the URL segment, the document language attribute, and the tag
+ * every number and date formatter is handed; `iso2` is what the store API selects a region — and
+ * therefore a currency — by; `displayName` is what the market control shows.
+ *
+ * They travel together because they are one row of the country endpoint's answer, and splitting
+ * them into three lists would mean three chances to hand one market's name to another's prices.
  *
  * Everything here is pure and isomorphic — the server resolves a market per request, the client
  * reads the one the server resolved, and both need the same parsing.
  */
+export type Market = {
+  /** BCP 47 tag, e.g. `es-CO`. The URL segment, the language attribute and the formatting tag. */
+  localeCode: string
+  /** ISO 3166-1 alpha-2, lowercased. What the store API prices a request in. */
+  iso2: string
+  /** The country as a shopper reads it. What the market control lists. */
+  displayName: string
+}
 
 /**
- * The market served without a URL prefix, and the one every fallback lands on.
+ * The market served when the store has nothing else to go on, and the one every fallback lands on.
  *
  * Compiled in rather than fetched because it is the answer when the fetch itself fails: a default
  * that can only be learned from the country endpoint is no default at all. The backend owns which
  * markets exist; this owns only which one a storefront with no other information shows.
  */
-export const DEFAULT_LOCALE_CODE = 'en-US'
+export const DEFAULT_MARKET: Market = { localeCode: 'en-US', iso2: 'us', displayName: 'United States' }
 
 /** Where the resolved locale code is persisted, so a later visit to `/` lands on the same market. */
 export const MARKET_COOKIE = 'proteus_store_market'
@@ -23,19 +35,19 @@ export const MARKET_COOKIE = 'proteus_store_market'
 const MARKET_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
 /**
- * What `getRouter` hands the rewrite, the document and the shell script.
+ * What `getRouter` hands the rewrite, the document, the shell script and every priced request.
  *
- * `localeCode` is mutable because the rewrite's `input` is what discovers it: the router parses
- * the location after it is created, so the market is not known at construction time. One object
- * per router, and the server builds a router per request, so nothing is shared across shoppers.
+ * `current` is mutable because the rewrite's `input` is what discovers it: the router parses the
+ * location after it is created, so the market is not known at construction time. One object per
+ * router, and the server builds a router per request, so nothing is shared across shoppers.
  */
 export type MarketContext = {
   /** The market this router is serving. */
-  localeCode: string
-  /** Every locale code that is a routable URL segment. Anything else is a not-found. */
-  localeCodes: ReadonlyArray<string>
+  current: Market
+  /** Every market the store sells in: the routable URL segments, and the control's options. */
+  markets: ReadonlyArray<Market>
   /**
-   * Whether `localeCode` came from the URL or is still the default standing in for one.
+   * Whether `current` came from the URL or is still the default standing in for one.
    *
    * `output` prefixes only when this is true. A path the router is answering with a not-found
    * never resolved a market, and prefixing it would move the not-found to `/en-US/fr-FR` — a
@@ -44,13 +56,19 @@ export type MarketContext = {
   resolvedFromUrl: boolean
 }
 
-/** The global the server writes into the document so the client router resolves the same market. */
+/**
+ * The global the server writes into the document so the client router resolves the same markets.
+ *
+ * The routable set only — not which market the document is in. That one the client reads out of
+ * its own URL, the same way the server did, so there is no second answer in the page that a later
+ * navigation could leave stale.
+ */
 export const MARKET_GLOBAL = '__PROTEUS_MARKET__'
 
 declare global {
   // biome-ignore lint/style/useConsistentTypeDefinitions: augmenting a global needs an interface
   interface Window {
-    [MARKET_GLOBAL]?: { localeCode: string; localeCodes: Array<string> }
+    [MARKET_GLOBAL]?: { markets: Array<Market> }
   }
 }
 
@@ -63,16 +81,34 @@ declare global {
  */
 export function splitMarketSegment(
   pathname: string,
-  localeCodes: ReadonlyArray<string>,
-): { localeCode: string; rest: string } | undefined {
+  markets: ReadonlyArray<Market>,
+): { market: Market; rest: string } | undefined {
   const [, first = '', ...remainder] = pathname.split('/')
-  if (!localeCodes.includes(first)) return undefined
-  return { localeCode: first, rest: `/${remainder.join('/')}` }
+  const market = markets.find((candidate) => candidate.localeCode === first)
+  if (!market) return undefined
+  return { market, rest: `/${remainder.join('/')}` }
 }
 
 /** Prefixes a router pathname with a market segment. The inverse of `splitMarketSegment`. */
 export function joinMarketSegment(localeCode: string, pathname: string): string {
   return pathname === '/' ? `/${localeCode}` : `/${localeCode}${pathname}`
+}
+
+/**
+ * The address the same page has in another market: same path, same search, different segment.
+ *
+ * Takes the browser's URL rather than the router's, because the segment has to be swapped on the
+ * address a document request will be made to — and it is the browser's URL that carries one at all.
+ * A path that has no market segment yet keeps all of itself, so nothing is lost switching from an
+ * address the middleware has not placed.
+ */
+export function marketHref(
+  localeCode: string,
+  location: { pathname: string; search: string },
+  markets: ReadonlyArray<Market>,
+): string {
+  const split = splitMarketSegment(location.pathname, markets)
+  return `${joinMarketSegment(localeCode, split?.rest ?? location.pathname)}${location.search}`
 }
 
 /**

@@ -1,19 +1,10 @@
 import { CartAddressInput } from '@proteus/http-schemas/store'
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSet,
-  formatPrice,
-  RadioGroup,
-  RadioGroupItem,
-  Skeleton,
-} from '@proteus/ui'
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { useSelector } from '@tanstack/react-form'
 import type { AddStoreCartShippingMethodBody } from '#/api/generated/model'
 import { useSelectShippingMethod, useShippingOptions } from '#/features/checkout/api/checkout'
 import { withForm } from '#/lib/form-hook'
+import { useFormatters } from '#/lib/use-formatters'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
 import { checkoutFormOpts } from '../../hooks/use-checkout-form'
 
@@ -22,6 +13,7 @@ export const ShippingMethodForm = withForm({
   ...checkoutFormOpts,
   props: {} as ShippingMethodFormProps,
   render: function ShippingMethodForm({ form, cart, isAddressesLoading }) {
+    const { formatPrice } = useFormatters()
     const shippingAddress = useSelector(form.store, (state) => state.values.shippingAddress)
     const { success: isValidShippingAddress } = CartAddressInput.safeParse(shippingAddress)
 

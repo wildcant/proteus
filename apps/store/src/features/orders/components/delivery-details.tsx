@@ -1,7 +1,8 @@
-import { cn, formatPrice } from '@proteus/ui'
+import { cn } from '@proteus/ui'
 import type { StoreOrderAddress, StoreOrderResponseOrder } from '#/api/generated/model'
 import { countryName } from '#/components/form/countries'
 import { Panel } from '#/components/panel'
+import { useFormatters } from '#/lib/use-formatters'
 
 /**
  * The address in full — `address2`, `province` and `phone` included, and the country as a name.
@@ -11,6 +12,7 @@ import { Panel } from '#/components/panel'
  * it used to have were never going to be three columns.
  */
 export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
+  const { formatPrice } = useFormatters()
   const address = order.shippingAddress
   const shippingMethod = order.shippingMethods[0]
 

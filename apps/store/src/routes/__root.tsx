@@ -14,15 +14,16 @@ import appCss from '../styles.css?url'
 const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`
 
 /**
- * Hands the market the server resolved to the client router, which is created before any route
- * has loaded and so has nowhere else to read it from. A plain script rather than a module, so it
+ * Hands the markets the server resolved to the client router, which is created before any route
+ * has loaded and so has nowhere else to read them from. A plain script rather than a module, so it
  * runs while the document is parsed — the entry module is deferred and runs after it.
  *
- * `<` is escaped because a `</script>` inside a string literal ends the element; locale codes
- * cannot contain one today, and this is what keeps that true if the shape ever grows.
+ * `<` is escaped because a `</script>` inside a string literal ends the element. This now carries
+ * merchant-authored country names rather than locale codes alone, so the escape has stopped being
+ * a precaution against a shape that might grow and become the thing keeping the document valid.
  */
 function marketInitScript(market: MarketContext): string {
-  const payload = JSON.stringify({ localeCode: market.localeCode, localeCodes: market.localeCodes })
+  const payload = JSON.stringify({ markets: market.markets })
   return `window.${MARKET_GLOBAL}=${payload.replace(/</g, '\\u003c')};`
 }
 
@@ -84,7 +85,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     // The locale code is the language tag. Until catalogues land, es-CO serves English under a
     // Spanish tag: a known trade-off, taken because it becomes correct the day the catalogues
     // exist, where hardcoding English would be a flag someone has to remember to flip.
-    <html lang={market.localeCode} suppressHydrationWarning>
+    <html lang={market.current.localeCode} suppressHydrationWarning>
       <head>
         {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Tanstack start default */}
         {/* biome-ignore lint/style/useNamingConvention: React API */}

@@ -5,6 +5,7 @@ import { SearchBestSellers } from '#/components/header/search-best-sellers'
 import { useProducts } from '#/features/products/api/products'
 import { ProductGrid } from '#/features/products/components/product-grid'
 import { useDebounce } from '#/hooks/use-debounce'
+import { useMarket } from '#/lib/use-market'
 
 type SearchResultsProps = {
   /** The live field value. Debounced here rather than by the caller, so the field stays responsive. */
@@ -20,12 +21,13 @@ type SearchResultsProps = {
 export function SearchResults({ term }: SearchResultsProps) {
   const trimmed = term.trim()
   const [debouncedTerm, setDebouncedTerm] = useState('')
+  const { current } = useMarket()
 
   // Clearing the field skips the delay: waiting 250ms to hide results the shopper just deleted
   // reads as lag, where waiting to *show* results reads as the query working.
   useDebounce(() => setDebouncedTerm(trimmed), trimmed ? SEARCH_DEBOUNCE_MS : 0, [trimmed])
   const { products } = useProducts(
-    { q: debouncedTerm, limit: SEARCH_RESULTS_LIMIT },
+    { q: debouncedTerm, limit: SEARCH_RESULTS_LIMIT, countryCode: current.iso2 },
     { enabled: debouncedTerm.length > 0 },
   )
 

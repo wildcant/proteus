@@ -39,12 +39,14 @@ import {
 import {
   createCountry,
   createRegion,
+  createRegionPaymentProvider,
   createShippingOptionWithZone,
   createStore,
   createStoreCurrency,
   generateCustomer,
   generateProduct,
   generateUser,
+  setPaymentProviderEnabled,
 } from '../factories/db/index.js'
 import {
   generateCreateFulfillmentSetDTO,
@@ -211,11 +213,17 @@ export type Fixtures = {
     create: {
       region: typeof createRegion
       country: typeof createCountry
+      /** Which payment providers a region offers. The providers themselves are seeded by the
+       *  payment module's loader when the container boots, so a test links to them by id. */
+      regionPaymentProvider: typeof createRegionPaymentProvider
       store: typeof createStore
       storeCurrency: typeof createStoreCurrency
       /** A shipping option and the whole zone chain that makes it offerable. Shared with the
        *  browser suite, which reaches the same factory through its own fixtures. */
       shippingOptionWithZone: typeof createShippingOptionWithZone
+    }
+    update: {
+      paymentProviderEnabled: typeof setPaymentProviderEnabled
     }
   }
   /** Request bodies for the HTTP layer, grouped by the API scope they belong to — the same split
@@ -413,9 +421,13 @@ export const test = testBase.extend<Fixtures>({
       create: {
         region: createRegion,
         country: createCountry,
+        regionPaymentProvider: createRegionPaymentProvider,
         store: createStore,
         storeCurrency: createStoreCurrency,
         shippingOptionWithZone: createShippingOptionWithZone,
+      },
+      update: {
+        paymentProviderEnabled: setPaymentProviderEnabled,
       },
     })
   },
