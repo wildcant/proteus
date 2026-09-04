@@ -1,6 +1,5 @@
-import { NativeSelectOption, RouteDrawer } from '@proteus/ui'
+import { RouteDrawer } from '@proteus/ui'
 import { Button } from '#/components/button'
-import { CountryOptions } from '#/components/form/country-options'
 import { Form } from '#/components/form/form.tsx'
 import { addressFormOpts } from '#/features/address/form-values'
 import { withForm } from '#/lib/form-hook'
@@ -52,14 +51,10 @@ export const AddressForm = withForm({
               <form.AppField name="city">
                 {(field) => <field.TextField label="City" autoComplete="address-level2" />}
               </form.AppField>
-              <form.AppField name="countryCode">
-                {(field) => (
-                  <field.SelectField label="Country">
-                    <NativeSelectOption value="">Select country</NativeSelectOption>
-                    <CountryOptions />
-                  </field.SelectField>
-                )}
-              </form.AppField>
+              {/* Not a choice: the market the shopper is in is the country the store ships to,
+                  and an address book full of countries nothing can be sent to is a book of
+                  addresses that fail at the end of a checkout rather than at the start. */}
+              <form.AppField name="countryCode">{(field) => <field.DeliveryCountryField />}</form.AppField>
               <form.AppField name="province">
                 {(field) => <field.TextField label="State / Province" autoComplete="address-level1" />}
               </form.AppField>

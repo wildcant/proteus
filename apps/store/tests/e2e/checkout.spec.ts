@@ -310,4 +310,105 @@ test.describe('Checkout', () => {
     await trigger.click()
     await expect(page.getByText(product.title).filter({ visible: true })).toBeVisible()
   })
+
+  test('the picker offers only what this market delivers to, while the book keeps everything', async ({
+    page,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+    await using customer = await factories.create.customer({ hasAccount: true })
+    await using _home = await factories.create.customerAddress({
+      customerId: customer.id,
+      countryCode: 'us',
+      addressName: 'Home',
+      address1: '742 Evergreen Terrace',
+      city: 'Austin',
+      province: 'TX',
+      postalCode: '78701',
+      isDefaultShipping: true,
+      isDefaultBilling: true,
+    })
+    // The address the storefront can no longer be made to save, which is the point: a shopper who
+    // bought from Colombia before still has it, and is now shopping in the United States.
+    await using _abroad = await factories.create.customerAddress({
+      customerId: customer.id,
+      countryCode: 'co',
+      addressName: 'Bogotá office',
+      address1: 'Calle 93 #11-27',
+      city: 'Bogotá',
+      postalCode: '110221',
+    })
+
+    disposeCartAfterTest(page, factories, cleanup)
+
+    await navigate({ to: '/login' })
+    await page.getByLabel('Email').fill(customer.email)
+    await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
+    await page.getByRole('button', { name: /sign in/i }).click()
+    await expect(page).toHaveURL('/en-US/account', { timeout: 15000 })
+
+    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await page.getByRole('button', { name: /add to cart/i }).click()
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await expect(cartPanel).toBeVisible()
+    await cartPanel.getByRole('link', { name: /checkout/i }).click()
+
+    // Only the deliverable one is offered. Listing the other would be inviting a shopper to fill
+    // in a whole checkout before being told the store cannot ship there.
+    await expect(page.getByText('Ship to')).toBeVisible()
+    await expect(page.getByText('742 Evergreen Terrace, Austin, TX, 78701, US')).toBeVisible()
+    await expect(page.getByText('Calle 93 #11-27, Bogotá, 110221, CO')).toHaveCount(0)
+
+    // The other half of the same claim, and the reason the filter is a filter rather than a
+    // deletion: the book still holds both. Nothing was thrown away to narrow the checkout.
+    await navigate({ to: '/account/addresses' })
+    await expect(page.getByText('742 Evergreen Terrace, Austin, TX, 78701, US').first()).toBeVisible()
+    await expect(page.getByText('Calle 93 #11-27, Bogotá, 110221, CO')).toBeVisible()
+  })
+
+  test('billing may be a country the store does not ship to', async ({ page, navigate, factories, cleanup }) => {
+    await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
+    await using shipping = await factories.create.shippingOptionWithZone()
+
+    disposeCartAfterTest(page, factories, cleanup)
+
+    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await page.getByRole('button', { name: /add to cart/i }).click()
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await expect(cartPanel).toBeVisible()
+    await cartPanel.getByRole('link', { name: /checkout/i }).click()
+
+    await page.getByLabel('Email').fill('billing-abroad@example.com')
+    await page.getByLabel('Email').blur()
+    await expect(page.getByRole('heading', { name: 'Delivery' })).toBeVisible()
+    await fillShippingAddress(page)
+
+    await page.getByRole('checkbox', { name: 'Billing address same as shipping' }).uncheck()
+    const billing = page.getByRole('region', { name: 'Billing address' })
+
+    // The whole ISO table, not the two markets the store sells in. A card is registered where its
+    // holder banks, and refusing that country would decline a card that was going to work.
+    const countries = billing.getByLabel('Country').locator('option')
+    await expect(countries.filter({ hasText: 'France' })).toHaveCount(1)
+    await expect(countries.filter({ hasText: 'Japan' })).toHaveCount(1)
+
+    await billing.getByLabel('Country').selectOption('fr')
+    await billing.getByLabel('Address', { exact: true }).fill('8 Rue de Rivoli')
+    await billing.getByLabel('City').fill('Paris')
+    await billing.getByLabel('Postal code').fill('75001')
+
+    const shippingRadio = page.getByRole('radio', { name: shipping.name })
+    await expect(shippingRadio).toBeVisible({ timeout: 10000 })
+    await shippingRadio.click()
+    await expect(page.getByRole('complementary').getByText('Enter shipping address')).toBeHidden({ timeout: 10000 })
+    await page.getByRole('radio', { name: /manual payment/i }).click()
+    await page.getByRole('button', { name: /place order/i }).click()
+
+    // Accepted — a French billing country did not stop the order. And the parcel still goes where
+    // the market said it would, which is what makes the two fields separate questions.
+    await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('main').getByText('United States')).toBeVisible()
+  })
 })

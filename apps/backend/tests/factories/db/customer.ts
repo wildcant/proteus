@@ -1,8 +1,14 @@
 import { faker } from '@faker-js/faker'
 import { eq, sql } from 'drizzle-orm'
 import { hashPassword } from '../../../src/providers/auth-emailpass/password.js'
-import type { CreateCustomer } from '../../../src/schema.js'
-import { authIdentityTable, authVerificationTable, customerTable, providerIdentityTable } from '../../../src/schema.js'
+import type { CreateCustomer, CreateCustomerAddress } from '../../../src/schema.js'
+import {
+  authIdentityTable,
+  authVerificationTable,
+  customerAddressTable,
+  customerTable,
+  providerIdentityTable,
+} from '../../../src/schema.js'
 import { db } from '../../db/client.js'
 
 export function generateCustomer(overrides?: Partial<CreateCustomer>): CreateCustomer {
@@ -70,4 +76,60 @@ export async function retrieveCustomer(filters: { email: string }) {
 export async function deleteCustomerById(customerId: string) {
   await db.delete(authIdentityTable).where(sql`app_metadata->>'customerId' = ${customerId}`)
   await db.delete(customerTable).where(eq(customerTable.id, customerId))
+}
+
+// --- CustomerAddress ---
+
+/**
+ * An address in a customer's book, written straight to the table.
+ *
+ * The storefront's own form is the other way to make one, and it is deliberately narrow: it saves
+ * addresses in the market the shopper is browsing and no other. A spec about what the book does
+ * with an address from somewhere else therefore cannot type one, and this is how it gets one.
+ *
+ * `countryCode` has no default worth guessing, so it is required: every caller of this is here
+ * because of which country the address is in.
+ */
+export function generateCustomerAddress(
+  overrides: Partial<CreateCustomerAddress> & Pick<CreateCustomerAddress, 'customerId' | 'countryCode'>,
+): CreateCustomerAddress {
+  return {
+    addressName: faker.location.streetAddress(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    company: null,
+    address1: faker.location.streetAddress(),
+    address2: null,
+    city: faker.location.city(),
+    province: null,
+    postalCode: faker.location.zipCode(),
+    phone: null,
+    isDefaultShipping: false,
+    isDefaultBilling: false,
+    metadata: null,
+    createdAt: faker.date.recent(),
+    updatedAt: faker.date.recent(),
+    deletedAt: null,
+    ...overrides,
+  }
+}
+
+export async function createCustomerAddress(
+  overrides: Partial<CreateCustomerAddress> & Pick<CreateCustomerAddress, 'customerId' | 'countryCode'>,
+) {
+  const values = generateCustomerAddress(overrides)
+  const result = await db.insert(customerAddressTable).values(values).returning()
+  const address = result[0]
+  if (!address) throw new Error('Customer address insert returned no rows')
+
+  return {
+    ...address,
+    [Symbol.asyncDispose]: async () => {
+      await deleteCustomerAddressById(address.id)
+    },
+  }
+}
+
+export async function deleteCustomerAddressById(addressId: string) {
+  await db.delete(customerAddressTable).where(eq(customerAddressTable.id, addressId))
 }

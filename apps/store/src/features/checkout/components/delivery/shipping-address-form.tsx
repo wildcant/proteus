@@ -1,4 +1,5 @@
 import { NativeSelectOption } from '@proteus/ui'
+import { useId } from 'react'
 import { CountryOptions } from '#/components/form/country-options'
 import { withForm } from '#/lib/form-hook'
 import { checkoutFormOpts } from '../../hooks/use-checkout-form'
@@ -8,23 +9,22 @@ import { checkoutFormOpts } from '../../hooks/use-checkout-form'
  * leaving the block writes them, which is the single request that unlocks the shipping rates —
  * see `CommitOnBlur` for why one handler covers all ten fields.
  *
- * Country comes first because it is the field the rest of the address is read against and the one
- * the rates depend on — filling the form top to bottom is then the same order as the promise the
- * shipping placeholder makes.
+ * Country still comes first, though it is no longer a question: it is the field the rest of the
+ * address is read against, and reading it before typing a postal code is what tells a shopper
+ * which shape of postal code the form is expecting. The market has already decided it, so the
+ * delivery country is shown rather than asked for; the billing one below is still a choice,
+ * because a card is registered where its holder banks.
  */
 export const ShippingAddressForm = withForm({
   ...checkoutFormOpts,
   render: function ShippingAddressForm({ form }) {
+    const billingHeadingId = useId()
+
     return (
       <div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <form.AppField name="shippingAddress.countryCode">
-            {(field) => (
-              <field.SelectField label="Country" className="sm:col-span-2">
-                <NativeSelectOption value="">Select country</NativeSelectOption>
-                <CountryOptions />
-              </field.SelectField>
-            )}
+            {(field) => <field.DeliveryCountryField className="sm:col-span-2" />}
           </form.AppField>
           <form.AppField name="shippingAddress.firstName">
             {(field) => <field.TextField label="First name" autoComplete="given-name" />}
@@ -72,8 +72,14 @@ export const ShippingAddressForm = withForm({
         <form.Subscribe selector={(state) => state.values.billingSameAsShipping}>
           {(sameAsBilling) =>
             !sameAsBilling && (
-              <div className="mt-6">
-                <h3 className="type-heading m-0 mb-4 text-ink">Billing address</h3>
+              // A named region, not a bare div: every label below repeats one from the delivery
+              // block above it, so without a name around them "Country" and "City" mean two
+              // things on one page — to a screen reader reading landmarks as much as to a test
+              // trying to reach the second of each.
+              <section aria-labelledby={billingHeadingId} className="mt-6">
+                <h3 id={billingHeadingId} className="type-heading m-0 mb-4 text-ink">
+                  Billing address
+                </h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <form.AppField name="billingAddress.countryCode">
                     {(field) => (
@@ -124,7 +130,7 @@ export const ShippingAddressForm = withForm({
                     )}
                   </form.AppField>
                 </div>
-              </div>
+              </section>
             )
           }
         </form.Subscribe>
