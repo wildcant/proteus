@@ -6,5 +6,7 @@
  */
 
 export type AdminCreateProductVariantPricesItem = {
+  /** @minLength 1 */
+  currencyCode: string;
   amount: string;
 };
