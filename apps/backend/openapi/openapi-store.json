@@ -2271,14 +2271,6 @@
               "type": "string"
             },
             "required": false,
-            "name": "countryCode",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
             "name": "province",
             "in": "query"
           },

@@ -40,6 +40,7 @@ import {
   createCountry,
   createRegion,
   createRegionPaymentProvider,
+  createShippingOptionWithZone,
   createStore,
   createStoreCurrency,
   generateCustomer,
@@ -217,6 +218,9 @@ export type Fixtures = {
       regionPaymentProvider: typeof createRegionPaymentProvider
       store: typeof createStore
       storeCurrency: typeof createStoreCurrency
+      /** A shipping option and the whole zone chain that makes it offerable. Shared with the
+       *  browser suite, which reaches the same factory through its own fixtures. */
+      shippingOptionWithZone: typeof createShippingOptionWithZone
     }
     update: {
       paymentProviderEnabled: typeof setPaymentProviderEnabled
@@ -420,6 +424,7 @@ export const test = testBase.extend<Fixtures>({
         regionPaymentProvider: createRegionPaymentProvider,
         store: createStore,
         storeCurrency: createStoreCurrency,
+        shippingOptionWithZone: createShippingOptionWithZone,
       },
       update: {
         paymentProviderEnabled: setPaymentProviderEnabled,
