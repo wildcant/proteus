@@ -1,5 +1,4 @@
-import { formatPrice, Skeleton } from '@proteus/ui'
-import { formatDate } from '@proteus/utils'
+import { Skeleton } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, PackageIcon } from 'lucide-react'
 import { Suspense, useState } from 'react'
@@ -9,6 +8,7 @@ import { Pagination } from '#/components/pagination'
 import { Panel } from '#/components/panel'
 import { ORDERS_DEFAULT_OFFSET, ordersPageQuery, useSuspenseOrders } from '#/features/orders/api/orders'
 import { fulfillmentLabels } from '#/features/orders/fulfillment-labels'
+import { useFormatters } from '#/lib/use-formatters'
 
 /**
  * The panel chrome renders straight away and only the list suspends, so paging does not blank
@@ -45,6 +45,8 @@ function OrderList() {
 }
 
 function OrderRow({ order }: { order: StoreOrderListResponseOrdersItem }) {
+  const { formatPrice, formatDate } = useFormatters()
+
   return (
     <Link
       to="/account/orders/$orderId"
