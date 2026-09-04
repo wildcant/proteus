@@ -5,9 +5,10 @@ import { useEffect } from 'react'
 import { Button } from '#/components/button'
 import { AddressLines } from '#/features/address/components/address-lines'
 import { withForm } from '#/lib/form-hook'
+import { useMarket } from '#/lib/use-market'
 import type { CheckoutAddress } from '../../checkout-address'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
-import { checkoutFormOpts } from '../../hooks/use-checkout-form'
+import { checkoutFormOpts, emptyShippingAddress } from '../../hooks/use-checkout-form'
 import { AddressActions } from './address-actions'
 
 type DeepNonNullableProps<T> = {
@@ -19,6 +20,8 @@ export const ShppingAddressPicker = withForm({
   ...checkoutFormOpts,
   props: {} as ShppingAddressPickerProps,
   render: function ShppingAddressPicker({ form, addresses, cartAddresses }) {
+    const { current } = useMarket()
+
     /**
      * Re-point the field at the live object: editing or deleting in the drawer rebuilds
      * `cartAddresses`, leaving what the field holds a stale twin. The selection is read rather than
@@ -30,8 +33,8 @@ export const ShppingAddressPicker = withForm({
       const live = cartAddresses.get(selected.id)
       if (live === selected) return
       // Deleted: there is nothing left to ship to, so the shopper picks again.
-      form.setFieldValue('shippingAddress', live ?? checkoutFormOpts.defaultValues.shippingAddress)
-    }, [cartAddresses, form])
+      form.setFieldValue('shippingAddress', live ?? emptyShippingAddress(current.iso2))
+    }, [cartAddresses, form, current.iso2])
 
     return (
       <FieldGroup>
