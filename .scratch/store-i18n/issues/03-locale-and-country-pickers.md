@@ -4,36 +4,38 @@ A shopper can reach `/es-US` after ticket 02, but only by typing it. This adds t
 
 Depends on `02-locale-routing-and-seo.md`.
 
-## Two controls, one of them inert
+## Already delivered by markets
 
-The reference storefront's footer bottom bar carries a country picker (`🇺🇸 US`) and a language
-picker (`Español`) side by side. We build both. Country is pinned to `US` until markets exist, so
-it renders with a single option and cannot be changed.
+**The country control shipped, and it is not inert.** `src/components/market-select.tsx` is a
+native `<select>` on the footer bottom bar listing every market the store sells in, straight off
+the country endpoint. Choosing one is a document navigation to that market's prefix, which is also
+what re-quotes the page in that market's currency. So the section below — two controls, one of them
+pinned to `US` with helper text explaining why it cannot be changed — describes a state the store
+is no longer in.
 
-That is a deliberate exception to the design-system rule against shipping controls with no
-destination. The reasoning: the country picker communicates *where the store ships*, which is real
-information even when there is only one answer, and the layout needs to be right before the second
-option exists. The footer link columns were dropped in that ticket because a link that silently
-returns you to the home page is a bug you walk into; a picker showing your only country is not.
+**The bottom bar already holds a control**, so the layout question this ticket raised is settled:
+the language picker slots in beside `MarketSelect`, at `src/components/footer.tsx:137`.
 
-Make it honest rather than broken: `aria-disabled`, a tooltip or helper text along the lines of
-"We currently ship to the United States only", and no dropdown that opens onto one item. Do not
-render a native `<select>` with a single `<option>` and call it done — a screen reader user should
-be told why it cannot be changed, not left to discover it.
+**The side-menu placement is still open.** `MarketSelect` renders only in the footer; nothing was
+added to `side-menu.tsx`. If mobile parity matters it is unresolved for both controls, not just
+the new one.
+
+Only the language picker is left. What follows applies to it.
 
 ## The language picker
 
 `src/components/locale-picker.tsx`, sibling of `theme-toggle.tsx` and modelled on it.
 
-The switch is a **document navigation**, not a client-side one:
+The switch is a **document navigation**, not a client-side one. `market-select.tsx` already does
+exactly this and is the model to copy:
 
 ```ts
-window.location.assign(localePath(next, router.state.location.href))
+window.location.assign(marketHref(next, window.location, markets))
 ```
 
-`router.state.location.href` is the *internal* href — the segment is already stripped, and search
-and hash come along. `router.navigate({ href, reloadDocument: true })` is the equivalent inside the
-router API; either is fine.
+Note it takes `window.location`, not `router.state.location`: the segment has to be swapped on the
+address the document request will be made to, and it is the browser's URL that carries one at all.
+`router.navigate({ href, reloadDocument: true })` is the equivalent inside the router API.
 
 Do **not** use `navigate({ to })`. The rewrite is fixed at router creation, so a client-side
 navigation would re-apply the old Locale's segment and land you back where you started.
@@ -47,10 +49,10 @@ looking for their language is scanning for the word they use for it.
 
 ## Placement
 
-The footer bottom bar, which renders at every width, and `side-menu.tsx:69` beside the theme toggle
-for mobile parity — the side menu is below-`lg` only, so a control living solely there is invisible
-to desktop shoppers. Build the bottom bar to hold two controls so the country picker slots in
-without a relayout.
+The footer bottom bar, which renders at every width and already carries `MarketSelect`, and
+`side-menu.tsx` beside the theme toggle for mobile parity — the side menu is below-`lg` only, so a
+control living solely there is invisible to desktop shoppers. If the side menu gets a language
+picker it should get the market control too, or the two standing choices are in different places.
 
 **No persistence.** Deliberate, and worth a comment at the call site so it is not "fixed" later. The
 URL is authoritative; a stored Locale that disagrees with the URL is how you get an `/es-US` link
@@ -68,11 +70,13 @@ design working, not a gap.
 1. `/es-US` — `<html lang="es-US">`, and a known Spanish nav string is visible.
 2. `/es-US/products` — an `ssr: true` route: same `lang`, and the `page.goto` response still carries
    `cache-control: public, max-age=300, stale-while-revalidate=3600`.
-3. The picker round-trips `/` → `/es-US` → `/`, preserving search params.
+3. The picker round-trips `/en-US` → `/es-US` → `/en-US`, preserving search params. Both ends carry
+   a prefix; there is no unprefixed address to round-trip through.
 
-Any row this needs comes from `factories.create.*` with `await using` inside the test. Never
-`beforeAll` — `playwright.config.ts` sets `fullyParallel: true`, so shared fixture data is a race
-between specs.
+`tests/e2e/markets.spec.ts` is the existing spec of this shape and shows the fixtures and the raw
+`page.goto` idiom in use. Any row this needs comes from `factories.create.*` with `await using`
+inside the test. Never `beforeAll` — `playwright.config.ts` sets `fullyParallel: true`, so shared
+fixture data is a race between specs.
 
 Assertion 1 cannot be written until ticket 05 has translated the nav. Either land 03 after 05, or
 write assertions 2 and 3 now and add the first when the chrome is translated — say which in the PR

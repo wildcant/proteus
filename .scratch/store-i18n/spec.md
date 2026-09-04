@@ -2,6 +2,12 @@
 
 **Status:** not started. Ticket 01 is the spike that decides whether the rest of this holds.
 
+Corrected after the markets feature shipped. Markets took the URL segment, the rewrite and the
+formatters — the parts of this plan that were about *where* a Locale lives rather than about
+translation — so several decisions below record what shipped instead of what was proposed. The
+remaining work is the translation itself, and it is unstarted. Corrected in place rather than
+re-planned: the plan is still the plan, but a reader now has to know the routing half is taken.
+
 Scope is **Store Copy** only, in the `CONTEXT.md` sense: text the storefront itself authors.
 **Merchant Text** — product titles, option values, shipping option names, API error messages — is
 the sibling feature in `.scratch/store-translations/`, which follows Medusa's Store API
@@ -44,11 +50,16 @@ So the Locale moves into the URL and the `i18n` instance becomes per-request.
 
 ## Decisions
 
-**The URL segment is `{language}-{COUNTRY}`, and English is unprefixed.** `/` is `en-US`;
-`/es-US` is Spanish. `/en-US` permanently redirects to `/` so the default has exactly one address.
-The reference storefront uses this shape, and a country picker is coming, so the two-part segment
-is adopted now even though country selects nothing yet — the URL is the expensive part to change
-later. Country is pinned to `US` until markets exist.
+**The URL segment is `{language}-{COUNTRY}`, and every market is prefixed.** `/en-US` is English,
+`/es-CO` is Colombian Spanish, and `/` is a router rather than a page: it resolves a market, then
+redirects to that market's prefix and never renders. The default is spelled the same way as every
+other market, so nothing downstream has to remember that one of them is written differently.
+
+The two-part segment shape was adopted here for a country picker that had not been built yet.
+Markets shipped first and took the segment: it now carries the market's Locale, one per sellable
+country, rather than a language with `US` pinned behind it. So a second *language* inside one
+market has no address yet — `es-US` alongside `en-US` is not a second market, and which of the two
+owns the segment is the open question this feature has to answer before it starts.
 
 **The country part is load-bearing for formatting, not just for future markets.** Verified: bare
 `es` resolves to European conventions — `Intl.NumberFormat('es').format(1234.56)` is `1234,56`, and
@@ -72,9 +83,11 @@ generated tree and `FileRouteTypes['to']` are untouched. `<Link>` renders `publi
 commits it, and `resolveRedirect` sets `Location` from it — so `throw redirect({ to: '/login' })`
 inside an `/es-US` page lands on `/es-US/login` with no change at the throw site.
 
-For `en-US` the rewrite factory returns `undefined`, so `parseLocation` takes its existing fast
-path and English behaviour is provably identical to today. That is what makes the string tickets
-verifiable: the nine existing specs must keep passing unmodified.
+The rewrite shipped with markets, in `src/router.tsx`, and it prefixes every market including the
+default — the "no rewrite for `en-US`" fast path this section originally rested on is gone. English
+is therefore no longer a provably untouched code path, and the e2e suite was updated for the
+prefix rather than kept unmodified. The string tickets need a different acceptance argument than
+"the nine existing specs pass unchanged".
 
 **The `i18n` instance lives in router context, created per request.** `getRouter()` becomes async
 and awaits the catalog. It already runs once per request on the server and once before hydration on
@@ -86,21 +99,33 @@ matches skip `beforeLoad` on hydration, so the client would hydrate against an u
 (`name: () => t\`…\``) does not save it: re-evaluating per render fixes staleness, not instance
 identity. Module-scope strings use `msg` descriptors instead.
 
-**The routable Locale set is static in the store.** `src/lib/i18n/locale.ts` owns it as a build-time
-constant, because routing must be resolvable synchronously at boot on every SSR request — fetching
-it would add a blocking round-trip to every render and make an unknown `/xx-YY` unanswerable until
-the API replied. A named divergence from Medusa, which keeps supported locales in `store_locale`.
+**The routable set is fetched, not compiled in.** This section originally decided the opposite —
+`src/lib/i18n/locale.ts` owning a build-time `LOCALES` constant, on the reasoning that routing must
+resolve synchronously at boot. Markets overturned it: the routable segments are exactly the
+countries the store sells to, and adding one must not need a storefront release. So
+`src/lib/sellable-markets.ts` reads them from `GET /store/countries` and caches the answer per
+server instance, the client reads what the server already resolved out of the document, and a
+compiled-in default market is what an unreachable backend falls back to. Not a per-render
+round-trip, which is what the original reasoning was actually guarding against.
+
 When the sibling feature lands, `GET /store/locales` answers "which Locales have Merchant Text
-translations" and gates picker entries; it never decides which URLs exist.
+translations" and gates picker entries; it still does not decide which URLs exist.
 
 **No persisted Locale preference.** The URL is authoritative. A stored Locale that contradicts it
 produces the "I shared an `/es-US` link and my colleague saw English" bug.
 
-**No `Accept-Language` negotiation.** Unprefixed URLs always serve English. Content-negotiating `/`
-requires `Vary: Accept-Language`, which fragments exactly the ISR cache the product routes were
-configured for; and Googlebot crawls with `Accept-Language: en` from US IPs, so auto-redirects are a
-documented way to get the Spanish pages never indexed. Matches Medusa, which also has no
-`Accept-Language` fallback.
+The market, as distinct from the Locale, *is* persisted — a cookie written when a market is
+resolved from the URL, and read only when the URL carries no market segment at all. That does not
+weaken the rule above: a prefixed link always renders its own market, and the cookie only decides
+where `/` sends a returning shopper.
+
+**No `Accept-Language` negotiation.** Content-negotiating an unprefixed URL requires
+`Vary: Accept-Language`, which fragments exactly the ISR cache the product routes were configured
+for; and Googlebot crawls with `Accept-Language: en` from US IPs, so auto-redirects are a documented
+way to get the Spanish pages never indexed. Matches Medusa, which also has no `Accept-Language`
+fallback. The decision stands; what has changed is that there are no unprefixed URLs left to
+negotiate — `/` resolves its market from the cookie, or from the store default, and never from a
+header.
 
 **Unknown segments 404.** `/fr-FR/products` matches nothing. Silently stripping it would create
 duplicate content at unbounded URLs.
@@ -119,9 +144,6 @@ informal, and `.scratch/store-design-system/spec.md` already settled on warm fir
 separately-landed tickets is tone drift, not mistranslation — commerce copy is short and highly
 patterned. Reviewing the `.po` diff is what keeps 220 messages sounding like one voice.
 
-**`deploy:static` is not supported.** `vite.config.static.ts` gets no Lingui wiring and will break
-if run. Say so in the file rather than leaving it to be discovered.
-
 ## Structure
 
 The runtime lives in `src/lib/i18n/`, a shared layer. Not `src/features/i18n/` — dependency-cruiser's
@@ -138,6 +160,14 @@ features, and ADR 0020 is explicit that a thing two features both need was never
 | `use-formatters.ts` | `useFormatters()` — price and date helpers bound to the active tag |
 | `zod-locale.ts` | `applyZodLocale` — client-only `z.config({ localeError })` |
 | `validation-messages.ts` | the English-string → `MessageDescriptor` table |
+
+Four of those rows now describe something that exists, built for markets rather than for Lingui and
+living in `src/lib/` rather than `src/lib/i18n/`. `market.ts` holds the pure parsing and joining
+(`splitMarketSegment`, `joinMarketSegment`, `marketHref`), `sellable-markets.ts` holds the routable
+set — fetched, not a `LOCALES` constant — `router.tsx` holds the rewrite itself, prefixing every
+market rather than returning `undefined` for the default, and `use-formatters.ts` shipped bound to
+the market's Locale. The first three rows are therefore not net-new work; what this ticket has to
+settle is how a language sits inside a structure the market already owns.
 
 A Locale is a record of `{ tag, language, country }`, not a bare string, and `LOCALES` is a typed
 array rather than an object keyed by tag: `useNamingConvention` allows only
@@ -165,14 +195,13 @@ all of them are already inside `use*` hooks or components.
 
 ## Formatting
 
-In scope, and smaller than it looks. `formatPrice`, `formatAmount` and `getCurrencySymbol` in
-`packages/ui/src/utils/pricing.ts` and the date helpers in `packages/utils/src/date.ts` all take an
-optional trailing `locale = 'en-US'`, so all 15 admin call sites keep working untouched. The store
-reaches them through `useFormatters()`, bound to the active tag.
+Already done, by markets. `formatPrice`, `formatAmount` and `getCurrencySymbol` in
+`packages/ui/src/utils/pricing.ts` and the date helpers in `packages/utils/src/date.ts` take an
+optional trailing locale, so all the admin call sites keep working untouched, and the store reaches
+them through `apps/store/src/lib/use-formatters.ts`, bound to the market's Locale.
 
-Because `es-US` and `en-US` format USD identically, **the price change is plumbing with no visual
-diff** and every e2e assertion on `$25.00 each` stays valid. Only dates actually move —
-`5 ene 2026` rather than `Jan 5, 2026`. Details in ticket 04.
+What is left is one line of that hook: swapping the market's Locale for the active i18n tag, once
+there is a tag that can differ from it. Details in ticket 04.
 
 ## Out of scope
 

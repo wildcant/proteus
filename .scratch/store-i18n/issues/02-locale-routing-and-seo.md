@@ -7,33 +7,42 @@ default, so `/es-US` is an English page under a Spanish tag until the strings la
 
 Depends on `01-runtime-and-build-wiring.md`.
 
+## Already delivered by markets
+
+The prefix routing in this ticket shipped, in a different shape and for a different reason. What
+exists in `src/router.tsx` and `src/start.ts` today:
+
+- The `rewrite`, prefixing **every** market including the default. `/` is a router and never a page:
+  it resolves a market from the cookie or the store default, redirects to that prefix, and renders
+  nothing. `/en-US` renders — it does **not** redirect to `/`, which is the reverse of what this
+  ticket proposed.
+- `<html lang>` reads the market's Locale, so the `lang="en"` hardcode is gone.
+- Unknown segments still 404: `/fr-FR/products` reaches the route tree unchanged.
+
+What is left of this ticket is the SEO head — `canonical`, `hreflang` and `x-default`, and the
+`SITE_URL` plumbing they need. Sections below are kept as written where they still apply; the
+routing sections are marked.
+
 ## Work
 
-**`src/lib/i18n/locale-rewrite.ts`**
+**`src/lib/i18n/locale-rewrite.ts`** — superseded. The rewrite lives in `src/router.tsx`, built
+from the market rather than from a Locale, and it does not return `undefined` for the default:
 
 ```ts
-export function createLocaleRewrite(locale: Locale): LocationRewrite | undefined {
-  if (locale.tag === DEFAULT_LOCALE.tag) return undefined
-  return {
-    input: ({ url }) => { url.pathname = splitLocale(url.pathname).rest; return url },
-    output: ({ url }) => { url.pathname = localePath(locale, url.pathname); return url },
-  }
-}
+input:  ({ url }) => { /* strip the market segment, remember which market it was */ },
+output: ({ url }) => { /* prefix every market, unless none was resolved from the URL */ },
 ```
 
-Returning `undefined` for the default is load-bearing, not tidiness: `parseLocation` takes a fast
-path when `rewrite` is falsy, so English is provably the same code path it is today. That is what
-lets tickets 05–08 use "the nine existing specs still pass" as their acceptance criterion.
+Prefixing the default too is what removed the second address for the same page, and it is what the
+`/en-US` → `/` redirect below was trying to achieve from the other direction. The cost is that
+English is no longer a provably untouched code path, so tickets 05–08 cannot use "the nine existing
+specs still pass unmodified" as their acceptance criterion — the suite already carries the prefix.
 
-Wire it into `createTanStackRouter({ …, rewrite: createLocaleRewrite(locale) })` in `src/router.tsx`.
+**`/en-US` redirects to `/`.** — superseded, and inverted. `/` redirects to `/en-US`. The goal was
+one address per Locale and that goal is met; it is the unprefixed URL that no longer exists, not
+the prefixed one.
 
-**`/en-US` redirects to `/`.** The default Locale has exactly one address. Without this, every page
-exists at two URLs and the canonical tag is doing work it should not have to. A permanent redirect,
-issued before the router matches — simplest place is the same request path that resolves the Locale.
-Confirm it survives search params and hash.
-
-**`src/routes/__root.tsx` — `<html lang>`.** Hardcoded `lang="en"` at :62. Read the **tag** (not the
-language) from the active Locale, so the document announces `es-US`.
+**`src/routes/__root.tsx` — `<html lang>`.** — done. Reads the market's Locale.
 
 Leave `suppressHydrationWarning` and `THEME_INIT_SCRIPT` exactly as they are. The Locale needs no
 equivalent blocking script — that script exists because theme comes from `localStorage` and the
@@ -45,16 +54,18 @@ through `match.context.i18n`. `head` receives `{ ssr, matches, match, params, lo
 `match.context` is the full router context, so no new plumbing is needed. It re-runs on every
 `loadMatches`, so what is computed here stays correct across client navigation.
 
-Add `canonical`, one `alternate` per Locale tag, and `x-default`, all built from `localePath()` and
-the last match's pathname — which is the *internal*, prefix-free path, because the rewrite already
-stripped it.
+Add `canonical`, one `alternate` per Locale tag, and `x-default`, all built from
+`joinMarketSegment()` and the last match's pathname — which is the *internal*, prefix-free path,
+because the rewrite already stripped it.
 
 ```
 <link rel="canonical"  href="https://…/es-US/products/abc">
-<link rel="alternate" hreflang="en-US" href="https://…/products/abc">
+<link rel="alternate" hreflang="en-US" href="https://…/en-US/products/abc">
 <link rel="alternate" hreflang="es-US" href="https://…/es-US/products/abc">
-<link rel="alternate" hreflang="x-default" href="https://…/products/abc">
+<link rel="alternate" hreflang="x-default" href="https://…/en-US/products/abc">
 ```
+
+Every href carries a prefix, `x-default` included — there is no unprefixed address to point it at.
 
 Note the `hreflang` values are full tags. This is the payoff for putting the country in the URL:
 `hreflang="es"` would tell Google "Spanish anywhere", which is wrong for a US store, and would
@@ -71,7 +82,8 @@ be updated or dev and e2e both fail to boot.
 ```bash
 curl -sI localhost:3001/es-US/products/<id>   # cache-control: public, max-age=300, stale-while-revalidate=3600
 curl -s  localhost:3001/es-US/products/<id> | grep '<html'   # lang="es-US"
-curl -sI localhost:3001/en-US                 # 301 → /
+curl -sI localhost:3001/en-US                 # 200 — the default market has a prefix like any other
+curl -sI localhost:3001/                      # 302 → /en-US
 curl -sI localhost:3001/fr-FR/products        # 404
 ```
 
@@ -84,7 +96,8 @@ languages get independent cache entries for free.
 the spec rules out content negotiation.
 
 A `throw redirect({ to: '/login' })` from an `/es-US` page must land on `/es-US/login` —
-`resolveRedirect` builds the `Location` header from `publicHref`. Worth checking by hand on the
-`_authed` guard, since nothing in the e2e suite covers it under a prefix until ticket 03.
+`resolveRedirect` builds the `Location` header from `publicHref`. Already true under the market
+prefix and covered by `tests/e2e/auth.spec.ts`, which asserts `/en-US/login`.
 
-`npm run verify` and all nine e2e specs, unmodified.
+`npm run verify` and the e2e suite. Not "unmodified" any more — the specs already carry the market
+prefix, so a change here that breaks them is a real break rather than an expected edit.
