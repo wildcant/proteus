@@ -13,10 +13,13 @@ import type {
   IPaymentModuleService,
   IPricingModuleService,
   IProductModuleService,
+  IRegionModuleService,
+  IStoreModuleService,
   IUserModuleService,
 } from '../src/core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '../src/core/utils/index.js'
 import { container } from '../src/framework/runtime/container.node.js'
+import { SEED_COUNTRIES } from './fixtures/countries.js'
 
 const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
 const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
@@ -29,6 +32,8 @@ const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
 const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
 // --- Catalogue ---
@@ -534,6 +539,125 @@ if (customerIdentity) {
   }
 }
 
+// --- Markets: regions, the ISO country table, and the store that trades in them ---
+// A region owns a currency and a country belongs to at most one region, so assigning a region is
+// what makes a country sellable. Everything else here derives from this one table.
+type Market = {
+  name: string
+  currencyCode: string
+  /** `localeCode` is optional here on purpose. The check below is what enforces it, so a market
+   *  missing one fails the seed naming the country rather than failing to compile. */
+  countries: { iso2: string; localeCode?: string }[]
+}
+
+const MARKETS: Market[] = [
+  { name: 'United States', currencyCode: 'usd', countries: [{ iso2: 'us', localeCode: 'en-US' }] },
+  { name: 'Colombia', currencyCode: 'cop', countries: [{ iso2: 'co', localeCode: 'es-CO' }] },
+]
+
+const STORE_NAME = 'Proteus'
+
+/**
+ * A price is stored in whole currency units — `amount` is a `numeric`, and `formatPrice` hands it
+ * to `Intl` unscaled — so the peso price is the dollar price times the rate, with nothing to
+ * convert between minor and major units. The rate is round rather than accurate: this is seed data.
+ */
+const COP_PER_USD = 4000
+
+function amountIn(currencyCode: string, usdAmount: number): number {
+  if (currencyCode === 'usd') return usdAmount
+  if (currencyCode === 'cop') return usdAmount * COP_PER_USD
+  throw new Error(`No seed conversion for currency "${currencyCode}"`)
+}
+
+const [primaryMarket] = MARKETS
+if (!primaryMarket) throw new Error('Expected at least one market to seed')
+
+const existingRegions = await regionService.listRegions()
+const regions =
+  existingRegions.length > 0
+    ? existingRegions
+    : await regionService.createRegions(MARKETS.map(({ name, currencyCode }) => ({ name, currencyCode })))
+console.info(
+  existingRegions.length > 0
+    ? `Skipped regions (${existingRegions.length} already exist)`
+    : `Seeded ${regions.length} regions: ${regions.map((region) => `${region.name} (${region.currencyCode})`).join(', ')}`,
+)
+
+const regionIdByName = new Map(regions.map((region) => [region.name, region.id]))
+const marketByIso2 = new Map(
+  MARKETS.flatMap((market) =>
+    market.countries.map((country) => [country.iso2, { regionName: market.name, localeCode: country.localeCode }]),
+  ),
+)
+
+const existingCountries = await regionService.listCountries()
+if (existingCountries.length === 0) {
+  await regionService.createCountries(
+    SEED_COUNTRIES.map((country) => {
+      const market = marketByIso2.get(country.iso2)
+      return {
+        id: country.iso2,
+        iso3: country.iso3,
+        numericCode: country.numericCode,
+        name: country.name,
+        displayName: country.displayName,
+        regionId: market ? (regionIdByName.get(market.regionName) ?? null) : null,
+        localeCode: market?.localeCode ?? null,
+      }
+    }),
+  )
+  console.info(`Seeded ${SEED_COUNTRIES.length} ISO countries, ${marketByIso2.size} of them sellable`)
+} else {
+  console.info(`Skipped countries (${existingCountries.length} already exist)`)
+}
+
+// A sellable country with no locale has nothing to format its prices and dates with, and the
+// symptom is a page reading `COP 1,234` rather than an error. Checked against what is in the
+// database, so a re-run catches a country whose locale was removed after it was seeded.
+const withoutLocale = (await regionService.listCountries()).filter(
+  (country) => country.regionId !== null && !country.localeCode,
+)
+if (withoutLocale.length > 0) {
+  const named = withoutLocale.map((country) => `${country.displayName} (${country.id})`).join(', ')
+  throw new Error(
+    `Sellable countries with no locale code: ${named}. A country with an owning region is one the ` +
+      'storefront formats money and dates for, so it needs a BCP 47 tag — add one in MARKETS.',
+  )
+}
+
+const existingStores = await storeService.listStores()
+if (existingStores.length === 0) {
+  const defaultRegionId = regionIdByName.get(primaryMarket.name)
+  if (!defaultRegionId) throw new Error(`Missing region "${primaryMarket.name}" for the store's default`)
+
+  const store = await storeService.createStore({
+    name: STORE_NAME,
+    defaultRegionId,
+    // The first market is the default one, so its currency is the store's default too.
+    currencies: MARKETS.map((market, index) => ({ currencyCode: market.currencyCode, isDefault: index === 0 })),
+  })
+  console.info(`Seeded store "${store.name}" defaulting to ${primaryMarket.name} (${primaryMarket.currencyCode})`)
+} else {
+  console.info(`Skipped store (${existingStores.length} already exist)`)
+}
+
+// --- Region payment providers ---
+// Many-to-many through the link module: every enabled provider serves every region for now, but
+// which providers a region offers is a per-region decision, not a column on the provider.
+const regionIds = regions.map((region) => region.id)
+const existingRegionProviders = await linkService.repo('regionPaymentProvider').findByRegionIds(regionIds)
+if (existingRegionProviders.length === 0) {
+  const enabledProviders = await paymentService.listPaymentProviders({ isEnabled: true })
+  const links = regionIds.flatMap((regionId) =>
+    enabledProviders.map((provider) => ({ regionId, paymentProviderId: provider.id })),
+  )
+  await linkService.repo('regionPaymentProvider').createMany(links)
+  console.info(`Seeded ${links.length} region-payment-provider links`)
+} else {
+  console.info(`Skipped region payment providers (${existingRegionProviders.length} already exist)`)
+}
+
 // --- Products ---
 const existingProducts = await productService.listProducts()
 if (existingProducts.length > 0) {
@@ -647,8 +771,14 @@ if (existingProducts.length > 0) {
   console.info(`Seeded ${createdVariants.length} product variants with their option values`)
 
   // --- Prices ---
+  // One price per market currency, so a variant is buyable from either region without a fallback.
   const priceSets = await pricingService.createPriceSets(
-    variantSpecs.map((spec) => ({ prices: [{ currencyCode: 'usd', amount: new BigNumber(spec.price) }] })),
+    variantSpecs.map((spec) => ({
+      prices: MARKETS.map((market) => ({
+        currencyCode: market.currencyCode,
+        amount: new BigNumber(amountIn(market.currencyCode, spec.price)),
+      })),
+    })),
   )
 
   await Promise.all(
@@ -793,18 +923,13 @@ if (existingShippingOptions.length === 0) {
   const fulfillmentSet = await fulfillmentService.createFulfillmentSet({ name: 'Default Shipping', type: 'shipping' })
 
   const serviceZone = await fulfillmentService.createServiceZone({
-    name: 'Worldwide',
+    name: 'Markets',
     fulfillmentSetId: fulfillmentSet.id,
-    geoZones: [
-      { type: 'country', countryCode: 'us' },
-      { type: 'country', countryCode: 'ca' },
-      { type: 'country', countryCode: 'gb' },
-      { type: 'country', countryCode: 'de' },
-      { type: 'country', countryCode: 'fr' },
-      { type: 'country', countryCode: 'au' },
-      { type: 'country', countryCode: 'se' },
-      { type: 'country', countryCode: 'dk' },
-    ],
+    // The zone covers exactly the sellable countries. A zone reaching further would offer
+    // shipping to a country no region prices, and checkout would have nothing to charge in.
+    geoZones: MARKETS.flatMap((market) =>
+      market.countries.map((country) => ({ type: 'country' as const, countryCode: country.iso2 })),
+    ),
   })
 
   const standardType = await fulfillmentService.createShippingOptionType({
