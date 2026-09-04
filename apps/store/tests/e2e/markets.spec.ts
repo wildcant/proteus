@@ -190,8 +190,8 @@ test.describe('Market control', () => {
     await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
     await expect(page.locator('html')).toHaveAttribute('lang', SECOND_MARKET)
 
-    // The bag still carries what was put in it. Repricing the cart into the new market is the
-    // next slice's job — this one only has to not lose the cart on the way across.
+    // The bag still carries what was put in it — the claim this test owns. What the bag is
+    // *priced* in after the crossing is the subject of `Cart across markets` below.
     //
     // The badge first, and not only because it is the claim: it is the cart request resolving,
     // which means the page has hydrated and the button below is a button rather than markup.
@@ -250,5 +250,167 @@ test.describe('Market dates', () => {
     await expect(switchedRow).toBeVisible({ timeout: BACKEND_TIMEOUT })
     await expect(switchedRow).toContainText(/\d{1,2}\/\d{2}\/\d{4}/)
     await expect(switchedRow).not.toContainText(/[A-Z][a-z]{2} \d{1,2}, \d{4}/)
+  })
+})
+
+/**
+ * The bag itself crossing a market boundary.
+ *
+ * A cart carries the currency of the market it was opened in, and the page around it quotes the
+ * market it is in — so a cart left behind is two currencies on one screen and an order taken at
+ * the wrong one. None of that is visible below a real browser: the cart id lives in the browser's
+ * own storage, and the crossing is a document navigation.
+ */
+test.describe('Cart across markets', () => {
+  test.describe.configure({ timeout: 60_000 })
+
+  test('reprices the bag into the market the shopper switched to', async ({
+    page,
+    authenticate,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    // Priced in both, and the peso price is not the dollar price relabelled — so the number in the
+    // bag afterwards says which currency it was read from.
+    await using product = await factories.create.productWithPricing({
+      prices: [
+        { amount: '25.00', currencyCode: 'usd' },
+        { amount: '100000', currencyCode: 'cop' },
+      ],
+    })
+    await authenticate({ as: 'customer' })
+    disposeCartAfterTest(page, factories, cleanup)
+
+    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await page.getByRole('button', { name: /add to cart/i }).click()
+
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await expect(cartPanel).toContainText('$25.00')
+    await page.keyboard.press('Escape')
+
+    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await expect(page.locator('html')).toHaveAttribute('lang', SECOND_MARKET)
+
+    const bag = page.locator('header').getByLabel('Cart')
+    await expect(bag).toContainText('1', { timeout: BACKEND_TIMEOUT })
+    await bag.click()
+
+    // One currency on the screen. The dollar amount is the whole defect: a bag quoting it beside
+    // a catalogue quoting pesos is an order that completes at the price nobody was shown.
+    await expect(cartPanel).toContainText('100.000', { timeout: BACKEND_TIMEOUT })
+    await expect(cartPanel).not.toContainText('25.00')
+  })
+
+  test('crosses on a market URL opened directly, not only through the control', async ({
+    page,
+    authenticate,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({
+      prices: [
+        { amount: '25.00', currencyCode: 'usd' },
+        { amount: '100000', currencyCode: 'cop' },
+      ],
+    })
+    await authenticate({ as: 'customer' })
+    disposeCartAfterTest(page, factories, cleanup)
+
+    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await page.getByRole('button', { name: /add to cart/i }).click()
+    await expect(page.locator('[data-slot="drawer-popup"]')).toContainText('$25.00')
+
+    // A shared link or a bookmark: the shopper arrives in the other market without ever touching
+    // the control, carrying the same cart in their browser's storage.
+    await page.goto(`/${SECOND_MARKET}`, { waitUntil: 'networkidle' })
+
+    const bag = page.locator('header').getByLabel('Cart')
+    await expect(bag).toContainText('1', { timeout: BACKEND_TIMEOUT })
+    await bag.click()
+    await expect(page.locator('[data-slot="drawer-popup"]')).toContainText('100.000', { timeout: BACKEND_TIMEOUT })
+  })
+
+  test('names what cannot be sold in the new market rather than dropping it', async ({
+    page,
+    authenticate,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    // Dollars only: there is no peso price for this line to move to, which is the one thing that
+    // makes the whole switch impossible rather than merely different.
+    await using product = await factories.create.productWithPricing({
+      prices: [{ amount: '25.00', currencyCode: 'usd' }],
+    })
+    await authenticate({ as: 'customer' })
+    disposeCartAfterTest(page, factories, cleanup)
+
+    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await page.getByRole('button', { name: /add to cart/i }).click()
+    await expect(page.locator('[data-slot="drawer-popup"]')).toContainText('$25.00')
+    await page.keyboard.press('Escape')
+
+    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+
+    // Told, by name, and told what the bag is still in — the shopper is standing in a market
+    // their cart is not in, and nothing about the page would otherwise say so.
+    const notice = page.getByRole('alert')
+    await expect(notice).toContainText(product.title, { timeout: BACKEND_TIMEOUT })
+    await expect(notice).toContainText('COP')
+    await expect(notice).toContainText('USD')
+
+    // The way out the notice offers points at the market the bag is priced for, so leaving is one
+    // click rather than a hunt through the control for whichever market that was.
+    await expect(notice.getByRole('link', { name: /United States/ })).toHaveAttribute(
+      'href',
+      new RegExp(`^/${DEFAULT_MARKET}`),
+    )
+
+    // And nothing was silently dropped on the way: the bag is exactly as they left it.
+    await page.locator('header').getByLabel('Cart').click()
+    await expect(page.locator('[data-slot="drawer-popup"]')).toContainText(product.title)
+  })
+
+  test('crosses on its own once the thing that blocked it is out of the bag', async ({
+    page,
+    authenticate,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using blocked = await factories.create.productWithPricing({
+      prices: [{ amount: '25.00', currencyCode: 'usd' }],
+    })
+    await using sellable = await factories.create.productWithPricing({
+      prices: [
+        { amount: '40.00', currencyCode: 'usd' },
+        { amount: '160000', currencyCode: 'cop' },
+      ],
+    })
+    await authenticate({ as: 'customer' })
+    disposeCartAfterTest(page, factories, cleanup)
+
+    for (const product of [sellable, blocked]) {
+      await navigate({ to: '/products/$productId', params: { productId: product.id } })
+      await page.getByRole('button', { name: /add to cart/i }).click()
+      await expect(page.locator('[data-slot="drawer-popup"]').getByText(product.title)).toBeVisible()
+      await page.keyboard.press('Escape')
+    }
+
+    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await expect(page.getByRole('alert')).toContainText(blocked.title, { timeout: BACKEND_TIMEOUT })
+
+    // The refusal is not a dead end. Taking out the thing this market cannot sell is the shopper's
+    // own way through it, and the storefront has to notice: the bag it asked about has changed, so
+    // the same switch is worth asking for again without them touching the control a second time.
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await page.locator('header').getByLabel('Cart').click()
+    await cartPanel.getByRole('button', { name: `Remove ${blocked.title}` }).click()
+
+    await expect(page.getByRole('alert')).toBeHidden({ timeout: BACKEND_TIMEOUT })
+    await expect(cartPanel).toContainText('160.000', { timeout: BACKEND_TIMEOUT })
+    await expect(cartPanel).not.toContainText('40.00')
   })
 })

@@ -5,6 +5,8 @@ import { PaymentForm } from './payment-form'
 
 type PaymentSectionProps = Pick<CheckoutData, 'cart'> & {
   form: CheckoutForm
+  hasFailedOrder: boolean
+  onReopened: () => void
 }
 export function PaymentSection(props: PaymentSectionProps) {
   return (

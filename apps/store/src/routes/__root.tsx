@@ -5,6 +5,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts, useRouter } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { CartMarketSwitch } from '#/components/cart-market-switch'
 import { SHOW_DEVTOOLS } from '#/env.ts'
 import { MARKET_GLOBAL, type MarketContext } from '#/lib/market'
 import { modalSearchSchema } from '#/lib/modal-state'
@@ -69,6 +70,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
 function RootComponent() {
   return (
     <>
+      {/* Above every layout because it is the one thing that belongs to all of them: a market is
+          entered by the control, by a shared link, by a bookmark and by the redirect at `/`, and
+          only the root is on the path of all four. */}
+      <CartMarketSwitch />
       <Outlet />
       <ReactQueryDevtools buttonPosition="bottom-left" />
     </>
