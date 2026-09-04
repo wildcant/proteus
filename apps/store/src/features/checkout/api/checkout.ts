@@ -24,7 +24,7 @@ import {
   createStorePaymentCollection,
   createStorePaymentSession,
 } from '#/api/generated/payment-collections/payment-collections'
-import { listStorePaymentProviders } from '#/api/generated/payments/payments'
+import { listStoreCartPaymentProviders } from '#/api/generated/payments/payments'
 import { cartQueryKeys } from '#/features/cart/api/cart'
 import { clearCartId, getCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
@@ -43,10 +43,12 @@ export const useShippingOptions = (
   })
 }
 
-export const usePaymentProviders = () => {
+/** Keyed by cart because the answer is: the payment methods this cart's market offers. */
+export const usePaymentProviders = (cartId: string) => {
   return useQuery({
-    queryKey: [...checkoutQueryKeys.all, 'payment-providers'],
-    queryFn: () => listStorePaymentProviders(),
+    queryKey: [...checkoutQueryKeys.all, 'payment-providers', cartId],
+    queryFn: () => listStoreCartPaymentProviders(cartId),
+    enabled: !!cartId,
   })
 }
 

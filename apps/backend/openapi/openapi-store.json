@@ -572,6 +572,36 @@
         },
         "required": ["id", "name", "amount", "serviceZoneId", "shippingProfileId", "shippingOptionTypeId", "providerId"]
       },
+      "StorePaymentProviderListResponse": {
+        "type": "object",
+        "properties": {
+          "paymentProviders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorePaymentProvider"
+            }
+          }
+        },
+        "required": ["paymentProviders"]
+      },
+      "StorePaymentProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "isTestOnly": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "isEnabled", "label", "isTestOnly"]
+      },
       "StoreCreateCartShippingMethodResponse": {
         "type": "object",
         "properties": {
@@ -1323,36 +1353,6 @@
           "updatedAt",
           "deletedAt"
         ]
-      },
-      "StorePaymentProviderListResponse": {
-        "type": "object",
-        "properties": {
-          "paymentProviders": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StorePaymentProvider"
-            }
-          }
-        },
-        "required": ["paymentProviders"]
-      },
-      "StorePaymentProvider": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "isEnabled": {
-            "type": "boolean"
-          },
-          "label": {
-            "type": "string"
-          },
-          "isTestOnly": {
-            "type": "boolean"
-          }
-        },
-        "required": ["id", "isEnabled", "label", "isTestOnly"]
       },
       "StoreProductListResponse": {
         "type": "object",
@@ -2319,6 +2319,42 @@
         }
       }
     },
+    "/store/carts/{id}/payment-providers": {
+      "get": {
+        "operationId": "listStoreCartPaymentProviders",
+        "summary": "List the payment providers the cart’s region offers",
+        "tags": ["Payments"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorePaymentProviderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/store/carts/{id}/shipping-methods": {
       "post": {
         "operationId": "addStoreCartShippingMethod",
@@ -2854,28 +2890,6 @@
           },
           "404": {
             "description": "Not found"
-          }
-        }
-      }
-    },
-    "/store/payment-providers": {
-      "get": {
-        "operationId": "listStorePaymentProviders",
-        "summary": "List enabled payment providers",
-        "tags": ["Payments"],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorePaymentProviderListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error"
           }
         }
       }
