@@ -38,6 +38,7 @@ import {
 } from '../factories/customer-dto.js'
 import {
   createCountry,
+  createProductWithPricing,
   createRegion,
   createRegionPaymentProvider,
   createShippingOptionWithZone,
@@ -142,6 +143,7 @@ import {
   listProductVariantImages,
   listProductVariants,
   listReservationItems,
+  listShippingMethods,
   priceVariants,
   requestAuthVerification,
   retrieveAuthIdentity,
@@ -221,6 +223,9 @@ export type Fixtures = {
       /** A shipping option and the whole zone chain that makes it offerable. Shared with the
        *  browser suite, which reaches the same factory through its own fixtures. */
       shippingOptionWithZone: typeof createShippingOptionWithZone
+      /** A published product, a variant, and a price per currency it is sold in — the shape a
+       *  spec needs when the same variant has to carry two markets' money at once. */
+      productWithPricing: typeof createProductWithPricing
     }
     update: {
       paymentProviderEnabled: typeof setPaymentProviderEnabled
@@ -354,6 +359,7 @@ export type Fixtures = {
       cartAddresses: typeof listCartAddresses
       carts: typeof listCarts
       cartLineItems: typeof listLineItems
+      cartShippingMethods: typeof listShippingMethods
       customer: typeof retrieveCustomer
       customerAddresses: typeof listCustomerAddresses
       customers: typeof listCustomers
@@ -425,6 +431,7 @@ export const test = testBase.extend<Fixtures>({
         store: createStore,
         storeCurrency: createStoreCurrency,
         shippingOptionWithZone: createShippingOptionWithZone,
+        productWithPricing: createProductWithPricing,
       },
       update: {
         paymentProviderEnabled: setPaymentProviderEnabled,
@@ -557,6 +564,7 @@ export const test = testBase.extend<Fixtures>({
         cartAddresses: listCartAddresses,
         carts: listCarts,
         cartLineItems: listLineItems,
+        cartShippingMethods: listShippingMethods,
         customer: retrieveCustomer,
         customerAddresses: listCustomerAddresses,
         customers: listCustomers,

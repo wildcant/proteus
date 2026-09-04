@@ -3,6 +3,7 @@ import type {
   FilterableCartAddressProps,
   FilterableCartLineItemProps,
   FilterableCartProps,
+  FilterableCartShippingMethodProps,
 } from '../../../src/core/types/cart/common.js'
 import type {
   CreateCartDTO,
@@ -86,6 +87,12 @@ export async function listLineItems(container: AwilixContainer, filters?: Filter
   const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.listLineItems(filters)
+}
+
+export async function listShippingMethods(container: AwilixContainer, filters?: FilterableCartShippingMethodProps) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
+
+  return cartService.listShippingMethods(filters)
 }
 
 export async function listCartAddresses(container: AwilixContainer, filters?: FilterableCartAddressProps) {
