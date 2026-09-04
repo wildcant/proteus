@@ -11,7 +11,7 @@ export async function getRouter() {
   const localeCodes = await loadMarketLocaleCodes()
   // One per router, and the server builds a router per request, so this is request state even
   // though the rewrite closes over it. `input` fills in the market; see below.
-  const market: MarketContext = { localeCode: DEFAULT_LOCALE_CODE, localeCodes }
+  const market: MarketContext = { localeCode: DEFAULT_LOCALE_CODE, localeCodes, resolvedFromUrl: false }
 
   const router = createTanStackRouter({
     routeTree,
@@ -31,14 +31,19 @@ export async function getRouter() {
         const split = splitMarketSegment(url.pathname, market.localeCodes)
         if (!split) return undefined
         market.localeCode = split.localeCode
+        market.resolvedFromUrl = true
         url.pathname = split.rest
         return url
       },
-      // The path the router built -> the URL the browser shows. Nothing is returned for the
-      // default market, so it keeps the unprefixed URLs it has today and provably takes the same
-      // path through the router that it does now.
+      // The path the router built -> the URL the browser shows. Every market is prefixed, the
+      // default one included: one shape for every URL, so no later slice has to remember that one
+      // market is spelled differently.
+      //
+      // Except when no market was resolved from the URL at all. That only happens on a path the
+      // router is about to answer with a not-found, and prefixing it would move the not-found off
+      // the address the shopper actually typed.
       output: ({ url }) => {
-        if (market.localeCode === DEFAULT_LOCALE_CODE) return undefined
+        if (!market.resolvedFromUrl) return undefined
         url.pathname = joinMarketSegment(market.localeCode, url.pathname)
         return url
       },

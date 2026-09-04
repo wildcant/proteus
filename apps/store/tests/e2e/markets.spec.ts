@@ -24,20 +24,35 @@ test.describe('Markets', () => {
     }
   })
 
-  test('an unknown locale code is a not-found, not a redirect somewhere plausible', async ({ page }) => {
+  test('the root is a router: it redirects to the default market and renders nothing itself', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'networkidle' })
+
+    // The default market is prefixed like every other one. If `/` rendered instead, the same
+    // storefront would answer at two addresses.
+    await expect(page).toHaveURL(`/${DEFAULT_MARKET}`)
+    await expect(page.locator('html')).toHaveAttribute('lang', DEFAULT_MARKET)
+  })
+
+  test('a path with no market keeps its route and gains the prefix', async ({ page }) => {
+    await page.goto('/login', { waitUntil: 'networkidle' })
+
+    // A real route missing its market is a shopper to be placed, not a wrong address.
+    await expect(page).toHaveURL(`/${DEFAULT_MARKET}/login`)
+    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+  })
+
+  test('an unknown locale code is a not-found at its own address', async ({ page }) => {
     const response = await page.goto('/fr-FR')
 
-    // Both halves matter. A 404 says the address is wrong; the unchanged URL says the store did
-    // not quietly move the shopper, which would mint duplicate content at unbounded URLs.
+    // Both halves matter, and the second is the one that is easy to lose: a market asked for by
+    // name that the store does not sell in has nowhere to be redirected to. Answering at
+    // `/en-US/fr-FR` would move the not-found off the address the shopper typed and mint a second
+    // URL for the same nothing.
     expect(response?.status()).toBe(404)
     await expect(page).toHaveURL('/fr-FR')
   })
 
   test('the market chosen by URL is remembered, and the root resolves to it', async ({ page }) => {
-    // No cookie yet, so the root is the store's default market and renders it.
-    await page.goto('/', { waitUntil: 'networkidle' })
-    await expect(page.locator('html')).toHaveAttribute('lang', DEFAULT_MARKET)
-
     // Choosing a market by its URL is what persists it.
     await page.goto(`/${SECOND_MARKET}`, { waitUntil: 'networkidle' })
     await expect(page.locator('html')).toHaveAttribute('lang', SECOND_MARKET)

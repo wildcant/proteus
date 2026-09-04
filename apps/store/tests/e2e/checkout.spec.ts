@@ -93,7 +93,7 @@ test.describe('Checkout', () => {
     await page.getByLabel('Email').fill(customer.email)
     await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
     await page.getByRole('button', { name: /sign in/i }).click()
-    await expect(page).toHaveURL('/account', { timeout: 15000 })
+    await expect(page).toHaveURL('/en-US/account', { timeout: 15000 })
 
     // 3. Verify cart was transferred — the bag on /account still carries the guest's item
     await page.getByLabel('Cart', { exact: true }).click()
@@ -235,7 +235,7 @@ test.describe('Checkout', () => {
     await page.getByLabel('Email').fill(customer.email)
     await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
     await page.getByRole('button', { name: /sign in/i }).click()
-    await expect(page).toHaveURL('/account', { timeout: 15000 })
+    await expect(page).toHaveURL('/en-US/account', { timeout: 15000 })
 
     // Saved through the address book, marked as the main one — there is no address factory, and
     // the book is the only thing that writes one.

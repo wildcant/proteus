@@ -119,7 +119,10 @@ const customer = definePersona('customer', {
     await page.getByLabel('Email').fill(customer.email)
     await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
     await page.getByRole('button', { name: /sign in/i }).click()
-    await page.waitForURL('/account')
+    // Prefixed: this persona drives the storefront, where every URL carries its market, and
+    // `en-US` is the market a browser with no cookie lands in. The admin persona above is a
+    // different application and stays unprefixed.
+    await page.waitForURL('/en-US/account')
     return { customerId: customer.id, email: customer.email }
   },
   async verifySession({ page, session }) {

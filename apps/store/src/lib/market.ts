@@ -34,6 +34,14 @@ export type MarketContext = {
   localeCode: string
   /** Every locale code that is a routable URL segment. Anything else is a not-found. */
   localeCodes: ReadonlyArray<string>
+  /**
+   * Whether `localeCode` came from the URL or is still the default standing in for one.
+   *
+   * `output` prefixes only when this is true. A path the router is answering with a not-found
+   * never resolved a market, and prefixing it would move the not-found to `/en-US/fr-FR` — a
+   * second address for the same nothing, and no longer the address the shopper typed.
+   */
+  resolvedFromUrl: boolean
 }
 
 /** The global the server writes into the document so the client router resolves the same market. */
@@ -65,6 +73,23 @@ export function splitMarketSegment(
 /** Prefixes a router pathname with a market segment. The inverse of `splitMarketSegment`. */
 export function joinMarketSegment(localeCode: string, pathname: string): string {
   return pathname === '/' ? `/${localeCode}` : `/${localeCode}${pathname}`
+}
+
+/**
+ * Whether a path's first segment is shaped like a market, whether or not the store sells in one.
+ *
+ * This is what separates the two ways a URL can arrive without a market. `/products` is a path
+ * missing its prefix, and the shopper is sent to the market they belong in. `/fr-FR` is a market
+ * being asked for by name — if the store does not sell there, the honest answer is not-found at
+ * that address. Redirecting it to `/en-US/fr-FR` would answer a question nobody asked, and mint a
+ * second URL for the same nothing.
+ *
+ * No route in the storefront is shaped this way, and none can be: a locale code is the one segment
+ * the router never owns.
+ */
+export function looksLikeMarketSegment(pathname: string): boolean {
+  const [, first = ''] = pathname.split('/')
+  return /^[a-z]{2}-[A-Z]{2}$/.test(first)
 }
 
 /** Reads the persisted market out of a `Cookie` header. Returns undefined when it is not set. */

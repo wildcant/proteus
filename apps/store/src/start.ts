@@ -2,6 +2,7 @@ import { createMiddleware, createStart } from '@tanstack/react-start'
 import {
   DEFAULT_LOCALE_CODE,
   joinMarketSegment,
+  looksLikeMarketSegment,
   marketCookie,
   readMarketCookie,
   splitMarketSegment,
@@ -27,6 +28,10 @@ function withCookieVary<T extends { response: Response }>(result: T): T {
  * gives are HTTP answers — a redirect to the market a returning shopper chose, and the `Set-Cookie`
  * that remembers the one they are looking at. Doing it in the router would mean rendering a page
  * to find out we should not have.
+ *
+ * Every market is prefixed, the default one included, so `/` is a router and never a page. The
+ * alternative — serving the default market unprefixed — puts the same content at two addresses
+ * and leaves every later slice knowing that one market is spelled differently from the rest.
  */
 const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ request, next, handlerType }) => {
   // Server function calls carry the market in their own URL and must not be redirected out from
@@ -44,14 +49,17 @@ const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ r
     return withCookieVary(result)
   }
 
+  // A market asked for by name that the store does not sell in. Not a path missing its prefix, so
+  // there is nowhere to send the shopper that answers what they asked: the router gets it
+  // unchanged and returns not-found at the address they typed.
+  if (looksLikeMarketSegment(url.pathname)) return withCookieVary(await next())
+
   const remembered = readMarketCookie(request.headers.get('cookie'))
   // A cookie naming a market the store no longer sells in is stale, not fatal — drop back to the
   // default rather than showing a shopper a not-found for a link that used to work.
-  if (!remembered || remembered === DEFAULT_LOCALE_CODE || !localeCodes.includes(remembered)) {
-    return withCookieVary(await next())
-  }
+  const target = remembered && localeCodes.includes(remembered) ? remembered : DEFAULT_LOCALE_CODE
 
-  url.pathname = joinMarketSegment(remembered, url.pathname)
+  url.pathname = joinMarketSegment(target, url.pathname)
   // `vary` for the same reason as above, and `no-store` because where this redirect points is one
   // shopper's answer: a cache that kept it would send the next shopper to someone else's market.
   return new Response(null, {
