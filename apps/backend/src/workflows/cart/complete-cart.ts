@@ -15,6 +15,7 @@ import type {
 import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { PaymentSessionStatus } from '@core/types/payment/common.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
 import { ContainerRegistrationKeys, Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { env } from '../../env.js'
@@ -108,42 +109,52 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     }
 
     const collection = await paymentService.retrievePaymentCollection(cartPaymentLink.paymentCollectionId)
-    const session = collection.paymentSessions?.[0]
-    if (!session) {
+    /** Every session on the collection, newest first — the payment module orders them, because a
+     *  collection routinely holds more than one. Picking a payment method again opens a session
+     *  beside the one already there and nothing removes the old one: deleting it is a call to the
+     *  provider with nothing to compensate it. So this step is not reading "the" session, it is
+     *  choosing which of them may authorize this collection. */
+    const sessions = collection.paymentSessions ?? []
+    const [newest] = sessions
+    if (!newest) {
       throw new WorkflowTerminalError({
         type: ErrorTypes.INVALID_DATA,
         message: `Payment collection "${collection.id}" has no payment session — call POST /store/payment-collections/:id/payment-sessions first`,
       })
     }
 
-    if (!PROCESSABLE_STATUSES.includes(session.status)) {
+    const processable = sessions.filter((session) => PROCESSABLE_STATUSES.includes(session.status))
+    const [newestProcessable] = processable
+    if (!newestProcessable) {
       throw new WorkflowTerminalError({
         type: ErrorTypes.INVALID_DATA,
-        message: `Payment session "${session.id}" is not processable (status: ${session.status})`,
+        message: `Payment session "${newest.id}" is not processable (status: ${newest.status})`,
       })
     }
 
     /** A session carries its own amount and currency, copied off the collection when it was
-     *  opened. A market switch restates the collection and cannot touch the session — deleting it
-     *  is a call to the provider with nothing to compensate it — so a session opened before the
-     *  switch would otherwise authorize the old money against the new cart. Comparing is the
-     *  non-destructive half, and it is the half that has to happen before `authorize-payment`
-     *  charges anyone.
+     *  opened, and a market switch restates the collection without touching them. Authorizing one
+     *  that no longer agrees charges the money the shopper was quoted before the switch for a cart
+     *  priced after it — so the one that authorizes has to be one that still agrees, and it has to
+     *  be settled here, before `authorize-payment` charges anyone.
      *
-     *  Named in both currencies, and actionable: the shopper's way out is to pick their payment
-     *  method again, which opens a session at what the cart now says. */
-    if (!session.amount.isEqualTo(collection.amount) || session.currencyCode !== collection.currencyCode) {
+     *  Searching rather than checking the newest: opening a session again is exactly what the
+     *  refusal below asks for, so the agreeing one is usually the newest but never has to be. */
+    const authorizable = processable.find(
+      (session) => session.amount.isEqualTo(collection.amount) && session.currencyCode === collection.currencyCode,
+    )
+    if (!authorizable) {
       throw new WorkflowTerminalError({
         type: ErrorTypes.INVALID_DATA,
         message:
-          `Payment session "${session.id}" was opened for ${session.amount} ${session.currencyCode.toUpperCase()} ` +
-          `but this cart is now ${collection.amount} ${collection.currencyCode.toUpperCase()} — ` +
-          'select your payment method again to open a new payment session',
+          `Payment session "${newestProcessable.id}" was opened for ${newestProcessable.amount} ` +
+          `${newestProcessable.currencyCode.toUpperCase()} but this cart is now ${collection.amount} ` +
+          `${collection.currencyCode.toUpperCase()} — reopen the payment session to pay what the cart now says`,
       })
     }
 
     return {
-      sessionId: session.id,
+      sessionId: authorizable.id,
       paymentCollectionId: cartPaymentLink.paymentCollectionId,
       amount: collection.amount,
     }
@@ -176,6 +187,46 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         }
       }),
     )
+  })
+
+  /** The market a cart is priced for and the country it delivers to have to be the same market's.
+   *
+   *  They can disagree with nothing wrong upstream. A shopper whose market switch was refused —
+   *  a line the new market cannot sell — keeps a cart priced for the market they left, while the
+   *  address checkout writes at submit comes from the market they are looking at. Everything in
+   *  between resolves off the cart's region: the couriers offered, the payment methods, the money.
+   *  The order that comes out is settled in a currency the shopper was never quoted, shipped by a
+   *  carrier that does not serve the address on it.
+   *
+   *  The rule is not new. `update-cart` already refuses to move a cart into a market that does not
+   *  ship to its address; this is the same invariant at the one moment left that can still break it.
+   *
+   *  Two cases are deliberately not this failure: a cart with no delivery country, which the
+   *  address and order steps own, and a cart whose region lists no country at all, where refusing
+   *  would turn a half-configured market into a checkout outage. */
+  await ctx.step('validate-delivery-region', async ({ container }) => {
+    const cartService = container.resolve<ICartModuleService>(Modules.CART)
+    const cart = await cartService.retrieveCart(input.cartId)
+    if (!cart.regionId) return
+
+    const [shippingAddress] = await cartService.listCartAddresses({ cartId: input.cartId, type: 'shipping' })
+    const countryCode = shippingAddress?.countryCode?.toLowerCase()
+    if (!countryCode) return
+
+    const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+    const countries = await regionService.listCountries({ regionId: cart.regionId })
+    if (countries.length === 0) return
+    if (countries.some((country) => country.id === countryCode)) return
+
+    // Retrieved only here, on the refusal, so the happy path pays for one read rather than two.
+    // The region exists: a country row named it.
+    const region = await regionService.retrieveRegion(cart.regionId)
+    throw new WorkflowTerminalError({
+      type: ErrorTypes.INVALID_DATA,
+      message:
+        `This cart is priced for "${region.name}", which does not ship to "${countryCode}" — ` +
+        'switch back to that market, or take out what this one cannot sell so the cart can move here',
+    })
   })
 
   /** Final guard against completing a cart that was already finalized. This catches the

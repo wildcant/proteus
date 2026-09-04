@@ -1,7 +1,9 @@
 import { BigNumber } from '@core/bignumber.js'
 import type {
   StoreCartDetailResponse,
+  StoreCompleteCartResponse,
   StoreCreatePaymentCollectionResponse,
+  StoreCreatePaymentSessionResponse,
   StoreUpdateCartResponse,
 } from '@proteus/http-schemas/store'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
@@ -90,6 +92,19 @@ const shipTo = (service: Services, cartId: string, countryCode: string) =>
 /** The collection the cart already has, or the one checkout would have opened for it. */
 const paymentCollectionFor = (cartId: string) =>
   api.post<StoreCreatePaymentCollectionResponse>('/store/payment-collections', { cartId })
+
+/**
+ * Picking a payment method, as the storefront does it — and as the completion refusal tells a
+ * shopper to do again. It lands on the cart's existing collection, at that collection's current
+ * terms, beside whatever session is already there.
+ */
+const openPaymentSession = async (cartId: string) => {
+  const { body } = await paymentCollectionFor(cartId)
+  return api.post<StoreCreatePaymentSessionResponse>(
+    `/store/payment-collections/${body.paymentCollection.id}/payment-sessions`,
+    { providerId: 'pp_system_default' },
+  )
+}
 
 /**
  * Switching market keeps the cart and reprices it. Everything with a number on it moves together —
@@ -404,10 +419,114 @@ test.describe('POST /store/carts/:id/complete — payment session and its collec
     // told the one thing that fixes it.
     expect(body.message).toContain('160 USD')
     expect(body.message).toContain('640000 COP')
-    expect(body.message).toContain('select your payment method again')
+    expect(body.message).toContain('reopen the payment session')
 
     // Refused before anything was authorized or written: no order, and a cart still open.
     expect(await service.read.orders(api.container)).toHaveLength(0)
     expect(await service.read.cart(api.container, ready.cart.id)).toMatchObject({ completedAt: null })
+  })
+
+  test('completes once the shopper does what the refusal tells them to', async ({ factories, service, expect }) => {
+    const markets = await createMarkets(factories)
+    const product = await factories.create.productWithPricing({
+      prices: [
+        { amount: USD_PRICE, currencyCode: 'usd' },
+        { amount: COP_PRICE, currencyCode: 'cop' },
+      ],
+    })
+    const ready = await service.create.checkoutReadyCart(api.container, {
+      cart: { regionId: markets.unitedStates.region.id, currencyCode: 'usd' },
+      lineItem: {
+        title: product.title,
+        variantId: product.variant.id,
+        quantity: 2,
+        unitPrice: new BigNumber(USD_PRICE),
+      },
+      shippingMethod: { amount: new BigNumber(0) },
+    })
+
+    await switchMarket(ready.cart.id, markets.colombia)
+    // The switch drops the method the old market quoted, so the shopper chooses again — the same
+    // thing they do in the browser, and what `validate-shipping` needs before payment matters.
+    await service.create.shippingMethod(api.container, ready.cart.id, {
+      name: 'CO Standard',
+      amount: new BigNumber(0),
+      shippingOptionId: markets.colombia.shippingOption.id,
+    })
+
+    expect((await api.post<ApiErrorBody>(`/store/carts/${ready.cart.id}/complete`)).status).toBe(400)
+
+    // The instruction, carried out. Nothing removes the dollar session — deleting it is a call to
+    // the provider with nothing to compensate it — so the collection now holds two, and reading
+    // "the" session out of an unordered set is the whole of this test.
+    expect((await openPaymentSession(ready.cart.id)).status).toBe(201)
+
+    const { status, body } = await api.post<StoreCompleteCartResponse>(`/store/carts/${ready.cart.id}/complete`)
+
+    expect(status).toBe(200)
+    expect(body.orderId).toBeTruthy()
+    // Settled in the money the shopper was quoted, not the money the stale session still names.
+    expect(await service.read.order(api.container, body.orderId)).toMatchObject({ currencyCode: 'cop' })
+  })
+})
+
+/**
+ * The other half of a refused switch. The cart correctly stays in the market it can be sold in and
+ * the shopper is told — but they are standing in the other one, and every priced answer checkout
+ * gives them is resolved off the cart's region while the delivery country is resolved off the
+ * market they are looking at.
+ *
+ * Nothing before this refused the two disagreeing, so an order could be created in one market's
+ * currency, on that market's courier, to an address in the other.
+ */
+test.describe('POST /store/carts/:id/complete — the market and the address must agree', () => {
+  test('refuses a cart delivering outside the market it is priced for', async ({ factories, service, expect }) => {
+    const markets = await createMarkets(factories)
+    const product = await factories.create.productWithPricing({ prices: [{ amount: USD_PRICE, currencyCode: 'usd' }] })
+    const ready = await service.create.checkoutReadyCart(api.container, {
+      cart: { regionId: markets.unitedStates.region.id, currencyCode: 'usd' },
+      lineItem: {
+        title: product.title,
+        variantId: product.variant.id,
+        quantity: 2,
+        unitPrice: new BigNumber(USD_PRICE),
+      },
+      shippingMethod: { amount: new BigNumber(0) },
+    })
+    // Where a shopper refused a switch ends up: the bag still priced in dollars, and the address
+    // checkout writes at submit taken from the market they are actually looking at.
+    await shipTo(service, ready.cart.id, 'co')
+
+    const { status, body } = await api.post<ApiErrorBody>(`/store/carts/${ready.cart.id}/complete`)
+
+    expect(status).toBe(400)
+    expect(body).toMatchObject({ type: 'invalid_data' })
+    expect(body.message).toContain('co')
+
+    expect(await service.read.orders(api.container)).toHaveLength(0)
+    expect(await service.read.cart(api.container, ready.cart.id)).toMatchObject({ completedAt: null })
+  })
+
+  test('completes a cart delivering inside the market it is priced for', async ({ factories, service, expect }) => {
+    const markets = await createMarkets(factories)
+    const product = await factories.create.productWithPricing({ prices: [{ amount: USD_PRICE, currencyCode: 'usd' }] })
+    const ready = await service.create.checkoutReadyCart(api.container, {
+      cart: { regionId: markets.unitedStates.region.id, currencyCode: 'usd' },
+      lineItem: {
+        title: product.title,
+        variantId: product.variant.id,
+        quantity: 2,
+        unitPrice: new BigNumber(USD_PRICE),
+      },
+      shippingMethod: { amount: new BigNumber(0) },
+    })
+    await shipTo(service, ready.cart.id, 'us')
+
+    // The guard has to be the narrow one it claims to be: an ordinary checkout that never crossed
+    // a market must be untouched by it.
+    const { status } = await api.post<StoreCompleteCartResponse>(`/store/carts/${ready.cart.id}/complete`)
+
+    expect(status).toBe(200)
+    expect(await service.read.orders(api.container)).toHaveLength(1)
   })
 })

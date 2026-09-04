@@ -135,7 +135,18 @@ export function useCheckoutForm(params?: CheckoutFormParams) {
     form.handleSubmit()
   }
 
-  return { form, placeOrder, signOut, isLoading: completeCart.isPending || updateCart.isPending }
+  return {
+    form,
+    placeOrder,
+    signOut,
+    isLoading: completeCart.isPending || updateCart.isPending,
+    /**
+     * Whether the last attempt to place this order failed. The payment step offers to reopen the
+     * session on the strength of it: the completion guard refuses a session whose amount or
+     * currency no longer matches the cart, and a market switch is what puts them out of step.
+     */
+    hasFailedOrder: completeCart.isError,
+  }
 }
 
 export type CheckoutForm = ReturnType<typeof useCheckoutForm>['form']

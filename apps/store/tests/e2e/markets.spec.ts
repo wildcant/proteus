@@ -361,8 +361,56 @@ test.describe('Cart across markets', () => {
     await expect(notice).toContainText('COP')
     await expect(notice).toContainText('USD')
 
+    // The way out the notice offers points at the market the bag is priced for, so leaving is one
+    // click rather than a hunt through the control for whichever market that was.
+    await expect(notice.getByRole('link', { name: /United States/ })).toHaveAttribute(
+      'href',
+      new RegExp(`^/${DEFAULT_MARKET}`),
+    )
+
     // And nothing was silently dropped on the way: the bag is exactly as they left it.
     await page.locator('header').getByLabel('Cart').click()
     await expect(page.locator('[data-slot="drawer-popup"]')).toContainText(product.title)
+  })
+
+  test('crosses on its own once the thing that blocked it is out of the bag', async ({
+    page,
+    authenticate,
+    navigate,
+    factories,
+    cleanup,
+  }) => {
+    await using blocked = await factories.create.productWithPricing({
+      prices: [{ amount: '25.00', currencyCode: 'usd' }],
+    })
+    await using sellable = await factories.create.productWithPricing({
+      prices: [
+        { amount: '40.00', currencyCode: 'usd' },
+        { amount: '160000', currencyCode: 'cop' },
+      ],
+    })
+    await authenticate({ as: 'customer' })
+    disposeCartAfterTest(page, factories, cleanup)
+
+    for (const product of [sellable, blocked]) {
+      await navigate({ to: '/products/$productId', params: { productId: product.id } })
+      await page.getByRole('button', { name: /add to cart/i }).click()
+      await expect(page.locator('[data-slot="drawer-popup"]').getByText(product.title)).toBeVisible()
+      await page.keyboard.press('Escape')
+    }
+
+    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await expect(page.getByRole('alert')).toContainText(blocked.title, { timeout: BACKEND_TIMEOUT })
+
+    // The refusal is not a dead end. Taking out the thing this market cannot sell is the shopper's
+    // own way through it, and the storefront has to notice: the bag it asked about has changed, so
+    // the same switch is worth asking for again without them touching the control a second time.
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await page.locator('header').getByLabel('Cart').click()
+    await cartPanel.getByRole('button', { name: `Remove ${blocked.title}` }).click()
+
+    await expect(page.getByRole('alert')).toBeHidden({ timeout: BACKEND_TIMEOUT })
+    await expect(cartPanel).toContainText('160.000', { timeout: BACKEND_TIMEOUT })
+    await expect(cartPanel).not.toContainText('40.00')
   })
 })
