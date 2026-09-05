@@ -18,6 +18,9 @@ npm run --workspace=backend db:start        # Start Postgres
 npm run --workspace=backend db:migrate:dev  # Run migrations
 npm run --workspace=backend db:generate     # Generate migration after schema change
 npm run --workspace=backend db:seed:dev     # Seed dev data
+npm run --workspace=backend stack:reset     # Wipe the volume and rebuild: proteus *and* Temporal's
+                                            # two databases, then migrate + seed. db:reset drops
+                                            # proteus only, so workflow history survives it
 
 # Testing
 npm run --workspace=backend test                          # All backend tests
