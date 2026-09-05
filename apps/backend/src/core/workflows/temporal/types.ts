@@ -77,25 +77,3 @@ export type CompensateWorkflowResult = {
   compensated: string[]
   failed: { step: string; message: string }[]
 }
-
-/**
- * The original error, flattened so it can cross the Temporal boundary and be rebuilt on the other
- * side. Without this a `WorkflowTerminalError({ type: CONFLICT })` reaches the route handler as an
- * opaque `ActivityFailure` and a 409 becomes a 500.
- */
-export type SerializedError = {
-  kind: 'app' | 'terminal' | 'plain'
-  name: string
-  message: string
-  /** `ErrorTypes` value, for the two `AppError`-shaped kinds. */
-  type?: string
-  code?: string
-}
-
-/** The payload every step failure carries in its `ApplicationFailure.details`. */
-export type StepFailureDetail = {
-  /** The `ctx.step` name that failed, or `null` when the handler failed between steps. */
-  step: string | null
-  nonRetryable: boolean
-  error: SerializedError
-}

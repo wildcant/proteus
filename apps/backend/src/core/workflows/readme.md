@@ -152,7 +152,7 @@ while (true) {
 ```
 
 The `advanceWorkflow` Activity runs in the Worker process, with the DI container. It looks the
-workflow up by name in `src/temporal/registry.ts`, re-executes its handler from the top with a
+workflow up by name in `src/core/workflows/temporal/registry.ts`, re-executes its handler from the top with a
 replay `ctx` whose `step()` returns stored outputs for completed steps and executes exactly the
 next one, then stops. Compensation is the same replay, backwards.
 
@@ -225,7 +225,7 @@ thrown from a step will not hold. Match on `error.name` if you need that —
 
 The `try` row is the sharper one, because the code that trips it looks entirely ordinary. Once the
 step it was replaying to is done, the replay hands the handler a promise that never settles
-(`src/temporal/replay.ts`) — the handler stops at that `await` and is never resumed, so a `catch` it
+(`src/core/workflows/temporal/replay.ts`) — the handler stops at that `await` and is never resumed, so a `catch` it
 wrote around `ctx.step` does not run and neither does a `finally`. The simple adapter rejects into
 the handler, so both do. A recovery path written that way therefore recovers on workerd and fails
 the checkout on Node. It is **rejected by `check:workflow-purity`** rather than left to this table:
@@ -312,7 +312,7 @@ without breaking any of the 72 existing `ctx.step` call sites. If `sleep`, `chil
    precludes it, and `WorkflowConfig` is where such a declaration would go, next to `idempotent`.
 
 The thing not to do is let a Temporal concept reach a workflow file. `src/workflows/` has zero
-imports from `src/temporal/` today and should keep it — a feature that cannot be expressed without
+imports from `src/core/workflows/temporal/` or `src/temporal/` today and should keep it — a feature that cannot be expressed without
 breaking that is a port change, and a port change is an ADR.
 
 ### Choosing an engine
@@ -328,10 +328,10 @@ it. A nested run stays inline, so **its steps are not journaled**: nothing about
 history, a Worker lost part-way through re-executes the whole nested workflow from its first step, and
 the nested workflow's own compensation stack dies with the process instead of unwinding. Those two get
 the durability of the outer workflow's steps and no more, where the other 24 get it for every step.
-`src/temporal/__tests__/nested-workflow.server.test.ts` pins that shape; ADR-0021 records it as a residual.
+`src/core/workflows/temporal/__tests__/nested-workflow.server.test.ts` pins that shape; ADR-0021 records it as a residual.
 
 `check:deps` enforces the boundary — `no-temporal-in-workerd` fails if `src/index.workerd.ts` can
-reach `@temporalio/*` or `src/temporal/` at all.
+reach `@temporalio/*`, `src/temporal/` or `src/core/workflows/temporal/` at all.
 
 **A workerd deployment therefore has no durable execution.** That is deliberate and recorded as an
 accepted limitation in ADR-0022, along with the table of what each runtime does and does not get.
@@ -353,7 +353,7 @@ const result = await myWorkflow.run({ cartId: 'cart_1' })
 ```
 
 Tests live in `__tests__/simple-adapter.test.ts`. The Temporal adapter's own tests are
-`src/temporal/__tests__/` — `replay.test.ts` for the replay mechanism with no server,
+`src/core/workflows/temporal/__tests__/` — `replay.test.ts` for the replay mechanism with no server,
 `temporal-adapter.server.test.ts` against `@temporalio/testing`'s time-skipping server, and
 `nested-workflow.server.test.ts` for the production Worker's topology, which the parity suite does not run.
 
@@ -378,18 +378,18 @@ between them is an adapter bug by definition, not a difference of opinion betwee
 **What that number is and is not.** At most 24 of the 70 files can route through the pinned engine:
 15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a workflow, and
 `__tests__/engine-pin.test.ts`. Roughly 120–250 of the ~820 assertions genuinely round-trip through
-Temporal; the rest are engine-blind — `src/temporal/__tests__` and the other files here build their
+Temporal; the rest are engine-blind — `src/core/workflows/temporal/__tests__` and the other files here build their
 own engines, and the module, core, framework and provider tests never reach a workflow. So it is
 evidence of no divergence anywhere the adapter is reachable, not 820 assertions of adapter coverage.
 If you quote the headline, quote this with it.
 
 **And for two workflows it proves a topology production does not deploy.** `create-product` and
 `complete-customer-auth` call another workflow's `.run()` from inside a step. On the production
-Worker that nested run is inline, because `src/temporal/container.ts` pins `simple` there. The parity
+Worker that nested run is inline, because `src/framework/runtime/container.worker.ts` pins `simple` there. The parity
 harness runs its Activities against the *test* container, which `test:temporal` pins to `temporal`,
 so under the suite the same nested run is a second Temporal execution — `tests/setup/temporal-parity.ts`
 says as much in its own comment. A green `POST /admin/products` under `test:temporal` is therefore
-evidence about a shape that is not deployed. `src/temporal/__tests__/nested-workflow.server.test.ts` covers
+evidence about a shape that is not deployed. `src/core/workflows/temporal/__tests__/nested-workflow.server.test.ts` covers
 the deployed one: Worker pinned `simple`, nested `.run()` inline inside an Activity, asserted on both
 counts — that the inner steps run in the outer execution's Activity, and that none of them reach an
 Activity or a history entry of their own.

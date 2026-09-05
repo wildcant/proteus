@@ -5,15 +5,9 @@ import {
   type RetryPolicy,
   TemporalFailure,
 } from '@temporalio/workflow'
+import { readStepFailureDetail, STEP_FAILURE_TYPE, type StepFailureDetail } from '../../../temporal/failure-details.js'
 import type { Activities } from './activities.js'
-import { readStepFailureDetail, STEP_FAILURE_TYPE } from './failure-details.js'
-import type {
-  AdvanceWorkflowInput,
-  AdvanceWorkflowResult,
-  DriverInput,
-  StepFailureDetail,
-  StepOutput,
-} from './types.js'
+import type { AdvanceWorkflowInput, AdvanceWorkflowResult, DriverInput, StepOutput } from './types.js'
 
 /**
  * Workflow code is bundled into a deterministic isolate with no filesystem, no network and no

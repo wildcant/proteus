@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { TestWorkflowEnvironment } from '@temporalio/testing'
 import { DefaultLogger, Runtime } from '@temporalio/worker'
-import { PAYLOAD_CONVERTER_PATH } from '../config.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../../../temporal/config.js'
 
 /**
  * Shared setup for every test that boots a Temporal test server.

@@ -1,11 +1,5 @@
-import { AppError, ErrorTypes } from '../core/errors/app-error.js'
-import type {
-  StepAction,
-  StepCompensation,
-  StepContext,
-  WorkflowContext,
-  WorkflowDefinition,
-} from '../core/workflows/types.js'
+import { AppError, ErrorTypes } from '../../errors/app-error.js'
+import type { StepAction, StepCompensation, StepContext, WorkflowContext, WorkflowDefinition } from '../types.js'
 import { chainStepFingerprint } from './fingerprint.js'
 import type { AdvanceWorkflowInput, AdvanceWorkflowResult, CompensateWorkflowResult, StepOutput } from './types.js'
 

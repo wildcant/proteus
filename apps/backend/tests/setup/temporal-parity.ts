@@ -4,19 +4,23 @@ import { Context } from '@temporalio/activity'
 import { Client, Connection } from '@temporalio/client'
 import { NativeConnection, Worker } from '@temporalio/worker'
 import type { AwilixContainer } from 'awilix'
-import { env } from '../../src/env.js'
 // The two process-global installers the adapter's own tests already needed: a Temporal Runtime whose
 // logger does not go through `console.warn` (which `setup-test-env.ts` turns into a thrown error),
 // and a TypeScript-aware `require` hook, because Temporal loads `payloadConverterPath` with
 // `require()` and this repo ships `.ts` with no build step.
-import { installTemporalRuntime, installTypeScriptRequireHook } from '../../src/temporal/__tests__/temporal-test-env.js'
+import {
+  installTemporalRuntime,
+  installTypeScriptRequireHook,
+} from '../../src/core/workflows/temporal/__tests__/temporal-test-env.js'
 import {
   createWorkflowActivities,
   type RegisteredWorkflowActivities,
   withStepActivities,
-} from '../../src/temporal/activities.js'
-import { PAYLOAD_CONVERTER_PATH, WORKFLOWS_PATH } from '../../src/temporal/config.js'
-import type { WorkflowRegistry } from '../../src/temporal/registry.js'
+} from '../../src/core/workflows/temporal/activities.js'
+import { WORKFLOWS_PATH } from '../../src/core/workflows/temporal/config.js'
+import type { WorkflowRegistry } from '../../src/core/workflows/temporal/registry.js'
+import { env } from '../../src/env.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../src/temporal/config.js'
 
 /**
  * What `npm run --workspace=backend test:temporal` needs that production does not.

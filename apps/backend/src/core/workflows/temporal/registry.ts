@@ -1,5 +1,5 @@
-import { AppError, ErrorTypes } from '../core/errors/app-error.js'
-import type { WorkflowDefinition } from '../core/workflows/types.js'
+import { AppError, ErrorTypes } from '../../errors/app-error.js'
+import type { WorkflowDefinition } from '../types.js'
 import { GENERATED_WORKFLOWS } from './registry.gen.js'
 
 /**
