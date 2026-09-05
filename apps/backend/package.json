@@ -28,6 +28,7 @@
     "db:test:down": "docker compose -f docker-compose.test.yml down",
     "typecheck": "tsc --noEmit",
     "db:restart": "npm run db:reset && npm run db:migrate:dev && npm run db:seed:dev",
+    "stack:reset": "./scripts/reset-stack.sh",
     "db:start": "docker compose up -d --wait",
     "db:stop": "docker compose down",
     "db:status": "docker compose ps",
