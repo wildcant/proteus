@@ -1,11 +1,13 @@
 import { BigNumber } from '../../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import { PAYMENT_ATTEMPT_IN_FLIGHT } from '../../../core/errors/payment-attempt-code.js'
 import { PAYMENT_METHOD_UNAVAILABLE } from '../../../core/errors/payment-method-code.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
   AccountHolderDTO,
+  AuthorizePaymentSessionResult,
   FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
@@ -212,6 +214,12 @@ export class PaymentModuleService implements IPaymentModuleService {
    *
    * Superseded sessions are cancelled at the gateway rather than merely forgotten, so a shopper
    * who tries three cards leaves no authorization standing against any of them.
+   *
+   * One attempt is refused instead of superseded: a session at `pending_authorization`. That is
+   * confirmed money the gateway has not finished deciding on, so it is not in
+   * `SUPERSEDABLE_SESSION_STATUSES` and cancelling it is exactly what that set exists to prevent.
+   * Leaving it standing and opening a second session alongside it is the failure described above,
+   * reached by a different road — so this refuses, and says so with its own code.
    */
   async replacePaymentSession(
     paymentCollectionId: string,
@@ -219,6 +227,29 @@ export class PaymentModuleService implements IPaymentModuleService {
     context?: Context,
   ): Promise<PaymentSessionDTO> {
     const collection = await this.retrievePaymentCollection(paymentCollectionId, undefined, context)
+
+    /**
+     * Before anything is superseded, because the answer is "not now" rather than "not this
+     * session": there is nothing to abandon and nothing to open.
+     *
+     * `pending_authorization` only. `authorized` and `captured` are also unsupersedable and also
+     * fall through to `createPaymentSession` today; that predates this guard and is not what it
+     * is here for.
+     *
+     * The message is deliberately the generic one this path already rendered — a shopper whose
+     * retry was refused reads the same words as before. The specificity is in `code`, which is
+     * where a caller that needs to tell the two apart is meant to read it.
+     */
+    const settling = (collection.paymentSessions ?? []).find((session) => session.status === 'pending_authorization')
+    if (settling) {
+      this.logger.debug(`Refusing a new payment session: "${settling.id}" is still settling at the provider`)
+      throw new AppError({
+        type: ErrorTypes.CONFLICT,
+        code: PAYMENT_ATTEMPT_IN_FLIGHT,
+        message: 'The payment could not be processed.',
+      })
+    }
+
     const superseded = (collection.paymentSessions ?? []).filter((session) =>
       SUPERSEDABLE_SESSION_STATUSES.has(session.status),
     )
@@ -345,14 +376,14 @@ export class PaymentModuleService implements IPaymentModuleService {
     return updated
   }
 
-  async authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null> {
+  async authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult> {
     this.logger.debug(`Authorizing payment session "${id}"`)
     const session = await this.paymentSessionRepository.findByIdOrFail(id, undefined, context)
 
     // Idempotent — safe to call multiple times
     const payment = await this.paymentRepository.findOne({ paymentSessionId: session.id }, undefined, context)
     if (payment && (payment.capturedAt || session.status === 'authorized')) {
-      return this.retrievePaymentWithRelations_(payment.id, context)
+      return { outcome: 'authorized', payment: await this.retrievePaymentWithRelations_(payment.id, context) }
     }
 
     const provider = await this.paymentProviderService.authorizePayment(session.providerId, {
@@ -374,13 +405,15 @@ export class PaymentModuleService implements IPaymentModuleService {
       context,
     )
 
-    // Async providers (e.g. bank redirect) resolve later via webhook
-    if (status === 'pending_authorization') return null
+    // Confirmed at the provider and still settling — an asynchronous method, or a card the
+    // gateway has not finished deciding on. There is no payment yet and nothing has failed: the
+    // webhook that resolves the intent calls this again and creates one then.
+    if (status === 'pending_authorization') return { outcome: 'pending_authorization' }
 
     // Provider declined or needs more input — no payment to create
     if (status !== 'authorized' && status !== 'captured') {
       await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
-      return null
+      return { outcome: 'not_authorized', sessionStatus: status }
     }
 
     // If anything below fails, cancel at the provider so we don't leave a dangling authorization
@@ -404,7 +437,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
 
-      return this.retrievePaymentWithRelations_(payment.id, context)
+      return { outcome: 'authorized', payment: await this.retrievePaymentWithRelations_(payment.id, context) }
     } catch (error) {
       await this.paymentProviderService.cancelPayment(session.providerId, {
         data: session.data,

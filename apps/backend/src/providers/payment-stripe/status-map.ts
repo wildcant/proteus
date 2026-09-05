@@ -17,11 +17,24 @@ export function paymentSessionStatusOf(intent: Stripe.PaymentIntent): PaymentSes
       return 'requires_more'
     case 'requires_confirmation':
       return 'pending'
-    // TODO(async-methods): the spec maps `processing` to `pending_authorization` for the method
-    // types a provider option lists as asynchronous. Neither that option nor the payment-method
-    // expansion it needs exists yet, so no method is asynchronous and `processing` is `pending`.
+    /**
+     * Confirmed, and the gateway has not finished deciding. `pending_authorization` is this
+     * vocabulary's name for exactly that, and it is what separates a settling intent from a
+     * refused one: `pending` also covers an intent nobody has confirmed yet, so mapping
+     * `processing` there made cart completion read money in flight as a decline and unwind the
+     * order while the charge kept settling.
+     *
+     * Unconditional, not gated on the method type. The spec's asynchronous-method option decides
+     * what the checkout *does* next — place the order now and let the webhook reconcile it, or
+     * wait — and that needs the subscriber that finishes an order once the webhook resolves. It
+     * does not change whether the provider has decided, which is all this table answers.
+     *
+     * TODO(async-methods): the order-completing subscriber, and the provider option that lists
+     * which method types are asynchronous. Until then a `processing` intent fails the checkout
+     * loudly and correctly classified, rather than silently as a decline.
+     */
     case 'processing':
-      return 'pending'
+      return 'pending_authorization'
     case 'requires_capture':
       return 'authorized'
     case 'succeeded':

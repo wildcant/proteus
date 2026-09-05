@@ -12,7 +12,7 @@ function intent(status: Stripe.PaymentIntent.Status, lastPaymentError?: { code: 
 const TABLE: [Stripe.PaymentIntent.Status, PaymentSessionStatus][] = [
   ['requires_payment_method', 'pending'],
   ['requires_confirmation', 'pending'],
-  ['processing', 'pending'],
+  ['processing', 'pending_authorization'],
   ['requires_action', 'requires_more'],
   ['requires_capture', 'authorized'],
   ['succeeded', 'captured'],
@@ -29,6 +29,19 @@ test.describe('paymentSessionStatusOf', () => {
   test('distinguishes a declined intent from one still waiting for a card', ({ expect }) => {
     expect(paymentSessionStatusOf(intent('requires_payment_method', { code: 'card_declined' }))).toBe('error')
     expect(paymentSessionStatusOf(intent('requires_payment_method'))).toBe('pending')
+  })
+
+  /**
+   * The row cart completion branches on, pinned as a contrast rather than on its own.
+   *
+   * `processing` used to map to `pending`, alongside an intent nobody had confirmed yet — so the
+   * payment module could not tell money in flight from a card that had never been charged, and
+   * cart completion unwound the order for both. The two states are separate names now, and this
+   * is the assertion that keeps them separate.
+   */
+  test('separates an intent the gateway is still settling from one nothing has confirmed', ({ expect }) => {
+    expect(paymentSessionStatusOf(intent('processing'))).toBe('pending_authorization')
+    expect(paymentSessionStatusOf(intent('requires_confirmation'))).toBe('pending')
   })
 })
 

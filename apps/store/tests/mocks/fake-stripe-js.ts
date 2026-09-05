@@ -21,12 +21,21 @@
  * document rather than an overlay frame.
  */
 
-/** Card numbers the fake recognises, mirroring Stripe's published test cards. */
+/**
+ * Card numbers the fake recognises, mirroring Stripe's published test cards.
+ *
+ * `settlesLater` is the exception and is deliberately not one of them: Stripe publishes no card
+ * that lands an intent in `processing`, because the methods that reliably reach it are not cards
+ * at all. It is spelled as an obvious derivative of `succeeds` so nobody mistakes it for a
+ * documented number, and it exists because `processing` is a state the backend has to answer for
+ * whatever produced it.
+ */
 export const FAKE_CARDS = {
   succeeds: '4242424242424242',
   declinedGeneric: '4000000000000002',
   declinedLostCard: '4000000000009987',
   requiresAuthentication: '4000002760003184',
+  settlesLater: '4242424242420077',
 } as const
 
 /** The control server `apps/backend/tests/mocks/fake-gateway-server.ts` listens on. */
@@ -329,6 +338,15 @@ export const FAKE_STRIPE_JS = String.raw`
       }
       if (values.number === CARDS.declinedLostCard) {
         return { error: declineError('lost_card', 'Your card has been reported lost.') }
+      }
+
+      // Confirmed, and the gateway has not finished deciding — money in flight, and the state
+      // this fake exists to be able to produce. The card is attached exactly as it is on the
+      // other confirmed states, because the shopper did pay with it.
+      if (values.number === CARDS.settlesLater) {
+        return advanceIntent(clientSecret, 'processing', null, cardOf(values)).then(function (updated) {
+          return { paymentIntent: updated }
+        })
       }
 
       if (values.number === CARDS.requiresAuthentication) {

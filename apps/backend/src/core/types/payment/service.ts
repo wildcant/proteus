@@ -2,6 +2,7 @@ import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
   AccountHolderDTO,
+  AuthorizePaymentSessionResult,
   FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
@@ -73,7 +74,14 @@ export type IPaymentModuleService = {
   updatePaymentSession(id: string, data: UpdatePaymentSessionDTO, context?: Context): Promise<PaymentSessionDTO>
   /** Destructive: the session is destroyed at the provider, so there is nothing to restore. */
   deletePaymentSession(id: string, context?: Context): Promise<void>
-  authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null>
+  /**
+   * Authorizes a session at its provider and records what came back.
+   *
+   * Answers with a discriminated outcome rather than a nullable payment: a caller has to be able
+   * to tell an intent that is still settling from one the provider refused, and `null` said both.
+   * Idempotent — a session already authorized answers with the payment it produced.
+   */
+  authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult>
 
   // Payment retrieval
   retrievePayment(id: string, context?: Context): Promise<PaymentDTO>

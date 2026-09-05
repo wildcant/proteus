@@ -82,6 +82,25 @@ export type PaymentDTO = {
   refunds?: RefundDTO[]
 }
 
+/**
+ * What an authorization attempt came back as.
+ *
+ * Three outcomes rather than two, because "the provider has not decided yet" and "the provider
+ * said no" ask the caller for opposite things: one is money in flight that a later webhook will
+ * resolve, the other is a shopper who did not pay. Both used to be `null`, so cart completion
+ * could only answer both with the same terminal error — and an intent still settling unwound a
+ * checkout as if the card had been declined, while the money kept settling at the gateway.
+ *
+ * The payment hangs off the `authorized` member alone, so there is no branch in which a caller
+ * can read one that does not exist.
+ */
+export type AuthorizePaymentSessionResult =
+  | { outcome: 'authorized'; payment: PaymentDTO }
+  /** Confirmed at the provider and still settling. No payment yet; the webhook brings one. */
+  | { outcome: 'pending_authorization' }
+  /** Declined, cancelled, or still waiting on the shopper. `sessionStatus` says which. */
+  | { outcome: 'not_authorized'; sessionStatus: PaymentSessionStatus }
+
 export type CaptureDTO = {
   id: string
   paymentId: string
