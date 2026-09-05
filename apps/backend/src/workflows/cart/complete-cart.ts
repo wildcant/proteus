@@ -1,4 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import { PAYMENT_AWAITING_AUTHORIZATION } from '@core/errors/payment-authorization-code.js'
 import type { CartAddressDTO } from '@core/types/cart/common.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
@@ -379,15 +380,32 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
       logger.debug(`[complete-cart] Authorizing payment session "${paymentInfo.sessionId}" for cart "${input.cartId}"`)
 
-      const payment = await paymentService.authorizePaymentSession(paymentInfo.sessionId)
-      if (!payment) {
+      const authorization = await paymentService.authorizePaymentSession(paymentInfo.sessionId)
+
+      /** Confirmed at the gateway and still settling — money in flight, not a shopper who did
+       *  not pay. Its own `code` so the two are separable in a response body and in an alert;
+       *  a `conflict` rather than the decline's `unexpected_state`, because 500 claims the
+       *  server is broken and an intent doing what the gateway documents is not that.
+       *
+       *  It is still a failure, and the workflow still unwinds. Finishing the order once the
+       *  webhook resolves needs a subscriber that does not exist yet, so until it does this
+       *  fails loudly and correctly classified rather than quietly as a decline. */
+      if (authorization.outcome === 'pending_authorization') {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.CONFLICT,
+          code: PAYMENT_AWAITING_AUTHORIZATION,
+          message: `Payment for session "${paymentInfo.sessionId}" has not been authorized yet`,
+        })
+      }
+
+      if (authorization.outcome === 'not_authorized') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.UNEXPECTED_STATE,
           message: `Payment authorization failed for session "${paymentInfo.sessionId}"`,
         })
       }
 
-      return payment
+      return authorization.payment
     },
     async (payment, { container }) => {
       const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)

@@ -16,10 +16,10 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     currencyCode: collection.currencyCode,
   })
 
-  const payment = await paymentService.authorizePaymentSession(session.id)
+  const authorization = await paymentService.authorizePaymentSession(session.id)
 
-  if (payment) {
-    await paymentService.capturePayment({ paymentId: payment.id })
+  if (authorization.outcome === 'authorized') {
+    await paymentService.capturePayment({ paymentId: authorization.payment.id })
   }
 
   const updated = await paymentService.retrievePaymentCollection(collection.id)

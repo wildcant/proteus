@@ -1,3 +1,5 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
+import { PAYMENT_AWAITING_AUTHORIZATION } from '@core/errors/payment-authorization-code.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/index.js'
@@ -112,6 +114,46 @@ test.describe('completeCartWorkflow', () => {
     expect(await service.read.linkRepo(container, 'orderCart').findByCartId(cart.id)).toBeNull()
     expect(await service.read.reservationItems(container)).toEqual([])
     expect(await service.read.cart(container, cart.id)).toMatchObject({ completedAt: null })
+  })
+
+  /**
+   * The classification the cart-completion API answers with, and the whole point of ILLO-70.
+   *
+   * A `processing` intent and a declined card both used to raise `unexpected_state` with the
+   * same message, so nothing downstream — an operator, an alert, the storefront — could tell a
+   * charge still settling from a shopper who did not pay. Asserted as a pair, because either
+   * error alone says nothing about whether the two are separable.
+   */
+  test('separates a payment still settling from a declined one, by code and by status', async ({ service, expect }) => {
+    const settling = await service.create.checkoutReadyCart(container)
+    const declined = await service.create.checkoutReadyCart(container)
+
+    const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+    const authorize = vi.spyOn(paymentService, 'authorizePaymentSession')
+    authorize.mockResolvedValueOnce({ outcome: 'pending_authorization' })
+    authorize.mockResolvedValueOnce({ outcome: 'not_authorized', sessionStatus: 'error' })
+
+    await expect(completeCartWorkflow.run({ cartId: settling.cart.id })).rejects.toMatchObject({
+      cause: {
+        type: ErrorTypes.CONFLICT,
+        code: PAYMENT_AWAITING_AUTHORIZATION,
+        message: expect.stringContaining('has not been authorized yet'),
+      },
+    })
+
+    // Unchanged, and asserted here rather than assumed: the decline keeps the type, the absent
+    // code and the message it had before this ticket.
+    await expect(completeCartWorkflow.run({ cartId: declined.cart.id })).rejects.toMatchObject({
+      cause: {
+        type: ErrorTypes.UNEXPECTED_STATE,
+        code: undefined,
+        message: expect.stringContaining('Payment authorization failed for session'),
+      },
+    })
+
+    // Both unwind. Finishing the order once the webhook resolves the settling intent needs a
+    // subscriber that does not exist yet — this ticket makes the case separable, not survivable.
+    expect(await service.read.orders(container)).toEqual([])
   })
 
   test('a rolled-back checkout leaves no address rows behind', async ({ dto, service, expect }) => {

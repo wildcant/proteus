@@ -177,19 +177,23 @@ test.describe('POST /store/payment-collections/:id/payment-sessions (stripe)', (
     expect(stripeGateway.intents.get(String(cancelled[0]))?.status).toBe('canceled')
   })
 
-  test('reports a processing intent as pending, the same status the webhook path reports', async ({
+  test('reports a processing intent as pending authorization, the same status the webhook path reports', async ({
     service,
     expect,
   }) => {
     // The two paths used to disagree about this one intent state: a session call called it
     // `pending_authorization` while a `payment_intent.processing` webhook called it `pending`.
     // They now read one table, so this status is the webhook action's status too.
+    //
+    // The shared answer is `pending_authorization` rather than `pending`: an intent the gateway
+    // is still settling is money in flight, and calling it `pending` put it in the same bucket as
+    // one nobody has confirmed — which is what made cart completion read it as a decline.
     stripeGateway.statusOnCreate = 'processing'
     const collection = await collectionWorth('19.99', 'usd', service)
 
     const { body } = await createSession(collection.id)
 
-    expect(body.paymentSession.status).toBe('pending')
+    expect(body.paymentSession.status).toBe('pending_authorization')
   })
 
   test('reports a capturable intent as authorized', async ({ service, expect }) => {

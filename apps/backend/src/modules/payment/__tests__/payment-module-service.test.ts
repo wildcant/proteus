@@ -1,5 +1,6 @@
 import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { AuthorizePaymentSessionResult, PaymentDTO } from '@core/types/payment/common.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -20,6 +21,20 @@ import { PaymentModuleService } from '../services/payment-module-service.js'
 import type { PaymentProviderService } from '../services/payment-provider-service.js'
 
 const cascadeGraph = buildCascadeGraph(models)
+
+/**
+ * The payment an authorization produced, or a failure naming what came back instead.
+ *
+ * `authorizePaymentSession` answers with an outcome rather than a nullable payment, and most of
+ * these tests are about what happens to a payment that exists. The two outcomes that carry none
+ * have their own tests, where the discriminant is the assertion rather than a precondition.
+ */
+function authorizedPayment(result: AuthorizePaymentSessionResult): PaymentDTO {
+  if (result.outcome !== 'authorized') {
+    throw new Error(`Expected an authorized payment, got outcome "${result.outcome}"`)
+  }
+  return result.payment
+}
 
 /** Two fixed instants, so "most recent" is a fact about the data and not about the clock. */
 const OLDER = new Date('2026-01-01T00:00:00Z')
@@ -177,8 +192,7 @@ test.describe('PaymentModuleService', () => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
 
-      const payment = await service.authorizePaymentSession(session.id)
-      assertDefined(payment)
+      const payment = authorizedPayment(await service.authorizePaymentSession(session.id))
 
       expect(payment.id).toBeDefined()
       expect(payment.paymentCollectionId).toBe(collection.id)
@@ -192,29 +206,56 @@ test.describe('PaymentModuleService', () => {
     test('authorizePaymentSession is idempotent', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
-      const firstPayment = await service.authorizePaymentSession(session.id)
-      assertDefined(firstPayment)
+      const firstPayment = authorizedPayment(await service.authorizePaymentSession(session.id))
 
-      const secondPayment = await service.authorizePaymentSession(session.id)
-      assertDefined(secondPayment)
+      const secondPayment = authorizedPayment(await service.authorizePaymentSession(session.id))
 
       expect(secondPayment.id).toBe(firstPayment.id)
       // Provider should only be called once — second call returns early
       expect(mockProvider.authorizePayment).toHaveBeenCalledOnce()
     })
 
-    test('authorizePaymentSession returns null for async providers', async ({ expect, dto }) => {
+    /**
+     * The distinction cart completion rests on, asserted as one pair.
+     *
+     * Both of these used to answer `null`, which is why an intent still settling unwound a
+     * checkout as if the card had been declined — the caller had nothing to branch on. Written
+     * as one test because what matters is that the two answers differ, not either alone.
+     */
+    test('authorizePaymentSession tells a settling payment apart from a refused one', async ({ expect, dto }) => {
+      const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+      const settling = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+      const refused = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+
+      mockProvider.authorizePayment.mockResolvedValueOnce({ status: 'pending_authorization', data: settling.data })
+      mockProvider.authorizePayment.mockResolvedValueOnce({ status: 'error', data: refused.data })
+
+      // No payment either way, and no `payment` key on either — a caller cannot read one that
+      // does not exist, which is what the nullable return could not stop it doing.
+      expect(await service.authorizePaymentSession(settling.id)).toEqual({ outcome: 'pending_authorization' })
+      expect(await service.authorizePaymentSession(refused.id)).toEqual({
+        outcome: 'not_authorized',
+        sessionStatus: 'error',
+      })
+    })
+
+    test('authorizePaymentSession syncs the session to the status a settling provider reported', async ({
+      expect,
+      dto,
+    }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
 
-      mockProvider.authorizePayment.mockResolvedValueOnce({
+      mockProvider.authorizePayment.mockResolvedValueOnce({ status: 'pending_authorization', data: session.data })
+      await service.authorizePaymentSession(session.id)
+
+      // The webhook that resolves the intent finds the session where the provider left it, and
+      // nothing is stamped as authorized for money that has not been authorized.
+      const after = await service.retrievePaymentCollection(collection.id)
+      expect(after.paymentSessions?.find((candidate) => candidate.id === session.id)).toMatchObject({
         status: 'pending_authorization',
-        data: session.data,
+        authorizedAt: null,
       })
-
-      const payment = await service.authorizePaymentSession(session.id)
-
-      expect(payment).toBeNull()
     })
 
     test('deletePaymentSession removes session and calls provider', async ({ expect, dto }) => {
@@ -238,8 +279,7 @@ test.describe('PaymentModuleService', () => {
     test('capturePayment full capture', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
-      const authorized = await service.authorizePaymentSession(session.id)
-      assertDefined(authorized)
+      const authorized = authorizedPayment(await service.authorizePaymentSession(session.id))
 
       const captured = await service.capturePayment({ paymentId: authorized.id })
 
@@ -259,8 +299,7 @@ test.describe('PaymentModuleService', () => {
     test('capturePayment refuses a second capture', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
-      const authorized = await service.authorizePaymentSession(session.id)
-      assertDefined(authorized)
+      const authorized = authorizedPayment(await service.authorizePaymentSession(session.id))
       await service.capturePayment({ paymentId: authorized.id })
 
       await expect(service.capturePayment({ paymentId: authorized.id })).rejects.toMatchObject({
@@ -279,8 +318,7 @@ test.describe('PaymentModuleService', () => {
     test('refundPayment full refund', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
-      const authorized = await service.authorizePaymentSession(session.id)
-      assertDefined(authorized)
+      const authorized = authorizedPayment(await service.authorizePaymentSession(session.id))
       await service.capturePayment({ paymentId: authorized.id })
 
       const refunded = await service.refundPayment({ paymentId: authorized.id })
@@ -294,8 +332,7 @@ test.describe('PaymentModuleService', () => {
     test('refundPayment partial refund', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
-      const authorized = await service.authorizePaymentSession(session.id)
-      assertDefined(authorized)
+      const authorized = authorizedPayment(await service.authorizePaymentSession(session.id))
       await service.capturePayment({ paymentId: authorized.id })
 
       const first = await service.refundPayment({ paymentId: authorized.id, amount: new BigNumber(3000) })
@@ -310,8 +347,7 @@ test.describe('PaymentModuleService', () => {
     test('cancelPayment', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
-      const authorized = await service.authorizePaymentSession(session.id)
-      assertDefined(authorized)
+      const authorized = authorizedPayment(await service.authorizePaymentSession(session.id))
 
       const canceled = await service.cancelPayment(authorized.id)
 
@@ -322,8 +358,7 @@ test.describe('PaymentModuleService', () => {
     test('cancelPayment is idempotent', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
-      const authorized = await service.authorizePaymentSession(session.id)
-      assertDefined(authorized)
+      const authorized = authorizedPayment(await service.authorizePaymentSession(session.id))
 
       const first = await service.cancelPayment(authorized.id)
       const second = await service.cancelPayment(authorized.id)
@@ -346,8 +381,7 @@ test.describe('PaymentModuleService', () => {
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
       expect((await service.retrievePaymentCollection(collection.id)).status).toBe('awaiting')
 
-      const payment = await service.authorizePaymentSession(session.id)
-      assertDefined(payment)
+      const payment = authorizedPayment(await service.authorizePaymentSession(session.id))
       const afterAuth = await service.retrievePaymentCollection(collection.id)
       expect(afterAuth.status).toBe('authorized')
       expect(afterAuth.authorizedAmount).toEqual(new BigNumber(10000))
@@ -745,8 +779,7 @@ test.describe('PaymentModuleService', () => {
     const paidCollection = async (dto: Fixtures['dto']) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
-      const payment = await service.authorizePaymentSession(session.id)
-      assertDefined(payment)
+      const payment = authorizedPayment(await service.authorizePaymentSession(session.id))
       await service.capturePayment({ paymentId: payment.id })
       await service.refundPayment({ paymentId: payment.id, amount: new BigNumber(4000) })
 

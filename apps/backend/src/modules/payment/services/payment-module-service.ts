@@ -6,6 +6,7 @@ import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
   AccountHolderDTO,
+  AuthorizePaymentSessionResult,
   FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
@@ -345,14 +346,14 @@ export class PaymentModuleService implements IPaymentModuleService {
     return updated
   }
 
-  async authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null> {
+  async authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult> {
     this.logger.debug(`Authorizing payment session "${id}"`)
     const session = await this.paymentSessionRepository.findByIdOrFail(id, undefined, context)
 
     // Idempotent — safe to call multiple times
     const payment = await this.paymentRepository.findOne({ paymentSessionId: session.id }, undefined, context)
     if (payment && (payment.capturedAt || session.status === 'authorized')) {
-      return this.retrievePaymentWithRelations_(payment.id, context)
+      return { outcome: 'authorized', payment: await this.retrievePaymentWithRelations_(payment.id, context) }
     }
 
     const provider = await this.paymentProviderService.authorizePayment(session.providerId, {
@@ -374,13 +375,15 @@ export class PaymentModuleService implements IPaymentModuleService {
       context,
     )
 
-    // Async providers (e.g. bank redirect) resolve later via webhook
-    if (status === 'pending_authorization') return null
+    // Confirmed at the provider and still settling — an asynchronous method, or a card the
+    // gateway has not finished deciding on. There is no payment yet and nothing has failed: the
+    // webhook that resolves the intent calls this again and creates one then.
+    if (status === 'pending_authorization') return { outcome: 'pending_authorization' }
 
     // Provider declined or needs more input — no payment to create
     if (status !== 'authorized' && status !== 'captured') {
       await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
-      return null
+      return { outcome: 'not_authorized', sessionStatus: status }
     }
 
     // If anything below fails, cancel at the provider so we don't leave a dangling authorization
@@ -404,7 +407,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
 
-      return this.retrievePaymentWithRelations_(payment.id, context)
+      return { outcome: 'authorized', payment: await this.retrievePaymentWithRelations_(payment.id, context) }
     } catch (error) {
       await this.paymentProviderService.cancelPayment(session.providerId, {
         data: session.data,

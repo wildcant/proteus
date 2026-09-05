@@ -88,7 +88,12 @@ async function processAuthorizedSession(
   action: PaymentActions,
   sessionId: string,
 ): Promise<void> {
-  const payment = await paymentService.authorizePaymentSession(sessionId)
+  const authorization = await paymentService.authorizePaymentSession(sessionId)
+
+  // Nothing to capture unless a payment came out of it. An event can reach here describing an
+  // intent that has since moved on — a redelivery of one the shopper cancelled, or one still
+  // settling — and neither outcome has a payment to take money against.
+  if (authorization.outcome !== 'authorized') return
 
   // Only if the money is not already taken. Stripe redelivers an event until it is
   // acknowledged, and `authorizePaymentSession` captures the payment itself when the intent
@@ -96,7 +101,7 @@ async function processAuthorizedSession(
   // Capturing again cannot take the money twice (`capturePayment` refuses), but it would raise,
   // and a raise here costs three retries for something that already worked. A capture takes the
   // whole authorization, so `capturedAt` settles it: it is set by the only capture there can be.
-  if (action === 'captured' && payment && !payment.capturedAt) {
-    await paymentService.capturePayment({ paymentId: payment.id })
+  if (action === 'captured' && !authorization.payment.capturedAt) {
+    await paymentService.capturePayment({ paymentId: authorization.payment.id })
   }
 }
