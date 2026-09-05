@@ -1,0 +1,17 @@
+# Temporal dynamic config, seeded from temporalio/samples-server:
+# https://github.com/temporalio/samples-server/blob/main/compose/dynamicconfig/development-sql.yaml
+#
+# `temporalio/server` refuses to boot without this file and does not ship one — the image has no
+# /etc/temporal/config/dynamicconfig at all, so the directory holding this file is mounted there and
+# DYNAMIC_CONFIG_FILE_PATH points at it. `temporalio/auto-setup` used to supply its own, which is why
+# nothing like this existed before.
+#
+# Local development only. `forceSearchAttributesCacheRefreshOnRead` below trades throughput for
+# read-your-writes on search attributes; upstream marks it dev-only and it must not be copied into a
+# deployed config.
+limit.maxIDLength:
+  - value: 255
+    constraints: {}
+system.forceSearchAttributesCacheRefreshOnRead:
+  - value: true # Dev setup only. Please don't turn this on in production.
+    constraints: {}
