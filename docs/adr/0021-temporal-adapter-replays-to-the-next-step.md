@@ -190,7 +190,7 @@ which is the point.
   says so itself — so under the suite the same nested run is a second Temporal execution. A green
   `POST /admin/products` under `test:temporal` is therefore evidence about a shape production does
   not use. `src/core/workflows/temporal/__tests__/nested-workflow.server.test.ts` covers the deployed shape directly: it
-  pins the Worker's global engine to `simple` as `container.ts` does, and asserts that the nested
+  pins the Worker's global engine to `simple` as `container.worker.ts` does, and asserts that the nested
   workflow's steps run inside the outer execution's Activity and that none of them reach an Activity
   or Temporal history of their own.
 
