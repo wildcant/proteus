@@ -1,5 +1,6 @@
 import { BigNumber } from '../../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import { PAYMENT_ATTEMPT_IN_FLIGHT } from '../../../core/errors/payment-attempt-code.js'
 import { PAYMENT_METHOD_UNAVAILABLE } from '../../../core/errors/payment-method-code.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -213,6 +214,12 @@ export class PaymentModuleService implements IPaymentModuleService {
    *
    * Superseded sessions are cancelled at the gateway rather than merely forgotten, so a shopper
    * who tries three cards leaves no authorization standing against any of them.
+   *
+   * One attempt is refused instead of superseded: a session at `pending_authorization`. That is
+   * confirmed money the gateway has not finished deciding on, so it is not in
+   * `SUPERSEDABLE_SESSION_STATUSES` and cancelling it is exactly what that set exists to prevent.
+   * Leaving it standing and opening a second session alongside it is the failure described above,
+   * reached by a different road — so this refuses, and says so with its own code.
    */
   async replacePaymentSession(
     paymentCollectionId: string,
@@ -220,6 +227,29 @@ export class PaymentModuleService implements IPaymentModuleService {
     context?: Context,
   ): Promise<PaymentSessionDTO> {
     const collection = await this.retrievePaymentCollection(paymentCollectionId, undefined, context)
+
+    /**
+     * Before anything is superseded, because the answer is "not now" rather than "not this
+     * session": there is nothing to abandon and nothing to open.
+     *
+     * `pending_authorization` only. `authorized` and `captured` are also unsupersedable and also
+     * fall through to `createPaymentSession` today; that predates this guard and is not what it
+     * is here for.
+     *
+     * The message is deliberately the generic one this path already rendered — a shopper whose
+     * retry was refused reads the same words as before. The specificity is in `code`, which is
+     * where a caller that needs to tell the two apart is meant to read it.
+     */
+    const settling = (collection.paymentSessions ?? []).find((session) => session.status === 'pending_authorization')
+    if (settling) {
+      this.logger.debug(`Refusing a new payment session: "${settling.id}" is still settling at the provider`)
+      throw new AppError({
+        type: ErrorTypes.CONFLICT,
+        code: PAYMENT_ATTEMPT_IN_FLIGHT,
+        message: 'The payment could not be processed.',
+      })
+    }
+
     const superseded = (collection.paymentSessions ?? []).filter((session) =>
       SUPERSEDABLE_SESSION_STATUSES.has(session.status),
     )

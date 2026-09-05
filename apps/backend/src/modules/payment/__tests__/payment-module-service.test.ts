@@ -1,5 +1,6 @@
 import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import { PAYMENT_ATTEMPT_IN_FLIGHT } from '@core/errors/payment-attempt-code.js'
 import type { AuthorizePaymentSessionResult, PaymentDTO } from '@core/types/payment/common.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
@@ -453,6 +454,55 @@ test.describe('PaymentModuleService', () => {
         const after = await service.retrievePaymentCollection(collection.id)
         expect(after.paymentSessions?.map((session) => session.id).sort()).toEqual([authorized.id, opened.id].sort())
         expect(mockProvider.deleteSession).not.toHaveBeenCalled()
+      })
+
+      /**
+       * The retry after an async-settling payment, which ILLO-70 made reachable.
+       *
+       * `processing` maps to `pending_authorization` now, so the failed attempt's session
+       * survives cart completion's unwind at that status — and that status is not supersedable.
+       * Left ungated, `replacePaymentSession` would supersede nothing and open a second session
+       * beside it: two live intents on one collection, and `validate-cart-payments` reads
+       * `paymentSessions?.[0]` from an unordered `find`. Pick the new one and the shopper is
+       * charged twice for one order.
+       */
+      test('refuses a second attempt while the first is still settling at the provider', async ({ expect, dto }) => {
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+        const settling = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+        mockProvider.authorizePayment.mockResolvedValueOnce({ status: 'pending_authorization', data: settling.data })
+        await service.authorizePaymentSession(settling.id)
+
+        // The message is asserted alongside the code because it is the one part of this the
+        // shopper reads: it reaches the storefront's failure toast verbatim, and it is deliberately
+        // the same sentence this path rendered before the refusal existed.
+        await expect(
+          service.replacePaymentSession(collection.id, dto.generate.createPaymentSession()),
+        ).rejects.toMatchObject({
+          type: ErrorTypes.CONFLICT,
+          code: PAYMENT_ATTEMPT_IN_FLIGHT,
+          message: 'The payment could not be processed.',
+        })
+
+        // Nothing opened and nothing abandoned — the refusal is the whole of the effect. A second
+        // session here is the double charge; a cancelled first one is money the ledger still counts.
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id)).toEqual([settling.id])
+        expect(mockProvider.deleteSession).not.toHaveBeenCalled()
+      })
+
+      test('still supersedes an attempt that never became money', async ({ expect, dto }) => {
+        // The contrast that keeps the guard narrow: a declined card leaves an `error` session and
+        // an untouched one stays `pending`, and both are still abandoned as they always were.
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+        const declined = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+        mockProvider.authorizePayment.mockResolvedValueOnce({ status: 'error', data: declined.data })
+        await service.authorizePaymentSession(declined.id)
+
+        const reopened = await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id)).toEqual([reopened.id])
+        expect(mockProvider.deleteSession).toHaveBeenCalledTimes(1)
       })
 
       test('refuses to open a new attempt when the old one cannot be cancelled', async ({ expect, dto }) => {
