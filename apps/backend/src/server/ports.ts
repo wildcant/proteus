@@ -25,6 +25,24 @@ export type HttpRequest<T = object> = {
   query: Record<string, unknown>
   validatedQuery: T extends { query: infer Q } ? InferQuery<Q> : Record<string, unknown>
   body: T extends { body: infer B } ? InferField<B> : unknown
+  /**
+   * The request body exactly as it arrived, before any parsing. Only routes verifying a
+   * signature over the transmitted bytes need it — everything else reads `body`, and a
+   * re-serialisation of `body` is not a substitute: it differs from what was signed.
+   *
+   * Absent when the platform adapter had no body to read, and when a route handler is called
+   * directly rather than over HTTP.
+   */
+  rawBody?: Uint8Array
+  /**
+   * Keeps work alive past the response, on a platform that would otherwise cancel it.
+   *
+   * workerd tears down pending async work the moment a `fetch` handler's response is delivered,
+   * so anything scheduled for after the response has to be handed back through the execution
+   * context or it silently never runs. Node has no such context and needs none — the process
+   * outlives the response — so this is absent there and callers must work without it.
+   */
+  waitUntil?: (work: Promise<unknown>) => void
   files?: File[]
   scope: AwilixContainer
   headers: Record<string, string>

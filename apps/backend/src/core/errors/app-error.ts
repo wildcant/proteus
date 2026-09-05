@@ -9,11 +9,19 @@ export enum ErrorTypes {
   DB_ERROR = 'db_error',
   UNEXPECTED_STATE = 'unexpected_state',
   INVALID_ARGUMENT = 'invalid_argument',
+  /** A dependency we do not own is down or throttling us. The caller may retry; nothing is wrong
+   *  with the request itself, which is what separates this from every other type here. */
+  SERVICE_UNAVAILABLE = 'service_unavailable',
 }
 
 export class AppError extends Error {
   __isAppError = true
   type: ErrorTypes
+  /**
+   * The specific reason, where the type alone is too coarse for a client to act on —
+   * `payment_method_unavailable` against a `conflict`, say. It reaches the response body, so it
+   * is an authored constant and never a third party's string.
+   */
   code?: string | undefined
   date: Date
 

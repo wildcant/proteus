@@ -1,5 +1,5 @@
 import { BigNumber } from '@core/bignumber.js'
-import { ErrorTypes } from '@core/errors/app-error.js'
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -21,6 +21,10 @@ import type { PaymentProviderService } from '../services/payment-provider-servic
 
 const cascadeGraph = buildCascadeGraph(models)
 
+/** Two fixed instants, so "most recent" is a fact about the data and not about the clock. */
+const OLDER = new Date('2026-01-01T00:00:00Z')
+const NEWER = new Date('2026-06-01T00:00:00Z')
+
 function createMockProviderService() {
   return {
     createSession: vi.fn().mockResolvedValue({
@@ -38,9 +42,10 @@ function createMockProviderService() {
     refundPayment: vi.fn().mockResolvedValue({ data: {} }),
     createAccountHolder: vi.fn().mockResolvedValue({ id: 'acct_ext_1', data: {} }),
     deleteAccountHolder: vi.fn().mockResolvedValue({ data: {} }),
-    listPaymentMethods: vi.fn().mockResolvedValue([{ id: 'pm_1', data: { last4: '4242' } }]),
+    listPaymentMethods: vi.fn().mockResolvedValue([]),
     savePaymentMethod: vi.fn().mockResolvedValue({ id: 'pm_saved_1', data: { last4: '4242' } }),
     deletePaymentMethod: vi.fn().mockResolvedValue({}),
+    setDefaultPaymentMethod: vi.fn().mockResolvedValue({}),
     list: vi.fn().mockResolvedValue([]),
     getWebhookActionAndData: vi.fn().mockResolvedValue({ action: 'authorized' }),
   }
@@ -53,11 +58,14 @@ let mockProvider: ReturnType<typeof createMockProviderService>
  *  them through. These two are how the second hop is asserted at all. */
 let captureRepository: CaptureRepository
 let refundRepository: RefundRepository
+/** Held so the concurrency tests can force the interleave a shared database client prevents. */
+let accountHolderRepository: AccountHolderRepository
 
 test.beforeEach(({ getDb, logger }) => {
   mockProvider = createMockProviderService()
   captureRepository = new CaptureRepository({ getDb, cascadeGraph })
   refundRepository = new RefundRepository({ getDb, cascadeGraph })
+  accountHolderRepository = new AccountHolderRepository({ getDb, cascadeGraph })
 
   service = new PaymentModuleService({
     paymentCollectionRepository: new PaymentCollectionRepository({ getDb, cascadeGraph }),
@@ -66,7 +74,7 @@ test.beforeEach(({ getDb, logger }) => {
     captureRepository,
     refundRepository,
     refundReasonRepository: new RefundReasonRepository({ getDb, cascadeGraph }),
-    accountHolderRepository: new AccountHolderRepository({ getDb, cascadeGraph }),
+    accountHolderRepository,
     paymentProviderService: mockProvider as unknown as PaymentProviderService,
     withTransaction: createWithTransaction(getDb),
     logger,
@@ -241,23 +249,31 @@ test.describe('PaymentModuleService', () => {
       expect(captured.captures[0]?.amount).toEqual(new BigNumber(10000))
     })
 
-    test('capturePayment partial capture', async ({ expect, dto }) => {
+    /**
+     * Replaces a partial-capture test. Partial capture is gone — see *Partial capture* in the
+     * spec's Out of Scope — so its premise no longer exists: there is no state in which a payment
+     * is captured for part of its amount. What is worth pinning instead is the refusal that
+     * replaces it, because the webhook route's acknowledgement of a redelivered event depends on
+     * a second capture being refused rather than taking the money again.
+     */
+    test('capturePayment refuses a second capture', async ({ expect, dto }) => {
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
       const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
       const authorized = await service.authorizePaymentSession(session.id)
       assertDefined(authorized)
+      await service.capturePayment({ paymentId: authorized.id })
 
-      const firstCapture = await service.capturePayment({ paymentId: authorized.id, amount: new BigNumber(4000) })
+      await expect(service.capturePayment({ paymentId: authorized.id })).rejects.toMatchObject({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: `Payment "${authorized.id}" has already been fully captured.`,
+      })
 
-      expect(firstCapture.capturedAt).toBeNull()
-      expect(firstCapture.captures).toHaveLength(1)
-      assertDefined(firstCapture.captures)
-      expect(firstCapture.captures[0]?.amount).toEqual(new BigNumber(4000))
-
-      const secondCapture = await service.capturePayment({ paymentId: authorized.id, amount: new BigNumber(6000) })
-
-      expect(secondCapture.capturedAt).toBeInstanceOf(Date)
-      expect(secondCapture.captures).toHaveLength(2)
+      // The gateway was asked once and the ledger holds one row for the whole authorization.
+      expect(mockProvider.capturePayment).toHaveBeenCalledOnce()
+      const payment = await service.retrievePayment(authorized.id)
+      expect(payment.captures).toHaveLength(1)
+      assertDefined(payment.captures)
+      expect(payment.captures[0]?.amount).toEqual(new BigNumber(10000))
     })
 
     test('refundPayment full refund', async ({ expect, dto }) => {
@@ -341,6 +357,85 @@ test.describe('PaymentModuleService', () => {
       expect(afterCapture.status).toBe('completed')
       expect(afterCapture.capturedAmount).toEqual(new BigNumber(10000))
       expect(afterCapture.completedAt).toBeInstanceOf(Date)
+    })
+
+    /**
+     * The retry path. Every Place order press opens a session, so without this a shopper who is
+     * declined and reaches for a second card leaves two — two intents at the gateway, one of them
+     * confirmed, and cart completion authorizing whichever row came back first.
+     */
+    test.describe('replacePaymentSession', () => {
+      test('abandons the previous attempt instead of adding to it', async ({ expect, dto }) => {
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+        const first = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        const second = await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id)).toEqual([second.id])
+        expect(first.id).not.toBe(second.id)
+      })
+
+      test('cancels the abandoned attempt at the gateway rather than forgetting it', async ({ expect, dto }) => {
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+        await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        // A forgotten session is an authorization left standing against the shopper's card.
+        expect(mockProvider.deleteSession).toHaveBeenCalledTimes(1)
+      })
+
+      test('leaves no authorization standing when a shopper tries three cards', async ({ expect, dto }) => {
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+
+        await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+        await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+        const third = await service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id)).toEqual([third.id])
+        expect(mockProvider.deleteSession).toHaveBeenCalledTimes(2)
+      })
+
+      test('will not abandon a session that has become money', async ({ expect, dto }) => {
+        // The guard on the status set. An authorized session is a claim on the shopper's funds
+        // that the collection's own totals are already accounting for; cancelling it quietly
+        // would leave the ledger describing money that no longer exists.
+        const collection = await service.createPaymentCollection(
+          dto.generate.createPaymentCollection({ amount: new BigNumber(20000) }),
+        )
+        const authorized = await service.createPaymentSession(
+          collection.id,
+          dto.generate.createPaymentSession({ amount: new BigNumber(10000) }),
+        )
+        await service.authorizePaymentSession(authorized.id)
+
+        const opened = await service.replacePaymentSession(
+          collection.id,
+          dto.generate.createPaymentSession({ amount: new BigNumber(10000) }),
+        )
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id).sort()).toEqual([authorized.id, opened.id].sort())
+        expect(mockProvider.deleteSession).not.toHaveBeenCalled()
+      })
+
+      test('refuses to open a new attempt when the old one cannot be cancelled', async ({ expect, dto }) => {
+        // Opening a second attempt while the first may have taken money is worse than refusing:
+        // the shopper sees the failure and can press again, and the cancel carries a stable
+        // idempotency key, so the retry is the same operation rather than a new one.
+        const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+        const first = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+        mockProvider.deleteSession.mockRejectedValueOnce(new Error('gateway refused the cancellation'))
+
+        await expect(service.replacePaymentSession(collection.id, dto.generate.createPaymentSession())).rejects.toThrow(
+          /gateway refused the cancellation/,
+        )
+
+        const after = await service.retrievePaymentCollection(collection.id)
+        expect(after.paymentSessions?.map((session) => session.id)).toEqual([first.id])
+      })
     })
 
     test('partial authorization sets partially_authorized', async ({ expect, dto }) => {
@@ -441,32 +536,177 @@ test.describe('PaymentModuleService', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // PaymentMethods (provider-managed, no DB table)
+  // The wallet (provider-managed, no DB table)
   // ---------------------------------------------------------------------------
 
-  test.describe('PaymentMethods', () => {
-    test('createPaymentMethods', async ({ expect }) => {
-      const result = await service.createPaymentMethods([
-        { providerId: 'system', data: { token: 'tok_123' }, context: {} },
+  test.describe('The wallet', () => {
+    /** A customer id per test: the account holder table is unique on (provider, customer). */
+    const customerId = () => `cus_${Math.random().toString(36).slice(2)}`
+
+    test("lists the customer's methods, default first and then most recent", async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      mockProvider.listPaymentMethods.mockResolvedValue([
+        { id: 'pm_old', brand: 'visa', last4: '1111', expMonth: 1, expYear: 2030, isDefault: false, createdAt: OLDER },
+        { id: 'pm_new', brand: 'visa', last4: '2222', expMonth: 1, expYear: 2030, isDefault: false, createdAt: NEWER },
+        {
+          id: 'pm_default',
+          brand: 'amex',
+          last4: '3333',
+          expMonth: 1,
+          expYear: 2030,
+          isDefault: true,
+          createdAt: OLDER,
+        },
       ])
+      await service.ensureAccountHolders({ customerId: customer })
 
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual({ id: 'pm_saved_1', data: { last4: '4242' }, providerId: 'system' })
-      expect(mockProvider.savePaymentMethod).toHaveBeenCalledOnce()
+      const result = await service.listSavedMethods(customer)
+
+      // The default leads even though it is the oldest — otherwise the two surfaces that render
+      // this list would each have to decide, and could disagree.
+      expect(result.map((method) => method.id)).toEqual(['pm_default', 'pm_new', 'pm_old'])
     })
 
-    test('listPaymentMethods', async ({ expect }) => {
-      const result = await service.listPaymentMethods({ providerId: 'system', context: { customerId: 'cus_1' } })
+    test('lists nothing for a customer with no account holder, without asking a gateway', async ({ expect }) => {
+      const result = await service.listSavedMethods(customerId())
 
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual({ id: 'pm_1', data: { last4: '4242' }, providerId: 'system' })
-      expect(mockProvider.listPaymentMethods).toHaveBeenCalledOnce()
+      expect(result).toEqual([])
+      expect(mockProvider.listPaymentMethods).not.toHaveBeenCalled()
     })
 
-    test('deletePaymentMethods', async ({ expect }) => {
-      await service.deletePaymentMethods([{ id: 'pm_1', providerId: 'system' }])
+    test('detaches through the provider holding the account', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      await service.ensureAccountHolders({ customerId: customer })
+
+      await service.deleteSavedMethod(customer, 'pm_1')
 
       expect(mockProvider.deletePaymentMethod).toHaveBeenCalledOnce()
+    })
+
+    test('answers payment_method_unavailable when no provider holds the method', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      await service.ensureAccountHolders({ customerId: customer })
+      mockProvider.deletePaymentMethod.mockRejectedValue(
+        new AppError({
+          type: ErrorTypes.CONFLICT,
+          code: 'payment_method_unavailable',
+          message: 'That payment method is no longer available.',
+        }),
+      )
+
+      await expect(service.deleteSavedMethod(customer, 'pm_stranger')).rejects.toMatchObject({
+        type: ErrorTypes.CONFLICT,
+        code: 'payment_method_unavailable',
+      })
+    })
+
+    test('a provider without setDefaultPaymentMethod needs no stub and does not break', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      await service.ensureAccountHolders({ customerId: customer })
+      // What `PaymentProviderService` answers for a provider that does not implement it at all.
+      mockProvider.setDefaultPaymentMethod.mockResolvedValue(undefined)
+
+      // The call is refused rather than throwing a TypeError, and the wallet's other operations
+      // are unaffected — which is the whole promise of the operation being optional.
+      await expect(service.setDefaultSavedMethod(customer, 'pm_1')).rejects.toMatchObject({
+        code: 'payment_method_unavailable',
+      })
+      await expect(service.listSavedMethods(customer)).resolves.toBeDefined()
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // Account holders
+  // ---------------------------------------------------------------------------
+
+  test.describe('ensureAccountHolders', () => {
+    const customerId = () => `cus_${Math.random().toString(36).slice(2)}`
+
+    test('creates one on first need and reuses it on the next checkout', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+
+      const first = await service.ensureAccountHolders({ customerId: customer, email: 'ada@example.com' })
+      const second = await service.ensureAccountHolders({ customerId: customer, email: 'ada@example.com' })
+
+      expect(first).toHaveLength(1)
+      expect(second.map((holder) => holder.id)).toEqual(first.map((holder) => holder.id))
+      expect(mockProvider.createAccountHolder).toHaveBeenCalledOnce()
+    })
+
+    /**
+     * Both callers see an empty wallet, which is what "at the same moment" means and what timing
+     * alone cannot produce here.
+     *
+     * `Promise.all` over two `ensureAccountHolders` looks like a race and is not one: the two
+     * calls share a database client, so the first INSERT commits before the second SELECT is
+     * issued and the second simply finds the row. Stubbing the lookup is the only way to reach
+     * the interleave the criterion names — and the recovery branch it exists to protect.
+     *
+     * Two calls stubbed, one per caller. Everything after them, including the recovery's own
+     * read-back, goes to the real database, so the duplicate is a real unique violation and the
+     * winner is a real row.
+     */
+    function bothSeeAnEmptyWallet() {
+      vi.spyOn(accountHolderRepository, 'find').mockResolvedValueOnce([]).mockResolvedValueOnce([])
+    }
+
+    test('two checkouts at the same moment leave one, when the gateway replays its own id', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      // What Stripe does with a replayed idempotency key: both callers are handed the same
+      // Customer. The loser's insert therefore collides on (provider, external) first — the
+      // index that has nothing to do with the customer, and the order a real race produces.
+      bothSeeAnEmptyWallet()
+
+      const [first, second] = await Promise.all([
+        service.ensureAccountHolders({ customerId: customer }),
+        service.ensureAccountHolders({ customerId: customer }),
+      ])
+
+      // The loser read the winner's row rather than failing the shopper's checkout.
+      expect(first[0]?.id).toBeDefined()
+      expect(first[0]?.id).toBe(second[0]?.id)
+      expect(await service.listAccountHolders({ customerId: customer })).toHaveLength(1)
+    })
+
+    test('two checkouts at the same moment leave one, when the gateway hands out two ids', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      // A gateway that does not replay — or a key that has expired at it. The external ids now
+      // differ, so (provider, external) cannot collide and (provider, customer) is the index that
+      // refuses the loser. The read-back has to find the winner under this order too.
+      mockProvider.createAccountHolder
+        .mockResolvedValueOnce({ id: 'acct_ext_first', data: {} })
+        .mockResolvedValueOnce({ id: 'acct_ext_second', data: {} })
+      bothSeeAnEmptyWallet()
+
+      const [first, second] = await Promise.all([
+        service.ensureAccountHolders({ customerId: customer }),
+        service.ensureAccountHolders({ customerId: customer }),
+      ])
+
+      expect(first[0]?.id).toBeDefined()
+      expect(first[0]?.id).toBe(second[0]?.id)
+      const surviving = await service.listAccountHolders({ customerId: customer })
+      expect(surviving).toHaveLength(1)
+      // Whichever won, the row both callers hold is the row that exists.
+      expect(surviving[0]?.id).toBe(first[0]?.id)
+    })
+
+    test('creates nothing for a provider with no account-holder concept', async ({ expect }) => {
+      const customer = customerId()
+      mockProvider.list.mockResolvedValue([{ id: 'system', isEnabled: true }])
+      mockProvider.createAccountHolder.mockResolvedValue(undefined)
+
+      const holders = await service.ensureAccountHolders({ customerId: customer })
+
+      expect(holders).toEqual([])
+      expect(await service.listAccountHolders({ customerId: customer })).toEqual([])
     })
   })
 

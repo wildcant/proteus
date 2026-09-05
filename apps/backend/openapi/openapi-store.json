@@ -1290,6 +1290,51 @@
           "deletedAt"
         ]
       },
+      "StoreUpdatePaymentSessionResponse": {
+        "type": "object",
+        "properties": {
+          "paymentSession": {
+            "$ref": "#/components/schemas/StorePaymentSession"
+          }
+        },
+        "required": ["paymentSession"]
+      },
+      "StoreSavedMethodListResponse": {
+        "type": "object",
+        "properties": {
+          "paymentMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreSavedMethod"
+            }
+          }
+        },
+        "required": ["paymentMethods"]
+      },
+      "StoreSavedMethod": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "last4": {
+            "type": "string"
+          },
+          "expMonth": {
+            "type": "integer"
+          },
+          "expYear": {
+            "type": "integer"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "brand", "last4", "expMonth", "expYear", "isDefault"]
+      },
       "StorePaymentProviderListResponse": {
         "type": "object",
         "properties": {
@@ -1316,9 +1361,13 @@
           },
           "isTestOnly": {
             "type": "boolean"
+          },
+          "publicConfig": {
+            "type": "object",
+            "additionalProperties": {}
           }
         },
-        "required": ["id", "isEnabled", "label", "isTestOnly"]
+        "required": ["id", "isEnabled", "label", "isTestOnly", "publicConfig"]
       },
       "StoreProductListResponse": {
         "type": "object",
@@ -2750,6 +2799,156 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreCreatePaymentSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/payment-collections/{id}/payment-sessions/{sessionId}": {
+      "patch": {
+        "operationId": "updateStorePaymentSession",
+        "summary": "Re-price a payment session from the cart's server-side total",
+        "tags": ["Payment Collections"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "sessionId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreUpdatePaymentSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/payment-methods": {
+      "get": {
+        "operationId": "listStorePaymentMethods",
+        "summary": "List the authenticated customer's saved payment methods",
+        "tags": ["Payments"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreSavedMethodListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/payment-methods/{id}": {
+      "delete": {
+        "operationId": "deleteStorePaymentMethod",
+        "summary": "Remove a saved payment method",
+        "tags": ["Payments"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/payment-methods/{id}/default": {
+      "post": {
+        "operationId": "setStoreDefaultPaymentMethod",
+        "summary": "Nominate the default payment method",
+        "tags": ["Payments"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreSavedMethodListResponse"
                 }
               }
             }

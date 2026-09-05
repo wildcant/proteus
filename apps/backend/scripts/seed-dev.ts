@@ -486,7 +486,7 @@ if (customerIdentity) {
       customerId = existingCustomers[0].id
     } else {
       const [created] = await customerService.createCustomers([
-        { id: DEV_CUSTOMER_ID, firstName: 'Dev', lastName: 'Customer', email: DEV_CUSTOMER_EMAIL },
+        { id: DEV_CUSTOMER_ID, firstName: 'Dev', lastName: 'Customer', email: DEV_CUSTOMER_EMAIL, hasAccount: true },
       ])
       if (!created) throw new Error('Failed to create dev customer entity')
       customerId = created.id

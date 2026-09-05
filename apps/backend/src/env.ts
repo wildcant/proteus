@@ -20,6 +20,12 @@ const envSchema = z.object({
   // Stripe
   STRIPE_SECRET_KEY: z.string(),
   STRIPE_WEBHOOK_SECRET: z.string(),
+  /**
+   * Publishable, and therefore not a secret: it is served to every storefront through
+   * `GET /store/payment-providers`. It is still required, because a deployment without one
+   * boots a checkout whose card form cannot mount.
+   */
+  STRIPE_PUBLISHABLE_KEY: z.string(),
 
   // Sendgrid
   // SENDGRID_API_KEY: z.string(),

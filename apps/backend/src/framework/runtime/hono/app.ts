@@ -1,5 +1,5 @@
 import type { AwilixContainer } from 'awilix'
-import { Hono } from 'hono'
+import { type Context, Hono } from 'hono'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import qs from 'qs'
@@ -13,6 +13,29 @@ import { corsHeaders } from '../../http/cors.js'
 import { extractFiles } from '../../http/multipart.js'
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
+
+const utf8 = new TextDecoder('utf8')
+
+/** Matches the adapter's previous `c.req.json().catch(...)`: a body that is not JSON is simply
+ *  absent, and the route's own schema validation is what reports that. */
+function parseJsonBody(rawBody: Uint8Array): unknown {
+  try {
+    return JSON.parse(utf8.decode(rawBody))
+  } catch {
+    return undefined
+  }
+}
+
+/** Hono throws on `c.executionCtx` when the platform supplies none, so this is a `try`, not a
+ *  `?.` — and the absence is legitimate: it is what running under Node looks like. */
+function executionContextOf(c: Context): ((work: Promise<unknown>) => void) | undefined {
+  try {
+    const executionCtx = c.executionCtx
+    return (work) => executionCtx.waitUntil(work)
+  } catch {
+    return undefined
+  }
+}
 
 type CreateHonoAppOptions = {
   routes: PreparedRoute[]
@@ -59,12 +82,21 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
 
       const multipart = hasBody && isMultipart(c.req.header('content-type'))
       const files = multipart ? await extractFiles(c.req.raw) : undefined
-      const body = multipart ? undefined : hasBody ? await c.req.json().catch(() => undefined) : undefined
+
+      // Read once, then parse those same bytes. A route verifying a gateway signature needs
+      // exactly what was transmitted, and re-serialising the parsed body does not reproduce it.
+      const rawBody = multipart || !hasBody ? undefined : new Uint8Array(await c.req.arrayBuffer())
+      const body = rawBody ? parseJsonBody(rawBody) : undefined
 
       const headers: Record<string, string> = {}
       c.req.raw.headers.forEach((value, key) => {
         headers[key] = value
       })
+
+      // Read through `c.executionCtx` rather than a captured global: it is per-request, and on a
+      // platform that does not provide one (the test harness, `app.request(...)`) Hono throws
+      // rather than returning undefined.
+      const waitUntil = executionContextOf(c)
 
       logger.http(`${c.req.method} ${url.pathname}`)
       try {
@@ -73,6 +105,8 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
           query,
           validatedQuery: {},
           body,
+          rawBody,
+          waitUntil,
           files,
           headers,
           scope: container.createScope(),

@@ -23,7 +23,7 @@
     "test:temporal": "dotenvx run -f ../../.env.test -- vitest run --config vitest.temporal.config.ts",
     "test:temporal:server": "dotenvx run -f ../../.env.test -- vitest run --config vitest.temporal-server.config.ts",
     "test:api": "dotenvx run -f ../../.env.test -- vitest run src/api",
-    "test:gate": "dotenvx run -f ../../.env.test -- vitest run src/api src/modules/product/utils",
+    "test:gate": "dotenvx run -f ../../.env.test -- vitest run src/api src/core/utils src/modules/payment src/modules/product/utils src/providers/payment-stripe src/framework/runtime",
     "db:test:up": "docker compose -f docker-compose.test.yml up -d --wait",
     "db:test:down": "docker compose -f docker-compose.test.yml down",
     "typecheck": "tsc --noEmit",

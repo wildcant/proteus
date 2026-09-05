@@ -1,12 +1,14 @@
 import type { CartAddressInputBody, StoreCompleteCartResponse } from '@proteus/http-schemas/store'
 import { formOptions } from '@tanstack/react-form'
-import { useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
 import { z } from 'zod'
 import { useLogout } from '#/features/auth/api/auth'
 import type { SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
-import { useCompleteCart, useUpdateCart } from '../api/checkout'
 import { CheckoutAddress } from '../checkout-address'
+import { useCompleteOrder } from '../payment/complete-order'
+import { checkoutReturnUrl } from '../payment/return-url'
+import { usePlaceOrder } from '../payment/use-place-order'
 import type { CheckoutData } from './use-checkout-data'
 
 const checkoutSchema = z.object({
@@ -61,16 +63,20 @@ type CheckoutFormParams = SubmitFormParams<StoreCompleteCartResponse> & {
   data: CheckoutData
 }
 
-export function useCheckoutForm(params?: CheckoutFormParams) {
-  const navigate = useNavigate()
-  const updateCart = useUpdateCart()
-  const completeCart = useCompleteCart()
+export function useCheckoutForm(params: CheckoutFormParams) {
+  const { completeOrder, isCompleting } = useCompleteOrder()
+  const { controller, confirmPayment, isPaying } = usePlaceOrder(params.data.cart.id)
+  /**
+   * What the gateway said, in the shopper's words. Held here rather than as a field error: it is
+   * not about a field they can correct, and it has to survive the submit that produced it.
+   */
+  const [paymentError, setPaymentError] = useState<string | null>(null)
   // Stay in checkout rather than falling home. Signing out here almost always means "wrong
   // account", not "I'm done" — the cart survives the sign-out, so the order should too. Naming
   // the route rather than staying put also closes any address drawer, which a guest cannot reopen.
   const logout = useLogout({ redirectTo: '/checkout' })
 
-  const { customer, addresses, cartAddresses } = params?.data ?? {}
+  const { customer, addresses, cartAddresses } = params.data
   const billingAddress = addresses?.find((address) => address.isDefaultShipping)
   const defaultBillingAddress = billingAddress ? cartAddresses?.get(billingAddress.id) : null
   const defaultValues: CheckoutFormValues = {
@@ -83,20 +89,31 @@ export function useCheckoutForm(params?: CheckoutFormParams) {
     defaultValues,
     validators: { onSubmit: checkoutSchema },
     onSubmit: async ({ value }) => {
+      setPaymentError(null)
       try {
-        await updateCart.mutateAsync({
-          billingAddress: value.billingAddress,
-          shippingAddress: value.shippingAddress,
-          email: value.email,
+        const outcome = await confirmPayment({
+          values: value,
+          returnUrl: checkoutReturnUrl(value.paymentProviderId),
         })
-        const response = await completeCart.mutateAsync()
+
+        // The tab is on its way to the gateway. Anything done here would be done twice: the
+        // return route picks the sequence up at cart completion.
+        if (outcome.kind === 'redirecting') return
+
+        // `processing` is a method that settles later. The order is created now and the webhook
+        // reconciles the money, which is the deferred-authorization path the backend already has.
+        if (outcome.kind !== 'succeeded' && outcome.kind !== 'processing') {
+          setPaymentError(paymentFailureMessage(outcome))
+          return
+        }
+
+        const response = await completeOrder()
         form.reset()
-        params?.onSuccess?.(response)
-        navigate({ to: '/order/$orderId/confirmed', params: { orderId: response.orderId } })
+        params.onSuccess?.(response)
       } catch (error) {
-        params?.onError?.(error instanceof Error ? error.message : 'Failed to place the order')
+        params.onError?.(error instanceof Error ? error.message : 'Failed to place the order')
       } finally {
-        params?.onSettled?.()
+        params.onSettled?.()
       }
     },
   })
@@ -119,7 +136,27 @@ export function useCheckoutForm(params?: CheckoutFormParams) {
     form.handleSubmit()
   }
 
-  return { form, placeOrder, signOut, isLoading: completeCart.isPending || updateCart.isPending }
+  return {
+    form,
+    placeOrder,
+    signOut,
+    controller,
+    paymentError,
+    isLoading: isPaying || isCompleting,
+  }
+}
+
+/**
+ * The two non-success outcomes the checkout can be handed.
+ *
+ * `customerMessage` arrives already sanitised by the adapter that knows the gateway's error
+ * vocabulary, so nothing here has to decide what is safe to print.
+ */
+function paymentFailureMessage(outcome: { kind: 'failed'; customerMessage: string } | { kind: 'staleMethod' }): string {
+  if (outcome.kind === 'failed') return outcome.customerMessage
+  // The selector has already refetched the wallet and dropped the selection back to the new-method
+  // form by the time this renders — see `usePlaceOrder`. This is the half that says why.
+  return 'That saved card is no longer available. Please choose another card or enter a new one.'
 }
 
 export type CheckoutForm = ReturnType<typeof useCheckoutForm>['form']

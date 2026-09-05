@@ -161,6 +161,7 @@ Future features TODOs
 Future Infra TODOs
 - Monitoring
 - temporal as a workflow adapter, allow to trace/retry/persist/resume workflows (https://www.youtube.com/watch?v=WjzojcyNp4U) (https://hub.docker.com/r/temporalio/server) (https://docs.temporal.io/design-patterns/saga-pattern?language=typescript) (https://github.com/temporalio/samples-typescript/blob/main/saga/src/workflows.ts)
+- cloudflare workflows (https://developers.cloudflare.com/workflows/) as replacement of simple workflows for workerd. Temporal has serverless support but only google and aws (https://docs.temporal.io/demos/serverless-workers)
 - aws deployment
 - default indexes in all tables with deleted_at.
 - composing workflows
@@ -171,7 +172,7 @@ Future Infra TODOs
   create-order-fulfillment are still on mocks, blocked on the reservation keying bug above.
 - features flags
 - event bus: investigate pgmq (see docs/research/event-subscriber-system/) and cloudflare queues
-  - Related video: https://www.youtube.com/watch?v=ACVevIlWEfM
+  - Medusa events module: https://docs.medusajs.com/resources/infrastructure-modules/event/create, https://docs.medusajs.com/resources/infrastructure-modules/event/redis, https://docs.medusajs.com/resources/references/event-service
 ![event](./subscriber-example.png)
 - NOTIFICATION QUEUE: order confirmation sends inside the checkout request. Can't just drop the await — on Workers
   withConnection closes the DB client when the handler resolves. Module is already outbox-shaped (pending status,
