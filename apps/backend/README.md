@@ -19,6 +19,10 @@ docker compose -f apps/backend/docker-compose.yml up -d --wait   # postgres, tem
 npm run --workspace=backend dev
 ```
 
+On a volume that has never been migrated, use `npm run --workspace=backend stack:reset` instead: the
+`worker` service reads `proteus` at boot and exits if the tables are not there, and only that script
+gets Postgres migrated before the Worker starts looking for it.
+
 That is the whole setup. The stack includes a **`worker` service** that polls `proteus`, so a
 workflow route works with nothing started by hand. `--wait` returns once the Worker is actually
 polling — the healthcheck asks Temporal for the queue's pollers rather than checking that a process
@@ -49,15 +53,41 @@ The Worker needs `@temporalio/core-bridge`, a native addon, so it is a **Node-on
 `npm run dev:workerd` and the Cloudflare deployment neither run nor bundle it — which is also why the
 container carries its own `node_modules` instead of mounting the host's.
 
+### Three services, not one
+
+`temporalio/server` does nothing but serve. It does not create its databases, it does not migrate
+their schemas, it does not register a namespace, and it will not start without a dynamic-config file
+it does not ship. The deprecated `temporalio/auto-setup` image did all four on first boot; that is
+the only thing it did, and it is why replacing it turns one compose service into three:
+
+| Service | Image | What it does |
+|---|---|---|
+| `temporal-schema` | `temporalio/admin-tools` | Creates `temporal` and `temporal_visibility` and migrates both schemas, then exits. The server waits on it with `service_completed_successfully`. |
+| `temporal` | `temporalio/server` | The frontend on `:7233`. Reads `temporal/dynamicconfig/development-sql.yaml`, mounted at `/etc/temporal/config/dynamicconfig`. |
+| `temporal-create-namespace` | `temporalio/admin-tools` | Waits for `SERVING`, registers `default`, then exits. |
+
+The shape and both shell scripts are the official ones from
+[temporalio/samples-server](https://github.com/temporalio/samples-server/tree/main/compose), vendored
+into `scripts/temporal/compose/` — re-sync by overwriting them, and read the header of
+`create-namespace.sh` first, which carries a one-character fix to an upstream bug.
+
+**`temporal-create-namespace` is what the rest of the stack waits on, not `temporal`.** The server
+image is one binary plus busybox, with no `temporal` CLI in it, so its own healthcheck can only ask
+whether the port is open. The namespace service polls `operator cluster health` before it does
+anything and creates the namespace every client here connects to, so "that service exited 0" is the
+stronger and more useful signal — `worker` and `temporal-ui` both depend on it.
+
 ### It shares the Postgres you already have
 
-`temporalio/auto-setup` points at the existing `postgres` service and creates two databases of its
-own, `temporal` and `temporal_visibility`, alongside `proteus`. One server, one volume, three
-databases.
+Temporal points at the existing `postgres` service rather than bringing its own, so its two databases
+sit alongside `proteus`. One server, one volume, three databases. (The upstream sample runs a second
+Postgres with its own `temporal`/`temporal` user; that part is deliberately not copied.)
 
 The one thing worth knowing: **`npm run db:reset` is safe.** It drops and recreates `proteus` only,
-so workflow history survives. `docker compose down -v` is the command that destroys it, along with
-everything else in the volume.
+so workflow history survives. `npm run stack:reset` is the command that destroys it — `down -v`, then
+Postgres, migrate, seed, and the rest of the stack, with `temporal-schema` rebuilding Temporal's two
+databases from empty. That teardown-and-rebuild is the supported way to move Temporal versions here;
+nothing is deployed, so there is no history worth migrating forward.
 
 ### Configuration
 
