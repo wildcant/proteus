@@ -1,9 +1,9 @@
-import { formatPrice } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { ShoppingBagIcon } from 'lucide-react'
 import type { StoreCartLineItem } from '#/api/generated/model'
 import { QuantityStepper } from '#/features/cart/components/quantity-stepper'
 import { useLineItemQuantity } from '#/features/cart/hooks/use-line-item-quantity'
+import { useFormatters } from '#/lib/use-formatters'
 
 /** The ceiling the PDP already enforces, restated here so the panel cannot exceed it. */
 const MAX_QUANTITY = 10
@@ -16,6 +16,7 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
   // Not disabled while saving — the hook holds the value and debounces, so taps land on the click.
   // Removing still blocks, because the row is on its way out.
   const { quantity, setQuantity, remove, isRemoving } = useLineItemQuantity(item)
+  const { formatPrice } = useFormatters()
 
   return (
     <li className="flex gap-3">

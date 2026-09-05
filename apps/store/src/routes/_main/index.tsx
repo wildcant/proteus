@@ -28,7 +28,11 @@ export const Route = createFileRoute('/_main/')({
   // value for — a cold hit on `?offset=24` would otherwise be SSR'd as page 1.
   loaderDeps: ({ search }) => ({ q: search.q, sort: search.sort, offset: search.offset }),
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(productsListQueryOptions(productsPageQuery(deps)))
+    // The market's country goes in with the rest of the page's parameters: it is what the backend
+    // prices the response in, so a loader that left it out would SSR one market's catalogue at
+    // another's currency and then swap it on hydration.
+    const query = productsPageQuery({ ...deps, countryCode: context.market.current.iso2 })
+    await context.queryClient.ensureQueryData(productsListQueryOptions(query))
   },
   headers: () => ({
     'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',

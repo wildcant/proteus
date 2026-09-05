@@ -26,6 +26,7 @@ function buildPricePayload(initial: PriceRow[], current: PriceRow[]): AdminUpdat
     }
     prices.push({
       ...(row.id ? { id: row.id } : {}),
+      currencyCode: row.currencyCode,
       amount: row.amount,
     })
   }

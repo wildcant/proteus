@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "imports": {
     "#/*": "./src/*"
@@ -31,5 +32,8 @@
     "@tanstack/react-router": "latest",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.5"
   }
 }

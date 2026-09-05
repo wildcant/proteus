@@ -1,9 +1,11 @@
-import { formatPrice } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { PackageIcon } from 'lucide-react'
 import type { StoreProductListItem } from '#/api/generated/model'
+import { useFormatters } from '#/lib/use-formatters'
 
 export function ProductCard({ product, priority }: { product: StoreProductListItem; priority?: boolean }) {
+  const { formatPrice } = useFormatters()
+
   return (
     <Link to="/products/$productId" params={{ productId: product.id }} className="group block no-underline">
       <div className="aspect-4/5 overflow-hidden bg-surface-subtle">

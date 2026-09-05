@@ -13,7 +13,7 @@ type CheckoutFormProps = {
 
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const data = useCheckoutData({ cart })
-  const { form, isLoading, placeOrder, signOut } = useCheckoutForm({ data })
+  const { form, isLoading, placeOrder, signOut, hasFailedOrder } = useCheckoutForm({ data })
 
   return (
     <Form onSubmit={placeOrder}>
@@ -22,7 +22,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
           <ContactSection form={form} onSignOut={signOut} {...data} />
           <DeliverySection form={form} {...data} />
           <ShippingMethodSection form={form} {...data} />
-          <PaymentSection form={form} {...data} />
+          <PaymentSection form={form} hasFailedOrder={hasFailedOrder} onReopened={placeOrder} {...data} />
 
           <form.SubmitButton className="w-full">{isLoading ? 'Placing order...' : 'Place order'}</form.SubmitButton>
         </div>

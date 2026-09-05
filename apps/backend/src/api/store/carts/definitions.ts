@@ -1,11 +1,13 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
+import { StorePricingContextParams } from '@proteus/http-schemas/store'
 import { setPricingContext } from '../middlewares.js'
 import * as completeRoutes from './[id]/complete/route.js'
 import * as customerRoutes from './[id]/customer/route.js'
 import * as inventoryRoutes from './[id]/inventory/route.js'
 import * as lineItemByIdRoutes from './[id]/line-items/[lineId]/route.js'
 import * as lineItemRoutes from './[id]/line-items/route.js'
+import * as paymentProviderRoutes from './[id]/payment-providers/route.js'
 import * as cartByIdRoutes from './[id]/route.js'
 import * as shippingMethodRoutes from './[id]/shipping-methods/route.js'
 import * as shippingOptionRoutes from './[id]/shipping-options/route.js'
@@ -18,7 +20,7 @@ export default [
     handler: cartRoutes.POST,
     auth: 'optional',
     middlewares: [setPricingContext()],
-    input: cartRoutes.PostInput,
+    input: { ...cartRoutes.PostInput, contextQuery: StorePricingContextParams },
     operationId: 'createStoreCart',
     summary: 'Create a cart',
     tags: [Tags.CARTS],
@@ -89,6 +91,17 @@ export default [
     summary: 'List available shipping options for a cart',
     tags: [Tags.CARTS],
     output: shippingOptionRoutes.GetOutput,
+  },
+  {
+    method: 'GET',
+    matcher: '/store/carts/:id/payment-providers',
+    handler: paymentProviderRoutes.GET,
+    auth: 'optional',
+    input: paymentProviderRoutes.GetInput,
+    operationId: 'listStoreCartPaymentProviders',
+    summary: 'List the payment providers the cart’s region offers',
+    tags: [Tags.PAYMENTS],
+    output: paymentProviderRoutes.GetOutput,
   },
   {
     method: 'POST',

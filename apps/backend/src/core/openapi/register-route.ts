@@ -1,5 +1,6 @@
 import type { OpenAPIRegistry, RouteConfig } from '@asteasolutions/zod-to-openapi'
 import type { RouteDefinition } from '@framework/http/types.js'
+import type { z } from 'zod'
 
 const methodMap = {
   GET: 'get',
@@ -18,8 +19,15 @@ export function registerOpenApiRoute(registry: OpenAPIRegistry, routePath: strin
   if (config.input?.params) {
     request.params = config.input.params as unknown as NonNullable<RouteConfig['request']>['params']
   }
-  if (config.method === 'GET' && config.input?.query) {
-    request.query = config.input.query as unknown as NonNullable<RouteConfig['request']>['query']
+  // A GET's own query describes the rows it wants; `contextQuery` describes where any request is
+  // coming from, so it is documented on every method. Merged rather than assigned, because
+  // OpenAPI takes one schema for the whole query string.
+  const query = config.method === 'GET' ? config.input?.query : undefined
+  const contextQuery = config.input?.contextQuery
+  const mergedQuery =
+    query && contextQuery ? (query as unknown as z.ZodObject).extend(contextQuery.shape) : (query ?? contextQuery)
+  if (mergedQuery) {
+    request.query = mergedQuery as unknown as NonNullable<RouteConfig['request']>['query']
   }
   if (config.method === 'POST' || config.method === 'PUT' || config.method === 'PATCH') {
     const multipartBody = config.multipartBody

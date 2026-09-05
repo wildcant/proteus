@@ -18,4 +18,15 @@ offset?: number | null;
 limit?: number;
 order?: string;
 q?: string;
+/**
+ * ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.
+ * @minLength 2
+ * @maxLength 2
+ */
+countryCode?: string;
+/**
+ * The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.
+ * @minLength 1
+ */
+cartId?: string;
 };

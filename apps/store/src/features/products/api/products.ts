@@ -1,6 +1,11 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
 import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
-import type { ListStoreProductsParams, StoreProductListResponse, StoreProductResponse } from '#/api/generated/model'
+import type {
+  GetStoreProductParams,
+  ListStoreProductsParams,
+  StoreProductListResponse,
+  StoreProductResponse,
+} from '#/api/generated/model'
 import { getStoreProduct, listStoreProducts } from '#/api/generated/products/products'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -47,15 +52,23 @@ export const productsPageQuery = ({
   q,
   sort,
   offset,
+  countryCode,
 }: {
   q?: string
   sort?: ProductSort
   offset?: number
+  /**
+   * The market's ISO-2. Required rather than optional, and part of what the key is built from:
+   * it decides the currency every amount in the response is quoted in, so a call site that could
+   * leave it out is a call site that can render one market's catalogue at another's prices.
+   */
+  countryCode: string
 }): ListStoreProductsParams => ({
   offset: offset ?? PRODUCTS_DEFAULT_OFFSET,
   limit: PRODUCTS_DEFAULT_LIMIT,
   q,
   order: PRODUCT_SORTS[sort ?? PRODUCT_SORT_DEFAULT],
+  countryCode,
 })
 
 type ProductsListQueryOptions = Omit<
@@ -63,13 +76,13 @@ type ProductsListQueryOptions = Omit<
   'queryFn' | 'queryKey'
 >
 /** Shared query config. Use in route loaders via `prefetchQuery(productsListQueryOptions())`. */
-export const productsListQueryOptions = (query?: ListStoreProductsParams, options?: ProductsListQueryOptions) => ({
+export const productsListQueryOptions = (query: ListStoreProductsParams, options?: ProductsListQueryOptions) => ({
   queryKey: productsQueryKeys.list(query),
   queryFn: () => listStoreProducts(query),
   ...options,
 })
 /** Suspends until products list resolves. Use inside a `<Suspense>` boundary. */
-export const useSuspenseProducts = (query?: ListStoreProductsParams, options?: ProductsListQueryOptions) => {
+export const useSuspenseProducts = (query: ListStoreProductsParams, options?: ProductsListQueryOptions) => {
   const { data, ...rest } = useSuspenseQuery(productsListQueryOptions(query, options))
   return { ...data, ...rest }
 }
@@ -80,7 +93,7 @@ export const useSuspenseProducts = (query?: ListStoreProductsParams, options?: P
  * flash empty between keystrokes instead of the last results sitting there until the next
  * ones land.
  */
-export const useProducts = (query?: ListStoreProductsParams, options?: ProductsListQueryOptions) => {
+export const useProducts = (query: ListStoreProductsParams, options?: ProductsListQueryOptions) => {
   const { data, ...rest } = useQuery({
     ...productsListQueryOptions(query, options),
     placeholderData: keepPreviousData,
@@ -92,14 +105,20 @@ type ProductQueryOptions = Omit<
   UseQueryOptions<StoreProductResponse, Error, StoreProductResponse>,
   'queryFn' | 'queryKey'
 >
-/** Shared query config. Use in route loaders via `prefetchQuery(productQueryOptions(id))`. */
-export const productQueryOptions = (id: string, options?: ProductQueryOptions) => ({
-  queryKey: productsQueryKeys.detail(id),
-  queryFn: () => getStoreProduct(id),
+/**
+ * Shared query config. Use in route loaders via `prefetchQuery(productQueryOptions(id, market))`.
+ *
+ * `countryCode` is in the key for the reason it is in `productsPageQuery`: the same product is a
+ * different answer in a different market, and one key for both would serve pesos to a shopper
+ * reading dollars.
+ */
+export const productQueryOptions = (id: string, query: GetStoreProductParams, options?: ProductQueryOptions) => ({
+  queryKey: productsQueryKeys.detail(id, query),
+  queryFn: () => getStoreProduct(id, query),
   ...options,
 })
 /** Suspends until product detail resolves. Use inside a `<Suspense>` boundary. */
-export const useSuspenseProduct = (id: string, options?: ProductQueryOptions) => {
-  const { data, ...rest } = useSuspenseQuery(productQueryOptions(id, options))
+export const useSuspenseProduct = (id: string, query: GetStoreProductParams, options?: ProductQueryOptions) => {
+  const { data, ...rest } = useSuspenseQuery(productQueryOptions(id, query, options))
   return { ...data, ...rest }
 }

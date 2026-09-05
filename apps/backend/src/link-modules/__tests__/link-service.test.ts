@@ -9,6 +9,7 @@ import { OrderFulfillmentRepository } from '../repositories/order-fulfillment.js
 import { OrderPaymentCollectionRepository } from '../repositories/order-payment-collection.js'
 import { ProductVariantInventoryItemRepository } from '../repositories/product-variant-inventory-item.js'
 import { ProductVariantPriceSetRepository } from '../repositories/product-variant-price-set.js'
+import { RegionPaymentProviderRepository } from '../repositories/region-payment-provider.js'
 import { LinkService } from '../services/link-service.js'
 
 const cascadeGraph = buildCascadeGraph(models)
@@ -26,6 +27,7 @@ test.beforeEach(({ getDb }) => {
   const orderCart = new OrderCartRepository({ getDb, cascadeGraph })
   const orderPaymentCollection = new OrderPaymentCollectionRepository({ getDb, cascadeGraph })
   const orderFulfillment = new OrderFulfillmentRepository({ getDb, cascadeGraph })
+  const regionPaymentProvider = new RegionPaymentProviderRepository({ getDb, cascadeGraph })
 
   linkService = new LinkService({
     withTransaction: createWithTransaction(getDb),
@@ -36,6 +38,7 @@ test.beforeEach(({ getDb }) => {
     orderCart,
     orderPaymentCollection,
     orderFulfillment,
+    regionPaymentProvider,
   })
 })
 

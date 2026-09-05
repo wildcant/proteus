@@ -40,6 +40,7 @@
     "db:seed:providers": "dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-providers.ts",
     "db:migrate:test": "dotenvx run -f ../../.env.test -- npm run db:migrate",
     "db:seed:providers:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-providers.ts",
+    "db:seed:markets:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-markets.ts",
     "db:restore:staging": "./scripts/restore-staging-db.sh",
     "db:diagram": "dotenvx run -f ../../.env.local -- ./scripts/db-diagram/run.sh",
     "openapi:dump": "curl -s http://localhost:3000/admin/openapi.json | python3 -m json.tool > openapi/openapi-admin.json && curl -s http://localhost:3000/store/openapi.json | python3 -m json.tool > openapi/openapi-store.json && echo 'Saved openapi/openapi-admin.json and openapi/openapi-store.json'",

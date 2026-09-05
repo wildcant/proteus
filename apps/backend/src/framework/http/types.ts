@@ -12,6 +12,7 @@ export function searchable<T>(...columns: Array<keyof T & string>): string[] {
 export const Tags = {
   AUTH: 'Auth',
   CARTS: 'Carts',
+  COUNTRIES: 'Countries',
   CUSTOMERS: 'Customers',
   FULFILLMENTS: 'Fulfillments',
   FULFILLMENT_PROVIDERS: 'Fulfillment Providers',
@@ -38,6 +39,17 @@ export type RouteInput = {
   params?: z.ZodType
   body?: z.ZodType
   query?: z.ZodType
+  /**
+   * Query parameters a middleware reads straight off `req.query`, before `applyMiddleware`
+   * validates anything. Documented in OpenAPI like any other query parameter, on every method
+   * rather than only GET, so a POST can carry one too.
+   *
+   * Separate from `input.query` because that describes which rows the caller wants: everything
+   * declared there lands in `validatedQuery.filters` and is offered to a repository as a column
+   * filter, which silently ignores the names it does not recognise. These say where the request
+   * is coming from instead, and only the middleware that declared them reads them.
+   */
+  contextQuery?: z.ZodObject
 }
 
 type BaseRoute = {
