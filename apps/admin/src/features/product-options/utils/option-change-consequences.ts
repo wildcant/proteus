@@ -1,5 +1,5 @@
 import type { AdminProductScopedOption } from '#/api/generated/model'
-import type { OptionValueEntry } from './components/option-value-selector'
+import type { OptionValueEntry } from '../components/option-value-selector'
 
 export type OptionChangeConsequences = {
   /** Values being unlinked that variants still carry, with how many each would delete. */

@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { SEARCH_DEBOUNCE_MS, SEARCH_RESULTS_LIMIT } from '#/components/header/constants'
-import { SearchBestSellers } from '#/components/header/search-best-sellers'
 import { useProducts } from '#/features/products/api/products'
 import { ProductGrid } from '#/features/products/components/product-grid'
+import { SearchBestSellers } from '#/features/products/components/search-best-sellers'
 import { useDebounce } from '#/hooks/use-debounce'
 
 type SearchResultsProps = {

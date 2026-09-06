@@ -3,7 +3,7 @@ import { ChevronLeftIcon, XIcon } from 'lucide-react'
 import { type CSSProperties, useEffect, useState } from 'react'
 import { Button } from '#/components/button'
 import { SearchForm } from '#/components/header/search-form'
-import { SearchResults } from '#/components/header/search-results'
+import { SearchResults } from '#/features/products/components/search-results'
 import { useModal } from '#/lib/modal-state'
 
 /**

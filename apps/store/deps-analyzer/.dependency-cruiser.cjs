@@ -1,3 +1,5 @@
+const { featureStructureRules, layerDirectionRules } = require('@proteus/frontend-conventions')
+
 /**
  * Which store feature may import which, as a directed acyclic graph.
  *
@@ -78,7 +80,10 @@ module.exports = {
       from: { path: `^src/features/(?!(?:${DECLARED_FEATURES})/)` },
       to: { path: `^src/features/(?:${DECLARED_FEATURES})/` },
     },
+    // shared -> features -> app, shared with the admin. See packages/frontend-conventions.
+    ...layerDirectionRules(),
   ],
+  required: featureStructureRules(),
   options: {
     doNotFollow: { path: 'node_modules' },
     exclude: { path: '\\.gen\\.ts$' },

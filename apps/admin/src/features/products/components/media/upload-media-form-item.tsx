@@ -1,6 +1,6 @@
 import { IMAGE_FORMATS } from '#/components/common/file-upload'
 import { FileUploadField } from '#/components/form/file-upload-field.tsx'
-import type { ProductMedia } from '#/features/products/media.ts'
+import type { ProductMedia } from '#/features/products/utils/media'
 
 type UploadMediaFormItemProps = {
   showHint?: boolean
