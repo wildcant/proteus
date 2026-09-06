@@ -175,28 +175,148 @@ Use the `HttpRequest<TBody>` generic to type the pre-validated body.
 
 ## OpenAPI & Swagger UI
 
+Two documents are generated, one per namespace: `Admin API` from `adminDefinitions` and `Store API` from `storeDefinitions` (`backend/src/routes.ts`). Each carries its own `info.description` and its own `tags` list.
+
 ### Endpoints
 
 | URL | Description |
 |-----|-------------|
-| `GET /openapi.json` | Raw OpenAPI 3.1 JSON spec |
-| `GET /docs/` | Interactive Swagger UI |
+| `GET /admin/openapi.json` | Raw OpenAPI 3.1 JSON spec for the admin API |
+| `GET /store/openapi.json` | Raw OpenAPI 3.1 JSON spec for the store API |
+| `GET /admin/docs/` | Interactive Swagger UI for the admin API |
+| `GET /store/docs/` | Interactive Swagger UI for the store API |
+
+### Security
+
+Both documents publish a single security scheme, `bearerAuth` (`http` / `bearer` / `JWT`). Admin and store share one `Authorization` header and differ only by the actor claim inside the token, so one name covers both.
+
+The scheme is also the document-level `security` default. Spectral reads that JSONPath literally and does not apply OpenAPI's root-to-operation inheritance, so `registerOpenApiRoute` additionally writes `security` on **every** operation, derived from the route's `auth` policy:
+
+| `auth` | Operation `security` | Operation declares `401` |
+|--------|----------------------|--------------------------|
+| unset / `required` / `optional` / `unregistered` | `[{ bearerAuth: [] }]` | yes — the middleware sends it before the handler runs |
+| `public` | `[]` | only if the route's `throws` names `UNAUTHORIZED` |
+
+A `public` route has no auth middleware, so its `401` — like every other failure status — comes from the route's declared `throws`.
+
+### Error responses
+
+`output` is the success half of a route's contract; **`throws` is the failure half**. It lists the `ErrorTypes` the route can end with, and `registerOpenApiRoute` turns each one into a declared response through `typeToStatus` — the same map `errorHandler` answers with at runtime. That shared map is the point: the spec cannot promise a status the API does not send, or omit one it does.
+
+The declaration lives next to the handler it describes, as a sibling of `PostInput` and `PostOutput`:
+
+```ts
+// src/api/store/auth/signup/route.tsexport const PostThrows = [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA, ErrorTypes.UNAUTHORIZED, ...completeCustomerAuthWorkflow.throws] as const
+```
+
+Two statuses are *not* listed, because the definition already implies them: the `400` from schema validation, and the `401` an auth middleware sends on any non-public route.
+
+**Errors raised inside a workflow are spread, never restated.** A workflow declares its own contract in its `createWorkflow` config, and whatever calls it — a route, or another workflow — spreads `.throws`:
+
+```ts
+export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
+  { name: 'complete-cart', throws: [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED] },
+  async (ctx, input) => { ... },
+)
+```
+
+Spreading rather than restating is what makes this work at any depth: `storeAuthLogin` inherits a `409` raised four frames down, in a step of a workflow called by the workflow it calls, without anything in between knowing about it. A step that lives in its own file exports its own `…Throws` for the same reason — see `setAuthAppMetadataThrows`.
+
+`throws` names the *complete* failure contract, including `UNEXPECTED_STATE` and the other invariant violations, because the code-shape rules cannot otherwise tell a missing declaration from a deliberate one. The published document drops the `5xx` half: a server error is not something the caller can reshape a request to avoid, and declaring it puts a dead branch in every generated client.
+
+Five rules keep the declarations honest, in both directions, and they run in the `conventions` job:
+
+| Rule | Catches |
+|------|---------|
+| `route-throws-undeclared-error` | a handler raises a type its `Throws` export omits |
+| `route-declares-unthrown-error` | a `Throws` export names a type nothing in the file raises |
+| `workflow-throws-undeclared-error` | the same, for a workflow's `createWorkflow` config |
+| `workflow-declares-unthrown-error` | the same, in reverse |
+| `route-omits-workflow-errors` | a `.run()` call whose caller does not spread the callee's `.throws` |
+
+Their scope is one file and syntactic, so a type raised by a **module service** the handler calls is invisible to them — `auth-module-service.ts` raises `UNAUTHORIZED` from `updateProvider`, and nothing declares it. Declaring such a type is correct and trips `*-declares-unthrown-error`; suppress that one site by id with the reason written above it, as `ast-grep/README.md` describes. Until that tier is covered, `registerOpenApiRoute` also keeps declaring a `404` on any route that takes a path parameter.
+
+### Tags
+
+The document's root `tags` array is derived from the registered route definitions, not hand-maintained — admin uses 17 tags and store 7, and a hardcoded list rots the first time a route gains one. Adding a tag to a route is enough; add the tag itself to the `Tags` enum in `backend/src/framework/http/types.ts`.
+
+### Path naming
+
+Paths name resources, not actions — the method is the verb. `POST /auth/:actorType/:authProvider/password` replaced `.../update`, which read as a verb in the path while keeping the same `operationId` (`authUpdatePassword`) and therefore the same generated client function name.
 
 ### Dumping the spec to a file
 
 ```bash
-npm run --workspace=backend openapi:dump
+npm run openapi:generate
 ```
 
-This fetches `/openapi.json` from a running server and saves it to `openapi.json` at the project root.
+This writes `apps/backend/openapi/openapi-admin.json` and `openapi-store.json` without a running server, then regenerates the Orval clients for admin and store. Both specs and both clients are committed — regenerate and commit them in the same change as any route, schema or tag edit.
+
+`openapi:dump:offline` runs through `dotenvx`, so it needs `.env.keys` at the repo root (`npm run pull-keys`).
+
+The dump is the only authority on how the spec files are formatted. Biome skips `apps/backend/openapi/openapi-*.json` for exactly that reason — a formatter and a generator disagreeing over the same file produces a whole-file diff on every regeneration, and the drift hook below would then fail for a reason that has nothing to do with drift. `--out-dir <dir>` writes the pair somewhere else; the hook uses it to dump into a temp directory.
+
+---
+
+## Linting the spec
+
+```bash
+npm run --workspace=backend check:openapi
+```
+
+Spectral lints both committed specs against `apps/backend/openapi/ruleset.yaml` — the one hand-written file in that directory. It also runs inside `npm run verify` as the `openapi` suite.
+
+The ruleset extends `spectral:oas` and adds guards for the conventions this repo cares about: kebab-case paths with no verb in them, camelCase schema properties and `operationId`s, every property typed, every `…At` property serialised as a `date-time` string, and a documented security scheme with a `security` block on every operation plus a `401` on every authenticated one.
+
+`--fail-severity=error` is passed explicitly, and it is deliberately *not* the `--error-on-warnings` that the lint suite gives Biome. Two rules — `proteus-request-strings-are-bounded` and `proteus-request-arrays-are-bounded` — are still `warn` because the request bodies they cover are not bounded yet. Raising the gate to fail on warnings would fail the build today.
+
+Two rules need care if you edit them:
+
+- **Asserting a field exists needs `function: schema` with `required`, not a `field:`-scoped function.** Spectral only runs a `field:`-scoped function when that field is present, so `then: { field: format, function: pattern }` silently skips the property that has no `format` at all — precisely the violation. `proteus-timestamps-are-iso` uses the `schema` form for this reason.
+- **`proteus-operation-security-defined` uses `defined`, not `truthy`.** A public operation declares `security: []`, and an empty array is falsy. The empty array is the point: it says "no auth required" explicitly rather than by omission.
+
+A guard that cannot fail is not a guard. When adding a rule, introduce the violation into a copy of a spec and confirm the rule reports it before trusting a clean run.
+
+---
+
+## Spec drift: the pre-commit hook
+
+The committed specs are generated, so a change to the routes or schemas they are built from leaves them stale unless someone remembers to regenerate. `.githooks/pre-commit` is what remembers.
+
+It runs only when the staged diff touches something that can change a spec:
+
+- `apps/backend/src/api/**`
+- `apps/backend/src/core/openapi/**`
+- `packages/http-schemas/**`
+
+When it does run, it dumps both specs into a temp directory and diffs them against the staged versions. On a difference it fails the commit and prints the remedy:
+
+```bash
+npm run openapi:generate
+```
+
+**The hook never writes into the working tree.** A hook that regenerated files mid-commit would stage changes the developer never wrote and never reviewed, so it only ever reads. It compares against the *index* rather than the working tree, so regenerating without staging the result still fails.
+
+Installation carries no dependency — no husky, no lefthook. The root `prepare` script points git at the directory:
+
+```json
+"hooks:install": "git rev-parse --git-dir > /dev/null 2>&1 && git config core.hooksPath .githooks || true"
+```
+
+`npm install` runs `prepare`, so a fresh clone is set up by `npm run setup` or by installing at all.
+
+Two limits, both accepted: `--no-verify` skips the hook, and it does not run in CI. It catches the mistake for developers rather than gating the branch. The hook also needs `.env.keys` to decrypt `.env.test` for the dump; without it the hook fails and says so.
 
 ### Key files
 
 | File | Purpose |
 |------|---------|
-| `backend/src/openapi/setup.ts` | Calls `extendZodWithOpenApi(z)` — must be imported before any `.openapi()` usage |
-| `backend/src/openapi/registry.ts` | Singleton `OpenAPIRegistry` and `generateDocument()` |
-| `backend/src/openapi/register-route.ts` | Converts `MiddlewareRoute` configs to `registry.registerPath()` calls |
+| `packages/http-schemas/src/openapi-setup.ts` | Calls `extendZodWithOpenApi(z)` — must be imported before any `.openapi()` usage |
+| `backend/src/core/openapi/registry.ts` | `createRegistry()`, `generateDocument()`, the `bearerAuth` scheme, the derived tag list and the per-document `documentInfo` (title + description) |
+| `backend/src/core/openapi/register-route.ts` | Converts a `RouteDefinition` to a `registry.registerPath()` call — path, operation `security` and the synthesised `200` / `400` / `401` / `404` responses |
+| `backend/scripts/openapi-dump.ts` | Writes both specs to `apps/backend/openapi/`, or to `--out-dir` |
+| `backend/openapi/ruleset.yaml` | The Spectral rules `check:openapi` enforces — hand-written, unlike the two JSON files beside it |
+| `.githooks/pre-commit` | Fails a commit that changes a spec's sources without regenerating the specs |
 
 ### How `$ref` works
 

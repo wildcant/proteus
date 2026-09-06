@@ -9,6 +9,8 @@ export const PatchOutput = StoreUpdatePaymentSessionResponse
  * Re-prices an open session from the cart's server-side total. There is no request body: the
  * amount is never taken from the browser, and anything one sends anyway is ignored.
  */
+export const PatchThrows = [...repricePaymentSessionWorkflow.throws] as const
+
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
   const paymentSession = await repricePaymentSessionWorkflow.run({
     paymentCollectionId: req.params.id,

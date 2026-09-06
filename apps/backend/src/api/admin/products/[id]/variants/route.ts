@@ -27,6 +27,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PostInput = { params: IdParams, body: AdminCreateProductVariant }
 export const PostOutput = AdminCreateProductVariantResponse
+export const PostThrows = [ErrorTypes.UNEXPECTED_STATE, ...createProductVariantsWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)

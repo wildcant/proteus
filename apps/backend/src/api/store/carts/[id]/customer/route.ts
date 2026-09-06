@@ -5,6 +5,7 @@ import { transferCartCustomerWorkflow } from '@workflows/cart/transfer-cart-cust
 
 export const PostInput = { params: IdParams }
 export const PostOutput = StoreCartResponse
+export const PostThrows = [ErrorTypes.UNAUTHORIZED, ...transferCartCustomerWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const customerId = req.authContext?.actorId

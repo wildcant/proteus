@@ -1,0 +1,30 @@
+id: workflow-throws-undeclared-error
+snapshots:
+  ? |
+    export const markOrderDeliveredWorkflow = createWorkflow(
+      'mark-order-delivered',
+      async (ctx, input) => { throw new WorkflowTerminalError({ type: ErrorTypes.NOT_ALLOWED, message: 'x' }) },
+    )
+  : labels:
+    - source: ErrorTypes.NOT_ALLOWED
+      style: primary
+      start: 150
+      end: 172
+    - source: 'new WorkflowTerminalError({ type: ErrorTypes.NOT_ALLOWED, message: ''x'' })'
+      style: secondary
+      start: 116
+      end: 189
+  ? |
+    export const markOrderDeliveredWorkflow = createWorkflow(
+      { name: 'mark-order-delivered', throws: [ErrorTypes.NOT_ALLOWED] },
+      async (ctx, input) => { throw new WorkflowTerminalError({ type: ErrorTypes.NOT_FOUND, message: 'x' }) },
+    )
+  : labels:
+    - source: ErrorTypes.NOT_FOUND
+      style: primary
+      start: 194
+      end: 214
+    - source: 'new WorkflowTerminalError({ type: ErrorTypes.NOT_FOUND, message: ''x'' })'
+      style: secondary
+      start: 160
+      end: 231

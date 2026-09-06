@@ -32,6 +32,8 @@ ast-grep/
       modules/        models, repositories, services   → docs/adding-a-module.md
       api/            route files                      → docs/middleware-and-openapi.md
       workflows/      steps and compensation
+                      the error contract spans both, so `route-omits-workflow-errors`
+                      sits at `backend/` rather than inside either one
   rule-tests/
     <same tree>/<rule-id>-test.yml
     __snapshots__/    flat — ast-grep keys these by rule id, not by path

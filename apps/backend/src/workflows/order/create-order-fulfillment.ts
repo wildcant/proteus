@@ -20,7 +20,7 @@ type CreateOrderFulfillmentInput = {
 // links it to the order, then converts reservations into actual stock decrements (the items
 // are leaving the warehouse, so reserved stock becomes consumed stock).
 export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillmentInput, OrderDTO>(
-  'create-order-fulfillment',
+  { name: 'create-order-fulfillment', throws: [ErrorTypes.NOT_ALLOWED] },
   async (ctx, input) => {
     /** Gate on order lifecycle state — only pending, unfulfilled orders may enter
      *  the fulfillment flow. Prevents double-fulfillment and fulfilling canceled orders. */

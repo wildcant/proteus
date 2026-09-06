@@ -1,0 +1,18 @@
+id: route-omits-workflow-errors
+snapshots:
+  ? |
+    export const PostThrows = [...addToCartWorkflow.throws] as const
+    export const POST = async (req) => completeCartWorkflow.run({ cartId: req.params.id })
+  : labels:
+    - source: 'completeCartWorkflow.run({ cartId: req.params.id })'
+      style: primary
+      start: 100
+      end: 151
+  ? |
+    export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
+    export const POST = async (req) => completeCartWorkflow.run({ cartId: req.params.id })
+  : labels:
+    - source: 'completeCartWorkflow.run({ cartId: req.params.id })'
+      style: primary
+      start: 96
+      end: 147

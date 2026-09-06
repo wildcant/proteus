@@ -8,6 +8,7 @@ import { setPricingContext } from '../middlewares.js'
 export const PostInput = { body: CreateCart }
 export const PostMiddlewares = [setPricingContext()] as const
 export const PostOutput = StoreCreateCartResponse
+export const PostThrows = [...addToCartWorkflow.throws] as const
 
 export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,

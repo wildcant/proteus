@@ -10,6 +10,7 @@ import { updateVariantPricesWorkflow } from '@workflows/product/update-variant-p
 
 export const PutInput = { params: VariantIdParams, body: AdminUpdateVariantPrices }
 export const PutOutput = AdminUpdateVariantPricesResponse
+export const PutThrows = [...updateVariantPricesWorkflow.throws] as const
 
 export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult<typeof PutOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)

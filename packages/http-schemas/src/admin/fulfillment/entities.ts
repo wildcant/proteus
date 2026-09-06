@@ -68,7 +68,7 @@ export const AdminShippingOption = z
     shippingProfileId: z.string(),
     shippingOptionTypeId: z.string().nullable(),
     providerId: z.string(),
-    data: z.unknown(),
+    data: z.record(z.string(), z.unknown()).nullable(),
     metadata: z.string().nullable(),
     isEnabled: z.boolean(),
     ...timestamps.shape,

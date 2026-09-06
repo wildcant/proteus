@@ -1,9 +1,9 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
+import * as authPasswordRoutes from './[actorType]/[authProvider]/password/route.js'
 import * as authRegisterRoutes from './[actorType]/[authProvider]/register/route.js'
 import * as authResetPasswordRoutes from './[actorType]/[authProvider]/reset-password/route.js'
 import * as authRoutes from './[actorType]/[authProvider]/route.js'
-import * as authUpdateRoutes from './[actorType]/[authProvider]/update/route.js'
 import * as tokenRefreshRoutes from './token/refresh/route.js'
 import * as verificationConfirmRoutes from './verification/confirm/route.js'
 import * as verificationRequestRoutes from './verification/request/route.js'
@@ -13,6 +13,10 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider/register',
     handler: authRegisterRoutes.POST,
+    throws: authRegisterRoutes.PostThrows,
+    // Obtaining a token cannot require one. `applyNamespaceAuth` already injects nothing outside
+    // `/admin/` and `/store/`, so this only corrects what the spec says.
+    auth: 'public',
     middlewares: authRegisterRoutes.PostMiddlewares,
     input: authRegisterRoutes.PostInput,
     operationId: 'authRegister',
@@ -24,6 +28,8 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider',
     handler: authRoutes.POST,
+    throws: authRoutes.PostThrows,
+    auth: 'public',
     middlewares: authRoutes.PostMiddlewares,
     input: authRoutes.PostInput,
     operationId: 'authAuthenticate',
@@ -35,6 +41,8 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider/reset-password',
     handler: authResetPasswordRoutes.POST,
+    throws: authResetPasswordRoutes.PostThrows,
+    auth: 'public',
     middlewares: authResetPasswordRoutes.PostMiddlewares,
     input: authResetPasswordRoutes.PostInput,
     operationId: 'authResetPassword',
@@ -44,19 +52,21 @@ export default [
   },
   {
     method: 'POST',
-    matcher: '/auth/:actorType/:authProvider/update',
-    handler: authUpdateRoutes.POST,
-    middlewares: authUpdateRoutes.PostMiddlewares,
-    input: authUpdateRoutes.PostInput,
+    matcher: '/auth/:actorType/:authProvider/password',
+    handler: authPasswordRoutes.POST,
+    throws: authPasswordRoutes.PostThrows,
+    input: authPasswordRoutes.PostInput,
+    middlewares: authPasswordRoutes.PostMiddlewares,
     operationId: 'authUpdatePassword',
     summary: 'Update password using a reset token',
     tags: [Tags.AUTH],
-    output: authUpdateRoutes.PostOutput,
+    output: authPasswordRoutes.PostOutput,
   },
   {
     method: 'POST',
     matcher: '/auth/token/refresh',
     handler: tokenRefreshRoutes.POST,
+    throws: tokenRefreshRoutes.PostThrows,
     middlewares: tokenRefreshRoutes.PostMiddlewares,
     operationId: 'authTokenRefresh',
     summary: 'Refresh an auth token',
@@ -67,6 +77,7 @@ export default [
     method: 'POST',
     matcher: '/auth/verification/request',
     handler: verificationRequestRoutes.POST,
+    throws: verificationRequestRoutes.PostThrows,
     middlewares: verificationRequestRoutes.PostMiddlewares,
     input: verificationRequestRoutes.PostInput,
     operationId: 'authVerificationRequest',
@@ -78,6 +89,7 @@ export default [
     method: 'POST',
     matcher: '/auth/verification/confirm',
     handler: verificationConfirmRoutes.POST,
+    throws: verificationConfirmRoutes.PostThrows,
     middlewares: verificationConfirmRoutes.PostMiddlewares,
     input: verificationConfirmRoutes.PostInput,
     operationId: 'authVerificationConfirm',

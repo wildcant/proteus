@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { opaqueToken, password, shortText } from '../../bounded.js'
 
 export const AdminCreateInvite = z.object({
   email: z.email(),
@@ -7,8 +8,8 @@ export const AdminCreateInvite = z.object({
 export type AdminCreateInvite = z.infer<typeof AdminCreateInvite>
 
 export const AdminAcceptInvite = z.object({
-  token: z.string().min(1),
-  name: z.string().min(1),
-  password: z.string().min(1),
+  token: opaqueToken.min(1),
+  name: shortText.min(1),
+  password: password.min(1),
 })
 export type AdminAcceptInvite = z.infer<typeof AdminAcceptInvite>

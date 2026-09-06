@@ -20,7 +20,7 @@ type CreateProductInput = {
  * a product behind that the shopkeeper never asked for; here the compensation removes it.
  */
 export const createProductWorkflow = createWorkflow<CreateProductInput, ProductDTO>(
-  'create-product',
+  { name: 'create-product', throws: [...createProductVariantsWorkflow.throws] },
   async (ctx, input) => {
     const product = await ctx.step(
       'create-product',

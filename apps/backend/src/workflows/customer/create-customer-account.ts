@@ -3,7 +3,7 @@ import type { CreateCustomerDTO } from '@core/types/customer/mutations.js'
 import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/index.js'
 import { createWorkflow } from '@core/workflows/types.js'
-import { setAuthAppMetadataStep } from '../auth/steps/set-auth-app-metadata.js'
+import { setAuthAppMetadataStep, setAuthAppMetadataThrows } from '../auth/steps/set-auth-app-metadata.js'
 
 export type CreateCustomerAccountInput = {
   authIdentityId: string
@@ -11,7 +11,7 @@ export type CreateCustomerAccountInput = {
 }
 
 export const createCustomerAccountWorkflow = createWorkflow<CreateCustomerAccountInput, CustomerDTO>(
-  'create-customer-account',
+  { name: 'create-customer-account', throws: [...setAuthAppMetadataThrows] },
   async (ctx, input) => {
     const customer = await ctx.step<CustomerDTO>(
       'create-customer',

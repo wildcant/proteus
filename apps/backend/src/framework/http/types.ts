@@ -1,3 +1,4 @@
+import type { ErrorTypes } from '@core/errors/app-error.js'
 import type { HttpRequest, HttpResult, MiddlewareFunction } from '@server/ports.js'
 import type { z } from 'zod'
 
@@ -43,6 +44,19 @@ export type RouteInput = {
 type BaseRoute = {
   auth?: AuthPolicy
   description?: string
+  // The failure half of the contract, next to `output`, which is the success half. Every type
+  // listed becomes a declared response via the same `typeToStatus` map the runtime answers with,
+  // so the spec cannot promise a status the API does not send or omit one it does.
+  //
+  // Structural failures are not listed here — a 400 from schema validation and the 401 an auth
+  // middleware sends are derived from the definition itself. What this adds is everything the
+  // *handler* decides: a credential check on a public route, a CONFLICT on a duplicate. Errors
+  // raised inside a workflow arrive by spreading its own contract, never by restating it:
+  //
+  //     export const PostThrows = [...createOrderShipmentWorkflow.throws, ErrorTypes.CONFLICT] as const
+  //
+  // The `route-*-error` code-shape rules keep this in step with the handler in both directions.
+  throws?: readonly ErrorTypes[]
   // Method syntax gives bivariant parameter checking. Route handlers declare
   // specific input/output types, but definitions store them opaquely.
   // Runtime schema validation in applyMiddleware ensures type safety.

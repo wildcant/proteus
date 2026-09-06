@@ -1,9 +1,10 @@
 import { z } from 'zod'
+import { countryCode, phone, postalCode, shortText } from '../../bounded.js'
 
 export const CreateCustomer = z
   .object({
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
+    firstName: shortText.min(1),
+    lastName: shortText.min(1),
     email: z.email(),
   })
   .openapi('CreateCustomer')
@@ -14,8 +15,8 @@ export type CreateCustomersBody = z.infer<typeof CreateCustomers>
 
 export const UpdateCustomer = z
   .object({
-    firstName: z.string().min(1).optional(),
-    lastName: z.string().min(1).optional(),
+    firstName: shortText.min(1).optional(),
+    lastName: shortText.min(1).optional(),
     email: z.email().optional(),
   })
   .openapi('UpdateCustomer')
@@ -29,22 +30,22 @@ export type UpdateCustomerBody = z.infer<typeof UpdateCustomer>
 const addressFields = {
   // No minimum: this doubles as the storefront's form validator, where an untouched optional
   // input holds `''`. An empty label is simply no label — the form sends null for it.
-  addressName: z.string().nullish(),
-  company: z.string().nullish(),
-  firstName: z.string().nullish(),
-  lastName: z.string().nullish(),
-  address2: z.string().nullish(),
-  province: z.string().nullish(),
-  phone: z.string().nullish(),
+  addressName: shortText.nullish(),
+  company: shortText.nullish(),
+  firstName: shortText.nullish(),
+  lastName: shortText.nullish(),
+  address2: shortText.nullish(),
+  province: shortText.nullish(),
+  phone: phone.nullish(),
 }
 
 export const StoreCreateAddress = z
   .object({
     ...addressFields,
-    address1: z.string().min(1),
-    city: z.string().min(1),
-    countryCode: z.string().min(2),
-    postalCode: z.string().min(1),
+    address1: shortText.min(1),
+    city: shortText.min(1),
+    countryCode: countryCode.min(2),
+    postalCode: postalCode.min(1),
     // One checkbox in the UI; the endpoint sets both flags. See StoreCustomerAddress.
     isDefault: z.boolean().optional(),
   })
@@ -54,10 +55,10 @@ export type StoreCreateAddressBody = z.infer<typeof StoreCreateAddress>
 export const StoreUpdateAddress = z
   .object({
     ...addressFields,
-    address1: z.string().min(1).optional(),
-    city: z.string().min(1).optional(),
-    countryCode: z.string().min(2).optional(),
-    postalCode: z.string().min(1).optional(),
+    address1: shortText.min(1).optional(),
+    city: shortText.min(1).optional(),
+    countryCode: countryCode.min(2).optional(),
+    postalCode: postalCode.min(1).optional(),
     isDefault: z.boolean().optional(),
   })
   .openapi('StoreUpdateAddress')

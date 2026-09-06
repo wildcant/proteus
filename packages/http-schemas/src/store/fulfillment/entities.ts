@@ -9,7 +9,7 @@ export const StoreShippingOption = z
     shippingProfileId: z.string(),
     shippingOptionTypeId: z.string().nullable(),
     providerId: z.string(),
-    data: z.unknown(),
+    data: z.record(z.string(), z.unknown()).nullable(),
   })
   .openapi('StoreShippingOption')
 export type StoreShippingOption = z.input<typeof StoreShippingOption>

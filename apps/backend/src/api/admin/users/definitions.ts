@@ -9,6 +9,7 @@ export default [
     method: 'GET',
     matcher: '/admin/users/me',
     handler: meRoutes.GET,
+    throws: meRoutes.GetThrows,
     operationId: 'getMe',
     summary: 'Retrieve the authenticated user',
     tags: [Tags.USERS],

@@ -1,0 +1,16 @@
+id: workflow-declares-unthrown-error
+snapshots:
+  ? |
+    export const markOrderDeliveredWorkflow = createWorkflow(
+      { name: 'mark-order-delivered', throws: [ErrorTypes.CONFLICT] },
+      async (ctx, input) => { throw new WorkflowTerminalError({ type: ErrorTypes.NOT_ALLOWED, message: 'x' }) },
+    )
+  : labels:
+    - source: ErrorTypes.CONFLICT
+      style: primary
+      start: 101
+      end: 120
+    - source: 'throws: [ErrorTypes.CONFLICT]'
+      style: secondary
+      start: 92
+      end: 121

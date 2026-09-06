@@ -12,65 +12,68 @@ type CreatePaymentCollectionForCartInput = { cartId: string }
 export const createPaymentCollectionForCartWorkflow = createWorkflow<
   CreatePaymentCollectionForCartInput,
   PaymentCollectionDTO
->('create-payment-collection-for-cart', async (ctx, input) => {
-  const paymentCollection = await ctx.step(
-    'create-payment-collection',
-    async ({ container }) => {
-      const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+>(
+  { name: 'create-payment-collection-for-cart', throws: [ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED] },
+  async (ctx, input) => {
+    const paymentCollection = await ctx.step(
+      'create-payment-collection',
+      async ({ container }) => {
+        const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-      // Validate cart exists and has no existing payment collection
-      const cart = await cartService.retrieveCart(input.cartId)
+        // Validate cart exists and has no existing payment collection
+        const cart = await cartService.retrieveCart(input.cartId)
 
-      if (cart.completedAt) {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart "${input.cartId}" is already completed`,
+        if (cart.completedAt) {
+          throw new WorkflowTerminalError({
+            type: ErrorTypes.NOT_ALLOWED,
+            message: `Cart "${input.cartId}" is already completed`,
+          })
+        }
+
+        const existingLink = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
+        if (existingLink) {
+          return paymentService.retrievePaymentCollection(existingLink.paymentCollectionId)
+        }
+
+        // Compute cart total from line items + shipping
+        const [lineItems, shippingMethods] = await Promise.all([
+          cartService.listLineItems({ cartId: input.cartId }),
+          cartService.listShippingMethods({ cartId: input.cartId }),
+        ])
+        const { cartTotal: amount } = cartService.computeCartTotals({ lineItems, shippingMethods })
+
+        if (amount.isLessThanOrEqualTo(0)) {
+          throw new WorkflowTerminalError({
+            type: ErrorTypes.INVALID_DATA,
+            message: `Cart "${input.cartId}" has no items or zero total`,
+          })
+        }
+
+        logger.debug(
+          `[create-payment-collection-for-cart] Creating collection for cart "${input.cartId}" with amount ${amount}`,
+        )
+
+        const collection = await paymentService.createPaymentCollection({
+          amount,
+          currencyCode: cart.currencyCode,
         })
-      }
 
-      const existingLink = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
-      if (existingLink) {
-        return paymentService.retrievePaymentCollection(existingLink.paymentCollectionId)
-      }
-
-      // Compute cart total from line items + shipping
-      const [lineItems, shippingMethods] = await Promise.all([
-        cartService.listLineItems({ cartId: input.cartId }),
-        cartService.listShippingMethods({ cartId: input.cartId }),
-      ])
-      const { cartTotal: amount } = cartService.computeCartTotals({ lineItems, shippingMethods })
-
-      if (amount.isLessThanOrEqualTo(0)) {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.INVALID_DATA,
-          message: `Cart "${input.cartId}" has no items or zero total`,
+        await linkService.repo('cartPaymentCollection').create({
+          cartId: input.cartId,
+          paymentCollectionId: collection.id,
         })
-      }
 
-      logger.debug(
-        `[create-payment-collection-for-cart] Creating collection for cart "${input.cartId}" with amount ${amount}`,
-      )
+        return collection
+      },
+      async (collection, { container }) => {
+        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+        await paymentService.softDeletePaymentCollections([collection.id])
+      },
+    )
 
-      const collection = await paymentService.createPaymentCollection({
-        amount,
-        currencyCode: cart.currencyCode,
-      })
-
-      await linkService.repo('cartPaymentCollection').create({
-        cartId: input.cartId,
-        paymentCollectionId: collection.id,
-      })
-
-      return collection
-    },
-    async (collection, { container }) => {
-      const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
-      await paymentService.softDeletePaymentCollections([collection.id])
-    },
-  )
-
-  return paymentCollection
-})
+    return paymentCollection
+  },
+)

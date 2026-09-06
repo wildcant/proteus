@@ -7,6 +7,7 @@ import { addToCartWorkflow } from '@workflows/cart/add-to-cart.js'
 
 export const PostInput = { params: IdParams, body: AddLineItem }
 export const PostOutput = StoreCreateCartLineItemResponse
+export const PostThrows = [ErrorTypes.UNEXPECTED_STATE, ...addToCartWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const [lineItem] = await addToCartWorkflow.run({ cartId: req.params.id, items: [req.body] })
