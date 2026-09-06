@@ -23,7 +23,7 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-JOBS="typecheck lint conventions deps test admin"
+JOBS="typecheck lint conventions deps openapi test admin"
 
 job_typecheck() { npm run typecheck; }
 
@@ -52,6 +52,11 @@ job_conventions() {
   npm run --workspace=backend --silent check:workflow-registry || code=1
   return $code
 }
+
+# Spectral against both committed specs. --fail-severity=error is explicit and deliberately
+# unlike job_lint's --error-on-warnings: two rules are still `warn` until the request bodies
+# they cover are bounded, and they must not fail the gate yet.
+job_openapi() { npm run --workspace=backend --silent check:openapi; }
 
 job_deps() {
   local code=0
@@ -102,6 +107,7 @@ label_of() {
     lint) echo "Lint & format rules (warnings fail)" ;;
     conventions) echo "Env usage, error & schema conventions" ;;
     deps) echo "Dependency rules (backend, admin, store)" ;;
+    openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;
     admin) echo "Admin unit tests" ;;
   esac

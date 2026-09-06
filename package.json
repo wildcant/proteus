@@ -8,7 +8,9 @@
     "packages/*"
   ],
   "scripts": {
-    "setup": "npm install && npm run pull-keys && npm run gen:workerd-env",
+    "setup": "npm install && npm run hooks:install && npm run pull-keys && npm run gen:workerd-env",
+    "prepare": "npm run hooks:install",
+    "hooks:install": "git rev-parse --git-dir > /dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "gen:workerd-env": "dotenvx get -f .env.local --format eval 2>/dev/null > apps/backend/.env.workerd",
     "lint": "biome lint .",
     "format": "biome format --write .",
