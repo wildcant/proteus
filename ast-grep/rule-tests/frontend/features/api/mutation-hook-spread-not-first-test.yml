@@ -1,0 +1,6 @@
+id: mutation-hook-spread-not-first
+valid:
+  - 'useMutation({ ...rest, mutationFn: f, onError })'
+invalid:
+  - 'useMutation({ mutationFn: f, onError, ...rest })'
+  - 'useMutation({ mutationFn: f, ...rest })'

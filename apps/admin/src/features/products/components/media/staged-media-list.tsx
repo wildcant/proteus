@@ -23,7 +23,7 @@ import { Button, cn } from '@proteus/ui'
 import { GripVerticalIcon, StarIcon, TrashIcon } from 'lucide-react'
 import { useState } from 'react'
 import { ActionMenu } from '#/components/common/action-menu'
-import type { ProductMedia } from '#/features/products/media.ts'
+import type { ProductMedia } from '#/features/products/utils/media'
 import { formatFileSize } from '#/lib/format-file-size.ts'
 
 const DROP_ANIMATION: DropAnimation = {

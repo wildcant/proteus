@@ -1,6 +1,6 @@
 import { AdminCreateOrderFulfillment, AdminOrderActionResponse, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
-import { createOrderFulfillmentWorkflow } from '../../../../../workflows/order/create-order-fulfillment.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { createOrderFulfillmentWorkflow } from '@workflows/order/create-order-fulfillment.js'
 
 export const PostInput = { params: IdParams, body: AdminCreateOrderFulfillment }
 export const PostOutput = AdminOrderActionResponse

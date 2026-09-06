@@ -1,0 +1,9 @@
+{
+  "name": "@proteus/frontend-conventions",
+  "private": true,
+  "description": "Structural rules for the store and admin apps, as dependency-cruiser rule builders.",
+  "main": "index.cjs",
+  "exports": {
+    ".": "./index.cjs"
+  }
+}

@@ -1,5 +1,5 @@
+import { env } from '@env'
 import { NativeConnection, Worker } from '@temporalio/worker'
-import { env } from '../env.js'
 import { createWorkflowActivities, ping } from './activities.js'
 import { PAYLOAD_CONVERTER_PATH, TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from './config.js'
 import { createWorkerContainer } from './container.js'

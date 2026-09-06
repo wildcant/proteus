@@ -26,6 +26,8 @@ import type {
   RetrievePaymentOutput,
   SavePaymentMethodInput,
   SavePaymentMethodOutput,
+  SetDefaultPaymentMethodInput,
+  SetDefaultPaymentMethodOutput,
   UpdatePaymentInput,
   UpdatePaymentOutput,
   WebhookActionResult,
@@ -73,6 +75,15 @@ export abstract class AbstractPaymentProvider<TConfig = Record<string, unknown>>
 
   /** Whether this provider is for testing/development only. */
   static isTestOnly = false
+
+  /**
+   * Checked by the provider loader before the provider is constructed, so a deployment missing a
+   * credential fails at boot rather than at the first payment — which is in front of a shopper,
+   * as an unexplained failure, however long after the deploy that caused it. Throw to refuse
+   * startup, naming the provider and the option. Optional: a provider with nothing to check does
+   * not implement it.
+   */
+  static validateOptions?(options: Record<string, unknown>): void
 
   protected config: TConfig
   protected container: Record<string, unknown>
@@ -187,10 +198,21 @@ export abstract class AbstractPaymentProvider<TConfig = Record<string, unknown>>
    */
   abstract getWebhookActionAndData(data: ProviderWebhookPayload['payload']): Promise<WebhookActionResult>
 
+  /**
+   * The client-safe subset of this provider's options, served to storefronts by
+   * `GET /store/payment-providers` so the client adapter needs no environment variable.
+   *
+   * **Name every key.** Returning a spread of `this.config` publishes whatever the deployment
+   * configured, which for most gateways includes an API key. Providers with nothing publishable
+   * leave this unimplemented and are served `{}`.
+   */
+  getPublicConfig?(): Record<string, unknown>
+
   // Optional methods — providers override if supported
   createAccountHolder?(input: CreateAccountHolderInput): Promise<CreateAccountHolderOutput>
   deleteAccountHolder?(input: DeleteAccountHolderInput): Promise<DeleteAccountHolderOutput>
   listPaymentMethods?(input: ListPaymentMethodsInput): Promise<ListPaymentMethodsOutput>
   savePaymentMethod?(input: SavePaymentMethodInput): Promise<SavePaymentMethodOutput>
   deletePaymentMethod?(input: DeletePaymentMethodInput): Promise<DeletePaymentMethodOutput>
+  setDefaultPaymentMethod?(input: SetDefaultPaymentMethodInput): Promise<SetDefaultPaymentMethodOutput>
 }

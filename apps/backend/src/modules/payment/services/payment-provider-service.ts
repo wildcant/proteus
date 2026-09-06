@@ -3,7 +3,11 @@ import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
-import type { FilterablePaymentProviderProps, PaymentProviderDTO } from '../../../core/types/payment/common.js'
+import type {
+  FilterablePaymentProviderProps,
+  PaymentProviderDTO,
+  PaymentProviderMeta,
+} from '../../../core/types/payment/common.js'
 import type {
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
@@ -29,6 +33,10 @@ import type {
   RefundPaymentOutput,
   SavePaymentMethodInput,
   SavePaymentMethodOutput,
+  SetDefaultPaymentMethodInput,
+  SetDefaultPaymentMethodOutput,
+  UpdatePaymentInput,
+  UpdatePaymentOutput,
   WebhookActionResult,
 } from '../../../core/types/payment/mutations.js'
 import type { IPaymentProvider } from '../../../core/types/payment/provider.js'
@@ -60,10 +68,12 @@ export class PaymentProviderService {
     }
   }
 
-  getProviderMeta(providerId: string): { label: string; isTestOnly: boolean } {
+  getProviderMeta(providerId: string): PaymentProviderMeta {
     const provider = this.retrieveProvider(providerId)
     const klass = provider.constructor as typeof AbstractPaymentProvider
-    return { label: klass.label, isTestOnly: klass.isTestOnly }
+    // `?? {}` rather than a stub on every provider: a gateway with nothing publishable publishes
+    // nothing, exactly as the optional saved-method operations work.
+    return { label: klass.label, isTestOnly: klass.isTestOnly, publicConfig: provider.getPublicConfig?.() ?? {} }
   }
 
   // -- Provider table CRUD --
@@ -97,6 +107,16 @@ export class PaymentProviderService {
     this.logger.debug(`Creating session via provider "${providerId}" for ${input.amount} ${input.currencyCode}`)
     const provider = this.retrieveProvider(providerId)
     return provider.initiatePayment(input)
+  }
+
+  /**
+   * Reachable at last. The provider's update method had no delegate, so a cart total that changed
+   * after the session was opened could never reach the gateway.
+   */
+  async updateSession(providerId: string, input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
+    this.logger.debug(`Updating session via provider "${providerId}" to ${input.amount} ${input.currencyCode}`)
+    const provider = this.retrieveProvider(providerId)
+    return provider.updatePayment(input)
   }
 
   async deleteSession(providerId: string, input: DeletePaymentInput): Promise<DeletePaymentOutput> {
@@ -172,6 +192,16 @@ export class PaymentProviderService {
     const provider = this.retrieveProvider(providerId)
     if (!provider.deletePaymentMethod) return undefined
     return provider.deletePaymentMethod(input)
+  }
+
+  /** `undefined` when this gateway has no notion of a default — the caller decides what that means. */
+  async setDefaultPaymentMethod(
+    providerId: string,
+    input: SetDefaultPaymentMethodInput,
+  ): Promise<SetDefaultPaymentMethodOutput | undefined> {
+    const provider = this.retrieveProvider(providerId)
+    if (!provider.setDefaultPaymentMethod) return undefined
+    return provider.setDefaultPaymentMethod(input)
   }
 
   async getWebhookActionAndData(

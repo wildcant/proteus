@@ -3,8 +3,8 @@ import type { IAuthModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AuthenticateResponse } from '@proteus/http-schemas/auth'
 import { StoreSignupBody } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
-import { completeCustomerAuthWorkflow } from '../../../../workflows/customer/complete-customer-auth.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { completeCustomerAuthWorkflow } from '@workflows/customer/complete-customer-auth.js'
 
 export const PostInput = { body: StoreSignupBody }
 export const PostOutput = AuthenticateResponse

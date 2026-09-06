@@ -1,0 +1,20 @@
+id: query-hook-inline-query
+language: typescript
+severity: error
+message: This query is defined inline at the hook, so no route loader can prefetch it.
+note: 'Move `queryKey`/`queryFn` into an exported `*QueryOptions` factory and have the hook call it. docs/query-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+rule:
+  pattern:
+    context: "{ queryFn: $FN }"
+    selector: pair
+  inside:
+    kind: object
+    inside:
+      kind: arguments
+      inside:
+        any:
+          - pattern: useQuery($$$)
+          - pattern: useSuspenseQuery($$$)
+          - pattern: useInfiniteQuery($$$)

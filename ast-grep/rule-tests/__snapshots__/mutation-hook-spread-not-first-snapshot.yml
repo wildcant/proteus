@@ -1,0 +1,46 @@
+id: mutation-hook-spread-not-first
+snapshots:
+  'useMutation({ mutationFn: f, ...rest })':
+    labels:
+    - source: '...rest'
+      style: primary
+      start: 29
+      end: 36
+    - source: 'useMutation({ mutationFn: f, ...rest })'
+      style: secondary
+      start: 0
+      end: 39
+    - source: '({ mutationFn: f, ...rest })'
+      style: secondary
+      start: 11
+      end: 39
+    - source: '{ mutationFn: f, ...rest }'
+      style: secondary
+      start: 12
+      end: 38
+    - source: 'mutationFn: f'
+      style: secondary
+      start: 14
+      end: 27
+  'useMutation({ mutationFn: f, onError, ...rest })':
+    labels:
+    - source: '...rest'
+      style: primary
+      start: 38
+      end: 45
+    - source: 'useMutation({ mutationFn: f, onError, ...rest })'
+      style: secondary
+      start: 0
+      end: 48
+    - source: '({ mutationFn: f, onError, ...rest })'
+      style: secondary
+      start: 11
+      end: 48
+    - source: '{ mutationFn: f, onError, ...rest }'
+      style: secondary
+      start: 12
+      end: 47
+    - source: onError
+      style: secondary
+      start: 29
+      end: 36

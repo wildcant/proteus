@@ -2,26 +2,28 @@ import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
   AccountHolderDTO,
-  FilterablePaymentMethodProps,
+  AuthorizePaymentSessionResult,
+  FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
   PaymentDTO,
-  PaymentMethodDTO,
   PaymentProviderDTO,
+  PaymentProviderMeta,
   PaymentSessionDTO,
   RefundReasonDTO,
+  SavedMethodDTO,
 } from './common.js'
 import type {
   CreateAccountHolderDTO,
   CreateCaptureDTO,
   CreatePaymentCollectionDTO,
-  CreatePaymentMethodDTO,
   CreatePaymentSessionDTO,
   CreateRefundDTO,
   CreateRefundReasonDTO,
-  DeletePaymentMethodDTO,
+  EnsureAccountHoldersDTO,
   ProviderWebhookPayload,
   UpdatePaymentCollectionDTO,
+  UpdatePaymentSessionDTO,
   UpdateRefundReasonDTO,
   WebhookActionResult,
 } from './mutations.js'
@@ -54,9 +56,32 @@ export type IPaymentModuleService = {
     input: CreatePaymentSessionDTO,
     context?: Context,
   ): Promise<PaymentSessionDTO>
+  /**
+   * Opens a session, abandoning every attempt on the collection that has not become money and
+   * cancelling it at the gateway.
+   *
+   * The operation a checkout wants, where each Place order press is the same shopper trying
+   * again. `createPaymentSession` is the one a split payment wants, where each session is a
+   * different part of one total.
+   */
+  replacePaymentSession(
+    paymentCollectionId: string,
+    input: CreatePaymentSessionDTO,
+    context?: Context,
+  ): Promise<PaymentSessionDTO>
+  /** Re-prices an open session. `data.amount` must be a server-computed total, never one a
+   *  browser supplied. An unchanged amount does not reach the provider. */
+  updatePaymentSession(id: string, data: UpdatePaymentSessionDTO, context?: Context): Promise<PaymentSessionDTO>
   /** Destructive: the session is destroyed at the provider, so there is nothing to restore. */
   deletePaymentSession(id: string, context?: Context): Promise<void>
-  authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null>
+  /**
+   * Authorizes a session at its provider and records what came back.
+   *
+   * Answers with a discriminated outcome rather than a nullable payment: a caller has to be able
+   * to tell an intent that is still settling from one the provider refused, and `null` said both.
+   * Idempotent — a session already authorized answers with the payment it produced.
+   */
+  authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult>
 
   // Payment retrieval
   retrievePayment(id: string, context?: Context): Promise<PaymentDTO>
@@ -72,23 +97,31 @@ export type IPaymentModuleService = {
     config?: FindConfig<PaymentProviderDTO>,
     context?: Context,
   ): Promise<PaymentProviderDTO[]>
-  getProviderMeta(providerId: string): { label: string; isTestOnly: boolean }
+  getProviderMeta(providerId: string): PaymentProviderMeta
 
   // Webhooks
   getWebhookActionAndData(data: ProviderWebhookPayload): Promise<WebhookActionResult>
 
   // AccountHolder
   createAccountHolder(input: CreateAccountHolderDTO, context?: Context): Promise<AccountHolderDTO>
+  /**
+   * The customer's account holder at every provider that has the concept, created on first need.
+   *
+   * The caller decides whether the customer is an *account*: Proteus gives every guest a Customer
+   * row, and a guest must leave nothing behind at a gateway.
+   */
+  ensureAccountHolders(input: EnsureAccountHoldersDTO, context?: Context): Promise<AccountHolderDTO[]>
+  listAccountHolders(
+    filters?: FilterableAccountHolderProps,
+    config?: FindConfig<AccountHolderDTO>,
+    context?: Context,
+  ): Promise<AccountHolderDTO[]>
   deleteAccountHolder(id: string, context?: Context): Promise<void>
 
-  // PaymentMethods (provider-managed, no DB table)
-  listPaymentMethods(
-    filters: FilterablePaymentMethodProps,
-    config?: FindConfig<PaymentMethodDTO>,
-    context?: Context,
-  ): Promise<PaymentMethodDTO[]>
-  createPaymentMethods(data: CreatePaymentMethodDTO[], context?: Context): Promise<PaymentMethodDTO[]>
-  deletePaymentMethods(data: DeletePaymentMethodDTO[], context?: Context): Promise<void>
+  // The wallet (provider-managed, no DB table). Ownership is verified at the gateway, per write.
+  listSavedMethods(customerId: string, context?: Context): Promise<SavedMethodDTO[]>
+  deleteSavedMethod(customerId: string, methodId: string, context?: Context): Promise<void>
+  setDefaultSavedMethod(customerId: string, methodId: string, context?: Context): Promise<void>
 
   // RefundReasons
   createRefundReasons(data: CreateRefundReasonDTO[], context?: Context): Promise<RefundReasonDTO[]>

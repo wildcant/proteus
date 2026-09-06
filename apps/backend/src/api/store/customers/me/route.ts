@@ -2,7 +2,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ICustomerModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { CustomerResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = CustomerResponse
 

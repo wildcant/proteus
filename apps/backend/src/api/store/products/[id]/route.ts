@@ -1,4 +1,3 @@
-import { AppError, ErrorTypes } from '@core/errors/index.js'
 import type {
   IInventoryModuleService,
   ILinkService,
@@ -7,26 +6,23 @@ import type {
 } from '@core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { IdParams, StoreProductResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
-import { buildOptionSwatches } from '../../../../workflows/product/utils/build-option-swatches.js'
-import { buildVariantPrices } from '../../../../workflows/product/utils/build-variant-prices.js'
-import { buildVariantStock } from '../../../../workflows/product/utils/build-variant-stock.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
+import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
+import { buildVariantStock } from '@workflows/product/utils/build-variant-stock.js'
+import { setPricingContext } from '../../middlewares.js'
 
 export const GetInput = { params: IdParams }
+export const GetMiddlewares = [setPricingContext()] as const
 export const GetOutput = StoreProductResponse
 
-export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
+export const GET = async (
+  req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,
+): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const pricingService = req.scope.resolve<IPricingModuleService>(Modules.PRICING)
   const inventoryService = req.scope.resolve<IInventoryModuleService>(Modules.INVENTORY)
   const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-
-  if (!req.pricingContext) {
-    throw new AppError({
-      type: ErrorTypes.UNEXPECTED_STATE,
-      message: 'pricingContext missing — setPricingContext middleware not applied',
-    })
-  }
 
   const [product, variants, images, options] = await Promise.all([
     productService.retrieveProduct(req.params.id),

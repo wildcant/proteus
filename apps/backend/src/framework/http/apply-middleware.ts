@@ -1,8 +1,8 @@
+import type { RouteHandler } from '@server/ports.js'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import { formatZodIssues } from '../../core/errors/format-zod-issues.js'
 import { buildSearchFilter } from '../../core/utils/build-search-filter.js'
 import { parseOrder, validateQuery } from '../../core/utils/validate-query.js'
-import type { RouteHandler } from '../../server/ports.js'
 import { runMiddlewares } from './run-middlewares.js'
 import type { RouteDefinition } from './types.js'
 

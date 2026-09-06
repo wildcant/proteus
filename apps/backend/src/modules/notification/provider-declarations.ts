@@ -1,5 +1,5 @@
+import { env } from '@env'
 import type { NotificationModuleOptions, NotificationProviderConfig } from '../../core/types/notification/common.js'
-import { env } from '../../env.js'
 import resendProvider from '../../providers/notification-email-resend/index.js'
 // import sendgridProvider from '../../providers/notification-email-sendgrid/index.js'
 import localProvider from '../../providers/notification-local/index.js'

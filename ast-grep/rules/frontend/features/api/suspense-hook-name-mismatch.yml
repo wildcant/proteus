@@ -1,0 +1,48 @@
+id: suspense-hook-name-mismatch
+language: typescript
+severity: error
+message: This hook's name and its blocking behaviour disagree, and the name is all the caller sees.
+note: 'A hook that calls `useSuspenseQuery` is `useSuspense<Thing>`; one that calls `useQuery` is `use<Thing>`. Suspending under a plain name blanks a boundary the caller never opted into. docs/query-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+
+utils:
+  # Both spellings of a hook, since which one a file uses is a style question and answering it here
+  # would make a rename look like a fix.
+  in-a-hook:
+    inside:
+      stopBy: end
+      any:
+        - kind: variable_declarator
+          has:
+            field: name
+            regex: "^use[A-Z]"
+        - kind: function_declaration
+          has:
+            field: name
+            regex: "^use[A-Z]"
+  in-a-hook-named-suspense:
+    inside:
+      stopBy: end
+      any:
+        - kind: variable_declarator
+          has:
+            field: name
+            regex: "^useSuspense"
+        - kind: function_declaration
+          has:
+            field: name
+            regex: "^useSuspense"
+
+rule:
+  any:
+    # Suspends, but the name does not warn anyone.
+    - all:
+        - pattern: useSuspenseQuery($$$)
+        - matches: in-a-hook
+        - not:
+            matches: in-a-hook-named-suspense
+    # Named as though it suspends, but renders straight through with `isLoading` instead.
+    - all:
+        - pattern: useQuery($$$)
+        - matches: in-a-hook-named-suspense

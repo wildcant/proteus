@@ -5,8 +5,8 @@ import {
   AdminUpdateVariantPricesResponse,
   VariantIdParams,
 } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { updateVariantPricesWorkflow } from '@workflows/product/update-variant-prices.js'
-import type { HttpRequest, HttpResult } from '../../../../../../../server/ports.js'
 
 export const PutInput = { params: VariantIdParams, body: AdminUpdateVariantPrices }
 export const PutOutput = AdminUpdateVariantPricesResponse

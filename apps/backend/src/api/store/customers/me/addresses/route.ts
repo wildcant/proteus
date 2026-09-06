@@ -6,7 +6,7 @@ import {
   StoreCustomerAddressListResponse,
   StoreCustomerAddressResponse,
 } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = StoreCustomerAddressListResponse
 

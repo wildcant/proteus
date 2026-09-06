@@ -1,6 +1,6 @@
 import { Card, CardAction, CardHeader, CardTitle, StatusBadge } from '@proteus/ui'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
-import { fulfillmentStatusColors } from '#/features/orders/constants'
+import { fulfillmentStatusColors } from '#/features/orders/utils/order-status'
 
 export function OrderFulfillmentSection({ order }: { order: AdminOrderResponseOrder }) {
   const shippableItems = order.lineItems.filter((item) => item.requiresShipping)

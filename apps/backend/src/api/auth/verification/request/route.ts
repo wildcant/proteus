@@ -2,14 +2,18 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/index.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { Modules } from '@core/utils/index.js'
+import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import { VerificationRequestBody, VerificationRequestResponse } from '@proteus/http-schemas/auth'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
-import { sendVerificationEmail } from '../../../../workflows/auth/send-verification-email.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { sendVerificationEmail } from '@workflows/auth/send-verification-email.js'
 
 export const PostInput = { body: VerificationRequestBody }
+export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const
 export const PostOutput = VerificationRequestResponse
 
-export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
+export const POST = async (
+  req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
+): Promise<HttpResult<typeof PostOutput>> => {
   const authContext = req.authContext
   if (!authContext) throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
 

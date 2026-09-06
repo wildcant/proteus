@@ -115,6 +115,8 @@ Orval generates typed API clients from the backend's OpenAPI spec into `src/api/
 
 Feature modules wrap generated functions with React Query hooks in `features/{name}/api/`. Every mutation hook accepts an optional `UseMutationOptions` parameter, shows an error toast on failure, and forwards callbacks. See `docs/mutation-hooks.md` for the full pattern.
 
+Every query is an exported `*QueryOptions` factory built with `queryOptions()`; hooks and route loaders both read that one factory, and queries never toast. See `docs/query-hooks.md`.
+
 ### DataTable System (`src/components/data-table/`)
 
 Consumer API: `useDefineTable<T>(config)` returns a table definition passed to `<DataTable use={table} />`.
@@ -199,7 +201,13 @@ catalogue data is fixture data and does not belong there.
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/middleware-and-openapi.md`, `docs/soft-delete-cascade.md`, `docs/product-options.md`.
+Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/query-hooks.md`, `docs/middleware-and-openapi.md`, `docs/soft-delete-cascade.md`, `docs/product-options.md`.
+
+A convention that can be checked is checked, and the check is a rule file rather than a script.
+Dependency rules go in each app's `deps-analyzer/.dependency-cruiser.cjs`; code-shape rules — what a
+file's contents must look like — go in `ast-grep/rules/`, whose tree mirrors the code it governs.
+`ast-grep/README.md` says where a new rule goes and how to exempt a considered exception. Reach for
+a script only after showing a rule cannot express it.
 
 Work in progress lives in `.scratch/<feature>/` — the spec at `.scratch/<feature>/spec.md`, its tickets in
 `.scratch/<feature>/issues/`. That is the issue tracker for this repo; GitHub Issues is not used. Once the work

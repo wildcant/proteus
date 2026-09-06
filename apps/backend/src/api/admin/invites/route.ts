@@ -6,8 +6,8 @@ import {
   AdminInviteListResponse,
   AdminInviteResponse,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
-import { createInviteWorkflow } from '../../../workflows/user/create-invite.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { createInviteWorkflow } from '@workflows/user/create-invite.js'
 
 export const GetInput = { query: AdminInviteListParams }
 export const GetOutput = AdminInviteListResponse

@@ -1,0 +1,7 @@
+id: mutation-hook-options-not-spread
+valid:
+  - 'useMutation({ ...rest, mutationFn: f })'
+  # A spread inside a handler is not the config spread.
+  - 'useMutation({ ...rest, onError: (...args) => { onError?.(...args) } })'
+invalid:
+  - 'useMutation({ mutationFn: f, onError })'

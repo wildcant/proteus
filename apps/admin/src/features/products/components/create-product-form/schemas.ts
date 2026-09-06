@@ -1,6 +1,6 @@
 import { AdminCreateProduct } from '@proteus/http-schemas/admin'
 import { z } from 'zod'
-import { mediaSchema } from '#/features/products/media.ts'
+import { mediaSchema } from '#/features/products/utils/media'
 
 export const detailsSchema = AdminCreateProduct.pick({
   title: true,

@@ -1,6 +1,6 @@
 import { AdminBatchImageVariant, AdminBatchImageVariantResponse, ImageIdParams } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { batchImageVariantsWorkflow } from '@workflows/product/batch-image-variants.js'
-import type { HttpRequest, HttpResult } from '../../../../../../../../server/ports.js'
 
 export const PostInput = { params: ImageIdParams, body: AdminBatchImageVariant }
 export const PostOutput = AdminBatchImageVariantResponse

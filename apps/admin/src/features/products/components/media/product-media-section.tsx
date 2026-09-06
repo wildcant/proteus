@@ -21,7 +21,7 @@ import { useState } from 'react'
 import type { AdminProductResponseProduct } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { useUpdateProduct } from '#/features/products/api/products'
-import { getProductMedia } from '#/features/products/media.ts'
+import { getProductMedia } from '#/features/products/utils/media'
 
 export function ProductMediaSection({ product }: { product: AdminProductResponseProduct }) {
   const navigate = useNavigate()

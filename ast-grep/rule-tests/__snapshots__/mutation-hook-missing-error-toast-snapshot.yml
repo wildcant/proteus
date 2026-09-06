@@ -1,0 +1,20 @@
+id: mutation-hook-missing-error-toast
+snapshots:
+  'useMutation({ ...rest, onError: (...args) => { onError?.(...args) } })':
+    labels:
+    - source: 'onError: (...args) => { onError?.(...args) }'
+      style: primary
+      start: 23
+      end: 67
+    - source: 'useMutation({ ...rest, onError: (...args) => { onError?.(...args) } })'
+      style: secondary
+      start: 0
+      end: 70
+    - source: '({ ...rest, onError: (...args) => { onError?.(...args) } })'
+      style: secondary
+      start: 11
+      end: 70
+    - source: '{ ...rest, onError: (...args) => { onError?.(...args) } }'
+      style: secondary
+      start: 12
+      end: 69
