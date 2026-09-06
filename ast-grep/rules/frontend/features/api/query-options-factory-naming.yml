@@ -1,0 +1,26 @@
+id: query-options-factory-naming
+language: typescript
+severity: error
+message: A factory returning `queryOptions` is not named `<thing>QueryOptions`, so a loader cannot find it by name.
+note: 'Name it `<thing>QueryOptions` or `<thing>ListQueryOptions`, with no `get` prefix — the call site reads as configuration, not as a fetch. docs/query-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+utils:
+  named-for-what-it-returns:
+    all:
+      - has:
+          field: name
+          regex: "QueryOptions$"
+      - not:
+          has:
+            field: name
+            regex: "^get"
+rule:
+  kind: variable_declarator
+  has:
+    field: value
+    any:
+      - pattern: ($$$PARAMS) => queryOptions($$$)
+      - pattern: ($$$PARAMS) => infiniteQueryOptions($$$)
+  not:
+    matches: named-for-what-it-returns

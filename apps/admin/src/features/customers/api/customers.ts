@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import {
   createCustomers,
   deleteCustomer,
@@ -21,38 +21,42 @@ import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const CUSTOMERS_QUERY_KEY = 'customers' as const
-export const customersQueryKeys = queryKeysFactory(CUSTOMERS_QUERY_KEY)
+export const customersQueryKeys = queryKeysFactory<typeof CUSTOMERS_QUERY_KEY, ListCustomersParams>(CUSTOMERS_QUERY_KEY)
 
 // --- Query options (for route loaders) ---
 
-export const getCustomersQueryOptions = (query?: ListCustomersParams) => ({
-  queryKey: customersQueryKeys.list(query),
-  queryFn: () => listCustomers(query),
-})
+type CustomersListQueryOptions = Omit<
+  UseQueryOptions<AdminCustomerListResponse, Error, AdminCustomerListResponse>,
+  'queryFn' | 'queryKey'
+>
+export const customersListQueryOptions = (query?: ListCustomersParams, options?: CustomersListQueryOptions) =>
+  queryOptions({
+    queryKey: customersQueryKeys.list(query),
+    queryFn: () => listCustomers(query),
+    placeholderData: keepPreviousData,
+    ...options,
+  })
+
+type CustomerQueryOptions = Omit<
+  UseQueryOptions<AdminCustomerResponse, Error, AdminCustomerResponse>,
+  'queryFn' | 'queryKey'
+>
+export const customerQueryOptions = (id: string, options?: CustomerQueryOptions) =>
+  queryOptions({
+    queryKey: customersQueryKeys.detail(id),
+    queryFn: () => getCustomer(id),
+    ...options,
+  })
 
 // --- Query hooks ---
 
-export const useCustomer = (
-  id: string,
-  options?: Omit<UseQueryOptions<AdminCustomerResponse, Error, AdminCustomerResponse>, 'queryFn' | 'queryKey'>,
-) => {
-  const { data, ...rest } = useQuery({
-    queryFn: () => getCustomer(id),
-    queryKey: customersQueryKeys.detail(id),
-    ...options,
-  })
+export const useCustomer = (id: string, options?: CustomerQueryOptions) => {
+  const { data, ...rest } = useQuery(customerQueryOptions(id, options))
   return { ...data, ...rest }
 }
 
-export const useCustomers = (
-  query?: ListCustomersParams,
-  options?: Omit<UseQueryOptions<AdminCustomerListResponse, Error, AdminCustomerListResponse>, 'queryFn' | 'queryKey'>,
-) => {
-  const { data, ...rest } = useQuery({
-    queryFn: () => listCustomers(query),
-    queryKey: customersQueryKeys.list(query),
-    ...options,
-  })
+export const useCustomers = (query?: ListCustomersParams, options?: CustomersListQueryOptions) => {
+  const { data, ...rest } = useQuery(customersListQueryOptions(query, options))
   return { ...data, ...rest }
 }
 

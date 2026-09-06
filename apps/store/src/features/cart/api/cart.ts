@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
   addStoreCartLineItem,
   createStoreCart,
@@ -31,15 +31,16 @@ type CartQueryOptions = Omit<
 >
 
 /** Shared query config. Use in route loaders via `prefetchQuery(cartQueryOptions())`. */
-export const cartQueryOptions = (options?: CartQueryOptions) => ({
-  queryKey: cartQueryKeys.all,
-  queryFn: async () => {
-    const cartId = getCartId()
-    if (!cartId) return null
-    return getStoreCart(cartId)
-  },
-  ...options,
-})
+export const cartQueryOptions = (options?: CartQueryOptions) =>
+  queryOptions({
+    queryKey: cartQueryKeys.all,
+    queryFn: async () => {
+      const cartId = getCartId()
+      if (!cartId) return null
+      return getStoreCart(cartId)
+    },
+    ...options,
+  })
 
 /** Suspends until cart data resolves. Use inside a `<Suspense>` boundary (route pages). */
 export const useSuspenseCart = (options?: CartQueryOptions) => {

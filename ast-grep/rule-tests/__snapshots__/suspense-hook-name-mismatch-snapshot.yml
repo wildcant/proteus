@@ -1,0 +1,44 @@
+id: suspense-hook-name-mismatch
+snapshots:
+  ? 'export const useCart = () => { const { data, ...rest } = useSuspenseQuery(cartQueryOptions()); return { cart: data?.cart ?? null, ...rest } }'
+  : labels:
+    - source: useSuspenseQuery(cartQueryOptions())
+      style: primary
+      start: 57
+      end: 93
+    - source: useCart
+      style: secondary
+      start: 13
+      end: 20
+    - source: 'useCart = () => { const { data, ...rest } = useSuspenseQuery(cartQueryOptions()); return { cart: data?.cart ?? null, ...rest } }'
+      style: secondary
+      start: 13
+      end: 141
+  'export const useSuspenseOrders = (query?: P) => useQuery(ordersListQueryOptions(query))':
+    labels:
+    - source: useQuery(ordersListQueryOptions(query))
+      style: primary
+      start: 48
+      end: 87
+    - source: useSuspenseOrders
+      style: secondary
+      start: 13
+      end: 30
+    - source: 'useSuspenseOrders = (query?: P) => useQuery(ordersListQueryOptions(query))'
+      style: secondary
+      start: 13
+      end: 87
+  'export function useOrders(query?: P) { return useSuspenseQuery(ordersListQueryOptions(query)) }':
+    labels:
+    - source: useSuspenseQuery(ordersListQueryOptions(query))
+      style: primary
+      start: 46
+      end: 93
+    - source: useOrders
+      style: secondary
+      start: 16
+      end: 25
+    - source: 'function useOrders(query?: P) { return useSuspenseQuery(ordersListQueryOptions(query)) }'
+      style: secondary
+      start: 7
+      end: 95

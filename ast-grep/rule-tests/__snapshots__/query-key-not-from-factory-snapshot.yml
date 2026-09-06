@@ -1,0 +1,14 @@
+id: query-key-not-from-factory
+snapshots:
+  'export const thingQueryOptions = (id: string) => queryOptions({ queryKey: [''things'', id], queryFn: f })':
+    labels:
+    - source: 'queryKey: [''things'', id]'
+      style: primary
+      start: 64
+      end: 88
+  'export const thingQueryOptions = (id: string) => queryOptions({ queryKey: [...thingKeys.all, ''detail'', id], queryFn: f })':
+    labels:
+    - source: 'queryKey: [...thingKeys.all, ''detail'', id]'
+      style: primary
+      start: 64
+      end: 106

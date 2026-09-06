@@ -22,7 +22,8 @@ ast-grep/
   rules/
     frontend/
       features/
-        api/          query and mutation hooks         → docs/mutation-hooks.md
+        api/          query and mutation hooks         → docs/query-hooks.md,
+                                                          docs/mutation-hooks.md
         hooks/        form hooks                       → docs/form-hooks.md
         components/   feature-specific UI
       components/     shared UI

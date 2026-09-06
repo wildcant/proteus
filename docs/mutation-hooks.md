@@ -133,6 +133,13 @@ The error-toast rule has exactly one exemption, and that is it — `useRemovePay
 except the stale-card refusal the checkout recovers from in place, and a toast raised under a
 condition satisfies the rule.
 
+## Relationship with query hooks
+
+The same file holds both, and both read one `queryKeysFactory` instance — that is what lets a
+mutation's `onSuccess` invalidate the exact key a query was built from. The two contracts are
+inverses on failure: a mutation must toast, a query must not. See
+[docs/query-hooks.md](./query-hooks.md).
+
 ## Relationship with form hooks
 
 Form hooks (`features/{name}/hooks/use-{action}-form.ts`) consume mutation hooks. The form hook calls `.mutate()` with per-call callbacks, while the mutation hook provides the default error toast. See `docs/form-hooks.md` for the form layer pattern.

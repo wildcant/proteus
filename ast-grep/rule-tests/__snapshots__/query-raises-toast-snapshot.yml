@@ -1,0 +1,30 @@
+id: query-raises-toast
+snapshots:
+  ? 'export const thingQueryOptions = () => queryOptions({ queryKey: k.lists(), queryFn: async () => { try { return await list() } catch (e) { toast.add({ type: "error", title: "Failed to load" }); throw e } } })'
+  : labels:
+    - source: 'toast.add({ type: "error", title: "Failed to load" })'
+      style: primary
+      start: 138
+      end: 191
+    - source: 'queryOptions({ queryKey: k.lists(), queryFn: async () => { try { return await list() } catch (e) { toast.add({ type: "error", title: "Failed to load" }); throw e } } })'
+      style: secondary
+      start: 39
+      end: 207
+    - source: '({ queryKey: k.lists(), queryFn: async () => { try { return await list() } catch (e) { toast.add({ type: "error", title: "Failed to load" }); throw e } } })'
+      style: secondary
+      start: 51
+      end: 207
+  ? 'export const useThings = () => useQuery({ ...thingsQueryOptions(), throwOnError: (e) => { toast.add({ type: "error", title: "Failed to load" }); return false } })'
+  : labels:
+    - source: 'toast.add({ type: "error", title: "Failed to load" })'
+      style: primary
+      start: 90
+      end: 143
+    - source: 'useQuery({ ...thingsQueryOptions(), throwOnError: (e) => { toast.add({ type: "error", title: "Failed to load" }); return false } })'
+      style: secondary
+      start: 31
+      end: 162
+    - source: '({ ...thingsQueryOptions(), throwOnError: (e) => { toast.add({ type: "error", title: "Failed to load" }); return false } })'
+      style: secondary
+      start: 39
+      end: 162
