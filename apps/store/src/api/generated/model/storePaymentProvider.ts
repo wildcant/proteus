@@ -5,10 +5,12 @@
  * Storefront API for shoppers: product browsing, carts, checkout and orders.
  * OpenAPI spec version: 0.1.0
  */
+import type { StorePaymentProviderPublicConfig } from './storePaymentProviderPublicConfig.ts';
 
 export interface StorePaymentProvider {
   id: string;
   isEnabled: boolean;
   label: string;
   isTestOnly: boolean;
+  publicConfig: StorePaymentProviderPublicConfig;
 }

@@ -13,11 +13,12 @@ import type {
   CreateOrderShippingMethodDTO,
 } from '@core/types/order/mutations.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
-import type { PaymentSessionStatus } from '@core/types/payment/common.js'
+import type { PaymentSessionStatus, UnauthorizedSessionStatus } from '@core/types/payment/common.js'
+import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
-import { env } from '../../env.js'
+import { env } from '@env'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
 import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
 import { prepareOrderConfirmationData } from './utils/prepare-order-confirmation-data.js'
@@ -31,6 +32,35 @@ const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
   'captured',
   'pending_authorization',
 ]
+
+/**
+ * What each way of not being authorized answers with.
+ *
+ * Total over [UnauthorizedSessionStatus], so a status added to the union has to be classified here
+ * rather than inheriting whatever a fallback branch guessed. All four are a `conflict`: the request
+ * is well formed and the session is real, the shopper's payment simply is not in a state an order
+ * can be built on. None of them is the server being broken, which is what a 500 would claim — and
+ * claiming it pages an operator every time a card bounces.
+ */
+const REFUSAL_BY_STATUS: Record<UnauthorizedSessionStatus, { code: PaymentErrorCodes; message: string }> = {
+  error: {
+    code: PaymentErrorCodes.DECLINED,
+    message: 'The payment was declined. Please try another payment method.',
+  },
+  pending: {
+    code: PaymentErrorCodes.NOT_CONFIRMED,
+    message: 'The payment has not been confirmed yet.',
+  },
+  // biome-ignore lint/style/useNamingConvention: mirrors the PaymentSessionStatus union member
+  requires_more: {
+    code: PaymentErrorCodes.REQUIRES_ACTION,
+    message: 'The payment needs to be confirmed with your bank before the order can be placed.',
+  },
+  canceled: {
+    code: PaymentErrorCodes.SESSION_CANCELED,
+    message: 'The payment was cancelled. Please start the payment again.',
+  },
+}
 
 // TODO(locking): No distributed lock guards this workflow. Concurrent calls for the same cart
 // can produce duplicate orders. Add acquireLock/releaseLock steps once a locking module is available.
@@ -379,15 +409,33 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
       logger.debug(`[complete-cart] Authorizing payment session "${paymentInfo.sessionId}" for cart "${input.cartId}"`)
 
-      const payment = await paymentService.authorizePaymentSession(paymentInfo.sessionId)
-      if (!payment) {
+      const authorization = await paymentService.authorizePaymentSession(paymentInfo.sessionId)
+
+      /** Confirmed at the gateway and still settling — money in flight, not a shopper who did
+       *  not pay. Its own `code` so the two are separable in a response body and in an alert,
+       *  distinct from the [PaymentErrorCodes.DECLINED] a refused card answers with.
+       *
+       *  It is still a failure, and the workflow still unwinds. Finishing the order once the
+       *  webhook resolves needs a subscriber that does not exist yet, so until it does this
+       *  fails loudly and correctly classified rather than quietly as a decline. */
+      if (authorization.outcome === 'pending_authorization') {
         throw new WorkflowTerminalError({
-          type: ErrorTypes.UNEXPECTED_STATE,
-          message: `Payment authorization failed for session "${paymentInfo.sessionId}"`,
+          type: ErrorTypes.CONFLICT,
+          code: PaymentErrorCodes.AWAITING_AUTHORIZATION,
+          message: `Payment for session "${paymentInfo.sessionId}" has not been authorized yet`,
         })
       }
 
-      return payment
+      if (authorization.outcome === 'not_authorized') {
+        const refusal = REFUSAL_BY_STATUS[authorization.sessionStatus]
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.CONFLICT,
+          code: refusal.code,
+          message: refusal.message,
+        })
+      }
+
+      return authorization.payment
     },
     async (payment, { container }) => {
       const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)

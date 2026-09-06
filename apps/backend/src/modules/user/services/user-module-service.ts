@@ -1,3 +1,4 @@
+import { env } from '@env'
 import jwt from 'jsonwebtoken'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
@@ -15,7 +16,6 @@ import type {
 } from '../../../core/types/index.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
-import { env } from '../../../env.js'
 import type { InviteRepository } from '../repositories/invite.js'
 import type { UserRepository } from '../repositories/user.js'
 

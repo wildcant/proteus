@@ -5,7 +5,7 @@ import type { AdminProduct } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { useDeleteProduct } from '#/features/products/api/products'
-import { productStatusColors } from '#/features/products/constants'
+import { productStatusColors } from '#/features/products/utils/product-status'
 
 export function ProductGeneralSection({ product }: { product: AdminProduct }) {
   const navigate = useNavigate()

@@ -1,17 +1,23 @@
 import { UserIcon } from '@proteus/icons'
 import { Link } from '@tanstack/react-router'
 import { MenuIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Button } from '#/components/button'
 import { Nav } from '#/components/header/nav'
-import { SearchDrawer } from '#/components/header/search-drawer'
 import { SearchBarTrigger, SearchIconTrigger } from '#/components/header/search-triggers'
 import { Wordmark } from '#/components/header/wordmark'
-import { CartDrawer } from '#/features/cart/components/cart-drawer'
-import { CartTrigger } from '#/features/cart/components/cart-trigger'
 import { useModal } from '#/lib/modal-state'
 import { SideMenu } from './side-menu'
 
-export function Header() {
+/**
+ * The bar itself: nav, wordmark, search triggers, account link.
+ *
+ * `actions` is a slot because the bag belongs in the action cluster but reads the cart, and shared
+ * chrome may not reach up into a feature. The two drawers used to mount here too; they are portalled
+ * overlays whose open state is a URL param, so they are siblings in the `_main` layout route now
+ * rather than props threaded through the bar. See `packages/frontend-conventions` for the rule.
+ */
+export function Header({ actions }: { actions?: ReactNode }) {
   const { setOpen: setMenuOpen } = useModal('menu')
 
   return (
@@ -50,13 +56,11 @@ export function Header() {
             </Button>
           </Link>
 
-          <CartTrigger />
+          {actions}
         </div>
       </div>
 
       <SideMenu />
-      <SearchDrawer />
-      <CartDrawer />
     </header>
   )
 }

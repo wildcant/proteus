@@ -3,6 +3,7 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { ExpressAdapter } from '@bull-board/express'
 import type { Logger } from '@core/types/logger.js'
 import type { CronScheduler, JobDefinition, JobHandler } from '@core/types/scheduler.js'
+import { env } from '@env'
 import type { AwilixContainer } from 'awilix'
 import {
   createPostgresBackend,
@@ -12,7 +13,6 @@ import {
   Worker,
   type WorkerOptions,
 } from 'bullmq'
-import { env } from '../../../env.js'
 
 const QUEUE_NAME = 'proteus-cron-jobs'
 

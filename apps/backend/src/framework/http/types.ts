@@ -1,7 +1,7 @@
+import type { HttpRequest, HttpResult, MiddlewareFunction } from '@server/ports.js'
 import type { z } from 'zod'
-import type { HttpRequest, HttpResult } from '../../server/ports.js'
 
-export type MiddlewareFunction = (req: HttpRequest) => HttpRequest | Promise<HttpRequest>
+export type { MiddlewareFunction } from '@server/ports.js'
 
 export type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
 
@@ -53,7 +53,7 @@ type BaseRoute = {
   handler(req: HttpRequest): Promise<HttpResult<unknown>>
   input?: RouteInput
   matcher: string
-  middlewares?: MiddlewareFunction[]
+  middlewares?: readonly MiddlewareFunction[]
   operationId: string
   output: z.ZodType
   summary?: string

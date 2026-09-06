@@ -1,6 +1,5 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
-import { setPricingContext } from '../middlewares.js'
 import * as completeRoutes from './[id]/complete/route.js'
 import * as customerRoutes from './[id]/customer/route.js'
 import * as inventoryRoutes from './[id]/inventory/route.js'
@@ -17,7 +16,7 @@ export default [
     matcher: '/store/carts',
     handler: cartRoutes.POST,
     auth: 'optional',
-    middlewares: [setPricingContext()],
+    middlewares: cartRoutes.PostMiddlewares,
     input: cartRoutes.PostInput,
     operationId: 'createStoreCart',
     summary: 'Create a cart',

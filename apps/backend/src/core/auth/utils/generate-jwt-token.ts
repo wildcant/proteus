@@ -1,6 +1,6 @@
+import { env } from '@env'
 import type { ActorType } from '@proteus/http-schemas/auth'
 import type { StringValue } from 'ms'
-import { env } from '../../../env.js'
 import type { ConfigModule } from '../../config/types.js'
 import type { AuthIdentityDTO, IAuthModuleService, ProviderIdentityDTO } from '../../types/index.js'
 import { generateJwtToken } from './token.js'

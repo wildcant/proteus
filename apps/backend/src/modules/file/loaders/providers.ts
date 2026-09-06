@@ -2,8 +2,8 @@ import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
 import type { AbstractFileProviderService } from '../../../core/utils/abstract-file-provider.js'
 import type { ModuleProviderExports } from '../../../core/utils/module-provider.js'
-import { FILE_PROVIDER_REGISTRATION_PREFIX } from '../constants.js'
 import { FileProviderService } from '../services/file-provider-service.js'
+import { FILE_PROVIDER_REGISTRATION_PREFIX } from '../utils/constants.js'
 
 export type FileProviderConfig = {
   resolve: ModuleProviderExports

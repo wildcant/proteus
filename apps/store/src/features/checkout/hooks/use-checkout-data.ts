@@ -3,7 +3,7 @@ import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { useMe } from '#/features/account/api/customer'
 import { useAddresses } from '#/features/address/api/addresses'
 import { isGuest } from '#/lib/auth-token'
-import { toCartAddressInput } from '../checkout-address'
+import { toCartAddressInput } from '../utils/checkout-address'
 
 export type CheckoutDataParams = {
   cart: StoreCartDetailResponseCart

@@ -1,6 +1,3 @@
-import { validateScopeProviderAssociation } from '@core/auth/utils/validate-scope-provider-association.js'
-import { validateToken } from '@core/auth/utils/validate-token.js'
-import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
 import * as authPasswordRoutes from './[actorType]/[authProvider]/password/route.js'
@@ -19,7 +16,7 @@ export default [
     // Obtaining a token cannot require one. `applyNamespaceAuth` already injects nothing outside
     // `/admin/` and `/store/`, so this only corrects what the spec says.
     auth: 'public',
-    middlewares: [validateScopeProviderAssociation()],
+    middlewares: authRegisterRoutes.PostMiddlewares,
     input: authRegisterRoutes.PostInput,
     operationId: 'authRegister',
     summary: 'Register with an auth provider',
@@ -32,7 +29,7 @@ export default [
     handler: authRoutes.POST,
     auth: 'public',
     returnsUnauthorized: true,
-    middlewares: [validateScopeProviderAssociation()],
+    middlewares: authRoutes.PostMiddlewares,
     input: authRoutes.PostInput,
     operationId: 'authAuthenticate',
     summary: 'Authenticate with an auth provider',
@@ -44,7 +41,7 @@ export default [
     matcher: '/auth/:actorType/:authProvider/reset-password',
     handler: authResetPasswordRoutes.POST,
     auth: 'public',
-    middlewares: [validateScopeProviderAssociation()],
+    middlewares: authResetPasswordRoutes.PostMiddlewares,
     input: authResetPasswordRoutes.PostInput,
     operationId: 'authResetPassword',
     summary: 'Request a password reset token',
@@ -55,8 +52,8 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider/password',
     handler: authPasswordRoutes.POST,
-    middlewares: [validateScopeProviderAssociation(), validateToken()],
     input: authPasswordRoutes.PostInput,
+    middlewares: authPasswordRoutes.PostMiddlewares,
     operationId: 'authUpdatePassword',
     summary: 'Update password using a reset token',
     tags: [Tags.AUTH],
@@ -66,7 +63,7 @@ export default [
     method: 'POST',
     matcher: '/auth/token/refresh',
     handler: tokenRefreshRoutes.POST,
-    middlewares: [authenticate('*', { allowUnregistered: true })],
+    middlewares: tokenRefreshRoutes.PostMiddlewares,
     operationId: 'authTokenRefresh',
     summary: 'Refresh an auth token',
     tags: [Tags.AUTH],
@@ -76,7 +73,7 @@ export default [
     method: 'POST',
     matcher: '/auth/verification/request',
     handler: verificationRequestRoutes.POST,
-    middlewares: [authenticate('*', { allowUnregistered: true })],
+    middlewares: verificationRequestRoutes.PostMiddlewares,
     input: verificationRequestRoutes.PostInput,
     operationId: 'authVerificationRequest',
     summary: 'Request a verification code',
@@ -87,7 +84,7 @@ export default [
     method: 'POST',
     matcher: '/auth/verification/confirm',
     handler: verificationConfirmRoutes.POST,
-    middlewares: [authenticate('*', { allowUnregistered: true })],
+    middlewares: verificationConfirmRoutes.PostMiddlewares,
     input: verificationConfirmRoutes.PostInput,
     operationId: 'authVerificationConfirm',
     summary: 'Confirm a verification code',

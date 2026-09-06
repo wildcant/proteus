@@ -1,0 +1,12 @@
+id: suspense-hook-name-mismatch
+valid:
+  - 'export const useSuspenseCart = () => { const { data, ...rest } = useSuspenseQuery(cartQueryOptions()); return { cart: data?.cart ?? null, ...rest } }'
+  - 'export const useCart = () => { const { data, ...rest } = useQuery(cartQueryOptions()); return { cart: data?.cart ?? null, ...rest } }'
+  # A route page reads the factory directly. Only the api layer's own hooks carry the promise.
+  - 'function RouteComponent() { const { data } = useSuspenseQuery(productQueryOptions(id)); return null }'
+invalid:
+  # Blanks its caller's `<Suspense>` boundary on every refetch, under a name that promised not to.
+  - 'export const useCart = () => { const { data, ...rest } = useSuspenseQuery(cartQueryOptions()); return { cart: data?.cart ?? null, ...rest } }'
+  - 'export function useOrders(query?: P) { return useSuspenseQuery(ordersListQueryOptions(query)) }'
+  # Named for a boundary it never suspends into, so a caller wraps one for nothing.
+  - 'export const useSuspenseOrders = (query?: P) => useQuery(ordersListQueryOptions(query))'

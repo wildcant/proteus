@@ -1,3 +1,5 @@
+const { featureStructureRules, layerDirectionRules } = require('@proteus/frontend-conventions')
+
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
   forbidden: [
@@ -22,7 +24,10 @@ module.exports = {
       from: {},
       to: { circular: true },
     },
+    // shared -> features -> app, shared with the store. See packages/frontend-conventions.
+    ...layerDirectionRules(),
   ],
+  required: featureStructureRules(),
   options: {
     doNotFollow: { path: 'node_modules' },
     tsPreCompilationDeps: true,

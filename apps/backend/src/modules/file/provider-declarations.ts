@@ -1,4 +1,4 @@
-import { env } from '../../env.js'
+import { env } from '@env'
 import localfsProvider from '../../providers/file-localfs/index.js'
 import s3Provider from '../../providers/file-s3/index.js'
 import type { FileModuleOptions, FileProviderConfig } from './loaders/providers.js'

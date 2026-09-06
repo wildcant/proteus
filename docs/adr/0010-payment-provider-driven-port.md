@@ -61,6 +61,29 @@ Providers are registered in the module's local DI container under `pp_{identifie
 
 Always registered as `pp_system_default`. Every method returns success with empty data. Used for admin "mark as paid" flows where no real gateway interaction is needed. Excluded from store-facing provider listings.
 
+### The client mirror: `StorePaymentAdapter`
+
+The storefront runs the same shape one process out. A gateway that needs a browser SDK — Stripe
+mounts an iframe and confirms the intent client-side — cannot be reached from the backend port
+alone, so the store defines its own contract and one adapter per provider behind it.
+
+- **The contract** lives at `apps/store/src/features/checkout/types/payment.ts`
+  (`StorePaymentAdapter`, `CreateSession`, `Confirm`, `ConfirmOutcome`). The checkout programs
+  against this and never against a gateway.
+- **The adapters** live at `apps/store/src/features/checkout/utils/payment/adapters/{provider}/`,
+  resolved by `utils/payment/registry.ts` — the client-side twin of `PaymentProviderService`.
+
+`stripe-stays-in-its-adapter` in `apps/store/deps-analyzer/.dependency-cruiser.cjs` enforces it:
+nothing outside the adapter directory may import from `@stripe/*`. A component or route that finds
+itself wanting `useStripe()` needs something added to the contract instead, which is the point.
+
+The directory is nested under `utils/` rather than sitting at the feature root because a store
+feature holds only the folders Bulletproof React names — `api`, `assets`, `components`, `hooks`,
+`stores`, `types`, `utils`. The adapter subtree was a `checkout/payment/` folder until 2026-09-05;
+it moved so the vocabulary could be enforced mechanically rather than by convention, and
+`STRIPE_ADAPTER_PATH` moved with it. Nesting *inside* a sanctioned folder is unconstrained, so the
+adapter keeps its own internal shape.
+
 ## Consequences
 
 - Adding a new payment provider means writing one class that extends `AbstractPaymentProvider` — no changes to the module service or orchestration logic
@@ -69,3 +92,4 @@ Always registered as `pp_system_default`. Every method returns success with empt
 - The `PaymentProviderService` facade adds a small layer of indirection, but it centralizes provider resolution and keeps the module service clean
 - Webhook handling routes through the same interface (`getWebhookActionAndData`), so provider-specific signature verification stays in the adapter
 - The optional payment method operations mean providers can opt in to features without forcing all adapters to implement stubs
+- The storefront mirrors the port with `StorePaymentAdapter`; a new client-side gateway means one adapter directory and one registry entry, with a dependency-cruiser rule keeping the SDK inside it

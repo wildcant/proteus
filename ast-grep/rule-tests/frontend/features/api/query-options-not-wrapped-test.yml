@@ -1,0 +1,10 @@
+id: query-options-not-wrapped
+valid:
+  - 'export const thingQueryOptions = (id: string) => queryOptions({ queryKey: k.detail(id), queryFn: () => get(id) })'
+  - 'export const thingsInfiniteQueryOptions = () => infiniteQueryOptions({ queryKey: k.lists(), queryFn: f, initialPageParam: 0 })'
+  # Not a query-options factory, so the rule has no opinion about its shape.
+  - 'export const thingPageQuery = (offset: number) => ({ offset, limit: 5 })'
+invalid:
+  - 'export const thingQueryOptions = (id: string) => ({ queryKey: k.detail(id), queryFn: () => get(id) })'
+  - 'export const thingsListQueryOptions = (query?: P) => ({ queryKey: k.list(query), queryFn: () => list(query) })'
+  - 'export const thingQueryOptions = (id: string) => { return { queryKey: k.detail(id), queryFn: () => get(id) } }'

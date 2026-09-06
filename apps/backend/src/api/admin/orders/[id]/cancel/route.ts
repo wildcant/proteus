@@ -1,6 +1,6 @@
 import { AdminOrderActionResponse, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
-import { cancelOrderWorkflow } from '../../../../../workflows/order/cancel-order.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { cancelOrderWorkflow } from '@workflows/order/cancel-order.js'
 
 export const PostInput = { params: IdParams }
 export const PostOutput = AdminOrderActionResponse

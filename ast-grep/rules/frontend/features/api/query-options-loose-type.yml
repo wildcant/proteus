@@ -1,0 +1,24 @@
+id: query-options-loose-type
+language: typescript
+severity: error
+message: This `options` type lets a caller redefine the query's own key or fetcher, or names no query type at all.
+note: "Use `Omit<UseQueryOptions<TData, Error, TData>, 'queryFn' | 'queryKey'>`, aliased once per file. docs/query-hooks.md"
+files:
+  - "**/features/*/api/*.ts"
+rule:
+  kind: optional_parameter
+  all:
+    - has:
+        field: pattern
+        regex: "^options$"
+    - has:
+        field: type
+        has:
+          any:
+            # `Partial<UseQueryOptions<…>>` — every property optional, `queryKey` and `queryFn`
+            # included, so a caller can redefine the query and keep its name.
+            - pattern:
+                context: "type T = Partial<UseQueryOptions<$$$ARGS>>"
+                selector: generic_type
+            # An ad-hoc `{ enabled?: boolean }`, which names one option and forecloses the rest.
+            - kind: object_type

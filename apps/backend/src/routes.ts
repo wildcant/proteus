@@ -31,6 +31,7 @@ import storeCartDefinitions from './api/store/carts/definitions.js'
 import storeCustomerDefinitions from './api/store/customers/definitions.js'
 import storeOrderDefinitions from './api/store/orders/definitions.js'
 import storePaymentCollectionDefinitions from './api/store/payment-collections/definitions.js'
+import storePaymentMethodDefinitions from './api/store/payment-methods/definitions.js'
 import storePaymentProviderDefinitions from './api/store/payment-providers/definitions.js'
 import storeProductDefinitions from './api/store/products/definitions.js'
 
@@ -70,6 +71,7 @@ export const storeDefinitions: RouteDefinition[] = [
   ...storeCustomerDefinitions,
   ...storeOrderDefinitions,
   ...storePaymentCollectionDefinitions,
+  ...storePaymentMethodDefinitions,
   ...storePaymentProviderDefinitions,
   ...storeProductDefinitions,
 ]

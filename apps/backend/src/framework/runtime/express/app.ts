@@ -1,10 +1,10 @@
 import path from 'node:path'
+import type { PreparedRoute } from '@server/ports.js'
 import type { AwilixContainer } from 'awilix'
 import express from 'express'
 import qs from 'qs'
 import { errorHandler } from '../../../core/errors/index.js'
 import type { Logger } from '../../../core/types/logger.js'
-import type { PreparedRoute } from '../../../server/ports.js'
 import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
 import { extractFiles } from '../../http/multipart.js'
@@ -47,7 +47,19 @@ async function toWebRequest(req: express.Request): Promise<Request> {
 export function createExpressApp({ routes, container, logger, corsOrigins }: CreateExpressAppOptions) {
   const app = express()
 
-  app.use(express.json({ type: 'application/json' }))
+  // `verify` is the only place the untouched bytes are still in hand — by the time the handler
+  // runs, `req.body` is a parsed object and the buffer is gone. Keyed off the request object
+  // rather than assigned onto it, so no route sees a property Express never promised.
+  const rawBodies = new WeakMap<express.Request, Uint8Array>()
+
+  app.use(
+    express.json({
+      type: 'application/json',
+      // Copied, not aliased: the buffer Express hands over is its own and must not outlive the
+      // parse it was made for.
+      verify: (req, _res, buffer) => rawBodies.set(req as express.Request, new Uint8Array(buffer)),
+    }),
+  )
   app.set('query parser', (str: string) => qs.parse(str))
 
   app.use((req, res, next) => {
@@ -80,6 +92,7 @@ export function createExpressApp({ routes, container, logger, corsOrigins }: Cre
           query: req.query as Record<string, unknown>,
           validatedQuery: {},
           body,
+          rawBody: rawBodies.get(req),
           files,
           headers: req.headers as Record<string, string>,
           scope: container.createScope(),

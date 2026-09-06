@@ -1,0 +1,10 @@
+id: query-hook-inline-query
+valid:
+  - 'export const useThing = (id: string) => useQuery(thingQueryOptions(id))'
+  - 'export const useThing = (id: string) => useSuspenseQuery(thingQueryOptions(id))'
+  # The factory is where a `queryFn` belongs.
+  - 'export const thingQueryOptions = (id: string) => queryOptions({ queryKey: k.detail(id), queryFn: () => get(id) })'
+invalid:
+  - 'export const useThing = (id: string) => useQuery({ queryKey: k.detail(id), queryFn: () => get(id) })'
+  - 'export const useThing = (id: string) => useSuspenseQuery({ queryKey: k.detail(id), queryFn: () => get(id) })'
+  - 'export const useThings = () => useInfiniteQuery({ queryKey: k.lists(), queryFn: ({ pageParam }) => list(pageParam), initialPageParam: 0 })'

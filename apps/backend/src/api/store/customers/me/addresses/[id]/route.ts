@@ -2,14 +2,18 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ICustomerModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { DeleteResponse, IdParams, StoreCustomerAddressResponse, StoreUpdateAddress } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { validateAddressOwnership } from '../../../middlewares.js'
 
 export const PatchInput = { params: IdParams, body: StoreUpdateAddress }
+export const PatchMiddlewares = [validateAddressOwnership()] as const
 export const PatchOutput = StoreCustomerAddressResponse
 
 // Ownership is enforced by `validateAddressOwnership` in the route definition, so by the time a
 // handler here runs the id in the path is known to be one of the caller's own.
-export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
+export const PATCH = async (
+  req: HttpRequest<typeof PatchInput, typeof PatchMiddlewares>,
+): Promise<HttpResult<typeof PatchOutput>> => {
   const customerId = req.authContext?.actorId
   if (!customerId) {
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
@@ -37,9 +41,12 @@ export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpRe
 }
 
 export const DeleteInput = { params: IdParams }
+export const DeleteMiddlewares = [validateAddressOwnership()] as const
 export const DeleteOutput = DeleteResponse
 
-export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
+export const DELETE = async (
+  req: HttpRequest<typeof DeleteInput, typeof DeleteMiddlewares>,
+): Promise<HttpResult<typeof DeleteOutput>> => {
   const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
   await customerService.softDeleteCustomerAddresses([req.params.id])
 

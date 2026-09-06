@@ -1,0 +1,38 @@
+id: mutation-hook-callback-not-forwarded
+snapshots:
+  'useMutation({ ...rest, onError: (...args) => { toast.add(x) } })':
+    labels:
+    - source: 'onError: (...args) => { toast.add(x) }'
+      style: primary
+      start: 23
+      end: 61
+    - source: 'useMutation({ ...rest, onError: (...args) => { toast.add(x) } })'
+      style: secondary
+      start: 0
+      end: 64
+    - source: '({ ...rest, onError: (...args) => { toast.add(x) } })'
+      style: secondary
+      start: 11
+      end: 64
+    - source: '{ ...rest, onError: (...args) => { toast.add(x) } }'
+      style: secondary
+      start: 12
+      end: 63
+  'useMutation({ ...rest, onSuccess: (...args) => { qc.invalidateQueries(k) } })':
+    labels:
+    - source: 'onSuccess: (...args) => { qc.invalidateQueries(k) }'
+      style: primary
+      start: 23
+      end: 74
+    - source: 'useMutation({ ...rest, onSuccess: (...args) => { qc.invalidateQueries(k) } })'
+      style: secondary
+      start: 0
+      end: 77
+    - source: '({ ...rest, onSuccess: (...args) => { qc.invalidateQueries(k) } })'
+      style: secondary
+      start: 11
+      end: 77
+    - source: '{ ...rest, onSuccess: (...args) => { qc.invalidateQueries(k) } }'
+      style: secondary
+      start: 12
+      end: 76

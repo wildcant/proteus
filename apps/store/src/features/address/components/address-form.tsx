@@ -2,7 +2,7 @@ import { NativeSelectOption, RouteDrawer } from '@proteus/ui'
 import { Button } from '#/components/button'
 import { CountryOptions } from '#/components/form/country-options'
 import { Form } from '#/components/form/form.tsx'
-import { addressFormOpts } from '#/features/address/form-values'
+import { addressFormOpts } from '#/features/address/utils/form-values'
 import { withForm } from '#/lib/form-hook'
 
 /**

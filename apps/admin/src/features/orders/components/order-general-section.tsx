@@ -4,7 +4,7 @@ import { ArchiveIcon, CheckCircleIcon, XCircleIcon } from 'lucide-react'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { useArchiveOrder, useCancelOrder, useCompleteOrder } from '#/features/orders/api/orders'
-import { fulfillmentStatusColors, orderStatusColors } from '#/features/orders/constants'
+import { fulfillmentStatusColors, orderStatusColors } from '#/features/orders/utils/order-status'
 
 export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder }) {
   const { mutateAsync: complete } = useCompleteOrder(order.id)

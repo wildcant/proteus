@@ -1,7 +1,6 @@
-import type { StoreShippingOptionListResponse } from '@proteus/http-schemas/store'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   addStoreCartShippingMethod,
   completeStoreCart,
@@ -17,38 +16,65 @@ import type {
   StoreCreateCartShippingMethodResponse,
   StoreCreatePaymentCollectionResponse,
   StoreCreatePaymentSessionResponse,
+  StoreShippingOptionListResponse,
   StoreUpdateCartResponse,
+  StoreUpdatePaymentSessionResponse,
   UpdateStoreCartBody,
 } from '#/api/generated/model'
 import {
   createStorePaymentCollection,
   createStorePaymentSession,
+  updateStorePaymentSession,
 } from '#/api/generated/payment-collections/payment-collections'
 import { listStorePaymentProviders } from '#/api/generated/payments/payments'
 import { cartQueryKeys } from '#/features/cart/api/cart'
 import { clearCartId, getCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
+import { isStaleMethodError, rethrowAsStaleMethod } from '../utils/payment/session-errors'
 
-const checkoutQueryKeys = queryKeysFactory('checkout')
+// Two resources, two key namespaces. One 'checkout' namespace would give both of them the same
+// `lists()` key, so neither could be invalidated without taking the other with it.
+const shippingOptionKeys = queryKeysFactory<
+  'shipping-options',
+  ListStoreCartShippingOptionsParams & { cartId: string }
+>('shipping-options')
+const paymentProviderKeys = queryKeysFactory<'payment-providers'>('payment-providers')
+
+type ShippingOptionsQueryOptions = Omit<
+  UseQueryOptions<StoreShippingOptionListResponse, Error, StoreShippingOptionListResponse>,
+  'queryFn' | 'queryKey'
+>
+
+/** Shared query config. Keyed by cart *and* address, since the rates are quoted against both. */
+export const shippingOptionsQueryOptions = (
+  cartId: string,
+  params: ListStoreCartShippingOptionsParams,
+  options?: ShippingOptionsQueryOptions,
+) =>
+  queryOptions({
+    queryKey: shippingOptionKeys.list({ ...params, cartId }),
+    queryFn: () => listStoreCartShippingOptions(cartId, params),
+    // The delivery step mounts this form before it has a cart to quote against. A caller with a
+    // stricter gate of its own — a complete address, say — passes its own `enabled` and replaces
+    // this one, which is safe because a cart is what it took to reach the step at all.
+    enabled: !!cartId,
+    ...options,
+  })
 
 export const useShippingOptions = (
   cartId: string,
   params: ListStoreCartShippingOptionsParams,
-  options?: Partial<UseQueryOptions<StoreShippingOptionListResponse, Error>>,
-) => {
-  return useQuery({
-    queryKey: [...checkoutQueryKeys.all, 'shipping-options', cartId, params],
-    queryFn: () => listStoreCartShippingOptions(cartId, params),
-    enabled: !!cartId && !!params && !!(options?.enabled ?? true),
-  })
-}
+  options?: ShippingOptionsQueryOptions,
+) => useQuery(shippingOptionsQueryOptions(cartId, params, options))
 
-export const usePaymentProviders = () => {
-  return useQuery({
-    queryKey: [...checkoutQueryKeys.all, 'payment-providers'],
+/** Shared query config. Use in route loaders via `prefetchQuery(paymentProvidersQueryOptions())`. */
+export const paymentProvidersQueryOptions = () =>
+  queryOptions({
+    queryKey: paymentProviderKeys.lists(),
     queryFn: () => listStorePaymentProviders(),
   })
-}
+
+export const usePaymentProviders = () => useQuery(paymentProvidersQueryOptions())
 
 export const useUpdateCart = (options?: UseMutationOptions<StoreUpdateCartResponse, Error, UpdateStoreCartBody>) => {
   const queryClient = useQueryClient()
@@ -124,10 +150,39 @@ export const useCreatePaymentSession = (
   return useMutation({
     ...rest,
     mutationFn: ({ collectionId, ...payload }: CreateStorePaymentSessionBody & { collectionId: string }) =>
-      createStorePaymentSession(collectionId, payload),
+      // Raised here rather than at the call site, so every caller of this mutation sees the one
+      // refusal the wallet can recover from as its own type rather than as a status code.
+      createStorePaymentSession(collectionId, payload).catch(rethrowAsStaleMethod),
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create payment session', description: error.message })
+      // A stale saved card is the one refusal the checkout recovers from in place: the wallet
+      // refetches and the selection resets to the new-method form, with a message beside the
+      // button that says so. A toast on top of that is the same news told twice.
+      if (!isStaleMethodError(error)) {
+        toast.add({ type: 'error', title: 'Failed to create payment session', description: error.message })
+      }
+      onError?.(...args)
+    },
+  })
+}
+
+/**
+ * Re-prices an open session from the cart's server-side total.
+ *
+ * There is no body: the browser names the session in the URL and is told what the cart came to.
+ * See `useOpenPaymentSession` for why every place-order press ends with this call.
+ */
+export const useRepricePaymentSession = (
+  options?: UseMutationOptions<StoreUpdatePaymentSessionResponse, Error, { collectionId: string; sessionId: string }>,
+) => {
+  const { onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
+    mutationFn: ({ collectionId, sessionId }: { collectionId: string; sessionId: string }) =>
+      updateStorePaymentSession(collectionId, sessionId),
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to price the payment', description: error.message })
       onError?.(...args)
     },
   })

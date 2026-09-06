@@ -19,12 +19,15 @@
     "openapi:generate": "npm run --workspace=backend openapi:dump:offline && npm run --workspace=admin openapi:client && npm run --workspace=store openapi:client",
     "typecheck": "npm run --workspace=backend typecheck && npm run --workspace=store typecheck && npm run --workspace=admin typecheck",
     "verify": "./scripts/verify.sh",
+    "check:code-shape": "ast-grep scan --config sgconfig.yml --error=unused-suppression .",
+    "check:code-shape:test": "ast-grep test --config sgconfig.yml",
     "sync-secrets:admin": "./scripts/sync-secrets.sh proteus-admin",
     "sync-secrets:backend": "./scripts/sync-secrets.sh proteus-backend",
     "sync-secrets:store": "./scripts/sync-secrets.sh proteus",
     "pull-keys": "npx wrangler r2 object get dotenv-keys/.env.keys --file=.env.keys --remote"
   },
   "devDependencies": {
+    "@ast-grep/cli": "^0.45.3",
     "@biomejs/biome": "2.5.4"
   }
 }

@@ -1,7 +1,7 @@
 import { StoreUpdateAddress } from '@proteus/http-schemas/store'
 import type { StoreCustomerAddress } from '#/api/generated/model'
 import { useUpdateAddress } from '#/features/address/api/addresses'
-import { addressFormOpts, toFormValues, toPayload } from '#/features/address/form-values'
+import { addressFormOpts, toFormValues, toPayload } from '#/features/address/utils/form-values'
 import type { SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
 

@@ -2,6 +2,7 @@ import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { Form } from '#/components/form/form'
 import { useCheckoutData } from '#/features/checkout/hooks/use-checkout-data'
 import { useCheckoutForm } from '../hooks/use-checkout-form'
+import { PaymentControllerProvider } from '../hooks/use-payment-controller'
 import { ContactSection } from './contact/contact-section'
 import { DeliverySection } from './delivery/delivery-section'
 import { PaymentSection } from './payment/payment-section'
@@ -13,20 +14,41 @@ type CheckoutFormProps = {
 
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const data = useCheckoutData({ cart })
-  const { form, isLoading, placeOrder, signOut } = useCheckoutForm({ data })
+  const { form, isLoading, placeOrder, signOut, controller, paymentError } = useCheckoutForm({ data })
 
   return (
-    <Form onSubmit={placeOrder}>
-      <form.AppForm>
-        <div className="space-y-8">
-          <ContactSection form={form} onSignOut={signOut} {...data} />
-          <DeliverySection form={form} {...data} />
-          <ShippingMethodSection form={form} {...data} />
-          <PaymentSection form={form} {...data} />
+    // The provider spans the button as well as the payment step: the adapter registers its
+    // confirm from inside its own SDK context, and the button reads it from outside.
+    <PaymentControllerProvider value={controller}>
+      <Form onSubmit={placeOrder}>
+        <form.AppForm>
+          <div className="space-y-8">
+            <ContactSection form={form} onSignOut={signOut} {...data} />
+            <DeliverySection form={form} {...data} />
+            <ShippingMethodSection form={form} {...data} />
+            <PaymentSection form={form} {...data} />
 
-          <form.SubmitButton className="w-full">{isLoading ? 'Placing order...' : 'Place order'}</form.SubmitButton>
-        </div>
-      </form.AppForm>
-    </Form>
+            {/* A checkout-level slot, not part of the selector: the line is not provider-specific
+                and must not move when a second provider is added. Plain text rather than links,
+                for the reason the footer's legal column does not exist yet — `/terms`, `/privacy`
+                and `/cookies` are not routes, and a link that quietly lands on the home page is a
+                bug the shopper walks into rather than a placeholder they can read. */}
+            <p className="m-0 text-ink-muted text-xs">
+              By placing your order you agree to our Terms and Conditions, Privacy Notice and Cookie Policy.
+            </p>
+
+            {/* Beneath the button, not under a field: a decline is not something the shopper
+                mistyped, and the press that produced it is what they are looking at. */}
+            {!!paymentError && (
+              <p role="alert" className="m-0 border border-sale bg-surface-subtle p-3 text-ink text-sm">
+                {paymentError}
+              </p>
+            )}
+
+            <form.SubmitButton className="w-full">{isLoading ? 'Placing order...' : 'Place order'}</form.SubmitButton>
+          </div>
+        </form.AppForm>
+      </Form>
+    </PaymentControllerProvider>
   )
 }

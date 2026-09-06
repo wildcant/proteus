@@ -23,7 +23,7 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-JOBS="typecheck lint conventions deps openapi test admin schemas"
+JOBS="typecheck lint conventions deps openapi test admin store schemas"
 
 job_typecheck() { npm run typecheck; }
 
@@ -50,6 +50,15 @@ job_conventions() {
   # is the step that notices when the two have drifted. --check never writes, so it behaves the same
   # here and under --ci. See scripts/generate-workflow-registry.ts.
   npm run --workspace=backend --silent check:workflow-registry || code=1
+  # Code-shape rules — the mutation-hook contract in docs/mutation-hooks.md today. Spans store and
+  # admin, so it lives at the root like the env check. ast-grep matches the syntax tree rather than
+  # lines: a hook forwarding one callback and swallowing the other reads as compliant to any
+  # line-wise pattern. `--error=unused-suppression` fails the run when an `ast-grep-ignore` outlives
+  # the code it exempted. See ast-grep/README.md for the rule tree.
+  npm run --silent check:code-shape || code=1
+  # The rules' own tests. A rule that stops matching its `invalid` case prints exactly what a clean
+  # codebase prints, and this is what tells the two apart.
+  npm run --silent check:code-shape:test || code=1
   return $code
 }
 
@@ -72,14 +81,22 @@ job_deps() {
   return $code
 }
 
-# The API tests plus the pure option-combination unit tests — the full suite is ~96s and would
-# dominate the gate. One vitest process, not two: every backend test file pulls in db-setup, and
-# the suite is not safe to run twice concurrently against the shared test database.
+# The API tests plus the unit tests worth gating — the option-combination matrix, the Stripe
+# adapter's currency and status tables, which decide what a shopper is charged, and the platform
+# adapters, which decide whether a webhook signature can be verified at all. The full
+# suite is ~96s and would dominate the gate. One vitest process, not two: every backend test file
+# pulls in db-setup, and the suite is not safe to run twice concurrently against the shared test
+# database.
 job_test() { npm run --workspace=backend test:gate; }
 
 # The admin's pure logic — the variant matrix the create wizard enumerates and what the options
 # drawer says a change will destroy. No database and no browser, so it runs alongside the rest.
 job_admin() { npm run --workspace=admin test; }
+
+# The store's pure logic — the shopper-facing payment copy, whose bucketing rule decides whether
+# a declined card tells a prober which decline it was. No browser, so it runs alongside the rest;
+# the rendered payment step is Playwright's, which the gate does not run.
+job_store() { npm run --workspace=store test; }
 
 # CI mode: report formatting instead of applying it. Triggered by --ci or by the CI env
 # var that every CI provider sets, so the workflow file needs no extra wiring.
@@ -111,12 +128,13 @@ label_of() {
   case "$1" in
     typecheck) echo "Type checking (backend, store, admin)" ;;
     lint) echo "Lint & format rules (warnings fail)" ;;
-    conventions) echo "Env usage, error & schema conventions" ;;
+    conventions) echo "Env usage, error, schema & code-shape conventions" ;;
     deps) echo "Dependency rules (backend, admin, store)" ;;
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;
     admin) echo "Admin unit tests" ;;
     schemas) echo "Request-schema bound tests" ;;
+    store) echo "Store unit tests" ;;
   esac
 }
 

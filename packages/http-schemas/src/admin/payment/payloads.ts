@@ -2,13 +2,6 @@ import { z } from 'zod'
 import { entityId, longText, machineCode, shortText } from '../../bounded.js'
 import { amountToBigNumber } from '../../common.js'
 
-export const AdminCapturePayment = z
-  .object({
-    amount: amountToBigNumber.optional(),
-  })
-  .openapi('AdminCapturePayment')
-export type AdminCapturePaymentBody = z.infer<typeof AdminCapturePayment>
-
 export const AdminRefundPayment = z
   .object({
     amount: amountToBigNumber.optional(),

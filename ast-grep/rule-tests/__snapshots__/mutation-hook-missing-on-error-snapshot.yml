@@ -1,0 +1,30 @@
+id: mutation-hook-missing-on-error
+snapshots:
+  'useMutation({ ...rest, mutationFn: f })':
+    labels:
+    - source: '{ ...rest, mutationFn: f }'
+      style: primary
+      start: 12
+      end: 38
+    - source: 'useMutation({ ...rest, mutationFn: f })'
+      style: secondary
+      start: 0
+      end: 39
+    - source: '({ ...rest, mutationFn: f })'
+      style: secondary
+      start: 11
+      end: 39
+  'useMutation({ ...rest, mutationFn: f, onSuccess: (...args) => { onSuccess?.(...args) } })':
+    labels:
+    - source: '{ ...rest, mutationFn: f, onSuccess: (...args) => { onSuccess?.(...args) } }'
+      style: primary
+      start: 12
+      end: 88
+    - source: 'useMutation({ ...rest, mutationFn: f, onSuccess: (...args) => { onSuccess?.(...args) } })'
+      style: secondary
+      start: 0
+      end: 89
+    - source: '({ ...rest, mutationFn: f, onSuccess: (...args) => { onSuccess?.(...args) } })'
+      style: secondary
+      start: 11
+      end: 89

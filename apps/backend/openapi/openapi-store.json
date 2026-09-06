@@ -1782,6 +1782,62 @@
           "deletedAt"
         ]
       },
+      "StoreUpdatePaymentSessionResponse": {
+        "type": "object",
+        "properties": {
+          "paymentSession": {
+            "$ref": "#/components/schemas/StorePaymentSession"
+          }
+        },
+        "required": [
+          "paymentSession"
+        ]
+      },
+      "StoreSavedMethodListResponse": {
+        "type": "object",
+        "properties": {
+          "paymentMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreSavedMethod"
+            }
+          }
+        },
+        "required": [
+          "paymentMethods"
+        ]
+      },
+      "StoreSavedMethod": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "last4": {
+            "type": "string"
+          },
+          "expMonth": {
+            "type": "integer"
+          },
+          "expYear": {
+            "type": "integer"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "brand",
+          "last4",
+          "expMonth",
+          "expYear",
+          "isDefault"
+        ]
+      },
       "StorePaymentProviderListResponse": {
         "type": "object",
         "properties": {
@@ -1810,13 +1866,18 @@
           },
           "isTestOnly": {
             "type": "boolean"
+          },
+          "publicConfig": {
+            "type": "object",
+            "additionalProperties": {}
           }
         },
         "required": [
           "id",
           "isEnabled",
           "label",
-          "isTestOnly"
+          "isTestOnly",
+          "publicConfig"
         ]
       },
       "StoreProductListResponse": {
@@ -3677,6 +3738,185 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreCreatePaymentSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/payment-collections/{id}/payment-sessions/{sessionId}": {
+      "patch": {
+        "operationId": "updateStorePaymentSession",
+        "summary": "Re-price a payment session from the cart's server-side total",
+        "tags": [
+          "Payment Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "sessionId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreUpdatePaymentSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/payment-methods": {
+      "get": {
+        "operationId": "listStorePaymentMethods",
+        "summary": "List the authenticated customer's saved payment methods",
+        "tags": [
+          "Payments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreSavedMethodListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/store/payment-methods/{id}": {
+      "delete": {
+        "operationId": "deleteStorePaymentMethod",
+        "summary": "Remove a saved payment method",
+        "tags": [
+          "Payments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/payment-methods/{id}/default": {
+      "post": {
+        "operationId": "setStoreDefaultPaymentMethod",
+        "summary": "Nominate the default payment method",
+        "tags": [
+          "Payments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreSavedMethodListResponse"
                 }
               }
             }
