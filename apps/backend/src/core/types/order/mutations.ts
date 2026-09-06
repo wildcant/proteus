@@ -40,7 +40,7 @@ export type CreateOrderShippingMethodDTO = {
   description?: string | null | undefined
   amount: BigNumber
   shippingOptionId?: string | null | undefined
-  data?: unknown | undefined
+  data?: Record<string, unknown> | null | undefined
 }
 
 export type CreateOrderTransactionDTO = {

@@ -2,6 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Store API",
+    "description": "Storefront API for shoppers: product browsing, carts, checkout and orders.",
     "version": "0.1.0"
   },
   "servers": [
@@ -9,7 +10,42 @@
       "url": "http://localhost:3000"
     }
   ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Carts"
+    },
+    {
+      "name": "Customers"
+    },
+    {
+      "name": "Orders"
+    },
+    {
+      "name": "Payment Collections"
+    },
+    {
+      "name": "Payments"
+    },
+    {
+      "name": "Products"
+    }
+  ],
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "schemas": {
       "AuthenticateResponse": {
         "type": "object",
@@ -568,9 +604,21 @@
           "providerId": {
             "type": "string"
           },
-          "data": {}
+          "data": {
+            "type": ["object", "null"],
+            "additionalProperties": {}
+          }
         },
-        "required": ["id", "name", "amount", "serviceZoneId", "shippingProfileId", "shippingOptionTypeId", "providerId"]
+        "required": [
+          "id",
+          "name",
+          "amount",
+          "serviceZoneId",
+          "shippingProfileId",
+          "shippingOptionTypeId",
+          "providerId",
+          "data"
+        ]
       },
       "StoreCreateCartShippingMethodResponse": {
         "type": "object",
@@ -1610,6 +1658,7 @@
         "operationId": "storeAuthSignup",
         "summary": "Register a new customer account",
         "tags": ["Auth"],
+        "security": [],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1632,6 +1681,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -1641,6 +1693,7 @@
         "operationId": "storeAuthLogin",
         "summary": "Login as a customer",
         "tags": ["Auth"],
+        "security": [],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1663,6 +1716,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -1672,6 +1728,11 @@
         "operationId": "authResetPassword",
         "summary": "Request a password reset token",
         "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -1715,17 +1776,25 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
         }
       }
     },
-    "/auth/{actorType}/{authProvider}/update": {
+    "/auth/{actorType}/{authProvider}/password": {
       "post": {
         "operationId": "authUpdatePassword",
         "summary": "Update password using a reset token",
         "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -1769,6 +1838,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -1780,6 +1852,11 @@
         "operationId": "authVerificationConfirm",
         "summary": "Confirm a verification code",
         "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1802,6 +1879,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -1811,6 +1891,11 @@
         "operationId": "createStoreCart",
         "summary": "Create a cart",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1856,6 +1941,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -1865,6 +1953,11 @@
         "operationId": "getStoreCart",
         "summary": "Retrieve a cart with line items",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -1890,6 +1983,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -1899,6 +1995,11 @@
         "operationId": "updateStoreCart",
         "summary": "Update a cart",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2027,6 +2128,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2038,6 +2142,11 @@
         "operationId": "addStoreCartLineItem",
         "summary": "Add a line item to a cart",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2083,6 +2192,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2094,6 +2206,11 @@
         "operationId": "updateStoreCartLineItem",
         "summary": "Update a cart line item",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2143,6 +2260,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2152,6 +2272,11 @@
         "operationId": "deleteStoreCartLineItem",
         "summary": "Remove a line item from a cart",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2186,6 +2311,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2197,6 +2325,11 @@
         "operationId": "listStoreCartShippingOptions",
         "summary": "List available shipping options for a cart",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2254,6 +2387,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2265,6 +2401,11 @@
         "operationId": "addStoreCartShippingMethod",
         "summary": "Select a shipping method for a cart",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2310,6 +2451,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2321,6 +2465,11 @@
         "operationId": "completeStoreCart",
         "summary": "Complete a cart (authorize payment and mark as completed)",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2346,6 +2495,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2357,6 +2509,11 @@
         "operationId": "checkStoreCartInventory",
         "summary": "Check inventory availability for a cart",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2382,6 +2539,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2393,6 +2553,11 @@
         "operationId": "transferStoreCartCustomer",
         "summary": "Transfer a cart to the authenticated customer",
         "tags": ["Carts"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2418,6 +2583,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2429,6 +2597,11 @@
         "operationId": "getStoreCustomerMe",
         "summary": "Get the authenticated customer",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2442,6 +2615,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2451,6 +2627,11 @@
         "operationId": "listStoreCustomerAddresses",
         "summary": "List the authenticated customer's addresses",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2464,6 +2645,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -2471,6 +2655,11 @@
         "operationId": "createStoreCustomerAddress",
         "summary": "Add an address to the address book",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2493,6 +2682,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2502,6 +2694,11 @@
         "operationId": "updateStoreCustomerAddress",
         "summary": "Update an address in the address book",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2536,6 +2733,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2545,6 +2745,11 @@
         "operationId": "deleteStoreCustomerAddress",
         "summary": "Remove an address from the address book",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2570,6 +2775,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2581,6 +2789,11 @@
         "operationId": "listStoreOrders",
         "summary": "List customer orders",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2625,6 +2838,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2634,6 +2850,11 @@
         "operationId": "getStoreOrder",
         "summary": "Retrieve a customer order",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2659,6 +2880,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2670,6 +2894,11 @@
         "operationId": "createStorePaymentCollection",
         "summary": "Create a payment collection for a cart",
         "tags": ["Payment Collections"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2699,6 +2928,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2708,6 +2940,11 @@
         "operationId": "createStorePaymentSession",
         "summary": "Create a payment session",
         "tags": ["Payment Collections"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2757,6 +2994,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2768,6 +3008,11 @@
         "operationId": "listStorePaymentProviders",
         "summary": "List enabled payment providers",
         "tags": ["Payments"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2781,6 +3026,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2790,6 +3038,7 @@
         "operationId": "listStoreProducts",
         "summary": "List published products",
         "tags": ["Products"],
+        "security": [],
         "parameters": [
           {
             "schema": {
@@ -2851,6 +3100,7 @@
         "operationId": "getStoreProduct",
         "summary": "Retrieve a product with variants",
         "tags": ["Products"],
+        "security": [],
         "parameters": [
           {
             "schema": {

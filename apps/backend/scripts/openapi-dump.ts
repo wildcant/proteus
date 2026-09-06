@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { registerOpenApiRoute } from '../src/core/openapi/register-route.js'
-import { createRegistry, generateDocument } from '../src/core/openapi/registry.js'
+import { createRegistry, documentInfo, generateDocument } from '../src/core/openapi/registry.js'
 import { adminDefinitions, storeDefinitions } from '../src/routes.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -13,7 +13,7 @@ for (const definition of adminDefinitions) {
   registerOpenApiRoute(adminRegistry, definition.matcher, definition)
 }
 
-const adminDoc = generateDocument(adminRegistry, 'Admin API')
+const adminDoc = generateDocument(adminRegistry, documentInfo.admin)
 const adminPath = resolve(__dirname, '../openapi/openapi-admin.json')
 writeFileSync(adminPath, `${JSON.stringify(adminDoc, null, 2)}\n`)
 console.info(`Admin OpenAPI spec written to ${adminPath}`)
@@ -24,7 +24,7 @@ for (const definition of storeDefinitions) {
   registerOpenApiRoute(storeRegistry, definition.matcher, definition)
 }
 
-const storeDoc = generateDocument(storeRegistry, 'Store API')
+const storeDoc = generateDocument(storeRegistry, documentInfo.store)
 const storePath = resolve(__dirname, '../openapi/openapi-store.json')
 writeFileSync(storePath, `${JSON.stringify(storeDoc, null, 2)}\n`)
 console.info(`Store OpenAPI spec written to ${storePath}`)

@@ -1,5 +1,6 @@
 import type { OpenAPIRegistry, RouteConfig } from '@asteasolutions/zod-to-openapi'
 import type { RouteDefinition } from '@framework/http/types.js'
+import { BEARER_SCHEME_NAME } from './registry.js'
 
 const methodMap = {
   GET: 'get',
@@ -30,6 +31,11 @@ export function registerOpenApiRoute(registry: OpenAPIRegistry, routePath: strin
     }
   }
 
+  // A root-level `security` is not inherited by operations as far as Spectral is concerned —
+  // it reads the JSONPath literally — so every operation states its own requirement.
+  const isPublic = (config.auth ?? 'required') === 'public'
+  const security: RouteConfig['security'] = isPublic ? [] : [{ [BEARER_SCHEME_NAME]: [] }]
+
   const hasParams = config.input?.params != null
   const responses: RouteConfig['responses'] = {
     200: {
@@ -37,6 +43,10 @@ export function registerOpenApiRoute(registry: OpenAPIRegistry, routePath: strin
       ...(config.output ? { content: { 'application/json': { schema: config.output } } } : {}),
     },
     400: { description: 'Validation error' },
+  }
+
+  if (!isPublic || config.returnsUnauthorized) {
+    responses[401] = { description: 'Unauthorized' }
   }
 
   if (hasParams) {
@@ -50,6 +60,7 @@ export function registerOpenApiRoute(registry: OpenAPIRegistry, routePath: strin
     ...(config.summary !== undefined && { summary: config.summary }),
     ...(config.description !== undefined && { description: config.description }),
     tags: config.tags,
+    security,
     request,
     responses,
   }
