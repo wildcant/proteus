@@ -1,8 +1,8 @@
 import { Context } from '@temporalio/activity'
 import type { AwilixContainer } from 'awilix'
-import type { Logger } from '../core/types/logger.js'
-import { ContainerRegistrationKeys } from '../core/utils/index.js'
-import { isTerminal, toStepApplicationFailure } from './failures.js'
+import { isTerminal, toStepApplicationFailure } from '../../../temporal/failures.js'
+import type { Logger } from '../../types/logger.js'
+import { ContainerRegistrationKeys } from '../../utils/index.js'
 import type { WorkflowRegistry } from './registry.js'
 import {
   advanceWorkflow as advanceReplay,

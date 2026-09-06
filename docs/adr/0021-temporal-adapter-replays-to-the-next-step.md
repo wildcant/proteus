@@ -32,7 +32,7 @@ its `{s,e,c}` internals — silent corruption in `complete-cart`'s money path.
 once per step.**
 
 ```ts
-// src/temporal/workflows.ts — the only code in the Temporal sandbox
+// src/core/workflows/temporal/workflows.ts — the only code in the Temporal sandbox
 const outputs = []
 for (;;) {
   const result = await advanceWorkflow({ name, input, outputs, fingerprint })
@@ -43,7 +43,7 @@ for (;;) {
 ```
 
 `advanceWorkflow` is an Activity running in a normal Node Worker with the DI container. It looks the
-workflow up by name in `src/temporal/registry.ts` and re-executes its handler with a replay `ctx`
+workflow up by name in `src/core/workflows/temporal/registry.ts` and re-executes its handler with a replay `ctx`
 whose `step()` returns the stored output for every already-completed step and executes exactly the
 next one, then abandons the handler. Compensation is the same replay run backwards.
 
@@ -72,7 +72,7 @@ same output as a clean tree.
 
 Two things it deliberately does not do. It does not follow imports: helpers under
 `src/workflows/*/utils/` are pure by convention and trusted. And it does not police step
-*concurrency*, which `src/temporal/replay.ts` asserts at runtime instead, where it can see two
+*concurrency*, which `src/core/workflows/temporal/replay.ts` asserts at runtime instead, where it can see two
 `ctx.step` calls actually overlap — `Promise.all` **inside** a step action is fine, and 14 workflows
 do it.
 
@@ -177,20 +177,20 @@ which is the point.
   pinned engine — 15 workflow tests that call `.run()`, the 8 `src/api` files whose routes dispatch a
   workflow, and the engine-pin probe below. Review round 1 put the assertions that genuinely
   round-trip through Temporal at roughly 120–250 of the ~820. The rest are engine-blind rather than
-  incidentally passing: `src/temporal/__tests__` and the other `src/core/workflows/__tests__` files
+  incidentally passing: `src/core/workflows/temporal/__tests__` and the other `src/core/workflows/__tests__` files
   build their own engines, and the module, core, framework and provider tests never reach a workflow
   at all. So the claim is "no behavioural divergence anywhere the adapter is reachable", not "820
   assertions' worth of adapter coverage". Do not restate the headline without this.
 
   **For two workflows the suite proves a topology production does not deploy.** `create-product` and
   `complete-customer-auth` call another workflow's `.run()` from inside a step.
-  `src/temporal/container.ts` pins the **simple** engine on the production Worker's container, so
+  `src/framework/runtime/container.worker.ts` pins the **simple** engine on the production Worker's container, so
   there that nested run is inline, in the Activity. The parity harness runs its Activities against
   the *test* container, which `test:temporal` pins to `temporal` — `tests/setup/temporal-parity.ts`
   says so itself — so under the suite the same nested run is a second Temporal execution. A green
   `POST /admin/products` under `test:temporal` is therefore evidence about a shape production does
-  not use. `src/temporal/__tests__/nested-workflow.server.test.ts` covers the deployed shape directly: it
-  pins the Worker's global engine to `simple` as `container.ts` does, and asserts that the nested
+  not use. `src/core/workflows/temporal/__tests__/nested-workflow.server.test.ts` covers the deployed shape directly: it
+  pins the Worker's global engine to `simple` as `container.worker.ts` does, and asserts that the nested
   workflow's steps run inside the outer execution's Activity and that none of them reach an Activity
   or Temporal history of their own.
 
@@ -247,9 +247,11 @@ which is the point.
 ## References
 
 - `apps/backend/src/core/workflows/readme.md` — how to write a workflow against either adapter
-- `apps/backend/src/temporal/` — the driver, the replay, the Activities, the converter
+- `apps/backend/src/core/workflows/temporal/` — the driver, the replay, the Activities, the registry
+- `apps/backend/src/temporal/` — the shared plumbing underneath it: the client, the converter, the
+  failure encoding
 - `apps/backend/scripts/replay-purity.ts` — the purity rule, the `try`-around-`ctx.step` rule, and why
   they are an AST check rather than a Biome plugin
-- `apps/backend/src/temporal/__tests__/nested-workflow.server.test.ts` — the production nested topology
+- `apps/backend/src/core/workflows/temporal/__tests__/nested-workflow.server.test.ts` — the production nested topology
 - ADR-0009 — the port this adapter implements
 - ADR-0022 — which runtime gets which adapter, and what that costs

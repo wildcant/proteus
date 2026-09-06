@@ -83,8 +83,32 @@ module.exports = {
         path: '^src/index\\.workerd\\.ts$',
       },
       to: {
-        path: '@temporalio/|^src/temporal/|^src/core/workflows/temporal-adapter\\.ts$',
+        path: '@temporalio/|^src/temporal/|^src/core/workflows/temporal(-adapter\\.ts$|/)',
         reachable: true,
+      },
+    },
+    {
+      name: 'shared-temporal-stays-shared',
+      comment:
+        'src/temporal/ is the Temporal plumbing the workflow engine and (soon) the event bus both ' +
+        'build on: the client, the payload converter, the failure encoding. It may reach the core ' +
+        'primitives every layer shares — BigNumber, AppError, the DTO types, the workflow port ' +
+        "type — and nothing else in src/core/, least of all the workflow engine's own Temporal " +
+        'internals in src/core/workflows/temporal/. The dependency runs one way: the engine imports ' +
+        'the plumbing, never the reverse. Without this rule the split rots the first time someone ' +
+        '"shares" a workflow helper by moving it back into src/temporal/, and the shared folder ' +
+        'quietly becomes the workflow engine again. ' +
+        'ping.ts is the one exemption: it is an operator script (`npm run temporal:ping`) rather ' +
+        "than plumbing — it starts the driver's own pingWorkflow on the workflow task queue, and " +
+        'nothing imports it, so it takes nothing with it.',
+      severity: 'error',
+      from: {
+        path: '^src/temporal/',
+        pathNot: '^src/temporal/ping\\.ts$',
+      },
+      to: {
+        path: '^src/core/',
+        pathNot: '^src/core/(bignumber\\.ts$|errors/|types/|workflows/types\\.ts$)',
       },
     },
     {

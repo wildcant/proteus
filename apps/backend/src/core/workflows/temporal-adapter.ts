@@ -2,11 +2,11 @@ import type { Client } from '@temporalio/client'
 import type { Duration, RetryPolicy } from '@temporalio/common'
 import { ulid } from 'ulid'
 import { createTemporalClient, type TemporalClientHandle } from '../../temporal/client.js'
-import { PROTEUS_WORKFLOW_TYPE, TEMPORAL_TASK_QUEUE } from '../../temporal/config.js'
 import { readStepFailureDetail } from '../../temporal/failure-details.js'
 import { deserializeError } from '../../temporal/failures.js'
-import type { DriverInput } from '../../temporal/types.js'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
+import { PROTEUS_WORKFLOW_TYPE, TEMPORAL_TASK_QUEUE } from './temporal/config.js'
+import type { DriverInput } from './temporal/types.js'
 import type { StepContext, WorkflowDefinition, WorkflowEngine } from './types.js'
 
 /**

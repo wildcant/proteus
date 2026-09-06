@@ -1,8 +1,9 @@
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { PAYLOAD_CONVERTER_PATH } from '../../../../temporal/config.js'
 import { ping } from '../activities.js'
-import { PAYLOAD_CONVERTER_PATH, TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
+import { TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
 import { pingWorkflow } from '../workflows.js'
 import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT } from './temporal-test-env.js'
 

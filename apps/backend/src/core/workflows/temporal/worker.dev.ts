@@ -19,7 +19,7 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-const workspace = fileURLToPath(new URL('../../', import.meta.url))
+const workspace = fileURLToPath(new URL('../../../../', import.meta.url))
 
 execFileSync('npm', ['run', '--silent', 'workflows:generate'], { cwd: workspace, stdio: 'inherit' })
 

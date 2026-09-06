@@ -6,8 +6,9 @@ import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { type AwilixContainer, createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { PAYLOAD_CONVERTER_PATH } from '../../../../temporal/config.js'
 import { createWorkflowActivities, withStepActivities } from '../activities.js'
-import { PAYLOAD_CONVERTER_PATH, TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
+import { TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
 import type { WorkflowRegistry } from '../registry.js'
 import type { AdvanceWorkflowInput } from '../types.js'
 import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT } from './temporal-test-env.js'
@@ -15,16 +16,17 @@ import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT } from './temporal
 /**
  * The topology the production Worker actually deploys, which nothing else covers.
  *
- * `src/temporal/container.ts` pins the **simple** engine on the Worker's own container, so the two
- * workflows that call another workflow's `.run()` from inside a step — `create-product` and
- * `complete-customer-auth` — run that nested workflow inline, in the Activity, rather than starting
- * a second Temporal execution. The parity suite cannot show this: `tests/setup/temporal-parity.ts`
- * runs its Activities against the *test* container, which `test:temporal` pins to `temporal`, so
- * there a nested run is its own execution. `POST /admin/products` therefore passes under the parity
- * suite while exercising a shape production does not use.
+ * `src/framework/runtime/container.worker.ts` pins the **simple** engine on the Worker's own
+ * container, so the two workflows that call another workflow's `.run()` from inside a step —
+ * `create-product` and `complete-customer-auth` — run that nested workflow inline, in the Activity,
+ * rather than starting a second Temporal execution. The parity suite cannot show this:
+ * `tests/setup/temporal-parity.ts` runs its Activities against the *test* container, which
+ * `test:temporal` pins to `temporal`, so there a nested run is its own execution.
+ * `POST /admin/products` therefore passes under the parity suite while exercising a shape
+ * production does not use.
  *
- * This file is that missing half. It wires the Worker the way `container.ts` does — global engine
- * pinned `simple` — and asserts both what the pin buys and what it costs.
+ * This file is that missing half. It wires the Worker the way `container.worker.ts` does — global
+ * engine pinned `simple` — and asserts both what the pin buys and what it costs.
  *
  * What it does **not** cover, and what ADR-0021 records as the residual: a Worker that dies while a
  * nested run is in flight takes the nested workflow's compensation stack with it, because that stack

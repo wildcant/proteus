@@ -1,7 +1,7 @@
 import { ulid } from 'ulid'
+import { TEMPORAL_TASK_QUEUE } from '../core/workflows/temporal/config.js'
+import { pingWorkflow } from '../core/workflows/temporal/workflows.js'
 import { createTemporalClient } from './client.js'
-import { TEMPORAL_TASK_QUEUE } from './config.js'
-import { pingWorkflow } from './workflows.js'
 
 /**
  * Round-trip probe — `npm run --workspace=backend temporal:ping`.

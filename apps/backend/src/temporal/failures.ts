@@ -1,8 +1,7 @@
 import { ApplicationFailure } from '@temporalio/common'
 import { AppError, ErrorTypes } from '../core/errors/app-error.js'
 import { WorkflowTerminalError } from '../core/workflows/types.js'
-import { STEP_FAILURE_TYPE } from './failure-details.js'
-import type { SerializedError, StepFailureDetail } from './types.js'
+import { type SerializedError, STEP_FAILURE_TYPE, type StepFailureDetail } from './failure-details.js'
 
 /**
  * Errors crossing the Temporal boundary, in both directions.

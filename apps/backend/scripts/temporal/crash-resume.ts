@@ -3,11 +3,12 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { Client, Connection, type WorkflowHandle } from '@temporalio/client'
 import { ulid } from 'ulid'
+import { PROTEUS_WORKFLOW_TYPE, TEMPORAL_TASK_QUEUE } from '../../src/core/workflows/temporal/config.js'
+import type { AdvanceWorkflowResult, DriverInput } from '../../src/core/workflows/temporal/types.js'
 import { env } from '../../src/env.js'
-import { PAYLOAD_CONVERTER_PATH, PROTEUS_WORKFLOW_TYPE, TEMPORAL_TASK_QUEUE } from '../../src/temporal/config.js'
-import { createWorkerContainer } from '../../src/temporal/container.js'
+import { createWorkerContainer } from '../../src/framework/runtime/container.worker.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../src/temporal/config.js'
 import { payloadConverter } from '../../src/temporal/payload-converter.js'
-import type { AdvanceWorkflowResult, DriverInput } from '../../src/temporal/types.js'
 import { completeCartWorkflow } from '../../src/workflows/cart/complete-cart.js'
 import { seedCheckoutCart } from './checkout-cart.js'
 
@@ -136,7 +137,7 @@ type RunningWorker = {
 function startWorker(label: string): RunningWorker {
   // `node --import tsx`, not the tsx binary: npm hoists `.bin` to the repo root, and the path to it
   // is not something this script should have to know.
-  const child = spawn(process.execPath, ['--import', 'tsx', 'src/temporal/worker.ts'], {
+  const child = spawn(process.execPath, ['--import', 'tsx', 'src/core/workflows/temporal/worker.ts'], {
     cwd: backend,
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
