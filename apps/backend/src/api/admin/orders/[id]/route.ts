@@ -1,7 +1,7 @@
 import type { IOrderModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AdminOrderResponse, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminOrderResponse

@@ -5,9 +5,9 @@ import { useEffect } from 'react'
 import { Button } from '#/components/button'
 import { AddressLines } from '#/features/address/components/address-lines'
 import { withForm } from '#/lib/form-hook'
-import type { CheckoutAddress } from '../../checkout-address'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
 import { checkoutFormOpts } from '../../hooks/use-checkout-form'
+import type { CheckoutAddress } from '../../utils/checkout-address'
 import { AddressActions } from './address-actions'
 
 type DeepNonNullableProps<T> = {

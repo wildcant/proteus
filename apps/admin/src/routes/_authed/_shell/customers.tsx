@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { getCustomersQueryOptions } from '#/features/customers/api/customers'
+import { customersListQueryOptions } from '#/features/customers/api/customers'
 import { CreateCustomerForm } from '#/features/customers/components/create-customer-form.tsx'
 import { CustomerList } from '#/features/customers/components/customer-list.tsx'
 
 export const Route = createFileRoute('/_authed/_shell/customers')({
   component: CustomersPage,
-  loader: ({ context }) => context.queryClient.ensureQueryData(getCustomersQueryOptions({ limit: 5, offset: 0 })),
+  loader: ({ context }) => context.queryClient.ensureQueryData(customersListQueryOptions({ limit: 5, offset: 0 })),
 })
 
 function CustomersPage() {

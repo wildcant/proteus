@@ -1,6 +1,6 @@
 import { AdminAcceptInvite, AdminAcceptInviteResponse } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
-import { acceptInviteWorkflow } from '../../../../workflows/user/accept-invite.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { acceptInviteWorkflow } from '@workflows/user/accept-invite.js'
 
 export const PostInput = { body: AdminAcceptInvite }
 export const PostOutput = AdminAcceptInviteResponse

@@ -32,5 +32,11 @@ export const CreateRefundReason = z.object({
 })
 export type CreateRefundReasonBody = z.infer<typeof CreateRefundReason>
 
+export const SessionIdParams = z.object({
+  id: z.string().min(1),
+  sessionId: z.string().min(1),
+})
+export type SessionIdParams = z.infer<typeof SessionIdParams>
+
 export const ProviderParams = z.object({ provider: z.string().min(1) })
 export type ProviderParams = z.infer<typeof ProviderParams>

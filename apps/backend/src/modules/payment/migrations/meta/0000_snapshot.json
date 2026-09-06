@@ -1,5 +1,5 @@
 {
-  "id": "ad179077-620a-4e1c-baa2-afd9e7b03445",
+  "id": "8073cb6a-90a4-448b-87a1-4d63f0e2d2a4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,6 +14,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "CONCAT('acchld_', REPLACE(gen_random_uuid()::text, '-', ''))"
+        },
+        "customer_id": {
+          "name": "customer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "data": {
           "name": "data",
@@ -79,6 +85,28 @@
             },
             {
               "expression": "external_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_account_holder_provider_customer": {
+          "name": "idx_account_holder_provider_customer",
+          "columns": [
+            {
+              "expression": "provider_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "customer_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

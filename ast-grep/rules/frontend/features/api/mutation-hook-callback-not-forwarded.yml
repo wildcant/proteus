@@ -1,0 +1,29 @@
+id: mutation-hook-callback-not-forwarded
+language: typescript
+severity: error
+message: This handler overrides the caller's callback without calling it, so the caller's never runs.
+note: 'End the handler with `onSuccess?.(...args)` / `onError?.(...args)`. docs/mutation-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+rule:
+  pattern:
+    context: "{ $NAME: ($$$ARGS) => { $$$BODY } }"
+    selector: pair
+  inside:
+    kind: object
+    inside:
+      kind: arguments
+      inside:
+        pattern: useMutation($$$)
+  not:
+    has:
+      # Anywhere inside the handler, not last: `useCreatePaymentSession` forwards after a
+      # conditional toast, and a rule about position would enforce a paragraph shape rather than the
+      # thing that matters — that the caller's callback runs at all.
+      stopBy: end
+      any:
+        - pattern: $NAME($$$)
+        - pattern: $NAME?.($$$)
+constraints:
+  NAME:
+    regex: "^(onSuccess|onError)$"

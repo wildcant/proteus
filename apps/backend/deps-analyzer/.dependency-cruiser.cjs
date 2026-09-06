@@ -121,6 +121,73 @@ module.exports = {
       },
     },
   ],
+  /**
+   * A rule about where a file may *sit*, which dependency-cruiser has no direct way to express.
+   *
+   * The mechanism: a `required` rule is module-scoped — it selects modules with `module.path`, then
+   * asserts each one has a dependency matching `to`. A `to.path` that can never match makes every
+   * selected module fail, so the rule reads as "no module may exist at this path". No import edge is
+   * involved, which is the whole point: a `forbidden` rule is evaluated per edge and therefore cannot
+   * see a misplaced file that imports nothing — and a helper nobody has imported yet is exactly the
+   * file this is meant to catch. Same primitive as packages/frontend-conventions, same caveat: it
+   * uses a documented feature in a way the docs never describe.
+   */
+  required: [
+    {
+      name: 'api-holds-only-four-file-kinds',
+      comment:
+        'src/api/ holds four kinds of file: route.ts, definitions.ts, middlewares.ts and __tests__/. ' +
+        'Route discovery reads definitions.ts, so a fifth kind is invisible to the routing layer and ' +
+        'becomes a private convention nobody else follows. Per-route logic has a sanctioned seam — a ' +
+        "MiddlewareFunction in middlewares.ts, wired through the definition's `middlewares: [...]` " +
+        'array (src/api/store/customers/middlewares.ts is the reference). Logic that is not ' +
+        'request-shaped belongs below the API layer: a module service, or a workflow when it spans ' +
+        'modules. src/api/index.ts is exempt — it is the backend-as-library composition root, not a ' +
+        'route.',
+      severity: 'error',
+      module: {
+        path: '^src/api/(?!index\\.ts$)(?!(?:.+/)?(?:route|definitions|middlewares)\\.ts$)(?!(?:.+/)?__tests__/)',
+      },
+      to: { path: '(?!)' },
+    },
+    {
+      name: 'module-holds-only-known-file-kinds',
+      comment: `
+        A module is eight folders and four root files: models/, repositories/, services/,
+        migrations/, __tests__/, loaders/, providers/, utils/, plus index.ts, database.config.ts,
+        provider-declarations.ts and sync-providers.ts. Bootstrap reads index.ts and drizzle-kit
+        reads database.config.ts, so a ninth folder or a fifth root file is invisible to both and
+        becomes a private convention only its module follows. Every kind of code already has a
+        home: a Drizzle table in models/, data access in repositories/, business logic in the
+        service (a collaborator class the service keeps private, like ProductOptionService, is
+        still services/), a pure helper a service consumes in utils/, provider DI registration in
+        loaders/ and a provider that ships with the module in providers/. Logic that spans modules
+        is not a module file at all — it is a workflow. See docs/adding-a-module.md.'
+      `,
+      severity: 'error',
+      module: {
+        path:
+          '^src/modules/[^/]+/' +
+          '(?!(?:index|database\\.config|provider-declarations|sync-providers)\\.ts$)' +
+          '(?!(?:models|repositories|services|migrations|__tests__|loaders|providers|utils)/)',
+      },
+      to: { path: '(?!)' },
+    },
+    {
+      name: 'module-tests-live-in-a-tests-folder',
+      comment:
+        "A module's tests live in __tests__/, never beside the file they cover. One place to look " +
+        'holds whether the test is an integration test against Postgres or a pure-function test, ' +
+        'and the folder is what tells a reader the difference between a module file and a file ' +
+        'about a module file. __tests__/ may nest — __tests__/fixtures/ and loaders/__tests__/ are ' +
+        'both fine.',
+      severity: 'error',
+      module: {
+        path: '^src/modules/(?!(?:.+/)?__tests__/).*\\.test\\.ts$',
+      },
+      to: { path: '(?!)' },
+    },
+  ],
   options: {
     doNotFollow: {
       path: 'node_modules',

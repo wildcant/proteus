@@ -1,5 +1,5 @@
+import { env } from '@env'
 import { Client, Connection } from '@temporalio/client'
-import { env } from '../env.js'
 import { PAYLOAD_CONVERTER_PATH } from './config.js'
 
 export type TemporalClientHandle = {

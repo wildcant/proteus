@@ -1604,14 +1604,6 @@
         },
         "required": ["id", "isEnabled"]
       },
-      "AdminCapturePayment": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "string"
-          }
-        }
-      },
       "AdminRefundPayment": {
         "type": "object",
         "properties": {
@@ -5280,15 +5272,6 @@
             "in": "path"
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminCapturePayment"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful response",

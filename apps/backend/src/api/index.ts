@@ -9,11 +9,11 @@
 
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import type { RouteDefinition } from '@framework/http/types.js'
-import type { RouteHandler } from '../server/ports.js'
+import type { RouteHandler } from '@server/ports.js'
 import customerDefinitions from './admin/customers/definitions.js'
 import userDefinitions from './admin/users/definitions.js'
 
-export { apiCall } from '../server/api-caller.js'
+export { apiCall } from '@server/api-caller.js'
 
 function withMiddleware(matcher: string, definitions: RouteDefinition[]): Record<string, RouteHandler> {
   const result: Record<string, RouteHandler> = {}

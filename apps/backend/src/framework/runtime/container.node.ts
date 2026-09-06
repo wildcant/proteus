@@ -1,10 +1,10 @@
 /** Node entry point — singleton connection pool, winston logger, Temporal-backed workflows. */
 
+import { env } from '@env'
 import postgres from 'postgres'
 import { bootstrapContainer } from '../../container.js'
 import { createNodeDbProvider } from '../../core/db/node-provider.js'
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '../../core/workflows/temporal-adapter.js'
-import { env } from '../../env.js'
 import { WinstonLogger } from '../logger/winston-logger.js'
 import { registerScheduler } from '../scheduler/index.js'
 

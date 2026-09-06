@@ -6,7 +6,7 @@ import {
   StoreUpdateCartLineItemResponse,
   UpdateLineItem,
 } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { params: LineIdParams, body: UpdateLineItem }
 export const PostOutput = StoreUpdateCartLineItemResponse

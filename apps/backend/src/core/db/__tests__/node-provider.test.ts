@@ -1,6 +1,6 @@
+import { env } from '@env'
 import { test } from '@tests/setup/test-extend.js'
 import postgres from 'postgres'
-import { env } from '../../../env.js'
 import { createNodeDbProvider } from '../node-provider.js'
 
 test.describe('createNodeDbProvider', () => {

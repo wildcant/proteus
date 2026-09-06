@@ -1,6 +1,6 @@
 import { cn } from '@proteus/ui'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
-import { orderProgress, type ProgressStep } from '#/features/orders/order-progress'
+import { orderProgress, type ProgressStep } from '#/features/orders/utils/order-progress'
 
 /**
  * How far along the order is, under the number that identifies it.

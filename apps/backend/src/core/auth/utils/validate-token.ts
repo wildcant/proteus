@@ -2,6 +2,7 @@ import type { MiddlewareFunction } from '@framework/http/types.js'
 import { AppError, ErrorTypes } from '../../errors/app-error.js'
 import type { IAuthModuleService } from '../../types/index.js'
 import { Modules } from '../../utils/index.js'
+import type { AuthContext } from '../types.js'
 import { extractTokenPayload } from './token.js'
 
 /**
@@ -13,7 +14,7 @@ import { extractTokenPayload } from './token.js'
  * 4. Consumes the reset token (single-use enforcement)
  * 5. Populates `req.authContext` with fresh data from the provider identity
  */
-export function validateToken(): MiddlewareFunction {
+export function validateToken(): MiddlewareFunction<{ authContext: AuthContext }> {
   return async (req) => {
     let payload: ReturnType<typeof extractTokenPayload>
     try {

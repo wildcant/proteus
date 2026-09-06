@@ -7,12 +7,16 @@ import type { ConfigModule } from '@core/config/types.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import { AuthenticateResponse } from '@proteus/http-schemas/auth'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
+export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const
 export const PostOutput = AuthenticateResponse
 
-export const POST = async (req: HttpRequest): Promise<HttpResult<typeof PostOutput>> => {
+export const POST = async (
+  req: HttpRequest<object, typeof PostMiddlewares>,
+): Promise<HttpResult<typeof PostOutput>> => {
   const authContext = req.authContext
   if (!authContext) {
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })

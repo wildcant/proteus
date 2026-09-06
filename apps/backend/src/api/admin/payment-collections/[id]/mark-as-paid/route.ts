@@ -1,7 +1,7 @@
 import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AdminPaymentCollectionResponse, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { params: IdParams }
 export const PostOutput = AdminPaymentCollectionResponse
@@ -16,10 +16,10 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     currencyCode: collection.currencyCode,
   })
 
-  const payment = await paymentService.authorizePaymentSession(session.id)
+  const authorization = await paymentService.authorizePaymentSession(session.id)
 
-  if (payment) {
-    await paymentService.capturePayment({ paymentId: payment.id, amount: collection.amount })
+  if (authorization.outcome === 'authorized') {
+    await paymentService.capturePayment({ paymentId: authorization.payment.id })
   }
 
   const updated = await paymentService.retrievePaymentCollection(collection.id)

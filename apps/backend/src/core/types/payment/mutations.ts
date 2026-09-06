@@ -1,5 +1,5 @@
 import type { BigNumber } from '../../bignumber.js'
-import type { PaymentActions, PaymentSessionStatus } from './common.js'
+import type { PaymentActions, PaymentSessionStatus, SavedMethodDTO } from './common.js'
 
 // ---------------------------------------------------------------------------
 // PaymentCollection
@@ -54,9 +54,9 @@ export type CreatePaymentDTO = {
 // Capture
 // ---------------------------------------------------------------------------
 
+/** No `amount`: a capture takes the whole authorization. See `PaymentModuleService.capturePayment`. */
 export type CreateCaptureDTO = {
   paymentId: string
-  amount?: BigNumber | undefined
   capturedBy?: string | undefined
 }
 
@@ -106,9 +106,23 @@ export type CreatePaymentProviderDTO = {
 export type CreateAccountHolderDTO = {
   providerId: string
   externalId: string
+  /** The Proteus Customer this holder belongs to. What `ensureAccountHolders` looks it up by. */
+  customerId?: string | null
   email?: string | null
   data?: Record<string, unknown>
   metadata?: Record<string, unknown> | null
+}
+
+/**
+ * What an account holder is created *from*, when nobody knows yet whether one exists.
+ *
+ * No `externalId`: the gateway assigns it, and the whole point of this operation is that the
+ * caller does not have to know whether the gateway has been asked before.
+ */
+export type EnsureAccountHoldersDTO = {
+  customerId: string
+  email?: string | null
+  name?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -128,6 +142,12 @@ export type DeletePaymentMethodDTO = {
   context?: Record<string, unknown>
 }
 
+export type SetDefaultPaymentMethodDTO = {
+  id: string
+  providerId: string
+  context?: Record<string, unknown>
+}
+
 // ---------------------------------------------------------------------------
 // Webhook
 // ---------------------------------------------------------------------------
@@ -136,7 +156,8 @@ export type ProviderWebhookPayload = {
   provider: string
   payload: {
     data: Record<string, unknown>
-    rawData: string | Buffer
+    /** The unmodified request body bytes, as the gateway sent and signed them. */
+    rawData: string | Uint8Array
     headers: Record<string, string>
   }
 }
@@ -205,6 +226,8 @@ export type DeletePaymentOutput = {
 
 export type RefundPaymentInput = {
   amount: BigNumber
+  /** The payment's currency. A provider counting in a smallest unit needs it to convert. */
+  currencyCode: string
   data?: Record<string, unknown> | undefined
   context?: Record<string, unknown> | undefined
 }
@@ -265,10 +288,14 @@ export type ListPaymentMethodsInput = {
   context?: Record<string, unknown>
 }
 
-export type ListPaymentMethodsOutput = {
-  id: string
-  data?: Record<string, unknown>
-}[]
+/**
+ * The neutral projection, not the gateway's objects.
+ *
+ * The adapter is the only thing that can read a `Stripe.PaymentMethod`, so it is also the only
+ * thing that should: handing the blob upwards is what puts `card.brand` in a route and a raw
+ * gateway field in a response body.
+ */
+export type ListPaymentMethodsOutput = SavedMethodDTO[]
 
 export type SavePaymentMethodInput = {
   data?: Record<string, unknown>
@@ -286,3 +313,10 @@ export type DeletePaymentMethodInput = {
 }
 
 export type DeletePaymentMethodOutput = Record<string, unknown>
+
+export type SetDefaultPaymentMethodInput = {
+  data?: Record<string, unknown> | undefined
+  context?: Record<string, unknown> | undefined
+}
+
+export type SetDefaultPaymentMethodOutput = Record<string, unknown>

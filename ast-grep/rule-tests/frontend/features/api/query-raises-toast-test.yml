@@ -1,0 +1,8 @@
+id: query-raises-toast
+valid:
+  # A mutation is where a toast belongs.
+  - 'export const useCreateThing = () => useMutation({ mutationFn: f, onError: (e) => { toast.add({ type: "error", title: "Failed", description: e.message }) } })'
+  - 'export const thingQueryOptions = () => queryOptions({ queryKey: k.lists(), queryFn: f, retry: 1 })'
+invalid:
+  - 'export const thingQueryOptions = () => queryOptions({ queryKey: k.lists(), queryFn: async () => { try { return await list() } catch (e) { toast.add({ type: "error", title: "Failed to load" }); throw e } } })'
+  - 'export const useThings = () => useQuery({ ...thingsQueryOptions(), throwOnError: (e) => { toast.add({ type: "error", title: "Failed to load" }); return false } })'

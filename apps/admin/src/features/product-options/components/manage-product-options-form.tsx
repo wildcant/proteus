@@ -7,7 +7,7 @@ import { useManageProductOptionsForm } from '#/features/product-options/hooks/us
 import {
   describeOptionChange,
   type OptionChangeConsequences,
-} from '#/features/product-options/option-change-consequences'
+} from '#/features/product-options/utils/option-change-consequences'
 
 function buildDefaultValues(currentOptions: AdminProductScopedOption[]) {
   return {

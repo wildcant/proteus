@@ -1,8 +1,8 @@
 import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import { env } from '@env'
 import { StorePaymentProviderListResponse } from '@proteus/http-schemas/store'
-import { env } from '../../../env.js'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = StorePaymentProviderListResponse
 

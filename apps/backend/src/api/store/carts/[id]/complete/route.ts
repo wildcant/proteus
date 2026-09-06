@@ -1,6 +1,6 @@
 import { IdParams, StoreCompleteCartResponse } from '@proteus/http-schemas/store'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { completeCartWorkflow } from '@workflows/cart/complete-cart.js'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 
 export const PostInput = { params: IdParams }
 export const PostOutput = StoreCompleteCartResponse

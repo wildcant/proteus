@@ -1,0 +1,20 @@
+id: query-options-not-wrapped
+snapshots:
+  'export const thingQueryOptions = (id: string) => ({ queryKey: k.detail(id), queryFn: () => get(id) })':
+    labels:
+    - source: 'const thingQueryOptions = (id: string) => ({ queryKey: k.detail(id), queryFn: () => get(id) })'
+      style: primary
+      start: 7
+      end: 101
+  'export const thingQueryOptions = (id: string) => { return { queryKey: k.detail(id), queryFn: () => get(id) } }':
+    labels:
+    - source: 'const thingQueryOptions = (id: string) => { return { queryKey: k.detail(id), queryFn: () => get(id) } }'
+      style: primary
+      start: 7
+      end: 110
+  'export const thingsListQueryOptions = (query?: P) => ({ queryKey: k.list(query), queryFn: () => list(query) })':
+    labels:
+    - source: 'const thingsListQueryOptions = (query?: P) => ({ queryKey: k.list(query), queryFn: () => list(query) })'
+      style: primary
+      start: 7
+      end: 110

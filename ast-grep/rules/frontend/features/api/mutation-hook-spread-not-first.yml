@@ -1,0 +1,21 @@
+id: mutation-hook-spread-not-first
+language: typescript
+severity: error
+message: This hook spreads the caller's options after its own handlers, which silently replaces them.
+note: Move `...rest` to the first property, so the hook's own cache handling survives. docs/mutation-hooks.md
+files:
+  - "**/features/*/api/*.ts"
+rule:
+  kind: spread_element
+  inside:
+    kind: object
+    inside:
+      kind: arguments
+      inside:
+        pattern: useMutation($$$)
+  # `follows` is the ordering operator: a spread with any property before it is not first.
+  follows:
+    stopBy: end
+    any:
+      - kind: pair
+      - kind: shorthand_property_identifier

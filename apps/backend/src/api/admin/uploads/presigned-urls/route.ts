@@ -2,8 +2,8 @@ import { MIMEType } from 'node:util'
 import type { IFileModuleService } from '@core/types/index.js'
 import { AppError, ErrorTypes, Modules } from '@core/utils/index.js'
 import { AdminCreatePresignedUploadUrl, AdminPresignedUploadUrlResponse } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { ulid } from 'ulid'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
 
 export const PostInput = { body: AdminCreatePresignedUploadUrl }
 export const PostOutput = AdminPresignedUploadUrlResponse
