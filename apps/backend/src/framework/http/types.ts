@@ -43,6 +43,10 @@ export type RouteInput = {
 type BaseRoute = {
   auth?: AuthPolicy
   description?: string
+  // Spec-only. Every non-public route declares a 401 because its auth middleware sends one.
+  // A public route has no such middleware, so one that checks credentials in the handler
+  // (login, signup) opts in here rather than omitting a response it really returns.
+  returnsUnauthorized?: boolean
   // Method syntax gives bivariant parameter checking. Route handlers declare
   // specific input/output types, but definitions store them opaquely.
   // Runtime schema validation in applyMiddleware ensures type safety.

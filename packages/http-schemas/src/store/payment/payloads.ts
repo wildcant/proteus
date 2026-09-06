@@ -1,34 +1,35 @@
 import { z } from 'zod'
-import { stringToBigNumber } from '../../common.js'
+import { entityId, longText, machineCode, shortText } from '../../bounded.js'
+import { amountToBigNumber } from '../../common.js'
 
 export const CreatePaymentSession = z.object({
-  providerId: z.string().min(1),
+  providerId: entityId.min(1),
   data: z.record(z.string(), z.unknown()).optional(),
   context: z.record(z.string(), z.unknown()).optional(),
 })
 export type CreatePaymentSessionBody = z.infer<typeof CreatePaymentSession>
 
 export const CreatePaymentCollection = z.object({
-  cartId: z.string().min(1),
+  cartId: entityId.min(1),
 })
 export type CreatePaymentCollectionBody = z.infer<typeof CreatePaymentCollection>
 
 export const CapturePayment = z.object({
-  amount: stringToBigNumber.optional(),
+  amount: amountToBigNumber.optional(),
 })
 export type CapturePaymentBody = z.infer<typeof CapturePayment>
 
 export const RefundPayment = z.object({
-  amount: stringToBigNumber.optional(),
-  refundReasonId: z.string().min(1).optional(),
-  note: z.string().optional(),
+  amount: amountToBigNumber.optional(),
+  refundReasonId: entityId.min(1).optional(),
+  note: longText.optional(),
 })
 export type RefundPaymentBody = z.infer<typeof RefundPayment>
 
 export const CreateRefundReason = z.object({
-  label: z.string().min(1),
-  code: z.string().min(1),
-  description: z.string().optional(),
+  label: shortText.min(1),
+  code: machineCode.min(1),
+  description: longText.optional(),
 })
 export type CreateRefundReasonBody = z.infer<typeof CreateRefundReason>
 

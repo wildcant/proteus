@@ -98,7 +98,7 @@ export type OrderShippingMethodDTO = {
   description: string | null
   amount: BigNumber
   shippingOptionId: string | null
-  data: unknown
+  data: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null

@@ -11,6 +11,7 @@
       "**",
       "!**/*.gen.ts",
       "!**/src/api/generated",
+      "!apps/backend/openapi/openapi-*.json",
       "!apps/backend/deps-analyzer/dependency-graph.svg",
       "!apps/backend/worker-configuration.d.ts"
     ]

@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# OpenAPI spec drift check.
+#
+# The committed specs are generated from the routes and schemas. This fails a commit that
+# changes something the specs are built from without regenerating them, so the two never
+# drift apart silently.
+#
+# Installed by the root `prepare` script (`git config core.hooksPath .githooks`), so
+# `npm install` is enough — the repo carries no hook-runner dependency.
+#
+# It never writes into the working tree: the specs are dumped into a temp directory and
+# diffed there. A hook that regenerated files mid-commit would stage changes the developer
+# never wrote and never reviewed.
+#
+# Known limits, both accepted: `--no-verify` skips it, and it does not run in CI, so it
+# catches the mistake for developers rather than gating the branch. And the dump reads the
+# working tree, not the index — a partially staged commit is compared against whatever is
+# on disk.
+
+set -uo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Only the sources a spec is built from. Anything else commits without paying for a dump.
+WATCHED_PATHS=(
+  'apps/backend/src/api'
+  'apps/backend/src/core/openapi'
+  'packages/http-schemas'
+)
+
+SPECS=(
+  'apps/backend/openapi/openapi-admin.json'
+  'apps/backend/openapi/openapi-store.json'
+)
+
+# --quiet exits 0 when nothing staged touches these paths, and that is the common case.
+if git diff --cached --quiet -- "${WATCHED_PATHS[@]}"; then
+  exit 0
+fi
+
+BOLD='\033[1m'
+RED='\033[0;31m'
+RESET='\033[0m'
+
+echo "Checking the OpenAPI specs are up to date…"
+
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+if ! npm run --workspace=backend --silent openapi:dump:offline -- --out-dir "$TMP_DIR" >"$TMP_DIR/dump.log" 2>&1; then
+  echo ""
+  echo -e "${RED}✖${RESET} ${BOLD}Could not generate the OpenAPI specs.${RESET}"
+  cat "$TMP_DIR/dump.log"
+  echo ""
+  echo -e "  The dump decrypts ${BOLD}.env.test${RESET}, which needs ${BOLD}.env.keys${RESET} at the repo root."
+  echo -e "  Run ${BOLD}npm run pull-keys${RESET} if you do not have it."
+  echo ""
+  exit 1
+fi
+
+drifted=0
+for spec in "${SPECS[@]}"; do
+  generated="$TMP_DIR/$(basename "$spec")"
+  # Compared against the index, not the working tree: the index is what this commit will
+  # contain, so regenerating without staging the result must still fail.
+  if ! git show ":$spec" 2>/dev/null | diff -q - "$generated" >/dev/null 2>&1; then
+    if [[ $drifted -eq 0 ]]; then
+      echo ""
+      echo -e "${RED}✖${RESET} ${BOLD}The OpenAPI specs are out of date.${RESET}"
+      echo ""
+    fi
+    echo -e "  ${BOLD}$spec${RESET}"
+    git show ":$spec" 2>/dev/null | diff -u --label "$spec (staged)" --label "$spec (generated)" - "$generated" | head -40
+    echo ""
+    drifted=1
+  fi
+done
+
+if [[ $drifted -eq 1 ]]; then
+  echo -e "  Regenerate them and stage the result:"
+  echo ""
+  echo -e "      ${BOLD}npm run openapi:generate${RESET}"
+  echo ""
+  exit 1
+fi
+
+exit 0

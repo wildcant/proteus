@@ -16,7 +16,7 @@ export const orderShippingMethodTable = pgTable(
     description: text(),
     amount: bignum().notNull(),
     shippingOptionId: text(),
-    data: jsonb(),
+    data: jsonb().$type<Record<string, unknown> | null>(),
     ...timestamps,
   },
   (table) => [

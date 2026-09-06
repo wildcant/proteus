@@ -2,7 +2,7 @@ import type { Server } from 'node:http'
 import type { RequestHandler } from 'express'
 import swaggerUi from 'swagger-ui-express'
 import type { DbProvider } from './core/db/ports.js'
-import { createRegistry, generateDocument } from './core/openapi/registry.js'
+import { createRegistry, documentInfo, generateDocument } from './core/openapi/registry.js'
 import type { Logger } from './core/types/logger.js'
 import type { CronScheduler } from './core/types/scheduler.js'
 import { ContainerRegistrationKeys } from './core/utils/index.js'
@@ -45,8 +45,8 @@ export async function start(options?: StartOptions): Promise<StartResult> {
 
   // ---- Swagger UI ----
 
-  const adminDocument = generateDocument(adminRegistry, 'Admin API')
-  const storeDocument = generateDocument(storeRegistry, 'Store API')
+  const adminDocument = generateDocument(adminRegistry, documentInfo.admin)
+  const storeDocument = generateDocument(storeRegistry, documentInfo.store)
   expressApp.use('/admin/docs', swaggerUi.serve, swaggerUi.setup(adminDocument))
   expressApp.use('/store/docs', swaggerUi.serve, swaggerUi.setup(storeDocument))
   expressApp.get('/admin/openapi.json', (_req, res) => res.json(adminDocument))

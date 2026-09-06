@@ -21,7 +21,7 @@ export const shippingOptionTable = pgTable(
       .references(() => shippingProfileTable.id),
     shippingOptionTypeId: text().references(() => shippingOptionTypeTable.id),
     providerId: text().notNull(),
-    data: jsonb(),
+    data: jsonb().$type<Record<string, unknown> | null>(),
     metadata: text(),
     isEnabled: boolean().default(true).notNull(),
     ...timestamps,
