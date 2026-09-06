@@ -14,7 +14,7 @@ type MarkOrderDeliveredInput = {
 // Final fulfillment lifecycle step: shipped -> delivered. Records the delivery timestamp
 // on the fulfillment and advances the order to its terminal fulfillment state.
 export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput, OrderDTO>(
-  'mark-order-delivered',
+  { name: 'mark-order-delivered', throws: [ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND] },
   async (ctx, input) => {
     // Only shipped orders can be marked delivered, and the fulfillment must belong to this order.
     await ctx.step('validate-guards', async ({ container }) => {

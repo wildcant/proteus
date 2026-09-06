@@ -5,7 +5,9 @@ import type { Logger } from '../types/logger.js'
 import { WorkflowTerminalError } from '../workflows/types.js'
 import { AppError, ErrorTypes } from './app-error.js'
 
-const typeToStatus: Record<ErrorTypes, number> = {
+/** Exported because the OpenAPI generator declares responses from it, so a route's documented
+ *  statuses and the ones it actually answers with cannot drift apart. */
+export const typeToStatus: Record<ErrorTypes, number> = {
   [ErrorTypes.UNAUTHORIZED]: 401,
   [ErrorTypes.FORBIDDEN]: 403,
   [ErrorTypes.NOT_FOUND]: 404,

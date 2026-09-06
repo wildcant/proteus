@@ -20,7 +20,7 @@ type RepricePaymentSessionInput = { paymentCollectionId: string; sessionId: stri
  * the expensive way: a hardcoded amount on the button over a server charging something else.
  */
 export const repricePaymentSessionWorkflow = createWorkflow<RepricePaymentSessionInput, PaymentSessionDTO>(
-  'reprice-payment-session',
+  { name: 'reprice-payment-session', throws: [ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND] },
   async (ctx, input) => {
     return ctx.step('reprice-payment-session', async ({ container }) => {
       const cartService = container.resolve<ICartModuleService>(Modules.CART)

@@ -8,6 +8,7 @@ import type { HttpRequest, HttpResult } from '@server/ports.js'
 export const PostInput = { body: VerificationConfirmBody }
 export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const
 export const PostOutput = VerificationConfirmResponse
+export const PostThrows = [ErrorTypes.UNAUTHORIZED, ErrorTypes.UNEXPECTED_STATE] as const
 
 export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,

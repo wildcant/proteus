@@ -6,6 +6,7 @@ import { requestPasswordResetWorkflow } from '@workflows/auth/request-password-r
 export const PostInput = { body: ResetPasswordBody, params: AuthParams }
 export const PostMiddlewares = [validateScopeProviderAssociation()] as const
 export const PostOutput = ResetPasswordResponse
+export const PostThrows = [...requestPasswordResetWorkflow.throws] as const
 
 export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,

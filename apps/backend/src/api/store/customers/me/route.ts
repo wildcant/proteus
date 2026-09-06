@@ -5,6 +5,7 @@ import { CustomerResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = CustomerResponse
+export const GetThrows = [ErrorTypes.UNAUTHORIZED] as const
 
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
   const customerId = req.authContext?.actorId

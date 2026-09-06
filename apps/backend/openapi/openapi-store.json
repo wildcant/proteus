@@ -2291,6 +2291,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -2328,6 +2331,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -2567,6 +2573,12 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -2900,6 +2912,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -3220,6 +3235,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -3266,6 +3284,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -3750,6 +3771,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }

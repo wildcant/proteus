@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
 import { test } from '@tests/setup/test-extend.js'
@@ -113,18 +114,67 @@ test.describe('registerOpenApiRoute', () => {
     expect(document.paths?.['/store/products']?.get?.responses).not.toHaveProperty('401')
   })
 
-  test('declares a 401 on a public route that opts in with returnsUnauthorized', ({ expect }) => {
+  test('declares a 401 on a public route whose handler throws UNAUTHORIZED', ({ expect }) => {
     const document = buildDocument({
       method: 'POST',
       matcher: '/store/auth/login',
       handler: () => Promise.resolve({ status: 200, json: {} }),
       auth: 'public',
-      returnsUnauthorized: true,
+      throws: [ErrorTypes.UNAUTHORIZED],
       operationId: 'storeAuthLogin',
       tags: [Tags.AUTH],
       output: z.object({}),
     })
 
     expect(document.paths?.['/store/auth/login']?.post?.responses).toHaveProperty('401')
+  })
+
+  test('declares a response for every client-facing type in throws, through the runtime status map', ({ expect }) => {
+    const document = buildDocument({
+      method: 'POST',
+      matcher: '/store/auth/signup',
+      handler: () => Promise.resolve({ status: 200, json: {} }),
+      auth: 'public',
+      throws: [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA],
+      operationId: 'storeAuthSignup',
+      tags: [Tags.AUTH],
+      output: z.object({}),
+    })
+
+    const responses = document.paths?.['/store/auth/signup']?.post?.responses
+    expect(Object.keys(responses ?? {}).sort()).toEqual(['200', '400', '409'])
+  })
+
+  // `throws` stays complete so the code-shape rules can check it; the document drops the 5xx half.
+  test('omits a 5xx response for an invariant violation named in throws', ({ expect }) => {
+    const document = buildDocument({
+      method: 'POST',
+      matcher: '/store/carts',
+      handler: () => Promise.resolve({ status: 200, json: {} }),
+      throws: [ErrorTypes.UNEXPECTED_STATE, ErrorTypes.SERVICE_UNAVAILABLE],
+      operationId: 'createStoreCart',
+      tags: [Tags.CARTS],
+      output: z.object({}),
+    })
+
+    const responses = document.paths?.['/store/carts']?.post?.responses
+    expect(Object.keys(responses ?? {}).sort()).toEqual(['200', '400', '401'])
+  })
+
+  // The regression ILLO-77 named: a public route must not advertise a credential failure it has no
+  // way to produce. Declaring one tells a client to write a branch that can never execute.
+  test('omits the 401 on a public route that does not throw UNAUTHORIZED', ({ expect }) => {
+    const document = buildDocument({
+      method: 'POST',
+      matcher: '/auth/:actorType/:authProvider/register',
+      handler: () => Promise.resolve({ status: 200, json: {} }),
+      auth: 'public',
+      throws: [ErrorTypes.INVALID_DATA],
+      operationId: 'authRegister',
+      tags: [Tags.AUTH],
+      output: z.object({}),
+    })
+
+    expect(document.paths?.['/auth/{actorType}/{authProvider}/register']?.post?.responses).not.toHaveProperty('401')
   })
 })

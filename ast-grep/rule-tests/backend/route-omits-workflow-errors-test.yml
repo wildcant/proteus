@@ -1,0 +1,24 @@
+id: route-omits-workflow-errors
+valid:
+  - |
+    export const PostThrows = [...completeCartWorkflow.throws] as const
+    export const POST = async (req) => completeCartWorkflow.run({ cartId: req.params.id })
+  # Composed with the handler's own throws alongside.
+  - |
+    export const PostThrows = [ErrorTypes.UNAUTHORIZED, ...completeCustomerAuthWorkflow.throws] as const
+    export const POST = async (req) => completeCustomerAuthWorkflow.run({ authIdentityId: '1' })
+  # Workflow calling workflow — the same spread, one level down.
+  - |
+    export const createProductWorkflow = createWorkflow(
+      { name: 'create-product', throws: [...createProductVariantsWorkflow.throws] },
+      async (ctx, input) => createProductVariantsWorkflow.run({ productId: '1' }),
+    )
+invalid:
+  # Every failure the workflow raises reaches the client undocumented.
+  - |
+    export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
+    export const POST = async (req) => completeCartWorkflow.run({ cartId: req.params.id })
+  # Spreading the wrong workflow is not spreading this one.
+  - |
+    export const PostThrows = [...addToCartWorkflow.throws] as const
+    export const POST = async (req) => completeCartWorkflow.run({ cartId: req.params.id })

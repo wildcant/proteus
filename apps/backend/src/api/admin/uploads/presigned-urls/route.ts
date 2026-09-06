@@ -7,6 +7,7 @@ import { ulid } from 'ulid'
 
 export const PostInput = { body: AdminCreatePresignedUploadUrl }
 export const PostOutput = AdminPresignedUploadUrlResponse
+export const PostThrows = [ErrorTypes.INVALID_DATA, ErrorTypes.UNEXPECTED_STATE] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const fileService = req.scope.resolve<IFileModuleService>(Modules.FILE)

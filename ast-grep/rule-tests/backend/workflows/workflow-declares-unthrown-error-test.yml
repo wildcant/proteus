@@ -1,0 +1,19 @@
+id: workflow-declares-unthrown-error
+valid:
+  - |
+    export const markOrderDeliveredWorkflow = createWorkflow(
+      { name: 'mark-order-delivered', throws: [ErrorTypes.NOT_ALLOWED] },
+      async (ctx, input) => { throw new WorkflowTerminalError({ type: ErrorTypes.NOT_ALLOWED, message: 'x' }) },
+    )
+  # A pure composition declares nothing of its own.
+  - |
+    export const createProductWorkflow = createWorkflow(
+      { name: 'create-product', throws: [...createProductVariantsWorkflow.throws] },
+      async (ctx, input) => createProductVariantsWorkflow.run({ productId: '1' }),
+    )
+invalid:
+  - |
+    export const markOrderDeliveredWorkflow = createWorkflow(
+      { name: 'mark-order-delivered', throws: [ErrorTypes.CONFLICT] },
+      async (ctx, input) => { throw new WorkflowTerminalError({ type: ErrorTypes.NOT_ALLOWED, message: 'x' }) },
+    )

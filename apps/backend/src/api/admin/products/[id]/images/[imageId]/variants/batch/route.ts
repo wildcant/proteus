@@ -4,6 +4,7 @@ import { batchImageVariantsWorkflow } from '@workflows/product/batch-image-varia
 
 export const PostInput = { params: ImageIdParams, body: AdminBatchImageVariant }
 export const PostOutput = AdminBatchImageVariantResponse
+export const PostThrows = [...batchImageVariantsWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const { added, removed } = await batchImageVariantsWorkflow.run({

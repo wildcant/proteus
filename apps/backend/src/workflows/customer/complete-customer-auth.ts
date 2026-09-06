@@ -29,7 +29,10 @@ type VerificationCheckResult =
   | { verified: false; token: string; email: string; verificationCode: string }
 
 export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthInput, CompleteCustomerAuthOutput>(
-  'complete-customer-auth',
+  {
+    name: 'complete-customer-auth',
+    throws: [ErrorTypes.INVALID_DATA, ErrorTypes.UNEXPECTED_STATE, ...createCustomerAccountWorkflow.throws],
+  },
   async (ctx, input) => {
     const verificationCheck = await ctx.step<VerificationCheckResult>('check-verification', async ({ container }) => {
       const authService = container.resolve<IAuthModuleService>(Modules.AUTH)

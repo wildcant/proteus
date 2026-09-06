@@ -9,6 +9,7 @@ import {
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = StoreCustomerAddressListResponse
+export const GetThrows = [ErrorTypes.UNAUTHORIZED] as const
 
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
   const customerId = req.authContext?.actorId
@@ -24,6 +25,7 @@ export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput
 
 export const PostInput = { body: StoreCreateAddress }
 export const PostOutput = StoreCustomerAddressResponse
+export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const customerId = req.authContext?.actorId

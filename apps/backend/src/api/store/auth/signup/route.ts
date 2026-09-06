@@ -8,6 +8,12 @@ import { completeCustomerAuthWorkflow } from '@workflows/customer/complete-custo
 
 export const PostInput = { body: StoreSignupBody }
 export const PostOutput = AuthenticateResponse
+export const PostThrows = [
+  ErrorTypes.CONFLICT,
+  ErrorTypes.INVALID_DATA,
+  ErrorTypes.UNAUTHORIZED,
+  ...completeCustomerAuthWorkflow.throws,
+] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)

@@ -18,7 +18,7 @@ rules:
 
   # ---- Regression guards --------------------------------------------------
 
-  proteus-paths-kebab-case:                       # via APIs You Won't Hate + Adidas
+  paths-kebab-case:
     description: Path segments must be kebab-case.
     message: "{{property}} must be kebab-case"
     severity: error
@@ -28,8 +28,8 @@ rules:
       functionOptions:
         match: "^(/[a-z0-9]+(-[a-z0-9]+)*|/\\{[a-zA-Z0-9]+\\})+$"
 
-  proteus-camel-case-properties:                  # via Adidas + Azure
-    description: Schema properties must be camelCase (CLAUDE.md — never snake_case).
+  camel-case-properties:
+    description: Schema properties must be camelCase.
     message: "{{property}} is not camelCase"
     severity: error
     given: "$.components.schemas..properties.*~"
@@ -38,7 +38,7 @@ rules:
       functionOptions:
         type: camel
 
-  proteus-camel-case-operation-id:                # via DigitalOcean + Azure
+  camel-case-operation-id:
     description: operationId becomes the generated Orval client function name.
     severity: error
     given: "$.paths[*][get,post,put,patch,delete].operationId"
@@ -47,7 +47,7 @@ rules:
       functionOptions:
         type: camel
 
-  proteus-timestamps-are-iso:                     # via Azure az-datetime-naming-convention
+  timestamps-are-iso:
     description: "A property ending in `At` must serialize as an ISO date-time string."
     message: "{{path}} must be a string with format date-time"
     severity: error
@@ -62,7 +62,7 @@ rules:
             format:
               const: date-time
 
-  proteus-no-verbs-in-paths:                      # via Adidas
+  no-verbs-in-paths:
     description: Paths name resources, not actions. Use the HTTP method for the verb.
     severity: error
     given: "$.paths[*]~"
@@ -71,7 +71,7 @@ rules:
       functionOptions:
         notMatch: "/(get|create|update|delete|list|add|remove|set|fetch)(/|$)"
 
-  proteus-schema-properties-must-have-type:       # via DigitalOcean + Azure az-property-type
+  schema-properties-must-have-type:
     description: An untyped property generates `unknown` in the Orval client.
     message: "{{path}} has no type"
     severity: error
@@ -90,7 +90,7 @@ rules:
             - required: ["enum"]
             - required: ["const"]
 
-  proteus-security-schemes-defined:               # via APIs You Won't Hate + OWASP api2
+  security-schemes-defined:
     description: The API uses JWT auth but the spec documents no security schemes.
     severity: error
     given: "$"
@@ -102,7 +102,7 @@ rules:
   # empty array is falsy. The empty array is the point — it says "no auth
   # required" explicitly rather than by omission — so the rule asserts the field
   # is present, not that it is non-empty.
-  proteus-operation-security-defined:             # via DigitalOcean + Azure az-operation-security
+  operation-security-defined:
     description: Every operation must declare its security requirement — `[]` for public routes.
     severity: error
     given: "$.paths[*][get,post,put,patch,delete]"
@@ -116,7 +116,7 @@ rules:
   # sends. The filter runs over each path item's children, so it selects
   # operations whose `security` is non-empty; a public operation carries
   # `security: []` and is skipped.
-  proteus-authed-operations-document-401:         # via OWASP api8 + DigitalOcean
+  authed-operations-document-401:
     description: An authenticated operation must document its 401.
     severity: error
     given: "$.paths[*][?(@.security && @.security.length > 0)].responses"
@@ -135,7 +135,7 @@ rules:
   # The bounds these two rules ask for are not written per field: `@proteus/http-schemas`
   # names a primitive per kind (`shortText`, `entityId`, `httpUrl`, ...) and the schemas
   # substitute it, so a new field picks a kind rather than inventing a number.
-  proteus-request-strings-are-bounded:            # via OWASP api4:2023-string-limit
+  request-strings-are-bounded:
     description: A string accepted from a client must declare maxLength (or enum/const/format).
     severity: error
     given: "$.paths[*][post,put,patch].requestBody.content[*].schema..properties[?(@.type=='string')]"
@@ -150,7 +150,7 @@ rules:
             - required: ["const"]
             - required: ["format"]
 
-  proteus-request-arrays-are-bounded:             # via OWASP api4:2023-array-limit
+  request-arrays-are-bounded:
     description: An array accepted from a client must declare maxItems.
     severity: error
     given: "$.paths[*][post,put,patch].requestBody.content[*].schema..properties[?(@.type=='array')]"

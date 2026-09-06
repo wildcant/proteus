@@ -9,6 +9,7 @@ import type { HttpRequest, HttpResult } from '@server/ports.js'
 export const PostInput = { body: UpdatePasswordBody, params: AuthParams }
 export const PostMiddlewares = [validateScopeProviderAssociation(), validateToken()] as const
 export const PostOutput = UpdatePasswordResponse
+export const PostThrows = [ErrorTypes.INVALID_DATA] as const
 
 export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,

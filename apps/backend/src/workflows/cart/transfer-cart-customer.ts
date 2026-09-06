@@ -9,7 +9,7 @@ type TransferCartCustomerInput = { cartId: string; customerId: string }
 
 // TODO(locking): No distributed lock — concurrent calls could race. Add acquireLock/releaseLock once available.
 export const transferCartCustomerWorkflow = createWorkflow<TransferCartCustomerInput, CartDTO>(
-  'transfer-cart-customer',
+  { name: 'transfer-cart-customer', throws: [ErrorTypes.NOT_FOUND] },
   async (ctx, input) => {
     return ctx.step<CartDTO>('transfer-cart', async ({ container }) => {
       const cartService = container.resolve<ICartModuleService>(Modules.CART)

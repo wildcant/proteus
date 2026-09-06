@@ -194,10 +194,47 @@ The scheme is also the document-level `security` default. Spectral reads that JS
 
 | `auth` | Operation `security` | Operation declares `401` |
 |--------|----------------------|--------------------------|
-| unset / `required` / `optional` / `unregistered` | `[{ bearerAuth: [] }]` | yes |
-| `public` | `[]` | only with `returnsUnauthorized: true` |
+| unset / `required` / `optional` / `unregistered` | `[{ bearerAuth: [] }]` | yes — the middleware sends it before the handler runs |
+| `public` | `[]` | only if the route's `throws` names `UNAUTHORIZED` |
 
-A `public` route has no auth middleware, so it declares no `401` by default. A public route whose *handler* rejects credentials — `/store/auth/login`, `/store/auth/signup` — sets `returnsUnauthorized: true` so the spec still declares the response it really sends. Never set it on a route that cannot return a `401`: the spec should not promise a response the API never sends.
+A `public` route has no auth middleware, so its `401` — like every other failure status — comes from the route's declared `throws`.
+
+### Error responses
+
+`output` is the success half of a route's contract; **`throws` is the failure half**. It lists the `ErrorTypes` the route can end with, and `registerOpenApiRoute` turns each one into a declared response through `typeToStatus` — the same map `errorHandler` answers with at runtime. That shared map is the point: the spec cannot promise a status the API does not send, or omit one it does.
+
+The declaration lives next to the handler it describes, as a sibling of `PostInput` and `PostOutput`:
+
+```ts
+// src/api/store/auth/signup/route.tsexport const PostThrows = [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA, ErrorTypes.UNAUTHORIZED, ...completeCustomerAuthWorkflow.throws] as const
+```
+
+Two statuses are *not* listed, because the definition already implies them: the `400` from schema validation, and the `401` an auth middleware sends on any non-public route.
+
+**Errors raised inside a workflow are spread, never restated.** A workflow declares its own contract in its `createWorkflow` config, and whatever calls it — a route, or another workflow — spreads `.throws`:
+
+```ts
+export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
+  { name: 'complete-cart', throws: [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED] },
+  async (ctx, input) => { ... },
+)
+```
+
+Spreading rather than restating is what makes this work at any depth: `storeAuthLogin` inherits a `409` raised four frames down, in a step of a workflow called by the workflow it calls, without anything in between knowing about it. A step that lives in its own file exports its own `…Throws` for the same reason — see `setAuthAppMetadataThrows`.
+
+`throws` names the *complete* failure contract, including `UNEXPECTED_STATE` and the other invariant violations, because the code-shape rules cannot otherwise tell a missing declaration from a deliberate one. The published document drops the `5xx` half: a server error is not something the caller can reshape a request to avoid, and declaring it puts a dead branch in every generated client.
+
+Five rules keep the declarations honest, in both directions, and they run in the `conventions` job:
+
+| Rule | Catches |
+|------|---------|
+| `route-throws-undeclared-error` | a handler raises a type its `Throws` export omits |
+| `route-declares-unthrown-error` | a `Throws` export names a type nothing in the file raises |
+| `workflow-throws-undeclared-error` | the same, for a workflow's `createWorkflow` config |
+| `workflow-declares-unthrown-error` | the same, in reverse |
+| `route-omits-workflow-errors` | a `.run()` call whose caller does not spread the callee's `.throws` |
+
+Their scope is one file and syntactic, so a type raised by a **module service** the handler calls is invisible to them — `auth-module-service.ts` raises `UNAUTHORIZED` from `updateProvider`, and nothing declares it. Declaring such a type is correct and trips `*-declares-unthrown-error`; suppress that one site by id with the reason written above it, as `ast-grep/README.md` describes. Until that tier is covered, `registerOpenApiRoute` also keeps declaring a `404` on any route that takes a path parameter.
 
 ### Tags
 

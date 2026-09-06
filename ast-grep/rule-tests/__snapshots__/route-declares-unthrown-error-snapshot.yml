@@ -1,0 +1,26 @@
+id: route-declares-unthrown-error
+snapshots:
+  ? |
+    export const PostThrows = [ErrorTypes.CONFLICT] as const
+    export const POST = async (req) => ({ status: 200, json: {} })
+  : labels:
+    - source: ErrorTypes.CONFLICT
+      style: primary
+      start: 27
+      end: 46
+    - source: export const PostThrows = [ErrorTypes.CONFLICT] as const
+      style: secondary
+      start: 0
+      end: 56
+  ? |
+    export const PostThrows = [ErrorTypes.UNAUTHORIZED, ErrorTypes.CONFLICT] as const
+    export const POST = async (req) => { throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'x' }) }
+  : labels:
+    - source: ErrorTypes.CONFLICT
+      style: primary
+      start: 52
+      end: 71
+    - source: export const PostThrows = [ErrorTypes.UNAUTHORIZED, ErrorTypes.CONFLICT] as const
+      style: secondary
+      start: 0
+      end: 81

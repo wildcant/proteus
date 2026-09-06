@@ -10,6 +10,7 @@ import { sendVerificationEmail } from '@workflows/auth/send-verification-email.j
 export const PostInput = { body: VerificationRequestBody }
 export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const
 export const PostOutput = VerificationRequestResponse
+export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
 
 export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
