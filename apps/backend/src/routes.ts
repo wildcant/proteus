@@ -39,7 +39,7 @@ import storeProductDefinitions from './api/store/products/definitions.js'
 const storeSharedAuthRoutes = new Set([
   '/auth/verification/confirm',
   '/auth/:actorType/:authProvider/reset-password',
-  '/auth/:actorType/:authProvider/update',
+  '/auth/:actorType/:authProvider/password',
 ])
 
 // ---- Definitions by scope ----

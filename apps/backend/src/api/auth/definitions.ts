@@ -3,10 +3,10 @@ import { validateToken } from '@core/auth/utils/validate-token.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
+import * as authPasswordRoutes from './[actorType]/[authProvider]/password/route.js'
 import * as authRegisterRoutes from './[actorType]/[authProvider]/register/route.js'
 import * as authResetPasswordRoutes from './[actorType]/[authProvider]/reset-password/route.js'
 import * as authRoutes from './[actorType]/[authProvider]/route.js'
-import * as authUpdateRoutes from './[actorType]/[authProvider]/update/route.js'
 import * as tokenRefreshRoutes from './token/refresh/route.js'
 import * as verificationConfirmRoutes from './verification/confirm/route.js'
 import * as verificationRequestRoutes from './verification/request/route.js'
@@ -16,6 +16,9 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider/register',
     handler: authRegisterRoutes.POST,
+    // Obtaining a token cannot require one. `applyNamespaceAuth` already injects nothing outside
+    // `/admin/` and `/store/`, so this only corrects what the spec says.
+    auth: 'public',
     middlewares: [validateScopeProviderAssociation()],
     input: authRegisterRoutes.PostInput,
     operationId: 'authRegister',
@@ -27,6 +30,8 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider',
     handler: authRoutes.POST,
+    auth: 'public',
+    returnsUnauthorized: true,
     middlewares: [validateScopeProviderAssociation()],
     input: authRoutes.PostInput,
     operationId: 'authAuthenticate',
@@ -38,6 +43,7 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider/reset-password',
     handler: authResetPasswordRoutes.POST,
+    auth: 'public',
     middlewares: [validateScopeProviderAssociation()],
     input: authResetPasswordRoutes.PostInput,
     operationId: 'authResetPassword',
@@ -47,14 +53,14 @@ export default [
   },
   {
     method: 'POST',
-    matcher: '/auth/:actorType/:authProvider/update',
-    handler: authUpdateRoutes.POST,
+    matcher: '/auth/:actorType/:authProvider/password',
+    handler: authPasswordRoutes.POST,
     middlewares: [validateScopeProviderAssociation(), validateToken()],
-    input: authUpdateRoutes.PostInput,
+    input: authPasswordRoutes.PostInput,
     operationId: 'authUpdatePassword',
     summary: 'Update password using a reset token',
     tags: [Tags.AUTH],
-    output: authUpdateRoutes.PostOutput,
+    output: authPasswordRoutes.PostOutput,
   },
   {
     method: 'POST',

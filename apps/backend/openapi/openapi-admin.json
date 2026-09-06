@@ -2,6 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Admin API",
+    "description": "Back-office API for staff: catalog, orders, fulfillment, payments and users.",
     "version": "0.1.0"
   },
   "servers": [
@@ -9,7 +10,72 @@
       "url": "http://localhost:3000"
     }
   ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Customers"
+    },
+    {
+      "name": "Fulfillment Providers"
+    },
+    {
+      "name": "Fulfillment Sets"
+    },
+    {
+      "name": "Invites"
+    },
+    {
+      "name": "Notifications"
+    },
+    {
+      "name": "Orders"
+    },
+    {
+      "name": "Payment Collections"
+    },
+    {
+      "name": "Payments"
+    },
+    {
+      "name": "Product Options"
+    },
+    {
+      "name": "Product Variants"
+    },
+    {
+      "name": "Products"
+    },
+    {
+      "name": "Refund Reasons"
+    },
+    {
+      "name": "Shipping Options"
+    },
+    {
+      "name": "Shipping Profiles"
+    },
+    {
+      "name": "Uploads"
+    },
+    {
+      "name": "Users"
+    }
+  ],
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "schemas": {
       "AuthTokenResponse": {
         "type": "object",
@@ -730,7 +796,10 @@
           "shippingOptionId": {
             "type": ["string", "null"]
           },
-          "data": {},
+          "data": {
+            "type": ["object", "null"],
+            "additionalProperties": {}
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -751,6 +820,7 @@
           "description",
           "amount",
           "shippingOptionId",
+          "data",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -2881,7 +2951,10 @@
           "providerId": {
             "type": "string"
           },
-          "data": {},
+          "data": {
+            "type": ["object", "null"],
+            "additionalProperties": {}
+          },
           "metadata": {
             "type": ["string", "null"]
           },
@@ -2910,6 +2983,7 @@
           "shippingProfileId",
           "shippingOptionTypeId",
           "providerId",
+          "data",
           "metadata",
           "isEnabled",
           "createdAt",
@@ -3262,6 +3336,7 @@
         "operationId": "authRegister",
         "summary": "Register with an auth provider",
         "tags": ["Auth"],
+        "security": [],
         "parameters": [
           {
             "schema": {
@@ -3316,6 +3391,7 @@
         "operationId": "authAuthenticate",
         "summary": "Authenticate with an auth provider",
         "tags": ["Auth"],
+        "security": [],
         "parameters": [
           {
             "schema": {
@@ -3359,6 +3435,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -3370,6 +3449,7 @@
         "operationId": "authResetPassword",
         "summary": "Request a password reset token",
         "tags": ["Auth"],
+        "security": [],
         "parameters": [
           {
             "schema": {
@@ -3419,11 +3499,16 @@
         }
       }
     },
-    "/auth/{actorType}/{authProvider}/update": {
+    "/auth/{actorType}/{authProvider}/password": {
       "post": {
         "operationId": "authUpdatePassword",
         "summary": "Update password using a reset token",
         "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -3467,6 +3552,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -3478,6 +3566,11 @@
         "operationId": "authTokenRefresh",
         "summary": "Refresh an auth token",
         "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -3491,6 +3584,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -3500,6 +3596,11 @@
         "operationId": "authVerificationRequest",
         "summary": "Request a verification code",
         "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3522,6 +3623,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -3531,6 +3635,11 @@
         "operationId": "authVerificationConfirm",
         "summary": "Confirm a verification code",
         "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3553,6 +3662,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -3562,6 +3674,11 @@
         "operationId": "listCustomers",
         "summary": "List customers",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -3640,6 +3757,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -3647,6 +3767,11 @@
         "operationId": "createCustomers",
         "summary": "Create customers",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3669,6 +3794,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -3678,6 +3806,11 @@
         "operationId": "getCustomer",
         "summary": "Retrieve a customer",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -3703,6 +3836,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -3712,6 +3848,11 @@
         "operationId": "updateCustomer",
         "summary": "Update a customer",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -3746,6 +3887,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -3755,6 +3899,11 @@
         "operationId": "deleteCustomer",
         "summary": "Delete a customer",
         "tags": ["Customers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -3780,6 +3929,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -3791,6 +3943,11 @@
         "operationId": "listAdminFulfillmentProviders",
         "summary": "List fulfillment providers",
         "tags": ["Fulfillment Providers"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -3804,6 +3961,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -3813,6 +3973,11 @@
         "operationId": "listInvites",
         "summary": "List invites",
         "tags": ["Invites"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -3883,6 +4048,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -3890,6 +4058,11 @@
         "operationId": "createInvite",
         "summary": "Create an invite",
         "tags": ["Invites"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3919,6 +4092,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -3928,6 +4104,7 @@
         "operationId": "acceptInvite",
         "summary": "Accept an invite",
         "tags": ["Invites"],
+        "security": [],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3974,6 +4151,11 @@
         "operationId": "getInvite",
         "summary": "Retrieve an invite",
         "tags": ["Invites"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -3999,6 +4181,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4008,6 +4193,11 @@
         "operationId": "deleteInvite",
         "summary": "Delete an invite",
         "tags": ["Invites"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4033,6 +4223,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4044,6 +4237,11 @@
         "operationId": "resendInvite",
         "summary": "Resend an invite",
         "tags": ["Invites"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4069,6 +4267,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4080,6 +4281,11 @@
         "operationId": "listNotifications",
         "summary": "List notifications",
         "tags": ["Notifications"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4236,6 +4442,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -4245,6 +4454,11 @@
         "operationId": "getNotification",
         "summary": "Retrieve a notification",
         "tags": ["Notifications"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4270,6 +4484,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4281,6 +4498,11 @@
         "operationId": "listOrders",
         "summary": "List orders",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4439,6 +4661,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -4448,6 +4673,11 @@
         "operationId": "getOrder",
         "summary": "Retrieve an order",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4473,6 +4703,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4484,6 +4717,11 @@
         "operationId": "completeOrder",
         "summary": "Complete an order",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4508,6 +4746,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "404": {
             "description": "Not found"
@@ -4520,6 +4761,11 @@
         "operationId": "cancelOrder",
         "summary": "Cancel an order",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4544,6 +4790,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "404": {
             "description": "Not found"
@@ -4556,6 +4805,11 @@
         "operationId": "archiveOrder",
         "summary": "Archive an order",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4581,6 +4835,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4592,6 +4849,11 @@
         "operationId": "createOrderFulfillment",
         "summary": "Create a fulfillment for an order",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4626,6 +4888,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4637,6 +4902,11 @@
         "operationId": "createOrderShipment",
         "summary": "Create a shipment for a fulfillment",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4680,6 +4950,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4691,6 +4964,11 @@
         "operationId": "markOrderAsDelivered",
         "summary": "Mark a fulfillment as delivered",
         "tags": ["Orders"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4725,6 +5003,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4736,6 +5017,11 @@
         "operationId": "listAdminFulfillmentSets",
         "summary": "List fulfillment sets",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -4749,6 +5035,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -4756,6 +5045,11 @@
         "operationId": "createAdminFulfillmentSet",
         "summary": "Create a fulfillment set",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -4778,6 +5072,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -4787,6 +5084,11 @@
         "operationId": "getAdminFulfillmentSet",
         "summary": "Retrieve a fulfillment set with service zones",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4812,6 +5114,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4821,6 +5126,11 @@
         "operationId": "updateAdminFulfillmentSet",
         "summary": "Update a fulfillment set",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4855,6 +5165,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4864,6 +5177,11 @@
         "operationId": "deleteAdminFulfillmentSet",
         "summary": "Delete a fulfillment set",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4889,6 +5207,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4900,6 +5221,11 @@
         "operationId": "createAdminServiceZone",
         "summary": "Create a service zone in a fulfillment set",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4934,6 +5260,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4945,6 +5274,11 @@
         "operationId": "getAdminServiceZone",
         "summary": "Retrieve a service zone with geo zones",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -4979,6 +5313,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -4988,6 +5325,11 @@
         "operationId": "updateAdminServiceZone",
         "summary": "Update a service zone",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5031,6 +5373,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5040,6 +5385,11 @@
         "operationId": "deleteAdminServiceZone",
         "summary": "Delete a service zone",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5074,6 +5424,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5085,6 +5438,11 @@
         "operationId": "createAdminGeoZone",
         "summary": "Add a geo zone to a service zone",
         "tags": ["Fulfillment Sets"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5128,6 +5486,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5139,6 +5500,11 @@
         "operationId": "getPaymentCollection",
         "summary": "Retrieve a payment collection",
         "tags": ["Payment Collections"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5163,6 +5529,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "404": {
             "description": "Not found"
@@ -5175,6 +5544,11 @@
         "operationId": "markPaymentCollectionAsPaid",
         "summary": "Mark a payment collection as paid",
         "tags": ["Payment Collections"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5200,6 +5574,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5211,6 +5588,11 @@
         "operationId": "getPayment",
         "summary": "Retrieve a payment",
         "tags": ["Payments"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5236,6 +5618,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5247,6 +5632,11 @@
         "operationId": "listAdminPaymentProviders",
         "summary": "List payment providers",
         "tags": ["Payments"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -5260,6 +5650,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -5269,6 +5662,11 @@
         "operationId": "capturePayment",
         "summary": "Capture a payment",
         "tags": ["Payments"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5303,6 +5701,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5314,6 +5715,11 @@
         "operationId": "refundPayment",
         "summary": "Refund a payment",
         "tags": ["Payments"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5348,6 +5754,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5359,6 +5768,11 @@
         "operationId": "listProductOptions",
         "summary": "List product options",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5411,6 +5825,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -5418,6 +5835,11 @@
         "operationId": "createProductOption",
         "summary": "Create a product option",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -5440,6 +5862,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -5449,6 +5874,11 @@
         "operationId": "getProductOption",
         "summary": "Retrieve a product option",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5474,6 +5904,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5483,6 +5916,11 @@
         "operationId": "updateProductOption",
         "summary": "Update a product option",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5517,6 +5955,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5526,6 +5967,11 @@
         "operationId": "deleteProductOption",
         "summary": "Delete a product option",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5551,6 +5997,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5562,6 +6011,11 @@
         "operationId": "listProductsForOption",
         "summary": "List products linked to an option",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5692,6 +6146,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5703,6 +6160,11 @@
         "operationId": "listValuesForOption",
         "summary": "List values for an option",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5765,6 +6227,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5776,6 +6241,11 @@
         "operationId": "listProducts",
         "summary": "List products",
         "tags": ["Products"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5896,6 +6366,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -5903,6 +6376,11 @@
         "operationId": "createProduct",
         "summary": "Create a product",
         "tags": ["Products"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -5925,6 +6403,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -5934,6 +6415,11 @@
         "operationId": "getProduct",
         "summary": "Retrieve a product",
         "tags": ["Products"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -5959,6 +6445,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -5968,6 +6457,11 @@
         "operationId": "updateProduct",
         "summary": "Update a product",
         "tags": ["Products"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6002,6 +6496,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6011,6 +6508,11 @@
         "operationId": "deleteProduct",
         "summary": "Delete a product",
         "tags": ["Products"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6036,6 +6538,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6047,6 +6552,11 @@
         "operationId": "getProductOptions",
         "summary": "List options for a product",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6072,6 +6582,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6081,6 +6594,11 @@
         "operationId": "setProductOptions",
         "summary": "Set options for a product",
         "tags": ["Product Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6115,6 +6633,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6126,6 +6647,11 @@
         "operationId": "listOptionCombinations",
         "summary": "List the option combinations a product could sell",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6205,6 +6731,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6216,6 +6745,11 @@
         "operationId": "listProductVariants",
         "summary": "List product variants",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6356,6 +6890,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6365,6 +6902,11 @@
         "operationId": "createProductVariant",
         "summary": "Create a product variant",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6399,6 +6941,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6410,6 +6955,11 @@
         "operationId": "createProductVariantsBatch",
         "summary": "Create several product variants at once",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6444,6 +6994,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6455,6 +7008,11 @@
         "operationId": "getProductVariant",
         "summary": "Retrieve a product variant",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6489,6 +7047,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6498,6 +7059,11 @@
         "operationId": "updateProductVariant",
         "summary": "Update a product variant",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6541,6 +7107,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6550,6 +7119,11 @@
         "operationId": "deleteProductVariant",
         "summary": "Delete a product variant",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6584,6 +7158,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6595,6 +7172,11 @@
         "operationId": "updateVariantPrices",
         "summary": "Update variant prices",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6638,6 +7220,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6649,6 +7234,11 @@
         "operationId": "listImageVariants",
         "summary": "List the variants a product image is assigned to",
         "tags": ["Products"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6683,6 +7273,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6694,6 +7287,11 @@
         "operationId": "batchImageVariants",
         "summary": "Add or remove variants for a product image",
         "tags": ["Products"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6737,6 +7335,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6748,6 +7349,11 @@
         "operationId": "batchVariantImages",
         "summary": "Add or remove images for a product variant",
         "tags": ["Product Variants"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6791,6 +7397,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6802,6 +7411,11 @@
         "operationId": "listRefundReasons",
         "summary": "List refund reasons",
         "tags": ["Refund Reasons"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -6815,6 +7429,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -6822,6 +7439,11 @@
         "operationId": "createRefundReason",
         "summary": "Create a refund reason",
         "tags": ["Refund Reasons"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -6844,6 +7466,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -6853,6 +7478,11 @@
         "operationId": "deleteRefundReason",
         "summary": "Delete a refund reason",
         "tags": ["Refund Reasons"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6878,6 +7508,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6889,6 +7522,11 @@
         "operationId": "listAdminShippingOptions",
         "summary": "List shipping options",
         "tags": ["Shipping Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -6902,6 +7540,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -6909,6 +7550,11 @@
         "operationId": "createAdminShippingOption",
         "summary": "Create a shipping option",
         "tags": ["Shipping Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -6931,6 +7577,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -6940,6 +7589,11 @@
         "operationId": "getAdminShippingOption",
         "summary": "Retrieve a shipping option",
         "tags": ["Shipping Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -6965,6 +7619,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -6974,6 +7631,11 @@
         "operationId": "updateAdminShippingOption",
         "summary": "Update a shipping option",
         "tags": ["Shipping Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7008,6 +7670,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -7017,6 +7682,11 @@
         "operationId": "deleteAdminShippingOption",
         "summary": "Delete a shipping option",
         "tags": ["Shipping Options"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7042,6 +7712,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -7053,6 +7726,11 @@
         "operationId": "listAdminShippingProfiles",
         "summary": "List shipping profiles",
         "tags": ["Shipping Profiles"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -7066,6 +7744,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -7073,6 +7754,11 @@
         "operationId": "createAdminShippingProfile",
         "summary": "Create a shipping profile",
         "tags": ["Shipping Profiles"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -7095,6 +7781,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -7104,6 +7793,11 @@
         "operationId": "updateAdminShippingProfile",
         "summary": "Update a shipping profile",
         "tags": ["Shipping Profiles"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7138,6 +7832,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -7147,6 +7844,11 @@
         "operationId": "deleteAdminShippingProfile",
         "summary": "Delete a shipping profile",
         "tags": ["Shipping Profiles"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7172,6 +7874,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -7183,6 +7888,11 @@
         "operationId": "uploadFiles",
         "summary": "Upload files",
         "tags": ["Uploads"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -7205,6 +7915,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -7214,6 +7927,11 @@
         "operationId": "getUpload",
         "summary": "Retrieve a file",
         "tags": ["Uploads"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7239,6 +7957,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -7248,6 +7969,11 @@
         "operationId": "deleteUpload",
         "summary": "Delete a file",
         "tags": ["Uploads"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7273,6 +7999,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -7284,6 +8013,11 @@
         "operationId": "createPresignedUploadUrl",
         "summary": "Get a presigned upload URL",
         "tags": ["Uploads"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -7306,6 +8040,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -7315,6 +8052,11 @@
         "operationId": "getMe",
         "summary": "Retrieve the authenticated user",
         "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -7328,6 +8070,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -7337,6 +8082,11 @@
         "operationId": "listUsers",
         "summary": "List users",
         "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7407,6 +8157,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -7414,6 +8167,11 @@
         "operationId": "createUser",
         "summary": "Create a user",
         "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -7436,6 +8194,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -7445,6 +8206,11 @@
         "operationId": "getUser",
         "summary": "Retrieve a user",
         "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7470,6 +8236,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -7479,6 +8248,11 @@
         "operationId": "updateUser",
         "summary": "Update a user",
         "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7513,6 +8287,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -7522,6 +8299,11 @@
         "operationId": "deleteUser",
         "summary": "Delete a user",
         "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -7546,6 +8328,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "404": {
             "description": "Not found"
