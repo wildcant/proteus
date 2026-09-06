@@ -91,7 +91,8 @@
       "AuthBody": {
         "type": "object",
         "additionalProperties": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 512
         }
       },
       "AuthenticateResponse": {
@@ -140,7 +141,8 @@
         "properties": {
           "password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 128
           }
         },
         "required": [
@@ -169,6 +171,36 @@
           "entityId",
           "entityType",
           "requestedAt"
+        ]
+      },
+      "VerificationRequestBody": {
+        "type": "object",
+        "properties": {
+          "entityId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "entityType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "codeProvider": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "default": "token"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {},
+            "default": {}
+          }
+        },
+        "required": [
+          "entityId",
+          "entityType"
         ]
       },
       "VerificationConfirmResponse": {
@@ -200,11 +232,13 @@
         "properties": {
           "code": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512
           },
           "codeProvider": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           }
         },
         "required": [
@@ -313,11 +347,13 @@
         "properties": {
           "firstName": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "lastName": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "email": {
             "type": "string",
@@ -360,14 +396,16 @@
               "string",
               "null"
             ],
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "lastName": {
             "type": [
               "string",
               "null"
             ],
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "email": {
             "type": "string",
@@ -1174,11 +1212,13 @@
         "properties": {
           "providerId": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           },
           "locationId": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           },
           "items": {
             "type": "array",
@@ -1187,23 +1227,28 @@
               "properties": {
                 "title": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 255
                 },
                 "quantity": {
                   "type": "integer",
                   "minimum": 1
                 },
                 "sku": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 64
                 },
                 "barcode": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 64
                 },
                 "lineItemId": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 64
                 },
                 "inventoryItemId": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 64
                 }
               },
               "required": [
@@ -1211,52 +1256,65 @@
                 "quantity"
               ]
             },
-            "minItems": 1
+            "minItems": 1,
+            "maxItems": 100
           },
           "address": {
             "type": "object",
             "properties": {
               "company": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
               },
               "firstName": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
               },
               "lastName": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
               },
               "address1": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
               },
               "address2": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
               },
               "city": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
               },
               "countryCode": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 2
               },
               "province": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
               },
               "postalCode": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 32
               },
               "phone": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 32
               }
             }
           },
           "shippingOptionId": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           },
           "data": {
             "type": "object",
             "additionalProperties": {}
           },
           "metadata": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 8192
           }
         },
         "required": [
@@ -1270,13 +1328,16 @@
         "type": "object",
         "properties": {
           "trackingNumber": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           },
           "trackingUrl": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 2048
           },
           "labelUrl": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 2048
           }
         }
       },
@@ -1354,11 +1415,13 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "type": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           }
         },
         "required": [
@@ -1455,11 +1518,13 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "type": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           }
         }
       },
@@ -1479,7 +1544,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "geoZones": {
             "type": "array",
@@ -1501,20 +1567,24 @@
                   "maxLength": 2
                 },
                 "provinceCode": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 64
                 },
                 "city": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 255
                 },
                 "postalExpression": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 4000
                 }
               },
               "required": [
                 "type",
                 "countryCode"
               ]
-            }
+            },
+            "maxItems": 1000
           }
         },
         "required": [
@@ -1641,7 +1711,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           }
         }
       },
@@ -1674,13 +1745,16 @@
             "maxLength": 2
           },
           "provinceCode": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           },
           "city": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           },
           "postalExpression": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 4000
           }
         },
         "required": [
@@ -2114,7 +2188,9 @@
         "type": "object",
         "properties": {
           "amount": {
-            "type": "string"
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
           }
         }
       },
@@ -2122,14 +2198,18 @@
         "type": "object",
         "properties": {
           "amount": {
-            "type": "string"
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
           },
           "refundReasonId": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           },
           "note": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 4000
           }
         }
       },
@@ -2267,7 +2347,8 @@
         "properties": {
           "title": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "renderAs": {
             "type": "string",
@@ -2290,7 +2371,8 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 255
                 },
                 "rank": {
                   "type": "integer",
@@ -2307,7 +2389,8 @@
               "required": [
                 "value"
               ]
-            }
+            },
+            "maxItems": 100
           }
         },
         "required": [
@@ -2319,7 +2402,8 @@
         "properties": {
           "title": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "renderAs": {
             "type": "string",
@@ -2341,11 +2425,13 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 64
                 },
                 "value": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 255
                 },
                 "rank": {
                   "type": "integer",
@@ -2362,7 +2448,8 @@
               "required": [
                 "value"
               ]
-            }
+            },
+            "maxItems": 100
           }
         }
       },
@@ -2580,13 +2667,15 @@
         "type": "object",
         "properties": {
           "description": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 4000
           },
           "discountable": {
             "type": "boolean"
           },
           "handle": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           },
           "height": {
             "type": [
@@ -2595,7 +2684,8 @@
             ]
           },
           "hsCode": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           },
           "images": {
             "type": "array",
@@ -2604,13 +2694,15 @@
               "properties": {
                 "url": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 2048
                 }
               },
               "required": [
                 "url"
               ]
-            }
+            },
+            "maxItems": 100
           },
           "length": {
             "type": [
@@ -2619,10 +2711,12 @@
             ]
           },
           "material": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           },
           "midCode": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           },
           "options": {
             "type": "array",
@@ -2631,25 +2725,30 @@
               "properties": {
                 "optionId": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 64
                 },
                 "valueIds": {
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   },
-                  "minItems": 1
+                  "minItems": 1,
+                  "maxItems": 100
                 }
               },
               "required": [
                 "optionId",
                 "valueIds"
               ]
-            }
+            },
+            "maxItems": 20
           },
           "originCountry": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           },
           "status": {
             "type": "string",
@@ -2661,23 +2760,27 @@
             ]
           },
           "subtitle": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           },
           "thumbnail": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 2048
           },
           "title": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "variants": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AdminCreateProductVariant"
-            }
+            },
+            "maxItems": 1000
           },
           "weight": {
             "type": [
@@ -2703,31 +2806,36 @@
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 2048
           },
           "sku": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "barcode": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "ean": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "upc": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "allowBackorder": {
             "type": "boolean"
@@ -2739,25 +2847,29 @@
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "originCountry": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "midCode": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "material": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "weight": {
             "type": [
@@ -2789,7 +2901,8 @@
           "optionValues": {
             "type": "object",
             "additionalProperties": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           },
           "metadata": {
@@ -2805,13 +2918,16 @@
               "type": "object",
               "properties": {
                 "amount": {
-                  "type": "string"
+                  "type": "string",
+                  "format": "decimal",
+                  "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
                 }
               },
               "required": [
                 "amount"
               ]
-            }
+            },
+            "maxItems": 100
           }
         },
         "required": [
@@ -2985,27 +3101,32 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 64
                 },
                 "url": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 2048
                 }
               },
               "required": [
                 "url"
               ]
-            }
+            },
+            "maxItems": 100
           },
           "thumbnail": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 2048
           },
           "title": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           }
         }
       },
@@ -3033,22 +3154,26 @@
               "properties": {
                 "optionId": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 64
                 },
                 "valueIds": {
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   },
-                  "minItems": 1
+                  "minItems": 1,
+                  "maxItems": 100
                 }
               },
               "required": [
                 "optionId",
                 "valueIds"
               ]
-            }
+            },
+            "maxItems": 20
           }
         },
         "required": [
@@ -3383,7 +3508,8 @@
             "items": {
               "$ref": "#/components/schemas/AdminCreateProductVariant"
             },
-            "minItems": 1
+            "minItems": 1,
+            "maxItems": 1000
           }
         },
         "required": [
@@ -3434,31 +3560,36 @@
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 2048
           },
           "sku": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "barcode": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "ean": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "upc": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "allowBackorder": {
             "type": "boolean"
@@ -3470,25 +3601,29 @@
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "originCountry": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "midCode": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 64
           },
           "material": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "weight": {
             "type": [
@@ -3520,7 +3655,8 @@
           "optionValues": {
             "type": "object",
             "additionalProperties": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           },
           "metadata": {
@@ -3552,16 +3688,20 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 64
                 },
                 "amount": {
-                  "type": "string"
+                  "type": "string",
+                  "format": "decimal",
+                  "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
                 }
               },
               "required": [
                 "amount"
               ]
-            }
+            },
+            "maxItems": 100
           }
         },
         "required": [
@@ -3609,14 +3749,18 @@
           "add": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
           },
           "remove": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
           }
         }
       },
@@ -3647,14 +3791,18 @@
           "add": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
           },
           "remove": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
           }
         }
       },
@@ -3740,14 +3888,17 @@
         "properties": {
           "label": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "code": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 4000
           }
         },
         "required": [
@@ -3871,7 +4022,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "priceType": {
             "type": "string",
@@ -3886,18 +4038,22 @@
           },
           "serviceZoneId": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           },
           "shippingProfileId": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           },
           "shippingOptionTypeId": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           },
           "providerId": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           },
           "data": {
             "type": "object",
@@ -3939,7 +4095,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "amount": {
             "type": "integer",
@@ -4028,11 +4185,13 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "type": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           }
         },
         "required": [
@@ -4056,11 +4215,13 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "type": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           }
         }
       },
@@ -4101,7 +4262,8 @@
             "items": {
               "type": "string",
               "format": "binary"
-            }
+            },
+            "maxItems": 20
           }
         },
         "required": [
@@ -4177,10 +4339,12 @@
         "properties": {
           "originalName": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "mimeType": {
             "type": "string",
+            "maxLength": 255,
             "pattern": "^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}\\/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}$"
           },
           "size": {
@@ -4243,7 +4407,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "email": {
             "type": "string",
@@ -4260,7 +4425,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "email": {
             "type": "string",
@@ -4296,7 +4462,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "authProvider",
@@ -4356,7 +4523,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "authProvider",
@@ -4419,7 +4587,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "authProvider",
@@ -4483,7 +4652,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "authProvider",
@@ -4570,7 +4740,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/VerificationRequestResponse"
+                "$ref": "#/components/schemas/VerificationRequestBody"
               }
             }
           }
@@ -5106,15 +5276,18 @@
                 "properties": {
                   "token": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 512
                   },
                   "name": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 255
                   },
                   "password": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 128
                   }
                 },
                 "required": [
@@ -6402,7 +6575,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "id",
@@ -6411,7 +6585,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "zoneId",
@@ -6455,7 +6630,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "id",
@@ -6464,7 +6640,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "zoneId",
@@ -6517,7 +6694,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "id",
@@ -6526,7 +6704,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "zoneId",
@@ -6572,7 +6751,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "id",
@@ -6581,7 +6761,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "zoneId",

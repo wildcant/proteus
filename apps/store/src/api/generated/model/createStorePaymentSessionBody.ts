@@ -9,7 +9,10 @@ import type { CreateStorePaymentSessionBodyContext } from './createStorePaymentS
 import type { CreateStorePaymentSessionBodyData } from './createStorePaymentSessionBodyData.ts';
 
 export type CreateStorePaymentSessionBody = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   providerId: string;
   data?: CreateStorePaymentSessionBodyData;
   context?: CreateStorePaymentSessionBodyContext;

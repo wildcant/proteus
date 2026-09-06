@@ -1,9 +1,10 @@
 import { z } from 'zod'
+import { entityId, MAX_ITEMS, shortText } from '../../bounded.js'
 import { metadata } from '../../common.js'
 import { ProductOptionRenderAs } from './entities.js'
 
 const CreateOptionValue = z.object({
-  value: z.string().min(1),
+  value: shortText.min(1),
   rank: z.number().int().min(0).optional(),
   metadata: metadata.optional(),
 })
@@ -13,28 +14,28 @@ const CreateOptionValue = z.object({
  * value is created. Values the payload leaves out are removed.
  */
 const UpsertOptionValue = z.object({
-  id: z.string().optional(),
-  value: z.string().min(1),
+  id: entityId.optional(),
+  value: shortText.min(1),
   rank: z.number().int().min(0).optional(),
   metadata: metadata.optional(),
 })
 
 export const AdminCreateProductOption = z
   .object({
-    title: z.string().min(1),
+    title: shortText.min(1),
     renderAs: ProductOptionRenderAs.optional(),
     metadata: metadata.optional(),
-    values: z.array(CreateOptionValue).optional(),
+    values: z.array(CreateOptionValue).max(MAX_ITEMS.batch).optional(),
   })
   .openapi('AdminCreateProductOption')
 export type AdminCreateProductOptionBody = z.infer<typeof AdminCreateProductOption>
 
 export const AdminUpdateProductOption = z
   .object({
-    title: z.string().min(1).optional(),
+    title: shortText.min(1).optional(),
     renderAs: ProductOptionRenderAs.optional(),
     metadata: metadata.optional(),
-    values: z.array(UpsertOptionValue).optional(),
+    values: z.array(UpsertOptionValue).max(MAX_ITEMS.batch).optional(),
   })
   .openapi('AdminUpdateProductOption')
 export type AdminUpdateProductOptionBody = z.infer<typeof AdminUpdateProductOption>
@@ -51,13 +52,13 @@ export type AdminUpdateProductOptionBody = z.infer<typeof AdminUpdateProductOpti
  * is the whole argument for one.
  */
 export const AdminSetProductOptionEntry = z.object({
-  optionId: z.string().min(1),
-  valueIds: z.array(z.string().min(1)).min(1),
+  optionId: entityId.min(1),
+  valueIds: z.array(entityId.min(1)).min(1).max(MAX_ITEMS.batch),
 })
 
 export const AdminSetProductOptions = z
   .object({
-    options: z.array(AdminSetProductOptionEntry),
+    options: z.array(AdminSetProductOptionEntry).max(MAX_ITEMS.small),
   })
   .openapi('AdminSetProductOptions')
 export type AdminSetProductOptionsBody = z.infer<typeof AdminSetProductOptions>

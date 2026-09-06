@@ -5,16 +5,23 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { VerificationRequestBodyMetadata } from './verificationRequestBodyMetadata.ts';
 
-export interface VerificationConfirmBody {
+export interface VerificationRequestBody {
   /**
      * @minLength 1
-     * @maxLength 512
+     * @maxLength 64
      */
-  code: string;
+  entityId: string;
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
+  entityType: string;
   /**
      * @minLength 1
      * @maxLength 64
      */
   codeProvider?: string;
+  metadata?: VerificationRequestBodyMetadata;
 }

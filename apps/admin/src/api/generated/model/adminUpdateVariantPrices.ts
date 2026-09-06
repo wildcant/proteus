@@ -8,5 +8,6 @@
 import type { AdminUpdateVariantPricesPricesItem } from './adminUpdateVariantPricesPricesItem.ts';
 
 export interface AdminUpdateVariantPrices {
+  /** @maxItems 100 */
   prices: AdminUpdateVariantPricesPricesItem[];
 }

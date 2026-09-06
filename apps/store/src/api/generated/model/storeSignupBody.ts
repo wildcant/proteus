@@ -8,8 +8,13 @@
 
 export interface StoreSignupBody {
   email: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
   password: string;
+  /** @maxLength 255 */
   firstName?: string;
+  /** @maxLength 255 */
   lastName?: string;
 }

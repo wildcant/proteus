@@ -10,10 +10,14 @@ import type { AdminUpdateProductOptionRenderAs } from './adminUpdateProductOptio
 import type { AdminUpdateProductOptionValuesItem } from './adminUpdateProductOptionValuesItem.ts';
 
 export interface AdminUpdateProductOption {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   title?: string;
   renderAs?: AdminUpdateProductOptionRenderAs;
   /** @nullable */
   metadata?: AdminUpdateProductOptionMetadata;
+  /** @maxItems 100 */
   values?: AdminUpdateProductOptionValuesItem[];
 }

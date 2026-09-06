@@ -9,25 +9,52 @@ import type { AdminUpdateProductVariantMetadata } from './adminUpdateProductVari
 import type { AdminUpdateProductVariantOptionValues } from './adminUpdateProductVariantOptionValues.ts';
 
 export interface AdminUpdateProductVariant {
-  /** @nullable */
+  /**
+     * @maxLength 2048
+     * @nullable
+     */
   thumbnail?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 64
+     * @nullable
+     */
   sku?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 64
+     * @nullable
+     */
   barcode?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 64
+     * @nullable
+     */
   ean?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 64
+     * @nullable
+     */
   upc?: string | null;
   allowBackorder?: boolean;
   manageInventory?: boolean;
-  /** @nullable */
+  /**
+     * @maxLength 64
+     * @nullable
+     */
   hsCode?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 64
+     * @nullable
+     */
   originCountry?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 64
+     * @nullable
+     */
   midCode?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   material?: string | null;
   /** @nullable */
   weight?: number | null;

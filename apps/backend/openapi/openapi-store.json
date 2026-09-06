@@ -70,13 +70,16 @@
           },
           "password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 128
           },
           "firstName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           },
           "lastName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           }
         },
         "required": [
@@ -93,7 +96,8 @@
           },
           "password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 128
           }
         },
         "required": [
@@ -133,7 +137,8 @@
         "properties": {
           "password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 128
           }
         },
         "required": [
@@ -169,11 +174,13 @@
         "properties": {
           "code": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512
           },
           "codeProvider": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           }
         },
         "required": [
@@ -1083,59 +1090,70 @@
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "company": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "firstName": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "lastName": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "address2": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "province": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "phone": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 32
           },
           "address1": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "city": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "countryCode": {
             "type": "string",
-            "minLength": 2
+            "minLength": 2,
+            "maxLength": 2
           },
           "postalCode": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 32
           },
           "isDefault": {
             "type": "boolean"
@@ -1155,59 +1173,70 @@
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "company": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "firstName": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "lastName": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "address2": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "province": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 255
           },
           "phone": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "maxLength": 32
           },
           "address1": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "city": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "countryCode": {
             "type": "string",
-            "minLength": 2
+            "minLength": 2,
+            "maxLength": 2
           },
           "postalCode": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 32
           },
           "isDefault": {
             "type": "boolean"
@@ -2266,7 +2295,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "authProvider",
@@ -2330,7 +2360,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "authProvider",
@@ -2439,7 +2470,8 @@
                       "properties": {
                         "variantId": {
                           "type": "string",
-                          "minLength": 1
+                          "minLength": 1,
+                          "maxLength": 64
                         },
                         "quantity": {
                           "type": "integer",
@@ -2450,7 +2482,8 @@
                         "variantId",
                         "quantity"
                       ]
-                    }
+                    },
+                    "maxItems": 100
                   }
                 }
               }
@@ -2555,10 +2588,12 @@
                     "format": "email"
                   },
                   "firstName": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                   },
                   "lastName": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                   },
                   "shippingAddress": {
                     "type": "object",
@@ -2567,33 +2602,39 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "lastName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "address1": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 255
                       },
                       "address2": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "company": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "city": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 255
                       },
                       "countryCode": {
                         "type": "string",
@@ -2604,17 +2645,20 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "postalCode": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 32
                       },
                       "phone": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 32
                       }
                     },
                     "required": [
@@ -2633,33 +2677,39 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "lastName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "address1": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 255
                       },
                       "address2": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "company": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "city": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 255
                       },
                       "countryCode": {
                         "type": "string",
@@ -2670,17 +2720,20 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 255
                       },
                       "postalCode": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 32
                       },
                       "phone": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "maxLength": 32
                       }
                     },
                     "required": [
@@ -2751,7 +2804,8 @@
                 "properties": {
                   "variantId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   },
                   "quantity": {
                     "type": "integer",
@@ -2805,7 +2859,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "id",
@@ -2814,7 +2869,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "lineId",
@@ -2873,7 +2929,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "id",
@@ -2882,7 +2939,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "lineId",
@@ -3021,7 +3079,8 @@
                 "properties": {
                   "shippingOptionId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   },
                   "data": {
                     "type": "object",
@@ -3530,7 +3589,8 @@
                 "properties": {
                   "cartId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   }
                 },
                 "required": [
@@ -3591,7 +3651,8 @@
                 "properties": {
                   "providerId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   },
                   "data": {
                     "type": "object",

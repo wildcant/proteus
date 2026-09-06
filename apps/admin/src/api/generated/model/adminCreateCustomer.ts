@@ -7,9 +7,15 @@
  */
 
 export interface AdminCreateCustomer {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   firstName: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   lastName: string;
   email: string;
 }

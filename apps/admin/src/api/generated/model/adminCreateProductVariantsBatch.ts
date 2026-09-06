@@ -8,6 +8,9 @@
 import type { AdminCreateProductVariant } from './adminCreateProductVariant.ts';
 
 export interface AdminCreateProductVariantsBatch {
-  /** @minItems 1 */
+  /**
+     * @minItems 1
+     * @maxItems 1000
+     */
   variants: AdminCreateProductVariant[];
 }

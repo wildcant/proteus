@@ -7,7 +7,10 @@
  */
 
 export interface AdminUpdateUser {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   name?: string;
   email?: string;
 }

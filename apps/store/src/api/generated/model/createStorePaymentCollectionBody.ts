@@ -7,6 +7,9 @@
  */
 
 export type CreateStorePaymentCollectionBody = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   cartId: string;
 };

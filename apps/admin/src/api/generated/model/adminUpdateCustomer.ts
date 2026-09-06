@@ -9,11 +9,13 @@
 export interface AdminUpdateCustomer {
   /**
      * @minLength 1
+     * @maxLength 255
      * @nullable
      */
   firstName?: string | null;
   /**
      * @minLength 1
+     * @maxLength 255
      * @nullable
      */
   lastName?: string | null;

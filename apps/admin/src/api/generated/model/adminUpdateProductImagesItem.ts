@@ -7,7 +7,11 @@
  */
 
 export type AdminUpdateProductImagesItem = {
+  /** @maxLength 64 */
   id?: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 2048
+     */
   url: string;
 };

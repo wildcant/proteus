@@ -8,7 +8,11 @@
 import type { AdminCreateServiceZoneGeoZonesItem } from './adminCreateServiceZoneGeoZonesItem.ts';
 
 export interface AdminCreateServiceZone {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   name: string;
+  /** @maxItems 1000 */
   geoZones?: AdminCreateServiceZoneGeoZonesItem[];
 }

@@ -9,17 +9,30 @@ import type { AdminCreateShippingOptionData } from './adminCreateShippingOptionD
 import type { AdminCreateShippingOptionPriceType } from './adminCreateShippingOptionPriceType.ts';
 
 export interface AdminCreateShippingOption {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   name: string;
   priceType: AdminCreateShippingOptionPriceType;
   /** @minimum 0 */
   amount?: number;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   serviceZoneId: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   shippingProfileId: string;
+  /** @maxLength 64 */
   shippingOptionTypeId?: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   providerId: string;
   data?: AdminCreateShippingOptionData;
 }

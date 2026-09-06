@@ -7,6 +7,14 @@
  */
 
 export interface AdminBatchImageVariant {
+  /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
   add?: string[];
+  /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
   remove?: string[];
 }

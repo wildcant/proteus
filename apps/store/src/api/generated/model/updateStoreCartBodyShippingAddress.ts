@@ -7,27 +7,54 @@
  */
 
 export type UpdateStoreCartBodyShippingAddress = {
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   firstName: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   lastName: string | null;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   address1: string;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   address2?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   company?: string | null;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   city: string;
   /**
      * @minLength 2
      * @maxLength 2
      */
   countryCode: string;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   province?: string | null;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 32
+     */
   postalCode: string;
-  /** @nullable */
+  /**
+     * @maxLength 32
+     * @nullable
+     */
   phone?: string | null;
 };

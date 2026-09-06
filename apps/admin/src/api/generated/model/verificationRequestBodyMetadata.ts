@@ -6,11 +6,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AdminCreateOrderShipment {
-  /** @maxLength 64 */
-  trackingNumber?: string;
-  /** @maxLength 2048 */
-  trackingUrl?: string;
-  /** @maxLength 2048 */
-  labelUrl?: string;
-}
+export type VerificationRequestBodyMetadata = {[key: string]: unknown};

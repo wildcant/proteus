@@ -7,8 +7,13 @@
  */
 
 export interface AdminRefundPayment {
+  /** @pattern ^-?\d{1,12}(\.\d{1,8})?$ */
   amount?: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   refundReasonId?: string;
+  /** @maxLength 4000 */
   note?: string;
 }

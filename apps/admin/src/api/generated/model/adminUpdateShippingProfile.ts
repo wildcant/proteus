@@ -7,8 +7,14 @@
  */
 
 export interface AdminUpdateShippingProfile {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   name?: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   type?: string;
 }

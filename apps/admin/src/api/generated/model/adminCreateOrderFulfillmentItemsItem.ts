@@ -7,12 +7,19 @@
  */
 
 export type AdminCreateOrderFulfillmentItemsItem = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   title: string;
   /** @minimum 1 */
   quantity: number;
+  /** @maxLength 64 */
   sku?: string;
+  /** @maxLength 64 */
   barcode?: string;
+  /** @maxLength 64 */
   lineItemId?: string;
+  /** @maxLength 64 */
   inventoryItemId?: string;
 };

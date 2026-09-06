@@ -127,13 +127,17 @@ rules:
           type: object
           required: ["401"]
 
-  # ---- Still `warn` until ILLO-79 -----------------------------------------
+  # ---- Input bounds -------------------------------------------------------
 
   # OWASP api4 scoped to REQUEST bodies only — unbounded input is the DoS surface;
   # bounding response strings is busywork. Unscoped, this rule reports 805 findings.
+  #
+  # The bounds these two rules ask for are not written per field: `@proteus/http-schemas`
+  # names a primitive per kind (`shortText`, `entityId`, `httpUrl`, ...) and the schemas
+  # substitute it, so a new field picks a kind rather than inventing a number.
   proteus-request-strings-are-bounded:            # via OWASP api4:2023-string-limit
     description: A string accepted from a client must declare maxLength (or enum/const/format).
-    severity: warn
+    severity: error
     given: "$.paths[*][post,put,patch].requestBody.content[*].schema..properties[?(@.type=='string')]"
     then:
       function: schema
@@ -148,7 +152,7 @@ rules:
 
   proteus-request-arrays-are-bounded:             # via OWASP api4:2023-array-limit
     description: An array accepted from a client must declare maxItems.
-    severity: warn
+    severity: error
     given: "$.paths[*][post,put,patch].requestBody.content[*].schema..properties[?(@.type=='array')]"
     then:
       field: maxItems

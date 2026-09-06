@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { countryCode, entityId, MAX_ITEMS, phone, postalCode, shortText } from '../../bounded.js'
 
 /**
  * What a shopper picks. Nothing else: the title, the option values and above all the price are
@@ -6,35 +7,35 @@ import { z } from 'zod'
  * its own sale.
  */
 export const AddLineItem = z.object({
-  variantId: z.string().min(1),
+  variantId: entityId.min(1),
   quantity: z.number().int().positive(),
 })
 export type AddLineItemBody = z.infer<typeof AddLineItem>
 
 export const CreateCart = z.object({
   email: z.email().optional(),
-  items: z.array(AddLineItem).optional(),
+  items: z.array(AddLineItem).max(MAX_ITEMS.batch).optional(),
 })
 export type CreateCartBody = z.infer<typeof CreateCart>
 
 export const CartAddressInput = z.object({
-  firstName: z.string().nullable(),
-  lastName: z.string().nullable(),
-  address1: z.string().min(1, 'Address is required'),
-  address2: z.string().optional().nullable(),
-  company: z.string().optional().nullable(),
-  city: z.string().min(1, 'City is required'),
-  countryCode: z.string().length(2, 'Country is required'),
-  province: z.string().optional().nullable(),
-  postalCode: z.string().min(1, 'Postal code is required'),
-  phone: z.string().optional().nullable(),
+  firstName: shortText.nullable(),
+  lastName: shortText.nullable(),
+  address1: shortText.min(1, 'Address is required'),
+  address2: shortText.optional().nullable(),
+  company: shortText.optional().nullable(),
+  city: shortText.min(1, 'City is required'),
+  countryCode: countryCode.length(2, 'Country is required'),
+  province: shortText.optional().nullable(),
+  postalCode: postalCode.min(1, 'Postal code is required'),
+  phone: phone.optional().nullable(),
 })
 export type CartAddressInputBody = z.infer<typeof CartAddressInput>
 
 export const UpdateCart = z.object({
   email: z.email().optional(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
+  firstName: shortText.optional(),
+  lastName: shortText.optional(),
   shippingAddress: CartAddressInput.optional(),
   billingAddress: CartAddressInput.optional(),
 })
@@ -46,7 +47,7 @@ export const UpdateLineItem = z.object({
 export type UpdateLineItemBody = z.infer<typeof UpdateLineItem>
 
 export const LineIdParams = z.object({
-  id: z.string().min(1),
-  lineId: z.string().min(1),
+  id: entityId.min(1),
+  lineId: entityId.min(1),
 })
 export type LineIdParams = z.infer<typeof LineIdParams>

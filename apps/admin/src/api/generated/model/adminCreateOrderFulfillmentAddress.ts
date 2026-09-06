@@ -7,14 +7,24 @@
  */
 
 export type AdminCreateOrderFulfillmentAddress = {
+  /** @maxLength 255 */
   company?: string;
+  /** @maxLength 255 */
   firstName?: string;
+  /** @maxLength 255 */
   lastName?: string;
+  /** @maxLength 255 */
   address1?: string;
+  /** @maxLength 255 */
   address2?: string;
+  /** @maxLength 255 */
   city?: string;
+  /** @maxLength 2 */
   countryCode?: string;
+  /** @maxLength 255 */
   province?: string;
+  /** @maxLength 32 */
   postalCode?: string;
+  /** @maxLength 32 */
   phone?: string;
 };
