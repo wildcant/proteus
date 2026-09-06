@@ -8,16 +8,6 @@ export const CreatePaymentSession = z.object({
 })
 export type CreatePaymentSessionBody = z.infer<typeof CreatePaymentSession>
 
-/**
- * Deliberately empty, and deliberately not `strictObject`.
- *
- * The amount is priced server-side from the cart; the browser has nothing to say about it. A
- * client that sends one anyway has it stripped here rather than rejected, so an older storefront
- * cannot break checkout by being polite about a field that no longer exists.
- */
-export const UpdatePaymentSession = z.object({}).default({})
-export type UpdatePaymentSessionBody = z.infer<typeof UpdatePaymentSession>
-
 export const CreatePaymentCollection = z.object({
   cartId: z.string().min(1),
 })

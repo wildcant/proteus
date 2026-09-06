@@ -1,4 +1,4 @@
-import type { HttpRequest } from '../../server/ports.js'
+import type { HttpRequest } from '@server/ports.js'
 import type { MiddlewareFunction } from './types.js'
 
 export async function runMiddlewares(

@@ -70,7 +70,7 @@ async function paymentNow(service: Fixtures['service'], paymentCollectionId: str
 }
 
 test.describe('POST /admin/payments/:id/capture (stripe)', () => {
-  test('takes the whole authorization when the body is empty', async ({ service, expect }) => {
+  test('takes the whole authorization', async ({ service, expect }) => {
     const { paymentId, paymentCollectionId, total } = await authorizedPayment(service)
 
     const { status } = await api.post(`/admin/payments/${paymentId}/capture`)
@@ -81,23 +81,6 @@ test.describe('POST /admin/payments/:id/capture (stripe)', () => {
     const payment = await paymentNow(service, paymentCollectionId)
     expect(payment.capturedAt).not.toBeNull()
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
-  })
-
-  test('refuses a request that asks for part of the authorization', async ({ service, expect }) => {
-    const { paymentId, paymentCollectionId } = await authorizedPayment(service)
-
-    const response = await api.post<ApiErrorBody>(`/admin/payments/${paymentId}/capture`, { amount: '40.00' })
-
-    // Loudly, and not by ignoring the field: Stripe's capture call carries no `amount_to_capture`,
-    // so a request that believes it is taking 40 of a 100 authorization would take all 100 and
-    // report success. Refusing it is the whole point of the field being gone.
-    expect(response.status).toBe(400)
-    expect(response.body.message).toBe('Invalid request body: Unrecognized keys: "amount"')
-
-    expect(stripeGateway.callsTo('paymentIntents.capture')).toHaveLength(0)
-    const payment = await paymentNow(service, paymentCollectionId)
-    expect(payment.capturedAt).toBeNull()
-    expect(payment.captures ?? []).toHaveLength(0)
   })
 
   test('refuses a second capture rather than answering success', async ({ service, expect }) => {

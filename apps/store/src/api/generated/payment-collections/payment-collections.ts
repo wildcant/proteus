@@ -9,8 +9,7 @@ import type {
   CreateStorePaymentSessionBody,
   StoreCreatePaymentCollectionResponse,
   StoreCreatePaymentSessionResponse,
-  StoreUpdatePaymentSessionResponse,
-  UpdateStorePaymentSessionBody
+  StoreUpdatePaymentSessionResponse
 } from '../model';
 
 import { fetcher } from '../../fetcher.ts';
@@ -51,12 +50,9 @@ export const createStorePaymentSession = (
 export const updateStorePaymentSession = (
     id: string,
     sessionId: string,
-    updateStorePaymentSessionBody?: BodyType<UpdateStorePaymentSessionBody>,
  ) => {
       return fetcher<StoreUpdatePaymentSessionResponse>(
-      {url: `/store/payment-collections/${id}/payment-sessions/${sessionId}`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: updateStorePaymentSessionBody
+      {url: `/store/payment-collections/${id}/payment-sessions/${sessionId}`, method: 'PATCH'
     },
       );
     }

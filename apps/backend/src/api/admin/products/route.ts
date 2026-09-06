@@ -6,8 +6,8 @@ import {
   AdminProductListParams,
   AdminProductListResponse,
 } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { createProductWorkflow } from '@workflows/product/create-product.js'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
 
 export const GetInput = { query: AdminProductListParams }
 export const GetOutput = AdminProductListResponse

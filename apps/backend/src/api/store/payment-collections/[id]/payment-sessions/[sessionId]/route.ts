@@ -1,13 +1,13 @@
-import { SessionIdParams, StoreUpdatePaymentSessionResponse, UpdatePaymentSession } from '@proteus/http-schemas/store'
+import { SessionIdParams, StoreUpdatePaymentSessionResponse } from '@proteus/http-schemas/store'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { repricePaymentSessionWorkflow } from '@workflows/payment/reprice-payment-session.js'
-import type { HttpRequest, HttpResult } from '../../../../../../server/ports.js'
 
-export const PatchInput = { params: SessionIdParams, body: UpdatePaymentSession }
+export const PatchInput = { params: SessionIdParams }
 export const PatchOutput = StoreUpdatePaymentSessionResponse
 
 /**
- * Re-prices an open session from the cart's server-side total. The body is empty by design — see
- * `UpdatePaymentSession`; an amount is never taken from the browser.
+ * Re-prices an open session from the cart's server-side total. There is no request body: the
+ * amount is never taken from the browser, and anything one sends anyway is ignored.
  */
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
   const paymentSession = await repricePaymentSessionWorkflow.run({

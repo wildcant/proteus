@@ -1,7 +1,7 @@
 import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { IdParams, StoreSavedMethodListResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { requireCustomer } from '../../../middlewares.js'
 
 export const PostInput = { params: IdParams }

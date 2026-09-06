@@ -5,7 +5,6 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
-  AdminCapturePayment,
   AdminPaymentProviderListResponse,
   AdminPaymentResponse,
   AdminRefundPayment
@@ -43,12 +42,9 @@ export const listAdminPaymentProviders = (
  */
 export const capturePayment = (
     id: string,
-    adminCapturePayment?: BodyType<AdminCapturePayment>,
  ) => {
       return fetcher<AdminPaymentResponse>(
-      {url: `/admin/payments/${id}/capture`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: adminCapturePayment
+      {url: `/admin/payments/${id}/capture`, method: 'POST'
     },
       );
     }

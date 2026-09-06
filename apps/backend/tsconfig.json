@@ -13,6 +13,7 @@
     "paths": {
       "@core/*": ["./src/core/*"],
       "@framework/*": ["./src/framework/*"],
+      "@server/*": ["./src/server/*"],
       "@workflows/*": ["./src/workflows/*"],
       "@tests/*": ["./tests/*"]
     }

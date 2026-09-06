@@ -1,30 +1,16 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { PAYMENT_METHOD_UNAVAILABLE } from '@core/errors/payment-method-code.js'
-import type { AccountHolderDTO, IPaymentModuleService } from '@core/types/index.js'
+import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { CreatePaymentSession, IdParams, StoreCreatePaymentSessionResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { readWalletChoice } from '@workflows/payment/utils/read-wallet-choice.js'
 import { attachCustomer } from '../../../middlewares.js'
 
 export const PostInput = { params: IdParams, body: CreatePaymentSession }
 export const PostMiddlewares = [attachCustomer()] as const
 export const PostOutput = StoreCreatePaymentSessionResponse
 type PostRequest = HttpRequest<typeof PostInput, typeof PostMiddlewares>
-
-/**
- * What the shopper said about their wallet, read from the adapter's own `data` blob.
- *
- * Two values, both the shopper's to give: whether to keep the card, and which stored card they
- * picked. Neither is trusted further than its shape — the account holder they act against is
- * resolved from the session's own authentication below, never from anything on the wire.
- */
-function walletChoiceOf(data: Record<string, unknown> | undefined) {
-  const chosenMethodId = data?.paymentMethodId
-  return {
-    savePaymentMethod: data?.savePaymentMethod === true,
-    paymentMethodId: typeof chosenMethodId === 'string' && chosenMethodId !== '' ? chosenMethodId : undefined,
-  }
-}
 
 /**
  * Opens the session for a checkout.
@@ -43,9 +29,23 @@ function walletChoiceOf(data: Record<string, unknown> | undefined) {
 export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutput>> => {
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
   const collection = await paymentService.retrievePaymentCollection(req.params.id)
+  const wallet = readWalletChoice(req.body.data)
 
-  const wallet = walletChoiceOf(req.body.data)
-  const accountHolder = await accountHolderFor(req, req.body.providerId)
+  // The account holder this checkout pays against, or nothing.
+  //
+  // Nothing is the guest's answer, and it is reached two ways: no session at all, and a session
+  // belonging to a Customer row with `hasAccount: false` — which is every guest checkout Proteus
+  // has ever written. Neither creates anything at the gateway, which is why the gate is the account
+  // rather than the row `attachCustomer()` found.
+  const customer = req.customer
+  const accountHolders = customer?.hasAccount
+    ? await paymentService.ensureAccountHolders({
+        customerId: customer.id,
+        email: customer.email,
+        name: [customer.firstName, customer.lastName].filter(Boolean).join(' ') || null,
+      })
+    : []
+  const accountHolder = accountHolders.find((holder) => holder.providerId === req.body.providerId)
 
   // A named saved card with no account holder to check it against, answered the way the wallet
   // answers every other card it cannot act on.
@@ -79,29 +79,4 @@ export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutp
   })
 
   return { status: 201, json: { paymentSession: session } }
-}
-
-/**
- * The account holder this checkout pays against, or nothing.
- *
- * Nothing is the guest's answer, and it is reached two ways: no session at all, and a session
- * belonging to a Customer row with `hasAccount: false` — which is every guest checkout Proteus
- * has ever written. Neither creates anything at the gateway, which is why the gate is the account
- * rather than the row `attachCustomer()` found.
- */
-async function accountHolderFor(
-  req: HttpRequest<object, typeof PostMiddlewares>,
-  providerId: string,
-): Promise<AccountHolderDTO | undefined> {
-  const customer = req.customer
-  if (!customer?.hasAccount) return undefined
-
-  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
-  const holders = await paymentService.ensureAccountHolders({
-    customerId: customer.id,
-    email: customer.email,
-    name: [customer.firstName, customer.lastName].filter(Boolean).join(' ') || null,
-  })
-
-  return holders.find((holder) => holder.providerId === providerId)
 }

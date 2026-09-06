@@ -1,4 +1,7 @@
 import type { Logger } from '../types/logger.js'
+// Relative, not `@workflows/`: this module is reachable through the `backend/test` package export,
+// which Node resolves on its own without reading tsconfig paths. Type-only imports survive an alias
+// there because they are erased; this one is a value import and would fail at runtime.
 import { WorkflowTerminalError } from '../workflows/types.js'
 import { AppError, ErrorTypes } from './app-error.js'
 

@@ -1,7 +1,7 @@
+import type { HttpRequest, HttpResult, MiddlewareFunction } from '@server/ports.js'
 import type { z } from 'zod'
-import type { HttpRequest, HttpResult, MiddlewareFunction } from '../../server/ports.js'
 
-export type { MiddlewareFunction } from '../../server/ports.js'
+export type { MiddlewareFunction } from '@server/ports.js'
 
 export type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
 

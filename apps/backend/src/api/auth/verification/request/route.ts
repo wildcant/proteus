@@ -4,8 +4,8 @@ import type { INotificationModuleService } from '@core/types/notification/servic
 import { Modules } from '@core/utils/index.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import { VerificationRequestBody, VerificationRequestResponse } from '@proteus/http-schemas/auth'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
-import { sendVerificationEmail } from '../../../../workflows/auth/send-verification-email.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { sendVerificationEmail } from '@workflows/auth/send-verification-email.js'
 
 export const PostInput = { body: VerificationRequestBody }
 export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const

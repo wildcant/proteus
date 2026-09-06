@@ -13,7 +13,6 @@ export * from './adminBatchVariantImages.ts';
 export * from './adminBatchVariantImagesResponse.ts';
 export * from './adminCapture.ts';
 export * from './adminCaptureMetadata.ts';
-export * from './adminCapturePayment.ts';
 export * from './adminCreateCustomer.ts';
 export * from './adminCreateCustomers.ts';
 export * from './adminCreateCustomersResponse.ts';

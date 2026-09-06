@@ -1,7 +1,7 @@
 import type { IFulfillmentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AdminCreateServiceZone, AdminCreateServiceZoneResponse, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { params: IdParams, body: AdminCreateServiceZone }
 export const PostOutput = AdminCreateServiceZoneResponse

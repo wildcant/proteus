@@ -98,6 +98,5 @@ export * from './updateStoreCartBody.ts';
 export * from './updateStoreCartBodyBillingAddress.ts';
 export * from './updateStoreCartBodyShippingAddress.ts';
 export * from './updateStoreCartLineItemBody.ts';
-export * from './updateStorePaymentSessionBody.ts';
 export * from './verificationConfirmBody.ts';
 export * from './verificationConfirmResponse.ts';

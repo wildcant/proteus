@@ -1,9 +1,8 @@
 import type { ICartModuleService, ICustomerModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { CreateCart, StoreCreateCartResponse } from '@proteus/http-schemas/store'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { addToCartWorkflow } from '@workflows/cart/add-to-cart.js'
-
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
 import { setPricingContext } from '../middlewares.js'
 
 export const PostInput = { body: CreateCart }

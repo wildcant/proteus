@@ -146,7 +146,7 @@ export const useCreatePaymentSession = (
 /**
  * Re-prices an open session from the cart's server-side total.
  *
- * The body is empty by design: the browser names the session and is told what the cart came to.
+ * There is no body: the browser names the session in the URL and is told what the cart came to.
  * See `useOpenPaymentSession` for why every place-order press ends with this call.
  */
 export const useRepricePaymentSession = (
@@ -156,7 +156,7 @@ export const useRepricePaymentSession = (
   return useMutation({
     ...rest,
     mutationFn: ({ collectionId, sessionId }: { collectionId: string; sessionId: string }) =>
-      updateStorePaymentSession(collectionId, sessionId, {}),
+      updateStorePaymentSession(collectionId, sessionId),
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: 'Failed to price the payment', description: error.message })

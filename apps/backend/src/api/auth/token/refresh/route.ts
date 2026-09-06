@@ -9,7 +9,7 @@ import type { IAuthModuleService } from '@core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import { AuthenticateResponse } from '@proteus/http-schemas/auth'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const
 export const PostOutput = AuthenticateResponse

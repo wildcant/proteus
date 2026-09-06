@@ -5,7 +5,7 @@ import type { PaymentActions } from '@core/types/payment/common.js'
 import type { DeferredTasks } from '@core/utils/deferred-tasks.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { ProviderParams, WebhookReceivedResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 /**
  * What this route does with each action a provider can report. Total over `PaymentActions`, so

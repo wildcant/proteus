@@ -1,8 +1,8 @@
 import type { IProductModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AdminSetProductOptions, AdminSetProductOptionsResponse, IdParams } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { setProductOptionsWorkflow } from '@workflows/product/set-product-options.js'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminSetProductOptionsResponse

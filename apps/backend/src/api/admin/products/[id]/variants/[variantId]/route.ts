@@ -7,9 +7,9 @@ import {
   DeleteResponse,
   VariantIdParams,
 } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { deleteProductVariantWorkflow } from '@workflows/product/delete-product-variant.js'
 import { updateProductVariantWorkflow } from '@workflows/product/update-product-variant.js'
-import type { HttpRequest, HttpResult } from '../../../../../../server/ports.js'
 
 export const GetInput = { params: VariantIdParams }
 export const GetOutput = AdminProductVariantResponse

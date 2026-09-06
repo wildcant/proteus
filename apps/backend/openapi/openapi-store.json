@@ -2837,17 +2837,6 @@
             "in": "path"
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {},
-                "default": {}
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful response",
