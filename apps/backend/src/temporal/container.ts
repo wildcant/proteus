@@ -1,8 +1,8 @@
+import { env } from '@env'
 import postgres from 'postgres'
 import { appConfigInput } from '../config.js'
 import { bootstrapContainer } from '../container.js'
 import { createNodeDbProvider } from '../core/db/node-provider.js'
-import { env } from '../env.js'
 import { WinstonLogger } from '../framework/logger/winston-logger.js'
 
 /**

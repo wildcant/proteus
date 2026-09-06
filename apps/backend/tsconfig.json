@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "paths": {
       "@core/*": ["./src/core/*"],
+      "@env": ["./src/env.ts"],
       "@framework/*": ["./src/framework/*"],
       "@server/*": ["./src/server/*"],
       "@workflows/*": ["./src/workflows/*"],

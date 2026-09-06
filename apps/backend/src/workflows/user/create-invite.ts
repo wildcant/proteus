@@ -3,7 +3,7 @@ import type { InviteDTO } from '@core/types/user/invite-common.js'
 import type { IUserModuleService } from '@core/types/user/service.js'
 import { Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow } from '@core/workflows/types.js'
-import { env } from '../../env.js'
+import { env } from '@env'
 
 export type CreateInviteInput = {
   email: string

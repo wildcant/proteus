@@ -4,7 +4,7 @@ import type { IAuthModuleService } from '@core/types/auth/service.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow } from '@core/workflows/types.js'
-import { env } from '../../env.js'
+import { env } from '@env'
 
 export type RequestPasswordResetInput = {
   email: string

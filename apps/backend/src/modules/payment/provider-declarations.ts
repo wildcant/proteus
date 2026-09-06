@@ -1,4 +1,4 @@
-import { env } from '../../env.js'
+import { env } from '@env'
 import stripeProvider from '../../providers/payment-stripe/index.js'
 import type { PaymentModuleOptions } from './loaders/providers.js'
 

@@ -1,8 +1,8 @@
+import { env } from '@env'
 import type { StorePaymentProviderListResponse } from '@proteus/http-schemas/store'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import { expect } from 'vitest'
-import { env } from '../../../../env.js'
 import paymentProviderDefinitions from '../definitions.js'
 
 /** The DI keys the two configured providers are registered under. */

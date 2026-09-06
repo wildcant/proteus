@@ -3,11 +3,11 @@ import { PAYMENT_AWAITING_AUTHORIZATION } from '@core/errors/payment-authorizati
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/index.js'
+import { env } from '@env'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
-import { env } from '../../../env.js'
 import { completeCartWorkflow } from '../complete-cart.js'
 
 let container: TestContainer

@@ -1,8 +1,8 @@
+import { env } from '@env'
 import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
 import type { AbstractPaymentProvider } from '../../../core/utils/abstract-payment-provider.js'
 import type { ModuleProviderExports } from '../../../core/utils/module-provider.js'
-import { env } from '../../../env.js'
 import { SystemPaymentProvider } from '../providers/system.js'
 import { PaymentProviderService } from '../services/payment-provider-service.js'
 
