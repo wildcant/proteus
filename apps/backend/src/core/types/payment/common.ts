@@ -16,6 +16,15 @@ export type PaymentSessionStatus =
   | 'canceled'
   | 'pending_authorization'
 
+/**
+ * The statuses that mean the provider did not authorize. Narrower than [PaymentSessionStatus] so a
+ * caller classifying the refusal covers exactly the reachable ones and no unreachable ones.
+ */
+export type UnauthorizedSessionStatus = Exclude<
+  PaymentSessionStatus,
+  'authorized' | 'captured' | 'pending_authorization'
+>
+
 export type PaymentActions =
   | 'authorized'
   | 'captured'
@@ -99,7 +108,7 @@ export type AuthorizePaymentSessionResult =
   /** Confirmed at the provider and still settling. No payment yet; the webhook brings one. */
   | { outcome: 'pending_authorization' }
   /** Declined, cancelled, or still waiting on the shopper. `sessionStatus` says which. */
-  | { outcome: 'not_authorized'; sessionStatus: PaymentSessionStatus }
+  | { outcome: 'not_authorized'; sessionStatus: UnauthorizedSessionStatus }
 
 export type CaptureDTO = {
   id: string

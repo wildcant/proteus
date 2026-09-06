@@ -19,8 +19,10 @@ export class AppError extends Error {
   type: ErrorTypes
   /**
    * The specific reason, where the type alone is too coarse for a client to act on —
-   * `payment_method_unavailable` against a `conflict`, say. It reaches the response body, so it
-   * is an authored constant and never a third party's string.
+   * `payment_method_unavailable` against a `conflict`, say. It reaches the response body, so it is
+   * an authored constant from the owning domain's code enum — see [PaymentErrorCodes] — and never
+   * a third party's string. Typed `string` because each domain names its own; there is no union
+   * here to widen every time one does.
    */
   code?: string | undefined
   date: Date

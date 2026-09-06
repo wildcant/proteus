@@ -1,6 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import { PAYMENT_METHOD_UNAVAILABLE } from '@core/errors/payment-method-code.js'
 import type { IPaymentModuleService } from '@core/types/index.js'
+import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import { Modules } from '@core/utils/index.js'
 import { CreatePaymentSession, IdParams, StoreCreatePaymentSessionResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
@@ -59,7 +59,7 @@ export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutp
   if (wallet.paymentMethodId && !accountHolder) {
     throw new AppError({
       type: ErrorTypes.CONFLICT,
-      code: PAYMENT_METHOD_UNAVAILABLE,
+      code: PaymentErrorCodes.METHOD_UNAVAILABLE,
       message: 'That payment method is no longer available.',
     })
   }

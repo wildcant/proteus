@@ -111,6 +111,19 @@ describe('toAppError', () => {
     expect(error.message).not.toContain('pm_1234')
   })
 
+  /**
+   * A refused card is the shopper's state, not a broken server: a 500 here pages an operator for
+   * something no operator can fix. The code is the same one cart completion answers a refused
+   * session with, so one decline reason cannot be told from another in a response body.
+   */
+  test('answers a declined card with a conflict, not a server error', () => {
+    const error = toAppError(cardDeclined())
+
+    expect(error.type).toBe(ErrorTypes.CONFLICT)
+    expect(error.code).toBe('payment_declined')
+    expect(error.message).not.toContain('lost_card')
+  })
+
   test('answers a transient gateway failure with service unavailable', () => {
     const error = toAppError(stripeError(Stripe.errors.StripeConnectionError, { message: 'socket hang up' }))
 

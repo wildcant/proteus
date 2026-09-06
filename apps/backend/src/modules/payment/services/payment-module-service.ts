@@ -1,7 +1,5 @@
 import { BigNumber } from '../../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
-import { PAYMENT_ATTEMPT_IN_FLIGHT } from '../../../core/errors/payment-attempt-code.js'
-import { PAYMENT_METHOD_UNAVAILABLE } from '../../../core/errors/payment-method-code.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
@@ -20,6 +18,7 @@ import type {
   RefundReasonDTO,
   SavedMethodDTO,
 } from '../../../core/types/payment/common.js'
+import { PaymentErrorCodes } from '../../../core/types/payment/errors.js'
 import type {
   CreateAccountHolderDTO,
   CreateCaptureDTO,
@@ -245,7 +244,7 @@ export class PaymentModuleService implements IPaymentModuleService {
       this.logger.debug(`Refusing a new payment session: "${settling.id}" is still settling at the provider`)
       throw new AppError({
         type: ErrorTypes.CONFLICT,
-        code: PAYMENT_ATTEMPT_IN_FLIGHT,
+        code: PaymentErrorCodes.ATTEMPT_IN_FLIGHT,
         message: 'The payment could not be processed.',
       })
     }
@@ -849,14 +848,14 @@ export class PaymentModuleService implements IPaymentModuleService {
       } catch (error) {
         // Only the gateway's "that is not this customer's method" moves on to the next provider.
         // Anything else — the gateway is down, our key is wrong — is the caller's answer.
-        if (!AppError.isError(error) || error.code !== PAYMENT_METHOD_UNAVAILABLE) throw error
+        if (!AppError.isError(error) || error.code !== PaymentErrorCodes.METHOD_UNAVAILABLE) throw error
         this.logger.debug(`Payment method "${methodId}" is not held at provider "${holder.providerId}"`)
       }
     }
 
     throw new AppError({
       type: ErrorTypes.CONFLICT,
-      code: PAYMENT_METHOD_UNAVAILABLE,
+      code: PaymentErrorCodes.METHOD_UNAVAILABLE,
       message: 'That payment method is no longer available.',
     })
   }

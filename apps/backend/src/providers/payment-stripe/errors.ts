@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
-import { PAYMENT_METHOD_UNAVAILABLE } from '../../core/errors/payment-method-code.js'
+import { PaymentErrorCodes } from '../../core/types/payment/errors.js'
 
 /**
  * Classifying what the gateway threw, and answering with a code instead of its message.
@@ -119,31 +119,40 @@ export function gatewayFailureLog(operation: string, error: unknown): string {
   return `[stripe] ${operation} failed (${bucket}): ${fields.join(' ')}`
 }
 
-/** Authored messages, one per bucket. None of them is Stripe's. */
-const ANSWER_BY_BUCKET: Record<GatewayErrorBucket, { type: ErrorTypes; code: string; message: string }> = {
+/**
+ * Authored answers, one per bucket. None of the messages is Stripe's.
+ *
+ * The type is doing real work here, not decorating the code: only `fatal` is our bug and therefore
+ * a 500. A gateway outage is a 503 the caller may retry, and a refused card is a 409 about the
+ * shopper's state — calling either one a server error pages an operator for something no operator
+ * can fix.
+ */
+const ANSWER_BY_BUCKET: Record<GatewayErrorBucket, { type: ErrorTypes; code: PaymentErrorCodes; message: string }> = {
   retry: {
     type: ErrorTypes.SERVICE_UNAVAILABLE,
-    code: 'payment_gateway_unavailable',
+    code: PaymentErrorCodes.GATEWAY_UNAVAILABLE,
     message: 'The payment gateway is temporarily unavailable. Please try again.',
   },
   indeterminate: {
     type: ErrorTypes.SERVICE_UNAVAILABLE,
-    code: 'payment_gateway_unavailable',
+    code: PaymentErrorCodes.GATEWAY_UNAVAILABLE,
     message: 'The payment gateway is temporarily unavailable. Please try again.',
   },
   paymentMethod: {
     type: ErrorTypes.CONFLICT,
-    code: PAYMENT_METHOD_UNAVAILABLE,
+    code: PaymentErrorCodes.METHOD_UNAVAILABLE,
     message: 'That payment method is no longer available.',
   },
+  /** The same code cart completion answers a refused session with: one decline code whatever the
+   *  reason, so a response body cannot separate a lost card from a generic refusal. */
   card: {
-    type: ErrorTypes.UNEXPECTED_STATE,
-    code: 'card_error',
+    type: ErrorTypes.CONFLICT,
+    code: PaymentErrorCodes.DECLINED,
     message: 'The card could not be charged.',
   },
   fatal: {
     type: ErrorTypes.UNEXPECTED_STATE,
-    code: 'payment_gateway_error',
+    code: PaymentErrorCodes.GATEWAY_ERROR,
     message: 'The payment could not be processed.',
   },
 }

@@ -1,6 +1,6 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import { PAYMENT_AWAITING_AUTHORIZATION } from '@core/errors/payment-authorization-code.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
+import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/index.js'
 import { env } from '@env'
@@ -136,23 +136,46 @@ test.describe('completeCartWorkflow', () => {
     await expect(completeCartWorkflow.run({ cartId: settling.cart.id })).rejects.toMatchObject({
       cause: {
         type: ErrorTypes.CONFLICT,
-        code: PAYMENT_AWAITING_AUTHORIZATION,
+        code: PaymentErrorCodes.AWAITING_AUTHORIZATION,
         message: expect.stringContaining('has not been authorized yet'),
       },
     })
 
-    // Unchanged, and asserted here rather than assumed: the decline keeps the type, the absent
-    // code and the message it had before this ticket.
+    // The decline is a conflict too, and separable by code alone.
     await expect(completeCartWorkflow.run({ cartId: declined.cart.id })).rejects.toMatchObject({
       cause: {
-        type: ErrorTypes.UNEXPECTED_STATE,
-        code: undefined,
-        message: expect.stringContaining('Payment authorization failed for session'),
+        type: ErrorTypes.CONFLICT,
+        code: PaymentErrorCodes.DECLINED,
+        message: expect.stringContaining('declined'),
       },
     })
 
     // Both unwind. Finishing the order once the webhook resolves the settling intent needs a
     // subscriber that does not exist yet — this ticket makes the case separable, not survivable.
+    expect(await service.read.orders(container)).toEqual([])
+  })
+
+  /**
+   * The other three ways a session can fail to authorize, which used to share the decline's
+   * `unexpected_state` and its absent code — so a 3D Secure challenge nobody finished and a bad
+   * API key were one indistinguishable 500. Asserted per status, because a table that classified
+   * only the status the previous test happens to use would pass while the rest stayed wrong.
+   */
+  test.for([
+    ['pending', PaymentErrorCodes.NOT_CONFIRMED],
+    ['requires_more', PaymentErrorCodes.REQUIRES_ACTION],
+    ['canceled', PaymentErrorCodes.SESSION_CANCELED],
+  ] as const)('refuses a %s session with a conflict and its own code', async ([status, code], { service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+
+    vi.spyOn(
+      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
+      'authorizePaymentSession',
+    ).mockResolvedValueOnce({ outcome: 'not_authorized', sessionStatus: status })
+
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toMatchObject({
+      cause: { type: ErrorTypes.CONFLICT, code },
+    })
     expect(await service.read.orders(container)).toEqual([])
   })
 

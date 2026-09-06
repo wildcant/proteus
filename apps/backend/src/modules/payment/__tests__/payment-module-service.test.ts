@@ -1,7 +1,7 @@
 import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import { PAYMENT_ATTEMPT_IN_FLIGHT } from '@core/errors/payment-attempt-code.js'
 import type { AuthorizePaymentSessionResult, PaymentDTO } from '@core/types/payment/common.js'
+import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -479,7 +479,7 @@ test.describe('PaymentModuleService', () => {
           service.replacePaymentSession(collection.id, dto.generate.createPaymentSession()),
         ).rejects.toMatchObject({
           type: ErrorTypes.CONFLICT,
-          code: PAYMENT_ATTEMPT_IN_FLIGHT,
+          code: PaymentErrorCodes.ATTEMPT_IN_FLIGHT,
           message: 'The payment could not be processed.',
         })
 

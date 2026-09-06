@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto'
 import type { Page } from '@playwright/test'
 import { db, pollDatabase } from '@proteus/testing'
-import { PAYMENT_AWAITING_AUTHORIZATION } from 'backend/test'
+import { PaymentErrorCodes } from 'backend/test'
 import { sql } from 'drizzle-orm'
 import type { FileRouteTypes } from '../../src/routeTree.gen'
 import {
@@ -74,7 +74,7 @@ test.describe('Checkout — a payment that is still settling', () => {
     // 2 · The red→green assertion. Before the fix this was a 500 carrying `unexpected_state` and
     // the decline's own message; a caller had nothing to branch on. `code` is an authored constant
     // imported from the backend, so a typo on either side fails rather than passes.
-    expect(await response.json()).toMatchObject({ code: PAYMENT_AWAITING_AUTHORIZATION })
+    expect(await response.json()).toMatchObject({ code: PaymentErrorCodes.AWAITING_AUTHORIZATION })
     expect(response.status()).toBe(409)
 
     // 3 · No order. At the database rather than through the absent confirmation page: the workflow
