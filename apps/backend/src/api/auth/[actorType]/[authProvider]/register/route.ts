@@ -1,4 +1,5 @@
 import { generateJwtTokenForAuthIdentity, getAuthJwtConfig } from '@core/auth/utils/generate-jwt-token.js'
+import { validateScopeProviderAssociation } from '@core/auth/utils/validate-scope-provider-association.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
@@ -6,9 +7,12 @@ import { AuthBody, AuthParams, AuthTokenResponse } from '@proteus/http-schemas/a
 import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 
 export const PostInput = { body: AuthBody, params: AuthParams }
+export const PostMiddlewares = [validateScopeProviderAssociation()] as const
 export const PostOutput = AuthTokenResponse
 
-export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
+export const POST = async (
+  req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
+): Promise<HttpResult<typeof PostOutput>> => {
   const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
   const { actorType, authProvider } = req.params
 

@@ -2,9 +2,10 @@ import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { IdParams, StoreSavedMethodListResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
-import { requestingCustomer } from '../../wallet.js'
+import { requireCustomer } from '../../../middlewares.js'
 
 export const PostInput = { params: IdParams }
+export const PostMiddlewares = [requireCustomer()] as const
 export const PostOutput = StoreSavedMethodListResponse
 
 /**
@@ -18,8 +19,10 @@ export const PostOutput = StoreSavedMethodListResponse
  * it — and a client that had to refetch to learn its own new order would render the old one for
  * a round trip.
  */
-export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const customer = await requestingCustomer(req)
+export const POST = async (
+  req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
+): Promise<HttpResult<typeof PostOutput>> => {
+  const customer = req.customer
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   await paymentService.setDefaultSavedMethod(customer.id, req.params.id)

@@ -3,7 +3,6 @@ import { Tags } from '@framework/http/types.js'
 import * as addressByIdRoutes from './me/addresses/[id]/route.js'
 import * as addressRoutes from './me/addresses/route.js'
 import * as meRoutes from './me/route.js'
-import { validateAddressOwnership } from './middlewares.js'
 
 export default [
   {
@@ -39,7 +38,7 @@ export default [
     matcher: '/store/customers/me/addresses/:id',
     handler: addressByIdRoutes.PATCH,
     input: addressByIdRoutes.PatchInput,
-    middlewares: [validateAddressOwnership()],
+    middlewares: addressByIdRoutes.PatchMiddlewares,
     operationId: 'updateStoreCustomerAddress',
     summary: 'Update an address in the address book',
     tags: [Tags.CUSTOMERS],
@@ -50,7 +49,7 @@ export default [
     matcher: '/store/customers/me/addresses/:id',
     handler: addressByIdRoutes.DELETE,
     input: addressByIdRoutes.DeleteInput,
-    middlewares: [validateAddressOwnership()],
+    middlewares: addressByIdRoutes.DeleteMiddlewares,
     operationId: 'deleteStoreCustomerAddress',
     summary: 'Remove an address from the address book',
     tags: [Tags.CUSTOMERS],

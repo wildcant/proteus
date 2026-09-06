@@ -1,3 +1,5 @@
+import { validateScopeProviderAssociation } from '@core/auth/utils/validate-scope-provider-association.js'
+import { validateToken } from '@core/auth/utils/validate-token.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
@@ -5,15 +7,14 @@ import { AuthParams, UpdatePasswordBody, UpdatePasswordResponse } from '@proteus
 import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 
 export const PostInput = { body: UpdatePasswordBody, params: AuthParams }
+export const PostMiddlewares = [validateScopeProviderAssociation(), validateToken()] as const
 export const PostOutput = UpdatePasswordResponse
 
-export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
+export const POST = async (
+  req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
+): Promise<HttpResult<typeof PostOutput>> => {
   const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
   const { authProvider } = req.params
-
-  if (!req.authContext) {
-    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
-  }
 
   const entityId = req.authContext.actorId
 

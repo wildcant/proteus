@@ -20,7 +20,8 @@ type InferQuery<T> = T extends ZodSchema
     }
   : T
 
-export type HttpRequest<T = object> = {
+/** Everything on a request that does not depend on which middlewares ran. */
+type RequestFields<T> = {
   params: T extends { params: infer P } ? InferField<P> : Record<string, string>
   query: Record<string, unknown>
   validatedQuery: T extends { query: infer Q } ? InferQuery<Q> : Record<string, unknown>
@@ -47,8 +48,42 @@ export type HttpRequest<T = object> = {
   scope: AwilixContainer
   headers: Record<string, string>
   authContext?: AuthContext
-  pricingContext?: { currencyCode: string }
 }
+
+/**
+ * A middleware, and what it puts on the request.
+ *
+ * `Adds` is enforced in both directions. The return type makes the middleware prove it produces
+ * the field, so `attachCustomer` cannot forget to set one. The phantom `adds` — which never exists
+ * at runtime — lets a route recover that type from a middleware list, so a handler reads
+ * `req.customer` only where the middleware that sets it is declared.
+ */
+export type MiddlewareFunction<Adds = object> = ((
+  req: RequestFields<object>,
+) => (RequestFields<object> & Adds) | Promise<RequestFields<object> & Adds>) & {
+  readonly adds?: Adds
+}
+
+type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never
+
+/**
+ * Everything a middleware list contributes, intersected — two middlewares each add their own
+ * field, so the handler sees both. An empty list contributes nothing.
+ */
+export type ContextOf<M extends readonly MiddlewareFunction<object>[]> = UnionToIntersection<
+  { [K in keyof M]: M[K] extends MiddlewareFunction<infer A> ? A : object }[number]
+>
+
+/**
+ * The request a handler receives: its validated input, plus whatever its middlewares added.
+ *
+ * The second parameter is the route's own `*Middlewares` const — `HttpRequest<typeof PostInput,
+ * typeof PostMiddlewares>` — so the request type is derived from the list rather than asserted
+ * next to it, and the two cannot drift. The definition then forwards that same const as its
+ * `middlewares`, alongside the `input` and `output` it already forwards.
+ */
+export type HttpRequest<T = object, M extends readonly MiddlewareFunction<object>[] = []> = RequestFields<T> &
+  ContextOf<M>
 
 export type HttpResult<T = unknown> = {
   status: number

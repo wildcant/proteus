@@ -4,10 +4,12 @@ import type { AccountHolderDTO, IPaymentModuleService } from '@core/types/index.
 import { Modules } from '@core/utils/index.js'
 import { CreatePaymentSession, IdParams, StoreCreatePaymentSessionResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
-import { ensureAccountHolders, requestingCustomer } from '../../../payment-methods/wallet.js'
+import { attachCustomer } from '../../../middlewares.js'
 
 export const PostInput = { params: IdParams, body: CreatePaymentSession }
+export const PostMiddlewares = [attachCustomer()] as const
 export const PostOutput = StoreCreatePaymentSessionResponse
+type PostRequest = HttpRequest<typeof PostInput, typeof PostMiddlewares>
 
 /**
  * What the shopper said about their wallet, read from the adapter's own `data` blob.
@@ -38,7 +40,7 @@ function walletChoiceOf(data: Record<string, unknown> | undefined) {
  * stranger's saved card, and a session's context is stored and served back, so only an id and the
  * gateway's own reference go into it.
  */
-export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
+export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutput>> => {
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
   const collection = await paymentService.retrievePaymentCollection(req.params.id)
 
@@ -84,13 +86,22 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
  *
  * Nothing is the guest's answer, and it is reached two ways: no session at all, and a session
  * belonging to a Customer row with `hasAccount: false` — which is every guest checkout Proteus
- * has ever written. Neither creates anything at the gateway.
+ * has ever written. Neither creates anything at the gateway, which is why the gate is the account
+ * rather than the row `attachCustomer()` found.
  */
-async function accountHolderFor(req: HttpRequest, providerId: string): Promise<AccountHolderDTO | undefined> {
-  if (!req.authContext?.actorId) return undefined
+async function accountHolderFor(
+  req: HttpRequest<object, typeof PostMiddlewares>,
+  providerId: string,
+): Promise<AccountHolderDTO | undefined> {
+  const customer = req.customer
+  if (!customer?.hasAccount) return undefined
 
-  const customer = await requestingCustomer(req)
-  const holders = await ensureAccountHolders(req, customer)
+  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
+  const holders = await paymentService.ensureAccountHolders({
+    customerId: customer.id,
+    email: customer.email,
+    name: [customer.firstName, customer.lastName].filter(Boolean).join(' ') || null,
+  })
 
   return holders.find((holder) => holder.providerId === providerId)
 }

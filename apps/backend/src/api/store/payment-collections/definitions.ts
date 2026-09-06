@@ -22,6 +22,7 @@ export default [
     handler: paymentSessionRoutes.POST,
     auth: 'optional',
     input: paymentSessionRoutes.PostInput,
+    middlewares: paymentSessionRoutes.PostMiddlewares,
     operationId: 'createStorePaymentSession',
     summary: 'Create a payment session',
     tags: [Tags.PAYMENT_COLLECTIONS],

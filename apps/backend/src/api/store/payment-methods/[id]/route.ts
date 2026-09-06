@@ -2,9 +2,10 @@ import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { DeleteResponse, IdParams } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
-import { requestingCustomer } from '../wallet.js'
+import { requireCustomer } from '../../middlewares.js'
 
 export const DeleteInput = { params: IdParams }
+export const DeleteMiddlewares = [requireCustomer()] as const
 export const DeleteOutput = DeleteResponse
 
 /**
@@ -17,8 +18,10 @@ export const DeleteOutput = DeleteResponse
  *
  * No Account Holder is created here — a shopper with nothing stored has nothing to remove.
  */
-export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
-  const customer = await requestingCustomer(req)
+export const DELETE = async (
+  req: HttpRequest<typeof DeleteInput, typeof DeleteMiddlewares>,
+): Promise<HttpResult<typeof DeleteOutput>> => {
+  const customer = req.customer
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   await paymentService.deleteSavedMethod(customer.id, req.params.id)
