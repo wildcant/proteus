@@ -187,3 +187,4 @@ Future Infra TODOs
 Future nice to have TODOs
 - per item fullfilment and shipment.
 - fix imports in backend to use alias.
+- make sure all routes follow the rules defined at apps/backend/src/api/README.md

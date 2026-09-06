@@ -1,4 +1,4 @@
-import type { SavedMethodDTO } from '../../core/types/payment/common.js'
+import type { SavedMethodDTO } from '../../../core/types/payment/common.js'
 
 /**
  * The wallet's order: the default first, then most recently stored.

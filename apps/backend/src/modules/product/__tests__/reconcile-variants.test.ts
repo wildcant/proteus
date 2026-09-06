@@ -1,6 +1,6 @@
 import { test } from '@tests/setup/test-extend.js'
-import type { CombinableOption } from './option-combinations.js'
-import { planVariantReconciliation, type ReconcilableVariant } from './reconcile-variants.js'
+import type { CombinableOption } from '../utils/option-combinations.js'
+import { planVariantReconciliation, type ReconcilableVariant } from '../utils/reconcile-variants.js'
 
 const option = (id: string, title: string, values: Array<[string, string]>): CombinableOption => ({
   id,

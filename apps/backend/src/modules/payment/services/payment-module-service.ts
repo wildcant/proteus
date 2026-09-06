@@ -35,7 +35,6 @@ import type {
 } from '../../../core/types/payment/mutations.js'
 import type { IPaymentModuleService } from '../../../core/types/payment/service.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
-import { idempotencyKeyFor } from '../idempotency-keys.js'
 import type { AccountHolderRepository } from '../repositories/account-holder.js'
 import type { CaptureRepository } from '../repositories/capture.js'
 import type { PaymentRepository } from '../repositories/payment.js'
@@ -43,7 +42,8 @@ import type { PaymentCollectionRepository } from '../repositories/payment-collec
 import type { PaymentSessionRepository } from '../repositories/payment-session.js'
 import type { RefundRepository } from '../repositories/refund.js'
 import type { RefundReasonRepository } from '../repositories/refund-reason.js'
-import { orderSavedMethods } from '../saved-methods.js'
+import { idempotencyKeyFor } from '../utils/idempotency-keys.js'
+import { orderSavedMethods } from '../utils/saved-methods.js'
 import type { PaymentProviderService } from './payment-provider-service.js'
 
 /**

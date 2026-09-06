@@ -1,6 +1,6 @@
 import type { SavedMethodDTO } from '@core/types/payment/common.js'
 import { expect, test } from 'vitest'
-import { orderSavedMethods } from '../saved-methods.js'
+import { orderSavedMethods } from '../utils/saved-methods.js'
 
 /**
  * The wallet's order, on its own.

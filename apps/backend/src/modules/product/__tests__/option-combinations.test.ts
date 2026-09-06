@@ -7,7 +7,7 @@ import {
   combinationKey,
   countCombinations,
   findCombination,
-} from './option-combinations.js'
+} from '../utils/option-combinations.js'
 
 const option = (id: string, title: string, values: Array<[string, string]>): CombinableOption => ({
   id,
