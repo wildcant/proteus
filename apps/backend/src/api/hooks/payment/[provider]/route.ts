@@ -2,7 +2,6 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IPaymentModuleService } from '@core/types/index.js'
 import type { Logger } from '@core/types/logger.js'
 import type { PaymentActions } from '@core/types/payment/common.js'
-import type { DeferredTasks } from '@core/utils/deferred-tasks.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { ProviderParams, WebhookReceivedResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
@@ -33,7 +32,6 @@ export const PostOutput = WebhookReceivedResponse
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const logger = req.scope.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
-  const deferred = req.scope.resolve<DeferredTasks>(ContainerRegistrationKeys.DEFERRED_TASKS)
 
   // The provider verifies a signature over these bytes. Without them there is nothing to verify
   // against, and passing a re-serialisation of the parsed body would only fake having them.
@@ -52,36 +50,27 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
 
   logger.info(`Webhook from "${req.params.provider}": action="${action}", sessionId="${data?.sessionId}"`)
 
-  // Filtered before anything is scheduled, not inside the deferred task. An event this route does
-  // not act on — an event type the dashboard has enabled, another integration sharing the Stripe
-  // account, an intent still settling — costs one acknowledgement and nothing else.
+  // An event this route does not act on — an event type the dashboard has enabled, another
+  // integration sharing the Stripe account, an intent still settling — costs one acknowledgement
+  // and nothing else. Not even a read.
   const sessionId = data?.sessionId
   if (ACTION_HANDLING[action] === 'skip' || !sessionId) {
     return { status: 200, json: { received: true } }
   }
 
-  // Acknowledged now, processed later. A webhook routinely overtakes the shopper's own checkout
-  // request — Stripe sends `payment_intent.succeeded` the moment the browser confirms, while
-  // `completeCart` is still creating the order — and processing it immediately races that. The
-  // delay is what the reference implementation gets from an event bus; the divergence, and why
-  // there is no distributed lock behind it, is recorded in the spec.
-  //
-  // `req.waitUntil` is what keeps the work alive on workerd, which cancels pending async work as
-  // soon as this handler's response is delivered. Without it the gateway gets a 200 and nothing
-  // is captured — and it stops redelivering, because a 200 is what it was waiting for.
-  deferred.run(
-    `payment-webhook:${sessionId}`,
-    () => processAuthorizedSession(paymentService, action, sessionId),
-    req.waitUntil,
-  )
+  // TODO(events): processed inline, so a webhook that overtakes the shopper's own checkout —
+  // Stripe sends `payment_intent.succeeded` the moment the browser confirms, while `completeCart`
+  // is still creating the order — races it. Delaying and retrying belongs to the event bus, which
+  // is why the interim runner that did it here was dropped rather than merged.
+  await processAuthorizedSession(paymentService, action, sessionId)
 
   return { status: 200, json: { received: true } }
 }
 
 /**
- * Runs after the gateway has already been answered, so nothing it throws reaches the gateway —
- * `DeferredTasks` retries it and then logs. It has to be safe to run twice for the same reason:
- * Stripe redelivers, and a redelivery lands here as a second, independent run.
+ * Has to be safe to run twice: Stripe redelivers until it is acknowledged, and a redelivery lands
+ * here as a second, independent run. Anything this throws reaches the gateway as a non-2xx, which
+ * is what makes it redeliver — the only retry there is until the event bus brings its own.
  */
 async function processAuthorizedSession(
   paymentService: IPaymentModuleService,
@@ -99,7 +88,7 @@ async function processAuthorizedSession(
   // acknowledged, and `authorizePaymentSession` captures the payment itself when the intent
   // already reports a completed charge — so by here the capture may well have happened.
   // Capturing again cannot take the money twice (`capturePayment` refuses), but it would raise,
-  // and a raise here costs three retries for something that already worked. A capture takes the
+  // and a raise here turns a delivery that already worked into a redelivery. A capture takes the
   // whole authorization, so `capturedAt` settles it: it is set by the only capture there can be.
   if (action === 'captured' && !authorization.payment.capturedAt) {
     await paymentService.capturePayment({ paymentId: authorization.payment.id })

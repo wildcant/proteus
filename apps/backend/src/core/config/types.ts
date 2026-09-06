@@ -1,5 +1,4 @@
 import type { ActorType } from '@proteus/http-schemas/auth'
-import type { DeferredTasksConfig } from '../utils/deferred-tasks.js'
 
 export type HttpConfig = {
   authMethodsPerActor: Partial<Record<ActorType, string[]>>
@@ -22,8 +21,6 @@ export type WorkflowsConfig = {
 
 export type ProjectConfig = {
   http: HttpConfig
-  /** How long incoming webhooks wait before they are processed, and how often a failure is retried. */
-  webhooks: DeferredTasksConfig
   workflows: WorkflowsConfig
 }
 
@@ -35,7 +32,6 @@ export type ConfigModule = {
 export type InputConfig = {
   projectConfig?: {
     http?: Partial<HttpConfig>
-    webhooks?: Partial<DeferredTasksConfig>
     workflows?: Partial<WorkflowsConfig>
   }
   featureFlags?: Record<string, boolean | string | Record<string, boolean>>

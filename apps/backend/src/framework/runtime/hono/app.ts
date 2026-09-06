@@ -1,6 +1,6 @@
 import type { PreparedRoute } from '@server/ports.js'
 import type { AwilixContainer } from 'awilix'
-import { type Context, Hono } from 'hono'
+import { Hono } from 'hono'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import qs from 'qs'
@@ -21,17 +21,6 @@ const utf8 = new TextDecoder('utf8')
 function parseJsonBody(rawBody: Uint8Array): unknown {
   try {
     return JSON.parse(utf8.decode(rawBody))
-  } catch {
-    return undefined
-  }
-}
-
-/** Hono throws on `c.executionCtx` when the platform supplies none, so this is a `try`, not a
- *  `?.` — and the absence is legitimate: it is what running under Node looks like. */
-function executionContextOf(c: Context): ((work: Promise<unknown>) => void) | undefined {
-  try {
-    const executionCtx = c.executionCtx
-    return (work) => executionCtx.waitUntil(work)
   } catch {
     return undefined
   }
@@ -93,11 +82,6 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
         headers[key] = value
       })
 
-      // Read through `c.executionCtx` rather than a captured global: it is per-request, and on a
-      // platform that does not provide one (the test harness, `app.request(...)`) Hono throws
-      // rather than returning undefined.
-      const waitUntil = executionContextOf(c)
-
       logger.http(`${c.req.method} ${url.pathname}`)
       try {
         const result = await route.handler({
@@ -106,7 +90,6 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
           validatedQuery: {},
           body,
           rawBody,
-          waitUntil,
           files,
           headers,
           scope: container.createScope(),

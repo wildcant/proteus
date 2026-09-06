@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1787590460480,
+      "when": 1788715428872,
       "tag": "0000_create_payment_tables",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1788395514109,
-      "tag": "0001_link_account_holder_to_customer",
       "breakpoints": true
     }
   ]

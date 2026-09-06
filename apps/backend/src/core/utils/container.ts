@@ -5,5 +5,4 @@ export const ContainerRegistrationKeys = {
   LOGGER: 'logger',
   LINK: 'link',
   SCHEDULER: 'scheduler',
-  DEFERRED_TASKS: 'deferredTasks',
 } as const

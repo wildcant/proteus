@@ -1,2 +1,0 @@
-ALTER TABLE "account_holder" ADD COLUMN "customer_id" text;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_account_holder_provider_customer" ON "account_holder" USING btree ("provider_id","customer_id") WHERE deleted_at IS NULL;

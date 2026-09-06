@@ -8,13 +8,9 @@ export const accountHolderTable = pgTable(
   {
     id: text().primaryKey().default(sql`CONCAT('acchld_', REPLACE(gen_random_uuid()::text, '-', ''))`),
     /**
-     * The Proteus Customer this holder stands for, and the only key anything looks it up by.
-     *
-     * Nullable because `externalId` is what identifies the holder *at the gateway* and a holder
-     * can exist without a Proteus account behind it — an admin-created one, a legacy row. The
-     * unique index below is the invariant that matters: one account holder per customer per
-     * provider, enforced where two concurrent checkouts collide rather than in a read-then-write
-     * that both of them pass.
+     * Nullable because `externalId` identifies the holder at the gateway, so one can exist
+     * without a Proteus account behind it. The unique index below carries the real invariant:
+     * one holder per customer per provider, enforced where concurrent checkouts collide.
      */
     customerId: text(),
     data: jsonb().$type<Record<string, unknown>>().notNull().default({}),
