@@ -8,7 +8,10 @@
 import type { AdminCreateProductOptionValuesItemMetadata } from './adminCreateProductOptionValuesItemMetadata.ts';
 
 export type AdminCreateProductOptionValuesItem = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   value: string;
   /** @minimum 0 */
   rank?: number;

@@ -7,8 +7,14 @@
  */
 
 export interface VerificationConfirmBody {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 512
+     */
   code: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   codeProvider?: string;
 }

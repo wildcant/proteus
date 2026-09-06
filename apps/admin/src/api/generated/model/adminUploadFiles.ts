@@ -7,5 +7,6 @@
  */
 
 export interface AdminUploadFiles {
+  /** @maxItems 20 */
   files: Blob[];
 }

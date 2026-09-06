@@ -7,6 +7,9 @@
  */
 
 export interface AdminUpdateServiceZone {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   name?: string;
 }

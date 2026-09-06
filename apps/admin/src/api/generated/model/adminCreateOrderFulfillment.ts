@@ -10,14 +10,25 @@ import type { AdminCreateOrderFulfillmentData } from './adminCreateOrderFulfillm
 import type { AdminCreateOrderFulfillmentItemsItem } from './adminCreateOrderFulfillmentItemsItem.ts';
 
 export interface AdminCreateOrderFulfillment {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   providerId: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   locationId: string;
-  /** @minItems 1 */
+  /**
+     * @minItems 1
+     * @maxItems 100
+     */
   items: AdminCreateOrderFulfillmentItemsItem[];
   address: AdminCreateOrderFulfillmentAddress;
+  /** @maxLength 64 */
   shippingOptionId?: string;
   data?: AdminCreateOrderFulfillmentData;
+  /** @maxLength 8192 */
   metadata?: string;
 }

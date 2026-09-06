@@ -23,7 +23,7 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-JOBS="typecheck lint conventions deps openapi test admin"
+JOBS="typecheck lint conventions deps openapi test admin schemas"
 
 job_typecheck() { npm run typecheck; }
 
@@ -53,10 +53,16 @@ job_conventions() {
   return $code
 }
 
-# Spectral against both committed specs. --fail-severity=error is explicit and deliberately
-# unlike job_lint's --error-on-warnings: two rules are still `warn` until the request bodies
-# they cover are bounded, and they must not fail the gate yet.
+# Spectral against both committed specs. Every rule the ruleset declares is `error`, and the
+# specs report nothing at any severity — so --fail-severity=error currently behaves the same as
+# job_lint's --error-on-warnings. It stays explicit because the inherited `spectral:oas` rules
+# keep their own severities, and one of those firing should not fail the gate.
 job_openapi() { npm run --workspace=backend --silent check:openapi; }
+
+# The bounded primitives in @proteus/http-schemas. The package had no tests before the request
+# bodies were bounded; this is where the chosen ceilings are written down as behaviour rather
+# than as configuration, so a change to one is a failing test rather than a silent widening.
+job_schemas() { npm run --workspace=@proteus/http-schemas test; }
 
 job_deps() {
   local code=0
@@ -110,6 +116,7 @@ label_of() {
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;
     admin) echo "Admin unit tests" ;;
+    schemas) echo "Request-schema bound tests" ;;
   esac
 }
 

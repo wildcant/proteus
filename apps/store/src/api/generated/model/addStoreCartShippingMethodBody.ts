@@ -8,7 +8,10 @@
 import type { AddStoreCartShippingMethodBodyData } from './addStoreCartShippingMethodBodyData.ts';
 
 export type AddStoreCartShippingMethodBody = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   shippingOptionId: string;
   data?: AddStoreCartShippingMethodBodyData;
 };

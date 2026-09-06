@@ -7,5 +7,6 @@
  */
 
 export type AdminCreateProductVariantPricesItem = {
+  /** @pattern ^-?\d{1,12}(\.\d{1,8})?$ */
   amount: string;
 };

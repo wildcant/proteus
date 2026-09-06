@@ -7,7 +7,10 @@
  */
 
 export type AddStoreCartLineItemBody = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   variantId: string;
   /** @exclusiveMinimum 0 */
   quantity: number;

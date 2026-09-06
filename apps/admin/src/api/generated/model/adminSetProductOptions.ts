@@ -8,5 +8,6 @@
 import type { AdminSetProductOptionsOptionsItem } from './adminSetProductOptionsOptionsItem.ts';
 
 export interface AdminSetProductOptions {
+  /** @maxItems 20 */
   options: AdminSetProductOptionsOptionsItem[];
 }

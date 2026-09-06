@@ -7,9 +7,16 @@
  */
 
 export interface AdminCreateRefundReason {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   label: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   code: string;
+  /** @maxLength 4000 */
   description?: string;
 }

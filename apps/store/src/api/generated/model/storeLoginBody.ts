@@ -8,6 +8,9 @@
 
 export interface StoreLoginBody {
   email: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
   password: string;
 }

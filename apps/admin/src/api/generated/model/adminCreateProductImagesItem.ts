@@ -7,6 +7,9 @@
  */
 
 export type AdminCreateProductImagesItem = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 2048
+     */
   url: string;
 };

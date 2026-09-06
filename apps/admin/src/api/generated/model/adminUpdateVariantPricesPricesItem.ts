@@ -7,6 +7,8 @@
  */
 
 export type AdminUpdateVariantPricesPricesItem = {
+  /** @maxLength 64 */
   id?: string;
+  /** @pattern ^-?\d{1,12}(\.\d{1,8})?$ */
   amount: string;
 };

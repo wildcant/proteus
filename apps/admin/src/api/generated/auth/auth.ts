@@ -15,6 +15,7 @@ import type {
   UpdatePasswordResponse,
   VerificationConfirmBody,
   VerificationConfirmResponse,
+  VerificationRequestBody,
   VerificationRequestResponse
 } from '../model';
 
@@ -98,12 +99,12 @@ export const authTokenRefresh = (
  * @summary Request a verification code
  */
 export const authVerificationRequest = (
-    verificationRequestResponse?: BodyType<VerificationRequestResponse>,
+    verificationRequestBody?: BodyType<VerificationRequestBody>,
  ) => {
       return fetcher<VerificationRequestResponse>(
       {url: `/auth/verification/request`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: verificationRequestResponse
+      data: verificationRequestBody
     },
       );
     }

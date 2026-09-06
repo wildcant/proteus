@@ -7,11 +7,16 @@
  */
 
 export type AdminCreateProductOptionsItem = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   optionId: string;
   /**
      * @minItems 1
+     * @maxItems 100
      * @items.minLength 1
+     * @items.maxLength 64
      */
   valueIds: string[];
 };

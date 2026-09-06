@@ -14,7 +14,10 @@ export type AdminCreateServiceZoneGeoZonesItem = {
      * @maxLength 2
      */
   countryCode: string;
+  /** @maxLength 64 */
   provinceCode?: string;
+  /** @maxLength 255 */
   city?: string;
+  /** @maxLength 4000 */
   postalExpression?: string;
 };

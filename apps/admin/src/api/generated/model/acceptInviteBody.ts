@@ -7,10 +7,19 @@
  */
 
 export type AcceptInviteBody = {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 512
+     */
   token: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   name: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
   password: string;
 };

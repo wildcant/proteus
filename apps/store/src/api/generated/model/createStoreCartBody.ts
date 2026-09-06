@@ -9,5 +9,6 @@ import type { CreateStoreCartBodyItemsItem } from './createStoreCartBodyItemsIte
 
 export type CreateStoreCartBody = {
   email?: string;
+  /** @maxItems 100 */
   items?: CreateStoreCartBodyItemsItem[];
 };

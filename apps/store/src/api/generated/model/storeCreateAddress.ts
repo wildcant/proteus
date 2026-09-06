@@ -7,27 +7,60 @@
  */
 
 export interface StoreCreateAddress {
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   addressName?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   company?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   firstName?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   lastName?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   address2?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 255
+     * @nullable
+     */
   province?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 32
+     * @nullable
+     */
   phone?: string | null;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   address1: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   city: string;
-  /** @minLength 2 */
+  /**
+     * @minLength 2
+     * @maxLength 2
+     */
   countryCode: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 32
+     */
   postalCode: string;
   isDefault?: boolean;
 }

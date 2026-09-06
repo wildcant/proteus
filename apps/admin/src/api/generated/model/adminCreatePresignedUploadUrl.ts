@@ -8,9 +8,15 @@
 import type { AdminCreatePresignedUploadUrlAccess } from './adminCreatePresignedUploadUrlAccess.ts';
 
 export interface AdminCreatePresignedUploadUrl {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   originalName: string;
-  /** @pattern ^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}\/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}$ */
+  /**
+     * @maxLength 255
+     * @pattern ^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}\/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}$
+     */
   mimeType: string;
   /** @exclusiveMinimum 0 */
   size: number;

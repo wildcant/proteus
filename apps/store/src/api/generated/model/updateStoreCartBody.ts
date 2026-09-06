@@ -10,7 +10,9 @@ import type { UpdateStoreCartBodyShippingAddress } from './updateStoreCartBodySh
 
 export type UpdateStoreCartBody = {
   email?: string;
+  /** @maxLength 255 */
   firstName?: string;
+  /** @maxLength 255 */
   lastName?: string;
   shippingAddress?: UpdateStoreCartBodyShippingAddress;
   billingAddress?: UpdateStoreCartBodyBillingAddress;

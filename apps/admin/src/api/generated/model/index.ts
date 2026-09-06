@@ -217,4 +217,6 @@ export * from './updatePasswordBody.ts';
 export * from './updatePasswordResponse.ts';
 export * from './verificationConfirmBody.ts';
 export * from './verificationConfirmResponse.ts';
+export * from './verificationRequestBody.ts';
+export * from './verificationRequestBodyMetadata.ts';
 export * from './verificationRequestResponse.ts';

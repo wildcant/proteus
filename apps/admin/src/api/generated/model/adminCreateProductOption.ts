@@ -10,10 +10,14 @@ import type { AdminCreateProductOptionRenderAs } from './adminCreateProductOptio
 import type { AdminCreateProductOptionValuesItem } from './adminCreateProductOptionValuesItem.ts';
 
 export interface AdminCreateProductOption {
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   title: string;
   renderAs?: AdminCreateProductOptionRenderAs;
   /** @nullable */
   metadata?: AdminCreateProductOptionMetadata;
+  /** @maxItems 100 */
   values?: AdminCreateProductOptionValuesItem[];
 }
