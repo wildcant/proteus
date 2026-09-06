@@ -5,11 +5,11 @@ import { z } from 'zod'
 import { useLogout } from '#/features/auth/api/auth'
 import type { SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
-import { CheckoutAddress } from '../checkout-address'
-import { useCompleteOrder } from '../payment/complete-order'
-import { checkoutReturnUrl } from '../payment/return-url'
-import { usePlaceOrder } from '../payment/use-place-order'
+import { CheckoutAddress } from '../utils/checkout-address'
+import { checkoutReturnUrl } from '../utils/payment/return-url'
 import type { CheckoutData } from './use-checkout-data'
+import { useCompleteOrder } from './use-complete-order'
+import { usePlaceOrder } from './use-place-order'
 
 const checkoutSchema = z.object({
   email: z.email('Email is required'),

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef } from 'react'
-import type { Confirm } from './types'
+import type { Confirm } from '../types/payment'
 
 /**
  * What the shopper decided about their wallet, registered from inside the selector and read from

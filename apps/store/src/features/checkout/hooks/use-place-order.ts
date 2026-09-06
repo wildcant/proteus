@@ -1,9 +1,9 @@
 import type { CartAddressInputBody } from '@proteus/http-schemas/store'
 import { useCallback } from 'react'
 import { useUpdateCart } from '../api/checkout'
-import { usePaymentController } from './payment-controller'
-import { resolvePaymentAdapter } from './registry'
-import type { ConfirmOutcome } from './types'
+import type { ConfirmOutcome } from '../types/payment'
+import { resolvePaymentAdapter } from '../utils/payment/registry'
+import { usePaymentController } from './use-payment-controller'
 import { useOpenPaymentSession } from './use-payment-session'
 
 /**

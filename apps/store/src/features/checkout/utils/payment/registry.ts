@@ -1,5 +1,5 @@
+import type { StorePaymentAdapter } from '../../types/payment'
 import { stripeAdapter } from './adapters/stripe/adapter'
-import type { StorePaymentAdapter } from './types'
 
 /**
  * Every client payment adapter the storefront has, keyed by provider identifier.

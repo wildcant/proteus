@@ -1,12 +1,13 @@
 import { cn, FieldLabel, RadioGroup, RadioGroupItem } from '@proteus/ui'
 import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { AcceptedNetworks } from '#/components/payment-network'
+import { PaymentRow, paymentRowLabelVariants } from '#/components/payment-row'
 import { SavedCardRow, WalletSkeleton } from '#/features/account/components/saved-card-row'
-import { isUsable } from '#/features/account/payment-methods/expiry'
-import { ROW_CLASS, ROW_LABEL_CLASS, ROW_SELECTED_CLASS, savedMethodName } from '#/features/account/payment-methods/row'
-import { usePaymentControllerContext } from './payment-controller'
+import { isUsable } from '#/features/account/utils/expiry'
+import { savedMethodName } from '#/lib/card-networks'
+import { usePaymentControllerContext } from '../../hooks/use-payment-controller'
+import type { PaymentAdapterContext, StorePaymentAdapter } from '../../types/payment'
 import { SaveMethodConsent } from './save-method-consent'
-import type { PaymentAdapterContext, StorePaymentAdapter } from './types'
 
 /**
  * The provider-neutral payment method selector.
@@ -219,16 +220,16 @@ function NewMethodRow({ selected }: { selected: boolean }) {
   const radioId = useId()
 
   return (
-    // The same envelope-plus-label structure a saved card row uses, rather than `ROW_CLASS` on the
-    // label itself: `FieldLabel` ships `w-fit`, so a row built that way stops at its own text and
-    // the network strip lands short of where every other row's right edge is.
-    <div className={cn(ROW_CLASS, selected && ROW_SELECTED_CLASS)} data-testid="new-method-row">
-      <FieldLabel htmlFor={radioId} className={cn(ROW_LABEL_CLASS, 'cursor-pointer')}>
+    // The same envelope-plus-label structure a saved card row uses, rather than the row classes on
+    // the label itself: `FieldLabel` ships `w-fit`, so a row built that way stops at its own text
+    // and the network strip lands short of where every other row's right edge is.
+    <PaymentRow state={selected ? 'selected' : 'default'} data-testid="new-method-row">
+      <FieldLabel htmlFor={radioId} className={paymentRowLabelVariants()}>
         <RadioGroupItem id={radioId} value={NEW_METHOD_VALUE} aria-label="Use a different card" />
         <span className="min-w-0 flex-1 font-medium text-ink text-sm">Use a different card</span>
         <AcceptedNetworks />
       </FieldLabel>
-    </div>
+    </PaymentRow>
   )
 }
 

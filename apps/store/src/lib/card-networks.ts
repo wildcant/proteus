@@ -23,3 +23,11 @@ export function networkName(brand: string): string {
   const words = brand.replace(/_/g, ' ')
   return words.charAt(0).toUpperCase() + words.slice(1)
 }
+
+/** A card, reduced to what its name depends on. */
+export type NamedMethod = { brand: string; last4: string }
+
+/** `Visa ending in 4242` — the phrase every label and button on a payment row is built from. */
+export function savedMethodName(method: NamedMethod): string {
+  return `${networkName(method.brand)} ending in ${method.last4}`
+}

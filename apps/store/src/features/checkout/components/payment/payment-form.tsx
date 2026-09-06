@@ -1,12 +1,12 @@
 import type { StorePaymentProvider } from '@proteus/http-schemas/store'
-import { cn, FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
+import { FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { Fragment } from 'react'
-import { ROW_CLASS, ROW_OPEN_CLASS, ROW_SELECTED_CLASS } from '#/features/account/payment-methods/row'
+import { PaymentRow } from '#/components/payment-row'
 import { usePaymentProviders } from '#/features/checkout/api/checkout'
 import { withForm } from '#/lib/form-hook'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
 import { checkoutFormOpts } from '../../hooks/use-checkout-form'
-import { resolvePaymentAdapter } from '../../payment/registry'
+import { resolvePaymentAdapter } from '../../utils/payment/registry'
 import { ActiveProviderPanel, SoleProvider, TestOnlyNotice } from './provider-panels'
 
 type PaymentFormProps = Pick<CheckoutData, 'cart' | 'customer'>
@@ -18,9 +18,9 @@ type PaymentFormProps = Pick<CheckoutData, 'cart' | 'customer'>
  * selection, so it carries the ink border. One that opens its own surface is only the way in to
  * the real choice, and the row beneath it is what gets bordered.
  */
-function providerRowState(provider: StorePaymentProvider, chosenId: string): string | false {
-  if (provider.id !== chosenId) return false
-  return resolvePaymentAdapter(provider.id) ? ROW_OPEN_CLASS : ROW_SELECTED_CLASS
+function providerRowState(provider: StorePaymentProvider, chosenId: string): 'default' | 'open' | 'selected' {
+  if (provider.id !== chosenId) return 'default'
+  return resolvePaymentAdapter(provider.id) ? 'open' : 'selected'
 }
 
 /**
@@ -74,7 +74,7 @@ export const PaymentForm = withForm({
                   >
                     {providers.map((provider) => (
                       <Fragment key={provider.id}>
-                        <div className={cn(ROW_CLASS, providerRowState(provider, field.state.value))}>
+                        <PaymentRow state={providerRowState(provider, field.state.value)}>
                           <div className="flex min-w-0 flex-1 flex-col gap-2">
                             <FieldLabel className="flex cursor-pointer items-center gap-3 has-data-checked:bg-transparent">
                               <RadioGroupItem value={provider.id} />
@@ -82,7 +82,7 @@ export const PaymentForm = withForm({
                             </FieldLabel>
                             {!!provider.isTestOnly && <TestOnlyNotice />}
                           </div>
-                        </div>
+                        </PaymentRow>
                         {provider.id === field.state.value && (
                           <ActiveProviderPanel provider={provider} cart={cart} customer={customer} />
                         )}

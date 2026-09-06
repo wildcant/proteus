@@ -1,0 +1,22 @@
+id: mutation-hook-missing-on-error
+language: typescript
+severity: error
+message: This hook has no `onError`, so a failure reaches the caller only as a rejected promise.
+note: 'Add `onError: (...args) => { … onError?.(...args) }`. docs/mutation-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+rule:
+  kind: object
+  inside:
+    kind: arguments
+    inside:
+      pattern: useMutation($$$)
+  not:
+    has:
+      any:
+        - pattern:
+            context: "{ onError: $CB }"
+            selector: pair
+        # `onError` passed straight through as a shorthand property.
+        - kind: shorthand_property_identifier
+          regex: "^onError$"

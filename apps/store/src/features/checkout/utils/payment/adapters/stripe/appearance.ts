@@ -70,11 +70,11 @@ export function appearanceFor(tokens: ThemeTokens): Appearance {
     },
     rules: {
       /**
-       * The accordion item, written as the twin of `ROW_CLASS` in `payment-methods/row.ts`: one
+       * The accordion item, written as the twin of `paymentRowVariants` in `#/components/payment-row`: one
        * hairline, square, 16px in, no shadow, filling on hover. Both sides are the same row drawn
        * in two places we cannot share a stylesheet across, so a change to one is a change to the
        * other — and this side is the constrained one, because the Appearance API decides which
-       * properties exist at all. `min-height` is not among them, which is why `ROW_CLASS` gives
+       * properties exist at all. `min-height` is not among them, which is why the row gives
        * its height to `p-4` rather than to a minimum only one side could honour.
        */
       '.AccordionItem': {

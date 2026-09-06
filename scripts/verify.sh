@@ -50,6 +50,15 @@ job_conventions() {
   # is the step that notices when the two have drifted. --check never writes, so it behaves the same
   # here and under --ci. See scripts/generate-workflow-registry.ts.
   npm run --workspace=backend --silent check:workflow-registry || code=1
+  # Code-shape rules — the mutation-hook contract in docs/mutation-hooks.md today. Spans store and
+  # admin, so it lives at the root like the env check. ast-grep matches the syntax tree rather than
+  # lines: a hook forwarding one callback and swallowing the other reads as compliant to any
+  # line-wise pattern. `--error=unused-suppression` fails the run when an `ast-grep-ignore` outlives
+  # the code it exempted. See ast-grep/README.md for the rule tree.
+  npm run --silent check:code-shape || code=1
+  # The rules' own tests. A rule that stops matching its `invalid` case prints exactly what a clean
+  # codebase prints, and this is what tells the two apart.
+  npm run --silent check:code-shape:test || code=1
   return $code
 }
 
@@ -108,7 +117,7 @@ label_of() {
   case "$1" in
     typecheck) echo "Type checking (backend, store, admin)" ;;
     lint) echo "Lint & format rules (warnings fail)" ;;
-    conventions) echo "Env usage, error & schema conventions" ;;
+    conventions) echo "Env usage, error, schema & code-shape conventions" ;;
     deps) echo "Dependency rules (backend, admin, store)" ;;
     test) echo "Backend API tests" ;;
     admin) echo "Admin unit tests" ;;

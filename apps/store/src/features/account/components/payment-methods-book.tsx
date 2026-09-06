@@ -8,8 +8,8 @@ import {
   useSetDefaultPaymentMethod,
 } from '#/features/account/api/payment-methods'
 import { SavedCardRow, WalletSkeleton } from '#/features/account/components/saved-card-row'
-import { isUsable } from '#/features/account/payment-methods/expiry'
-import { savedMethodName } from '#/features/account/payment-methods/row'
+import { isUsable } from '#/features/account/utils/expiry'
+import { savedMethodName } from '#/lib/card-networks'
 
 /**
  * The account wallet.

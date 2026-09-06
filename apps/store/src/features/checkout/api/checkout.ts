@@ -30,7 +30,7 @@ import { listStorePaymentProviders } from '#/api/generated/payments/payments'
 import { cartQueryKeys } from '#/features/cart/api/cart'
 import { clearCartId, getCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
-import { isStaleMethodError, rethrowAsStaleMethod } from '../payment/session-errors'
+import { isStaleMethodError, rethrowAsStaleMethod } from '../utils/payment/session-errors'
 
 const checkoutQueryKeys = queryKeysFactory('checkout')
 

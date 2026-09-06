@@ -1,0 +1,9 @@
+id: mutation-hook-callback-not-forwarded
+valid:
+  - 'useMutation({ ...rest, onError: (...args) => { toast.add(x); onError?.(...args) } })'
+  - 'useMutation({ ...rest, onSuccess: (...args) => { qc.invalidateQueries(k); onSuccess?.(...args) } })'
+  # Forwarded before other work, not after — position is not the rule.
+  - 'useMutation({ ...rest, onError: (...args) => { onError?.(...args); report(args) } })'
+invalid:
+  - 'useMutation({ ...rest, onError: (...args) => { toast.add(x) } })'
+  - 'useMutation({ ...rest, onSuccess: (...args) => { qc.invalidateQueries(k) } })'

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { CheckoutReturn } from '#/features/checkout/payment/checkout-return'
+import { CheckoutReturn } from '#/features/checkout/components/payment/checkout-return'
 
 /**
  * `/checkout-return`, deliberately a sibling of `/checkout` rather than a child of it.

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useCreatePaymentCollection, useCreatePaymentSession, useRepricePaymentSession } from '../api/checkout'
-import type { CreateSession } from './types'
+import type { CreateSession } from '../types/payment'
 
 /**
  * Opens the payment session, and is the only thing in the payment step that talks to our API.

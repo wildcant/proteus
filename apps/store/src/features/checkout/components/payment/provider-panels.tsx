@@ -2,9 +2,9 @@ import type { StorePaymentProvider } from '@proteus/http-schemas/store'
 import { InfoIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
-import { PaymentMethodSelector } from '../../payment/payment-method-selector'
-import { resolvePaymentAdapter } from '../../payment/registry'
-import type { PaymentAdapterContext } from '../../payment/types'
+import type { PaymentAdapterContext } from '../../types/payment'
+import { resolvePaymentAdapter } from '../../utils/payment/registry'
+import { PaymentMethodSelector } from './payment-method-selector'
 
 /** Shown against a provider that takes no real money, wherever that provider is rendered. */
 export function TestOnlyNotice() {

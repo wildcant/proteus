@@ -24,7 +24,7 @@ const FEATURE_GRAPH = {
 const DECLARED_FEATURES = Object.keys(FEATURE_GRAPH).join('|')
 
 /** The one directory allowed to know a payment gateway's name. See ADR 0010's client mirror. */
-const STRIPE_ADAPTER_PATH = '^src/features/checkout/payment/adapters/stripe/'
+const STRIPE_ADAPTER_PATH = '^src/features/checkout/utils/payment/adapters/stripe/'
 
 /** One rule per feature: it may reach itself and its declared dependencies, and nothing else. */
 const featureGraphRules = Object.entries(FEATURE_GRAPH).map(([feature, allowed]) => ({
@@ -60,9 +60,9 @@ module.exports = {
       name: 'stripe-stays-in-its-adapter',
       comment:
         'The checkout depends on the StorePaymentAdapter contract, never on Stripe. Every Stripe ' +
-        'symbol belongs under src/features/checkout/payment/adapters/stripe/ — if the checkout, a ' +
-        'component or a route needs something from the gateway, it belongs on the contract in ' +
-        'src/features/checkout/payment/types.ts instead. Without this rule the abstraction rots ' +
+        'symbol belongs under src/features/checkout/utils/payment/adapters/stripe/ — if the checkout, ' +
+        'a component or a route needs something from the gateway, it belongs on the contract in ' +
+        'src/features/checkout/types/payment.ts instead. Without this rule the abstraction rots ' +
         'the first time someone reaches for useStripe() one level up.',
       severity: 'error',
       from: { pathNot: STRIPE_ADAPTER_PATH },

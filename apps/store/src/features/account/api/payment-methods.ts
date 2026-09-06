@@ -1,7 +1,8 @@
 import { toast } from '@proteus/ui'
+import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import type { StoreSavedMethod, StoreSavedMethodListResponse } from '#/api/generated/model'
+import type { DeleteResponse, StoreSavedMethod, StoreSavedMethodListResponse } from '#/api/generated/model'
 import {
   deleteStorePaymentMethod,
   listStorePaymentMethods,
@@ -84,20 +85,29 @@ const NO_METHODS: readonly StoreSavedMethod[] = Object.freeze([])
  * it is what made the account row sit at "Removing…" for two round trips instead of one, and it
  * would turn the checkout's optimistic drop into a blocking wait.
  */
-export function useRemovePaymentMethod() {
+export const useRemovePaymentMethod = (options?: UseMutationOptions<DeleteResponse, Error, string>) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
+    ...rest,
     mutationFn: (methodId: string) => deleteStorePaymentMethod(methodId),
-    onSuccess: (_response, methodId) => {
+    onSuccess: (...args) => {
+      const [, methodId] = args
       queryClient.setQueryData(paymentMethodsQueryKeys.lists(), (current: StoreSavedMethodListResponse | undefined) =>
         current ? { paymentMethods: current.paymentMethods.filter((method) => method.id !== methodId) } : current,
       )
       void queryClient.invalidateQueries({ queryKey: paymentMethodsQueryKeys.all })
+      onSuccess?.(...args)
     },
-    // No toast. The row that failed renders its own retryable message, and the shopper is looking
-    // straight at it — a toast on top is the same news told twice, which is the call this codebase
-    // already makes for a stale method one file away in `checkout.ts`.
+    // No toast, deliberately: the row that failed renders its own retryable message and the shopper
+    // is looking straight at it, so a toast on top is the same news told twice. The handler stays
+    // so the caller's `onError` still runs — the shape `useCreatePaymentSession` uses one file away
+    // in `checkout.ts`, which keeps the handler and suppresses only the toast.
+    // ast-grep-ignore: mutation-hook-missing-error-toast
+    onError: (...args) => {
+      onError?.(...args)
+    },
   })
 }
 
@@ -129,17 +139,25 @@ export function useWallet() {
  * response is written straight into the cache: a client that had to refetch to learn its own new
  * order would render the old one for a round trip.
  */
-export function useSetDefaultPaymentMethod() {
+export const useSetDefaultPaymentMethod = (
+  options?: UseMutationOptions<StoreSavedMethodListResponse, Error, string>,
+) => {
   const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
+    ...rest,
     mutationFn: (methodId: string) => setStoreDefaultPaymentMethod(methodId),
-    onSuccess: (response) => {
+    onSuccess: (...args) => {
+      const [response] = args
       queryClient.setQueryData(paymentMethodsQueryKeys.lists(), response)
       void queryClient.invalidateQueries({ queryKey: paymentMethodsQueryKeys.all })
+      onSuccess?.(...args)
     },
-    onError: (error: Error) => {
+    onError: (...args) => {
+      const [error] = args
       toast.add({ type: 'error', title: 'Failed to set default card', description: error.message })
+      onError?.(...args)
     },
   })
 }

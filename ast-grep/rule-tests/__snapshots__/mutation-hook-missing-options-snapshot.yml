@@ -1,0 +1,32 @@
+id: mutation-hook-missing-options
+snapshots:
+  'export const useThing = () => useMutation({ mutationFn: f })':
+    labels:
+    - source: 'useMutation({ mutationFn: f })'
+      style: primary
+      start: 30
+      end: 60
+    - source: 'const useThing = () => useMutation({ mutationFn: f })'
+      style: secondary
+      start: 7
+      end: 60
+  'export const useThing = (id: string) => useMutation({ mutationFn: f })':
+    labels:
+    - source: 'useMutation({ mutationFn: f })'
+      style: primary
+      start: 40
+      end: 70
+    - source: 'const useThing = (id: string) => useMutation({ mutationFn: f })'
+      style: secondary
+      start: 7
+      end: 70
+  'export const useThing = (options?: UseMutationOptions<R, Error, V>, id: string) => useMutation({ ...rest })':
+    labels:
+    - source: useMutation({ ...rest })
+      style: primary
+      start: 83
+      end: 107
+    - source: 'const useThing = (options?: UseMutationOptions<R, Error, V>, id: string) => useMutation({ ...rest })'
+      style: secondary
+      start: 7
+      end: 107

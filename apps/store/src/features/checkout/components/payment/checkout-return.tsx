@@ -2,11 +2,11 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '#/components/button'
 import { useCart } from '#/features/cart/api/cart'
-import { usePaymentProviders } from '../api/checkout'
-import { useCompleteOrder } from './complete-order'
-import { logPaymentFailure } from './log'
-import { resolvePaymentAdapter } from './registry'
-import type { ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from './types'
+import { usePaymentProviders } from '../../api/checkout'
+import { useCompleteOrder } from '../../hooks/use-complete-order'
+import type { ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from '../../types/payment'
+import { logPaymentFailure } from '../../utils/payment/log'
+import { resolvePaymentAdapter } from '../../utils/payment/registry'
 
 /**
  * Where a redirect payment method lands.
