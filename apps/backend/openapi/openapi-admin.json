@@ -3336,11 +3336,7 @@
         "operationId": "authRegister",
         "summary": "Register with an auth provider",
         "tags": ["Auth"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [],
         "parameters": [
           {
             "schema": {
@@ -3384,9 +3380,6 @@
           "400": {
             "description": "Validation error"
           },
-          "401": {
-            "description": "Unauthorized"
-          },
           "404": {
             "description": "Not found"
           }
@@ -3398,11 +3391,7 @@
         "operationId": "authAuthenticate",
         "summary": "Authenticate with an auth provider",
         "tags": ["Auth"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [],
         "parameters": [
           {
             "schema": {
@@ -3460,11 +3449,7 @@
         "operationId": "authResetPassword",
         "summary": "Request a password reset token",
         "tags": ["Auth"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [],
         "parameters": [
           {
             "schema": {
@@ -3507,9 +3492,6 @@
           },
           "400": {
             "description": "Validation error"
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "404": {
             "description": "Not found"

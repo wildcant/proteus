@@ -16,6 +16,9 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider/register',
     handler: authRegisterRoutes.POST,
+    // Obtaining a token cannot require one. `applyNamespaceAuth` already injects nothing outside
+    // `/admin/` and `/store/`, so this only corrects what the spec says.
+    auth: 'public',
     middlewares: [validateScopeProviderAssociation()],
     input: authRegisterRoutes.PostInput,
     operationId: 'authRegister',
@@ -27,6 +30,8 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider',
     handler: authRoutes.POST,
+    auth: 'public',
+    returnsUnauthorized: true,
     middlewares: [validateScopeProviderAssociation()],
     input: authRoutes.PostInput,
     operationId: 'authAuthenticate',
@@ -38,6 +43,7 @@ export default [
     method: 'POST',
     matcher: '/auth/:actorType/:authProvider/reset-password',
     handler: authResetPasswordRoutes.POST,
+    auth: 'public',
     middlewares: [validateScopeProviderAssociation()],
     input: authResetPasswordRoutes.PostInput,
     operationId: 'authResetPassword',
