@@ -108,3 +108,18 @@ export async function fillAddressForm(page: Page, { label, city }: { label: stri
   // unambiguous and the layer this should be asserting against.
   await page.getByRole('checkbox', { name: 'Make this my main address' }).check()
 }
+
+/**
+ * Signs a customer in through the form, which is the only thing that issues a store token.
+ *
+ * Here rather than beside any one feature's specs: a signed-in shopper is the premise of several
+ * of them, and it was previously stranded in a `wallet.ts` that existed to prop up stubbed
+ * wallets.
+ */
+export async function signIn(page: Page, customer: { email: string; password: string }) {
+  await page.goto('/login')
+  await page.getByLabel('Email').fill(customer.email)
+  await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
+  await page.getByRole('button', { name: /sign in/i }).click()
+  await expect(page).toHaveURL('/account', { timeout: 15_000 })
+}

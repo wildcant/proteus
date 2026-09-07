@@ -1,5 +1,6 @@
 import { HttpResponse, http } from 'msw'
-import { FAKE_GATEWAY, stripeFactories } from '../../stripe-factories.js'
+import { FAKE_GATEWAY, MOCK_INTENT_ID, methodIdOfCard, stripeFactories } from '../../stripe-factories.js'
+import { gatewayWallet } from './stripe-wallet.js'
 
 /**
  * Happy-path handlers for the Stripe API.
@@ -9,10 +10,11 @@ import { FAKE_GATEWAY, stripeFactories } from '../../stripe-factories.js'
  * runs the real backend, so the HTTP call is the only seam available. The vitest suites fake the
  * SDK at the module boundary instead (`../../vitest/stripe.mock.ts`), where a module seam exists.
  *
- * Stateless by design. Nothing is stored between calls, so no spec can be affected by what another
- * spec did — which is what lets the suites run `fullyParallel`. A flow that needs a different
- * outcome asks for it through the request: see `FAKE_GATEWAY` for the values that mean something
- * other than the happy path.
+ * Almost everything here is a pure function of its request — a flow that needs an outcome other
+ * than the happy path asks for it through the request; see `FAKE_GATEWAY`. The exception is the
+ * wallet, which is state because a wallet *is* state: see `stripe-wallet.ts`. It is keyed by
+ * Stripe customer, and a spec's customer comes from its own factory, so the suites still run
+ * `fullyParallel`.
  *
  * Covers the card checkout flow: create the intent → authorize (retrieve) → capture, plus the
  * account holder and stored-card calls the wallet makes.
@@ -26,6 +28,19 @@ import { FAKE_GATEWAY, stripeFactories } from '../../stripe-factories.js'
 type IncomingRequest = { text: () => Promise<string> }
 
 const form = async (request: IncomingRequest) => Object.fromEntries(new URLSearchParams(await request.text()))
+
+/**
+ * The card a saved checkout leaves behind.
+ *
+ * One card, and always this one: the browser's fake Stripe.js and this fake cannot talk — the
+ * storefront's adapter hands the server an intent id and nothing else — so what was typed into the
+ * card form never reaches here. Wallets of several distinct cards are therefore not reachable by
+ * shopping, and the claims needing one are asserted where they can be: the ordering rule in
+ * `payment-method.api.test.ts`, the row's own rendering in `saved-card-row.browser.test.tsx`.
+ *
+ * The expiry is far enough out that a wallet saved today is still usable whenever the suite runs.
+ */
+const SAVED_CARD = { brand: 'visa', last4: '4242', expMonth: 12, expYear: new Date().getFullYear() + 3 }
 
 /** The SDK sends bracketed nesting for `metadata[key]`; this reads it back out. */
 function metadataOf(fields: Record<string, string>): Record<string, string> {
@@ -44,15 +59,35 @@ export const stripeHandlers = [
   // server priced, which is the one thing Stripe.js refuses a confirmation over.
   http.post('https://api.stripe.com/v1/payment_intents', async ({ request }) => {
     const fields = await form(request)
+    const metadata = metadataOf(fields)
+
+    // The intent's own id, derived from the payment session it belongs to.
+    //
+    // One fixed id for every intent is the same defect one fixed customer id was: two concurrent
+    // checkouts become one intent, and the second overwrites what the first is holding — so a card
+    // is attached to whichever shopper created last. It cost two green-alone, red-together specs
+    // before being found here rather than in the wallet. `metadata.sessionId` is on the request the
+    // provider already sends, so this stays a pure function of it.
+    const id =
+      Number(fields.amount) === FAKE_GATEWAY.settlingTotalCents
+        ? FAKE_GATEWAY.settlingIntentId
+        : metadata.sessionId
+          ? `pi_test_${metadata.sessionId}`
+          : MOCK_INTENT_ID
+
+    // Held for the retrieve below, which is where a card actually joins a wallet.
+    gatewayWallet.rememberIntent(id, {
+      customer: fields.customer,
+      savesCard: Boolean(fields.setup_future_usage),
+    })
+
     return HttpResponse.json(
       stripeFactories.paymentIntent({
-        // The one total that opens a settling intent, so `retrieve` below can answer `processing`
-        // for it without either handler remembering this call.
-        ...(Number(fields.amount) === FAKE_GATEWAY.settlingTotalCents ? { id: FAKE_GATEWAY.settlingIntentId } : {}),
+        id,
         amount: Number(fields.amount),
         currency: fields.currency,
         captureMethod: fields.capture_method,
-        metadata: metadataOf(fields),
+        metadata,
         ...(fields.customer ? { customer: fields.customer } : {}),
         ...(fields.setup_future_usage ? { setupFutureUsage: fields.setup_future_usage } : {}),
         ...(fields.payment_method ? { paymentMethod: fields.payment_method } : {}),
@@ -65,7 +100,29 @@ export const stripeHandlers = [
   http.get('https://api.stripe.com/v1/payment_intents/:id', ({ params }) => {
     const id = String(params.id)
     const status = id === FAKE_GATEWAY.settlingIntentId ? 'processing' : 'requires_capture'
-    return HttpResponse.json(stripeFactories.paymentIntent({ id, status }))
+    const opened = gatewayWallet.intentOf(id)
+
+    // The confirmed intent names the method the browser paid with, which is the first moment the
+    // *server* sees it — the storefront's adapter hands back an intent id and nothing more. The
+    // card it names is the happy-path Visa, because the two fakes cannot talk about what was
+    // typed; see the note on `SAVED_CARD`.
+    const paymentMethod = `${methodIdOfCard(SAVED_CARD)}_${id}`
+
+    // `setup_future_usage` attaches the method to the customer, exactly as Stripe does — and
+    // leaves it un-redisplayable until the provider's second call says otherwise.
+    if (opened?.savesCard && opened.customer && status === 'requires_capture') {
+      gatewayWallet.attach(opened.customer, paymentMethod)
+    }
+
+    return HttpResponse.json(
+      stripeFactories.paymentIntent({
+        id,
+        status,
+        paymentMethod,
+        ...(opened?.customer ? { customer: opened.customer } : {}),
+        ...(opened?.savesCard ? { setupFutureUsage: 'on_session' } : {}),
+      }),
+    )
   }),
 
   // Capture — registered before the bare `:id` POST below, which would otherwise match it first.
@@ -118,41 +175,60 @@ export const stripeHandlers = [
     )
   }),
 
-  http.get('https://api.stripe.com/v1/customers/:id', ({ params }) =>
-    HttpResponse.json(stripeFactories.customer({ id: String(params.id) })),
-  ),
+  http.get('https://api.stripe.com/v1/customers/:id', ({ params }) => {
+    const id = String(params.id)
+    return HttpResponse.json(stripeFactories.customer({ id, defaultPaymentMethod: gatewayWallet.defaultOf(id) }))
+  }),
 
-  http.post('https://api.stripe.com/v1/customers/:id', ({ params }) =>
-    HttpResponse.json(stripeFactories.customer({ id: String(params.id) })),
-  ),
+  // Nominating a default. Stripe keeps it on the customer, never on the merchant's own tables,
+  // which is why the wallet reads it back from here rather than from a Proteus row.
+  http.post('https://api.stripe.com/v1/customers/:id', async ({ params, request }) => {
+    const id = String(params.id)
+    const fields = await form(request)
+    const nominated = fields['invoice_settings[default_payment_method]']
+    if (nominated) gatewayWallet.setDefault(id, nominated)
+    return HttpResponse.json(stripeFactories.customer({ id, defaultPaymentMethod: gatewayWallet.defaultOf(id) }))
+  }),
 
   http.delete('https://api.stripe.com/v1/customers/:id', ({ params }) =>
     HttpResponse.json(stripeFactories.deletedCustomer(String(params.id))),
   ),
 
-  // The wallet. One card, always the same one: a spec that needs a particular wallet stubs our own
-  // `GET /store/payment-methods` at the browser instead, which is the boundary it can reach.
+  // The wallet: exactly the cards this customer has saved, and nothing for one who has saved none.
+  // An empty wallet used to be unreachable — the fake handed every account holder the same card —
+  // which is what pushed the specs into stubbing our own route.
   http.get('https://api.stripe.com/v1/customers/:id/payment_methods', ({ params }) =>
-    HttpResponse.json(stripeFactories.list([stripeFactories.paymentMethod({ customer: String(params.id) })])),
+    HttpResponse.json(stripeFactories.list(gatewayWallet.list(String(params.id)))),
   ),
 
   // The ownership check. The customer is part of the URL rather than a filter someone remembered
   // to apply, which is why it cannot be skipped by accident.
   http.get('https://api.stripe.com/v1/customers/:customer/payment_methods/:id', ({ params }) => {
     const id = String(params.id)
-    // A card the gateway no longer holds answers the same 404 a detached one does, which is what
-    // the adapter turns into `payment_method_unavailable`.
-    if (id.startsWith(FAKE_GATEWAY.goneMethodPrefix)) {
+    const customer = String(params.customer)
+    // A card this customer does not hold answers the same 404 a detached one does, which is what
+    // the adapter turns into `payment_method_unavailable`. A card removed in another tab reaches
+    // this by simply not being there any more — no magic id is needed to arrange it.
+    const held = gatewayWallet.find(customer, id)
+    if (!held) {
       return HttpResponse.json(stripeFactories.notYourPaymentMethod(), { status: 404 })
     }
-    return HttpResponse.json(stripeFactories.paymentMethod({ id, customer: String(params.customer) }))
+    return HttpResponse.json(held)
   }),
 
-  http.post('https://api.stripe.com/v1/payment_methods/:id/detach', ({ params }) =>
-    HttpResponse.json(stripeFactories.paymentMethod({ id: String(params.id), customer: null })),
-  ),
+  http.post('https://api.stripe.com/v1/payment_methods/:id/detach', ({ params }) => {
+    const id = String(params.id)
+    gatewayWallet.detach(id)
+    return HttpResponse.json(stripeFactories.paymentMethod({ id, customer: null }))
+  }),
 
-  http.post('https://api.stripe.com/v1/payment_methods/:id', ({ params }) =>
-    HttpResponse.json(stripeFactories.paymentMethod({ id: String(params.id) })),
-  ),
+  // `allow_redisplay: 'always'` — the provider's `markRedisplayable`. Without it an attached card
+  // stays filtered out of every customer-scoped listing, so this handler is what makes that call
+  // observable rather than decorative.
+  http.post('https://api.stripe.com/v1/payment_methods/:id', async ({ params, request }) => {
+    const id = String(params.id)
+    const fields = await form(request)
+    if (fields.allow_redisplay === 'always') gatewayWallet.markRedisplayable(id)
+    return HttpResponse.json(stripeFactories.paymentMethod({ id, allowRedisplay: fields.allow_redisplay as never }))
+  }),
 ]

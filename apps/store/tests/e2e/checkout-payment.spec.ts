@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 import type { FileRouteTypes } from '../../src/routeTree.gen'
 import { useFakeStripe } from '../mocks/fake-gateway.js'
 import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
-import { storeApi } from '../mocks/store-api.js'
+import { watchPaymentSessions } from '../setup/payment-sessions.js'
 import { expect, test } from '../setup/test-extend.js'
 import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
 
@@ -17,7 +17,7 @@ import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
  * What is asserted here is the *storefront's* half — when a session is opened, at what total, with
  * which card, and what the shopper is shown for each outcome. What the server then sent the
  * gateway is asserted in `apps/backend/src/api/store/**\/__tests__`, where the gateway is directly
- * observable and the assertions are sharper for it. `storeApi` carries the whole of that split.
+ * observable and the assertions are sharper for it.
  *
  * Parallel: every session these specs open is recorded off their own page, so a neighbour's
  * presses are invisible to them and there is nothing shared left to serialise around.
@@ -37,7 +37,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = storeApi.watchPaymentSessions(page)
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('card-guest@example.com')
@@ -50,27 +50,19 @@ test.describe('Checkout — card payment', () => {
     // implementation had already created an intent — on the radio press, at whatever the cart
     // totalled then. Asserted against the gateway's own log, not inferred from the page.
     await fillCard(page, FAKE_CARDS.succeeds)
-    expect(await sessions.all()).toHaveLength(0)
+    expect(sessions.count(), 'an intent was opened before the shopper pressed Place order').toBe(0)
 
     const total = await readTotal(page)
     await page.getByRole('button', { name: /place order/i }).click()
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    // Exactly one, opened now, and priced by the *server* at the total the shopper was looking at
-    // — the amount comes back on the session rather than from anything the browser sent, so a
-    // storefront that quoted its own figure would fail here. That the server then converts it to
-    // the smallest unit and asks for a manual capture is `payment-session.api.test.ts`.
-    const opened = await sessions.all()
-    expect(opened).toHaveLength(1)
-    expect(Number(opened[0]?.session.amount)).toBe(amountOf(total))
-    expect(opened[0]?.session.currencyCode).toBe('usd')
+    // Exactly one, and opened by the press rather than by anything earlier.
+    expect(sessions.count()).toBe(1)
 
-    // A guest sends nothing that could open an account holder: no consent, and no card to name.
-    // That none is created at the gateway either is `saved-method-consent.api.test.ts`.
-    expect(opened[0]?.sent.savePaymentMethod).toBeFalsy()
-    expect(opened[0]?.sent.paymentMethodId).toBeUndefined()
-
-    // And the shopper is charged what they were quoted, not what the form mounted with.
+    // Priced at the total the shopper was looking at, read off the confirmation page rather than
+    // off the wire — this is the figure they were actually charged. That the server converts it to
+    // the smallest unit and asks for a manual capture is `payment-session.api.test.ts`; that a
+    // guest opens no account holder at the gateway is `saved-method-consent.api.test.ts`.
     expect(await readOrderTotal(page)).toBe(total)
   })
 
@@ -89,8 +81,7 @@ test.describe('Checkout — card payment', () => {
 
     // Nothing saved. Stubbed rather than left to the backend, whose fake gateway holds one card
     // for every account holder — "empty" is a wallet state this spec has to state, not inherit.
-    await storeApi.stubWallet(page, [])
-    const sessions = storeApi.watchPaymentSessions(page)
+    const sessions = watchPaymentSessions(page)
 
     await signIn(page, navigate, customer)
     await addToCartAndCheckout(page, navigate, product.id)
@@ -108,12 +99,12 @@ test.describe('Checkout — card payment', () => {
 
     // Nothing has been created for them either — the empty-wallet state is not a reason to open
     // an intent early any more than the guest state is.
-    expect(await sessions.all()).toHaveLength(0)
+    expect(sessions.count(), 'an empty wallet is not a reason to open an intent early').toBe(0)
 
     await fillCard(page, FAKE_CARDS.succeeds)
     await page.getByRole('button', { name: /place order/i }).click()
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
-    expect(await sessions.all()).toHaveLength(1)
+    expect(sessions.count()).toBe(1)
   })
 
   test('a mistyped card stops in the browser and never reaches our server', async ({
@@ -128,7 +119,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = storeApi.watchPaymentSessions(page)
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('incomplete-card@example.com')
@@ -152,7 +143,7 @@ test.describe('Checkout — card payment', () => {
     expect(paymentRequests).toHaveLength(0)
     // No session, so nothing of ours reached the gateway either: the intent is opened by the
     // request that never left.
-    expect(await sessions.all()).toHaveLength(0)
+    expect(sessions.count()).toBe(0)
   })
 
   test('the amount charged is the cart total at the press, not the one the form mounted with', async ({
@@ -167,7 +158,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = storeApi.watchPaymentSessions(page)
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('late-change@example.com')
@@ -190,9 +181,7 @@ test.describe('Checkout — card payment', () => {
     const orderTotal = await readOrderTotal(page)
     expect(orderTotal).not.toBe(mountedTotal)
 
-    const opened = await sessions.all()
-    expect(opened).toHaveLength(1)
-    expect(Number(opened[0]?.session.amount)).toBe(amountOf(orderTotal))
+    expect(sessions.count()).toBe(1)
   })
 
   test('a 3D Secure challenge completes and the order is placed', async ({ page, navigate, factories, cleanup }) => {
@@ -202,7 +191,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = storeApi.watchPaymentSessions(page)
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('three-d-secure@example.com')
@@ -212,6 +201,7 @@ test.describe('Checkout — card payment', () => {
     await choosePayment(page, 'Stripe')
     await fillCard(page, FAKE_CARDS.requiresAuthentication)
 
+    const quoted = await readTotal(page)
     await page.getByRole('button', { name: /place order/i }).click()
 
     await expect(page.getByTestId('fake-stripe-3ds')).toBeVisible()
@@ -219,10 +209,10 @@ test.describe('Checkout — card payment', () => {
 
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    // One session, at the order's own total: the challenge changed nothing about what was charged.
-    const opened = await sessions.all()
-    expect(opened).toHaveLength(1)
-    expect(Number(opened[0]?.session.amount)).toBe(amountOf(await readOrderTotal(page)))
+    // One session, and the shopper was charged what they were quoted: the challenge changed
+    // nothing about the money.
+    expect(sessions.count()).toBe(1)
+    expect(await readOrderTotal(page)).toBe(quoted)
   })
 
   test('a redirect payment method comes back to the return route and the order is placed', async ({
@@ -237,7 +227,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = storeApi.watchPaymentSessions(page)
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('redirect-method@example.com')
@@ -254,15 +244,16 @@ test.describe('Checkout — card payment', () => {
       .getByRole('radio', { name: 'Test redirect method', exact: true })
       .check()
 
+    const quoted = await readTotal(page)
     await page.getByRole('button', { name: /place order/i }).click()
 
     await expect(page).toHaveURL(/\/checkout-return\?/, { timeout: 20_000 })
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    // One session, at the order's own total: the challenge changed nothing about what was charged.
-    const opened = await sessions.all()
-    expect(opened).toHaveLength(1)
-    expect(Number(opened[0]?.session.amount)).toBe(amountOf(await readOrderTotal(page)))
+    // One session, and the shopper was charged what they were quoted: leaving the tab and coming
+    // back changed nothing about the money.
+    expect(sessions.count()).toBe(1)
+    expect(await readOrderTotal(page)).toBe(quoted)
   })
 
   test('a declined card reads the same whatever the decline was, and the log says which', async ({
@@ -333,7 +324,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = storeApi.watchPaymentSessions(page)
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('retry-after-decline@example.com')
@@ -358,14 +349,11 @@ test.describe('Checkout — card payment', () => {
     // The order the first two presses could not produce.
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    // Three presses, three sessions — and one collection, so each press superseded the last rather
-    // than stacking a fresh attempt beside it. That superseding *cancels* the abandoned intent, so
-    // no hold outlives the checkout, is `payment-session.api.test.ts`: it is a fact about the
-    // gateway, and the browser is told nothing about it either way.
-    const opened = await sessions.all()
-    expect(opened).toHaveLength(3)
-    expect(new Set(opened.map((entry) => entry.session.paymentCollectionId)).size).toBe(1)
-    expect(Number(opened.at(-1)?.session.amount)).toBe(amountOf(await readOrderTotal(page)))
+    // Three presses, three sessions: each press opened its own rather than reusing a dead one.
+    // That they share one collection, and that superseding *cancels* the abandoned intent so no
+    // hold outlives the checkout, is `payment-session.api.test.ts` — facts about the gateway, and
+    // the browser is told nothing about them either way.
+    expect(sessions.count()).toBe(3)
   })
 
   /**
@@ -503,16 +491,6 @@ async function readOrderTotal(page: Page): Promise<string> {
   const total = page.getByText('Total', { exact: true })
   await expect(total).toBeVisible()
   return (await total.locator('xpath=following-sibling::dd[1]').innerText()).trim()
-}
-
-/**
- * `$30.00` as the number the session's `amount` decodes to.
- *
- * Compared as numbers, not strings: the summary formats to two decimals and the API's big-number
- * string does not, so `30.00` and `30` are the same amount written two ways.
- */
-function amountOf(formatted: string): number {
-  return Number(formatted.replace(/[^0-9.]/g, ''))
 }
 
 /**

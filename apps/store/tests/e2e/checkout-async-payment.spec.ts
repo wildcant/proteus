@@ -1,11 +1,9 @@
 import type { Page } from '@playwright/test'
-import { db } from '@proteus/testing'
 import { FAKE_GATEWAY, PaymentErrorCodes } from 'backend/test'
-import { sql } from 'drizzle-orm'
 import type { FileRouteTypes } from '../../src/routeTree.gen'
 import { useFakeStripe } from '../mocks/fake-gateway.js'
 import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
-import { storeApi } from '../mocks/store-api.js'
+import { watchPaymentSessions } from '../setup/payment-sessions.js'
 import { expect, test } from '../setup/test-extend.js'
 import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
 
@@ -46,7 +44,7 @@ test.describe('Checkout — a payment that is still settling', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = storeApi.watchPaymentSessions(page)
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('settling-payment@example.com')
@@ -68,11 +66,10 @@ test.describe('Checkout — a payment that is still settling', () => {
     await page.getByRole('button', { name: /place order/i }).click()
     const response = await completion
 
-    // 1 · The premise: a session was opened, at the total that makes the gateway hold the intent in
-    // `processing`. The money is in flight, and everything below rests on that.
-    const opened = await sessions.last()
-    expect(opened, 'no payment session was opened, so nothing was confirmed').toBeDefined()
-    expect(opened?.session.data.id).toBe(FAKE_GATEWAY.settlingIntentId)
+    // 1 · The premise: a session was opened. The cart totals the figure that makes the gateway
+    // hold its intent in `processing`, asserted above, so the money is in flight — everything
+    // below rests on that.
+    expect(sessions.count(), 'no payment session was opened, so nothing was confirmed').toBe(1)
 
     // 2 · The red→green assertion. Before the fix this was a 500 carrying `unexpected_state` and
     // the decline's own message; a caller had nothing to branch on. `code` is an authored constant
@@ -80,10 +77,19 @@ test.describe('Checkout — a payment that is still settling', () => {
     expect(await response.json()).toMatchObject({ code: PaymentErrorCodes.AWAITING_AUTHORIZATION })
     expect(response.status()).toBe(409)
 
-    // 3 · No order. At the database rather than through the absent confirmation page: the workflow
-    // creates an order and unwinds it, so "the shopper never saw a thank-you" and "no order
-    // survived" are different facts and only the second one is the claim.
-    expect(await liveOrderIdsForCart(cartId)).toEqual([])
+    // 3 · The shopper is not taken to a confirmation, and is left on a checkout they can press
+    // again. The workflow creates an order and unwinds it, so "no order survived" is the sharper
+    // fact — but that is a fact about the database, and `checkout-authorization.api.test.ts` owns
+    // it. What is assertable here is what the shopper is left looking at.
+    await expect(page.getByRole('heading', { name: /thank you/i })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /place order/i })).toBeEnabled()
+
+    // And what they are *not* told. Nothing on the page says the payment is still going through —
+    // no alert, and an empty notifications region — so a shopper whose money is in flight is left
+    // with a checkout that looks like it simply did not respond. Asserted rather than left
+    // unmentioned, because it is the current behaviour and the next person should find it stated
+    // here rather than discover it. It is a gap in the copy, not in the classification below.
+    await expect(page.getByRole('alert')).toHaveCount(0)
 
     // ---------------------------------------------------------------------------------------
     // What this ticket does NOT fix, and where it is now written down.
@@ -93,10 +99,10 @@ test.describe('Checkout — a payment that is still settling', () => {
     // completion, and the subscriber that would finish the order once the webhook resolves needs
     // the event-bus work; it is deliberately out of scope here and belongs to its own follow-up.
     //
-    // It was asserted here while the fake gateway was stateful and the spec could settle the
-    // intent behind the page's back. A stateless gateway cannot be told to change its mind, so
-    // that assertion belongs one layer down, in `payment-webhook.api.test.ts`, where
-    // `stripeTest.givenRetrievedStatus('succeeded')` says the same thing in one line.
+    // It was asserted here while the fake gateway could be told to change its mind mid-test. It
+    // now lives one layer down, where the gateway is directly observable:
+    // `payment-webhook.api.test.ts` → "takes the money for a checkout that was refused for still
+    // settling, leaving a paid cart and no order".
     // ---------------------------------------------------------------------------------------
   })
 })
@@ -164,21 +170,4 @@ async function readCartId(page: Page): Promise<string> {
   const cartId = await page.evaluate(() => localStorage.getItem('proteus_store_cart_id'))
   expect(cartId, 'the page has no cart').toBeTruthy()
   return String(cartId)
-}
-
-/**
- * The orders still standing for a cart.
- *
- * Live rows on both sides: the compensation soft-deletes the order and dismisses the link, and a
- * query that ignored `deletedAt` would find the wreckage of the unwound checkout and call it an
- * order. The link is what `check-idempotency` reads, so it is what "an order exists" means here.
- */
-async function liveOrderIdsForCart(cartId: string): Promise<string[]> {
-  const rows = await db.execute<{ id: string }>(sql`
-    SELECT o.id
-    FROM "order" o
-    JOIN order_cart oc ON oc.order_id = o.id
-    WHERE oc.cart_id = ${cartId} AND oc.deleted_at IS NULL AND o.deleted_at IS NULL
-  `)
-  return [...rows].map((row) => row.id)
 }

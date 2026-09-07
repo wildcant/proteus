@@ -82,9 +82,10 @@ job_test() { npm run --workspace=backend test:gate; }
 # drawer says a change will destroy. No database and no browser, so it runs alongside the rest.
 job_admin() { npm run --workspace=admin test; }
 
-# The store's pure logic — the shopper-facing payment copy, whose bucketing rule decides whether
-# a declined card tells a prober which decline it was. No browser, so it runs alongside the rest;
-# the rendered payment step is Playwright's, which the gate does not run.
+# The store's two fast levels: pure logic in node, and components rendered in a real Chromium via
+# Vitest Browser Mode. The browser project is here rather than left to Playwright because it needs
+# no server, no database and no fixtures — it mounts a component with props — so it costs the gate
+# a few seconds and catches the render rules that used to be asserted through a stubbed API.
 job_store() { npm run --workspace=store test; }
 
 # CI mode: report formatting instead of applying it. Triggered by --ci or by the CI env

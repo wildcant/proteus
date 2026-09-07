@@ -1,9 +1,6 @@
 import './db-setup.js'
 
-import { cleanup } from '@testing-library/react'
-import { afterEach, beforeEach, type MockInstance, vi } from 'vitest'
-
-afterEach(() => cleanup())
+import { beforeEach, type MockInstance, vi } from 'vitest'
 
 export let consoleError: MockInstance<(typeof console)['error']>
 export let consoleWarn: MockInstance<(typeof console)['warn']>

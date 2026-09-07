@@ -157,6 +157,32 @@ Form logic lives in `features/{name}/hooks/use-{action}-form.ts`, not in compone
 
 ## Testing
 
+### The four test levels
+
+| Level | Where | What it may fake |
+| --- | --- | --- |
+| Unit | `apps/*/src/**/*.test.ts` (node) | nothing — pure functions |
+| Component | `apps/store/src/**/*.browser.test.tsx` (Vitest Browser Mode, real Chromium) | nothing — props in, render out |
+| API / integration | `apps/backend/src/**/__tests__` | the third-party gateway, at the module boundary |
+| E2E | `apps/*/tests/e2e` (Playwright, real backend) | the third party only — **never our own API** |
+
+**Never fake a response from our own backend in an e2e test.** Faking Stripe is right; faking
+`GET /store/payment-methods` is not — it deletes the route, the service and the ordering rule from
+the test while leaving it green. A wallet is arranged by *shopping*, and the fake gateway holds what
+the checkout saved (`apps/backend/tests/mocks/msw/handlers/stripe-wallet.ts`). If a claim seems to
+need a stubbed endpoint, it belongs at a lower level.
+
+**Write fewer, longer tests.** E2E setup is expensive, so one test per *user journey*, not one per
+assertion — merge tests that share an arrange phase, and keep them separate only when the persona,
+the app or the data shape genuinely differs. Thirteen one-assertion wallet specs are what made
+stubbing look necessary in the first place.
+
+**Assert what the shopper sees, not what the database holds.** A DB query in an e2e assertion is a
+smell: status changed → assert the badge; record deleted → assert the empty state. DB helpers are
+for setup. The same goes for reading request bodies off the wire — the one exception here is
+`tests/setup/payment-sessions.ts`, which counts sessions because "no intent until Place order" has
+no visual surface at all.
+
 Backend tests are integration tests against a real Postgres database. Custom Vitest fixtures in `tests/setup/test-extend.ts` provide:
 - `getDb` — Factory function `() => dbInstance`
 - `logger` — noopLogger

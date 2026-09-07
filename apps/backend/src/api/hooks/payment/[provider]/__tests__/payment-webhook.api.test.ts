@@ -153,6 +153,49 @@ test.describe('POST /hooks/payment/:provider', () => {
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
   })
 
+  test('takes the money for a checkout that was refused for still settling, leaving a paid cart and no order', async ({
+    service,
+    expect,
+  }) => {
+    // The residual this ticket knowingly does not fix, asserted so it is a documented behaviour
+    // rather than a surprise. The shopper confirms, the intent is still `processing`, and cart
+    // completion refuses with `AWAITING_AUTHORIZATION` — no order. The funds then clear, Stripe
+    // sends `payment_intent.succeeded`, and the webhook does what it is for: it captures.
+    //
+    // So the money is taken against a cart that never became an order. Nothing re-runs completion;
+    // the subscriber that would finish the order once the webhook resolves needs the event-bus
+    // work and is out of scope. It was previously asserted from the store e2e, which could only
+    // reach it while the fake gateway was stateful enough to change its mind mid-test.
+    stripeTest.givenIntentStatus('processing')
+
+    const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
+    const { paymentCollection, paymentSession } = await service.create.paymentSessionForCart(api.container, {
+      cartId: cart.id,
+      amount: new BigNumber('19.99'),
+      currencyCode: 'usd',
+      providerId: STRIPE_PROVIDER,
+    })
+
+    const intent = await stripeTest.intentCreatedFor(paymentSession.id)
+    assertDefined(intent)
+
+    // Still settling, and said so in its own words: this is the classification the checkout turns
+    // into a 409 rather than the decline's `unexpected_state`. Asserted here because everything
+    // below depends on the completion having been refused for *this* reason.
+    const authorization = await paymentModule().authorizePaymentSession(paymentSession.id)
+    expect(authorization).toMatchObject({ outcome: 'pending_authorization' })
+
+    // The funds clear.
+    stripeTest.givenRetrievedStatus('succeeded')
+    const response = await postWebhook(succeededEvent(intent), signedHeaders(succeededEvent(intent)))
+    expect(response.status).toBe(200)
+
+    // Captured — in full, against a cart with no order behind it.
+    const payment = await paymentFor(service, paymentCollection.id)
+    expect(payment.capturedAt).not.toBeNull()
+    expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([new BigNumber('19.99').toFixed()])
+  })
+
   test('captures once when the charge is already complete before any payment exists', async ({ service, expect }) => {
     // The other way the same double capture used to surface: no Payment yet, so authorizing the
     // session creates one and captures it in the same call, leaving nothing for the route to take.

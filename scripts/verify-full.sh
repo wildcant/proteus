@@ -66,7 +66,7 @@ done
 label_of() {
   case "$1" in
     backend) echo "Backend suite (full)" ;;
-    store) echo "Store unit tests" ;;
+    store) echo "Store unit + component tests" ;;
     admin) echo "Admin unit tests" ;;
     storeE2e) echo "Store e2e (:3013 backend, proteus_test_store)" ;;
     adminE2e) echo "Admin e2e (:3015 backend, proteus_test_admin)" ;;

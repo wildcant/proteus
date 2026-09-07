@@ -5,10 +5,9 @@
  * `useNamingConvention` suppression. Keeping them in one file is what lets the handlers next door
  * read as a flat list, and gives the wire format a single definition to check against the docs.
  *
- * Pure and stateless. A factory takes the few fields a handler echoes back from the request and
- * fills in the rest; nothing is stored between calls, so no test can be affected by what another
- * test did. Where a flow needs a different outcome, the handler for it is exported from
- * `stripe.http.ts` and swapped in per test.
+ * Pure. A factory takes the few fields a handler echoes back from the request and fills in the
+ * rest; it decides nothing on its own. The only thing the fake remembers between calls is the
+ * wallet, which lives in `msw/handlers/stripe-wallet.ts` and explains itself there.
  */
 
 /** Fixed ids. The fake answers for one intent, one customer and one card; that is the whole model. */
@@ -21,9 +20,12 @@ export const MOCK_PAYMENT_METHOD_ID = 'pm_test_mock'
  *
  * The same device Stripe itself uses: `4000000000000002` is not a card, it is "decline this". The
  * store e2e runs the real backend in its own process, so the only thing a spec there can vary is
- * what it puts *into* the checkout — the total it builds a cart to, and the id it puts in a
- * wallet. Encoding the outcome in those keeps every handler a pure function of its request, which
- * is what lets the e2e specs run `fullyParallel` against one backend.
+ * what it puts *into* the checkout — and for a payment left settling, that is the total it builds
+ * a cart to. Encoding the outcome in the request keeps the handler a pure function of it.
+ *
+ * There is no entry here for "a card the gateway no longer holds": the wallet is real now, so a
+ * card removed in another tab is gone because it was removed, and the ownership check answers its
+ * 404 on its own.
  *
  * Exported through `backend/test` so the spec and the handler share one constant rather than two
  * magic numbers that have to be kept in step by hand.
@@ -33,9 +35,40 @@ export const FAKE_GATEWAY = {
   settlingTotalCents: 4277,
   /** The intent that total opens. Derived from the amount, so `retrieve` can answer without state. */
   settlingIntentId: 'pi_test_settling',
-  /** A method id the gateway does not hold — a card detached in another tab, or never theirs. */
-  goneMethodPrefix: 'pm_test_gone',
 } as const
+
+/**
+ * A card, written into the payment method id that carries it.
+ *
+ * The gateway is handed an id and nothing else — the browser confirms the card, and all the server
+ * ever sees is `pm_...`. Encoding the card into the id is what lets the wallet answer with the card
+ * the shopper actually typed, instead of one canned card for everybody. It is the same device as
+ * `FAKE_GATEWAY`: the request carries the answer, so the handler stays a pure function of it.
+ *
+ * `pm_test_visa_4242_12_2034` — brand, last four, expiry month, expiry year.
+ */
+export function methodIdOfCard(card: { brand: string; last4: string; expMonth: number; expYear: number }): string {
+  return `pm_test_${card.brand}_${card.last4}_${card.expMonth}_${card.expYear}`
+}
+
+/**
+ * Reads a card back out of its id.
+ *
+ * `created` is nudged by the card's position in the wallet so that "most recent first" has
+ * something real to sort on — two cards saved in the same second would otherwise tie, and the
+ * ordering rule under test would be decided by chance.
+ */
+export function cardFromMethodId(id: string, position = 0): StripeCard {
+  const [brand, last4, expMonth, expYear] = id.replace(/^pm_test_/, '').split('_')
+  return stripeFactories.paymentMethod({
+    id,
+    brand: brand || 'visa',
+    last4: last4 || '4242',
+    expMonth: Number(expMonth) || 12,
+    expYear: Number(expYear) || 2030,
+    created: 1_767_225_600 + position,
+  })
+}
 
 export type IntentStatus =
   | 'requires_payment_method'

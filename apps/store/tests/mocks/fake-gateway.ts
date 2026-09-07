@@ -8,9 +8,9 @@ import { FAKE_STRIPE_JS } from './fake-stripe-js.js'
  * replacing the response is the whole of it — the adapter under test is not modified, mocked or
  * branched on in any way.
  *
- * This is the only thing left of what was once a gateway client. The backend's Stripe handlers are
- * stateless now (`apps/backend/tests/mocks/msw/handlers/stripe.mocks.ts`), so there is no shared
- * gateway state for a spec to read or seed. What a spec needs instead is in `store-api.ts`.
+ * Faking the *gateway's* script is the whole of what a spec here is allowed to fake. Our own API
+ * is never stubbed: a wallet is arranged by shopping, and the backend's handlers
+ * (`apps/backend/tests/mocks/msw/handlers/stripe.mocks.ts`) hold the cards the checkout saved.
  */
 export async function useFakeStripe(page: Page): Promise<void> {
   await page.route('https://js.stripe.com/**', (route) =>

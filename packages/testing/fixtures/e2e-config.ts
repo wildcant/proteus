@@ -1,3 +1,6 @@
+import { rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
 import { withAppDatabase } from 'backend/test/database-url'
 
@@ -71,6 +74,25 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
    */
   const taskQueue = `proteus-e2e-${app}`
 
+  /**
+   * Where the fake Stripe keeps the cards it is holding.
+   *
+   * A file because the two processes below both fake the gateway: the API opens the payment
+   * session, and the Worker authorizes it inside `complete-cart`. A wallet held in module state
+   * would be attached in one process and listed from the other, so a card saved at checkout would
+   * never reach the account page. There is one Stripe, so there is one file — and one per suite,
+   * so the store and admin runs cannot see each other's.
+   *
+   * A directory of small files rather than one document: specs run `fullyParallel`, and a single
+   * JSON file read-modified-written from both processes loses updates silently.
+   *
+   * Cleared on the way in rather than the way out: a leftover wallet from a previous run is the
+   * kind of state that makes a suite pass for the wrong reason, and keeping it after a failure is
+   * worth more than tidiness.
+   */
+  const gatewayState = join(tmpdir(), `proteus-fake-gateway-${app}`)
+  rmSync(gatewayState, { force: true, recursive: true })
+
   return defineConfig({
     globalSetup: '@proteus/testing/global-setup',
     testDir: './tests/e2e',
@@ -103,6 +125,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
           POOLER_DATABASE_URL: database,
           DIRECT_DATABASE_URL: database,
           TEMPORAL_TASK_QUEUE: taskQueue,
+          FAKE_GATEWAY_STATE: gatewayState,
         },
       },
       {
@@ -117,6 +140,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
           POOLER_DATABASE_URL: database,
           DIRECT_DATABASE_URL: database,
           TEMPORAL_TASK_QUEUE: taskQueue,
+          FAKE_GATEWAY_STATE: gatewayState,
         },
       },
       {
