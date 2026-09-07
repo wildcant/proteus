@@ -29,10 +29,13 @@ export type EventBusConfig = {
    * Cloudflare Queues do not exist off it, so the transport is not a deployment knob and there is
    * deliberately no `EVENT_BUS` env var.
    *
-   * The node roots take the derived answer now — `temporal-adapter.ts` exists. workerd still pins
-   * `inline` because Cloudflare Queues is the remaining ticket, and the test container pins it for
-   * the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and `npm test`
-   * must not need a running server.
+   * Both transports exist, so this is no longer a pin with a date on it. The node roots leave it
+   * unset and take the derived answer; the workerd root names the one it derives anyway, so a
+   * deploy's transport reads next to the wiring that supplies its binding; a Worker process states
+   * it because two Workers share one composition root and neither should inherit the other's choice.
+   * The test container is the only caller pinning something a runtime would not derive — `inline`,
+   * for the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and
+   * `npm test` must not need a running server.
    */
   adapter?: EventBusAdapterName
 }

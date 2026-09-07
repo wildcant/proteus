@@ -261,6 +261,43 @@ describe('the temporal event bus', () => {
   )
 
   it(
+    'lets a delivery that burned its whole retry budget be published again',
+    async () => {
+      delivered.length = 0
+      const errors: string[] = []
+      const single = busFor(registryOf('failing-probe'), collectingLogger(errors))
+      const identity = 'bus.probe.repeatable:republish_1:1:failing-probe'
+
+      try {
+        await single.emit('bus.probe.repeatable', { id: 'republish_1', attempt: 1 })
+        await settle(identity)
+
+        const failed = await testEnv.client.activity.getHandle(identity).describe()
+        expect(failed.status).toBe('FAILED')
+
+        // The permissive half of `ALLOW_DUPLICATE_FAILED_ONLY`, and the reason that policy is not
+        // `REJECT_DUPLICATE`: a delivery that exhausted its retries is *not* delivered, so republishing
+        // it has to be allowed or the notification retry and the webhook redelivery in later slices
+        // have no way back in. The previous test pins the other half — a delivery that succeeded is
+        // refused — and neither alone would notice the policy being changed to the other value.
+        await single.emit('bus.probe.repeatable', { id: 'republish_1', attempt: 1 })
+        await settle(identity)
+
+        const republished = await testEnv.client.activity.getHandle(identity).describe()
+        expect(republished.activityRunId).not.toBe(failed.activityRunId)
+      } finally {
+        await single.close()
+      }
+
+      // Three attempts on the first execution, three on the second: the republish is a fresh
+      // execution with its own budget, not a continuation of the exhausted one.
+      expect(delivered).toHaveLength(6)
+      expect(errors).toEqual([])
+    },
+    TEST_TIMEOUT,
+  )
+
+  it(
     'retries a failing subscriber under the bounded policy, and then stops',
     async () => {
       delivered.length = 0

@@ -14,17 +14,18 @@ import { EVENTS_TASK_QUEUE } from './config.js'
  * processes is what makes the queue split mean something — one pool of slots per kind of work, so a
  * burst of event deliveries cannot leave a shopper's `authorize-payment` waiting for a slot.
  *
- * **The engine pin is explicit.** `createWorkerContainer` defaults to `simple` because the workflow
- * Worker wants it — two workflows call another workflow's `.run()` from inside a step and those
- * nested runs are meant to stay in-process. A subscriber calling `.run()` is the opposite case: it
- * is the *entry* to a workflow, and it should get a durable execution like any other entry point.
- * So this process asks for `temporal` rather than inheriting a default chosen for the other Worker.
+ * **Both pins are explicit.** `createWorkerContainer` defaults `engine` to `simple` because the
+ * workflow Worker wants it — two workflows call another workflow's `.run()` from inside a step and
+ * those nested runs are meant to stay in-process. A subscriber calling `.run()` is the opposite
+ * case: it is the *entry* to a workflow and should get a durable execution like any other entry
+ * point. So this process names both values rather than inheriting either one, and `eventBus` has no
+ * default to inherit even if it wanted to.
  *
  * Node only, and activity-only: there is no `workflowsPath` here, because this Worker runs no
  * workflow code. The SDK logs "No workflows registered, not polling for workflow tasks" on boot,
  * which is the correct description of what this process is.
  */
-const { container, shutdown } = await createWorkerContainer({ engine: 'temporal' })
+const { container, shutdown } = await createWorkerContainer({ engine: 'temporal', eventBus: 'temporal' })
 
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS })
 

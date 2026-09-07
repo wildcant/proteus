@@ -16,7 +16,12 @@ import { STEP_ACTIVITY_NAMES } from './step-names.js'
  *
  * Node only. The Worker needs `@temporalio/core-bridge`, a native addon that workerd cannot load.
  */
-const { container, shutdown } = await createWorkerContainer()
+/**
+ * Both pins stated, neither inherited. `simple` keeps the two nested `.run()` calls in-process, which
+ * is what this Worker's workflows were written against; `temporal` sends anything a step *publishes*
+ * to the events queue rather than running the subscriber inline while this Activity holds its slot.
+ */
+const { container, shutdown } = await createWorkerContainer({ engine: 'simple', eventBus: 'temporal' })
 
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS })
 

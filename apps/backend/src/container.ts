@@ -49,14 +49,25 @@ export type BootstrapContainerDeps = {
    */
   createTemporalWorkflowEngine?: () => WorkflowEngine
   /**
-   * Builds the Temporal event bus when the resolved adapter is `temporal`.
+   * Builds the bus when the resolved adapter is anything but the in-process one.
    *
-   * Injected for the same reason `createTemporalWorkflowEngine` is, and it is a *second* factory
-   * rather than one Temporal bundle for both: the two subsystems are peers that may not import each
-   * other, and a single injected "temporal things" object would be that import wearing a hat. Each
-   * entry point wires the ones its runtime can load.
+   * Injected rather than imported for the same reason the Temporal engine is, and once for both
+   * transports: each one is unbuildable on the runtime that did not choose it. Cloudflare Queues
+   * arrive as a binding — a live object workerd constructs from `wrangler.jsonc`, which no node
+   * process has and no environment file can carry — and Temporal reaches `@temporalio/core-bridge`,
+   * a native addon workerd cannot load. The composition root that pins an adapter is the only place
+   * that has what building it needs, so it passes a factory instead.
+   *
+   * One field rather than one per transport: a transport name inside a runtime-agnostic type is the
+   * thing adapter selection must not carry, and `selectEventBus` would otherwise grow a branch each
+   * time a runtime gains a transport. Keeping Temporal's *engine* and *bus* separate — the reason
+   * these are not one injected object — survives regardless, because
+   * `createTemporalWorkflowEngine` stays its own field.
+   *
+   * It takes the container because a subscriber is handed one, and it is not built until this
+   * function has finished registering the modules a subscriber resolves from.
    */
-  createTemporalEventBus?: () => EventBus
+  createEventBusAdapter?: (container: AwilixContainer) => EventBus
 }
 
 export async function bootstrapContainer(deps: BootstrapContainerDeps) {
@@ -122,12 +133,14 @@ function selectWorkflowEngine(
 }
 
 /**
- * Refusing to boot is the right answer for an adapter this container cannot build. "Events are being
- * delivered in-process" and "events are being delivered durably" look identical from the publisher
- * and differ entirely when the process dies, so a missing transport must never quietly become a
- * different one.
+ * Refusing to boot is the right answer when the selected adapter cannot be built here: it must not
+ * silently become a different one, because "events are being delivered in-process" and "events are
+ * being delivered durably" look identical from the publisher and differ entirely when the process
+ * dies.
  *
- * Cloudflare Queues is the one still missing (ILLO-88).
+ * The in-process adapter is the one this can build itself — it needs nothing a runtime supplies.
+ * Every other adapter arrives through `createEventBusAdapter`, from the composition root that
+ * pinned it.
  */
 function selectEventBus(
   deps: BootstrapContainerDeps,
@@ -138,25 +151,16 @@ function selectEventBus(
   const adapter = resolveEventBusAdapterName({ configured, runtime: env.RUNTIME })
   if (adapter === 'inline') return createInlineEventBus({ registry: subscriberRegistry, container, logger })
 
-  if (adapter === 'temporal') {
-    const createBus = deps.createTemporalEventBus
-    if (!createBus) {
-      throw new AppError({
-        type: ErrorTypes.UNEXPECTED_STATE,
-        message:
-          'The temporal event bus adapter was selected but no factory was injected. The entry point ' +
-          'building this container must pass `createTemporalEventBus`, or pin ' +
-          '`projectConfig.eventBus.adapter` to "inline".',
-      })
-    }
-
-    return createBus()
+  const createAdapter = deps.createEventBusAdapter
+  if (!createAdapter) {
+    throw new AppError({
+      type: ErrorTypes.UNEXPECTED_STATE,
+      message:
+        `The "${adapter}" event bus adapter was selected but no factory was injected. The entry ` +
+        'point building this container must pass `createEventBusAdapter`, or pin ' +
+        '`projectConfig.eventBus.adapter` to "inline".',
+    })
   }
 
-  throw new AppError({
-    type: ErrorTypes.UNEXPECTED_STATE,
-    message:
-      `The "${adapter}" event bus adapter was selected but does not exist yet. The entry point ` +
-      'building this container must pin `projectConfig.eventBus.adapter` to "inline".',
-  })
+  return createAdapter(container)
 }

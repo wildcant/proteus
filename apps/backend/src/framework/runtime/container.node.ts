@@ -46,15 +46,18 @@ export const container = await bootstrapContainer({
     return temporalEngine
   },
   /**
-   * The event bus's own Temporal factory, imported here for the same reason and kept separate from
-   * the engine's: the two subsystems are peers that may not import each other, so they are two
-   * injections rather than one.
+   * The bus factory. Generic in the container's type — one seam for one concern, whichever transport
+   * a runtime resolves — and Temporal here because this is the node root.
+   *
+   * The container argument goes unused: the Temporal adapter is a publisher, and a publisher starts
+   * an activity rather than resolving a subscriber. The workerd root's Cloudflare adapter is the one
+   * that needs it.
    *
    * This process is a publisher only. What runs the subscribers is
    * `npm run --workspace=backend worker:events` — and an event published with nothing polling
    * `proteus-events` waits on the queue rather than being lost, which is the point of the transport.
    */
-  createTemporalEventBus: () => {
+  createEventBusAdapter: () => {
     temporalEventBus = createTemporalEventBus({ registry: subscriberRegistry, logger })
     return temporalEventBus
   },

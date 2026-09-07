@@ -104,11 +104,15 @@ This is load-bearing rather than lenient. The order confirmation is sent after t
 authorized, so a failure that propagated back into the checkout workflow would compensate it and
 refund a valid order over a mail outage. Every adapter has to keep that true.
 
-**Nor does a transport failure reach the publisher.** An adapter that cannot reach its transport, or
-cannot derive a sendable identity for the delivery, logs it and resolves. The argument above does not
-weaken when the failure moves from the subscriber to the wire. The cost is real and stated rather
-than hidden: such an event is lost, with a log line as its only trace. Closing that window means an
-outbox table, which is adapter internals rather than a port change.
+**`emit` never rejects — on either runtime.** Not for a subscriber failure, not for a transport
+failure, and not for a delivery the adapter itself refuses to send. Every such case is logged at
+error level naming the event and the subscriber, and that event is lost; the log line is its only
+trace. That is the residual D8 accepts, and the fix is an outbox — adapter internals, not a port
+change.
+
+One rule for every adapter, not a property of whichever one a runtime resolves. A caller cannot know
+which runtime it is on, so a guarantee that held on node and not on workerd would not be a contract.
+Losing an event is recoverable by replay; refunding a paid order in front of a shopper is not.
 
 The inline adapter does happen to wait for its subscribers — that is what makes it a seam a test can
 assert through — but nothing may depend on it. On either real transport `emit` returns with the work
@@ -118,13 +122,23 @@ still to be delivered.
 
 `resolveEventBusAdapterName` derives it from `RUNTIME`: workerd gets Cloudflare Queues, node gets
 Temporal standalone activities. There is no `EVENT_BUS` env var and there is not meant to be — the
-transport is not a per-deployment choice. A composition root pins another one through
-`projectConfig.eventBus.adapter`, and the test container pins `inline` for the reason the workflow
-suite pins `simple`: `RUNTIME` is `node` under vitest, and `npm test` must not need a running server.
+transport is not a per-deployment choice. A composition root states or overrides it through
+`projectConfig.eventBus.adapter`.
 
-The node roots — the API and both Workers — take the derived answer. workerd still pins `inline`,
-because Cloudflare Queues is ILLO-88 and `bootstrapContainer` refuses to boot rather than
-substituting something for a transport it cannot build.
+Neither transport can be built by `bootstrapContainer` itself — one needs a workerd binding, the
+other a native addon workerd cannot load — so a root that resolves one also passes
+`createEventBusAdapter`. One seam for one concern: a field per transport would put a transport name
+inside a runtime-agnostic type, which is the thing selection must not carry. `bootstrapContainer`
+refuses to boot when the factory is missing rather than substituting something it can build.
+
+Who states what:
+
+| Root | Adapter | Why |
+|---|---|---|
+| `container.node.ts` (API) | derived → `temporal` | Nothing to say; the derived answer is the right one. |
+| `container.workerd.ts` | `cloudflare-queues`, named | Derived anyway, but written out so a deploy's transport reads next to the binding that supplies it. |
+| `container.worker.ts` (both Workers) | **required parameter** | Two Worker processes share one root. A default would hand one of them a choice made for the other, silently. |
+| the test container | `inline` | For the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and `npm test` must not need a running server. |
 
 ## The node transport
 

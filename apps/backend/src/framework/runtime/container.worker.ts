@@ -14,26 +14,29 @@ import { WinstonLogger } from '../logger/winston-logger.js'
  * process that actually executes step actions and event subscribers, so it needs everything a route
  * handler needs.
  *
- * Two things differ, and deliberately: a Worker pins its own workflow engine and its own event bus
- * rather than taking the derived defaults. The workflow Worker pins **simple**, which is why that is
- * the default here. Two workflows call another workflow's `.run()` from inside a step
- * (`create-product`, `complete-customer-auth`), and those nested runs are meant to stay inline.
- * Leaving that Worker on the derived default would make each one start its own Temporal execution
- * from inside an Activity — a different failure and compensation shape than the one those workflows
- * were written against, for no durability the outer execution does not already provide.
+ * A Worker pins its own workflow engine and its own event bus rather than taking the derived
+ * defaults. The workflow Worker wants **simple**: two workflows call another workflow's `.run()`
+ * from inside a step (`create-product`, `complete-customer-auth`), and those nested runs are meant
+ * to stay inline. On the derived default each one would start its own Temporal execution from inside
+ * an Activity — a different failure and compensation shape than the one those workflows were written
+ * against, for no durability the outer execution does not already provide.
  *
- * Both pins are parameters rather than constants because the second Worker process wants a different
- * answer for one of them, and inheriting a pin nobody chose is the failure that costs a debugging
- * session. `src/core/event-bus/temporal/worker.ts` is that process and asks for `temporal`.
+ * **`eventBus` has no default, deliberately.** Both Workers want `temporal` — a step that publishes
+ * from inside an Activity should go durable rather than dispatch a subscriber inline while holding
+ * that Activity's slot — so a default would be *correct* and still wrong: this function would then
+ * hand one process a pin chosen for the other, silently, which is the failure this comment used to
+ * describe while the code did it. Making it required costs each caller five words and makes the
+ * choice readable at the call site, which is where it matters.
+ *
+ * `engine` keeps its default: `simple` is what the older and larger caller wants, and changing that
+ * is not this ticket's to do.
  *
  * Kept separate from `container.node.ts` rather than reusing it, because that module is a resolved
  * singleton for the HTTP server: importing it here would build the API's container, engine
  * included, as a side effect of starting a Worker.
  */
-export async function createWorkerContainer(
-  options: { engine?: WorkflowEngineName; eventBus?: EventBusAdapterName } = {},
-) {
-  const { engine = 'simple', eventBus = 'temporal' } = options
+export async function createWorkerContainer(options: { engine?: WorkflowEngineName; eventBus: EventBusAdapterName }) {
+  const { engine = 'simple', eventBus } = options
 
   const client = postgres(env.DATABASE_URL, { prepare: false })
   const dbProvider = createNodeDbProvider(client)
@@ -64,7 +67,9 @@ export async function createWorkerContainer(
       temporalEngine = createTemporalWorkflowEngine({ retry: {} })
       return temporalEngine
     },
-    createTemporalEventBus: () => {
+    // The container argument goes unused here: a publisher starts an activity rather than resolving
+    // a subscriber. The workerd root's Cloudflare adapter is the one that needs it.
+    createEventBusAdapter: () => {
       temporalEventBus = createTemporalEventBus({ registry: subscriberRegistry, logger })
       return temporalEventBus
     },

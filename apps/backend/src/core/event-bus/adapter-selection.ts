@@ -14,10 +14,12 @@ import type { EventBusAdapterName } from '../config/types.js'
  * caller: `RUNTIME` is `node` under vitest, so the derived answer would be Temporal and every test
  * touching an emit would need a running server.
  *
- * `temporal` exists: `temporal-adapter.ts`, one standalone activity execution per delivery. Node
- * composition roots take it by derivation now rather than pinning around it. `cloudflare-queues` is
- * still ILLO-88, so workerd keeps its `inline` pin and `bootstrapContainer` refuses to boot rather
- * than quietly substituting something — an adapter it cannot build must not become a different one.
+ * Both transports exist — `temporal-adapter.ts` and `cloudflare-queues-adapter.ts` — and neither can
+ * be built by `bootstrapContainer` itself, so a composition root passes a factory alongside its pin.
+ * The node roots take `temporal` by derivation and name nothing; the workerd root names
+ * `cloudflare-queues` explicitly even though it derives it, so a deploy's answer reads next to the
+ * wiring that supplies the binding. `bootstrapContainer` still refuses to boot when the factory is
+ * missing: an adapter it cannot build must never quietly become a different one.
  */
 export function resolveEventBusAdapterName(input: {
   configured: EventBusAdapterName | undefined
