@@ -7,7 +7,7 @@ import {
   DeleteResponse,
   IdParams,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminCustomerResponse

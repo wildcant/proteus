@@ -1,0 +1,9 @@
+id: query-options-loose-type
+valid:
+  - "export const useThing = (id: string, options?: Omit<UseQueryOptions<R, Error, R>, 'queryFn' | 'queryKey'>) => useQuery(thingQueryOptions(id, options))"
+  # Aliased once per file, which is the shape every file with more than one query uses.
+  - 'export const useThing = (id: string, options?: ThingQueryOptions) => useQuery(thingQueryOptions(id, options))'
+  - 'export const useThing = (id: string) => useQuery(thingQueryOptions(id))'
+invalid:
+  - 'export const useThing = (id: string, options?: Partial<UseQueryOptions<R, Error>>) => useQuery(thingQueryOptions(id, options))'
+  - 'export const useThing = (id: string, options?: { enabled?: boolean }) => useQuery(thingQueryOptions(id, options))'

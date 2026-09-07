@@ -1,0 +1,23 @@
+id: route-throws-undeclared-error
+valid:
+  # Declared beside the handler, which is the whole point of the export.
+  - |
+    export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
+    export const POST = async (req) => { throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'x' }) }
+  # Both arms of the ternary are declared.
+  - |
+    export const PostThrows = [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA] as const
+    export const POST = async (req) => { throw new AppError({ type: isDuplicate ? ErrorTypes.CONFLICT : ErrorTypes.INVALID_DATA, message: 'x' }) }
+invalid:
+  # Thrown, declared nowhere — the spec would omit the 401.
+  - |
+    export const PostOutput = AuthenticateResponse
+    export const POST = async (req) => { throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'x' }) }
+  # Declared, but not this type.
+  - |
+    export const PostThrows = [ErrorTypes.INVALID_DATA] as const
+    export const POST = async (req) => { throw new AppError({ type: ErrorTypes.CONFLICT, message: 'x' }) }
+  # The ternary arm that was forgotten. Signup's duplicate-email branch is exactly this shape.
+  - |
+    export const PostThrows = [ErrorTypes.INVALID_DATA] as const
+    export const POST = async (req) => { throw new AppError({ type: isDuplicate ? ErrorTypes.CONFLICT : ErrorTypes.INVALID_DATA, message: 'x' }) }

@@ -1,0 +1,56 @@
+id: query-hook-inline-query
+snapshots:
+  'export const useThing = (id: string) => useQuery({ queryKey: k.detail(id), queryFn: () => get(id) })':
+    labels:
+    - source: 'queryFn: () => get(id)'
+      style: primary
+      start: 75
+      end: 97
+    - source: 'useQuery({ queryKey: k.detail(id), queryFn: () => get(id) })'
+      style: secondary
+      start: 40
+      end: 100
+    - source: '({ queryKey: k.detail(id), queryFn: () => get(id) })'
+      style: secondary
+      start: 48
+      end: 100
+    - source: '{ queryKey: k.detail(id), queryFn: () => get(id) }'
+      style: secondary
+      start: 49
+      end: 99
+  'export const useThing = (id: string) => useSuspenseQuery({ queryKey: k.detail(id), queryFn: () => get(id) })':
+    labels:
+    - source: 'queryFn: () => get(id)'
+      style: primary
+      start: 83
+      end: 105
+    - source: 'useSuspenseQuery({ queryKey: k.detail(id), queryFn: () => get(id) })'
+      style: secondary
+      start: 40
+      end: 108
+    - source: '({ queryKey: k.detail(id), queryFn: () => get(id) })'
+      style: secondary
+      start: 56
+      end: 108
+    - source: '{ queryKey: k.detail(id), queryFn: () => get(id) }'
+      style: secondary
+      start: 57
+      end: 107
+  ? 'export const useThings = () => useInfiniteQuery({ queryKey: k.lists(), queryFn: ({ pageParam }) => list(pageParam), initialPageParam: 0 })'
+  : labels:
+    - source: 'queryFn: ({ pageParam }) => list(pageParam)'
+      style: primary
+      start: 71
+      end: 114
+    - source: 'useInfiniteQuery({ queryKey: k.lists(), queryFn: ({ pageParam }) => list(pageParam), initialPageParam: 0 })'
+      style: secondary
+      start: 31
+      end: 138
+    - source: '({ queryKey: k.lists(), queryFn: ({ pageParam }) => list(pageParam), initialPageParam: 0 })'
+      style: secondary
+      start: 47
+      end: 138
+    - source: '{ queryKey: k.lists(), queryFn: ({ pageParam }) => list(pageParam), initialPageParam: 0 }'
+      style: secondary
+      start: 48
+      end: 137

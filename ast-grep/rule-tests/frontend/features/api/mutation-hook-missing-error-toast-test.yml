@@ -1,0 +1,7 @@
+id: mutation-hook-missing-error-toast
+valid:
+  - 'useMutation({ ...rest, onError: (...args) => { toast.add({ type: "error", title: "x", description: e.message }); onError?.(...args) } })'
+  # A toast raised under a condition still counts — see `useCreatePaymentSession`.
+  - 'useMutation({ ...rest, onError: (...args) => { if (!isStale(e)) { toast.add({ type: "error", title: "x" }) } onError?.(...args) } })'
+invalid:
+  - 'useMutation({ ...rest, onError: (...args) => { onError?.(...args) } })'

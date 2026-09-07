@@ -5,7 +5,7 @@ import {
   AdminCreateFulfillmentSetResponse,
   AdminFulfillmentSetListResponse,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = AdminFulfillmentSetListResponse
 

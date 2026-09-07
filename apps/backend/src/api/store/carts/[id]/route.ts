@@ -1,8 +1,8 @@
 import type { ICartModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { IdParams, StoreCartDetailResponse, StoreUpdateCartResponse, UpdateCart } from '@proteus/http-schemas/store'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { updateCartWorkflow } from '@workflows/cart/update-cart.js'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = StoreCartDetailResponse
@@ -31,6 +31,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PostInput = { params: IdParams, body: UpdateCart }
 export const PostOutput = StoreUpdateCartResponse
+export const PostThrows = [...updateCartWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const cart = await updateCartWorkflow.run({ cartId: req.params.id, ...req.body })

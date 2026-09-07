@@ -1,7 +1,7 @@
+import { env } from '@env'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import { test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'
-import { env } from '../../../env.js'
 import { ErrorTypes } from '../../errors/app-error.js'
 import { generateJwtToken } from '../utils/token.js'
 

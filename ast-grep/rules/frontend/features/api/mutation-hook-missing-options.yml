@@ -1,0 +1,35 @@
+id: mutation-hook-missing-options
+language: typescript
+severity: error
+message: This mutation hook takes no `options`, so a caller cannot set `retry`, `onSettled` or its own callbacks.
+note: 'Give it `options?: UseMutationOptions<TData, Error, TVariables>` as its last parameter. docs/mutation-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+
+utils:
+  # Both spellings of a hook. Which one a file uses is a style question, and answering it here would
+  # make a rename look like a fix.
+  inside-a-hook:
+    inside:
+      stopBy: end
+      any:
+        - pattern: const $HOOK = ($$$PARAMS) => $BODY
+        - pattern: function $HOOK($$$PARAMS) { $$$ }
+  # Parameter lists are ordered, so this is `options` *last* — closure params such as `id` come
+  # before it and are matched by `$$$BEFORE`.
+  takes-options-last:
+    inside:
+      stopBy: end
+      any:
+        - pattern: 'const $H = ($$$BEFORE, $OPTIONS?: UseMutationOptions<$$$>) => $B'
+        - pattern: 'function $H($$$BEFORE, $OPTIONS?: UseMutationOptions<$$$>) { $$$ }'
+
+rule:
+  pattern: useMutation($$$)
+  matches: inside-a-hook
+  not:
+    matches: takes-options-last
+
+constraints:
+  HOOK:
+    regex: "^use[A-Z]"

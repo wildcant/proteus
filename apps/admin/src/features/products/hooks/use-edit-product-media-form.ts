@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { AdminProductResponseProduct } from '#/api/generated/model'
 import { useUpdateProduct } from '#/features/products/api/products'
 import { useUploadProductMedia } from '#/features/products/hooks/use-upload-product-media.ts'
-import { getProductMedia, mediaSchema, resolveMediaPayload } from '#/features/products/media.ts'
+import { getProductMedia, mediaSchema, resolveMediaPayload } from '#/features/products/utils/media'
 import { useAppForm } from '#/lib/form-hook.ts'
 import type { SubmitFormParams } from '#/types/form.ts'
 

@@ -1,6 +1,6 @@
 import { Connection } from '@temporalio/client'
+import { TEMPORAL_TASK_QUEUE } from '../../src/core/workflows/temporal/config.js'
 import { env } from '../../src/env.js'
-import { TEMPORAL_TASK_QUEUE } from '../../src/temporal/config.js'
 
 /**
  * Readiness probe for the `worker` service in `docker-compose.yml`.

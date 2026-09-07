@@ -1,5 +1,5 @@
+import { env } from '@env'
 import { test } from '@tests/setup/test-extend.js'
-import { env } from '../../../env.js'
 import { createWorkersDbProvider } from '../workers-provider.js'
 
 test.describe('createWorkersDbProvider', () => {

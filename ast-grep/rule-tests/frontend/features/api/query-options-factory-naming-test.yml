@@ -1,0 +1,9 @@
+id: query-options-factory-naming
+valid:
+  - 'export const thingQueryOptions = (id: string) => queryOptions({ queryKey: k.detail(id), queryFn: f })'
+  - 'export const thingsListQueryOptions = (query?: P) => queryOptions({ queryKey: k.list(query), queryFn: f })'
+  - 'export const thingsInfiniteQueryOptions = () => infiniteQueryOptions({ queryKey: k.lists(), queryFn: f, initialPageParam: 0 })'
+invalid:
+  - 'export const thingOptions = (id: string) => queryOptions({ queryKey: k.detail(id), queryFn: f })'
+  # `get` reads as a fetch. The factory configures a query; it does not perform one.
+  - 'export const getThingsQueryOptions = (query?: P) => queryOptions({ queryKey: k.list(query), queryFn: f })'

@@ -1,11 +1,11 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import type { ListStoreOrdersParams, StoreOrderListResponse, StoreOrderResponse } from '#/api/generated/model'
 import { getStoreOrder, listStoreOrders } from '#/api/generated/orders/orders'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const ORDERS_QUERY_KEY = 'orders' as const
-export const ordersQueryKeys = queryKeysFactory(ORDERS_QUERY_KEY)
+export const ordersQueryKeys = queryKeysFactory<typeof ORDERS_QUERY_KEY, ListStoreOrdersParams>(ORDERS_QUERY_KEY)
 
 /** Five rows is what the account panel shows before it pages. */
 export const ORDERS_DEFAULT_LIMIT = 5
@@ -27,11 +27,12 @@ type OrdersListQueryOptions = Omit<
   'queryFn' | 'queryKey'
 >
 /** Shared query config. Use in route loaders via `prefetchQuery(ordersListQueryOptions())`. */
-export const ordersListQueryOptions = (query?: ListStoreOrdersParams, options?: OrdersListQueryOptions) => ({
-  queryKey: ordersQueryKeys.list(query),
-  queryFn: () => listStoreOrders(query),
-  ...options,
-})
+export const ordersListQueryOptions = (query?: ListStoreOrdersParams, options?: OrdersListQueryOptions) =>
+  queryOptions({
+    queryKey: ordersQueryKeys.list(query),
+    queryFn: () => listStoreOrders(query),
+    ...options,
+  })
 
 /** Suspends until orders list resolves. Use inside a `<Suspense>` boundary. */
 export const useSuspenseOrders = (query?: ListStoreOrdersParams, options?: OrdersListQueryOptions) => {
@@ -41,11 +42,12 @@ export const useSuspenseOrders = (query?: ListStoreOrdersParams, options?: Order
 
 type OrderQueryOptions = Omit<UseQueryOptions<StoreOrderResponse, Error, StoreOrderResponse>, 'queryFn' | 'queryKey'>
 /** Shared query config. Use in route loaders via `prefetchQuery(orderQueryOptions(id))`. */
-export const orderQueryOptions = (id: string, options?: OrderQueryOptions) => ({
-  queryKey: ordersQueryKeys.detail(id),
-  queryFn: () => getStoreOrder(id),
-  ...options,
-})
+export const orderQueryOptions = (id: string, options?: OrderQueryOptions) =>
+  queryOptions({
+    queryKey: ordersQueryKeys.detail(id),
+    queryFn: () => getStoreOrder(id),
+    ...options,
+  })
 
 /** Suspends until order detail resolves. Use inside a `<Suspense>` boundary. */
 export const useSuspenseOrder = (id: string, options?: OrderQueryOptions) => {

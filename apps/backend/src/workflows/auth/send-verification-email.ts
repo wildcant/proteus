@@ -1,6 +1,6 @@
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { NotificationTemplates } from '@core/utils/index.js'
-import { env } from '../../env.js'
+import { env } from '@env'
 
 export async function sendVerificationEmail(
   notificationService: INotificationModuleService,

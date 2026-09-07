@@ -1,9 +1,10 @@
 import { IdParams, StoreCartInventoryResponse } from '@proteus/http-schemas/store'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { confirmInventoryWorkflow } from '@workflows/cart/confirm-inventory-workflow.js'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = StoreCartInventoryResponse
+export const GetThrows = [...confirmInventoryWorkflow.throws] as const
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const result = await confirmInventoryWorkflow.run({ cartId: req.params.id })

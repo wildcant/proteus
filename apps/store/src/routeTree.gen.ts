@@ -18,6 +18,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-pass
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as AuthVerifyRouteImport } from './routes/_auth/verify'
 import { Route as CheckoutCheckoutRouteRouteImport } from './routes/_checkout/checkout/route'
+import { Route as CheckoutCheckoutReturnRouteImport } from './routes/_checkout/checkout-return'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainAuthedRouteRouteImport } from './routes/_main/_authed/route'
 import { Route as MainProductsRouteRouteImport } from './routes/_main/products/route'
@@ -27,6 +28,7 @@ import { Route as MainProductsProductIdRouteImport } from './routes/_main/produc
 import { Route as CheckoutCheckoutAddressesNewRouteImport } from './routes/_checkout/checkout/addresses/new'
 import { Route as MainAuthedAccountIndexRouteImport } from './routes/_main/_authed/account/index'
 import { Route as MainAuthedAccountAddressesRouteRouteImport } from './routes/_main/_authed/account/addresses/route'
+import { Route as MainAuthedAccountPaymentMethodsRouteImport } from './routes/_main/_authed/account/payment-methods'
 import { Route as MainOrderOrderIdConfirmedRouteImport } from './routes/_main/order/$orderId/confirmed'
 import { Route as CheckoutCheckoutAddressesAddressIdEditRouteImport } from './routes/_checkout/checkout/addresses/$addressId/edit'
 import { Route as MainAuthedAccountAddressesIndexRouteImport } from './routes/_main/_authed/account/addresses/index'
@@ -76,6 +78,11 @@ const CheckoutCheckoutRouteRoute = CheckoutCheckoutRouteRouteImport.update({
   path: '/checkout',
   getParentRoute: () => CheckoutRouteRoute,
 } as any)
+const CheckoutCheckoutReturnRoute = CheckoutCheckoutReturnRouteImport.update({
+  id: '/checkout-return',
+  path: '/checkout-return',
+  getParentRoute: () => CheckoutRouteRoute,
+} as any)
 const MainIndexRoute = MainIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -121,6 +128,12 @@ const MainAuthedAccountAddressesRouteRoute =
   MainAuthedAccountAddressesRouteRouteImport.update({
     id: '/account/addresses',
     path: '/account/addresses',
+    getParentRoute: () => MainAuthedRouteRoute,
+  } as any)
+const MainAuthedAccountPaymentMethodsRoute =
+  MainAuthedAccountPaymentMethodsRouteImport.update({
+    id: '/account/payment-methods',
+    path: '/account/payment-methods',
     getParentRoute: () => MainAuthedRouteRoute,
   } as any)
 const MainOrderOrderIdConfirmedRoute =
@@ -169,11 +182,13 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/signup': typeof AuthSignupRoute
   '/verify': typeof AuthVerifyRoute
+  '/checkout-return': typeof CheckoutCheckoutReturnRoute
   '/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/products/$productId': typeof MainProductsProductIdRoute
   '/checkout/': typeof CheckoutCheckoutIndexRoute
   '/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
+  '/account/payment-methods': typeof MainAuthedAccountPaymentMethodsRoute
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/account/': typeof MainAuthedAccountIndexRoute
   '/checkout/addresses/$addressId/edit': typeof CheckoutCheckoutAddressesAddressIdEditRoute
@@ -190,10 +205,12 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/signup': typeof AuthSignupRoute
   '/verify': typeof AuthVerifyRoute
+  '/checkout-return': typeof CheckoutCheckoutReturnRoute
   '/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/products/$productId': typeof MainProductsProductIdRoute
   '/checkout': typeof CheckoutCheckoutIndexRoute
   '/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
+  '/account/payment-methods': typeof MainAuthedAccountPaymentMethodsRoute
   '/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/account': typeof MainAuthedAccountIndexRoute
   '/checkout/addresses/$addressId/edit': typeof CheckoutCheckoutAddressesAddressIdEditRoute
@@ -215,12 +232,14 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/signup': typeof AuthSignupRoute
   '/_auth/verify': typeof AuthVerifyRoute
+  '/_checkout/checkout-return': typeof CheckoutCheckoutReturnRoute
   '/_main/': typeof MainIndexRoute
   '/_checkout/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/_main/products/$productId': typeof MainProductsProductIdRoute
   '/_checkout/checkout/': typeof CheckoutCheckoutIndexRoute
   '/_main/_authed/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/_checkout/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
+  '/_main/_authed/account/payment-methods': typeof MainAuthedAccountPaymentMethodsRoute
   '/_main/order/$orderId/confirmed': typeof MainOrderOrderIdConfirmedRoute
   '/_main/_authed/account/': typeof MainAuthedAccountIndexRoute
   '/_checkout/checkout/addresses/$addressId/edit': typeof CheckoutCheckoutAddressesAddressIdEditRoute
@@ -240,11 +259,13 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/verify'
+    | '/checkout-return'
     | '/checkout/addresses'
     | '/products/$productId'
     | '/checkout/'
     | '/account/addresses'
     | '/checkout/addresses/new'
+    | '/account/payment-methods'
     | '/order/$orderId/confirmed'
     | '/account/'
     | '/checkout/addresses/$addressId/edit'
@@ -261,10 +282,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/verify'
+    | '/checkout-return'
     | '/checkout/addresses'
     | '/products/$productId'
     | '/checkout'
     | '/checkout/addresses/new'
+    | '/account/payment-methods'
     | '/order/$orderId/confirmed'
     | '/account'
     | '/checkout/addresses/$addressId/edit'
@@ -285,12 +308,14 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_auth/signup'
     | '/_auth/verify'
+    | '/_checkout/checkout-return'
     | '/_main/'
     | '/_checkout/checkout/addresses'
     | '/_main/products/$productId'
     | '/_checkout/checkout/'
     | '/_main/_authed/account/addresses'
     | '/_checkout/checkout/addresses/new'
+    | '/_main/_authed/account/payment-methods'
     | '/_main/order/$orderId/confirmed'
     | '/_main/_authed/account/'
     | '/_checkout/checkout/addresses/$addressId/edit'
@@ -371,6 +396,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCheckoutRouteRouteImport
       parentRoute: typeof CheckoutRouteRoute
     }
+    '/_checkout/checkout-return': {
+      id: '/_checkout/checkout-return'
+      path: '/checkout-return'
+      fullPath: '/checkout-return'
+      preLoaderRoute: typeof CheckoutCheckoutReturnRouteImport
+      parentRoute: typeof CheckoutRouteRoute
+    }
     '/_main/': {
       id: '/_main/'
       path: '/'
@@ -432,6 +464,13 @@ declare module '@tanstack/react-router' {
       path: '/account/addresses'
       fullPath: '/account/addresses'
       preLoaderRoute: typeof MainAuthedAccountAddressesRouteRouteImport
+      parentRoute: typeof MainAuthedRouteRoute
+    }
+    '/_main/_authed/account/payment-methods': {
+      id: '/_main/_authed/account/payment-methods'
+      path: '/account/payment-methods'
+      fullPath: '/account/payment-methods'
+      preLoaderRoute: typeof MainAuthedAccountPaymentMethodsRouteImport
       parentRoute: typeof MainAuthedRouteRoute
     }
     '/_main/order/$orderId/confirmed': {
@@ -534,10 +573,12 @@ const CheckoutCheckoutRouteRouteWithChildren =
 
 interface CheckoutRouteRouteChildren {
   CheckoutCheckoutRouteRoute: typeof CheckoutCheckoutRouteRouteWithChildren
+  CheckoutCheckoutReturnRoute: typeof CheckoutCheckoutReturnRoute
 }
 
 const CheckoutRouteRouteChildren: CheckoutRouteRouteChildren = {
   CheckoutCheckoutRouteRoute: CheckoutCheckoutRouteRouteWithChildren,
+  CheckoutCheckoutReturnRoute: CheckoutCheckoutReturnRoute,
 }
 
 const CheckoutRouteRouteWithChildren = CheckoutRouteRoute._addFileChildren(
@@ -565,6 +606,7 @@ const MainAuthedAccountAddressesRouteRouteWithChildren =
 
 interface MainAuthedRouteRouteChildren {
   MainAuthedAccountAddressesRouteRoute: typeof MainAuthedAccountAddressesRouteRouteWithChildren
+  MainAuthedAccountPaymentMethodsRoute: typeof MainAuthedAccountPaymentMethodsRoute
   MainAuthedAccountIndexRoute: typeof MainAuthedAccountIndexRoute
   MainAuthedAccountOrdersOrderIdRoute: typeof MainAuthedAccountOrdersOrderIdRoute
 }
@@ -572,6 +614,7 @@ interface MainAuthedRouteRouteChildren {
 const MainAuthedRouteRouteChildren: MainAuthedRouteRouteChildren = {
   MainAuthedAccountAddressesRouteRoute:
     MainAuthedAccountAddressesRouteRouteWithChildren,
+  MainAuthedAccountPaymentMethodsRoute: MainAuthedAccountPaymentMethodsRoute,
   MainAuthedAccountIndexRoute: MainAuthedAccountIndexRoute,
   MainAuthedAccountOrdersOrderIdRoute: MainAuthedAccountOrdersOrderIdRoute,
 }

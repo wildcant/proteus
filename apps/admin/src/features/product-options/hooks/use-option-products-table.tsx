@@ -1,7 +1,7 @@
 import type { AdminProduct } from '#/api/generated/model'
 import { StatusCell, useDefineTable } from '#/components/data-table'
 import { useProductsForOption } from '#/features/product-options/api/product-options'
-import { productStatusColors } from '#/features/products/constants'
+import { productStatusColors } from '#/features/products/utils/product-status'
 
 export const useOptionProductsTable = (optionId: string) =>
   useDefineTable<AdminProduct>({

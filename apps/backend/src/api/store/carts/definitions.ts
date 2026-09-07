@@ -1,7 +1,6 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
 import { StorePricingContextParams } from '@proteus/http-schemas/store'
-import { setPricingContext } from '../middlewares.js'
 import * as completeRoutes from './[id]/complete/route.js'
 import * as customerRoutes from './[id]/customer/route.js'
 import * as inventoryRoutes from './[id]/inventory/route.js'
@@ -18,8 +17,9 @@ export default [
     method: 'POST',
     matcher: '/store/carts',
     handler: cartRoutes.POST,
+    throws: cartRoutes.PostThrows,
     auth: 'optional',
-    middlewares: [setPricingContext()],
+    middlewares: cartRoutes.PostMiddlewares,
     input: { ...cartRoutes.PostInput, contextQuery: StorePricingContextParams },
     operationId: 'createStoreCart',
     summary: 'Create a cart',
@@ -41,6 +41,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id',
     handler: cartByIdRoutes.POST,
+    throws: cartByIdRoutes.PostThrows,
     auth: 'optional',
     input: cartByIdRoutes.PostInput,
     operationId: 'updateStoreCart',
@@ -52,6 +53,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id/line-items',
     handler: lineItemRoutes.POST,
+    throws: lineItemRoutes.PostThrows,
     auth: 'optional',
     input: lineItemRoutes.PostInput,
     operationId: 'addStoreCartLineItem',
@@ -107,6 +109,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id/shipping-methods',
     handler: shippingMethodRoutes.POST,
+    throws: shippingMethodRoutes.PostThrows,
     auth: 'optional',
     input: shippingMethodRoutes.PostInput,
     operationId: 'addStoreCartShippingMethod',
@@ -118,6 +121,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id/complete',
     handler: completeRoutes.POST,
+    throws: completeRoutes.PostThrows,
     auth: 'optional',
     input: completeRoutes.PostInput,
     operationId: 'completeStoreCart',
@@ -129,6 +133,7 @@ export default [
     method: 'GET',
     matcher: '/store/carts/:id/inventory',
     handler: inventoryRoutes.GET,
+    throws: inventoryRoutes.GetThrows,
     auth: 'optional',
     input: inventoryRoutes.GetInput,
     operationId: 'checkStoreCartInventory',
@@ -140,6 +145,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id/customer',
     handler: customerRoutes.POST,
+    throws: customerRoutes.PostThrows,
     auth: 'required',
     input: customerRoutes.PostInput,
     operationId: 'transferStoreCartCustomer',

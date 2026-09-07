@@ -7,6 +7,7 @@ export default [
     method: 'POST',
     matcher: '/hooks/payment/:provider',
     handler: paymentWebhookRoutes.POST,
+    throws: paymentWebhookRoutes.PostThrows,
     input: paymentWebhookRoutes.PostInput,
     operationId: 'paymentWebhook',
     summary: 'Handle payment provider webhook',

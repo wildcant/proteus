@@ -17,7 +17,7 @@ type CreateOrderShipmentInput = {
 // Drives an order from fulfilled -> shipped. Records the shipment timestamp (and optional
 // tracking info) on the fulfillment, then advances the order's fulfillment status.
 export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInput, OrderDTO>(
-  'create-order-shipment',
+  { name: 'create-order-shipment', throws: [ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND] },
   async (ctx, input) => {
     // The order must be fulfilled before it can ship, and the fulfillment must actually
     // belong to this order (prevents shipping someone else's fulfillment).

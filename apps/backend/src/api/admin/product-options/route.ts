@@ -6,7 +6,7 @@ import {
   AdminProductOptionListResponse,
   AdminProductOptionResponse,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { query: AdminProductOptionListParams }
 export const GetOutput = AdminProductOptionListResponse

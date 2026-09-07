@@ -275,7 +275,7 @@ interface IPaymentModuleService {
   // PaymentSession lifecycle
   createPaymentSession(paymentCollectionId: string, input: CreatePaymentSessionDTO, context?: Context): Promise<PaymentSessionDTO>
   deletePaymentSession(id: string, context?: Context): Promise<void>
-  authorizePaymentSession(id: string, context?: Context): Promise<PaymentDTO | null>
+  authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult>
 
   // Payment lifecycle
   capturePayment(data: CreateCaptureDTO, context?: Context): Promise<PaymentDTO>

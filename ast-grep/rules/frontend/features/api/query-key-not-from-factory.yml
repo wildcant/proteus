@@ -1,0 +1,11 @@
+id: query-key-not-from-factory
+language: typescript
+severity: error
+message: This `queryKey` is an array literal, so no mutation can invalidate it by `lists()` or `detail()`.
+note: 'Take the key from a `queryKeysFactory` instance — `keys.all`, `keys.lists()`, `keys.list(params)`, `keys.detail(id)`. docs/query-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+rule:
+  pattern:
+    context: "{ queryKey: [$$$ITEMS] }"
+    selector: pair

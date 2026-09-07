@@ -1,0 +1,10 @@
+id: mutation-hook-missing-options
+valid:
+  - 'export const useThing = (options?: UseMutationOptions<R, Error, V>) => useMutation({ ...rest })'
+  - 'export const useThing = (id: string, options?: UseMutationOptions<R, Error, V>) => useMutation({ ...rest })'
+  - 'export function useThing(options?: UseMutationOptions<R, Error, V>) { return useMutation({ ...rest }) }'
+invalid:
+  - 'export const useThing = () => useMutation({ mutationFn: f })'
+  - 'export const useThing = (id: string) => useMutation({ mutationFn: f })'
+  # `options` present but not last, so a caller cannot omit the trailing parameter.
+  - 'export const useThing = (options?: UseMutationOptions<R, Error, V>, id: string) => useMutation({ ...rest })'

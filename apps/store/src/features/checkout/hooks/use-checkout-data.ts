@@ -4,7 +4,7 @@ import { useMe } from '#/features/account/api/customer'
 import { useAddresses } from '#/features/address/api/addresses'
 import { isGuest } from '#/lib/auth-token'
 import { useMarket } from '#/lib/use-market'
-import { toCartAddressInput } from '../checkout-address'
+import { toCartAddressInput } from '../utils/checkout-address'
 
 export type CheckoutDataParams = {
   cart: StoreCartDetailResponseCart

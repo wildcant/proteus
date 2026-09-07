@@ -1,0 +1,9 @@
+id: query-key-not-from-factory
+valid:
+  - 'export const thingQueryOptions = (id: string) => queryOptions({ queryKey: thingKeys.detail(id), queryFn: f })'
+  - 'export const thingsQueryOptions = () => queryOptions({ queryKey: thingKeys.lists(), queryFn: f })'
+  - 'export const cartQueryOptions = () => queryOptions({ queryKey: cartKeys.all, queryFn: f })'
+invalid:
+  - "export const thingQueryOptions = (id: string) => queryOptions({ queryKey: ['things', id], queryFn: f })"
+  # Reaching into a factory's `all` and appending is still a key nothing can invalidate by name.
+  - "export const thingQueryOptions = (id: string) => queryOptions({ queryKey: [...thingKeys.all, 'detail', id], queryFn: f })"

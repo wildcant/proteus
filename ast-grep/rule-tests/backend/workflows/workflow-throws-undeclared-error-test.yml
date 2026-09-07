@@ -1,0 +1,26 @@
+id: workflow-throws-undeclared-error
+valid:
+  - |
+    export const markOrderDeliveredWorkflow = createWorkflow(
+      { name: 'mark-order-delivered', throws: [ErrorTypes.NOT_ALLOWED] },
+      async (ctx, input) => { throw new WorkflowTerminalError({ type: ErrorTypes.NOT_ALLOWED, message: 'x' }) },
+    )
+  # A step in its own file declares its own contract for the workflow to spread.
+  - |
+    export const setAuthAppMetadataThrows = [ErrorTypes.CONFLICT] as const
+    export async function setAuthAppMetadataStep(ctx, input) {
+      throw new WorkflowTerminalError({ type: ErrorTypes.CONFLICT, message: 'x' })
+    }
+invalid:
+  # The string form carries no contract at all, so nothing downstream can spread one.
+  - |
+    export const markOrderDeliveredWorkflow = createWorkflow(
+      'mark-order-delivered',
+      async (ctx, input) => { throw new WorkflowTerminalError({ type: ErrorTypes.NOT_ALLOWED, message: 'x' }) },
+    )
+  # Declared, but a second type was added to the handler later.
+  - |
+    export const markOrderDeliveredWorkflow = createWorkflow(
+      { name: 'mark-order-delivered', throws: [ErrorTypes.NOT_ALLOWED] },
+      async (ctx, input) => { throw new WorkflowTerminalError({ type: ErrorTypes.NOT_FOUND, message: 'x' }) },
+    )

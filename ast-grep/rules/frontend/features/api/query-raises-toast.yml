@@ -1,0 +1,19 @@
+id: query-raises-toast
+language: typescript
+severity: error
+message: This query raises a toast. A failed read is the surface's to render, not the query's to announce.
+note: 'Let the caller show the failure — an error boundary, or a `failed` flag as `usePaymentMethods` does. Toasts belong to mutations. docs/query-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+rule:
+  pattern: toast.add($$$)
+  inside:
+    stopBy: end
+    kind: arguments
+    inside:
+      any:
+        - pattern: queryOptions($$$)
+        - pattern: infiniteQueryOptions($$$)
+        - pattern: useQuery($$$)
+        - pattern: useSuspenseQuery($$$)
+        - pattern: useInfiniteQuery($$$)

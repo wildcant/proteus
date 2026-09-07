@@ -24,6 +24,7 @@ export function AccountDetail() {
         <OrdersPanel className="lg:col-span-2" />
         <div className="flex flex-col gap-4">
           <Panel title="Address Book" chevron render={<Link to="/account/addresses" />} />
+          <Panel title="Payment Methods" chevron render={<Link to="/account/payment-methods" />} />
           <DetailsPanel firstName={customer.firstName} lastName={customer.lastName} email={customer.email} />
           <PasswordPanel email={customer.email} />
         </div>

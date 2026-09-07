@@ -41,7 +41,7 @@ export const AdminOrderShippingMethod = z
     description: z.string().nullable(),
     amount: bigNumberToString,
     shippingOptionId: z.string().nullable(),
-    data: z.unknown(),
+    data: z.record(z.string(), z.unknown()).nullable(),
     ...timestamps.shape,
   })
   .openapi('AdminOrderShippingMethod')

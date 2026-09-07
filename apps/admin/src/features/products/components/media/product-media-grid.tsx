@@ -33,7 +33,7 @@ import {
 } from '@proteus/ui'
 import { ImageIcon, StarIcon } from 'lucide-react'
 import { useState } from 'react'
-import type { ProductMedia } from '#/features/products/media.ts'
+import type { ProductMedia } from '#/features/products/utils/media'
 
 const DROP_ANIMATION: DropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.4' } } }),

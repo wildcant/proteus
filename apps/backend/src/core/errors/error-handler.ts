@@ -1,8 +1,13 @@
 import type { Logger } from '../types/logger.js'
+// Relative, not `@workflows/`: this module is reachable through the `backend/test` package export,
+// which Node resolves on its own without reading tsconfig paths. Type-only imports survive an alias
+// there because they are erased; this one is a value import and would fail at runtime.
 import { WorkflowTerminalError } from '../workflows/types.js'
 import { AppError, ErrorTypes } from './app-error.js'
 
-const typeToStatus: Record<ErrorTypes, number> = {
+/** Exported because the OpenAPI generator declares responses from it, so a route's documented
+ *  statuses and the ones it actually answers with cannot drift apart. */
+export const typeToStatus: Record<ErrorTypes, number> = {
   [ErrorTypes.UNAUTHORIZED]: 401,
   [ErrorTypes.FORBIDDEN]: 403,
   [ErrorTypes.NOT_FOUND]: 404,
@@ -13,9 +18,16 @@ const typeToStatus: Record<ErrorTypes, number> = {
   [ErrorTypes.DUPLICATE_ERROR]: 422,
   [ErrorTypes.DB_ERROR]: 500,
   [ErrorTypes.UNEXPECTED_STATE]: 500,
+  [ErrorTypes.SERVICE_UNAVAILABLE]: 503,
 }
 
-type ApiCode = 'invalid_request_error' | 'invalid_state_error' | 'not_found' | 'unauthorized' | 'unknown_error'
+type ApiCode =
+  | 'invalid_request_error'
+  | 'invalid_state_error'
+  | 'not_found'
+  | 'service_unavailable'
+  | 'unauthorized'
+  | 'unknown_error'
 
 const typeToApiCode: Record<ErrorTypes, ApiCode> = {
   [ErrorTypes.UNAUTHORIZED]: 'unauthorized',
@@ -28,6 +40,7 @@ const typeToApiCode: Record<ErrorTypes, ApiCode> = {
   [ErrorTypes.DUPLICATE_ERROR]: 'invalid_request_error',
   [ErrorTypes.DB_ERROR]: 'unknown_error',
   [ErrorTypes.UNEXPECTED_STATE]: 'invalid_state_error',
+  [ErrorTypes.SERVICE_UNAVAILABLE]: 'service_unavailable',
 }
 
 const serverErrorTypes = new Set<ErrorTypes>([ErrorTypes.DB_ERROR])
@@ -37,7 +50,8 @@ export function errorHandler(
   logger: Logger,
 ): {
   status: number
-  json: { code: ApiCode; type: string; message: string }
+  /** The error's own `code` when it carries one, and the type's coarse code otherwise. */
+  json: { code: string; type: string; message: string }
 } {
   // Unwrap WorkflowTerminalError — if it wraps an AppError, use the AppError for HTTP semantics
   if (err instanceof WorkflowTerminalError && AppError.isError(err.cause)) {
@@ -57,7 +71,7 @@ export function errorHandler(
     return {
       status,
       json: {
-        code: typeToApiCode[err.type] ?? 'unknown_error',
+        code: err.code ?? typeToApiCode[err.type] ?? 'unknown_error',
         type: err.type,
         message: isServer ? 'An internal error occurred' : err.message,
       },

@@ -5,8 +5,8 @@ import {
   AdminCreateProductVariantsBatchResponse,
   IdParams,
 } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { createProductVariantsWorkflow } from '@workflows/product/create-product-variants.js'
-import type { HttpRequest, HttpResult } from '../../../../../../server/ports.js'
 
 export const PostInput = { params: IdParams, body: AdminCreateProductVariantsBatch }
 export const PostOutput = AdminCreateProductVariantsBatchResponse
@@ -16,6 +16,8 @@ export const PostOutput = AdminCreateProductVariantsBatchResponse
  * for the same workflow; this exists because the admin's matrix form produces many rows at once
  * and the duplicate-combination check has to see them together.
  */
+export const PostThrows = [...createProductVariantsWorkflow.throws] as const
+
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const created = await createProductVariantsWorkflow.run({

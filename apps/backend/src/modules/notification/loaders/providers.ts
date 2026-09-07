@@ -1,3 +1,4 @@
+import { env } from '@env'
 import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
 import type {
@@ -6,7 +7,6 @@ import type {
   NotificationProviderConfig,
 } from '../../../core/types/notification/common.js'
 import type { AbstractNotificationProviderService } from '../../../core/utils/abstract-notification-provider.js'
-import { env } from '../../../env.js'
 import { NotificationProviderService } from '../services/notification-provider-service.js'
 
 // biome-ignore lint/suspicious/noExplicitAny: provider constructors accept varied dependency shapes

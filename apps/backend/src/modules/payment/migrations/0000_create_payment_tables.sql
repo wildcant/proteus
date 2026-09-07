@@ -2,6 +2,7 @@ CREATE TYPE "public"."payment_collection_status" AS ENUM('not_paid', 'awaiting',
 CREATE TYPE "public"."payment_session_status" AS ENUM('pending', 'authorized', 'captured', 'requires_more', 'error', 'canceled', 'pending_authorization');--> statement-breakpoint
 CREATE TABLE "account_holder" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('acchld_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
+	"customer_id" text,
 	"data" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"email" text,
 	"external_id" text NOT NULL,
@@ -109,6 +110,7 @@ ALTER TABLE "payment" ADD CONSTRAINT "payment_payment_session_id_payment_session
 ALTER TABLE "refund" ADD CONSTRAINT "refund_payment_id_payment_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payment"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "refund" ADD CONSTRAINT "refund_refund_reason_id_refund_reason_id_fk" FOREIGN KEY ("refund_reason_id") REFERENCES "public"."refund_reason"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_account_holder_provider_external" ON "account_holder" USING btree ("provider_id","external_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_account_holder_provider_customer" ON "account_holder" USING btree ("provider_id","customer_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_capture_payment_id" ON "capture" USING btree ("payment_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_payment_collection_status" ON "payment_collection" USING btree ("status") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_payment_session_collection_id" ON "payment_session" USING btree ("payment_collection_id") WHERE deleted_at IS NULL;--> statement-breakpoint

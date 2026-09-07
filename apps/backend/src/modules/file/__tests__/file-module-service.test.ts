@@ -1,8 +1,8 @@
 import { test } from '@tests/setup/test-extend.js'
 import { ErrorTypes } from '../../../core/errors/app-error.js'
-import { FILE_PROVIDER_REGISTRATION_PREFIX } from '../constants.js'
 import { FileModuleService } from '../services/file-module-service.js'
 import { FileProviderService } from '../services/file-provider-service.js'
+import { FILE_PROVIDER_REGISTRATION_PREFIX } from '../utils/constants.js'
 import { InMemoryFileProvider } from './fixtures/in-memory-file-provider.js'
 
 function createFileService(options?: { maxFileSize?: number }) {

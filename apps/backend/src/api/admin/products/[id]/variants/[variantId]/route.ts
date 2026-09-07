@@ -7,9 +7,9 @@ import {
   DeleteResponse,
   VariantIdParams,
 } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { deleteProductVariantWorkflow } from '@workflows/product/delete-product-variant.js'
 import { updateProductVariantWorkflow } from '@workflows/product/update-product-variant.js'
-import type { HttpRequest, HttpResult } from '../../../../../../server/ports.js'
 
 export const GetInput = { params: VariantIdParams }
 export const GetOutput = AdminProductVariantResponse
@@ -38,6 +38,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PatchInput = { params: VariantIdParams, body: AdminUpdateProductVariant }
 export const PatchOutput = AdminUpdateProductVariantResponse
+export const PatchThrows = [...updateProductVariantWorkflow.throws] as const
 
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
@@ -49,6 +50,7 @@ export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpRe
 
 export const DeleteInput = { params: VariantIdParams }
 export const DeleteOutput = DeleteResponse
+export const DeleteThrows = [...deleteProductVariantWorkflow.throws] as const
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
   await deleteProductVariantWorkflow.run({ variantId: req.params.variantId })

@@ -13,7 +13,8 @@ import { useFormatters } from '#/lib/use-formatters'
 
 /**
  * The cart, as a panel off the right edge. Open state is `?modal=cart`, so back closes it and two
- * overlays at once stays unrepresentable; it mounts in `Header`, so `/checkout` cannot open it.
+ * overlays at once stays unrepresentable; it mounts in the `_main` layout route, so `/checkout`
+ * cannot open it.
  */
 export function CartDrawer() {
   const { isOpen, setOpen } = useModal('cart')

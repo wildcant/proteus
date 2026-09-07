@@ -3,15 +3,13 @@ import type { CheckoutForm } from '../../hooks/use-checkout-form'
 import { CheckoutSection } from '../checkout-section'
 import { PaymentForm } from './payment-form'
 
-type PaymentSectionProps = Pick<CheckoutData, 'cart'> & {
+type PaymentSectionProps = Pick<CheckoutData, 'cart' | 'customer'> & {
   form: CheckoutForm
-  hasFailedOrder: boolean
-  onReopened: () => void
 }
-export function PaymentSection(props: PaymentSectionProps) {
+export function PaymentSection({ form, cart, customer }: PaymentSectionProps) {
   return (
     <CheckoutSection title="Payment">
-      <PaymentForm {...props} />
+      <PaymentForm form={form} cart={cart} customer={customer} />
     </CheckoutSection>
   )
 }

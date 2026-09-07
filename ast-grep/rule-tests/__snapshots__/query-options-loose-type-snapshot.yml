@@ -1,0 +1,38 @@
+id: query-options-loose-type
+snapshots:
+  'export const useThing = (id: string, options?: Partial<UseQueryOptions<R, Error>>) => useQuery(thingQueryOptions(id, options))':
+    labels:
+    - source: 'options?: Partial<UseQueryOptions<R, Error>>'
+      style: primary
+      start: 37
+      end: 81
+    - source: options
+      style: secondary
+      start: 37
+      end: 44
+    - source: Partial<UseQueryOptions<R, Error>>
+      style: secondary
+      start: 47
+      end: 81
+    - source: Partial<UseQueryOptions<R, Error>>
+      style: secondary
+      start: 47
+      end: 81
+  'export const useThing = (id: string, options?: { enabled?: boolean }) => useQuery(thingQueryOptions(id, options))':
+    labels:
+    - source: 'options?: { enabled?: boolean }'
+      style: primary
+      start: 37
+      end: 68
+    - source: options
+      style: secondary
+      start: 37
+      end: 44
+    - source: '{ enabled?: boolean }'
+      style: secondary
+      start: 47
+      end: 68
+    - source: '{ enabled?: boolean }'
+      style: secondary
+      start: 47
+      end: 68

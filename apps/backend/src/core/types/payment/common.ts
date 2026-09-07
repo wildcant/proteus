@@ -16,6 +16,15 @@ export type PaymentSessionStatus =
   | 'canceled'
   | 'pending_authorization'
 
+/**
+ * The statuses that mean the provider did not authorize. Narrower than [PaymentSessionStatus] so a
+ * caller classifying the refusal covers exactly the reachable ones and no unreachable ones.
+ */
+export type UnauthorizedSessionStatus = Exclude<
+  PaymentSessionStatus,
+  'authorized' | 'captured' | 'pending_authorization'
+>
+
 export type PaymentActions =
   | 'authorized'
   | 'captured'
@@ -82,6 +91,25 @@ export type PaymentDTO = {
   refunds?: RefundDTO[]
 }
 
+/**
+ * What an authorization attempt came back as.
+ *
+ * Three outcomes rather than two, because "the provider has not decided yet" and "the provider
+ * said no" ask the caller for opposite things: one is money in flight that a later webhook will
+ * resolve, the other is a shopper who did not pay. Both used to be `null`, so cart completion
+ * could only answer both with the same terminal error — and an intent still settling unwound a
+ * checkout as if the card had been declined, while the money kept settling at the gateway.
+ *
+ * The payment hangs off the `authorized` member alone, so there is no branch in which a caller
+ * can read one that does not exist.
+ */
+export type AuthorizePaymentSessionResult =
+  | { outcome: 'authorized'; payment: PaymentDTO }
+  /** Confirmed at the provider and still settling. No payment yet; the webhook brings one. */
+  | { outcome: 'pending_authorization' }
+  /** Declined, cancelled, or still waiting on the shopper. `sessionStatus` says which. */
+  | { outcome: 'not_authorized'; sessionStatus: UnauthorizedSessionStatus }
+
 export type CaptureDTO = {
   id: string
   paymentId: string
@@ -113,6 +141,17 @@ export type RefundReasonDTO = {
   deletedAt: Date | null
 }
 
+/**
+ * What the storefront is told about a provider beyond its row: the label and test-only flag from
+ * the provider class, and the client-safe configuration its adapter boots from.
+ */
+export type PaymentProviderMeta = {
+  label: string
+  isTestOnly: boolean
+  /** Allowlisted, publishable values only. Empty for a provider with nothing to publish. */
+  publicConfig: Record<string, unknown>
+}
+
 export type PaymentProviderDTO = {
   id: string
   isEnabled: boolean
@@ -121,6 +160,8 @@ export type PaymentProviderDTO = {
 export type AccountHolderDTO = {
   id: string
   providerId: string
+  /** The Proteus Customer this holder stands for. Null for a holder created without one. */
+  customerId: string | null
   externalId: string
   email: string | null
   data: Record<string, unknown>
@@ -134,6 +175,29 @@ export type PaymentMethodDTO = {
   id: string
   data: Record<string, unknown>
   providerId: string
+}
+
+/**
+ * A stored card, in the checkout's vocabulary rather than a gateway's.
+ *
+ * Every field here is one any card network answers for, which is what lets the storefront render
+ * a Stripe wallet and a Mercado Pago one with the same row component. The gateway's own object
+ * stops at the adapter: nothing above it can leak a raw field because nothing above it is given
+ * one.
+ *
+ * `createdAt` is the exception that is not shown — it exists so the wallet has one definition of
+ * "most recent" to order by. `orderSavedMethods` is that definition, and it is applied once.
+ */
+export type SavedMethodDTO = {
+  id: string
+  brand: string
+  last4: string
+  expMonth: number
+  expYear: number
+  /** The default the *gateway* holds, not one Proteus stores. See `setDefaultPaymentMethod`. */
+  isDefault: boolean
+  /** When the gateway says the method was stored. Ordering only; never served to a storefront. */
+  createdAt: Date
 }
 
 // ---------------------------------------------------------------------------
@@ -188,4 +252,10 @@ export interface FilterablePaymentProviderProps extends BaseFilterable<Filterabl
 export interface FilterablePaymentMethodProps {
   providerId: string
   context: Record<string, unknown>
+}
+
+export interface FilterableAccountHolderProps extends BaseFilterable<FilterableAccountHolderProps> {
+  id?: string | string[]
+  providerId?: string | string[]
+  customerId?: string | string[]
 }

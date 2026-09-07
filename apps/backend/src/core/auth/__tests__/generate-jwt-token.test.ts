@@ -1,7 +1,7 @@
+import { env } from '@env'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import jwt from 'jsonwebtoken'
 import { vi } from 'vitest'
-import { env } from '../../../env.js'
 import type { ConfigModule } from '../../config/types.js'
 import type { IAuthModuleService } from '../../types/index.js'
 import { generateJwtTokenForAuthIdentity, generateJwtTokenWithChecks } from '../utils/generate-jwt-token.js'

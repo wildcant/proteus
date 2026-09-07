@@ -101,332 +101,335 @@ async function resolveNamedRegion(
   return regionService.retrieveRegion(country.regionId)
 }
 
-export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>('update-cart', async (ctx, input) => {
-  /**
-   * Validates the cart exists and hasn't been completed. A completed cart is the record behind
-   * an order and must not accept further updates.
-   */
-  const cart = await ctx.step('validate-cart', async ({ container }) => {
-    const cartService = container.resolve<ICartModuleService>(Modules.CART)
-    const cart = await cartService.retrieveCart(input.cartId)
-
-    if (cart.completedAt) {
-      throw new WorkflowTerminalError({
-        type: ErrorTypes.NOT_ALLOWED,
-        message: `Cart "${input.cartId}" is already completed`,
-      })
-    }
-
-    return cart
-  })
-
-  /**
-   * Reads the new market and decides whether the cart can move to it — before the customer is
-   * created and before a single column is written, so a refusal leaves the cart exactly as the
-   * shopper left it.
-   *
-   * A region the cart is already in is not a change: the switch would reprice every line at the
-   * same numbers and drop shipping methods that still apply, for nothing.
-   */
-  const regionChange = await ctx.step<RegionChange | null>('resolve-region-change', async ({ container }) => {
-    const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
-    const cartService = container.resolve<ICartModuleService>(Modules.CART)
-
-    const region = await resolveNamedRegion(regionService, input)
-    if (!region || region.id === cart.regionId) return null
-
-    const countries = await regionService.listCountries({ regionId: region.id }, { order: { id: 'ASC' } })
-    const countryCodes = countries.map((country) => country.id)
-
-    const [existingShippingAddress] = await cartService.listCartAddresses({
-      cartId: input.cartId,
-      type: 'shipping',
-    })
-
-    // Where the shopper said the order goes. The payload's address outranks the row on the cart,
-    // which this same request is about to replace; a row carrying nothing but a country an earlier
-    // switch adopted is not their answer at all — `isShopperEnteredAddress` says why.
-    const shopperAddress =
-      input.shippingAddress ??
-      (existingShippingAddress && isShopperEnteredAddress(existingShippingAddress)
-        ? existingShippingAddress
-        : undefined)
-    const enteredCountry = shopperAddress?.countryCode?.toLowerCase()
-
-    /** The country an earlier switch adopted, still on the cart and not being replaced. */
-    const adoptedAddress = !shopperAddress && existingShippingAddress ? existingShippingAddress : null
-
-    // Cross-border shipping does not exist yet: a market sells to the countries it lists, so an
-    // address the shopper gave outside them is an order the new market could not fulfil. Refusing
-    // beats silently moving their address to a country they did not choose.
-    if (enteredCountry && !countryCodes.includes(enteredCountry)) {
-      throw new WorkflowTerminalError({
-        type: ErrorTypes.INVALID_DATA,
-        message: `"${region.name}" does not ship to "${enteredCountry}"`,
-      })
-    }
-
-    const [firstCountryCode] = countryCodes
-    const adoptedCountryCode = !enteredCountry && countryCodes.length === 1 ? (firstCountryCode ?? null) : null
-    const adoptedCountryIsStale =
-      adoptedAddress?.countryCode != null && !countryCodes.includes(adoptedAddress.countryCode.toLowerCase())
-
-    return {
-      regionId: region.id,
-      currencyCode: region.currencyCode,
-      shippingCountryCode: enteredCountry ?? adoptedCountryCode ?? firstCountryCode ?? null,
-      adoptedCountryCode,
-      staleShippingAddressId: !adoptedCountryCode && adoptedCountryIsStale ? (adoptedAddress?.id ?? null) : null,
-    }
-  })
-
-  /**
-   * When a guest provides an email, find or create a guest customer record
-   * and link it to the cart so the order inherits a customerId.
-   */
-  const { customer } = await findOrCreateCustomerStep(ctx, {
-    email: input.email,
-    firstName: input.firstName,
-    lastName: input.lastName,
-  })
-
-  /**
-   * Links the guest customer to the cart, then upserts addresses and email
-   * in a single transaction.
-   */
-  const updatedCart = await ctx.step('update-cart', async ({ container }) => {
-    const cartService = container.resolve<ICartModuleService>(Modules.CART)
-
-    if (customer) {
-      await cartService.updateCart(input.cartId, { customerId: customer.id, email: customer.email })
-    }
-
-    return cartService.updateCartWithAddresses(input.cartId, {
-      email: input.email,
-      shippingAddress: input.shippingAddress,
-      billingAddress: input.billingAddress,
-    })
-  })
-
-  if (!regionChange) return updatedCart
-
-  /**
-   * Moves the cart into the new market: its region, the currency that region settles in, and —
-   * when the market has exactly one country — the country its shipping address ships to.
-   *
-   * The currency is written here rather than taken from the payload for the same reason the
-   * region is: it is the region's to decide, and the three refreshes below all read it back off
-   * the cart, so there is one answer to what money this cart is in.
-   */
-  const applied = await ctx.step<AppliedRegionChange>(
-    'apply-region-change',
-    async ({ container }) => {
+export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
+  { name: 'update-cart', throws: [ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED] },
+  async (ctx, input) => {
+    /**
+     * Validates the cart exists and hasn't been completed. A completed cart is the record behind
+     * an order and must not accept further updates.
+     */
+    const cart = await ctx.step('validate-cart', async ({ container }) => {
       const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      const cart = await cartService.retrieveCart(input.cartId)
+
+      if (cart.completedAt) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cart "${input.cartId}" is already completed`,
+        })
+      }
+
+      return cart
+    })
+
+    /**
+     * Reads the new market and decides whether the cart can move to it — before the customer is
+     * created and before a single column is written, so a refusal leaves the cart exactly as the
+     * shopper left it.
+     *
+     * A region the cart is already in is not a change: the switch would reprice every line at the
+     * same numbers and drop shipping methods that still apply, for nothing.
+     */
+    const regionChange = await ctx.step<RegionChange | null>('resolve-region-change', async ({ container }) => {
+      const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+
+      const region = await resolveNamedRegion(regionService, input)
+      if (!region || region.id === cart.regionId) return null
+
+      const countries = await regionService.listCountries({ regionId: region.id }, { order: { id: 'ASC' } })
+      const countryCodes = countries.map((country) => country.id)
 
       const [existingShippingAddress] = await cartService.listCartAddresses({
         cartId: input.cartId,
         type: 'shipping',
       })
 
-      const cart = await cartService.updateCart(input.cartId, {
-        regionId: regionChange.regionId,
-        currencyCode: regionChange.currencyCode,
-      })
+      // Where the shopper said the order goes. The payload's address outranks the row on the cart,
+      // which this same request is about to replace; a row carrying nothing but a country an earlier
+      // switch adopted is not their answer at all — `isShopperEnteredAddress` says why.
+      const shopperAddress =
+        input.shippingAddress ??
+        (existingShippingAddress && isShopperEnteredAddress(existingShippingAddress)
+          ? existingShippingAddress
+          : undefined)
+      const enteredCountry = shopperAddress?.countryCode?.toLowerCase()
 
-      const unchangedAddress = {
-        cart,
-        previousRegionId: updatedCart.regionId,
-        previousCurrencyCode: updatedCart.currencyCode,
-        createdShippingAddressId: null,
-        overwrittenShippingAddress: null,
-        removedShippingAddressId: null,
-      }
+      /** The country an earlier switch adopted, still on the cart and not being replaced. */
+      const adoptedAddress = !shopperAddress && existingShippingAddress ? existingShippingAddress : null
 
-      if (regionChange.staleShippingAddressId) {
-        await cartService.softDeleteCartAddresses([regionChange.staleShippingAddressId])
-        return { ...unchangedAddress, removedShippingAddressId: regionChange.staleShippingAddressId }
-      }
-
-      if (!regionChange.adoptedCountryCode) return unchangedAddress
-
-      const shippingAddress = await cartService.upsertCartAddress(input.cartId, 'shipping', {
-        countryCode: regionChange.adoptedCountryCode,
-      })
-
-      return {
-        ...unchangedAddress,
-        createdShippingAddressId: existingShippingAddress ? null : shippingAddress.id,
-        overwrittenShippingAddress: existingShippingAddress
-          ? { id: existingShippingAddress.id, countryCode: existingShippingAddress.countryCode }
-          : null,
-      }
-    },
-    async (applied, { container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-
-      await cartService.updateCart(input.cartId, {
-        regionId: applied.previousRegionId,
-        currencyCode: applied.previousCurrencyCode,
-      })
-
-      if (applied.createdShippingAddressId) {
-        await cartService.softDeleteCartAddresses([applied.createdShippingAddressId])
-      }
-
-      if (applied.overwrittenShippingAddress) {
-        await cartService.upsertCartAddress(input.cartId, 'shipping', {
-          countryCode: applied.overwrittenShippingAddress.countryCode,
+      // Cross-border shipping does not exist yet: a market sells to the countries it lists, so an
+      // address the shopper gave outside them is an order the new market could not fulfil. Refusing
+      // beats silently moving their address to a country they did not choose.
+      if (enteredCountry && !countryCodes.includes(enteredCountry)) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.INVALID_DATA,
+          message: `"${region.name}" does not ship to "${enteredCountry}"`,
         })
       }
 
-      if (applied.removedShippingAddressId) {
-        await cartService.restoreCartAddresses([applied.removedShippingAddressId])
+      const [firstCountryCode] = countryCodes
+      const adoptedCountryCode = !enteredCountry && countryCodes.length === 1 ? (firstCountryCode ?? null) : null
+      const adoptedCountryIsStale =
+        adoptedAddress?.countryCode != null && !countryCodes.includes(adoptedAddress.countryCode.toLowerCase())
+
+      return {
+        regionId: region.id,
+        currencyCode: region.currencyCode,
+        shippingCountryCode: enteredCountry ?? adoptedCountryCode ?? firstCountryCode ?? null,
+        adoptedCountryCode,
+        staleShippingAddressId: !adoptedCountryCode && adoptedCountryIsStale ? (adoptedAddress?.id ?? null) : null,
       }
-    },
-  )
+    })
 
-  /**
-   * Reprices every line at what the catalogue asks in the new market's currency.
-   *
-   * A line the catalogue cannot price there fails the whole update, by name. The alternatives are
-   * both worse than a refusal a shopper can read: dropping the line loses something they chose
-   * without saying so, and leaving its old number puts two currencies in one basket and bills the
-   * larger of them.
-   *
-   * Every price is resolved before anything is written, so the refusal happens with the cart
-   * untouched rather than half repriced. The writes then land in one transaction, which is what
-   * keeps the cart out of the mixed-currency state this step exists to prevent.
-   */
-  await ctx.step<PreviousLineItemPrice[]>(
-    'reprice-line-items',
-    async ({ container }) => {
+    /**
+     * When a guest provides an email, find or create a guest customer record
+     * and link it to the cart so the order inherits a customerId.
+     */
+    const { customer } = await findOrCreateCustomerStep(ctx, {
+      email: input.email,
+      firstName: input.firstName,
+      lastName: input.lastName,
+    })
+
+    /**
+     * Links the guest customer to the cart, then upserts addresses and email
+     * in a single transaction.
+     */
+    const updatedCart = await ctx.step('update-cart', async ({ container }) => {
       const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-      const lineItems = await cartService.listLineItems({ cartId: input.cartId })
-      if (lineItems.length === 0) return []
+      if (customer) {
+        await cartService.updateCart(input.cartId, { customerId: customer.id, email: customer.email })
+      }
 
-      const variantIds = [...new Set(lineItems.flatMap((item) => (item.variantId ? [item.variantId] : [])))]
-      const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
-      const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
-      const calculatedPrices = await pricingService.calculatePrices(priceSetIds, {
-        currencyCode: regionChange.currencyCode,
+      return cartService.updateCartWithAddresses(input.cartId, {
+        email: input.email,
+        shippingAddress: input.shippingAddress,
+        billingAddress: input.billingAddress,
       })
-      const priceByVariantId = buildVariantPrices(links, calculatedPrices)
+    })
 
-      const repriced = lineItems.map((item) => {
-        const price = item.variantId ? priceByVariantId.get(item.variantId) : undefined
-        if (!price) {
-          throw new WorkflowTerminalError({
-            type: ErrorTypes.INVALID_DATA,
-            message: `"${item.title}" is not sold in ${regionChange.currencyCode.toUpperCase()}`,
+    if (!regionChange) return updatedCart
+
+    /**
+     * Moves the cart into the new market: its region, the currency that region settles in, and —
+     * when the market has exactly one country — the country its shipping address ships to.
+     *
+     * The currency is written here rather than taken from the payload for the same reason the
+     * region is: it is the region's to decide, and the three refreshes below all read it back off
+     * the cart, so there is one answer to what money this cart is in.
+     */
+    const applied = await ctx.step<AppliedRegionChange>(
+      'apply-region-change',
+      async ({ container }) => {
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+
+        const [existingShippingAddress] = await cartService.listCartAddresses({
+          cartId: input.cartId,
+          type: 'shipping',
+        })
+
+        const cart = await cartService.updateCart(input.cartId, {
+          regionId: regionChange.regionId,
+          currencyCode: regionChange.currencyCode,
+        })
+
+        const unchangedAddress = {
+          cart,
+          previousRegionId: updatedCart.regionId,
+          previousCurrencyCode: updatedCart.currencyCode,
+          createdShippingAddressId: null,
+          overwrittenShippingAddress: null,
+          removedShippingAddressId: null,
+        }
+
+        if (regionChange.staleShippingAddressId) {
+          await cartService.softDeleteCartAddresses([regionChange.staleShippingAddressId])
+          return { ...unchangedAddress, removedShippingAddressId: regionChange.staleShippingAddressId }
+        }
+
+        if (!regionChange.adoptedCountryCode) return unchangedAddress
+
+        const shippingAddress = await cartService.upsertCartAddress(input.cartId, 'shipping', {
+          countryCode: regionChange.adoptedCountryCode,
+        })
+
+        return {
+          ...unchangedAddress,
+          createdShippingAddressId: existingShippingAddress ? null : shippingAddress.id,
+          overwrittenShippingAddress: existingShippingAddress
+            ? { id: existingShippingAddress.id, countryCode: existingShippingAddress.countryCode }
+            : null,
+        }
+      },
+      async (applied, { container }) => {
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+
+        await cartService.updateCart(input.cartId, {
+          regionId: applied.previousRegionId,
+          currencyCode: applied.previousCurrencyCode,
+        })
+
+        if (applied.createdShippingAddressId) {
+          await cartService.softDeleteCartAddresses([applied.createdShippingAddressId])
+        }
+
+        if (applied.overwrittenShippingAddress) {
+          await cartService.upsertCartAddress(input.cartId, 'shipping', {
+            countryCode: applied.overwrittenShippingAddress.countryCode,
           })
         }
 
-        return { id: item.id, unitPrice: price.calculatedAmount, previousUnitPrice: item.unitPrice }
-      })
+        if (applied.removedShippingAddressId) {
+          await cartService.restoreCartAddresses([applied.removedShippingAddressId])
+        }
+      },
+    )
 
-      await cartService.applyLineItemPlan(input.cartId, {
-        create: [],
-        merge: repriced.map(({ id, unitPrice }) => ({ id, data: { unitPrice } })),
-      })
+    /**
+     * Reprices every line at what the catalogue asks in the new market's currency.
+     *
+     * A line the catalogue cannot price there fails the whole update, by name. The alternatives are
+     * both worse than a refusal a shopper can read: dropping the line loses something they chose
+     * without saying so, and leaving its old number puts two currencies in one basket and bills the
+     * larger of them.
+     *
+     * Every price is resolved before anything is written, so the refusal happens with the cart
+     * untouched rather than half repriced. The writes then land in one transaction, which is what
+     * keeps the cart out of the mixed-currency state this step exists to prevent.
+     */
+    await ctx.step<PreviousLineItemPrice[]>(
+      'reprice-line-items',
+      async ({ container }) => {
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-      return repriced.map(({ id, previousUnitPrice }) => ({ id, unitPrice: previousUnitPrice }))
-    },
-    async (previousPrices, { container }) => {
-      if (previousPrices.length === 0) return
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const lineItems = await cartService.listLineItems({ cartId: input.cartId })
+        if (lineItems.length === 0) return []
 
-      await cartService.applyLineItemPlan(input.cartId, {
-        create: [],
-        merge: previousPrices.map(({ id, unitPrice }) => ({ id, data: { unitPrice } })),
-      })
-    },
-  )
+        const variantIds = [...new Set(lineItems.flatMap((item) => (item.variantId ? [item.variantId] : [])))]
+        const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
+        const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
+        const calculatedPrices = await pricingService.calculatePrices(priceSetIds, {
+          currencyCode: regionChange.currencyCode,
+        })
+        const priceByVariantId = buildVariantPrices(links, calculatedPrices)
 
-  /**
-   * Drops the shipping methods the new market does not offer.
-   *
-   * A method is a quote for a rate in a zone, so one whose option the new country is outside of is
-   * not a cheaper or dearer quote — it is a delivery nobody is offering. It is removed rather than
-   * repriced, which leaves the shopper to choose again from the options the new market does list.
-   */
-  await ctx.step<string[]>(
-    'refresh-shipping-methods',
-    async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+        const repriced = lineItems.map((item) => {
+          const price = item.variantId ? priceByVariantId.get(item.variantId) : undefined
+          if (!price) {
+            throw new WorkflowTerminalError({
+              type: ErrorTypes.INVALID_DATA,
+              message: `"${item.title}" is not sold in ${regionChange.currencyCode.toUpperCase()}`,
+            })
+          }
 
-      const shippingMethods = await cartService.listShippingMethods({ cartId: input.cartId })
-      if (shippingMethods.length === 0) return []
+          return { id: item.id, unitPrice: price.calculatedAmount, previousUnitPrice: item.unitPrice }
+        })
 
-      const offered = regionChange.shippingCountryCode
-        ? await fulfillmentService.listShippingOptionsForContext({ countryCode: regionChange.shippingCountryCode })
-        : []
-      const offeredIds = new Set(offered.map((option) => option.id))
+        await cartService.applyLineItemPlan(input.cartId, {
+          create: [],
+          merge: repriced.map(({ id, unitPrice }) => ({ id, data: { unitPrice } })),
+        })
 
-      // A method with no option behind it cannot be shown to still apply, so it goes with the
-      // rest — the cart is left offering only deliveries the new market answers for.
-      const stale = shippingMethods.filter(
-        (method) => !method.shippingOptionId || !offeredIds.has(method.shippingOptionId),
-      )
-      if (stale.length === 0) return []
+        return repriced.map(({ id, previousUnitPrice }) => ({ id, unitPrice: previousUnitPrice }))
+      },
+      async (previousPrices, { container }) => {
+        if (previousPrices.length === 0) return
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
-      const staleIds = stale.map((method) => method.id)
-      await cartService.softDeleteShippingMethods(staleIds)
+        await cartService.applyLineItemPlan(input.cartId, {
+          create: [],
+          merge: previousPrices.map(({ id, unitPrice }) => ({ id, data: { unitPrice } })),
+        })
+      },
+    )
 
-      return staleIds
-    },
-    async (staleIds, { container }) => {
-      if (staleIds.length === 0) return
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      await cartService.restoreShippingMethods(staleIds)
-    },
-  )
+    /**
+     * Drops the shipping methods the new market does not offer.
+     *
+     * A method is a quote for a rate in a zone, so one whose option the new country is outside of is
+     * not a cheaper or dearer quote — it is a delivery nobody is offering. It is removed rather than
+     * repriced, which leaves the shopper to choose again from the options the new market does list.
+     */
+    await ctx.step<string[]>(
+      'refresh-shipping-methods',
+      async ({ container }) => {
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 
-  /**
-   * Restates the amount to authorise in the money the cart now quotes.
-   *
-   * Last, because it totals what the two steps above just rewrote. A cart with no collection yet
-   * has nothing to restate — checkout creates one from the current total when it gets there.
-   */
-  await ctx.step<PreviousPaymentCollection>(
-    'refresh-payment-collection',
-    async ({ container }) => {
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+        const shippingMethods = await cartService.listShippingMethods({ cartId: input.cartId })
+        if (shippingMethods.length === 0) return []
 
-      const link = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
-      if (!link) return null
+        const offered = regionChange.shippingCountryCode
+          ? await fulfillmentService.listShippingOptionsForContext({ countryCode: regionChange.shippingCountryCode })
+          : []
+        const offeredIds = new Set(offered.map((option) => option.id))
 
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+        // A method with no option behind it cannot be shown to still apply, so it goes with the
+        // rest — the cart is left offering only deliveries the new market answers for.
+        const stale = shippingMethods.filter(
+          (method) => !method.shippingOptionId || !offeredIds.has(method.shippingOptionId),
+        )
+        if (stale.length === 0) return []
 
-      const [collection, lineItems, shippingMethods] = await Promise.all([
-        paymentService.retrievePaymentCollection(link.paymentCollectionId),
-        cartService.listLineItems({ cartId: input.cartId }),
-        cartService.listShippingMethods({ cartId: input.cartId }),
-      ])
+        const staleIds = stale.map((method) => method.id)
+        await cartService.softDeleteShippingMethods(staleIds)
 
-      const { cartTotal } = cartService.computeCartTotals({ lineItems, shippingMethods })
+        return staleIds
+      },
+      async (staleIds, { container }) => {
+        if (staleIds.length === 0) return
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        await cartService.restoreShippingMethods(staleIds)
+      },
+    )
 
-      await paymentService.updatePaymentCollection(collection.id, {
-        amount: cartTotal,
-        currencyCode: regionChange.currencyCode,
-      })
+    /**
+     * Restates the amount to authorise in the money the cart now quotes.
+     *
+     * Last, because it totals what the two steps above just rewrote. A cart with no collection yet
+     * has nothing to restate — checkout creates one from the current total when it gets there.
+     */
+    await ctx.step<PreviousPaymentCollection>(
+      'refresh-payment-collection',
+      async ({ container }) => {
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-      return { id: collection.id, amount: collection.amount, currencyCode: collection.currencyCode }
-    },
-    async (previous, { container }) => {
-      if (!previous) return
-      const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+        const link = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
+        if (!link) return null
 
-      await paymentService.updatePaymentCollection(previous.id, {
-        amount: previous.amount,
-        currencyCode: previous.currencyCode,
-      })
-    },
-  )
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
-  return applied.cart
-})
+        const [collection, lineItems, shippingMethods] = await Promise.all([
+          paymentService.retrievePaymentCollection(link.paymentCollectionId),
+          cartService.listLineItems({ cartId: input.cartId }),
+          cartService.listShippingMethods({ cartId: input.cartId }),
+        ])
+
+        const { cartTotal } = cartService.computeCartTotals({ lineItems, shippingMethods })
+
+        await paymentService.updatePaymentCollection(collection.id, {
+          amount: cartTotal,
+          currencyCode: regionChange.currencyCode,
+        })
+
+        return { id: collection.id, amount: collection.amount, currencyCode: collection.currencyCode }
+      },
+      async (previous, { container }) => {
+        if (!previous) return
+        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+
+        await paymentService.updatePaymentCollection(previous.id, {
+          amount: previous.amount,
+          currencyCode: previous.currencyCode,
+        })
+      },
+    )
+
+    return applied.cart
+  },
+)

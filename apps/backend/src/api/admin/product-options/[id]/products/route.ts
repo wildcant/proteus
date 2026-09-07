@@ -1,7 +1,7 @@
 import type { IProductModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AdminProductListParams, AdminProductListResponse, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { params: IdParams, query: AdminProductListParams }
 export const GetOutput = AdminProductListResponse

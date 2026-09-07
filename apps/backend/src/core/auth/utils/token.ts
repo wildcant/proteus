@@ -1,6 +1,6 @@
+import { env } from '@env'
 import jwt, { type SignOptions } from 'jsonwebtoken'
 import type { StringValue } from 'ms'
-import { env } from '../../../env.js'
 import { AppError, ErrorTypes } from '../../errors/app-error.js'
 import type { AuthTokenPayload } from '../types.js'
 

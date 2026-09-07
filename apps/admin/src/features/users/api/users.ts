@@ -14,8 +14,10 @@ export const usersListQueryOptions = (params?: ListUsersParams) =>
 
 export const useUsers = (params?: ListUsersParams) => useQuery(usersListQueryOptions(params))
 
-export const useUser = (id: string) =>
-  useQuery({
+export const userQueryOptions = (id: string) =>
+  queryOptions({
     queryKey: userKeys.detail(id),
     queryFn: () => getUser(id),
   })
+
+export const useUser = (id: string) => useQuery(userQueryOptions(id))

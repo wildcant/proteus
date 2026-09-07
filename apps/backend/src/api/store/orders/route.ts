@@ -2,10 +2,11 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IOrderModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { StoreOrderListParams, StoreOrderListResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { query: StoreOrderListParams }
 export const GetOutput = StoreOrderListResponse
+export const GetThrows = [ErrorTypes.UNAUTHORIZED] as const
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const customerId = req.authContext?.actorId

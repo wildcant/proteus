@@ -1,8 +1,8 @@
+import { env } from '@env'
 import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
 import type { AbstractFulfillmentProvider } from '../../../core/utils/abstract-fulfillment-provider.js'
 import type { ModuleProviderExports } from '../../../core/utils/module-provider.js'
-import { env } from '../../../env.js'
 import { ManualFulfillmentProvider } from '../providers/manual.js'
 import { FulfillmentProviderService } from '../services/fulfillment-provider-service.js'
 

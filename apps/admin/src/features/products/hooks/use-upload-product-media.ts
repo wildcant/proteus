@@ -1,4 +1,4 @@
-import type { ProductMedia } from '#/features/products/media.ts'
+import type { ProductMedia } from '#/features/products/utils/media'
 import { useUploadFiles } from '#/features/uploads/api/uploads'
 
 /**

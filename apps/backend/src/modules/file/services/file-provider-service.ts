@@ -11,7 +11,7 @@ import type {
   ProviderUploadStreamResult,
 } from '../../../core/types/file/mutations.js'
 import type { IFileProvider } from '../../../core/types/file/provider.js'
-import { FILE_PROVIDER_REGISTRATION_PREFIX } from '../constants.js'
+import { FILE_PROVIDER_REGISTRATION_PREFIX } from '../utils/constants.js'
 
 type InjectedDependencies = {
   [key: `${typeof FILE_PROVIDER_REGISTRATION_PREFIX}${string}`]: IFileProvider

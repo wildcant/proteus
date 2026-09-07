@@ -1,8 +1,8 @@
 import type { IFileModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AdminDeleteFileResponse, AdminFileResponse, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../../server/ports.js'
-import { deleteFilesWorkflow } from '../../../../workflows/file/delete-files.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { deleteFilesWorkflow } from '@workflows/file/delete-files.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminFileResponse
@@ -15,6 +15,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const DeleteInput = { params: IdParams }
 export const DeleteOutput = AdminDeleteFileResponse
+export const DeleteThrows = [...deleteFilesWorkflow.throws] as const
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
   await deleteFilesWorkflow.run({ ids: [req.params.id] })

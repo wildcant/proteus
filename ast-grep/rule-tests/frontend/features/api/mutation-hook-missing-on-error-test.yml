@@ -1,0 +1,7 @@
+id: mutation-hook-missing-on-error
+valid:
+  - 'useMutation({ ...rest, mutationFn: f, onError: (...args) => { onError?.(...args) } })'
+  - 'useMutation({ ...rest, mutationFn: f, onError })'
+invalid:
+  - 'useMutation({ ...rest, mutationFn: f })'
+  - 'useMutation({ ...rest, mutationFn: f, onSuccess: (...args) => { onSuccess?.(...args) } })'

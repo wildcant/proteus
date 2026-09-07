@@ -35,7 +35,8 @@ through `projectConfig.workflows.engine`, in code, next to the reason: the Tempo
 stay inline, and the test container pins one per suite so the default run needs no Temporal server.
 
 `check:deps` enforces the boundary structurally: `no-temporal-in-workerd` fails if
-`src/index.workerd.ts` can reach `@temporalio/*` or `src/temporal/` at all, through any path.
+`src/index.workerd.ts` can reach `@temporalio/*`, `src/temporal/` or
+`src/core/workflows/temporal/` at all, through any path.
 
 **The consequence is accepted and stated plainly: a Cloudflare deployment of this backend has no
 durable execution.** Its workflows run in-process. A `complete-cart` interrupted between

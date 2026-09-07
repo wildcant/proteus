@@ -5,7 +5,7 @@ import {
   AdminCreateShippingProfileResponse,
   AdminShippingProfileListResponse,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = AdminShippingProfileListResponse
 

@@ -12,7 +12,7 @@
  *     must be pure and synchronous.
  *
  * A second invariant rides along, for the same reason it is checked rather than written down. Once
- * the step it was replaying to is done, the handler is *abandoned*: `src/temporal/replay.ts` hands
+ * the step it was replaying to is done, the handler is *abandoned*: `src/core/workflows/temporal/replay.ts` hands
  * back a promise that never settles, so the handler simply stops at its next `await`. A `try` the
  * handler wrapped around that `ctx.step` therefore never reaches its `catch` or its `finally` —
  * while the simple adapter rejects into the handler and both do run. Ordinary recovery code, two
@@ -25,7 +25,7 @@
  *
  * Scope is single-file and syntactic. Helpers under `src/workflows/*∕utils/` are pure by convention
  * and are trusted (ADR-0021, D11); what this owns is the handler body. Step *concurrency* is not
- * here either — `src/temporal/replay.ts` asserts that at runtime, where it can see two `ctx.step`
+ * here either — `src/core/workflows/temporal/replay.ts` asserts that at runtime, where it can see two `ctx.step`
  * calls actually overlap, and `Promise.all` inside a step action stays legal.
  *
  * ## Why here, and not a Biome plugin

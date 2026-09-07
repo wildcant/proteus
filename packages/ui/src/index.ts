@@ -1,6 +1,9 @@
 // Re-exported so app packages can build render-prop components without taking a direct
 // dependency on @base-ui/react. Public API, not an internal: @base-ui/react/use-render.
 export { useRender } from '@base-ui/react/use-render'
+// Re-exported so a consumer defining variants gets them from the design system, alongside `cn`,
+// rather than taking its own dependency on the styling primitives this package already owns.
+export { cva, type VariantProps } from 'class-variance-authority'
 export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './components/ui/accordion.tsx'
 export {
   AlertDialog,

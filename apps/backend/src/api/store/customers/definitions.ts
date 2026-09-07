@@ -3,13 +3,13 @@ import { Tags } from '@framework/http/types.js'
 import * as addressByIdRoutes from './me/addresses/[id]/route.js'
 import * as addressRoutes from './me/addresses/route.js'
 import * as meRoutes from './me/route.js'
-import { validateAddressOwnership } from './middlewares.js'
 
 export default [
   {
     method: 'GET',
     matcher: '/store/customers/me',
     handler: meRoutes.GET,
+    throws: meRoutes.GetThrows,
     operationId: 'getStoreCustomerMe',
     summary: 'Get the authenticated customer',
     tags: [Tags.CUSTOMERS],
@@ -19,6 +19,7 @@ export default [
     method: 'GET',
     matcher: '/store/customers/me/addresses',
     handler: addressRoutes.GET,
+    throws: addressRoutes.GetThrows,
     operationId: 'listStoreCustomerAddresses',
     summary: "List the authenticated customer's addresses",
     tags: [Tags.CUSTOMERS],
@@ -28,6 +29,7 @@ export default [
     method: 'POST',
     matcher: '/store/customers/me/addresses',
     handler: addressRoutes.POST,
+    throws: addressRoutes.PostThrows,
     input: addressRoutes.PostInput,
     operationId: 'createStoreCustomerAddress',
     summary: 'Add an address to the address book',
@@ -38,8 +40,9 @@ export default [
     method: 'PATCH',
     matcher: '/store/customers/me/addresses/:id',
     handler: addressByIdRoutes.PATCH,
+    throws: addressByIdRoutes.PatchThrows,
     input: addressByIdRoutes.PatchInput,
-    middlewares: [validateAddressOwnership()],
+    middlewares: addressByIdRoutes.PatchMiddlewares,
     operationId: 'updateStoreCustomerAddress',
     summary: 'Update an address in the address book',
     tags: [Tags.CUSTOMERS],
@@ -50,7 +53,7 @@ export default [
     matcher: '/store/customers/me/addresses/:id',
     handler: addressByIdRoutes.DELETE,
     input: addressByIdRoutes.DeleteInput,
-    middlewares: [validateAddressOwnership()],
+    middlewares: addressByIdRoutes.DeleteMiddlewares,
     operationId: 'deleteStoreCustomerAddress',
     summary: 'Remove an address from the address book',
     tags: [Tags.CUSTOMERS],

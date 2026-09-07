@@ -1,11 +1,31 @@
-import type { StepFailureDetail } from './types.js'
-
 /**
  * Shared by the driver Workflow, the Activities and the client-side adapter, so it is written
  * against plain object shapes rather than `instanceof ApplicationFailure`: the driver half runs
  * inside Temporal's sandbox, where importing the non-workflow half of the SDK is a bundling
  * hazard for no gain — the failure has already been decoded by the time either side reads it.
  */
+
+/**
+ * The original error, flattened so it can cross the Temporal boundary and be rebuilt on the other
+ * side. Without this a `WorkflowTerminalError({ type: CONFLICT })` reaches the route handler as an
+ * opaque `ActivityFailure` and a 409 becomes a 500.
+ */
+export type SerializedError = {
+  kind: 'app' | 'terminal' | 'plain'
+  name: string
+  message: string
+  /** `ErrorTypes` value, for the two `AppError`-shaped kinds. */
+  type?: string
+  code?: string
+}
+
+/** The payload every step failure carries in its `ApplicationFailure.details`. */
+export type StepFailureDetail = {
+  /** The `ctx.step` name that failed, or `null` when the handler failed between steps. */
+  step: string | null
+  nonRetryable: boolean
+  error: SerializedError
+}
 
 /** `ApplicationFailure.type` for every failure this adapter raises. */
 export const STEP_FAILURE_TYPE = 'ProteusWorkflowStepFailure'

@@ -11,6 +11,7 @@
       "**",
       "!**/*.gen.ts",
       "!**/src/api/generated",
+      "!apps/backend/openapi/openapi-*.json",
       "!apps/backend/deps-analyzer/dependency-graph.svg",
       "!apps/backend/worker-configuration.d.ts"
     ]
@@ -44,7 +45,7 @@
         "noCommonJs": "warn",
         "useNodejsImportProtocol": "warn",
         "noDefaultExport": "warn",
-        "useComponentExportOnlyModules": "warn",
+        "useComponentExportOnlyModules": "off",
         "useNamingConvention": {
           "level": "warn",
           "options": {
@@ -101,9 +102,6 @@
       "includes": ["packages/ui/**"],
       "linter": {
         "rules": {
-          "style": {
-            "useComponentExportOnlyModules": "off"
-          },
           "a11y": {
             "useSemanticElements": "off",
             "noLabelWithoutControl": "off"

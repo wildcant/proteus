@@ -1,0 +1,22 @@
+id: query-options-factory-naming
+snapshots:
+  'export const getThingsQueryOptions = (query?: P) => queryOptions({ queryKey: k.list(query), queryFn: f })':
+    labels:
+    - source: 'getThingsQueryOptions = (query?: P) => queryOptions({ queryKey: k.list(query), queryFn: f })'
+      style: primary
+      start: 13
+      end: 105
+    - source: '(query?: P) => queryOptions({ queryKey: k.list(query), queryFn: f })'
+      style: secondary
+      start: 37
+      end: 105
+  'export const thingOptions = (id: string) => queryOptions({ queryKey: k.detail(id), queryFn: f })':
+    labels:
+    - source: 'thingOptions = (id: string) => queryOptions({ queryKey: k.detail(id), queryFn: f })'
+      style: primary
+      start: 13
+      end: 96
+    - source: '(id: string) => queryOptions({ queryKey: k.detail(id), queryFn: f })'
+      style: secondary
+      start: 28
+      end: 96

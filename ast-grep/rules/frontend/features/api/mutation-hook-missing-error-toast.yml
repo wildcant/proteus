@@ -1,0 +1,24 @@
+id: mutation-hook-missing-error-toast
+language: typescript
+severity: error
+message: This `onError` raises no toast, so a failure is invisible unless the caller renders one itself.
+note: 'Add `toast.add({ type: "error", title: "…", description: error.message })`, or suppress this rule on the handler with the reason. docs/mutation-hooks.md'
+files:
+  - "**/features/*/api/*.ts"
+rule:
+  pattern:
+    context: "{ onError: ($$$ARGS) => { $$$BODY } }"
+    selector: pair
+  inside:
+    kind: object
+    inside:
+      kind: arguments
+      inside:
+        pattern: useMutation($$$)
+  not:
+    has:
+      # Anywhere in the handler, so a toast raised under a condition still counts — see
+      # `useCreatePaymentSession`, which suppresses it only for the refusal the checkout recovers
+      # from in place.
+      stopBy: end
+      pattern: toast.add($$$)

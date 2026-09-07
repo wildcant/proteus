@@ -1,0 +1,38 @@
+id: route-throws-undeclared-error
+snapshots:
+  ? |
+    export const PostOutput = AuthenticateResponse
+    export const POST = async (req) => { throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'x' }) }
+  : labels:
+    - source: ErrorTypes.UNAUTHORIZED
+      style: primary
+      start: 111
+      end: 134
+    - source: 'new AppError({ type: ErrorTypes.UNAUTHORIZED, message: ''x'' })'
+      style: secondary
+      start: 90
+      end: 151
+  ? |
+    export const PostThrows = [ErrorTypes.INVALID_DATA] as const
+    export const POST = async (req) => { throw new AppError({ type: ErrorTypes.CONFLICT, message: 'x' }) }
+  : labels:
+    - source: ErrorTypes.CONFLICT
+      style: primary
+      start: 125
+      end: 144
+    - source: 'new AppError({ type: ErrorTypes.CONFLICT, message: ''x'' })'
+      style: secondary
+      start: 104
+      end: 161
+  ? |
+    export const PostThrows = [ErrorTypes.INVALID_DATA] as const
+    export const POST = async (req) => { throw new AppError({ type: isDuplicate ? ErrorTypes.CONFLICT : ErrorTypes.INVALID_DATA, message: 'x' }) }
+  : labels:
+    - source: ErrorTypes.CONFLICT
+      style: primary
+      start: 139
+      end: 158
+    - source: 'new AppError({ type: isDuplicate ? ErrorTypes.CONFLICT : ErrorTypes.INVALID_DATA, message: ''x'' })'
+      style: secondary
+      start: 104
+      end: 201

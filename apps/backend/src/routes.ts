@@ -32,6 +32,7 @@ import storeCountryDefinitions from './api/store/countries/definitions.js'
 import storeCustomerDefinitions from './api/store/customers/definitions.js'
 import storeOrderDefinitions from './api/store/orders/definitions.js'
 import storePaymentCollectionDefinitions from './api/store/payment-collections/definitions.js'
+import storePaymentMethodDefinitions from './api/store/payment-methods/definitions.js'
 import storeProductDefinitions from './api/store/products/definitions.js'
 
 // ---- Shared auth routes exposed to the store API ----
@@ -39,7 +40,7 @@ import storeProductDefinitions from './api/store/products/definitions.js'
 const storeSharedAuthRoutes = new Set([
   '/auth/verification/confirm',
   '/auth/:actorType/:authProvider/reset-password',
-  '/auth/:actorType/:authProvider/update',
+  '/auth/:actorType/:authProvider/password',
 ])
 
 // ---- Definitions by scope ----
@@ -71,6 +72,7 @@ export const storeDefinitions: RouteDefinition[] = [
   ...storeCustomerDefinitions,
   ...storeOrderDefinitions,
   ...storePaymentCollectionDefinitions,
+  ...storePaymentMethodDefinitions,
   ...storeProductDefinitions,
 ]
 

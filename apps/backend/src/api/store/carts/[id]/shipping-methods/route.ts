@@ -3,10 +3,11 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService, IFulfillmentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AddCartShippingMethod, IdParams, StoreCreateCartShippingMethodResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { params: IdParams, body: AddCartShippingMethod }
 export const PostOutput = StoreCreateCartShippingMethodResponse
+export const PostThrows = [ErrorTypes.NOT_ALLOWED, ErrorTypes.UNEXPECTED_STATE] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)

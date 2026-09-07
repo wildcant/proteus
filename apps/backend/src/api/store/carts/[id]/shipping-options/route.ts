@@ -1,8 +1,8 @@
 import type { ICartModuleService, IFulfillmentModuleService, IRegionModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { IdParams, StoreShippingOptionListParams, StoreShippingOptionListResponse } from '@proteus/http-schemas/store'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import type { AwilixContainer } from 'awilix'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 
 /**
  * Which country the cart ships to, in the order the signals are trusted.

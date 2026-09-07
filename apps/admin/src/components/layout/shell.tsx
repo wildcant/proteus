@@ -20,19 +20,33 @@ import {
   TooltipProvider,
 } from '@proteus/ui'
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
-import { NotificationBell } from '#/features/notifications/components/notification-bell'
+import type { ReactNode } from 'react'
 import { Breadcrumbs } from './breadcrumbs'
 import { navItems, settingsItem } from './nav'
 import { ThemeToggle } from './theme-toggle'
-import { UserMenu } from './user-menu'
 
-export function Shell() {
+/**
+ * The admin chrome: sidebar, topbar, and the outlet between them.
+ *
+ * The two slots exist because this file is shared-layer and the things that belong in them are
+ * features — the notification bell reads the notifications API, the user menu reads auth. Shared
+ * code may not reach up into a feature, so the route composes them instead. See
+ * `routes/_authed/_shell/route.tsx`, and `packages/frontend-conventions` for the rule.
+ */
+type ShellProps = {
+  /** Rendered at the end of the topbar, after the theme toggle. */
+  topbarActions?: ReactNode
+  /** Rendered in the sidebar footer. */
+  sidebarFooter?: ReactNode
+}
+
+export function Shell({ topbarActions, sidebarFooter }: ShellProps) {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar footer={sidebarFooter} />
         <SidebarInset>
-          <Topbar />
+          <Topbar actions={topbarActions} />
           <div className="flex-1 overflow-auto">
             <div className="mx-auto max-w-[1600px] p-4">
               <Outlet />
@@ -44,7 +58,7 @@ export function Shell() {
   )
 }
 
-function Topbar() {
+function Topbar({ actions }: { actions?: ReactNode }) {
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
@@ -52,13 +66,13 @@ function Topbar() {
       <Breadcrumbs />
       <div className="ml-auto flex items-center gap-1">
         <ThemeToggle />
-        <NotificationBell />
+        {actions}
       </div>
     </header>
   )
 }
 
-function AppSidebar() {
+function AppSidebar({ footer }: { footer?: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   return (
@@ -140,9 +154,7 @@ function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <UserMenu />
-      </SidebarFooter>
+      <SidebarFooter>{footer}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

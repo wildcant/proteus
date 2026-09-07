@@ -3,7 +3,7 @@ import type { AdminProduct } from '#/api/generated/model'
 import { StatusCell, useDefineTable } from '#/components/data-table'
 import { useProducts } from '#/features/products/api/products'
 import { ProductRowActions } from '#/features/products/components/product-row-actions'
-import { productStatusColors } from '#/features/products/constants'
+import { productStatusColors } from '#/features/products/utils/product-status'
 
 export const useProductTable = () =>
   useDefineTable<AdminProduct>({

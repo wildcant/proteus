@@ -8,8 +8,8 @@ import {
   AdminProductVariantListResponse,
   IdParams,
 } from '@proteus/http-schemas/admin'
+import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { createProductVariantsWorkflow } from '@workflows/product/create-product-variants.js'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
 
 export const GetInput = { params: IdParams, query: AdminProductVariantListParams }
 export const GetOutput = AdminProductVariantListResponse
@@ -27,6 +27,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PostInput = { params: IdParams, body: AdminCreateProductVariant }
 export const PostOutput = AdminCreateProductVariantResponse
+export const PostThrows = [ErrorTypes.UNEXPECTED_STATE, ...createProductVariantsWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)

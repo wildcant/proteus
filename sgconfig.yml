@@ -1,0 +1,14 @@
+# Code-shape rules — what a file's contents must look like, the counterpart to the dependency rules
+# in each app's `deps-analyzer/.dependency-cruiser.cjs`. Both are declarative and both run in the
+# `conventions` job of `npm run verify`.
+#
+# `rules/` mirrors the code it governs, so a rule has an obvious home: frontend/features/api holds
+# the mutation-hook contract, backend/workflows would hold the step rules. See ast-grep/README.md
+# for the tree and for how to add one.
+#
+# Rules and tests are both discovered recursively. Snapshots are not — ast-grep keys those by rule
+# id, so they stay flat in `rule-tests/__snapshots__/`.
+ruleDirs:
+  - ast-grep/rules
+testConfigs:
+  - testDir: ast-grep/rule-tests
