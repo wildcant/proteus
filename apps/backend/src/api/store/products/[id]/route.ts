@@ -16,6 +16,11 @@ import { setPricingContext } from '../../middlewares.js'
 export const GetInput = { params: IdParams }
 export const GetMiddlewares = [setPricingContext()] as const
 export const GetOutput = StoreProductResponse
+/**
+ * A product the market cannot price is not a product this market has. The 404 says so directly
+ * rather than answering with a variant list the storefront has no price to render.
+ */
+export const GetThrows = [ErrorTypes.NOT_FOUND] as const
 
 export const GET = async (
   req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,

@@ -1,9 +1,9 @@
 import { useRouterState } from '@tanstack/react-router'
 import { CircleAlertIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { useCart, useSwitchCartMarket } from '#/features/cart/api/cart'
 import { marketHref } from '#/lib/market'
 import { useMarket } from '#/lib/use-market'
+import { useCart, useSwitchCartMarket } from '../api/cart'
 
 /**
  * Brings the cart across when the shopper changes market, and says so when it cannot come.

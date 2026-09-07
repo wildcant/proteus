@@ -99,7 +99,7 @@ export const useCreateCart = (options?: UseMutationOptions<StoreCreateCartRespon
 export const useSwitchCartMarket = (options?: UseMutationOptions<StoreUpdateCartResponse, Error, void>) => {
   const queryClient = useQueryClient()
   const { current } = useMarket()
-  const { onSuccess, ...rest } = options ?? {}
+  const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
     ...rest,
@@ -114,6 +114,13 @@ export const useSwitchCartMarket = (options?: UseMutationOptions<StoreUpdateCart
       // id, and the catalogue prices around it. After it lands none of them is still true.
       queryClient.invalidateQueries()
       onSuccess?.(...args)
+    },
+    // `CartMarketSwitch` renders the refusal as persistent state — which market the bag is still
+    // priced in and the way back to it — so a toast would be the same news told twice, and told
+    // in the one form the shopper can dismiss without having read it.
+    // ast-grep-ignore: mutation-hook-missing-error-toast
+    onError: (...args) => {
+      onError?.(...args)
     },
   })
 }
