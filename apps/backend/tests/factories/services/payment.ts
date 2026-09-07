@@ -3,6 +3,8 @@ import type { BigNumber } from '../../../src/core/bignumber.js'
 import type { ILinkService } from '../../../src/core/types/link/service.js'
 import type { IPaymentModuleService } from '../../../src/core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules } from '../../../src/core/utils/index.js'
+import { type CreatePayment, paymentTable } from '../../../src/schema.js'
+import type { Database } from '../../../src/schema.type.js'
 import { generateCreatePaymentCollectionDTO, generateCreatePaymentSessionDTO } from '../payment-dto.js'
 
 export type PaymentSessionForCartOptions = {
@@ -70,4 +72,22 @@ export async function retrievePayment(container: AwilixContainer, paymentId: str
   const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   return paymentService.retrievePayment(paymentId)
+}
+
+/**
+ * Writes a payment row for a session directly, bypassing `authorizePaymentSession`.
+ *
+ * The one arrangement the module service cannot make: another caller already holding a session's
+ * slot when this one goes to write. Refusing to create a second payment for one session is the
+ * invariant under test, so setting the losing side up through the service is circular — this
+ * takes the container's own database handle instead.
+ */
+export async function createPaymentForSession(container: AwilixContainer, values: CreatePayment) {
+  const getDb = container.resolve<() => Database>(ContainerRegistrationKeys.GET_DB)
+
+  const rows = await getDb().insert(paymentTable).values(values).returning()
+  const payment = rows[0]
+  if (!payment) throw new Error('Payment insert returned no rows')
+
+  return payment
 }

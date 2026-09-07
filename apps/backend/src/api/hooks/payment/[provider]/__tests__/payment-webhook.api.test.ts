@@ -95,7 +95,7 @@ async function chargedSessionWithoutPayment(service: Fixtures['service']) {
   const intent = stripeGateway.intentForSession(paymentSession.id)
   assertDefined(intent)
 
-  return { paymentCollectionId: paymentCollection.id, intent, total: new BigNumber('19.99') }
+  return { session: paymentSession, paymentCollectionId: paymentCollection.id, intent, total: new BigNumber('19.99') }
 }
 
 test.describe('POST /hooks/payment/:provider', () => {
@@ -207,6 +207,46 @@ test.describe('POST /hooks/payment/:provider', () => {
     expect(response.status).toBe(200)
     expect(stripeGateway.calls).toHaveLength(callsBefore)
     expect((await paymentFor(service, session.paymentCollectionId)).capturedAt).toBeNull()
+  })
+})
+
+/**
+ * Stripe emits `payment_intent.succeeded` the moment the browser confirms — typically while the
+ * shopper's own checkout is still running — so this route and `complete-cart` reach
+ * `authorizePaymentSession` together. Its guard reads the session's payment and then writes one,
+ * with nothing atomic between the two, and the unique index on the payment's session id is what
+ * makes the residual overlap fail rather than write a second row.
+ *
+ * What that refusal must not cost is the money. Both callers confirmed the *same* intent, so the
+ * loser has no authorization of its own to release.
+ */
+test.describe('POST /hooks/payment/:provider — losing the race to checkout', () => {
+  test('leaves the authorization alone when the payment was already written', async ({ service, expect }) => {
+    // Checkout's row, written between this delivery's guard read and its own write. The session
+    // sits at `captured` and the row carries no `capturedAt` yet, which is exactly where the
+    // winner is between its create and its capture — and the one live state the guard does not
+    // treat as terminal, so this delivery goes on to authorize and write.
+    const { session, paymentCollectionId, intent, total } = await chargedSessionWithoutPayment(service)
+    await service.create.paymentForSession(api.container, {
+      paymentCollectionId,
+      paymentSessionId: session.id,
+      amount: total,
+      currencyCode: 'usd',
+      providerId: STRIPE_PROVIDER,
+      data: { id: intent.id },
+    })
+
+    const body = succeededEvent(intent)
+    const response = await postWebhook(body, signedHeaders(body))
+
+    // 422, so Stripe redelivers rather than being told the event is done with.
+    expect(response.status).toBe(422)
+    // And the intent is untouched. Cancelling it here would void the authorization the winner's
+    // order was placed against — money lost, on a request that changed nothing.
+    expect(stripeGateway.callsTo('paymentIntents.cancel')).toEqual([])
+    // One payment for the session, still checkout's.
+    const collection = await service.read.paymentCollection(api.container, paymentCollectionId)
+    expect(collection.payments).toHaveLength(1)
   })
 })
 

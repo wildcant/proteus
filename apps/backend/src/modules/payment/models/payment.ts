@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm'
 import { jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
-import { liveIndex } from '../../../core/db/indexes.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { paymentCollectionTable } from './payment-collection.js'
 import { paymentSessionTable } from './payment-session.js'
 
@@ -19,6 +19,15 @@ export const paymentTable = pgTable(
     paymentCollectionId: text()
       .notNull()
       .references(() => paymentCollectionTable.id, { onDelete: 'cascade' }),
+    /**
+     * At most one live payment per session — the shape every read here already assumes, since the
+     * module looks the relationship up with a single-result query and nothing in the domain wants
+     * two payments for one authorization.
+     *
+     * `authorizePaymentSession` guards it with a read-then-write, which is not atomic: checkout
+     * and the payment webhook reaching it together both find no payment and both write one. The
+     * unique index below is what makes that loser fail instead of duplicating the row.
+     */
     paymentSessionId: text()
       .notNull()
       .references(() => paymentSessionTable.id),
@@ -29,7 +38,7 @@ export const paymentTable = pgTable(
   (table) => [
     liveIndex('idx_payment_provider_id').on(table.providerId),
     liveIndex('idx_payment_collection_id').on(table.paymentCollectionId),
-    liveIndex('idx_payment_session_id').on(table.paymentSessionId),
+    liveUniqueIndex('idx_payment_session_id').on(table.paymentSessionId),
   ],
 )
 
