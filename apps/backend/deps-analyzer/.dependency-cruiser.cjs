@@ -77,20 +77,25 @@ module.exports = {
         'broken deploy rather than dead weight. src/container.ts therefore takes the Temporal ' +
         'engine as an injected factory instead of importing the adapter, exactly as it takes its ' +
         'logger and dbProvider — this rule is what keeps that boundary deliberate rather than ' +
-        'incidental. Reachability, not a direct import: the hazard is transitive.',
+        'incidental. Reachability, not a direct import: the hazard is transitive. ' +
+        "The event bus paths are listed alongside the workflow engine's: `@temporalio/` already " +
+        'catches them transitively, but naming them is what makes a future Temporal-shaped file ' +
+        'that has not yet imported the SDK fail here rather than on a deploy.',
       severity: 'error',
       from: {
         path: '^src/index\\.workerd\\.ts$',
       },
       to: {
-        path: '@temporalio/|^src/temporal/|^src/core/workflows/temporal(-adapter\\.ts$|/)',
+        path:
+          '@temporalio/|^src/temporal/|^src/core/workflows/temporal(-adapter\\.ts$|/)' +
+          '|^src/core/event-bus/temporal(-adapter\\.ts$|/)',
         reachable: true,
       },
     },
     {
       name: 'shared-temporal-stays-shared',
       comment:
-        'src/temporal/ is the Temporal plumbing the workflow engine and (soon) the event bus both ' +
+        'src/temporal/ is the Temporal plumbing the workflow engine and the event bus both ' +
         'build on: the client, the payload converter, the failure encoding. It may reach the core ' +
         'primitives every layer shares — BigNumber, AppError, the DTO types, the workflow port ' +
         "type — and nothing else in src/core/, least of all the workflow engine's own Temporal " +
@@ -115,8 +120,8 @@ module.exports = {
       name: 'event-bus-and-workflows-stay-peers',
       comment:
         'src/core/event-bus/ and src/core/workflows/ are peers that must not import each other. ' +
-        'They happen to share a vendor on node — the workflow engine runs workflow executions, the ' +
-        'bus will run standalone activities — and that is exactly the coupling this forbids: a fix ' +
+        'They share a vendor on node — the workflow engine runs workflow executions, the bus runs ' +
+        'standalone activities — and that is exactly the coupling this forbids: a fix ' +
         "in the engine's replay code must be structurally incapable of changing event dispatch, " +
         'which it is only while dispatch never enters that file. What they genuinely share (the ' +
         'client factory, the payload converter, the failure encoding) lives in src/temporal/, which ' +

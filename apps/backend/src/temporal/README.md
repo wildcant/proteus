@@ -1,7 +1,7 @@
 # `src/temporal/` — shared Temporal plumbing
 
 This folder is the Temporal plumbing that more than one subsystem builds on: the workflow engine
-(`src/core/workflows/temporal/`) today, the event bus (`src/core/event-bus/`) next. That is the
+(`src/core/workflows/temporal/`) and the event bus (`src/core/event-bus/`). That is the
 whole rule for what belongs here. A change to any file in this folder changes behaviour for every
 one of them at once, so it needs to be weighed against all of them — and, conversely, anything that
 serves only one of them belongs in that subsystem's own folder, not here. `check:deps` enforces the
@@ -14,6 +14,12 @@ the other would come back subtly wrong rather than failing — corrupt data inst
 same argument covers `failures.ts` / `failure-details.ts`, which are the one encoding of an error
 crossing the boundary, and `client.ts`, which is the one way to open a connection with that
 converter attached.
+
+`client.ts` is shared as a **factory**, not as an instance. Each subsystem calls it and gets its own
+`Client` on its own connection: the workflow engine starts workflow executions on `proteus`, the
+event bus starts standalone activities on `proteus-events`, and each hands its own connection back
+in its own `close()`. What must not diverge is the encoding; what must not be shared is the
+connection, because one subsystem's shutdown would take the other's client down with it.
 
 `config.ts` holds only `PAYLOAD_CONVERTER_PATH` for the same reason. The queue name, the workflow
 bundle path and the driver's workflow type are the workflow engine's alone and live in

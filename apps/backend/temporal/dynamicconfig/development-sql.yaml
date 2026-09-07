@@ -9,6 +9,18 @@
 # Local development only. `forceSearchAttributesCacheRefreshOnRead` below trades throughput for
 # read-your-writes on search attributes; upstream marks it dev-only and it must not be copied into a
 # deployed config.
+#
+# `activity.enableStandalone` is this repo's own addition rather than upstream's. The event bus runs
+# every subscriber as a standalone activity execution (`src/core/event-bus/temporal-adapter.ts`), and
+# self-hosted 1.31.2 answers `Standalone activity is disabled` without this flag — the Temporal CLI
+# dev server the tests boot defaults it on, so a stack that only ran the tests would not find out.
+# Unlike the search-attribute flag below it is not dev-only: any deployment running the event bus
+# needs it.
+activity.enableStandalone:
+  - value: true
+    constraints: {}
+# The ceiling `src/core/event-bus/temporal/config.ts` holds a dispatch identity to. Temporal's own
+# default is 1000; this file is what makes 255 the number that actually applies here.
 limit.maxIDLength:
   - value: 255
     constraints: {}

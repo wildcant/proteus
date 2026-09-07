@@ -1,6 +1,6 @@
 import type { AwilixContainer } from 'awilix'
 import type { Logger } from '../types/logger.js'
-import { buildEvent } from './events.js'
+import { buildEvent, type Event } from './events.js'
 import type { SubscriberRegistry } from './registry.js'
 import type { EventBus } from './types.js'
 
@@ -40,7 +40,19 @@ export function createInlineEventBus(deps: {
     async emit(name, data) {
       await Promise.all(
         registry.forEvent(name).map(async (subscriber) => {
-          const event = buildEvent(name, data, subscriber.name)
+          // Caught, not left to escape. `buildEvent` runs a key extractor from `EVENT_KEYS`, which
+          // is ordinary code that can throw — and a throw here would reject `emit`, which the port
+          // forbids for exactly the reason a subscriber failure is caught below. No extractor can
+          // throw today; leaving it uncaught means the first one that can is discovered inside a
+          // compensated checkout.
+          let event: Event
+          try {
+            event = buildEvent(name, data, subscriber.name)
+          } catch (error) {
+            logger.error(`[event-bus] Could not build the delivery of "${name}" to "${subscriber.name}"`)
+            logger.error(error instanceof Error ? error : String(error))
+            return
+          }
 
           try {
             await subscriber.handler({ event, container })

@@ -15,7 +15,7 @@ see `src/core/workflows/readme.md`.
 ### Starting it
 
 ```bash
-docker compose -f apps/backend/docker-compose.yml up -d --wait   # postgres, temporal, temporal-ui, worker
+docker compose -f apps/backend/docker-compose.yml up -d --wait   # postgres, temporal, temporal-ui, worker, events-worker
 npm run --workspace=backend dev
 ```
 
@@ -43,6 +43,23 @@ same entrypoint through the same script, on the host, with no container in the l
 docker compose -f apps/backend/docker-compose.yml stop worker   # don't let two Workers share the queue
 npm run --workspace=backend worker
 ```
+
+### Two Workers, two queues
+
+The stack runs a second Worker, `events-worker`, on the `proteus-events` queue. It is the event bus's
+side of Temporal: every `bus.emit(...)` on node becomes a standalone activity execution there, and
+this is the process that runs the subscriber. `npm run --workspace=backend worker:events` is the same
+entrypoint on the host, and `docker compose ... stop events-worker` first for the same reason.
+
+The queues are split so a burst of event deliveries cannot take the Worker slots a shopper's
+checkout step is waiting for. The processes are split so the slot pools are genuinely separate, and
+so each can pin the workflow engine it wants — the workflow Worker keeps nested `.run()` calls
+in-process, the events Worker gives a subscriber's `.run()` a durable execution of its own. See
+`src/core/event-bus/readme.md`.
+
+Standalone activities need `activity.enableStandalone` in Temporal's dynamic config; this repo's
+`temporal/dynamicconfig/development-sql.yaml` sets it. Without it the server answers
+`Standalone activity is disabled` at the first emit.
 
 The UI is at <http://localhost:8088>; the gRPC frontend is at `localhost:7233`. Every execution and
 its full history show up there — including the one a route just dispatched.

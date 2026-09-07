@@ -29,8 +29,13 @@ export type EventBusConfig = {
    * Cloudflare Queues do not exist off it, so the transport is not a deployment knob and there is
    * deliberately no `EVENT_BUS` env var.
    *
-   * It is set today at every composition root, because the two derived transports are the next two
-   * tickets and only the in-process adapter exists. That is a pin with a date on it, not a default.
+   * Both transports exist, so this is no longer a pin with a date on it. The node roots leave it
+   * unset and take the derived answer; the workerd root names the one it derives anyway, so a
+   * deploy's transport reads next to the wiring that supplies its binding; a Worker process states
+   * it because two Workers share one composition root and neither should inherit the other's choice.
+   * The test container is the only caller pinning something a runtime would not derive — `inline`,
+   * for the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and
+   * `npm test` must not need a running server.
    */
   adapter?: EventBusAdapterName
 }

@@ -190,5 +190,38 @@ services:
       # late rather than slow — the same reason `temporal` above needs one.
       start_period: 60s
 
+  # The events Worker. Same image as `worker` above, a different entrypoint and a different queue:
+  # this one polls `proteus-events` and runs subscribers, that one polls `proteus` and runs workflow
+  # steps. Two services rather than two queues on one, so a burst of event deliveries cannot take the
+  # slots a shopper's checkout step is waiting for.
+  #
+  # It joins the stack for the same reason `worker` did: `RUNTIME` defaults to `node`, so
+  # `adapter-selection.ts` resolves the Temporal event bus and every `bus.emit(...)` becomes a
+  # standalone activity on `proteus-events`. A queue nobody polls does not fail — the event simply
+  # waits, durably, until something does.
+  #
+  # No healthcheck. `temporal:worker-ready` asks about the `proteus` queue specifically, and nothing
+  # else in the stack waits on this service.
+  events-worker:
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile.worker
+    command: ['npm', 'run', '--workspace=backend', 'worker:events']
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal-create-namespace:
+        condition: service_completed_successfully
+    environment:
+      POOLER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
+      DIRECT_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
+      TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      - ../../.env.local:/app/.env.local:ro
+      - ../../.env.keys:/app/.env.keys:ro
+      - ./src:/app/apps/backend/src:ro
+      - ../../packages:/app/packages:ro
+      - ./static:/app/apps/backend/static
+
 volumes:
   proteus-dev-data:
