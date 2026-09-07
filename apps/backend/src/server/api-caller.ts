@@ -16,7 +16,23 @@
  * the DB connection is created and disposed per-request.
  */
 
-import { container, dbProvider } from '../framework/runtime/container.workerd.js'
+import { env as bindings } from 'cloudflare:workers'
+import { createWorkerdContainer, dbProvider } from '../framework/runtime/container.workerd.js'
+
+/**
+ * Built on first call rather than at import, and held, so a caller that never uses `apiCall` does
+ * not pay for a container and the ones that do share a single one.
+ *
+ * The queue binding is read here for the same reason `index.workerd.ts` reads it: this file is the
+ * other composition root on this runtime — the backend-as-library entry — and a binding is a live
+ * object only the runtime can hand over.
+ */
+let building: Promise<Awaited<ReturnType<typeof createWorkerdContainer>>> | undefined
+
+function libraryContainer() {
+  building ??= createWorkerdContainer({ events: bindings.EVENTS })
+  return building
+}
 
 // ---- Type-level helpers ----
 
@@ -63,6 +79,8 @@ export async function apiCall<H extends (...args: never[]) => Promise<{ status: 
   handler: H,
   ...[data]: keyof ApiCallData<H> extends never ? [] : [data: ApiCallData<H>]
 ): Promise<OutputOf<H>> {
+  const container = await libraryContainer()
+
   return dbProvider.withConnection(async () => {
     const d = data as { params?: unknown; query?: unknown; body?: unknown } | undefined
     const result = await handler({

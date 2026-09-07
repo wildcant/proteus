@@ -41,13 +41,14 @@ wires it up; `npm run verify` fails if you forget.
 ## Architecture
 
 ```
-events.ts            — the event map: names, payloads, key extractors, dispatch identity
-types.ts             — the port (EventBus) and the subscriber contract
-adapter-selection.ts — which adapter a composition root wires, derived from RUNTIME
-inline-adapter.ts    — in-process adapter: looks the subscribers up and runs them here
-temporal-adapter.ts  — node transport: one standalone activity execution per delivery
-temporal/            — that transport's own pieces: queue name, dispatch activity, events Worker
-registry.ts          — event name → subscribers, from the generated import list
+events.ts                     — the event map: names, payloads, key extractors, dispatch identity
+types.ts                      — the port (EventBus) and the subscriber contract
+adapter-selection.ts          — which adapter a composition root wires, derived from RUNTIME
+inline-adapter.ts             — in-process adapter: looks the subscribers up and runs them here
+cloudflare-queues-adapter.ts  — workerd transport: producer and queue() consumer
+temporal-adapter.ts           — node transport: one standalone activity execution per delivery
+temporal/                     — that transport's own pieces: queue name, dispatch activity, events Worker
+registry.ts                   — event name → subscribers, from the generated import list
 ```
 
 `src/core/event-bus/` and `src/core/workflows/` are peers and may not import each other, enforced by
@@ -91,9 +92,13 @@ why one exists before the event that needs it does.
 ## Subscribers must be idempotent
 
 Not advice — the contract. Two transports with two delivery guarantees, and every subscriber runs
-unchanged on both, so each one is written to the weaker: at-least-once, no dedup. Temporal's
-server-side dedup is extra safety, not permission to depend on it. `event.dispatchId` is the key to
-be idempotent against.
+unchanged on both, so each one is written to the weaker: at-least-once, no dedup, which is what
+Cloudflare Queues offers. Temporal's server-side dedup is extra safety, not permission to depend on
+it. `event.dispatchId` is the key to be idempotent against.
+
+Concurrent deliveries of one event are therefore possible on workerd in a way they are not on node.
+That is exactly as exposed as processing the same work inline already is, so it is neutral rather
+than a regression — but it is a fact a subscriber is written against, not one to discover.
 
 ## Publishing resolves on acceptance, not on completion
 
@@ -170,6 +175,22 @@ with an error log naming the identity, rather than letting the server answer `Fa
 activity` with the real reason a gRPC layer down. Truncating instead would be worse than dropping:
 two different events would share an id and the second would be deduped into the first, silently.
 
+## On workerd
+
+`src/index.workerd.ts` reads the queue binding from `cloudflare:workers` and passes it in, next to
+the cron block. A binding is a live object the runtime builds from `wrangler.jsonc` and is never
+serialised into one, so it cannot travel through `.env.workerd` however `nodejs_compat` is set —
+`src/env.ts` has nothing to say about it. The `queue()` export is the consumer.
+
+One message is **one delivery to one subscriber**, which is what makes a retry retry that subscriber
+and nothing that travelled beside it. The consumer acks and retries per message, and opens one
+database connection for the batch — the request that published the event closed its own long before
+the message arrived, which is the bug the whole feature exists to fix.
+
+`wrangler.jsonc` bounds retries and names a dead-letter queue: an email subscriber that retried
+forever is a mail loop, and what still fails after that has to stay somewhere readable rather than
+disappear.
+
 ## The generated registry
 
 `src/subscribers/registry.gen.ts` is written by `scripts/generate-subscriber-registry.ts`, which
@@ -203,6 +224,12 @@ engine's tests use, because standalone activities are not part of what that impl
 
 `__tests__/temporal-adapter.test.ts` is the half a server cannot show: what the adapter refuses to be
 built with, and what it does when a start fails.
+
+The Cloudflare adapter is tested under node against a fake binding, the way
+`core/db/__tests__/workers-provider.test.ts` covers the other half of that runtime — no workerd test
+pool and no queue. What is worth protecting there is what the adapter does with a binding, not what
+Cloudflare does with a message: ack and retry per message, and one connection per batch. Both are
+silent when wrong, which is why they are asserted rather than read.
 
 `src/subscribers/bus-probe.ts` is the bus's `pingWorkflow` — a subscriber whose only job is to prove
 the arc works end to end. It logs its dispatch identity, which is the assertion in one string: the
