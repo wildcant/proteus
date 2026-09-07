@@ -336,6 +336,46 @@ test.describe('POST /admin/regions/:id/countries', () => {
     expect((await getRegion(region.id)).body.region.countries).toEqual([])
   })
 
+  test('refuses a locale that is not a well-formed BCP 47 tag, and assigns nothing', async ({ expect, factories }) => {
+    // `es_CO` is the POSIX form and the most ordinary locale typo there is — non-empty, five
+    // characters, and past every length check. What it costs is not a mis-formatted price: the
+    // storefront would list Colombia as sellable and hand that tag to `Intl.NumberFormat`, which
+    // throws on every priced page in the market. Length was never the property worth checking.
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia' })
+
+    const { status, body } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries`, {
+      countries: [{ id: 'co', localeCode: 'es_CO' }],
+    })
+
+    expect(status).toBe(400)
+    expect(body.type).toBe(ErrorTypes.INVALID_DATA)
+    expect((await getRegion(region.id)).body.region.countries).toEqual([])
+  })
+
+  test('accepts the BCP 47 tags a market legitimately needs, not only language-REGION', async ({
+    expect,
+    factories,
+  }) => {
+    // The other half of the check: it narrows the field to what a formatter takes and no further.
+    // A variant subtag, a script subtag and a UN M.49 region are all tags a real market runs on.
+    const region = await factories.create.region({ name: 'Europe', currencyCode: 'eur' })
+    await factories.create.country({ id: 'es', displayName: 'Spain' })
+    await factories.create.country({ id: 'rs', displayName: 'Serbia' })
+    await factories.create.country({ id: 'ar', displayName: 'Argentina' })
+
+    const { status, body } = await assignCountries(region.id, {
+      countries: [
+        { id: 'es', localeCode: 'ca-ES-valencia' },
+        { id: 'rs', localeCode: 'sr-Latn-RS' },
+        { id: 'ar', localeCode: 'es-419' },
+      ],
+    })
+
+    expect(status).toBe(200)
+    expect(body.countries.map((country) => country.localeCode)).toEqual(['ca-ES-valencia', 'sr-Latn-RS', 'es-419'])
+  })
+
   test('accepts the country code in any case, since every country row carries the lowercase form', async ({
     expect,
     factories,
@@ -435,6 +475,25 @@ test.describe('POST /admin/regions/:id/countries/:code', () => {
     const { status } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries/co`, { localeCode: '  ' })
 
     expect(status).toBe(400)
+    expect((await listRegionCountries(region.id))[0]?.localeCode).toBe('es-CO')
+  })
+
+  test('refuses a locale that is not a well-formed BCP 47 tag, and leaves the market as it was', async ({
+    expect,
+    factories,
+  }) => {
+    // This route is the reachable path for the typo: its own copy invites a merchant to retype the
+    // field. An edit that can strand a live market defeats the assignment's guarantee from the
+    // other direction, so the same primitive refuses it here.
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia', regionId: region.id, localeCode: 'es-CO' })
+
+    const { status, body } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries/co`, {
+      localeCode: 'es_CO',
+    })
+
+    expect(status).toBe(400)
+    expect(body.type).toBe(ErrorTypes.INVALID_DATA)
     expect((await listRegionCountries(region.id))[0]?.localeCode).toBe('es-CO')
   })
 

@@ -46,11 +46,34 @@ export type AdminUpdateRegionBody = z.infer<typeof AdminUpdateRegion>
  *
  * Trimmed before it is required, so a tag of spaces is refused rather than stored: `country.locale_code`
  * is asserted to be set exactly when `region_id` is, and a country that is sellable with no usable
- * locale is a market whose prices and dates cannot be formatted at all. No pattern beyond that —
- * BCP 47 admits far more than `language-REGION`, and a schema that guessed at the shape would
- * refuse tags a merchant legitimately needs.
+ * locale is a market whose prices and dates cannot be formatted at all.
+ *
+ * Non-empty is not enough, because this is a field a merchant retypes. `es_CO` — the POSIX form,
+ * and the most ordinary locale typo there is — is five characters and passes every length check,
+ * and what it produces downstream is not a mis-formatted price but a dead market: the storefront
+ * lists the country as sellable, hands the tag to `new Intl.NumberFormat(…)`, and every priced page
+ * in that market throws `RangeError: Incorrect locale information provided` with no error boundary
+ * above it.
+ *
+ * The check is `Intl.getCanonicalLocales` rather than a pattern for exactly the reason a pattern
+ * looked impossible: BCP 47 admits far more than `language-REGION`, and any expression short enough
+ * to read would refuse tags a merchant legitimately needs. `Intl` implements that grammar and
+ * nothing beyond it, so `en`, `pt-BR`, `sr-Latn-RS`, `ca-ES-valencia`, `en-US-u-ca-gregory` and
+ * `es-419` all pass. It narrows the field to what a formatter can actually be given, and no
+ * further. It is also the one function every runtime this schema loads in already ships, so the
+ * form refuses the typo in the browser with the field named, and the route refuses it again.
  */
-const localeCode = machineCode.trim().min(1)
+const localeCode = machineCode
+  .trim()
+  .min(1)
+  .refine((tag) => {
+    try {
+      Intl.getCanonicalLocales(tag)
+      return true
+    } catch {
+      return false
+    }
+  }, 'Not a well-formed BCP 47 language tag')
 
 /** ISO 3166-1 alpha-2, lowercased on the way in so `CO` and `co` name the same country row. */
 const countryIso2 = countryCode.min(2).transform((code) => code.toLowerCase())
