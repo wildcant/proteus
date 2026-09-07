@@ -116,5 +116,5 @@ CREATE INDEX "idx_payment_collection_status" ON "payment_collection" USING btree
 CREATE INDEX "idx_payment_session_collection_id" ON "payment_session" USING btree ("payment_collection_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_payment_provider_id" ON "payment" USING btree ("provider_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_payment_collection_id" ON "payment" USING btree ("payment_collection_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_payment_session_id" ON "payment" USING btree ("payment_session_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_payment_session_id" ON "payment" USING btree ("payment_session_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_refund_payment_id" ON "refund" USING btree ("payment_id") WHERE deleted_at IS NULL;

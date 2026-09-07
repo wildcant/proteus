@@ -76,17 +76,20 @@ let captureRepository: CaptureRepository
 let refundRepository: RefundRepository
 /** Held so the concurrency tests can force the interleave a shared database client prevents. */
 let accountHolderRepository: AccountHolderRepository
+/** Same reason for the payment's own race, plus the hidden rows no service read can reach. */
+let paymentRepository: PaymentRepository
 
 test.beforeEach(({ getDb, logger }) => {
   mockProvider = createMockProviderService()
   captureRepository = new CaptureRepository({ getDb, cascadeGraph })
   refundRepository = new RefundRepository({ getDb, cascadeGraph })
   accountHolderRepository = new AccountHolderRepository({ getDb, cascadeGraph })
+  paymentRepository = new PaymentRepository({ getDb, cascadeGraph })
 
   service = new PaymentModuleService({
     paymentCollectionRepository: new PaymentCollectionRepository({ getDb, cascadeGraph }),
     paymentSessionRepository: new PaymentSessionRepository({ getDb, cascadeGraph }),
-    paymentRepository: new PaymentRepository({ getDb, cascadeGraph }),
+    paymentRepository,
     captureRepository,
     refundRepository,
     refundReasonRepository: new RefundReasonRepository({ getDb, cascadeGraph }),
@@ -367,6 +370,77 @@ test.describe('PaymentModuleService', () => {
       expect(second.canceledAt).toEqual(first.canceledAt)
       // Provider should only be called once — second call returns early
       expect(mockProvider.cancelPayment).toHaveBeenCalledOnce()
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // One payment per session
+  // ---------------------------------------------------------------------------
+
+  /**
+   * The invariant `authorizePaymentSession` has always assumed and never enforced.
+   *
+   * Its guard is a read-then-write — `findOne` by session id, then a create — with nothing atomic
+   * between the two. Two callers reaching it together (checkout and the payment webhook, which is
+   * the pair that actually happens) both read no payment and both write one. The session-keyed
+   * lookup then answers with whichever row comes back first, so the guard stops working from that
+   * point on and the collection holds two separately capturable payments for one authorization.
+   *
+   * The unique index does not remove the race — a lock would, and `complete-cart` still records
+   * that as absent. It makes the loser fail loudly instead of writing the second row.
+   */
+  test.describe('One payment per session', () => {
+    /**
+     * Both callers see no payment, which is what "at the same moment" means here and what timing
+     * alone cannot produce: the calls share a database client, so a real `Promise.all` lets the
+     * first create commit before the second read is issued and the second returns early.
+     *
+     * Two calls stubbed, one per caller. Everything after them goes to the real database, so the
+     * refusal is a real unique violation rather than an assertion about a mock.
+     */
+    function bothSeeNoPayment() {
+      vi.spyOn(paymentRepository, 'findOne').mockResolvedValueOnce(null).mockResolvedValueOnce(null)
+    }
+
+    test('refuses the second write rather than leaving two payments for one session', async ({ expect, dto }) => {
+      const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+      const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+      bothSeeNoPayment()
+
+      const results = await Promise.allSettled([
+        service.authorizePaymentSession(session.id),
+        service.authorizePaymentSession(session.id),
+      ])
+
+      // One caller is told, rather than both being told they succeeded.
+      const rejected = results.filter((result) => result.status === 'rejected')
+      expect(rejected).toHaveLength(1)
+      // Named down to the column, so the refusal cannot be mistaken for some other collision.
+      expect(rejected[0]?.reason).toMatchObject({
+        type: ErrorTypes.DUPLICATE_ERROR,
+        message: `payment: payment_session_id "${session.id}" already exists`,
+      })
+      // And the loser's authorization is released at the gateway rather than left dangling.
+      expect(mockProvider.cancelPayment).toHaveBeenCalledOnce()
+      expect(await paymentRepository.find({ paymentSessionId: session.id })).toHaveLength(1)
+    })
+
+    /**
+     * The reason the index is partial. A payment hidden by a cascade has released its slot, so the
+     * session can be authorized again — an unconditional unique index would refuse that forever
+     * against a row nothing can read.
+     */
+    test('a hidden payment does not hold the session against a replacement', async ({ expect, dto }) => {
+      const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+      const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+      const first = authorizedPayment(await service.authorizePaymentSession(session.id))
+      await paymentRepository.softDelete([first.id])
+
+      const replacement = authorizedPayment(await service.authorizePaymentSession(session.id))
+
+      expect(replacement.id).not.toBe(first.id)
+      expect(await paymentRepository.find({ paymentSessionId: session.id })).toHaveLength(1)
+      expect(await paymentRepository.find({ paymentSessionId: session.id }, { withDeleted: true })).toHaveLength(2)
     })
   })
 
