@@ -50,6 +50,9 @@ job_conventions() {
   # is the step that notices when the two have drifted. --check never writes, so it behaves the same
   # here and under --ci. See scripts/generate-workflow-registry.ts.
   npm run --workspace=backend --silent check:workflow-registry || code=1
+  # The event bus dispatches subscribers from a generated import list for the same reasons, so it
+  # drifts the same way. See scripts/generate-subscriber-registry.ts.
+  npm run --workspace=backend --silent check:subscriber-registry || code=1
   # Code-shape rules — the mutation-hook contract in docs/mutation-hooks.md today. Spans store and
   # admin, so it lives at the root like the env check. ast-grep matches the syntax tree rather than
   # lines: a hook forwarding one callback and swallowing the other reads as compliant to any
@@ -82,8 +85,9 @@ job_deps() {
 }
 
 # The API tests plus the unit tests worth gating — the option-combination matrix, the Stripe
-# adapter's currency and status tables, which decide what a shopper is charged, and the platform
-# adapters, which decide whether a webhook signature can be verified at all. The full
+# adapter's currency and status tables, which decide what a shopper is charged, the platform
+# adapters, which decide whether a webhook signature can be verified at all, and the event bus,
+# whose pin probe is what says the suite published through the adapter it claims to. The full
 # suite is ~96s and would dominate the gate. One vitest process, not two: every backend test file
 # pulls in db-setup, and the suite is not safe to run twice concurrently against the shared test
 # database.

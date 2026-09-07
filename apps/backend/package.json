@@ -23,7 +23,7 @@
     "test:temporal": "dotenvx run -f ../../.env.test -- vitest run --config vitest.temporal.config.ts",
     "test:temporal:server": "dotenvx run -f ../../.env.test -- vitest run --config vitest.temporal-server.config.ts",
     "test:api": "dotenvx run -f ../../.env.test -- vitest run src/api",
-    "test:gate": "dotenvx run -f ../../.env.test -- vitest run src/api src/core/utils src/modules/payment src/framework/runtime",
+    "test:gate": "dotenvx run -f ../../.env.test -- vitest run src/api src/core/event-bus src/core/utils src/modules/payment src/framework/runtime",
     "db:test:up": "docker compose -f docker-compose.test.yml up -d --wait",
     "db:test:down": "docker compose -f docker-compose.test.yml down",
     "typecheck": "tsc --noEmit",
@@ -48,6 +48,8 @@
     "check:workflow-purity": "tsx scripts/replay-purity.ts",
     "check:workflow-registry": "tsx scripts/generate-workflow-registry.ts --check",
     "workflows:generate": "tsx scripts/generate-workflow-registry.ts",
+    "check:subscriber-registry": "tsx scripts/generate-subscriber-registry.ts --check",
+    "subscribers:generate": "tsx scripts/generate-subscriber-registry.ts",
     "check:schema": "tsx scripts/checks/run.ts",
     "check:deps": "depcruise src/ --config deps-analyzer/.dependency-cruiser.cjs",
     "check:deps:graph": "depcruise src/ --config deps-analyzer/.dependency-cruiser.cjs --output-type archi --exclude '(node_modules|__tests__)' --collapse 3 | dot -T svg -o deps-analyzer/dependency-graph.svg && open deps-analyzer/dependency-graph.svg"

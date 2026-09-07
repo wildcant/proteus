@@ -30,6 +30,8 @@ export class ConfigManager {
         // No default: an unset engine means "derive it", which only the composition root can do
         // (it is the one thing here that depends on the runtime).
         workflows: { engine: input.projectConfig?.workflows?.engine },
+        // Same rule, same reason — see `resolveEventBusAdapterName`.
+        eventBus: { adapter: input.projectConfig?.eventBus?.adapter },
       },
       featureFlags: input.featureFlags ?? {},
     }

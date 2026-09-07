@@ -5,4 +5,5 @@ export const ContainerRegistrationKeys = {
   LOGGER: 'logger',
   LINK: 'link',
   SCHEDULER: 'scheduler',
+  EVENT_BUS: 'eventBus',
 } as const

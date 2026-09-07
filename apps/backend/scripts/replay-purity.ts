@@ -49,7 +49,8 @@
 
 import { fileURLToPath } from 'node:url'
 import * as ts from 'typescript'
-import { collect, findCreateWorkflowCalls, parse, type SourceFileInput, workflowNameOf } from './workflow-source.js'
+import { collect, parse, type SourceFileInput } from './ts-source.js'
+import { findCreateWorkflowCalls, workflowNameOf } from './workflow-source.js'
 
 /** Stable ids, so the fixture pass can assert every rule still fires rather than just "something did". */
 type PurityRule =
