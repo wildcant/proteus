@@ -38,7 +38,13 @@ export async function createWorkerContainer(options: { engine?: WorkflowEngineNa
     dbProvider,
     config: {
       ...appConfigInput,
-      projectConfig: { ...appConfigInput.projectConfig, workflows: { engine } },
+      projectConfig: {
+        ...appConfigInput.projectConfig,
+        workflows: { engine },
+        // ILLO-87 replaces this with the Temporal adapter and gives the events worker its own
+        // process; until then a step that publishes from inside a Worker runs the subscriber inline.
+        eventBus: { adapter: 'inline' },
+      },
     },
   })
 

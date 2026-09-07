@@ -2,6 +2,7 @@
 
 import { env } from '@env'
 import postgres from 'postgres'
+import { appConfigInput } from '../../config.js'
 import { bootstrapContainer } from '../../container.js'
 import { createNodeDbProvider } from '../../core/db/node-provider.js'
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '../../core/workflows/temporal-adapter.js'
@@ -23,6 +24,14 @@ let temporalEngine: TemporalWorkflowEngine | undefined
 export const container = await bootstrapContainer({
   logger,
   dbProvider,
+  /**
+   * The derived adapter here is Temporal standalone activities, which is ILLO-87. Pinned to the
+   * in-process one until that lands — nothing publishes yet, so the pin has nothing to change.
+   */
+  config: {
+    ...appConfigInput,
+    projectConfig: { ...appConfigInput.projectConfig, eventBus: { adapter: 'inline' } },
+  },
   /**
    * Imported here and nowhere shared, so `@temporalio/*` stays out of the workerd bundle.
    *

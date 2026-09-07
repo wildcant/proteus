@@ -112,6 +112,46 @@ module.exports = {
       },
     },
     {
+      name: 'event-bus-and-workflows-stay-peers',
+      comment:
+        'src/core/event-bus/ and src/core/workflows/ are peers that must not import each other. ' +
+        'They happen to share a vendor on node — the workflow engine runs workflow executions, the ' +
+        'bus will run standalone activities — and that is exactly the coupling this forbids: a fix ' +
+        "in the engine's replay code must be structurally incapable of changing event dispatch, " +
+        'which it is only while dispatch never enters that file. What they genuinely share (the ' +
+        'client factory, the payload converter, the failure encoding) lives in src/temporal/, which ' +
+        'shared-temporal-stays-shared keeps from growing back into either of them. ' +
+        'Direct imports, not reachability, and deliberately so: a subscriber that runs a workflow ' +
+        'is the designed path — src/subscribers/ may reach both — and a workflow step that ' +
+        "publishes needs the bus's port type. Both would fail a reachable rule while being the " +
+        'thing the split exists to allow. The hazard is shared machinery, and machinery is imported.',
+      severity: 'error',
+      from: {
+        path: '^src/core/(event-bus|workflows)/',
+      },
+      to: {
+        path: '^src/core/(event-bus|workflows)/',
+        pathNot: '^src/core/$1/',
+      },
+    },
+    {
+      name: 'notifications-belong-to-neither',
+      comment:
+        'src/notifications/ holds what a notification *is*, separated from what decides to send it. ' +
+        'Its builders are called by a checkout step today and by an order.placed subscriber next, ' +
+        'so it sits under neither tree on purpose — a builder under src/workflows/ would mean the ' +
+        'subscriber reaches into the workflow tree to send an email, and the reverse is as bad. ' +
+        'Nothing enforced that placement until now: a README is not a rule, and the directory ' +
+        'reads as correct right up until the first import that quietly makes it belong to one side.',
+      severity: 'error',
+      from: {
+        path: '^src/notifications/',
+      },
+      to: {
+        path: '^src/workflows/|^src/core/(event-bus|workflows)/',
+      },
+    },
+    {
       name: 'no-circular',
       comment: 'No circular dependencies allowed.',
       severity: 'error',

@@ -19,9 +19,26 @@ export type WorkflowsConfig = {
   engine?: WorkflowEngineName
 }
 
+/** Which `EventBus` adapter `bootstrapContainer` wires. */
+export type EventBusAdapterName = 'inline' | 'cloudflare-queues' | 'temporal'
+
+export type EventBusConfig = {
+  /**
+   * Left unset, the composition root derives the adapter from `RUNTIME`, the same way it derives
+   * the workflow engine and for the same reason: workerd cannot load Temporal's native worker and
+   * Cloudflare Queues do not exist off it, so the transport is not a deployment knob and there is
+   * deliberately no `EVENT_BUS` env var.
+   *
+   * It is set today at every composition root, because the two derived transports are the next two
+   * tickets and only the in-process adapter exists. That is a pin with a date on it, not a default.
+   */
+  adapter?: EventBusAdapterName
+}
+
 export type ProjectConfig = {
   http: HttpConfig
   workflows: WorkflowsConfig
+  eventBus: EventBusConfig
 }
 
 export type ConfigModule = {
@@ -33,6 +50,7 @@ export type InputConfig = {
   projectConfig?: {
     http?: Partial<HttpConfig>
     workflows?: Partial<WorkflowsConfig>
+    eventBus?: Partial<EventBusConfig>
   }
   featureFlags?: Record<string, boolean | string | Record<string, boolean>>
 }

@@ -4,13 +4,17 @@
  * so each entry point only bundles its own provider (tree-shaking friendly).
  */
 
-import { asFunction, asValue, createContainer } from 'awilix'
+import { type AwilixContainer, asFunction, asValue, createContainer } from 'awilix'
 import { appConfig } from './config.js'
 import { bootstrapModule } from './core/bootstrap/index.js'
 import { defineAppConfig } from './core/config/index.js'
 import type { InputConfig } from './core/config/types.js'
 import type { DbProvider } from './core/db/ports.js'
 import { AppError, ErrorTypes } from './core/errors/app-error.js'
+import { resolveEventBusAdapterName } from './core/event-bus/adapter-selection.js'
+import { createInlineEventBus } from './core/event-bus/inline-adapter.js'
+import { subscriberRegistry } from './core/event-bus/registry.js'
+import type { EventBus } from './core/event-bus/types.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/index.js'
 import { resolveWorkflowEngineName } from './core/workflows/engine-selection.js'
@@ -75,6 +79,15 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   registerLinkService(container)
   setWorkflowEngine(selectWorkflowEngine(deps, configModule.projectConfig.workflows.engine), container)
 
+  // The bus is a container registration rather than a module global like the workflow engine,
+  // because a publisher always already has the container: a step is handed one, a route handler
+  // resolves from `req.scope`. It goes in last so a subscriber it dispatches to sees every module.
+  container.register({
+    [ContainerRegistrationKeys.EVENT_BUS]: asValue(
+      selectEventBus(configModule.projectConfig.eventBus.adapter, container, logger),
+    ),
+  })
+
   return container
 }
 
@@ -97,4 +110,27 @@ function selectWorkflowEngine(
   }
 
   return createEngine()
+}
+
+/**
+ * The transports the derived default names — Cloudflare Queues on workerd, Temporal standalone
+ * activities on node — are the next two tickets. Refusing to boot is the right answer until they
+ * land: an adapter this cannot build must not silently become a different one, because "events are
+ * being delivered in-process" and "events are being delivered durably" look identical from the
+ * publisher and differ entirely when the process dies.
+ */
+function selectEventBus(
+  configured: ReturnType<typeof defineAppConfig>['projectConfig']['eventBus']['adapter'],
+  container: AwilixContainer,
+  logger: Logger,
+): EventBus {
+  const adapter = resolveEventBusAdapterName({ configured, runtime: env.RUNTIME })
+  if (adapter === 'inline') return createInlineEventBus({ registry: subscriberRegistry, container, logger })
+
+  throw new AppError({
+    type: ErrorTypes.UNEXPECTED_STATE,
+    message:
+      `The "${adapter}" event bus adapter was selected but does not exist yet. The entry point ` +
+      'building this container must pin `projectConfig.eventBus.adapter` to "inline".',
+  })
 }
