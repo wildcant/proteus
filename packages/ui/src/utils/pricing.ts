@@ -19,6 +19,18 @@ export function getCurrencySymbol(currencyCode: string, locale: string = DEFAULT
   return symbolPart?.value ?? currencyCode
 }
 
+/**
+ * The currency's name in words — `Euro`, `US Dollar` — for a label a code alone does not explain.
+ *
+ * Derived rather than stored: `Intl.DisplayNames` already ships every ISO 4217 name in every
+ * locale the runtime supports, so a table of them would only be a copy going stale. A code the
+ * runtime does not know is returned uppercased, which is still the best label available for it.
+ */
+export function getCurrencyName(currencyCode: string, locale: string = DEFAULT_LOCALE): string {
+  const name = new Intl.DisplayNames([locale], { type: 'currency' }).of(currencyCode.toUpperCase())
+  return name ?? currencyCode.toUpperCase()
+}
+
 /** Formats a numeric string as a fully styled currency value with symbol (e.g. "$10.00"). */
 export function formatPrice(amount: string, currencyCode: string, locale: string = DEFAULT_LOCALE) {
   return new Intl.NumberFormat(locale, {

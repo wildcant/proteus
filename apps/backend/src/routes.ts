@@ -16,10 +16,12 @@ import adminInviteDefinitions from './api/admin/invites/definitions.js'
 import adminNotificationDefinitions from './api/admin/notifications/definitions.js'
 import adminOrderDefinitions from './api/admin/orders/definitions.js'
 import adminPaymentCollectionDefinitions from './api/admin/payment-collections/definitions.js'
+import adminPaymentProviderDefinitions from './api/admin/payment-providers/definitions.js'
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
 import adminProductOptionDefinitions from './api/admin/product-options/definitions.js'
 import adminProductDefinitions from './api/admin/products/definitions.js'
 import adminRefundReasonDefinitions from './api/admin/refund-reasons/definitions.js'
+import adminRegionDefinitions from './api/admin/regions/definitions.js'
 import adminShippingOptionDefinitions from './api/admin/shipping-options/definitions.js'
 import adminShippingProfileDefinitions from './api/admin/shipping-profiles/definitions.js'
 import adminStoreDefinitions from './api/admin/store/definitions.js'
@@ -56,9 +58,11 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminFulfillmentSetDefinitions,
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,
+  ...adminPaymentProviderDefinitions,
   ...adminProductOptionDefinitions,
   ...adminProductDefinitions,
   ...adminRefundReasonDefinitions,
+  ...adminRegionDefinitions,
   ...adminShippingOptionDefinitions,
   ...adminShippingProfileDefinitions,
   ...adminStoreDefinitions,
