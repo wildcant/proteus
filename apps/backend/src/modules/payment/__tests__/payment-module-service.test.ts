@@ -420,9 +420,33 @@ test.describe('PaymentModuleService', () => {
         type: ErrorTypes.DUPLICATE_ERROR,
         message: `payment: payment_session_id "${session.id}" already exists`,
       })
-      // And the loser's authorization is released at the gateway rather than left dangling.
-      expect(mockProvider.cancelPayment).toHaveBeenCalledOnce()
+      // And the authorization is left alone. Both callers confirmed the *same* intent, so there
+      // is no "loser's own" authorization to release — cancelling here would void the money the
+      // winner's order was placed against, on a request that changed nothing.
+      expect(mockProvider.cancelPayment).not.toHaveBeenCalled()
       expect(await paymentRepository.find({ paymentSessionId: session.id })).toHaveLength(1)
+    })
+
+    /**
+     * The other half of that narrowing. The cancel exists for a real case — a payment row written
+     * and then something after it failing, leaving an authorization nothing will ever capture —
+     * and skipping it for the duplicate must not quietly drop it for everything else.
+     */
+    test('still releases the authorization when the failure is not a duplicate', async ({ expect, dto }) => {
+      const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())
+      const session = await service.createPaymentSession(collection.id, dto.generate.createPaymentSession())
+      // A provider that authorizes and captures in one step, whose capture then fails: the row
+      // exists, the money was never taken, and the authorization is this caller's to release.
+      mockProvider.authorizePayment.mockResolvedValueOnce({ status: 'captured', data: session.data })
+      mockProvider.capturePayment.mockRejectedValueOnce(
+        new AppError({ type: ErrorTypes.SERVICE_UNAVAILABLE, message: 'Gateway timed out' }),
+      )
+
+      await expect(service.authorizePaymentSession(session.id)).rejects.toMatchObject({
+        type: ErrorTypes.SERVICE_UNAVAILABLE,
+      })
+
+      expect(mockProvider.cancelPayment).toHaveBeenCalledOnce()
     })
 
     /**
