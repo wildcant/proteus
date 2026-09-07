@@ -21,7 +21,7 @@ import { Route as AuthedShellOrdersRouteRouteImport } from './routes/_authed/_sh
 import { Route as AuthedShellProductOptionsRouteRouteImport } from './routes/_authed/_shell/product-options/route'
 import { Route as AuthedShellProductsRouteRouteImport } from './routes/_authed/_shell/products/route'
 import { Route as AuthedSettingsRegionsRouteRouteImport } from './routes/_authed/settings/regions/route'
-import { Route as AuthedSettingsStoreRouteImport } from './routes/_authed/settings/store'
+import { Route as AuthedSettingsStoreRouteRouteImport } from './routes/_authed/settings/store/route'
 import { Route as AuthedSettingsUsersRouteRouteImport } from './routes/_authed/settings/users/route'
 import { Route as AuthedShellOrdersIndexRouteImport } from './routes/_authed/_shell/orders/index'
 import { Route as AuthedShellOrdersIdRouteRouteImport } from './routes/_authed/_shell/orders/$id/route'
@@ -34,6 +34,9 @@ import { Route as AuthedShellProductsCreateRouteImport } from './routes/_authed/
 import { Route as AuthedSettingsRegionsIndexRouteImport } from './routes/_authed/settings/regions/index'
 import { Route as AuthedSettingsRegionsIdRouteRouteImport } from './routes/_authed/settings/regions/$id/route'
 import { Route as AuthedSettingsRegionsCreateRouteImport } from './routes/_authed/settings/regions/create'
+import { Route as AuthedSettingsStoreIndexRouteImport } from './routes/_authed/settings/store/index'
+import { Route as AuthedSettingsStoreCurrenciesRouteImport } from './routes/_authed/settings/store/currencies'
+import { Route as AuthedSettingsStoreEditRouteImport } from './routes/_authed/settings/store/edit'
 import { Route as AuthedSettingsUsersInviteRouteImport } from './routes/_authed/settings/users/invite'
 import { Route as AuthedShellOrdersIdDetailRouteRouteImport } from './routes/_authed/_shell/orders/$id/_detail/route'
 import { Route as AuthedShellProductOptionsIdDetailRouteRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/route'
@@ -117,11 +120,12 @@ const AuthedSettingsRegionsRouteRoute =
     path: '/regions',
     getParentRoute: () => AuthedSettingsRouteRoute,
   } as any)
-const AuthedSettingsStoreRoute = AuthedSettingsStoreRouteImport.update({
-  id: '/store',
-  path: '/store',
-  getParentRoute: () => AuthedSettingsRouteRoute,
-} as any)
+const AuthedSettingsStoreRouteRoute =
+  AuthedSettingsStoreRouteRouteImport.update({
+    id: '/store',
+    path: '/store',
+    getParentRoute: () => AuthedSettingsRouteRoute,
+  } as any)
 const AuthedSettingsUsersRouteRoute =
   AuthedSettingsUsersRouteRouteImport.update({
     id: '/users',
@@ -193,6 +197,23 @@ const AuthedSettingsRegionsCreateRoute =
     path: '/create',
     getParentRoute: () => AuthedSettingsRegionsRouteRoute,
   } as any)
+const AuthedSettingsStoreIndexRoute =
+  AuthedSettingsStoreIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedSettingsStoreRouteRoute,
+  } as any)
+const AuthedSettingsStoreCurrenciesRoute =
+  AuthedSettingsStoreCurrenciesRouteImport.update({
+    id: '/currencies',
+    path: '/currencies',
+    getParentRoute: () => AuthedSettingsStoreRouteRoute,
+  } as any)
+const AuthedSettingsStoreEditRoute = AuthedSettingsStoreEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => AuthedSettingsStoreRouteRoute,
+} as any)
 const AuthedSettingsUsersInviteRoute =
   AuthedSettingsUsersInviteRouteImport.update({
     id: '/invite',
@@ -331,9 +352,9 @@ export interface FileRoutesByFullPath {
   '/product-options': typeof AuthedShellProductOptionsRouteRouteWithChildren
   '/products': typeof AuthedShellProductsRouteRouteWithChildren
   '/settings/regions': typeof AuthedSettingsRegionsRouteRouteWithChildren
+  '/settings/store': typeof AuthedSettingsStoreRouteRouteWithChildren
   '/settings/users': typeof AuthedSettingsUsersRouteRouteWithChildren
   '/customers': typeof AuthedShellCustomersRoute
-  '/settings/store': typeof AuthedSettingsStoreRoute
   '/orders/$id': typeof AuthedShellOrdersIdRouteRouteWithChildren
   '/product-options/$id': typeof AuthedShellProductOptionsIdRouteRouteWithChildren
   '/products/$id': typeof AuthedShellProductsIdRouteRouteWithChildren
@@ -341,11 +362,14 @@ export interface FileRoutesByFullPath {
   '/product-options/create': typeof AuthedShellProductOptionsCreateRoute
   '/products/create': typeof AuthedShellProductsCreateRoute
   '/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
+  '/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
+  '/settings/store/edit': typeof AuthedSettingsStoreEditRoute
   '/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
   '/orders/': typeof AuthedShellOrdersIndexRoute
   '/product-options/': typeof AuthedShellProductOptionsIndexRoute
   '/products/': typeof AuthedShellProductsIndexRoute
   '/settings/regions/': typeof AuthedSettingsRegionsIndexRoute
+  '/settings/store/': typeof AuthedSettingsStoreIndexRoute
   '/products/$id/variants/$variantId': typeof AuthedShellProductsIdVariantsVariantIdRouteRouteWithChildren
   '/product-options/$id/edit': typeof AuthedShellProductOptionsIdDetailEditRoute
   '/products/$id/edit': typeof AuthedShellProductsIdDetailEditRoute
@@ -371,7 +395,6 @@ export interface FileRoutesByTo {
   '/login': typeof PublicLoginRoute
   '/settings/users': typeof AuthedSettingsUsersRouteRouteWithChildren
   '/customers': typeof AuthedShellCustomersRoute
-  '/settings/store': typeof AuthedSettingsStoreRoute
   '/orders/$id': typeof AuthedShellOrdersIdDetailIndexRoute
   '/product-options/$id': typeof AuthedShellProductOptionsIdDetailIndexRoute
   '/products/$id': typeof AuthedShellProductsIdDetailIndexRoute
@@ -379,11 +402,14 @@ export interface FileRoutesByTo {
   '/product-options/create': typeof AuthedShellProductOptionsCreateRoute
   '/products/create': typeof AuthedShellProductsCreateRoute
   '/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
+  '/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
+  '/settings/store/edit': typeof AuthedSettingsStoreEditRoute
   '/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
   '/orders': typeof AuthedShellOrdersIndexRoute
   '/product-options': typeof AuthedShellProductOptionsIndexRoute
   '/products': typeof AuthedShellProductsIndexRoute
   '/settings/regions': typeof AuthedSettingsRegionsIndexRoute
+  '/settings/store': typeof AuthedSettingsStoreIndexRoute
   '/products/$id/variants/$variantId': typeof AuthedShellProductsIdVariantsVariantIdRouteRouteWithChildren
   '/product-options/$id/edit': typeof AuthedShellProductOptionsIdDetailEditRoute
   '/products/$id/edit': typeof AuthedShellProductsIdDetailEditRoute
@@ -410,9 +436,9 @@ export interface FileRoutesById {
   '/_authed/_shell/product-options': typeof AuthedShellProductOptionsRouteRouteWithChildren
   '/_authed/_shell/products': typeof AuthedShellProductsRouteRouteWithChildren
   '/_authed/settings/regions': typeof AuthedSettingsRegionsRouteRouteWithChildren
+  '/_authed/settings/store': typeof AuthedSettingsStoreRouteRouteWithChildren
   '/_authed/settings/users': typeof AuthedSettingsUsersRouteRouteWithChildren
   '/_authed/_shell/customers': typeof AuthedShellCustomersRoute
-  '/_authed/settings/store': typeof AuthedSettingsStoreRoute
   '/_authed/_shell/': typeof AuthedShellIndexRoute
   '/_authed/_shell/orders/$id': typeof AuthedShellOrdersIdRouteRouteWithChildren
   '/_authed/_shell/product-options/$id': typeof AuthedShellProductOptionsIdRouteRouteWithChildren
@@ -421,11 +447,14 @@ export interface FileRoutesById {
   '/_authed/_shell/product-options/create': typeof AuthedShellProductOptionsCreateRoute
   '/_authed/_shell/products/create': typeof AuthedShellProductsCreateRoute
   '/_authed/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
+  '/_authed/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
+  '/_authed/settings/store/edit': typeof AuthedSettingsStoreEditRoute
   '/_authed/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
   '/_authed/_shell/orders/': typeof AuthedShellOrdersIndexRoute
   '/_authed/_shell/product-options/': typeof AuthedShellProductOptionsIndexRoute
   '/_authed/_shell/products/': typeof AuthedShellProductsIndexRoute
   '/_authed/settings/regions/': typeof AuthedSettingsRegionsIndexRoute
+  '/_authed/settings/store/': typeof AuthedSettingsStoreIndexRoute
   '/_authed/_shell/orders/$id/_detail': typeof AuthedShellOrdersIdDetailRouteRouteWithChildren
   '/_authed/_shell/product-options/$id/_detail': typeof AuthedShellProductOptionsIdDetailRouteRouteWithChildren
   '/_authed/_shell/products/$id/_detail': typeof AuthedShellProductsIdDetailRouteRouteWithChildren
@@ -459,9 +488,9 @@ export interface FileRouteTypes {
     | '/product-options'
     | '/products'
     | '/settings/regions'
+    | '/settings/store'
     | '/settings/users'
     | '/customers'
-    | '/settings/store'
     | '/orders/$id'
     | '/product-options/$id'
     | '/products/$id'
@@ -469,11 +498,14 @@ export interface FileRouteTypes {
     | '/product-options/create'
     | '/products/create'
     | '/settings/regions/create'
+    | '/settings/store/currencies'
+    | '/settings/store/edit'
     | '/settings/users/invite'
     | '/orders/'
     | '/product-options/'
     | '/products/'
     | '/settings/regions/'
+    | '/settings/store/'
     | '/products/$id/variants/$variantId'
     | '/product-options/$id/edit'
     | '/products/$id/edit'
@@ -499,7 +531,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/settings/users'
     | '/customers'
-    | '/settings/store'
     | '/orders/$id'
     | '/product-options/$id'
     | '/products/$id'
@@ -507,11 +538,14 @@ export interface FileRouteTypes {
     | '/product-options/create'
     | '/products/create'
     | '/settings/regions/create'
+    | '/settings/store/currencies'
+    | '/settings/store/edit'
     | '/settings/users/invite'
     | '/orders'
     | '/product-options'
     | '/products'
     | '/settings/regions'
+    | '/settings/store'
     | '/products/$id/variants/$variantId'
     | '/product-options/$id/edit'
     | '/products/$id/edit'
@@ -537,9 +571,9 @@ export interface FileRouteTypes {
     | '/_authed/_shell/product-options'
     | '/_authed/_shell/products'
     | '/_authed/settings/regions'
+    | '/_authed/settings/store'
     | '/_authed/settings/users'
     | '/_authed/_shell/customers'
-    | '/_authed/settings/store'
     | '/_authed/_shell/'
     | '/_authed/_shell/orders/$id'
     | '/_authed/_shell/product-options/$id'
@@ -548,11 +582,14 @@ export interface FileRouteTypes {
     | '/_authed/_shell/product-options/create'
     | '/_authed/_shell/products/create'
     | '/_authed/settings/regions/create'
+    | '/_authed/settings/store/currencies'
+    | '/_authed/settings/store/edit'
     | '/_authed/settings/users/invite'
     | '/_authed/_shell/orders/'
     | '/_authed/_shell/product-options/'
     | '/_authed/_shell/products/'
     | '/_authed/settings/regions/'
+    | '/_authed/settings/store/'
     | '/_authed/_shell/orders/$id/_detail'
     | '/_authed/_shell/product-options/$id/_detail'
     | '/_authed/_shell/products/$id/_detail'
@@ -671,7 +708,7 @@ declare module '@tanstack/react-router' {
       id: '/_authed/settings/store'
       path: '/store'
       fullPath: '/settings/store'
-      preLoaderRoute: typeof AuthedSettingsStoreRouteImport
+      preLoaderRoute: typeof AuthedSettingsStoreRouteRouteImport
       parentRoute: typeof AuthedSettingsRouteRoute
     }
     '/_authed/settings/users': {
@@ -757,6 +794,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/regions/create'
       preLoaderRoute: typeof AuthedSettingsRegionsCreateRouteImport
       parentRoute: typeof AuthedSettingsRegionsRouteRoute
+    }
+    '/_authed/settings/store/': {
+      id: '/_authed/settings/store/'
+      path: '/'
+      fullPath: '/settings/store/'
+      preLoaderRoute: typeof AuthedSettingsStoreIndexRouteImport
+      parentRoute: typeof AuthedSettingsStoreRouteRoute
+    }
+    '/_authed/settings/store/currencies': {
+      id: '/_authed/settings/store/currencies'
+      path: '/currencies'
+      fullPath: '/settings/store/currencies'
+      preLoaderRoute: typeof AuthedSettingsStoreCurrenciesRouteImport
+      parentRoute: typeof AuthedSettingsStoreRouteRoute
+    }
+    '/_authed/settings/store/edit': {
+      id: '/_authed/settings/store/edit'
+      path: '/edit'
+      fullPath: '/settings/store/edit'
+      preLoaderRoute: typeof AuthedSettingsStoreEditRouteImport
+      parentRoute: typeof AuthedSettingsStoreRouteRoute
     }
     '/_authed/settings/users/invite': {
       id: '/_authed/settings/users/invite'
@@ -1177,6 +1235,24 @@ const AuthedSettingsRegionsRouteRouteWithChildren =
     AuthedSettingsRegionsRouteRouteChildren,
   )
 
+interface AuthedSettingsStoreRouteRouteChildren {
+  AuthedSettingsStoreCurrenciesRoute: typeof AuthedSettingsStoreCurrenciesRoute
+  AuthedSettingsStoreEditRoute: typeof AuthedSettingsStoreEditRoute
+  AuthedSettingsStoreIndexRoute: typeof AuthedSettingsStoreIndexRoute
+}
+
+const AuthedSettingsStoreRouteRouteChildren: AuthedSettingsStoreRouteRouteChildren =
+  {
+    AuthedSettingsStoreCurrenciesRoute: AuthedSettingsStoreCurrenciesRoute,
+    AuthedSettingsStoreEditRoute: AuthedSettingsStoreEditRoute,
+    AuthedSettingsStoreIndexRoute: AuthedSettingsStoreIndexRoute,
+  }
+
+const AuthedSettingsStoreRouteRouteWithChildren =
+  AuthedSettingsStoreRouteRoute._addFileChildren(
+    AuthedSettingsStoreRouteRouteChildren,
+  )
+
 interface AuthedSettingsUsersRouteRouteChildren {
   AuthedSettingsUsersInviteRoute: typeof AuthedSettingsUsersInviteRoute
 }
@@ -1193,14 +1269,14 @@ const AuthedSettingsUsersRouteRouteWithChildren =
 
 interface AuthedSettingsRouteRouteChildren {
   AuthedSettingsRegionsRouteRoute: typeof AuthedSettingsRegionsRouteRouteWithChildren
+  AuthedSettingsStoreRouteRoute: typeof AuthedSettingsStoreRouteRouteWithChildren
   AuthedSettingsUsersRouteRoute: typeof AuthedSettingsUsersRouteRouteWithChildren
-  AuthedSettingsStoreRoute: typeof AuthedSettingsStoreRoute
 }
 
 const AuthedSettingsRouteRouteChildren: AuthedSettingsRouteRouteChildren = {
   AuthedSettingsRegionsRouteRoute: AuthedSettingsRegionsRouteRouteWithChildren,
+  AuthedSettingsStoreRouteRoute: AuthedSettingsStoreRouteRouteWithChildren,
   AuthedSettingsUsersRouteRoute: AuthedSettingsUsersRouteRouteWithChildren,
-  AuthedSettingsStoreRoute: AuthedSettingsStoreRoute,
 }
 
 const AuthedSettingsRouteRouteWithChildren =

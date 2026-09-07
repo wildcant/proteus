@@ -8,6 +8,7 @@
 
 export * from './acceptInviteBody.ts';
 export * from './adminAcceptInviteResponse.ts';
+export * from './adminAddStoreCurrencies.ts';
 export * from './adminAssignRegionCountries.ts';
 export * from './adminAssignRegionCountriesCountriesItem.ts';
 export * from './adminBatchImageVariant.ts';
@@ -198,6 +199,7 @@ export * from './adminUpdateShippingOptionData.ts';
 export * from './adminUpdateShippingOptionResponse.ts';
 export * from './adminUpdateShippingProfile.ts';
 export * from './adminUpdateShippingProfileResponse.ts';
+export * from './adminUpdateStore.ts';
 export * from './adminUpdateUser.ts';
 export * from './adminUpdateVariantPrices.ts';
 export * from './adminUpdateVariantPricesPricesItem.ts';
