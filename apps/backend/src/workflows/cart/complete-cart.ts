@@ -19,9 +19,9 @@ import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules, NotificationTemplates } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { env } from '@env'
+import { buildOrderConfirmationNotification } from '../../notifications/order-confirmation.js'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
 import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
-import { prepareOrderConfirmationData } from './utils/prepare-order-confirmation-data.js'
 
 type CompleteCartInput = { cartId: string }
 
@@ -492,32 +492,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 
       try {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-
-        const [lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([
-          orderService.listOrderLineItems({ orderId: order.id }),
-          orderService.listOrderShippingMethods({ orderId: order.id }),
-          orderService.listOrderTransactions({ orderId: order.id }),
-          orderService.retrieveOrderAddress(order.id, 'shipping'),
-        ])
-
-        await notificationService.createNotification({
-          to: order.email,
-          channel: 'email',
-          template: NotificationTemplates.ORDER_CONFIRMATION,
-          data: prepareOrderConfirmationData({
-            order,
-            lineItems: orderService.enrichLineItems(lineItems),
-            totals: orderService.computeOrderTotals({ lineItems, shippingMethods, transactions }),
-            shippingAddress,
-            storeUrl: env.STORE_URL,
-          }),
-          triggerType: 'order.placed',
-          resourceId: order.id,
-          resourceType: 'order',
-          // Guards against a duplicate email if the workflow is retried after this point.
-          idempotencyKey: `order-confirmation:${order.id}`,
-        })
+        await notificationService.createNotification(await buildOrderConfirmationNotification(order.id, container))
       } catch (error) {
         logger.error(`[complete-cart] Failed to send order confirmation for order "${order.id}"`)
         logger.error(error instanceof Error ? error : String(error))
