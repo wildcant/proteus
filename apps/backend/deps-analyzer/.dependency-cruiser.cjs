@@ -157,6 +157,38 @@ module.exports = {
       },
     },
     {
+      name: 'subscribers-name-no-transport',
+      comment:
+        'A subscriber must not name the transport that delivers it. There are two, with two delivery ' +
+        'guarantees, and every subscriber is written to the weaker of them — at-least-once, no dedup, the ' +
+        'one Cloudflare Queues offers — so that one file runs unchanged on node and on workerd. An import ' +
+        'that names a runtime is what makes that untrue: reading `env` from `cloudflare:workers`, or ' +
+        "typing a handler against a queue message, turns a subscriber into one runtime's subscriber, and " +
+        'the other runtime is where that is discovered. Direct imports, not reachability, and for the ' +
+        'reason event-bus-and-workflows-stay-peers gives: a subscriber that runs a workflow or resolves ' +
+        'anything the container holds is the designed path, and a reachable rule would forbid it. ' +
+        'This says out loud what two rules already caught for reasons of their own — neither of which is ' +
+        'a statement about subscribers, so neither survives a refactor that changes its reason. ' +
+        '`@temporalio/` here fails no-temporal-in-workerd, but transitively, because the workerd entry ' +
+        'reaches the subscriber through registry.gen.ts; the queues adapter fails no-circular, because ' +
+        'that adapter imports the registry and the import closes the cycle. `cloudflare:workers` was ' +
+        'caught by neither: worker-configuration.d.ts declares the module, so it type-checks and cruises ' +
+        'clean, and the first thing to notice is every node process that loads the registry failing at ' +
+        'import time. ' +
+        'registry.gen.ts is subject to this like every other file here, and passes as generated — it ' +
+        'imports the subscriber configs and the event-bus types, never an adapter. So do the tests in ' +
+        '__tests__/, which build events through events.ts rather than through a transport.',
+      severity: 'error',
+      from: {
+        path: '^src/subscribers/',
+      },
+      to: {
+        path:
+          '@temporalio/|cloudflare:' +
+          '|^src/core/event-bus/(cloudflare-queues-adapter\\.ts$|temporal(-adapter\\.ts$|/))',
+      },
+    },
+    {
       name: 'no-circular',
       comment: 'No circular dependencies allowed.',
       severity: 'error',
