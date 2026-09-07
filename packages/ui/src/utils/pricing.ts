@@ -25,10 +25,22 @@ export function getCurrencySymbol(currencyCode: string, locale: string = DEFAULT
  * Derived rather than stored: `Intl.DisplayNames` already ships every ISO 4217 name in every
  * locale the runtime supports, so a table of them would only be a copy going stale. A code the
  * runtime does not know is returned uppercased, which is still the best label available for it.
+ *
+ * The `try` is not defensive padding. `Intl.DisplayNames` answers an unrecognised-but-well-formed
+ * code such as `ZZZ` with the code itself, but a *malformed* one — anything that is not three
+ * letters — with a `RangeError`, and so does a malformed locale. This is a label in a table cell
+ * and in a select option, rendered once per row: an exception here does not spoil a label, it
+ * takes down the Currencies card and the region editor with it. The uppercased code is the same
+ * fallback the unknown-currency case already gets.
  */
 export function getCurrencyName(currencyCode: string, locale: string = DEFAULT_LOCALE): string {
-  const name = new Intl.DisplayNames([locale], { type: 'currency' }).of(currencyCode.toUpperCase())
-  return name ?? currencyCode.toUpperCase()
+  const fallback = currencyCode.toUpperCase()
+
+  try {
+    return new Intl.DisplayNames([locale], { type: 'currency' }).of(fallback) ?? fallback
+  } catch {
+    return fallback
+  }
 }
 
 /** Formats a numeric string as a fully styled currency value with symbol (e.g. "$10.00"). */

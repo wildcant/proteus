@@ -6,10 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
-  AdminStoreResponse
+  AdminAddStoreCurrencies,
+  AdminStoreResponse,
+  AdminUpdateStore,
+  DeleteResponse
 } from '../model';
 
 import { fetcher } from '../../../lib/fetcher.ts';
+import type { BodyType } from '../../../lib/fetcher.ts';
 
 
 
@@ -24,4 +28,56 @@ export const getStore = (
     },
       );
     }
+  /**
+ * @summary Update the store's details
+ */
+export const updateStore = (
+    adminUpdateStore?: BodyType<AdminUpdateStore>,
+ ) => {
+      return fetcher<AdminStoreResponse>(
+      {url: `/admin/store`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminUpdateStore
+    },
+      );
+    }
+  /**
+ * @summary Add currencies to the store
+ */
+export const addStoreCurrencies = (
+    adminAddStoreCurrencies?: BodyType<AdminAddStoreCurrencies>,
+ ) => {
+      return fetcher<AdminStoreResponse>(
+      {url: `/admin/store/currencies`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminAddStoreCurrencies
+    },
+      );
+    }
+  /**
+ * @summary Nominate the store's default currency
+ */
+export const setDefaultStoreCurrency = (
+    code: string,
+ ) => {
+      return fetcher<AdminStoreResponse>(
+      {url: `/admin/store/currencies/${code}/default`, method: 'POST'
+    },
+      );
+    }
+  /**
+ * @summary Remove a currency from the store
+ */
+export const removeStoreCurrency = (
+    code: string,
+ ) => {
+      return fetcher<DeleteResponse>(
+      {url: `/admin/store/currencies/${code}`, method: 'DELETE'
+    },
+      );
+    }
   export type GetStoreResult = NonNullable<Awaited<ReturnType<typeof getStore>>>
+export type UpdateStoreResult = NonNullable<Awaited<ReturnType<typeof updateStore>>>
+export type AddStoreCurrenciesResult = NonNullable<Awaited<ReturnType<typeof addStoreCurrencies>>>
+export type SetDefaultStoreCurrencyResult = NonNullable<Awaited<ReturnType<typeof setDefaultStoreCurrency>>>
+export type RemoveStoreCurrencyResult = NonNullable<Awaited<ReturnType<typeof removeStoreCurrency>>>

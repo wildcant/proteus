@@ -1,23 +1,12 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IStoreModuleService, StoreCurrencyDTO } from '@core/types/index.js'
+import type { IRegionModuleService, IStoreModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
-import { AdminStoreResponse } from '@proteus/http-schemas/admin'
+import { AdminStoreResponse, AdminUpdateStore } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { buildStoreView, NO_STORE_CONFIGURED, resolveStore } from '@workflows/store/utils/store-view.js'
 
 export const GetOutput = AdminStoreResponse
 export const GetThrows = [ErrorTypes.NOT_FOUND] as const
-
-/**
- * The default currency leads, then the rest alphabetically.
- *
- * The order is part of the answer rather than the caller's to impose: the admin renders one price
- * column per currency, and the money the store itself is denominated in is the one a merchant types
- * first. Sorted here so every caller draws the same columns in the same order.
- */
-function byDefaultThenCode(left: StoreCurrencyDTO, right: StoreCurrencyDTO): number {
-  if (left.isDefault !== right.isDefault) return left.isDefault ? -1 : 1
-  return left.currencyCode.localeCompare(right.currencyCode)
-}
 
 /**
  * The store and the currencies it sells in.
@@ -30,25 +19,62 @@ function byDefaultThenCode(left: StoreCurrencyDTO, right: StoreCurrencyDTO): num
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
   const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
 
-  const [store] = await storeService.listStores(undefined, { limit: 1, order: { createdAt: 'ASC' } })
+  const store = await resolveStore(storeService)
   if (!store) {
-    throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'No store is configured' })
+    throw new AppError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
   }
 
   const currencies = await storeService.listStoreCurrencies({ storeId: store.id })
 
-  return {
-    status: 200,
-    json: {
-      store: {
-        id: store.id,
-        name: store.name,
-        defaultRegionId: store.defaultRegionId,
-        currencies: [...currencies].sort(byDefaultThenCode).map((currency) => ({
-          currencyCode: currency.currencyCode,
-          isDefault: currency.isDefault,
-        })),
-      },
-    },
+  return { status: 200, json: { store: buildStoreView(store, currencies) } }
+}
+
+export const PostInput = { body: AdminUpdateStore }
+export const PostOutput = AdminStoreResponse
+export const PostThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.INVALID_DATA] as const
+
+/**
+ * Edits the store's details.
+ *
+ * POST rather than PATCH, matching the region editor this drawer sits beside. Every field is
+ * optional and each is written only when the body mentions it, so renaming the store leaves the
+ * default region alone — and a body that mentions nothing is a no-op rather than an error, because
+ * an update with no columns to set is what the repository refuses.
+ *
+ * The default region is checked against the region module rather than trusted. `store.default_region_id`
+ * carries no foreign key — regions live in another module, and no key crosses that boundary — so an
+ * id naming nothing would be stored happily and read back as a storefront serving shoppers from a
+ * region that does not exist. `INVALID_DATA`, not `NOT_FOUND`: the store was found; the body named
+ * a region that was not.
+ */
+export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
+  const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
+  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
+
+  const store = await resolveStore(storeService)
+  if (!store) {
+    throw new AppError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
   }
+
+  const { name, defaultRegionId } = req.body
+
+  if (defaultRegionId) {
+    const [region] = await regionService.listRegions({ id: defaultRegionId })
+    if (!region) {
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: `No region "${defaultRegionId}" exists, so the store cannot default to it`,
+      })
+    }
+  }
+
+  const changes = {
+    ...(name !== undefined && { name }),
+    ...(defaultRegionId !== undefined && { defaultRegionId }),
+  }
+  const [updated] = Object.keys(changes).length ? await storeService.updateStores([store.id], changes) : [store]
+
+  const currencies = await storeService.listStoreCurrencies({ storeId: store.id })
+
+  return { status: 200, json: { store: buildStoreView(updated ?? store, currencies) } }
 }

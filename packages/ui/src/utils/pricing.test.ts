@@ -78,4 +78,17 @@ describe('getCurrencyName', () => {
     // Not a real ISO 4217 code. A label is still wanted — the region editor has a row to fill.
     expect(getCurrencyName('zzz')).toBe('ZZZ')
   })
+
+  it('answers a malformed code with a label instead of taking the table down', () => {
+    // `Intl.DisplayNames` separates these two cases where a caller cannot: `ZZZ` above comes back
+    // as itself, but anything that is not three letters is a `RangeError`. This runs once per row
+    // of the Currencies table, so an unhandled one is a blank screen rather than a blank cell.
+    expect(getCurrencyName('us')).toBe('US')
+    expect(getCurrencyName('')).toBe('')
+    expect(getCurrencyName('12345')).toBe('12345')
+  })
+
+  it('answers a malformed locale the same way, since the locale is the other argument Intl refuses', () => {
+    expect(getCurrencyName('usd', 'en_US')).toBe('USD')
+  })
 })

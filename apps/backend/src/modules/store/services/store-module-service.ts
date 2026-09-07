@@ -1,3 +1,4 @@
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   Context,
   CreateStoreDTO,
@@ -72,5 +73,68 @@ export class StoreModuleService implements IStoreModuleService {
     context?: Context,
   ): Promise<StoreCurrencyDTO[]> {
     return this.storeCurrencyRepository.find(filters, config, context)
+  }
+
+  /**
+   * Codes the store already holds are skipped rather than refused, so the call is idempotent: the
+   * unique index would answer a repeat with a duplicate-key error, and nothing a merchant did
+   * wrong should surface as one.
+   *
+   * A store holding no default gets one. The Store card, the price editor's leading column and the
+   * money a region is checked against are all read off that flag, so a store that trades in
+   * something but names no default is a store every one of those surfaces has to special-case.
+   */
+  async createStoreCurrencies(
+    storeId: string,
+    currencyCodes: string[],
+    context?: Context,
+  ): Promise<StoreCurrencyDTO[]> {
+    return this.withTransaction(context, async (ctx) => {
+      const existing = await this.storeCurrencyRepository.find({ storeId }, undefined, ctx)
+      const held = new Set(existing.map((currency) => currency.currencyCode))
+      const added = [...new Set(currencyCodes)].filter((code) => !held.has(code))
+
+      if (added.length) {
+        const hasDefault = existing.some((currency) => currency.isDefault)
+        await this.storeCurrencyRepository.createMany(
+          added.map((currencyCode, index) => ({ storeId, currencyCode, isDefault: !hasDefault && index === 0 })),
+          ctx,
+        )
+      }
+
+      return this.storeCurrencyRepository.find({ storeId }, undefined, ctx)
+    })
+  }
+
+  /**
+   * Demoting the incumbent and promoting the nominee share one transaction, which is what makes
+   * "exactly one default" a property of the store rather than of the order two writes happened to
+   * land in.
+   */
+  async setDefaultStoreCurrency(storeId: string, currencyCode: string, context?: Context): Promise<StoreCurrencyDTO[]> {
+    return this.withTransaction(context, async (ctx) => {
+      const currencies = await this.storeCurrencyRepository.find({ storeId }, undefined, ctx)
+      const target = currencies.find((currency) => currency.currencyCode === currencyCode)
+      if (!target) {
+        throw new AppError({
+          type: ErrorTypes.NOT_FOUND,
+          message: `The store does not trade in "${currencyCode}"`,
+        })
+      }
+
+      const demoted = currencies.filter((currency) => currency.isDefault && currency.id !== target.id)
+      await this.storeCurrencyRepository.updateMany(
+        demoted.map((currency) => currency.id),
+        { isDefault: false },
+        ctx,
+      )
+      await this.storeCurrencyRepository.updateMany([target.id], { isDefault: true }, ctx)
+
+      return this.storeCurrencyRepository.find({ storeId }, undefined, ctx)
+    })
+  }
+
+  async softDeleteStoreCurrencies(currencyIds: string[], context?: Context): Promise<void> {
+    await this.withTransaction(context, async (ctx) => this.storeCurrencyRepository.softDelete(currencyIds, ctx))
   }
 }
