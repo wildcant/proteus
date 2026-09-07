@@ -1,13 +1,13 @@
-import { type FakeIntent, stripeGateway } from '@tests/mocks/stripe.js'
+import { stripeTest } from '@tests/mocks/vitest/stripe.mock.js'
+import { stripeErrors } from '@tests/mocks/vitest/stripe-errors.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
-import Stripe from 'stripe'
 import { vi } from 'vitest'
 import paymentDefinitions from '../definitions.js'
 
-vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeModuleMock())
+vi.mock('stripe', async () => (await import('@tests/mocks/vitest/stripe.mock.js')).stripeTest.moduleMock())
 
 /** The DI key the Stripe adapter is registered under. */
 const STRIPE_PROVIDER = 'pp_stripe_default'
@@ -15,7 +15,7 @@ const STRIPE_PROVIDER = 'pp_stripe_default'
 let api: TestApi
 
 test.beforeEach(async ({ createApi }) => {
-  stripeGateway.reset()
+  stripeTest.reset()
   api = await createApi({ definitions: paymentDefinitions })
 })
 
@@ -31,12 +31,7 @@ async function authorizedPayment(service: Fixtures['service']) {
   const payment = (await service.read.paymentCollection(api.container, collection.id)).payments?.[0]
   assertDefined(payment)
 
-  const session = checkout.paymentSession
-  assertDefined(session)
-  const intent = stripeGateway.intentForSession(session.id)
-  assertDefined(intent)
-
-  return { paymentId: payment.id, paymentCollectionId: collection.id, total: checkout.total, intent }
+  return { paymentId: payment.id, paymentCollectionId: collection.id, total: checkout.total }
 }
 
 /**
@@ -47,20 +42,8 @@ async function authorizedPayment(service: Fixtures['service']) {
  * reading the code alone is not enough to tell a completed operation from a refused one. The
  * message is Stripe's own wording for the cancelled case.
  */
-const unexpectedState = (message: string) =>
-  new Stripe.errors.StripeInvalidRequestError({
-    type: 'invalid_request_error',
-    code: 'payment_intent_unexpected_state',
-    message,
-  })
-
-/** Puts the gateway's intent into a state, the way something outside this process would. */
-function intentBecomes(intent: FakeIntent, status: Stripe.PaymentIntent.Status) {
-  intent.status = status
-}
-
 /** The gateway calls made since `from`, in order, as bare method names. */
-const callsSince = (from: number) => stripeGateway.calls.slice(from).map((call) => call.method)
+const callsSince = (from: number) => stripeTest.callSequence().slice(from)
 
 /** The payment as it stands now, with the capture rows that are its ledger. */
 async function paymentNow(service: Fixtures['service'], paymentCollectionId: string) {
@@ -76,7 +59,7 @@ test.describe('POST /admin/payments/:id/capture (stripe)', () => {
     const { status } = await api.post(`/admin/payments/${paymentId}/capture`)
 
     expect(status).toBe(200)
-    expect(stripeGateway.callsTo('paymentIntents.capture')).toHaveLength(1)
+    expect(stripeTest.mock.paymentIntents.capture).toHaveBeenCalledTimes(1)
 
     const payment = await paymentNow(service, paymentCollectionId)
     expect(payment.capturedAt).not.toBeNull()
@@ -94,7 +77,7 @@ test.describe('POST /admin/payments/:id/capture (stripe)', () => {
 
     // One capture at the gateway and one row behind it. A merchant double-clicking Capture is the
     // ordinary way here, and the money must be taken once.
-    expect(stripeGateway.callsTo('paymentIntents.capture')).toHaveLength(1)
+    expect(stripeTest.mock.paymentIntents.capture).toHaveBeenCalledTimes(1)
     const payment = await paymentNow(service, paymentCollectionId)
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
   })
@@ -111,13 +94,12 @@ test.describe('POST /admin/payments/:id/capture (stripe)', () => {
  */
 test.describe('POST /admin/payments/:id/capture — refusals that are not successes', () => {
   test('raises when the authorization was cancelled, rather than recording a capture', async ({ service, expect }) => {
-    const { paymentId, paymentCollectionId, intent } = await authorizedPayment(service)
+    const { paymentId, paymentCollectionId } = await authorizedPayment(service)
 
     // Cancelled at Stripe — by the dashboard, or by an expiry — after we authorized it.
-    intentBecomes(intent, 'canceled')
-    stripeGateway.failNext(
-      'paymentIntents.capture',
-      unexpectedState('This PaymentIntent could not be captured because it has a status of canceled.'),
+    stripeTest.givenRetrievedStatus('canceled')
+    stripeTest.mock.paymentIntents.capture.mockRejectedValueOnce(
+      stripeErrors.unexpectedState('This PaymentIntent could not be captured because it has a status of canceled.'),
     )
 
     const response = await api.post<ApiErrorBody>(`/admin/payments/${paymentId}/capture`)
@@ -133,13 +115,12 @@ test.describe('POST /admin/payments/:id/capture — refusals that are not succes
   })
 
   test('still treats a capture the gateway already made as success', async ({ service, expect }) => {
-    const { paymentId, paymentCollectionId, total, intent } = await authorizedPayment(service)
+    const { paymentId, paymentCollectionId, total } = await authorizedPayment(service)
 
     // The other side of the same coin: auto-capture, or a redelivered webhook, got there first.
-    intentBecomes(intent, 'succeeded')
-    stripeGateway.failNext(
-      'paymentIntents.capture',
-      unexpectedState('This PaymentIntent could not be captured because it has a status of succeeded.'),
+    stripeTest.givenRetrievedStatus('succeeded')
+    stripeTest.mock.paymentIntents.capture.mockRejectedValueOnce(
+      stripeErrors.unexpectedState('This PaymentIntent could not be captured because it has a status of succeeded.'),
     )
 
     const { status } = await api.post(`/admin/payments/${paymentId}/capture`)
@@ -150,14 +131,13 @@ test.describe('POST /admin/payments/:id/capture — refusals that are not succes
   })
 
   test('raises when a cancel would be written over a captured payment', async ({ service, expect }) => {
-    const { paymentId, paymentCollectionId, intent } = await authorizedPayment(service)
+    const { paymentId, paymentCollectionId } = await authorizedPayment(service)
 
     // The mirror bug: Stripe refuses to cancel an intent it has already charged, with the same
     // code — and swallowing it stamps `canceledAt` on a payment the shopper really paid.
-    intentBecomes(intent, 'succeeded')
-    stripeGateway.failNext(
-      'paymentIntents.cancel',
-      unexpectedState('You cannot cancel this PaymentIntent because it has a status of succeeded.'),
+    stripeTest.givenRetrievedStatus('succeeded')
+    stripeTest.mock.paymentIntents.cancel.mockRejectedValueOnce(
+      stripeErrors.unexpectedState('You cannot cancel this PaymentIntent because it has a status of succeeded.'),
     )
 
     await expect(service.create.canceledPayment(api.container, paymentId)).rejects.toThrow()
@@ -166,15 +146,14 @@ test.describe('POST /admin/payments/:id/capture — refusals that are not succes
   })
 
   test('still treats an intent the gateway already cancelled as cancelled', async ({ service, expect }) => {
-    const { paymentId, paymentCollectionId, intent } = await authorizedPayment(service)
+    const { paymentId, paymentCollectionId } = await authorizedPayment(service)
 
-    intentBecomes(intent, 'canceled')
-    stripeGateway.failNext(
-      'paymentIntents.cancel',
-      unexpectedState('You cannot cancel this PaymentIntent because it has a status of canceled.'),
+    stripeTest.givenRetrievedStatus('canceled')
+    stripeTest.mock.paymentIntents.cancel.mockRejectedValueOnce(
+      stripeErrors.unexpectedState('You cannot cancel this PaymentIntent because it has a status of canceled.'),
     )
 
-    const before = stripeGateway.calls.length
+    const before = stripeTest.callSequence().length
     await service.create.canceledPayment(api.container, paymentId)
 
     expect((await paymentNow(service, paymentCollectionId)).canceledAt).not.toBeNull()
@@ -187,7 +166,7 @@ test.describe('POST /admin/payments/:id/capture — refusals that are not succes
   test('cancels in one round trip when the gateway does not object', async ({ service, expect }) => {
     const { paymentId, paymentCollectionId } = await authorizedPayment(service)
 
-    const before = stripeGateway.calls.length
+    const before = stripeTest.callSequence().length
     await service.create.canceledPayment(api.container, paymentId)
 
     expect((await paymentNow(service, paymentCollectionId)).canceledAt).not.toBeNull()

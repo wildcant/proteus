@@ -37,6 +37,15 @@ npm run verify                 # format, then typecheck + lint + convention chec
                                # Runs src/api tests only; run the full suite separately before a PR
 npm run verify -- --ci         # CI mode: fails on unformatted files instead of rewriting them
                                # (implied when the CI env var is set)
+npm run verify:full            # Every test, in parallel: the whole backend suite, the store and
+                               # admin unit tests, and both Playwright e2e suites. No static
+                               # checks — that is verify. Needs the test database up. Excludes
+                               # the Temporal suites, which need a Temporal server of their own.
+
+# Each e2e suite owns its database, backend process, Temporal task queue and Worker, so the two
+# run concurrently — and so a Worker started by `worker:dev` cannot execute a suite's workflow
+# against the dev database. packages/testing/fixtures/e2e-config.ts holds the port map and the
+# queue names, and is where a new suite is defined.
 
 # Code generation
 npm run openapi:generate       # Dump OpenAPI spec → regenerate Orval clients (admin + store)

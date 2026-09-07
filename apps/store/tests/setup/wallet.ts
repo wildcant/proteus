@@ -1,14 +1,12 @@
 import type { Page } from '@playwright/test'
-import { type GatewayCustomer, gatewayCustomerFor } from '../mocks/fake-gateway.js'
 import { expect } from './test-extend.js'
 
 /**
  * Steps the two wallet specs share — the checkout selector's and the account page's.
  *
- * They are shared rather than copied because both files need the same awkward prelude: nothing
- * exists at the gateway for a shopper until they reach a surface that needs an account holder, so
- * a wallet cannot be seeded until one has been visited. That ordering *is* the lazy-creation rule,
- * so encoding it once keeps both specs honest about it.
+ * Shared rather than copied because the two files assert the *same* wallet from two surfaces, and
+ * an assertion that read a row differently on each would be able to pass while the surfaces
+ * disagreed — which is the bug these specs exist for.
  */
 
 /** Signs a customer in through the form, which is the only thing that issues a store token. */
@@ -18,19 +16,6 @@ export async function signIn(page: Page, customer: { email: string; password: st
   await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
   await page.getByRole('button', { name: /sign in/i }).click()
   await expect(page).toHaveURL('/account', { timeout: 15_000 })
-}
-
-/**
- * Opens `/account/payment-methods` and hands back the gateway customer it caused to exist.
- *
- * Waiting for the empty state rather than the heading is the point: the heading paints before the
- * wallet request resolves, and the account holder is created by that request. Reading the gateway
- * any earlier is a race that fails one run in ten.
- */
-export async function openAccountWallet(page: Page, proteusCustomerId: string): Promise<GatewayCustomer> {
-  await page.goto('/account/payment-methods')
-  await expect(page.getByRole('heading', { name: 'No saved cards' })).toBeVisible({ timeout: 15_000 })
-  return gatewayCustomerFor(proteusCustomerId)
 }
 
 /** A month the card is still good in, well clear of any boundary. */
@@ -50,26 +35,6 @@ export function lastMonthExpiry(): { expMonth: number; expYear: number } {
 export function thisMonthExpiry(): { expMonth: number; expYear: number } {
   const now = new Date()
   return { expMonth: now.getMonth() + 1, expYear: now.getFullYear() }
-}
-
-/**
- * Removes a card without the page knowing, through the shopper's own session.
- *
- * The case this stands for is real and is not a broken client: a shopper who removed the card in
- * another tab, or whose session moved on while the selector sat open. The page must find out at
- * the press, from the `409`, rather than from anything it was told beforehand.
- */
-export async function detachCardOutOfBand(page: Page, methodId: string) {
-  const token = await page.evaluate(() => localStorage.getItem('proteus_store_token'))
-  expect(token, 'the page holds no session token').toBeTruthy()
-
-  const backendUrl = process.env.VITE_BACKEND_URL
-  expect(backendUrl, 'VITE_BACKEND_URL is unset — run the suite through `npm run test:e2e`').toBeTruthy()
-
-  const response = await page.request.delete(`${backendUrl}/store/payment-methods/${methodId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  expect(response.ok(), `the wallet refused to detach the card: ${response.status()}`).toBe(true)
 }
 
 /**
@@ -148,8 +113,10 @@ export async function walkBackToPaymentStep(page: Page) {
  * assertion — which is exactly how the resurrected-card bug reached review.
  */
 export async function delayWalletReads(page: Page, ms = 1_500) {
-  await page.route('**/store/payment-methods', async (route) => {
+  // `fallback`, not `continue`: the wallet is stubbed by `storeApi.stubWallet`, and continuing
+  // would go past it to a backend that knows nothing about this spec's cards.
+  await page.route(/\/store\/payment-methods(\?|$)/, async (route) => {
     await new Promise((resolve) => setTimeout(resolve, ms))
-    await route.continue()
+    await route.fallback()
   })
 }

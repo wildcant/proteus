@@ -1,14 +1,14 @@
 import type { StoreCompleteCartResponse } from '@proteus/http-schemas/store'
-import { type GatewayCall, stripeGateway } from '@tests/mocks/stripe.js'
+import { stripeTest } from '@tests/mocks/vitest/stripe.mock.js'
+import { stripeErrors } from '@tests/mocks/vitest/stripe-errors.js'
 import type { TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
-import Stripe from 'stripe'
 import { vi } from 'vitest'
 import cartDefinitions from '../definitions.js'
 
-vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeModuleMock())
+vi.mock('stripe', async () => (await import('@tests/mocks/vitest/stripe.mock.js')).stripeTest.moduleMock())
 
 /**
  * What a shopper pressing **Place order** costs at the gateway.
@@ -21,21 +21,23 @@ vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeMod
 
 const STRIPE_PROVIDER = 'pp_stripe_default'
 
-const connectionError = () => new Stripe.errors.StripeConnectionError({ message: 'socket hang up' })
-
 let api: TestApi
 
 test.beforeEach(async ({ createApi }) => {
-  stripeGateway.reset()
+  stripeTest.reset()
   // The state a card checkout reaches once the browser has confirmed: Stripe already has the
   // money, so authorizing the session both creates the Payment and captures it.
-  stripeGateway.statusOnCreate = 'succeeded'
+  stripeTest.givenIntentStatus('succeeded')
   api = await createApi({ definitions: cartDefinitions })
 })
 
 const completeCart = (cartId: string) => api.post<StoreCompleteCartResponse>(`/store/carts/${cartId}/complete`)
 
-const keyOf = (call: GatewayCall) => (call.params.options as { idempotencyKey?: string } | undefined)?.idempotencyKey
+/** `paymentIntents.capture(id, params, options)` — the key rides on the third argument. */
+const captureKeys = () =>
+  stripeTest.mock.paymentIntents.capture.mock.calls.map(
+    ([, , options]) => (options as { idempotencyKey?: string })?.idempotencyKey,
+  )
 
 async function payableCart(service: Fixtures['service']) {
   const checkout = await service.create.checkoutReadyCart(api.container, {
@@ -63,7 +65,7 @@ test.describe('POST /store/carts/:id/complete — charging once', () => {
     // The second press is answered with the order the first one placed, not a second checkout.
     expect(first.status).toBe(200)
     expect(second.body.orderId).toBe(first.body.orderId)
-    expect(stripeGateway.callsTo('paymentIntents.capture')).toHaveLength(1)
+    expect(stripeTest.mock.paymentIntents.capture).toHaveBeenCalledTimes(1)
     expect(await capturesFor(service, checkout.paymentCollection.id)).toHaveLength(1)
   })
 
@@ -76,7 +78,7 @@ test.describe('POST /store/carts/:id/complete — charging once', () => {
     // One of the two wins the order↔cart link and the other unwinds; which is which is a race, so
     // the assertion is on the money rather than on the winner.
     expect([first.status, second.status]).toContain(200)
-    expect(stripeGateway.callsTo('paymentIntents.capture')).toHaveLength(1)
+    expect(stripeTest.mock.paymentIntents.capture).toHaveBeenCalledTimes(1)
     expect(await capturesFor(service, checkout.paymentCollection.id)).toHaveLength(1)
   })
 
@@ -90,12 +92,12 @@ test.describe('POST /store/carts/:id/complete — charging once', () => {
     // The first capture may or may not have reached Stripe — a dropped connection cannot tell us.
     // Retrying is only safe because the key is the same, so Stripe answers the second attempt
     // from the first one's result instead of taking the money again.
-    stripeGateway.failNext('paymentIntents.capture', connectionError())
+    stripeTest.mock.paymentIntents.capture.mockRejectedValueOnce(stripeErrors.connection())
 
     const { status } = await completeCart(checkout.cart.id)
 
     expect(status).toBe(200)
-    const keys = stripeGateway.callsTo('paymentIntents.capture').map(keyOf)
+    const keys = captureKeys()
     expect(keys).toHaveLength(2)
     expect(keys[0]).toBeDefined()
     expect(keys[0]).toBe(keys[1])

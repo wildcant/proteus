@@ -1,5 +1,7 @@
 import type { StoreCompleteCartResponse, StoreCreatePaymentSessionResponse } from '@proteus/http-schemas/store'
-import { stripeGateway } from '@tests/mocks/stripe.js'
+import { stripeFactories } from '@tests/mocks/stripe-factories.js'
+import { stripeTest } from '@tests/mocks/vitest/stripe.mock.js'
+import { stripeErrors } from '@tests/mocks/vitest/stripe-errors.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
@@ -10,7 +12,7 @@ import cartDefinitions from '../../carts/definitions.js'
 import paymentMethodDefinitions from '../../payment-methods/definitions.js'
 import paymentCollectionDefinitions from '../definitions.js'
 
-vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeModuleMock())
+vi.mock('stripe', async () => (await import('@tests/mocks/vitest/stripe.mock.js')).stripeTest.moduleMock())
 
 /**
  * What consent does, and what a guest leaves behind.
@@ -26,10 +28,10 @@ const STRIPE_PROVIDER = 'pp_stripe_default'
 let api: TestApi
 
 test.beforeEach(async ({ createApi }) => {
-  stripeGateway.reset()
+  stripeTest.reset()
   // Where a card checkout stands once the browser has confirmed: Stripe already has the money,
   // so completing the cart both creates the Payment and captures it.
-  stripeGateway.statusOnCreate = 'succeeded'
+  stripeTest.givenIntentStatus('succeeded')
   api = await createApi({
     definitions: [...cartDefinitions, ...paymentCollectionDefinitions, ...paymentMethodDefinitions],
     namespaceAuth: true,
@@ -67,10 +69,11 @@ async function payableCart(service: Fixtures['service']) {
 
 /** The parameters the intent this checkout opened was created with. */
 function lastIntentParams() {
-  const calls = stripeGateway.callsTo('paymentIntents.create')
+  const calls = stripeTest.mock.paymentIntents.create.mock.calls
   const call = calls.at(-1)
   if (!call) throw new Error('No PaymentIntent was created at the gateway')
-  return call.params
+  // `paymentIntents.create(params, options)` — the parameters are the first argument.
+  return call[0] as Record<string, unknown>
 }
 
 test.describe('saving a card as a side effect of paying', () => {
@@ -82,10 +85,9 @@ test.describe('saving a card as a side effect of paying', () => {
     await openSession(checkout.paymentCollection.id, { data: { savePaymentMethod: true } })
     await completeCart(checkout.cart.id)
 
-    expect(stripeGateway.customers.size).toBe(0)
-    expect(stripeGateway.methods.size).toBe(0)
+    expect(stripeTest.mock.customers.create).not.toHaveBeenCalled()
     expect(lastIntentParams()).not.toHaveProperty('setup_future_usage')
-    expect(stripeGateway.callsTo('paymentMethods.update')).toHaveLength(0)
+    expect(stripeTest.mock.paymentMethods.update).not.toHaveBeenCalled()
   })
 
   test('consent produces setup_future_usage and a card the wallet can show', async ({ service, expect }) => {
@@ -100,17 +102,30 @@ test.describe('saving a card as a side effect of paying', () => {
       setup_future_usage: 'on_session',
     })
 
+    stripeTest.mock.paymentIntents.retrieve.mockImplementation(async (id: string) =>
+      stripeFactories.paymentIntent({
+        id,
+        status: 'succeeded',
+        customer: stripeTest.gatewayCustomerIdFor(customer.id),
+        setupFutureUsage: 'on_session',
+      }),
+    )
     await completeCart(checkout.cart.id, headers)
 
     // `setup_future_usage` attaches the card and leaves `allow_redisplay` unspecified, which the
-    // customer-scoped listing filters straight back out. Setting it is its own call.
-    expect(stripeGateway.callsTo('paymentMethods.update')).toMatchObject([
-      {
-        params: {
-          // biome-ignore lint/style/useNamingConvention: the Stripe SDK parameter
-          allow_redisplay: 'always',
-        },
-      },
+    // customer-scoped listing filters straight back out. Setting it is its own call, and this is
+    // the assertion that fails if the adapter stops making it.
+    const [markedId, markedParams] = stripeTest.mock.paymentMethods.update.mock.calls[0] ?? []
+    expect(stripeTest.mock.paymentMethods.update).toHaveBeenCalledTimes(1)
+    // biome-ignore lint/style/useNamingConvention: the Stripe SDK parameter
+    expect(markedParams).toMatchObject({ allow_redisplay: 'always' })
+
+    // Marked redisplayable at the gateway, so the wallet now holds it.
+    stripeTest.givenWallet([
+      stripeFactories.paymentMethod({
+        id: String(markedId),
+        customer: stripeTest.gatewayCustomerIdFor(customer.id),
+      }),
     ])
     expect((await listWallet(headers)).body.paymentMethods).toHaveLength(1)
   })
@@ -125,7 +140,7 @@ test.describe('saving a card as a side effect of paying', () => {
     await completeCart(checkout.cart.id, headers)
 
     expect(lastIntentParams()).not.toHaveProperty('setup_future_usage')
-    expect(stripeGateway.callsTo('paymentMethods.update')).toHaveLength(0)
+    expect(stripeTest.mock.paymentMethods.update).not.toHaveBeenCalled()
     expect((await listWallet(headers)).body.paymentMethods).toEqual([])
   })
 
@@ -158,7 +173,7 @@ test.describe('saving a card as a side effect of paying', () => {
       authHeader('customer', guest.id),
     )
 
-    expect(stripeGateway.customers.size).toBe(0)
+    expect(stripeTest.mock.customers.create).not.toHaveBeenCalled()
     expect(lastIntentParams()).not.toHaveProperty('customer')
   })
 })
@@ -170,10 +185,13 @@ test.describe('paying with a saved card', () => {
     const headers = authHeader('customer', customer.id)
     await listWallet(headers)
 
-    const gatewayCustomer = stripeGateway.customerFor(customer.id)
+    const gatewayCustomer = { id: stripeTest.gatewayCustomerIdFor(customer.id) }
     if (!gatewayCustomer) throw new Error('No Stripe Customer was created for an authenticated shopper')
 
-    return { customer, headers, gatewayCustomer, method: stripeGateway.storeMethod(gatewayCustomer.id) }
+    const method = stripeFactories.paymentMethod({ id: `pm_test_${customer.id}`, customer: gatewayCustomer.id })
+    stripeTest.givenWallet([method])
+
+    return { customer, headers, gatewayCustomer, method }
   }
 
   test('charges the card the shopper chose, against their own account holder', async ({ service, expect }) => {
@@ -199,8 +217,9 @@ test.describe('paying with a saved card', () => {
     const victim = await shopperWithCard(service)
     const attacker = await shopperWithCard(service)
     const checkout = await payableCart(service)
+    stripeTest.mock.customers.retrievePaymentMethod.mockRejectedValueOnce(stripeErrors.notYourPaymentMethod())
     assertDefined(checkout.paymentCollection)
-    const intentsBefore = stripeGateway.callsTo('paymentIntents.create').length
+    const intentsBefore = stripeTest.mock.paymentIntents.create.mock.calls.length
 
     const { status, body } = await openSession(
       checkout.paymentCollection.id,
@@ -212,7 +231,7 @@ test.describe('paying with a saved card', () => {
     expect(body).toMatchObject({ code: 'payment_method_unavailable' })
     // Refused before the intent exists, not after: an intent naming a stranger's card should
     // never be created at all.
-    expect(stripeGateway.callsTo('paymentIntents.create')).toHaveLength(intentsBefore)
+    expect(stripeTest.mock.paymentIntents.create).toHaveBeenCalledTimes(intentsBefore)
   })
 
   test('answers a named card with no account holder the way it answers a stale one', async ({ service, expect }) => {
@@ -236,7 +255,7 @@ test.describe('paying with a saved card', () => {
     const message = 'message' in body ? body.message : ''
     expect(message).not.toContain('Stripe')
     expect(message).not.toContain('pm_from_a_previous_session')
-    expect(stripeGateway.callsTo('paymentIntents.create')).toHaveLength(0)
+    expect(stripeTest.mock.paymentIntents.create).not.toHaveBeenCalled()
   })
 
   test('answers an unauthenticated caller naming a card the same way', async ({ service, expect }) => {
@@ -249,13 +268,14 @@ test.describe('paying with a saved card', () => {
 
     expect(status).toBe(409)
     expect(body).toMatchObject({ code: 'payment_method_unavailable' })
-    expect(stripeGateway.callsTo('paymentIntents.create')).toHaveLength(0)
+    expect(stripeTest.mock.paymentIntents.create).not.toHaveBeenCalled()
   })
 
   test('ignores an account holder the browser supplies', async ({ service, expect }) => {
     const victim = await shopperWithCard(service)
     const attacker = await shopperWithCard(service)
     const checkout = await payableCart(service)
+    stripeTest.mock.customers.retrievePaymentMethod.mockRejectedValueOnce(stripeErrors.notYourPaymentMethod())
     assertDefined(checkout.paymentCollection)
 
     // The whole attack in one request: name the victim's account holder, then their card.
@@ -272,6 +292,6 @@ test.describe('paying with a saved card', () => {
     // session — so the ownership check runs against the attacker and refuses before any intent
     // exists. A route that merged the browser's context would have charged the victim's card.
     expect(status).toBe(409)
-    expect(stripeGateway.callsTo('paymentIntents.create')).toHaveLength(0)
+    expect(stripeTest.mock.paymentIntents.create).not.toHaveBeenCalled()
   })
 })

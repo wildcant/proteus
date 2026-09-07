@@ -1,5 +1,4 @@
 import { Connection } from '@temporalio/client'
-import { TEMPORAL_TASK_QUEUE } from '../../src/core/workflows/temporal/config.js'
 import { env } from '../../src/env.js'
 
 /**
@@ -18,15 +17,15 @@ const connection = await Connection.connect({ address: env.TEMPORAL_ADDRESS })
 try {
   const { pollers } = await connection.workflowService.describeTaskQueue({
     namespace: env.TEMPORAL_NAMESPACE,
-    taskQueue: { name: TEMPORAL_TASK_QUEUE },
+    taskQueue: { name: env.TEMPORAL_TASK_QUEUE },
   })
 
   if (!pollers?.length) {
     // The exit code is what Docker reads; this line is what a human reads in `docker inspect`.
-    console.info(`[worker-ready] nothing is polling '${TEMPORAL_TASK_QUEUE}' on ${env.TEMPORAL_ADDRESS}`)
+    console.info(`[worker-ready] nothing is polling '${env.TEMPORAL_TASK_QUEUE}' on ${env.TEMPORAL_ADDRESS}`)
     process.exitCode = 1
   } else {
-    console.info(`[worker-ready] ${pollers.length} poller(s) on '${TEMPORAL_TASK_QUEUE}'`)
+    console.info(`[worker-ready] ${pollers.length} poller(s) on '${env.TEMPORAL_TASK_QUEUE}'`)
   }
 } finally {
   await connection.close()

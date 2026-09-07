@@ -1,12 +1,20 @@
 import { execSync } from 'node:child_process'
 import { rmSync } from 'node:fs'
+import { withAppDatabase } from 'backend/test/database-url'
 import { sql } from 'drizzle-orm'
 import { db, shutdown } from '../db/client.js'
 
-export default async function globalSetup() {
-  // Ensure test DB schema is up-to-date (idempotent — skips already-applied migrations)
-  execSync('npm run --workspace=backend db:migrate:test', { stdio: 'inherit' })
+/**
+ * The suite's own database — `proteus_test_store`, `proteus_test_admin`. Creating and migrating it
+ * belongs to `backend/scripts/prepare-test-database.ts`, which the web server command runs: by the
+ * time this hook is reached Playwright has already started that server, and a database it could
+ * not connect to would have failed there first.
+ */
+const DATABASE_URL = withAppDatabase(
+  process.env.POOLER_DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:5433/proteus_test',
+)
 
+export default async function globalSetup() {
   await db.execute(sql`
     DO $$
     DECLARE r RECORD;
@@ -21,7 +29,14 @@ export default async function globalSetup() {
 
   // Re-seed providers after truncation. Needed because the backend server may be reused
   // across test runs (reuseExistingServer: true) and won't re-run its boot-time seeding.
-  execSync('npm run --workspace=backend db:seed:providers:test', { stdio: 'inherit' })
+  //
+  // dotenvx leaves a variable alone when the environment already carries one, so passing the
+  // suite's database here is what keeps the seed off the base one — this process still holds the
+  // unsuffixed URL that `.env.test` supplied.
+  execSync('npm run --workspace=backend db:seed:providers:test', {
+    stdio: 'inherit',
+    env: { ...process.env, POOLER_DATABASE_URL: DATABASE_URL },
+  })
 
   rmSync('playwright/.auth', { recursive: true, force: true })
 }

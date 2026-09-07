@@ -1,5 +1,7 @@
 import type { DeleteResponse, StoreSavedMethodListResponse } from '@proteus/http-schemas/store'
-import { stripeGateway } from '@tests/mocks/stripe.js'
+import { type StripeCard, stripeFactories } from '@tests/mocks/stripe-factories.js'
+import { stripeTest } from '@tests/mocks/vitest/stripe.mock.js'
+import { stripeErrors } from '@tests/mocks/vitest/stripe-errors.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
@@ -7,7 +9,7 @@ import { authHeader } from '@tests/utils/auth-header.js'
 import { vi } from 'vitest'
 import paymentMethodDefinitions from '../definitions.js'
 
-vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeModuleMock())
+vi.mock('stripe', async () => (await import('@tests/mocks/vitest/stripe.mock.js')).stripeTest.moduleMock())
 
 /**
  * The wallet, at the seam a storefront sees it through.
@@ -22,7 +24,7 @@ let api: TestApi
 // The real `authenticate` middleware, because half this file is about what an authenticated
 // caller still may not do — and that is not observable without it.
 test.beforeEach(async ({ createApi }) => {
-  stripeGateway.reset()
+  stripeTest.reset()
   api = await createApi({ definitions: paymentMethodDefinitions, namespaceAuth: true })
 })
 
@@ -48,15 +50,17 @@ async function shopperWithWallet(service: Fixtures['service'], cards: number) {
   const headers = authHeader('customer', customer.id)
 
   await list(headers)
-  const gatewayCustomer = stripeGateway.customerFor(customer.id)
-  if (!gatewayCustomer) throw new Error('No Stripe Customer was created for an authenticated shopper')
+  const gatewayCustomer = { id: stripeTest.gatewayCustomerIdFor(customer.id) }
 
-  const methods = Array.from({ length: cards }, (_, index) =>
-    stripeGateway.storeMethod(gatewayCustomer.id, {
+  const methods: StripeCard[] = Array.from({ length: cards }, (_, index) =>
+    stripeFactories.paymentMethod({
+      id: `pm_test_${customer.id}_${index}`,
+      customer: gatewayCustomer.id,
       created: 1_700_000_000 + index,
-      card: { last4: String(1000 + index) },
+      last4: String(1000 + index),
     }),
   )
+  stripeTest.givenWallet(methods)
 
   return { customer, headers, gatewayCustomer, methods }
 }
@@ -82,8 +86,7 @@ test.describe('GET /store/payment-methods', () => {
     expect(first.status).toBe(200)
     expect(idsOf(second.body)).toEqual([])
     // One Customer at the gateway across two checkouts, not one per read.
-    expect(stripeGateway.callsTo('customers.create')).toHaveLength(1)
-    expect(stripeGateway.customers.size).toBe(1)
+    expect(stripeTest.mock.customers.create).toHaveBeenCalledTimes(1)
   })
 
   test('creates nothing at the gateway for a customer row that is not an account', async ({ service, expect }) => {
@@ -95,7 +98,7 @@ test.describe('GET /store/payment-methods', () => {
 
     expect(status).toBe(200)
     expect(idsOf(body)).toEqual([])
-    expect(stripeGateway.customers.size).toBe(0)
+    expect(stripeTest.mock.customers.create).not.toHaveBeenCalled()
   })
 
   test('projects to the neutral shape and never the gateway object', async ({ service, expect }) => {
@@ -129,10 +132,12 @@ test.describe('GET /store/payment-methods', () => {
     const consented = methods[0]
     // Attached to the customer but never consented to — which is what `setup_future_usage` alone
     // leaves behind. Listing it would show a shopper a card they never agreed to keep.
-    const unconsented = stripeGateway.storeMethod(gatewayCustomer.id, {
-      // biome-ignore lint/style/useNamingConvention: the Stripe field under test
-      allow_redisplay: 'unspecified',
+    const unconsented = stripeFactories.paymentMethod({
+      id: 'pm_test_unconsented',
+      customer: gatewayCustomer.id,
+      allowRedisplay: 'unspecified',
     })
+    stripeTest.givenWallet([...methods, unconsented])
 
     const { body } = await list(headers)
 
@@ -141,10 +146,13 @@ test.describe('GET /store/payment-methods', () => {
   })
 
   test('orders the default first and then the most recent', async ({ service, expect }) => {
-    const { headers, methods } = await shopperWithWallet(service, 3)
+    const { headers, gatewayCustomer, methods } = await shopperWithWallet(service, 3)
     const [oldest, middle, newest] = methods
     if (!oldest || !middle || !newest) throw new Error('no cards')
     await makeDefault(oldest.id, headers)
+    stripeTest.mock.customers.retrieve.mockResolvedValue(
+      stripeFactories.customer({ id: gatewayCustomer.id, defaultPaymentMethod: oldest.id }),
+    )
 
     const { body } = await list(headers)
 
@@ -155,6 +163,7 @@ test.describe('GET /store/payment-methods', () => {
   test("returns only the requesting customer's methods", async ({ service, expect }) => {
     const mine = await shopperWithWallet(service, 1)
     const theirs = await shopperWithWallet(service, 1)
+    stripeTest.givenWallet([...mine.methods, ...theirs.methods])
 
     const { body } = await list(mine.headers)
 
@@ -178,13 +187,19 @@ test.describe('DELETE /store/payment-methods/:id', () => {
     const { status } = await remove(card.id, headers)
 
     expect(status).toBe(200)
-    expect(stripeGateway.methods.get(card.id)?.customer).toBeNull()
+    expect(stripeTest.mock.paymentMethods.detach).toHaveBeenCalledWith(card.id)
+
+    // Detached at the gateway, so the next read no longer holds it.
+    stripeTest.givenWallet([])
     expect(idsOf((await list(headers)).body)).toEqual([])
   })
 
   test("will not detach another customer's method", async ({ service, expect }) => {
     const attacker = await shopperWithWallet(service, 0)
     const victim = await shopperWithWallet(service, 1)
+    stripeTest.givenWallet([...attacker.methods, ...victim.methods])
+    // The card is not the attacker's, so the ownership check is refused.
+    stripeTest.mock.customers.retrievePaymentMethod.mockRejectedValueOnce(stripeErrors.notYourPaymentMethod())
     const victimCard = victim.methods[0]
     if (!victimCard) throw new Error('no card')
 
@@ -192,13 +207,14 @@ test.describe('DELETE /store/payment-methods/:id', () => {
 
     expect(status).toBe(409)
     expect(body).toMatchObject({ type: 'conflict', code: 'payment_method_unavailable' })
-    // Still the victim's, and still in their wallet.
-    expect(stripeGateway.methods.get(victimCard.id)?.customer).toBe(victim.gatewayCustomer.id)
+    // Still the victim's: the detach never went out at all.
+    expect(stripeTest.mock.paymentMethods.detach).not.toHaveBeenCalled()
     expect(idsOf((await list(victim.headers)).body)).toEqual([victimCard.id])
   })
 
   test('answers a stale id with a conflict carrying no gateway wording', async ({ service, expect }) => {
     const { headers } = await shopperWithWallet(service, 0)
+    stripeTest.mock.customers.retrievePaymentMethod.mockRejectedValueOnce(stripeErrors.notYourPaymentMethod())
 
     const { status, body } = await remove('pm_long_gone', headers)
 
@@ -214,6 +230,7 @@ test.describe('DELETE /store/payment-methods/:id', () => {
 
 test.describe('POST /store/payment-methods/:id/default', () => {
   test('refuses a guest', async ({ expect }) => {
+    stripeTest.mock.customers.retrievePaymentMethod.mockRejectedValueOnce(stripeErrors.notYourPaymentMethod())
     const { status } = await makeDefault('pm_anything')
 
     expect(status).toBe(401)
@@ -227,7 +244,10 @@ test.describe('POST /store/payment-methods/:id/default', () => {
     const { status, body } = await makeDefault(chosen.id, headers)
 
     expect(status).toBe(200)
-    expect(stripeGateway.customers.get(gatewayCustomer.id)?.invoice_settings.default_payment_method).toBe(chosen.id)
+    expect(stripeTest.mock.customers.update).toHaveBeenCalledWith(gatewayCustomer.id, {
+      // biome-ignore lint/style/useNamingConvention: the Stripe wire field
+      invoice_settings: { default_payment_method: chosen.id },
+    })
     // The wallet comes back already reordered, so the client does not render a stale order while
     // it refetches its own answer.
     expect(idsOf(body)[0]).toBe(chosen.id)
@@ -236,6 +256,9 @@ test.describe('POST /store/payment-methods/:id/default', () => {
   test("will not nominate another customer's method", async ({ service, expect }) => {
     const attacker = await shopperWithWallet(service, 0)
     const victim = await shopperWithWallet(service, 1)
+    stripeTest.givenWallet([...attacker.methods, ...victim.methods])
+    // The card is not the attacker's, so the ownership check is refused.
+    stripeTest.mock.customers.retrievePaymentMethod.mockRejectedValueOnce(stripeErrors.notYourPaymentMethod())
     const victimCard = victim.methods[0]
     if (!victimCard) throw new Error('no card')
 
@@ -243,7 +266,6 @@ test.describe('POST /store/payment-methods/:id/default', () => {
 
     expect(status).toBe(409)
     expect(body).toMatchObject({ code: 'payment_method_unavailable' })
-    expect(stripeGateway.customers.get(attacker.gatewayCustomer.id)?.invoice_settings.default_payment_method).toBeNull()
-    expect(stripeGateway.customers.get(victim.gatewayCustomer.id)?.invoice_settings.default_payment_method).toBeNull()
+    expect(stripeTest.mock.customers.update).not.toHaveBeenCalled()
   })
 })

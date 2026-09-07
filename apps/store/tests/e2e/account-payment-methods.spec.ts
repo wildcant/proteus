@@ -1,9 +1,10 @@
 import type { Page } from '@playwright/test'
 import type { FileRouteTypes } from '../../src/routeTree.gen'
-import { gatewayCustomerFor, gatewayWalletFor, seedSavedCard, useFakeStripe } from '../mocks/fake-gateway.js'
+import { useFakeStripe } from '../mocks/fake-gateway.js'
+import { storeApi } from '../mocks/store-api.js'
 import { expect, test } from '../setup/test-extend.js'
 import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
-import { futureExpiry, openAccountWallet, renderedCardIds, signIn } from '../setup/wallet.js'
+import { futureExpiry, renderedCardIds, signIn } from '../setup/wallet.js'
 
 /**
  * The account wallet, and the one thing it must never do: disagree with the checkout.
@@ -11,10 +12,13 @@ import { futureExpiry, openAccountWallet, renderedCardIds, signIn } from '../set
  * Two lists of cards that could differ is the failure mode the shared row component exists to
  * prevent, so the ordering spec below asserts across both surfaces in one test rather than
  * asserting each in isolation and hoping.
+ *
+ * The wallet itself is stubbed at `GET /store/payment-methods` — see `storeApi` for why, and for
+ * which half of each claim lives in the backend suite instead.
  */
 test.describe('Account — payment methods', () => {
-  // Parallel: nothing here reads the gateway's shared call log, and every card is seeded with a
-  // `last4` unique to its own test. Serialising would only cost failure isolation.
+  // Parallel: every wallet here is stubbed in front of its own page, so no two specs can see each
+  // other's cards. Serialising would only cost failure isolation.
   test.describe.configure({ timeout: 90_000 })
 
   test('a customer with nothing saved is told where cards come from, not offered a form', async ({
@@ -23,6 +27,7 @@ test.describe('Account — payment methods', () => {
   }) => {
     await using customer = await factories.create.customer({ hasAccount: true })
 
+    await storeApi.stubWallet(page, [])
     await signIn(page, customer)
     await page.goto('/account/payment-methods')
 
@@ -46,21 +51,18 @@ test.describe('Account — payment methods', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    // Deliberately not in any order either surface could have arrived at on its own: the default
+    // is neither first nor last, so a surface that re-sorted by `isDefault` *or* by recency would
+    // produce something other than this. Which order the backend picks is its own claim, asserted
+    // in `payment-method.api.test.ts`.
+    const theDefault = storeApi.card({ brand: 'mastercard', last4: '2102', ...futureExpiry(), isDefault: true })
+    const newest = storeApi.card({ brand: 'amex', last4: '2103', ...futureExpiry() })
+    const oldest = storeApi.card({ last4: '2101', ...futureExpiry() })
+    await storeApi.stubWallet(page, [theDefault, newest, oldest])
+
     await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
+    await page.goto('/account/payment-methods')
 
-    // Seeded oldest first with the default in the middle, so neither "as stored" nor "newest
-    // first" alone produces the expected order — only "default first, then most recent" does.
-    const oldest = await seedSavedCard(gatewayCustomer.id, { last4: '2101', ...futureExpiry() })
-    const theDefault = await seedSavedCard(gatewayCustomer.id, {
-      brand: 'mastercard',
-      last4: '2102',
-      ...futureExpiry(),
-      isDefault: true,
-    })
-    const newest = await seedSavedCard(gatewayCustomer.id, { brand: 'amex', last4: '2103', ...futureExpiry() })
-
-    await page.reload()
     await expect(page.getByRole('radio', { name: /ending in 2101/ })).toBeVisible({ timeout: 15_000 })
     const inAccount = await renderedCardIds(page)
     expect(inAccount).toEqual([theDefault.id, newest.id, oldest.id])
@@ -69,7 +71,7 @@ test.describe('Account — payment methods', () => {
     await expect(page.getByRole('radio', { name: 'Pay with Visa ending in 2101' })).toBeVisible()
     const inCheckout = await renderedCardIds(page)
 
-    // Same rows, same order. The order comes from the backend and neither surface re-sorts it.
+    // Same rows, same order. Neither surface re-sorts what it was given.
     expect(inCheckout).toEqual(inAccount)
   })
 
@@ -86,49 +88,40 @@ test.describe('Account — payment methods', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const current = storeApi.card({ last4: '2201', ...futureExpiry(), isDefault: true })
+    const nominated = storeApi.card({ brand: 'mastercard', last4: '2202', ...futureExpiry() })
+    const wallet = await storeApi.stubWallet(page, [current, nominated])
+
     await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
+    await page.goto('/account/payment-methods')
 
-    await seedSavedCard(gatewayCustomer.id, { last4: '2201', ...futureExpiry(), isDefault: true })
-    const nominated = await seedSavedCard(gatewayCustomer.id, {
-      brand: 'mastercard',
-      last4: '2202',
-      ...futureExpiry(),
-    })
-
-    await page.reload()
+    await expect(page.getByRole('radio', { name: /ending in 2202/ })).toBeVisible({ timeout: 15_000 })
     await page.getByRole('radio', { name: 'Make Mastercard ending in 2202 the default' }).click()
 
     // The route answers with the reordered wallet, so the nominated card moves to the top without
     // a second round trip.
     await expect(page.getByRole('radio', { name: /Mastercard ending in 2202, your default card/ })).toBeChecked()
 
-    // And the default lives at the gateway, on the field Stripe itself treats as one — no Proteus
-    // table, no migration, and nothing that could disagree with it.
-    await expect
-      .poll(async () => (await gatewayCustomerFor(customer.id)).invoice_settings.default_payment_method, {
-        timeout: 10_000,
-      })
-      .toBe(nominated.id)
+    // The nomination was written, not merely rendered — the checkout below is reached through a
+    // fresh read, so a page that had only reordered its own copy would arrive on the old card.
+    // That the write lands on the *gateway customer* rather than a Proteus table is asserted in
+    // `payment-method.api.test.ts`; from here it is not observable and should not be.
+    expect(wallet.cards.filter((card) => card.isDefault).map((card) => card.id)).toEqual([nominated.id])
 
     await reachPaymentStep(page, navigate, product.id, shipping.name)
     await expect(page.getByRole('radio', { name: 'Pay with Mastercard ending in 2202' })).toBeChecked()
     await expect(page.getByRole('radio', { name: 'Pay with Visa ending in 2201' })).not.toBeChecked()
   })
 
-  test('removing a card from the account page confirms inline and detaches it at the gateway', async ({
-    page,
-    factories,
-  }) => {
+  test('removing a card from the account page confirms inline and deletes it', async ({ page, factories }) => {
     await using customer = await factories.create.customer({ hasAccount: true })
 
+    const doomed = storeApi.card({ last4: '2301', ...futureExpiry(), isDefault: true })
+    const kept = storeApi.card({ brand: 'mastercard', last4: '2302', ...futureExpiry() })
+    const wallet = await storeApi.stubWallet(page, [doomed, kept])
+
     await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
-
-    const doomed = await seedSavedCard(gatewayCustomer.id, { last4: '2301', ...futureExpiry(), isDefault: true })
-    await seedSavedCard(gatewayCustomer.id, { brand: 'mastercard', last4: '2302', ...futureExpiry() })
-
-    await page.reload()
+    await page.goto('/account/payment-methods')
     await expect(page.getByRole('radio', { name: /ending in 2301/ })).toBeVisible({ timeout: 15_000 })
 
     await page.getByRole('button', { name: 'Remove Visa ending in 2301' }).click()
@@ -144,19 +137,19 @@ test.describe('Account — payment methods', () => {
     await expect(page.getByRole('radio', { name: /ending in 2301/ })).toHaveCount(0)
     await expect(page.getByRole('radio', { name: /ending in 2302/ })).toBeVisible()
 
-    await expect
-      .poll(async () => (await gatewayWalletFor(gatewayCustomer.id)).map((method) => method.id))
-      .not.toContain(doomed.id)
+    // Deleted, not merely hidden: the row is dropped because the card is already gone, and the
+    // press that dropped it is the one that asked for it to be. The detach reaching the gateway is
+    // asserted in `payment-method.api.test.ts`.
+    expect(wallet.cards.map((card) => card.id)).toEqual([kept.id])
   })
 
   test('the Remove control is not nested inside the selectable label', async ({ page, factories }) => {
     await using customer = await factories.create.customer({ hasAccount: true })
 
-    await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
-    await seedSavedCard(gatewayCustomer.id, { last4: '2401', ...futureExpiry(), isDefault: true })
+    await storeApi.stubWallet(page, [storeApi.card({ last4: '2401', ...futureExpiry(), isDefault: true })])
 
-    await page.reload()
+    await signIn(page, customer)
+    await page.goto('/account/payment-methods')
     const remove = page.getByRole('button', { name: 'Remove Visa ending in 2401' })
     await expect(remove).toBeVisible({ timeout: 15_000 })
 

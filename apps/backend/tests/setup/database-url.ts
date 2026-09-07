@@ -34,3 +34,25 @@ export function withWorkerDatabase(baseUrl: string, poolId = process.env.VITEST_
   url.pathname = `${url.pathname}_${workerId}`
   return url.toString()
 }
+
+/**
+ * Per-app end-to-end database name. `withWorkerDatabase` above isolates vitest workers from each
+ * other; this isolates the Playwright suites from each other for the same reason — each one's
+ * `globalSetup` truncates every table in `public`, so store and admin sharing one database means
+ * whichever starts second wipes the rows the first is still asserting against.
+ *
+ * `E2E_APP` is set by `defineE2eConfig` (packages/testing/fixtures/e2e-config.ts) in the Playwright
+ * main process and inherited by every worker and web server forked from it. Unset — vitest, the
+ * seed scripts, a hand-started `dev:test` — the base name is returned unchanged, so nothing outside
+ * an e2e run changes database.
+ *
+ * Composes with `withWorkerDatabase` rather than competing with it: exactly one of `VITEST_POOL_ID`
+ * and `E2E_APP` is ever set, so the two suffixes cannot both apply.
+ */
+export function withAppDatabase(baseUrl: string, app = process.env.E2E_APP) {
+  if (!app) return baseUrl
+
+  const url = new URL(baseUrl)
+  url.pathname = `${url.pathname}_${app}`
+  return url.toString()
+}

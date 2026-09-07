@@ -1,25 +1,15 @@
 import type { Page } from '@playwright/test'
+import { FAKE_GATEWAY } from 'backend/test'
 import type { FileRouteTypes } from '../../src/routeTree.gen'
-import {
-  type GatewayCall,
-  gatewayIntentForSession,
-  gatewayWalletFor,
-  gatewayWatermark,
-  intentsCreatedBy,
-  type PaymentSessionTracker,
-  seedSavedCard,
-  trackPaymentSessions,
-  useFakeStripe,
-} from '../mocks/fake-gateway.js'
+import { useFakeStripe } from '../mocks/fake-gateway.js'
 import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
+import { storeApi } from '../mocks/store-api.js'
 import { expect, test } from '../setup/test-extend.js'
 import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
 import {
   delayWalletReads,
-  detachCardOutOfBand,
   futureExpiry,
   lastMonthExpiry,
-  openAccountWallet,
   refocusTab,
   signIn,
   thisMonthExpiry,
@@ -32,13 +22,12 @@ import {
  * Paying with a card the shopper already has.
  *
  * Every spec here operates on a list of near-identical rows, so the repo's "select the row you
- * created, never `.first()`" rule matters more than anywhere else: each card is seeded with a
- * `last4` unique to its test and selected by the accessible name built from it.
+ * created, never `.first()`" rule matters more than anywhere else: each card carries a `last4`
+ * unique to its test and is selected by the accessible name built from it.
  *
- * Parallel, deliberately: `trackPaymentSessions` keys every gateway assertion on the session ids
- * this page was handed, so a neighbour's intents are already invisible to it. Serialising on top
- * of that buys nothing and costs failure isolation — one red spec would skip every spec after it
- * in the file, which is the opposite of what a reviewer needs.
+ * The wallet is stubbed in front of each page — see `storeApi` for why, and for which half of each
+ * claim is asserted in the backend suite instead. Parallel follows from that: a stub belongs to
+ * one page, so no spec here can see another's cards.
  */
 test.describe('Checkout — saved cards', () => {
   test.describe.configure({ timeout: 90_000 })
@@ -56,21 +45,14 @@ test.describe('Checkout — saved cards', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    // The default is deliberately not the first row, so "the default" and "the first one" cannot
+    // both be satisfied by the same card.
+    const chosen = storeApi.card({ last4: '1101', ...futureExpiry() })
+    const preferred = storeApi.card({ brand: 'mastercard', last4: '1102', ...futureExpiry(), isDefault: true })
+    await storeApi.stubWallet(page, [chosen, preferred])
+
     await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
-
-    // The default is deliberately *not* the most recently stored card, so "the default first" and
-    // "the newest first" cannot both be satisfied by the same row.
-    const chosen = await seedSavedCard(gatewayCustomer.id, { last4: '1101', ...futureExpiry() })
-    const preferred = await seedSavedCard(gatewayCustomer.id, {
-      brand: 'mastercard',
-      last4: '1102',
-      ...futureExpiry(),
-      isDefault: true,
-    })
-
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    const sessions = storeApi.watchPaymentSessions(page)
     await reachPaymentStep(page, navigate, product.id, shipping.name)
 
     // Pre-selected on arrival: the default, not the first row and not the newest card.
@@ -81,13 +63,13 @@ test.describe('Checkout — saved cards', () => {
     await page.getByRole('button', { name: /place order/i }).click()
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    // The id that reached the gateway is the one the shopper pressed — read off the gateway's own
-    // call log rather than inferred from the page, and asserted against the *other* card too so a
-    // selector that always sends the default would fail here.
-    const [created] = await intentsSince(sessions, watermark)
-    expect(created?.params.payment_method).toBe(chosen.id)
-    expect(created?.params.payment_method).not.toBe(preferred.id)
-    expect((await intentFor(created)).status).toBe('requires_capture')
+    // The id the storefront sent is the one the shopper pressed — asserted against the *other*
+    // card too, so a selector that always sent the default would fail here rather than pass by
+    // coincidence. That the server charges that card and no other is
+    // `saved-method-consent.api.test.ts`.
+    const opened = await sessions.last()
+    expect(opened?.sent.paymentMethodId).toBe(chosen.id)
+    expect(opened?.sent.paymentMethodId).not.toBe(preferred.id)
   })
 
   test('an expired card is labelled, unselectable and skipped by auto-selection; one expiring this month is not', async ({
@@ -103,14 +85,14 @@ test.describe('Checkout — saved cards', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
-
     // The expired card is the shopper's *default*, which is the case a naive "select the default"
     // gets wrong: they have one, and it is not the answer.
-    await seedSavedCard(gatewayCustomer.id, { last4: '1201', ...lastMonthExpiry(), isDefault: true })
-    await seedSavedCard(gatewayCustomer.id, { brand: 'mastercard', last4: '1202', ...thisMonthExpiry() })
+    await storeApi.stubWallet(page, [
+      storeApi.card({ last4: '1201', ...lastMonthExpiry(), isDefault: true }),
+      storeApi.card({ brand: 'mastercard', last4: '1202', ...thisMonthExpiry() }),
+    ])
 
+    await signIn(page, customer)
     await reachPaymentStep(page, navigate, product.id, shipping.name)
 
     const expired = page.getByRole('radio', { name: 'Pay with Visa ending in 1201' })
@@ -143,12 +125,12 @@ test.describe('Checkout — saved cards', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const wallet = await storeApi.stubWallet(page, [
+      storeApi.card({ last4: '1301', ...futureExpiry(), isDefault: true }),
+      storeApi.card({ brand: 'mastercard', last4: '1302', ...futureExpiry() }),
+    ])
+
     await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
-
-    await seedSavedCard(gatewayCustomer.id, { last4: '1301', ...futureExpiry(), isDefault: true })
-    await seedSavedCard(gatewayCustomer.id, { brand: 'mastercard', last4: '1302', ...futureExpiry() })
-
     await reachPaymentStep(page, navigate, product.id, shipping.name)
     await expect(page.getByRole('radio', { name: 'Pay with Visa ending in 1301' })).toBeChecked()
 
@@ -159,7 +141,7 @@ test.describe('Checkout — saved cards', () => {
     // A third card arrives as the new default while they are looking at the step, and the tab
     // refocuses. Without the `autoSelected` guard the refetch re-runs auto-selection and quietly
     // moves the shopper onto a card they never picked — which is the bug this asserts against.
-    await seedSavedCard(gatewayCustomer.id, { brand: 'amex', last4: '1303', ...futureExpiry(), isDefault: true })
+    wallet.add(storeApi.card({ brand: 'amex', last4: '1303', ...futureExpiry(), isDefault: true }))
     await refocusTab(page)
 
     // The refetch landed: the new card is on screen.
@@ -182,12 +164,11 @@ test.describe('Checkout — saved cards', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
+    const doomed = storeApi.card({ last4: '1401', ...futureExpiry(), isDefault: true })
+    const kept = storeApi.card({ brand: 'mastercard', last4: '1402', ...futureExpiry() })
+    const wallet = await storeApi.stubWallet(page, [doomed, kept])
+
     await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
-
-    const doomed = await seedSavedCard(gatewayCustomer.id, { last4: '1401', ...futureExpiry(), isDefault: true })
-    await seedSavedCard(gatewayCustomer.id, { brand: 'mastercard', last4: '1402', ...futureExpiry() })
-
     await reachPaymentStep(page, navigate, product.id, shipping.name)
     await expect(page.getByRole('radio', { name: 'Pay with Visa ending in 1401' })).toBeChecked()
 
@@ -202,10 +183,9 @@ test.describe('Checkout — saved cards', () => {
     await expect(page.getByRole('radio', { name: 'Pay with Visa ending in 1401' })).toHaveCount(0)
     await expect(page.getByRole('radio', { name: 'Pay with Mastercard ending in 1402' })).toBeChecked()
 
-    // And gone at the gateway too, not merely hidden. Optimism about a *completed* detach is the
-    // rule here: the row is dropped because the card is already gone, not in the hope that it is.
-    const stored = await gatewayWalletFor(gatewayCustomer.id)
-    expect(stored.map((method) => method.id)).not.toContain(doomed.id)
+    // Deleted, not merely hidden. Optimism about a *completed* detach is the rule here: the row is
+    // dropped because the card is already gone, not in the hope that it will be.
+    expect(wallet.cards.map((card) => card.id)).toEqual([kept.id])
   })
 
   test('a card removed elsewhere answers 409, and the wallet refetches back to the new-card form', async ({
@@ -221,15 +201,24 @@ test.describe('Checkout — saved cards', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
-    const stale = await seedSavedCard(gatewayCustomer.id, { last4: '1501', ...futureExpiry(), isDefault: true })
+    // A card the gateway no longer holds. The id is the instruction — see `FAKE_GATEWAY` — so the
+    // `409` below is the backend's own, produced by the same 404 a real detached card gives, not
+    // one this spec stubbed.
+    const stale = storeApi.card({
+      id: `${FAKE_GATEWAY.goneMethodPrefix}_1501`,
+      last4: '1501',
+      ...futureExpiry(),
+      isDefault: true,
+    })
+    const wallet = await storeApi.stubWallet(page, [stale])
 
+    await signIn(page, customer)
     await reachPaymentStep(page, navigate, product.id, shipping.name)
     await expect(page.getByRole('radio', { name: 'Pay with Visa ending in 1501' })).toBeChecked()
 
-    // Removed in another tab while this one sat open. The page has been told nothing.
-    await detachCardOutOfBand(page, stale.id)
+    // Removed in another tab while this one sat open: gone from the wallet, and the page has been
+    // told nothing. It is still rendering the row, and must find out at the press.
+    wallet.remove(stale.id)
 
     const conflict = page.waitForResponse(
       (response) => response.url().includes('/payment-sessions') && response.status() === 409,
@@ -266,9 +255,7 @@ test.describe('Checkout — saved cards', () => {
 
     // The wallet read fails and nothing else does. A shopper who cannot see their saved cards must
     // still be able to buy the thing they came for.
-    await page.route('**/store/payment-methods', (route) =>
-      route.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"service_unavailable"}' }),
-    )
+    await storeApi.failWallet(page)
 
     await reachPaymentStep(page, navigate, product.id, shipping.name)
 
@@ -282,7 +269,7 @@ test.describe('Checkout — saved cards', () => {
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
   })
 
-  test('a card the shopper asked to keep is stored, redisplayable, and waiting at the next checkout', async ({
+  test('a shopper with nothing saved is offered the option, and their consent rides the one press', async ({
     page,
     navigate,
     factories,
@@ -295,11 +282,13 @@ test.describe('Checkout — saved cards', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
+    // Nothing saved: the state that gets the new-card form, and the one the fake gateway cannot
+    // produce on its own — it holds one card for every account holder that asks.
+    await storeApi.stubWallet(page, [])
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    await signIn(page, customer)
+
+    const sessions = storeApi.watchPaymentSessions(page)
     await reachPaymentStep(page, navigate, product.id, shipping.name)
 
     // The consent control is gated on the session, not the wallet count — this shopper has nothing
@@ -309,20 +298,18 @@ test.describe('Checkout — saved cards', () => {
     await page.getByRole('button', { name: /place order/i }).click()
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    // Consent reached the gateway as `setup_future_usage`, against the shopper's account holder.
-    const [created] = await intentsSince(sessions, watermark)
-    expect(created?.params.setup_future_usage).toBe('on_session')
-    expect(created?.params.customer).toBe(gatewayCustomer.id)
-
-    // And the card is redisplayable, which is the half that a gateway leaves undone: a method
-    // attached through `setup_future_usage` lands as `unspecified` and the customer-scoped listing
-    // filters it straight back out. Saved and invisible is not saved.
-    const [stored] = await gatewayWalletFor(gatewayCustomer.id)
-    expect(stored?.allow_redisplay).toBe('always')
-    expect(stored?.card.last4).toBe('4242')
-
-    await page.goto('/account/payment-methods')
-    await expect(page.getByRole('radio', { name: /Visa ending in 4242/ })).toBeVisible()
+    // The consent left the browser on the session that opened the intent — the one press, not a
+    // later call, and not a second request the shopper could navigate away from between.
+    //
+    // What the server does with it is deliberately not asserted here: `setup_future_usage`, the
+    // account holder it acts against, and marking the card redisplayable so the customer-scoped
+    // listing does not filter it straight back out are all
+    // `saved-method-consent.api.test.ts`. Reading them back through the fake gateway's wallet
+    // would prove nothing either way — it answers with the same card whether or not one was
+    // saved, so the assertion could not fail.
+    const opened = await sessions.all()
+    expect(opened).toHaveLength(1)
+    expect(opened[0]?.sent.savePaymentMethod).toBe(true)
   })
 
   /**
@@ -346,15 +333,10 @@ test.describe('Checkout — saved cards', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
-    await seedSavedCard(gatewayCustomer.id, { last4: '1601', ...futureExpiry(), isDefault: true })
-    const survivor = await seedSavedCard(gatewayCustomer.id, {
-      brand: 'mastercard',
-      last4: '1602',
-      ...futureExpiry(),
-    })
+    const survivor = storeApi.card({ brand: 'mastercard', last4: '1602', ...futureExpiry() })
+    await storeApi.stubWallet(page, [storeApi.card({ last4: '1601', ...futureExpiry(), isDefault: true }), survivor])
 
+    await signIn(page, customer)
     await reachPaymentStep(page, navigate, product.id, shipping.name)
     await page.getByRole('button', { name: 'Remove Visa ending in 1601' }).click()
     await page.getByRole('button', { name: 'Remove', exact: true }).click()
@@ -384,19 +366,13 @@ test.describe('Checkout — saved cards', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    await signIn(page, customer)
-    const gatewayCustomer = await openAccountWallet(page, customer.id)
     // The card about to be removed. Unbound: the assertions below name the survivor, so there is
     // nothing left to compare this one against.
-    await seedSavedCard(gatewayCustomer.id, { last4: '1701', ...futureExpiry(), isDefault: true })
-    const survivor = await seedSavedCard(gatewayCustomer.id, {
-      brand: 'mastercard',
-      last4: '1702',
-      ...futureExpiry(),
-    })
+    const survivor = storeApi.card({ brand: 'mastercard', last4: '1702', ...futureExpiry() })
+    await storeApi.stubWallet(page, [storeApi.card({ last4: '1701', ...futureExpiry(), isDefault: true }), survivor])
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    await signIn(page, customer)
+    const sessions = storeApi.watchPaymentSessions(page)
 
     await reachPaymentStep(page, navigate, product.id, shipping.name)
     await page.getByRole('button', { name: 'Remove Visa ending in 1701' }).click()
@@ -424,8 +400,7 @@ test.describe('Checkout — saved cards', () => {
     await page.getByRole('button', { name: /place order/i }).click()
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    const [created] = await intentsSince(sessions, watermark)
-    expect(created?.params.payment_method).toBe(survivor.id)
+    expect((await sessions.last())?.sent.paymentMethodId).toBe(survivor.id)
   })
 })
 
@@ -476,22 +451,4 @@ async function fillDeliveryAndChooseStripe(page: Page, shippingName: string) {
 /** Types into the gateway's own frame, which is where a card is entered at the real gateway too. */
 async function fillCard(page: Page, number: string) {
   await page.frameLocator('[data-testid="fake-stripe-frame"]').getByLabel('Card number').fill(number)
-}
-
-/**
- * The intents *this* checkout opened.
- *
- * Filtered by the session ids the page was handed rather than by a watermark alone: spec files
- * run concurrently and the gateway's call log is one object, so a watermark on its own scoops up
- * a neighbouring file's intents. See `trackPaymentSessions`.
- */
-async function intentsSince(tracker: PaymentSessionTracker, watermark: number): Promise<GatewayCall[]> {
-  return intentsCreatedBy(tracker, watermark)
-}
-
-/** The intent a recorded `create` call opened, found through the session id in its metadata. */
-async function intentFor(created: GatewayCall | undefined) {
-  const sessionId = created?.params['metadata[sessionId]']
-  expect(sessionId, 'no PaymentIntent was created, or it carried no session id').toBeTruthy()
-  return gatewayIntentForSession(String(sessionId))
 }

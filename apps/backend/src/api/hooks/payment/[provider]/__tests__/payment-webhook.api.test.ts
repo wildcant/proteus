@@ -1,17 +1,34 @@
+import { createHmac } from 'node:crypto'
 import { BigNumber } from '@core/bignumber.js'
 import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { env } from '@env'
-import { type FakeIntent, signWebhook, stripeGateway, webhookEventBody } from '@tests/mocks/stripe.js'
+import type { FakeIntent } from '@tests/mocks/stripe-factories.js'
+import { stripeTest } from '@tests/mocks/vitest/stripe.mock.js'
+import { stripeErrors } from '@tests/mocks/vitest/stripe-errors.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
-import Stripe from 'stripe'
 import { vi } from 'vitest'
 import hookDefinitions from '../../../definitions.js'
 
-vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeModuleMock())
+vi.mock('stripe', async () => (await import('@tests/mocks/vitest/stripe.mock.js')).stripeTest.moduleMock())
+
+/**
+ * Stripe's documented signature scheme: an HMAC-SHA256 over `<timestamp>.<payload>`. Written out
+ * rather than taken from the SDK's test helper so this pins the wire format itself.
+ */
+function signWebhook(payload: string | Uint8Array, secret: string, timestamp = Math.floor(Date.now() / 1000)) {
+  const body = typeof payload === 'string' ? payload : new TextDecoder('utf8').decode(payload)
+  const signature = createHmac('sha256', secret).update(`${timestamp}.${body}`).digest('hex')
+  return `t=${timestamp},v1=${signature}`
+}
+
+/** A webhook event body around an intent, serialized the way Stripe sends it — indented. */
+function webhookEventBody(type: string, intent: FakeIntent, id = 'evt_test'): string {
+  return JSON.stringify({ id, object: 'event', type, data: { object: intent } }, null, 2)
+}
 
 /** The DI key the Stripe adapter is registered under, and so the `:provider` segment the
  *  gateway's webhook endpoint is configured with. */
@@ -24,7 +41,7 @@ const MISSING_HEADER_REJECTION = 'Missing stripe-signature header'
 let api: TestApi
 
 test.beforeEach(async ({ createApi }) => {
-  stripeGateway.reset()
+  stripeTest.reset()
   api = await createApi({ definitions: hookDefinitions })
 })
 
@@ -43,7 +60,7 @@ async function authorizedOrder(service: Fixtures['service']) {
 
   const session = checkout.paymentSession
   assertDefined(session)
-  const intent = stripeGateway.intentForSession(session.id)
+  const intent = await stripeTest.intentCreatedFor(session.id)
   assertDefined(intent)
 
   return { session, intent, total: checkout.total }
@@ -82,7 +99,7 @@ async function paymentFor(service: Fixtures['service'], paymentCollectionId: str
  * tab after confirming, whose first news of the charge is the webhook itself.
  */
 async function chargedSessionWithoutPayment(service: Fixtures['service']) {
-  stripeGateway.statusOnCreate = 'succeeded'
+  stripeTest.givenIntentStatus('succeeded')
 
   const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
   const { paymentCollection, paymentSession } = await service.create.paymentSessionForCart(api.container, {
@@ -92,7 +109,7 @@ async function chargedSessionWithoutPayment(service: Fixtures['service']) {
     providerId: STRIPE_PROVIDER,
   })
 
-  const intent = stripeGateway.intentForSession(paymentSession.id)
+  const intent = await stripeTest.intentCreatedFor(paymentSession.id)
   assertDefined(intent)
 
   return { paymentCollectionId: paymentCollection.id, intent, total: new BigNumber('19.99') }
@@ -186,14 +203,14 @@ test.describe('POST /hooks/payment/:provider', () => {
     const { session, intent } = await authorizedOrder(service)
     const body = webhookEventBody('payment_intent.processing', { ...intent, status: 'processing' })
 
-    const callsBefore = stripeGateway.calls.length
+    const callsBefore = stripeTest.callSequence().length
     const response = await postWebhook(body, signedHeaders(body))
 
     // A settling payment is acknowledged so Stripe stops redelivering it, and nothing else. Not
     // even a read: filtering happens before anything is scheduled, so an event type the dashboard
     // has enabled cannot cost a round trip per delivery for the life of the integration.
     expect(response.status).toBe(200)
-    expect(stripeGateway.calls).toHaveLength(callsBefore)
+    expect(stripeTest.callSequence()).toHaveLength(callsBefore)
     expect((await paymentFor(service, session.paymentCollectionId)).capturedAt).toBeNull()
   })
 
@@ -201,11 +218,11 @@ test.describe('POST /hooks/payment/:provider', () => {
     const { session, intent } = await authorizedOrder(service)
     const body = webhookEventBody('payment_intent.succeeded', { ...intent, status: 'succeeded', metadata: {} })
 
-    const callsBefore = stripeGateway.calls.length
+    const callsBefore = stripeTest.callSequence().length
     const response = await postWebhook(body, signedHeaders(body))
 
     expect(response.status).toBe(200)
-    expect(stripeGateway.calls).toHaveLength(callsBefore)
+    expect(stripeTest.callSequence()).toHaveLength(callsBefore)
     expect((await paymentFor(service, session.paymentCollectionId)).capturedAt).toBeNull()
   })
 })
@@ -222,7 +239,7 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
 
     // Down for one attempt. The adapter retries a `retry`-classified error itself, so a single
     // transient failure must not be the end of the capture even with nothing retrying above it.
-    stripeGateway.failNext('paymentIntents.capture', connectionError())
+    stripeTest.mock.paymentIntents.capture.mockRejectedValueOnce(stripeErrors.connection())
 
     const response = await postWebhook(body, signedHeaders(body))
 
@@ -236,7 +253,11 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
     const body = succeededEvent(intent)
 
     // One error per attempt the adapter makes, so the outage outlasts it.
-    stripeGateway.failNext('paymentIntents.capture', connectionError(), connectionError(), connectionError())
+    // Three in a row: one per attempt the adapter makes before it gives up.
+    stripeTest.mock.paymentIntents.capture
+      .mockRejectedValueOnce(stripeErrors.connection())
+      .mockRejectedValueOnce(stripeErrors.connection())
+      .mockRejectedValueOnce(stripeErrors.connection())
 
     const response = await postWebhook(body, signedHeaders(body))
 
@@ -306,4 +327,3 @@ test.describe('webhook amounts', () => {
  * class has to be the real one the adapter checks `instanceof` against, which is why it comes
  * through the mocked module rather than being hand-rolled.
  */
-const connectionError = () => new Stripe.errors.StripeConnectionError({ message: 'socket hang up' })

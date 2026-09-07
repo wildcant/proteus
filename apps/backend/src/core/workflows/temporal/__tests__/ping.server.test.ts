@@ -3,7 +3,7 @@ import { Worker } from '@temporalio/worker'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { PAYLOAD_CONVERTER_PATH } from '../../../../temporal/config.js'
 import { ping } from '../activities.js'
-import { TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
+import { DEFAULT_TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
 import { pingWorkflow } from '../workflows.js'
 import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT } from './temporal-test-env.js'
 
@@ -23,7 +23,7 @@ describe('pingWorkflow', () => {
     async () => {
       const worker = await Worker.create({
         connection: testEnv.nativeConnection,
-        taskQueue: TEMPORAL_TASK_QUEUE,
+        taskQueue: DEFAULT_TEMPORAL_TASK_QUEUE,
         workflowsPath: WORKFLOWS_PATH,
         dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
         activities: { ping },
@@ -31,7 +31,7 @@ describe('pingWorkflow', () => {
 
       const output = await worker.runUntil(
         testEnv.client.workflow.execute(pingWorkflow, {
-          taskQueue: TEMPORAL_TASK_QUEUE,
+          taskQueue: DEFAULT_TEMPORAL_TASK_QUEUE,
           workflowId: 'ping-test',
           args: ['proteus'],
         }),

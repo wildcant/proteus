@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./global-setup": "./fixtures/global-setup.ts"
+    "./global-setup": "./fixtures/global-setup.ts",
+    "./playwright": "./fixtures/e2e-config.ts"
   },
   "devDependencies": {
     "backend": "*",

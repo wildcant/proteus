@@ -8,7 +8,7 @@ import { type AwilixContainer, asValue, createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { PAYLOAD_CONVERTER_PATH } from '../../../../temporal/config.js'
 import { createWorkflowActivities } from '../activities.js'
-import { TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
+import { DEFAULT_TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
 import type { WorkflowRegistry } from '../registry.js'
 import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT } from './temporal-test-env.js'
 
@@ -71,7 +71,7 @@ describe('temporal workflow engine', () => {
 
     worker = await Worker.create({
       connection: testEnv.nativeConnection,
-      taskQueue: TEMPORAL_TASK_QUEUE,
+      taskQueue: DEFAULT_TEMPORAL_TASK_QUEUE,
       workflowsPath: WORKFLOWS_PATH,
       dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
       activities: createWorkflowActivities({ container, registry }),
@@ -81,6 +81,10 @@ describe('temporal workflow engine', () => {
     void workerRun.catch(() => undefined)
 
     engine = createTemporalWorkflowEngine({
+      // Pinned to the Worker above rather than left to `env.TEMPORAL_TASK_QUEUE`: a queue set in
+      // the environment would send these workflows somewhere nothing is polling, and the suite
+      // would hang rather than fail.
+      taskQueue: DEFAULT_TEMPORAL_TASK_QUEUE,
       // The test server's client, so the tests never reach `env.TEMPORAL_ADDRESS`.
       connect: async () => ({ client: testEnv.client, close: async () => undefined }),
       retry: {
