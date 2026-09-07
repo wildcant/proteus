@@ -57,6 +57,9 @@ export type QueuedEvent = {
   subscriber: string
 }
 
+/** The producer binding, narrowed to the one method the bus uses. */
+export type EventQueueBinding = Pick<Queue<QueuedEvent>, 'sendBatch'>
+
 /**
  * The producer half — the `EventBus` a workerd composition root registers.
  *
@@ -65,15 +68,26 @@ export type QueuedEvent = {
  * that throws is this transport's problem to retry and never becomes the publisher's, which is what
  * keeps a mail outage from compensating an authorized checkout.
  *
- * `queue` is the binding, narrowed to the one method used. The binding is a live object workerd
- * constructs from `wrangler.jsonc` and cannot travel through an environment file, so it is passed
- * in from the composition root rather than read here.
+ * **It does not reject when the send itself fails, either.** An oversized payload, an over-limit
+ * batch and a queue that refuses the write all log and resolve. A caller cannot know which runtime
+ * it is on, so a rule that held here and not on node would not be a contract — and the caller this
+ * is written for is checkout's final step, publishing *after* the payment is authorized, where a
+ * rejection compensates the workflow and refunds a valid order. A lost event with a log line is
+ * recoverable by replay; a refunded order is not. That is the accepted cost, and the outbox D8 names
+ * is what eventually closes it.
+ *
+ * `queue` is the binding. It is a live object workerd constructs from `wrangler.jsonc` and cannot
+ * travel through an environment file, so it is passed in from the composition root rather than read
+ * here — and it is typed as possibly missing, because the generated `Env` says it exists on the
+ * strength of a config file that a second Worker may not share.
  */
 export function createCloudflareQueuesEventBus(deps: {
-  queue: Pick<Queue<QueuedEvent>, 'sendBatch'>
+  queue: EventQueueBinding | undefined
   registry: SubscriberRegistry
+  logger: Logger
 }): EventBus {
-  const { queue, registry } = deps
+  const { registry, logger } = deps
+  const queue = requireQueueBinding(deps.queue)
 
   return {
     async emit(name, data) {
@@ -82,28 +96,66 @@ export function createCloudflareQueuesEventBus(deps: {
       // only fail to dispatch, and pay a retry cycle and a dead-letter entry to say so.
       if (subscribers.length === 0) return
 
-      const messages = subscribers.map((subscriber) => ({
-        body: { name, data, subscriber: subscriber.name } as QueuedEvent,
-      }))
+      try {
+        const messages = subscribers.map((subscriber) => ({
+          body: { name, data, subscriber: subscriber.name } as QueuedEvent,
+        }))
 
-      assertSendable(messages)
-      await queue.sendBatch(messages)
+        assertSendable(messages)
+        await queue.sendBatch(messages)
+      } catch (error) {
+        // The publisher is never told, so these lines are the whole trace of a lost event. One per
+        // subscriber, because the fan-out travels as a single `sendBatch` and a refusal loses every
+        // delivery in it — naming them one at a time is what lets a search for a subscriber find
+        // the event it never received. The same sentence the node transport logs, so the search
+        // does not have to know which runtime dropped it.
+        for (const subscriber of subscribers) {
+          logger.error(`[event-bus] Could not dispatch "${name}" to "${subscriber.name}"`)
+        }
+        logger.error(error instanceof Error ? error : String(error))
+      }
     },
   }
 }
 
 /**
- * Rejects a publish the queue would reject, before it reaches the queue.
+ * Refuses to build a bus that has no queue to publish to.
+ *
+ * The generated `Env` types `EVENTS` as always present, on the strength of this app's
+ * `wrangler.jsonc` declaring it — which is a claim about one config file, not about the runtime a
+ * bundle ends up in. A Worker whose config has no `queues` block hands over `undefined`, and without
+ * this the container builds cleanly and dies at the first publish with a `TypeError` about reading
+ * `sendBatch` of undefined. That is exactly the *reads as configured, fails at first publish*
+ * failure this transport's binding is supposed to be wired against, so it fails at construction
+ * instead, naming the binding a reader has to go and add.
+ */
+function requireQueueBinding(queue: EventQueueBinding | undefined): EventQueueBinding {
+  if (!queue || typeof queue.sendBatch !== 'function') {
+    throw new AppError({
+      type: ErrorTypes.UNEXPECTED_STATE,
+      message:
+        '[event-bus] The "EVENTS" queue binding is missing. Declare it under `queues.producers` in ' +
+        "this Worker's wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that " +
+        'does not need one.',
+    })
+  }
+
+  return queue
+}
+
+/**
+ * Names a publish the queue would refuse, before it reaches the queue.
  *
  * Cloudflare's answer to an oversized message is an error about bytes, raised at the transport, in
  * a stack that says nothing about which event carried them. Checking here costs one serialisation
- * and buys an error naming the event, the subscriber and the size — which is the difference between
- * a fixable report and an investigation.
+ * and buys a message naming the event, the subscriber and the size — which is the difference between
+ * a fixable report and an investigation. It throws, and `emit` catches: the value is the sentence,
+ * and a sentence is as useful in a log line as in a rejection.
  *
  * The batch ceilings are checked for the same reason, and are refused rather than split: an emit
  * that quietly became two sends would deliver half its subscribers when the second send failed.
  * Neither is reachable at today's fan-out — a handful of subscribers per event, payloads that carry
- * an id — so a failure here means an event's shape changed, and that is worth stopping for.
+ * an id — so a failure here means an event's shape changed, and that is worth a loud log line.
  */
 function assertSendable(messages: { body: QueuedEvent }[]): void {
   let total = 0

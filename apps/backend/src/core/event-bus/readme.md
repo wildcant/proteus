@@ -191,6 +191,17 @@ the message arrived, which is the bug the whole feature exists to fix.
 forever is a mail loop, and what still fails after that has to stay somewhere readable rather than
 disappear.
 
+`emit` does not reject here either. An oversized payload, an over-limit batch and a queue that
+refuses the write all log and resolve, naming the event and every subscriber whose delivery was lost
+— one `sendBatch` carries the whole fan-out, so a refusal loses all of it. The check that names the
+byte count still exists; it just reports rather than throws, because a rejection in checkout's final
+step refunds an authorized order and a lost event is recoverable by replay.
+
+The bus refuses to be **built** without the `EVENTS` binding, which is the one thing that is not a
+log line. The generated `Env` types it as always present because this app's `wrangler.jsonc` declares
+it, and that is a claim about one config file rather than about the runtime a bundle ends up in — a
+Worker without a `queues` block would otherwise build cleanly and die at the first publish.
+
 ## The generated registry
 
 `src/subscribers/registry.gen.ts` is written by `scripts/generate-subscriber-registry.ts`, which

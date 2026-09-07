@@ -22,7 +22,7 @@ const logger = new ConsoleLogger()
  * that import stays out of this file so the container keeps being buildable by anything that has a
  * binding to pass.
  */
-export function createWorkerdContainer(deps: { events: Queue<QueuedEvent> }) {
+export function createWorkerdContainer(deps: { events: Queue<QueuedEvent> | undefined }) {
   return bootstrapContainer({
     logger,
     dbProvider,
@@ -38,7 +38,10 @@ export function createWorkerdContainer(deps: { events: Queue<QueuedEvent> }) {
     },
     // The container is offered and not taken: the producer only puts messages on a queue, and it is
     // the consumer in `index.workerd.ts` that hands a container to a subscriber, one batch later.
-    createEventBusAdapter: () => createCloudflareQueuesEventBus({ queue: deps.events, registry: subscriberRegistry }),
+    // The logger is taken, because `emit` never rejects — a send it could not make is a log line and
+    // nothing else.
+    createEventBusAdapter: () =>
+      createCloudflareQueuesEventBus({ queue: deps.events, registry: subscriberRegistry, logger }),
   })
 }
 

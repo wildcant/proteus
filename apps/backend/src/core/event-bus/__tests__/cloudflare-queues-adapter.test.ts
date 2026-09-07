@@ -19,6 +19,10 @@ import { defineSubscriber, type SubscriberDefinition } from '../types.js'
  * wrong — a batch that retries whole still delivers everything eventually, and a consumer sharing a
  * request's connection works right up until the request that opened it has finished, which is every
  * time.
+ *
+ * The producer half pins the port's other rule: **`emit` never rejects**, on this runtime as on
+ * node. `temporal-adapter.test.ts` holds the same assertion against its own transport, so a third
+ * one cannot re-open the question by reading only one adapter.
  */
 
 function makeContainer() {
@@ -27,17 +31,32 @@ function makeContainer() {
   return container
 }
 
-/** The producer binding. `sendBatch` is the whole of what the bus asks of a queue. */
-function fakeQueue() {
+/**
+ * The producer binding. `sendBatch` is the whole of what the bus asks of a queue.
+ *
+ * `refuse` makes it answer the way a queue that will not take the write does, which is the half of
+ * the never-reject contract no size check can stand in for.
+ */
+function fakeQueue(options: { refuse?: Error } = {}) {
   const sent: { body: QueuedEvent }[] = []
 
   return {
     sent,
     binding: {
       async sendBatch(messages: Iterable<{ body: QueuedEvent }>) {
+        if (options.refuse) throw options.refuse
         sent.push(...messages)
         return { metadata: { metrics: { backlogCount: 0, backlogBytes: 0 } } }
       },
+    },
+  }
+}
+
+function collectingLogger(errors: string[]): Logger {
+  return {
+    ...noopLogger,
+    error(messageOrError) {
+      errors.push(messageOrError instanceof Error ? messageOrError.message : messageOrError)
     },
   }
 }
@@ -130,6 +149,7 @@ test.describe('the Cloudflare Queues producer', () => {
     const queue = fakeQueue()
     const bus = createCloudflareQueuesEventBus({
       queue: queue.binding,
+      logger: noopLogger,
       registry: createSubscriberRegistry([
         defineSubscriber({ name: 'first', event: 'bus.probe', handler: async () => undefined }),
         defineSubscriber({ name: 'second', event: 'bus.probe', handler: async () => undefined }),
@@ -148,7 +168,11 @@ test.describe('the Cloudflare Queues producer', () => {
   /** Nothing wanted it, so there is nothing a consumer could do with a message but fail to place it. */
   test('sends nothing when no subscriber asked for the event', async ({ expect }) => {
     const queue = fakeQueue()
-    const bus = createCloudflareQueuesEventBus({ queue: queue.binding, registry: createSubscriberRegistry([]) })
+    const bus = createCloudflareQueuesEventBus({
+      queue: queue.binding,
+      logger: noopLogger,
+      registry: createSubscriberRegistry([]),
+    })
 
     await expect(bus.emit('bus.probe', { id: 'ord_1' })).resolves.toBeUndefined()
     expect(queue.sent).toEqual([])
@@ -159,6 +183,7 @@ test.describe('the Cloudflare Queues producer', () => {
     const queue = fakeQueue()
     const bus = createCloudflareQueuesEventBus({
       queue: queue.binding,
+      logger: noopLogger,
       registry: createSubscriberRegistry([
         defineSubscriber({
           name: 'later',
@@ -177,28 +202,67 @@ test.describe('the Cloudflare Queues producer', () => {
   })
 
   /**
-   * The queue's own answer to an oversized message is an error about bytes, raised somewhere that
-   * says nothing about which event carried them. This one names the event and the subscriber.
+   * The contract, and the mirror of `temporal-adapter.test.ts`'s "resolves, and logs, when the
+   * transport refuses the start". A caller cannot know which runtime it is on, so the rule has to be
+   * one sentence true of both adapters — and ILLO-89 puts an `emit` in checkout's final step, after
+   * the payment is authorized, where a rejection compensates the workflow and refunds a valid order.
+   * The event is lost; that is the accepted cost, and these log lines are the whole trace of it.
    */
-  test('refuses a payload over the message limit rather than letting the queue reject it', async ({ expect }) => {
+  test('resolves, and logs, when the queue refuses the send', async ({ expect }) => {
+    const errors: string[] = []
+    const queue = fakeQueue({ refuse: new Error('Queue "proteus-events" is over its backlog limit') })
+    const bus = createCloudflareQueuesEventBus({
+      queue: queue.binding,
+      logger: collectingLogger(errors),
+      registry: createSubscriberRegistry([
+        defineSubscriber({ name: 'first-probe', event: 'bus.probe', handler: async () => undefined }),
+        defineSubscriber({ name: 'second-probe', event: 'bus.probe', handler: async () => undefined }),
+      ]),
+    })
+
+    await expect(bus.emit('bus.probe', { id: 'probe_1' })).resolves.toBeUndefined()
+
+    // One line per subscriber, because the fan-out travels as a single sendBatch and a refusal loses
+    // every delivery in it — the same sentence the node transport logs, so a search for a lost
+    // delivery does not have to know which runtime dropped it.
+    expect(errors).toContain('[event-bus] Could not dispatch "bus.probe" to "first-probe"')
+    expect(errors).toContain('[event-bus] Could not dispatch "bus.probe" to "second-probe"')
+    expect(errors).toContain('Queue "proteus-events" is over its backlog limit')
+  })
+
+  /**
+   * The queue's own answer to an oversized message is an error about bytes, raised somewhere that
+   * says nothing about which event carried them. This one names the event, the subscriber and the
+   * size — as useful in a log line as it would have been in a rejection.
+   */
+  test('logs a payload over the message limit rather than letting the queue reject it', async ({ expect }) => {
+    const errors: string[] = []
     const queue = fakeQueue()
     const bus = createCloudflareQueuesEventBus({
       queue: queue.binding,
+      logger: collectingLogger(errors),
       registry: createSubscriberRegistry([
         defineSubscriber({ name: 'reader', event: 'bus.probe', handler: async () => undefined }),
       ]),
     })
 
-    await expect(bus.emit('bus.probe', { id: 'x'.repeat(200_000) })).rejects.toThrow(
-      /"bus\.probe" is \d+ bytes for subscriber "reader", over the 131072 byte queue message limit/,
-    )
+    await expect(bus.emit('bus.probe', { id: 'x'.repeat(200_000) })).resolves.toBeUndefined()
+
     expect(queue.sent).toEqual([])
+    expect(errors).toContain('[event-bus] Could not dispatch "bus.probe" to "reader"')
+    expect(
+      errors.some((message) =>
+        /"bus\.probe" is \d+ bytes for subscriber "reader", over the 131072 byte queue message limit/.test(message),
+      ),
+    ).toBe(true)
   })
 
-  test('refuses a fan-out over the batch limit rather than delivering half of it', async ({ expect }) => {
+  test('logs a fan-out over the batch limit rather than delivering half of it', async ({ expect }) => {
+    const errors: string[] = []
     const queue = fakeQueue()
     const bus = createCloudflareQueuesEventBus({
       queue: queue.binding,
+      logger: collectingLogger(errors),
       registry: createSubscriberRegistry([
         defineSubscriber({ name: 'one', event: 'bus.probe', handler: async () => undefined }),
         defineSubscriber({ name: 'two', event: 'bus.probe', handler: async () => undefined }),
@@ -206,10 +270,48 @@ test.describe('the Cloudflare Queues producer', () => {
       ]),
     })
 
-    await expect(bus.emit('bus.probe', { id: 'x'.repeat(90_000) })).rejects.toThrow(
-      /"bus\.probe" fans out to 3 subscribers and \d+ bytes, over the 100 message \/ 262144 byte queue batch limit/,
-    )
+    await expect(bus.emit('bus.probe', { id: 'x'.repeat(90_000) })).resolves.toBeUndefined()
+
     expect(queue.sent).toEqual([])
+    expect(errors).toContain('[event-bus] Could not dispatch "bus.probe" to "two"')
+    expect(
+      errors.some((message) =>
+        /"bus\.probe" fans out to 3 subscribers and \d+ bytes, over the 100 message \/ 262144 byte queue batch limit/.test(
+          message,
+        ),
+      ),
+    ).toBe(true)
+  })
+
+  /**
+   * The generated `Env` types `EVENTS` as always present because this app's `wrangler.jsonc` says
+   * so, which is a claim about one config file rather than about the runtime a bundle ends up in.
+   * Without this the container builds cleanly and dies at the first publish with a `TypeError` —
+   * the *reads as configured, fails at first publish* failure the binding criterion is written
+   * against. It cannot be an `emit`-time log, because a bus that never had a queue never had an
+   * event to lose either.
+   */
+  test('refuses to be built without the EVENTS binding', async ({ expect }) => {
+    const build = () =>
+      createCloudflareQueuesEventBus({
+        queue: undefined,
+        logger: noopLogger,
+        registry: createSubscriberRegistry([]),
+      })
+
+    expect(build).toThrow('[event-bus] The "EVENTS" queue binding is missing')
+  })
+
+  test('refuses to be built on a binding that cannot send', async ({ expect }) => {
+    const build = () =>
+      createCloudflareQueuesEventBus({
+        // A KV namespace bound under the same name reads as present and answers nothing.
+        queue: {} as never,
+        logger: noopLogger,
+        registry: createSubscriberRegistry([]),
+      })
+
+    expect(build).toThrow('[event-bus] The "EVENTS" queue binding is missing')
   })
 })
 
