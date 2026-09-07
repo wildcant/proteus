@@ -117,10 +117,35 @@ than write a duplicate payment row.
 compensated workflow publishes nothing; under Temporal a crash after an earlier step resumes and
 eventually reaches it. There is no staging store and no event group — see ADR-0024 for why not.
 
-**Accepted residual: an emit from a route handler *outside* a workflow can be lost** in the window
-between the database commit and the enqueue, because `queue.send()` and the activity start do not run
-inside the Drizzle transaction. Small, deliberate, and closable later with an outbox table — which
-changes adapter internals only, and leaves `emit()`'s signature alone.
+### Accepted residual: a publish that fails is lost, and this is wider than a crash window
+
+**A publish that the transport refuses is lost outright.** `emit` never rejects, and every adapter
+honours that by catching and logging — `inline-adapter.ts`, `cloudflare-queues-adapter.ts` and
+`temporal-adapter.ts` all end the same way. So a Queues outage, a Temporal frontend that is down, or
+a dispatch identity the server rejects produces one error line and a `Promise<void>` that resolves,
+and the event never existed.
+
+Two consequences worth separating, because an earlier draft of this ADR described only the first:
+
+- **Inside a transaction-bearing caller**, there is additionally the ordinary interleaving: neither
+  `queue.send()` nor an activity start runs inside the Drizzle transaction, so a crash between the
+  commit and the enqueue loses the event even when the transport is healthy.
+- **At a route handler with no commit to be in a window after** — the payment webhook is exactly
+  this — the loss is not an interleaving at all. Any transport error, no crash required, and the
+  work is gone. `POST /hooks/payment/:provider` had a retry before the bus: it processed inline, so a
+  failure was a non-2xx and Stripe redelivered. Publishing removed that retry for the *publish* step
+  and replaced it only for the *subscriber* step. This is the one place where the bus is strictly
+  worse than what it replaced, and it moves money.
+
+**The operator signal is the log line, and nothing else.**
+`[event-bus] Could not dispatch "<event>" to "<subscriber>"` at error level is the whole trace a lost
+delivery leaves — no row, no dead-letter message, no failed activity, because none of those were ever
+created. Any deployment of this backend has to alert on it.
+
+The fix is an outbox table, which changes adapter internals only and leaves `emit()`'s signature
+alone. It was not built here because the rule that makes it necessary is also the rule that keeps a
+mail outage from refunding an authorized order — see the publish surface above — and a rejection
+channel only the webhook uses would be a port change for one caller.
 
 ### Isolation from the workflow engine
 

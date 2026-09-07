@@ -74,6 +74,23 @@ const succeededEvent = (intent: FakeIntent) =>
   })
 
 /**
+ * The event Stripe sends when a manual-capture intent is confirmed — funds held, not taken.
+ *
+ * This is the *first* webhook of an ordinary card checkout here, not an edge case: the adapter opens
+ * every intent with `capture_method: 'manual'`, so a confirmed card lands on `requires_capture` and
+ * the action is `authorized`.
+ */
+const capturableEvent = (intent: FakeIntent) =>
+  webhookEventBody('payment_intent.amount_capturable_updated', {
+    ...intent,
+    status: 'requires_capture',
+    // biome-ignore lint/style/useNamingConvention: the Stripe field the adapter reads
+    amount_received: 0,
+    // biome-ignore lint/style/useNamingConvention: the Stripe field the adapter reads
+    amount_capturable: intent.amount,
+  })
+
+/**
  * Finishes the intent at the gateway, as Stripe does before it sends the event.
  *
  * The webhook is not the source of truth about the intent — `authorizePaymentSession` re-reads it —
@@ -159,6 +176,34 @@ test.describe('POST /hooks/payment/:provider', () => {
     // The session's id, not the intent's: the payload names the resource this backend owns, and it
     // is what the payment, the collection and the cart behind it are all reachable through.
     expect(emit).toHaveBeenCalledExactlyOnceWith('payment.captured', { id: session.id, action: 'captured' })
+    expect(await paymentFor(service, session.paymentCollectionId)).toMatchObject({ capturedAt: null })
+  })
+
+  /**
+   * The delivery a card checkout produces first, and the one no test used to cover.
+   *
+   * Under `capture_method: 'manual'` a confirmed intent is `requires_capture`, so the ordinary first
+   * event of every card checkout publishes `action: 'authorized'`. It has to reach the subscriber —
+   * the completion re-run is deliberately not gated on the action — and it must not take any money,
+   * because the shopper has not been charged yet and a capture here would be the route deciding to.
+   */
+  test('publishes the authorization a manual-capture checkout reports first, and takes no money', async ({
+    service,
+    expect,
+  }) => {
+    const { session, intent } = await authorizedOrder(service)
+    const bus = api.container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    const body = capturableEvent(intent)
+    const response = await postWebhook(body, signedHeaders(body))
+
+    expect(response.status).toBe(200)
+    expect(emit).toHaveBeenCalledExactlyOnceWith('payment.captured', { id: session.id, action: 'authorized' })
+
+    // Through the real subscriber, not a mocked publish: the suite pins the in-process adapter, so
+    // what this asserts is that the subscriber left the money where it was.
+    expect(stripeGateway.callsTo('paymentIntents.capture')).toEqual([])
     expect(await paymentFor(service, session.paymentCollectionId)).toMatchObject({ capturedAt: null })
   })
 

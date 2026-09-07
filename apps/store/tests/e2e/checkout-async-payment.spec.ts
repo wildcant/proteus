@@ -31,6 +31,39 @@ import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
  * The last block is the second half, added when the event bus arrived: the classification made the
  * case *distinguishable*, and the `payment.captured` subscriber makes it *survivable*. It used to
  * assert the residual — charged, no order — and now asserts the fix.
+ *
+ * ## ⚠ This spec has not been executed, and cannot be as the harness is wired
+ *
+ * Not a property of this spec — **no e2e spec in this repo can run today.** `playwright.config.ts`
+ * starts the backend and the store and nothing else, while the node composition root resolves the
+ * *Temporal* workflow engine, so every request that runs a workflow blocks forever on a task queue
+ * nobody polls. Measured: with nothing polling `proteus`, `GET /store/carts/:id/inventory` hangs;
+ * with a Worker bound to `.env.test` it answers in 90ms. Block 3 above needs that Worker as much as
+ * block 4 does.
+ *
+ * Starting the two Workers by hand does not close it either, and this is the part that needs a
+ * decision rather than a script:
+ *
+ * ```sh
+ * # gets the stack up, and still does not make this spec pass
+ * npm run --workspace=backend db:test:up
+ * npm run --workspace=backend db:migrate:test && npm run --workspace=backend db:seed:providers:test
+ * (cd apps/backend && npx dotenvx run -f ../../.env.test -- npx tsx src/core/workflows/temporal/worker.ts)
+ * (cd apps/backend && npx dotenvx run -f ../../.env.test -- npx tsx src/core/event-bus/temporal/worker.ts)
+ * npm run --workspace=store test:e2e -- checkout-async-payment.spec.ts
+ * ```
+ *
+ * The fake gateway's state is a module-scoped `Map` in `tests/mocks/stripe-gateway-state.ts`, and
+ * only `src/index.ts` installs MSW and the control server. A Worker in another process therefore
+ * has an *empty* gateway: the intent this spec's browser confirmed does not exist there, so
+ * `authorize-payment` — which runs in the Worker — cannot retrieve it. Making that work means the
+ * fake gateway becomes a single owner other processes talk to, or the Workers run inside the API
+ * process under `MOCKS`. Either is a change to shared e2e infrastructure and belongs to its own
+ * ticket, not to the one that flipped this assertion.
+ *
+ * Until then the behaviour this block asserts is covered at the backend seam instead:
+ * `src/api/hooks/payment/[provider]/__tests__/payment-webhook.api.test.ts` drives a signed webhook
+ * through the real route and asserts one order, one charge and the confirmation.
  */
 test.describe('Checkout — a payment that is still settling', () => {
   test.describe.configure({ timeout: 120_000 })
@@ -100,6 +133,10 @@ test.describe('Checkout — a payment that is still settling', () => {
     //
     // Polled rather than read once: the route acknowledges as soon as the event is published, and
     // the subscriber runs on the transport's own time.
+    //
+    // ⚠ NOT EXECUTED. See the file header: no e2e spec in this repo can run as the harness is
+    // wired, so this assertion states the behaviour the backend suites verify rather than a result
+    // anyone has observed here. Do not read a green tick into it.
     // ---------------------------------------------------------------------------------------
     await settleIntentAtGateway(sessionId)
     await deliverWebhook(intentEventBody(await gatewayIntentForSession(sessionId), sessionId))

@@ -41,13 +41,31 @@ export const PostThrows = [ErrorTypes.INVALID_DATA] as const
  * anything, publish it, acknowledge.
  *
  * **It performs no state transition.** Everything the event means happens in the
- * `process-payment-captured` subscriber, which is a durable unit of work with a bounded retry of
- * its own — so a process that dies mid-way resumes rather than losing the capture, and a failure
- * retries without waiting on the gateway to redeliver, which used to be the only retry there was.
+ * `process-payment-captured` subscriber. Once the event is *accepted* by the transport that work is
+ * durable and has a bounded retry of its own, so a process that dies mid-way resumes rather than
+ * losing the capture and a failure retries without waiting on the gateway to redeliver — which used
+ * to be the only retry there was.
  *
  * That is also why the failures below are the only ones a caller sees. A subscriber's failure is
  * the transport's business and never becomes this response's: answering non-2xx for one would ask
  * Stripe to redeliver work that is already queued, which is a second delivery rather than a retry.
+ *
+ * ## What the acknowledgement does not cover, and it is not a small thing
+ *
+ * `emit` never rejects — the port's contract on every adapter, and every adapter honours it by
+ * catching and logging (`inline-adapter.ts`, `cloudflare-queues-adapter.ts`, `temporal-adapter.ts`).
+ * So a transport that is refusing writes — a Queues outage, a Temporal frontend that is down, a
+ * dispatch identity the server rejects — is **not** a crash window and not a rare interleaving: it
+ * logs one line, this route answers 200 anyway, Stripe records the event as delivered and stops
+ * sending it, and that capture is gone. This route has no database write to be in a window after;
+ * losing the publish loses the whole thing.
+ *
+ * Before the bus, the same outage would have been a non-2xx and Stripe would have redelivered. That
+ * retry is the one thing this change removed, and nothing replaces it. The only trace is
+ * `[event-bus] Could not dispatch "payment.captured" to "process-payment-captured"` at error level,
+ * so **that line has to be something an operator alerts on** — it is the difference between a
+ * shopper's charge being reconciled and being lost. ADR-0023 records it; closing it means an outbox,
+ * which is adapter internals rather than a change here.
  */
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const logger = req.scope.resolve<Logger>(ContainerRegistrationKeys.LOGGER)

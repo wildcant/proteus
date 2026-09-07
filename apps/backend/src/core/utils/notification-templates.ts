@@ -11,7 +11,7 @@ export const NotificationTemplates = {
   ORDER_CONFIRMATION: 'order-confirmation',
   WORKFLOW_FAILED: 'workflow-failed',
   CHECKOUT_FAILED: 'checkout-failed',
-  PAYMENT_CAPTURED_WITHOUT_ORDER: 'payment-captured-without-order',
+  PAYMENT_WITHOUT_ORDER: 'payment-without-order',
 } as const
 
 export type NotificationTemplate = (typeof NotificationTemplates)[keyof typeof NotificationTemplates]

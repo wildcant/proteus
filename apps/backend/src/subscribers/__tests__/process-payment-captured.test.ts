@@ -53,6 +53,19 @@ async function settledAfterRefusal(service: Fixtures['service']) {
 
 const paymentModule = () => container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
+/**
+ * Breaks the re-run at `create-order`, which is *before* `authorize-payment`.
+ *
+ * That is the half of the alert's job the wording has to be right about: nothing compensates a
+ * payment the workflow never reached, so what the alert reports is the state the subscriber left
+ * the payment in rather than anything the workflow did to it.
+ */
+function failTheReRun() {
+  vi.spyOn(container.resolve<IOrderModuleService>(Modules.ORDER), 'createOrder').mockRejectedValueOnce(
+    new Error('order module unavailable'),
+  )
+}
+
 test.describe('the payment.captured subscriber', () => {
   /**
    * The headline: money that arrives after the checkout was refused ends with an order.
@@ -143,24 +156,55 @@ test.describe('the payment.captured subscriber', () => {
    */
   test('raises its own alert when the re-run cannot produce an order', async ({ service, expect }) => {
     const { cart, session } = await settledAfterRefusal(service)
-    vi.spyOn(container.resolve<IOrderModuleService>(Modules.ORDER), 'createOrder').mockRejectedValueOnce(
-      new Error('order module unavailable'),
-    )
+    failTheReRun()
 
     await expect(deliver(session.id)).rejects.toThrow('order module unavailable')
 
     expect(await service.read.orders(container)).toEqual([])
     const alerts = await service.read.notifications(container, { channel: 'feed' })
-    expect(alerts.map((alert) => alert.template).sort()).toEqual(['checkout-failed', 'payment-captured-without-order'])
+    expect(alerts.map((alert) => alert.template).sort()).toEqual(['checkout-failed', 'payment-without-order'])
 
-    // What the new one says, which is the half the existing alert gets wrong: the money was taken.
-    // Reported as observed rather than promised — `authorize-payment`'s compensation refunds a
-    // re-run that got that far, and this one did not, so the money is still captured.
-    expect(alerts.find((alert) => alert.template === 'payment-captured-without-order')).toMatchObject({
+    // What the new one says, which is the half the existing alert gets wrong: money moved. Reported
+    // as observed rather than promised — `authorize-payment`'s compensation refunds a re-run that
+    // got that far, and this one failed before it, so the capture is still standing.
+    expect(alerts.find((alert) => alert.template === 'payment-without-order')).toMatchObject({
       channel: 'feed',
       resourceType: 'cart',
       resourceId: cart.id,
-      data: { title: 'Payment captured, no order', description: expect.stringContaining('not been refunded') },
+      data: {
+        title: 'Payment captured, no order',
+        description: expect.stringContaining('is captured and has not been refunded'),
+      },
+    })
+  })
+
+  /**
+   * The wording on the delivery that actually reaches this in production.
+   *
+   * The Stripe adapter opens every intent with `capture_method: 'manual'`, so a confirmed card lands
+   * on `requires_capture` → `authorized`, and `payment_intent.amount_capturable_updated` is the
+   * ordinary first webhook of a card checkout. The completion re-run is not gated on the action, so
+   * that delivery reaches the alert as often as any other — and the money it describes is *held*,
+   * not taken. Telling an operator a shopper was charged sends them looking for a refund to issue
+   * that does not exist.
+   */
+  test('says the funds are held, not taken, when the delivery only authorized', async ({ service, expect }) => {
+    const { cart, session } = await settledAfterRefusal(service)
+    failTheReRun()
+
+    await expect(deliver(session.id, 'authorized')).rejects.toThrow('order module unavailable')
+
+    // The premise: nothing was captured, because the action was not a capture.
+    const collection = await service.read.paymentCollection(container, session.paymentCollectionId)
+    expect(collection.payments?.[0]).toMatchObject({ capturedAt: null })
+
+    const alerts = await service.read.notifications(container, { channel: 'feed' })
+    expect(alerts.find((alert) => alert.template === 'payment-without-order')).toMatchObject({
+      resourceId: cart.id,
+      data: {
+        title: 'Payment authorized, no order',
+        description: expect.stringContaining('held at the provider, not taken'),
+      },
     })
   })
 

@@ -127,32 +127,78 @@ async function completeCartBehind(payment: PaymentDTO, container: AwilixContaine
      * who was charged for nothing, so it raises nothing; the throw below lets the bounded retry
      * converge on the order that run is creating.
      *
-     * No link means the money is ours and no order came of it, which is the outcome an operator has
-     * to hear about.
+     * No link means the shopper's money moved and no order came of it, which is the outcome an
+     * operator has to hear about. What exactly moved — held, taken, taken and returned — is read off
+     * the payment rather than assumed; see [describeMoney].
      */
     const orderLink = await linkService.repo('orderCart').findByCartId(cartLink.cartId)
-    if (!orderLink) await alertChargedWithoutOrder({ container, cartId: cartLink.cartId, paymentId: payment.id })
+    if (!orderLink) await alertPaymentWithoutOrder({ container, cartId: cartLink.cartId, paymentId: payment.id })
 
     throw error
   }
 }
 
 /**
- * Tells an operator that a shopper's money was taken and no order came of it.
+ * What an operator is told about the money, read off the payment rather than assumed.
+ *
+ * **The delivery that reaches this is usually the `authorized` one, not the captured one.** The
+ * Stripe adapter opens every intent with `capture_method: 'manual'`, so a confirmed card lands on
+ * `requires_capture` → `authorized`, and `payment_intent.amount_capturable_updated` is the ordinary
+ * first webhook of a card checkout. The completion re-run is not gated on the action, so that
+ * delivery reaches the alert as often as any other — and telling an operator a shopper was charged
+ * when the funds are only held sends them looking for a refund to issue that does not exist.
+ *
+ * Four states, one already-loaded payment, no extra read:
+ *
+ * | Payment | What happened |
+ * |---|---|
+ * | refunds present | `authorize-payment`'s compensation refunded a capture. The shopper is whole. |
+ * | `capturedAt`, no refunds | Taken and still held by us. The one that needs a human. |
+ * | `canceledAt`, never captured | The same compensation voided the authorization. Nothing was taken. |
+ * | neither | Authorized and untouched — the re-run failed before `authorize-payment` ran at all, so nothing compensated it. |
+ */
+function describeMoney(payment: PaymentDTO): { title: string; money: string } {
+  if ((payment.refunds ?? []).length > 0) {
+    return {
+      title: 'Payment captured and refunded, no order',
+      money: `Payment "${payment.id}" was captured and then refunded, so the shopper is whole.`,
+    }
+  }
+
+  if (payment.capturedAt) {
+    return {
+      title: 'Payment captured, no order',
+      money: `Payment "${payment.id}" is captured and has not been refunded — the shopper has paid for nothing.`,
+    }
+  }
+
+  if (payment.canceledAt) {
+    return {
+      title: 'Payment authorized then voided, no order',
+      money: `Payment "${payment.id}" was authorized and the authorization has since been released. Nothing was taken.`,
+    }
+  }
+
+  return {
+    title: 'Payment authorized, no order',
+    money: `Payment "${payment.id}" is authorized and not captured — the funds are held at the provider, not taken, and the authorization is still standing.`,
+  }
+}
+
+/**
+ * Tells an operator that a shopper's money moved and no order came of it.
  *
  * **Not `complete-cart`'s existing compensation alert**, which the plan asked for and which cannot
  * work here. That alert is keyed per cart, and on this path the checkout workflow runs twice for
  * the same cart: the first attempt — the one that refused the still-settling payment — has already
  * written `checkout-failed:<cartId>`, so a second compensation on the same cart is deduped and the
  * operator hears nothing. It also says the wrong thing, reporting a rollback rather than money
- * taken. So the alert belongs here, with its own key and its own words.
+ * moved. So the alert belongs here, with its own key and its own words.
  *
- * The refund is `authorize-payment`'s compensation, and it only runs for a re-run that got that
- * far. A re-run refused earlier — a shipping option withdrawn, a variant deleted — leaves the money
- * captured, so the message reports what the payment actually says rather than promising a refund
- * nobody made. That is read fresh, after the compensation has finished.
+ * Which words is [describeMoney]'s job, and the payment is re-read here rather than reused from the
+ * caller: the compensation that may have refunded or voided it runs between the two.
  */
-async function alertChargedWithoutOrder(deps: {
+async function alertPaymentWithoutOrder(deps: {
   container: AwilixContainer
   cartId: string
   paymentId: string
@@ -161,27 +207,23 @@ async function alertChargedWithoutOrder(deps: {
   const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
   const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
 
-  const payment = await paymentService.retrievePayment(paymentId)
-  const refunded = (payment.refunds ?? []).length > 0
-  const money = refunded
-    ? `Payment "${paymentId}" was captured and refunded.`
-    : `Payment "${paymentId}" is still captured and has not been refunded.`
+  const { title, money } = describeMoney(await paymentService.retrievePayment(paymentId))
 
   await notificationService.createNotification({
     // TODO(rbac): one configured address until there is a role to ask for.
     to: env.ADMIN_NOTIFICATION_EMAIL,
     channel: 'feed',
-    template: NotificationTemplates.PAYMENT_CAPTURED_WITHOUT_ORDER,
+    template: NotificationTemplates.PAYMENT_WITHOUT_ORDER,
     data: {
-      title: 'Payment captured, no order',
-      description: `The payment for cart "${cartId}" was captured but the order could not be created. ${money}`,
+      title,
+      description: `The payment for cart "${cartId}" was accepted but the order could not be created. ${money}`,
     },
     triggerType: 'payment.captured.completion.failed',
     resourceType: 'cart',
     resourceId: cartId,
     // Per cart, not per delivery: the bounded retry re-runs this whole subscriber, and an operator
     // needs one alert about one shopper rather than one per attempt.
-    idempotencyKey: `charged-without-order:${cartId}`,
+    idempotencyKey: `payment-without-order:${cartId}`,
   })
 }
 
