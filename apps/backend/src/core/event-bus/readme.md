@@ -63,8 +63,8 @@ unbounded retry policy exactly as `createTemporalWorkflowEngine` refuses one for
 lines that do it are written twice on purpose — a shared validator would be the import the rule
 exists to forbid.
 
-`src/notifications/` is under neither, for the same kind of reason: its builders are called by a
-checkout step today and by an `order.placed` subscriber next, so it may not reach either tree.
+`src/notifications/` is under neither, for the same kind of reason: its builders are called by the
+`order.placed` subscriber and, before it, by a checkout step, so it may not reach either tree.
 
 ## Adding an event
 
@@ -73,7 +73,13 @@ The name and the payload are then checked at compile time, so a typo is a build 
 an event nobody receives.
 
 Add an event **because a subscriber wants it**. A catalogue of names nothing consumes is one nobody
-can safely delete from.
+can safely delete from. `order.placed` arrived with `src/subscribers/send-order-confirmation.ts`,
+which is the shape to copy.
+
+Publish it from a workflow's **final step**, and derive its id from something an earlier step
+already recorded. A step that retries runs its action again: an id minted inside the action is a new
+one per attempt, so the dispatch identity changes, dedup has nothing to match, and the subscriber
+runs twice. `order.placed` carries `order.id`, which `create-order` produced.
 
 ## Dispatch identity
 
@@ -105,9 +111,9 @@ than a regression — but it is a fact a subscriber is written against, not one 
 `await bus.emit(…)` means the event has been handed over, never that a subscriber finished. A
 subscriber that throws is the transport's problem and never becomes the publisher's.
 
-This is load-bearing rather than lenient. The order confirmation is sent after the payment is
-authorized, so a failure that propagated back into the checkout workflow would compensate it and
-refund a valid order over a mail outage. Every adapter has to keep that true.
+This is load-bearing rather than lenient. `complete-cart` publishes `order.placed` from its final
+step, after the payment is authorized, so a failure that propagated back into the workflow would
+compensate it and refund a valid order over a mail outage. Every adapter has to keep that true.
 
 **`emit` never rejects — on either runtime.** Not for a subscriber failure, not for a transport
 failure, and not for a delivery the adapter itself refuses to send. Every such case is logged at
@@ -163,8 +169,12 @@ rather than aspirational, because no driver, replay or shape fingerprint is invo
 Two operational requirements, both easy to miss:
 
 - **`activity.enableStandalone` must be on.** Self-hosted 1.31.2 answers `Standalone activity is
-  disabled` without it; `temporal/dynamicconfig/development-sql.yaml` sets it. The Temporal CLI dev
-  server the tests boot defaults it on, so tests alone would not catch a stack that missed it.
+  disabled` without it; `temporal/dynamicconfig/development-sql.yaml` sets it. Because `emit` never
+  rejects, a stack that missed it would drop *every* event with one log line each, and no test can
+  catch that — the CLI dev server the tests boot has the flag on. So the events Worker asks the
+  server at boot and refuses to start when the answer is no: `temporal/preflight.ts`, which
+  describes an activity id that cannot exist and reads `UNIMPLEMENTED` as the disabled answer and
+  `NOT_FOUND` as the working one.
 - **Something has to poll `proteus-events`.** That is `npm run --workspace=backend worker:events`,
   and the `events-worker` service in `docker-compose.yml`. A queue nobody polls does not fail; the
   event waits, durably, until something does.
@@ -245,3 +255,8 @@ silent when wrong, which is why they are asserted rather than read.
 `src/subscribers/bus-probe.ts` is the bus's `pingWorkflow` — a subscriber whose only job is to prove
 the arc works end to end. It logs its dispatch identity, which is the assertion in one string: the
 event name, the key derived from the payload, and the subscriber's own name.
+
+`send-order-confirmation` is the first production subscriber, and its tests split the same way the
+adapters' do: `src/subscribers/__tests__/` covers what the handler does with one delivery, and
+`src/workflows/cart/__tests__/complete-cart.test.ts` covers that checkout publishes at all — and
+publishes nothing when it unwinds.

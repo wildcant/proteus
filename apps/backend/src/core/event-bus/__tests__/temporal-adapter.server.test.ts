@@ -10,6 +10,7 @@ import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 import type { Event } from '../events.js'
 import { createSubscriberRegistry, type SubscriberRegistry } from '../registry.js'
 import { createEventActivities } from '../temporal/activities.js'
+import { assertStandaloneActivitiesEnabled } from '../temporal/preflight.js'
 import { createTemporalEventBus, type TemporalEventBus } from '../temporal-adapter.js'
 import { defineSubscriber, type SubscriberDefinition } from '../types.js'
 
@@ -353,6 +354,22 @@ describe('the temporal event bus', () => {
       } finally {
         await single.close()
       }
+    },
+    TEST_TIMEOUT,
+  )
+
+  it(
+    'passes the events-worker preflight against a server that has standalone activities',
+    async () => {
+      // The half of D11's check only a real server can answer. `preflight.test.ts` covers the
+      // refusal, which no server in this suite can produce — the CLI dev server has the flag on,
+      // which is exactly why a deployment without it was never going to be caught by tests.
+      await expect(
+        assertStandaloneActivitiesEnabled({
+          namespace: testEnv.client.options.namespace,
+          describeActivityExecution: (request) => testEnv.client.workflowService.describeActivityExecution(request),
+        }),
+      ).resolves.toBeUndefined()
     },
     TEST_TIMEOUT,
   )

@@ -15,6 +15,20 @@ export type EventPayloads = {
   'bus.probe': { id: string }
   /** The same probe, for the event shape that legitimately fires more than once per resource. */
   'bus.probe.repeatable': { id: string; attempt: number }
+  /**
+   * An order exists and its payment is authorized — published by checkout's final step, and by
+   * nothing else.
+   *
+   * The id is the order's, which is what makes it *once per resource*: an order is placed once, so
+   * the derived dispatch identity is the same on every republish and the transport dedups a repeat.
+   * That is load-bearing rather than incidental — the publisher is a workflow step, and a step that
+   * retries runs its action again. An id minted inside that action would be a new one per attempt,
+   * a new dispatch identity, and a second confirmation email nobody asked for.
+   *
+   * Nothing else about the order travels. A subscriber reads what it needs through the id, so a
+   * delivery that arrives late describes the order as it is now rather than as it was at checkout.
+   */
+  'order.placed': { id: string }
 }
 
 export type EventName = keyof EventPayloads
