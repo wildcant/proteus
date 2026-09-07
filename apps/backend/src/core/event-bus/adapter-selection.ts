@@ -14,10 +14,10 @@ import type { EventBusAdapterName } from '../config/types.js'
  * caller: `RUNTIME` is `node` under vitest, so the derived answer would be Temporal and every test
  * touching an emit would need a running server.
  *
- * The two transports this returns do not exist yet — they land in ILLO-87 and ILLO-88, one adapter
- * file each. Until then every composition root pins `inline`, and `bootstrapContainer` refuses to
- * boot rather than quietly substituting something. The rule is here now because it is the rule; what
- * is missing is only the code it names.
+ * `temporal` exists: `temporal-adapter.ts`, one standalone activity execution per delivery. Node
+ * composition roots take it by derivation now rather than pinning around it. `cloudflare-queues` is
+ * still ILLO-88, so workerd keeps its `inline` pin and `bootstrapContainer` refuses to boot rather
+ * than quietly substituting something — an adapter it cannot build must not become a different one.
  */
 export function resolveEventBusAdapterName(input: {
   configured: EventBusAdapterName | undefined

@@ -48,6 +48,15 @@ export type BootstrapContainerDeps = {
    * that boundary, so this is not a stylistic choice — an import here fails the gate.
    */
   createTemporalWorkflowEngine?: () => WorkflowEngine
+  /**
+   * Builds the Temporal event bus when the resolved adapter is `temporal`.
+   *
+   * Injected for the same reason `createTemporalWorkflowEngine` is, and it is a *second* factory
+   * rather than one Temporal bundle for both: the two subsystems are peers that may not import each
+   * other, and a single injected "temporal things" object would be that import wearing a hat. Each
+   * entry point wires the ones its runtime can load.
+   */
+  createTemporalEventBus?: () => EventBus
 }
 
 export async function bootstrapContainer(deps: BootstrapContainerDeps) {
@@ -84,7 +93,7 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   // resolves from `req.scope`. It goes in last so a subscriber it dispatches to sees every module.
   container.register({
     [ContainerRegistrationKeys.EVENT_BUS]: asValue(
-      selectEventBus(configModule.projectConfig.eventBus.adapter, container, logger),
+      selectEventBus(deps, configModule.projectConfig.eventBus.adapter, container, logger),
     ),
   })
 
@@ -113,19 +122,36 @@ function selectWorkflowEngine(
 }
 
 /**
- * The transports the derived default names — Cloudflare Queues on workerd, Temporal standalone
- * activities on node — are the next two tickets. Refusing to boot is the right answer until they
- * land: an adapter this cannot build must not silently become a different one, because "events are
- * being delivered in-process" and "events are being delivered durably" look identical from the
- * publisher and differ entirely when the process dies.
+ * Refusing to boot is the right answer for an adapter this container cannot build. "Events are being
+ * delivered in-process" and "events are being delivered durably" look identical from the publisher
+ * and differ entirely when the process dies, so a missing transport must never quietly become a
+ * different one.
+ *
+ * Cloudflare Queues is the one still missing (ILLO-88).
  */
 function selectEventBus(
+  deps: BootstrapContainerDeps,
   configured: ReturnType<typeof defineAppConfig>['projectConfig']['eventBus']['adapter'],
   container: AwilixContainer,
   logger: Logger,
 ): EventBus {
   const adapter = resolveEventBusAdapterName({ configured, runtime: env.RUNTIME })
   if (adapter === 'inline') return createInlineEventBus({ registry: subscriberRegistry, container, logger })
+
+  if (adapter === 'temporal') {
+    const createBus = deps.createTemporalEventBus
+    if (!createBus) {
+      throw new AppError({
+        type: ErrorTypes.UNEXPECTED_STATE,
+        message:
+          'The temporal event bus adapter was selected but no factory was injected. The entry point ' +
+          'building this container must pass `createTemporalEventBus`, or pin ' +
+          '`projectConfig.eventBus.adapter` to "inline".',
+      })
+    }
+
+    return createBus()
+  }
 
   throw new AppError({
     type: ErrorTypes.UNEXPECTED_STATE,

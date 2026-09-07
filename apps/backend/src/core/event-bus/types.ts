@@ -13,6 +13,17 @@ import type { Event, EventName, EventPayloads } from './events.js'
  * depends on: the payment is already authorized by the time the confirmation is published, so a
  * failing mail provider must not be able to throw back into the workflow and refund a valid order.
  * Subscriber failure is the transport's business, and every adapter has to keep it that way.
+ *
+ * **It does not reject for transport failures either.** An adapter that could not reach its
+ * transport, or could not derive a sendable identity for the delivery, logs it and resolves. The
+ * argument is the same one and it does not weaken when the failure moves from the subscriber to the
+ * wire: a checkout workflow's final step must not compensate an authorized payment because a queue
+ * was briefly unreachable. The honest cost is that such an event is **lost**, with a log line as its
+ * only trace — small, deliberate, and closed later by an outbox table, which changes adapter
+ * internals rather than this signature.
+ *
+ * A `Promise<void>` with no failure channel is therefore the whole return type on purpose: there is
+ * no outcome for a caller to branch on, so there is none to hand back.
  */
 export type EventBus = {
   emit<N extends EventName>(name: N, data: EventPayloads[N]): Promise<void>
