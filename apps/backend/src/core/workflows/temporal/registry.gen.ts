@@ -29,6 +29,7 @@ import { deleteProductVariantWorkflow } from '../../../workflows/product/delete-
 import { setProductOptionsWorkflow } from '../../../workflows/product/set-product-options.js'
 import { updateProductVariantWorkflow } from '../../../workflows/product/update-product-variant.js'
 import { updateVariantPricesWorkflow } from '../../../workflows/product/update-variant-prices.js'
+import { assignRegionCountriesWorkflow } from '../../../workflows/region/assign-region-countries.js'
 import { createRegionWorkflow } from '../../../workflows/region/create-region.js'
 import { updateRegionWorkflow } from '../../../workflows/region/update-region.js'
 import { acceptInviteWorkflow } from '../../../workflows/user/accept-invite.js'
@@ -60,6 +61,7 @@ export const GENERATED_WORKFLOWS: WorkflowDefinition<never, unknown>[] = [
   setProductOptionsWorkflow,
   updateProductVariantWorkflow,
   updateVariantPricesWorkflow,
+  assignRegionCountriesWorkflow,
   createRegionWorkflow,
   updateRegionWorkflow,
   acceptInviteWorkflow,

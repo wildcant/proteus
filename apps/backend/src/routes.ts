@@ -9,6 +9,7 @@ import type { PreparedRoute } from './server/ports.js'
 
 // ---- Definition imports ----
 
+import adminCountryDefinitions from './api/admin/countries/definitions.js'
 import adminCustomerDefinitions from './api/admin/customers/definitions.js'
 import adminFulfillmentProviderDefinitions from './api/admin/fulfillment-providers/definitions.js'
 import adminFulfillmentSetDefinitions from './api/admin/fulfillment-sets/definitions.js'
@@ -50,6 +51,7 @@ const storeSharedAuthRoutes = new Set([
 
 export const adminDefinitions: RouteDefinition[] = [
   ...authDefinitions,
+  ...adminCountryDefinitions,
   ...adminCustomerDefinitions,
   ...adminFulfillmentProviderDefinitions,
   ...adminInviteDefinitions,

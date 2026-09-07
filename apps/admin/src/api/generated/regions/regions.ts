@@ -6,10 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AdminAssignRegionCountries,
+  AdminCountryResponse,
   AdminCreateRegion,
+  AdminRegionCountriesResponse,
   AdminRegionListResponse,
   AdminRegionResponse,
+  AdminUpdateCountryLocale,
   AdminUpdateRegion,
+  DeleteResponse,
   ListRegionsParams
 } from '../model';
 
@@ -68,7 +73,51 @@ export const updateRegion = (
     },
       );
     }
+  /**
+ * @summary Assign countries to a region
+ */
+export const assignRegionCountries = (
+    id: string,
+    adminAssignRegionCountries?: BodyType<AdminAssignRegionCountries>,
+ ) => {
+      return fetcher<AdminRegionCountriesResponse>(
+      {url: `/admin/regions/${id}/countries`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminAssignRegionCountries
+    },
+      );
+    }
+  /**
+ * @summary Update a country's locale
+ */
+export const updateRegionCountryLocale = (
+    id: string,
+    code: string,
+    adminUpdateCountryLocale?: BodyType<AdminUpdateCountryLocale>,
+ ) => {
+      return fetcher<AdminCountryResponse>(
+      {url: `/admin/regions/${id}/countries/${code}`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminUpdateCountryLocale
+    },
+      );
+    }
+  /**
+ * @summary Remove a country from a region
+ */
+export const removeRegionCountry = (
+    id: string,
+    code: string,
+ ) => {
+      return fetcher<DeleteResponse>(
+      {url: `/admin/regions/${id}/countries/${code}`, method: 'DELETE'
+    },
+      );
+    }
   export type ListRegionsResult = NonNullable<Awaited<ReturnType<typeof listRegions>>>
 export type CreateRegionResult = NonNullable<Awaited<ReturnType<typeof createRegion>>>
 export type GetRegionResult = NonNullable<Awaited<ReturnType<typeof getRegion>>>
 export type UpdateRegionResult = NonNullable<Awaited<ReturnType<typeof updateRegion>>>
+export type AssignRegionCountriesResult = NonNullable<Awaited<ReturnType<typeof assignRegionCountries>>>
+export type UpdateRegionCountryLocaleResult = NonNullable<Awaited<ReturnType<typeof updateRegionCountryLocale>>>
+export type RemoveRegionCountryResult = NonNullable<Awaited<ReturnType<typeof removeRegionCountry>>>
