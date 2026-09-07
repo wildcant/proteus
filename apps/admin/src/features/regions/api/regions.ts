@@ -11,7 +11,11 @@ import { createRegion, getRegion, listRegions, updateRegion } from '#/api/genera
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
-const regionKeys = queryKeysFactory<'regions', ListRegionsParams>('regions')
+/**
+ * Exported because the country screens invalidate it too: assigning or removing a country changes
+ * what the region's own card lists, so both caches move together.
+ */
+export const regionKeys = queryKeysFactory<'regions', ListRegionsParams>('regions')
 
 export const regionsListQueryOptions = (params?: ListRegionsParams) =>
   queryOptions({

@@ -2,6 +2,10 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { authHeader } from '@tests/utils/auth-header.js'
+import countryDefinitions from '../../countries/definitions.js'
+import type * as countryRoutes from '../../countries/route.js'
+import type * as regionCountryRoutes from '../[id]/countries/[code]/route.js'
+import type * as regionCountriesRoutes from '../[id]/countries/route.js'
 import type * as regionByIdRoutes from '../[id]/route.js'
 import regionDefinitions from '../definitions.js'
 import type * as regionRoutes from '../route.js'
@@ -18,8 +22,11 @@ const STRIPE_PROVIDER_ID = 'pp_stripe_default'
 
 let api: TestApi
 
+// The country list route is mounted alongside the region routes because it is how the region's
+// Countries card reads its rows — asserting on `regionId` and `localeCode` through it is asserting
+// on what that card actually shows, rather than on a projection only this test knows about.
 test.beforeEach(async ({ createApi }) => {
-  api = await createApi({ definitions: regionDefinitions })
+  api = await createApi({ definitions: [...regionDefinitions, ...countryDefinitions] })
 })
 
 /** ILLO-47's two markets as store currencies. A region may only be denominated in one of these. */
@@ -37,6 +44,23 @@ const getRegion = (id: string) => api.get<typeof regionByIdRoutes.GetOutput>(`/a
 
 const updateRegion = (id: string, body: object) =>
   api.post<typeof regionByIdRoutes.PostOutput>(`/admin/regions/${id}`, body)
+
+const assignCountries = (id: string, body: object) =>
+  api.post<typeof regionCountriesRoutes.PostOutput>(`/admin/regions/${id}/countries`, body)
+
+const updateCountryLocale = (id: string, code: string, body: object) =>
+  api.post<typeof regionCountryRoutes.PostOutput>(`/admin/regions/${id}/countries/${code}`, body)
+
+const listCountries = async (query?: Record<string, unknown>) => {
+  const { body } = await api.get<typeof countryRoutes.GetOutput>(
+    '/admin/countries',
+    undefined,
+    query ? { query } : undefined,
+  )
+  return body.countries
+}
+
+const listRegionCountries = (regionId: string) => listCountries({ regionId })
 
 test.describe('POST /admin/regions', () => {
   test('creates a region with a name, a currency and the providers it offers', async ({ expect, factories }) => {
@@ -240,7 +264,15 @@ test.describe('region routes', () => {
   test('expose no way to delete a region', ({ expect }) => {
     // A region owns live carts, orders and prices. Nothing in this feature makes removing one
     // safe, so the absence of a DELETE is the decision, not an omission.
-    expect(regionDefinitions.map((definition) => definition.method)).not.toContain('DELETE')
+    //
+    // Scoped to the region's own matchers, because `/admin/regions/:id/countries/:code` does have
+    // one: unassigning a country closes a market the region still exists to serve, which is the
+    // reversible half of the decision above.
+    const regionItself = regionDefinitions.filter(
+      (definition) => definition.matcher === '/admin/regions' || definition.matcher === '/admin/regions/:id',
+    )
+
+    expect(regionItself.map((definition) => definition.method)).not.toContain('DELETE')
   })
 
   test('refuse a request carrying no credential', async ({ expect, createApi, factories }) => {
@@ -254,5 +286,275 @@ test.describe('region routes', () => {
 
     expect(anonymous.status).toBe(401)
     expect(staff.status).toBe(200)
+  })
+})
+
+test.describe('POST /admin/regions/:id/countries', () => {
+  test('makes a country sellable: region and locale are both set by the one request', async ({ expect, factories }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia' })
+
+    const { status, body } = await assignCountries(region.id, {
+      countries: [{ id: 'co', localeCode: 'es-CO' }],
+    })
+
+    expect(status).toBe(200)
+    expect(body.countries).toEqual([{ id: 'co', displayName: 'Colombia', regionId: region.id, localeCode: 'es-CO' }])
+    expect((await getRegion(region.id)).body.region.countries).toEqual([{ id: 'co', displayName: 'Colombia' }])
+  })
+
+  test('refuses an assignment carrying no locale, and assigns nothing', async ({ expect, factories }) => {
+    // The rejection this whole route exists for. `regionId` is what makes a country sellable and
+    // `localeCode` is what its storefront's URL segment, `lang` attribute and every number and date
+    // formatter come from — so a country assigned without one is a market that renders broken, and
+    // the admin must not be the path that produces one.
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia' })
+
+    const { status, body } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries`, {
+      countries: [{ id: 'co' }],
+    })
+
+    expect(status).toBe(400)
+    expect(body.type).toBe(ErrorTypes.INVALID_DATA)
+    expect((await getRegion(region.id)).body.region.countries).toEqual([])
+  })
+
+  test('refuses a locale that is empty or only whitespace', async ({ expect, factories }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia' })
+
+    const empty = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries`, {
+      countries: [{ id: 'co', localeCode: '' }],
+    })
+    const blank = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries`, {
+      countries: [{ id: 'co', localeCode: '   ' }],
+    })
+
+    expect(empty.status).toBe(400)
+    expect(blank.status).toBe(400)
+    expect((await getRegion(region.id)).body.region.countries).toEqual([])
+  })
+
+  test('refuses a locale that is not a well-formed BCP 47 tag, and assigns nothing', async ({ expect, factories }) => {
+    // `es_CO` is the POSIX form and the most ordinary locale typo there is — non-empty, five
+    // characters, and past every length check. What it costs is not a mis-formatted price: the
+    // storefront would list Colombia as sellable and hand that tag to `Intl.NumberFormat`, which
+    // throws on every priced page in the market. Length was never the property worth checking.
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia' })
+
+    const { status, body } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries`, {
+      countries: [{ id: 'co', localeCode: 'es_CO' }],
+    })
+
+    expect(status).toBe(400)
+    expect(body.type).toBe(ErrorTypes.INVALID_DATA)
+    expect((await getRegion(region.id)).body.region.countries).toEqual([])
+  })
+
+  test('accepts the BCP 47 tags a market legitimately needs, not only language-REGION', async ({
+    expect,
+    factories,
+  }) => {
+    // The other half of the check: it narrows the field to what a formatter takes and no further.
+    // A variant subtag, a script subtag and a UN M.49 region are all tags a real market runs on.
+    const region = await factories.create.region({ name: 'Europe', currencyCode: 'eur' })
+    await factories.create.country({ id: 'es', displayName: 'Spain' })
+    await factories.create.country({ id: 'rs', displayName: 'Serbia' })
+    await factories.create.country({ id: 'ar', displayName: 'Argentina' })
+
+    const { status, body } = await assignCountries(region.id, {
+      countries: [
+        { id: 'es', localeCode: 'ca-ES-valencia' },
+        { id: 'rs', localeCode: 'sr-Latn-RS' },
+        { id: 'ar', localeCode: 'es-419' },
+      ],
+    })
+
+    expect(status).toBe(200)
+    expect(body.countries.map((country) => country.localeCode)).toEqual(['ca-ES-valencia', 'sr-Latn-RS', 'es-419'])
+  })
+
+  test('accepts the country code in any case, since every country row carries the lowercase form', async ({
+    expect,
+    factories,
+  }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia' })
+
+    const { status, body } = await assignCountries(region.id, { countries: [{ id: 'CO', localeCode: 'es-CO' }] })
+
+    expect(status).toBe(200)
+    expect(body.countries[0]?.id).toBe('co')
+  })
+
+  test('refuses a country another region already sells to, and leaves it where it was', async ({
+    expect,
+    factories,
+  }) => {
+    const europe = await factories.create.region({ name: 'Europe', currencyCode: 'eur' })
+    const nordics = await factories.create.region({ name: 'Nordics', currencyCode: 'eur' })
+    await factories.create.country({ id: 'dk', displayName: 'Denmark', regionId: europe.id, localeCode: 'da-DK' })
+
+    const { status, body } = await api.post<ApiErrorBody>(`/admin/regions/${nordics.id}/countries`, {
+      countries: [{ id: 'dk', localeCode: 'da-DK' }],
+    })
+
+    expect(status).toBe(409)
+    expect(body.type).toBe(ErrorTypes.CONFLICT)
+    expect((await getRegion(europe.id)).body.region.countries).toEqual([{ id: 'dk', displayName: 'Denmark' }])
+  })
+
+  test('assigns none of them when one country in the batch is refused', async ({ expect, factories }) => {
+    // Every country is its own compensating step, so a batch that fails halfway is unwound rather
+    // than left half-applied — a merchant reading the table afterwards sees what they asked for or
+    // nothing at all, never some of it.
+    const europe = await factories.create.region({ name: 'Europe', currencyCode: 'eur' })
+    const nordics = await factories.create.region({ name: 'Nordics', currencyCode: 'eur' })
+    await factories.create.country({ id: 'se', displayName: 'Sweden' })
+    await factories.create.country({ id: 'dk', displayName: 'Denmark', regionId: europe.id, localeCode: 'da-DK' })
+
+    const { status } = await api.post<ApiErrorBody>(`/admin/regions/${nordics.id}/countries`, {
+      countries: [
+        { id: 'se', localeCode: 'sv-SE' },
+        { id: 'dk', localeCode: 'da-DK' },
+      ],
+    })
+
+    expect(status).toBe(409)
+    expect((await getRegion(nordics.id)).body.region.countries).toEqual([])
+  })
+
+  test('re-assigning a country already in this region repoints its locale', async ({ expect, factories }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia', regionId: region.id, localeCode: 'en-CO' })
+
+    const { status, body } = await assignCountries(region.id, { countries: [{ id: 'co', localeCode: 'es-CO' }] })
+
+    expect(status).toBe(200)
+    expect(body.countries[0]?.localeCode).toBe('es-CO')
+  })
+
+  test('an unknown region is a 404, and an unknown country code is too', async ({ expect, factories }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia' })
+
+    const unknownRegion = await api.post<ApiErrorBody>('/admin/regions/reg_missing/countries', {
+      countries: [{ id: 'co', localeCode: 'es-CO' }],
+    })
+    // The ISO 3166-1 table ships whole and is never authored, so a code naming no row is a client
+    // sending a country that does not exist, not a country to create.
+    const unknownCountry = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries`, {
+      countries: [{ id: 'zz', localeCode: 'en-ZZ' }],
+    })
+
+    expect(unknownRegion.status).toBe(404)
+    expect(unknownCountry.status).toBe(404)
+  })
+})
+
+test.describe('POST /admin/regions/:id/countries/:code', () => {
+  test('repoints a country to another locale', async ({ expect, factories }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia', regionId: region.id, localeCode: 'en-CO' })
+
+    const { status, body } = await updateCountryLocale(region.id, 'co', { localeCode: 'es-CO' })
+
+    expect(status).toBe(200)
+    expect(body.country).toEqual({ id: 'co', displayName: 'Colombia', regionId: region.id, localeCode: 'es-CO' })
+  })
+
+  test('refuses an empty locale, so an edit cannot break what an assignment could not', async ({
+    expect,
+    factories,
+  }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia', regionId: region.id, localeCode: 'es-CO' })
+
+    const { status } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries/co`, { localeCode: '  ' })
+
+    expect(status).toBe(400)
+    expect((await listRegionCountries(region.id))[0]?.localeCode).toBe('es-CO')
+  })
+
+  test('refuses a locale that is not a well-formed BCP 47 tag, and leaves the market as it was', async ({
+    expect,
+    factories,
+  }) => {
+    // This route is the reachable path for the typo: its own copy invites a merchant to retype the
+    // field. An edit that can strand a live market defeats the assignment's guarantee from the
+    // other direction, so the same primitive refuses it here.
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia', regionId: region.id, localeCode: 'es-CO' })
+
+    const { status, body } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}/countries/co`, {
+      localeCode: 'es_CO',
+    })
+
+    expect(status).toBe(400)
+    expect(body.type).toBe(ErrorTypes.INVALID_DATA)
+    expect((await listRegionCountries(region.id))[0]?.localeCode).toBe('es-CO')
+  })
+
+  test('a country another region sells to is not this one to edit', async ({ expect, factories }) => {
+    const europe = await factories.create.region({ name: 'Europe', currencyCode: 'eur' })
+    const nordics = await factories.create.region({ name: 'Nordics', currencyCode: 'eur' })
+    await factories.create.country({ id: 'dk', displayName: 'Denmark', regionId: europe.id, localeCode: 'da-DK' })
+
+    const { status } = await api.post<ApiErrorBody>(`/admin/regions/${nordics.id}/countries/dk`, {
+      localeCode: 'en-DK',
+    })
+
+    expect(status).toBe(404)
+    expect((await listRegionCountries(europe.id))[0]?.localeCode).toBe('da-DK')
+  })
+})
+
+test.describe('DELETE /admin/regions/:id/countries/:code', () => {
+  test('closes the market: the country keeps neither its region nor its locale', async ({ expect, factories }) => {
+    // Both columns, not only `regionId`. A country left holding a locale it is not sellable in
+    // reads as a half-open market to everything that inspects it, the next assignment included.
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', displayName: 'Colombia', regionId: region.id, localeCode: 'es-CO' })
+
+    const { status, body } = await api.delete<typeof regionCountryRoutes.DeleteOutput>(
+      `/admin/regions/${region.id}/countries/co`,
+    )
+
+    expect(status).toBe(200)
+    expect(body).toEqual({ id: 'co', deleted: true })
+    expect((await getRegion(region.id)).body.region.countries).toEqual([])
+    expect((await listCountries({ q: 'co' })).find((country) => country.id === 'co')).toEqual({
+      id: 'co',
+      displayName: 'Colombia',
+      regionId: null,
+      localeCode: null,
+    })
+  })
+
+  test('removes several one at a time, which is what the table does with a bulk selection', async ({
+    expect,
+    factories,
+  }) => {
+    const region = await factories.create.region({ name: 'Europe', currencyCode: 'eur' })
+    await factories.create.country({ id: 'dk', displayName: 'Denmark', regionId: region.id, localeCode: 'da-DK' })
+    await factories.create.country({ id: 'fr', displayName: 'France', regionId: region.id, localeCode: 'fr-FR' })
+
+    await api.delete(`/admin/regions/${region.id}/countries/dk`)
+    await api.delete(`/admin/regions/${region.id}/countries/fr`)
+
+    expect((await getRegion(region.id)).body.region.countries).toEqual([])
+  })
+
+  test('a country another region sells to is not this one to remove', async ({ expect, factories }) => {
+    const europe = await factories.create.region({ name: 'Europe', currencyCode: 'eur' })
+    const nordics = await factories.create.region({ name: 'Nordics', currencyCode: 'eur' })
+    await factories.create.country({ id: 'dk', displayName: 'Denmark', regionId: europe.id, localeCode: 'da-DK' })
+
+    const { status } = await api.delete<ApiErrorBody>(`/admin/regions/${nordics.id}/countries/dk`)
+
+    expect(status).toBe(404)
+    expect((await getRegion(europe.id)).body.region.countries).toEqual([{ id: 'dk', displayName: 'Denmark' }])
   })
 })

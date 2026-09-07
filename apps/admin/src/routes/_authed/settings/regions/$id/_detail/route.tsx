@@ -7,6 +7,7 @@ import { SectionRow } from '#/components/common/section-row'
 import { SingleColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
 import { regionQueryOptions } from '#/features/regions/api/regions'
+import { RegionCountriesCard } from '#/features/regions/components/region-countries-card'
 import { paymentProviderLabel } from '#/features/regions/utils/payment-provider-label'
 
 export const Route = createFileRoute('/_authed/settings/regions/$id/_detail')({
@@ -49,6 +50,7 @@ function RegionDetailLayout() {
           }
         />
       </Card>
+      <RegionCountriesCard regionId={region.id} />
     </PageLayout.SingleColumn>
   )
 }

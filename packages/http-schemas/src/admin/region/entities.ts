@@ -39,3 +39,26 @@ export const AdminRegion = z
   })
   .openapi('AdminRegion')
 export type AdminRegion = z.input<typeof AdminRegion>
+
+/**
+ * A country as the admin's country screens list it: the ISO row, the region that sells to it, and
+ * the locale that region's storefront runs in.
+ *
+ * Wider than `AdminRegionCountry`, and deliberately a separate shape rather than an extension of
+ * it. That one answers "which countries does this region cover"; this one answers "what is the
+ * store's relationship with this country", which is why it carries `regionId` — the picker needs
+ * to know which countries are already spoken for, and `null` is what says a country is not
+ * sellable anywhere yet.
+ */
+export const AdminCountry = z
+  .object({
+    /** ISO 3166-1 alpha-2, lowercased — the country table's own primary key. */
+    id: z.string(),
+    displayName: z.string(),
+    /** The region that sells to this country, or `null` when the store does not sell there. */
+    regionId: z.string().nullable(),
+    /** BCP 47 tag, e.g. `es-CO`. Set exactly when `regionId` is. */
+    localeCode: z.string().nullable(),
+  })
+  .openapi('AdminCountry')
+export type AdminCountry = z.input<typeof AdminCountry>
