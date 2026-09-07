@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAmount, formatPrice, getCurrencySymbol } from './pricing.ts'
+import { formatAmount, formatPrice, getCurrencyName, getCurrencySymbol } from './pricing.ts'
 
 /**
  * Two claims, and the first is the one that protects the admin: omitting the locale has to keep
@@ -56,5 +56,26 @@ describe('formatAmount', () => {
 
   it('returns the input untouched when it is not a number', () => {
     expect(formatAmount('not a price', 'usd')).toBe('not a price')
+  })
+})
+
+describe('getCurrencyName', () => {
+  it('names the currency in words, which is what a bare code does not', () => {
+    expect(getCurrencyName('eur')).toBe('Euro')
+    expect(getCurrencyName('usd')).toBe('US Dollar')
+    expect(getCurrencyName('cop')).toBe('Colombian Peso')
+  })
+
+  it('takes the code in either case, since prices carry the lowercase form', () => {
+    expect(getCurrencyName('COP')).toBe(getCurrencyName('cop'))
+  })
+
+  it('names it in the given locale', () => {
+    expect(getCurrencyName('cop', 'es-CO')).not.toBe(getCurrencyName('cop', 'en-US'))
+  })
+
+  it('falls back to the uppercased code when the runtime knows no name for it', () => {
+    // Not a real ISO 4217 code. A label is still wanted — the region editor has a row to fill.
+    expect(getCurrencyName('zzz')).toBe('ZZZ')
   })
 })
