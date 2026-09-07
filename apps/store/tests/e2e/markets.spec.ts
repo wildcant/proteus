@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import type { Page } from '@playwright/test'
 import { BACKEND_TIMEOUT } from '@proteus/testing'
 import { expect, test } from '../setup/test-extend.js'
 import { disposeCartAfterTest, placeOrder } from '../setup/utils.js'
@@ -13,6 +14,23 @@ import { disposeCartAfterTest, placeOrder } from '../setup/utils.js'
  */
 const DEFAULT_MARKET = 'en-US'
 const SECOND_MARKET = 'es-CO'
+/** How the second market is listed. The control names markets the way a shopper reads them. */
+const SECOND_MARKET_NAME = 'Colombia'
+
+/** The footer's market control, opened. A menu rather than a `<select>`, so its rows are on the
+ *  page only while it is open — every assertion about them opens it first. */
+function openMarketMenu(page: Page) {
+  return page
+    .locator('footer')
+    .getByRole('button', { name: /^Market:/ })
+    .click()
+}
+
+/** Switches market by name, which is the only thing a row shows. */
+async function switchMarket(page: Page, displayName: string) {
+  await openMarketMenu(page)
+  await page.getByRole('menuitem', { name: displayName }).click()
+}
 
 test.describe('Markets', () => {
   test('both markets render the storefront under their own locale code', async ({ page }) => {
@@ -89,10 +107,8 @@ test.describe('Market control', () => {
     // The seeded markets, sorted by display name the way the country endpoint returns them.
     // Exhaustive on purpose: a control offering a market the store does not sell in quotes a
     // currency nobody configured, and it is this list that would have to grow for that to happen.
-    await expect(page.locator('footer').getByLabel('Market').locator('option')).toHaveText([
-      'Colombia',
-      'United States',
-    ])
+    await openMarketMenu(page)
+    await expect(page.getByRole('menuitem')).toHaveText(['Colombia', 'United States'])
   })
 
   test('switches market as a document navigation, keeping the path and its search', async ({
@@ -108,7 +124,7 @@ test.describe('Market control', () => {
     await navigate({ to: '/', search: { q: term } })
     await expect(page).toHaveURL(`/${DEFAULT_MARKET}?q=${term}`)
 
-    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await switchMarket(page, SECOND_MARKET_NAME)
 
     // The same page, in the other market: the search survives the switch, so a shopper does not
     // lose what they were looking at to change where they are buying from.
@@ -145,7 +161,7 @@ test.describe('Market control', () => {
     const card = page.locator('main').getByRole('link').filter({ hasText: product.title })
     await expect(card).toContainText('$25.00')
 
-    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await switchMarket(page, SECOND_MARKET_NAME)
     await expect(page).toHaveURL(`/${SECOND_MARKET}?q=${term}`)
 
     // Colombian grouping — a dot where the American form puts a comma — around the peso amount,
@@ -187,7 +203,7 @@ test.describe('Market control', () => {
     await expect(cartPanel.getByText(product.title)).toBeVisible()
     await page.keyboard.press('Escape')
 
-    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await switchMarket(page, SECOND_MARKET_NAME)
     await expect(page.locator('html')).toHaveAttribute('lang', SECOND_MARKET)
 
     // The bag still carries what was put in it — the claim this test owns. What the bag is
@@ -241,7 +257,7 @@ test.describe('Market dates', () => {
     // Month first and spelled out — the American form.
     await expect(orderRow).toContainText(/[A-Z][a-z]{2} \d{1,2}, \d{4}/)
 
-    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await switchMarket(page, SECOND_MARKET_NAME)
     await expect(page).toHaveURL(`/${SECOND_MARKET}/account`)
 
     // The same order, day first and numeric — and no longer anything an American reader could
@@ -289,7 +305,7 @@ test.describe('Cart across markets', () => {
     await expect(cartPanel).toContainText('$25.00')
     await page.keyboard.press('Escape')
 
-    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await switchMarket(page, SECOND_MARKET_NAME)
     await expect(page.locator('html')).toHaveAttribute('lang', SECOND_MARKET)
 
     const bag = page.locator('header').getByLabel('Cart')
@@ -352,7 +368,7 @@ test.describe('Cart across markets', () => {
     await expect(page.locator('[data-slot="drawer-popup"]')).toContainText('$25.00')
     await page.keyboard.press('Escape')
 
-    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await switchMarket(page, SECOND_MARKET_NAME)
 
     // Told, by name, and told what the bag is still in — the shopper is standing in a market
     // their cart is not in, and nothing about the page would otherwise say so.
@@ -399,7 +415,7 @@ test.describe('Cart across markets', () => {
       await page.keyboard.press('Escape')
     }
 
-    await page.locator('footer').getByLabel('Market').selectOption(SECOND_MARKET)
+    await switchMarket(page, SECOND_MARKET_NAME)
     await expect(page.getByRole('alert')).toContainText(blocked.title, { timeout: BACKEND_TIMEOUT })
 
     // The refusal is not a dead end. Taking out the thing this market cannot sell is the shopper's

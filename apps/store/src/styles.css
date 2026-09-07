@@ -99,11 +99,12 @@
      the lifted dark blue fall under 4.5:1.
 
      This shadows shadcn's own --accent, which is a near-white hover surface paired with a
-     near-black --accent-foreground. Only DropdownMenu and Combobox consume that pair and
-     the store renders neither, so the names can coexist — but the first store screen to
-     import one of those needs --accent-foreground repointed here too, or its focused item
-     lands as near-black on brand blue. */
+     near-black --accent-foreground. Only DropdownMenu and Combobox consume that pair, and
+     the footer's market menu is the first of them to land in the store, so the foreground
+     is repointed below — left at shadcn's near-black, a focused item reads as near-black
+     on brand blue. */
   --accent: #004eba;
+  --accent-foreground: var(--surface);
   --sale: #dc0428;
   --positive: #009966;
 
