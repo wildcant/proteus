@@ -9,14 +9,13 @@ import { prepareOrderConfirmationData } from './prepare-order-confirmation-data.
  * The order confirmation, built from nothing but an order id.
  *
  * Reading the order rather than being handed it is what makes this callable from anywhere that
- * knows an order happened — a checkout step today, an `order.placed` subscriber next. An event
- * payload carries ids, not DTOs, so a builder that took an `OrderDTO` would push the same four
- * reads back into every caller.
+ * knows an order happened — the `order.placed` subscriber today, a checkout step before it. An
+ * event payload carries ids, not DTOs, so a builder that took an `OrderDTO` would push the same four
+ * reads back into every caller, and a delivery that arrived late would describe the order as it was
+ * rather than as it is.
  *
  * It returns the notification instead of sending it. Who sends, and what happens when the send
- * fails, is the caller's decision: checkout swallows the failure because the payment is already
- * authorized by the time it sends, while a subscriber wants the throw so the transport retries it.
- * Both need the same body.
+ * fails, is the caller's decision, and that is why this stops here.
  */
 export async function buildOrderConfirmationNotification(
   orderId: string,

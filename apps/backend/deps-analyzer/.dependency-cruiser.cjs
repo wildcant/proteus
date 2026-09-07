@@ -143,7 +143,7 @@ module.exports = {
       name: 'notifications-belong-to-neither',
       comment:
         'src/notifications/ holds what a notification *is*, separated from what decides to send it. ' +
-        'Its builders are called by a checkout step today and by an order.placed subscriber next, ' +
+        'Its builders are called by the order.placed subscriber and were called by a checkout step, ' +
         'so it sits under neither tree on purpose — a builder under src/workflows/ would mean the ' +
         'subscriber reaches into the workflow tree to send an email, and the reverse is as bad. ' +
         'Nothing enforced that placement until now: a README is not a rule, and the directory ' +

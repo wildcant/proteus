@@ -1,10 +1,12 @@
 import { env } from '@env'
 import { createWorkerContainer } from '@framework/runtime/container.worker.js'
 import { NativeConnection, Worker } from '@temporalio/worker'
+import { createTemporalClient } from '../../../temporal/client.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 import { subscriberRegistry } from '../registry.js'
 import { createEventActivities } from './activities.js'
 import { EVENTS_TASK_QUEUE } from './config.js'
+import { assertStandaloneActivitiesEnabled } from './preflight.js'
 
 /**
  * Events Worker entrypoint — `npm run --workspace=backend worker:events`.
@@ -25,6 +27,26 @@ import { EVENTS_TASK_QUEUE } from './config.js'
  * workflow code. The SDK logs "No workflows registered, not polling for workflow tasks" on boot,
  * which is the correct description of what this process is.
  */
+/**
+ * Before the container, because everything after it is pointless without it: a server with
+ * `activity.enableStandalone` off refuses every dispatch, and `emit` never rejects, so the whole
+ * deployment would drop every event with one log line each. See `preflight.ts` for why the check
+ * lives at boot, and here rather than in the API process.
+ *
+ * First, so a refusal is a process that never opened a database pool. Its own short-lived client
+ * too: the Worker's `NativeConnection` below polls and does not speak the workflow service, and the
+ * bus's client inside the container is built lazily on first publish, which this process never does.
+ */
+const preflight = await createTemporalClient()
+try {
+  await assertStandaloneActivitiesEnabled({
+    namespace: env.TEMPORAL_NAMESPACE,
+    describeActivityExecution: (request) => preflight.client.workflowService.describeActivityExecution(request),
+  })
+} finally {
+  await preflight.close()
+}
+
 const { container, shutdown } = await createWorkerContainer({ engine: 'temporal', eventBus: 'temporal' })
 
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS })
