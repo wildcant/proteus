@@ -26,12 +26,14 @@ export function paymentSessionStatusOf(intent: Stripe.PaymentIntent): PaymentSes
      *
      * Unconditional, not gated on the method type. The spec's asynchronous-method option decides
      * what the checkout *does* next — place the order now and let the webhook reconcile it, or
-     * wait — and that needs the subscriber that finishes an order once the webhook resolves. It
-     * does not change whether the provider has decided, which is all this table answers.
+     * wait. It does not change whether the provider has decided, which is all this table answers.
      *
-     * TODO(async-methods): the order-completing subscriber, and the provider option that lists
-     * which method types are asynchronous. Until then a `processing` intent fails the checkout
-     * loudly and correctly classified, rather than silently as a decline.
+     * The checkout still fails on a `processing` intent, loudly and correctly classified, and the
+     * `payment.captured` subscriber completes the cart once the webhook resolves — so the shopper
+     * ends with an order rather than a charge with nothing behind it.
+     *
+     * TODO(async-methods): the provider option that lists which method types are asynchronous, so a
+     * checkout can wait on screen for the ones that settle in seconds instead of being refused.
      */
     case 'processing':
       return 'pending_authorization'

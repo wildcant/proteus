@@ -23,15 +23,19 @@ import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
  * the same `unexpected_state`. So a shopper whose money was in flight got the checkout unwound as
  * though they had been declined, and nothing downstream could tell the two cases apart.
  *
- * **The assertion that moves red to green is the classification**, not the money. Before the fix
+ * **The assertion that moved red to green was the classification**, not the money. Before that fix
  * the completion request answered `type: "unexpected_state"` with `Payment authorization failed
  * for session "…"` — byte-identical to a decline. After it, the response carries its own authored
- * `code`. That is the whole of what changed, and the last block below records what did not.
+ * `code`.
+ *
+ * The last block is the second half, added when the event bus arrived: the classification made the
+ * case *distinguishable*, and the `payment.captured` subscriber makes it *survivable*. It used to
+ * assert the residual — charged, no order — and now asserts the fix.
  */
 test.describe('Checkout — a payment that is still settling', () => {
   test.describe.configure({ timeout: 120_000 })
 
-  test('is refused with its own code, distinct from a decline, and leaves no order', async ({
+  test('is refused with its own code, distinct from a decline, and becomes an order once it settles', async ({
     page,
     navigate,
     factories,
@@ -83,15 +87,19 @@ test.describe('Checkout — a payment that is still settling', () => {
     expect(await liveOrderIdsForCart(cartId)).toEqual([])
 
     // ---------------------------------------------------------------------------------------
-    // 4 · The residual, and what this ticket does NOT fix.
+    // 4 · The money arrives, and so does the order.
     //
-    // The intent settles, Stripe sends `payment_intent.succeeded`, and the webhook authorizes and
-    // captures the session — money taken, against a cart that has no order. Nothing re-runs cart
-    // completion, and the subscriber that would finish the order once the webhook resolves needs
-    // the event-bus work; it is deliberately out of scope here and belongs to its own follow-up.
+    // The intent settles, Stripe sends `payment_intent.succeeded`, and the route publishes
+    // `payment.captured`. The subscriber records the capture and re-runs cart completion for the
+    // cart behind the session, so the shopper who was refused above ends with the order they paid
+    // for rather than a charge with nothing behind it.
     //
-    // So this block is not an acceptance criterion. It is the end state ILLO-70 leaves in place,
-    // written down so the follow-up has a failing shape to aim at rather than a description.
+    // This block used to assert the opposite. It was written as the residual ILLO-70 left in place,
+    // a failing shape for this work to aim at — so the flip below is the acceptance criterion, and
+    // needs no new fixtures to be one.
+    //
+    // Polled rather than read once: the route acknowledges as soon as the event is published, and
+    // the subscriber runs on the transport's own time.
     // ---------------------------------------------------------------------------------------
     await settleIntentAtGateway(sessionId)
     await deliverWebhook(intentEventBody(await gatewayIntentForSession(sessionId), sessionId))
@@ -102,8 +110,14 @@ test.describe('Checkout — a payment that is still settling', () => {
     )
     expect(payment.capturedAt).not.toBeNull()
 
-    // Charged, and still no order. This is the bug that outlives this ticket.
-    expect(await liveOrderIdsForCart(cartId)).toEqual([])
+    const orderIds = await pollDatabase(async () => {
+      const ids = await liveOrderIdsForCart(cartId)
+      return ids.length > 0 ? ids : null
+    }, `The payment for cart "${cartId}" was captured but no order was created for it`)
+
+    // One order for one checkout, against one charge. Both halves matter: the completion ran twice
+    // for this cart — refused, then re-run — and `check-idempotency` is what keeps that one order.
+    expect(orderIds).toHaveLength(1)
   })
 })
 

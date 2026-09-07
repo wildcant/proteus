@@ -151,8 +151,9 @@ test.describe('completeCartWorkflow', () => {
       },
     })
 
-    // Both unwind. Finishing the order once the webhook resolves the settling intent needs a
-    // subscriber that does not exist yet — this ticket makes the case separable, not survivable.
+    // Both unwind, and that is still right here: the money is not committed at the point this
+    // workflow needs it. What happens to the settling one afterwards belongs to the
+    // `payment.captured` subscriber, which re-runs this workflow once the capture lands.
     expect(await service.read.orders(container)).toEqual([])
   })
 

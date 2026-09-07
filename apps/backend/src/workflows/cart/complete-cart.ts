@@ -418,9 +418,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
          *  not pay. Its own `code` so the two are separable in a response body and in an alert,
          *  distinct from the [PaymentErrorCodes.DECLINED] a refused card answers with.
          *
-         *  It is still a failure, and the workflow still unwinds. Finishing the order once the
-         *  webhook resolves needs a subscriber that does not exist yet, so until it does this
-         *  fails loudly and correctly classified rather than quietly as a decline. */
+         *  It is still a failure, and the workflow still unwinds — there is no order to build on
+         *  money the provider has not committed. What finishes the job is the `payment.captured`
+         *  subscriber: when the capture lands it re-runs this workflow for the same cart, and
+         *  `check-idempotency` is what keeps that one order rather than two. */
         if (authorization.outcome === 'pending_authorization') {
           throw new WorkflowTerminalError({
             type: ErrorTypes.CONFLICT,

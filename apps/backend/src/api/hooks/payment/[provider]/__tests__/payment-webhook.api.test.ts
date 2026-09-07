@@ -1,13 +1,17 @@
 import { BigNumber } from '@core/bignumber.js'
+import type { EventBus } from '@core/event-bus/types.js'
 import type { IPaymentModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import { PaymentErrorCodes } from '@core/types/payment/errors.js'
+import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { env } from '@env'
 import { type FakeIntent, signWebhook, stripeGateway, webhookEventBody } from '@tests/mocks/stripe.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
+import { completeCartWorkflow } from '@workflows/cart/complete-cart.js'
 import Stripe from 'stripe'
+import type { ExpectStatic } from 'vitest'
 import { vi } from 'vitest'
 import hookDefinitions from '../../../definitions.js'
 
@@ -69,6 +73,20 @@ const succeededEvent = (intent: FakeIntent) =>
     amount_capturable: 0,
   })
 
+/**
+ * Finishes the intent at the gateway, as Stripe does before it sends the event.
+ *
+ * The webhook is not the source of truth about the intent — `authorizePaymentSession` re-reads it —
+ * so a `succeeded` event delivered against an intent the fake still holds as `processing` would
+ * authorize nothing.
+ */
+function settleAtGateway(intent: FakeIntent): FakeIntent {
+  intent.status = 'succeeded'
+  intent.amount_received = intent.amount
+  intent.amount_capturable = 0
+  return intent
+}
+
 /** The payment behind a session, with its captures. */
 async function paymentFor(service: Fixtures['service'], paymentCollectionId: string) {
   const collection = await service.read.paymentCollection(api.container, paymentCollectionId)
@@ -118,6 +136,30 @@ test.describe('POST /hooks/payment/:provider', () => {
     const payment = await paymentFor(service, session.paymentCollectionId)
     expect(payment.capturedAt).not.toBeNull()
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
+  })
+
+  /**
+   * The route's whole job, and the assertion that it is the whole job.
+   *
+   * With the publish intercepted, nothing downstream runs — and nothing happens. That is the point:
+   * the state transition is a subscriber's, so it survives this process dying and retries on its own
+   * bounded budget instead of waiting for Stripe to redeliver, which used to be the only retry there
+   * was. Every other test in this file sees the capture because the suite pins the in-process
+   * adapter, which runs the subscriber inside `emit`.
+   */
+  test('publishes what the provider reported and does nothing else itself', async ({ service, expect }) => {
+    const { session, intent } = await authorizedOrder(service)
+    const bus = api.container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit').mockResolvedValue(undefined)
+
+    const body = succeededEvent(intent)
+    const response = await postWebhook(body, signedHeaders(body))
+
+    expect(response.status).toBe(200)
+    // The session's id, not the intent's: the payload names the resource this backend owns, and it
+    // is what the payment, the collection and the cart behind it are all reachable through.
+    expect(emit).toHaveBeenCalledExactlyOnceWith('payment.captured', { id: session.id, action: 'captured' })
+    expect(await paymentFor(service, session.paymentCollectionId)).toMatchObject({ capturedAt: null })
   })
 
   test('captures once when the same event is delivered twice', async ({ service, expect }) => {
@@ -212,7 +254,7 @@ test.describe('POST /hooks/payment/:provider', () => {
 
 /**
  * Stripe emits `payment_intent.succeeded` the moment the browser confirms — typically while the
- * shopper's own checkout is still running — so this route and `complete-cart` reach
+ * shopper's own checkout is still running — so the subscriber and `complete-cart` reach
  * `authorizePaymentSession` together. Its guard reads the session's payment and then writes one,
  * with nothing atomic between the two, and the unique index on the payment's session id is what
  * makes the residual overlap fail rather than write a second row.
@@ -239,10 +281,12 @@ test.describe('POST /hooks/payment/:provider — losing the race to checkout', (
     const body = succeededEvent(intent)
     const response = await postWebhook(body, signedHeaders(body))
 
-    // 422, so Stripe redelivers rather than being told the event is done with.
-    expect(response.status).toBe(422)
-    // And the intent is untouched. Cancelling it here would void the authorization the winner's
-    // order was placed against — money lost, on a request that changed nothing.
+    // 200: the event was published, and the delivery that failed under it is the transport's to
+    // retry. Answering non-2xx would ask Stripe to redeliver work that is already queued, which is
+    // a second delivery rather than a retry — and would eventually disable the endpoint.
+    expect(response.status).toBe(200)
+    // The intent is untouched. Cancelling it here would void the authorization the winner's order
+    // was placed against — money lost, on a delivery that changed nothing.
     expect(stripeGateway.callsTo('paymentIntents.cancel')).toEqual([])
     // One payment for the session, still checkout's.
     const collection = await service.read.paymentCollection(api.container, paymentCollectionId)
@@ -251,9 +295,10 @@ test.describe('POST /hooks/payment/:provider — losing the race to checkout', (
 })
 
 /**
- * Processing is inline, so a failure the gateway caused reaches the gateway. There is no retry
- * ladder above the route any more — the interim runner that had one was dropped in favour of the
- * event bus — which leaves the adapter's own retry and, past that, Stripe's redelivery.
+ * A gateway failure is now a *subscriber* failure, so what answers it is the transport's bounded
+ * retry rather than Stripe's redelivery. The route has already acknowledged by then, which is the
+ * whole change: webhook processing survives this process dying, and a failure retries without the
+ * gateway having to send the event again.
  */
 test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
   test('absorbs a blip, because the adapter rides it out under one idempotency key', async ({ service, expect }) => {
@@ -261,7 +306,7 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
     const body = succeededEvent(intent)
 
     // Down for one attempt. The adapter retries a `retry`-classified error itself, so a single
-    // transient failure must not be the end of the capture even with nothing retrying above it.
+    // transient failure must not be the end of the capture even before the transport's retry.
     stripeGateway.failNext('paymentIntents.capture', connectionError())
 
     const response = await postWebhook(body, signedHeaders(body))
@@ -271,7 +316,7 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
   })
 
-  test('is reported when the adapter cannot ride it out, so the gateway redelivers', async ({ service, expect }) => {
+  test('is acknowledged even when the adapter cannot ride it out, and takes no money', async ({ service, expect }) => {
     const { session, intent } = await authorizedOrder(service)
     const body = succeededEvent(intent)
 
@@ -280,13 +325,89 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
 
     const response = await postWebhook(body, signedHeaders(body))
 
-    // 503, not 200: a 2xx tells Stripe the event is done with and it stops sending it, which
-    // would lose the capture outright. The capture row rolls back with the transaction, so the
-    // redelivery finds the authorization exactly as it was.
-    expect(response.status).toBe(503)
+    // 200, because the event reached the transport: a non-2xx would report a delivery failure the
+    // route did not have, and the retry that matters is the subscriber's. The suite's in-process
+    // adapter has none, so what this pins is the other half — nothing was half-taken. The capture
+    // row rolls back with the transaction, so the next attempt finds the authorization as it was.
+    expect(response.status).toBe(200)
     const payment = await paymentFor(service, session.paymentCollectionId)
     expect(payment.capturedAt).toBeNull()
     expect(payment.captures ?? []).toEqual([])
+  })
+})
+
+/**
+ * The bug this ticket exists to close: a shopper charged with no order.
+ *
+ * A payment method that settles asynchronously — a bank redirect, ACH, a card the issuer holds for
+ * review — leaves the intent `processing` when the shopper presses Place order. `authorize-payment`
+ * correctly refuses, the whole checkout compensates, and then the money arrives. Nothing used to
+ * re-run completion, so the charge stood against a cart with no order behind it.
+ *
+ * Driven through the API harness rather than by calling the subscriber: what has to be true is that
+ * a signed webhook, arriving at the real route, ends with an order — every hop in between included.
+ */
+test.describe('POST /hooks/payment/:provider — a payment that settled after checkout was refused', () => {
+  /** A checkout refused with the money already in flight, exactly as `complete-cart` leaves one. */
+  async function refusedWhileSettling(service: Fixtures['service'], expect: ExpectStatic) {
+    stripeGateway.statusOnCreate = 'processing'
+
+    const checkout = await service.create.checkoutReadyCart(api.container, {
+      cart: { currencyCode: 'usd' },
+      payment: { providerId: STRIPE_PROVIDER },
+    })
+    const session = checkout.paymentSession
+    assertDefined(session)
+
+    await expect(completeCartWorkflow.run({ cartId: checkout.cart.id })).rejects.toMatchObject({
+      cause: { code: PaymentErrorCodes.AWAITING_AUTHORIZATION },
+    })
+    expect(await service.read.orders(api.container)).toEqual([])
+
+    const intent = stripeGateway.intentForSession(session.id)
+    assertDefined(intent)
+
+    return { ...checkout, session, intent }
+  }
+
+  test('ends with one order, one charge, and the same confirmation everyone else gets', async ({ service, expect }) => {
+    const { cart, session, intent, total } = await refusedWhileSettling(service, expect)
+
+    const body = succeededEvent(settleAtGateway(intent))
+    const response = await postWebhook(body, signedHeaders(body))
+
+    expect(response.status).toBe(200)
+
+    // An order, reached through the link `check-idempotency` reads — the same definition of "an
+    // order exists" the workflow itself uses.
+    const orderLink = await service.read.linkRepo(api.container, 'orderCart').findByCartId(cart.id)
+    expect(orderLink).toMatchObject({ orderId: expect.any(String) })
+    expect(await service.read.orders(api.container)).toHaveLength(1)
+
+    // Charged once, for what the cart came to.
+    const payment = await paymentFor(service, session.paymentCollectionId)
+    expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
+
+    // And the confirmation, with no second code path to keep in step: the re-run publishes
+    // `order.placed` from the same final step the synchronous checkout does.
+    expect(await service.read.notifications(api.container, { channel: 'email' })).toMatchObject([
+      { template: 'order-confirmation', resourceId: orderLink?.orderId },
+    ])
+  })
+
+  test('makes no second order when the same capture is delivered twice', async ({ service, expect }) => {
+    const { cart, intent } = await refusedWhileSettling(service, expect)
+
+    const body = succeededEvent(settleAtGateway(intent))
+    const first = await postWebhook(body, signedHeaders(body))
+    const second = await postWebhook(body, signedHeaders(body))
+
+    expect([first.status, second.status]).toEqual([200, 200])
+    // `check-idempotency` answers the second one with the order the first made. That is why this is
+    // a re-run of checkout rather than a completion path of its own — a second path would need a
+    // second answer to the same question, and the two would drift.
+    expect(await service.read.orders(api.container)).toHaveLength(1)
+    expect(await service.read.cart(api.container, cart.id)).toMatchObject({ completedAt: expect.any(Date) })
   })
 })
 

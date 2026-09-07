@@ -73,8 +73,9 @@ The name and the payload are then checked at compile time, so a typo is a build 
 an event nobody receives.
 
 Add an event **because a subscriber wants it**. A catalogue of names nothing consumes is one nobody
-can safely delete from. `order.placed` arrived with `src/subscribers/send-order-confirmation.ts`,
-which is the shape to copy.
+can safely delete from. `order.placed` arrived with `src/subscribers/send-order-confirmation.ts`
+and `payment.captured` with `src/subscribers/process-payment-captured.ts`; either is the shape to
+copy.
 
 Publish it from a workflow's **final step**, and derive its id from something an earlier step
 already recorded. A step that retries runs its action again: an id minted inside the action is a new
@@ -93,7 +94,10 @@ transport sees two distinct events, the subscriber runs twice.
 
 The derived key means *once per resource*, which is correct for an order being placed and wrong for
 an event that can legitimately fire twice against one thing. That is what the extractor is for, and
-why one exists before the event that needs it does.
+`payment.captured` is the first production event to need it: one session can be authorized and then
+captured, so keying on the session alone would dedup the capture into the authorization and never
+deliver it. A *redelivery* of either still keys identically, which is what makes a repeat of one
+webhook a duplicate rather than a second capture.
 
 ## Subscribers must be idempotent
 
@@ -260,3 +264,29 @@ event name, the key derived from the payload, and the subscriber's own name.
 adapters' do: `src/subscribers/__tests__/` covers what the handler does with one delivery, and
 `src/workflows/cart/__tests__/complete-cart.test.ts` covers that checkout publishes at all — and
 publishes nothing when it unwinds.
+
+`process-payment-captured` splits the same way, one layer up: `src/subscribers/__tests__/` covers what
+one delivery does, and `src/api/hooks/payment/[provider]/__tests__/payment-webhook.api.test.ts` drives
+the whole arc through the real route — a signed webhook in, an order and one charge out. That file also
+pins the half that is easy to lose: with the publish intercepted, the route does *nothing*.
+
+## Subscribers, and what each one is for
+
+| Subscriber | Event | What it does |
+|---|---|---|
+| `send-order-confirmation` | `order.placed` | the shopper's confirmation, off checkout's critical path |
+| `process-payment-captured` | `payment.captured` | records what the provider reported, then re-runs cart completion for the cart behind the session |
+| `bus-probe` | `bus.probe`, `bus.probe.repeatable` | the bus's own round trip; no production behaviour rides on it |
+
+`process-payment-captured` is deliberately **one subscriber doing two things in sequence** rather than
+two on one event. Two subscribers run concurrently, so both would call `authorizePaymentSession` for
+the same session at once and the unique index on the payment's session id would make one lose — which
+converges on a retry on a real transport, and is nothing at all under the in-process adapter. In
+sequence there is no race to converge from. The cost is that a completion failure retries the whole
+unit, re-running a capture that already succeeded; that re-run is a no-op against `capturedAt`.
+
+## Decisions
+
+- **ADR-0023** — this design: the port, the three adapters, the two delivery guarantees, the runtime
+  split, the lost-emit residual, the standalone-activities preview risk and its fallback.
+- **ADR-0024** — why grouped events were not built, and what would trigger revisiting.
