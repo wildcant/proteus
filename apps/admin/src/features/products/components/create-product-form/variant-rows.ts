@@ -1,5 +1,6 @@
 import type { AdminCreateProduct, AdminProductOption } from '#/api/generated/model'
 import type { OptionValueEntry } from '#/features/product-options/components/option-value-selector'
+import type { CurrencyAmounts } from '#/features/products/utils/price-columns'
 
 /** One row of the wizard's variant grid: a combination plus what the shopkeeper typed against it. */
 export type VariantRow = {
@@ -9,7 +10,46 @@ export type VariantRow = {
   label: string
   optionValues: Record<string, string>
   sku: string
-  price: string
+  /**
+   * One amount per store currency, keyed by ISO code. Blank means the variant is not priced in
+   * that currency — which is allowed: a product does not have to be sellable in every market on
+   * the day it is created.
+   */
+  prices: CurrencyAmounts
+}
+
+/**
+ * The row as the grid holds it: `label`, `sku`, and one key per currency, all flat.
+ *
+ * `DataGridColumn` reaches a value by a single key, so the nested `prices` has to be spread out for
+ * the grid and folded back afterwards. The projection is here rather than in the form because it is
+ * the other half of the row shape above, and the two only make sense together.
+ */
+export type VariantGridRow = Record<string, string>
+
+export function toVariantGridRows(rows: VariantRow[]): VariantGridRow[] {
+  return rows.map((row) => ({ label: row.label, sku: row.sku, ...row.prices }))
+}
+
+/**
+ * Folds the grid's edits back onto the rows they were projected from, by position — the grid never
+ * adds, removes or reorders rows, so index is identity for the round trip.
+ */
+export function fromVariantGridRows(rows: VariantRow[], gridRows: VariantGridRow[]): VariantRow[] {
+  return rows.map((row, index) => {
+    const gridRow = gridRows[index]
+    if (!gridRow) return row
+    const { label: _label, sku, ...prices } = gridRow
+    return { ...row, sku: sku ?? '', prices }
+  })
+}
+
+/**
+ * A row's price cells for the currencies the store sells in today, carrying over whatever was
+ * already typed. A currency the store has dropped is dropped with it rather than quietly submitted.
+ */
+function seedPrices(currencyCodes: string[], existing?: CurrencyAmounts): CurrencyAmounts {
+  return Object.fromEntries(currencyCodes.map((currencyCode) => [currencyCode, existing?.[currencyCode] ?? '']))
 }
 
 /**
@@ -25,6 +65,7 @@ export function enumerateVariantRows(
   allOptions: AdminProductOption[],
   selected: OptionValueEntry[],
   existing: VariantRow[] = [],
+  currencyCodes: string[] = [],
 ): VariantRow[] {
   const optionById = new Map(allOptions.map((option) => [option.id, option]))
 
@@ -62,7 +103,7 @@ export function enumerateVariantRows(
       label: values.map((value) => value.value).join(' / '),
       optionValues,
       sku: edited?.sku ?? '',
-      price: edited?.price ?? '',
+      prices: seedPrices(currencyCodes, edited?.prices),
     }
   })
 }
@@ -104,11 +145,20 @@ export function resolveVariantsPayload(variants: {
 
   return {
     options: variants.options,
-    variants: variants.rows.map((row, index) => ({
-      optionValues: row.optionValues,
-      variantRank: index,
-      ...(row.sku ? { sku: row.sku } : {}),
-      ...(row.price ? { prices: [{ currencyCode: 'usd', amount: row.price }] } : {}),
-    })),
+    variants: variants.rows.map((row, index) => {
+      // One price per currency the merchant actually typed into. A blank cell is not a zero: it
+      // means this variant is not priced in that market yet, and sending it would put the variant
+      // on sale for nothing there.
+      const prices = Object.entries(row.prices)
+        .filter(([, amount]) => amount !== '')
+        .map(([currencyCode, amount]) => ({ currencyCode, amount }))
+
+      return {
+        optionValues: row.optionValues,
+        variantRank: index,
+        ...(row.sku ? { sku: row.sku } : {}),
+        ...(prices.length > 0 ? { prices } : {}),
+      }
+    }),
   }
 }
