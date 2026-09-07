@@ -10,9 +10,11 @@
 
 import { defineSubscriber, type SubscriberDefinition } from '../core/event-bus/types.js'
 import { config as busProbe } from './bus-probe.js'
+import { config as processPaymentCaptured } from './process-payment-captured.js'
 import { config as sendOrderConfirmation } from './send-order-confirmation.js'
 
 export const GENERATED_SUBSCRIBERS: SubscriberDefinition[] = [
   defineSubscriber(busProbe),
+  defineSubscriber(processPaymentCaptured),
   defineSubscriber(sendOrderConfirmation),
 ]

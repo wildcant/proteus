@@ -1,3 +1,15 @@
+import type { PaymentActions } from '../types/payment/common.js'
+
+/**
+ * The two provider actions a `payment.captured` delivery can be about.
+ *
+ * Narrowed from [PaymentActions] rather than written out, so the union cannot drift from the one
+ * the provider adapters produce. The webhook route's handling map is what decides which actions
+ * reach here at all, and it is total over the wider union — an action added later has to be given
+ * an answer there rather than falling into this one by accident.
+ */
+export type PaymentCapturedAction = Extract<PaymentActions, 'authorized' | 'captured'>
+
 /**
  * Every event this backend can publish, and the payload each one carries.
  *
@@ -29,6 +41,20 @@ export type EventPayloads = {
    * delivery that arrives late describes the order as it is now rather than as it was at checkout.
    */
   'order.placed': { id: string }
+  /**
+   * A payment provider reported that a session's money has moved — published by the payment webhook
+   * route, and by nothing else.
+   *
+   * The id is the **payment session's**, because that is what the provider's event is about and what
+   * every reader of this event starts from: the payment, the payment collection and the cart behind
+   * it are all reachable through it, and a delivery that arrives late describes them as they are now.
+   *
+   * `action` is what the provider actually reported, and it is part of the dispatch key rather than
+   * only of the payload (see [EVENT_KEYS]). A manual-capture session legitimately produces two
+   * events — authorized when the shopper confirms, captured when the money is taken — and keying on
+   * the session alone would dedup the second into the first and silently never deliver it.
+   */
+  'payment.captured': { id: string; action: PaymentCapturedAction }
 }
 
 export type EventName = keyof EventPayloads
@@ -64,6 +90,13 @@ export type Event<N extends EventName = EventName> = N extends EventName
  */
 const EVENT_KEYS: { [N in EventName]?: (data: EventPayloads[N]) => string } = {
   'bus.probe.repeatable': (data) => `${data.id}:${data.attempt}`,
+  /**
+   * The first production event to need this. One session can be authorized and then captured, which
+   * is two different things happening to the same resource — `data.id` alone would make the capture
+   * a duplicate of the authorization and drop it. A *redelivery* of either still keys identically,
+   * which is what makes a repeat of one webhook a duplicate rather than a second capture.
+   */
+  'payment.captured': (data) => `${data.id}:${data.action}`,
 }
 
 /**
