@@ -24,7 +24,7 @@ export const ShippingAddressForm = withForm({
       <div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <form.AppField name="shippingAddress.countryCode">
-            {(field) => <field.DeliveryCountryField className="sm:col-span-2" />}
+            {(field) => <field.CountryField className="sm:col-span-2" />}
           </form.AppField>
           <form.AppField name="shippingAddress.firstName">
             {(field) => <field.TextField label="First name" autoComplete="given-name" />}

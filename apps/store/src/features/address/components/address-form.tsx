@@ -55,7 +55,7 @@ export const AddressForm = withForm({
                 {/* Not a choice: the market the shopper is in is the country the store ships to,
                     and an address book full of countries nothing can be sent to is a book of
                     addresses that fail at the end of a checkout rather than at the start. */}
-                <form.AppField name="countryCode">{(field) => <field.DeliveryCountryField />}</form.AppField>
+                <form.AppField name="countryCode">{(field) => <field.CountryField />}</form.AppField>
                 <form.AppField name="province">
                   {(field) => <field.TextField label="State / Province" autoComplete="address-level1" />}
                 </form.AppField>

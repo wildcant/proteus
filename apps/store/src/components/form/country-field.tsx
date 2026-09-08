@@ -19,7 +19,7 @@ import { useMarket } from '#/lib/use-market'
  * in another market — and there the address's own country is the truthful answer. Showing the
  * market's would be claiming a row says something it does not, one Save away from making it true.
  */
-export function DeliveryCountryField({ className }: { className?: string }) {
+export function CountryField({ className }: { className?: string }) {
   const field = useFieldContext<string>()
   const { current } = useMarket()
   const countryName = useCountryName()

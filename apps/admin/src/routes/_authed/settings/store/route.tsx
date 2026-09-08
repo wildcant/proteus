@@ -55,8 +55,12 @@ function StoreLayout() {
           </CardAction>
         </CardHeader>
         <SectionRow title="Name" value={store.name} />
+        {/* Both defaults carry a description because they sit adjacent and read as one setting:
+            a merchant seeing a default currency the default region does not settle in would
+            otherwise conclude the store quotes it. Only the region decides that. */}
         <SectionRow
           title="Default currency"
+          description="Leads the currency columns when you price a product. It is not what shoppers are quoted."
           value={
             currency ? (
               <span className="flex items-center gap-x-2">
@@ -68,7 +72,11 @@ function StoreLayout() {
         />
         {/* `-` is what `SectionRow` renders for an absent value, and an unset default region is a
             state the store can legitimately be in — every shopper picks their own market. */}
-        <SectionRow title="Default region" value={region?.name ?? null} />
+        <SectionRow
+          title="Default region"
+          description="The market — and so the currency — a shopper is priced in before they pick one."
+          value={region?.name ?? null}
+        />
       </Card>
       <StoreCurrenciesCard />
     </PageLayout.SingleColumn>
