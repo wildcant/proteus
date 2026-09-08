@@ -9,6 +9,16 @@ import type { UpdateStoreCartBodyBillingAddress } from './updateStoreCartBodyBil
 import type { UpdateStoreCartBodyShippingAddress } from './updateStoreCartBodyShippingAddress.ts';
 
 export type UpdateStoreCartBody = {
+  /**
+     * @minLength 2
+     * @maxLength 2
+     */
+  countryCode?: string;
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
+  regionId?: string;
   email?: string;
   /** @maxLength 255 */
   firstName?: string;

@@ -24,19 +24,19 @@ test.describe('Header', () => {
     // The panel is URL state, so opening it is a navigation and back closes it.
     await header.getByLabel('Search products').click()
     const searchPanel = page.locator('[data-slot="drawer-popup"]')
-    await expect(page).toHaveURL('/?modal=search')
+    await expect(page).toHaveURL('/en-US?modal=search')
     await expect(searchPanel).toBeVisible()
     await expect(searchPanel.getByLabel('Search products')).toBeFocused()
 
     await page.goBack()
     await expect(searchPanel).not.toBeVisible()
-    await expect(page).toHaveURL('/')
+    await expect(page).toHaveURL('/en-US')
 
     // Closing with the ✕ replaces rather than pushes, so back does not reopen it
     await header.getByLabel('Search products').click()
     await searchPanel.getByLabel('Close search').click()
     await expect(searchPanel).not.toBeVisible()
-    await expect(page).toHaveURL('/')
+    await expect(page).toHaveURL('/en-US')
   })
 
   test('the side menu carries the navigation below lg', async ({ page, authenticate, navigate }) => {
@@ -53,7 +53,7 @@ test.describe('Header', () => {
     // opens the same panel the desktop button does
     await header.getByLabel('Search', { exact: true }).click()
     const searchPanel = page.locator('[data-slot="drawer-popup"]')
-    await expect(page).toHaveURL('/?modal=search')
+    await expect(page).toHaveURL('/en-US?modal=search')
     await expect(searchPanel.getByLabel('Search products')).toBeFocused()
 
     // The panel opens onto a merchandised row rather than blank space
@@ -64,12 +64,12 @@ test.describe('Header', () => {
     await expect(searchPanel.getByLabel('Close search')).not.toBeVisible()
     await searchPanel.getByLabel('Back').click()
     await expect(searchPanel).not.toBeVisible()
-    await expect(page).toHaveURL('/')
+    await expect(page).toHaveURL('/en-US')
 
     // Open side menu. Both overlays are drawers, but `modal` is an enum so only one is ever
     // mounted — the shared selector is unambiguous at runtime.
     await header.getByLabel('Open menu').click()
-    await expect(page).toHaveURL('/?modal=menu')
+    await expect(page).toHaveURL('/en-US?modal=menu')
     const sideMenu = page.locator('[data-slot="drawer-popup"]')
     await expect(sideMenu).toBeVisible()
 
@@ -82,7 +82,7 @@ test.describe('Header', () => {
     // Following a row closes the menu with no explicit dismissal — a plain <Link> drops the
     // search params, and `modal` is one of them
     await sideMenu.getByText('Products').click()
-    await expect(page).toHaveURL('/')
+    await expect(page).toHaveURL('/en-US')
     await expect(sideMenu).not.toBeVisible()
 
     // Search hands off in a single navigation: the menu closes as the panel opens. Both
@@ -90,7 +90,7 @@ test.describe('Header', () => {
     // its searchbox role — the drawer selector matches the menu's trigger button too.
     await header.getByLabel('Open menu').click()
     await sideMenu.getByLabel('Search products').click()
-    await expect(page).toHaveURL('/?modal=search')
+    await expect(page).toHaveURL('/en-US?modal=search')
     await expect(page.getByRole('searchbox', { name: 'Search products' })).toBeFocused()
     await page.keyboard.press('Escape')
   })
@@ -114,7 +114,7 @@ test.describe('Header', () => {
     // Opening the panel is a navigation that keeps the page it opened over — the root-level
     // `modal` param merges with this route's own `q` rather than replacing it.
     await page.locator('header').getByLabel('Search products').click()
-    await expect(page).toHaveURL('/?modal=search')
+    await expect(page).toHaveURL('/en-US?modal=search')
 
     const panel = page.locator('[data-slot="drawer-popup"]')
     const search = panel.getByLabel('Search products')
@@ -128,7 +128,7 @@ test.describe('Header', () => {
     await panel.getByRole('link', { name: new RegExp(`View all.*${matchTerm}`) }).click()
 
     // Landing on a search with no `modal` is what closes the panel
-    await expect(page).toHaveURL(`/?q=${matchTerm}`)
+    await expect(page).toHaveURL(`/en-US?q=${matchTerm}`)
     await expect(page.locator('[data-slot="drawer-popup"]')).not.toBeVisible()
     await expect(page.getByText(match.title)).toBeVisible()
     await expect(page.getByText(other.title)).not.toBeVisible()

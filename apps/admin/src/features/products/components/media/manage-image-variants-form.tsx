@@ -14,7 +14,7 @@ type ManageImageVariantsFormProps = {
 export function ManageImageVariantsForm({ productId, image, variantIds }: ManageImageVariantsFormProps) {
   const { handleSuccess } = useRouteModal()
 
-  const { form, isLoading } = useManageImageVariantsForm({
+  const { form } = useManageImageVariantsForm({
     productId,
     imageId: image.id,
     variantIds,
@@ -27,38 +27,38 @@ export function ManageImageVariantsForm({ productId, image, variantIds }: Manage
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-        <RouteDrawer.Header>
-          <div className="flex items-center gap-x-3">
-            <img src={image.url} alt="" className="size-10 shrink-0 rounded-md border object-cover" />
-            <div className="flex flex-col gap-y-1">
-              <RouteDrawer.Title>Manage variants</RouteDrawer.Title>
-              <RouteDrawer.Description>Manage associated variants for the image</RouteDrawer.Description>
+        <form.AppForm>
+          <RouteDrawer.Header>
+            <div className="flex items-center gap-x-3">
+              <img src={image.url} alt="" className="size-10 shrink-0 rounded-md border object-cover" />
+              <div className="flex flex-col gap-y-1">
+                <RouteDrawer.Title>Manage variants</RouteDrawer.Title>
+                <RouteDrawer.Description>Manage associated variants for the image</RouteDrawer.Description>
+              </div>
             </div>
-          </div>
-        </RouteDrawer.Header>
-        <RouteDrawer.Body className="flex flex-col overflow-hidden p-0">
-          <form.Field name="variantIds">
-            {(field) => (
-              <VariantSelectionTable
-                productId={productId}
-                imageUrl={image.url}
-                value={field.state.value}
-                onChange={field.handleChange}
-              />
-            )}
-          </form.Field>
-        </RouteDrawer.Body>
-        <RouteDrawer.Footer className="justify-between">
-          <form.Subscribe selector={(state) => state.values.variantIds.length}>
-            {(count) => <span className="text-muted-foreground text-sm">{count} selected</span>}
-          </form.Subscribe>
-          <div className="flex items-center gap-x-2">
-            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-            <Button type="submit" size="sm" disabled={isLoading}>
-              Save
-            </Button>
-          </div>
-        </RouteDrawer.Footer>
+          </RouteDrawer.Header>
+          <RouteDrawer.Body className="flex flex-col overflow-hidden p-0">
+            <form.Field name="variantIds">
+              {(field) => (
+                <VariantSelectionTable
+                  productId={productId}
+                  imageUrl={image.url}
+                  value={field.state.value}
+                  onChange={field.handleChange}
+                />
+              )}
+            </form.Field>
+          </RouteDrawer.Body>
+          <RouteDrawer.Footer className="justify-between">
+            <form.Subscribe selector={(state) => state.values.variantIds.length}>
+              {(count) => <span className="text-muted-foreground text-sm">{count} selected</span>}
+            </form.Subscribe>
+            <div className="flex items-center gap-x-2">
+              <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
+              <form.SubmitButton size="sm">Save</form.SubmitButton>
+            </div>
+          </RouteDrawer.Footer>
+        </form.AppForm>
       </KeyboundForm>
     </RouteDrawer.Form>
   )

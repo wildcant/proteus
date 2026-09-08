@@ -37,28 +37,28 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
-        <RouteDrawer.Header>
-          <RouteDrawer.Title>Manage Product Options</RouteDrawer.Title>
-        </RouteDrawer.Header>
-        <RouteDrawer.Body className="space-y-6 p-6">
-          <form.Field name="options">
-            {(field) => (
-              <OptionValueSelector allOptions={allOptions} value={field.state.value} onChange={field.handleChange} />
-            )}
-          </form.Field>
+        <form.AppForm>
+          <RouteDrawer.Header>
+            <RouteDrawer.Title>Manage Product Options</RouteDrawer.Title>
+          </RouteDrawer.Header>
+          <RouteDrawer.Body className="space-y-6 p-6">
+            <form.Field name="options">
+              {(field) => (
+                <OptionValueSelector allOptions={allOptions} value={field.state.value} onChange={field.handleChange} />
+              )}
+            </form.Field>
 
-          {/* The variants follow the options, so what that costs is shown while it is still a
-              choice rather than reported once it has happened. */}
-          <form.Subscribe selector={(state) => state.values.options}>
-            {(next) => <ConsequenceNotice consequences={describeOptionChange(currentOptions, next)} />}
-          </form.Subscribe>
-        </RouteDrawer.Body>
-        <RouteDrawer.Footer>
-          <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-          <Button type="submit" size="sm">
-            Save
-          </Button>
-        </RouteDrawer.Footer>
+            {/* The variants follow the options, so what that costs is shown while it is still a
+                choice rather than reported once it has happened. */}
+            <form.Subscribe selector={(state) => state.values.options}>
+              {(next) => <ConsequenceNotice consequences={describeOptionChange(currentOptions, next)} />}
+            </form.Subscribe>
+          </RouteDrawer.Body>
+          <RouteDrawer.Footer>
+            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
+            <form.SubmitButton size="sm">Save</form.SubmitButton>
+          </RouteDrawer.Footer>
+        </form.AppForm>
       </KeyboundForm>
     </RouteDrawer.Form>
   )

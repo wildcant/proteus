@@ -27,8 +27,10 @@ type CheckoutReturnProps = {
 export function CheckoutReturn({ query }: CheckoutReturnProps) {
   const providerId = query.get('providerId') ?? ''
   const adapter = resolvePaymentAdapter(providerId)
-  const { data, isLoading: isLoadingProviders } = usePaymentProviders()
   const { cart, isLoading: isLoadingCart } = useCart()
+  // The provider list is the cart's market's, so it cannot be asked for before the cart is back.
+  // `isLoadingCart` covers that gap: a disabled query reports no loading of its own.
+  const { data, isLoading: isLoadingProviders } = usePaymentProviders(cart?.id ?? '')
   const provider = data?.paymentProviders.find((candidate) => candidate.id === providerId)
 
   if (isLoadingProviders || isLoadingCart) return <ReturnStatus title="Completing your order…" />

@@ -40,7 +40,8 @@ export const variantsSchema = z.object({
       label: z.string(),
       optionValues: z.record(z.string(), z.string()),
       sku: z.string(),
-      price: z.string(),
+      /** One amount per store currency, keyed by ISO code. Blank means unpriced in that market. */
+      prices: z.record(z.string(), z.string()),
     }),
   ),
 })

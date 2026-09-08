@@ -1,0 +1,14 @@
+id: form-hook-submit-unguarded
+snapshots:
+  const onSubmit = async ({ value }) => { await updateMutation.mutateAsync(value).then(() => params?.onSuccess?.()) }:
+    labels:
+    - source: updateMutation.mutateAsync(value)
+      style: primary
+      start: 46
+      end: 79
+  const onSubmit = async ({ value }) => { const data = await createMutation.mutateAsync(value); params?.onSuccess?.(data) }:
+    labels:
+    - source: createMutation.mutateAsync(value)
+      style: primary
+      start: 59
+      end: 92

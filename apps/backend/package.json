@@ -40,6 +40,7 @@
     "db:seed:providers": "dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-providers.ts",
     "db:migrate:test": "dotenvx run -f ../../.env.test -- npm run db:migrate",
     "db:seed:providers:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-providers.ts",
+    "db:seed:markets:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-markets.ts",
     "db:restore:staging": "./scripts/restore-staging-db.sh",
     "db:diagram": "dotenvx run -f ../../.env.local -- ./scripts/db-diagram/run.sh",
     "openapi:dump:offline": "dotenvx run -f ../../.env.test -- tsx scripts/openapi-dump.ts",

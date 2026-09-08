@@ -1,0 +1,22 @@
+id: form-hook-mutate-not-awaited
+snapshots:
+  ? 'const onSubmit = ({ value }) => { createMutation.mutate(value, { onSuccess: (data) => params?.onSuccess?.(data), onError: (error) => params?.onError?.(error.message) }) }'
+  : labels:
+    - source: 'createMutation.mutate(value, { onSuccess: (data) => params?.onSuccess?.(data), onError: (error) => params?.onError?.(error.message) })'
+      style: primary
+      start: 34
+      end: 168
+    - source: 'createMutation.mutate(value, { onSuccess: (data) => params?.onSuccess?.(data), onError: (error) => params?.onError?.(error.message) })'
+      style: secondary
+      start: 34
+      end: 168
+  'const onSubmit = ({ value }) => { updateMutation.mutate({ id: params.id, data: value }) }':
+    labels:
+    - source: 'updateMutation.mutate({ id: params.id, data: value })'
+      style: primary
+      start: 34
+      end: 87
+    - source: 'updateMutation.mutate({ id: params.id, data: value })'
+      style: secondary
+      start: 34
+      end: 87

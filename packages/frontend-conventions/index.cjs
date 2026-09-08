@@ -120,4 +120,72 @@ function layerDirectionRules(options = {}) {
   ]
 }
 
-module.exports = { FEATURE_FOLDERS, SHARED_FOLDERS, featureStructureRules, layerDirectionRules }
+/** Where Orval writes the generated client in both apps. Its own layout, not ours to choose. */
+const GENERATED_PATH = '^src/api/generated/'
+
+/**
+ * The transport the generated client calls, named in both apps' `orval.config.ts` as its mutator.
+ *
+ * A path and not a folder: `src/api/` also holds the query-options factories every feature reads,
+ * so only this one file is out of bounds.
+ */
+const FETCHER_PATH = '^src/api/fetcher\\.ts$'
+
+/**
+ * The directories that may call the API: the shared `api/` layer and each feature's own `api/`.
+ *
+ * Deliberately a prefix and not a leaf, so a feature's api folder may grow files that call each
+ * other. `src/api/generated/` matches too, which is what lets the generated modules import their
+ * siblings and the fetcher.
+ */
+const API_LAYER_PATH = '^src/(?:api/|features/[^/]+/api/)'
+
+/**
+ * Two rules that keep HTTP behind the api layer.
+ *
+ * The generated client is a transport, not a vocabulary. A component that calls `listStoreProducts`
+ * directly has a request in it — no query key, no cache entry, no error toast, and nothing for a
+ * route loader to share — and the pattern spreads by precedent long before anyone reads the docs
+ * that forbid it. See the query-hook and mutation-hook contracts under `ast-grep/rules/`.
+ *
+ * The generated *types* are the opposite: `StoreOrder` is what the app calls an order, and a
+ * component naming its props with it is correct. So the first rule exempts type-only edges rather
+ * than the folders that hold components — the distinction that matters is calling versus naming,
+ * not where the file happens to sit.
+ *
+ * Both paths are fixed rather than passed in: the two apps put the generated client and its fetcher
+ * in the same places, and a rule that took them as arguments would let one app quietly point at a
+ * file that no longer exists — a rule matching nothing passes.
+ */
+function apiLayerRules() {
+  return [
+    {
+      name: 'generated-client-calls-stay-in-the-api-layer',
+      comment:
+        "Only src/api/ and a feature's own api/ may call the generated client. Move the work there — " +
+        'a query-options factory, a mutation hook, or a plain function that owns the whole outcome, ' +
+        'error handling included. A one-line pass-through that only forwards arguments satisfies this ' +
+        'rule while defeating it: the request moved but the request-handling did not. Importing the ' +
+        "generated *types* is fine anywhere and this rule allows it — they are the app's vocabulary. " +
+        'What must not spread is the request.',
+      severity: 'error',
+      from: { pathNot: API_LAYER_PATH },
+      to: { path: GENERATED_PATH, dependencyTypesNot: ['type-only'] },
+    },
+    {
+      name: 'fetcher-belongs-to-the-generated-client',
+      comment:
+        "The fetcher is the generated client's transport and has no other caller: it attaches the " +
+        'session token and clears it on a 401, which is behaviour a shopper-agnostic or one-off ' +
+        'request should not inherit. Hand-rolling a call through it also skips the generated URL and ' +
+        'types, so the spec stops being the single description of the API. Regenerate the client for ' +
+        'a new endpoint. Where an app gives its refusals a class, that class belongs in its own ' +
+        'module, so recognising an error never requires importing the transport that raised it.',
+      severity: 'error',
+      from: { pathNot: GENERATED_PATH },
+      to: { path: FETCHER_PATH },
+    },
+  ]
+}
+
+module.exports = { FEATURE_FOLDERS, SHARED_FOLDERS, featureStructureRules, layerDirectionRules, apiLayerRules }

@@ -1,4 +1,4 @@
-import { formatAmount, getCurrencySymbol } from '@proteus/ui'
+import { formatAmount, getCurrencySymbol } from '@proteus/utils'
 import { useCallback } from 'react'
 
 type CurrencyCellProps = {

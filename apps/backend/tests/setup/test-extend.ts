@@ -36,7 +36,19 @@ import {
   generateCustomerDTO,
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
-import { generateCustomer, generateProduct, generateUser } from '../factories/db/index.js'
+import {
+  createCountry,
+  createProductWithPricing,
+  createRegion,
+  createRegionPaymentProvider,
+  createShippingOptionWithZone,
+  createStore,
+  createStoreCurrency,
+  generateCustomer,
+  generateProduct,
+  generateUser,
+  setPaymentProviderEnabled,
+} from '../factories/db/index.js'
 import {
   generateCreateFulfillmentSetDTO,
   generateCreateGeoZoneDTO,
@@ -131,6 +143,7 @@ import {
   listProductVariantImages,
   listProductVariants,
   listReservationItems,
+  listShippingMethods,
   priceVariants,
   requestAuthVerification,
   retrieveAuthIdentity,
@@ -196,6 +209,27 @@ export type Fixtures = {
     customer: typeof generateCustomer
     user: typeof generateUser
     product: typeof generateProduct
+    /** Rows written straight to the database, for tables no module service writes yet — region,
+     *  country and store are seeded, and their admin write paths are separate features. Each
+     *  returns a disposable, so a spec's rows live and die with it. */
+    create: {
+      region: typeof createRegion
+      country: typeof createCountry
+      /** Which payment providers a region offers. The providers themselves are seeded by the
+       *  payment module's loader when the container boots, so a test links to them by id. */
+      regionPaymentProvider: typeof createRegionPaymentProvider
+      store: typeof createStore
+      storeCurrency: typeof createStoreCurrency
+      /** A shipping option and the whole zone chain that makes it offerable. Shared with the
+       *  browser suite, which reaches the same factory through its own fixtures. */
+      shippingOptionWithZone: typeof createShippingOptionWithZone
+      /** A published product, a variant, and a price per currency it is sold in — the shape a
+       *  spec needs when the same variant has to carry two markets' money at once. */
+      productWithPricing: typeof createProductWithPricing
+    }
+    update: {
+      paymentProviderEnabled: typeof setPaymentProviderEnabled
+    }
   }
   /** Request bodies for the HTTP layer, grouped by the API scope they belong to — the same split
    *  `@proteus/http-schemas` makes between `./store` and `./admin`. A wire body is not a service
@@ -325,6 +359,7 @@ export type Fixtures = {
       cartAddresses: typeof listCartAddresses
       carts: typeof listCarts
       cartLineItems: typeof listLineItems
+      cartShippingMethods: typeof listShippingMethods
       customer: typeof retrieveCustomer
       customerAddresses: typeof listCustomerAddresses
       customers: typeof listCustomers
@@ -389,6 +424,18 @@ export const test = testBase.extend<Fixtures>({
       customer: generateCustomer,
       user: generateUser,
       product: generateProduct,
+      create: {
+        region: createRegion,
+        country: createCountry,
+        regionPaymentProvider: createRegionPaymentProvider,
+        store: createStore,
+        storeCurrency: createStoreCurrency,
+        shippingOptionWithZone: createShippingOptionWithZone,
+        productWithPricing: createProductWithPricing,
+      },
+      update: {
+        paymentProviderEnabled: setPaymentProviderEnabled,
+      },
     })
   },
   async http({ task: _ }, use) {
@@ -517,6 +564,7 @@ export const test = testBase.extend<Fixtures>({
         cartAddresses: listCartAddresses,
         carts: listCarts,
         cartLineItems: listLineItems,
+        cartShippingMethods: listShippingMethods,
         customer: retrieveCustomer,
         customerAddresses: listCustomerAddresses,
         customers: listCustomers,

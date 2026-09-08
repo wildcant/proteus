@@ -2,7 +2,7 @@ import { AdminCreateCustomer } from '@proteus/http-schemas/admin'
 import type { AdminCreateCustomersResponse } from '#/api/generated/model'
 import { useCreateCustomer } from '#/features/customers/api/customers'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type CreateCustomerFormParams = SubmitFormParams<AdminCreateCustomersResponse>
 
@@ -12,17 +12,18 @@ export function useCreateCustomerForm(params?: CreateCustomerFormParams) {
   const form = useAppForm({
     defaultValues: { firstName: '', lastName: '', email: '' },
     validators: { onSubmit: AdminCreateCustomer },
-    onSubmit: ({ value }) => {
-      createMutation.mutate([value], {
-        onSuccess: (data) => {
-          form.reset()
-          params?.onSuccess?.(data)
-        },
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await createMutation.mutateAsync([value])
+        form.reset()
+        params?.onSuccess?.(data)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: createMutation.isPending }
+  return { form }
 }

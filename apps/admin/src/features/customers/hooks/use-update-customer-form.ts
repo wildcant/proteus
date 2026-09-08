@@ -2,7 +2,7 @@ import { AdminUpdateCustomer, type AdminUpdateCustomerBody } from '@proteus/http
 import type { AdminCustomerResponse } from '#/api/generated/model'
 import { useUpdateCustomer } from '#/features/customers/api/customers'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type UpdateCustomerFormParams = SubmitFormParams<AdminCustomerResponse> & {
   id: string
@@ -15,17 +15,17 @@ export function useUpdateCustomerForm(params: UpdateCustomerFormParams) {
   const form = useAppForm({
     defaultValues: params.defaultValues,
     validators: { onSubmit: AdminUpdateCustomer },
-    onSubmit: ({ value }) => {
-      updateMutation.mutate(
-        { id: params.id, data: value },
-        {
-          onSuccess: (data) => params?.onSuccess?.(data),
-          onError: (error) => params?.onError?.(error.message),
-          onSettled: () => params?.onSettled?.(),
-        },
-      )
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await updateMutation.mutateAsync({ id: params.id, data: value })
+        params.onSuccess?.(data)
+      } catch (error) {
+        params.onError?.(errorMessage(error))
+      } finally {
+        params.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: updateMutation.isPending }
+  return { form }
 }

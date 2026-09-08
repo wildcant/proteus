@@ -22,7 +22,7 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string(),
   /**
    * Publishable, and therefore not a secret: it is served to every storefront through
-   * `GET /store/payment-providers`. It is still required, because a deployment without one
+   * `GET /store/carts/:id/payment-providers`. It is still required, because a deployment without one
    * boots a checkout whose card form cannot mount.
    */
   STRIPE_PUBLISHABLE_KEY: z.string(),

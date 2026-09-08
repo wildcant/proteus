@@ -2,7 +2,7 @@ id: query-options-loose-type
 language: typescript
 severity: error
 message: This `options` type lets a caller redefine the query's own key or fetcher, or names no query type at all.
-note: "Use `Omit<UseQueryOptions<TData, Error, TData>, 'queryFn' | 'queryKey'>`, aliased once per file. docs/query-hooks.md"
+note: "Use `Omit<UseQueryOptions<TData, Error, TData>, 'queryFn' | 'queryKey'>`, aliased once per file. ast-grep/rules/frontend/features/api/__docs__/query-hooks.md"
 files:
   - "**/features/*/api/*.ts"
 rule:

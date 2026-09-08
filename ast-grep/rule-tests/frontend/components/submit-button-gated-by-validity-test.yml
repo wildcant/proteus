@@ -1,0 +1,15 @@
+id: submit-button-gated-by-validity
+valid:
+  # The request is already in flight — the merchant is stopped from sending it twice, not from
+  # finding out what is wrong.
+  - 'const F = () => <Button type="submit">Save</Button>'
+  - 'const F = () => <Button type="submit" size="sm" disabled={isPending}>Save</Button>'
+  - 'const F = () => <Button type="submit" disabled={isSubmitting || isLoading}>Save</Button>'
+  - 'const F = () => <Button type="submit" disabled={updatePrices.isPending} />'
+  # A field may be disabled for any reason; only the submit is held to this.
+  - 'const F = () => <Input disabled={!isValid} />'
+invalid:
+  - 'const F = () => <Button type="submit" size="sm" disabled={!assignmentIsComplete(countries)}>Save</Button>'
+  - 'const F = () => <Button type="submit" size="sm" disabled={currencyCodes.length === 0}>Save</Button>'
+  - 'const F = () => <Button type="submit" disabled={!isDirty || updatePrices.isPending}>Save</Button>'
+  - 'const F = () => <Button type="submit" disabled={isSubmitting || disabled} />'

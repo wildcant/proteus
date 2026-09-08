@@ -26,7 +26,12 @@ export default defineConfig({
     },
     {
       command: 'npm run dev:test',
-      url: 'http://localhost:3011',
+      // A static asset, not `/`. Playwright starts the web servers before `globalSetup`, so at this
+      // moment the database is whatever the last run left — possibly empty. A storefront with no
+      // sellable markets answers `/` with a 500 by design, which Playwright reads as "not ready",
+      // and the setup that would have seeded the markets never runs. This asks the only question a
+      // readiness probe should: is the server listening.
+      url: 'http://localhost:3011/robots.txt',
       reuseExistingServer: true,
     },
   ],

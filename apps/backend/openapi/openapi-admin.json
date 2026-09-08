@@ -20,6 +20,9 @@
       "name": "Auth"
     },
     {
+      "name": "Countries"
+    },
+    {
       "name": "Customers"
     },
     {
@@ -41,6 +44,9 @@
       "name": "Payment Collections"
     },
     {
+      "name": "Payment Providers"
+    },
+    {
       "name": "Payments"
     },
     {
@@ -56,10 +62,16 @@
       "name": "Refund Reasons"
     },
     {
+      "name": "Regions"
+    },
+    {
       "name": "Shipping Options"
     },
     {
       "name": "Shipping Profiles"
+    },
+    {
+      "name": "Store"
     },
     {
       "name": "Uploads"
@@ -243,6 +255,61 @@
         },
         "required": [
           "code"
+        ]
+      },
+      "AdminCountryListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCountry"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "countries"
+        ]
+      },
+      "AdminCountry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "regionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "localeCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "regionId",
+          "localeCode"
         ]
       },
       "AdminCustomerListResponse": {
@@ -2907,6 +2974,11 @@
             "items": {
               "type": "object",
               "properties": {
+                "currencyCode": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
                 "amount": {
                   "type": "string",
                   "format": "decimal",
@@ -2914,6 +2986,7 @@
                 }
               },
               "required": [
+                "currencyCode",
                 "amount"
               ]
             },
@@ -3681,6 +3754,11 @@
                   "type": "string",
                   "maxLength": 64
                 },
+                "currencyCode": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
                 "amount": {
                   "type": "string",
                   "format": "decimal",
@@ -3688,6 +3766,7 @@
                 }
               },
               "required": [
+                "currencyCode",
                 "amount"
               ]
             },
@@ -3894,6 +3973,223 @@
         "required": [
           "label",
           "code"
+        ]
+      },
+      "AdminRegionListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminRegion"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "regions"
+        ]
+      },
+      "AdminRegion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminRegionCountry"
+            }
+          },
+          "paymentProviders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPaymentProvider"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "currencyCode",
+          "countries",
+          "paymentProviders",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AdminRegionCountry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "displayName"
+        ]
+      },
+      "AdminRegionResponse": {
+        "type": "object",
+        "properties": {
+          "region": {
+            "$ref": "#/components/schemas/AdminRegion"
+          }
+        },
+        "required": [
+          "region"
+        ]
+      },
+      "AdminCreateRegion": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "currencyCode": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "paymentProviderIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "name",
+          "currencyCode"
+        ]
+      },
+      "AdminUpdateRegion": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "currencyCode": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "paymentProviderIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 20
+          }
+        }
+      },
+      "AdminRegionCountriesResponse": {
+        "type": "object",
+        "properties": {
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCountry"
+            }
+          }
+        },
+        "required": [
+          "countries"
+        ]
+      },
+      "AdminAssignRegionCountries": {
+        "type": "object",
+        "properties": {
+          "countries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                },
+                "localeCode": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "required": [
+                "id",
+                "localeCode"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "countries"
+        ]
+      },
+      "AdminCountryResponse": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "$ref": "#/components/schemas/AdminCountry"
+          }
+        },
+        "required": [
+          "country"
+        ]
+      },
+      "AdminUpdateCountryLocale": {
+        "type": "object",
+        "properties": {
+          "localeCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "localeCode"
         ]
       },
       "AdminShippingOptionListResponse": {
@@ -4214,6 +4510,98 @@
             "maxLength": 64
           }
         }
+      },
+      "AdminStoreResponse": {
+        "type": "object",
+        "properties": {
+          "store": {
+            "$ref": "#/components/schemas/AdminStore"
+          }
+        },
+        "required": [
+          "store"
+        ]
+      },
+      "AdminStore": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "defaultRegionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminStoreCurrency"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "defaultRegionId",
+          "currencies"
+        ]
+      },
+      "AdminStoreCurrency": {
+        "type": "object",
+        "properties": {
+          "currencyCode": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "currencyCode",
+          "isDefault"
+        ]
+      },
+      "AdminUpdateStore": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "defaultRegionId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          }
+        }
+      },
+      "AdminAddStoreCurrencies": {
+        "type": "object",
+        "properties": {
+          "currencyCodes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "pattern": "^[A-Za-z]{3}$"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "currencyCodes"
+        ]
       },
       "AdminUploadResponse": {
         "type": "object",
@@ -4783,6 +5171,88 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VerificationConfirmResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/admin/countries": {
+      "get": {
+        "operationId": "listCountries",
+        "summary": "List countries",
+        "tags": [
+          "Countries"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "regionId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCountryListResponse"
                 }
               }
             }
@@ -7065,6 +7535,38 @@
         }
       }
     },
+    "/admin/payment-providers": {
+      "get": {
+        "operationId": "listPaymentProviders",
+        "summary": "List enabled payment providers",
+        "tags": [
+          "Payment Providers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPaymentProviderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
     "/admin/product-options": {
       "get": {
         "operationId": "listProductOptions",
@@ -8988,6 +9490,395 @@
         }
       }
     },
+    "/admin/regions": {
+      "get": {
+        "operationId": "listRegions",
+        "summary": "List regions",
+        "tags": [
+          "Regions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRegionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createRegion",
+        "summary": "Create a region",
+        "tags": [
+          "Regions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateRegion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRegionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/admin/regions/{id}": {
+      "get": {
+        "operationId": "getRegion",
+        "summary": "Retrieve a region",
+        "tags": [
+          "Regions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRegionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "post": {
+        "operationId": "updateRegion",
+        "summary": "Update a region",
+        "tags": [
+          "Regions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateRegion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRegionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/regions/{id}/countries": {
+      "post": {
+        "operationId": "assignRegionCountries",
+        "summary": "Assign countries to a region",
+        "tags": [
+          "Regions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAssignRegionCountries"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRegionCountriesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/admin/regions/{id}/countries/{code}": {
+      "post": {
+        "operationId": "updateRegionCountryLocale",
+        "summary": "Update a country's locale",
+        "tags": [
+          "Regions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            },
+            "required": true,
+            "name": "code",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateCountryLocale"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCountryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeRegionCountry",
+        "summary": "Remove a country from a region",
+        "tags": [
+          "Regions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            },
+            "required": true,
+            "name": "code",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/admin/shipping-options": {
       "get": {
         "operationId": "listAdminShippingOptions",
@@ -9346,6 +10237,223 @@
             },
             "required": true,
             "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/store": {
+      "get": {
+        "operationId": "getStore",
+        "summary": "Retrieve the store and its currencies",
+        "tags": [
+          "Store"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStoreResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "post": {
+        "operationId": "updateStore",
+        "summary": "Update the store's details",
+        "tags": [
+          "Store"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateStore"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStoreResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/store/currencies": {
+      "post": {
+        "operationId": "addStoreCurrencies",
+        "summary": "Add currencies to the store",
+        "tags": [
+          "Store"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAddStoreCurrencies"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStoreResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/store/currencies/{code}/default": {
+      "post": {
+        "operationId": "setDefaultStoreCurrency",
+        "summary": "Nominate the store's default currency",
+        "tags": [
+          "Store"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "pattern": "^[A-Za-z]{3}$"
+            },
+            "required": true,
+            "name": "code",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStoreResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/store/currencies/{code}": {
+      "delete": {
+        "operationId": "removeStoreCurrency",
+        "summary": "Remove a currency from the store",
+        "tags": [
+          "Store"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "pattern": "^[A-Za-z]{3}$"
+            },
+            "required": true,
+            "name": "code",
             "in": "path"
           }
         ],

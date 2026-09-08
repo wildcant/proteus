@@ -13,6 +13,7 @@ import { Pagination } from './data-table-ui/pagination'
 import { Search } from './data-table-ui/search'
 import { SortingMenu } from './data-table-ui/sorting-menu'
 import { Toolbar, ToolbarRow, ToolbarSection } from './data-table-ui/toolbar'
+import { ToolbarHeading } from './data-table-ui/toolbar-heading'
 import { useColumns } from './hooks/use-columns'
 import { useFilters } from './hooks/use-filters'
 import { usePagination } from './hooks/use-pagination'
@@ -30,11 +31,13 @@ type ActionConfig = {
 type DataTableProps<T> = {
   use: TableDefinition<T>
   heading?: string
+  /** A sentence under the heading saying what the list is. Omitted, the heading stands alone. */
+  description?: string
   actions?: ActionConfig[]
   className?: string
 }
 
-export function DataTable<T>({ use, heading, actions, className }: DataTableProps<T>) {
+export function DataTable<T>({ use, heading, description, actions, className }: DataTableProps<T>) {
   const { config, columns, filterDefs, rowSelection } = use
 
   const urlState = useUrlState({
@@ -113,7 +116,7 @@ export function DataTable<T>({ use, heading, actions, className }: DataTableProp
       <Toolbar>
         <ToolbarRow className="px-6">
           <ToolbarSection position="left">
-            {!!heading && <h1 className="font-semibold text-lg">{heading}</h1>}
+            <ToolbarHeading heading={heading} description={description} />
           </ToolbarSection>
           <ToolbarSection position="right">
             {!hasSecondRow && (

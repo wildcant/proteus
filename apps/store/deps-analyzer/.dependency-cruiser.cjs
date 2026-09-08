@@ -1,4 +1,4 @@
-const { featureStructureRules, layerDirectionRules } = require('@proteus/frontend-conventions')
+const { apiLayerRules, featureStructureRules, layerDirectionRules } = require('@proteus/frontend-conventions')
 
 /**
  * Which store feature may import which, as a directed acyclic graph.
@@ -70,6 +70,8 @@ module.exports = {
       from: { pathNot: STRIPE_ADAPTER_PATH },
       to: { path: '(^|/)node_modules/@stripe/' },
     },
+    // HTTP stays behind the api layer, shared with the admin. See packages/frontend-conventions.
+    ...apiLayerRules(),
     ...featureGraphRules,
     {
       name: 'feature-graph-undeclared',

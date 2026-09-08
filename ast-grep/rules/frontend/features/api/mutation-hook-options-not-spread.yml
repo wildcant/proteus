@@ -2,7 +2,7 @@ id: mutation-hook-options-not-spread
 language: typescript
 severity: error
 message: This hook never spreads the caller's options, so everything but the callbacks is dropped.
-note: 'Destructure `const { onSuccess, onError, ...rest } = options ?? {}` and spread `...rest` first. docs/mutation-hooks.md'
+note: 'Destructure `const { onSuccess, onError, ...rest } = options ?? {}` and spread `...rest` first. ast-grep/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
 rule:

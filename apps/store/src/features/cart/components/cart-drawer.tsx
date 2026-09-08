@@ -1,5 +1,5 @@
 import { ShoppingBagIcon } from '@proteus/icons'
-import { Drawer, DrawerClose, DrawerContent, DrawerTitle, formatPrice } from '@proteus/ui'
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { InfoIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
@@ -8,6 +8,7 @@ import { useCart } from '#/features/cart/api/cart'
 import { CartDrawerSkeleton } from '#/features/cart/components/cart-drawer-skeleton'
 import { CartEmpty } from '#/features/cart/components/cart-empty'
 import { CartItem } from '#/features/cart/components/cart-item'
+import { useFormatters } from '#/hooks/use-formatters'
 import { useModal } from '#/lib/modal-state'
 
 /**
@@ -18,6 +19,7 @@ import { useModal } from '#/lib/modal-state'
 export function CartDrawer() {
   const { isOpen, setOpen } = useModal('cart')
   const { cart, isLoading } = useCart()
+  const { formatPrice } = useFormatters()
 
   const items = cart?.items ?? []
   const sortedItems = [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
