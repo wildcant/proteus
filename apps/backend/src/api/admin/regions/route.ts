@@ -10,7 +10,7 @@ import {
 } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { createRegionWorkflow } from '@workflows/region/create-region.js'
-import { buildRegionView, buildRegionViews } from '@workflows/region/utils/build-region-views.js'
+import { regionsWithRelations, regionWithRelations } from '@workflows/region/utils/region-with-relations.js'
 
 export const GetInput = { query: AdminRegionListParams }
 export const GetOutput = AdminRegionListResponse
@@ -44,7 +44,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   return {
     status: 200,
     json: {
-      regions: buildRegionViews(regions, countries, links, providers),
+      regions: regionsWithRelations(regions, countries, links, providers),
       count: matching.length,
       offset,
       limit,
@@ -69,5 +69,5 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     paymentService.listPaymentProviders(),
   ])
 
-  return { status: 201, json: { region: buildRegionView(region, countries, links, providers) } }
+  return { status: 201, json: { region: regionWithRelations(region, countries, links, providers) } }
 }

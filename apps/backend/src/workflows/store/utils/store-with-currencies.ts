@@ -1,24 +1,8 @@
-import type { IStoreModuleService, StoreCurrencyDTO, StoreDTO } from '@core/types/index.js'
+import type { StoreCurrencyDTO, StoreDTO } from '@core/types/index.js'
 import type { AdminStore } from '@proteus/http-schemas/admin'
 
 /** What every admin store route answers with when a deployment has no store to describe. */
 export const NO_STORE_CONFIGURED = 'No store is configured'
-
-/**
- * The one store a deployment has, oldest first.
- *
- * The same resolution the storefront's pricing context and the region currency check make, so
- * every surface answers for the same row — there is no id in any of these paths precisely because
- * there is nothing to choose between.
- *
- * Returns `undefined` rather than throwing, so the route that calls it raises the 404 itself and
- * therefore documents it: a status the OpenAPI document promises has to be one the handler is seen
- * to send.
- */
-export async function resolveStore(storeService: IStoreModuleService): Promise<StoreDTO | undefined> {
-  const [store] = await storeService.listStores(undefined, { limit: 1, order: { createdAt: 'ASC' } })
-  return store
-}
 
 /**
  * The default currency leads, then the rest alphabetically.
@@ -39,15 +23,9 @@ function byDefaultThenCode(left: StoreCurrencyDTO, right: StoreCurrencyDTO): num
  * adding a currency to a store that had none also names the store's default, and nominating a
  * default reorders the list. A client that had to refetch to learn either would render the old
  * answer for a round trip.
+ *
+ * The sort is the whole job; the response schema does the narrowing.
  */
-export function buildStoreView(store: StoreDTO, currencies: StoreCurrencyDTO[]): AdminStore {
-  return {
-    id: store.id,
-    name: store.name,
-    defaultRegionId: store.defaultRegionId,
-    currencies: [...currencies].sort(byDefaultThenCode).map((currency) => ({
-      currencyCode: currency.currencyCode,
-      isDefault: currency.isDefault,
-    })),
-  }
+export function storeWithCurrencies(store: StoreDTO, currencies: StoreCurrencyDTO[]): AdminStore {
+  return { ...store, currencies: [...currencies].sort(byDefaultThenCode) }
 }

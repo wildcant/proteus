@@ -3,7 +3,7 @@ import type { IRegionModuleService, IStoreModuleService } from '@core/types/inde
 import { Modules } from '@core/utils/index.js'
 import { AdminStoreResponse, AdminUpdateStore } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
-import { buildStoreView, NO_STORE_CONFIGURED, resolveStore } from '@workflows/store/utils/store-view.js'
+import { NO_STORE_CONFIGURED, storeWithCurrencies } from '@workflows/store/utils/store-with-currencies.js'
 
 export const GetOutput = AdminStoreResponse
 export const GetThrows = [ErrorTypes.NOT_FOUND] as const
@@ -19,14 +19,14 @@ export const GetThrows = [ErrorTypes.NOT_FOUND] as const
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
   const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
 
-  const store = await resolveStore(storeService)
+  const store = await storeService.resolveStore()
   if (!store) {
     throw new AppError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
   }
 
   const currencies = await storeService.listStoreCurrencies({ storeId: store.id })
 
-  return { status: 200, json: { store: buildStoreView(store, currencies) } }
+  return { status: 200, json: { store: storeWithCurrencies(store, currencies) } }
 }
 
 export const PostInput = { body: AdminUpdateStore }
@@ -51,7 +51,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
   const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
 
-  const store = await resolveStore(storeService)
+  const store = await storeService.resolveStore()
   if (!store) {
     throw new AppError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
   }
@@ -76,5 +76,5 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
 
   const currencies = await storeService.listStoreCurrencies({ storeId: store.id })
 
-  return { status: 200, json: { store: buildStoreView(updated ?? store, currencies) } }
+  return { status: 200, json: { store: storeWithCurrencies(updated ?? store, currencies) } }
 }

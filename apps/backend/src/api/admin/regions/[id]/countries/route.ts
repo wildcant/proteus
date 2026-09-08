@@ -1,7 +1,6 @@
 import { AdminAssignRegionCountries, AdminRegionCountriesResponse, IdParams } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { assignRegionCountriesWorkflow } from '@workflows/region/assign-region-countries.js'
-import { buildCountryViews } from '@workflows/region/utils/build-country-views.js'
 
 export const PostInput = { params: IdParams, body: AdminAssignRegionCountries }
 export const PostOutput = AdminRegionCountriesResponse
@@ -26,5 +25,5 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     countries: req.body.countries,
   })
 
-  return { status: 200, json: { countries: buildCountryViews(assigned) } }
+  return { status: 200, json: { countries: assigned } }
 }

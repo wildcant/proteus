@@ -46,7 +46,7 @@ async function resolveRegion(scope: AwilixContainer, countryCode?: string, cartI
   }
 
   const storeService = scope.resolve<IStoreModuleService>(Modules.STORE)
-  const [store] = await storeService.listStores(undefined, { limit: 1, order: { createdAt: 'ASC' } })
+  const store = await storeService.resolveStore()
   if (!store?.defaultRegionId) {
     // The request was well formed; the deployment has no market to fall back on. A 500 rather than
     // a 400, because nothing the caller could send would fix it.

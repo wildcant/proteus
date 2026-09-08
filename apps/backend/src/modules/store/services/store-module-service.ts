@@ -43,6 +43,11 @@ export class StoreModuleService implements IStoreModuleService {
     return this.storeRepository.findByIdOrFail(storeId, config, context)
   }
 
+  async resolveStore(context?: Context): Promise<StoreDTO | undefined> {
+    const [store] = await this.storeRepository.find(undefined, { limit: 1, order: { createdAt: 'ASC' } }, context)
+    return store
+  }
+
   /** The currencies are created in the same transaction, so a store is never briefly untradeable. */
   async createStore(data: CreateStoreDTO, context?: Context): Promise<StoreDTO> {
     const { currencies, ...store } = data

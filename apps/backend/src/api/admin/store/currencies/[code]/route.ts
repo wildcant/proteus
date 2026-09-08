@@ -3,7 +3,7 @@ import type { IRegionModuleService, IStoreModuleService } from '@core/types/inde
 import { Modules } from '@core/utils/index.js'
 import { DeleteResponse, StoreCurrencyParams } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
-import { NO_STORE_CONFIGURED, resolveStore } from '@workflows/store/utils/store-view.js'
+import { NO_STORE_CONFIGURED } from '@workflows/store/utils/store-with-currencies.js'
 
 export const DeleteInput = { params: StoreCurrencyParams }
 export const DeleteOutput = DeleteResponse
@@ -31,7 +31,7 @@ export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<Http
   const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
   const { code } = req.params
 
-  const store = await resolveStore(storeService)
+  const store = await storeService.resolveStore()
   if (!store) {
     throw new AppError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
   }

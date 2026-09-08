@@ -2,7 +2,7 @@ import type { RegionPaymentProviderDTO } from '@core/types/link/common.js'
 import type { PaymentProviderDTO } from '@core/types/payment/common.js'
 import type { CountryDTO, RegionDTO } from '@core/types/region/common.js'
 import { describe, expect, test } from 'vitest'
-import { buildRegionView, buildRegionViews } from '../utils/build-region-views.js'
+import { regionsWithRelations, regionWithRelations } from '../utils/region-with-relations.js'
 
 const now = new Date('2026-01-01T00:00:00.000Z')
 
@@ -39,9 +39,9 @@ const link = (regionId: string, paymentProviderId: string): RegionPaymentProvide
 
 const provider = (id: string, isEnabled = true): PaymentProviderDTO => ({ id, isEnabled })
 
-describe('buildRegionViews', () => {
+describe('regionsWithRelations', () => {
   test('gives each region only its own countries and providers', () => {
-    const views = buildRegionViews(
+    const views = regionsWithRelations(
       [region('reg_eu', 'Europe', 'eur'), region('reg_us', 'United States', 'usd')],
       [country('fr', 'France', 'reg_eu'), country('us', 'United States', 'reg_us')],
       [link('reg_eu', 'pp_stripe_default'), link('reg_us', 'pp_system_default')],
@@ -61,7 +61,7 @@ describe('buildRegionViews', () => {
   })
 
   test('a country no region sells to belongs to none of them', () => {
-    const views = buildRegionViews([region('reg_eu', 'Europe', 'eur')], [country('jp', 'Japan', null)], [], [])
+    const views = regionsWithRelations([region('reg_eu', 'Europe', 'eur')], [country('jp', 'Japan', null)], [], [])
 
     expect(views[0]?.countries).toEqual([])
   })
@@ -69,7 +69,7 @@ describe('buildRegionViews', () => {
   test('drops a link whose provider row is gone rather than failing the region', () => {
     // A gateway removed from the deployment leaves its links behind. A merchant who can still
     // open the region is a merchant who can still repair it.
-    const views = buildRegionViews(
+    const views = regionsWithRelations(
       [region('reg_eu', 'Europe', 'eur')],
       [],
       [link('reg_eu', 'pp_stripe_default'), link('reg_eu', 'pp_gone_default')],
@@ -80,7 +80,7 @@ describe('buildRegionViews', () => {
   })
 
   test('carries a disabled provider a region is already linked to', () => {
-    const views = buildRegionViews(
+    const views = regionsWithRelations(
       [region('reg_eu', 'Europe', 'eur')],
       [],
       [link('reg_eu', 'pp_stripe_default')],
@@ -91,7 +91,7 @@ describe('buildRegionViews', () => {
   })
 
   test('a region with nothing attached is still a region', () => {
-    expect(buildRegionViews([region('reg_eu', 'Europe', 'eur')], [], [], [])[0]).toMatchObject({
+    expect(regionsWithRelations([region('reg_eu', 'Europe', 'eur')], [], [], [])[0]).toMatchObject({
       name: 'Europe',
       currencyCode: 'eur',
       countries: [],
@@ -100,16 +100,16 @@ describe('buildRegionViews', () => {
   })
 })
 
-describe('buildRegionView', () => {
-  test('shapes one region exactly as the list shapes each of its own', () => {
-    const [only] = buildRegionViews(
+describe('regionWithRelations', () => {
+  test('joins one region exactly as the list joins each of its own', () => {
+    const [only] = regionsWithRelations(
       [region('reg_eu', 'Europe', 'eur')],
       [country('fr', 'France', 'reg_eu')],
       [link('reg_eu', 'pp_stripe_default')],
       [provider('pp_stripe_default')],
     )
 
-    const single = buildRegionView(
+    const single = regionWithRelations(
       region('reg_eu', 'Europe', 'eur'),
       [country('fr', 'France', 'reg_eu')],
       [link('reg_eu', 'pp_stripe_default')],

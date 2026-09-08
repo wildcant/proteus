@@ -3,7 +3,7 @@ import type { IStoreModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { AdminStoreResponse, StoreCurrencyParams } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
-import { buildStoreView, NO_STORE_CONFIGURED, resolveStore } from '@workflows/store/utils/store-view.js'
+import { NO_STORE_CONFIGURED, storeWithCurrencies } from '@workflows/store/utils/store-with-currencies.js'
 
 export const PostInput = { params: StoreCurrencyParams }
 export const PostOutput = AdminStoreResponse
@@ -27,12 +27,12 @@ export const PostThrows = [ErrorTypes.NOT_FOUND] as const
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
 
-  const store = await resolveStore(storeService)
+  const store = await storeService.resolveStore()
   if (!store) {
     throw new AppError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
   }
 
   const currencies = await storeService.setDefaultStoreCurrency(store.id, req.params.code)
 
-  return { status: 200, json: { store: buildStoreView(store, currencies) } }
+  return { status: 200, json: { store: storeWithCurrencies(store, currencies) } }
 }

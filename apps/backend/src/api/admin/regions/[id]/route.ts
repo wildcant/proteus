@@ -5,7 +5,7 @@ import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { AdminRegionResponse, AdminUpdateRegion, IdParams } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { updateRegionWorkflow } from '@workflows/region/update-region.js'
-import { buildRegionView } from '@workflows/region/utils/build-region-views.js'
+import { regionWithRelations } from '@workflows/region/utils/region-with-relations.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminRegionResponse
@@ -23,7 +23,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     paymentService.listPaymentProviders(),
   ])
 
-  return { status: 200, json: { region: buildRegionView(region, countries, links, providers) } }
+  return { status: 200, json: { region: regionWithRelations(region, countries, links, providers) } }
 }
 
 export const PostInput = { params: IdParams, body: AdminUpdateRegion }
@@ -49,5 +49,5 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     paymentService.listPaymentProviders(),
   ])
 
-  return { status: 200, json: { region: buildRegionView(region, countries, links, providers) } }
+  return { status: 200, json: { region: regionWithRelations(region, countries, links, providers) } }
 }

@@ -2,7 +2,6 @@ import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/index.js'
 import { AdminCountryListParams, AdminCountryListResponse } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
-import { buildCountryViews } from '@workflows/region/utils/build-country-views.js'
 
 export const GetInput = { query: AdminCountryListParams }
 export const GetOutput = AdminCountryListResponse
@@ -30,7 +29,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   return {
     status: 200,
     json: {
-      countries: buildCountryViews(matching.slice(offset, offset + limit)),
+      countries: matching.slice(offset, offset + limit),
       count: matching.length,
       offset,
       limit,

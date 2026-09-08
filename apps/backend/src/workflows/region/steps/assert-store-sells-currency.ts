@@ -21,9 +21,7 @@ export async function assertStoreSellsCurrencyStep(ctx: WorkflowContext, currenc
     if (currencyCode === undefined) return
 
     const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
-    // Oldest first — the same store the admin store route and the storefront's pricing context
-    // resolve, so the currencies a region is checked against are the ones the price forms offer.
-    const [store] = await storeService.listStores(undefined, { limit: 1, order: { createdAt: 'ASC' } })
+    const store = await storeService.resolveStore()
     const currencies = store ? await storeService.listStoreCurrencies({ storeId: store.id }) : []
 
     if (currencies.some((currency) => currency.currencyCode === currencyCode)) return

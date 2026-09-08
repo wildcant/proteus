@@ -8,7 +8,6 @@ import {
   RegionCountryParams,
 } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
-import { buildCountryView } from '@workflows/region/utils/build-country-views.js'
 
 export const PostInput = { params: RegionCountryParams, body: AdminUpdateCountryLocale }
 export const PostOutput = AdminCountryResponse
@@ -38,7 +37,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
 
   const [updated] = await regionService.updateCountries([country.id], { localeCode: req.body.localeCode })
 
-  return { status: 200, json: { country: buildCountryView(updated ?? country) } }
+  return { status: 200, json: { country: updated ?? country } }
 }
 
 export const DeleteInput = { params: RegionCountryParams }
