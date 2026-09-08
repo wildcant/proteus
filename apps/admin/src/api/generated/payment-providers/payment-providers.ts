@@ -9,7 +9,7 @@ import type {
   AdminPaymentProviderListResponse
 } from '../model';
 
-import { fetcher } from '../../../lib/fetcher.ts';
+import { fetcher } from '../../fetcher.ts';
 
 
 

@@ -10,7 +10,7 @@ import type {
   ListCountriesParams
 } from '../model';
 
-import { fetcher } from '../../../lib/fetcher.ts';
+import { fetcher } from '../../fetcher.ts';
 
 
 
