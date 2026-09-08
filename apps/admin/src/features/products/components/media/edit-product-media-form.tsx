@@ -7,7 +7,7 @@ import { useEditProductMediaForm } from '#/features/products/hooks/use-edit-prod
 export function EditProductMediaForm({ product }: { product: AdminProductResponseProduct }) {
   const { handleSuccess } = useRouteModal()
 
-  const { form, isLoading } = useEditProductMediaForm(product, {
+  const { form } = useEditProductMediaForm(product, {
     onSuccess: () => {
       toast.add({ type: 'success', title: 'Media updated successfully' })
       handleSuccess()
@@ -33,9 +33,7 @@ export function EditProductMediaForm({ product }: { product: AdminProductRespons
           </RouteFocusModal.Body>
           <RouteFocusModal.Footer>
             <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-            <form.SubmitButton size="sm" isPending={isLoading}>
-              Save
-            </form.SubmitButton>
+            <form.SubmitButton size="sm">Save</form.SubmitButton>
           </RouteFocusModal.Footer>
         </form.AppForm>
       </KeyboundForm>

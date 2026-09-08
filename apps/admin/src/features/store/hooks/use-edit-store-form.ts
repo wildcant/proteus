@@ -2,7 +2,7 @@ import { AdminUpdateStore, type AdminUpdateStoreBody } from '@proteus/http-schem
 import type { AdminStore, AdminStoreResponse } from '#/api/generated/model'
 import { useUpdateStore } from '#/features/store/api/store'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type EditStoreFormParams = SubmitFormParams<AdminStoreResponse>
 
@@ -19,17 +19,18 @@ export function useEditStoreForm(store: AdminStore, params?: EditStoreFormParams
     // The same schema the route validates against, so a value the API would refuse is one the form
     // refuses first — with the field named rather than as a 400 the merchant has to interpret.
     validators: { onSubmit: AdminUpdateStore },
-    onSubmit: ({ value }) => {
-      updateMutation.mutate(value, {
-        onSuccess: (data) => {
-          form.reset()
-          params?.onSuccess?.(data)
-        },
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await updateMutation.mutateAsync(value)
+        form.reset()
+        params?.onSuccess?.(data)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: updateMutation.isPending }
+  return { form }
 }

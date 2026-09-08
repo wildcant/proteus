@@ -6,7 +6,7 @@ import { useInviteTable } from '#/features/users/hooks/use-invite-table'
 export function InviteForm() {
   const invites = useInviteTable()
 
-  const { form, isLoading } = useInviteForm({
+  const { form } = useInviteForm({
     onSuccess: () => toast.add({ type: 'success', title: 'Invite sent' }),
   })
 
@@ -22,9 +22,7 @@ export function InviteForm() {
                 <form.AppField name="email">
                   {(field) => <field.TextField label="Email" type="email" autoFocus placeholder="user@example.com" />}
                 </form.AppField>
-                <form.SubmitButton size="sm" isPending={isLoading}>
-                  Send Invite
-                </form.SubmitButton>
+                <form.SubmitButton size="sm">Send Invite</form.SubmitButton>
               </div>
               <div className="mt-8">
                 <DataTable use={invites} heading="Pending Invites" />

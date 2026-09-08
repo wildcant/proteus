@@ -2,7 +2,7 @@ id: form-element-not-wrapped
 language: tsx
 severity: error
 message: This is a bare `<form>`. Every form goes through a wrapper that owns `noValidate`.
-note: 'Use `<Form>` from `#/components/form/form.tsx`, or `KeyboundForm` from `@proteus/ui` for an admin route modal. Fields carry type="email" and type="tel" for the mobile keyboard, which also opts them into the browser''s constraint validation — a native bubble in place of the field error the schema produces. The wrapper also owns the `preventDefault`, and calls `onSubmit` with no arguments so `form.handleSubmit` can be passed bare. docs/form-hooks.md'
+note: 'Use `<Form>` from `#/components/form/form.tsx`, or `KeyboundForm` from `@proteus/ui` for an admin route modal. Fields carry type="email" and type="tel" for the mobile keyboard, which also opts them into the browser''s constraint validation — a native bubble in place of the field error the schema produces. The wrapper also owns the `preventDefault`, and calls `onSubmit` with no arguments so `form.handleSubmit` can be passed bare. ast-grep/rules/frontend/components/__docs__/form-components.md'
 files:
   - "**/src/**/*.tsx"
 ignores:

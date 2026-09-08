@@ -2,7 +2,7 @@ id: query-hook-inline-query
 language: typescript
 severity: error
 message: This query is defined inline at the hook, so no route loader can prefetch it.
-note: 'Move `queryKey`/`queryFn` into an exported `*QueryOptions` factory and have the hook call it. docs/query-hooks.md'
+note: 'Move `queryKey`/`queryFn` into an exported `*QueryOptions` factory and have the hook call it. ast-grep/rules/frontend/features/api/__docs__/query-hooks.md'
 files:
   - "**/features/*/api/*.ts"
 rule:

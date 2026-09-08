@@ -1,4 +1,4 @@
-# Query Hook Pattern
+# Query hooks
 
 Query hooks in `features/{name}/api/` wrap Orval-generated API functions with React Query's
 `useQuery`. The counterpart to [mutation hooks](./mutation-hooks.md), and the same file holds both.
@@ -14,7 +14,7 @@ features/{name}/
   api/{name}.ts   — query keys, query options, query hooks, and mutation hooks
 ```
 
-## Hook shape
+## Shape
 
 ```ts
 import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query'
@@ -132,12 +132,6 @@ consumes it is beyond a single-file pattern match, so it stays a thing to know r
 
 ## Enforcement
 
-Every rule on this page is enforced, one [ast-grep](https://ast-grep.github.io) rule per file in
-`ast-grep/rules/frontend/features/api/`, run by the `conventions` job of `npm run verify`. They
-match the syntax tree rather than lines, because a hook that names itself one thing and does another
-reads as compliant to any line-wise pattern. `ast-grep/README.md` has the rule tree and how to add
-one.
-
 | Rule id | The paragraph it enforces |
 |---|---|
 | `query-hook-inline-query` | `queryKey`/`queryFn` live in a factory, not at the `useQuery` |
@@ -148,23 +142,8 @@ one.
 | `query-raises-toast` | a query does not announce its own failure |
 | `suspense-hook-name-mismatch` | `useSuspense<Thing>` suspends; `use<Thing>` does not |
 
-Each rule owns a test alongside it in `ast-grep/rule-tests/` holding the code it must flag and the
-code it must not. `npm run check:code-shape:test` fails when a rule stops matching its own `invalid`
-case — a check that has silently stopped matching prints exactly what a clean codebase prints, and
-this is what tells the two apart.
-
-### Exemptions
-
-A rule with a considered exception is suppressed at the line, by id, with the reason written above
-it, exactly as on the mutation side:
-
-```ts
-// ast-grep-ignore: query-options-loose-type
-```
-
-The suppression names one rule and silences only that rule. A misspelt rule id suppresses nothing,
-and `npm run check:code-shape` passes `--error=unused-suppression`, so the build fails the day an
-exemption outlives the code it was written for. None of these seven has an exemption today.
+`ast-grep/README.md` covers how rules run, how their tests work, and how to suppress one. None of
+these seven has an exemption today.
 
 ## What is deliberately not enforced
 
@@ -181,4 +160,4 @@ exemption outlives the code it was written for. None of these seven has an exemp
 ## Relationship with mutation hooks
 
 Mutations invalidate the keys these factories are built from, which is why both live in one file and
-share one `queryKeysFactory` instance. See [docs/mutation-hooks.md](./mutation-hooks.md).
+share one `queryKeysFactory` instance. See [mutation hooks](./mutation-hooks.md).

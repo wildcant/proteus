@@ -14,8 +14,8 @@ import { withForm } from '#/lib/form-hook'
  */
 export const AddressForm = withForm({
   ...addressFormOpts,
-  props: { title: '', isPending: false },
-  render: function AddressForm({ form, title, isPending }) {
+  props: { title: '' },
+  render: function AddressForm({ form, title }) {
     return (
       <RouteDrawer.Form form={form}>
         <Form onSubmit={form.handleSubmit} className="flex min-h-0 flex-1 flex-col">
@@ -79,9 +79,7 @@ export const AddressForm = withForm({
               <RouteDrawer.Close render={<Button variant="outline" size="sm" type="button" />}>
                 Cancel
               </RouteDrawer.Close>
-              <form.SubmitButton size="sm" isPending={isPending}>
-                Save
-              </form.SubmitButton>
+              <form.SubmitButton size="sm">Save</form.SubmitButton>
             </RouteDrawer.Footer>
           </form.AppForm>
         </Form>

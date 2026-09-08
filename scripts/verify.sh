@@ -53,7 +53,7 @@ job_conventions() {
   # is the step that notices when the two have drifted. --check never writes, so it behaves the same
   # here and under --ci. See scripts/generate-workflow-registry.ts.
   npm run --workspace=backend --silent check:workflow-registry || code=1
-  # Code-shape rules — the mutation-hook contract in docs/mutation-hooks.md today. Spans store and
+  # Code-shape rules — the mutation-hook contract in ast-grep/rules/ today. Spans store and
   # admin, so it lives at the root like the env check. ast-grep matches the syntax tree rather than
   # lines: a hook forwarding one callback and swallowing the other reads as compliant to any
   # line-wise pattern. `--error=unused-suppression` fails the run when an `ast-grep-ignore` outlives

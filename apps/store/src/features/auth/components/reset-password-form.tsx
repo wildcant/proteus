@@ -3,7 +3,7 @@ import type { ResetPasswordFormParams } from '#/features/auth/hooks/use-reset-pa
 import { useResetPasswordForm } from '#/features/auth/hooks/use-reset-password-form'
 
 export function ResetPasswordForm(props: ResetPasswordFormParams) {
-  const { form, isPending } = useResetPasswordForm(props)
+  const { form } = useResetPasswordForm(props)
 
   return (
     <Form onSubmit={form.handleSubmit} className="w-full">
@@ -13,9 +13,13 @@ export function ResetPasswordForm(props: ResetPasswordFormParams) {
             {(field) => <field.TextField label="New password" type="password" autoComplete="new-password" autoFocus />}
           </form.AppField>
         </div>
-        <form.SubmitButton isPending={isPending} className="mt-6 h-14 w-full font-semibold text-base">
-          {isPending ? 'Updating...' : 'Set new password'}
-        </form.SubmitButton>
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => (
+            <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">
+              {isSubmitting ? 'Updating...' : 'Set new password'}
+            </form.SubmitButton>
+          )}
+        </form.Subscribe>
       </form.AppForm>
     </Form>
   )

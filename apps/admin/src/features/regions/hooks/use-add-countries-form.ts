@@ -3,7 +3,7 @@ import { formOptions } from '@tanstack/form-core'
 import type { AdminRegionCountriesResponse } from '#/api/generated/model'
 import { useAssignRegionCountries } from '#/features/regions/api/countries'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type AddCountriesFormParams = SubmitFormParams<AdminRegionCountriesResponse>
 
@@ -26,17 +26,18 @@ export function useAddCountriesForm(regionId: string, params?: AddCountriesFormP
 
   const form = useAppForm({
     ...addCountriesFormOpts,
-    onSubmit: ({ value }) => {
-      assignMutation.mutate(value, {
-        onSuccess: (data) => {
-          form.reset()
-          params?.onSuccess?.(data)
-        },
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await assignMutation.mutateAsync(value)
+        form.reset()
+        params?.onSuccess?.(data)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: assignMutation.isPending }
+  return { form }
 }

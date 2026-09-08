@@ -2,7 +2,7 @@ import { AdminAddStoreCurrencies, type AdminAddStoreCurrenciesBody } from '@prot
 import type { AdminStoreResponse } from '#/api/generated/model'
 import { useAddStoreCurrencies } from '#/features/store/api/store'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type AddCurrenciesFormParams = SubmitFormParams<AdminStoreResponse>
 
@@ -14,20 +14,21 @@ export function useAddCurrenciesForm(params?: AddCurrenciesFormParams) {
       currencyCodes: [],
     } satisfies AdminAddStoreCurrenciesBody as AdminAddStoreCurrenciesBody,
     // The same schema the route validates against. Every code here comes from the runtime's own
-    // ISO 4217 list, so the only value it can refuse is the empty selection — which the Save
-    // button already refuses, visibly.
+    // ISO 4217 list, so the only value it can refuse is the empty selection — which the select
+    // then reports on itself.
     validators: { onSubmit: AdminAddStoreCurrencies },
-    onSubmit: ({ value }) => {
-      addMutation.mutate(value, {
-        onSuccess: (data) => {
-          form.reset()
-          params?.onSuccess?.(data)
-        },
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await addMutation.mutateAsync(value)
+        form.reset()
+        params?.onSuccess?.(data)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: addMutation.isPending }
+  return { form }
 }

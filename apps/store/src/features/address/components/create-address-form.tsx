@@ -4,7 +4,7 @@ import { useCreateAddressForm } from '#/features/address/hooks/use-create-addres
 
 export function CreateAddressForm() {
   const { handleSuccess } = useRouteModal()
-  const { form, isPending } = useCreateAddressForm({ onSuccess: () => handleSuccess() })
+  const { form } = useCreateAddressForm({ onSuccess: () => handleSuccess() })
 
-  return <AddressForm form={form} title="Add an address" isPending={isPending} />
+  return <AddressForm form={form} title="Add an address" />
 }

@@ -10,7 +10,7 @@ type CreateAccountFormProps = {
 }
 
 export function CreateAccountForm({ token, email, onSuccess }: CreateAccountFormProps) {
-  const { form, isPending } = useCreateAccountForm({
+  const { form } = useCreateAccountForm({
     token,
     onSuccess,
   })
@@ -38,9 +38,11 @@ export function CreateAccountForm({ token, email, onSuccess }: CreateAccountForm
               <form.AppField name="confirmPassword">
                 {(field) => <field.TextField label="Confirm password" type="password" autoComplete="new-password" />}
               </form.AppField>
-              <form.SubmitButton isPending={isPending}>
-                {isPending ? 'Creating account...' : 'Create account'}
-              </form.SubmitButton>
+              <form.Subscribe selector={(state) => state.isSubmitting}>
+                {(isSubmitting) => (
+                  <form.SubmitButton>{isSubmitting ? 'Creating account...' : 'Create account'}</form.SubmitButton>
+                )}
+              </form.Subscribe>
             </form.AppForm>
           </Form>
           <div className="mt-4 text-center">

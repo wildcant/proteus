@@ -14,7 +14,7 @@ type CheckoutFormProps = {
 
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const data = useCheckoutData({ cart })
-  const { form, isLoading, placeOrder, signOut, controller, paymentError } = useCheckoutForm({ data })
+  const { form, placeOrder, signOut, controller, paymentError } = useCheckoutForm({ data })
 
   return (
     // The provider spans the button as well as the payment step: the adapter registers its
@@ -45,7 +45,13 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
               </p>
             )}
 
-            <form.SubmitButton className="w-full">{isLoading ? 'Placing order...' : 'Place order'}</form.SubmitButton>
+            <form.Subscribe selector={(state) => state.isSubmitting}>
+              {(isSubmitting) => (
+                <form.SubmitButton className="w-full">
+                  {isSubmitting ? 'Placing order...' : 'Place order'}
+                </form.SubmitButton>
+              )}
+            </form.Subscribe>
           </div>
         </form.AppForm>
       </Form>

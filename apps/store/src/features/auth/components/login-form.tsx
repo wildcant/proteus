@@ -5,7 +5,7 @@ import type { LoginFormParams } from '#/features/auth/hooks/use-login-form'
 import { useLoginForm } from '#/features/auth/hooks/use-login-form'
 
 export function LoginForm(props: LoginFormParams) {
-  const { form, isPending } = useLoginForm(props)
+  const { form } = useLoginForm(props)
 
   return (
     <Form onSubmit={form.handleSubmit} className="w-full">
@@ -21,9 +21,13 @@ export function LoginForm(props: LoginFormParams) {
         <Button variant="link" render={<Link to="/forgot-password" />} className="mt-6 w-full justify-center text-base">
           Forgot password?
         </Button>
-        <form.SubmitButton isPending={isPending} className="mt-6 h-14 w-full font-semibold text-base">
-          {isPending ? 'Signing in...' : 'Sign in'}
-        </form.SubmitButton>
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => (
+            <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">
+              {isSubmitting ? 'Signing in...' : 'Sign in'}
+            </form.SubmitButton>
+          )}
+        </form.Subscribe>
       </form.AppForm>
     </Form>
   )

@@ -5,7 +5,7 @@ import { useCreateProduct } from '#/features/products/api/products'
 import { useUploadProductMedia } from '#/features/products/hooks/use-upload-product-media.ts'
 import { resolveMediaPayload } from '#/features/products/utils/media'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 import type { SubmitIntent } from '../components/create-product-form/constants'
 import { type ProductFormValues, productFormSchema } from '../components/create-product-form/schemas'
 import { resolveVariantsPayload } from '../components/create-product-form/variant-rows'
@@ -33,7 +33,7 @@ export const productCreateFormOpts = formOptions({
 export type CreateProductFormParams = SubmitFormParams<AdminCreateProductResponse>
 
 export function useCreateProductForm(params?: CreateProductFormParams) {
-  const { uploadMedia, isPending: isUploading } = useUploadProductMedia()
+  const { uploadMedia } = useUploadProductMedia()
   const createMutation = useCreateProduct()
 
   const form = useAppForm({
@@ -43,7 +43,8 @@ export function useCreateProductForm(params?: CreateProductFormParams) {
       const status = meta?.intent === 'draft' ? 'draft' : 'published'
 
       try {
-        // Staged files have to reach storage before the product can reference their URLs.
+        // Staged files have to reach storage before the product can reference their URLs. The
+        // upload is awaited inside the submit, so `isSubmitting` covers it as well as the write.
         const media = await uploadMedia(value.media)
 
         // Parsing rather than casting also drops the image ids, which only updates accept. The
@@ -60,22 +61,16 @@ export function useCreateProductForm(params?: CreateProductFormParams) {
           ...resolveVariantsPayload(value.variants),
         }
 
-        createMutation.mutate(payload, {
-          onSuccess: (data) => {
-            form.reset()
-            params?.onSuccess?.(data)
-          },
-          onError: (error) => params?.onError?.(error.message),
-          onSettled: () => params?.onSettled?.(),
-        })
+        const data = await createMutation.mutateAsync(payload)
+        form.reset()
+        params?.onSuccess?.(data)
       } catch (error) {
-        // The upload and the parse throw; `mutate` reports its own failures through the callbacks.
-        params?.onError?.(error instanceof Error ? error.message : 'Failed to create product')
+        params?.onError?.(errorMessage(error))
       } finally {
         params?.onSettled?.()
       }
     },
   })
 
-  return { form, isLoading: isUploading || createMutation.isPending }
+  return { form }
 }

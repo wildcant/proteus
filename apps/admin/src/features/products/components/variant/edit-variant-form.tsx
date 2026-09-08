@@ -13,12 +13,12 @@ export function EditVariantForm({ productId, variant }: EditVariantFormProps) {
 
   // Passing the variant's id is what keeps the combination it already holds in the list — a
   // variant must be able to keep its own, and everything else is taken by definition.
-  const { combinations, current, onSearchChange, hasNoOptions, isPending } = useOptionCombinationSearch({
+  const { combinations, current, onSearchChange, hasNoOptions } = useOptionCombinationSearch({
     productId,
     variantId: variant.id,
   })
 
-  const { form, isLoading } = useEditVariantForm({
+  const { form } = useEditVariantForm({
     productId,
     variant,
     current,
@@ -68,9 +68,7 @@ export function EditVariantForm({ productId, variant }: EditVariantFormProps) {
           </RouteDrawer.Body>
           <RouteDrawer.Footer>
             <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-            <form.SubmitButton size="sm" isPending={isPending || isLoading}>
-              Save
-            </form.SubmitButton>
+            <form.SubmitButton size="sm">Save</form.SubmitButton>
           </RouteDrawer.Footer>
         </form.AppForm>
       </KeyboundForm>

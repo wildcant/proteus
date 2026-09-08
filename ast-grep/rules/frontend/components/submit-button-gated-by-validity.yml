@@ -2,7 +2,7 @@ id: submit-button-gated-by-validity
 language: tsx
 severity: error
 message: This submit button disables itself. A form that cannot be submitted cannot say which field is missing.
-note: 'Leave submit enabled and let the validator refuse it — the offending field renders its own error, which a greyed-out button never does. `disabled` on a submit is for the request already in flight (`isPending`, `isSubmitting`) and nothing else. docs/form-hooks.md'
+note: 'Leave submit enabled and let the validator refuse it — the offending field renders its own error, which a greyed-out button never does. `disabled` on a submit is for the request already in flight (`isPending`, `isSubmitting`) and nothing else. ast-grep/rules/frontend/components/__docs__/form-components.md'
 files:
   - "**/src/**/*.tsx"
 utils:

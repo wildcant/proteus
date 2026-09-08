@@ -2,7 +2,7 @@ import { AdminUpdateCountryLocale, type AdminUpdateCountryLocaleBody } from '@pr
 import type { AdminCountry, AdminCountryResponse } from '#/api/generated/model'
 import { useUpdateCountryLocale } from '#/features/regions/api/countries'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type EditCountryLocaleFormParams = SubmitFormParams<AdminCountryResponse>
 
@@ -18,14 +18,17 @@ export function useEditCountryLocaleForm(
       localeCode: country.localeCode ?? '',
     } satisfies AdminUpdateCountryLocaleBody as AdminUpdateCountryLocaleBody,
     validators: { onSubmit: AdminUpdateCountryLocale },
-    onSubmit: ({ value }) => {
-      updateMutation.mutate(value, {
-        onSuccess: (data) => params?.onSuccess?.(data),
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await updateMutation.mutateAsync(value)
+        params?.onSuccess?.(data)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: updateMutation.isPending }
+  return { form }
 }

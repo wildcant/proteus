@@ -26,7 +26,7 @@ export function EditVariantMediaForm({ productId, variant, productImages }: Edit
   const { handleSuccess } = useRouteModal()
   const [selection, setSelection] = useState<Record<string, boolean>>({})
 
-  const { form, isLoading } = useEditVariantMediaForm(productId, variant, {
+  const { form } = useEditVariantMediaForm(productId, variant, {
     onSuccess: () => handleSuccess(),
   })
 
@@ -124,9 +124,7 @@ export function EditVariantMediaForm({ productId, variant, productImages }: Edit
           </RouteFocusModal.Body>
           <RouteFocusModal.Footer>
             <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-            <form.SubmitButton size="sm" isPending={isLoading}>
-              Save
-            </form.SubmitButton>
+            <form.SubmitButton size="sm">Save</form.SubmitButton>
           </RouteFocusModal.Footer>
         </form.AppForm>
       </KeyboundForm>

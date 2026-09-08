@@ -1,4 +1,4 @@
-# Mutation Hook Pattern
+# Mutation hooks
 
 Mutation hooks in `features/{name}/api/` wrap Orval-generated API functions with React Query's `useMutation`. Every mutation hook follows a consistent pattern: accept an optional `options` parameter, handle cache invalidation on success, display an error toast on failure, and forward all callbacks to the caller.
 
@@ -9,7 +9,7 @@ features/{name}/
   api/{name}.ts   — query options, query hooks, and mutation hooks
 ```
 
-## Hook shape
+## Shape
 
 ```ts
 import { toast } from '@proteus/ui'
@@ -89,12 +89,6 @@ export const useUpdateThing = (id: string, options?: UseMutationOptions<ThingRes
 
 ## Enforcement
 
-Every rule on this page is enforced, one [ast-grep](https://ast-grep.github.io) rule per file in
-`ast-grep/rules/frontend/features/api/`, run by the `conventions` job of `npm run verify`. They
-match the syntax tree rather than lines, because a hook that forwards one callback and swallows the
-other reads as compliant to any line-wise pattern. `ast-grep/README.md` has the rule tree and how to
-add one.
-
 | Rule id | The paragraph it enforces |
 |---|---|
 | `mutation-hook-missing-options` | `options?: UseMutationOptions<…>`, as the last parameter |
@@ -104,10 +98,7 @@ add one.
 | `mutation-hook-callback-not-forwarded` | an overridden `onSuccess`/`onError` calls the caller's |
 | `mutation-hook-missing-error-toast` | `onError` raises a toast |
 
-Each rule owns a test alongside it in `ast-grep/rule-tests/` holding the code it must flag and the code it must
-not. `npm run check:code-shape:test` fails when a rule stops matching its own `invalid` case — a
-check that has silently stopped matching prints exactly what a clean codebase prints, and this is
-what tells the two apart.
+`ast-grep/README.md` covers how rules run, how their tests work, and how to suppress one.
 
 ### Exemptions
 
@@ -124,9 +115,7 @@ onError: (...args) => {
 ```
 
 The suppression names one rule and silences only that rule: the handler above still fails
-`mutation-hook-callback-not-forwarded` if it stops forwarding. A misspelt rule id suppresses
-nothing. And `npm run check:code-shape` passes `--error=unused-suppression`, so the build fails the
-day an exemption outlives the code it was written for.
+`mutation-hook-callback-not-forwarded` if it stops forwarding.
 
 The error-toast rule has exactly one exemption, and that is it — `useRemovePaymentMethod`.
 `useCreatePaymentSession` reads like a second one but is not: it raises the toast for every failure
@@ -138,8 +127,14 @@ condition satisfies the rule.
 The same file holds both, and both read one `queryKeysFactory` instance — that is what lets a
 mutation's `onSuccess` invalidate the exact key a query was built from. The two contracts are
 inverses on failure: a mutation must toast, a query must not. See
-[docs/query-hooks.md](./query-hooks.md).
+[query hooks](./query-hooks.md).
 
 ## Relationship with form hooks
 
-Form hooks (`features/{name}/hooks/use-{action}-form.ts`) consume mutation hooks. The form hook calls `.mutate()` with per-call callbacks, while the mutation hook provides the default error toast. See `docs/form-hooks.md` for the form layer pattern.
+Form hooks (`features/{name}/hooks/use-{action}-form.ts`) consume mutation hooks. The form hook awaits
+`.mutateAsync()` inside a try/catch — that is what makes the form's `isSubmitting` mean "the write is
+still in the air" — while the mutation hook provides the default error toast. The `onError` a form hook
+catches is for the caller, not for a second toast. See [form hooks](../../hooks/__docs__/form-hooks.md) for the form layer pattern.
+
+This is a form-hook rule, not a mutation-hook one: a component that writes on a click or a select still
+calls `.mutate()` with per-call callbacks, which is why they exist.

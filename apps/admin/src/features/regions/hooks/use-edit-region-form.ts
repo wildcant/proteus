@@ -2,7 +2,7 @@ import { AdminUpdateRegion, type AdminUpdateRegionBody } from '@proteus/http-sch
 import type { AdminRegion, AdminRegionResponse } from '#/api/generated/model'
 import { useUpdateRegion } from '#/features/regions/api/regions'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type EditRegionFormParams = SubmitFormParams<AdminRegionResponse>
 
@@ -18,17 +18,18 @@ export function useEditRegionForm(region: AdminRegion, params?: EditRegionFormPa
       paymentProviderIds: region.paymentProviders.map((provider) => provider.id),
     } satisfies AdminUpdateRegionBody as AdminUpdateRegionBody,
     validators: { onSubmit: AdminUpdateRegion },
-    onSubmit: ({ value }) => {
-      updateMutation.mutate(value, {
-        onSuccess: (data) => {
-          form.reset()
-          params?.onSuccess?.(data)
-        },
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await updateMutation.mutateAsync(value)
+        form.reset()
+        params?.onSuccess?.(data)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: updateMutation.isPending }
+  return { form }
 }

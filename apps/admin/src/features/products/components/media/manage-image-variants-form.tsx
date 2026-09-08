@@ -14,7 +14,7 @@ type ManageImageVariantsFormProps = {
 export function ManageImageVariantsForm({ productId, image, variantIds }: ManageImageVariantsFormProps) {
   const { handleSuccess } = useRouteModal()
 
-  const { form, isLoading } = useManageImageVariantsForm({
+  const { form } = useManageImageVariantsForm({
     productId,
     imageId: image.id,
     variantIds,
@@ -55,9 +55,7 @@ export function ManageImageVariantsForm({ productId, image, variantIds }: Manage
             </form.Subscribe>
             <div className="flex items-center gap-x-2">
               <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-              <form.SubmitButton size="sm" isPending={isLoading}>
-                Save
-              </form.SubmitButton>
+              <form.SubmitButton size="sm">Save</form.SubmitButton>
             </div>
           </RouteDrawer.Footer>
         </form.AppForm>

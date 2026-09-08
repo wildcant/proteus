@@ -23,5 +23,5 @@ export function useCompleteOrder() {
     return order
   }, [completeCart, navigate])
 
-  return { completeOrder, isCompleting: completeCart.isPending }
+  return { completeOrder }
 }

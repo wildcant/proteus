@@ -9,11 +9,11 @@ export function CreateVariantForm({ productId }: { productId: string }) {
 
   // The combobox is this component's concern, so the search lives here rather than being proxied
   // back out through the form hook.
-  const { combinations, onSearchChange, isExhausted, hasNoOptions, isPending } = useOptionCombinationSearch({
+  const { combinations, onSearchChange, isExhausted, hasNoOptions } = useOptionCombinationSearch({
     productId,
   })
 
-  const { form, isLoading } = useCreateVariantForm({
+  const { form } = useCreateVariantForm({
     productId,
     params: {
       onSuccess: (data) => {
@@ -104,9 +104,7 @@ export function CreateVariantForm({ productId }: { productId: string }) {
             ) : (
               <>
                 <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-                <form.SubmitButton size="sm" isPending={isPending || isLoading}>
-                  Create
-                </form.SubmitButton>
+                <form.SubmitButton size="sm">Create</form.SubmitButton>
               </>
             )}
           </RouteFocusModal.Footer>

@@ -3,7 +3,7 @@ import type { LoginFormParams } from '#/features/auth/hooks/use-login-form'
 import { useLoginForm } from '#/features/auth/hooks/use-login-form'
 
 export function LoginForm(props: LoginFormParams) {
-  const { form, isPending } = useLoginForm(props)
+  const { form } = useLoginForm(props)
 
   return (
     <Form onSubmit={form.handleSubmit} className="flex flex-col gap-4">
@@ -14,7 +14,9 @@ export function LoginForm(props: LoginFormParams) {
         <form.AppField name="password">
           {(field) => <field.TextField label="Password" type="password" autoComplete="current-password" hideLabel />}
         </form.AppField>
-        <form.SubmitButton isPending={isPending}>{isPending ? 'Signing in...' : 'Sign in'}</form.SubmitButton>
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => <form.SubmitButton>{isSubmitting ? 'Signing in...' : 'Sign in'}</form.SubmitButton>}
+        </form.Subscribe>
       </form.AppForm>
     </Form>
   )

@@ -2,7 +2,7 @@ id: mutation-hook-missing-on-error
 language: typescript
 severity: error
 message: This hook has no `onError`, so a failure reaches the caller only as a rejected promise.
-note: 'Add `onError: (...args) => { … onError?.(...args) }`. docs/mutation-hooks.md'
+note: 'Add `onError: (...args) => { … onError?.(...args) }`. ast-grep/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
 rule:

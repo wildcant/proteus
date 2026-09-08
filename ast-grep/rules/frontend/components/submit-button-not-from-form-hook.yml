@@ -2,7 +2,7 @@ id: submit-button-not-from-form-hook
 language: tsx
 severity: error
 message: This submit is a raw Button. The form hook registers a `SubmitButton`; use that one.
-note: 'Reach it as `<form.AppForm><form.SubmitButton>…</form.SubmitButton></form.AppForm>`. It has no `disabled` prop to pass, which is what keeps a submit from being gated on validity, and it already disables itself while the request is in flight — pass the mutation''s own flag as `isPending` where the hook returns one. docs/form-hooks.md'
+note: 'Reach it as `<form.AppForm><form.SubmitButton>…</form.SubmitButton></form.AppForm>`. It takes no props but its own appearance: no `disabled`, which is what keeps a submit from being gated on validity, and no in-flight flag either — it subscribes to `isSubmitting`, which the form hook''s awaited submit makes truthful. ast-grep/rules/frontend/components/__docs__/form-components.md'
 files:
   - "**/src/**/*.tsx"
 ignores:

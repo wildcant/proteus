@@ -3,7 +3,7 @@ import { formOptions } from '@tanstack/react-form'
 import { useState } from 'react'
 import { z } from 'zod'
 import { useLogout } from '#/features/auth/api/auth'
-import type { SubmitFormParams } from '#/lib/form'
+import { errorMessage, type SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
 import { useMarket } from '#/lib/use-market'
 import { CheckoutAddress } from '../utils/checkout-address'
@@ -76,8 +76,8 @@ type CheckoutFormParams = SubmitFormParams<StoreCompleteCartResponse> & {
 }
 
 export function useCheckoutForm(params: CheckoutFormParams) {
-  const { completeOrder, isCompleting } = useCompleteOrder()
-  const { controller, confirmPayment, isPaying } = usePlaceOrder(params.data.cart.id)
+  const { completeOrder } = useCompleteOrder()
+  const { controller, confirmPayment } = usePlaceOrder(params.data.cart.id)
   /**
    * What the gateway said, in the shopper's words. Held here rather than as a field error: it is
    * not about a field they can correct, and it has to survive the submit that produced it.
@@ -127,7 +127,7 @@ export function useCheckoutForm(params: CheckoutFormParams) {
         form.reset()
         params.onSuccess?.(response)
       } catch (error) {
-        params.onError?.(error instanceof Error ? error.message : 'Failed to place the order')
+        params.onError?.(errorMessage(error))
       } finally {
         params.onSettled?.()
       }
@@ -158,7 +158,6 @@ export function useCheckoutForm(params: CheckoutFormParams) {
     signOut,
     controller,
     paymentError,
-    isLoading: isPaying || isCompleting,
   }
 }
 

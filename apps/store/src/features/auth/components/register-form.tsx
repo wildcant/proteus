@@ -3,7 +3,7 @@ import type { RegisterFormParams } from '#/features/auth/hooks/use-register-form
 import { useRegisterForm } from '#/features/auth/hooks/use-register-form'
 
 export function RegisterForm(props: RegisterFormParams) {
-  const { form, isPending } = useRegisterForm(props)
+  const { form } = useRegisterForm(props)
 
   return (
     <Form onSubmit={form.handleSubmit} className="flex w-full flex-col">
@@ -25,9 +25,13 @@ export function RegisterForm(props: RegisterFormParams) {
         <span className="mt-6 text-center text-ink-muted text-xs">
           By creating an account, you agree to our Privacy Policy and Terms of Use.
         </span>
-        <form.SubmitButton isPending={isPending} className="mt-6 h-14 w-full font-semibold text-base">
-          {isPending ? 'Creating account...' : 'Create account'}
-        </form.SubmitButton>
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => (
+            <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">
+              {isSubmitting ? 'Creating account...' : 'Create account'}
+            </form.SubmitButton>
+          )}
+        </form.Subscribe>
       </form.AppForm>
     </Form>
   )

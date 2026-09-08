@@ -3,7 +3,7 @@ import type { ForgotPasswordFormParams } from '#/features/auth/hooks/use-forgot-
 import { useForgotPasswordForm } from '#/features/auth/hooks/use-forgot-password-form'
 
 export function ForgotPasswordForm(props: ForgotPasswordFormParams) {
-  const { form, isPending } = useForgotPasswordForm(props)
+  const { form } = useForgotPasswordForm(props)
 
   return (
     <Form onSubmit={form.handleSubmit} className="w-full">
@@ -13,9 +13,13 @@ export function ForgotPasswordForm(props: ForgotPasswordFormParams) {
             {(field) => <field.TextField label="Email" type="email" autoComplete="email" autoFocus />}
           </form.AppField>
         </div>
-        <form.SubmitButton isPending={isPending} className="mt-6 h-14 w-full font-semibold text-base">
-          {isPending ? 'Sending...' : 'Send reset link'}
-        </form.SubmitButton>
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => (
+            <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">
+              {isSubmitting ? 'Sending...' : 'Send reset link'}
+            </form.SubmitButton>
+          )}
+        </form.Subscribe>
       </form.AppForm>
     </Form>
   )
