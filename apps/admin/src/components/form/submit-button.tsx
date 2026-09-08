@@ -1,7 +1,7 @@
-import { useFormContext } from '#/lib/form-context'
-import { Button, type ButtonProps } from '../button'
+import { Button } from '@proteus/ui'
+import { useFormContext } from '#/lib/form-context.ts'
 
-type SubmitButtonProps = Pick<ButtonProps, 'children' | 'className' | 'size'> & {
+type SubmitButtonProps = Pick<React.ComponentProps<typeof Button>, 'children' | 'className' | 'size'> & {
   /**
    * The mutation's own in-flight flag, where the form hook has one.
    *

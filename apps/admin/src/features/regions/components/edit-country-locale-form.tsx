@@ -25,25 +25,25 @@ export function EditCountryLocaleForm({ regionId, country }: EditCountryLocaleFo
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
-        <RouteDrawer.Header>
-          <RouteDrawer.Title>Edit Locale</RouteDrawer.Title>
-          <RouteDrawer.Description>{country.displayName}</RouteDrawer.Description>
-        </RouteDrawer.Header>
-        <RouteDrawer.Body className="flex flex-col gap-y-6">
-          <form.AppField name="localeCode">
-            {(field) => <field.TextField label="Locale" autoFocus placeholder="e.g. es-CO" />}
-          </form.AppField>
-          <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-muted-foreground text-sm">
-            This changes the live storefront URLs for {country.displayName}. Links to the current ones stop resolving —
-            nothing redirects them.
-          </p>
-        </RouteDrawer.Body>
-        <RouteDrawer.Footer>
-          <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-          <Button type="submit" size="sm">
-            Save
-          </Button>
-        </RouteDrawer.Footer>
+        <form.AppForm>
+          <RouteDrawer.Header>
+            <RouteDrawer.Title>Edit Locale</RouteDrawer.Title>
+            <RouteDrawer.Description>{country.displayName}</RouteDrawer.Description>
+          </RouteDrawer.Header>
+          <RouteDrawer.Body className="flex flex-col gap-y-6">
+            <form.AppField name="localeCode">
+              {(field) => <field.TextField label="Locale" autoFocus placeholder="e.g. es-CO" />}
+            </form.AppField>
+            <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-muted-foreground text-sm">
+              This changes the live storefront URLs for {country.displayName}. Links to the current ones stop resolving
+              — nothing redirects them.
+            </p>
+          </RouteDrawer.Body>
+          <RouteDrawer.Footer>
+            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
+            <form.SubmitButton size="sm">Save</form.SubmitButton>
+          </RouteDrawer.Footer>
+        </form.AppForm>
       </KeyboundForm>
     </RouteDrawer.Form>
   )

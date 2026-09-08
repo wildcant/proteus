@@ -65,7 +65,7 @@ export type AdminUpdateRegionBody = z.infer<typeof AdminUpdateRegion>
  */
 const localeCode = machineCode
   .trim()
-  .min(1)
+  .min(1, 'A locale is required.')
   .refine((tag) => {
     try {
       Intl.getCanonicalLocales(tag)
@@ -95,7 +95,7 @@ export const AdminAssignRegionCountries = z
           localeCode,
         }),
       )
-      .min(1)
+      .min(1, 'Select at least one country.')
       .max(MAX_ITEMS.batch),
   })
   .openapi('AdminAssignRegionCountries')

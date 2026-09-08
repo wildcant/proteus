@@ -58,11 +58,6 @@ export function VariantPriceEditForm({ productId, variant }: { productId: string
   const [draftRow, setDraftRow] = useState<CurrencyAmounts | null>(null)
   const row = draftRow ?? initialRow
 
-  const isDirty = useMemo(
-    () => Object.entries(row).some(([currencyCode, amount]) => amount !== (initialRow[currencyCode] ?? '')),
-    [row, initialRow],
-  )
-
   const handleEditingChange = useCallback(
     (isEditing: boolean) => {
       setCloseOnEscape(!isEditing)
@@ -95,7 +90,9 @@ export function VariantPriceEditForm({ productId, variant }: { productId: string
       </RouteFocusModal.Body>
       <RouteFocusModal.Footer>
         <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-        <Button type="submit" size="sm" disabled={!isDirty || updatePrices.isPending}>
+        {/* No `useAppForm` behind this one — the grid is `useState`, so there is no form context
+            for `form.SubmitButton` to read. Exempted in the rule; see submit-button-not-from-form-hook. */}
+        <Button type="submit" size="sm" disabled={updatePrices.isPending}>
           Save
         </Button>
       </RouteFocusModal.Footer>

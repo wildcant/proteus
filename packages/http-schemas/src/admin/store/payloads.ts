@@ -45,7 +45,7 @@ export type AdminUpdateStoreBody = z.infer<typeof AdminUpdateStore>
  */
 export const AdminAddStoreCurrencies = z
   .object({
-    currencyCodes: z.array(storeCurrencyCode).min(1).max(MAX_ITEMS.batch),
+    currencyCodes: z.array(storeCurrencyCode).min(1, 'Select at least one currency.').max(MAX_ITEMS.batch),
   })
   .openapi('AdminAddStoreCurrencies')
 export type AdminAddStoreCurrenciesBody = z.infer<typeof AdminAddStoreCurrencies>

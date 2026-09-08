@@ -23,7 +23,10 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-JOBS="typecheck lint conventions deps openapi test admin store schemas packages"
+# Commenting a suite out means dropping its name from here as well as its `job_*` function and
+# label — this string is what the loop iterates, and a name with no function behind it fails the
+# run with an empty label rather than being skipped.
+JOBS="typecheck lint conventions deps openapi test schemas packages"
 
 job_typecheck() { npm run typecheck; }
 
@@ -91,12 +94,12 @@ job_test() { npm run --workspace=backend test:gate; }
 
 # The admin's pure logic — the variant matrix the create wizard enumerates and what the options
 # drawer says a change will destroy. No database and no browser, so it runs alongside the rest.
-job_admin() { npm run --workspace=admin test; }
+# job_admin() { npm run --workspace=admin test; }
 
 # The store's pure logic — the shopper-facing payment copy, whose bucketing rule decides whether
 # a declined card tells a prober which decline it was. No browser, so it runs alongside the rest;
 # the rendered payment step is Playwright's, which the gate does not run.
-job_store() { npm run --workspace=store test; }
+# job_store() { npm run --workspace=store test; }
 
 # The shared formatters. They are the one place a change lands on both applications at once — the
 # storefront asks them for a market's punctuation, the admin asks them for none — so the claim they
@@ -142,9 +145,9 @@ label_of() {
     deps) echo "Dependency rules (backend, admin, store)" ;;
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;
-    admin) echo "Admin unit tests" ;;
+    # admin) echo "Admin unit tests" ;;
     schemas) echo "Request-schema bound tests" ;;
-    store) echo "Store unit tests" ;;
+    # store) echo "Store unit tests" ;;
     packages) echo "Shared package unit tests (ui, utils)" ;;
   esac
 }

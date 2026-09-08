@@ -75,3 +75,11 @@ The suppression names one rule and silences only that rule — the same handler 
 other rule. A misspelt id suppresses nothing. And `check:code-shape` passes
 `--error=unused-suppression`, so the build fails the day an exemption outlives the code it was
 written for.
+
+**A JSX match cannot carry one.** ast-grep reads the suppression off the matched node's preceding
+sibling, and between a `{/* … */}` and the element below it tree-sitter puts a `jsx_text` node
+holding the newline. Gluing the comment to the element works until the formatter splits the line
+back apart, which it does. So a considered exception to a JSX rule goes in that rule's `ignores`
+instead, with the reason written above it — see `submit-button-not-from-form-hook`. It exempts a
+whole file rather than one line, and `--error=unused-suppression` cannot tell you when it goes
+stale, so keep the glob as narrow as the one file it is for.

@@ -45,17 +45,6 @@ export function suggestLocaleCode(iso2: string): string | null {
 }
 
 /**
- * Whether the form has enough to submit — every selected country carrying a locale.
- *
- * The same rule the API enforces, checked here so the merchant sees a disabled button instead of a
- * rejected request. It is deliberately the weaker of the two: this one keeps the form honest, the
- * API's is what makes a country without a locale impossible.
- */
-export function assignmentIsComplete(countries: CountryAssignment[]): boolean {
-  return countries.length > 0 && countries.every((country) => country.localeCode.trim().length > 0)
-}
-
-/**
  * Reconciles the form's rows with the picker's selection: new countries arrive with a suggested
  * locale, deselected ones drop out, and a locale the merchant already edited survives both.
  */

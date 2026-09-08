@@ -40,93 +40,95 @@ export function EditVariantMediaForm({ productId, variant, productImages }: Edit
   return (
     <RouteFocusModal.Form form={form}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-        <RouteFocusModal.Header>
-          <RouteFocusModal.Title className="sr-only">Edit Variant Media</RouteFocusModal.Title>
-        </RouteFocusModal.Header>
-        <RouteFocusModal.Body className="flex flex-col overflow-hidden">
-          <form.Field name="imageIds">
-            {(field) => {
-              const assigned = productImages.filter((image) => field.state.value.includes(image.id))
-              const available = productImages.filter((image) => !field.state.value.includes(image.id))
-              const selectedIds = Object.keys(selection)
+        <form.AppForm>
+          <RouteFocusModal.Header>
+            <RouteFocusModal.Title className="sr-only">Edit Variant Media</RouteFocusModal.Title>
+          </RouteFocusModal.Header>
+          <RouteFocusModal.Body className="flex flex-col overflow-hidden">
+            <form.Field name="imageIds">
+              {(field) => {
+                const assigned = productImages.filter((image) => field.state.value.includes(image.id))
+                const available = productImages.filter((image) => !field.state.value.includes(image.id))
+                const selectedIds = Object.keys(selection)
 
-              const removeSelected = () => {
-                field.handleChange(field.state.value.filter((id) => !selection[id]))
-                setSelection({})
-              }
+                const removeSelected = () => {
+                  field.handleChange(field.state.value.filter((id) => !selection[id]))
+                  setSelection({})
+                }
 
-              const makeThumbnail = () => {
-                const [id] = selectedIds
-                const image = productImages.find((item) => item.id === id)
-                if (image) form.setFieldValue('thumbnail', image.url)
-                setSelection({})
-              }
+                const makeThumbnail = () => {
+                  const [id] = selectedIds
+                  const image = productImages.find((item) => item.id === id)
+                  if (image) form.setFieldValue('thumbnail', image.url)
+                  setSelection({})
+                }
 
-              return (
-                <div className="flex size-full flex-col-reverse lg:grid lg:grid-cols-[1fr_320px]">
-                  <div className="size-full overflow-auto bg-muted/40">
-                    {assigned.length > 0 ? (
-                      <div className="grid h-fit auto-rows-auto grid-cols-2 gap-6 p-6 xl:grid-cols-4">
-                        <form.Subscribe selector={(state) => state.values.thumbnail}>
-                          {(thumbnail) =>
-                            assigned.map((image) => (
-                              <AssignedImage
-                                key={image.id}
-                                image={image}
-                                checked={!!selection[image.id]}
-                                isThumbnail={image.url === thumbnail}
-                                onCheckedChange={() => toggleSelected(image.id)}
-                              />
-                            ))
-                          }
-                        </form.Subscribe>
-                      </div>
-                    ) : (
-                      <div className="flex size-full flex-col items-center justify-center gap-y-2 p-6">
-                        <ImageIcon className="size-6 text-muted-foreground" />
-                        <p className="text-muted-foreground text-sm">No images assigned to this variant yet.</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="overflow-auto border-b lg:border-b-0 lg:border-l">
-                    <div className="border-b px-6 py-4">
-                      <h2 className="font-medium text-sm">Select images</h2>
-                      <p className="mt-1 text-muted-foreground text-sm">
-                        Add product images to the variant. To add new images, add them to the product first.
-                      </p>
+                return (
+                  <div className="flex size-full flex-col-reverse lg:grid lg:grid-cols-[1fr_320px]">
+                    <div className="size-full overflow-auto bg-muted/40">
+                      {assigned.length > 0 ? (
+                        <div className="grid h-fit auto-rows-auto grid-cols-2 gap-6 p-6 xl:grid-cols-4">
+                          <form.Subscribe selector={(state) => state.values.thumbnail}>
+                            {(thumbnail) =>
+                              assigned.map((image) => (
+                                <AssignedImage
+                                  key={image.id}
+                                  image={image}
+                                  checked={!!selection[image.id]}
+                                  isThumbnail={image.url === thumbnail}
+                                  onCheckedChange={() => toggleSelected(image.id)}
+                                />
+                              ))
+                            }
+                          </form.Subscribe>
+                        </div>
+                      ) : (
+                        <div className="flex size-full flex-col items-center justify-center gap-y-2 p-6">
+                          <ImageIcon className="size-6 text-muted-foreground" />
+                          <p className="text-muted-foreground text-sm">No images assigned to this variant yet.</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="grid grid-cols-2 gap-4 p-4">
-                      {available.map((image) => (
-                        <AvailableImage
-                          key={image.id}
-                          image={image}
-                          onAdd={() => field.handleChange([...field.state.value, image.id])}
-                        />
-                      ))}
+                    <div className="overflow-auto border-b lg:border-b-0 lg:border-l">
+                      <div className="border-b px-6 py-4">
+                        <h2 className="font-medium text-sm">Select images</h2>
+                        <p className="mt-1 text-muted-foreground text-sm">
+                          Add product images to the variant. To add new images, add them to the product first.
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 p-4">
+                        {available.map((image) => (
+                          <AvailableImage
+                            key={image.id}
+                            image={image}
+                            onAdd={() => field.handleChange([...field.state.value, image.id])}
+                          />
+                        ))}
+                      </div>
                     </div>
+                    <CommandBar open={selectedIds.length > 0}>
+                      <CommandBarValue>{selectedIds.length} selected</CommandBarValue>
+                      <CommandBarSeparator />
+                      {selectedIds.length === 1 && (
+                        <>
+                          <CommandBarCommand action={makeThumbnail} label="Make thumbnail" shortcut="t" />
+                          <CommandBarSeparator />
+                        </>
+                      )}
+                      <CommandBarCommand action={removeSelected} label="Remove Selected" shortcut="r" />
+                    </CommandBar>
                   </div>
-                  <CommandBar open={selectedIds.length > 0}>
-                    <CommandBarValue>{selectedIds.length} selected</CommandBarValue>
-                    <CommandBarSeparator />
-                    {selectedIds.length === 1 && (
-                      <>
-                        <CommandBarCommand action={makeThumbnail} label="Make thumbnail" shortcut="t" />
-                        <CommandBarSeparator />
-                      </>
-                    )}
-                    <CommandBarCommand action={removeSelected} label="Remove Selected" shortcut="r" />
-                  </CommandBar>
-                </div>
-              )
-            }}
-          </form.Field>
-        </RouteFocusModal.Body>
-        <RouteFocusModal.Footer>
-          <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-          <Button type="submit" size="sm" disabled={isLoading}>
-            Save
-          </Button>
-        </RouteFocusModal.Footer>
+                )
+              }}
+            </form.Field>
+          </RouteFocusModal.Body>
+          <RouteFocusModal.Footer>
+            <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
+            <form.SubmitButton size="sm" isPending={isLoading}>
+              Save
+            </form.SubmitButton>
+          </RouteFocusModal.Footer>
+        </form.AppForm>
       </KeyboundForm>
     </RouteFocusModal.Form>
   )

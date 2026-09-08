@@ -14,33 +14,33 @@ export function EditRegionForm({ region }: { region: AdminRegion }) {
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
-        <RouteDrawer.Header>
-          <RouteDrawer.Title>Edit Region</RouteDrawer.Title>
-        </RouteDrawer.Header>
-        <RouteDrawer.Body className="flex flex-col gap-y-6">
-          <form.AppField name="name">
-            {(field) => <field.TextField label="Name" autoFocus placeholder="e.g. Europe" />}
-          </form.AppField>
-          <form.Field name="currencyCode">
-            {(field) => (
-              <RegionCurrencySelect
-                value={field.state.value ?? ''}
-                onChange={field.handleChange}
-                errors={field.state.meta.isValid ? undefined : field.state.meta.errors}
-              />
-            )}
-          </form.Field>
-          <Separator />
-          <form.Field name="paymentProviderIds">
-            {(field) => <RegionProviderSelect value={field.state.value ?? []} onChange={field.handleChange} />}
-          </form.Field>
-        </RouteDrawer.Body>
-        <RouteDrawer.Footer>
-          <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-          <Button type="submit" size="sm">
-            Save
-          </Button>
-        </RouteDrawer.Footer>
+        <form.AppForm>
+          <RouteDrawer.Header>
+            <RouteDrawer.Title>Edit Region</RouteDrawer.Title>
+          </RouteDrawer.Header>
+          <RouteDrawer.Body className="flex flex-col gap-y-6">
+            <form.AppField name="name">
+              {(field) => <field.TextField label="Name" autoFocus placeholder="e.g. Europe" />}
+            </form.AppField>
+            <form.Field name="currencyCode">
+              {(field) => (
+                <RegionCurrencySelect
+                  value={field.state.value ?? ''}
+                  onChange={field.handleChange}
+                  errors={field.state.meta.isValid ? undefined : field.state.meta.errors}
+                />
+              )}
+            </form.Field>
+            <Separator />
+            <form.Field name="paymentProviderIds">
+              {(field) => <RegionProviderSelect value={field.state.value ?? []} onChange={field.handleChange} />}
+            </form.Field>
+          </RouteDrawer.Body>
+          <RouteDrawer.Footer>
+            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
+            <form.SubmitButton size="sm">Save</form.SubmitButton>
+          </RouteDrawer.Footer>
+        </form.AppForm>
       </KeyboundForm>
     </RouteDrawer.Form>
   )
