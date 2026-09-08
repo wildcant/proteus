@@ -1,11 +1,15 @@
 import type { ILinkService, IPricingModuleService, IProductModuleService } from '@core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { StoreProductListParams, StoreProductListResponse } from '@proteus/http-schemas/store'
+import {
+  StorePricingContextParams,
+  StoreProductListParams,
+  StoreProductListResponse,
+} from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { buildStartingPrices } from '@workflows/product/utils/build-starting-prices.js'
 import { setPricingContext } from '../middlewares.js'
 
-export const GetInput = { query: StoreProductListParams }
+export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
 export const GetMiddlewares = [setPricingContext()] as const
 export const GetOutput = StoreProductListResponse
 

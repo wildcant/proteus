@@ -1,11 +1,11 @@
 import type { ICartModuleService, ICustomerModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
-import { CreateCart, StoreCreateCartResponse } from '@proteus/http-schemas/store'
+import { CreateCart, StoreCreateCartResponse, StorePricingContextParams } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { addToCartWorkflow } from '@workflows/cart/add-to-cart.js'
 import { setPricingContext } from '../middlewares.js'
 
-export const PostInput = { body: CreateCart }
+export const PostInput = { body: CreateCart, contextQuery: StorePricingContextParams }
 export const PostMiddlewares = [setPricingContext()] as const
 export const PostOutput = StoreCreateCartResponse
 export const PostThrows = [...addToCartWorkflow.throws] as const

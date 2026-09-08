@@ -1,0 +1,23 @@
+id: route-declares-unread-context-query
+valid:
+  # The middleware that parses it is declared in the same file.
+  - |
+    export const PostInput = { body: CreateCart, contextQuery: StorePricingContextParams }
+    export const PostMiddlewares = [setPricingContext()] as const
+  # Among other middlewares.
+  - |
+    export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
+    export const GetMiddlewares = [attachCustomer(), setPricingContext()] as const
+  # A route with no context query at all is not this rule's business.
+  - |
+    export const GetInput = { params: IdParams }
+    export const GetMiddlewares = [attachCustomer()] as const
+invalid:
+  # Documented for clients, read by nobody — the request is priced off the store default instead.
+  - |
+    export const PostInput = { body: CreateCart, contextQuery: StorePricingContextParams }
+    export const PostMiddlewares = [] as const
+  # The middleware was dropped and the declaration left behind.
+  - |
+    export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
+    export const GetMiddlewares = [attachCustomer()] as const
