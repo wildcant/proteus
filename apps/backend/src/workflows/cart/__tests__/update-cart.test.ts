@@ -289,3 +289,87 @@ test.describe('updateCartWorkflow — market switch rollback', () => {
     })
   })
 })
+
+/**
+ * The update's own write, unwound.
+ *
+ * It lands before the market switch does, so a switch that fails half-way owes the shopper the
+ * cart they arrived with — not the customer link and address the same request had just written.
+ */
+test.describe('updateCartWorkflow — update rollback', () => {
+  /** The switch's last write, and the furthest point the update's own rollback has to reach back from. */
+  const failTheLastStep = () =>
+    vi
+      .spyOn(container.resolve<IPaymentModuleService>(Modules.PAYMENT), 'updatePaymentCollection')
+      .mockRejectedValueOnce(new Error('Payment collection unavailable'))
+
+  /** An address the Colombian market will accept, so the switch is refused for nothing else. */
+  const colombianAddress = { ...SHIPPING_ADDRESS, city: 'Bogota', countryCode: 'CO', postalCode: '110111' }
+
+  test('puts back the customer and email it linked', async ({ factories, service, expect }) => {
+    const scene = await cartReadyToSwitch({ factories, service })
+    const before = await service.read.cart(container, scene.cart.id)
+    failTheLastStep()
+
+    await expect(
+      updateCartWorkflow.run({
+        cartId: scene.cart.id,
+        regionId: scene.colombia.region.id,
+        email: 'switcher@example.com',
+      }),
+    ).rejects.toThrow('Payment collection unavailable')
+
+    expect(await service.read.cart(container, scene.cart.id)).toMatchObject({
+      customerId: before.customerId,
+      email: before.email,
+    })
+    expect(await service.read.customers(container, { email: 'switcher@example.com' })).toEqual([])
+  })
+
+  test('removes the address it created', async ({ factories, service, expect }) => {
+    const scene = await cartReadyToSwitch({ factories, service })
+    failTheLastStep()
+
+    await expect(
+      updateCartWorkflow.run({
+        cartId: scene.cart.id,
+        regionId: scene.colombia.region.id,
+        shippingAddress: colombianAddress,
+      }),
+    ).rejects.toThrow('Payment collection unavailable')
+
+    expect(await service.read.cartAddresses(container, { cartId: scene.cart.id })).toEqual([])
+  })
+
+  // The upsert merges, so a rollback naming only the fields the payload named would leave the new
+  // city and country sitting in an otherwise restored address.
+  test('restores every field of the address it overwrote', async ({ factories, service, expect }) => {
+    const scene = await cartReadyToSwitch({ factories, service })
+    const [before] = await service.create.cartAddresses(container, scene.cart.id, {
+      shippingAddress: { ...SHIPPING_ADDRESS, countryCode: 'us', province: 'IL', phone: '555-0100' },
+      billingAddress: undefined,
+    })
+    failTheLastStep()
+
+    await expect(
+      updateCartWorkflow.run({
+        cartId: scene.cart.id,
+        regionId: scene.colombia.region.id,
+        shippingAddress: colombianAddress,
+      }),
+    ).rejects.toThrow('Payment collection unavailable')
+
+    const [after] = await service.read.cartAddresses(container, { cartId: scene.cart.id, type: 'shipping' })
+    expect(after).toMatchObject({
+      id: before?.id,
+      firstName: before?.firstName,
+      lastName: before?.lastName,
+      address1: before?.address1,
+      city: before?.city,
+      countryCode: before?.countryCode,
+      province: before?.province,
+      postalCode: before?.postalCode,
+      phone: before?.phone,
+    })
+  })
+})

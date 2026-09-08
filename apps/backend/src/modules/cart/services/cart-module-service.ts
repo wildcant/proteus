@@ -129,6 +129,10 @@ export class CartModuleService implements ICartModuleService {
 
       const updateData: UpdateCartDTO = {}
 
+      if (data.customerId !== undefined) {
+        updateData.customerId = data.customerId
+      }
+
       if (data.email !== undefined) {
         updateData.email = data.email
       }

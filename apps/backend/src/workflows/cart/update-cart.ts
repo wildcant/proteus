@@ -1,6 +1,7 @@
 import type { BigNumber } from '@core/bignumber.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { CartDTO } from '@core/types/cart/common.js'
+import type { CartAddressDTO, CartAddressType, CartDTO } from '@core/types/cart/common.js'
+import type { CreateCartAddressDTO } from '@core/types/cart/mutations.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
@@ -50,6 +51,29 @@ type RegionChange = {
   staleShippingAddressId: string | null
 }
 
+/** What `update-cart` has to put back, and the cart as its write left it. */
+type AppliedCartUpdate = {
+  cart: CartDTO
+  /**
+   * The cart's own columns before the write. Both are restored whether or not the write named
+   * them: putting back a value that never changed costs one column and saves the step from
+   * having to remember which halves of the payload were present.
+   */
+  previousCustomerId: string | null
+  previousEmail: string | null
+  /**
+   * Address rows the write created. A created row has no earlier state to write back, and
+   * `upsertCartAddress` merges rather than replaces, so it is removed instead.
+   */
+  createdAddressIds: string[]
+  /**
+   * Address rows the write overwrote, every field as it stood. All of them, because the upsert
+   * merges: a restore naming only the fields the payload named would leave the payload's values
+   * in the ones it did not.
+   */
+  overwrittenAddresses: { type: CartAddressType; fields: CreateCartAddressDTO }[]
+}
+
 /** What `apply-region-change` has to put back, and the cart as the switch left it. */
 type AppliedRegionChange = {
   cart: CartDTO
@@ -68,6 +92,27 @@ type PreviousLineItemPrice = { id: string; unitPrice: BigNumber }
 
 /** The payment collection's terms before the switch, or null when the cart has none yet. */
 type PreviousPaymentCollection = { id: string; amount: BigNumber; currencyCode: string } | null
+
+/**
+ * A cart address row reduced to what a write can set, so compensation can put every field back.
+ * Spelled out rather than derived, because the fields a restore has to name are exactly the ones
+ * `CreateCartAddressDTO` allows — a row gaining a column should fail here, not silently stop
+ * being restored.
+ */
+function writableAddressFields(address: CartAddressDTO): CreateCartAddressDTO {
+  return {
+    company: address.company,
+    firstName: address.firstName,
+    lastName: address.lastName,
+    address1: address.address1,
+    address2: address.address2,
+    city: address.city,
+    countryCode: address.countryCode,
+    province: address.province,
+    postalCode: address.postalCode,
+    phone: address.phone,
+  }
+}
 
 /**
  * The market a switch names, however the caller named it — or null when it named none.
@@ -193,22 +238,77 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
     })
 
     /**
-     * Links the guest customer to the cart, then upserts addresses and email
-     * in a single transaction.
+     * Links the customer to the cart and writes the email and addresses the request named — as one
+     * call, so the database keeps them together. Two calls could leave the cart pointing at a
+     * customer whose creation the failure was about to roll back, and a step that fails registers
+     * no compensation to notice.
+     *
+     * The addresses are read first because `upsertCartAddress` merges: putting them back means
+     * naming every field, and after the write the earlier values are gone.
      */
-    const updatedCart = await ctx.step('update-cart', async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+    const cartUpdate = await ctx.step<AppliedCartUpdate>(
+      'update-cart',
+      async ({ container }) => {
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
-      if (customer) {
-        await cartService.updateCart(input.cartId, { customerId: customer.id, email: customer.email })
-      }
+        const addressTypesInRequest: CartAddressType[] = [
+          ...(input.shippingAddress ? (['shipping'] as const) : []),
+          ...(input.billingAddress ? (['billing'] as const) : []),
+        ]
+        const previousAddresses = addressTypesInRequest.length
+          ? await cartService.listCartAddresses({ cartId: input.cartId, type: addressTypesInRequest })
+          : []
 
-      return cartService.updateCartWithAddresses(input.cartId, {
-        email: input.email,
-        shippingAddress: input.shippingAddress,
-        billingAddress: input.billingAddress,
-      })
-    })
+        const updatedCart = await cartService.updateCartWithAddresses(input.cartId, {
+          customerId: customer?.id,
+          // A customer found by email answers for it; the payload's own email still wins, which is
+          // what the two writes this replaces added up to.
+          email: input.email ?? customer?.email,
+          shippingAddress: input.shippingAddress,
+          billingAddress: input.billingAddress,
+        })
+
+        // Which rows the upsert made rather than merged into is only knowable by looking again:
+        // the write answers with the cart, not with the addresses it touched.
+        const addressesAsWritten = addressTypesInRequest.length
+          ? await cartService.listCartAddresses({ cartId: input.cartId, type: addressTypesInRequest })
+          : []
+        const previousAddressIds = new Set(previousAddresses.map((address) => address.id))
+
+        return {
+          cart: updatedCart,
+          previousCustomerId: cart.customerId,
+          previousEmail: cart.email,
+          createdAddressIds: addressesAsWritten
+            .filter((address) => !previousAddressIds.has(address.id))
+            .map((address) => address.id),
+          overwrittenAddresses: previousAddresses.map((address) => ({
+            type: address.type,
+            fields: writableAddressFields(address),
+          })),
+        }
+      },
+      async (cartUpdate, { container }) => {
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+
+        await cartService.updateCart(input.cartId, {
+          customerId: cartUpdate.previousCustomerId,
+          email: cartUpdate.previousEmail,
+        })
+
+        if (cartUpdate.createdAddressIds.length > 0) {
+          await cartService.softDeleteCartAddresses(cartUpdate.createdAddressIds)
+        }
+
+        await Promise.all(
+          cartUpdate.overwrittenAddresses.map(({ type, fields }) =>
+            cartService.upsertCartAddress(input.cartId, type, fields),
+          ),
+        )
+      },
+    )
+
+    const updatedCart = cartUpdate.cart
 
     if (!regionChange) return updatedCart
 

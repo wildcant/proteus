@@ -253,6 +253,13 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       // Retrieved only here, on the refusal, so the happy path pays for one read rather than two.
       // The region exists: a country row named it.
       const region = await regionService.retrieveRegion(cart.regionId)
+      // TODO(ux): the message asks the shopper to do something the storefront cannot help with. It
+      // is prose, so both remedies are theirs to carry out by hand, and working out which lines the
+      // market they are looking at cannot sell is guesswork. Carry the offending line items and the
+      // cart's region on the error instead, so checkout can render the blocked lines with a remove
+      // action beside each and a "switch back to <region>" button. Those lines are the same ones
+      // `reprice-line-items` in `update-cart` refuses the switch over, one at a time; naming all of
+      // them wants that step to collect its failures instead of throwing on the first.
       throw new WorkflowTerminalError({
         type: ErrorTypes.INVALID_DATA,
         message:
