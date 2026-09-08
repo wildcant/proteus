@@ -4,7 +4,7 @@ import { Button } from '#/components/button'
 import { useSuspenseOrder } from '#/features/orders/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
 import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 const route = getRouteApi('/_main/_authed/account/orders/$orderId')
 

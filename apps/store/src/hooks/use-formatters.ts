@@ -1,7 +1,7 @@
 import { formatPrice } from '@proteus/ui'
 import { formatDate, formatDatetime } from '@proteus/utils'
 import { useMemo } from 'react'
-import { useMarket } from '#/lib/use-market'
+import { useMarket } from '#/hooks/use-market'
 
 type DateInput = string | number | Date
 

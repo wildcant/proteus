@@ -2,8 +2,8 @@ import { Field } from '@proteus/ui'
 import { useId } from 'react'
 import { useCountryName } from '#/api/countries'
 import { FloatingLabelInput } from '#/components/form/input.tsx'
+import { useMarket } from '#/hooks/use-market'
 import { useFieldContext } from '#/lib/form-context.ts'
-import { useMarket } from '#/lib/use-market'
 
 /**
  * Where a parcel is going, which the market decides rather than the shopper.

@@ -1,7 +1,7 @@
 import { getRouteApi, useRouterState } from '@tanstack/react-router'
 import { Pagination } from '#/components/pagination'
 import { PRODUCTS_DEFAULT_LIMIT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
-import { useMarket } from '#/lib/use-market'
+import { useMarket } from '#/hooks/use-market'
 import { ProductEmpty } from './product-empty'
 import { ProductGrid } from './product-grid'
 

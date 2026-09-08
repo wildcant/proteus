@@ -1,6 +1,6 @@
 import { PackageIcon } from 'lucide-react'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 /**
  * The checkout summary's row, on the record of the checkout that produced it — same 4:5 cover,

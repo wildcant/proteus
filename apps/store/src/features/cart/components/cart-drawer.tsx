@@ -8,8 +8,8 @@ import { useCart } from '#/features/cart/api/cart'
 import { CartDrawerSkeleton } from '#/features/cart/components/cart-drawer-skeleton'
 import { CartEmpty } from '#/features/cart/components/cart-empty'
 import { CartItem } from '#/features/cart/components/cart-item'
+import { useFormatters } from '#/hooks/use-formatters'
 import { useModal } from '#/lib/modal-state'
-import { useFormatters } from '#/lib/use-formatters'
 
 /**
  * The cart, as a panel off the right edge. Open state is `?modal=cart`, so back closes it and two

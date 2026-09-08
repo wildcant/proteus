@@ -3,7 +3,7 @@ import { ShoppingBagIcon } from 'lucide-react'
 import type { StoreCartLineItem } from '#/api/generated/model'
 import { QuantityStepper } from '#/features/cart/components/quantity-stepper'
 import { useLineItemQuantity } from '#/features/cart/hooks/use-line-item-quantity'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 /** The ceiling the PDP already enforces, restated here so the panel cannot exceed it. */
 const MAX_QUANTITY = 10

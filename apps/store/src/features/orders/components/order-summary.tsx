@@ -1,6 +1,6 @@
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
 import { Panel } from '#/components/panel'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 import { OrderItems } from './order-items'
 
 export function OrderSummary({ order, className }: { order: StoreOrderResponseOrder; className?: string }) {

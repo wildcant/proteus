@@ -1,8 +1,8 @@
 import { useRouterState } from '@tanstack/react-router'
 import { CircleAlertIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useMarket } from '#/hooks/use-market'
 import { marketHref } from '#/lib/market'
-import { useMarket } from '#/lib/use-market'
 import { useCart, useSwitchCartMarket } from '../api/cart'
 
 /**

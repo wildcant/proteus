@@ -2,7 +2,7 @@ import { cn } from '@proteus/ui'
 import { useCountryName } from '#/api/countries'
 import type { StoreOrderAddress, StoreOrderResponseOrder } from '#/api/generated/model'
 import { Panel } from '#/components/panel'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 /**
  * The address in full — `address2`, `province` and `phone` included, and the country as a name.

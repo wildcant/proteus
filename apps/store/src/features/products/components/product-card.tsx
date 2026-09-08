@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { PackageIcon } from 'lucide-react'
 import type { StoreProductListItem } from '#/api/generated/model'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 export function ProductCard({ product, priority }: { product: StoreProductListItem; priority?: boolean }) {
   const { formatPrice } = useFormatters()

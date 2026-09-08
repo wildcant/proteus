@@ -2,7 +2,7 @@ import { ShoppingBagIcon } from '@proteus/icons'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@proteus/ui'
 import { ChevronDownIcon } from 'lucide-react'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 type CheckoutSummaryProps = {
   cart: StoreCartDetailResponseCart

@@ -4,8 +4,8 @@ import { AddToCart } from '#/features/products/components/add-to-cart'
 import { ProductGallery } from '#/features/products/components/product-gallery'
 import { ProductSpecs } from '#/features/products/components/product-specs'
 import { VariantPicker } from '#/features/products/components/variant-picker'
-import { useFormatters } from '#/lib/use-formatters'
-import { useMarket } from '#/lib/use-market'
+import { useFormatters } from '#/hooks/use-formatters'
+import { useMarket } from '#/hooks/use-market'
 
 const route = getRouteApi('/_main/products/$productId')
 

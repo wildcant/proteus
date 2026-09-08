@@ -5,7 +5,7 @@ import { useProducts } from '#/features/products/api/products'
 import { ProductGrid } from '#/features/products/components/product-grid'
 import { SearchBestSellers } from '#/features/products/components/search-best-sellers'
 import { useDebounce } from '#/hooks/use-debounce'
-import { useMarket } from '#/lib/use-market'
+import { useMarket } from '#/hooks/use-market'
 
 type SearchResultsProps = {
   /** The live field value. Debounced here rather than by the caller, so the field stays responsive. */

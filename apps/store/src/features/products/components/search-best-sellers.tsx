@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { SEARCH_RESULTS_LIMIT } from '#/components/header/constants'
 import { useProducts } from '#/features/products/api/products'
 import { ProductGrid } from '#/features/products/components/product-grid'
-import { useMarket } from '#/lib/use-market'
+import { useMarket } from '#/hooks/use-market'
 
 /**
  * What fills the panel before the shopper has typed anything.

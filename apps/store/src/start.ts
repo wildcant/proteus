@@ -1,4 +1,5 @@
 import { createMiddleware, createStart } from '@tanstack/react-start'
+import { loadSellableMarkets } from '#/api/sellable-markets'
 import {
   DEFAULT_MARKET,
   joinMarketSegment,
@@ -7,7 +8,6 @@ import {
   readMarketCookie,
   splitMarketSegment,
 } from '#/lib/market'
-import { loadSellableMarkets } from '#/lib/sellable-markets'
 
 /**
  * What a document request answers with now depends on the market cookie, and the product list

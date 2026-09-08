@@ -8,7 +8,7 @@ import { Pagination } from '#/components/pagination'
 import { Panel } from '#/components/panel'
 import { ORDERS_DEFAULT_OFFSET, ordersPageQuery, useSuspenseOrders } from '#/features/orders/api/orders'
 import { fulfillmentLabels } from '#/features/orders/utils/fulfillment-labels'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 /**
  * The panel chrome renders straight away and only the list suspends, so paging does not blank

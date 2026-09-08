@@ -1,6 +1,6 @@
 import { StoreCountryListResponse } from '@proteus/http-schemas/store'
 import { createIsomorphicFn } from '@tanstack/react-start'
-import { env } from '#/env'
+import { listStoreCountries } from '#/api/generated/countries/countries'
 import { DEFAULT_MARKET, MARKET_GLOBAL, type Market } from '#/lib/market'
 
 /**
@@ -35,10 +35,10 @@ let cache: CacheEntry | undefined
 let inFlight: Promise<Array<Market>> | undefined
 
 async function fetchMarkets(): Promise<Array<Market>> {
-  const response = await fetch(new URL('/store/countries', env.VITE_BACKEND_URL))
-  if (!response.ok) throw new Error(`GET /store/countries failed: ${response.status}`)
-
-  const { countries } = StoreCountryListResponse.parse(await response.json())
+  // Parsed and not merely typed: the generated client asserts the body's shape without checking
+  // it, and this one answer routes every document request, is held for minutes and is serialised
+  // into the page. A payload that does not match belongs in the fallback below, not in the router.
+  const { countries } = StoreCountryListResponse.parse(await listStoreCountries({ scope: 'sellable' }))
   // A sellable country always carries a locale code and a currency — both come from the region
   // that makes it sellable, and the seed fails naming the country when the locale is missing — so
   // this filter is a type narrowing, not a silent drop.

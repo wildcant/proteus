@@ -2,7 +2,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useSuspenseOrder } from '#/features/orders/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
 import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 const route = getRouteApi('/_main/order/$orderId/confirmed')
 

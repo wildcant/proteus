@@ -2,9 +2,9 @@ import { StoreCreateAddress } from '@proteus/http-schemas/store'
 import { PREFILL_FORMS } from '#/env.ts'
 import { useCreateAddress } from '#/features/address/api/addresses'
 import { addressFormOpts, EMPTY_ADDRESS, TEST_ADDRESS, toPayload } from '#/features/address/utils/form-values'
+import { useMarket } from '#/hooks/use-market'
 import { errorMessage, type SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
-import { useMarket } from '#/lib/use-market'
 
 export type CreateAddressFormParams = SubmitFormParams
 

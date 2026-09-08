@@ -1,8 +1,8 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
+import { loadSellableMarkets } from '#/api/sellable-markets'
 import { DEFAULT_MARKET, joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
-import { loadSellableMarkets } from '#/lib/sellable-markets'
 import { routeTree } from './routeTree.gen'
 
 export async function getRouter() {

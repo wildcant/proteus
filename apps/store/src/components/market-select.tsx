@@ -1,7 +1,7 @@
 import { cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
 import { ChevronDownIcon } from 'lucide-react'
+import { useMarket } from '#/hooks/use-market'
 import { marketHref } from '#/lib/market'
-import { useMarket } from '#/lib/use-market'
 
 /** The first regional indicator, `🇦`. Two of them in sequence are how a flag emoji is spelled. */
 const REGIONAL_INDICATOR_A = 0x1f1e6

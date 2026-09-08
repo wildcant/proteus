@@ -21,9 +21,9 @@ import type {
   StoreUpdateCartResponse,
   UpdateStoreCartLineItemBody,
 } from '#/api/generated/model'
+import { useMarket } from '#/hooks/use-market'
 import { getCartId, setCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
-import { useMarket } from '#/lib/use-market'
 
 const CART_QUERY_KEY = 'cart' as const
 export const cartQueryKeys = queryKeysFactory(CART_QUERY_KEY)

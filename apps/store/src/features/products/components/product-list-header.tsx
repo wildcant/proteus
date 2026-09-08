@@ -1,7 +1,7 @@
 import { getRouteApi } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { PRODUCT_SORT_DEFAULT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
-import { useMarket } from '#/lib/use-market'
+import { useMarket } from '#/hooks/use-market'
 import { ProductSort } from './product-sort'
 
 const route = getRouteApi('/_main/')

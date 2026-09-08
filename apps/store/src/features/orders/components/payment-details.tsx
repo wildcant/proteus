@@ -1,6 +1,6 @@
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
 import { Panel } from '#/components/panel'
-import { useFormatters } from '#/lib/use-formatters'
+import { useFormatters } from '#/hooks/use-formatters'
 
 /**
  * What was paid and when, and nothing that implies how. The order module stores no card brand
