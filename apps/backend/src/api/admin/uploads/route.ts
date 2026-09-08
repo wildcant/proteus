@@ -3,6 +3,7 @@ import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { uploadFilesWorkflow } from '@workflows/file/upload-files.js'
 
 export const PostOutput = AdminUploadResponse
+export const PostThrows = [...uploadFilesWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest): Promise<HttpResult<typeof PostOutput>> => {
   const uploadedFiles = req.files ?? []

@@ -10,6 +10,7 @@ import type { HttpRequest, HttpResult } from '@server/ports.js'
 export const PostInput = { body: AuthBody, params: AuthParams }
 export const PostMiddlewares = [validateScopeProviderAssociation()] as const
 export const PostOutput = AuthenticateResponse
+export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
 
 export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,

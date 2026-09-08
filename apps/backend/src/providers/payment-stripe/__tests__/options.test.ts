@@ -25,7 +25,7 @@ describe('validateStripeOptions', () => {
 
   /**
    * The swap this exists for: a key-holder adding `STRIPE_PUBLISHABLE_KEY` to a `.env`, on the
-   * line below `STRIPE_SECRET_KEY`, pastes the wrong one. `GET /store/payment-providers` is
+   * line below `STRIPE_SECRET_KEY`, pastes the wrong one. `GET /store/carts/:id/payment-providers` is
    * public, so nothing downstream would catch it — the provider boots and the key goes on the
    * wire to every browser.
    */

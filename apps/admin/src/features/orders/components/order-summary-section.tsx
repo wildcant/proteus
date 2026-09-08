@@ -1,4 +1,5 @@
-import { Card, CardHeader, CardTitle, formatPrice } from '@proteus/ui'
+import { Card, CardHeader, CardTitle } from '@proteus/ui'
+import { formatPrice } from '@proteus/utils'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
 
 export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder }) {

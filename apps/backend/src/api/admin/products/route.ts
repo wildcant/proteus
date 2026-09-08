@@ -22,6 +22,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PostInput = { body: AdminCreateProduct }
 export const PostOutput = AdminCreateProductResponse
+export const PostThrows = [...createProductWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const { options, variants, ...productData } = req.body

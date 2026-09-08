@@ -26,7 +26,7 @@ import {
   createStorePaymentSession,
   updateStorePaymentSession,
 } from '#/api/generated/payment-collections/payment-collections'
-import { listStorePaymentProviders } from '#/api/generated/payments/payments'
+import { listStoreCartPaymentProviders } from '#/api/generated/payments/payments'
 import { cartQueryKeys } from '#/features/cart/api/cart'
 import { clearCartId, getCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
@@ -38,7 +38,7 @@ const shippingOptionKeys = queryKeysFactory<
   'shipping-options',
   ListStoreCartShippingOptionsParams & { cartId: string }
 >('shipping-options')
-const paymentProviderKeys = queryKeysFactory<'payment-providers'>('payment-providers')
+const paymentProviderKeys = queryKeysFactory<'payment-providers', { cartId: string }>('payment-providers')
 
 type ShippingOptionsQueryOptions = Omit<
   UseQueryOptions<StoreShippingOptionListResponse, Error, StoreShippingOptionListResponse>,
@@ -67,14 +67,23 @@ export const useShippingOptions = (
   options?: ShippingOptionsQueryOptions,
 ) => useQuery(shippingOptionsQueryOptions(cartId, params, options))
 
-/** Shared query config. Use in route loaders via `prefetchQuery(paymentProvidersQueryOptions())`. */
-export const paymentProvidersQueryOptions = () =>
+/**
+ * Shared query config. Use in route loaders via `prefetchQuery(paymentProvidersQueryOptions(id))`.
+ *
+ * Keyed by cart because the answer is cart-shaped: the payment methods this cart's market offers,
+ * not every method the deployment has enabled. The cart is also what carries the region, so a
+ * cached list can never outlive the market it was quoted for.
+ */
+export const paymentProvidersQueryOptions = (cartId: string) =>
   queryOptions({
-    queryKey: paymentProviderKeys.lists(),
-    queryFn: () => listStorePaymentProviders(),
+    queryKey: paymentProviderKeys.list({ cartId }),
+    queryFn: () => listStoreCartPaymentProviders(cartId),
+    // The payment step can mount before the cart id is known; the route is scoped to a cart, so
+    // there is nothing to ask for until there is one.
+    enabled: !!cartId,
   })
 
-export const usePaymentProviders = () => useQuery(paymentProvidersQueryOptions())
+export const usePaymentProviders = (cartId: string) => useQuery(paymentProvidersQueryOptions(cartId))
 
 export const useUpdateCart = (options?: UseMutationOptions<StoreUpdateCartResponse, Error, UpdateStoreCartBody>) => {
   const queryClient = useQueryClient()

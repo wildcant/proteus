@@ -58,14 +58,32 @@ Variant Reconciliation Plan derives it. A variant's identity — its SKU, price,
 history — survives a reassignment; only which combination it stands for changes.
 _Avoid_: move, remap, re-link
 
+### Markets
+
+**Region**:
+A set of countries the store sells to under one currency — the currency every price inside it is
+written in and every payment inside it settles in. A country belongs to at most one Region, and
+giving it one is what makes it sellable at all. A shopper never names a Region; they name a
+country, and the store resolves the Region behind it.
+_Avoid_: zone, territory, market, currency zone
+
+**Market**:
+One country a shopper can shop in, as the storefront offers it: the country, the Locale it is read
+and formatted in, and the name the market control lists it under. Every Market belongs to a Region,
+so choosing one also chooses the currency prices are quoted in, the payment methods offered and the
+country deliveries are priced to. The Markets are exactly the countries the store sells to — a
+Region is how the store groups them, a Market is how a shopper picks one.
+_Avoid_: region, locale (for the country), storefront region, country picker
+
 ### Storefront language
 
 **Locale**:
 A BCP 47 tag naming both the language the storefront renders Store Copy in and the regional
 conventions it formats numbers and dates with — `es-US` is Spanish words with US number and date
-conventions. It selects copy and formatting and nothing else: every Locale shows the same catalogue
-at the same prices, and a shopper's currency and delivery country come from their cart and their
-address regardless of which Locale they are reading in.
+conventions. Each Market carries exactly one, which is what identifies it in the URL and what every
+number and date formatter is handed. A Locale selects no prices of its own; it arrives attached to
+a Market, and it is that Market's Region that decides the currency, so two Locales are not two
+readings of one catalogue at one price.
 _Avoid_: market, region, language (as a system concept), i18n
 
 **Message Catalog**:

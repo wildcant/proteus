@@ -8,9 +8,8 @@ import { validateAddressOwnership } from '../../../middlewares.js'
 export const PatchInput = { params: IdParams, body: StoreUpdateAddress }
 export const PatchMiddlewares = [validateAddressOwnership()] as const
 export const PatchOutput = StoreCustomerAddressResponse
+export const PatchThrows = [ErrorTypes.UNAUTHORIZED] as const
 
-// Ownership is enforced by `validateAddressOwnership` in the route definition, so by the time a
-// handler here runs the id in the path is known to be one of the caller's own.
 export const PATCH = async (
   req: HttpRequest<typeof PatchInput, typeof PatchMiddlewares>,
 ): Promise<HttpResult<typeof PatchOutput>> => {

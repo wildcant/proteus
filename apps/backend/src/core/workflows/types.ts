@@ -14,11 +14,22 @@ export interface WorkflowContext {
 export interface WorkflowConfig {
   name: string
   idempotent?: boolean
+  /**
+   * The terminal error types this workflow can end with — its failure contract, the counterpart to
+   * the output type. A route that calls the workflow spreads this into its own `throws`, which is
+   * how a `CONFLICT` raised three step-frames down still reaches the OpenAPI document. The array is
+   * kept in step with the `WorkflowTerminalError` throws in this file by the `workflow-*-error`
+   * code-shape rules, in both directions.
+   *
+   * Retryable failures are not listed. Only what a caller can act on belongs here.
+   */
+  throws?: readonly ErrorTypes[]
 }
 
 export interface WorkflowDefinition<TInput, TOutput> {
   name: string
   idempotent: boolean
+  throws: readonly ErrorTypes[]
   handler: (ctx: WorkflowContext, input: TInput) => Promise<TOutput>
 }
 
@@ -60,6 +71,7 @@ export function createWorkflow<TInput, TOutput>(
   return {
     name: config.name,
     idempotent: config.idempotent ?? false,
+    throws: config.throws ?? [],
     handler,
     run(input: TInput): Promise<TOutput> {
       if (!globalEngine || !globalContainer) {

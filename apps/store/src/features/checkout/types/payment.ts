@@ -20,7 +20,7 @@ import type { FC, ReactNode } from 'react'
  * inside the adapter and nowhere else.
  */
 export type PaymentAdapterContext = {
-  /** From `GET /store/payment-providers`. Allowlisted, publishable values only. */
+  /** From `GET /store/carts/:id/payment-providers`. Allowlisted, publishable values only. */
   publicConfig: Record<string, unknown>
   /** The cart total as displayed. A display and eligibility input — never what is charged. */
   amount: string

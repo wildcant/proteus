@@ -1,0 +1,45 @@
+id: workflow-util-is-not-pure
+valid:
+  # The caller fetches, the util joins. Three modules' rows, no service in sight.
+  - |
+    export function regionWithRelations(
+      region: RegionDTO,
+      countries: CountryDTO[],
+      links: RegionPaymentProviderDTO[],
+      providers: PaymentProviderDTO[],
+    ): AdminRegion {
+      const providerIds = new Set(links.map((link) => link.paymentProviderId))
+      return { ...region, countries, paymentProviders: providers.filter((p) => providerIds.has(p.id)) }
+    }
+  # A DTO whose name ends in something else entirely is not a service.
+  - |
+    export function buildVariantPrices(links: ProductVariantPriceSetDTO[]): Map<string, CalculatedPriceSetDTO> {
+      return new Map(links.map((link) => [link.variantId, link.priceSetId]))
+    }
+  # Sorting is a decision, not I/O.
+  - |
+    export const byDefaultThenCode = (left: StoreCurrencyDTO, right: StoreCurrencyDTO): number =>
+      left.isDefault === right.isDefault ? 0 : left.isDefault ? -1 : 1
+invalid:
+  # The shape this rule was written for: a read dressed as a util.
+  - |
+    export async function resolveStore(storeService: IStoreModuleService): Promise<StoreDTO | undefined> {
+      const [store] = await storeService.listStores(undefined, { limit: 1, order: { createdAt: 'ASC' } })
+      return store
+    }
+  # Not awaiting does not make it pure — the caller awaits instead.
+  - |
+    export function listRegionCountries(regionService: IRegionModuleService, regionId: string) {
+      return regionService.listCountries({ regionId: [regionId] })
+    }
+  # The container is the whole point: resolving from it is what a step is for.
+  - |
+    export const loadProviders = async (container: AwilixContainer) => {
+      return container.resolve(Modules.PAYMENT).listPaymentProviders()
+    }
+  # Awaiting something handed in is still I/O in a util.
+  - |
+    export async function withPrices(variants: VariantDTO[], pricing: Promise<CalculatedPriceSetDTO[]>) {
+      const prices = await pricing
+      return variants.map((variant) => ({ ...variant, prices }))
+    }

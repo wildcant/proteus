@@ -4,10 +4,12 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "check:datetime": "./scripts/check-datetime-schema.sh"
   },
   "exports": {
     "./admin": "./src/admin/index.ts",
+    "./bounded": "./src/bounded.ts",
     "./common": "./src/common.ts",
     "./auth": "./src/auth/index.ts",
     "./store": "./src/store/index.ts"
@@ -15,5 +17,8 @@
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.5"
   }
 }

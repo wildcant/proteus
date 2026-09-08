@@ -2,7 +2,13 @@ import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { authResetPassword, authUpdatePassword, storeAuthLogin, storeAuthSignup } from '#/api/generated/auth/auth'
+import {
+  authResetPassword,
+  authUpdatePassword,
+  authVerificationConfirm,
+  storeAuthLogin,
+  storeAuthSignup,
+} from '#/api/generated/auth/auth'
 import type {
   AuthenticateResponse,
   ResetPasswordBody,
@@ -80,6 +86,31 @@ export const useUpdatePassword = (
       onError?.(...args)
     },
   })
+}
+
+/** What confirming a code can turn out to be. Both arms render; neither is a fault. */
+export type VerificationOutcome = { verified: true } | { verified: false; message: string }
+
+/**
+ * Confirms an emailed verification code, answering with the outcome rather than raising.
+ *
+ * A refusal here is the ordinary case — a code that has expired, or that a first visit already
+ * spent — and it is something the page renders, not something that went wrong. Thrown, it would
+ * fall through to the route's `errorComponent`, which tells the shopper their link is malformed.
+ * That is a different story and usually the wrong one, so the refusal is returned as an outcome
+ * and only the route decides how to word it.
+ *
+ * A plain function rather than a mutation hook because the code is single-use: its caller is a
+ * route loader, which the router runs once per navigation outside React's render and effect cycle,
+ * so a StrictMode remount cannot spend the code twice.
+ */
+export const confirmVerification = async (code: string): Promise<VerificationOutcome> => {
+  try {
+    await authVerificationConfirm({ code })
+    return { verified: true }
+  } catch (error) {
+    return { verified: false, message: error instanceof Error ? error.message : 'Verification failed' }
+  }
 }
 
 export type LogoutParams = {

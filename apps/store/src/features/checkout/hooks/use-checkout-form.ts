@@ -3,7 +3,8 @@ import { formOptions } from '@tanstack/react-form'
 import { useState } from 'react'
 import { z } from 'zod'
 import { useLogout } from '#/features/auth/api/auth'
-import type { SubmitFormParams } from '#/lib/form'
+import { useMarket } from '#/hooks/use-market'
+import { errorMessage, type SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
 import { CheckoutAddress } from '../utils/checkout-address'
 import { checkoutReturnUrl } from '../utils/payment/return-url'
@@ -59,13 +60,24 @@ const DEFAULT_VALUES: CheckoutFormValues = {
 
 export const checkoutFormOpts = formOptions({ defaultValues: DEFAULT_VALUES })
 
+/**
+ * A blank delivery address, except for the one line of it the shopper does not fill in: the
+ * market decides where the parcel goes, so the country is already answered on an empty form.
+ *
+ * Exported because the picker resets to this too — an address deleted mid-checkout has to leave
+ * behind the same empty form a shopper who never had one starts from, country included.
+ */
+export function emptyShippingAddress(iso2: string): CheckoutFormValues['shippingAddress'] {
+  return { ...EMPTY_ADDRESS, countryCode: iso2 }
+}
+
 type CheckoutFormParams = SubmitFormParams<StoreCompleteCartResponse> & {
   data: CheckoutData
 }
 
 export function useCheckoutForm(params: CheckoutFormParams) {
-  const { completeOrder, isCompleting } = useCompleteOrder()
-  const { controller, confirmPayment, isPaying } = usePlaceOrder(params.data.cart.id)
+  const { completeOrder } = useCompleteOrder()
+  const { controller, confirmPayment } = usePlaceOrder(params.data.cart.id)
   /**
    * What the gateway said, in the shopper's words. Held here rather than as a field error: it is
    * not about a field they can correct, and it has to survive the submit that produced it.
@@ -76,13 +88,17 @@ export function useCheckoutForm(params: CheckoutFormParams) {
   // the route rather than staying put also closes any address drawer, which a guest cannot reopen.
   const logout = useLogout({ redirectTo: '/checkout' })
 
+  const { current } = useMarket()
+
   const { customer, addresses, cartAddresses } = params.data
+  // `addresses` is already narrowed to what this market delivers to, so the default picked here
+  // cannot be one the shopper would be refused at the end.
   const billingAddress = addresses?.find((address) => address.isDefaultShipping)
   const defaultBillingAddress = billingAddress ? cartAddresses?.get(billingAddress.id) : null
   const defaultValues: CheckoutFormValues = {
     ...checkoutFormOpts.defaultValues,
     email: customer?.email ?? checkoutFormOpts.defaultValues.email,
-    shippingAddress: defaultBillingAddress ? defaultBillingAddress : checkoutFormOpts.defaultValues.shippingAddress,
+    shippingAddress: defaultBillingAddress ? defaultBillingAddress : emptyShippingAddress(current.iso2),
   }
 
   const form = useAppForm({
@@ -111,7 +127,7 @@ export function useCheckoutForm(params: CheckoutFormParams) {
         form.reset()
         params.onSuccess?.(response)
       } catch (error) {
-        params.onError?.(error instanceof Error ? error.message : 'Failed to place the order')
+        params.onError?.(errorMessage(error))
       } finally {
         params.onSettled?.()
       }
@@ -123,7 +139,7 @@ export function useCheckoutForm(params: CheckoutFormParams) {
    * `reset()` would restore the mount defaults, which were built from that customer.
    */
   const signOut = () => {
-    form.reset(checkoutFormOpts.defaultValues)
+    form.reset({ ...checkoutFormOpts.defaultValues, shippingAddress: emptyShippingAddress(current.iso2) })
     logout()
   }
 
@@ -142,7 +158,6 @@ export function useCheckoutForm(params: CheckoutFormParams) {
     signOut,
     controller,
     paymentError,
-    isLoading: isPaying || isCompleting,
   }
 }
 

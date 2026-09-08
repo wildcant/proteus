@@ -67,7 +67,7 @@ export type ShippingOptionDTO = {
   shippingProfileId: string
   shippingOptionTypeId: string | null
   providerId: string
-  data: unknown
+  data: Record<string, unknown> | null
   metadata: string | null
   isEnabled: boolean
   createdAt: Date

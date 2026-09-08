@@ -1,6 +1,7 @@
 import { SortableList } from '#/components/common/sortable-list'
 import { useProductOptions } from '#/features/product-options/api/product-options'
 import { OptionValueSelector } from '#/features/product-options/components/option-value-selector'
+import { useStoreCurrencies } from '#/features/store/api/store'
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { enumerateVariantRows } from './variant-rows'
@@ -16,6 +17,7 @@ export const ProductCreateVariantsSection = withForm({
   render: function ProductCreateVariantsSection({ form }) {
     const { data } = useProductOptions()
     const allOptions = data?.productOptions ?? []
+    const { currencyCodes } = useStoreCurrencies()
 
     return (
       <form.Subscribe selector={(state) => state.values.variants}>
@@ -46,8 +48,9 @@ export const ProductCreateVariantsSection = withForm({
                       ...variants,
                       options,
                       // Rows are re-enumerated but carried by combination key, so an edited SKU
-                      // survives adding a value elsewhere in the matrix.
-                      rows: enumerateVariantRows(allOptions, options, variants.rows),
+                      // survives adding a value elsewhere in the matrix. Each row is seeded with a
+                      // price cell per store currency, which is what the grid's columns are drawn from.
+                      rows: enumerateVariantRows(allOptions, options, variants.rows, currencyCodes),
                     })
                   }
                 />

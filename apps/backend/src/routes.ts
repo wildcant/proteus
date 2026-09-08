@@ -9,6 +9,7 @@ import type { PreparedRoute } from './server/ports.js'
 
 // ---- Definition imports ----
 
+import adminCountryDefinitions from './api/admin/countries/definitions.js'
 import adminCustomerDefinitions from './api/admin/customers/definitions.js'
 import adminFulfillmentProviderDefinitions from './api/admin/fulfillment-providers/definitions.js'
 import adminFulfillmentSetDefinitions from './api/admin/fulfillment-sets/definitions.js'
@@ -16,23 +17,26 @@ import adminInviteDefinitions from './api/admin/invites/definitions.js'
 import adminNotificationDefinitions from './api/admin/notifications/definitions.js'
 import adminOrderDefinitions from './api/admin/orders/definitions.js'
 import adminPaymentCollectionDefinitions from './api/admin/payment-collections/definitions.js'
+import adminPaymentProviderDefinitions from './api/admin/payment-providers/definitions.js'
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
 import adminProductOptionDefinitions from './api/admin/product-options/definitions.js'
 import adminProductDefinitions from './api/admin/products/definitions.js'
 import adminRefundReasonDefinitions from './api/admin/refund-reasons/definitions.js'
+import adminRegionDefinitions from './api/admin/regions/definitions.js'
 import adminShippingOptionDefinitions from './api/admin/shipping-options/definitions.js'
 import adminShippingProfileDefinitions from './api/admin/shipping-profiles/definitions.js'
+import adminStoreDefinitions from './api/admin/store/definitions.js'
 import adminUploadDefinitions from './api/admin/uploads/definitions.js'
 import adminUserDefinitions from './api/admin/users/definitions.js'
 import authDefinitions from './api/auth/definitions.js'
 import hookDefinitions from './api/hooks/definitions.js'
 import storeAuthDefinitions from './api/store/auth/definitions.js'
 import storeCartDefinitions from './api/store/carts/definitions.js'
+import storeCountryDefinitions from './api/store/countries/definitions.js'
 import storeCustomerDefinitions from './api/store/customers/definitions.js'
 import storeOrderDefinitions from './api/store/orders/definitions.js'
 import storePaymentCollectionDefinitions from './api/store/payment-collections/definitions.js'
 import storePaymentMethodDefinitions from './api/store/payment-methods/definitions.js'
-import storePaymentProviderDefinitions from './api/store/payment-providers/definitions.js'
 import storeProductDefinitions from './api/store/products/definitions.js'
 
 // ---- Shared auth routes exposed to the store API ----
@@ -40,13 +44,14 @@ import storeProductDefinitions from './api/store/products/definitions.js'
 const storeSharedAuthRoutes = new Set([
   '/auth/verification/confirm',
   '/auth/:actorType/:authProvider/reset-password',
-  '/auth/:actorType/:authProvider/update',
+  '/auth/:actorType/:authProvider/password',
 ])
 
 // ---- Definitions by scope ----
 
 export const adminDefinitions: RouteDefinition[] = [
   ...authDefinitions,
+  ...adminCountryDefinitions,
   ...adminCustomerDefinitions,
   ...adminFulfillmentProviderDefinitions,
   ...adminInviteDefinitions,
@@ -55,11 +60,14 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminFulfillmentSetDefinitions,
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,
+  ...adminPaymentProviderDefinitions,
   ...adminProductOptionDefinitions,
   ...adminProductDefinitions,
   ...adminRefundReasonDefinitions,
+  ...adminRegionDefinitions,
   ...adminShippingOptionDefinitions,
   ...adminShippingProfileDefinitions,
+  ...adminStoreDefinitions,
   ...adminUploadDefinitions,
   ...adminUserDefinitions,
 ]
@@ -68,11 +76,11 @@ export const storeDefinitions: RouteDefinition[] = [
   ...storeAuthDefinitions,
   ...authDefinitions.filter((d) => storeSharedAuthRoutes.has(d.matcher)),
   ...storeCartDefinitions,
+  ...storeCountryDefinitions,
   ...storeCustomerDefinitions,
   ...storeOrderDefinitions,
   ...storePaymentCollectionDefinitions,
   ...storePaymentMethodDefinitions,
-  ...storePaymentProviderDefinitions,
   ...storeProductDefinitions,
 ]
 

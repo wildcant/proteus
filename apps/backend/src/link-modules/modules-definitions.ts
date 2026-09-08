@@ -7,6 +7,8 @@ export { inventoryItemTable } from '../modules/inventory/models/inventory-item.j
 export { inventoryLevelTable } from '../modules/inventory/models/inventory-level.js'
 export { orderTable } from '../modules/order/models/order.js'
 export { paymentCollectionTable } from '../modules/payment/models/payment-collection.js'
+export { paymentProviderTable } from '../modules/payment/models/payment-provider.js'
 export { priceSetTable } from '../modules/pricing/models/price-set.js'
 export { productTable } from '../modules/product/models/product.js'
 export { productVariantTable } from '../modules/product/models/product-variant.js'
+export { regionTable } from '../modules/region/models/region.js'

@@ -2,7 +2,7 @@ id: query-options-not-wrapped
 language: typescript
 severity: error
 message: This factory returns a bare object, so `useSuspenseQuery` cannot narrow its data from the key.
-note: 'Wrap the body in `queryOptions({ … })` — or `infiniteQueryOptions` for a paged read. docs/query-hooks.md'
+note: 'Wrap the body in `queryOptions({ … })` — or `infiniteQueryOptions` for a paged read. ast-grep/rules/frontend/features/api/__docs__/query-hooks.md'
 files:
   - "**/features/*/api/*.ts"
 rule:

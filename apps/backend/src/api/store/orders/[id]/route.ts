@@ -9,6 +9,8 @@ export const GetOutput = StoreOrderResponse
 
 // TODO: Replace unauthenticated access with a signed order access token (JWT scoped to order ID)
 // so that order details are not accessible to anyone who knows the order UUID.
+export const GetThrows = [ErrorTypes.NOT_FOUND] as const
+
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const customerId = req.authContext?.actorId
 

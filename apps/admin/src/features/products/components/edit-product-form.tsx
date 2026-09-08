@@ -12,20 +12,20 @@ export function EditProductForm({ product }: { product: AdminProduct }) {
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
-        <RouteDrawer.Header>
-          <RouteDrawer.Title>Edit Product</RouteDrawer.Title>
-        </RouteDrawer.Header>
-        <RouteDrawer.Body>
-          <form.AppField name="title">
-            {(field) => <field.TextField label="Title" autoFocus placeholder="Product title" />}
-          </form.AppField>
-        </RouteDrawer.Body>
-        <RouteDrawer.Footer>
-          <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-          <Button type="submit" size="sm">
-            Save
-          </Button>
-        </RouteDrawer.Footer>
+        <form.AppForm>
+          <RouteDrawer.Header>
+            <RouteDrawer.Title>Edit Product</RouteDrawer.Title>
+          </RouteDrawer.Header>
+          <RouteDrawer.Body>
+            <form.AppField name="title">
+              {(field) => <field.TextField label="Title" autoFocus placeholder="Product title" />}
+            </form.AppField>
+          </RouteDrawer.Body>
+          <RouteDrawer.Footer>
+            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
+            <form.SubmitButton size="sm">Save</form.SubmitButton>
+          </RouteDrawer.Footer>
+        </form.AppForm>
       </KeyboundForm>
     </RouteDrawer.Form>
   )

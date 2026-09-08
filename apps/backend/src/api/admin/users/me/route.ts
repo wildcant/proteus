@@ -5,6 +5,7 @@ import { AdminUserResponse } from '@proteus/http-schemas/admin'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = AdminUserResponse
+export const GetThrows = [ErrorTypes.NOT_FOUND] as const
 
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
   const actorId = req.authContext?.actorId

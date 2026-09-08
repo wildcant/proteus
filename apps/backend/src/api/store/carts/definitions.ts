@@ -5,6 +5,7 @@ import * as customerRoutes from './[id]/customer/route.js'
 import * as inventoryRoutes from './[id]/inventory/route.js'
 import * as lineItemByIdRoutes from './[id]/line-items/[lineId]/route.js'
 import * as lineItemRoutes from './[id]/line-items/route.js'
+import * as paymentProviderRoutes from './[id]/payment-providers/route.js'
 import * as cartByIdRoutes from './[id]/route.js'
 import * as shippingMethodRoutes from './[id]/shipping-methods/route.js'
 import * as shippingOptionRoutes from './[id]/shipping-options/route.js'
@@ -15,6 +16,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts',
     handler: cartRoutes.POST,
+    throws: cartRoutes.PostThrows,
     auth: 'optional',
     middlewares: cartRoutes.PostMiddlewares,
     input: cartRoutes.PostInput,
@@ -38,6 +40,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id',
     handler: cartByIdRoutes.POST,
+    throws: cartByIdRoutes.PostThrows,
     auth: 'optional',
     input: cartByIdRoutes.PostInput,
     operationId: 'updateStoreCart',
@@ -49,6 +52,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id/line-items',
     handler: lineItemRoutes.POST,
+    throws: lineItemRoutes.PostThrows,
     auth: 'optional',
     input: lineItemRoutes.PostInput,
     operationId: 'addStoreCartLineItem',
@@ -90,9 +94,21 @@ export default [
     output: shippingOptionRoutes.GetOutput,
   },
   {
+    method: 'GET',
+    matcher: '/store/carts/:id/payment-providers',
+    handler: paymentProviderRoutes.GET,
+    auth: 'optional',
+    input: paymentProviderRoutes.GetInput,
+    operationId: 'listStoreCartPaymentProviders',
+    summary: 'List the payment providers the cart’s region offers',
+    tags: [Tags.PAYMENTS],
+    output: paymentProviderRoutes.GetOutput,
+  },
+  {
     method: 'POST',
     matcher: '/store/carts/:id/shipping-methods',
     handler: shippingMethodRoutes.POST,
+    throws: shippingMethodRoutes.PostThrows,
     auth: 'optional',
     input: shippingMethodRoutes.PostInput,
     operationId: 'addStoreCartShippingMethod',
@@ -104,6 +120,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id/complete',
     handler: completeRoutes.POST,
+    throws: completeRoutes.PostThrows,
     auth: 'optional',
     input: completeRoutes.PostInput,
     operationId: 'completeStoreCart',
@@ -115,6 +132,7 @@ export default [
     method: 'GET',
     matcher: '/store/carts/:id/inventory',
     handler: inventoryRoutes.GET,
+    throws: inventoryRoutes.GetThrows,
     auth: 'optional',
     input: inventoryRoutes.GetInput,
     operationId: 'checkStoreCartInventory',
@@ -126,6 +144,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id/customer',
     handler: customerRoutes.POST,
+    throws: customerRoutes.PostThrows,
     auth: 'required',
     input: customerRoutes.PostInput,
     operationId: 'transferStoreCartCustomer',

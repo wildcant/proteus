@@ -38,5 +38,10 @@ export default async function globalSetup() {
     env: { ...process.env, POOLER_DATABASE_URL: DATABASE_URL },
   })
 
+  // Markets, for the same reason and one more: the storefront reads its routable URL segments
+  // from the sellable countries, so with none seeded there is no market to render at all. After
+  // the providers, because each region is linked to the providers that exist when it is created.
+  execSync('npm run --workspace=backend db:seed:markets:test', { stdio: 'inherit' })
+
   rmSync('playwright/.auth', { recursive: true, force: true })
 }

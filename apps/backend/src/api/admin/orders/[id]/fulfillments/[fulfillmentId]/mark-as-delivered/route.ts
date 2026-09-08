@@ -4,6 +4,7 @@ import { markOrderDeliveredWorkflow } from '@workflows/order/mark-order-delivere
 
 export const PostInput = { params: OrderFulfillmentIdParams }
 export const PostOutput = AdminOrderActionResponse
+export const PostThrows = [...markOrderDeliveredWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const order = await markOrderDeliveredWorkflow.run({

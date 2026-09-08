@@ -122,9 +122,9 @@ TanStack Router + React Query + React Table + TanStack Form + Zod v4. Path alias
 
 Orval generates typed API clients from the backend's OpenAPI spec into `src/api/generated/` (tags-split mode). Custom fetcher at `src/lib/fetcher.ts` uses `qs.stringify()` for nested query params.
 
-Feature modules wrap generated functions with React Query hooks in `features/{name}/api/`. Every mutation hook accepts an optional `UseMutationOptions` parameter, shows an error toast on failure, and forwards callbacks. See `docs/mutation-hooks.md` for the full pattern.
+Feature modules wrap generated functions with React Query hooks in `features/{name}/api/`. Every mutation hook accepts an optional `UseMutationOptions` parameter, shows an error toast on failure, and forwards callbacks. See `ast-grep/rules/frontend/features/api/__docs__/mutation-hooks.md` for the full pattern.
 
-Every query is an exported `*QueryOptions` factory built with `queryOptions()`; hooks and route loaders both read that one factory, and queries never toast. See `docs/query-hooks.md`.
+Every query is an exported `*QueryOptions` factory built with `queryOptions()`; hooks and route loaders both read that one factory, and queries never toast. See `ast-grep/rules/frontend/features/api/__docs__/query-hooks.md`.
 
 ### DataTable System (`src/components/data-table/`)
 
@@ -147,7 +147,9 @@ Each feature at `src/features/{name}/` co-locates:
 
 ### Form Hooks
 
-Form logic lives in `features/{name}/hooks/use-{action}-form.ts`, not in components. Components only render fields. See `docs/form-hooks.md` for the full pattern.
+Form logic lives in `features/{name}/hooks/use-{action}-form.ts`, not in components. Components only render
+fields. See `ast-grep/rules/frontend/features/hooks/__docs__/form-hooks.md` for the hook contract and
+`ast-grep/rules/frontend/components/__docs__/form-components.md` for the form element and its submit button.
 
 ### Dependency Rules (dependency-cruiser)
 
@@ -236,7 +238,13 @@ catalogue data is fixture data and does not belong there.
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`, `docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/form-hooks.md`, `docs/mutation-hooks.md`, `docs/query-hooks.md`, `docs/middleware-and-openapi.md`, `docs/soft-delete-cascade.md`, `docs/product-options.md`.
+Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`,
+`docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/middleware-and-openapi.md`,
+`docs/soft-delete-cascade.md`, `docs/product-options.md`.
+
+A convention with a rule behind it is documented beside that rule, not in `docs/` — form hooks, form
+components, query hooks and mutation hooks all live under `ast-grep/rules/`. `ast-grep/README.md` is
+the index and explains why.
 
 A convention that can be checked is checked, and the check is a rule file rather than a script.
 Dependency rules go in each app's `deps-analyzer/.dependency-cruiser.cjs`; code-shape rules — what a

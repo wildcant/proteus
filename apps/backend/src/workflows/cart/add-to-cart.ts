@@ -40,7 +40,10 @@ export type AddToCartInput = {
  * exactly this window; a unique index on `(cart_id, variant_id)` would close it from below.
  */
 export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[]>(
-  'add-to-cart',
+  {
+    name: 'add-to-cart',
+    throws: [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND],
+  },
   async (ctx, input) => {
     /**
      * A completed cart is the record behind an order and must not grow, and an empty payload is

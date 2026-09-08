@@ -85,14 +85,14 @@ export type CreateShippingOptionDTO = {
   shippingProfileId: string
   shippingOptionTypeId?: string | null | undefined
   providerId: string
-  data?: unknown | undefined
+  data?: Record<string, unknown> | null | undefined
   metadata?: string | null | undefined
 }
 
 export type UpdateShippingOptionDTO = {
   name?: string | undefined
   amount?: number | null | undefined
-  data?: unknown | undefined
+  data?: Record<string, unknown> | null | undefined
   metadata?: string | null | undefined
   isEnabled?: boolean | undefined
 }

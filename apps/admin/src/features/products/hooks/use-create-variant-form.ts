@@ -4,7 +4,7 @@ import type { AdminCreateProductVariantResponse } from '#/api/generated/model'
 import { useCreateProductVariant } from '#/features/products/api/product-variants'
 import type { CombinationOption } from '#/features/products/hooks/use-option-combination-search'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 /**
  * The form holds the chosen combination itself, not its key — the payload needs its `optionValues`,
@@ -37,27 +37,27 @@ export function useCreateVariantForm({ productId, params }: UseCreateVariantForm
   const form = useAppForm({
     defaultValues,
     validators: { onSubmit: createVariantSchema },
-    onSubmit: ({ value }) => {
-      createMutation.mutate(
-        // Parsing rather than casting drops any key the endpoint rejects, and takes `unknown`, so
-        // the combination needs no narrowing here — the validator has already refused a null one.
-        // `prices` is omitted because the schema's pipeline outputs a BigNumber, which is not the
-        // wire type, and this form does not set them.
-        AdminCreateProductVariant.omit({ prices: true }).parse({
-          sku: value.sku || null,
-          optionValues: value.combination?.optionValues,
-        }),
-        {
-          onSuccess: (created) => {
-            form.reset()
-            params?.onSuccess?.(created)
-          },
-          onError: (error) => params?.onError?.(error.message),
-          onSettled: () => params?.onSettled?.(),
-        },
-      )
+    onSubmit: async ({ value }) => {
+      try {
+        const created = await createMutation.mutateAsync(
+          // Parsing rather than casting drops any key the endpoint rejects, and takes `unknown`, so
+          // the combination needs no narrowing here — the validator has already refused a null one.
+          // `prices` is omitted because the schema's pipeline outputs a BigNumber, which is not the
+          // wire type, and this form does not set them.
+          AdminCreateProductVariant.omit({ prices: true }).parse({
+            sku: value.sku || null,
+            optionValues: value.combination?.optionValues,
+          }),
+        )
+        form.reset()
+        params?.onSuccess?.(created)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: createMutation.isPending }
+  return { form }
 }

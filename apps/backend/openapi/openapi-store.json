@@ -2,6 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Store API",
+    "description": "Storefront API for shoppers: product browsing, carts, checkout and orders.",
     "version": "0.1.0"
   },
   "servers": [
@@ -9,7 +10,45 @@
       "url": "http://localhost:3000"
     }
   ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Carts"
+    },
+    {
+      "name": "Countries"
+    },
+    {
+      "name": "Customers"
+    },
+    {
+      "name": "Orders"
+    },
+    {
+      "name": "Payment Collections"
+    },
+    {
+      "name": "Payments"
+    },
+    {
+      "name": "Products"
+    }
+  ],
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "schemas": {
       "AuthenticateResponse": {
         "type": "object",
@@ -21,7 +60,9 @@
             "type": "boolean"
           }
         },
-        "required": ["token"]
+        "required": [
+          "token"
+        ]
       },
       "StoreSignupBody": {
         "type": "object",
@@ -32,16 +73,22 @@
           },
           "password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 128
           },
           "firstName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           },
           "lastName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           }
         },
-        "required": ["email", "password"]
+        "required": [
+          "email",
+          "password"
+        ]
       },
       "StoreLoginBody": {
         "type": "object",
@@ -52,10 +99,14 @@
           },
           "password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 128
           }
         },
-        "required": ["email", "password"]
+        "required": [
+          "email",
+          "password"
+        ]
       },
       "ResetPasswordResponse": {
         "type": "object",
@@ -69,7 +120,9 @@
             "format": "email"
           }
         },
-        "required": ["email"]
+        "required": [
+          "email"
+        ]
       },
       "UpdatePasswordResponse": {
         "type": "object",
@@ -78,17 +131,22 @@
             "type": "boolean"
           }
         },
-        "required": ["success"]
+        "required": [
+          "success"
+        ]
       },
       "UpdatePasswordBody": {
         "type": "object",
         "properties": {
           "password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 128
           }
         },
-        "required": ["password"]
+        "required": [
+          "password"
+        ]
       },
       "VerificationConfirmResponse": {
         "type": "object",
@@ -107,21 +165,30 @@
             "format": "date-time"
           }
         },
-        "required": ["id", "entityId", "entityType", "verifiedAt"]
+        "required": [
+          "id",
+          "entityId",
+          "entityType",
+          "verifiedAt"
+        ]
       },
       "VerificationConfirmBody": {
         "type": "object",
         "properties": {
           "code": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512
           },
           "codeProvider": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 64
           }
         },
-        "required": ["code"]
+        "required": [
+          "code"
+        ]
       },
       "StoreCreateCartResponse": {
         "type": "object",
@@ -130,7 +197,9 @@
             "$ref": "#/components/schemas/StoreCart"
           }
         },
-        "required": ["cart"]
+        "required": [
+          "cart"
+        ]
       },
       "StoreCart": {
         "type": "object",
@@ -139,22 +208,37 @@
             "type": "string"
           },
           "regionId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "customerId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "salesChannelId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "email": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "currencyCode": {
             "type": "string"
           },
           "completedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "createdAt": {
@@ -166,7 +250,10 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -216,12 +303,20 @@
                     "$ref": "#/components/schemas/StoreCartAddress"
                   }
                 },
-                "required": ["items", "shippingMethods", "totals", "shippingAddress", "billingAddress"]
+                "required": [
+                  "items",
+                  "shippingMethods",
+                  "totals",
+                  "shippingAddress",
+                  "billingAddress"
+                ]
               }
             ]
           }
         },
-        "required": ["cart"]
+        "required": [
+          "cart"
+        ]
       },
       "StoreCartLineItem": {
         "type": "object",
@@ -236,46 +331,85 @@
             "type": "string"
           },
           "subtitle": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "thumbnail": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "quantity": {
             "type": "number"
           },
           "variantId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "productId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "productTitle": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "productDescription": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "productSubtitle": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "productType": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "productHandle": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "variantSku": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "variantBarcode": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "variantTitle": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "variantOptionValues": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "requiresShipping": {
             "type": "boolean"
@@ -310,7 +444,10 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -357,7 +494,10 @@
             "type": "string"
           },
           "description": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "amount": {
             "type": "string",
@@ -367,10 +507,16 @@
             "type": "boolean"
           },
           "shippingOptionId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "data": {
-            "type": ["object", "null"],
+            "type": [
+              "object",
+              "null"
+            ],
             "additionalProperties": {}
           },
           "createdAt": {
@@ -382,7 +528,10 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -416,10 +565,17 @@
             "description": "Numeric string (arbitrary precision)"
           }
         },
-        "required": ["itemsTotal", "shippingTotal", "cartTotal"]
+        "required": [
+          "itemsTotal",
+          "shippingTotal",
+          "cartTotal"
+        ]
       },
       "StoreCartAddress": {
-        "type": ["object", "null"],
+        "type": [
+          "object",
+          "null"
+        ],
         "properties": {
           "id": {
             "type": "string"
@@ -429,37 +585,70 @@
           },
           "type": {
             "type": "string",
-            "enum": ["shipping", "billing"]
+            "enum": [
+              "shipping",
+              "billing"
+            ]
           },
           "company": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "firstName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "lastName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "address1": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "address2": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "city": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "countryCode": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "province": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "postalCode": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "phone": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -470,7 +659,10 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -500,7 +692,9 @@
             "$ref": "#/components/schemas/StoreCart"
           }
         },
-        "required": ["cart"]
+        "required": [
+          "cart"
+        ]
       },
       "StoreCreateCartLineItemResponse": {
         "type": "object",
@@ -509,7 +703,9 @@
             "$ref": "#/components/schemas/StoreCartLineItem"
           }
         },
-        "required": ["lineItem"]
+        "required": [
+          "lineItem"
+        ]
       },
       "StoreUpdateCartLineItemResponse": {
         "type": "object",
@@ -518,7 +714,9 @@
             "$ref": "#/components/schemas/StoreCartLineItem"
           }
         },
-        "required": ["lineItem"]
+        "required": [
+          "lineItem"
+        ]
       },
       "DeleteResponse": {
         "type": "object",
@@ -530,7 +728,10 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "deleted"]
+        "required": [
+          "id",
+          "deleted"
+        ]
       },
       "StoreShippingOptionListResponse": {
         "type": "object",
@@ -542,7 +743,9 @@
             }
           }
         },
-        "required": ["shippingOptions"]
+        "required": [
+          "shippingOptions"
+        ]
       },
       "StoreShippingOption": {
         "type": "object",
@@ -554,7 +757,10 @@
             "type": "string"
           },
           "amount": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "serviceZoneId": {
             "type": "string"
@@ -563,14 +769,74 @@
             "type": "string"
           },
           "shippingOptionTypeId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "providerId": {
             "type": "string"
           },
-          "data": {}
+          "data": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          }
         },
-        "required": ["id", "name", "amount", "serviceZoneId", "shippingProfileId", "shippingOptionTypeId", "providerId"]
+        "required": [
+          "id",
+          "name",
+          "amount",
+          "serviceZoneId",
+          "shippingProfileId",
+          "shippingOptionTypeId",
+          "providerId",
+          "data"
+        ]
+      },
+      "StorePaymentProviderListResponse": {
+        "type": "object",
+        "properties": {
+          "paymentProviders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorePaymentProvider"
+            }
+          }
+        },
+        "required": [
+          "paymentProviders"
+        ]
+      },
+      "StorePaymentProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "isTestOnly": {
+            "type": "boolean"
+          },
+          "publicConfig": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "id",
+          "isEnabled",
+          "label",
+          "isTestOnly",
+          "publicConfig"
+        ]
       },
       "StoreCreateCartShippingMethodResponse": {
         "type": "object",
@@ -579,7 +845,9 @@
             "$ref": "#/components/schemas/StoreCartShippingMethod"
           }
         },
-        "required": ["shippingMethod"]
+        "required": [
+          "shippingMethod"
+        ]
       },
       "StoreCompleteCartResponse": {
         "type": "object",
@@ -588,7 +856,9 @@
             "type": "string"
           }
         },
-        "required": ["orderId"]
+        "required": [
+          "orderId"
+        ]
       },
       "StoreCartInventoryResponse": {
         "type": "object",
@@ -603,7 +873,10 @@
             }
           }
         },
-        "required": ["cartId", "items"]
+        "required": [
+          "cartId",
+          "items"
+        ]
       },
       "StoreConfirmInventoryItem": {
         "type": "object",
@@ -630,7 +903,14 @@
             }
           }
         },
-        "required": ["lineItemId", "variantId", "inventoryItemId", "requiredQuantity", "quantity", "locationIds"]
+        "required": [
+          "lineItemId",
+          "variantId",
+          "inventoryItemId",
+          "requiredQuantity",
+          "quantity",
+          "locationIds"
+        ]
       },
       "StoreCartResponse": {
         "type": "object",
@@ -639,7 +919,56 @@
             "$ref": "#/components/schemas/StoreCart"
           }
         },
-        "required": ["cart"]
+        "required": [
+          "cart"
+        ]
+      },
+      "StoreCountryListResponse": {
+        "type": "object",
+        "properties": {
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCountry"
+            }
+          }
+        },
+        "required": [
+          "countries"
+        ]
+      },
+      "StoreCountry": {
+        "type": "object",
+        "properties": {
+          "iso2": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2, lowercased. What a country is selected by everywhere else."
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The country name as a shopper reads it. Listings come sorted by it."
+          },
+          "currencyCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ISO 4217, lowercased, from the owning region. Null only for a country no region owns."
+          },
+          "localeCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "BCP 47 tag, e.g. es-CO — the URL segment, the document language, and the tag every number and date formatter is given. Null on the same countries currencyCode is."
+          }
+        },
+        "required": [
+          "iso2",
+          "displayName",
+          "currencyCode",
+          "localeCode"
+        ]
       },
       "CustomerResponse": {
         "type": "object",
@@ -648,7 +977,9 @@
             "$ref": "#/components/schemas/Customer"
           }
         },
-        "required": ["customer"]
+        "required": [
+          "customer"
+        ]
       },
       "Customer": {
         "type": "object",
@@ -660,10 +991,16 @@
             "type": "boolean"
           },
           "firstName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "lastName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "email": {
             "type": "string"
@@ -677,11 +1014,23 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
-        "required": ["id", "hasAccount", "firstName", "lastName", "email", "createdAt", "updatedAt", "deletedAt"]
+        "required": [
+          "id",
+          "hasAccount",
+          "firstName",
+          "lastName",
+          "email",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
       },
       "StoreCustomerAddressListResponse": {
         "type": "object",
@@ -693,7 +1042,9 @@
             }
           }
         },
-        "required": ["addresses"]
+        "required": [
+          "addresses"
+        ]
       },
       "StoreCustomerAddress": {
         "type": "object",
@@ -705,7 +1056,10 @@
             "type": "string"
           },
           "addressName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "isDefaultShipping": {
             "type": "boolean"
@@ -714,34 +1068,64 @@
             "type": "boolean"
           },
           "company": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "firstName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "lastName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "address1": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "address2": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "city": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "countryCode": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "province": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "postalCode": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "phone": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -752,7 +1136,10 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -784,93 +1171,164 @@
             "$ref": "#/components/schemas/StoreCustomerAddress"
           }
         },
-        "required": ["address"]
+        "required": [
+          "address"
+        ]
       },
       "StoreCreateAddress": {
         "type": "object",
         "properties": {
           "addressName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "company": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "firstName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "lastName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "address2": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "province": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "phone": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
           },
           "address1": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "city": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "countryCode": {
             "type": "string",
-            "minLength": 2
+            "minLength": 2,
+            "maxLength": 2
           },
           "postalCode": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 32
           },
           "isDefault": {
             "type": "boolean"
           }
         },
-        "required": ["address1", "city", "countryCode", "postalCode"]
+        "required": [
+          "address1",
+          "city",
+          "countryCode",
+          "postalCode"
+        ]
       },
       "StoreUpdateAddress": {
         "type": "object",
         "properties": {
           "addressName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "company": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "firstName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "lastName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "address2": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "province": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
           },
           "phone": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
           },
           "address1": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "city": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 255
           },
           "countryCode": {
             "type": "string",
-            "minLength": 2
+            "minLength": 2,
+            "maxLength": 2
           },
           "postalCode": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 32
           },
           "isDefault": {
             "type": "boolean"
@@ -910,13 +1368,21 @@
                       "description": "Numeric string (arbitrary precision)"
                     }
                   },
-                  "required": ["items", "total"]
+                  "required": [
+                    "items",
+                    "total"
+                  ]
                 }
               ]
             }
           }
         },
-        "required": ["count", "offset", "limit", "orders"]
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "orders"
+        ]
       },
       "StoreOrderItemSummary": {
         "type": "object",
@@ -928,13 +1394,21 @@
             "type": "string"
           },
           "thumbnail": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "quantity": {
             "type": "number"
           }
         },
-        "required": ["id", "title", "thumbnail", "quantity"]
+        "required": [
+          "id",
+          "title",
+          "thumbnail",
+          "quantity"
+        ]
       },
       "StoreOrder": {
         "type": "object",
@@ -947,11 +1421,21 @@
           },
           "status": {
             "type": "string",
-            "enum": ["pending", "completed", "canceled", "archived"]
+            "enum": [
+              "pending",
+              "completed",
+              "canceled",
+              "archived"
+            ]
           },
           "fulfillmentStatus": {
             "type": "string",
-            "enum": ["unfulfilled", "fulfilled", "shipped", "delivered"]
+            "enum": [
+              "unfulfilled",
+              "fulfilled",
+              "shipped",
+              "delivered"
+            ]
           },
           "email": {
             "type": "string"
@@ -1010,15 +1494,27 @@
                   },
                   "paymentStatus": {
                     "type": "string",
-                    "enum": ["awaiting", "authorized", "captured"]
+                    "enum": [
+                      "awaiting",
+                      "authorized",
+                      "captured"
+                    ]
                   }
                 },
-                "required": ["lineItems", "shippingAddress", "shippingMethods", "totals", "paymentStatus"]
+                "required": [
+                  "lineItems",
+                  "shippingAddress",
+                  "shippingMethods",
+                  "totals",
+                  "paymentStatus"
+                ]
               }
             ]
           }
         },
-        "required": ["order"]
+        "required": [
+          "order"
+        ]
       },
       "StoreOrderLineItem": {
         "type": "object",
@@ -1030,13 +1526,22 @@
             "type": "string"
           },
           "variantTitle": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "variantOptionValues": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "thumbnail": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "quantity": {
             "type": "number"
@@ -1062,37 +1567,70 @@
         ]
       },
       "StoreOrderAddress": {
-        "type": ["object", "null"],
+        "type": [
+          "object",
+          "null"
+        ],
         "properties": {
           "company": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "firstName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "lastName": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "address1": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "address2": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "city": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "countryCode": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "province": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "postalCode": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "phone": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1119,7 +1657,10 @@
             "description": "Numeric string (arbitrary precision)"
           }
         },
-        "required": ["name", "amount"]
+        "required": [
+          "name",
+          "amount"
+        ]
       },
       "StoreOrderTotals": {
         "type": "object",
@@ -1137,7 +1678,11 @@
             "description": "Numeric string (arbitrary precision)"
           }
         },
-        "required": ["itemsTotal", "shippingTotal", "orderTotal"]
+        "required": [
+          "itemsTotal",
+          "shippingTotal",
+          "orderTotal"
+        ]
       },
       "StoreCreatePaymentCollectionResponse": {
         "type": "object",
@@ -1146,7 +1691,9 @@
             "$ref": "#/components/schemas/StorePaymentCollection"
           }
         },
-        "required": ["paymentCollection"]
+        "required": [
+          "paymentCollection"
+        ]
       },
       "StorePaymentCollection": {
         "type": "object",
@@ -1174,15 +1721,27 @@
             "description": "Numeric string (arbitrary precision)"
           },
           "completedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "status": {
             "type": "string",
-            "enum": ["not_paid", "awaiting", "authorized", "partially_authorized", "completed"]
+            "enum": [
+              "not_paid",
+              "awaiting",
+              "authorized",
+              "partially_authorized",
+              "completed"
+            ]
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": [
+              "object",
+              "null"
+            ],
             "additionalProperties": {}
           },
           "createdAt": {
@@ -1194,7 +1753,10 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -1220,7 +1782,9 @@
             "$ref": "#/components/schemas/StorePaymentSession"
           }
         },
-        "required": ["paymentSession"]
+        "required": [
+          "paymentSession"
+        ]
       },
       "StorePaymentSession": {
         "type": "object",
@@ -1243,22 +1807,39 @@
           },
           "status": {
             "type": "string",
-            "enum": ["pending", "authorized", "captured", "requires_more", "error", "canceled", "pending_authorization"]
+            "enum": [
+              "pending",
+              "authorized",
+              "captured",
+              "requires_more",
+              "error",
+              "canceled",
+              "pending_authorization"
+            ]
           },
           "data": {
             "type": "object",
             "additionalProperties": {}
           },
           "context": {
-            "type": ["object", "null"],
+            "type": [
+              "object",
+              "null"
+            ],
             "additionalProperties": {}
           },
           "authorizedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": [
+              "object",
+              "null"
+            ],
             "additionalProperties": {}
           },
           "createdAt": {
@@ -1270,7 +1851,10 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -1297,7 +1881,9 @@
             "$ref": "#/components/schemas/StorePaymentSession"
           }
         },
-        "required": ["paymentSession"]
+        "required": [
+          "paymentSession"
+        ]
       },
       "StoreSavedMethodListResponse": {
         "type": "object",
@@ -1309,7 +1895,9 @@
             }
           }
         },
-        "required": ["paymentMethods"]
+        "required": [
+          "paymentMethods"
+        ]
       },
       "StoreSavedMethod": {
         "type": "object",
@@ -1333,41 +1921,14 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "brand", "last4", "expMonth", "expYear", "isDefault"]
-      },
-      "StorePaymentProviderListResponse": {
-        "type": "object",
-        "properties": {
-          "paymentProviders": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StorePaymentProvider"
-            }
-          }
-        },
-        "required": ["paymentProviders"]
-      },
-      "StorePaymentProvider": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "isEnabled": {
-            "type": "boolean"
-          },
-          "label": {
-            "type": "string"
-          },
-          "isTestOnly": {
-            "type": "boolean"
-          },
-          "publicConfig": {
-            "type": "object",
-            "additionalProperties": {}
-          }
-        },
-        "required": ["id", "isEnabled", "label", "isTestOnly", "publicConfig"]
+        "required": [
+          "id",
+          "brand",
+          "last4",
+          "expMonth",
+          "expYear",
+          "isDefault"
+        ]
       },
       "StoreProductListResponse": {
         "type": "object",
@@ -1388,7 +1949,12 @@
             }
           }
         },
-        "required": ["count", "offset", "limit", "products"]
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "products"
+        ]
       },
       "StoreProductListItem": {
         "allOf": [
@@ -1419,7 +1985,11 @@
             "description": "Numeric string (arbitrary precision)"
           }
         },
-        "required": ["id", "currencyCode", "calculatedAmount"]
+        "required": [
+          "id",
+          "currencyCode",
+          "calculatedAmount"
+        ]
       },
       "StoreProduct": {
         "type": "object",
@@ -1434,31 +2004,58 @@
             "type": "string"
           },
           "subtitle": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "description": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "thumbnail": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "weight": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "length": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "height": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "width": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "originCountry": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "material": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1510,17 +2107,27 @@
                     "additionalProperties": {
                       "type": "object",
                       "additionalProperties": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
                     }
                   }
                 },
-                "required": ["images", "options", "variants", "pickerTargets"]
+                "required": [
+                  "images",
+                  "options",
+                  "variants",
+                  "pickerTargets"
+                ]
               }
             ]
           }
         },
-        "required": ["product"]
+        "required": [
+          "product"
+        ]
       },
       "StoreProductImage": {
         "type": "object",
@@ -1535,7 +2142,11 @@
             "type": "number"
           }
         },
-        "required": ["id", "url", "rank"]
+        "required": [
+          "id",
+          "url",
+          "rank"
+        ]
       },
       "StoreProductScopedOption": {
         "type": "object",
@@ -1548,7 +2159,10 @@
           },
           "renderAs": {
             "type": "string",
-            "enum": ["text", "swatch"]
+            "enum": [
+              "text",
+              "swatch"
+            ]
           },
           "values": {
             "type": "array",
@@ -1557,7 +2171,12 @@
             }
           }
         },
-        "required": ["id", "title", "renderAs", "values"]
+        "required": [
+          "id",
+          "title",
+          "renderAs",
+          "values"
+        ]
       },
       "StoreProductScopedOptionValue": {
         "type": "object",
@@ -1569,13 +2188,24 @@
             "type": "string"
           },
           "rank": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "swatchImageUrl": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
-        "required": ["id", "value", "rank", "swatchImageUrl"]
+        "required": [
+          "id",
+          "value",
+          "rank",
+          "swatchImageUrl"
+        ]
       },
       "StoreProductVariant": {
         "type": "object",
@@ -1590,7 +2220,10 @@
             "type": "string"
           },
           "thumbnail": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "imageIds": {
             "type": "array",
@@ -1608,25 +2241,46 @@
             "type": "boolean"
           },
           "sku": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "barcode": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "material": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "weight": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "length": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "height": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "width": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "calculatedPrice": {
             "$ref": "#/components/schemas/StoreCalculatedPrice"
@@ -1658,7 +2312,10 @@
       "post": {
         "operationId": "storeAuthSignup",
         "summary": "Register a new customer account",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
+        "security": [],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1681,6 +2338,12 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -1689,7 +2352,10 @@
       "post": {
         "operationId": "storeAuthLogin",
         "summary": "Login as a customer",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
+        "security": [],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1712,6 +2378,12 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -1720,12 +2392,18 @@
       "post": {
         "operationId": "authResetPassword",
         "summary": "Request a password reset token",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
+        "security": [],
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "enum": ["user", "customer"]
+              "enum": [
+                "user",
+                "customer"
+              ]
             },
             "required": true,
             "name": "actorType",
@@ -1734,7 +2412,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "authProvider",
@@ -1770,16 +2449,26 @@
         }
       }
     },
-    "/auth/{actorType}/{authProvider}/update": {
+    "/auth/{actorType}/{authProvider}/password": {
       "post": {
         "operationId": "authUpdatePassword",
         "summary": "Update password using a reset token",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "enum": ["user", "customer"]
+              "enum": [
+                "user",
+                "customer"
+              ]
             },
             "required": true,
             "name": "actorType",
@@ -1788,7 +2477,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "authProvider",
@@ -1818,6 +2508,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -1828,7 +2521,14 @@
       "post": {
         "operationId": "authVerificationConfirm",
         "summary": "Confirm a verification code",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1851,6 +2551,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -1859,7 +2562,39 @@
       "post": {
         "operationId": "createStoreCart",
         "summary": "Create a cart",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1877,15 +2612,20 @@
                       "properties": {
                         "variantId": {
                           "type": "string",
-                          "minLength": 1
+                          "minLength": 1,
+                          "maxLength": 64
                         },
                         "quantity": {
                           "type": "integer",
                           "exclusiveMinimum": 0
                         }
                       },
-                      "required": ["variantId", "quantity"]
-                    }
+                      "required": [
+                        "variantId",
+                        "quantity"
+                      ]
+                    },
+                    "maxItems": 100
                   }
                 }
               }
@@ -1905,6 +2645,15 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -1913,7 +2662,14 @@
       "get": {
         "operationId": "getStoreCart",
         "summary": "Retrieve a cart with line items",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -1939,6 +2695,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -1947,7 +2706,14 @@
       "post": {
         "operationId": "updateStoreCart",
         "summary": "Update a cart",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -1965,38 +2731,68 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "countryCode": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                  },
+                  "regionId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
                   "email": {
                     "type": "string",
                     "format": "email"
                   },
                   "firstName": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                   },
                   "lastName": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                   },
                   "shippingAddress": {
                     "type": "object",
                     "properties": {
                       "firstName": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "lastName": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "address1": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 255
                       },
                       "address2": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "company": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "city": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 255
                       },
                       "countryCode": {
                         "type": "string",
@@ -2004,40 +2800,74 @@
                         "maxLength": 2
                       },
                       "province": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "postalCode": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 32
                       },
                       "phone": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 32
                       }
                     },
-                    "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
+                    "required": [
+                      "firstName",
+                      "lastName",
+                      "address1",
+                      "city",
+                      "countryCode",
+                      "postalCode"
+                    ]
                   },
                   "billingAddress": {
                     "type": "object",
                     "properties": {
                       "firstName": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "lastName": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "address1": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 255
                       },
                       "address2": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "company": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "city": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 255
                       },
                       "countryCode": {
                         "type": "string",
@@ -2045,17 +2875,33 @@
                         "maxLength": 2
                       },
                       "province": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 255
                       },
                       "postalCode": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 32
                       },
                       "phone": {
-                        "type": ["string", "null"]
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 32
                       }
                     },
-                    "required": ["firstName", "lastName", "address1", "city", "countryCode", "postalCode"]
+                    "required": [
+                      "firstName",
+                      "lastName",
+                      "address1",
+                      "city",
+                      "countryCode",
+                      "postalCode"
+                    ]
                   }
                 }
               }
@@ -2076,6 +2922,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2086,7 +2935,14 @@
       "post": {
         "operationId": "addStoreCartLineItem",
         "summary": "Add a line item to a cart",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2106,14 +2962,18 @@
                 "properties": {
                   "variantId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   },
                   "quantity": {
                     "type": "integer",
                     "exclusiveMinimum": 0
                   }
                 },
-                "required": ["variantId", "quantity"]
+                "required": [
+                  "variantId",
+                  "quantity"
+                ]
               }
             }
           }
@@ -2132,8 +2992,14 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -2142,12 +3008,20 @@
       "post": {
         "operationId": "updateStoreCartLineItem",
         "summary": "Update a cart line item",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "id",
@@ -2156,7 +3030,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "lineId",
@@ -2192,6 +3067,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2200,12 +3078,20 @@
       "delete": {
         "operationId": "deleteStoreCartLineItem",
         "summary": "Remove a line item from a cart",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "id",
@@ -2214,7 +3100,8 @@
           {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "required": true,
             "name": "lineId",
@@ -2235,6 +3122,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2245,7 +3135,14 @@
       "get": {
         "operationId": "listStoreCartShippingOptions",
         "summary": "List available shipping options for a cart",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2255,14 +3152,6 @@
             "required": true,
             "name": "id",
             "in": "path"
-          },
-          {
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "name": "countryCode",
-            "in": "query"
           },
           {
             "schema": {
@@ -2303,6 +3192,55 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/carts/{id}/payment-providers": {
+      "get": {
+        "operationId": "listStoreCartPaymentProviders",
+        "summary": "List the payment providers the cart’s region offers",
+        "tags": [
+          "Payments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorePaymentProviderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2313,7 +3251,14 @@
       "post": {
         "operationId": "addStoreCartShippingMethod",
         "summary": "Select a shipping method for a cart",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2333,14 +3278,17 @@
                 "properties": {
                   "shippingOptionId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   },
                   "data": {
                     "type": "object",
                     "additionalProperties": {}
                   }
                 },
-                "required": ["shippingOptionId"]
+                "required": [
+                  "shippingOptionId"
+                ]
               }
             }
           }
@@ -2359,6 +3307,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2369,7 +3320,14 @@
       "post": {
         "operationId": "completeStoreCart",
         "summary": "Complete a cart (authorize payment and mark as completed)",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2395,8 +3353,14 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -2405,7 +3369,14 @@
       "get": {
         "operationId": "checkStoreCartInventory",
         "summary": "Check inventory availability for a cart",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2431,8 +3402,14 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -2441,7 +3418,14 @@
       "post": {
         "operationId": "transferStoreCartCustomer",
         "summary": "Transfer a cart to the authenticated customer",
-        "tags": ["Carts"],
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2467,8 +3451,53 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/countries": {
+      "get": {
+        "operationId": "listStoreCountries",
+        "summary": "List countries, sellable ones by default",
+        "tags": [
+          "Countries"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sellable",
+                "all"
+              ],
+              "default": "sellable",
+              "description": "Which listing to return. \"sellable\" (the default) is the countries the store sells to, each with a currency and locale. \"all\" is the whole ISO 3166-1 table, for a form that has to accept an address anywhere; the countries outside a region carry null currency and locale."
+            },
+            "required": false,
+            "description": "Which listing to return. \"sellable\" (the default) is the countries the store sells to, each with a currency and locale. \"all\" is the whole ISO 3166-1 table, for a form that has to accept an address anywhere; the countries outside a region carry null currency and locale.",
+            "name": "scope",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCountryListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }
@@ -2477,7 +3506,14 @@
       "get": {
         "operationId": "getStoreCustomerMe",
         "summary": "Get the authenticated customer",
-        "tags": ["Customers"],
+        "tags": [
+          "Customers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2491,6 +3527,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2499,7 +3538,14 @@
       "get": {
         "operationId": "listStoreCustomerAddresses",
         "summary": "List the authenticated customer's addresses",
-        "tags": ["Customers"],
+        "tags": [
+          "Customers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2513,13 +3559,23 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
       "post": {
         "operationId": "createStoreCustomerAddress",
         "summary": "Add an address to the address book",
-        "tags": ["Customers"],
+        "tags": [
+          "Customers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2542,6 +3598,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2550,7 +3609,14 @@
       "patch": {
         "operationId": "updateStoreCustomerAddress",
         "summary": "Update an address in the address book",
-        "tags": ["Customers"],
+        "tags": [
+          "Customers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2585,6 +3651,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2593,7 +3662,14 @@
       "delete": {
         "operationId": "deleteStoreCustomerAddress",
         "summary": "Remove an address from the address book",
-        "tags": ["Customers"],
+        "tags": [
+          "Customers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2619,6 +3695,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2629,11 +3708,21 @@
       "get": {
         "operationId": "listStoreOrders",
         "summary": "List customer orders",
-        "tags": ["Orders"],
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
-              "type": ["integer", "null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "minimum": 0,
               "default": 0
             },
@@ -2674,6 +3763,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2682,7 +3774,14 @@
       "get": {
         "operationId": "getStoreOrder",
         "summary": "Retrieve a customer order",
-        "tags": ["Orders"],
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2708,6 +3807,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2718,7 +3820,14 @@
       "post": {
         "operationId": "createStorePaymentCollection",
         "summary": "Create a payment collection for a cart",
-        "tags": ["Payment Collections"],
+        "tags": [
+          "Payment Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2727,10 +3836,13 @@
                 "properties": {
                   "cartId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   }
                 },
-                "required": ["cartId"]
+                "required": [
+                  "cartId"
+                ]
               }
             }
           }
@@ -2748,6 +3860,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2756,7 +3871,14 @@
       "post": {
         "operationId": "createStorePaymentSession",
         "summary": "Create a payment session",
-        "tags": ["Payment Collections"],
+        "tags": [
+          "Payment Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2776,7 +3898,8 @@
                 "properties": {
                   "providerId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 64
                   },
                   "data": {
                     "type": "object",
@@ -2787,7 +3910,9 @@
                     "additionalProperties": {}
                   }
                 },
-                "required": ["providerId"]
+                "required": [
+                  "providerId"
+                ]
               }
             }
           }
@@ -2806,8 +3931,14 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -2816,7 +3947,14 @@
       "patch": {
         "operationId": "updateStorePaymentSession",
         "summary": "Re-price a payment session from the cart's server-side total",
-        "tags": ["Payment Collections"],
+        "tags": [
+          "Payment Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2851,6 +3989,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2861,7 +4002,14 @@
       "get": {
         "operationId": "listStorePaymentMethods",
         "summary": "List the authenticated customer's saved payment methods",
-        "tags": ["Payments"],
+        "tags": [
+          "Payments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2875,6 +4023,9 @@
           },
           "400": {
             "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2883,7 +4034,14 @@
       "delete": {
         "operationId": "deleteStorePaymentMethod",
         "summary": "Remove a saved payment method",
-        "tags": ["Payments"],
+        "tags": [
+          "Payments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2909,6 +4067,9 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
           }
@@ -2919,7 +4080,14 @@
       "post": {
         "operationId": "setStoreDefaultPaymentMethod",
         "summary": "Nominate the default payment method",
-        "tags": ["Payments"],
+        "tags": [
+          "Payments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "schema": {
@@ -2945,30 +4113,11 @@
           "400": {
             "description": "Validation error"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not found"
-          }
-        }
-      }
-    },
-    "/store/payment-providers": {
-      "get": {
-        "operationId": "listStorePaymentProviders",
-        "summary": "List enabled payment providers",
-        "tags": ["Payments"],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorePaymentProviderListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error"
           }
         }
       }
@@ -2977,11 +4126,17 @@
       "get": {
         "operationId": "listStoreProducts",
         "summary": "List published products",
-        "tags": ["Products"],
+        "tags": [
+          "Products"
+        ],
+        "security": [],
         "parameters": [
           {
             "schema": {
-              "type": ["integer", "null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "minimum": 0,
               "default": 0
             },
@@ -3015,6 +4170,29 @@
             "required": false,
             "name": "q",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -3038,7 +4216,10 @@
       "get": {
         "operationId": "getStoreProduct",
         "summary": "Retrieve a product with variants",
-        "tags": ["Products"],
+        "tags": [
+          "Products"
+        ],
+        "security": [],
         "parameters": [
           {
             "schema": {
@@ -3048,6 +4229,29 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
           }
         ],
         "responses": {

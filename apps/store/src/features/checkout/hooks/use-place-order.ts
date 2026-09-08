@@ -41,7 +41,7 @@ export type PlaceOrderArgs = {
 export function usePlaceOrder(cartId: string) {
   const controller = usePaymentController()
   const updateCart = useUpdateCart()
-  const { open, isPending: isOpeningSession } = useOpenPaymentSession(cartId)
+  const { open } = useOpenPaymentSession(cartId)
 
   const confirmPayment = useCallback(
     async ({ values, returnUrl }: PlaceOrderArgs): Promise<ConfirmOutcome> => {
@@ -101,5 +101,5 @@ export function usePlaceOrder(cartId: string) {
     [controller, open, updateCart],
   )
 
-  return { controller, confirmPayment, isPaying: updateCart.isPending || isOpeningSession }
+  return { controller, confirmPayment }
 }

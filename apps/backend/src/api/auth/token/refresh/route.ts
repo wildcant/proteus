@@ -13,6 +13,7 @@ import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const
 export const PostOutput = AuthenticateResponse
+export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
 
 export const POST = async (
   req: HttpRequest<object, typeof PostMiddlewares>,

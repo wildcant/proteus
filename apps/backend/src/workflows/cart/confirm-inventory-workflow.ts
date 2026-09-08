@@ -10,7 +10,7 @@ import { type ConfirmInventoryResult, prepareConfirmInventoryInput } from './uti
 type ConfirmInventoryInput = { cartId: string }
 
 export const confirmInventoryWorkflow = createWorkflow<ConfirmInventoryInput, ConfirmInventoryResult>(
-  'confirm-inventory',
+  { name: 'confirm-inventory', throws: [ErrorTypes.CONFLICT] },
   async (ctx, input) => {
     const confirmInput = await ctx.step('prepare-confirm-inventory-input', async ({ container }) => {
       const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)

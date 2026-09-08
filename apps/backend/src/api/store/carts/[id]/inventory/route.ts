@@ -4,6 +4,7 @@ import { confirmInventoryWorkflow } from '@workflows/cart/confirm-inventory-work
 
 export const GetInput = { params: IdParams }
 export const GetOutput = StoreCartInventoryResponse
+export const GetThrows = [...confirmInventoryWorkflow.throws] as const
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const result = await confirmInventoryWorkflow.run({ cartId: req.params.id })

@@ -1,0 +1,44 @@
+id: form-hook-returns-pending-flag
+snapshots:
+  'export function useEditRegionForm() { return { form, isPending: updateMutation.isPending } }':
+    labels:
+    - source: 'return { form, isPending: updateMutation.isPending }'
+      style: primary
+      start: 38
+      end: 90
+    - source: 'isPending: updateMutation.isPending'
+      style: secondary
+      start: 53
+      end: 88
+    - source: '{ form, isPending: updateMutation.isPending }'
+      style: secondary
+      start: 45
+      end: 90
+  'export function useInviteForm() { return { form, isLoading: createMutation.isPending } }':
+    labels:
+    - source: 'return { form, isLoading: createMutation.isPending }'
+      style: primary
+      start: 34
+      end: 86
+    - source: 'isLoading: createMutation.isPending'
+      style: secondary
+      start: 49
+      end: 84
+    - source: '{ form, isLoading: createMutation.isPending }'
+      style: secondary
+      start: 41
+      end: 86
+  export function useLoginForm() { const isPending = m.isPending; return { form, isPending } }:
+    labels:
+    - source: return { form, isPending }
+      style: primary
+      start: 64
+      end: 90
+    - source: isPending
+      style: secondary
+      start: 79
+      end: 88
+    - source: '{ form, isPending }'
+      style: secondary
+      start: 71
+      end: 90

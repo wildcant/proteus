@@ -28,6 +28,7 @@ const ACTION_HANDLING: Record<PaymentActions, 'process' | 'skip'> = {
 
 export const PostInput = { params: ProviderParams }
 export const PostOutput = WebhookReceivedResponse
+export const PostThrows = [ErrorTypes.INVALID_DATA] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const logger = req.scope.resolve<Logger>(ContainerRegistrationKeys.LOGGER)

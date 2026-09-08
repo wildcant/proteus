@@ -1,4 +1,4 @@
-const { featureStructureRules, layerDirectionRules } = require('@proteus/frontend-conventions')
+const { apiLayerRules, featureStructureRules, layerDirectionRules } = require('@proteus/frontend-conventions')
 
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
@@ -24,6 +24,8 @@ module.exports = {
       from: {},
       to: { circular: true },
     },
+    // HTTP stays behind the api layer, shared with the store. See packages/frontend-conventions.
+    ...apiLayerRules(),
     // shared -> features -> app, shared with the store. See packages/frontend-conventions.
     ...layerDirectionRules(),
   ],

@@ -28,5 +28,5 @@ export function useUploadProductMedia() {
     return media.map((item) => ({ ...item, url: uploadedUrls.get(item.key) ?? item.url }))
   }
 
-  return { uploadMedia, isPending: uploadMutation.isPending }
+  return { uploadMedia }
 }

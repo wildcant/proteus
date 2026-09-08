@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { z } from 'zod'
+import { decimalAmount } from './bounded.js'
 // This module is a public entrypoint (`@proteus/http-schemas/common`), so it cannot rely on a
 // namespace index having installed `.openapi()` first. The call is idempotent.
 import './openapi-setup.js'
@@ -21,8 +22,19 @@ export const bigNumberToString = z
   .transform((bn) => bn.toFixed())
   .pipe(z.string())
 
+/**
+ * Reads back anything `BigNumber.toFixed()` can write, `'Infinity'` included. Deliberately
+ * unbounded: its other caller is the Temporal payload converter, which decodes values this
+ * process itself encoded and must round-trip them exactly. Use `amountToBigNumber` for a
+ * number a client sends.
+ */
 export const stringToBigNumber = z
   .string()
+  .refine((s) => !new BigNumber(s).isNaN(), 'Invalid numeric value')
+  .transform((s) => new BigNumber(s))
+
+/** A money amount in a request body — the same parse, over `decimalAmount`'s bounded shape. */
+export const amountToBigNumber = decimalAmount
   .refine((s) => !new BigNumber(s).isNaN(), 'Invalid numeric value')
   .transform((s) => new BigNumber(s))
 

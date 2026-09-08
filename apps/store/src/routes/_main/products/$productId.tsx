@@ -15,7 +15,10 @@ export const Route = createFileRoute('/_main/products/$productId')({
   validateSearch: productSearchSchema,
   component: ProductDetailPage,
   loader: async ({ context, params }) => {
-    await context.queryClient.ensureQueryData(productQueryOptions(params.productId))
+    // See the list route: the market's country is what the price on this page is quoted in.
+    await context.queryClient.ensureQueryData(
+      productQueryOptions(params.productId, { countryCode: context.market.current.iso2 }),
+    )
   },
   headers: () => ({
     // Shorter cache due to inventory changes

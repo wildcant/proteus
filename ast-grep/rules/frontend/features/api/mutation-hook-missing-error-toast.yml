@@ -2,7 +2,7 @@ id: mutation-hook-missing-error-toast
 language: typescript
 severity: error
 message: This `onError` raises no toast, so a failure is invisible unless the caller renders one itself.
-note: 'Add `toast.add({ type: "error", title: "…", description: error.message })`, or suppress this rule on the handler with the reason. docs/mutation-hooks.md'
+note: 'Add `toast.add({ type: "error", title: "…", description: error.message })`, or suppress this rule on the handler with the reason. ast-grep/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
 rule:

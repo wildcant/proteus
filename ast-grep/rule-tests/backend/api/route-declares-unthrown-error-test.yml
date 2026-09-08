@@ -1,0 +1,17 @@
+id: route-declares-unthrown-error
+valid:
+  - |
+    export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
+    export const POST = async (req) => { throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'x' }) }
+  # Spreading a workflow declares nothing of its own, so there is nothing to go stale.
+  - |
+    export const PostThrows = [...completeCartWorkflow.throws] as const
+    export const POST = async (req) => completeCartWorkflow.run({ cartId: req.params.id })
+invalid:
+  # The stale flag this whole rule exists to catch: declared, then the throw was removed.
+  - |
+    export const PostThrows = [ErrorTypes.CONFLICT] as const
+    export const POST = async (req) => ({ status: 200, json: {} })
+  - |
+    export const PostThrows = [ErrorTypes.UNAUTHORIZED, ErrorTypes.CONFLICT] as const
+    export const POST = async (req) => { throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'x' }) }

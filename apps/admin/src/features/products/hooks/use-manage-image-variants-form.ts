@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { useBatchImageVariants } from '#/features/products/api/product-variants'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 type ManageImageVariantsFormParams = SubmitFormParams & {
   productId: string
@@ -21,20 +21,20 @@ export function useManageImageVariantsForm({
   const form = useAppForm({
     defaultValues: { variantIds },
     validators: { onSubmit: z.object({ variantIds: z.array(z.string()) }) },
-    onSubmit: ({ value }) => {
-      batchMutation.mutate(
-        {
+    onSubmit: async ({ value }) => {
+      try {
+        await batchMutation.mutateAsync({
           add: value.variantIds.filter((id) => !variantIds.includes(id)),
           remove: variantIds.filter((id) => !value.variantIds.includes(id)),
-        },
-        {
-          onSuccess: () => params.onSuccess?.(),
-          onError: (error) => params.onError?.(error.message),
-          onSettled: () => params.onSettled?.(),
-        },
-      )
+        })
+        params.onSuccess?.()
+      } catch (error) {
+        params.onError?.(errorMessage(error))
+      } finally {
+        params.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: batchMutation.isPending }
+  return { form }
 }

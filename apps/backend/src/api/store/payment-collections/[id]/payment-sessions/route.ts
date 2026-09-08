@@ -26,6 +26,8 @@ type PostRequest = HttpRequest<typeof PostInput, typeof PostMiddlewares>
  * stranger's saved card, and a session's context is stored and served back, so only an id and the
  * gateway's own reference go into it.
  */
+export const PostThrows = [ErrorTypes.CONFLICT] as const
+
 export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutput>> => {
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
   const collection = await paymentService.retrievePaymentCollection(req.params.id)

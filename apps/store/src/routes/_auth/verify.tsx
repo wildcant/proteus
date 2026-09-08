@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { z } from 'zod'
-import { authVerificationConfirm } from '#/api/generated/auth/auth'
 import { Button } from '#/components/button'
+import { confirmVerification } from '#/features/auth/api/auth'
 import { AuthHeading } from '#/features/auth/components/auth-heading'
 import { getToken } from '#/lib/auth-token'
 
@@ -14,21 +14,10 @@ export const Route = createFileRoute('/_auth/verify')({
   // The confirm reads the signup JWT out of localStorage, so it has to run in the browser.
   ssr: false,
   loaderDeps: ({ search }) => ({ code: search.code }),
-  /**
-   * Confirming happens here rather than in an effect because the code is single-use.
-   *
-   * The router calls a loader once per navigation, outside React's render and effect cycle, so StrictMode's
-   * remount cannot fire it twice. The failure is returned rather than thrown so it renders as a verification
-   * outcome instead of falling through to errorComponent, which reports a malformed link.
-   */
-  loader: async ({ deps }) => {
-    try {
-      await authVerificationConfirm({ code: deps.code })
-      return { verified: true as const }
-    } catch (error) {
-      return { verified: false as const, message: error instanceof Error ? error.message : 'Verification failed' }
-    }
-  },
+  // A loader and not an effect because the code is single-use, and `confirmVerification` answers
+  // with an outcome rather than throwing so both arms render here. Both reasons are on the
+  // function; this page only chooses the words.
+  loader: ({ deps }) => confirmVerification(deps.code),
   shouldReload: false,
   component: VerifyPage,
   pendingComponent: VerifyPending,
