@@ -4,9 +4,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  getCurrencyName,
   usePrompt,
 } from '@proteus/ui'
+import { getCurrencyName } from '@proteus/utils'
 import { EllipsisIcon, StarIcon, TrashIcon } from 'lucide-react'
 import type { AdminStoreCurrency } from '#/api/generated/model'
 import { useRemoveStoreCurrencies, useSetDefaultStoreCurrency } from '#/features/store/api/store'

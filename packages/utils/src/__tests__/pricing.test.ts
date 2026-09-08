@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAmount, formatPrice, getCurrencyName, getCurrencySymbol } from './pricing.ts'
+import { formatAmount, formatPrice, getCurrencyName, getCurrencySymbol } from '../pricing.ts'
 
 /**
  * Two claims, and the first is the one that protects the admin: omitting the locale has to keep

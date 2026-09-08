@@ -1,5 +1,4 @@
-import { formatPrice } from '@proteus/ui'
-import { formatDate, formatDatetime } from '@proteus/utils'
+import { formatDate, formatDatetime, formatPrice } from '@proteus/utils'
 import { useMemo } from 'react'
 import { useMarket } from '#/hooks/use-market'
 

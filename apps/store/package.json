@@ -26,6 +26,7 @@
     "@proteus/http-schemas": "*",
     "@proteus/icons": "*",
     "@proteus/ui": "*",
+    "@proteus/utils": "*",
     "@stripe/react-stripe-js": "^6.8.2",
     "@stripe/stripe-js": "^9.15.0",
     "@tailwindcss/vite": "^4.3.3",

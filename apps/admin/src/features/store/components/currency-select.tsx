@@ -1,4 +1,5 @@
-import { Field, FieldError, getCurrencyName } from '@proteus/ui'
+import { Field, FieldError } from '@proteus/ui'
+import { getCurrencyName } from '@proteus/utils'
 import { MultiSelectCombobox } from '#/components/multi-select-combobox'
 import { useStoreCurrencies } from '#/features/store/api/store'
 import { selectableCurrencyCodes } from '#/features/store/utils/store-currencies'

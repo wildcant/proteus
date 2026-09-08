@@ -1,4 +1,4 @@
-import { getCurrencyName } from '@proteus/ui'
+import { getCurrencyName } from '@proteus/utils'
 import type { AdminStoreCurrency } from '#/api/generated/model'
 import { StatusCell, useDefineTable } from '#/components/data-table'
 import { useStore } from '#/features/store/api/store'

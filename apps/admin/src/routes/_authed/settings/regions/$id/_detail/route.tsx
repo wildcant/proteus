@@ -1,4 +1,5 @@
-import { Badge, Card, CardAction, CardHeader, CardTitle, getCurrencyName } from '@proteus/ui'
+import { Badge, Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
+import { getCurrencyName } from '@proteus/utils'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { PencilIcon } from 'lucide-react'

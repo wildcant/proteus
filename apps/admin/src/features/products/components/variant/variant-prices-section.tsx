@@ -1,4 +1,5 @@
-import { Card, CardAction, CardHeader, CardTitle, formatPrice } from '@proteus/ui'
+import { Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
+import { formatPrice } from '@proteus/utils'
 import { PencilIcon } from 'lucide-react'
 import type { AdminProductVariant } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'

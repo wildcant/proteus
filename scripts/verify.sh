@@ -104,12 +104,7 @@ job_test() { npm run --workspace=backend test:gate; }
 # The shared formatters. They are the one place a change lands on both applications at once — the
 # storefront asks them for a market's punctuation, the admin asks them for none — so the claim they
 # carry is that omitting a locale still prints exactly what it printed before.
-job_packages() {
-  local code=0
-  npm run --workspace=@proteus/ui test || code=1
-  npm run --workspace=@proteus/utils test || code=1
-  return $code
-}
+job_packages() { npm run --workspace=@proteus/utils test; }
 
 # CI mode: report formatting instead of applying it. Triggered by --ci or by the CI env
 # var that every CI provider sets, so the workflow file needs no extra wiring.
@@ -148,7 +143,7 @@ label_of() {
     # admin) echo "Admin unit tests" ;;
     schemas) echo "Request-schema bound tests" ;;
     # store) echo "Store unit tests" ;;
-    packages) echo "Shared package unit tests (ui, utils)" ;;
+    packages) echo "Shared package unit tests (utils)" ;;
   esac
 }
 

@@ -1,6 +1,6 @@
 import { format, formatDistanceToNow } from 'date-fns'
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatDatetime, formatRelativeTime } from './date.ts'
+import { formatDate, formatDatetime, formatRelativeTime } from '../date.ts'
 
 /** Fixed and unambiguous: a single-digit day and a morning time, where locales disagree the most. */
 const MOMENT = new Date(2026, 0, 5, 10, 45)

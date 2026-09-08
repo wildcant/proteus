@@ -1,4 +1,5 @@
-import { Field, FieldDescription, FieldError, FieldLabel, getCurrencyName } from '@proteus/ui'
+import { Field, FieldDescription, FieldError, FieldLabel } from '@proteus/ui'
+import { getCurrencyName } from '@proteus/utils'
 import { useId } from 'react'
 import { SingleSelectCombobox } from '#/components/single-select-combobox'
 import { useStoreCurrencies } from '#/features/store/api/store'
