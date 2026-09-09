@@ -64,13 +64,6 @@ const updateSession = <T = StoreUpdatePaymentSessionResponse>(
 ) => target.patch<T>(`/store/payment-collections/${collectionId}/payment-sessions/${sessionId}`, body)
 
 /** What the gateway was asked to charge, for the single intent these tests create. */
-function intentCreateParams() {
-  const call = stripeTest.mock.paymentIntents.create.mock.calls[0]
-  if (!call) throw new Error('No PaymentIntent was created at the gateway')
-  // `paymentIntents.create(params, options)` — the parameters are the first argument.
-  return call[0] as Record<string, unknown>
-}
-
 /**
  * The idempotency keys each call to a method carried, in order.
  *
@@ -91,7 +84,7 @@ test.describe('POST /store/payment-collections/:id/payment-sessions (stripe)', (
 
     expect(status).toBe(201)
     // 19.99 sent as-is is rejected by Stripe outright; 1999 is the charge the shopper agreed to.
-    expect(intentCreateParams()).toMatchObject({ amount: 1999, currency: 'usd' })
+    expect(stripeTest.intentCreateParams()).toMatchObject({ amount: 1999, currency: 'usd' })
   })
 
   test('sends a zero-decimal total unmultiplied', async ({ service, expect }) => {
@@ -100,7 +93,7 @@ test.describe('POST /store/payment-collections/:id/payment-sessions (stripe)', (
     await createSession(collection.id)
 
     // A blanket ×100 here would charge ¥100,000 for a ¥1,000 order.
-    expect(intentCreateParams()).toMatchObject({ amount: 1000, currency: 'jpy' })
+    expect(stripeTest.intentCreateParams()).toMatchObject({ amount: 1000, currency: 'jpy' })
   })
 
   test("sends a three-decimal total on the currency's own exponent", async ({ service, expect }) => {
@@ -108,7 +101,7 @@ test.describe('POST /store/payment-collections/:id/payment-sessions (stripe)', (
 
     await createSession(collection.id)
 
-    expect(intentCreateParams()).toMatchObject({ amount: 19990, currency: 'bhd' })
+    expect(stripeTest.intentCreateParams()).toMatchObject({ amount: 19990, currency: 'bhd' })
   })
 
   test('carries the session id to the gateway so a webhook can be traced back', async ({ service, expect }) => {
@@ -116,7 +109,7 @@ test.describe('POST /store/payment-collections/:id/payment-sessions (stripe)', (
 
     const { body } = await createSession(collection.id)
 
-    expect(intentCreateParams().metadata).toEqual({ sessionId: body.paymentSession.id })
+    expect(stripeTest.intentCreateParams().metadata).toEqual({ sessionId: body.paymentSession.id })
   })
 
   /**

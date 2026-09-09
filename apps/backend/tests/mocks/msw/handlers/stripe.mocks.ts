@@ -1,5 +1,13 @@
 import { HttpResponse, http } from 'msw'
-import { FAKE_GATEWAY, MOCK_INTENT_ID, methodIdOfCard, stripeFactories } from '../../stripe-factories.js'
+import {
+  allowRedisplayOf,
+  FAKE_GATEWAY,
+  gatewayCustomerId,
+  gatewayIntentId,
+  MOCK_INTENT_ID,
+  methodIdOfCard,
+  stripeFactories,
+} from '../../stripe-factories.js'
 import { gatewayWallet } from './stripe-wallet.js'
 
 /**
@@ -27,7 +35,8 @@ import { gatewayWallet } from './stripe-wallet.js'
  */
 type IncomingRequest = { text: () => Promise<string> }
 
-const form = async (request: IncomingRequest) => Object.fromEntries(new URLSearchParams(await request.text()))
+/** The form-encoded body the Stripe SDK sends, as the flat record every handler below reads. */
+const formFields = async (request: IncomingRequest) => Object.fromEntries(new URLSearchParams(await request.text()))
 
 /**
  * The card a saved checkout leaves behind.
@@ -58,7 +67,7 @@ export const stripeHandlers = [
   // Create the intent — the amount and currency are echoed back so the shopper is quoted what the
   // server priced, which is the one thing Stripe.js refuses a confirmation over.
   http.post('https://api.stripe.com/v1/payment_intents', async ({ request }) => {
-    const fields = await form(request)
+    const fields = await formFields(request)
     const metadata = metadataOf(fields)
 
     // The intent's own id, derived from the payment session it belongs to.
@@ -72,7 +81,7 @@ export const stripeHandlers = [
       Number(fields.amount) === FAKE_GATEWAY.settlingTotalCents
         ? FAKE_GATEWAY.settlingIntentId
         : metadata.sessionId
-          ? `pi_test_${metadata.sessionId}`
+          ? gatewayIntentId(metadata.sessionId)
           : MOCK_INTENT_ID
 
     // Held for the retrieve below, which is where a card actually joins a wallet.
@@ -136,7 +145,7 @@ export const stripeHandlers = [
 
   // Update — the cart changed after the intent was opened.
   http.post('https://api.stripe.com/v1/payment_intents/:id', async ({ params, request }) => {
-    const fields = await form(request)
+    const fields = await formFields(request)
     return HttpResponse.json(
       stripeFactories.paymentIntent({
         id: String(params.id),
@@ -147,7 +156,7 @@ export const stripeHandlers = [
   }),
 
   http.post('https://api.stripe.com/v1/refunds', async ({ request }) =>
-    HttpResponse.json(stripeFactories.refund(await form(request))),
+    HttpResponse.json(stripeFactories.refund(await formFields(request))),
   ),
 
   // --- Account holders and their stored cards ---
@@ -163,11 +172,11 @@ export const stripeHandlers = [
   // each passed in isolation. `metadata[customerId]` is on the request the adapter already sends,
   // so this stays a pure function of it.
   http.post('https://api.stripe.com/v1/customers', async ({ request }) => {
-    const fields = await form(request)
+    const fields = await formFields(request)
     const metadata = metadataOf(fields)
     return HttpResponse.json(
       stripeFactories.customer({
-        ...(metadata.customerId ? { id: `cus_test_${metadata.customerId}` } : {}),
+        ...(metadata.customerId ? { id: gatewayCustomerId(metadata.customerId) } : {}),
         ...(fields.email ? { email: fields.email } : {}),
         ...(fields.name ? { name: fields.name } : {}),
         metadata,
@@ -184,7 +193,7 @@ export const stripeHandlers = [
   // which is why the wallet reads it back from here rather than from a Proteus row.
   http.post('https://api.stripe.com/v1/customers/:id', async ({ params, request }) => {
     const id = String(params.id)
-    const fields = await form(request)
+    const fields = await formFields(request)
     const nominated = fields['invoice_settings[default_payment_method]']
     if (nominated) gatewayWallet.setDefault(id, nominated)
     return HttpResponse.json(stripeFactories.customer({ id, defaultPaymentMethod: gatewayWallet.defaultOf(id) }))
@@ -227,8 +236,10 @@ export const stripeHandlers = [
   // observable rather than decorative.
   http.post('https://api.stripe.com/v1/payment_methods/:id', async ({ params, request }) => {
     const id = String(params.id)
-    const fields = await form(request)
+    const fields = await formFields(request)
     if (fields.allow_redisplay === 'always') gatewayWallet.markRedisplayable(id)
-    return HttpResponse.json(stripeFactories.paymentMethod({ id, allowRedisplay: fields.allow_redisplay as never }))
+    return HttpResponse.json(
+      stripeFactories.paymentMethod({ id, allowRedisplay: allowRedisplayOf(fields.allow_redisplay) }),
+    )
   }),
 ]

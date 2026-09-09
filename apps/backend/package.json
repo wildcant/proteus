@@ -5,7 +5,8 @@
   "exports": {
     "./api": "./src/api/index.ts",
     "./test": "./src/test-exports.ts",
-    "./test/database-url": "./tests/setup/database-url.ts"
+    "./test/database-url": "./tests/setup/database-url.ts",
+    "./test/fake-gateway": "./tests/mocks/msw/handlers/stripe-wallet.ts"
   },
   "scripts": {
     "dev": "dotenvx run -f ../../.env.local -- tsx --watch src/index.ts",

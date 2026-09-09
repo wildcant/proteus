@@ -10,9 +10,24 @@
  * wallet, which lives in `msw/handlers/stripe-wallet.ts` and explains itself there.
  */
 
-/** Fixed ids. The fake answers for one intent, one customer and one card; that is the whole model. */
-export const MOCK_INTENT_ID = 'pi_test_mock'
-export const MOCK_CUSTOMER_ID = 'cus_test_mock'
+/**
+ * The ids the fake mints, derived from what the adapter already puts on the request.
+ *
+ * Both fakes build these — the wire one in `msw/handlers/stripe.mocks.ts` and the module one in
+ * `vitest/stripe.mock.ts` — and a test that names an id before the call that creates it (see
+ * `stripeTest.gatewayCustomerIdFor`) has to agree with whichever answered. One definition rather
+ * than five template literals that drift apart silently.
+ */
+export const gatewayCustomerId = (customerId: string) => `cus_test_${customerId}`
+export const gatewayIntentId = (sessionId: string) => `pi_test_${sessionId}`
+
+/**
+ * What those ids come out as when the request carries nothing to derive them from — a call made
+ * outside a checkout, or a factory asked for a bare object. Never a shared identity for two
+ * shoppers: anything reached by shopping is keyed by the session or the customer it belongs to.
+ */
+export const MOCK_INTENT_ID = gatewayIntentId('mock')
+export const MOCK_CUSTOMER_ID = gatewayCustomerId('mock')
 export const MOCK_PAYMENT_METHOD_ID = 'pm_test_mock'
 
 /**
@@ -68,6 +83,20 @@ export function cardFromMethodId(id: string, position = 0): StripeCard {
     expYear: Number(expYear) || 2030,
     created: 1_767_225_600 + position,
   })
+}
+
+/**
+ * Stripe's consent flag on a stored card. Named rather than inlined because a handler reading it
+ * back off a form-encoded request has a `string` in hand and needs something to narrow *to*.
+ */
+export type AllowRedisplay = 'always' | 'limited' | 'unspecified'
+
+/** The same three values at runtime, for narrowing a request field that is only ever a string. */
+const ALLOW_REDISPLAY_VALUES: readonly AllowRedisplay[] = ['always', 'limited', 'unspecified']
+
+/** A request's `allow_redisplay`, or `undefined` when it is absent or not one of Stripe's three. */
+export function allowRedisplayOf(value: string | undefined): AllowRedisplay | undefined {
+  return ALLOW_REDISPLAY_VALUES.find((candidate) => candidate === value)
 }
 
 export type IntentStatus =
@@ -135,10 +164,10 @@ export const stripeFactories = {
    * `amount_received` and `amount_capturable` follow the status rather than being passed, because
    * Stripe reports them that way and the adapter reads them.
    */
-  paymentIntent(over: IntentOverrides = {}) {
-    const id = over.id ?? MOCK_INTENT_ID
-    const status = over.status ?? 'requires_payment_method'
-    const amount = over.amount ?? 5000
+  paymentIntent(overrides: IntentOverrides = {}) {
+    const id = overrides.id ?? MOCK_INTENT_ID
+    const status = overrides.status ?? 'requires_payment_method'
+    const amount = overrides.amount ?? 5000
 
     return {
       id,
@@ -149,24 +178,24 @@ export const stripeFactories = {
       amount_received: status === 'succeeded' ? amount : 0,
       // biome-ignore lint/style/useNamingConvention: the Stripe wire field
       amount_capturable: status === 'requires_capture' ? amount : 0,
-      currency: over.currency ?? 'usd',
+      currency: overrides.currency ?? 'usd',
       // biome-ignore lint/style/useNamingConvention: the Stripe wire field
-      capture_method: over.captureMethod ?? 'manual',
-      metadata: over.metadata ?? {},
+      capture_method: overrides.captureMethod ?? 'manual',
+      metadata: overrides.metadata ?? {},
       // biome-ignore lint/style/useNamingConvention: the Stripe wire field
       client_secret: `${id}_secret_test`,
       // biome-ignore lint/style/useNamingConvention: the Stripe wire field
       last_payment_error: null,
-      ...(over.customer ? { customer: over.customer } : {}),
+      ...(overrides.customer ? { customer: overrides.customer } : {}),
       // biome-ignore lint/style/useNamingConvention: the Stripe wire field
-      ...(over.setupFutureUsage ? { setup_future_usage: over.setupFutureUsage } : {}),
+      ...(overrides.setupFutureUsage ? { setup_future_usage: overrides.setupFutureUsage } : {}),
       // biome-ignore lint/style/useNamingConvention: the Stripe wire field
-      payment_method: over.paymentMethod ?? MOCK_PAYMENT_METHOD_ID,
+      payment_method: overrides.paymentMethod ?? MOCK_PAYMENT_METHOD_ID,
     }
   },
 
   customer(
-    over: {
+    overrides: {
       id?: string
       email?: string
       name?: string
@@ -175,13 +204,13 @@ export const stripeFactories = {
     } = {},
   ) {
     return {
-      id: over.id ?? MOCK_CUSTOMER_ID,
+      id: overrides.id ?? MOCK_CUSTOMER_ID,
       object: 'customer',
-      email: over.email ?? 'shopper@example.com',
-      name: over.name ?? 'Test Shopper',
-      metadata: over.metadata ?? {},
+      email: overrides.email ?? 'shopper@example.com',
+      name: overrides.name ?? 'Test Shopper',
+      metadata: overrides.metadata ?? {},
       // biome-ignore lint/style/useNamingConvention: the Stripe wire field
-      invoice_settings: { default_payment_method: over.defaultPaymentMethod ?? null },
+      invoice_settings: { default_payment_method: overrides.defaultPaymentMethod ?? null },
     }
   },
 
@@ -190,7 +219,7 @@ export const stripeFactories = {
    * the `unspecified` case is what `markRedisplayable` exists to fix, and it has its own handler.
    */
   paymentMethod(
-    over: {
+    overrides: {
       id?: string
       customer?: string | null
       /** Seconds, as Stripe counts. The wallet's "most recent" ordering reads this. */
@@ -199,30 +228,30 @@ export const stripeFactories = {
       last4?: string
       expMonth?: number
       expYear?: number
-      allowRedisplay?: 'always' | 'limited' | 'unspecified'
+      allowRedisplay?: AllowRedisplay
     } = {},
   ) {
     return {
-      id: over.id ?? MOCK_PAYMENT_METHOD_ID,
+      id: overrides.id ?? MOCK_PAYMENT_METHOD_ID,
       object: 'payment_method',
       type: 'card',
-      customer: over.customer === undefined ? MOCK_CUSTOMER_ID : over.customer,
+      customer: overrides.customer === undefined ? MOCK_CUSTOMER_ID : overrides.customer,
       // biome-ignore lint/style/useNamingConvention: the Stripe wire field
-      allow_redisplay: over.allowRedisplay ?? 'always',
-      created: over.created ?? 1_767_225_600,
+      allow_redisplay: overrides.allowRedisplay ?? 'always',
+      created: overrides.created ?? 1_767_225_600,
       card: {
-        brand: over.brand ?? 'visa',
-        last4: over.last4 ?? '4242',
+        brand: overrides.brand ?? 'visa',
+        last4: overrides.last4 ?? '4242',
         // biome-ignore lint/style/useNamingConvention: the Stripe wire field
-        exp_month: over.expMonth ?? 12,
+        exp_month: overrides.expMonth ?? 12,
         // biome-ignore lint/style/useNamingConvention: the Stripe wire field
-        exp_year: over.expYear ?? 2030,
+        exp_year: overrides.expYear ?? 2030,
       },
     }
   },
 
-  refund(over: Record<string, string> = {}) {
-    return { id: 're_test_mock', object: 'refund', status: 'succeeded', ...over }
+  refund(overrides: Record<string, string> = {}) {
+    return { id: 're_test_mock', object: 'refund', status: 'succeeded', ...overrides }
   },
 
   deletedCustomer(id: string) {

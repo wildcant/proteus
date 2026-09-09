@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process'
 import { rmSync } from 'node:fs'
-import { withAppDatabase } from 'backend/test/database-url'
+import { DEFAULT_TEST_DATABASE_URL, withAppDatabase } from 'backend/test/database-url'
 import { sql } from 'drizzle-orm'
 import { db, shutdown } from '../db/client.js'
 
@@ -10,9 +10,7 @@ import { db, shutdown } from '../db/client.js'
  * time this hook is reached Playwright has already started that server, and a database it could
  * not connect to would have failed there first.
  */
-const DATABASE_URL = withAppDatabase(
-  process.env.POOLER_DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:5433/proteus_test',
-)
+const DATABASE_URL = withAppDatabase(process.env.POOLER_DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL)
 
 export default async function globalSetup() {
   await db.execute(sql`
@@ -41,7 +39,14 @@ export default async function globalSetup() {
   // Markets, for the same reason and one more: the storefront reads its routable URL segments
   // from the sellable countries, so with none seeded there is no market to render at all. After
   // the providers, because each region is linked to the providers that exist when it is created.
-  execSync('npm run --workspace=backend db:seed:markets:test', { stdio: 'inherit' })
+  //
+  // Same env override as the providers above, and for the same reason — without it this seeds the
+  // *base* database while the suite runs against its own, and the storefront answers every request
+  // with "the store does not sell in its default market".
+  execSync('npm run --workspace=backend db:seed:markets:test', {
+    stdio: 'inherit',
+    env: { ...process.env, POOLER_DATABASE_URL: DATABASE_URL },
+  })
 
   rmSync('playwright/.auth', { recursive: true, force: true })
 }

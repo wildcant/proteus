@@ -107,8 +107,13 @@ test.describe('Market control', () => {
     // The seeded markets, sorted by display name the way the country endpoint returns them.
     // Exhaustive on purpose: a control offering a market the store does not sell in quotes a
     // currency nobody configured, and it is this list that would have to grow for that to happen.
+    // The count is what makes it exhaustive, and the accessible name is what a row says — the
+    // flag beside it is decorative and hidden from the shopper who is being read to.
     await openMarketMenu(page)
-    await expect(page.getByRole('menuitem')).toHaveText(['Colombia', 'United States'])
+    const markets = page.getByRole('menuitem')
+    await expect(markets).toHaveCount(2)
+    await expect(markets.nth(0)).toHaveAccessibleName('Colombia')
+    await expect(markets.nth(1)).toHaveAccessibleName('United States')
   })
 
   test('switches market as a document navigation, keeping the path and its search', async ({
@@ -118,7 +123,16 @@ test.describe('Market control', () => {
     factories,
   }) => {
     const term = faker.string.alpha({ length: 10, casing: 'lower' })
-    await using product = await factories.create.product({ status: 'published', title: `${term} tee` })
+    // Priced in both currencies: the list is the catalogue a market can quote, so a product
+    // carrying only dollars would be on the page before the switch and gone after it — a market
+    // difference this test would then read as the search having been lost.
+    await using product = await factories.create.productWithPricing({
+      product: { title: `${term} tee` },
+      prices: [
+        { amount: '25.00', currencyCode: 'usd' },
+        { amount: '100000', currencyCode: 'cop' },
+      ],
+    })
     await authenticate({ as: 'customer' })
 
     await navigate({ to: '/', search: { q: term } })

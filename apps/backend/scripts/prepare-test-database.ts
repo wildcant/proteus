@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process'
 import postgres from 'postgres'
+import { DEFAULT_TEST_DATABASE_URL } from '../tests/setup/database-url.js'
 
 /**
  * Creates and migrates the database a `dev:test` backend is about to boot against.
@@ -10,10 +11,13 @@ import postgres from 'postgres'
  * (`proteus_test_store`, `proteus_test_admin`): those are not the `POSTGRES_DB` the container
  * creates, and its data directory is tmpfs, so every docker restart is a cold cluster.
  *
- * Resetting rows is still `globalSetup`'s job. This only guarantees the schema exists.
+ * Resetting rows is still `globalSetup`'s job — but the *first* seed is not, and cannot be.
+ * Playwright polls every `webServer` ready before it runs `globalSetup`, and the storefront's
+ * readiness poll is a rendered page: with no market seeded it answers 500 to every request, so a
+ * suite whose database is brand new would wait out the timeout and never reach the hook that would
+ * have fixed it. Seeding here breaks that deadlock. `globalSetup` still truncates and re-seeds
+ * afterwards, so this is a floor rather than the state any test runs against.
  */
-
-const DEFAULT_DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5433/proteus_test'
 
 /**
  * Arbitrary constant, distinct from the ones the vitest and Playwright setups take. Advisory locks
@@ -21,7 +25,7 @@ const DEFAULT_DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5433/prot
  */
 const CREATE_LOCK_KEY = 8_312_006
 
-const target = process.env.DIRECT_DATABASE_URL || process.env.POOLER_DATABASE_URL || DEFAULT_DATABASE_URL
+const target = process.env.DIRECT_DATABASE_URL || process.env.POOLER_DATABASE_URL || DEFAULT_TEST_DATABASE_URL
 const name = new URL(target).pathname.slice(1)
 
 await createIfMissing()
@@ -31,6 +35,16 @@ execSync('npm run db:migrate', {
   stdio: 'inherit',
   env: { ...process.env, DIRECT_DATABASE_URL: target },
 })
+
+// Providers first: each region is linked to the providers that exist when it is created, which is
+// the same order `globalSetup` re-seeds in. Both are idempotent, so a reused database pays only
+// for the checks.
+for (const seed of ['db:seed:providers:test', 'db:seed:markets:test']) {
+  execSync(`npm run ${seed}`, {
+    stdio: 'inherit',
+    env: { ...process.env, POOLER_DATABASE_URL: target, DIRECT_DATABASE_URL: target },
+  })
+}
 
 /**
  * `CREATE DATABASE` copies template1, and two at once fail with "source database is being accessed

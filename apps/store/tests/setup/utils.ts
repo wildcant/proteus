@@ -127,5 +127,16 @@ export async function signIn(page: Page, customer: { email: string; password: st
   await page.getByLabel('Email').fill(customer.email)
   await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
   await page.getByRole('button', { name: /sign in/i }).click()
-  await expect(page).toHaveURL('/account', { timeout: 15_000 })
+  // Locale-prefixed, because every storefront route is: `/login` redirects to `/en-US/login`, and
+  // the sign-in lands on the account page of the market the shopper is in. Asserting the bare
+  // `/account` waits out its timeout on a page that arrived correctly — which is what it did in
+  // every spec calling this helper until the market work landed.
+  await expect(page).toHaveURL(`/${DEFAULT_MARKET}/account`, { timeout: 15_000 })
 }
+
+/**
+ * The market a shopper with no stated preference is served, and the segment every path they visit
+ * carries. `markets.spec.ts` owns the claim that this is what the seed produces; here it is the
+ * prefix the other suites have to expect.
+ */
+export const DEFAULT_MARKET = 'en-US'

@@ -1,9 +1,9 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { DRIZZLE_OPTIONS } from '../../src/core/db/config.js'
-import { withAppDatabase, withWorkerDatabase } from '../setup/database-url.js'
+import { DEFAULT_TEST_DATABASE_URL, withAppDatabase, withWorkerDatabase } from '../setup/database-url.js'
 
-const DATABASE_URL = process.env.POOLER_DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:5433/proteus_test'
+const DATABASE_URL = process.env.POOLER_DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL
 
 // Under vitest this resolves to the worker's own database, matching `db-setup.ts`. Under Playwright
 // — the specs reaching these factories through `src/test-exports.ts` — it resolves to the suite's

@@ -4,7 +4,7 @@ import { useFakeStripe } from '../mocks/fake-gateway.js'
 import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
 import { watchPaymentSessions } from '../setup/payment-sessions.js'
 import { expect, test } from '../setup/test-extend.js'
-import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
+import { disposeCartAfterTest, fillShippingAddress, signIn } from '../setup/utils.js'
 
 /**
  * Paying by card, against a faked gateway.
@@ -79,11 +79,12 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    // Nothing saved. Stubbed rather than left to the backend, whose fake gateway holds one card
-    // for every account holder — "empty" is a wallet state this spec has to state, not inherit.
+    // Nothing is arranged to make the wallet empty, and nothing needs to be: this customer was
+    // created by this test and has never checked out, so the gateway is holding no cards for them.
+    // The counter is the only thing here read off the wire — see `watchPaymentSessions`.
     const sessions = watchPaymentSessions(page)
 
-    await signIn(page, navigate, customer)
+    await signIn(page, customer)
     await addToCartAndCheckout(page, navigate, product.id)
     await fillShippingAddress(page)
     await selectShipping(page, shipping.name)
@@ -450,14 +451,6 @@ async function addToCartAndCheckout(page: Page, navigate: Navigate, productId: s
   await expect(cartPanel).toBeVisible()
   await cartPanel.getByRole('link', { name: /checkout/i }).click()
   await expect(page).toHaveURL(/\/checkout/)
-}
-
-async function signIn(page: Page, navigate: Navigate, customer: { email: string; password: string }) {
-  await navigate({ to: '/login' })
-  await page.getByLabel('Email').fill(customer.email)
-  await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
-  await page.getByRole('button', { name: /sign in/i }).click()
-  await expect(page).toHaveURL('/account', { timeout: 15_000 })
 }
 
 /** By name, never `.first()`: concurrent specs each list their own US option. */

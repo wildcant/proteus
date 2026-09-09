@@ -1,5 +1,11 @@
 import { vi } from 'vitest'
-import { type IntentStatus, type StripeCard, stripeFactories } from '../stripe-factories.js'
+import {
+  gatewayCustomerId,
+  gatewayIntentId,
+  type IntentStatus,
+  type StripeCard,
+  stripeFactories,
+} from '../stripe-factories.js'
 
 /**
  * The Stripe SDK as plain vitest mocks.
@@ -23,9 +29,13 @@ type Params = Record<string, unknown>
 
 const metadataOf = (params: Params) => (params.metadata ?? {}) as Record<string, string>
 
-/** Derived, not stored, so ids stay distinct and say which session or customer they belong to. */
-const intentIdFor = (params: Params) => `pi_test_${metadataOf(params).sessionId ?? 'mock'}`
-const customerIdFor = (params: Params) => `cus_test_${metadataOf(params).customerId ?? 'mock'}`
+/**
+ * Derived, not stored, so ids stay distinct and say which session or customer they belong to. The
+ * shapes come from `stripe-factories.ts`, which is also where the wire fake gets them — the two
+ * have to mint the same id for the same request or a test cannot move between them.
+ */
+const intentIdFor = (params: Params) => gatewayIntentId(String(metadataOf(params).sessionId ?? 'mock'))
+const customerIdFor = (params: Params) => gatewayCustomerId(String(metadataOf(params).customerId ?? 'mock'))
 
 /** An intent built purely from what the caller asked for, in whatever state is wanted. */
 const intentFrom = (params: Params, status: IntentStatus) =>
@@ -189,7 +199,20 @@ export const stripeTest = {
    * writes, so a test can name the id before the call that creates it.
    */
   gatewayCustomerIdFor(proteusCustomerId: string): string {
-    return `cus_test_${proteusCustomerId}`
+    return gatewayCustomerId(proteusCustomerId)
+  },
+
+  /**
+   * The parameters an intent was created with.
+   *
+   * `at` is an array index, so the default reads the first call and `-1` reads the most recent —
+   * which is what a flow that supersedes one session with another needs. `create(params, options)`
+   * puts the parameters first.
+   */
+  intentCreateParams(at = 0): Record<string, unknown> {
+    const call = mock.paymentIntents.create.mock.calls.at(at)
+    if (!call) throw new Error('No PaymentIntent was created at the gateway')
+    return call[0] as Record<string, unknown>
   },
 
   /**

@@ -105,8 +105,10 @@ test.describe('Header', () => {
     // match on the page, and other specs seed products in parallel.
     const matchTerm = faker.string.alpha({ length: 10, casing: 'lower' })
     const otherTerm = faker.string.alpha({ length: 10, casing: 'lower' })
-    await using match = await factories.create.product({ status: 'published', title: `${matchTerm} tee` })
-    await using other = await factories.create.product({ status: 'published', title: `${otherTerm} cap` })
+    // Priced, because both the panel and the list behind it are the catalogue this market can
+    // quote — a product with no price in its currency never reaches either.
+    await using match = await factories.create.productWithPricing({ product: { title: `${matchTerm} tee` } })
+    await using other = await factories.create.productWithPricing({ product: { title: `${otherTerm} cap` } })
     await authenticate({ as: 'customer' })
 
     await navigate({ to: '/' })

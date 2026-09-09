@@ -29,13 +29,25 @@ import { cardFromMethodId, type StripeCard } from '../../stripe-factories.js'
  * spec: it is reached only by the gateway calls the code under test actually makes.
  */
 
+/**
+ * Where a suite's fake gateway keeps its state.
+ *
+ * `e2e-config.ts` calls this with the suite's name and passes the answer to both processes as
+ * `FAKE_GATEWAY_STATE`; a hand-run backend, which belongs to no suite, falls back to the unnamed
+ * one. Both come from here so the two cannot name different directories — a config that clears one
+ * path while the wallet writes to another is a suite that starts every run holding a stale card.
+ */
+export function fakeGatewayStateDir(app?: string): string {
+  return join(tmpdir(), app ? `proteus-fake-gateway-${app}` : 'proteus-fake-gateway')
+}
+
 /** One directory per suite — `e2e-config.ts` gives each its own, so runs cannot mix. */
-const STATE_DIR = process.env.FAKE_GATEWAY_STATE ?? join(tmpdir(), 'proteus-fake-gateway')
+const STATE_DIR = process.env.FAKE_GATEWAY_STATE ?? fakeGatewayStateDir()
 
 export type FakeIntentRecord = { customer?: string; savesCard: boolean }
 
 /** A Stripe id is already filename-safe, but a stray separator would escape the directory. */
-const safe = (key: string) => key.replace(/[^A-Za-z0-9_-]/g, '_')
+const filenameSafe = (key: string) => key.replace(/[^A-Za-z0-9_-]/g, '_')
 
 function readJson<T>(file: string): T | undefined {
   try {
@@ -59,9 +71,9 @@ function writeJson(file: string, value: unknown) {
   renameSync(scratch, join(STATE_DIR, file))
 }
 
-const walletFile = (customer: string) => `wallet-${safe(customer)}.json`
-const defaultFile = (customer: string) => `default-${safe(customer)}.json`
-const intentFile = (id: string) => `intent-${safe(id)}.json`
+const walletFile = (customer: string) => `wallet-${filenameSafe(customer)}.json`
+const defaultFile = (customer: string) => `default-${filenameSafe(customer)}.json`
+const intentFile = (id: string) => `intent-${filenameSafe(id)}.json`
 
 function heldBy(customer: string): StripeCard[] {
   return readJson<StripeCard[]>(walletFile(customer)) ?? []

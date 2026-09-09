@@ -7,8 +7,9 @@ import { defineConfig } from 'vitest/config'
  * Two levels, and the split is about what a claim needs to be true.
  *
  * - **unit** — functions whose edges are far easier to see directly than through a rendered page.
- *   The expiry bucketing is the type case: twelve cases and a clock, or twelve fixtures and a
- *   rendered card list.
+ *   `utils/expiry.test.ts` is the type case: the whole of it is one month comparison, and stating
+ *   its boundaries takes a table and an injected clock rather than a fixture and a card list per
+ *   case.
  * - **browser** — components, rendered in a real Chromium rather than a DOM emulation. Everything
  *   these assert is render and interaction logic: what a row is labelled, what is disabled, what a
  *   list does with the order it was given. They mount a component with props and never speak to an

@@ -1,6 +1,17 @@
 import { availableParallelism } from 'node:os'
 
 /**
+ * Where the test cluster is when nothing in the environment says otherwise.
+ *
+ * Five processes reach for this — the backend's Drizzle client, `packages/testing`'s, the Playwright
+ * factory, its global setup, and the script that creates a suite's database — and the two suffixing
+ * helpers below only ever qualify it. A copy that drifts points one of them at a database the others
+ * are not using, which is the failure this whole file exists to prevent. 5433 is what
+ * `docker-compose.test.yml` publishes.
+ */
+export const DEFAULT_TEST_DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5433/proteus_test'
+
+/**
  * How many databases the run provisions, and therefore how many vitest workers may exist.
  * `vitest.config.ts` caps `maxWorkers` with this so a worker never asks for a database
  * `globalSetup` did not create.

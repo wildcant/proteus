@@ -33,14 +33,19 @@ npm run typecheck              # All workspaces
 
 # Verification gate — run after finishing any implementation task
 npm run verify                 # format, then typecheck + lint + convention checks + dependency
-                               # rules + backend API tests, in parallel. Lint warnings fail here.
-                               # Runs src/api tests only; run the full suite separately before a PR
+                               # rules + backend API tests + the store's unit and component tests,
+                               # in parallel. Lint warnings fail here. Runs backend src/api tests
+                               # only; run the full suite separately before a PR. The component
+                               # tests need a Chromium: npx playwright install chromium
 npm run verify -- --ci         # CI mode: fails on unformatted files instead of rewriting them
                                # (implied when the CI env var is set)
-npm run verify:full            # Every test, in parallel: the whole backend suite, the store and
-                               # admin unit tests, and both Playwright e2e suites. No static
-                               # checks — that is verify. Needs the test database up. Excludes
-                               # the Temporal suites, which need a Temporal server of their own.
+npm run verify:full            # Every test, in parallel: the whole backend suite, the store's unit
+                               # and component tests, the http-schemas and utils package tests, and
+                               # both Playwright e2e suites. No static checks — that is verify.
+                               # Needs the test database up, and the e2e suites need the Temporal
+                               # server too (docker compose -f apps/backend/docker-compose.yml
+                               # up -d --wait). Excludes the Temporal test suites, which need a
+                               # server of their own.
 
 # Each e2e suite owns its database, backend process, Temporal task queue and Worker, so the two
 # run concurrently — and so a Worker started by `worker:dev` cannot execute a suite's workflow

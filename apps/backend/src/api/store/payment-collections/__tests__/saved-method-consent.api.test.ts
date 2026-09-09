@@ -67,15 +67,6 @@ async function payableCart(service: Fixtures['service']) {
   return checkout
 }
 
-/** The parameters the intent this checkout opened was created with. */
-function lastIntentParams() {
-  const calls = stripeTest.mock.paymentIntents.create.mock.calls
-  const call = calls.at(-1)
-  if (!call) throw new Error('No PaymentIntent was created at the gateway')
-  // `paymentIntents.create(params, options)` — the parameters are the first argument.
-  return call[0] as Record<string, unknown>
-}
-
 test.describe('saving a card as a side effect of paying', () => {
   test('a guest leaves no Customer, no saved method and nothing redisplayable', async ({ service, expect }) => {
     const checkout = await payableCart(service)
@@ -86,7 +77,7 @@ test.describe('saving a card as a side effect of paying', () => {
     await completeCart(checkout.cart.id)
 
     expect(stripeTest.mock.customers.create).not.toHaveBeenCalled()
-    expect(lastIntentParams()).not.toHaveProperty('setup_future_usage')
+    expect(stripeTest.intentCreateParams(-1)).not.toHaveProperty('setup_future_usage')
     expect(stripeTest.mock.paymentMethods.update).not.toHaveBeenCalled()
   })
 
@@ -97,7 +88,7 @@ test.describe('saving a card as a side effect of paying', () => {
     assertDefined(checkout.paymentCollection)
 
     await openSession(checkout.paymentCollection.id, { data: { savePaymentMethod: true } }, headers)
-    expect(lastIntentParams()).toMatchObject({
+    expect(stripeTest.intentCreateParams(-1)).toMatchObject({
       // biome-ignore lint/style/useNamingConvention: the Stripe SDK parameter
       setup_future_usage: 'on_session',
     })
@@ -139,7 +130,7 @@ test.describe('saving a card as a side effect of paying', () => {
     await openSession(checkout.paymentCollection.id, { data: { savePaymentMethod: false } }, headers)
     await completeCart(checkout.cart.id, headers)
 
-    expect(lastIntentParams()).not.toHaveProperty('setup_future_usage')
+    expect(stripeTest.intentCreateParams(-1)).not.toHaveProperty('setup_future_usage')
     expect(stripeTest.mock.paymentMethods.update).not.toHaveBeenCalled()
     expect((await listWallet(headers)).body.paymentMethods).toEqual([])
   })
@@ -156,7 +147,7 @@ test.describe('saving a card as a side effect of paying', () => {
 
     await openSession(checkout.paymentCollection.id, { data: { savePaymentMethod: true } }, headers)
 
-    expect(lastIntentParams()).toMatchObject({
+    expect(stripeTest.intentCreateParams(-1)).toMatchObject({
       // biome-ignore lint/style/useNamingConvention: the Stripe SDK parameter
       setup_future_usage: 'on_session',
     })
@@ -174,7 +165,7 @@ test.describe('saving a card as a side effect of paying', () => {
     )
 
     expect(stripeTest.mock.customers.create).not.toHaveBeenCalled()
-    expect(lastIntentParams()).not.toHaveProperty('customer')
+    expect(stripeTest.intentCreateParams(-1)).not.toHaveProperty('customer')
   })
 })
 
@@ -206,7 +197,7 @@ test.describe('paying with a saved card', () => {
     )
 
     expect(status).toBe(201)
-    expect(lastIntentParams()).toMatchObject({
+    expect(stripeTest.intentCreateParams(-1)).toMatchObject({
       customer: shopper.gatewayCustomer.id,
       // biome-ignore lint/style/useNamingConvention: the Stripe SDK parameter
       payment_method: shopper.method.id,

@@ -1,8 +1,8 @@
-import { withAppDatabase } from 'backend/test/database-url'
+import { DEFAULT_TEST_DATABASE_URL, withAppDatabase } from 'backend/test/database-url'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
-const DATABASE_URL = process.env.POOLER_DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:5433/proteus_test'
+const DATABASE_URL = process.env.POOLER_DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL
 
 // The suite's own database, matching the backend process `defineE2eConfig` started for it. Outside
 // an e2e run `E2E_APP` is unset and this stays on the base database.

@@ -1,8 +1,7 @@
 import { rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
-import { withAppDatabase } from 'backend/test/database-url'
+import { DEFAULT_TEST_DATABASE_URL, withAppDatabase } from 'backend/test/database-url'
+import { fakeGatewayStateDir } from 'backend/test/fake-gateway'
 
 /**
  * The Playwright configuration both apps use, and the single place their ports and database name
@@ -44,8 +43,6 @@ export type E2eConfig = {
   workerHealthPort: number
 }
 
-const DEFAULT_DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5433/proteus_test'
-
 export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }: E2eConfig) {
   // Set on the main process, and so inherited by the workers and web servers forked from it. This
   // is what `withAppDatabase` reads, so putting it here rather than in the npm script means a bare
@@ -61,7 +58,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
   // green-against-the-wrong-data failure this factory exists to prevent.
   process.env.VITE_BACKEND_URL = `http://localhost:${backendPort}`
 
-  const database = withAppDatabase(process.env.POOLER_DATABASE_URL ?? DEFAULT_DATABASE_URL, app)
+  const database = withAppDatabase(process.env.POOLER_DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL, app)
 
   /**
    * This suite's own Temporal queue.
@@ -90,7 +87,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
    * kind of state that makes a suite pass for the wrong reason, and keeping it after a failure is
    * worth more than tidiness.
    */
-  const gatewayState = join(tmpdir(), `proteus-fake-gateway-${app}`)
+  const gatewayState = fakeGatewayStateDir(app)
   rmSync(gatewayState, { force: true, recursive: true })
 
   return defineConfig({

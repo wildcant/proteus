@@ -2,11 +2,12 @@
 # Every test this repo has, in parallel.
 #
 # `verify.sh` is the post-implementation gate: it formats, type-checks, lints, and runs the slice
-# of tests worth waiting ~16s for. This runs the suites that gate deliberately leaves out — the
-# whole backend suite rather than the API slice, and both Playwright suites — and runs no static
-# checks at all. The two scripts are read together, not one instead of the other.
+# of tests worth waiting ~16s for. This runs every suite and no static checks at all — including
+# the fast ones the gate already covers, because "every test" is the claim this script makes and a
+# list that silently omits a package is worth less than one that repeats it for four seconds. The
+# two scripts are read together, not one instead of the other.
 #
-# All five run at once, which is only true because nothing they touch is shared any more. The
+# All six run at once, which is only true because nothing they touch is shared any more. The
 # backend suite holds `proteus_test_1..N`, one per vitest worker; the store and admin suites hold
 # `proteus_test_store` and `proteus_test_admin`, each with its own backend process and its own fake
 # payment gateway, assigned by `defineE2eConfig` in packages/testing. Before that split the two
@@ -29,13 +30,27 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-JOBS="backend store admin storeE2e adminE2e"
+JOBS="backend store schemas packages storeE2e adminE2e"
+
+# Every port `defineE2eConfig` binds, for the hint below. The map itself lives in
+# packages/testing/fixtures/e2e-config.ts: apps on 3011/3012, their backends on 3013/3015, their
+# Temporal Workers' readiness endpoints on 3017/3018. A suite added there needs its ports here.
+E2E_PORTS="3011,3012,3013,3015,3017,3018"
 
 # The whole suite, not `test:gate`. ~96s, and the reason this script exists separately.
 job_backend() { npm run --workspace=backend test; }
 
 job_store() { npm run --workspace=store test; }
-job_admin() { npm run --workspace=admin test; }
+
+# The two shared packages. Both are pure and take a few seconds, and both also run in `verify.sh` —
+# see the note at the top on why they are repeated here rather than left to it.
+job_schemas() { npm run --workspace=@proteus/http-schemas test; }
+job_packages() { npm run --workspace=@proteus/utils test; }
+
+# No job_admin. The admin has a vitest config and no test files, and `vitest run` treats that as a
+# failure rather than a pass — so listing it here failed every run of this script. `verify.sh` has
+# the same job commented out for the same reason. Both come back the moment a file matches
+# `apps/admin/src/**/*.test.ts`.
 
 # --reporter=line overrides the config's `html`, which on a local failure starts a report server
 # and blocks — a run that never exits rather than one that fails. `line` still prints full failure
@@ -48,8 +63,9 @@ for arg in "$@"; do
     -h | --help)
       echo "Usage: npm run verify:full"
       echo ""
-      echo "  Runs every test suite in parallel: the full backend suite, the store and admin"
-      echo "  unit tests, and both Playwright e2e suites."
+      echo "  Runs every test suite in parallel: the full backend suite, the store's unit and"
+      echo "  component tests, the http-schemas and utils package tests, and both Playwright"
+      echo "  e2e suites."
       echo ""
       echo "  Static checks are npm run verify. The Temporal suites are excluded — they need"
       echo "  a Temporal server and cannot share the backend suite's databases."
@@ -67,7 +83,8 @@ label_of() {
   case "$1" in
     backend) echo "Backend suite (full)" ;;
     store) echo "Store unit + component tests" ;;
-    admin) echo "Admin unit tests" ;;
+    schemas) echo "Request-schema bound tests (@proteus/http-schemas)" ;;
+    packages) echo "Shared formatter tests (@proteus/utils)" ;;
     storeE2e) echo "Store e2e (:3013 backend, proteus_test_store)" ;;
     adminE2e) echo "Admin e2e (:3015 backend, proteus_test_admin)" ;;
   esac
@@ -129,7 +146,7 @@ report() {
   if grep -q 'Timed out waiting .* from config.webServer' "$LOG_DIR/$name.log"; then
     echo ""
     echo -e "  ${BOLD}Hint:${RESET} a server may already hold this suite's port. Check with"
-    echo -e "  ${BOLD}lsof -nP -iTCP:3011,3012,3013,3014,3015,3016 -sTCP:LISTEN${RESET}."
+    echo -e "  ${BOLD}lsof -nP -iTCP:${E2E_PORTS} -sTCP:LISTEN${RESET}."
   fi
   failures=$((failures + 1))
 }
