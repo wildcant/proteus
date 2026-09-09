@@ -1,7 +1,8 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { SubscriberArgs, SubscriberConfig } from '@core/event-bus/types.js'
+import type { Logger } from '@core/types/logger.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
-import { Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { buildOrderConfirmationNotification } from '../notifications/order-confirmation.js'
 
 /**
@@ -37,10 +38,15 @@ import { buildOrderConfirmationNotification } from '../notifications/order-confi
  */
 async function sendOrderConfirmation({ event, container }: SubscriberArgs<'order.placed'>) {
   const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+  const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
   const orderId = event.data.id
 
   const notification = await notificationService.createNotification(
     await buildOrderConfirmationNotification(orderId, container),
+  )
+
+  logger.info(
+    `[send-order-confirmation] Notification "${notification.id}" for order "${orderId}" is "${notification.status}" via provider "${notification.providerId ?? 'none'}"`,
   )
 
   if (notification.status === 'failure' && notification.providerId) {
@@ -48,6 +54,12 @@ async function sendOrderConfirmation({ event, container }: SubscriberArgs<'order
       type: ErrorTypes.SERVICE_UNAVAILABLE,
       message: `The order confirmation for order "${orderId}" was not sent — provider "${notification.providerId}" refused it`,
     })
+  }
+
+  if (notification.status === 'failure') {
+    logger.error(
+      `[send-order-confirmation] No provider configured for the "${notification.channel}" channel, so order "${orderId}" was not sent; not retrying`,
+    )
   }
 }
 

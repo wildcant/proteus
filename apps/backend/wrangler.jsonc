@@ -13,7 +13,9 @@
   },
   "triggers": {
     // Each entry must match a JobDefinition.schedule in src/jobs/
-    "crons": ["* * * * *"]
+    "crons": [
+      // "* * * * *"
+    ]
   },
   // The event bus transport on this runtime. One queue carries every event; a message is one
   // delivery to one subscriber, which is what makes a retry retry that subscriber and nothing else.

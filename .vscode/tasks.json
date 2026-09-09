@@ -1,8 +1,10 @@
 {
   // Two dev sessions live in here.
   //
-  //   `dev`          — Node runtime. Four panes: API, Temporal Worker, store, admin.
-  //   `dev: workerd` — workerd runtime. Three panes: API under `wrangler dev`, store, admin.
+  //   `dev`          — Node runtime. Two terminals: backend (API, workflow Worker, events Worker)
+  //                    and frontend (store, admin).
+  //   `dev: workerd` — workerd runtime. One terminal, three panes: API under `wrangler dev`, store,
+  //                    admin.
   //
   // Both run from Cmd+Shift+P → "Tasks: Run Task". `dev` additionally answers to Cmd+Shift+B, not
   // through a keybinding but by being the default build task below — and VS Code allows exactly one
@@ -13,10 +15,14 @@
   //   { "key": "...", "command": "workbench.action.tasks.runTask", "args": "dev: workerd" }
   //
   // `presentation.group` is the whole trick: every task sharing a group name opens as a split pane
-  // in one terminal group rather than as its own tab, which is the four- and three-pane layout.
+  // inside one terminal rather than as its own, so a group name is a terminal and its members are
+  // that terminal's panes. `dev` uses two — `dev-backend` and `dev-frontend` — which is why it comes
+  // up as two entries in the terminal list, split three ways and two ways, instead of one terminal
+  // split five ways where every pane is too narrow to read a stack trace.
+  //
   // `panel: "dedicated"` keeps each pane bound to its own task across reruns, so a restarted store
-  // reuses the store pane instead of stacking a new one beside it. The two sessions use different
-  // group names so a leftover pane from one never splits into the other's group.
+  // reuses the store pane instead of stacking a new one beside it. Every session uses group names of
+  // its own so a leftover pane from one never splits into another's terminal.
   "version": "2.0.0",
   "tasks": [
     {
@@ -29,18 +35,18 @@
       "problemMatcher": []
     },
     {
-      // Split out from `dev` only so the four below start in parallel while still sitting behind
+      // Split out from `dev` only so the five below start in parallel while still sitting behind
       // the infra step — `dependsOrder` applies per task, so one list cannot mix the two orders.
       "label": "dev: apps",
-      "dependsOn": ["dev: api", "dev: worker", "dev: store", "dev: admin", "dev: open"],
+      "dependsOn": ["dev: api", "dev: worker", "dev: events", "dev: store", "dev: admin", "dev: open"],
       "dependsOrder": "parallel",
       "problemMatcher": []
     },
     {
-      // Runs alongside the four rather than after them, because it waits on the ports itself —
-      // sequencing it would mean nothing starts until the browser is open. Deliberately outside the
-      // "dev" presentation group: a fifth member would split the terminal five ways for a task that
-      // exits after a few seconds. Delete it from `dev: apps` above to stop opening tabs.
+      // Runs alongside the five rather than after them, because it waits on the ports itself —
+      // sequencing it would mean nothing starts until the browser is open. Deliberately in neither
+      // presentation group: a member that exits after a few seconds would leave a dead pane wedged
+      // into a terminal the others are still using. Delete it from `dev: apps` to stop opening tabs.
       "label": "dev: open",
       "type": "shell",
       "command": "./scripts/dev-open.sh",
@@ -48,12 +54,13 @@
       "problemMatcher": []
     },
     {
-      // Stopping the compose Worker is not tidiness. It polls `proteus` and so does the pane below;
-      // whichever is free claims the task, so leaving both up means edits appear to apply at random.
+      // Stopping the compose Workers is not tidiness. `worker` polls `proteus` and `events-worker`
+      // polls `proteus-events`, and so do the two panes below; whichever is free claims the task, so
+      // leaving both up means edits appear to apply at random — to a step or to a subscriber.
       // `--wait` blocks on the healthchecks, which is what makes the sequence above worth having.
       "label": "dev: infra",
       "type": "shell",
-      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui && docker compose -f apps/backend/docker-compose.yml stop worker",
+      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui && docker compose -f apps/backend/docker-compose.yml stop worker events-worker",
       "presentation": { "reveal": "silent", "panel": "shared", "close": true },
       "problemMatcher": []
     },
@@ -63,7 +70,7 @@
       "command": "npm run --workspace=backend dev",
       "isBackground": true,
       "presentation": {
-        "group": "dev",
+        "group": "dev-backend",
         "panel": "dedicated",
         "reveal": "always",
         "focus": false,
@@ -85,7 +92,33 @@
       "command": "npm run --workspace=backend worker:dev",
       "isBackground": true,
       "presentation": {
-        "group": "dev",
+        "group": "dev-backend",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+    {
+      // The event bus, and a separate process from the pane above on purpose: it polls
+      // `proteus-events` while the Worker polls `proteus`, so a burst of subscriber deliveries
+      // cannot leave a shopper's `authorize-payment` step waiting for a slot. Without this pane a
+      // publish still succeeds and the activity waits durably on a queue nobody reads — the
+      // "No workers polling" banner in the Temporal UI is what that looks like.
+      //
+      // No `watch`: `worker:events` runs `worker.ts` directly, so editing a subscriber means
+      // restarting this pane. It refuses to boot when the server has `activity.enableStandalone`
+      // off, which a Temporal container older than `dynamicconfig/development-sql.yaml` will —
+      // recreate it rather than reading the refusal as a broken task.
+      "label": "dev: events",
+      "type": "shell",
+      "command": "npm run --workspace=backend worker:events",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev-backend",
         "panel": "dedicated",
         "reveal": "always",
         "focus": false,
@@ -101,7 +134,7 @@
       "command": "npm run --workspace=store dev",
       "isBackground": true,
       "presentation": {
-        "group": "dev",
+        "group": "dev-frontend",
         "panel": "dedicated",
         "reveal": "always",
         "focus": false,
@@ -117,7 +150,7 @@
       "command": "npm run --workspace=admin dev",
       "isBackground": true,
       "presentation": {
-        "group": "dev",
+        "group": "dev-frontend",
         "panel": "dedicated",
         "reveal": "always",
         "focus": false,
