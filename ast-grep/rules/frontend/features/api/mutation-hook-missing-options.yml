@@ -2,7 +2,7 @@ id: mutation-hook-missing-options
 language: typescript
 severity: error
 message: This mutation hook takes no `options`, so a caller cannot set `retry`, `onSettled` or its own callbacks.
-note: 'Give it `options?: UseMutationOptions<TData, Error, TVariables>` as its last parameter. docs/mutation-hooks.md'
+note: 'Give it `options?: UseMutationOptions<TData, Error, TVariables>` as its last parameter. ast-grep/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
 

@@ -1,0 +1,26 @@
+id: route-omits-context-query
+snapshots:
+  ? |
+    export const GetInput = { params: IdParams }
+    export const GetMiddlewares = [setPricingContext()] as const
+  : labels:
+    - source: setPricingContext()
+      style: primary
+      start: 76
+      end: 95
+  ? |
+    export const GetInput = { query: StoreProductListParams }
+    export const GetMiddlewares = [attachCustomer(), setPricingContext()] as const
+  : labels:
+    - source: setPricingContext()
+      style: primary
+      start: 107
+      end: 126
+  ? |
+    export const PostInput = { body: CreateCart }
+    export const PostMiddlewares = [setPricingContext()] as const
+  : labels:
+    - source: setPricingContext()
+      style: primary
+      start: 78
+      end: 97

@@ -12,9 +12,9 @@ type FloatingLabelSelectProps = Omit<ComponentProps<'select'>, 'size'> & {
 /**
  * The same 56px box as `FloatingLabelInput`, around a native select.
  *
- * Its own `<select>`, not `@proteus/ui`'s `NativeSelect`, whose `className` reaches the wrapper
- * only — styling the control would take eight `**:data-[slot=native-select]:` selectors. Chevron
- * is ours (`appearance-none`), at `right-4` to match this box's wider gutter.
+ * Its own `<select>`, not `@proteus/ui`'s `NativeSelect`: the floating label has to be the select's
+ * sibling inside this box, and the primitive owns that box. Chevron is ours (`appearance-none`), at
+ * `right-4` to match this box's wider gutter.
  */
 export function FloatingLabelSelect({ id, label, className, required, children, ...props }: FloatingLabelSelectProps) {
   return (

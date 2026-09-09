@@ -12,6 +12,8 @@ export const Modules = {
   FULFILLMENT: 'fulfillment',
   NOTIFICATION: 'notification',
   FILE: 'file',
+  REGION: 'region',
+  STORE: 'store',
 } as const
 
 export const Links = {
@@ -22,4 +24,5 @@ export const Links = {
   ORDER_CART: 'orderCart',
   ORDER_PAYMENT_COLLECTION: 'orderPaymentCollection',
   ORDER_FULFILLMENT: 'orderFulfillment',
+  REGION_PAYMENT_PROVIDER: 'regionPaymentProvider',
 } as const

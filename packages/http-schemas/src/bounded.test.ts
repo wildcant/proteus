@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { z } from 'zod'
 import { AdminSetProductOptions } from './admin/product-option/payloads.js'
 import { AdminCreateProductVariantsBatch } from './admin/product-variant/payloads.js'
+import { AdminUpdateCountryLocale } from './admin/region/payloads.js'
 import {
   countryCode,
   decimalAmount,
@@ -85,5 +86,48 @@ describe('bounded array tiers', () => {
     expect(AdminCreateProductVariantsBatch.safeParse({ variants: fill(MAX_ITEMS.bulk + 1, variant) }).success).toBe(
       false,
     )
+  })
+})
+
+/**
+ * The one bounded field whose ceiling is not the interesting half.
+ *
+ * A locale that is merely short enough is not a locale: `country.locale_code` is handed straight to
+ * `Intl.NumberFormat` on the storefront, so a tag that fails its grammar takes down every priced
+ * page in that market rather than formatting one number oddly. The accept list is the other half of
+ * the claim — the check has to narrow the field to what a formatter takes and nothing further, or
+ * it refuses markets a merchant legitimately needs.
+ */
+describe('AdminUpdateCountryLocale.localeCode', () => {
+  it.each([
+    'es-CO',
+    'en',
+    'pt-BR',
+    'sr-Latn-RS',
+    'zh-Hans-CN',
+    // A variant subtag, an extension subtag and a UN M.49 region — all BCP 47, none of them the
+    // `language-REGION` shape a hand-written pattern would have been built around.
+    'ca-ES-valencia',
+    'en-US-u-ca-gregory',
+    'es-419',
+  ])('accepts %s', (localeCode) => {
+    expect(AdminUpdateCountryLocale.safeParse({ localeCode }).success).toBe(true)
+  })
+
+  it.each([
+    // The POSIX/Java form, and the typo this check exists for: five characters, non-empty, dead.
+    'es_CO',
+    'en_US',
+    'es CO',
+    'es-CO!',
+    'es--CO',
+    '',
+    '   ',
+  ])('rejects %s', (localeCode) => {
+    expect(AdminUpdateCountryLocale.safeParse({ localeCode }).success).toBe(false)
+  })
+
+  it('trims before it validates, so a pasted tag with stray spaces is accepted and stored clean', () => {
+    expect(AdminUpdateCountryLocale.parse({ localeCode: '  es-CO  ' })).toEqual({ localeCode: 'es-CO' })
   })
 })

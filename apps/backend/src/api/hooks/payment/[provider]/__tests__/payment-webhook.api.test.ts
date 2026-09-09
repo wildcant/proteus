@@ -1,21 +1,38 @@
+import { createHmac } from 'node:crypto'
 import { BigNumber } from '@core/bignumber.js'
 import type { EventBus } from '@core/event-bus/types.js'
 import type { IPaymentModuleService } from '@core/types/index.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { env } from '@env'
-import { type FakeIntent, signWebhook, stripeGateway, webhookEventBody } from '@tests/mocks/stripe.js'
+import type { FakeIntent } from '@tests/mocks/stripe-factories.js'
+import { stripeTest } from '@tests/mocks/vitest/stripe.mock.js'
+import { stripeErrors } from '@tests/mocks/vitest/stripe-errors.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { completeCartWorkflow } from '@workflows/cart/complete-cart.js'
-import Stripe from 'stripe'
 import type { ExpectStatic } from 'vitest'
 import { vi } from 'vitest'
 import hookDefinitions from '../../../definitions.js'
 
-vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeModuleMock())
+vi.mock('stripe', async () => (await import('@tests/mocks/vitest/stripe.mock.js')).stripeTest.moduleMock())
+
+/**
+ * Stripe's documented signature scheme: an HMAC-SHA256 over `<timestamp>.<payload>`. Written out
+ * rather than taken from the SDK's test helper so this pins the wire format itself.
+ */
+function signWebhook(payload: string | Uint8Array, secret: string, timestamp = Math.floor(Date.now() / 1000)) {
+  const body = typeof payload === 'string' ? payload : new TextDecoder('utf8').decode(payload)
+  const signature = createHmac('sha256', secret).update(`${timestamp}.${body}`).digest('hex')
+  return `t=${timestamp},v1=${signature}`
+}
+
+/** A webhook event body around an intent, serialized the way Stripe sends it — indented. */
+function webhookEventBody(type: string, intent: FakeIntent, id = 'evt_test'): string {
+  return JSON.stringify({ id, object: 'event', type, data: { object: intent } }, null, 2)
+}
 
 /** The DI key the Stripe adapter is registered under, and so the `:provider` segment the
  *  gateway's webhook endpoint is configured with. */
@@ -28,7 +45,7 @@ const MISSING_HEADER_REJECTION = 'Missing stripe-signature header'
 let api: TestApi
 
 test.beforeEach(async ({ createApi }) => {
-  stripeGateway.reset()
+  stripeTest.reset()
   api = await createApi({ definitions: hookDefinitions })
 })
 
@@ -47,7 +64,7 @@ async function authorizedOrder(service: Fixtures['service']) {
 
   const session = checkout.paymentSession
   assertDefined(session)
-  const intent = stripeGateway.intentForSession(session.id)
+  const intent = await stripeTest.intentCreatedFor(session.id)
   assertDefined(intent)
 
   return { session, intent, total: checkout.total }
@@ -90,20 +107,6 @@ const capturableEvent = (intent: FakeIntent) =>
     amount_capturable: intent.amount,
   })
 
-/**
- * Finishes the intent at the gateway, as Stripe does before it sends the event.
- *
- * The webhook is not the source of truth about the intent — `authorizePaymentSession` re-reads it —
- * so a `succeeded` event delivered against an intent the fake still holds as `processing` would
- * authorize nothing.
- */
-function settleAtGateway(intent: FakeIntent): FakeIntent {
-  intent.status = 'succeeded'
-  intent.amount_received = intent.amount
-  intent.amount_capturable = 0
-  return intent
-}
-
 /** The payment behind a session, with its captures. */
 async function paymentFor(service: Fixtures['service'], paymentCollectionId: string) {
   const collection = await service.read.paymentCollection(api.container, paymentCollectionId)
@@ -117,7 +120,7 @@ async function paymentFor(service: Fixtures['service'], paymentCollectionId: str
  * tab after confirming, whose first news of the charge is the webhook itself.
  */
 async function chargedSessionWithoutPayment(service: Fixtures['service']) {
-  stripeGateway.statusOnCreate = 'succeeded'
+  stripeTest.givenIntentStatus('succeeded')
 
   const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
   const { paymentCollection, paymentSession } = await service.create.paymentSessionForCart(api.container, {
@@ -127,7 +130,7 @@ async function chargedSessionWithoutPayment(service: Fixtures['service']) {
     providerId: STRIPE_PROVIDER,
   })
 
-  const intent = stripeGateway.intentForSession(paymentSession.id)
+  const intent = await stripeTest.intentCreatedFor(paymentSession.id)
   assertDefined(intent)
 
   return { session: paymentSession, paymentCollectionId: paymentCollection.id, intent, total: new BigNumber('19.99') }
@@ -203,7 +206,7 @@ test.describe('POST /hooks/payment/:provider', () => {
 
     // Through the real subscriber, not a mocked publish: the suite pins the in-process adapter, so
     // what this asserts is that the subscriber left the money where it was.
-    expect(stripeGateway.callsTo('paymentIntents.capture')).toEqual([])
+    expect(stripeTest.mock.paymentIntents.capture).not.toHaveBeenCalled()
     expect(await paymentFor(service, session.paymentCollectionId)).toMatchObject({ capturedAt: null })
   })
 
@@ -221,6 +224,50 @@ test.describe('POST /hooks/payment/:provider', () => {
 
     const payment = await paymentFor(service, session.paymentCollectionId)
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
+  })
+
+  test('takes the money for a settling payment on a cart that cannot become an order', async ({ service, expect }) => {
+    // The capture path on its own, with the completion re-run deliberately unable to finish.
+    //
+    // This cart is a bare one — no email, no shipping method, no address — so the re-run the
+    // `payment.captured` subscriber performs fails on the first validation step, every time. That
+    // is the point of the fixture: it isolates what the *route* does from what the subscriber
+    // manages to do with it, and the describe block below covers the case that does end in an
+    // order. It is also the never-reject contract under load — the subscriber throws here, and a
+    // publisher must not learn about it.
+    //
+    // Not a residual any more. When the cart *can* complete, the shopper gets the order they paid
+    // for; see "a payment that settled after checkout was refused". What survives from before the
+    // event bus is only this: a capture stands on its own, whatever becomes of the completion.
+    stripeTest.givenIntentStatus('processing')
+
+    const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
+    const { paymentCollection, paymentSession } = await service.create.paymentSessionForCart(api.container, {
+      cartId: cart.id,
+      amount: new BigNumber('19.99'),
+      currencyCode: 'usd',
+      providerId: STRIPE_PROVIDER,
+    })
+
+    const intent = await stripeTest.intentCreatedFor(paymentSession.id)
+    assertDefined(intent)
+
+    // Still settling, and said so in its own words: this is the classification the checkout turns
+    // into a 409 rather than the decline's `unexpected_state`. Asserted here because everything
+    // below depends on the completion having been refused for *this* reason.
+    const authorization = await paymentModule().authorizePaymentSession(paymentSession.id)
+    expect(authorization).toMatchObject({ outcome: 'pending_authorization' })
+
+    // The funds clear.
+    stripeTest.givenRetrievedStatus('succeeded')
+    const response = await postWebhook(succeededEvent(intent), signedHeaders(succeededEvent(intent)))
+    expect(response.status).toBe(200)
+
+    // Captured — in full, against a cart with no order behind it, because this one cannot have one.
+    const payment = await paymentFor(service, paymentCollection.id)
+    expect(payment.capturedAt).not.toBeNull()
+    expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([new BigNumber('19.99').toFixed()])
+    expect(await service.read.orders(api.container)).toEqual([])
   })
 
   test('captures once when the charge is already complete before any payment exists', async ({ service, expect }) => {
@@ -273,14 +320,14 @@ test.describe('POST /hooks/payment/:provider', () => {
     const { session, intent } = await authorizedOrder(service)
     const body = webhookEventBody('payment_intent.processing', { ...intent, status: 'processing' })
 
-    const callsBefore = stripeGateway.calls.length
+    const callsBefore = stripeTest.callSequence().length
     const response = await postWebhook(body, signedHeaders(body))
 
     // A settling payment is acknowledged so Stripe stops redelivering it, and nothing else. Not
     // even a read: filtering happens before anything is scheduled, so an event type the dashboard
     // has enabled cannot cost a round trip per delivery for the life of the integration.
     expect(response.status).toBe(200)
-    expect(stripeGateway.calls).toHaveLength(callsBefore)
+    expect(stripeTest.callSequence()).toHaveLength(callsBefore)
     expect((await paymentFor(service, session.paymentCollectionId)).capturedAt).toBeNull()
   })
 
@@ -288,11 +335,11 @@ test.describe('POST /hooks/payment/:provider', () => {
     const { session, intent } = await authorizedOrder(service)
     const body = webhookEventBody('payment_intent.succeeded', { ...intent, status: 'succeeded', metadata: {} })
 
-    const callsBefore = stripeGateway.calls.length
+    const callsBefore = stripeTest.callSequence().length
     const response = await postWebhook(body, signedHeaders(body))
 
     expect(response.status).toBe(200)
-    expect(stripeGateway.calls).toHaveLength(callsBefore)
+    expect(stripeTest.callSequence()).toHaveLength(callsBefore)
     expect((await paymentFor(service, session.paymentCollectionId)).capturedAt).toBeNull()
   })
 })
@@ -332,7 +379,7 @@ test.describe('POST /hooks/payment/:provider — losing the race to checkout', (
     expect(response.status).toBe(200)
     // The intent is untouched. Cancelling it here would void the authorization the winner's order
     // was placed against — money lost, on a delivery that changed nothing.
-    expect(stripeGateway.callsTo('paymentIntents.cancel')).toEqual([])
+    expect(stripeTest.mock.paymentIntents.cancel).not.toHaveBeenCalled()
     // One payment for the session, still checkout's.
     const collection = await service.read.paymentCollection(api.container, paymentCollectionId)
     expect(collection.payments).toHaveLength(1)
@@ -352,7 +399,7 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
 
     // Down for one attempt. The adapter retries a `retry`-classified error itself, so a single
     // transient failure must not be the end of the capture even before the transport's retry.
-    stripeGateway.failNext('paymentIntents.capture', connectionError())
+    stripeTest.mock.paymentIntents.capture.mockRejectedValueOnce(stripeErrors.connection())
 
     const response = await postWebhook(body, signedHeaders(body))
 
@@ -365,8 +412,12 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
     const { session, intent } = await authorizedOrder(service)
     const body = succeededEvent(intent)
 
-    // One error per attempt the adapter makes, so the outage outlasts it.
-    stripeGateway.failNext('paymentIntents.capture', connectionError(), connectionError(), connectionError())
+    // Three in a row: one per attempt the adapter makes before it gives up, so the outage
+    // outlasts it.
+    stripeTest.mock.paymentIntents.capture
+      .mockRejectedValueOnce(stripeErrors.connection())
+      .mockRejectedValueOnce(stripeErrors.connection())
+      .mockRejectedValueOnce(stripeErrors.connection())
 
     const response = await postWebhook(body, signedHeaders(body))
 
@@ -395,7 +446,7 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
 test.describe('POST /hooks/payment/:provider — a payment that settled after checkout was refused', () => {
   /** A checkout refused with the money already in flight, exactly as `complete-cart` leaves one. */
   async function refusedWhileSettling(service: Fixtures['service'], expect: ExpectStatic) {
-    stripeGateway.statusOnCreate = 'processing'
+    stripeTest.givenIntentStatus('processing')
 
     const checkout = await service.create.checkoutReadyCart(api.container, {
       cart: { currencyCode: 'usd' },
@@ -409,7 +460,7 @@ test.describe('POST /hooks/payment/:provider — a payment that settled after ch
     })
     expect(await service.read.orders(api.container)).toEqual([])
 
-    const intent = stripeGateway.intentForSession(session.id)
+    const intent = await stripeTest.intentCreatedFor(session.id)
     assertDefined(intent)
 
     return { ...checkout, session, intent }
@@ -418,7 +469,13 @@ test.describe('POST /hooks/payment/:provider — a payment that settled after ch
   test('ends with one order, one charge, and the same confirmation everyone else gets', async ({ service, expect }) => {
     const { cart, session, intent, total } = await refusedWhileSettling(service, expect)
 
-    const body = succeededEvent(settleAtGateway(intent))
+    // The funds clear. Said to the gateway rather than by mutating the event, because the webhook
+    // is not the source of truth about the intent — `authorizePaymentSession` re-reads it, and a
+    // `succeeded` event delivered against an intent the fake still answers as `processing` would
+    // authorize nothing.
+    stripeTest.givenRetrievedStatus('succeeded')
+
+    const body = succeededEvent(intent)
     const response = await postWebhook(body, signedHeaders(body))
 
     expect(response.status).toBe(200)
@@ -443,7 +500,13 @@ test.describe('POST /hooks/payment/:provider — a payment that settled after ch
   test('makes no second order when the same capture is delivered twice', async ({ service, expect }) => {
     const { cart, intent } = await refusedWhileSettling(service, expect)
 
-    const body = succeededEvent(settleAtGateway(intent))
+    // The funds clear. Said to the gateway rather than by mutating the event, because the webhook
+    // is not the source of truth about the intent — `authorizePaymentSession` re-reads it, and a
+    // `succeeded` event delivered against an intent the fake still answers as `processing` would
+    // authorize nothing.
+    stripeTest.givenRetrievedStatus('succeeded')
+
+    const body = succeededEvent(intent)
     const first = await postWebhook(body, signedHeaders(body))
     const second = await postWebhook(body, signedHeaders(body))
 
@@ -512,4 +575,3 @@ test.describe('webhook amounts', () => {
  * class has to be the real one the adapter checks `instanceof` against, which is why it comes
  * through the mocked module rather than being hand-rolled.
  */
-const connectionError = () => new Stripe.errors.StripeConnectionError({ message: 'socket hang up' })

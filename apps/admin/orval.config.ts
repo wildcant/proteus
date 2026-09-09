@@ -13,7 +13,7 @@ export default defineConfig({
       clean: true,
       override: {
         mutator: {
-          path: './src/lib/fetcher.ts',
+          path: './src/api/fetcher.ts',
           name: 'fetcher',
         },
       },

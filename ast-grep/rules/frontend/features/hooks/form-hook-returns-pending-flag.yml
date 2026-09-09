@@ -1,0 +1,21 @@
+id: form-hook-returns-pending-flag
+language: typescript
+severity: error
+message: This form hook returns its own in-flight flag. There is one source of truth for that, and it is the form.
+note: 'Return `{ form }` and read `state.isSubmitting` through `form.Subscribe` where a label or a non-submit button needs it. `SubmitButton` already does. A second flag is a second thing to keep in step, and the one that gets forgotten. ast-grep/rules/frontend/features/hooks/__docs__/form-hooks.md'
+files:
+  - "**/features/*/hooks/use-*form*.ts"
+rule:
+  kind: return_statement
+  has:
+    kind: object
+    has:
+      any:
+        - pattern:
+            context: "const x = { isPending: $V }"
+            selector: pair
+        - pattern:
+            context: "const x = { isLoading: $V }"
+            selector: pair
+        - kind: shorthand_property_identifier
+          regex: '^(isPending|isLoading)$'

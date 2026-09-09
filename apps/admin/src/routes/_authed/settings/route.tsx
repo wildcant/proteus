@@ -11,6 +11,7 @@ export const Route = createFileRoute('/_authed/settings')({
           items: [
             { label: 'Store', to: '/settings/store' },
             { label: 'Users', to: '/settings/users' },
+            { label: 'Regions', to: '/settings/regions' },
           ],
         },
         {

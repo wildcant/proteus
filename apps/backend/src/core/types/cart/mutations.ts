@@ -87,6 +87,7 @@ export type CreateCartAddressDTO = {
 }
 
 export type UpdateCartWithAddressesDTO = {
+  customerId?: string | null | undefined
   email?: string | null | undefined
   shippingAddress?: CreateCartAddressDTO | undefined
   billingAddress?: CreateCartAddressDTO | undefined

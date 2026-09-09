@@ -1,3 +1,4 @@
+import { env } from '@env'
 import type { Client } from '@temporalio/client'
 import type { Duration, RetryPolicy } from '@temporalio/common'
 import { ulid } from 'ulid'
@@ -5,7 +6,7 @@ import { createTemporalClient, type TemporalClientHandle } from '../../temporal/
 import { readStepFailureDetail } from '../../temporal/failure-details.js'
 import { deserializeError } from '../../temporal/failures.js'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
-import { PROTEUS_WORKFLOW_TYPE, TEMPORAL_TASK_QUEUE } from './temporal/config.js'
+import { PROTEUS_WORKFLOW_TYPE } from './temporal/config.js'
 import type { DriverInput } from './temporal/types.js'
 import type { StepContext, WorkflowDefinition, WorkflowEngine } from './types.js'
 
@@ -84,7 +85,7 @@ const DEFAULT_IDEMPOTENT_RETRY: RetryPolicy = {
 export function createTemporalWorkflowEngine(options: TemporalWorkflowEngineOptions = {}): TemporalWorkflowEngine {
   assertBoundedRetryPolicies(options)
 
-  const taskQueue = options.taskQueue ?? TEMPORAL_TASK_QUEUE
+  const taskQueue = options.taskQueue ?? env.TEMPORAL_TASK_QUEUE
   const startToCloseTimeout = options.startToCloseTimeout ?? DEFAULT_START_TO_CLOSE_TIMEOUT
   const connect = options.connect ?? createTemporalClient
 

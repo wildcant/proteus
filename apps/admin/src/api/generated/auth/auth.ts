@@ -19,8 +19,8 @@ import type {
   VerificationRequestResponse
 } from '../model';
 
-import { fetcher } from '../../../lib/fetcher.ts';
-import type { BodyType } from '../../../lib/fetcher.ts';
+import { fetcher } from '../../fetcher.ts';
+import type { BodyType } from '../../fetcher.ts';
 
 
 

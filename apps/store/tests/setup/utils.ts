@@ -19,11 +19,10 @@ export function disposeCartAfterTest(page: Page, factories: Factories, cleanup: 
  * What `fillShippingAddress` types. Exported so a spec asserting the address came back on the
  * order can read the same values rather than retyping the strings beside them.
  *
- * `countryName` is the rendered country, not the code the form selects — an order prints
- * "United States", never "US".
+ * `countryName` and no code, because no surface reads a code any more: the delivery form shows
+ * the market's country by name and an order prints the same name back.
  */
 export const SHIPPING_ADDRESS = {
-  countryCode: 'us',
   countryName: 'United States',
   firstName: 'John',
   lastName: 'Doe',
@@ -36,7 +35,11 @@ export const SHIPPING_ADDRESS = {
 
 /** Fills the checkout's delivery block. The values are arbitrary but must be a real US state. */
 export async function fillShippingAddress(page: Page) {
-  await page.getByLabel('Country').selectOption(SHIPPING_ADDRESS.countryCode)
+  // Not filled in — read back. The market decides where a parcel goes, so the country is answered
+  // before the form is opened and there is nothing here to select. Asserted rather than skipped:
+  // every field below is typed against this country, and a form that had quietly lost it would
+  // otherwise fail much later, at the rates.
+  await expect(page.getByLabel('Country')).toHaveValue(SHIPPING_ADDRESS.countryName)
   await page.getByLabel('First name').fill(SHIPPING_ADDRESS.firstName)
   await page.getByLabel('Last name').fill(SHIPPING_ADDRESS.lastName)
   // Exact: 'Apartment, suite, etc.' and 'Billing address same as shipping' are both real labels
@@ -54,8 +57,9 @@ export async function fillShippingAddress(page: Page) {
 
 /**
  * Drives an authenticated shopper from the address step to the confirmation page and returns the
- * order's display number. Orders have no factory — the checkout workflow is the only thing that
- * writes one — so any spec that needs an existing order has to place it through the UI.
+ * order's display number. This is the only way to get an order the checkout workflow itself wrote,
+ * so any spec about what checkout produces places it through the UI. `factories.create.order` is
+ * for the orders checkout can no longer produce, not a shortcut around this.
  */
 export async function placeOrder(page: Page, shippingOptionName: string): Promise<string> {
   await expect(page.getByRole('heading', { name: 'Delivery' })).toBeVisible({ timeout: 10_000 })
@@ -99,7 +103,9 @@ export async function fillAddressForm(page: Page, { label, city }: { label: stri
   await page.getByLabel('Last name').fill('Doe')
   await page.getByLabel('Address', { exact: true }).fill('123 Main St')
   await page.getByLabel('City').fill(city)
-  await page.getByLabel('Country').selectOption('us')
+  // Same as the checkout's: the book saves into the market the shopper is in, so the country is
+  // shown rather than chosen.
+  await expect(page.getByLabel('Country')).toHaveValue(SHIPPING_ADDRESS.countryName)
   await page.getByLabel('State / Province').fill('TX')
   await page.getByLabel('Postal code').fill('78701')
   // By role, not by label: Base UI renders a span[role=checkbox] plus a hidden native input, and
@@ -108,3 +114,29 @@ export async function fillAddressForm(page: Page, { label, city }: { label: stri
   // unambiguous and the layer this should be asserting against.
   await page.getByRole('checkbox', { name: 'Make this my main address' }).check()
 }
+
+/**
+ * Signs a customer in through the form, which is the only thing that issues a store token.
+ *
+ * Here rather than beside any one feature's specs: a signed-in shopper is the premise of several
+ * of them, and it was previously stranded in a `wallet.ts` that existed to prop up stubbed
+ * wallets.
+ */
+export async function signIn(page: Page, customer: { email: string; password: string }) {
+  await page.goto('/login')
+  await page.getByLabel('Email').fill(customer.email)
+  await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
+  await page.getByRole('button', { name: /sign in/i }).click()
+  // Locale-prefixed, because every storefront route is: `/login` redirects to `/en-US/login`, and
+  // the sign-in lands on the account page of the market the shopper is in. Asserting the bare
+  // `/account` waits out its timeout on a page that arrived correctly — which is what it did in
+  // every spec calling this helper until the market work landed.
+  await expect(page).toHaveURL(`/${DEFAULT_MARKET}/account`, { timeout: 15_000 })
+}
+
+/**
+ * The market a shopper with no stated preference is served, and the segment every path they visit
+ * carries. `markets.spec.ts` owns the claim that this is what the seed produces; here it is the
+ * prefix the other suites have to expect.
+ */
+export const DEFAULT_MARKET = 'en-US'

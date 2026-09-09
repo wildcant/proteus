@@ -1,9 +1,10 @@
+import { createServer } from 'node:http'
 import { env } from '@env'
 import { createWorkerContainer } from '@framework/runtime/container.worker.js'
 import { NativeConnection, Worker } from '@temporalio/worker'
 import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 import { createWorkflowActivities, ping } from './activities.js'
-import { TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from './config.js'
+import { WORKFLOWS_PATH } from './config.js'
 import { workflowRegistry } from './registry.js'
 import { STEP_ACTIVITY_NAMES } from './step-names.js'
 
@@ -16,6 +17,18 @@ import { STEP_ACTIVITY_NAMES } from './step-names.js'
  *
  * Node only. The Worker needs `@temporalio/core-bridge`, a native addon that workerd cannot load.
  */
+/**
+ * The Worker executes workflow *steps*, so every gateway call a checkout makes leaves this process
+ * rather than the API's — which means the fake gateway has to be installed here too. Without it an
+ * e2e checkout reaches the real `api.stripe.com` from a step and the API process's own mocks prove
+ * nothing.
+ */
+if (env.MOCKS) {
+  const { server, onUnhandledRequest } = await import('../../../../tests/mocks/msw/server.js')
+  server.listen({ onUnhandledRequest })
+  console.info('[MSW] MSW server listening — mocking third-party APIs')
+}
+
 /**
  * Both pins stated, neither inherited. `simple` keeps the two nested `.run()` calls in-process, which
  * is what this Worker's workflows were written against; `temporal` sends anything a step *publishes*
@@ -35,7 +48,7 @@ const activities = { ping, ...createWorkflowActivities({ container, registry: wo
 const worker = await Worker.create({
   connection,
   namespace: env.TEMPORAL_NAMESPACE,
-  taskQueue: TEMPORAL_TASK_QUEUE,
+  taskQueue: env.TEMPORAL_TASK_QUEUE,
   workflowsPath: WORKFLOWS_PATH,
   dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
   activities,
@@ -71,8 +84,24 @@ function handleSignal(signal: string) {
 process.on('SIGTERM', () => handleSignal('SIGTERM'))
 process.on('SIGINT', () => handleSignal('SIGINT'))
 
+/**
+ * A readiness endpoint, for a caller that has to wait for this Worker before doing anything —
+ * Playwright's `webServer`, which knows how to poll a URL and nothing else.
+ *
+ * It answers on the state rather than on the process existing, because those differ in the case
+ * that bites: a Worker that booted, failed to connect and is retrying. Off unless the port is set,
+ * so production opens no listener it has no use for.
+ */
+if (env.WORKER_HEALTH_PORT) {
+  createServer((_request, response) => {
+    const ready = worker.getState() === 'RUNNING'
+    response.writeHead(ready ? 200 : 503, { 'content-type': 'application/json' })
+    response.end(JSON.stringify({ state: worker.getState(), taskQueue: env.TEMPORAL_TASK_QUEUE }))
+  }).listen(env.WORKER_HEALTH_PORT)
+}
+
 console.info(
-  `[temporal-worker] polling '${TEMPORAL_TASK_QUEUE}' on ${env.TEMPORAL_ADDRESS} (namespace ${env.TEMPORAL_NAMESPACE}) ` +
+  `[temporal-worker] polling '${env.TEMPORAL_TASK_QUEUE}' on ${env.TEMPORAL_ADDRESS} (namespace ${env.TEMPORAL_NAMESPACE}) ` +
     `with ${workflowRegistry.names().length} workflows and ${STEP_ACTIVITY_NAMES.size} step activities registered`,
 )
 

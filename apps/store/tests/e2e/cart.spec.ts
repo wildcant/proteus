@@ -82,7 +82,7 @@ test.describe('Cart', () => {
     // 6. "Back to cart" lands on the catalogue with the panel open, which is where the cart
     // lives now. Full layout returns with it.
     await page.getByRole('link', { name: /back to cart/i }).click()
-    await expect(page).toHaveURL('/?modal=cart')
+    await expect(page).toHaveURL('/en-US?modal=cart')
     await expect(panel).toBeVisible()
     await expect(panel.getByText(productA.title)).toBeVisible()
     // Exact: the panel is open, so a substring `Cart` also matches its `Close cart` button.
@@ -115,14 +115,14 @@ test.describe('Cart', () => {
     // Opening pushed, so hardware back closes it
     await page.goBack()
     await expect(panel).not.toBeVisible()
-    await expect(page).toHaveURL(`/products/${product.id}`)
+    await expect(page).toHaveURL(`/en-US/products/${product.id}`)
 
     // Closing with the ✕ replaces rather than pushes, so there is no entry to go forward into
     await page.getByLabel('Cart', { exact: true }).click()
     await expect(panel).toBeVisible()
     await panel.getByLabel('Close cart').click()
     await expect(panel).not.toBeVisible()
-    await expect(page).toHaveURL(`/products/${product.id}`)
+    await expect(page).toHaveURL(`/en-US/products/${product.id}`)
 
     await page.goForward()
     await expect(panel).not.toBeVisible()

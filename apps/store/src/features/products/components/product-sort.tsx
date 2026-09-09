@@ -14,10 +14,9 @@ type ProductSortProps = {
  * A native `<select>`, so the platform renders the bottom sheet a phone wants without this file
  * owning any modal state.
  *
- * Its own control rather than `@proteus/ui`'s `NativeSelect`, for the reason `components/form/select.tsx`
- * gives: that primitive's `className` reaches its wrapper only, and its hardcoded 32px height
- * misses the 44px thumb target the pager sets as the floor. No border here — the bar's own rules
- * are the only ones this needs.
+ * Its own control rather than `@proteus/ui`'s `NativeSelect`: that primitive is a bordered box,
+ * and the bar's own rules are the only ones this needs. `components/market-select.tsx` is the same
+ * shape on the primitive if this ever wants to follow.
  */
 export function ProductSort({ value, onChange }: ProductSortProps) {
   return (

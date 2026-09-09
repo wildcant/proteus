@@ -16,6 +16,17 @@ import { fetcher } from '../../fetcher.ts';
 
 
   /**
+ * @summary List the payment providers the cart’s region offers
+ */
+export const listStoreCartPaymentProviders = (
+    id: string,
+ ) => {
+      return fetcher<StorePaymentProviderListResponse>(
+      {url: `/store/carts/${id}/payment-providers`, method: 'GET'
+    },
+      );
+    }
+  /**
  * @summary List the authenticated customer's saved payment methods
  */
 export const listStorePaymentMethods = (
@@ -48,18 +59,7 @@ export const setStoreDefaultPaymentMethod = (
     },
       );
     }
-  /**
- * @summary List enabled payment providers
- */
-export const listStorePaymentProviders = (
-
- ) => {
-      return fetcher<StorePaymentProviderListResponse>(
-      {url: `/store/payment-providers`, method: 'GET'
-    },
-      );
-    }
-  export type ListStorePaymentMethodsResult = NonNullable<Awaited<ReturnType<typeof listStorePaymentMethods>>>
+  export type ListStoreCartPaymentProvidersResult = NonNullable<Awaited<ReturnType<typeof listStoreCartPaymentProviders>>>
+export type ListStorePaymentMethodsResult = NonNullable<Awaited<ReturnType<typeof listStorePaymentMethods>>>
 export type DeleteStorePaymentMethodResult = NonNullable<Awaited<ReturnType<typeof deleteStorePaymentMethod>>>
 export type SetStoreDefaultPaymentMethodResult = NonNullable<Awaited<ReturnType<typeof setStoreDefaultPaymentMethod>>>
-export type ListStorePaymentProvidersResult = NonNullable<Awaited<ReturnType<typeof listStorePaymentProviders>>>

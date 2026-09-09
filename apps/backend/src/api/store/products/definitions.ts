@@ -22,6 +22,7 @@ export default [
     method: 'GET',
     matcher: '/store/products/:id',
     handler: productByIdRoutes.GET,
+    throws: productByIdRoutes.GetThrows,
     auth: 'public',
     middlewares: productByIdRoutes.GetMiddlewares,
     input: productByIdRoutes.GetInput,

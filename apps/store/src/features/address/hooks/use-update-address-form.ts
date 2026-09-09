@@ -2,7 +2,7 @@ import { StoreUpdateAddress } from '@proteus/http-schemas/store'
 import type { StoreCustomerAddress } from '#/api/generated/model'
 import { useUpdateAddress } from '#/features/address/api/addresses'
 import { addressFormOpts, toFormValues, toPayload } from '#/features/address/utils/form-values'
-import type { SubmitFormParams } from '#/lib/form'
+import { errorMessage, type SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
 
 export type UpdateAddressFormParams = SubmitFormParams
@@ -21,17 +21,17 @@ export function useUpdateAddressForm(address: StoreCustomerAddress, params?: Upd
     validators: {
       onSubmit: StoreUpdateAddress.required({ address1: true, city: true, countryCode: true, postalCode: true }),
     },
-    onSubmit: ({ value }) => {
-      updateAddress.mutate(
-        { addressId: address.id, payload: toPayload(value) },
-        {
-          onSuccess: () => params?.onSuccess?.(),
-          onError: (error) => params?.onError?.(error.message),
-          onSettled: () => params?.onSettled?.(),
-        },
-      )
+    onSubmit: async ({ value }) => {
+      try {
+        await updateAddress.mutateAsync({ addressId: address.id, payload: toPayload(value) })
+        params?.onSuccess?.()
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isPending: updateAddress.isPending }
+  return { form }
 }

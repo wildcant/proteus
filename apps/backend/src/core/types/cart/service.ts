@@ -67,6 +67,9 @@ export type ICartModuleService = {
     context?: Context,
   ): Promise<CartShippingMethodDTO[]>
   softDeleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
+  /** Brings back exactly the methods the matching soft delete hid — the undo half of a refresh
+   *  that dropped the ones a new market does not offer. */
+  restoreShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
 
   // Addresses — owned by the cart, so reads and writes are scoped to a parent
   listCartAddresses(
@@ -81,6 +84,8 @@ export type ICartModuleService = {
     context?: Context,
   ): Promise<CartAddressDTO>
   softDeleteCartAddresses(addressIds: string[], context?: Context): Promise<void>
+  /** Brings back exactly the addresses the matching soft delete hid. */
+  restoreCartAddresses(addressIds: string[], context?: Context): Promise<void>
 
   // Computed
   enrichLineItem(lineItem: CartLineItemDTO): EnrichedCartLineItemDTO

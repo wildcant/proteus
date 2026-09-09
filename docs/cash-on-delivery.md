@@ -6,7 +6,7 @@ COD is a payment method where customers pay upon item delivery rather than upfro
 
 ## Current State
 
-- The only customer-facing payment option requires removing the `pp_system_*` filter in `apps/backend/src/api/store/payment-providers/route.ts`
+- The only customer-facing payment option requires removing the `pp_system_*` filter in `apps/backend/src/api/store/carts/[id]/payment-providers/route.ts`
 - The system provider (`pp_system_default`) auto-authorizes and no-ops on capture — functionally identical to what COD needs
 - For local testing, the system provider works fine as a stand-in
 
@@ -64,5 +64,5 @@ In a real COD flow, capture should happen when the delivery driver confirms paym
 | `apps/backend/src/modules/payment/providers/system.ts` | Reference implementation (copy and change identifier) |
 | `apps/backend/src/modules/payment/provider-declarations.ts` | Register new provider here |
 | `apps/backend/src/modules/payment/loaders/providers.ts` | Auto-loads and seeds providers |
-| `apps/backend/src/api/store/payment-providers/route.ts` | Store API (filters `pp_system_*`) |
+| `apps/backend/src/api/store/carts/[id]/payment-providers/route.ts` | Store API (filters `pp_system_*`) |
 | `apps/store/src/features/checkout/components/payment-form.tsx` | Frontend provider display |

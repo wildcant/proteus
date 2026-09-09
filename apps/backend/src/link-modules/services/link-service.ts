@@ -14,6 +14,7 @@ import type { OrderFulfillmentRepository } from '../repositories/order-fulfillme
 import type { OrderPaymentCollectionRepository } from '../repositories/order-payment-collection.js'
 import type { ProductVariantInventoryItemRepository } from '../repositories/product-variant-inventory-item.js'
 import type { ProductVariantPriceSetRepository } from '../repositories/product-variant-price-set.js'
+import type { RegionPaymentProviderRepository } from '../repositories/region-payment-provider.js'
 
 export type LinkRepositoryMap = {
   productVariantInventoryItem: ProductVariantInventoryItemRepository
@@ -23,6 +24,7 @@ export type LinkRepositoryMap = {
   orderCart: OrderCartRepository
   orderPaymentCollection: OrderPaymentCollectionRepository
   orderFulfillment: OrderFulfillmentRepository
+  regionPaymentProvider: RegionPaymentProviderRepository
 }
 
 type WritableLinkRepositoryMap = {
@@ -47,6 +49,8 @@ export class LinkService {
     priceSetId: ['productVariantPriceSet'],
     orderId: ['orderCart', 'orderPaymentCollection', 'orderFulfillment'],
     fulfillmentId: ['orderFulfillment'],
+    regionId: ['regionPaymentProvider'],
+    paymentProviderId: ['regionPaymentProvider'],
   } as const satisfies LinkColumnRegistry
 
   constructor({
@@ -57,6 +61,7 @@ export class LinkService {
     orderCart,
     orderPaymentCollection,
     orderFulfillment,
+    regionPaymentProvider,
     withTransaction,
   }: InjectedDependencies) {
     this.withTransaction = withTransaction
@@ -68,6 +73,7 @@ export class LinkService {
       orderCart,
       orderPaymentCollection,
       orderFulfillment,
+      regionPaymentProvider,
     }
   }
 

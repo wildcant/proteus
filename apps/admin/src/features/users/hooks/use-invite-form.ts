@@ -2,7 +2,7 @@ import { AdminCreateInvite } from '@proteus/http-schemas/admin'
 import type { AdminInviteResponse } from '#/api/generated/model'
 import { useCreateInvite } from '#/features/users/api/invites'
 import { useAppForm } from '#/lib/form-hook'
-import type { SubmitFormParams } from '#/types/form'
+import { errorMessage, type SubmitFormParams } from '#/types/form'
 
 export type InviteFormParams = SubmitFormParams<AdminInviteResponse>
 
@@ -12,17 +12,18 @@ export function useInviteForm(params?: InviteFormParams) {
   const form = useAppForm({
     defaultValues: { email: '' },
     validators: { onSubmit: AdminCreateInvite },
-    onSubmit: ({ value }) => {
-      createMutation.mutate(value, {
-        onSuccess: (data) => {
-          form.reset()
-          params?.onSuccess?.(data)
-        },
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await createMutation.mutateAsync(value)
+        form.reset()
+        params?.onSuccess?.(data)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: createMutation.isPending }
+  return { form }
 }

@@ -35,7 +35,7 @@ function publishableKeyOf(publicConfig: Record<string, unknown>): string {
   if (typeof key !== 'string' || key === '') {
     // A deployment that got this far without a key would otherwise show an empty payment step and
     // no reason for it. The backend refuses to boot without one, so this is the storefront's half.
-    throw new Error('Stripe is enabled but GET /store/payment-providers served no publishableKey')
+    throw new Error('Stripe is enabled but GET /store/carts/:id/payment-providers served no publishableKey')
   }
   return key
 }

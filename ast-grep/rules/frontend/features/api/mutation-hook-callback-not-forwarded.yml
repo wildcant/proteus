@@ -2,7 +2,7 @@ id: mutation-hook-callback-not-forwarded
 language: typescript
 severity: error
 message: This handler overrides the caller's callback without calling it, so the caller's never runs.
-note: 'End the handler with `onSuccess?.(...args)` / `onError?.(...args)`. docs/mutation-hooks.md'
+note: 'End the handler with `onSuccess?.(...args)` / `onError?.(...args)`. ast-grep/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
 rule:

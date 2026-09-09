@@ -188,3 +188,4 @@ Future nice to have TODOs
 - per item fullfilment and shipment.
 - fix imports in backend to use alias.
 - make sure all routes follow the rules defined at apps/backend/src/api/README.md
+- white label all proteus references, get rid of magic strings that mention proteus

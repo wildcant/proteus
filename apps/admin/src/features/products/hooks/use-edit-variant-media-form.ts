@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { AdminProductVariantResponseVariant } from '#/api/generated/model'
 import { useBatchVariantImages, useUpdateProductVariant } from '#/features/products/api/product-variants'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 const variantMediaSchema = z.object({
   imageIds: z.array(z.string()),
@@ -30,25 +30,18 @@ export function useEditVariantMediaForm(
           await updateMutation.mutateAsync({ thumbnail: value.thumbnail })
         }
 
-        batchMutation.mutate(
-          {
-            add: value.imageIds.filter((id) => !assignedIds.includes(id)),
-            remove: assignedIds.filter((id) => !value.imageIds.includes(id)),
-          },
-          {
-            onSuccess: () => params?.onSuccess?.(),
-            onError: (error) => params?.onError?.(error.message),
-            onSettled: () => params?.onSettled?.(),
-          },
-        )
+        await batchMutation.mutateAsync({
+          add: value.imageIds.filter((id) => !assignedIds.includes(id)),
+          remove: assignedIds.filter((id) => !value.imageIds.includes(id)),
+        })
+        params?.onSuccess?.()
       } catch (error) {
-        // Only the thumbnail write throws here — `mutate` reports its own failures via callbacks.
-        params?.onError?.(error instanceof Error ? error.message : 'Failed to update the variant thumbnail')
+        params?.onError?.(errorMessage(error))
       } finally {
         params?.onSettled?.()
       }
     },
   })
 
-  return { form, isLoading: batchMutation.isPending || updateMutation.isPending }
+  return { form }
 }

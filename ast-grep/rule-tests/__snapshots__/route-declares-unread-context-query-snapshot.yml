@@ -1,0 +1,18 @@
+id: route-declares-unread-context-query
+snapshots:
+  ? |
+    export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
+    export const GetMiddlewares = [attachCustomer()] as const
+  : labels:
+    - source: 'contextQuery: StorePricingContextParams'
+      style: primary
+      start: 57
+      end: 96
+  ? |
+    export const PostInput = { body: CreateCart, contextQuery: StorePricingContextParams }
+    export const PostMiddlewares = [] as const
+  : labels:
+    - source: 'contextQuery: StorePricingContextParams'
+      style: primary
+      start: 45
+      end: 84

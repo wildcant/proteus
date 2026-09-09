@@ -2,7 +2,7 @@ id: suspense-hook-name-mismatch
 language: typescript
 severity: error
 message: This hook's name and its blocking behaviour disagree, and the name is all the caller sees.
-note: 'A hook that calls `useSuspenseQuery` is `useSuspense<Thing>`; one that calls `useQuery` is `use<Thing>`. Suspending under a plain name blanks a boundary the caller never opted into. docs/query-hooks.md'
+note: 'A hook that calls `useSuspenseQuery` is `useSuspense<Thing>`; one that calls `useQuery` is `use<Thing>`. Suspending under a plain name blanks a boundary the caller never opted into. ast-grep/rules/frontend/features/api/__docs__/query-hooks.md'
 files:
   - "**/features/*/api/*.ts"
 

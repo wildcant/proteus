@@ -45,7 +45,17 @@ const documents = {
  */
 const unauthenticatedOperations = {
   admin: ['acceptInvite', 'authAuthenticate', 'authRegister', 'authResetPassword'],
-  store: ['authResetPassword', 'getStoreProduct', 'listStoreProducts', 'storeAuthLogin', 'storeAuthSignup'],
+  store: [
+    'authResetPassword',
+    'getStoreProduct',
+    // The market picker draws this list before a shopper has done anything, sign in included —
+    // and a country's name and ISO code are catalogue data, the same as the two product
+    // operations beside it here.
+    'listStoreCountries',
+    'listStoreProducts',
+    'storeAuthLogin',
+    'storeAuthSignup',
+  ],
 }
 
 /**
@@ -56,7 +66,7 @@ const unauthenticatedOperations = {
  */
 const operationsWithoutUnauthorized = {
   admin: ['acceptInvite', 'authRegister', 'authResetPassword'],
-  store: ['authResetPassword', 'getStoreProduct', 'listStoreProducts'],
+  store: ['authResetPassword', 'getStoreProduct', 'listStoreCountries', 'listStoreProducts'],
 }
 
 test.describe('shipped OpenAPI documents', () => {

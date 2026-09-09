@@ -2,7 +2,7 @@ import { AdminCreateProductOption, type AdminCreateProductOptionBody } from '@pr
 import type { AdminProductOptionResponse } from '#/api/generated/model'
 import { useCreateProductOption } from '#/features/product-options/api/product-options'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type CreateProductOptionFormParams = SubmitFormParams<AdminProductOptionResponse>
 
@@ -12,17 +12,18 @@ export function useCreateProductOptionForm(params?: CreateProductOptionFormParam
   const form = useAppForm({
     defaultValues: { title: '', values: [] } satisfies AdminCreateProductOptionBody as AdminCreateProductOptionBody,
     validators: { onSubmit: AdminCreateProductOption },
-    onSubmit: ({ value }) => {
-      createMutation.mutate(value, {
-        onSuccess: (data) => {
-          form.reset()
-          params?.onSuccess?.(data)
-        },
-        onError: (error) => params?.onError?.(error.message),
-        onSettled: () => params?.onSettled?.(),
-      })
+    onSubmit: async ({ value }) => {
+      try {
+        const data = await createMutation.mutateAsync(value)
+        form.reset()
+        params?.onSuccess?.(data)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: createMutation.isPending }
+  return { form }
 }

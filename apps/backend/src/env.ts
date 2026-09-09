@@ -22,7 +22,7 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string(),
   /**
    * Publishable, and therefore not a secret: it is served to every storefront through
-   * `GET /store/payment-providers`. It is still required, because a deployment without one
+   * `GET /store/carts/:id/payment-providers`. It is still required, because a deployment without one
    * boots a checkout whose card form cannot mount.
    */
   STRIPE_PUBLISHABLE_KEY: z.string(),
@@ -55,6 +55,21 @@ const envSchema = z.object({
   TEMPORAL_ADDRESS: z.string().default('localhost:7233'),
   TEMPORAL_NAMESPACE: z.string().default('default'),
 
+  /**
+   * The queue this process publishes to, or polls.
+   *
+   * One name is the whole routing story in production, and the default is what every deployment
+   * uses. It is a knob at all because a queue is *shared across environments*: a Temporal server
+   * routes a task to whoever is polling, so a dev Worker on `.env.local` and an e2e backend on
+   * `proteus_test_store` sharing one name means the dev Worker executes the e2e's checkout against
+   * the dev database. Each e2e suite therefore names its own queue — see `defineE2eConfig`.
+   *
+   * The literal is duplicated in `core/workflows/temporal/config.ts` rather than imported, because
+   * `index.workerd.ts` reaches this file and the `no-temporal-in-workerd` rule stops it reaching
+   * that one. Both sides say so.
+   */
+  TEMPORAL_TASK_QUEUE: z.string().default('proteus'),
+
   ADMIN_URL: z.url(),
   STORE_URL: z.url(),
 
@@ -76,6 +91,13 @@ const envSchema = z.object({
   // ------------------------------ DEV ONLY ------------------------------
 
   MOCKS: z.coerce.boolean().default(false),
+
+  /**
+   * Opens a readiness endpoint on the Temporal Worker. Set by the e2e config, which has to wait
+   * for the Worker before running a spec and can only do that by polling a URL. Unset everywhere
+   * else, and the listener is not opened at all.
+   */
+  WORKER_HEALTH_PORT: z.coerce.number().int().positive().optional(),
 
   /**
    * Points the API at the toxiproxy in docker-compose.yml instead of Postgres directly, so every

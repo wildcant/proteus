@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  GetStoreProductParams,
   ListStoreProductsParams,
   StoreProductListResponse,
   StoreProductResponse
@@ -32,9 +33,11 @@ export const listStoreProducts = (
  */
 export const getStoreProduct = (
     id: string,
+    params?: GetStoreProductParams,
  ) => {
       return fetcher<StoreProductResponse>(
-      {url: `/store/products/${id}`, method: 'GET'
+      {url: `/store/products/${id}`, method: 'GET',
+        params
     },
       );
     }

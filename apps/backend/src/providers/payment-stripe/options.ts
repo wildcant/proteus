@@ -5,7 +5,7 @@ export type StripeOptions = {
   webhookSecret: string
   /**
    * The browser's half of the key pair. Not a secret — it is served to every storefront by
-   * `GET /store/payment-providers` — but required all the same: without it the card form has
+   * `GET /store/carts/:id/payment-providers` — but required all the same: without it the card form has
    * nothing to boot Stripe.js with.
    */
   publishableKey: string
@@ -23,7 +23,7 @@ const REQUIRED_OPTIONS = ['apiKey', 'webhookSecret', 'publishableKey'] as const
  * wrong is worse than leaving it out.
  *
  * `publishableKey` is the one that matters. It is served to every browser by
- * `GET /store/payment-providers`, which is public and unauthenticated, and it is about to be
+ * `GET /store/carts/:id/payment-providers`, which is public and unauthenticated, and it is about to be
  * hand-added to a `.env` on the line below `STRIPE_SECRET_KEY`. Nothing else in the system would
  * notice a secret key pasted there — it is a non-empty string, the provider boots, the storefront
  * mounts, and the key is on the wire. Stripe prefixes publishable keys `pk_` and secret ones

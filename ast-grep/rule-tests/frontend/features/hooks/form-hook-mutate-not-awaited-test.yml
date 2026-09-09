@@ -1,0 +1,9 @@
+id: form-hook-mutate-not-awaited
+valid:
+  # The shape every form hook uses: the write is awaited, so `isSubmitting` spans it.
+  - 'const onSubmit = async ({ value }) => { try { const data = await updateMutation.mutateAsync(value); params?.onSuccess?.(data) } catch (error) { params?.onError?.(errorMessage(error)) } finally { params?.onSettled?.() } }'
+  # Two writes, same rule — the second is awaited too.
+  - 'const onSubmit = async ({ value }) => { try { await updateMutation.mutateAsync({ thumbnail: value.thumbnail }); await batchMutation.mutateAsync(value.ids) } catch (error) { params?.onError?.(errorMessage(error)) } finally { params?.onSettled?.() } }'
+invalid:
+  - 'const onSubmit = ({ value }) => { createMutation.mutate(value, { onSuccess: (data) => params?.onSuccess?.(data), onError: (error) => params?.onError?.(error.message) }) }'
+  - 'const onSubmit = ({ value }) => { updateMutation.mutate({ id: params.id, data: value }) }'

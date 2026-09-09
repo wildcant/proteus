@@ -206,7 +206,8 @@ function VariantSelect({ variants, selectedVariant, onVariantChange }: VariantSe
       </label>
       <NativeSelect
         id="variant-select"
-        className="w-full rounded-none"
+        wrapperClassName="w-full"
+        className="rounded-none"
         value={selectedVariant?.id ?? ''}
         onChange={(event) => onVariantChange(event.target.value)}
       >

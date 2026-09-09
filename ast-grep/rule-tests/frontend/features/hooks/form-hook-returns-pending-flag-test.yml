@@ -1,0 +1,9 @@
+id: form-hook-returns-pending-flag
+valid:
+  - 'export function useEditRegionForm() { const form = useAppForm({}); return { form } }'
+  # The checkout returns more than the form — none of it is a second in-flight flag.
+  - 'export function useCheckoutForm() { return { form, placeOrder, signOut, controller, paymentError } }'
+invalid:
+  - 'export function useEditRegionForm() { return { form, isPending: updateMutation.isPending } }'
+  - 'export function useInviteForm() { return { form, isLoading: createMutation.isPending } }'
+  - 'export function useLoginForm() { const isPending = m.isPending; return { form, isPending } }'

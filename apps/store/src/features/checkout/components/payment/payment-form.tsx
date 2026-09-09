@@ -34,7 +34,9 @@ export const PaymentForm = withForm({
   ...checkoutFormOpts,
   props: {} as PaymentFormProps,
   render: function PaymentForm({ form, cart, customer }) {
-    const { data, isLoading } = usePaymentProviders()
+    // Scoped to the cart: the list is the methods this cart's market offers, so it is keyed by the
+    // cart the same way the shipping options are.
+    const { data, isLoading } = usePaymentProviders(cart.id)
 
     if (isLoading) {
       return <Skeleton className="h-14 w-full" />

@@ -5,7 +5,7 @@ import { useUpdateAddressForm } from '#/features/address/hooks/use-update-addres
 
 export function UpdateAddressForm({ address }: { address: StoreCustomerAddress }) {
   const { handleSuccess } = useRouteModal()
-  const { form, isPending } = useUpdateAddressForm(address, { onSuccess: () => handleSuccess() })
+  const { form } = useUpdateAddressForm(address, { onSuccess: () => handleSuccess() })
 
-  return <AddressForm form={form} title="Edit address" isPending={isPending} />
+  return <AddressForm form={form} title="Edit address" />
 }
