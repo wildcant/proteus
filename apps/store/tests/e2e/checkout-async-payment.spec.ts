@@ -97,21 +97,17 @@ test.describe('Checkout — a payment that is still settling', () => {
     await expect(page.getByRole('alert')).toHaveCount(0)
 
     // ---------------------------------------------------------------------------------------
-    // 4 · The money arrives, and so does the order — asserted one layer down.
+    // What this ticket does NOT fix, and where it is now written down.
     //
     // The intent settles, Stripe sends `payment_intent.succeeded`, and the route publishes
     // `payment.captured`. The subscriber records the capture and re-runs cart completion for the
     // cart behind the session, so the shopper who was refused above ends with the order they paid
     // for rather than a charge with nothing behind it.
     //
-    // It was asserted here while the fake gateway could be told to change its mind mid-test.
-    // Driving it from the browser now would mean settling an intent the fake decides about from
-    // the cart total alone, so it lives one layer down, where the gateway is directly observable:
-    // `payment-webhook.api.test.ts` -> "POST /hooks/payment/:provider — a payment that settled
-    // after checkout was refused" -> "ends with one order, one charge, and the same confirmation
-    // everyone else gets". That suite drives a signed webhook through the real route, so every hop
-    // between the capture and the order is covered; what is lost here is only the browser in front
-    // of it, which asserts nothing about this half.
+    // It was asserted here while the fake gateway could be told to change its mind mid-test. It
+    // now lives one layer down, where the gateway is directly observable:
+    // `payment-webhook.api.test.ts` → "takes the money for a checkout that was refused for still
+    // settling, leaving a paid cart and no order".
     // ---------------------------------------------------------------------------------------
   })
 })

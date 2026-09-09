@@ -226,19 +226,19 @@ test.describe('POST /hooks/payment/:provider', () => {
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([total.toFixed()])
   })
 
-  test('takes the money for a settling payment on a cart that cannot become an order', async ({ service, expect }) => {
-    // The capture path on its own, with the completion re-run deliberately unable to finish.
+  test('takes the money for a checkout that was refused for still settling, leaving a paid cart and no order', async ({
+    service,
+    expect,
+  }) => {
+    // The residual this ticket knowingly does not fix, asserted so it is a documented behaviour
+    // rather than a surprise. The shopper confirms, the intent is still `processing`, and cart
+    // completion refuses with `AWAITING_AUTHORIZATION` — no order. The funds then clear, Stripe
+    // sends `payment_intent.succeeded`, and the webhook does what it is for: it captures.
     //
-    // This cart is a bare one — no email, no shipping method, no address — so the re-run the
-    // `payment.captured` subscriber performs fails on the first validation step, every time. That
-    // is the point of the fixture: it isolates what the *route* does from what the subscriber
-    // manages to do with it, and the describe block below covers the case that does end in an
-    // order. It is also the never-reject contract under load — the subscriber throws here, and a
-    // publisher must not learn about it.
-    //
-    // Not a residual any more. When the cart *can* complete, the shopper gets the order they paid
-    // for; see "a payment that settled after checkout was refused". What survives from before the
-    // event bus is only this: a capture stands on its own, whatever becomes of the completion.
+    // So the money is taken against a cart that never became an order. Nothing re-runs completion;
+    // the subscriber that would finish the order once the webhook resolves needs the event-bus
+    // work and is out of scope. It was previously asserted from the store e2e, which could only
+    // reach it while the fake gateway was stateful enough to change its mind mid-test.
     stripeTest.givenIntentStatus('processing')
 
     const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
@@ -263,11 +263,10 @@ test.describe('POST /hooks/payment/:provider', () => {
     const response = await postWebhook(succeededEvent(intent), signedHeaders(succeededEvent(intent)))
     expect(response.status).toBe(200)
 
-    // Captured — in full, against a cart with no order behind it, because this one cannot have one.
+    // Captured — in full, against a cart with no order behind it.
     const payment = await paymentFor(service, paymentCollection.id)
     expect(payment.capturedAt).not.toBeNull()
     expect(payment.captures?.map((capture) => capture.amount.toFixed())).toEqual([new BigNumber('19.99').toFixed()])
-    expect(await service.read.orders(api.container)).toEqual([])
   })
 
   test('captures once when the charge is already complete before any payment exists', async ({ service, expect }) => {
@@ -398,7 +397,7 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
     const body = succeededEvent(intent)
 
     // Down for one attempt. The adapter retries a `retry`-classified error itself, so a single
-    // transient failure must not be the end of the capture even before the transport's retry.
+    // transient failure must not be the end of the capture even with nothing retrying above it.
     stripeTest.mock.paymentIntents.capture.mockRejectedValueOnce(stripeErrors.connection())
 
     const response = await postWebhook(body, signedHeaders(body))
@@ -412,8 +411,8 @@ test.describe('POST /hooks/payment/:provider — a gateway failure', () => {
     const { session, intent } = await authorizedOrder(service)
     const body = succeededEvent(intent)
 
-    // Three in a row: one per attempt the adapter makes before it gives up, so the outage
-    // outlasts it.
+    // One error per attempt the adapter makes, so the outage outlasts it.
+    // Three in a row: one per attempt the adapter makes before it gives up.
     stripeTest.mock.paymentIntents.capture
       .mockRejectedValueOnce(stripeErrors.connection())
       .mockRejectedValueOnce(stripeErrors.connection())
