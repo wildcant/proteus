@@ -2,6 +2,7 @@ import type { UnhandledRequestStrategy } from 'msw'
 
 const knownServices: Record<string, string> = {
   'api.resend.com': 'Resend',
+  'api.stripe.com': 'Stripe',
 }
 
 const passthroughHosts = new Set(['localhost', '127.0.0.1'])

@@ -201,6 +201,13 @@ test('variant media section assigns product images to a variant', async ({
   await page.locator('[data-slot="command-bar-command"]', { hasText: 'Make thumbnail' }).click()
   await modal.getByRole('button', { name: 'Save' }).click()
 
+  // Unlike the product media form, this one raises no toast — `useEditVariantMediaForm` is given
+  // only `onSuccess`, and that closes the modal. So the modal closing is the single signal that
+  // both writes landed, and it is two of them: the thumbnail goes to the variant, then the image
+  // links go in a batch. Asserting the section behind without waiting races all of that plus the
+  // refetch it invalidates, which is what made this test flake.
+  await expect(modal).toBeHidden({ timeout: 15_000 })
+
   const mediaSection = page.locator('[data-slot="card"]').filter({ has: page.getByText('Media', { exact: true }) })
   await expect(mediaSection.getByRole('img', { name: `${variant.title} media` })).toHaveCount(1)
   await expect(mediaSection.getByRole('button', { name: 'Thumbnail' })).toBeVisible({ timeout: 10000 })
@@ -215,6 +222,7 @@ test('variant media section assigns product images to a variant', async ({
   await reopened.getByRole('checkbox', { name: 'Select image' }).first().click()
   await page.locator('[data-slot="command-bar-command"]', { hasText: 'Remove Selected' }).click()
   await reopened.getByRole('button', { name: 'Save' }).click()
+  await expect(reopened).toBeHidden({ timeout: 15_000 })
 
   await expect(mediaSection.getByText('No media')).toBeVisible({ timeout: 10000 })
 })

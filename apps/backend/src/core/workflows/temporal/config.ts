@@ -1,10 +1,14 @@
 import { fileURLToPath } from 'node:url'
 
 /**
- * The single queue this stage uses. A Worker polls it and a client targets it; nothing else in the
- * codebase names a queue yet, so one constant is the whole routing story.
+ * The queue everything uses unless told otherwise, and the default behind `env.TEMPORAL_TASK_QUEUE`
+ * — which is what actually routes. Read this constant only where there is no environment to read:
+ * the server tests build a Worker and a client in one process and just need the two to agree.
+ *
+ * The literal is repeated in `env.ts` rather than imported from here: `index.workerd.ts` reaches
+ * that file, and `no-temporal-in-workerd` stops it reaching this one.
  */
-export const TEMPORAL_TASK_QUEUE = 'proteus'
+export const DEFAULT_TEMPORAL_TASK_QUEUE = 'proteus'
 
 /**
  * Absolute path to the workflow module. The Worker runs workflow code in a v8 isolate it builds

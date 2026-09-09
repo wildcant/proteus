@@ -33,10 +33,24 @@ npm run typecheck              # All workspaces
 
 # Verification gate — run after finishing any implementation task
 npm run verify                 # format, then typecheck + lint + convention checks + dependency
-                               # rules + backend API tests, in parallel. Lint warnings fail here.
-                               # Runs src/api tests only; run the full suite separately before a PR
+                               # rules + backend API tests + the store's unit and component tests,
+                               # in parallel. Lint warnings fail here. Runs backend src/api tests
+                               # only; run the full suite separately before a PR. The component
+                               # tests need a Chromium: npx playwright install chromium
 npm run verify -- --ci         # CI mode: fails on unformatted files instead of rewriting them
                                # (implied when the CI env var is set)
+npm run verify:full            # Every test, in parallel: the whole backend suite, the store's unit
+                               # and component tests, the http-schemas and utils package tests, and
+                               # both Playwright e2e suites. No static checks — that is verify.
+                               # Needs the test database up, and the e2e suites need the Temporal
+                               # server too (docker compose -f apps/backend/docker-compose.yml
+                               # up -d --wait). Excludes the Temporal test suites, which need a
+                               # server of their own.
+
+# Each e2e suite owns its database, backend process, Temporal task queue and Worker, so the two
+# run concurrently — and so a Worker started by `worker:dev` cannot execute a suite's workflow
+# against the dev database. packages/testing/fixtures/e2e-config.ts holds the port map and the
+# queue names, and is where a new suite is defined.
 
 # Code generation
 npm run openapi:generate       # Dump OpenAPI spec → regenerate Orval clients (admin + store)
@@ -149,6 +163,32 @@ fields. See `ast-grep/rules/frontend/features/hooks/__docs__/form-hooks.md` for 
 - No circular dependencies
 
 ## Testing
+
+### The four test levels
+
+| Level | Where | What it may fake |
+| --- | --- | --- |
+| Unit | `apps/*/src/**/*.test.ts` (node) | nothing — pure functions |
+| Component | `apps/store/src/**/*.browser.test.tsx` (Vitest Browser Mode, real Chromium) | nothing — props in, render out |
+| API / integration | `apps/backend/src/**/__tests__` | the third-party gateway, at the module boundary |
+| E2E | `apps/*/tests/e2e` (Playwright, real backend) | the third party only — **never our own API** |
+
+**Never fake a response from our own backend in an e2e test.** Faking Stripe is right; faking
+`GET /store/payment-methods` is not — it deletes the route, the service and the ordering rule from
+the test while leaving it green. A wallet is arranged by *shopping*, and the fake gateway holds what
+the checkout saved (`apps/backend/tests/mocks/msw/handlers/stripe-wallet.ts`). If a claim seems to
+need a stubbed endpoint, it belongs at a lower level.
+
+**Write fewer, longer tests.** E2E setup is expensive, so one test per *user journey*, not one per
+assertion — merge tests that share an arrange phase, and keep them separate only when the persona,
+the app or the data shape genuinely differs. Thirteen one-assertion wallet specs are what made
+stubbing look necessary in the first place.
+
+**Assert what the shopper sees, not what the database holds.** A DB query in an e2e assertion is a
+smell: status changed → assert the badge; record deleted → assert the empty state. DB helpers are
+for setup. The same goes for reading request bodies off the wire — the one exception here is
+`tests/setup/payment-sessions.ts`, which counts sessions because "no intent until Place order" has
+no visual surface at all.
 
 Backend tests are integration tests against a real Postgres database. Custom Vitest fixtures in `tests/setup/test-extend.ts` provide:
 - `getDb` — Factory function `() => dbInstance`

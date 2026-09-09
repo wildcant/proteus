@@ -1,5 +1,5 @@
+import { env } from '@env'
 import { ulid } from 'ulid'
-import { TEMPORAL_TASK_QUEUE } from '../core/workflows/temporal/config.js'
 import { pingWorkflow } from '../core/workflows/temporal/workflows.js'
 import { createTemporalClient } from './client.js'
 
@@ -15,7 +15,7 @@ try {
   const workflowId = `ping-${ulid()}`
 
   const output = await client.workflow.execute(pingWorkflow, {
-    taskQueue: TEMPORAL_TASK_QUEUE,
+    taskQueue: env.TEMPORAL_TASK_QUEUE,
     workflowId,
     args: ['proteus'],
   })

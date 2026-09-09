@@ -4,14 +4,19 @@
   "type": "module",
   "exports": {
     "./api": "./src/api/index.ts",
-    "./test": "./src/test-exports.ts"
+    "./test": "./src/test-exports.ts",
+    "./test/database-url": "./tests/setup/database-url.ts",
+    "./test/fake-gateway": "./tests/mocks/msw/handlers/stripe-wallet.ts"
   },
   "scripts": {
     "dev": "dotenvx run -f ../../.env.local -- tsx --watch src/index.ts",
     "dev:slow": "./scripts/dev-slow-db.sh",
-    "dev:test": "NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx watch src/index.ts --port 3010",
+    "dev:test": "NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx watch src/index.ts --port ${PORT:-3010}",
+    "db:test:prepare": "dotenvx run --env-file=../../.env.test -- tsx scripts/prepare-test-database.ts",
+    "dev:test:e2e": "npm run db:test:prepare && npm run dev:test",
     "dev:workerd": "wrangler dev --test-scheduled --config wrangler.jsonc --env-file .env.workerd",
     "worker": "dotenvx run -f ../../.env.local -- tsx src/core/workflows/temporal/worker.ts",
+    "worker:test": "npm run workflows:generate && NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx src/core/workflows/temporal/worker.ts",
     "worker:dev": "dotenvx run -f ../../.env.local -- tsx watch --include 'src/workflows/**/*.ts' --exclude 'src/core/workflows/temporal/registry.gen.ts' src/core/workflows/temporal/worker.dev.ts",
     "temporal:ping": "dotenvx run -f ../../.env.local -- tsx src/temporal/ping.ts",
     "temporal:worker-ready": "dotenvx run -f ../../.env.local --quiet -- tsx scripts/temporal/worker-ready.ts",
