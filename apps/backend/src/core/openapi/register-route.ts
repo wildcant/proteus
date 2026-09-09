@@ -2,6 +2,7 @@ import type { OpenAPIRegistry, RouteConfig } from '@asteasolutions/zod-to-openap
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { typeToStatus } from '@core/errors/error-handler.js'
 import type { RouteDefinition } from '@framework/http/types.js'
+import type { z } from 'zod'
 import { BEARER_SCHEME_NAME } from './registry.js'
 
 /** One line per `ErrorTypes` member. The `Record` is what makes a new member a compile error here
@@ -37,8 +38,15 @@ export function registerOpenApiRoute(registry: OpenAPIRegistry, routePath: strin
   if (config.input?.params) {
     request.params = config.input.params as unknown as NonNullable<RouteConfig['request']>['params']
   }
-  if (config.method === 'GET' && config.input?.query) {
-    request.query = config.input.query as unknown as NonNullable<RouteConfig['request']>['query']
+  // A GET's own query describes the rows it wants; `contextQuery` describes where any request is
+  // coming from, so it is documented on every method. Merged rather than assigned, because
+  // OpenAPI takes one schema for the whole query string.
+  const query = config.method === 'GET' ? config.input?.query : undefined
+  const contextQuery = config.input?.contextQuery
+  const mergedQuery =
+    query && contextQuery ? (query as unknown as z.ZodObject).extend(contextQuery.shape) : (query ?? contextQuery)
+  if (mergedQuery) {
+    request.query = mergedQuery as unknown as NonNullable<RouteConfig['request']>['query']
   }
   if (config.method === 'POST' || config.method === 'PUT' || config.method === 'PATCH') {
     const multipartBody = config.multipartBody

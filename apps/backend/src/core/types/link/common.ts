@@ -142,3 +142,18 @@ export type IOrderFulfillmentRepository = {
   findByFulfillmentId(fulfillmentId: string, context?: Context): Promise<OrderFulfillmentDTO | null>
   create(data: Partial<OrderFulfillmentDTO>, context?: Context): Promise<OrderFulfillmentDTO>
 }
+
+export type RegionPaymentProviderDTO = {
+  id: string
+  regionId: string
+  paymentProviderId: string
+  createdAt: Date
+  deletedAt: Date | null
+}
+
+export type IRegionPaymentProviderRepository = {
+  findByRegionIds(regionIds: string[], context?: Context): Promise<RegionPaymentProviderDTO[]>
+  create(data: Partial<RegionPaymentProviderDTO>, context?: Context): Promise<RegionPaymentProviderDTO>
+  createMany(data: Partial<RegionPaymentProviderDTO>[], context?: Context): Promise<RegionPaymentProviderDTO[]>
+  softDelete(ids: string[], context?: Context): Promise<void>
+}

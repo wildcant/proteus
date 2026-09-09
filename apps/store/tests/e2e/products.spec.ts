@@ -199,9 +199,10 @@ async function createProductWithOptions(factories: Factories) {
  */
 async function createCatalogue(factories: Factories, count: number) {
   const token = faker.string.alpha({ length: 10, casing: 'lower' })
+  // Priced, because an unpriceable product never reaches the list the pager is paging.
   const products = await Promise.all(
     Array.from({ length: count }, (_, index) =>
-      factories.create.product({ status: 'published', title: `${token} ${index}` }),
+      factories.create.productWithPricing({ product: { title: `${token} ${index}` } }),
     ),
   )
 
@@ -216,7 +217,9 @@ async function createCatalogue(factories: Factories, count: number) {
 
 test.describe('Products', () => {
   test('product list page shows seeded products', async ({ page, authenticate, navigate, factories }) => {
-    await using product = await factories.create.product({ status: 'published' })
+    // Priced, because the list is the catalogue this market can quote: a product with no price in
+    // the market's currency is left out of the response rather than shown without one.
+    await using product = await factories.create.productWithPricing()
     await authenticate({ as: 'customer' })
 
     // Searched rather than browsed: the list is one page of twelve over a catalogue every other
@@ -354,24 +357,24 @@ test.describe('Product list', () => {
     factories,
   }) => {
     const token = faker.string.alpha({ length: 10, casing: 'lower' })
-    await using alpha = await factories.create.product({ status: 'published', title: `${token} alpha` })
-    await using zulu = await factories.create.product({ status: 'published', title: `${token} zulu` })
+    await using alpha = await factories.create.productWithPricing({ product: { title: `${token} alpha` } })
+    await using zulu = await factories.create.productWithPricing({ product: { title: `${token} zulu` } })
     await authenticate({ as: 'customer' })
 
     await navigate({ to: '/', search: { q: token } })
 
     await page.getByLabel('Sort by').selectOption('za')
-    await expect(page).toHaveURL(`/?q=${token}&sort=za`)
+    await expect(page).toHaveURL(`/en-US?q=${token}&sort=za`)
     await expect.poll(() => cardTitles(page)).toEqual([zulu.title, alpha.title])
 
     await page.getByLabel('Sort by').selectOption('az')
-    await expect(page).toHaveURL(`/?q=${token}&sort=az`)
+    await expect(page).toHaveURL(`/en-US?q=${token}&sort=az`)
     await expect.poll(() => cardTitles(page)).toEqual([alpha.title, zulu.title])
 
     // The default is absent from the URL, never written into it — the rule `header.spec.ts`'s
-    // `toHaveURL('/?q=...')` assertions depend on.
+    // `toHaveURL('/en-US?q=...')` assertions depend on.
     await page.getByLabel('Sort by').selectOption('newest')
-    await expect(page).toHaveURL(`/?q=${token}`)
+    await expect(page).toHaveURL(`/en-US?q=${token}`)
   })
 
   test('paging round-trips through the URL and survives a reload', async ({
@@ -389,7 +392,7 @@ test.describe('Product list', () => {
     const firstPage = await cardTitles(page)
 
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page).toHaveURL(`/?q=${catalogue.token}&offset=12`)
+    await expect(page).toHaveURL(`/en-US?q=${catalogue.token}&offset=12`)
     await expect.poll(() => cardTitles(page)).toHaveLength(1)
     const secondPage = await cardTitles(page)
 

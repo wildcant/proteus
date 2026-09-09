@@ -4,14 +4,19 @@
   "type": "module",
   "exports": {
     "./api": "./src/api/index.ts",
-    "./test": "./src/test-exports.ts"
+    "./test": "./src/test-exports.ts",
+    "./test/database-url": "./tests/setup/database-url.ts",
+    "./test/fake-gateway": "./tests/mocks/msw/handlers/stripe-wallet.ts"
   },
   "scripts": {
     "dev": "dotenvx run -f ../../.env.local -- tsx --watch src/index.ts",
     "dev:slow": "./scripts/dev-slow-db.sh",
-    "dev:test": "NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx watch src/index.ts --port 3010",
+    "dev:test": "NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx watch src/index.ts --port ${PORT:-3010}",
+    "db:test:prepare": "dotenvx run --env-file=../../.env.test -- tsx scripts/prepare-test-database.ts",
+    "dev:test:e2e": "npm run db:test:prepare && npm run dev:test",
     "dev:workerd": "wrangler dev --test-scheduled --config wrangler.jsonc --env-file .env.workerd",
     "worker": "dotenvx run -f ../../.env.local -- tsx src/core/workflows/temporal/worker.ts",
+    "worker:test": "npm run workflows:generate && NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx src/core/workflows/temporal/worker.ts",
     "worker:dev": "dotenvx run -f ../../.env.local -- tsx watch --include 'src/workflows/**/*.ts' --exclude 'src/core/workflows/temporal/registry.gen.ts' src/core/workflows/temporal/worker.dev.ts",
     "worker:events": "dotenvx run -f ../../.env.local -- tsx src/core/event-bus/temporal/worker.ts",
     "temporal:ping": "dotenvx run -f ../../.env.local -- tsx src/temporal/ping.ts",
@@ -41,6 +46,7 @@
     "db:seed:providers": "dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-providers.ts",
     "db:migrate:test": "dotenvx run -f ../../.env.test -- npm run db:migrate",
     "db:seed:providers:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-providers.ts",
+    "db:seed:markets:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-markets.ts",
     "db:restore:staging": "./scripts/restore-staging-db.sh",
     "db:diagram": "dotenvx run -f ../../.env.local -- ./scripts/db-diagram/run.sh",
     "openapi:dump:offline": "dotenvx run -f ../../.env.test -- tsx scripts/openapi-dump.ts",

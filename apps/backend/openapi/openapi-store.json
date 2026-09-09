@@ -23,6 +23,9 @@
       "name": "Carts"
     },
     {
+      "name": "Countries"
+    },
+    {
       "name": "Customers"
     },
     {
@@ -793,6 +796,48 @@
           "data"
         ]
       },
+      "StorePaymentProviderListResponse": {
+        "type": "object",
+        "properties": {
+          "paymentProviders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorePaymentProvider"
+            }
+          }
+        },
+        "required": [
+          "paymentProviders"
+        ]
+      },
+      "StorePaymentProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "isTestOnly": {
+            "type": "boolean"
+          },
+          "publicConfig": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "id",
+          "isEnabled",
+          "label",
+          "isTestOnly",
+          "publicConfig"
+        ]
+      },
       "StoreCreateCartShippingMethodResponse": {
         "type": "object",
         "properties": {
@@ -876,6 +921,53 @@
         },
         "required": [
           "cart"
+        ]
+      },
+      "StoreCountryListResponse": {
+        "type": "object",
+        "properties": {
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCountry"
+            }
+          }
+        },
+        "required": [
+          "countries"
+        ]
+      },
+      "StoreCountry": {
+        "type": "object",
+        "properties": {
+          "iso2": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2, lowercased. What a country is selected by everywhere else."
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The country name as a shopper reads it. Listings come sorted by it."
+          },
+          "currencyCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ISO 4217, lowercased, from the owning region. Null only for a country no region owns."
+          },
+          "localeCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "BCP 47 tag, e.g. es-CO — the URL segment, the document language, and the tag every number and date formatter is given. Null on the same countries currencyCode is."
+          }
+        },
+        "required": [
+          "iso2",
+          "displayName",
+          "currencyCode",
+          "localeCode"
         ]
       },
       "CustomerResponse": {
@@ -1838,48 +1930,6 @@
           "isDefault"
         ]
       },
-      "StorePaymentProviderListResponse": {
-        "type": "object",
-        "properties": {
-          "paymentProviders": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StorePaymentProvider"
-            }
-          }
-        },
-        "required": [
-          "paymentProviders"
-        ]
-      },
-      "StorePaymentProvider": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "isEnabled": {
-            "type": "boolean"
-          },
-          "label": {
-            "type": "string"
-          },
-          "isTestOnly": {
-            "type": "boolean"
-          },
-          "publicConfig": {
-            "type": "object",
-            "additionalProperties": {}
-          }
-        },
-        "required": [
-          "id",
-          "isEnabled",
-          "label",
-          "isTestOnly",
-          "publicConfig"
-        ]
-      },
       "StoreProductListResponse": {
         "type": "object",
         "properties": {
@@ -2520,6 +2570,31 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2656,6 +2731,16 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "countryCode": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                  },
+                  "regionId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
                   "email": {
                     "type": "string",
                     "format": "email"
@@ -3073,14 +3158,6 @@
               "type": "string"
             },
             "required": false,
-            "name": "countryCode",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
             "name": "province",
             "in": "query"
           },
@@ -3108,6 +3185,52 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreShippingOptionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/carts/{id}/payment-providers": {
+      "get": {
+        "operationId": "listStoreCartPaymentProviders",
+        "summary": "List the payment providers the cart’s region offers",
+        "tags": [
+          "Payments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorePaymentProviderListResponse"
                 }
               }
             }
@@ -3333,6 +3456,48 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/countries": {
+      "get": {
+        "operationId": "listStoreCountries",
+        "summary": "List countries, sellable ones by default",
+        "tags": [
+          "Countries"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sellable",
+                "all"
+              ],
+              "default": "sellable",
+              "description": "Which listing to return. \"sellable\" (the default) is the countries the store sells to, each with a currency and locale. \"all\" is the whole ISO 3166-1 table, for a form that has to accept an address anywhere; the countries outside a region carry null currency and locale."
+            },
+            "required": false,
+            "description": "Which listing to return. \"sellable\" (the default) is the countries the store sells to, each with a currency and locale. \"all\" is the whole ISO 3166-1 table, for a form that has to accept an address anywhere; the countries outside a region carry null currency and locale.",
+            "name": "scope",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCountryListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }
@@ -3957,38 +4122,6 @@
         }
       }
     },
-    "/store/payment-providers": {
-      "get": {
-        "operationId": "listStorePaymentProviders",
-        "summary": "List enabled payment providers",
-        "tags": [
-          "Payments"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorePaymentProviderListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
     "/store/products": {
       "get": {
         "operationId": "listStoreProducts",
@@ -4037,6 +4170,29 @@
             "required": false,
             "name": "q",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -4073,6 +4229,29 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
           }
         ],
         "responses": {

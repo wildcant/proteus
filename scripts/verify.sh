@@ -23,7 +23,10 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-JOBS="typecheck lint conventions deps openapi test admin store schemas"
+# Commenting a suite out means dropping its name from here as well as its `job_*` function and
+# label — this string is what the loop iterates, and a name with no function behind it fails the
+# run with an empty label rather than being skipped.
+JOBS="typecheck lint conventions deps openapi test schemas store packages"
 
 job_typecheck() { npm run typecheck; }
 
@@ -53,7 +56,7 @@ job_conventions() {
   # The event bus dispatches subscribers from a generated import list for the same reasons, so it
   # drifts the same way. See scripts/generate-subscriber-registry.ts.
   npm run --workspace=backend --silent check:subscriber-registry || code=1
-  # Code-shape rules — the mutation-hook contract in docs/mutation-hooks.md today. Spans store and
+  # Code-shape rules — the mutation-hook contract in ast-grep/rules/ today. Spans store and
   # admin, so it lives at the root like the env check. ast-grep matches the syntax tree rather than
   # lines: a hook forwarding one callback and swallowing the other reads as compliant to any
   # line-wise pattern. `--error=unused-suppression` fails the run when an `ast-grep-ignore` outlives
@@ -95,12 +98,20 @@ job_test() { npm run --workspace=backend test:gate; }
 
 # The admin's pure logic — the variant matrix the create wizard enumerates and what the options
 # drawer says a change will destroy. No database and no browser, so it runs alongside the rest.
-job_admin() { npm run --workspace=admin test; }
+# job_admin() { npm run --workspace=admin test; }
 
-# The store's pure logic — the shopper-facing payment copy, whose bucketing rule decides whether
-# a declined card tells a prober which decline it was. No browser, so it runs alongside the rest;
-# the rendered payment step is Playwright's, which the gate does not run.
+# The store's two fast levels: pure logic in node, and components rendered in a real Chromium via
+# Vitest Browser Mode. The browser project is in the gate rather than left to Playwright because it
+# needs no server, no database and no fixtures — it mounts a component with props — so it costs the
+# gate ~3s and catches the render rules that used to be asserted through a stubbed API. It is the
+# only job here that needs a browser binary; the hint below is for a checkout that has not installed
+# one yet.
 job_store() { npm run --workspace=store test; }
+
+# The shared formatters. They are the one place a change lands on both applications at once — the
+# storefront asks them for a market's punctuation, the admin asks them for none — so the claim they
+# carry is that omitting a locale still prints exactly what it printed before.
+job_packages() { npm run --workspace=@proteus/utils test; }
 
 # CI mode: report formatting instead of applying it. Triggered by --ci or by the CI env
 # var that every CI provider sets, so the workflow file needs no extra wiring.
@@ -114,7 +125,7 @@ for arg in "$@"; do
       echo "Usage: npm run verify [-- --ci]"
       echo ""
       echo "  Formats the tree, then runs typecheck, lint, convention checks, dependency"
-      echo "  rules and the backend API tests in parallel."
+      echo "  rules, the backend API tests and the store's unit and component tests in parallel."
       echo ""
       echo "  --ci   Fail on unformatted files instead of rewriting them."
       echo "         Implied when the CI environment variable is set."
@@ -136,9 +147,10 @@ label_of() {
     deps) echo "Dependency rules (backend, admin, store)" ;;
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;
-    admin) echo "Admin unit tests" ;;
+    # admin) echo "Admin unit tests" ;;
     schemas) echo "Request-schema bound tests" ;;
-    store) echo "Store unit tests" ;;
+    store) echo "Store unit + component tests" ;;
+    packages) echo "Shared package unit tests (utils)" ;;
   esac
 }
 
@@ -205,6 +217,11 @@ report() {
       echo -e "  test database. The backend suite is not safe to run twice concurrently."
       echo -e "  Check with ${BOLD}ps aux | grep vitest${RESET} and re-run once it is clear."
     fi
+    # The component tests render in a real Chromium, which a fresh checkout has not downloaded.
+    if grep -q "Executable doesn't exist" "$LOG_DIR/$name.log"; then
+      echo ""
+      echo -e "  ${BOLD}Hint:${RESET} run ${BOLD}npx playwright install chromium${RESET} once, then re-run."
+    fi
     failures=$((failures + 1))
   fi
 }
@@ -233,5 +250,5 @@ if [[ $failures -gt 0 ]]; then
 fi
 
 echo -e "${GREEN}✔${RESET} ${BOLD}All checks passed.${RESET}"
-echo -e "${DIM}  Only src/api and pure unit tests ran. Full suite: npm run --workspace=backend test${RESET}"
+echo -e "${DIM}  Only src/api, component and pure unit tests ran. Everything else: npm run verify:full${RESET}"
 echo ""

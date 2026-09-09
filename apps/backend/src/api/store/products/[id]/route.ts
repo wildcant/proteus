@@ -1,3 +1,4 @@
+import { AppError, ErrorTypes } from '@core/errors/index.js'
 import type {
   IInventoryModuleService,
   ILinkService,
@@ -5,16 +6,21 @@ import type {
   IProductModuleService,
 } from '@core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { IdParams, StoreProductResponse } from '@proteus/http-schemas/store'
+import { IdParams, StorePricingContextParams, StoreProductResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
 import { buildVariantStock } from '@workflows/product/utils/build-variant-stock.js'
 import { setPricingContext } from '../../middlewares.js'
 
-export const GetInput = { params: IdParams }
+export const GetInput = { params: IdParams, contextQuery: StorePricingContextParams }
 export const GetMiddlewares = [setPricingContext()] as const
 export const GetOutput = StoreProductResponse
+/**
+ * A product the market cannot price is not a product this market has. The 404 says so directly
+ * rather than answering with a variant list the storefront has no price to render.
+ */
+export const GetThrows = [ErrorTypes.NOT_FOUND] as const
 
 export const GET = async (
   req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,
@@ -68,6 +74,23 @@ export const GET = async (
     const inStock = inStockByVariantId.get(variant.id) ?? true
     return { ...variant, imageIds, inStock, optionValues: optionValuesByVariantId[variant.id] ?? {}, calculatedPrice }
   })
+
+  /**
+   * A product whose every variant was dropped for having no price in this market has nothing to
+   * show and nothing to buy: no amount, no option picker, no add-to-cart. The store cannot sell
+   * it here, so it answers the way it answers for a product it does not have — the refusal
+   * `retrieveProduct` already raises for an unknown id, so this route has one not-found and not
+   * two.
+   *
+   * Guarded on the product having had variants at all, so a product with none keeps answering
+   * exactly as it did: that is a different shape (nothing to price) and not this finding.
+   */
+  if (variants.length > 0 && variantsForResponse.length === 0) {
+    throw new AppError({
+      type: ErrorTypes.NOT_FOUND,
+      message: `Product with id "${req.params.id}" has no price in ${req.pricingContext.currencyCode}`,
+    })
+  }
 
   // Built from the variants actually being shipped, so the picker never offers one the response
   // dropped for having no price.

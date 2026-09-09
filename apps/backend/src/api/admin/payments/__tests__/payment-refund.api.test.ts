@@ -1,13 +1,13 @@
-import { type GatewayCall, stripeGateway } from '@tests/mocks/stripe.js'
+import { stripeTest } from '@tests/mocks/vitest/stripe.mock.js'
+import { stripeErrors } from '@tests/mocks/vitest/stripe-errors.js'
 import type { TestApi } from '@tests/setup/create-api.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
-import Stripe from 'stripe'
 import { vi } from 'vitest'
 import paymentDefinitions from '../definitions.js'
 
-vi.mock('stripe', async () => (await import('@tests/mocks/stripe.js')).stripeModuleMock())
+vi.mock('stripe', async () => (await import('@tests/mocks/vitest/stripe.mock.js')).stripeTest.moduleMock())
 
 /** The DI key the Stripe adapter is registered under. */
 const STRIPE_PROVIDER = 'pp_stripe_default'
@@ -15,7 +15,7 @@ const STRIPE_PROVIDER = 'pp_stripe_default'
 let api: TestApi
 
 test.beforeEach(async ({ createApi }) => {
-  stripeGateway.reset()
+  stripeTest.reset()
   api = await createApi({ definitions: paymentDefinitions })
 })
 
@@ -36,17 +36,19 @@ async function capturedPayment(service: Fixtures['service'], currencyCode: strin
   return { paymentId: authorized.id, total: checkout.total }
 }
 
-/** What the gateway was asked to refund. */
+/** What the gateway was asked to refund — the first argument of the first `refunds.create`. */
 function refundParams() {
-  const [call] = stripeGateway.callsTo('refunds.create')
+  const call = stripeTest.mock.refunds.create.mock.calls[0]
   if (!call) throw new Error('No refund was created at the gateway')
-  return call.params
+  // biome-ignore lint/style/useNamingConvention: the raw Stripe wire field name
+  return call[0] as { amount: number; payment_intent: string }
 }
 
-/** The idempotency key a recorded call carried, or undefined if it went out unkeyed. */
-const keyOf = (call: GatewayCall) => (call.params.options as { idempotencyKey?: string } | undefined)?.idempotencyKey
-
-const refundKeys = () => stripeGateway.callsTo('refunds.create').map(keyOf)
+/** The idempotency key each call carried, or undefined where one went out unkeyed. */
+const refundKeys = () =>
+  stripeTest.mock.refunds.create.mock.calls.map(
+    ([, options]) => (options as { idempotencyKey?: string })?.idempotencyKey,
+  )
 
 test.describe('POST /admin/payments/:id/refund (stripe)', () => {
   test('sends the refund in the smallest unit, like the charge it reverses', async ({ service, expect }) => {
@@ -94,10 +96,7 @@ test.describe('POST /admin/payments/:id/refund — the key across a rollback', (
 
     // The first attempt dies at the gateway, which is what a crash mid-refund looks like from
     // here: the transaction unwinds and the Refund row never existed.
-    stripeGateway.failNext(
-      'refunds.create',
-      new Stripe.errors.StripeAPIError({ type: 'api_error', message: 'Something went wrong' }),
-    )
+    stripeTest.mock.refunds.create.mockRejectedValueOnce(stripeErrors.apiError())
     const failed = await api.post(`/admin/payments/${paymentId}/refund`, { amount: '5.55' })
     expect(failed.status).toBe(503)
 

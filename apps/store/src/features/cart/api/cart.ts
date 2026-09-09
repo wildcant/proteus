@@ -7,6 +7,7 @@ import {
   deleteStoreCartLineItem,
   getStoreCart,
   transferStoreCartCustomer,
+  updateStoreCart,
   updateStoreCartLineItem,
 } from '#/api/generated/carts/carts'
 import type {
@@ -17,8 +18,10 @@ import type {
   StoreCreateCartLineItemResponse,
   StoreCreateCartResponse,
   StoreUpdateCartLineItemResponse,
+  StoreUpdateCartResponse,
   UpdateStoreCartLineItemBody,
 } from '#/api/generated/model'
+import { useMarket } from '#/hooks/use-market'
 import { getCartId, setCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -56,12 +59,16 @@ export const useCart = (options?: CartQueryOptions) => {
 
 export const useCreateCart = (options?: UseMutationOptions<StoreCreateCartResponse, Error, void>) => {
   const queryClient = useQueryClient()
+  const { current } = useMarket()
   const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
     ...rest,
     mutationFn: async () => {
-      const response = await createStoreCart({})
+      // The market a cart is opened in is the market it keeps: the country picks the region, the
+      // region owns the currency, and the cart carries that currency for the rest of its life.
+      // Nothing re-reads this later, so it is the one moment it can be got right.
+      const response = await createStoreCart({}, { countryCode: current.iso2 })
       setCartId(response.cart.id)
       return response
     },
@@ -77,10 +84,52 @@ export const useCreateCart = (options?: UseMutationOptions<StoreCreateCartRespon
   })
 }
 
+/**
+ * Moves the cart the shopper is already carrying into the market the page is in.
+ *
+ * Named by country, the same way `useCreateCart` names it: the storefront sends the segment it
+ * already has in its own URL and the backend resolves the region and the currency behind it. That
+ * is what keeps the answer to "what is a market" in one place — and why nothing here, or anywhere
+ * else outside the generated client, knows a region id exists.
+ *
+ * No error toast, unlike every other mutation in this file. A refusal is not a failed click to
+ * retry — the shopper never asked for this, and it leaves them somewhere: in a market holding a
+ * bag priced in another one. `CartMarketSwitch` renders that state and keeps rendering it.
+ */
+export const useSwitchCartMarket = (options?: UseMutationOptions<StoreUpdateCartResponse, Error, void>) => {
+  const queryClient = useQueryClient()
+  const { current } = useMarket()
+  const { onSuccess, onError, ...rest } = options ?? {}
+
+  return useMutation({
+    ...rest,
+    mutationFn: () => {
+      const cartId = getCartId()
+      if (!cartId) throw new Error('No cart exists')
+      return updateStoreCart(cartId, { countryCode: current.iso2 })
+    },
+    onSuccess: (...args) => {
+      // Everything, not just the cart: a switch restates every priced answer this client is
+      // holding — the line items, the shipping options and payment providers keyed by the cart's
+      // id, and the catalogue prices around it. After it lands none of them is still true.
+      queryClient.invalidateQueries()
+      onSuccess?.(...args)
+    },
+    // `CartMarketSwitch` renders the refusal as persistent state — which market the bag is still
+    // priced in and the way back to it — so a toast would be the same news told twice, and told
+    // in the one form the shopper can dismiss without having read it.
+    // ast-grep-ignore: mutation-hook-missing-error-toast
+    onError: (...args) => {
+      onError?.(...args)
+    },
+  })
+}
+
 export const useAddLineItem = (
   options?: UseMutationOptions<StoreCreateCartLineItemResponse, Error, AddStoreCartLineItemBody>,
 ) => {
   const queryClient = useQueryClient()
+  const { current } = useMarket()
   const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
@@ -88,7 +137,8 @@ export const useAddLineItem = (
     mutationFn: async (payload: AddStoreCartLineItemBody) => {
       let cartId = getCartId()
       if (!cartId) {
-        const cartResponse = await createStoreCart({})
+        // Same as `useCreateCart`: the first add is where a shopper's cart gets its currency.
+        const cartResponse = await createStoreCart({}, { countryCode: current.iso2 })
         cartId = cartResponse.cart.id
         setCartId(cartId)
       }

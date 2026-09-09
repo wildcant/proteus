@@ -70,6 +70,25 @@ module.exports = {
       },
     },
     {
+      name: 'no-stripe-outside-its-provider',
+      comment:
+        'Only src/providers/payment-stripe/ may import the Stripe SDK. Everything else reaches a ' +
+        'gateway through the PaymentProvider port, so a stripe import anywhere else is a vendor ' +
+        'detail escaping its adapter — the difference between adding a second provider as a ' +
+        'registration and adding it as a rewrite. Two exemptions, both about faking the gateway ' +
+        "rather than calling it: __tests__/, where a test driving the adapter needs Stripe's own " +
+        'error classes and event shapes to build what the real gateway would have sent, and ' +
+        'tests/mocks/vitest/, the SDK stand-in itself — it can only stand in for Stripe by ' +
+        'importing it. Test scaffolding outside those two goes through the stand-in.',
+      severity: 'error',
+      from: {
+        pathNot: '^src/providers/payment-stripe/|__tests__/|^tests/mocks/vitest/',
+      },
+      to: {
+        path: '(^|/)node_modules/stripe/',
+      },
+    },
+    {
       name: 'no-temporal-in-workerd',
       comment:
         'The workerd bundle must not reach Temporal. @temporalio/worker pulls in ' +

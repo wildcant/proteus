@@ -1,0 +1,8 @@
+id: form-hook-submit-unguarded
+valid:
+  - 'const onSubmit = async ({ value }) => { try { const data = await createMutation.mutateAsync(value); params?.onSuccess?.(data) } catch (error) { params?.onError?.(errorMessage(error)) } finally { params?.onSettled?.() } }'
+  # Guarded however deep it sits — the upload above it throws into the same catch.
+  - 'const onSubmit = async ({ value }) => { try { const media = await uploadMedia(value.media); if (media.length) { await updateMutation.mutateAsync(media) } } catch (error) { params?.onError?.(errorMessage(error)) } }'
+invalid:
+  - 'const onSubmit = async ({ value }) => { const data = await createMutation.mutateAsync(value); params?.onSuccess?.(data) }'
+  - 'const onSubmit = async ({ value }) => { await updateMutation.mutateAsync(value).then(() => params?.onSuccess?.()) }'

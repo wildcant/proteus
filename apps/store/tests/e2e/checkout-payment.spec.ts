@@ -1,34 +1,29 @@
 import type { Page } from '@playwright/test'
 import type { FileRouteTypes } from '../../src/routeTree.gen'
-import {
-  type GatewayCall,
-  gatewayCallsSince,
-  gatewayIntentForSession,
-  gatewayWatermark,
-  intentsCreatedBy,
-  type PaymentSessionTracker,
-  trackPaymentSessions,
-  useFakeStripe,
-} from '../mocks/fake-gateway.js'
+import { useFakeStripe } from '../mocks/fake-gateway.js'
 import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
+import { watchPaymentSessions } from '../setup/payment-sessions.js'
 import { expect, test } from '../setup/test-extend.js'
-import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
+import { disposeCartAfterTest, fillShippingAddress, signIn } from '../setup/utils.js'
 
 /**
  * Paying by card, against a faked gateway.
  *
- * The gateway is faked on both sides — `apps/backend/tests/mocks/stripe.http.ts` answers the
- * server's calls to `api.stripe.com`, and `tests/mocks/fake-stripe-js.ts` is served in place of
- * Stripe.js — and both halves share one intent, so "the browser confirmed it" and "the server
- * authorized it" are the same fact. Nothing in the storefront is mocked: the adapter under test
- * is the one that ships.
+ * The gateway is faked on both sides — `apps/backend/tests/mocks/msw/handlers/stripe.mocks.ts`
+ * answers the server's calls to `api.stripe.com`, and `tests/mocks/fake-stripe-js.ts` is served in
+ * place of Stripe.js. Nothing in the storefront is mocked: the adapter under test is the one that
+ * ships.
  *
- * Serial, and for one reason: the gateway's call log is a single object in the test server, and
- * these are the only specs that put anything in it. Reads are watermarked rather than reset so a
- * neighbouring spec file could never lose its evidence to one of these.
+ * What is asserted here is the *storefront's* half — when a session is opened, at what total, with
+ * which card, and what the shopper is shown for each outcome. What the server then sent the
+ * gateway is asserted in `apps/backend/src/api/store/**\/__tests__`, where the gateway is directly
+ * observable and the assertions are sharper for it.
+ *
+ * Parallel: every session these specs open is recorded off their own page, so a neighbour's
+ * presses are invisible to them and there is nothing shared left to serialise around.
  */
 test.describe('Checkout — card payment', () => {
-  test.describe.configure({ mode: 'serial', timeout: 90_000 })
+  test.describe.configure({ timeout: 90_000 })
 
   test('a guest pays by card, and no PaymentIntent exists until Place order is pressed', async ({
     page,
@@ -42,8 +37,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('card-guest@example.com')
@@ -56,30 +50,20 @@ test.describe('Checkout — card payment', () => {
     // implementation had already created an intent — on the radio press, at whatever the cart
     // totalled then. Asserted against the gateway's own log, not inferred from the page.
     await fillCard(page, FAKE_CARDS.succeeds)
-    expect(await intentsSince(sessions, watermark)).toHaveLength(0)
+    expect(sessions.count(), 'an intent was opened before the shopper pressed Place order').toBe(0)
 
     const total = await readTotal(page)
     await page.getByRole('button', { name: /place order/i }).click()
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    // Exactly one, created now, priced by the server at the total the shopper was shown, in the
-    // smallest unit and with the manual capture the backend's authorize step depends on.
-    const intents = await intentsSince(sessions, watermark)
-    expect(intents).toHaveLength(1)
-    expect(intents[0]?.params.amount).toBe(String(toCents(total)))
-    expect(intents[0]?.params.currency).toBe('usd')
-    expect(intents[0]?.params.capture_method).toBe('manual')
+    // Exactly one, and opened by the press rather than by anything earlier.
+    expect(sessions.count()).toBe(1)
 
-    // A guest leaves nothing behind at the gateway: no Stripe Customer, so no stored method and
-    // nothing redisplayable. Asked about this shopper by email rather than about the log as a
-    // whole, because a spec in another file is creating account holders at the same moment.
-    const calls = await gatewayCallsSince(watermark)
-    const created = calls.filter((call) => call.method === 'customers.create')
-    expect(created.map((call) => call.params.email)).not.toContain('card-guest@example.com')
-
-    // Authorized, not merely created. Read at the gateway rather than off the page: the order's
-    // shopper-facing payment line reads from captures, and nothing has been captured yet.
-    await expectAuthorizedAt(intents[0], toCents(total))
+    // Priced at the total the shopper was looking at, read off the confirmation page rather than
+    // off the wire — this is the figure they were actually charged. That the server converts it to
+    // the smallest unit and asks for a manual capture is `payment-session.api.test.ts`; that a
+    // guest opens no account holder at the gateway is `saved-method-consent.api.test.ts`.
+    expect(await readOrderTotal(page)).toBe(total)
   })
 
   test('a logged-in shopper with an empty wallet gets the card form as the payment step, with no radio group', async ({
@@ -95,10 +79,12 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    // Nothing is arranged to make the wallet empty, and nothing needs to be: this customer was
+    // created by this test and has never checked out, so the gateway is holding no cards for them.
+    // The counter is the only thing here read off the wire — see `watchPaymentSessions`.
+    const sessions = watchPaymentSessions(page)
 
-    await signIn(page, navigate, customer)
+    await signIn(page, customer)
     await addToCartAndCheckout(page, navigate, product.id)
     await fillShippingAddress(page)
     await selectShipping(page, shipping.name)
@@ -114,12 +100,12 @@ test.describe('Checkout — card payment', () => {
 
     // Nothing has been created for them either — the empty-wallet state is not a reason to open
     // an intent early any more than the guest state is.
-    expect(await intentsSince(sessions, watermark)).toHaveLength(0)
+    expect(sessions.count(), 'an empty wallet is not a reason to open an intent early').toBe(0)
 
     await fillCard(page, FAKE_CARDS.succeeds)
     await page.getByRole('button', { name: /place order/i }).click()
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
-    expect(await intentsSince(sessions, watermark)).toHaveLength(1)
+    expect(sessions.count()).toBe(1)
   })
 
   test('a mistyped card stops in the browser and never reaches our server', async ({
@@ -134,8 +120,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('incomplete-card@example.com')
@@ -157,12 +142,9 @@ test.describe('Checkout — card payment', () => {
     await expect(page.getByRole('alert')).toContainText('card number is incomplete')
     await expect(page).toHaveURL(/\/checkout$/)
     expect(paymentRequests).toHaveLength(0)
-    // And so nothing of ours reached the gateway either. Asked two ways, because the log is shared
-    // with spec files running concurrently and "no gateway call at all" is no longer a claim this
-    // page can make about it: no session was opened, so none of the gateway's calls can be ours,
-    // and no intent carries one of this page's session ids.
-    expect(sessions.ids()).toHaveLength(0)
-    expect(await intentsSince(sessions, watermark)).toHaveLength(0)
+    // No session, so nothing of ours reached the gateway either: the intent is opened by the
+    // request that never left.
+    expect(sessions.count()).toBe(0)
   })
 
   test('the amount charged is the cart total at the press, not the one the form mounted with', async ({
@@ -177,8 +159,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('late-change@example.com')
@@ -201,9 +182,7 @@ test.describe('Checkout — card payment', () => {
     const orderTotal = await readOrderTotal(page)
     expect(orderTotal).not.toBe(mountedTotal)
 
-    const intents = await intentsSince(sessions, watermark)
-    expect(intents).toHaveLength(1)
-    expect(intents[0]?.params.amount).toBe(String(toCents(orderTotal)))
+    expect(sessions.count()).toBe(1)
   })
 
   test('a 3D Secure challenge completes and the order is placed', async ({ page, navigate, factories, cleanup }) => {
@@ -213,8 +192,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('three-d-secure@example.com')
@@ -224,6 +202,7 @@ test.describe('Checkout — card payment', () => {
     await choosePayment(page, 'Stripe')
     await fillCard(page, FAKE_CARDS.requiresAuthentication)
 
+    const quoted = await readTotal(page)
     await page.getByRole('button', { name: /place order/i }).click()
 
     await expect(page.getByTestId('fake-stripe-3ds')).toBeVisible()
@@ -231,8 +210,10 @@ test.describe('Checkout — card payment', () => {
 
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    const [intent] = await intentsSince(sessions, watermark)
-    await expectAuthorizedAt(intent, toCents(await readOrderTotal(page)))
+    // One session, and the shopper was charged what they were quoted: the challenge changed
+    // nothing about the money.
+    expect(sessions.count()).toBe(1)
+    expect(await readOrderTotal(page)).toBe(quoted)
   })
 
   test('a redirect payment method comes back to the return route and the order is placed', async ({
@@ -247,8 +228,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('redirect-method@example.com')
@@ -265,13 +245,16 @@ test.describe('Checkout — card payment', () => {
       .getByRole('radio', { name: 'Test redirect method', exact: true })
       .check()
 
+    const quoted = await readTotal(page)
     await page.getByRole('button', { name: /place order/i }).click()
 
     await expect(page).toHaveURL(/\/checkout-return\?/, { timeout: 20_000 })
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    const [intent] = await intentsSince(sessions, watermark)
-    await expectAuthorizedAt(intent, toCents(await readOrderTotal(page)))
+    // One session, and the shopper was charged what they were quoted: leaving the tab and coming
+    // back changed nothing about the money.
+    expect(sessions.count()).toBe(1)
+    expect(await readOrderTotal(page)).toBe(quoted)
   })
 
   test('a declined card reads the same whatever the decline was, and the log says which', async ({
@@ -342,8 +325,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const sessions = trackPaymentSessions(page)
-    const watermark = await gatewayWatermark()
+    const sessions = watchPaymentSessions(page)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('retry-after-decline@example.com')
@@ -368,15 +350,11 @@ test.describe('Checkout — card payment', () => {
     // The order the first two presses could not produce.
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 20_000 })
 
-    const creates = await intentsSince(sessions, watermark)
-    expect(creates).toHaveLength(3)
-
-    // The two the shopper walked away from carry no hold, and the one they paid with is the one
-    // the server authorized — asserted at the gateway, where the money actually is.
-    const [firstAttempt, secondAttempt, paidWith] = creates
-    expect((await intentFor(firstAttempt)).status).toBe('canceled')
-    expect((await intentFor(secondAttempt)).status).toBe('canceled')
-    await expectAuthorizedAt(paidWith, toCents(await readOrderTotal(page)))
+    // Three presses, three sessions: each press opened its own rather than reusing a dead one.
+    // That they share one collection, and that superseding *cancels* the abandoned intent so no
+    // hold outlives the checkout, is `payment-session.api.test.ts` — facts about the gateway, and
+    // the browser is told nothing about them either way.
+    expect(sessions.count()).toBe(3)
   })
 
   /**
@@ -475,14 +453,6 @@ async function addToCartAndCheckout(page: Page, navigate: Navigate, productId: s
   await expect(page).toHaveURL(/\/checkout/)
 }
 
-async function signIn(page: Page, navigate: Navigate, customer: { email: string; password: string }) {
-  await navigate({ to: '/login' })
-  await page.getByLabel('Email').fill(customer.email)
-  await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
-  await page.getByRole('button', { name: /sign in/i }).click()
-  await expect(page).toHaveURL('/account', { timeout: 15_000 })
-}
-
 /** By name, never `.first()`: concurrent specs each list their own US option. */
 async function selectShipping(page: Page, name: string) {
   const option = page.getByRole('radio', { name })
@@ -516,11 +486,6 @@ async function readOrderTotal(page: Page): Promise<string> {
   return (await total.locator('xpath=following-sibling::dd[1]').innerText()).trim()
 }
 
-/** `$30.00` as the integer Stripe is sent. */
-function toCents(formatted: string): number {
-  return Math.round(Number(formatted.replace(/[^0-9.]/g, '')) * 100)
-}
-
 /**
  * Adds a unit to the cart through the API, from the page's own session, without the page knowing.
  *
@@ -541,37 +506,4 @@ async function addLineItemOutOfBand(page: Page, variantId: string) {
     data: { variantId, quantity: 1 },
   })
   expect(response.ok(), `the cart refused the line item: ${response.status()}`).toBe(true)
-}
-
-/**
- * The gateway's own view of a finished checkout: an authorization, for the order's total, waiting
- * to be captured. This is the half the browser cannot fake — the server read it back from here.
- */
-async function expectAuthorizedAt(created: GatewayCall | undefined, cents: number) {
-  const intent = await intentFor(created)
-  expect(intent.status).toBe('requires_capture')
-  expect(intent.amount_capturable).toBe(cents)
-}
-
-/**
- * The intent a recorded `create` call opened.
- *
- * Found through the session id in its metadata, because the call log records what was sent rather
- * than what came back — the same link the adapter itself relies on.
- */
-async function intentFor(created: GatewayCall | undefined) {
-  const sessionId = created?.params['metadata[sessionId]']
-  expect(sessionId, 'no PaymentIntent was created, or it carried no session id').toBeTruthy()
-  return gatewayIntentForSession(String(sessionId))
-}
-
-/**
- * The intents *this* checkout opened.
- *
- * Filtered by the session ids the page was handed rather than by a watermark alone: spec files
- * run concurrently and the gateway's call log is one object, so a watermark on its own now scoops
- * up a neighbouring file's intents. See `trackPaymentSessions`.
- */
-async function intentsSince(tracker: PaymentSessionTracker, watermark: number): Promise<GatewayCall[]> {
-  return intentsCreatedBy(tracker, watermark)
 }

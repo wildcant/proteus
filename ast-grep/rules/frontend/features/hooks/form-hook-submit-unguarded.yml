@@ -1,0 +1,13 @@
+id: form-hook-submit-unguarded
+language: typescript
+severity: error
+message: This `mutateAsync` is not inside a try/catch, so a failed write rejects out of `handleSubmit` as an unhandled rejection.
+note: 'Wrap the submit in try/catch/finally: the caller''s `onError` is what keeps a modal open on failure, and `finally` is where `onSettled` belongs now that the write is awaited. ast-grep/rules/frontend/features/hooks/__docs__/form-hooks.md'
+files:
+  - "**/features/*/hooks/use-*form*.ts"
+rule:
+  pattern: $M.mutateAsync($$$ARGS)
+  not:
+    inside:
+      kind: try_statement
+      stopBy: end

@@ -7,6 +7,11 @@
  */
 
 export type AdminCreateProductVariantPricesItem = {
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
+  currencyCode: string;
   /** @pattern ^-?\d{1,12}(\.\d{1,8})?$ */
   amount: string;
 };

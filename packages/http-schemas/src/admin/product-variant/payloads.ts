@@ -2,12 +2,22 @@ import { z } from 'zod'
 import { entityId, httpUrl, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
 import { amountToBigNumber, metadata } from '../../common.js'
 
+/**
+ * A price is only meaningful alongside the currency it is quoted in, so the code travels with it
+ * rather than being assumed downstream. A price set holds one price per currency.
+ */
 const CreateVariantPrice = z.object({
+  currencyCode: machineCode.min(1),
   amount: amountToBigNumber,
 })
 
+/**
+ * `id` names the row to overwrite. Omitting it prices a currency the variant does not have yet —
+ * currencies this payload leaves out are kept as they are, not dropped.
+ */
 const UpdateVariantPrice = z.object({
   id: entityId.optional(),
+  currencyCode: machineCode.min(1),
   amount: amountToBigNumber,
 })
 

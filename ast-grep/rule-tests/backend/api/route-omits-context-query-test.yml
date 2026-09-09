@@ -1,0 +1,28 @@
+id: route-omits-context-query
+valid:
+  # Declared beside the body it accompanies — the POST case, which `input.query` cannot express.
+  - |
+    export const PostInput = { body: CreateCart, contextQuery: StorePricingContextParams }
+    export const PostMiddlewares = [setPricingContext()] as const
+  # A GET carries its own query as well; the two are merged into one schema when the spec is built.
+  - |
+    export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
+    export const GetMiddlewares = [setPricingContext()] as const
+  # No middleware, nothing to document.
+  - |
+    export const GetInput = { params: IdParams }
+    export const GetMiddlewares = [] as const
+invalid:
+  # The middleware runs and nothing declares what it reads — `countryCode` never reaches the spec.
+  - |
+    export const PostInput = { body: CreateCart }
+    export const PostMiddlewares = [setPricingContext()] as const
+  # Spread from elsewhere, which is what this replaced: the declaration no longer travels with the
+  # constant, so normalising this line to `input: cartRoutes.PostInput` silently drops the param.
+  - |
+    export const GetInput = { params: IdParams }
+    export const GetMiddlewares = [setPricingContext()] as const
+  # Alongside another middleware, so the match does not depend on being the only one.
+  - |
+    export const GetInput = { query: StoreProductListParams }
+    export const GetMiddlewares = [attachCustomer(), setPricingContext()] as const

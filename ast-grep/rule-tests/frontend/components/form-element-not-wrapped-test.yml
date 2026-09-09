@@ -1,0 +1,10 @@
+id: form-element-not-wrapped
+valid:
+  - 'const F = () => <Form onSubmit={form.handleSubmit} className="flex flex-col gap-4">{children}</Form>'
+  - 'const F = () => <KeyboundForm onSubmit={form.handleSubmit}>{children}</KeyboundForm>'
+  # `form.AppForm` is the context provider, not a form element — its name is a member expression.
+  - 'const F = () => <form.AppForm>{children}</form.AppForm>'
+  - 'const F = () => <form.Field name="countries">{(field) => <Input />}</form.Field>'
+invalid:
+  - 'const F = () => <form onSubmit={handleSubmit}>{children}</form>'
+  - 'const F = () => <form noValidate className="w-full">{children}</form>'

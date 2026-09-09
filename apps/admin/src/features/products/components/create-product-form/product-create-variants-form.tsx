@@ -1,25 +1,27 @@
 import { DataGrid, type DataGridColumn } from '#/components/data-grid'
 import { useProductOptions } from '#/features/product-options/api/product-options'
+import { buildPriceColumns } from '#/features/products/utils/price-columns'
+import { useStoreCurrencies } from '#/features/store/api/store'
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import type { GroupRefs } from './constants'
 import { Tab } from './constants'
 import { variantsSchema } from './schemas'
 import { useRegisterCreateProductFormStep } from './use-register-create-product-form-step'
-import type { VariantRow } from './variant-rows'
+import { fromVariantGridRows, toVariantGridRows, type VariantGridRow } from './variant-rows'
 
 /**
  * One column for the combination, headed by the options it is made of — which is also the variant's
  * title, since a Variant Title is that label. A separate Title column would repeat it verbatim.
  *
- * Only one price column: prices are written as `usd` throughout, and there is no store or region
- * module to source others from.
+ * Then one price column per currency the store sells in, so a product can be priced for every
+ * market on the screen that creates it rather than in a second pass per variant.
  */
-function buildColumns(optionTitles: string[]): DataGridColumn<VariantRow>[] {
+function buildColumns(optionTitles: string[], currencyCodes: string[]): DataGridColumn<VariantGridRow>[] {
   return [
     { header: optionTitles.join(' / ') || 'Variant', accessorKey: 'label', type: 'readonly' },
     { header: 'SKU', accessorKey: 'sku', type: 'text' },
-    { header: 'Price', accessorKey: 'price', type: 'currency', currencyCode: 'usd' },
+    ...buildPriceColumns(currencyCodes),
   ]
 }
 
@@ -29,6 +31,7 @@ export const ProductCreateVariantsForm = withForm({
   render: function ProductCreateVariantsForm({ form, groupRefs }) {
     const { data } = useProductOptions()
     const optionsById = new Map((data?.productOptions ?? []).map((option) => [option.id, option.title]))
+    const { currencyCodes, isPending } = useStoreCurrencies()
 
     return (
       <form.FormGroup name="variants" validators={{ onSubmit: variantsSchema }}>
@@ -56,9 +59,18 @@ export const ProductCreateVariantsForm = withForm({
 
                 return (
                   <DataGrid
-                    data={variants.rows}
-                    columns={buildColumns(variants.options.flatMap((entry) => optionsById.get(entry.optionId) ?? []))}
-                    onChange={(rows) => form.setFieldValue('variants', { ...variants, rows })}
+                    data={toVariantGridRows(variants.rows)}
+                    columns={buildColumns(
+                      variants.options.flatMap((entry) => optionsById.get(entry.optionId) ?? []),
+                      currencyCodes,
+                    )}
+                    onChange={(gridRows) =>
+                      form.setFieldValue('variants', {
+                        ...variants,
+                        rows: fromVariantGridRows(variants.rows, gridRows),
+                      })
+                    }
+                    isLoading={isPending}
                   />
                 )
               }}

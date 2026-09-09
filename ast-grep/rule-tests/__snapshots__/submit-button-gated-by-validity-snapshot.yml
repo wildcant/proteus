@@ -1,0 +1,70 @@
+id: submit-button-gated-by-validity
+snapshots:
+  const F = () => <Button type="submit" disabled={!isDirty || updatePrices.isPending}>Save</Button>:
+    labels:
+    - source: <Button type="submit" disabled={!isDirty || updatePrices.isPending}>Save</Button>
+      style: primary
+      start: 16
+      end: 97
+    - source: type="submit"
+      style: secondary
+      start: 24
+      end: 37
+    - source: disabled={!isDirty || updatePrices.isPending}
+      style: secondary
+      start: 38
+      end: 83
+    - source: <Button type="submit" disabled={!isDirty || updatePrices.isPending}>
+      style: secondary
+      start: 16
+      end: 84
+  const F = () => <Button type="submit" disabled={isSubmitting || disabled} />:
+    labels:
+    - source: <Button type="submit" disabled={isSubmitting || disabled} />
+      style: primary
+      start: 16
+      end: 76
+    - source: type="submit"
+      style: secondary
+      start: 24
+      end: 37
+    - source: disabled={isSubmitting || disabled}
+      style: secondary
+      start: 38
+      end: 73
+  const F = () => <Button type="submit" size="sm" disabled={!assignmentIsComplete(countries)}>Save</Button>:
+    labels:
+    - source: <Button type="submit" size="sm" disabled={!assignmentIsComplete(countries)}>Save</Button>
+      style: primary
+      start: 16
+      end: 105
+    - source: type="submit"
+      style: secondary
+      start: 24
+      end: 37
+    - source: disabled={!assignmentIsComplete(countries)}
+      style: secondary
+      start: 48
+      end: 91
+    - source: <Button type="submit" size="sm" disabled={!assignmentIsComplete(countries)}>
+      style: secondary
+      start: 16
+      end: 92
+  const F = () => <Button type="submit" size="sm" disabled={currencyCodes.length === 0}>Save</Button>:
+    labels:
+    - source: <Button type="submit" size="sm" disabled={currencyCodes.length === 0}>Save</Button>
+      style: primary
+      start: 16
+      end: 99
+    - source: type="submit"
+      style: secondary
+      start: 24
+      end: 37
+    - source: disabled={currencyCodes.length === 0}
+      style: secondary
+      start: 48
+      end: 85
+    - source: <Button type="submit" size="sm" disabled={currencyCodes.length === 0}>
+      style: secondary
+      start: 16
+      end: 86

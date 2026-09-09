@@ -171,6 +171,37 @@ export const POST = async (req: HttpRequest<CreateCustomerDTO[]>): Promise<HttpR
 
 Use the `HttpRequest<TBody>` generic to type the pre-validated body.
 
+### Query params a middleware reads: `contextQuery`
+
+`input.query` answers *which rows the caller wants*. `applyMiddleware` destructures it into
+`{ pagination, filters }`, and everything that is not `offset`/`limit`/`order`/`q` lands in
+`filters`, where a repository is offered it as a column filter. It is also GET-only, in both the
+runtime and the spec.
+
+Some query params answer a different question — *where is this request coming from* — and are read
+by a middleware off the raw `req.query`, before any validation runs. Those go in `contextQuery`:
+
+```typescript
+// apps/backend/src/api/store/carts/route.ts
+export const PostInput = { body: CreateCart, contextQuery: StorePricingContextParams }
+export const PostMiddlewares = [setPricingContext()] as const
+```
+
+Declaring them in `input.query` instead would put `countryCode` in `filters` and offer it to the
+product repository as a column that does not exist — silently ignored — and would document nothing
+at all on a POST.
+
+`contextQuery` has no runtime effect. The middleware parses the params itself
+(`api/store/middlewares.ts`); the declaration exists so `registerOpenApiRoute` can document them,
+on every method rather than only GET, merging them into the operation's single query schema
+alongside `input.query` when a GET has both. Without it the param is real but invisible: absent
+from the spec, and therefore absent from the Orval client the storefront calls through.
+
+It is declared on the `<Method>Input` constant beside the handler, not in `definitions.ts`, so the
+declaration travels with the constant. Two rules keep it paired with the middleware that reads it —
+`route-omits-context-query` and `route-declares-unread-context-query`, in
+`ast-grep/rules/backend/api/`.
+
 ---
 
 ## OpenAPI & Swagger UI

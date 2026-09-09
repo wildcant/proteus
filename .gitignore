@@ -14,3 +14,8 @@ apps/backend/static
 .env.workerd
 
 .playwright-mcp
+
+# Vitest Browser Mode writes these when a component test fails — a local debugging aid, and
+# regenerated on the next failing run.
+.vitest-attachments/
+**/__screenshots__/

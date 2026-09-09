@@ -1,0 +1,40 @@
+id: submit-button-not-from-form-hook
+snapshots:
+  const F = () => <Button type="submit" className="w-full" />:
+    labels:
+    - source: <Button type="submit" className="w-full" />
+      style: primary
+      start: 16
+      end: 59
+    - source: type="submit"
+      style: secondary
+      start: 24
+      end: 37
+  const F = () => <Button type="submit" disabled={isPending}>Save</Button>:
+    labels:
+    - source: <Button type="submit" disabled={isPending}>Save</Button>
+      style: primary
+      start: 16
+      end: 72
+    - source: type="submit"
+      style: secondary
+      start: 24
+      end: 37
+    - source: <Button type="submit" disabled={isPending}>
+      style: secondary
+      start: 16
+      end: 59
+  const F = () => <Button type="submit" size="sm">Save</Button>:
+    labels:
+    - source: <Button type="submit" size="sm">Save</Button>
+      style: primary
+      start: 16
+      end: 61
+    - source: type="submit"
+      style: secondary
+      start: 24
+      end: 37
+    - source: <Button type="submit" size="sm">
+      style: secondary
+      start: 16
+      end: 48

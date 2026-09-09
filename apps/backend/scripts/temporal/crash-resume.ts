@@ -3,7 +3,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { Client, Connection, type WorkflowHandle } from '@temporalio/client'
 import { ulid } from 'ulid'
-import { PROTEUS_WORKFLOW_TYPE, TEMPORAL_TASK_QUEUE } from '../../src/core/workflows/temporal/config.js'
+import { PROTEUS_WORKFLOW_TYPE } from '../../src/core/workflows/temporal/config.js'
 import type { AdvanceWorkflowResult, DriverInput } from '../../src/core/workflows/temporal/types.js'
 import { env } from '../../src/env.js'
 import { createWorkerContainer } from '../../src/framework/runtime/container.worker.js'
@@ -29,7 +29,7 @@ import { seedCheckoutCart } from './checkout-cart.js'
  *   npm run --workspace=backend temporal:crash-resume
  *   npm run --workspace=backend temporal:crash-resume -- --hard
  *
- * The `stop worker` line is load-bearing. The dev stack's Worker polls `TEMPORAL_TASK_QUEUE`, the
+ * The `stop worker` line is load-bearing. The dev stack's Worker polls `env.TEMPORAL_TASK_QUEUE`, the
  * same queue this script's own Workers use, so leaving it running means the step "lost" below is
  * picked up by a Worker this script cannot stop — every step still completes and the demo proves
  * nothing.
@@ -94,7 +94,7 @@ try {
   }
 
   const handle = await client.workflow.start(PROTEUS_WORKFLOW_TYPE, {
-    taskQueue: TEMPORAL_TASK_QUEUE,
+    taskQueue: env.TEMPORAL_TASK_QUEUE,
     workflowId,
     args: [driver],
   })

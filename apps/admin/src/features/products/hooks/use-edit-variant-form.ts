@@ -4,7 +4,7 @@ import type { AdminProductVariant, AdminUpdateProductVariantResponse } from '#/a
 import { useUpdateProductVariant } from '#/features/products/api/product-variants'
 import type { CombinationOption } from '#/features/products/hooks/use-option-combination-search'
 import { useAppForm } from '#/lib/form-hook.ts'
-import type { SubmitFormParams } from '#/types/form.ts'
+import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 /**
  * The variant's own fields come from the endpoint's schema; `combination` is the one field that is
@@ -37,26 +37,24 @@ export function useEditVariantForm({ productId, variant, current, params }: UseE
   const form = useAppForm({
     defaultValues,
     validators: { onSubmit: editVariantSchema },
-    onSubmit: ({ value }) => {
-      // No title is sent: it is derived from the combination, so moving a variant from M/White to
-      // L/White retitles it server-side.
-      updateMutation.mutate(
-        {
+    onSubmit: async ({ value }) => {
+      try {
+        // No title is sent: it is derived from the combination, so moving a variant from M/White to
+        // L/White retitles it server-side.
+        const updated = await updateMutation.mutateAsync({
           sku: value.sku || null,
           material: value.material || null,
           ...(value.combination ? { optionValues: value.combination.optionValues } : {}),
-        },
-        {
-          onSuccess: (updated) => {
-            form.reset()
-            params?.onSuccess?.(updated)
-          },
-          onError: (error) => params?.onError?.(error.message),
-          onSettled: () => params?.onSettled?.(),
-        },
-      )
+        })
+        form.reset()
+        params?.onSuccess?.(updated)
+      } catch (error) {
+        params?.onError?.(errorMessage(error))
+      } finally {
+        params?.onSettled?.()
+      }
     },
   })
 
-  return { form, isLoading: updateMutation.isPending }
+  return { form }
 }

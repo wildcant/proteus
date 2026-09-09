@@ -3,9 +3,11 @@ import { interpolatePath } from '@tanstack/react-router'
 import {
   createCart,
   createCustomer,
+  createCustomerAddress,
   createFulfillmentProvider,
   createFulfillmentSet,
   createGeoZone,
+  createOrder,
   createPaymentProvider,
   createPrice,
   createPriceSet,
@@ -28,11 +30,13 @@ import {
   createShippingProfile,
   createUser,
   deleteCartById,
+  deleteCustomerAddressById,
   deleteCustomerById,
   deleteFulfillmentProviderById,
   deleteFulfillmentSetById,
   deleteGeoZoneById,
   deleteNotificationsByIds,
+  deleteOrderById,
   deletePaymentProviderById,
   deletePriceById,
   deletePriceSetById,
@@ -52,9 +56,11 @@ import {
   deleteUserById,
   generateCart,
   generateCustomer,
+  generateCustomerAddress,
   generateFulfillmentProvider,
   generateFulfillmentSet,
   generateGeoZone,
+  generateOrder,
   generatePaymentProvider,
   generatePrice,
   generatePriceSet,
@@ -119,7 +125,10 @@ const customer = definePersona('customer', {
     await page.getByLabel('Email').fill(customer.email)
     await page.getByRole('textbox', { name: 'Password' }).fill(customer.password)
     await page.getByRole('button', { name: /sign in/i }).click()
-    await page.waitForURL('/account')
+    // Prefixed: this persona drives the storefront, where every URL carries its market, and
+    // `en-US` is the market a browser with no cookie lands in. The admin persona above is a
+    // different application and stays unprefixed.
+    await page.waitForURL('/en-US/account')
     return { customerId: customer.id, email: customer.email }
   },
   async verifySession({ page, session }) {
@@ -140,6 +149,7 @@ export type Factories = {
   generate: {
     cart: typeof generateCart
     customer: typeof generateCustomer
+    customerAddress: typeof generateCustomerAddress
     user: typeof generateUser
     product: typeof generateProduct
     productImage: typeof generateProductImage
@@ -161,6 +171,7 @@ export type Factories = {
     shippingOptionType: typeof generateShippingOptionType
     shippingOption: typeof generateShippingOption
     paymentProvider: typeof generatePaymentProvider
+    order: typeof generateOrder
     loginForm: typeof generateLoginFormValues
     customerSignupForm: typeof generateRegisterFormValues
   }
@@ -171,6 +182,7 @@ export type Factories = {
   create: {
     cart: typeof createCart
     customer: typeof createCustomer
+    customerAddress: typeof createCustomerAddress
     user: typeof createUser
     product: typeof createProduct
     productImage: typeof createProductImage
@@ -195,11 +207,13 @@ export type Factories = {
     shippingOptionType: typeof createShippingOptionType
     shippingOption: typeof createShippingOption
     paymentProvider: typeof createPaymentProvider
+    order: typeof createOrder
   }
   destroy: {
     cart: typeof deleteCartById
     notification: typeof deleteNotificationsByIds
     customer: typeof deleteCustomerById
+    customerAddress: typeof deleteCustomerAddressById
     user: typeof deleteUserById
     product: typeof deleteProductById
     productImage: typeof deleteProductImageById
@@ -220,6 +234,7 @@ export type Factories = {
     shippingOptionType: typeof deleteShippingOptionTypeById
     shippingOption: typeof deleteShippingOptionById
     paymentProvider: typeof deletePaymentProviderById
+    order: typeof deleteOrderById
   }
 }
 
@@ -234,6 +249,7 @@ export function createTest<RoutePath extends string = string>() {
       generate: {
         cart: generateCart,
         customer: generateCustomer,
+        customerAddress: generateCustomerAddress,
         user: generateUser,
         product: generateProduct,
         productImage: generateProductImage,
@@ -255,6 +271,7 @@ export function createTest<RoutePath extends string = string>() {
         shippingOptionType: generateShippingOptionType,
         shippingOption: generateShippingOption,
         paymentProvider: generatePaymentProvider,
+        order: generateOrder,
 
         // Forms
         loginForm: generateLoginFormValues,
@@ -267,6 +284,7 @@ export function createTest<RoutePath extends string = string>() {
       create: {
         cart: createCart,
         customer: createCustomer,
+        customerAddress: createCustomerAddress,
         user: createUser,
         product: createProduct,
         productImage: createProductImage,
@@ -291,11 +309,13 @@ export function createTest<RoutePath extends string = string>() {
         shippingOptionType: createShippingOptionType,
         shippingOption: createShippingOption,
         paymentProvider: createPaymentProvider,
+        order: createOrder,
       },
       destroy: {
         cart: deleteCartById,
         notification: deleteNotificationsByIds,
         customer: deleteCustomerById,
+        customerAddress: deleteCustomerAddressById,
         user: deleteUserById,
         product: deleteProductById,
         productImage: deleteProductImageById,
@@ -316,6 +336,7 @@ export function createTest<RoutePath extends string = string>() {
         shippingOptionType: deleteShippingOptionTypeById,
         shippingOption: deleteShippingOptionById,
         paymentProvider: deletePaymentProviderById,
+        order: deleteOrderById,
       },
     },
 

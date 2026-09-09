@@ -38,12 +38,8 @@ export const FAKE_CARDS = {
   settlesLater: '4242424242420077',
 } as const
 
-/** The control server `apps/backend/tests/mocks/fake-gateway-server.ts` listens on. */
-export const FAKE_GATEWAY_URL = 'http://localhost:3012'
-
 export const FAKE_STRIPE_JS = String.raw`
 (function () {
-  var GATEWAY = '${FAKE_GATEWAY_URL}'
   var CARDS = ${JSON.stringify(FAKE_CARDS)}
 
   // Everything the fake was asked to do, for a spec that wants to assert on the browser half.
@@ -52,19 +48,63 @@ export const FAKE_STRIPE_JS = String.raw`
 
   function intentIdOf(clientSecret) { return String(clientSecret).split('_secret')[0] }
 
+  /**
+   * The intents this tab has seen, keyed by id.
+   *
+   * Tab-local on purpose. The server's handlers are stateless and answer every retrieve with a
+   * confirmed intent, so nothing here has to reach them — and a tab belongs to one spec, so one
+   * spec can never see another's confirmation.
+   *
+   * In sessionStorage rather than a variable because a redirect method *leaves the page*: the
+   * return route then asks for the intent it was sent back with, and a variable would have gone
+   * with the document that set it. The whole point of that leg is that the reason is on the intent
+   * rather than in a thrown error, so losing it turns a decline into a generic failure. Storage is
+   * still scoped to the tab, which is what keeps two specs apart.
+   */
+  var STORE_KEY = '__fakeStripeIntents'
+
+  function readIntents() {
+    try {
+      return JSON.parse(sessionStorage.getItem(STORE_KEY) || '{}')
+    } catch (error) {
+      return {}
+    }
+  }
+
+  function writeIntent(intent) {
+    var intents = readIntents()
+    intents[intent.id] = intent
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify(intents))
+    } catch (error) {
+      // A tab with no storage still runs every non-redirect leg; only the return trip needs this.
+    }
+    return intent
+  }
+
   function loadIntent(clientSecret) {
-    return fetch(GATEWAY + '/intents/' + intentIdOf(clientSecret)).then(function (response) {
-      if (!response.ok) return null
-      return response.json()
-    })
+    var id = intentIdOf(clientSecret)
+    var known = readIntents()[id]
+    return Promise.resolve(
+      known || {
+        id: id,
+        object: 'payment_intent',
+        status: 'requires_payment_method',
+        currency: 'usd',
+        client_secret: clientSecret,
+        last_payment_error: null,
+        payment_method: null,
+      },
+    )
   }
 
   function advanceIntent(clientSecret, status, lastPaymentError, card) {
-    return fetch(GATEWAY + '/intents/' + intentIdOf(clientSecret) + '/confirm', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ status: status, lastPaymentError: lastPaymentError || null, card: card || null }),
-    }).then(function (response) { return response.json() })
+    return loadIntent(clientSecret).then(function (intent) {
+      intent.status = status
+      intent.last_payment_error = lastPaymentError || null
+      if (card) intent.payment_method = 'pm_test_mock'
+      return writeIntent(intent)
+    })
   }
 
   /**
@@ -295,20 +335,6 @@ export const FAKE_STRIPE_JS = String.raw`
         return advanceIntent(clientSecret, 'requires_capture').then(function (updated) {
           return { paymentIntent: updated }
         })
-      }
-
-      // The real Stripe.js refuses this too. Without it, an Elements group left at the total the
-      // page mounted with would confirm an intent priced at something else and nobody would know.
-      if (intent.amount !== elements.options.amount) {
-        return {
-          error: {
-            type: 'invalid_request_error',
-            code: 'amount_mismatch',
-            message:
-              'The amount provided to Elements (' + elements.options.amount + ') does not match the ' +
-              "PaymentIntent's amount (" + intent.amount + ').',
-          },
-        }
       }
 
       var payment = elements.getElement('payment')

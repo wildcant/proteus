@@ -299,9 +299,9 @@ response "Created payment collection: ${PAY_COL_ID} (amount: \$$(echo "scale=2; 
 
 # ──────────────────────────────────────────
 step "List payment providers"
-request GET /store/payment-providers
+request GET "/store/carts/${CART_ID}/payment-providers"
 
-PROVIDERS=$(api -H "$STORE_AUTH_HEADER" "${BASE_URL}/store/payment-providers")
+PROVIDERS=$(api -H "$STORE_AUTH_HEADER" "${BASE_URL}/store/carts/${CART_ID}/payment-providers")
 PROVIDER_COUNT=$(echo "$PROVIDERS" | jq '.paymentProviders | length')
 response "Available providers: ${PROVIDER_COUNT}"
 echo "$PROVIDERS" | jq -r '.paymentProviders[] | "  - \(.id)"'

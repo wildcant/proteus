@@ -64,18 +64,28 @@ export function CreateProductForm() {
 
         <RouteFocusModal.Footer>
           <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-          <Button type="button" size="sm" onClick={() => handleSave('draft')}>
-            Save as Draft
-          </Button>
-          {isLastTab ? (
-            <Button type="button" size="sm" onClick={() => handleSave('publish')}>
-              Publish
-            </Button>
-          ) : (
-            <Button type="button" size="sm" onClick={handleContinue}>
-              Continue
-            </Button>
-          )}
+          {/* Not `form.SubmitButton`: two of these save, with different intents, and the third only
+              moves a tab — none of them can be the form's one submit. They read the same
+              `isSubmitting` it does, which spans the media upload as well as the create because
+              the hook awaits both inside `onSubmit`. */}
+          <form.Subscribe selector={(state) => state.isSubmitting}>
+            {(isSubmitting) => (
+              <>
+                <Button type="button" size="sm" disabled={isSubmitting} onClick={() => handleSave('draft')}>
+                  Save as Draft
+                </Button>
+                {isLastTab ? (
+                  <Button type="button" size="sm" disabled={isSubmitting} onClick={() => handleSave('publish')}>
+                    Publish
+                  </Button>
+                ) : (
+                  <Button type="button" size="sm" onClick={handleContinue}>
+                    Continue
+                  </Button>
+                )}
+              </>
+            )}
+          </form.Subscribe>
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>

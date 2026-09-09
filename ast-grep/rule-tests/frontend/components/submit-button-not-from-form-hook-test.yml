@@ -1,0 +1,11 @@
+id: submit-button-not-from-form-hook
+valid:
+  - 'const F = () => <form.AppForm><form.SubmitButton size="sm">Save</form.SubmitButton></form.AppForm>'
+  - 'const F = () => <form.AppForm><form.SubmitButton isPending={isLoading}>Save</form.SubmitButton></form.AppForm>'
+  # Only the submit is held to this; the other footer buttons stay ordinary.
+  - 'const F = () => <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>'
+  - 'const F = () => <Close render={<Button variant="secondary" size="sm" />}>Cancel</Close>'
+invalid:
+  - 'const F = () => <Button type="submit" size="sm">Save</Button>'
+  - 'const F = () => <Button type="submit" disabled={isPending}>Save</Button>'
+  - 'const F = () => <Button type="submit" className="w-full" />'

@@ -1,5 +1,10 @@
 # E2E Testing Infrastructure
 
+**Status:** shipped, and since revised. The suites no longer share a backend, a database or a
+Playwright config — each owns its own, assembled by `defineE2eConfig` in
+`packages/testing/fixtures/e2e-config.ts`. The sections below are marked where that supersedes what
+was originally decided; everything unmarked still holds.
+
 ## Problem Statement
 
 Proteus has 103 backend integration tests but zero frontend tests. The admin and store apps have no way to verify that authentication flows, page rendering, form submissions, and navigation work correctly end-to-end. Regressions in the frontend or in the contract between frontend and backend are caught manually. The project needs Playwright E2E tests with proper data seeding, session management, external service mocking, and automatic cleanup — matching the patterns already proven in a sister project.
@@ -38,7 +43,9 @@ Add Playwright E2E testing infrastructure across the monorepo. A new `packages/t
 
 ### Package structure
 
-A new `packages/testing` workspace package (`@proteus/testing`) holds all shared E2E infrastructure: Drizzle test DB client, data factories, Playwright fixtures, and globalSetup. Each frontend app has its own `playwright.config.ts` and `tests/e2e/` directory. Configs are fully independent (no shared base config object) — apps only import fixtures and factories from the shared package.
+A new `packages/testing` workspace package (`@proteus/testing`) holds all shared E2E infrastructure: Drizzle test DB client, data factories, Playwright fixtures, and globalSetup. Each frontend app has its own `playwright.config.ts` and `tests/e2e/` directory.
+
+**Superseded.** The two configs were originally fully independent, with no shared base object. They are now three lines each, delegating to `defineE2eConfig({ app, appPort, backendPort, workerHealthPort })` in `packages/testing/fixtures/e2e-config.ts`. The reason is that the per-app values are not independent of each other: a suite's specs, its backend process and that process's fake gateway must land on the same database and the same listeners, and two hand-written configs drifted into naming a port but inheriting a database — a suite running green against the wrong data.
 
 ### Backend test export entry point
 
@@ -46,7 +53,22 @@ The backend adds a `src/test-exports.ts` file that re-exports Drizzle table defi
 
 ### Server orchestration
 
-Each app's Playwright config declares a `webServer` array with two entries: the backend test server (port 3010, `reuseExistingServer: true`) and the app's own Vite dev server (admin on port 3012, store on port 3011). The backend `dev:test` script sets `MOCKS=true` and loads `.env.test`. The DB runs on its standard test port (5433 via `docker-compose.test.yml`).
+**Superseded.** Originally two `webServer` entries per app — one shared backend on port 3010 with `reuseExistingServer: true`, plus the app's own Vite dev server — against one shared `proteus_test` database.
+
+There are now **three** entries per suite, and each suite has a database of its own:
+
+| | store | admin |
+| --- | --- | --- |
+| app (Vite `dev:test`) | 3011 | 3012 |
+| backend (`dev:test:e2e`) | 3013 | 3015 |
+| Temporal Worker readiness | 3017 | 3018 |
+| database | `proteus_test_store` | `proteus_test_admin` |
+| Temporal task queue | `proteus-e2e-store` | `proteus-e2e-admin` |
+| fake gateway state | `$TMPDIR/proteus-fake-gateway-store` | `$TMPDIR/proteus-fake-gateway-admin` |
+
+Three things forced the split. A shared database meant each suite's `globalSetup` truncated the rows the other was still asserting against, so the two could not run concurrently — or even reliably back to back. A shared Temporal task queue is not scoped by environment at all: a Worker started by `worker:dev` on `.env.local` will happily pick up an e2e checkout and run it against the *dev* database, which is what a whole run of red store specs turned out to be. And the checkout workflow runs in the Worker process rather than the API's, so the suite has to start one.
+
+Port 3010 stays reserved for a hand-run `dev:test`, deliberately kept out of the set the configs reuse: `reuseExistingServer` cannot tell a backend this config started from one a developer left running, and the two no longer point at the same database. The DB still runs on 5433 via `docker-compose.test.yml`; creating and migrating each suite's database belongs to `apps/backend/scripts/prepare-test-database.ts`, which the backend web-server command runs before Playwright's `globalSetup` gets a turn.
 
 ### Authentication via personas
 
@@ -72,7 +94,7 @@ Wraps `page.goto()` with `waitUntil: 'networkidle'` and provides type-safe TanSt
 
 ### Test DB client
 
-`packages/testing` creates its own standalone Drizzle client connecting directly to the test Postgres (`postgresql://postgres:postgres@127.0.0.1:5433/proteus_test`). This client is used only for data seeding and cleanup — completely independent of the backend's `DbProvider` port.
+`packages/testing` creates its own standalone Drizzle client connecting directly to the test Postgres. This client is used only for data seeding and cleanup — completely independent of the backend's `DbProvider` port. The base URL is `DEFAULT_TEST_DATABASE_URL` in `apps/backend/tests/setup/database-url.ts`, which every process that reaches this cluster imports; `withAppDatabase` then suffixes it with the running suite's name, so the client lands on the same database as that suite's backend.
 
 ### ADR compliance
 
@@ -113,12 +135,12 @@ Tests generate unique data via `@faker-js/faker` (random emails, names, product 
 
 - **CI/CD integration** — No GitHub Actions workflows. The setup code (scripts, configs) is included for future CI enablement but no workflow files are created.
 - **Browser-side MSW** — Only server-side MSW (`msw/node`) is set up. Browser-side interception (`@msw/playwright`) is deferred until per-test overrides are needed.
-- **Stripe and SendGrid mock handlers** — Only Resend is mocked. Other external services are added when tests exercise flows that hit them.
+- ~~**Stripe mock handlers**~~ — *No longer out of scope.* Checkout needed them: `apps/backend/tests/mocks/msw/handlers/` now fakes the Stripe API at the wire, including a wallet on disk keyed by Stripe customer (`stripe-wallet.ts`), because the API process and the Temporal Worker both talk to it. SendGrid is still unmocked and still added only when a test needs it.
 - **Role-based personas** — Only `admin` (user) and `customer` personas. Additional roles (e.g., admin with limited permissions) are added when RBAC is implemented.
 - **Full test coverage** — Only auth and product page tests. Coverage of other features (customers, settings, users/invites, cart, checkout) is incremental.
 - **Visual regression testing** — No screenshot comparison. Tests assert DOM state via Playwright locators.
 - **Backend-as-library testing** — The store's backend-as-library pattern is deprecated and not considered in the testing architecture.
-- **Shared Playwright base config** — Each app has fully independent config. No shared config object or factory function.
+- ~~**Shared Playwright base config**~~ — *No longer out of scope.* `defineE2eConfig` is exactly the factory function this ruled out; see **Server orchestration** for why the per-app values turned out not to be independent.
 
 ## Further Notes
 
@@ -126,13 +148,14 @@ Tests generate unique data via `@faker-js/faker` (random emails, names, product 
 
 | Script | Command | Purpose |
 |--------|---------|---------|
-| Backend test server | `npm run --workspace=backend dev:test` | Starts backend on :3010 with `MOCKS=true` and `.env.test` |
+| Backend test server | `npm run --workspace=backend dev:test` | Starts backend on :3010 with `MOCKS=true` and `.env.test`. Hand-run only — each e2e suite starts its own on 3013/3015 via `dev:test:e2e` |
 | Admin test server | `npm run --workspace=admin dev:test` | Starts admin Vite on :3012 with `.env.test` |
 | Store test server | `npm run --workspace=store dev:test` | Starts store Vite on :3011 with `.env.test` |
 | Admin E2E tests | `npm run --workspace=admin test:e2e` | Runs admin Playwright suite (auto-starts servers) |
 | Store E2E tests | `npm run --workspace=store test:e2e` | Runs store Playwright suite (auto-starts servers) |
 | Admin E2E UI mode | `npm run --workspace=admin test:e2e:dev` | Launches Playwright UI for visual debugging |
 | Store E2E UI mode | `npm run --workspace=store test:e2e:dev` | Launches Playwright UI for visual debugging |
+| Every test at once | `npm run verify:full` | Both e2e suites, the full backend suite and the app unit/component suites, in parallel — possible only because no two share a database |
 
 ### Auth token details
 

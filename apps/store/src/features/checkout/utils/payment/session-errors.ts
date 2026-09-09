@@ -1,4 +1,4 @@
-import { ApiError } from '#/api/fetcher'
+import { ApiError } from '#/api/api-error'
 
 /**
  * The API's answer for a saved card that cannot be paid with, in the port's own vocabulary.

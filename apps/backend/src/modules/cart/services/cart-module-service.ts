@@ -129,6 +129,10 @@ export class CartModuleService implements ICartModuleService {
 
       const updateData: UpdateCartDTO = {}
 
+      if (data.customerId !== undefined) {
+        updateData.customerId = data.customerId
+      }
+
       if (data.email !== undefined) {
         updateData.email = data.email
       }
@@ -253,6 +257,12 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
+  async restoreShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.cartShippingMethodRepository.restore(shippingMethodIds, ctx)
+    })
+  }
+
   async listCartAddresses(
     filters?: FilterableCartAddressProps,
     config?: FindConfig<CartAddressDTO>,
@@ -281,6 +291,12 @@ export class CartModuleService implements ICartModuleService {
   async softDeleteCartAddresses(addressIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartAddressRepository.softDelete(addressIds, ctx)
+    })
+  }
+
+  async restoreCartAddresses(addressIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.cartAddressRepository.restore(addressIds, ctx)
     })
   }
 

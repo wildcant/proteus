@@ -1,0 +1,62 @@
+id: workflow-util-is-not-pure
+snapshots:
+  ? |
+    export async function resolveStore(storeService: IStoreModuleService): Promise<StoreDTO | undefined> {
+      const [store] = await storeService.listStores(undefined, { limit: 1, order: { createdAt: 'ASC' } })
+      return store
+    }
+  : labels:
+    - source: |-
+        async function resolveStore(storeService: IStoreModuleService): Promise<StoreDTO | undefined> {
+          const [store] = await storeService.listStores(undefined, { limit: 1, order: { createdAt: 'ASC' } })
+          return store
+        }
+      style: primary
+      start: 7
+      end: 221
+  ? |
+    export async function withPrices(variants: VariantDTO[], pricing: Promise<CalculatedPriceSetDTO[]>) {
+      const prices = await pricing
+      return variants.map((variant) => ({ ...variant, prices }))
+    }
+  : labels:
+    - source: |-
+        async function withPrices(variants: VariantDTO[], pricing: Promise<CalculatedPriceSetDTO[]>) {
+          const prices = await pricing
+          return variants.map((variant) => ({ ...variant, prices }))
+        }
+      style: primary
+      start: 7
+      end: 195
+  ? |
+    export const loadProviders = async (container: AwilixContainer) => {
+      return container.resolve(Modules.PAYMENT).listPaymentProviders()
+    }
+  : labels:
+    - source: |-
+        async (container: AwilixContainer) => {
+          return container.resolve(Modules.PAYMENT).listPaymentProviders()
+        }
+      style: primary
+      start: 29
+      end: 137
+  ? |
+    export function listRegionCountries(regionService: IRegionModuleService, regionId: string) {
+      return regionService.listCountries({ regionId: [regionId] })
+    }
+  : labels:
+    - source: |-
+        function listRegionCountries(regionService: IRegionModuleService, regionId: string) {
+          return regionService.listCountries({ regionId: [regionId] })
+        }
+      style: primary
+      start: 7
+      end: 157
+    - source: '(regionService: IRegionModuleService, regionId: string)'
+      style: secondary
+      start: 35
+      end: 90
+    - source: IRegionModuleService
+      style: secondary
+      start: 51
+      end: 71
