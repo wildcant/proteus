@@ -11,6 +11,7 @@ import type { AwilixContainer } from 'awilix'
 import { appConfigInput } from '../../src/config.js'
 import { bootstrapContainer } from '../../src/container.js'
 import type { Database } from '../../src/schema.type.js'
+import { pinnedTestEventBusAdapter } from './event-bus-adapter.js'
 import { pinnedTestWorkflowEngine } from './workflow-engine.js'
 
 /**
@@ -55,7 +56,7 @@ export async function createTestContainer(
     },
   }
 
-  const config = withPinnedEngine(options.config)
+  const config = withPinnedAdapters(options.config)
   const parity = config.projectConfig?.workflows?.engine === 'temporal' ? await attachToTemporal() : undefined
 
   const container = await bootstrapContainer({
@@ -85,21 +86,22 @@ export async function createTestContainer(
 }
 
 /**
- * Pins a workflow engine unless the caller asked for one.
+ * Pins a workflow engine and an event bus adapter unless the caller asked for one.
  *
- * `RUNTIME` is `node` under vitest, so the derived default would be Temporal and every workflow test
- * would need a running server and Worker. Which one the run pins comes from
- * `workflow-engine.ts` — `simple` for `npm test`, `temporal` for `npm run test:temporal`, both
- * through `projectConfig.workflows.engine` and neither through the environment (D4). This only
- * supplies a default; a test that names an engine still gets the one it named.
+ * `RUNTIME` is `node` under vitest, so both derived defaults would be Temporal and every test that
+ * ran a workflow or published an event would need a running server. Which values the run pins come
+ * from `workflow-engine.ts` — `simple` for `npm test`, `temporal` for `npm run test:temporal` — and
+ * `event-bus-adapter.ts`, both through `projectConfig` and neither through the environment (D4).
+ * This only supplies defaults; a test that names an engine or an adapter still gets the one it named.
  */
-function withPinnedEngine(config: InputConfig | undefined): InputConfig {
+function withPinnedAdapters(config: InputConfig | undefined): InputConfig {
   const base = config ?? appConfigInput
   return {
     ...base,
     projectConfig: {
       ...base.projectConfig,
       workflows: { engine: base.projectConfig?.workflows?.engine ?? pinnedTestWorkflowEngine() },
+      eventBus: { adapter: base.projectConfig?.eventBus?.adapter ?? pinnedTestEventBusAdapter() },
     },
   }
 }

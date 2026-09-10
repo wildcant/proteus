@@ -4,13 +4,17 @@
  * so each entry point only bundles its own provider (tree-shaking friendly).
  */
 
-import { asFunction, asValue, createContainer } from 'awilix'
+import { type AwilixContainer, asFunction, asValue, createContainer } from 'awilix'
 import { appConfig } from './config.js'
 import { bootstrapModule } from './core/bootstrap/index.js'
 import { defineAppConfig } from './core/config/index.js'
 import type { InputConfig } from './core/config/types.js'
 import type { DbProvider } from './core/db/ports.js'
 import { AppError, ErrorTypes } from './core/errors/app-error.js'
+import { resolveEventBusAdapterName } from './core/event-bus/adapter-selection.js'
+import { createInlineEventBus } from './core/event-bus/inline-adapter.js'
+import { subscriberRegistry } from './core/event-bus/registry.js'
+import type { EventBus } from './core/event-bus/types.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/index.js'
 import { resolveWorkflowEngineName } from './core/workflows/engine-selection.js'
@@ -46,6 +50,26 @@ export type BootstrapContainerDeps = {
    * that boundary, so this is not a stylistic choice — an import here fails the gate.
    */
   createTemporalWorkflowEngine?: () => WorkflowEngine
+  /**
+   * Builds the bus when the resolved adapter is anything but the in-process one.
+   *
+   * Injected rather than imported for the same reason the Temporal engine is, and once for both
+   * transports: each one is unbuildable on the runtime that did not choose it. Cloudflare Queues
+   * arrive as a binding — a live object workerd constructs from `wrangler.jsonc`, which no node
+   * process has and no environment file can carry — and Temporal reaches `@temporalio/core-bridge`,
+   * a native addon workerd cannot load. The composition root that pins an adapter is the only place
+   * that has what building it needs, so it passes a factory instead.
+   *
+   * One field rather than one per transport: a transport name inside a runtime-agnostic type is the
+   * thing adapter selection must not carry, and `selectEventBus` would otherwise grow a branch each
+   * time a runtime gains a transport. Keeping Temporal's *engine* and *bus* separate — the reason
+   * these are not one injected object — survives regardless, because
+   * `createTemporalWorkflowEngine` stays its own field.
+   *
+   * It takes the container because a subscriber is handed one, and it is not built until this
+   * function has finished registering the modules a subscriber resolves from.
+   */
+  createEventBusAdapter?: (container: AwilixContainer) => EventBus
 }
 
 export async function bootstrapContainer(deps: BootstrapContainerDeps) {
@@ -79,6 +103,15 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   registerLinkService(container)
   setWorkflowEngine(selectWorkflowEngine(deps, configModule.projectConfig.workflows.engine), container)
 
+  // The bus is a container registration rather than a module global like the workflow engine,
+  // because a publisher always already has the container: a step is handed one, a route handler
+  // resolves from `req.scope`. It goes in last so a subscriber it dispatches to sees every module.
+  container.register({
+    [ContainerRegistrationKeys.EVENT_BUS]: asValue(
+      selectEventBus(deps, configModule.projectConfig.eventBus.adapter, container, logger),
+    ),
+  })
+
   return container
 }
 
@@ -101,4 +134,37 @@ function selectWorkflowEngine(
   }
 
   return createEngine()
+}
+
+/**
+ * Refusing to boot is the right answer when the selected adapter cannot be built here: it must not
+ * silently become a different one, because "events are being delivered in-process" and "events are
+ * being delivered durably" look identical from the publisher and differ entirely when the process
+ * dies.
+ *
+ * The in-process adapter is the one this can build itself — it needs nothing a runtime supplies.
+ * Every other adapter arrives through `createEventBusAdapter`, from the composition root that
+ * pinned it.
+ */
+function selectEventBus(
+  deps: BootstrapContainerDeps,
+  configured: ReturnType<typeof defineAppConfig>['projectConfig']['eventBus']['adapter'],
+  container: AwilixContainer,
+  logger: Logger,
+): EventBus {
+  const adapter = resolveEventBusAdapterName({ configured, runtime: env.RUNTIME })
+  if (adapter === 'inline') return createInlineEventBus({ registry: subscriberRegistry, container, logger })
+
+  const createAdapter = deps.createEventBusAdapter
+  if (!createAdapter) {
+    throw new AppError({
+      type: ErrorTypes.UNEXPECTED_STATE,
+      message:
+        `The "${adapter}" event bus adapter was selected but no factory was injected. The entry ` +
+        'point building this container must pass `createEventBusAdapter`, or pin ' +
+        '`projectConfig.eventBus.adapter` to "inline".',
+    })
+  }
+
+  return createAdapter(container)
 }

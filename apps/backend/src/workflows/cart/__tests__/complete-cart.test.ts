@@ -1,8 +1,9 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { EventBus } from '@core/event-bus/types.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import { Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { env } from '@env'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { test } from '@tests/setup/test-extend.js'
@@ -150,8 +151,9 @@ test.describe('completeCartWorkflow', () => {
       },
     })
 
-    // Both unwind. Finishing the order once the webhook resolves the settling intent needs a
-    // subscriber that does not exist yet — this ticket makes the case separable, not survivable.
+    // Both unwind, and that is still right here: the money is not committed at the point this
+    // workflow needs it. What happens to the settling one afterwards belongs to the
+    // `payment.captured` subscriber, which re-runs this workflow once the capture lands.
     expect(await service.read.orders(container)).toEqual([])
   })
 
@@ -233,33 +235,117 @@ test.describe('completeCartWorkflow', () => {
     ])
   })
 
-  test('a confirmation that fails to send notifies an operator and still returns the order', async ({
+  /**
+   * The confirmation now leaves through the bus, from the final step, and reaches the subscriber
+   * that sends it. Asserted on the notification row rather than on the emit, because the row is
+   * what a shopper would receive — the publish alone would pass with nothing listening.
+   *
+   * The suite pins the in-process adapter, which waits for its subscribers, so the row exists by
+   * the time `run` resolves. On a real transport it would not, and nothing here may be read as a
+   * promise that it does.
+   */
+  test('sends the confirmation through an order.placed subscriber rather than inside checkout', async ({
     service,
     expect,
   }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
-
-    // `Once`, so only the shopper's confirmation fails — the feed row written from the catch is
-    // the second call and has to get through.
-    vi.spyOn(
-      container.resolve<INotificationModuleService>(Modules.NOTIFICATION),
-      'createNotification',
-    ).mockRejectedValueOnce(new Error('mail provider unavailable'))
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
 
     const order = await completeCartWorkflow.run({ cartId: cart.id })
 
-    // The payment is authorized by now, so the send is built never to throw. That is also why
-    // `notifyOnFailureStep` cannot cover this case: no throw, no rollback, no compensation.
-    expect(order).toMatchObject({ id: expect.any(String) })
-    expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
+    // The order's own id, not one minted in the step — see the retry test below for why.
+    expect(emit).toHaveBeenCalledWith('order.placed', { id: order.id })
+    expect(await service.read.notifications(container, { channel: 'email' })).toMatchObject([
       {
-        to: env.ADMIN_NOTIFICATION_EMAIL,
-        channel: 'feed',
+        to: order.email,
+        template: 'order-confirmation',
         resourceType: 'order',
         resourceId: order.id,
-        data: { title: 'Order confirmation not sent', description: expect.stringContaining(order.email) },
       },
     ])
+  })
+
+  test('publishes nothing when the checkout compensates', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    vi.spyOn(
+      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
+      'authorizePaymentSession',
+    ).mockRejectedValueOnce(new Error('provider unavailable'))
+
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
+
+    // Final-step ordering is the whole transactional story: there is no staging area and no event
+    // group, so a workflow that unwinds simply never reached the emit. The absent notification is
+    // the half that matters — an `order.placed` for an order that was rolled back would email a
+    // shopper about a purchase that did not happen.
+    expect(emit).not.toHaveBeenCalled()
+    expect(await service.read.notifications(container, { channel: 'email' })).toEqual([])
+  })
+
+  /**
+   * The failure this whole feature exists to remove, coming back through the other door.
+   *
+   * `emit` is published from the final step, after the payment is authorized. If anything under it
+   * could reject, a mail outage would compensate the workflow and refund a valid order — money
+   * taken, no order. The port forbids that on every adapter and the adapter tests pin the contract
+   * in isolation; this pins the call site that depends on it.
+   */
+  test('a failing send under emit cannot compensate an authorized checkout', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+
+    // Under the pinned in-process adapter the subscriber is what runs beneath `emit`, so its
+    // failure is the transport failure this call site has to survive.
+    vi.spyOn(
+      container.resolve<INotificationModuleService>(Modules.NOTIFICATION),
+      'createNotification',
+    ).mockRejectedValue(new Error('mail provider unavailable'))
+
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
+
+    // The order survives and nothing unwound: no compensation ran, so the cart stays locked, the
+    // reservations stand, and the payment is not refunded.
+    expect(order).toMatchObject({ id: expect.any(String) })
+    expect(await service.read.orders(container)).toHaveLength(1)
+    expect(await service.read.linkRepo(container, 'orderCart').findByCartId(cart.id)).toMatchObject({
+      orderId: order.id,
+    })
+    expect(await service.read.reservationItems(container)).toHaveLength(1)
+    expect(await service.read.cart(container, cart.id)).toMatchObject({ completedAt: expect.any(Date) })
+  })
+
+  /**
+   * The detail in this feature most likely to be got wrong, and the one that fails silently.
+   *
+   * The final step's action runs again when the step is retried. Because the payload's id is the
+   * order's — a value `create-order` recorded before this step existed — the derived dispatch
+   * identity is byte-identical on the second run, so the transport dedups it. An id minted inside
+   * the action would be a new one per attempt, a new identity, and a second confirmation email with
+   * nothing anywhere to say it had gone out.
+   *
+   * Publishing the same event again is exactly what a retried step does, so that is what this does.
+   */
+  test('a republished order.placed keeps one identity, so a retried step cannot double-send', async ({
+    service,
+    expect,
+  }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
+
+    // Republished with what the step itself published, rather than with a payload written here —
+    // an id minted inside the action would be a fresh one on the second run, and rebuilding it by
+    // hand would hide exactly that.
+    const published = emit.mock.calls[0]
+    assertDefined(published)
+    await bus.emit(...published)
+
+    expect(await service.read.notifications(container, { channel: 'email' })).toMatchObject([{ resourceId: order.id }])
   })
 
   test('refuses a cart with no email', async ({ service, expect }) => {

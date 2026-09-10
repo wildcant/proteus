@@ -15,7 +15,7 @@ import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
  * the same `unexpected_state`. So a shopper whose money was in flight got the checkout unwound as
  * though they had been declined, and nothing downstream could tell the two cases apart.
  *
- * **The assertion that moves red to green is the classification**, not the money. Before the fix
+ * **The assertion that moved red to green was the classification**, not the money. Before that fix
  * the completion request answered `type: "unexpected_state"` with `Payment authorization failed
  * for session "…"` — byte-identical to a decline. After it, the response carries its own authored
  * `code`.
@@ -24,11 +24,16 @@ import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
  * a card the fake Stripe.js leaves in `processing`, and the server reads back a `processing`
  * intent because `FAKE_GATEWAY.settlingTotalCents` is what the cart came to. The gateway keeps no
  * state either side of that, which is why the total has to carry the instruction.
+ *
+ * That statelessness is also why the second half of the story — the money arrives and the order
+ * appears — is asserted one layer down rather than here. It needs the gateway to change its mind
+ * mid-test, which is the one thing a fake driven entirely by the cart total cannot do. See the
+ * closing block.
  */
 test.describe('Checkout — a payment that is still settling', () => {
   test.describe.configure({ timeout: 120_000 })
 
-  test('is refused with its own code, distinct from a decline, and leaves no order', async ({
+  test('is refused with its own code, distinct from a decline, and becomes an order once it settles', async ({
     page,
     navigate,
     factories,
@@ -94,10 +99,10 @@ test.describe('Checkout — a payment that is still settling', () => {
     // ---------------------------------------------------------------------------------------
     // What this ticket does NOT fix, and where it is now written down.
     //
-    // The intent settles, Stripe sends `payment_intent.succeeded`, and the webhook authorizes and
-    // captures the session — money taken, against a cart that has no order. Nothing re-runs cart
-    // completion, and the subscriber that would finish the order once the webhook resolves needs
-    // the event-bus work; it is deliberately out of scope here and belongs to its own follow-up.
+    // The intent settles, Stripe sends `payment_intent.succeeded`, and the route publishes
+    // `payment.captured`. The subscriber records the capture and re-runs cart completion for the
+    // cart behind the session, so the shopper who was refused above ends with the order they paid
+    // for rather than a charge with nothing behind it.
     //
     // It was asserted here while the fake gateway could be told to change its mind mid-test. It
     // now lives one layer down, where the gateway is directly observable:

@@ -3,12 +3,12 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { Client, Connection, type WorkflowHandle } from '@temporalio/client'
 import { ulid } from 'ulid'
+import { PAYLOAD_CONVERTER_PATH } from '../../src/core/temporal/config.js'
+import { payloadConverter } from '../../src/core/temporal/payload-converter.js'
 import { PROTEUS_WORKFLOW_TYPE } from '../../src/core/workflows/temporal/config.js'
 import type { AdvanceWorkflowResult, DriverInput } from '../../src/core/workflows/temporal/types.js'
 import { env } from '../../src/env.js'
 import { createWorkerContainer } from '../../src/framework/runtime/container.worker.js'
-import { PAYLOAD_CONVERTER_PATH } from '../../src/temporal/config.js'
-import { payloadConverter } from '../../src/temporal/payload-converter.js'
 import { completeCartWorkflow } from '../../src/workflows/cart/complete-cart.js'
 import { seedCheckoutCart } from './checkout-cart.js'
 
@@ -69,7 +69,11 @@ const dataConverter = { payloadConverterPath: PAYLOAD_CONVERTER_PATH }
 const connection = await Connection.connect({ address: env.TEMPORAL_ADDRESS })
 const client = new Client({ connection, namespace: env.TEMPORAL_NAMESPACE, dataConverter })
 
-const { container, shutdown } = await createWorkerContainer()
+// `inline` restores what this script had before `eventBus` became a required pin: it publishes
+// nothing, and an operator script has no events Worker behind it, so queueing into a void would be
+// the worse of the two answers. Out of the review round's scope — named here only because making
+// the parameter required forces every caller to state it.
+const { container, shutdown } = await createWorkerContainer({ eventBus: 'inline' })
 
 let worker: ReturnType<typeof startWorker> | undefined
 

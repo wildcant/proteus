@@ -1,6 +1,6 @@
 import { ApplicationFailure } from '@temporalio/common'
-import { AppError, ErrorTypes } from '../core/errors/app-error.js'
-import { WorkflowTerminalError } from '../core/workflows/types.js'
+import { AppError, ErrorTypes } from '../errors/app-error.js'
+import { WorkflowTerminalError } from '../workflows/types.js'
 import { type SerializedError, STEP_FAILURE_TYPE, type StepFailureDetail } from './failure-details.js'
 
 /**

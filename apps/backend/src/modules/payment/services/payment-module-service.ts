@@ -443,6 +443,17 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       return { outcome: 'authorized', payment: await this.retrievePaymentWithRelations_(payment.id, context) }
     } catch (error) {
+      // Except when the session's slot was already taken. The payment's session id is the only
+      // unique index reachable in here, so a duplicate means a concurrent caller — checkout and
+      // the payment webhook, which is the pair that actually races — created the row first.
+      //
+      // There is nothing of this caller's to release: `cancelPayment` voids `session.data.id`,
+      // the single intent *both* callers authorized, so cancelling here would void the winner's
+      // money on a request that changed nothing. Fail loudly and leave the authorization alone,
+      // which is what the unique index is for. Converging on the winner's row belongs to the
+      // caller's own retry, not here.
+      if (AppError.isError(error) && error.type === ErrorTypes.DUPLICATE_ERROR) throw error
+
       await this.paymentProviderService.cancelPayment(session.providerId, {
         data: session.data,
         context: { idempotencyKey: idempotencyKeyFor('cancel', session.id) },

@@ -7,8 +7,8 @@ import {
   type PayloadConverterWithEncoding,
   UndefinedPayloadConverter,
 } from '@temporalio/common'
-import { BigNumber } from '../core/bignumber.js'
-import { AppError, ErrorTypes } from '../core/errors/app-error.js'
+import { BigNumber } from '../bignumber.js'
+import { AppError, ErrorTypes } from '../errors/app-error.js'
 
 /**
  * Payload conversion for values that cross the Temporal boundary.

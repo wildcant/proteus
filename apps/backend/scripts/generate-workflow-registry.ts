@@ -15,13 +15,14 @@
  * artifact is committed, so every environment runs the identical file, and `--check` fails the
  * verify gate when it drifts from the source tree.
  *
- * Parsing lives in `workflow-source.ts`, which also owns the `typescript` import and explains why
- * the repo is pinned to the 6.x line for it.
+ * Reading a workflow file lives in `workflow-source.ts`; turning source text into a tree lives in
+ * `ts-source.ts`, which owns the `typescript` import and explains why the repo is pinned to 6.x.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { collect, exportedBindingOf, findCreateWorkflowCalls, parse, workflowNameOf } from './workflow-source.js'
+import { collect, parse } from './ts-source.js'
+import { exportedBindingOf, findCreateWorkflowCalls, workflowNameOf } from './workflow-source.js'
 
 const RED = '\x1b[0;31m'
 const GREEN = '\x1b[0;32m'

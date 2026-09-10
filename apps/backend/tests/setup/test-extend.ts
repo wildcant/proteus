@@ -115,6 +115,7 @@ import {
   createCustomer,
   createCustomerAddress,
   createOrder,
+  createPaymentForSession,
   createPaymentSessionForCart,
   createProduct,
   createProductOption,
@@ -326,6 +327,7 @@ export type Fixtures = {
       variantStock: typeof stockVariant
       inventoryLevel: typeof addInventoryLevel
       paymentSessionForCart: typeof createPaymentSessionForCart
+      paymentForSession: typeof createPaymentForSession
       capturedPayment: typeof capturePayment
       canceledPayment: typeof cancelPayment
       checkoutReadyCart: typeof createCheckoutReadyCart
@@ -531,6 +533,7 @@ export const test = testBase.extend<Fixtures>({
         variantStock: stockVariant,
         inventoryLevel: addInventoryLevel,
         paymentSessionForCart: createPaymentSessionForCart,
+        paymentForSession: createPaymentForSession,
         capturedPayment: capturePayment,
         canceledPayment: cancelPayment,
         checkoutReadyCart: createCheckoutReadyCart,

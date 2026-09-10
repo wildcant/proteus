@@ -1,11 +1,11 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { EventBus } from '@core/event-bus/types.js'
 import type { CartAddressDTO } from '@core/types/cart/common.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { Logger } from '@core/types/logger.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { OrderDTO } from '@core/types/order/common.js'
 import type {
   CreateOrderAddressDTO,
@@ -22,7 +22,6 @@ import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { env } from '@env'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
 import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
-import { prepareOrderConfirmationData } from './utils/prepare-order-confirmation-data.js'
 
 type CompleteCartInput = { cartId: string }
 
@@ -496,9 +495,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
          *  not pay. Its own `code` so the two are separable in a response body and in an alert,
          *  distinct from the [PaymentErrorCodes.DECLINED] a refused card answers with.
          *
-         *  It is still a failure, and the workflow still unwinds. Finishing the order once the
-         *  webhook resolves needs a subscriber that does not exist yet, so until it does this
-         *  fails loudly and correctly classified rather than quietly as a decline. */
+         *  It is still a failure, and the workflow still unwinds — there is no order to build on
+         *  money the provider has not committed. What finishes the job is the `payment.captured`
+         *  subscriber: when the capture lands it re-runs this workflow for the same cart, and
+         *  `check-idempotency` is what keeps that one order rather than two. */
         if (authorization.outcome === 'pending_authorization') {
           throw new WorkflowTerminalError({
             type: ErrorTypes.CONFLICT,
@@ -559,68 +559,27 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       )
     })
 
-    /** Send the order confirmation email. Deliberately swallows every error: the payment is
-     *  already authorized at this point, so throwing would compensate the whole workflow and
-     *  refund a valid order over a mail failure. The notification module persists the attempt,
-     *  so a failed send is recoverable without re-running checkout. */
-    await ctx.step('send-order-confirmation', async ({ container }) => {
-      const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
-
-      const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
-
-      try {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-
-        const [lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([
-          orderService.listOrderLineItems({ orderId: order.id }),
-          orderService.listOrderShippingMethods({ orderId: order.id }),
-          orderService.listOrderTransactions({ orderId: order.id }),
-          orderService.retrieveOrderAddress(order.id, 'shipping'),
-        ])
-
-        await notificationService.createNotification({
-          to: order.email,
-          channel: 'email',
-          template: NotificationTemplates.ORDER_CONFIRMATION,
-          data: prepareOrderConfirmationData({
-            order,
-            lineItems: orderService.enrichLineItems(lineItems),
-            totals: orderService.computeOrderTotals({ lineItems, shippingMethods, transactions }),
-            shippingAddress,
-            storeUrl: env.STORE_URL,
-          }),
-          triggerType: 'order.placed',
-          resourceId: order.id,
-          resourceType: 'order',
-          // Guards against a duplicate email if the workflow is retried after this point.
-          idempotencyKey: `order-confirmation:${order.id}`,
-        })
-      } catch (error) {
-        logger.error(`[complete-cart] Failed to send order confirmation for order "${order.id}"`)
-        logger.error(error instanceof Error ? error : String(error))
-
-        /** Written here rather than through `notifyOnFailureStep`, which only ever runs on
-         *  compensation: this step is built never to throw, so there is no rollback for it to hang
-         *  off. The shopper is already looking at a confirmed order — only an operator can act on
-         *  this. Best-effort for the same reason the send is: a failed alert must not become the
-         *  throw that refunds a valid order. */
-        await notificationService
-          .createNotification({
-            // TODO(rbac): one configured address until there is a role to ask for.
-            to: env.ADMIN_NOTIFICATION_EMAIL,
-            channel: 'feed',
-            template: NotificationTemplates.ORDER_CONFIRMATION_FAILED,
-            data: {
-              title: 'Order confirmation not sent',
-              description: `Order #${order.displayId} was placed and paid for, but the confirmation email to ${order.email} could not be sent.`,
-            },
-            triggerType: 'order.confirmation.failed',
-            resourceType: 'order',
-            resourceId: order.id,
-            idempotencyKey: `order-confirmation-failed:${order.id}`,
-          })
-          .catch((notifyError) => logger.error(notifyError instanceof Error ? notifyError : String(notifyError)))
-      }
+    /** Announce the order and finish. The confirmation email is sent by the `send-order-confirmation`
+     *  subscriber, off this workflow's critical path — the shopper no longer waits on a mail
+     *  provider, and a send that fails is retried by the transport instead of being swallowed here.
+     *
+     *  **This is the final step, and that ordering is the entire transactional story.** There is no
+     *  staging area and no event group: a workflow that fails earlier simply never reaches this
+     *  line, so a compensated checkout publishes nothing.
+     *
+     *  A bare `await` with no `try` around it, deliberately. `emit` never rejects — the port's
+     *  contract on every adapter (`core/event-bus/types.ts`), because the payment is authorized by
+     *  now and a rejection here would compensate the workflow and refund a valid order over a
+     *  transport blip. A defensive catch would be dead code against a signature that cannot fail,
+     *  and it would re-add the swallowing this step exists to delete.
+     *
+     *  The id is `order.id` — a value the `create-order` step already recorded, not one minted
+     *  here. That is what keeps the dispatch identity the same when this step is retried; an id
+     *  created inside this action would be new per attempt, and a second confirmation would go out
+     *  with nothing to say it had. */
+    await ctx.step('publish-order-placed', async ({ container }) => {
+      const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+      await bus.emit('order.placed', { id: order.id })
     })
 
     return order

@@ -4,6 +4,8 @@ import { env } from '@env'
 import postgres from 'postgres'
 import { bootstrapContainer } from '../../container.js'
 import { createNodeDbProvider } from '../../core/db/node-provider.js'
+import { subscriberRegistry } from '../../core/event-bus/registry.js'
+import { createTemporalEventBus, type TemporalEventBus } from '../../core/event-bus/temporal-adapter.js'
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '../../core/workflows/temporal-adapter.js'
 import { WinstonLogger } from '../logger/winston-logger.js'
 import { registerScheduler } from '../scheduler/index.js'
@@ -20,6 +22,14 @@ const logger = new WinstonLogger()
  */
 let temporalEngine: TemporalWorkflowEngine | undefined
 
+/** Held for the same reason, and closed by the same function. */
+let temporalEventBus: TemporalEventBus | undefined
+
+/**
+ * No `config` override at all. `RUNTIME` is `node` here, so both derived defaults — the Temporal
+ * workflow engine and the Temporal event bus — are already what this process wants, and the
+ * `eventBus: 'inline'` pin that stood in for a transport that did not exist yet is gone.
+ */
 export const container = await bootstrapContainer({
   logger,
   dbProvider,
@@ -35,19 +45,39 @@ export const container = await bootstrapContainer({
     temporalEngine = createTemporalWorkflowEngine({ retry: {} })
     return temporalEngine
   },
+  /**
+   * The bus factory. Generic in the container's type — one seam for one concern, whichever transport
+   * a runtime resolves — and Temporal here because this is the node root.
+   *
+   * The container argument goes unused: the Temporal adapter is a publisher, and a publisher starts
+   * an activity rather than resolving a subscriber. The workerd root's Cloudflare adapter is the one
+   * that needs it.
+   *
+   * This process is a publisher only. What runs the subscribers is
+   * `npm run --workspace=backend worker:events` — and an event published with nothing polling
+   * `proteus-events` waits on the queue rather than being lost, which is the point of the transport.
+   */
+  createEventBusAdapter: () => {
+    temporalEventBus = createTemporalEventBus({ registry: subscriberRegistry, logger })
+    return temporalEventBus
+  },
 })
 registerScheduler(container, logger)
 
 /**
- * Closes the Temporal connection, if this process opened one. A no-op under the simple engine, and
- * safe to call twice.
+ * Closes the Temporal connections, if this process opened any — the workflow engine's and the event
+ * bus's, which are separate `Client` instances on separate connections by design. A no-op under the
+ * in-process adapters, and safe to call twice.
  *
  * `start.ts` force-exits on a signal, so this only matters on the path that does not — an embedded
- * caller awaiting the `shutdown()` that `start()` returns, which would otherwise be left holding an
- * open gRPC connection.
+ * caller awaiting the `shutdown()` that `start()` returns, which would otherwise be left holding
+ * open gRPC connections.
  */
 export async function closeWorkflowEngine(): Promise<void> {
   const engine = temporalEngine
+  const bus = temporalEventBus
   temporalEngine = undefined
+  temporalEventBus = undefined
   await engine?.close()
+  await bus?.close()
 }

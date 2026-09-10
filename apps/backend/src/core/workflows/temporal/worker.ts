@@ -2,7 +2,7 @@ import { createServer } from 'node:http'
 import { env } from '@env'
 import { createWorkerContainer } from '@framework/runtime/container.worker.js'
 import { NativeConnection, Worker } from '@temporalio/worker'
-import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../temporal/config.js'
 import { createWorkflowActivities, ping } from './activities.js'
 import { WORKFLOWS_PATH } from './config.js'
 import { workflowRegistry } from './registry.js'
@@ -29,7 +29,12 @@ if (env.MOCKS) {
   console.info('[MSW] MSW server listening — mocking third-party APIs')
 }
 
-const { container, shutdown } = await createWorkerContainer()
+/**
+ * Both pins stated, neither inherited. `simple` keeps the two nested `.run()` calls in-process, which
+ * is what this Worker's workflows were written against; `temporal` sends anything a step *publishes*
+ * to the events queue rather than running the subscriber inline while this Activity holds its slot.
+ */
+const { container, shutdown } = await createWorkerContainer({ engine: 'simple', eventBus: 'temporal' })
 
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS })
 

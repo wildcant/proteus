@@ -13,6 +13,35 @@
   },
   "triggers": {
     // Each entry must match a JobDefinition.schedule in src/jobs/
-    "crons": ["* * * * *"]
+    "crons": [
+      // "* * * * *"
+    ]
+  },
+  // The event bus transport on this runtime. One queue carries every event; a message is one
+  // delivery to one subscriber, which is what makes a retry retry that subscriber and nothing else.
+  // The binding is a live object workerd builds from this block and hands to the entry point — it
+  // is never serialised into .env.workerd, which is why src/index.workerd.ts reads it from
+  // `cloudflare:workers` rather than from src/env.ts.
+  "queues": {
+    "producers": [
+      {
+        "queue": "proteus-events",
+        "binding": "EVENTS"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "proteus-events",
+        // Every message in a batch shares one database connection, so the batch is sized for what
+        // one connection should carry rather than for throughput.
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        // Bounded, because a subscriber that sends email and retries forever is a mail loop. What
+        // still fails after this lands in the dead-letter queue, where it can be inspected and
+        // replayed once the cause is fixed, instead of disappearing.
+        "max_retries": 3,
+        "dead_letter_queue": "proteus-events-dlq"
+      }
+    ]
   }
 }

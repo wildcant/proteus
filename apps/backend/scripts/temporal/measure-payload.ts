@@ -1,13 +1,13 @@
 import { Client, Connection } from '@temporalio/client'
 import { NativeConnection, Worker } from '@temporalio/worker'
 import { ulid } from 'ulid'
+import { PAYLOAD_CONVERTER_PATH } from '../../src/core/temporal/config.js'
 import { createWorkflowActivities } from '../../src/core/workflows/temporal/activities.js'
 import { PROTEUS_WORKFLOW_TYPE, WORKFLOWS_PATH } from '../../src/core/workflows/temporal/config.js'
 import { workflowRegistry } from '../../src/core/workflows/temporal/registry.js'
 import type { DriverInput } from '../../src/core/workflows/temporal/types.js'
 import { env } from '../../src/env.js'
 import { createWorkerContainer } from '../../src/framework/runtime/container.worker.js'
-import { PAYLOAD_CONVERTER_PATH } from '../../src/temporal/config.js'
 import { completeCartWorkflow } from '../../src/workflows/cart/complete-cart.js'
 import { seedCheckoutCart } from './checkout-cart.js'
 
@@ -56,7 +56,11 @@ type Measurement = {
 }
 
 const taskQueue = `proteus-measure-${process.pid}`
-const { container, shutdown } = await createWorkerContainer()
+// `inline` restores what this script had before `eventBus` became a required pin: it publishes
+// nothing, and an operator script has no events Worker behind it, so queueing into a void would be
+// the worse of the two answers. Out of the review round's scope — named here only because making
+// the parameter required forces every caller to state it.
+const { container, shutdown } = await createWorkerContainer({ eventBus: 'inline' })
 
 const dataConverter = { payloadConverterPath: PAYLOAD_CONVERTER_PATH }
 const namespace = env.TEMPORAL_NAMESPACE

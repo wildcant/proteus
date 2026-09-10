@@ -163,7 +163,7 @@
       }
     },
     {
-      "includes": ["apps/backend/src/temporal/__tests__/payload-converter.test.ts"],
+      "includes": ["apps/backend/src/core/temporal/__tests__/payload-converter.test.ts"],
       "linter": {
         "rules": {
           "style": {

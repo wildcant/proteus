@@ -99,6 +99,39 @@ Registration keys: `GET_DB`, `DB_PROVIDER`, `LOGGER`, `LINK` (in `ContainerRegis
 
 - **Link modules** (`src/link-modules/`) — Cross-module join tables and relations. Accessed via `LinkService.repo("cartProduct")`. Two types: writeable (own table + BaseRepository) and readonly (Drizzle relations only + ReadonlyLinkRepository).
 - **Workflows** (`src/workflows/`) — Cross-module orchestration with `ctx.step()` calls and compensation for rollback.
+- **Subscribers** (`src/subscribers/`) — Work caused by something that happened, off the caller's critical path. See below.
+
+### Adding a Subscriber
+
+A subscriber is "this should happen because that happened", without "and the shopper waits for it, and if it fails nothing tries again". Same file shape as a job in `src/jobs/`: a named function plus an exported `config`.
+
+1. **Add the event** to `EventPayloads` in `src/core/event-bus/events.ts`, with a payload carrying `id` — the resource it is about. Add it *because a subscriber wants it*; a catalogue of names nothing consumes is one nobody can safely delete from.
+2. **Write the file** in `src/subscribers/`. Every file there is a subscriber — the generator rejects a helper module rather than skipping it.
+
+   ```ts
+   async function orderNotifier({ event, container }: SubscriberArgs<'order.placed'>) {
+     const { id } = event.data
+     // …
+   }
+
+   export const config: SubscriberConfig<'order.placed'> = {
+     name: 'order-notifier', // required, and the dedup key — not derived from the filename
+     event: 'order.placed',  // or an array
+     handler: orderNotifier,
+   }
+   ```
+
+   The type argument on `SubscriberConfig<…>` is load-bearing: leave it off and the event union widens to every event, so the handler stops type-checking instead of failing to compile.
+3. **Regenerate**: `npm run --workspace=backend subscribers:generate`, and commit `registry.gen.ts`. Nothing else wires it up, and `npm run verify` fails if you forget.
+
+Non-negotiables, because the transports differ:
+
+- **Every subscriber must be idempotent.** The weaker of the two transports is at-least-once with no dedup, and the same file runs on both. `event.dispatchId` is the key to be idempotent against.
+- **Publish from a workflow's final step**, and derive the payload's `id` from something an earlier step already recorded. A retried step runs its action again: an id minted inside it is new per attempt, so dedup has nothing to match and the subscriber runs twice.
+- **`emit` never rejects and resolves on acceptance**, never on completion. A subscriber's failure is the transport's to retry; throwing is how you ask for that retry.
+- **A subscriber file imports no transport vocabulary** — no `@temporalio/*`, no `cloudflare:workers`, no queue types. `check:deps` keeps `src/core/event-bus/` and `src/core/workflows/` from importing each other; a subscriber may reach both.
+
+Full guide, including the transports and their guarantees: `apps/backend/src/core/event-bus/readme.md`. The design decisions are ADR-0023 and ADR-0024.
 
 ### Server & Routing
 
@@ -245,7 +278,8 @@ catalogue data is fixture data and does not belong there.
 
 Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`,
 `docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/middleware-and-openapi.md`,
-`docs/soft-delete-cascade.md`, `docs/product-options.md`.
+`docs/soft-delete-cascade.md`, `docs/product-options.md`,
+`apps/backend/src/core/event-bus/readme.md`.
 
 A convention with a rule behind it is documented beside that rule, not in `docs/` — form hooks, form
 components, query hooks and mutation hooks all live under `ast-grep/rules/`. `ast-grep/README.md` is
