@@ -5,6 +5,7 @@ import type { AbstractPaymentProvider } from '../../../core/utils/abstract-payme
 import type { ModuleProviderExports } from '../../../core/utils/module-provider.js'
 import { SystemPaymentProvider } from '../providers/system.js'
 import { PaymentProviderService } from '../services/payment-provider-service.js'
+import { MANUAL_PROVIDER_ID, paymentProviderId, SYSTEM_PROVIDER_KEY } from '../utils/provider-ids.js'
 
 export type ProviderConfig = {
   resolve: ModuleProviderExports
@@ -23,8 +24,6 @@ type ProviderConstructor = AnyProviderConstructor & {
   identifier: string
   validateOptions?: (options: Record<string, unknown>) => void
 }
-
-export const SYSTEM_PROVIDER_KEY = 'system_default'
 
 /** Computes the full list of provider keys (including system_default) from a config array. */
 export function computeProviderKeys(configs?: ProviderConfig[]): string[] {
@@ -49,7 +48,7 @@ export function seedProviders(
   configs?: ProviderConfig[],
 ) {
   const keys = computeProviderKeys(configs)
-  return providerService.upsert(keys.map((key) => ({ id: `pp_${key}`, isEnabled: true })))
+  return providerService.upsert(keys.map((key) => ({ id: paymentProviderId(key), isEnabled: true })))
 }
 
 export async function loadProviders({
@@ -63,7 +62,7 @@ export async function loadProviders({
 
   // 1. Always register the system provider
   const systemProvider = new SystemPaymentProvider()
-  container.register({ [`pp_${SYSTEM_PROVIDER_KEY}`]: asValue(systemProvider) })
+  container.register({ [MANUAL_PROVIDER_ID]: asValue(systemProvider) })
 
   // 2. Register configured providers
   if (opts?.providers) {
@@ -76,7 +75,7 @@ export async function loadProviders({
         // from a blank key would otherwise register cleanly and fail at the first charge.
         Klass.validateOptions?.(providerOptions ?? {})
         const instance = new Klass(container.cradle, providerOptions ?? {})
-        container.register({ [`pp_${Klass.identifier}_${id}`]: asValue(instance) })
+        container.register({ [paymentProviderId(`${Klass.identifier}_${id}`)]: asValue(instance) })
       }
     }
   }

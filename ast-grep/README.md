@@ -33,6 +33,8 @@ ast-grep/
     backend/
       modules/        models, repositories, services   → docs/adding-a-module.md
       api/            route files                      → docs/middleware-and-openapi.md
+                      the error contract; plus route-helper placement and the DELETE
+                      response shape → apps/backend/src/api/README.md
       workflows/      steps and compensation
                       the error contract spans both, so `route-omits-workflow-errors`
                       sits at `backend/` rather than inside either one

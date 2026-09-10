@@ -1,0 +1,87 @@
+id: route-chains-mutations-on-one-service
+snapshots:
+  ? |
+    await customerService.updateCustomerAddress(req.params.id, changes)
+    const address = await customerService.setDefaultAddress(customerId, req.params.id)
+  : labels:
+    - source: const address = await customerService.setDefaultAddress(customerId, req.params.id)
+      style: primary
+      start: 68
+      end: 150
+    - source: await customerService.setDefaultAddress(customerId, req.params.id)
+      style: secondary
+      start: 84
+      end: 150
+    - source: await customerService.updateCustomerAddress(req.params.id, changes)
+      style: secondary
+      start: 0
+      end: 67
+    - source: await customerService.updateCustomerAddress(req.params.id, changes)
+      style: secondary
+      start: 0
+      end: 67
+  ? |
+    const address = await customerService.createCustomerAddress(customerId, req.body)
+    if (!req.body.isDefault) {
+      return { status: 201, json: { address } }
+    }
+    const promoted = await customerService.setDefaultAddress(customerId, address.id)
+  : labels:
+    - source: const promoted = await customerService.setDefaultAddress(customerId, address.id)
+      style: primary
+      start: 155
+      end: 235
+    - source: await customerService.setDefaultAddress(customerId, address.id)
+      style: secondary
+      start: 172
+      end: 235
+    - source: await customerService.createCustomerAddress(customerId, req.body)
+      style: secondary
+      start: 16
+      end: 81
+    - source: await customerService.createCustomerAddress(customerId, req.body)
+      style: secondary
+      start: 16
+      end: 81
+  ? |
+    const existing = await cartService.listShippingMethods({ cartId: req.params.id })
+    await cartService.softDeleteShippingMethods(existing.map((sm) => sm.id))
+    const [shippingMethod] = await cartService.addShippingMethods(req.params.id, [method])
+  : labels:
+    - source: const [shippingMethod] = await cartService.addShippingMethods(req.params.id, [method])
+      style: primary
+      start: 155
+      end: 241
+    - source: await cartService.addShippingMethods(req.params.id, [method])
+      style: secondary
+      start: 180
+      end: 241
+    - source: await cartService.softDeleteShippingMethods(existing.map((sm) => sm.id))
+      style: secondary
+      start: 82
+      end: 154
+    - source: await cartService.softDeleteShippingMethods(existing.map((sm) => sm.id))
+      style: secondary
+      start: 82
+      end: 154
+  ? |
+    const session = await paymentService.createPaymentSession(collection.id, input)
+    const authorization = await paymentService.authorizePaymentSession(session.id)
+    await paymentService.capturePayment({ paymentId: authorization.payment.id })
+  : labels:
+    - source: const authorization = await paymentService.authorizePaymentSession(session.id)
+      style: primary
+      start: 80
+      end: 158
+    - source: await paymentService.authorizePaymentSession(session.id)
+      style: secondary
+      start: 102
+      end: 158
+    - source: await paymentService.createPaymentSession(collection.id, input)
+      style: secondary
+      start: 16
+      end: 79
+    - source: await paymentService.createPaymentSession(collection.id, input)
+      style: secondary
+      start: 16
+      end: 79

@@ -3,6 +3,7 @@ import type { BigNumber } from '../../../src/core/bignumber.js'
 import type { ILinkService } from '../../../src/core/types/link/service.js'
 import type { IPaymentModuleService } from '../../../src/core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules } from '../../../src/core/utils/index.js'
+import { MANUAL_PROVIDER_ID } from '../../../src/modules/payment/utils/provider-ids.js'
 import { type CreatePayment, paymentTable } from '../../../src/schema.js'
 import type { Database } from '../../../src/schema.type.js'
 import { generateCreatePaymentCollectionDTO, generateCreatePaymentSessionDTO } from '../payment-dto.js'
@@ -12,7 +13,7 @@ export type PaymentSessionForCartOptions = {
   amount: BigNumber
   currencyCode?: string
   /** Full DI registration key, not the bare provider name — `PaymentProviderService.retrieveProvider`
-   *  resolves it from the container verbatim. `pp_system_default` is always registered. */
+   *  resolves it from the container verbatim. Defaults to `MANUAL_PROVIDER_ID`, always registered. */
   providerId?: string
 }
 
@@ -33,7 +34,7 @@ export async function createPaymentSessionForCart(container: AwilixContainer, op
   const paymentSession = await paymentService.createPaymentSession(
     paymentCollection.id,
     generateCreatePaymentSessionDTO({
-      providerId: options.providerId ?? 'pp_system_default',
+      providerId: options.providerId ?? MANUAL_PROVIDER_ID,
       amount: options.amount,
       currencyCode,
     }),

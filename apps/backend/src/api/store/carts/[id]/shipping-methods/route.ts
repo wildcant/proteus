@@ -7,13 +7,14 @@ import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { params: IdParams, body: AddCartShippingMethod }
 export const PostOutput = StoreCreateCartShippingMethodResponse
-export const PostThrows = [ErrorTypes.NOT_ALLOWED, ErrorTypes.UNEXPECTED_STATE] as const
+export const PostThrows = [ErrorTypes.NOT_ALLOWED] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
   const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 
-  // Retrieve the shipping option for name/amount
+  // The option carries the name and the amount the cart's method is written with — the shopper
+  // sends an id, never a price.
   const shippingOption = await fulfillmentService.retrieveShippingOption(req.body.shippingOptionId)
 
   if (!shippingOption.isEnabled) {
@@ -23,26 +24,12 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     })
   }
 
-  const amount = new BigNumber(shippingOption.amount ?? 0)
-
-  // Remove existing shipping methods on the cart (replace strategy for MVP)
-  const existing = await cartService.listShippingMethods({ cartId: req.params.id })
-  if (existing.length > 0) {
-    await cartService.softDeleteShippingMethods(existing.map((sm) => sm.id))
-  }
-
-  // Add the new shipping method
-  const [shippingMethod] = await cartService.addShippingMethods(req.params.id, [
-    {
-      name: shippingOption.name,
-      amount,
-      shippingOptionId: shippingOption.id,
-      data: req.body.data ?? null,
-    },
-  ])
-  if (!shippingMethod) {
-    throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Shipping method not returned after create' })
-  }
+  const shippingMethod = await cartService.setShippingMethod(req.params.id, {
+    name: shippingOption.name,
+    amount: new BigNumber(shippingOption.amount ?? 0),
+    shippingOptionId: shippingOption.id,
+    data: req.body.data ?? null,
+  })
 
   return { status: 201, json: { shippingMethod } }
 }

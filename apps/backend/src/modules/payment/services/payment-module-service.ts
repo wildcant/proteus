@@ -43,6 +43,7 @@ import type { PaymentSessionRepository } from '../repositories/payment-session.j
 import type { RefundRepository } from '../repositories/refund.js'
 import type { RefundReasonRepository } from '../repositories/refund-reason.js'
 import { idempotencyKeyFor } from '../utils/idempotency-keys.js'
+import { MANUAL_PROVIDER_ID } from '../utils/provider-ids.js'
 import { orderSavedMethods } from '../utils/saved-methods.js'
 import type { PaymentProviderService } from './payment-provider-service.js'
 
@@ -642,6 +643,50 @@ export class PaymentModuleService implements IPaymentModuleService {
       await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
 
       return this.retrievePaymentWithRelations_(payment.id, ctx)
+    })
+  }
+
+  /**
+   * Records money taken outside Proteus: an admin has been paid by transfer, cash or a terminal
+   * and is settling the collection by hand.
+   *
+   * Three mutations — open a session, authorize it, capture it — and none of them may stand
+   * without the others. A collection left holding an authorized payment nobody captured reads as
+   * unpaid on the order while the money is gone, and there is no gateway event coming to resolve
+   * it, because nothing was ever charged. So they share one transaction and Postgres unwinds all
+   * three, rather than each step carrying a compensation that could itself fail.
+   *
+   * The provider is pinned here rather than taken from the caller, and that is what makes the
+   * transaction safe as much as it is what makes the operation meaningful: the system provider is
+   * in-process, so the three calls this wraps hold no network round-trip open against an idle
+   * Postgres transaction. A real gateway belongs to the checkout flow, which authorizes outside a
+   * transaction for exactly that reason.
+   */
+  async markPaymentCollectionAsPaid(id: string, context?: Context): Promise<PaymentCollectionDTO> {
+    this.logger.debug(`Marking payment collection "${id}" as paid`)
+    return this.withTransaction(context, async (ctx) => {
+      const collection = await this.retrievePaymentCollection(id, undefined, ctx)
+
+      const session = await this.createPaymentSession(
+        collection.id,
+        {
+          providerId: MANUAL_PROVIDER_ID,
+          amount: collection.amount,
+          currencyCode: collection.currencyCode,
+        },
+        ctx,
+      )
+
+      const authorization = await this.authorizePaymentSession(session.id, ctx)
+
+      // The system provider authorizes unconditionally, so the other outcomes are unreachable
+      // from here. Guarded rather than asserted because the alternative is reading `payment` off
+      // an outcome that does not carry one.
+      if (authorization.outcome === 'authorized') {
+        await this.capturePayment({ paymentId: authorization.payment.id }, ctx)
+      }
+
+      return this.retrievePaymentCollection(collection.id, undefined, ctx)
     })
   }
 

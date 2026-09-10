@@ -257,6 +257,45 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
+  /**
+   * Makes `method` the cart's only shipping method, replacing whatever it had.
+   *
+   * Replace rather than add, because the delivery step offers one choice: a shopper picking a
+   * second option is changing their mind about the first, not buying two deliveries.
+   *
+   * Hiding the old rows and writing the new one are one transaction. They are rows of one table
+   * in one module, so the database is what makes the pair atomic — a failure part-way leaves the
+   * cart with the method it already had rather than with none, and the caller needs no
+   * compensation to get that. A cart stripped of its delivery by a half-applied change would
+   * price the order short at exactly the moment the shopper is trying to pay.
+   */
+  async setShippingMethod(
+    cartId: string,
+    method: CreateShippingMethodDTO,
+    context?: Context,
+  ): Promise<CartShippingMethodDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const existing = await this.listShippingMethods({ cartId }, undefined, ctx)
+      if (existing.length > 0) {
+        await this.softDeleteShippingMethods(
+          existing.map((shippingMethod) => shippingMethod.id),
+          ctx,
+        )
+      }
+
+      // `addShippingMethods` is what refuses a completed cart, so the guard covers this path too.
+      const [added] = await this.addShippingMethods(cartId, [method], ctx)
+      if (!added) {
+        throw new AppError({
+          type: ErrorTypes.UNEXPECTED_STATE,
+          message: 'Shipping method not returned after create',
+        })
+      }
+
+      return added
+    })
+  }
+
   async restoreShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartShippingMethodRepository.restore(shippingMethodIds, ctx)

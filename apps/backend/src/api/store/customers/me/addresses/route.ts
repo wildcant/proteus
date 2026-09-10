@@ -36,13 +36,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
   const { isDefault, ...data } = req.body
 
-  const address = await customerService.createCustomerAddress({ ...data, customerId })
-  if (!isDefault) {
-    return { status: 201, json: { address } }
-  }
+  const address = await customerService.createCustomerAddress({ ...data, customerId }, { makeDefault: isDefault })
 
-  // Promotion is its own transactional step because the previous default has to be released
-  // before this one can claim the slot. See CustomerModuleService.setDefaultAddress.
-  const promoted = await customerService.setDefaultAddress(customerId, address.id)
-  return { status: 201, json: { address: promoted } }
+  return { status: 201, json: { address } }
 }

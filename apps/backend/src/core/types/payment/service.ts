@@ -90,6 +90,15 @@ export type IPaymentModuleService = {
   capturePayment(data: CreateCaptureDTO, context?: Context): Promise<PaymentDTO>
   refundPayment(data: CreateRefundDTO, context?: Context): Promise<PaymentDTO>
   cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO>
+  /**
+   * Settles a collection against money taken outside Proteus — a transfer, cash, a terminal.
+   *
+   * Opens a session on the manual provider, authorizes and captures it, all in one transaction:
+   * a collection left holding an authorized payment nobody captured reads as unpaid while the
+   * money is gone, and no gateway event is coming to fix it. Answers with the collection as it
+   * stands afterwards.
+   */
+  markPaymentCollectionAsPaid(id: string, context?: Context): Promise<PaymentCollectionDTO>
 
   // Providers
   listPaymentProviders(

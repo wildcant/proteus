@@ -67,6 +67,15 @@ export type ICartModuleService = {
     context?: Context,
   ): Promise<CartShippingMethodDTO[]>
   softDeleteShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
+  /**
+   * Makes `method` the cart's only shipping method, replacing whatever it had.
+   *
+   * The delivery step offers one choice, so picking again is a change of mind rather than a
+   * second delivery. Hiding the old rows and writing the new one are rows of one table, so the
+   * database keeps them together — the caller needs no compensation to undo a half-applied
+   * replacement, and gets none.
+   */
+  setShippingMethod(cartId: string, method: CreateShippingMethodDTO, context?: Context): Promise<CartShippingMethodDTO>
   /** Brings back exactly the methods the matching soft delete hid — the undo half of a refresh
    *  that dropped the ones a new market does not offer. */
   restoreShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>

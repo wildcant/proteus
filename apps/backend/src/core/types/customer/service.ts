@@ -7,6 +7,7 @@ import type {
   FilterableCustomerProps,
 } from './common.js'
 import type {
+  AddressDefaultOption,
   CreateCustomerAddressDTO,
   CreateCustomerDTO,
   UpdateCustomerAddressDTO,
@@ -49,10 +50,23 @@ export type ICustomerModuleService = {
   ): Promise<CustomerAddressDTO[]>
   setDefaultAddress(customerId: string, addressId: string, context?: Context): Promise<CustomerAddressDTO>
   softDeleteCustomerAddresses(addressIds: string[], context?: Context): Promise<void>
-  createCustomerAddress(data: CreateCustomerAddressDTO, context?: Context): Promise<CustomerAddressDTO>
+  /**
+   * Writes an address, claiming the customer's default slot for it when `makeDefault` is set.
+   *
+   * The write and the promotion share a transaction: promoting releases whichever address held
+   * the slot, so a caller doing this in two calls can leave the customer with no default at all.
+   */
+  createCustomerAddress(
+    data: CreateCustomerAddressDTO,
+    options?: AddressDefaultOption,
+    context?: Context,
+  ): Promise<CustomerAddressDTO>
+  /** Edits an address, claiming the default slot for it when `makeDefault` is set. A body with no
+   *  field changes is allowed — a promotion on its own is a valid edit. */
   updateCustomerAddress(
     addressId: string,
     data: UpdateCustomerAddressDTO,
+    options?: AddressDefaultOption,
     context?: Context,
   ): Promise<CustomerAddressDTO>
 }

@@ -23,5 +23,5 @@ export const POST = async (req: HttpRequest): Promise<HttpResult<typeof PostOutp
 
   const files = await uploadFilesWorkflow.run({ files: fileData })
 
-  return { status: 200, json: { files } }
+  return { status: 201, json: { files } }
 }

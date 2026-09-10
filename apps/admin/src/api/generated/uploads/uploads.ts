@@ -7,11 +7,11 @@
  */
 import type {
   AdminCreatePresignedUploadUrl,
-  AdminDeleteFileResponse,
   AdminFileResponse,
   AdminPresignedUploadUrlResponse,
   AdminUploadFiles,
-  AdminUploadResponse
+  AdminUploadResponse,
+  DeleteResponse
 } from '../model';
 
 import { fetcher } from '../../fetcher.ts';
@@ -53,7 +53,7 @@ export const getUpload = (
 export const deleteUpload = (
     id: string,
  ) => {
-      return fetcher<AdminDeleteFileResponse>(
+      return fetcher<DeleteResponse>(
       {url: `/admin/uploads/${id}`, method: 'DELETE'
     },
       );

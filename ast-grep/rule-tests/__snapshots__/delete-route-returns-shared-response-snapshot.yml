@@ -1,0 +1,16 @@
+id: delete-route-returns-shared-response
+snapshots:
+  ? |
+    export const DeleteOutput = AdminDeleteFileResponse
+  : labels:
+    - source: export const DeleteOutput = AdminDeleteFileResponse
+      style: primary
+      start: 0
+      end: 51
+  ? |
+    export const DeleteOutput = StoreDeleteAddressResponse
+  : labels:
+    - source: export const DeleteOutput = StoreDeleteAddressResponse
+      style: primary
+      start: 0
+      end: 54

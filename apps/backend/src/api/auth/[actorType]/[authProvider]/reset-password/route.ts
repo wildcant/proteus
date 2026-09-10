@@ -19,6 +19,7 @@ export const POST = async (
     authProvider,
   })
 
-  // Always return 201 regardless of whether the email exists (no enumeration)
-  return { status: 201, json: {} }
+  // The same answer whether or not the email exists, so the response cannot be used to discover
+  // which addresses have accounts. 200 rather than 201: nothing was created, an email was sent.
+  return { status: 200, json: {} }
 }

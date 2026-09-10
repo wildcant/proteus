@@ -4,6 +4,7 @@ import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import { Modules } from '@core/utils/index.js'
 import { CreatePaymentSession, IdParams, StoreCreatePaymentSessionResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { describeAccountHolder } from '@workflows/payment/utils/describe-account-holder.js'
 import { readWalletChoice } from '@workflows/payment/utils/read-wallet-choice.js'
 import { attachCustomer } from '../../../middlewares.js'
 
@@ -12,13 +13,15 @@ export const PostMiddlewares = [attachCustomer()] as const
 export const PostOutput = StoreCreatePaymentSessionResponse
 type PostRequest = HttpRequest<typeof PostInput, typeof PostMiddlewares>
 
+export const PostThrows = [ErrorTypes.CONFLICT] as const
+
 /**
  * Opens the session for a checkout.
  *
  * `replacePaymentSession`, not `createPaymentSession`: every Place order press comes through
  * here, so a shopper who is declined and reaches for a second card is retrying rather than paying
  * twice. The previous attempt is abandoned and cancelled at the gateway before this one opens.
- * The admin's mark-as-paid route keeps the additive operation — its session is not a retry of
+ * `markPaymentCollectionAsPaid` keeps the additive operation — its session is not a retry of
  * anything.
  *
  * The account holder is attached here rather than sent by the browser, and the browser's own
@@ -26,8 +29,6 @@ type PostRequest = HttpRequest<typeof PostInput, typeof PostMiddlewares>
  * stranger's saved card, and a session's context is stored and served back, so only an id and the
  * gateway's own reference go into it.
  */
-export const PostThrows = [ErrorTypes.CONFLICT] as const
-
 export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutput>> => {
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
   const collection = await paymentService.retrievePaymentCollection(req.params.id)
@@ -41,11 +42,7 @@ export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutp
   // rather than the row `attachCustomer()` found.
   const customer = req.customer
   const accountHolders = customer?.hasAccount
-    ? await paymentService.ensureAccountHolders({
-        customerId: customer.id,
-        email: customer.email,
-        name: [customer.firstName, customer.lastName].filter(Boolean).join(' ') || null,
-      })
+    ? await paymentService.ensureAccountHolders(describeAccountHolder(customer))
     : []
   const accountHolder = accountHolders.find((holder) => holder.providerId === req.body.providerId)
 

@@ -1,0 +1,48 @@
+id: route-chains-mutations-on-one-service
+valid:
+  # One mutation, whatever it reads first. A read and a write is a handler, not a sequence.
+  - |
+    const collection = await paymentService.retrievePaymentCollection(req.params.id)
+    const session = await paymentService.createPaymentSession(collection.id, input)
+  # Two services, so the pair crosses a module boundary — that is the workflow case, and this rule
+  # deliberately does not claim it.
+  - |
+    const shippingOption = await fulfillmentService.retrieveShippingOption(req.body.shippingOptionId)
+    const method = await cartService.addShippingMethods(req.params.id, [shippingOption])
+  # Reads chained as far as you like on one service.
+  - |
+    const [address] = await cartService.listCartAddresses({ cartId, type: 'shipping' })
+    const cart = await cartService.retrieveCart(cartId)
+    const methods = await cartService.listShippingMethods({ cartId })
+  # `ensure` is provisioning at the gateway, not a mutation that has to unwind with the write below
+  # it — the exclusion that keeps the wallet routes quiet.
+  - |
+    const holders = await paymentService.ensureAccountHolders(describeAccountHolder(customer))
+    const session = await paymentService.replacePaymentSession(collection.id, input)
+  # The fix this rule asks for: one call, and the sequence lives behind it.
+  - |
+    const shippingMethod = await cartService.setShippingMethod(req.params.id, method)
+invalid:
+  # The cart's replace-strategy, as the route used to write it: a failed add leaves the cart with no
+  # delivery at all.
+  - |
+    const existing = await cartService.listShippingMethods({ cartId: req.params.id })
+    await cartService.softDeleteShippingMethods(existing.map((sm) => sm.id))
+    const [shippingMethod] = await cartService.addShippingMethods(req.params.id, [method])
+  # Mark-as-paid, as the route used to write it — three mutations, and a capture that throws strands
+  # an authorized payment nobody will ever capture.
+  - |
+    const session = await paymentService.createPaymentSession(collection.id, input)
+    const authorization = await paymentService.authorizePaymentSession(session.id)
+    await paymentService.capturePayment({ paymentId: authorization.payment.id })
+  # Write then promote: the edit is saved and the default flag is not.
+  - |
+    await customerService.updateCustomerAddress(req.params.id, changes)
+    const address = await customerService.setDefaultAddress(customerId, req.params.id)
+  # Statements need not be adjacent — `stopBy: end` reaches past whatever sits between them.
+  - |
+    const address = await customerService.createCustomerAddress(customerId, req.body)
+    if (!req.body.isDefault) {
+      return { status: 201, json: { address } }
+    }
+    const promoted = await customerService.setDefaultAddress(customerId, address.id)

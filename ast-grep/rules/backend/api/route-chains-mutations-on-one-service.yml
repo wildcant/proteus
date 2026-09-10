@@ -1,0 +1,42 @@
+id: route-chains-mutations-on-one-service
+language: typescript
+severity: error
+message: 'This handler awaits `$SVC.$M1` and then `$SVC.$M2` — two mutations on one module, sequenced in the route file. A failure in the second leaves the first applied.'
+note: 'Move the pair behind one method on that service and wrap it in `this.withTransaction`, so Postgres unwinds a failure rather than the route leaving half of it standing — `setShippingMethod` on the cart service and `markPaymentCollectionAsPaid` on the payment service are the two this rule was written from. Not a workflow: workflows exist to cross modules, and compensation is hand-written rollback that can itself fail. A read that decided the write moves with them, and stops being able to go stale between the two calls. apps/backend/src/api/README.md'
+files:
+  - "**/src/api/**/route.ts"
+ignores:
+  - "**/__tests__/**"
+# Two mutating awaits on the same `$SVC`, matched at statement level rather than on the awaits
+# themselves. `follows` compares siblings, and the awaits are not: one is an `expression_statement`,
+# the next is usually a `lexical_declaration` binding the result. Their statements *are* siblings,
+# so the relation is anchored there and each statement reaches its own await with `has`.
+#
+# The ordering is not decoration. `follows` is what makes the two matches provably distinct —
+# ast-grep cannot assert that two metavariables differ, so a `has`-twice formulation would match a
+# single call against itself and fire on every mutation in the codebase.
+#
+# `$SVC` is a variable name, so this sees one *service*, not one module: two services resolved from
+# the same module would read as unrelated. That is the direction worth erring in — the alternative
+# flags a cross-module sequence, which is the case that legitimately is a workflow.
+rule:
+  any:
+    - kind: expression_statement
+    - kind: lexical_declaration
+  has:
+    stopBy: end
+    pattern: await $SVC.$M2($$$)
+  follows:
+    stopBy: end
+    has:
+      stopBy: end
+      pattern: await $SVC.$M1($$$)
+# A prefix list, because the verb is the only thing in a method name that says whether it writes.
+# `ensure` is deliberately absent: `ensureAccountHolders` provisions at the gateway, is idempotent,
+# and cannot join a database transaction anyway, so pairing it with the write beside it reported a
+# route that had nothing to fix.
+constraints:
+  M1:
+    regex: '^(create|update|upsert|delete|softDelete|restore|add|set|replace|remove|capture|authorize|cancel|refund|complete|archive|transfer)'
+  M2:
+    regex: '^(create|update|upsert|delete|softDelete|restore|add|set|replace|remove|capture|authorize|cancel|refund|complete|archive|transfer)'

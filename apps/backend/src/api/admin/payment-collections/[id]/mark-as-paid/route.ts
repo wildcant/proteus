@@ -8,21 +8,7 @@ export const PostOutput = AdminPaymentCollectionResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
-  const collection = await paymentService.retrievePaymentCollection(req.params.id)
+  const paymentCollection = await paymentService.markPaymentCollectionAsPaid(req.params.id)
 
-  const session = await paymentService.createPaymentSession(collection.id, {
-    providerId: 'pp_system_default',
-    amount: collection.amount,
-    currencyCode: collection.currencyCode,
-  })
-
-  const authorization = await paymentService.authorizePaymentSession(session.id)
-
-  if (authorization.outcome === 'authorized') {
-    await paymentService.capturePayment({ paymentId: authorization.payment.id })
-  }
-
-  const updated = await paymentService.retrievePaymentCollection(collection.id)
-
-  return { status: 200, json: { paymentCollection: updated } }
+  return { status: 200, json: { paymentCollection } }
 }
