@@ -4659,28 +4659,6 @@
           "file"
         ]
       },
-      "AdminDeleteFileResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "file"
-            ]
-          },
-          "deleted": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "deleted"
-        ]
-      },
       "AdminPresignedUploadUrlResponse": {
         "type": "object",
         "properties": {
@@ -10594,7 +10572,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminDeleteFileResponse"
+                  "$ref": "#/components/schemas/DeleteResponse"
                 }
               }
             }

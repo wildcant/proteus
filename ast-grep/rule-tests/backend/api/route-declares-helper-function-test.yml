@@ -1,0 +1,46 @@
+id: route-declares-helper-function
+valid:
+  # The shape every handler in `src/api/` is written in.
+  - |
+    export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
+      const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
+      return { status: 200, json: { cart: await cartService.retrieveCart(req.params.id) } }
+    }
+  # The constants a route file exists to co-export.
+  - |
+    export const GetInput = { params: IdParams, query: StoreShippingOptionListParams }
+    export const GetOutput = StoreShippingOptionListResponse
+    export const GetMiddlewares = [requireCustomer()] as const
+    export const PostThrows = [ErrorTypes.CONFLICT] as const
+  # A lambda passed to an array method is not a declared helper.
+  - |
+    export const GET = async (req) => {
+      const rows = await service.listThings()
+      return { status: 200, json: { ids: rows.map((row) => row.id) } }
+    }
+  # A total lookup table keyed by a union — a constant, not a helper, and the handler still reads
+  # straight through.
+  - |
+    const ACTION_HANDLING: Record<PaymentActions, PaymentCapturedAction | 'skip'> = {
+      authorized: 'authorized',
+      captured: 'captured',
+    }
+invalid:
+  # The shipping-options country fallback: no `req`, three reads across two modules, and invisible
+  # to the workflow step that wanted the same answer.
+  - |
+    async function resolveShippingCountry(scope: AwilixContainer, cartId: string): Promise<string | null> {
+      const cartService = scope.resolve<ICartModuleService>(Modules.CART)
+      const [shippingAddress] = await cartService.listCartAddresses({ cartId, type: 'shipping' })
+      return shippingAddress?.countryCode ?? null
+    }
+  # Pure, and so belonging in `workflows/<domain>/utils/` where a step can reach it too.
+  - |
+    function describeAccountHolder(customer: CustomerDTO): EnsureAccountHoldersDTO {
+      return { customerId: customer.id, email: customer.email }
+    }
+  # Not exported, which is the whole problem: the next route that needs it writes its own copy.
+  - |
+    function toCents(amount: number) {
+      return Math.round(amount * 100)
+    }

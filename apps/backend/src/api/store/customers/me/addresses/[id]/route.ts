@@ -13,29 +13,20 @@ export const PatchThrows = [ErrorTypes.UNAUTHORIZED] as const
 export const PATCH = async (
   req: HttpRequest<typeof PatchInput, typeof PatchMiddlewares>,
 ): Promise<HttpResult<typeof PatchOutput>> => {
-  const customerId = req.authContext?.actorId
-  if (!customerId) {
+  // `validateAddressOwnership()` has already refused an address belonging to someone else; this
+  // is the caller with no session at all, which it has nothing to compare against.
+  if (!req.authContext?.actorId) {
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
   }
 
   const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
   const { isDefault, ...fields } = req.body
 
-  // Releasing the flags is a plain update; only claiming them contends with the partial unique
-  // indexes, which is what setDefaultAddress exists for.
+  // Releasing the flags is a plain field change; only claiming them contends with the partial
+  // unique indexes, which is what `makeDefault` exists for.
   const changes = isDefault === false ? { ...fields, isDefaultShipping: false, isDefaultBilling: false } : fields
 
-  if (!isDefault) {
-    const address = await customerService.updateCustomerAddress(req.params.id, changes)
-    return { status: 200, json: { address } }
-  }
-
-  // A promotion on its own carries no field changes, and drizzle refuses an empty `set`.
-  if (Object.keys(changes).length > 0) {
-    await customerService.updateCustomerAddress(req.params.id, changes)
-  }
-
-  const address = await customerService.setDefaultAddress(customerId, req.params.id)
+  const address = await customerService.updateCustomerAddress(req.params.id, changes, { makeDefault: isDefault })
   return { status: 200, json: { address } }
 }
 

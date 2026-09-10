@@ -3,56 +3,28 @@ Fixes and improvements
   rejects it (422); clicks landing between link-order and mark-cart-completed get 409. Confirmed under dev:slow,
   so the "only ms on a local DB" caveat is settled — it is real, just not damaging: one order, one charge, no
   oversell. Deferred; real fix is a lock on the cart (see "investigate locking").
-- create-order compensation orphans addresses: order_address is referenced *by* order (order/models/order.ts:25),
-  so no cascade reaches it and every rolled-back order leaves up to two rows. cart_address has the same shape.
-- display_id is a serial, so every rolled-back order burns an order number. Gaps are visible to shoppers once
-  a race discards five in a row. Only fixable by changing how the number is assigned.
-- SOFT DELETE CASCADE in BaseRepository: walk drizzle's FK metadata and soft-delete the children that declare
-  onDelete:'cascade', so the model stays the source of truth instead of each module service. Needs a
-  module-scoped table registry at bootstrap (no FK crosses modules today). Invert order_address/cart_address
-  onto the child so they are covered too. restore() needs the same walk, matched on deletedAt.
-- `idempotent` flag in core/workflows/types.ts:16 is dead — nothing reads it, no workflow sets it. Delete.
-- Stripe idempotencyKey is never populated — stripe-provider.ts:209 reads it off session context, nothing writes it.
-  Wire one before Stripe goes live.
+- display_id is a serial (order/models/order.ts:19), so every rolled-back order burns an order number. Gaps are
+  visible to shoppers once a race discards five in a row. Only fixable by changing how the number is assigned.
 
-- STALE SHIPPING METHOD AND PAYMENT SESSION SURVIVE AN ADDRESS CHANGE (payment-provider gap): changing the
-  cart's shipping address leaves the previously chosen shipping method and the payment collection/session on the
-  cart, quoted against the address that is gone. Nothing invalidates them.
-  - Two ways in. Signing out mid-checkout: useCheckoutForm.signOut resets the form, so the shopper must re-enter
-    an address, but the cart keeps the row and the collection. And "Use a different address" at the delivery
-    step, which has the same hole with no sign-out involved. The address seam is the real one; sign-out is a
-    route into it.
-  - WRONG AMOUNT CAN BE AUTHORIZED. store/payment-collections/[id]/payment-sessions/route.ts creates the session
-    with `amount: collection.amount` — snapshotted when the collection was created, i.e. while the old shipping
-    method was still on the cart. complete-cart.ts `validate-cart-payments` resolves one collection through
-    linkService.repo('cartPaymentCollection').findByCartId and checks only that the session status is in
-    PROCESSABLE_STATUSES. It never compares the collection amount to the cart's current total.
+- STALE SHIPPING METHOD SURVIVES AN ADDRESS CHANGE WITHIN ONE MARKET: updateCartWorkflow now has
+  `refresh-shipping-methods` and `refresh-payment-collection` steps, but both sit behind
+  `if (!regionChange) return updatedCart` (update-cart.ts:313) — they fire only on a market switch. A shipping
+  address changed inside one market leaves the previously chosen method on the cart, quoted against the address
+  that is gone.
+  - Two ways in, both still open. "Use a different address" at the delivery step, and signing out mid-checkout:
+    useCheckoutForm.signOut resets the form so the shopper must re-enter an address, but the cart keeps the
+    shipping method row. The address seam is the real one; sign-out is a route into it.
   - WRONG RATE CAN SHIP. complete-cart.ts `validate-shipping` re-fetches each method's option and asserts
     option.isEnabled, nothing more. A method quoted for the previous address — different country, different
-    zone — passes.
-  - Compounding: payment-form.tsx calls createPaymentSession on every radio change, and usePaymentSession calls
-    createCollection first each time, so repeated selections can link more than one collection to a cart while
-    findByCartId reads a single one. Worth confirming whether createPaymentCollectionForCartWorkflow is
-    idempotent per cart.
-  - Visible symptom now: after sign-out the summary's Shipping line still shows a price (it renders "Enter
-    shipping address" only when cart.shippingMethods is empty) while the radio group beside it is blank.
-  - No primitive exists to fix it from the client. There is no DELETE for a shipping method or a payment session
-    in src/api/store. POST /store/carts/:id/shipping-methods replaces (soft-deletes existing, then adds) but
-    cannot clear, and updateCartWorkflow upserts addresses and touches neither methods nor payments.
-  - Three shapes, pick one when this is picked up:
-    1. Invalidate at the address seam — updateCartWorkflow drops shipping methods and the payment collection when
-       the shipping address changes. Covers both routes in, no new endpoints. This is what Medusa does, via
-       refreshCartShippingMethodsWorkflow, which re-lists each method's option for the current cart context and
-       deletes any that no longer resolves or no longer prices. Leaves a window at sign-out where the cart is
-       untouched until the guest types an address.
-    2. Clear at the sign-out seam — new store endpoints, called from signOut. No mismatch window, but two
-       endpoints that exist only for logout, and the "use a different address" path stays broken.
-    3. Stop creating the session eagerly — move collection + session creation out of the payment radio's
-       onValueChange back to place-order time, so there is never a stale session to reset. Kills the wrong-amount
-       bug at the root and reduces the problem to shipping methods alone. This is how it worked before the
-       one-page checkout refactor.
-  - Whichever is chosen, complete-cart should also assert the collection amount equals the cart total. That is
-    the check that would have caught all of this, and it is missing regardless of which seam gets the fix.
+    zone — passes. `refresh-shipping-methods` already has the shape of the missing check:
+    listShippingOptionsForContext({ countryCode }) and drop what no longer resolves.
+  - Fix is to widen the seam, not add one: run the refresh steps when the shipping address country changes, not
+    only when the region does. Covers both routes in, no new endpoints. This is what Medusa does, via
+    refreshCartShippingMethodsWorkflow. Leaves a window at sign-out where the cart is untouched until the guest
+    types an address.
+  - ALREADY CLOSED, do not re-solve: the wrong-amount hole. `validate-cart-payments` now picks the session whose
+    amount and currencyCode equal the collection's and refuses otherwise, and handles a collection carrying
+    several sessions explicitly.
 
 - CART OWNERSHIP IS UNGUARDED: any request holding a cart id can read and mutate that cart, including one
   belonging to a registered customer — so the cart carries their email, phone and full postal address to whoever
@@ -85,10 +57,10 @@ Fixes and improvements
 - INVENTORY IS NOT ACTUALLY RESERVED: placing an order does not reduce what the storefront offers.
   - `createReservationItems` (apps/backend/src/modules/inventory/services/inventory-module-service.ts:173) writes a
     reservation_item row and nothing else. `deleteReservationItems` / `restoreReservationItems` are the same.
-    Nothing in the codebase ever writes `inventory_level.reserved_quantity`.
-  - `retrieveAvailableQuantity` is `stocked - reserved`, so with reserved permanently 0 availability ignores every
-    order that has been placed but not yet fulfilled. Stock only moves at fulfillment, via `adjustInventoryLevel`,
-    which touches `stocked_quantity` only.
+    Nothing in the codebase ever writes `inventory_level.reserved_quantity` — the only write is its `default(0)`.
+  - `retrieveAvailableQuantity` is `stocked - reserved` (inventory-module-service.ts:139), so with reserved
+    permanently 0 availability ignores every order that has been placed but not yet fulfilled. Stock only moves at
+    fulfillment, via `adjustInventoryLevel`, which touches `stocked_quantity` only.
   - Net effect: the same last unit can be sold an unbounded number of times. The concurrency test in
     src/api/store/carts/__tests__/cart.api.test.ts passes on the `order_cart` unique index, not on inventory —
     it proves one cart completes once, not that stock is respected across different carts.
@@ -97,9 +69,9 @@ Fixes and improvements
     live reservation_item rows. Either way `confirmInventory` and `buildVariantStock` inherit it for free.
 
 - RESERVATIONS ARE KEYED TO CART LINE ITEMS, BUT READ BY ORDER LINE ITEM.
-  - complete-cart.ts:303 writes `lineItemId` from the *cart*'s line items (`cali_…`). cancel-order.ts:40 and
-    create-order-fulfillment.ts:138 both call `listReservationItems({ lineItemId })` with *order* line item ids
-    (`ordli_…`). They never match.
+  - complete-cart.ts writes `lineItemId` from the *cart*'s line items (`cali_…`, via
+    prepare-confirm-inventory-input.ts:40). cancel-order.ts:40 and create-order-fulfillment.ts:138 both call
+    `listReservationItems({ lineItemId })` with *order* line item ids (`ordli_…`). They never match.
   - Cancelling an order therefore never releases its stock — the reservation is stranded and the units stay
     unsellable forever (and see above: they were never counted as reserved anyway).
   - Fulfilling an order with managed inventory always throws `No reservation found for managed-inventory item
@@ -113,8 +85,8 @@ Future features TODOs
   - No stock location entity. `location_id` is free text on inventory_level and reservation_item — no table, no
     FK, no validation. The seed hardcodes `loc_default`, test factories generate `sloc_*`, and the admin
     fulfillment route (src/api/admin/orders/[id]/fulfillments/route.ts:11) takes whatever locationId the client
-    sends. complete-cart.ts:301 picks `locationIds[0] ?? ''` — an arbitrary location, and an empty string when the
-    variant has no levels at all.
+    sends. complete-cart.ts picks `locationIds[0] ?? ''` in `reserve-inventory` — an arbitrary location, and an
+    empty string when the variant has no levels at all.
   - No admin surface. There are no routes under src/api/admin/inventory and no admin feature module. A shopkeeper
     cannot create an inventory item, set or adjust a level, or see what is committed. Only scripts/seed-dev.ts
     writes stock.
@@ -132,15 +104,17 @@ Future features TODOs
     emits one.
   - `adjustInventoryLevel` throws when the item has no level at the given location, so fulfilling from a location
     that was never stocked fails rather than falling back.
-- Allow customer to see previous orders.
+- ORDER HISTORY HAS NO LIST PAGE: the account dashboard prefetches ordersListQueryOptions and renders a panel,
+  and account/orders/$orderId.tsx is the detail page, but there is no standalone paginated /account/orders route
+  behind them. GET /store/orders and the orders feature module already exist.
 - LEGAL PAGES + MARKETING CONSENT: no privacy policy, terms, or returns policy exists, and nothing can go live without them.
   - Practically mandatory, for three separate reasons: Stripe/PayPal require a published privacy policy in their terms
     and hold accounts at review without one; CalOPPA requires one for any commercial site collecting PII from California
     residents with NO revenue threshold; GDPR Arts. 13-14 require a notice at the point of collection the moment an EU/UK
     shopper signs up. CCPA/CPRA's "Do Not Sell or Share" duty only bites above ~$25M revenue / 100k consumers.
-  - Live defect today: register-form.tsx renders "By creating an account, you agree to our Privacy Policy and Terms of
-    Use." as PLAIN TEXT. The documents do not exist and the words are not links, so we assert agreement to something
-    unreachable. Either write them and link, or drop the sentence — the current state is worse than silence.
+  - Live defect today: register-form.tsx:26 renders "By creating an account, you agree to our Privacy Policy and
+    Terms of Use." as PLAIN TEXT. The documents do not exist and the words are not links, so we assert agreement to
+    something unreachable. Either write them and link, or drop the sentence — the current state is worse than silence.
   - Footer Help/Company links all point at `/` for the same reason (see components/footer.tsx). Static content routes
     are the shared prerequisite.
   - Marketing consent is a SEPARATE consent from the privacy policy and needs storage we do not have: a
@@ -159,24 +133,18 @@ Future features TODOs
 - GLOBAL SHIPPING OPTIONS [COUNTRY CODE]: if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
 
 Future Infra TODOs
-- Monitoring
-- temporal as a workflow adapter, allow to trace/retry/persist/resume workflows (https://www.youtube.com/watch?v=WjzojcyNp4U) (https://hub.docker.com/r/temporalio/server) (https://docs.temporal.io/design-patterns/saga-pattern?language=typescript) (https://github.com/temporalio/samples-typescript/blob/main/saga/src/workflows.ts)
+- Monitoring — nothing today: no opentelemetry, no sentry, no exporter of any kind.
 - cloudflare workflows (https://developers.cloudflare.com/workflows/) as replacement of simple workflows for workerd. Temporal has serverless support but only google and aws (https://docs.temporal.io/demos/serverless-workers)
 - aws deployment
-- default indexes in all tables with deleted_at.
 - composing workflows
-- ci workflow to handle deployment!
+- ci workflow to handle deployment! — there is no .github/workflows directory at all, so this is CI from zero,
+  not just the deploy step.
 - migration order in prod (first modules and then link modules, are there edge cases?).
-- reusable workflow setup function for tests — done for 12 of 14 workflow test files (they now run against a real
+- reusable workflow setup function for tests — done for 15 of 17 workflow test files (they now run against a real
   container from `createTestContainer()`; see docs/backend-test-infrastructure.md). cancel-order and
-  create-order-fulfillment are still on mocks, blocked on the reservation keying bug above.
-- features flags
-- event bus: investigate pgmq (see docs/research/event-subscriber-system/) and cloudflare queues
-  - Medusa events module: https://docs.medusajs.com/resources/infrastructure-modules/event/create, https://docs.medusajs.com/resources/infrastructure-modules/event/redis, https://docs.medusajs.com/resources/references/event-service
-![event](./subscriber-example.png)
-- NOTIFICATION QUEUE: order confirmation sends inside the checkout request. Can't just drop the await — on Workers
-  withConnection closes the DB client when the handler resolves. Module is already outbox-shaped (pending status,
-  src/jobs, per-minute cron). Also fixes failed sends never being retried.
+  create-order-fulfillment are still on `vi.fn()` mocks, blocked on the reservation keying bug above.
+- features flags — `featureFlags` is on the config type (core/config/types.ts:51) and config-manager.ts:36
+  defaults it to `{}`, but nothing anywhere reads it. A stub, not a feature: pick a first flag and a read path.
 - investigate locking
   -  Context: Medusa's notification module uses DB queries for idempotency checks (query by idempotency_key, skip if already SUCCESS/PENDING). There's a race window where two concurrent requests with the same key could both pass the check before either creates a PENDING record. Medusa has a TODO to use Redis-based locking instead.
   - The DB unique constraint on idempotencyKey catches the second insert if both slip through, so for single-instance it's sufficient.
@@ -186,6 +154,7 @@ Future Infra TODOs
 
 Future nice to have TODOs
 - per item fullfilment and shipment.
-- fix imports in backend to use alias.
-- make sure all routes follow the rules defined at apps/backend/src/api/README.md
+- fix imports in backend to use alias — 408 occurrences of `../../../` or deeper under apps/backend/src.
+- routes that Spectral cannot reach: the API-design half of apps/backend/src/api/README.md is now enforced in the
+  verify gate, so what is left is whatever the ruleset cannot express. Name those rules before doing a sweep.
 - white label all proteus references, get rid of magic strings that mention proteus

@@ -1,0 +1,54 @@
+id: route-declares-helper-function
+snapshots:
+  ? |
+    async function resolveShippingCountry(scope: AwilixContainer, cartId: string): Promise<string | null> {
+      const cartService = scope.resolve<ICartModuleService>(Modules.CART)
+      const [shippingAddress] = await cartService.listCartAddresses({ cartId, type: 'shipping' })
+      return shippingAddress?.countryCode ?? null
+    }
+  : labels:
+    - source: |-
+        async function resolveShippingCountry(scope: AwilixContainer, cartId: string): Promise<string | null> {
+          const cartService = scope.resolve<ICartModuleService>(Modules.CART)
+          const [shippingAddress] = await cartService.listCartAddresses({ cartId, type: 'shipping' })
+          return shippingAddress?.countryCode ?? null
+        }
+      style: primary
+      start: 0
+      end: 315
+    - source: resolveShippingCountry
+      style: secondary
+      start: 15
+      end: 37
+  ? |
+    function describeAccountHolder(customer: CustomerDTO): EnsureAccountHoldersDTO {
+      return { customerId: customer.id, email: customer.email }
+    }
+  : labels:
+    - source: |-
+        function describeAccountHolder(customer: CustomerDTO): EnsureAccountHoldersDTO {
+          return { customerId: customer.id, email: customer.email }
+        }
+      style: primary
+      start: 0
+      end: 142
+    - source: describeAccountHolder
+      style: secondary
+      start: 9
+      end: 30
+  ? |
+    function toCents(amount: number) {
+      return Math.round(amount * 100)
+    }
+  : labels:
+    - source: |-
+        function toCents(amount: number) {
+          return Math.round(amount * 100)
+        }
+      style: primary
+      start: 0
+      end: 70
+    - source: toCents
+      style: secondary
+      start: 9
+      end: 16

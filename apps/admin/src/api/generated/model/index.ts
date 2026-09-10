@@ -69,8 +69,6 @@ export * from './adminCreateUser.ts';
 export * from './adminCustomer.ts';
 export * from './adminCustomerListResponse.ts';
 export * from './adminCustomerResponse.ts';
-export * from './adminDeleteFileResponse.ts';
-export * from './adminDeleteFileResponseObject.ts';
 export * from './adminFile.ts';
 export * from './adminFileResponse.ts';
 export * from './adminFulfillmentProvider.ts';

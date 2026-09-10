@@ -13,6 +13,9 @@ export type UpdateCustomerDTO = {
   email?: string | undefined
 }
 
+/** Whether a write should also claim the customer's default slot for the address it touches. */
+export type AddressDefaultOption = { makeDefault?: boolean }
+
 export type CreateCustomerAddressDTO = {
   customerId: string
   addressName?: string | null

@@ -1,0 +1,17 @@
+id: delete-route-returns-shared-response
+valid:
+  # What sixteen of the seventeen DELETEs answer with.
+  - |
+    export const DeleteInput = { params: IdParams }
+    export const DeleteOutput = DeleteResponse
+  # Other methods choose their own response; this rule speaks only for DELETE.
+  - |
+    export const GetOutput = AdminFileResponse
+    export const PostOutput = AdminUploadResponse
+invalid:
+  # The uploads route, which carried a Stripe-shaped `object: 'file'` nothing in the repo read.
+  - |
+    export const DeleteOutput = AdminDeleteFileResponse
+  # A per-resource variant of any name.
+  - |
+    export const DeleteOutput = StoreDeleteAddressResponse

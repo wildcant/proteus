@@ -2,6 +2,7 @@ import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { StoreSavedMethodListResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '@server/ports.js'
+import { describeAccountHolder } from '@workflows/payment/utils/describe-account-holder.js'
 import { requireCustomer } from '../middlewares.js'
 
 export const GetMiddlewares = [requireCustomer()] as const
@@ -30,11 +31,7 @@ export const GET = async (req: HttpRequest<object, typeof GetMiddlewares>): Prom
   // authenticated shopper with an empty wallet still needs somewhere for their first card to land.
   // A guest must leave nothing at a gateway, so this gates on the account, not on the row.
   if (customer.hasAccount) {
-    await paymentService.ensureAccountHolders({
-      customerId: customer.id,
-      email: customer.email,
-      name: [customer.firstName, customer.lastName].filter(Boolean).join(' ') || null,
-    })
+    await paymentService.ensureAccountHolders(describeAccountHolder(customer))
   }
 
   const paymentMethods = await paymentService.listSavedMethods(customer.id)

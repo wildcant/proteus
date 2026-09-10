@@ -7,15 +7,6 @@ export type AdminUploadResponse = z.input<typeof AdminUploadResponse>
 export const AdminFileResponse = z.object({ file: AdminFile }).openapi('AdminFileResponse')
 export type AdminFileResponse = z.input<typeof AdminFileResponse>
 
-export const AdminDeleteFileResponse = z
-  .object({
-    id: z.string(),
-    object: z.literal('file'),
-    deleted: z.boolean(),
-  })
-  .openapi('AdminDeleteFileResponse')
-export type AdminDeleteFileResponse = z.input<typeof AdminDeleteFileResponse>
-
 export const AdminPresignedUploadUrlResponse = z
   .object({
     url: z.string(),

@@ -1,4 +1,5 @@
 import type {
+  AddressDefaultOption,
   Context,
   CreateCustomerAddressDTO,
   CreateCustomerDTO,
@@ -139,19 +140,46 @@ export class CustomerModuleService implements ICustomerModuleService {
     })
   }
 
-  async createCustomerAddress(data: CreateCustomerAddressDTO, context?: Context): Promise<CustomerAddressDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      return this.customerAddressRepository.create(data, ctx)
-    })
-  }
-
-  async updateCustomerAddress(
-    addressId: string,
-    data: UpdateCustomerAddressDTO,
+  /**
+   * Writes an address, and claims the default slot for it when the shopper ticked the box.
+   *
+   * One transaction, because the promotion is not a second wish the shopper expressed separately:
+   * an address saved without the default it was saved *as* is a change reported as applied when
+   * half of it was. What half-applies is worse than it sounds — promoting releases whichever
+   * address held the slot, so a failure between the two calls can leave the customer with no
+   * default at all.
+   */
+  async createCustomerAddress(
+    data: CreateCustomerAddressDTO,
+    options?: AddressDefaultOption,
     context?: Context,
   ): Promise<CustomerAddressDTO> {
     return this.withTransaction(context, async (ctx) => {
-      return this.customerAddressRepository.update(addressId, data, ctx)
+      const address = await this.customerAddressRepository.create(data, ctx)
+      if (!options?.makeDefault) return address
+
+      return this.setDefaultAddress(data.customerId, address.id, ctx)
+    })
+  }
+
+  /** Edits an address, and claims the default slot for it when asked — see
+   *  `createCustomerAddress` for why the two share a transaction. */
+  async updateCustomerAddress(
+    addressId: string,
+    data: UpdateCustomerAddressDTO,
+    options?: AddressDefaultOption,
+    context?: Context,
+  ): Promise<CustomerAddressDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      // A promotion on its own carries no field changes, and drizzle refuses an empty `set`.
+      const address =
+        Object.keys(data).length > 0
+          ? await this.customerAddressRepository.update(addressId, data, ctx)
+          : await this.customerAddressRepository.findByIdOrFail(addressId, undefined, ctx)
+
+      if (!options?.makeDefault) return address
+
+      return this.setDefaultAddress(address.customerId, addressId, ctx)
     })
   }
 
