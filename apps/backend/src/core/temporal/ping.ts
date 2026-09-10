@@ -1,6 +1,6 @@
 import { env } from '@env'
 import { ulid } from 'ulid'
-import { pingWorkflow } from '../core/workflows/temporal/workflows.js'
+import { pingWorkflow } from '../workflows/temporal/workflows.js'
 import { createTemporalClient } from './client.js'
 
 /**

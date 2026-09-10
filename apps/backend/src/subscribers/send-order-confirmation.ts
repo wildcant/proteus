@@ -2,8 +2,10 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { SubscriberArgs, SubscriberConfig } from '@core/event-bus/types.js'
 import type { Logger } from '@core/types/logger.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
+import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { buildOrderConfirmationNotification } from '../notifications/order-confirmation.js'
+import { env } from '@env'
+import { buildOrderConfirmationNotification } from '@workflows/notification/utils/order-confirmation.js'
 
 /**
  * The shopper's order confirmation, sent after checkout rather than inside it.
@@ -38,11 +40,28 @@ import { buildOrderConfirmationNotification } from '../notifications/order-confi
  */
 async function sendOrderConfirmation({ event, container }: SubscriberArgs<'order.placed'>) {
   const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
   const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
   const orderId = event.data.id
 
+  // The event carries an id, never a DTO, so the confirmation is built from the order as it is now
+  // rather than as it was when checkout published — which is what makes a late delivery correct.
+  const order = await orderService.retrieveOrder(orderId)
+  const [lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([
+    orderService.listOrderLineItems({ orderId: order.id }),
+    orderService.listOrderShippingMethods({ orderId: order.id }),
+    orderService.listOrderTransactions({ orderId: order.id }),
+    orderService.retrieveOrderAddress(order.id, 'shipping'),
+  ])
+
   const notification = await notificationService.createNotification(
-    await buildOrderConfirmationNotification(orderId, container),
+    buildOrderConfirmationNotification({
+      order,
+      lineItems: orderService.enrichLineItems(lineItems),
+      totals: orderService.computeOrderTotals({ lineItems, shippingMethods, transactions }),
+      shippingAddress,
+      storeUrl: env.STORE_URL,
+    }),
   )
 
   logger.info(

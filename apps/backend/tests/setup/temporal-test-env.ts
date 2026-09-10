@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { TestWorkflowEnvironment } from '@temporalio/testing'
 import { DefaultLogger, Runtime } from '@temporalio/worker'
-import { PAYLOAD_CONVERTER_PATH } from '../../src/temporal/config.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../src/core/temporal/config.js'
 
 /**
  * What every test that boots a Temporal server of its own needs, for whichever subsystem is booting

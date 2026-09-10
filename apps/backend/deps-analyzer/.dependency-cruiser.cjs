@@ -106,7 +106,7 @@ module.exports = {
       },
       to: {
         path:
-          '@temporalio/|^src/temporal/|^src/core/workflows/temporal(-adapter\\.ts$|/)' +
+          '@temporalio/|^src/core/temporal/|^src/core/workflows/temporal(-adapter\\.ts$|/)' +
           '|^src/core/event-bus/temporal(-adapter\\.ts$|/)',
         reachable: true,
       },
@@ -114,25 +114,29 @@ module.exports = {
     {
       name: 'shared-temporal-stays-shared',
       comment:
-        'src/temporal/ is the Temporal plumbing the workflow engine and the event bus both ' +
+        'src/core/temporal/ is the Temporal plumbing the workflow engine and the event bus both ' +
         'build on: the client, the payload converter, the failure encoding. It may reach the core ' +
         'primitives every layer shares — BigNumber, AppError, the DTO types, the workflow port ' +
         "type — and nothing else in src/core/, least of all the workflow engine's own Temporal " +
         'internals in src/core/workflows/temporal/. The dependency runs one way: the engine imports ' +
         'the plumbing, never the reverse. Without this rule the split rots the first time someone ' +
-        '"shares" a workflow helper by moving it back into src/temporal/, and the shared folder ' +
-        'quietly becomes the workflow engine again. ' +
+        '"shares" a workflow helper by moving it back into src/core/temporal/, and the shared ' +
+        'folder quietly becomes the workflow engine again. ' +
+        'It sits under src/core/ because it is infrastructure the layers above it share rather than ' +
+        'a layer of its own, and that is why the exemption list has to name the folder itself: every ' +
+        'import here is read against src/core/, so client.ts reaching config.ts next door is the ' +
+        'plumbing being plumbing, not a reach across a boundary. ' +
         'ping.ts is the one exemption: it is an operator script (`npm run temporal:ping`) rather ' +
         "than plumbing — it starts the driver's own pingWorkflow on the workflow task queue, and " +
         'nothing imports it, so it takes nothing with it.',
       severity: 'error',
       from: {
-        path: '^src/temporal/',
-        pathNot: '^src/temporal/ping\\.ts$',
+        path: '^src/core/temporal/',
+        pathNot: '^src/core/temporal/ping\\.ts$',
       },
       to: {
         path: '^src/core/',
-        pathNot: '^src/core/(bignumber\\.ts$|errors/|types/|workflows/types\\.ts$)',
+        pathNot: '^src/core/(temporal/|bignumber\\.ts$|errors/|types/|workflows/types\\.ts$)',
       },
     },
     {
@@ -143,7 +147,8 @@ module.exports = {
         'standalone activities — and that is exactly the coupling this forbids: a fix ' +
         "in the engine's replay code must be structurally incapable of changing event dispatch, " +
         'which it is only while dispatch never enters that file. What they genuinely share (the ' +
-        'client factory, the payload converter, the failure encoding) lives in src/temporal/, which ' +
+        'client factory, the payload converter, the failure encoding) lives in src/core/temporal/, ' +
+        'which ' +
         'shared-temporal-stays-shared keeps from growing back into either of them. ' +
         'Direct imports, not reachability, and deliberately so: a subscriber that runs a workflow ' +
         'is the designed path — src/subscribers/ may reach both — and a workflow step that ' +
@@ -156,23 +161,6 @@ module.exports = {
       to: {
         path: '^src/core/(event-bus|workflows)/',
         pathNot: '^src/core/$1/',
-      },
-    },
-    {
-      name: 'notifications-belong-to-neither',
-      comment:
-        'src/notifications/ holds what a notification *is*, separated from what decides to send it. ' +
-        'Its builders are called by the order.placed subscriber and were called by a checkout step, ' +
-        'so it sits under neither tree on purpose — a builder under src/workflows/ would mean the ' +
-        'subscriber reaches into the workflow tree to send an email, and the reverse is as bad. ' +
-        'Nothing enforced that placement until now: a README is not a rule, and the directory ' +
-        'reads as correct right up until the first import that quietly makes it belong to one side.',
-      severity: 'error',
-      from: {
-        path: '^src/notifications/',
-      },
-      to: {
-        path: '^src/workflows/|^src/core/(event-bus|workflows)/',
       },
     },
     {
@@ -229,6 +217,28 @@ module.exports = {
    * uses a documented feature in a way the docs never describe.
    */
   required: [
+    {
+      name: 'src-holds-only-known-top-level-entries',
+      comment:
+        'A new top-level folder under src/ is a new architectural layer, so it is added by editing ' +
+        'this list — not by an author who needed somewhere to put a file. Every kind of code already ' +
+        'has a home: an HTTP route in api/, the ports and primitives every layer shares in core/, a ' +
+        'scheduled task in jobs/, a cross-module join in link-modules/, tables and business logic in ' +
+        'modules/, a third-party adapter in providers/, work caused by something that happened in ' +
+        'subscribers/, and cross-module orchestration in workflows/. A folder that fits none of them ' +
+        'is a decision rather than a convenience, and a decision comes with a rule saying what may ' +
+        'import it — the way subscribers/ has subscribers-name-no-transport. ',
+      severity: 'error',
+      module: {
+        path:
+          '^src/' +
+          '(?!(?:api|core|framework|jobs|link-modules|modules|providers|server' +
+          '|subscribers|workflows)/)' +
+          '(?!(?:config|container|env|index|index\\.workerd|routes|schema|schema\\.type|start' +
+          '|test-exports)\\.ts$)',
+      },
+      to: { path: '(?!)' },
+    },
     {
       name: 'api-holds-only-four-file-kinds',
       comment:

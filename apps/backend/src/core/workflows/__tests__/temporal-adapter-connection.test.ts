@@ -1,7 +1,7 @@
 import type { Client } from '@temporalio/client'
 import { test } from '@tests/setup/test-extend.js'
 import { createContainer } from 'awilix'
-import type { TemporalClientHandle } from '../../../temporal/client.js'
+import type { TemporalClientHandle } from '../../temporal/client.js'
 import { createTemporalWorkflowEngine } from '../temporal-adapter.js'
 import { createWorkflow } from '../types.js'
 

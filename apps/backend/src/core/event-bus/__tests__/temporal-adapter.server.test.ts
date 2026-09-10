@@ -6,7 +6,7 @@ import { createTemporalDevServerEnvironment, TEMPORAL_BOOT_TIMEOUT } from '@test
 import { type AwilixContainer, asValue, createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { noopLogger } from '../../../framework/logger/noop-logger.js'
-import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../temporal/config.js'
 import type { Event } from '../events.js'
 import { createSubscriberRegistry, type SubscriberRegistry } from '../registry.js'
 import { createEventActivities } from '../temporal/activities.js'

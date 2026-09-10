@@ -55,7 +55,7 @@ registry.ts                   — event name → subscribers, from the generated
 `check:deps`. They share a vendor on node — the engine runs workflow executions, the bus runs
 standalone activities — and that is exactly the coupling the rule forbids: a fix in the engine's
 replay code has to be structurally incapable of changing event dispatch. What they genuinely share
-lives in `src/temporal/`: the payload converter, the failure encoding, and the client *factory*. Each
+lives in `src/core/temporal/`: the payload converter, the failure encoding, and the client *factory*. Each
 subsystem gets its own `Client` on its own connection, and its own task queue.
 
 The bounded-retry rule is the visible cost of that split. `createTemporalEventBus` refuses an

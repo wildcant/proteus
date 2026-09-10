@@ -1,7 +1,7 @@
 import { ActivityExecutionAlreadyStartedError, type Client } from '@temporalio/client'
 import type { Duration, Priority, RetryPolicy } from '@temporalio/common'
-import { createTemporalClient, type TemporalClientHandle } from '../../temporal/client.js'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
+import { createTemporalClient, type TemporalClientHandle } from '../temporal/client.js'
 import type { Logger } from '../types/logger.js'
 import { buildEvent, type EventName, type EventPayloads } from './events.js'
 import type { SubscriberRegistry } from './registry.js'

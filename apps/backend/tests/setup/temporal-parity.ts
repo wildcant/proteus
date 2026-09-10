@@ -4,6 +4,7 @@ import { Context } from '@temporalio/activity'
 import { Client, Connection } from '@temporalio/client'
 import { NativeConnection, Worker } from '@temporalio/worker'
 import type { AwilixContainer } from 'awilix'
+import { PAYLOAD_CONVERTER_PATH } from '../../src/core/temporal/config.js'
 import {
   createWorkflowActivities,
   type RegisteredWorkflowActivities,
@@ -12,7 +13,6 @@ import {
 import { WORKFLOWS_PATH } from '../../src/core/workflows/temporal/config.js'
 import type { WorkflowRegistry } from '../../src/core/workflows/temporal/registry.js'
 import { env } from '../../src/env.js'
-import { PAYLOAD_CONVERTER_PATH } from '../../src/temporal/config.js'
 // The two process-global installers every Temporal test needs: a Runtime whose logger does not go
 // through `console.warn` (which `setup-test-env.ts` turns into a thrown error), and a
 // TypeScript-aware `require` hook, because Temporal loads `payloadConverterPath` with `require()`

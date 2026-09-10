@@ -1,4 +1,4 @@
-import type { SerializedError } from '../../../temporal/failure-details.js'
+import type { SerializedError } from '../../temporal/failure-details.js'
 import type { Event } from '../events.js'
 
 /**

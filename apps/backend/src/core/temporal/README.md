@@ -1,4 +1,4 @@
-# `src/temporal/` — shared Temporal plumbing
+# `src/core/temporal/` — shared Temporal plumbing
 
 This folder is the Temporal plumbing that more than one subsystem builds on: the workflow engine
 (`src/core/workflows/temporal/`) and the event bus (`src/core/event-bus/`). That is the

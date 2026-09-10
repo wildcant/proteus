@@ -1,6 +1,6 @@
 import { ApplicationFailure } from '@temporalio/common'
 import type { AwilixContainer } from 'awilix'
-import { serializeError } from '../../../temporal/failures.js'
+import { serializeError } from '../../temporal/failures.js'
 import type { Logger } from '../../types/logger.js'
 import { ContainerRegistrationKeys } from '../../utils/index.js'
 import type { SubscriberRegistry } from '../registry.js'

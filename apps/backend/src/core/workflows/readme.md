@@ -312,7 +312,7 @@ without breaking any of the 72 existing `ctx.step` call sites. If `sleep`, `chil
    precludes it, and `WorkflowConfig` is where such a declaration would go, next to `idempotent`.
 
 The thing not to do is let a Temporal concept reach a workflow file. `src/workflows/` has zero
-imports from `src/core/workflows/temporal/` or `src/temporal/` today and should keep it — a feature that cannot be expressed without
+imports from `src/core/workflows/temporal/` or `src/core/temporal/` today and should keep it — a feature that cannot be expressed without
 breaking that is a port change, and a port change is an ADR.
 
 ### Choosing an engine
@@ -331,7 +331,7 @@ the durability of the outer workflow's steps and no more, where the other 24 get
 `src/core/workflows/temporal/__tests__/nested-workflow.server.test.ts` pins that shape; ADR-0021 records it as a residual.
 
 `check:deps` enforces the boundary — `no-temporal-in-workerd` fails if `src/index.workerd.ts` can
-reach `@temporalio/*`, `src/temporal/` or `src/core/workflows/temporal/` at all.
+reach `@temporalio/*`, `src/core/temporal/` or `src/core/workflows/temporal/` at all.
 
 **A workerd deployment therefore has no durable execution.** That is deliberate and recorded as an
 accepted limitation in ADR-0022, along with the table of what each runtime does and does not get.

@@ -5,7 +5,7 @@ import {
   type RetryPolicy,
   TemporalFailure,
 } from '@temporalio/workflow'
-import { readStepFailureDetail, STEP_FAILURE_TYPE, type StepFailureDetail } from '../../../temporal/failure-details.js'
+import { readStepFailureDetail, STEP_FAILURE_TYPE, type StepFailureDetail } from '../../temporal/failure-details.js'
 import type { Activities } from './activities.js'
 import type { AdvanceWorkflowInput, AdvanceWorkflowResult, DriverInput, StepOutput } from './types.js'
 

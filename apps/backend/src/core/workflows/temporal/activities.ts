@@ -1,6 +1,6 @@
 import { Context } from '@temporalio/activity'
 import type { AwilixContainer } from 'awilix'
-import { isTerminal, toStepApplicationFailure } from '../../../temporal/failures.js'
+import { isTerminal, toStepApplicationFailure } from '../../temporal/failures.js'
 import type { Logger } from '../../types/logger.js'
 import { ContainerRegistrationKeys } from '../../utils/index.js'
 import type { WorkflowRegistry } from './registry.js'

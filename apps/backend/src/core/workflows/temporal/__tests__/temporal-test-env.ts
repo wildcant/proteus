@@ -4,7 +4,7 @@ import {
   installTypeScriptRequireHook,
   TEMPORAL_BOOT_TIMEOUT,
 } from '@tests/setup/temporal-test-env.js'
-import { PAYLOAD_CONVERTER_PATH } from '../../../../temporal/config.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 
 /**
  * The workflow engine's own test server.
