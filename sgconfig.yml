@@ -1,6 +1,6 @@
 # Standards — what a file's contents must look like, the counterpart to the dependency rules
 # in each app's `structure/.dependency-cruiser.cjs`. Both are declarative — these run in the
-# `standards` gate of `npm run verify`, those in `structure`.
+# `standards` gate of `pnpm verify`, those in `structure`.
 #
 # `rules/` mirrors the code it governs, so a rule has an obvious home: frontend/features/api holds
 # the mutation-hook contract, backend/workflows would hold the step rules. See standards/README.md

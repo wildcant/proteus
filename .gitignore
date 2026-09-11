@@ -3,7 +3,7 @@ node_modules
 .env.keys.production
 *.db
 
-# Prisma generated client (regenerate with: npx prisma generate)
+# Prisma generated client (regenerate with: pnpm dlx prisma generate)
 backend/generated/
 
 tmp

@@ -1,5 +1,5 @@
 /**
- * Dev entrypoint for the Worker — `npm run --workspace=backend worker:dev`. Production runs
+ * Dev entrypoint for the Worker — `pnpm --filter backend run worker:dev`. Production runs
  * `worker.ts` directly and never loads this file.
  *
  * All it adds is regenerating `registry.gen.ts` before booting, so adding a workflow file needs no
@@ -21,6 +21,6 @@ import { fileURLToPath } from 'node:url'
 
 const workspace = fileURLToPath(new URL('../../../../', import.meta.url))
 
-execFileSync('npm', ['run', '--silent', 'workflows:generate'], { cwd: workspace, stdio: 'inherit' })
+execFileSync('pnpm', ['--silent', 'run', 'workflows:generate'], { cwd: workspace, stdio: 'inherit' })
 
 await import('./worker.js')

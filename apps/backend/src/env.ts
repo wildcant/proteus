@@ -101,7 +101,7 @@ const envSchema = z.object({
 
   /**
    * Points the API at the toxiproxy in docker-compose.yml instead of Postgres directly, so every
-   * query carries injected latency. Set by `npm run dev:slow`; empty everywhere else. Ignored while
+   * query carries injected latency. Set by `pnpm dev:slow`; empty everywhere else. Ignored while
    * migrating — those run against DIRECT_DATABASE_URL and have no reason to be slow.
    */
   SLOW_DATABASE_URL: z.string().default(''),

@@ -45,15 +45,17 @@ npm run --workspace=admin test:e2e
 
 # Linting & type-checking
 npm run check                  # Biome lint + format (warnings do not fail)
-npm run typecheck              # backend, store, admin
+npm run typecheck              # root tooling scripts (tsconfig.json), then every workspace with a
+                               # typecheck script, via `pnpm -r` — so a new workspace needs no edit
 npm run check:standards        # ast-grep rules; :test runs the rules' own tests
 
 # Verification gate — run after finishing any implementation task
-npm run verify                 # Formats, then ten gates in parallel: typecheck, lint
+npm run verify                 # Formats, then eleven gates in parallel: typecheck, lint
                                # (warnings fail here), the code standards, the import structure
-                               # rules, generated-file currency, Spectral on both OpenAPI specs,
-                               # `test:gate`, the http-schemas bound tests, the store's unit +
-                               # component tests, and the utils tests. ~16s. Component tests need
+                               # rules, one version per declared dependency, generated-file
+                               # currency, Spectral on both OpenAPI specs, `test:gate`, the
+                               # http-schemas bound tests, the store's unit + component tests, and
+                               # the utils tests. ~16s. Component tests need
                                # `npx playwright install chromium`.
 npm run verify -- --ci         # CI mode: fails on unformatted files instead of rewriting them
                                # (implied when the CI env var is set)

@@ -8,14 +8,14 @@
     "./playwright": "./fixtures/e2e-config.ts"
   },
   "devDependencies": {
-    "backend": "*",
-    "@faker-js/faker": "^10.5.0",
-    "@playwright/test": "^1.52.0",
-    "@tanstack/react-router": "latest",
-    "drizzle-orm": "^0.45.2",
+    "backend": "workspace:*",
+    "@faker-js/faker": "catalog:",
+    "@playwright/test": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "drizzle-orm": "catalog:",
     "playwright-persona": "^0.3.0",
-    "postgres": "^3.4.7",
-    "scrypt-kdf": "^4.0.0",
-    "@types/node": "^22.0.0"
+    "postgres": "catalog:",
+    "scrypt-kdf": "catalog:",
+    "@types/node": "catalog:"
   }
 }

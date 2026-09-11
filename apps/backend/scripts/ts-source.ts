@@ -25,7 +25,7 @@
  * "which files call `createWorkflow`". That is the opposite of the paragraph above.
  *
  * The cost is real and was measured: typechecking the three apps takes ~13s on 6.x against ~4s on
- * the native 7.x compiler. It does not move `npm run verify`, where the type-check suite finishes
+ * the native 7.x compiler. It does not move `pnpm verify`, where the type-check suite finishes
  * well inside the backend test suite it runs beside. Revisit when a stable standalone parser ships;
  * that is the single thing blocking the upgrade.
  */

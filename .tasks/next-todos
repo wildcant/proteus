@@ -137,6 +137,7 @@ Future features TODOs
 - GLOBAL SHIPPING OPTIONS [COUNTRY CODE]: if there's a single countryCode in apps/backend/src/modules/fulfillment/models/geo-zone.ts then the country code should be fixed to that single country in all endpoints. figure out the way to do this.
 
 Future Infra TODOs
+- migrate node cron jobs from bull mq to temporal schedules.
 - Monitoring — nothing today: no opentelemetry, no sentry, no exporter of any kind.
 - cloudflare workflows (https://developers.cloudflare.com/workflows/) as replacement of simple workflows for workerd. Temporal has serverless support but only google and aws (https://docs.temporal.io/demos/serverless-workers)
 - aws deployment

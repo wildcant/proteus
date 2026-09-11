@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # Self-locating, so the check behaves the same from the workspace, the repo root, or
-# `npm run --workspace=...`. Violations still print repo-relative paths: `src/foo.ts` alone
+# `pnpm --filter <name> run ...`. Violations still print repo-relative paths: `src/foo.ts` alone
 # would not say which workspace it is in.
 WORKSPACE="$(cd "$(dirname "$0")/.." && pwd)"
 REPO_ROOT="$(cd "$WORKSPACE/../.." && pwd)"

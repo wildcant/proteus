@@ -351,6 +351,31 @@ does **not** dislodge it either; only deleting the lockfile does.
 An **exact version** in the override has no such failure mode, because no previous resolution can
 satisfy it except the one you named. That is why the recommendation in §11 pins exactly.
 
+> **Corrected during implementation, 2026-09-11.** Two things above are wrong in a way that matters.
+>
+> The stickiness is not specific to ranges. An **exact** override added to an existing lockfile does
+> not re-resolve either — `@tanstack/form-core` stayed at two copies after an incremental install
+> with `'@tanstack/form-core': 1.33.2` in place. What dislodges it is deleting **`node_modules`**,
+> not the lockfile.
+>
+> And "delete `pnpm-lock.yaml`" is the wrong instruction here, not merely a stronger one than
+> necessary. The lockfile is the *output of `pnpm import`*, which is what holds the migration to 8
+> drifting packages instead of 180. Deleting it discards the import and turns the package-manager
+> change into a repo-wide upgrade. The order that works: overrides in `pnpm-workspace.yaml` **before**
+> `pnpm import` runs, so they are written into the lockfile's `overrides:` header at import time,
+> then `rm -rf node_modules && pnpm install`.
+>
+> Measured against the real repo in that order: `@tanstack/form-core` and `@tanstack/history` each at
+> one version, and all three apps and all four packages at 0 type errors.
+>
+> One note on how to read the fidelity number, because the obvious count is misleading. Classifying
+> each differing name rather than just counting them: **0 packages resolved to a version npm did not
+> have.** What the raw count picks up is 38 *collapses* — a name npm held at two versions that pnpm
+> holds at one — which is the goal of this work, not a risk from it. And a subtree that leaves the
+> tree entirely stops being compared at all, so removing a dependency *lowers* the shared-name total
+> rather than raising the drift. Count collapses, expansions and changes separately; only the last
+> one means the migration became an upgrade.
+
 ### 4.4 The forms of an override, checked
 
 | Form | Verdict here |
@@ -726,7 +751,7 @@ The implementation is one file, pure Node, no dependency, no network — it pars
 of `pnpm-lock.yaml` with a regex and every workspace manifest with `JSON.parse`:
 
 ```js
-// scripts/checks/one-version.mjs (sketch — the working version lives in the scratchpad)
+// scripts/checks/one-version.mts (sketch — the working version lives in the scratchpad)
 const lock = readFileSync('pnpm-lock.yaml', 'utf8').split('\n')
 const versions = new Map()
 let inPackages = false
@@ -756,6 +781,56 @@ const accepted = {
   '@dotenvx/dotenvx': 'we are on 2; shadcn bundles 1. Different process, never imported together.',
 }
 ```
+
+> **Corrected during implementation, 2026-09-11.** Do not copy that map. Re-derived against the real
+> repo, **none of the three entries survives** and the shipped map has exactly one.
+>
+> `express` is **gone** — the backend moved to `express@^5.2.1`, which collapses it to one copy and
+> takes four `qs` copies down to one with it (`docs/research/express-5-migration.md` §5.3). It was
+> recorded here as a permanent exception a week before it stopped being one, which is the argument
+> for re-deriving the map from the tree rather than inheriting it.
+>
+> `zod` and `@dotenvx/dotenvx` are **both gone too**, and the route to it is worth recording because
+> the two obvious ones are dead ends. *Upgrading* shadcn does nothing: 4.21.0, the current latest,
+> declares `@dotenvx/dotenvx: ^1.48.4` and `zod: ^3.24.1`, the same as the 4.16.1 we ran — checked
+> against the registry. *Dropping* the declaration breaks the build, because both apps carried
+> `@import "shadcn/tailwind.css"` in their `styles.css` and the package ships that as a build input;
+> the store's component tests fail on `Can't resolve 'shadcn/tailwind.css'`.
+>
+> What works is **`shadcn eject`** (shadcn changelog, 2026-05), which inlines that stylesheet and
+> deletes the dependency. Run from the installed 4.16.1 rather than `@latest`, so the inlined CSS is
+> the exact bytes we were already compiling; it needs `components.json` and the `@import` in the same
+> workspace, which is why the block now lives in `packages/ui` — where those keyframes and variants
+> are consumed — and both apps get it through the `@proteus/ui/styles.css` import that already sat on
+> the next line, leaving the cascade order unchanged. **73 packages leave the tree, and both apps'
+> compiled CSS is byte-identical before and after** (same size, same MD5, verified by building both).
+> The cost is that the block no longer tracks shadcn; re-ejecting is how you pick up a change to it.
+>
+> One phantom class turned up on the way and it is one nothing here can catch. Before this,
+> **`packages/ui` declared `shadcn` and never imported it, while both apps imported it and declared
+> it nowhere.** tsc, dependency-cruiser and Biome all reason about JS and TS import specifiers; a
+> dependency named only inside a stylesheet is invisible to all three. The strict layout did not
+> surface it either — pnpm's hidden hoisted store still satisfied the resolver, even though node
+> itself cannot resolve the specifier from the app's own directory. A CSS-only dependency is a gap in
+> §8's survey and in `undeclared-dependencies.md` alike.
+>
+> The one entry left is `@types/node`, at 22 and 24. Six workspaces were relying on a hoisted copy
+> and declaring none, which the strict layout *did* surface; declaring it in all of them collapsed
+> every copy our own source resolves. What remains is entirely **Temporal's**, and traced rather
+> than guessed: `protobufjs@7.6.6` through `@grpc/proto-loader` (the gRPC transport to the Temporal
+> server, alongside `@temporalio/proto`'s own `protobufjs@8.8.0`), and `jest-worker@27.5.1` through
+> `webpack`, which `@temporalio/worker` declares as a hard `dependencies` entry — it is the bundler
+> that compiles `src/workflows/` into the deterministic isolate. Both take `@types/node` as a hard
+> dependency rather than a peer, so no declaration of ours reaches them, and an override would be
+> forcing node types onto Temporal's bundler to retire a type-only duplicate nothing compiles
+> against.
+>
+> Worth naming the wrong turn, because `pnpm why` invites it: the tree also shows `webpack` under
+> `@tanstack/router-plugin` and `unplugin` labelled `peer`, which reads like an unused bundler that
+> `autoInstallPeers` dragged in. It is not — both declare webpack **optional**, and `autoInstallPeers`
+> installs missing *non-optional* peers only. Those lines are optional peers being satisfied by the
+> copy Temporal had already required. `peerDependencyRules.ignoreMissing` is no help either: pnpm's
+> own docs scope it to warnings, and adding it here left the lockfile untouched — *measured*.
 
 **Proof it bites** (`AGENTS.md`: *"a gate that cannot fail is not a gate"*), performed 2026-09-11 in the
 trial workspace:
@@ -935,7 +1010,7 @@ Measured effect of exactly this configuration in the trial workspace, *2026-09-1
 
 ### 11.3 The gate
 
-`scripts/checks/one-version.mjs` as sketched in §10, wired into `scripts/verify.sh`'s `JOBS` list —
+`scripts/checks/one-version.mts` as sketched in §10, wired into `scripts/verify.sh`'s `JOBS` list —
 which `AGENTS.md` names as "the single definition of what 'checked' means here". It is offline, 36 ms,
 and derives from the manifests, so it fits alongside the `structure` gate rather than needing a tool.
 Whether it becomes its own job or joins `structure` is a judgement call: the claim is about *versions*,
@@ -950,7 +1025,9 @@ minimal"). It needs the registry and takes seconds, so it belongs in CI, not in 
 2. Add the catalog and convert the 37 shared declarations. This alone clears the two fatal
    `peerDependencies: latest` entries and five of the nine splits.
 3. Add the two overrides. Delete `pnpm-lock.yaml`, reinstall — do not trust an incremental install here
-   (§4.3).
+   (§4.3). **Corrected: delete `node_modules`, never `pnpm-lock.yaml`, and have the overrides in place
+   before `pnpm import` runs. See the correction box in §4.3 — deleting the lockfile discards the
+   import and puts the drift against npm back to 180 packages.**
 4. Run `tsc` in `apps/admin` and `packages/ui`; expect 0.
 5. Add the gate with the three-entry `accepted` map, run the mutation of §10, and say in the PR that
    you ran it.

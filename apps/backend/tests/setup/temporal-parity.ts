@@ -20,7 +20,7 @@ import { env } from '../../src/env.js'
 import { installTemporalRuntime, installTypeScriptRequireHook } from './temporal-test-env.js'
 
 /**
- * What `npm run --workspace=backend test:temporal` needs that production does not.
+ * What `pnpm --filter backend run test:temporal` needs that production does not.
  *
  * In production the API process starts an execution and a separate Worker process runs the steps
  * against its own container and database. The parity suite cannot do that: every vitest worker has

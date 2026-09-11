@@ -1,12 +1,19 @@
 import { env } from '@env'
 import jwt, { type SignOptions } from 'jsonwebtoken'
-import type { StringValue } from 'ms'
 import { AppError, ErrorTypes } from '../../errors/app-error.js'
 import type { AuthTokenPayload } from '../types.js'
 
+/**
+ * The lifetime a signed token may be given, taken from jsonwebtoken's own option type.
+ * Its string form (`'15m'`) is declared by `ms`, which is a transitive dependency of
+ * jsonwebtoken — importing `StringValue` from there directly reached past our own manifest
+ * into a package nothing in this repo declares.
+ */
+export type JwtExpiresIn = NonNullable<SignOptions['expiresIn']>
+
 type JwtConfig = {
   secret: string
-  expiresIn: StringValue | number
+  expiresIn: JwtExpiresIn
   jwtOptions?: SignOptions
 }
 

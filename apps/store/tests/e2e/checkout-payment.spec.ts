@@ -498,7 +498,10 @@ async function addLineItemOutOfBand(page: Page, variantId: string) {
   expect(cartId, 'the page has no cart to change').toBeTruthy()
 
   const backendUrl = process.env.VITE_BACKEND_URL
-  expect(backendUrl, 'VITE_BACKEND_URL is unset — run the suite through `npm run test:e2e`').toBeTruthy()
+  expect(
+    backendUrl,
+    'VITE_BACKEND_URL is unset — run the suite through `pnpm --filter store run test:e2e`',
+  ).toBeTruthy()
 
   // Through Playwright's own request context rather than the page's `fetch`, so the page never
   // learns the cart moved — which is the entire point of this step.

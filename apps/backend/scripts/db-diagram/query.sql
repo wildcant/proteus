@@ -1,7 +1,7 @@
 -- ChartDB's PostgreSQL "Smart Query", vendored from https://github.com/chartdb/chartdb.
 -- Collects the schema as one JSON row for import into a diagram.
 -- If a ChartDB upgrade changes it, copy the new one out of the import dialog and
--- pass it in: npm run --workspace=backend db:diagram -- path/to/query.sql
+-- pass it in: pnpm --filter backend run db:diagram path/to/query.sql
 /* PostgreSQL edition */
 WITH fk_info AS (
     SELECT array_to_string(array_agg(CONCAT('{"schema":"', replace(schema_name, '"', ''), '"',

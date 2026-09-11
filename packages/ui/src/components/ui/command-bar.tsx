@@ -1,6 +1,6 @@
 /**
  * Hand-written. shadcn has no `CommandBar` — its `Command` is a cmdk palette — so there is no
- * registry entry to `npx shadcn add` and no upstream to re-sync from. Change it in place.
+ * registry entry to `pnpm --filter @proteus/ui run shadcn:add` and no upstream to re-sync from. Change it in place.
  *
  * It was ported from Medusa's design system with four deliberate departures:
  *

@@ -38,14 +38,14 @@ JOBS="backend store schemas packages storeE2e adminE2e"
 E2E_PORTS="3011,3012,3013,3015,3017,3018"
 
 # The whole suite, not `test:gate`. ~96s, and the reason this script exists separately.
-job_backend() { npm run --workspace=backend test; }
+job_backend() { pnpm --filter backend run test; }
 
-job_store() { npm run --workspace=store test; }
+job_store() { pnpm --filter store run test; }
 
 # The two shared packages. Both are pure and take a few seconds, and both also run in `verify.sh` —
 # see the note at the top on why they are repeated here rather than left to it.
-job_schemas() { npm run --workspace=@proteus/http-schemas test; }
-job_packages() { npm run --workspace=@proteus/utils test; }
+job_schemas() { pnpm --filter @proteus/http-schemas run test; }
+job_packages() { pnpm --filter @proteus/utils run test; }
 
 # No job_admin. The admin has a vitest config and no test files, and `vitest run` treats that as a
 # failure rather than a pass — so listing it here failed every run of this script. `verify.sh` has
@@ -55,25 +55,29 @@ job_packages() { npm run --workspace=@proteus/utils test; }
 # --reporter=line overrides the config's `html`, which on a local failure starts a report server
 # and blocks — a run that never exits rather than one that fails. `line` still prints full failure
 # detail at the end, and the HTML report stays available to anyone running `test:e2e` directly.
-job_storeE2e() { npm run --workspace=store test:e2e -- --reporter=line; }
-job_adminE2e() { npm run --workspace=admin test:e2e -- --reporter=line; }
+#
+# No `--` before it. npm consumed that separator; pnpm forwards it to the script, so Playwright
+# would receive a bare `--` as its first argument. pnpm passes everything after the script name
+# through already, which is why the separator has nothing left to separate.
+job_storeE2e() { pnpm --filter store run test:e2e --reporter=line; }
+job_adminE2e() { pnpm --filter admin run test:e2e --reporter=line; }
 
 for arg in "$@"; do
   case "$arg" in
     -h | --help)
-      echo "Usage: npm run verify:full"
+      echo "Usage: pnpm verify:full"
       echo ""
       echo "  Runs every test suite in parallel: the full backend suite, the store's unit and"
       echo "  component tests, the http-schemas and utils package tests, and both Playwright"
       echo "  e2e suites."
       echo ""
-      echo "  Static checks are npm run verify. The Temporal suites are excluded — they need"
+      echo "  Static checks are pnpm verify. The Temporal suites are excluded — they need"
       echo "  a Temporal server and cannot share the backend suite's databases."
       exit 0
       ;;
     *)
       echo "Unknown argument: $arg" >&2
-      echo "Usage: npm run verify:full" >&2
+      echo "Usage: pnpm verify:full" >&2
       exit 1
       ;;
   esac
@@ -93,7 +97,7 @@ label_of() {
 if ! docker compose -f apps/backend/docker-compose.test.yml ps --status running --quiet postgres-test >/dev/null 2>&1; then
   echo ""
   echo -e "${RED}✖${RESET} ${BOLD}The test database is not running.${RESET}"
-  echo -e "  Start it with ${BOLD}npm run --workspace=backend db:test:up${RESET}."
+  echo -e "  Start it with ${BOLD}pnpm --filter backend run db:test:up${RESET}."
   echo ""
   exit 1
 fi
@@ -175,5 +179,5 @@ if [[ $failures -gt 0 ]]; then
 fi
 
 echo -e "${GREEN}✔${RESET} ${BOLD}All tests passed.${RESET}"
-echo -e "${DIM}  Static checks are npm run verify. Temporal: npm run --workspace=backend test:temporal${RESET}"
+echo -e "${DIM}  Static checks are pnpm verify. Temporal: pnpm --filter backend run test:temporal${RESET}"
 echo ""

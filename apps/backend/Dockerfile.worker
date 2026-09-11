@@ -1,9 +1,9 @@
 # The Temporal Worker, for the dev Compose stack only. Never built for deployment.
 #
 # It exists because `RUNTIME` defaults to `node` and `node` resolves to the Temporal engine, so
-# `npm run dev` dispatches every workflow to the `proteus` task queue — and a queue nobody polls
-# does not fail, it hangs. D4 promised `npm run dev` works with no extra setup, so the Worker joins
-# the stack Temporal is already in.
+# `pnpm --filter backend run dev` dispatches every workflow to the `proteus` task queue — and a
+# queue nobody polls does not fail, it hangs. D4 promised that command works with no extra setup,
+# so the Worker joins the stack Temporal is already in.
 #
 # The image carries its own `node_modules` rather than mounting the host's: `@temporalio/core-bridge`
 # is a native addon, and the host's copy is built for the host's platform. Source is bind-mounted
@@ -13,23 +13,34 @@ FROM node:22-bookworm-slim
 
 WORKDIR /app
 
-# Manifests first, so the install layer survives every source change and is rebuilt only when a
-# package.json or the lockfile moves. `npm ci` needs every workspace's manifest, not just the
-# backend's, because the lockfile describes the whole tree.
-COPY package.json package-lock.json ./
+# corepack reads `packageManager` from the root package.json, so the image installs with the exact
+# pnpm the repo pins rather than whatever latest is on build day. `COPY package.json` has to come
+# first for that reason — `corepack enable` only installs the shim, and the version is resolved on
+# the first `pnpm` call below.
+COPY package.json ./
+RUN corepack enable pnpm
+
+# The rest of the manifests, so the install layer survives every source change and is rebuilt only
+# when a package.json or the lockfile moves. `--frozen-lockfile` needs every workspace's manifest,
+# not just the backend's, because it verifies the lockfile against all of them and fails on a
+# mismatch rather than resolving around it. `pnpm-workspace.yaml` is part of that input now: it
+# carries the workspace globs *and* the catalog, so a manifest saying `catalog:` cannot be resolved
+# without it.
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/backend/package.json apps/backend/
 COPY apps/admin/package.json apps/admin/
 COPY apps/store/package.json apps/store/
+COPY packages/frontend-structure/package.json packages/frontend-structure/
 COPY packages/http-schemas/package.json packages/http-schemas/
 COPY packages/icons/package.json packages/icons/
 COPY packages/testing/package.json packages/testing/
 COPY packages/ui/package.json packages/ui/
 COPY packages/utils/package.json packages/utils/
 
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
 # The same command a contributor runs by hand, so the containerised Worker and the manual one cannot
 # drift. `tsx` and `dotenvx` come from the script; nothing is compiled ahead of time here either.
-CMD ["npm", "run", "--workspace=backend", "worker"]
+CMD ["pnpm", "--filter", "backend", "run", "worker"]

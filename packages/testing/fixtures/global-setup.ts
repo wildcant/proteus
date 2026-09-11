@@ -31,7 +31,7 @@ export default async function globalSetup() {
   // dotenvx leaves a variable alone when the environment already carries one, so passing the
   // suite's database here is what keeps the seed off the base one — this process still holds the
   // unsuffixed URL that `.env.test` supplied.
-  execSync('npm run --workspace=backend db:seed:providers:test', {
+  execSync('pnpm --filter backend run db:seed:providers:test', {
     stdio: 'inherit',
     env: { ...process.env, POOLER_DATABASE_URL: DATABASE_URL },
   })
@@ -43,7 +43,7 @@ export default async function globalSetup() {
   // Same env override as the providers above, and for the same reason — without it this seeds the
   // *base* database while the suite runs against its own, and the storefront answers every request
   // with "the store does not sell in its default market".
-  execSync('npm run --workspace=backend db:seed:markets:test', {
+  execSync('pnpm --filter backend run db:seed:markets:test', {
     stdio: 'inherit',
     env: { ...process.env, POOLER_DATABASE_URL: DATABASE_URL },
   })

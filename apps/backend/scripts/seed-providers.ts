@@ -1,7 +1,7 @@
 /**
  * Seed all module providers into the database.
  *
- * Usage: npx tsx scripts/seed-providers.ts
+ * Usage: pnpm --filter backend exec tsx scripts/seed-providers.ts
  *
  * This is the CI/CD counterpart of the provider loaders' DB upsert,
  * which is skipped on the workerd runtime. Run this script against

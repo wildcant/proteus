@@ -67,7 +67,7 @@
     {
       "label": "dev: api",
       "type": "shell",
-      "command": "npm run --workspace=backend dev",
+      "command": "pnpm --filter backend run dev",
       "isBackground": true,
       "presentation": {
         "group": "dev-backend",
@@ -89,7 +89,7 @@
       // mid-execution finishes that step rather than losing it.
       "label": "dev: worker",
       "type": "shell",
-      "command": "npm run --workspace=backend worker:dev",
+      "command": "pnpm --filter backend run worker:dev",
       "isBackground": true,
       "presentation": {
         "group": "dev-backend",
@@ -115,7 +115,7 @@
       // recreate it rather than reading the refusal as a broken task.
       "label": "dev: events",
       "type": "shell",
-      "command": "npm run --workspace=backend worker:events",
+      "command": "pnpm --filter backend run worker:events",
       "isBackground": true,
       "presentation": {
         "group": "dev-backend",
@@ -131,7 +131,7 @@
     {
       "label": "dev: store",
       "type": "shell",
-      "command": "npm run --workspace=store dev",
+      "command": "pnpm --filter store run dev",
       "isBackground": true,
       "presentation": {
         "group": "dev-frontend",
@@ -147,7 +147,7 @@
     {
       "label": "dev: admin",
       "type": "shell",
-      "command": "npm run --workspace=admin dev",
+      "command": "pnpm --filter admin run dev",
       "isBackground": true,
       "presentation": {
         "group": "dev-frontend",
@@ -189,10 +189,10 @@
       // a fresh clone has no such file and starts with an undefined DATABASE_URL. The guard covers
       // missing and empty — the two fatal cases — and never truncates a good file, which an
       // unconditional regenerate would do whenever dotenvx fails. It does not cover *stale*: after
-      // editing `.env.local`, rerun `npm run gen:workerd-env` yourself.
+      // editing `.env.local`, rerun `pnpm run gen:workerd-env` yourself.
       "label": "dev: workerd infra",
       "type": "shell",
-      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres && { [ -s apps/backend/.env.workerd ] || npm run gen:workerd-env; }",
+      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres && { [ -s apps/backend/.env.workerd ] || pnpm run gen:workerd-env; }",
       "presentation": { "reveal": "silent", "panel": "shared", "close": true },
       "problemMatcher": []
     },
@@ -212,7 +212,7 @@
       // jobs in `src/jobs/` can be fired by hand instead of waiting on the minute tick.
       "label": "dev: workerd api",
       "type": "shell",
-      "command": "npm run --workspace=backend dev:workerd",
+      "command": "pnpm --filter backend run dev:workerd",
       "isBackground": true,
       "presentation": {
         "group": "dev-workerd",
@@ -228,7 +228,7 @@
     {
       "label": "dev: workerd store",
       "type": "shell",
-      "command": "npm run --workspace=store dev:workerd",
+      "command": "pnpm --filter store run dev:workerd",
       "isBackground": true,
       "presentation": {
         "group": "dev-workerd",
@@ -244,7 +244,7 @@
     {
       "label": "dev: workerd admin",
       "type": "shell",
-      "command": "npm run --workspace=admin dev:workerd",
+      "command": "pnpm --filter admin run dev:workerd",
       "isBackground": true,
       "presentation": {
         "group": "dev-workerd",

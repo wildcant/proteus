@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
  * bundling this file rather than by sharing objects across the isolate boundary.
  *
  * Loaded with `require()`, which means the process needs a TypeScript-aware require hook: `tsx`
- * provides one for `npm run worker` and `npm run dev`, and the adapter tests install the same hook
+ * provides one for `pnpm worker` and `pnpm dev`, and the adapter tests install the same hook
  * (see `core/workflows/temporal/__tests__/temporal-test-env.ts`) because vitest leaves node_modules
  * on plain Node.
  *

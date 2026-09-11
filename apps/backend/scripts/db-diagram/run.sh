@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build a ChartDB diagram of the local schema, grouped into one labelled area per module.
 #
-#   npm run --workspace=backend db:diagram
+#   pnpm --filter backend run db:diagram
 #
 # Dumps the schema with query.sql, then hands it to load.mjs, which drives ChartDB's import and
 # rewrites the layout. Opens a browser window with the finished diagram; no copying or pasting.
@@ -13,7 +13,7 @@
 # Connects with DIRECT_DATABASE_URL from .env.local, decrypted by dotenvx (see package.json).
 #
 # Pass a different query if a ChartDB upgrade changes it:
-#   npm run --workspace=backend db:diagram -- path/to/query.sql
+#   pnpm --filter backend run db:diagram path/to/query.sql
 #
 # Note: cross-module references are plain text columns with no foreign key (see src/link-modules),
 # so link tables render without relationship lines. That is accurate — there is no constraint.
@@ -29,8 +29,8 @@ URL="${CHARTDB_URL:-http://localhost:8088}"
 
 if [ -z "${DIRECT_DATABASE_URL:-}" ]; then
   echo "error: DIRECT_DATABASE_URL is not set." >&2
-  echo "       Run it through npm so dotenvx decrypts .env.local:" >&2
-  echo "         npm run --workspace=backend db:diagram" >&2
+  echo "       Run it through pnpm so dotenvx decrypts .env.local:" >&2
+  echo "         pnpm --filter backend run db:diagram" >&2
   exit 1
 fi
 

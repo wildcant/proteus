@@ -126,7 +126,7 @@ module.exports = {
         'a layer of its own, and that is why the exemption list has to name the folder itself: every ' +
         'import here is read against src/core/, so client.ts reaching config.ts next door is the ' +
         'plumbing being plumbing, not a reach across a boundary. ' +
-        'ping.ts is the one exemption: it is an operator script (`npm run temporal:ping`) rather ' +
+        'ping.ts is the one exemption: it is an operator script (`pnpm temporal:ping`) rather ' +
         "than plumbing — it starts the driver's own pingWorkflow on the workflow task queue, and " +
         'nothing imports it, so it takes nothing with it.',
       severity: 'error',

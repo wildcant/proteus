@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Restore the staging database: drop all schemas, re-migrate, seed providers, seed dev data.
-# Usage: npm run --workspace=backend db:restore:staging
+# Usage: pnpm --filter backend run db:restore:staging
 #
 # Seeding runs with FILE_PROVIDER=s3 so the product photos are uploaded to the bucket in .env
 # rather than copied to a local `static/` directory staging cannot serve.
@@ -10,10 +10,16 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/../../../" && pwd)"
 BACKEND_DIR="$REPO_ROOT/apps/backend"
 
+# Every command below resolves a binary or a module from the backend's own node_modules, and under
+# pnpm that is the only place they exist — `dotenvx` and `tsx` come from its .bin, and the inline
+# `require('pg')` from its dependencies. The `pnpm --filter backend run` entry point already puts
+# us here; this makes the script say so rather than depend on it.
+cd "$BACKEND_DIR"
+
 export NODE_OPTIONS="--dns-result-order=ipv4first"
 
 echo "==> Decrypting DIRECT_DATABASE_URL from .env..."
-DATABASE_URL=$(npx dotenvx get DIRECT_DATABASE_URL -f "$REPO_ROOT/.env")
+DATABASE_URL=$(dotenvx get DIRECT_DATABASE_URL -f "$REPO_ROOT/.env")
 
 echo "==> Dropping public and drizzle schemas..."
 node -e "
@@ -31,12 +37,12 @@ client.connect().then(async () => {
 "
 
 echo "==> Running migrations..."
-MIGRATING=true npx dotenvx run -f "$REPO_ROOT/.env" -- npm run --workspace=backend db:migrate
+MIGRATING=true dotenvx run -f "$REPO_ROOT/.env" -- pnpm run db:migrate
 
 echo "==> Seeding providers..."
-MIGRATING=true npx dotenvx run -f "$REPO_ROOT/.env" -- npx -w backend tsx scripts/seed-providers.ts
+MIGRATING=true dotenvx run -f "$REPO_ROOT/.env" -- tsx scripts/seed-providers.ts
 
-echo "==> Seeding dev data (uploading seed images to $(npx dotenvx get S3_BUCKET -f "$REPO_ROOT/.env"))..."
-MIGRATING=true FILE_PROVIDER=s3 npx dotenvx run -f "$REPO_ROOT/.env" -- npx -w backend tsx scripts/seed-dev.ts
+echo "==> Seeding dev data (uploading seed images to $(dotenvx get S3_BUCKET -f "$REPO_ROOT/.env"))..."
+MIGRATING=true FILE_PROVIDER=s3 dotenvx run -f "$REPO_ROOT/.env" -- tsx scripts/seed-dev.ts
 
 echo "==> Done! Staging database restored."

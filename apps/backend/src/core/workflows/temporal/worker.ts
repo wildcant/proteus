@@ -9,7 +9,7 @@ import { workflowRegistry } from './registry.js'
 import { STEP_ACTIVITY_NAMES } from './step-names.js'
 
 /**
- * Worker entrypoint — `npm run --workspace=backend worker`.
+ * Worker entrypoint — `pnpm --filter backend run worker`.
  *
  * This is where Proteus workflows actually execute. The sandboxed driver in `workflows.ts` carries
  * only a name and a list of outputs; the handler behind that name lives here, with the DI
