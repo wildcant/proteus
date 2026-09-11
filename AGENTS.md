@@ -1,64 +1,80 @@
 # AGENTS.md
 
-Guidance for coding agents working in this repository. `CLAUDE.md` is a symlink to this file, so
-Claude Code loads it as its project instructions; Codex and other `AGENTS.md` readers load it
-directly. Personal, untracked preferences go in `AGENTS.local.md` (bridged by `CLAUDE.local.md`),
-never here.
+Guidance for coding agents working in this repository. Personal, untracked preferences go in AGENTS.local.md, never here.
 
 ## Commands
 
 ```bash
 # Install
 npm install
+npm run setup                  # install + pull dotenvx keys + generate apps/backend/.env.workerd
 
-# Dev servers
-npm run --workspace=backend dev          # API at :3000 (Swagger at /admin/docs/, /store/docs/)
-npm run --workspace=admin dev            # Admin SPA at :3002
-npm run --workspace=store dev         # Storefront at :3001
+# Dev — the whole stack is five processes plus Docker. In VS Code, run the `dev` task
+# (Cmd+Shift+B): it brings up Postgres + Temporal, then the API, both Workers, store and admin,
+# and opens the three URLs. `dev: workerd` is the same session on the workerd runtime.
+docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui
+npm run --workspace=backend dev            # API at :3000 (Swagger at /admin/docs/, /store/docs/)
+npm run --workspace=backend worker:dev     # Temporal Worker for src/workflows (watch mode)
+npm run --workspace=backend worker:events  # Temporal Worker for src/subscribers
+npm run --workspace=store dev              # Storefront at :3001
+npm run --workspace=admin dev              # Admin SPA at :3002
+                                           # Temporal UI at :8088
+
+# Stop the compose-run Workers when running them locally. Both poll the same task queues, and
+# whichever is free claims the task — leaving both up makes edits appear to apply at random.
 
 # Database (Docker Postgres)
 npm run --workspace=backend db:start        # Start Postgres
-npm run --workspace=backend db:migrate:dev  # Run migrations
-npm run --workspace=backend db:generate     # Generate migration after schema change
+npm run --workspace=backend db:migrate:dev  # Run migrations (every module + link-modules)
+npm run --workspace=backend db:generate     # Generate migration after a schema change
 npm run --workspace=backend db:seed:dev     # Seed dev data
+npm run --workspace=backend db:test:up      # Test Postgres — needed by the backend + e2e suites
 npm run --workspace=backend stack:reset     # Wipe the volume and rebuild: proteus *and* Temporal's
                                             # two databases, then migrate + seed. db:reset drops
                                             # proteus only, so workflow history survives it
 
 # Testing
-npm run --workspace=backend test                          # All backend tests
-npx -w backend vitest run src/modules/product             # Single module tests
+npm run --workspace=backend test                          # Full backend suite (~96s)
+npm run --workspace=backend test:gate                     # The slice `verify` runs
+npx -w backend vitest run src/modules/product             # Single module
 npx -w backend dotenvx run -f ../../.env.test -- vitest run src/modules/product  # With env
+npm run --workspace=backend test:temporal                 # Needs a Temporal server up
+npm run --workspace=store test                            # Unit (node) + component (Chromium)
+npm run --workspace=store test:e2e                        # Playwright; :e2e:dev for the UI
+npm run --workspace=admin test:e2e
 
 # Linting & type-checking
 npm run check                  # Biome lint + format (warnings do not fail)
-npm run typecheck              # All workspaces
+npm run typecheck              # backend, store, admin
+npm run check:code-shape       # ast-grep rules; :test runs the rules' own tests
 
 # Verification gate — run after finishing any implementation task
-npm run verify                 # format, then typecheck + lint + convention checks + dependency
-                               # rules + backend API tests + the store's unit and component tests,
-                               # in parallel. Lint warnings fail here. Runs backend src/api tests
-                               # only; run the full suite separately before a PR. The component
-                               # tests need a Chromium: npx playwright install chromium
+npm run verify                 # Formats, then nine suites in parallel: typecheck, lint
+                               # (warnings fail here), convention checks, dependency rules,
+                               # Spectral on both OpenAPI specs, `test:gate`, the http-schemas
+                               # bound tests, the store's unit + component tests, and the utils
+                               # tests. ~16s. Component tests need `npx playwright install chromium`.
 npm run verify -- --ci         # CI mode: fails on unformatted files instead of rewriting them
                                # (implied when the CI env var is set)
 npm run verify:full            # Every test, in parallel: the whole backend suite, the store's unit
                                # and component tests, the http-schemas and utils package tests, and
                                # both Playwright e2e suites. No static checks — that is verify.
-                               # Needs the test database up, and the e2e suites need the Temporal
-                               # server too (docker compose -f apps/backend/docker-compose.yml
-                               # up -d --wait). Excludes the Temporal test suites, which need a
-                               # server of their own.
+                               # Needs the test database up. Excludes the Temporal suites, which
+                               # need a server of their own.
+
+# scripts/verify.sh is the single definition of what "checked" means here. A new project-wide
+# check belongs in its JOBS list; nothing else aggregates them.
 
 # Each e2e suite owns its database, backend process, Temporal task queue and Worker, so the two
 # run concurrently — and so a Worker started by `worker:dev` cannot execute a suite's workflow
 # against the dev database. packages/testing/fixtures/e2e-config.ts holds the port map and the
 # queue names, and is where a new suite is defined.
 
-# Code generation
-npm run openapi:generate       # Dump OpenAPI spec → regenerate Orval clients (admin + store)
-npm run --workspace=admin openapi:client    # Admin Orval client only
-npm run --workspace=admin generate-routes   # TanStack Router route tree
+# Code generation — all three are committed, and `verify` fails when they have drifted
+npm run openapi:generate                        # OpenAPI spec → Orval clients (admin + store)
+npm run --workspace=backend workflows:generate  # src/workflows → temporal/registry.gen.ts
+npm run --workspace=backend subscribers:generate # src/subscribers → registry.gen.ts
+npm run --workspace=admin generate-routes       # TanStack Router route tree
 ```
 
 ## Project Structure
@@ -67,10 +83,16 @@ Monorepo with npm workspaces:
 
 - `apps/backend` — API server (Ports & Adapters / Hexagonal Architecture)
 - `apps/admin` — Admin SPA (TanStack Router + React Query + React Table)
-- `apps/store` — Storefront SPA (TanStack Start, backend-as-library)
-- `packages/http-schemas` — Shared Zod schemas (exports `./admin` and `./store`)
+- `apps/store` — Storefront (TanStack Start on workerd; selective SSR)
+- `packages/http-schemas` — Shared Zod schemas (`./admin`, `./store`, `./auth`, `./common`, `./bounded`)
 - `packages/ui` — Component library (shadcn/base-nova style, @base-ui/react primitives)
-- `packages/utils` — Shared utilities (date formatting via date-fns)
+- `packages/utils` — Shared utilities (date/number formatting)
+- `packages/icons` — Generated icon components (`build:icons` from `assets/`)
+- `packages/testing` — Shared Playwright/Vitest fixtures, e2e port + database map, global setup
+- `packages/frontend-conventions` — The Bulletproof React layout rules both frontends are checked against
+
+Path aliases: backend `@core/*`, `@framework/*`, `@server/*`, `@workflows/*`, `@env`, `@tests/*`;
+both frontends `#/*` → `./src/*`.
 
 ## Backend Architecture
 
@@ -80,11 +102,18 @@ Each module at `apps/backend/src/modules/{name}/` follows an identical layout:
 - `models/` — Drizzle table definitions (use `timestamps` helper from `src/core/db/columns.ts`)
 - `repositories/` — Extend `BaseRepository(table)`, receive `{ getDb }` factory
 - `services/` — Business logic implementing an interface from `src/core/types/`
-- `__tests__/` — Integration tests
-- `index.ts` — `Module()` factory definition
+- `__tests__/` — Every test the module has, including pure-function ones
+- `index.ts` — `Module()` factory definition, and the module's whole public surface
 - `database.config.ts` — Drizzle migration config
 
-Modules: cart, customer, fulfillment, inventory, payment, product, user.
+Modules: auth, cart, customer, file, fulfillment, inventory, notification, order, payment, pricing,
+product, region, store, user.
+
+**The folder list is closed.** Eight folders and four root files — `models/`, `repositories/`,
+`services/`, `migrations/`, `__tests__/`, `utils/`, `loaders/`, `providers/`, plus `index.ts`,
+`database.config.ts`, `provider-declarations.ts`, `sync-providers.ts` — enforced by
+`module-holds-only-known-file-kinds`. Nesting *inside* them is unconstrained. See
+`apps/backend/src/modules/README.md`.
 
 A module too large for one service class splits internally: the module service constructs the
 collaborator from its own injected dependencies and keeps it private. Nothing registers or exports
@@ -96,13 +125,32 @@ built per module from one models barrel, so tables with foreign keys between the
 
 `src/container.ts` creates a shared Awilix container. Each module gets a private local container with its repos. Only the module's service is exposed to the shared container. Modules cannot access each other's internals.
 
-Registration keys: `GET_DB`, `DB_PROVIDER`, `LOGGER`, `LINK` (in `ContainerRegistrationKeys`).
+Registration keys: `GET_DB`, `DB_PROVIDER`, `LOGGER`, `LINK`, `EVENT_BUS` (in `ContainerRegistrationKeys`).
 
 ### Cross-Module Patterns
 
 - **Link modules** (`src/link-modules/`) — Cross-module join tables and relations. Accessed via `LinkService.repo("cartProduct")`. Two types: writeable (own table + BaseRepository) and readonly (Drizzle relations only + ReadonlyLinkRepository).
-- **Workflows** (`src/workflows/`) — Cross-module orchestration with `ctx.step()` calls and compensation for rollback.
+- **Workflows** (`src/workflows/`) — Cross-module orchestration with `ctx.step()` calls and compensation for rollback. Executed by a Temporal Worker on node, by a simple in-process engine on workerd. Workflow handlers must stay replay-pure (`check:workflow-purity`).
 - **Subscribers** (`src/subscribers/`) — Work caused by something that happened, off the caller's critical path. See below.
+
+### Where a Route Helper Goes
+
+A handler calls out; it does not carry its own helpers. The signal is **mutation**, not how many
+modules are touched:
+
+- **Pure** (no `req`, no service, awaits nothing) → `src/workflows/<domain>/utils/`.
+- **Several reads, even across modules** → inline them. There is nothing to unwind, so there is
+  nothing for a workflow to compensate.
+- **Mutations that must not half-happen** → one mutation: call the service. Several in one module:
+  one method under `this.withTransaction`. Several across modules: a workflow. Prefer the
+  transaction wherever it reaches — compensation is hand-written rollback that needs one per step
+  and can itself fail. The module boundary is where the transaction stops, because a `Context` is
+  never threaded across one.
+- **Fetch or validation reused by several routes** → a middleware in `middlewares.ts`.
+
+`src/api/` holds exactly four kinds of file — `route.ts`, `definitions.ts`, `middlewares.ts`,
+`__tests__/` — enforced by `api-holds-only-four-file-kinds`. Full table and worked examples:
+`apps/backend/src/api/README.md`.
 
 ### Adding a Subscriber
 
@@ -141,33 +189,47 @@ Full guide, including the transports and their guarantees: `apps/backend/src/cor
 - `src/server/app.ts` — Zero-dependency router: `fetch(Request) → Response`. File-based route discovery from `src/api/`.
 - `src/server/platforms.ts` — Platform adapters (Node via Hono, Express with Swagger, Workers).
 - `src/server/api-caller.ts` — Backend-as-library adapter for TanStack Start server functions (no HTTP round-trip).
-- Route files: `src/api/admin/{resource}/route.ts` export `GET`, `POST`, etc. Middleware via `middlewares.ts`.
-- Query parsing uses `qs` library (supports nested operator params like `$eq`, `$in`, `$gte`).
+- Route files: `src/api/admin/{resource}/route.ts` export `GET`, `POST`, etc.; `definitions.ts` wires each handler to its schemas, auth and OpenAPI metadata.
+- Handlers declare the errors they raise with `throws` — see `docs/middleware-and-openapi.md`. Webhooks under `src/api/hooks/` are the carve-out: they verify by signature inside the handler, because a middleware runs before input validation and signature checks need the raw bytes.
+- Query parsing uses `qs` (supports nested operator params like `$eq`, `$in`, `$gte`).
 
 ### Key Conventions
 
 - `getDb` is always a factory function `() => Database`, never a direct instance. Repositories call `getDb()` and support transaction context via `getClient(context?)`.
-- `createWithTransaction(getDb)` wraps mutations. Services use `this.withTransaction(context, async (ctx) => { ... })`.
+- `createWithTransaction(getDb)` wraps mutations. Services use `this.withTransaction(context, async (ctx) => { ... })`, and an outer method passes `ctx` down so a whole sequence commits or rolls back once.
 - Date handling: DB stores `timestamptz` → Drizzle returns `Date` → DTOs use `Date` → API serializes to ISO strings. In `http-schemas`, use `dateToIso` pipeline and `z.input` (not `z.infer`) for entity types.
 - Soft-delete by default: every table has `deletedAt`, BaseRepository auto-filters.
 - SQL-level prefixed IDs (e.g., `cus_550e8400...`) generated by Postgres.
 - `DbProvider` port: Node uses singleton pool; Workers uses per-request connection via AsyncLocalStorage.
 
-## Admin App Architecture
+## Frontend Apps
 
-### Stack
+Both frontends follow [Bulletproof React](https://github.com/alan2207/bulletproof-react): unidirectional,
+feature-based. A feature at `src/features/{name}/` may contain only `api/`, `assets/`,
+`components/`, `hooks/`, `stores/`, `types/`, `utils/` — a closed vocabulary, enforced from
+`packages/frontend-conventions` through each app's `deps-analyzer/.dependency-cruiser.cjs`. Anything
+deeper than that second level is the feature's own business.
 
-TanStack Router + React Query + React Table + TanStack Form + Zod v4. Path alias: `#/*` → `./src/*`.
+The admin is a plain SPA: Vite + TanStack Router, built to a static `dist` and deployed to
+Cloudflare Pages. The store is **not** — it is TanStack Start on workerd with selective SSR.
+`src/start.ts` sets `defaultSsr: false` because auth tokens and cart IDs live in `localStorage`,
+which the server cannot read; `__root__` and `_main` carry `ssr: true` to provide the document shell
+and `<Outlet />`, and the two product routes opt in for SEO. Adding a route means deciding which
+side it is on — see ADR-0013.
 
 ### API Layer
 
-Orval generates typed API clients from the backend's OpenAPI spec into `src/api/generated/` (tags-split mode). Custom fetcher at `src/lib/fetcher.ts` uses `qs.stringify()` for nested query params.
+Orval generates typed API clients from the backend's OpenAPI spec into `src/api/generated/`
+(tags-split mode). Custom fetcher at `src/lib/fetcher.ts` uses `qs.stringify()` for nested query
+params. The store additionally calls the backend as a library from server functions.
 
-Feature modules wrap generated functions with React Query hooks in `features/{name}/api/`. Every mutation hook accepts an optional `UseMutationOptions` parameter, shows an error toast on failure, and forwards callbacks. See `ast-grep/rules/frontend/features/api/__docs__/mutation-hooks.md` for the full pattern.
+Feature modules wrap generated functions with React Query hooks in `features/{name}/api/`. Every
+mutation hook accepts an optional `UseMutationOptions`, shows an error toast on failure, and
+forwards callbacks. Every query is an exported `*QueryOptions` factory built with `queryOptions()`;
+hooks and route loaders both read that one factory, and queries never toast. Contracts:
+`ast-grep/rules/frontend/features/api/__docs__/`.
 
-Every query is an exported `*QueryOptions` factory built with `queryOptions()`; hooks and route loaders both read that one factory, and queries never toast. See `ast-grep/rules/frontend/features/api/__docs__/query-hooks.md`.
-
-### DataTable System (`src/components/data-table/`)
+### Admin DataTable System (`src/components/data-table/`)
 
 Consumer API: `useDefineTable<T>(config)` returns a table definition passed to `<DataTable use={table} />`.
 
@@ -177,14 +239,7 @@ Global cell renderers (datetime, date, boolean, text) configured via `configureD
 
 ### Route-Driven Modals
 
-Create/edit forms open as child routes using `RouteFocusModal` (full viewport drawer) or `RouteDrawer` (side drawer). `RouteModalForm` wraps TanStack Form with an unsaved-changes guard via `useBlocker()`.
-
-### Features Structure
-
-Each feature at `src/features/{name}/` co-locates:
-- `api/` — React Query hooks and mutation factories
-- `components/` — Feature-specific UI
-- `hooks/` — `useDefineTable` config, form hooks
+Create/edit forms open as child routes using `RouteFocusModal` (full viewport drawer) or `RouteDrawer` (side drawer). `RouteModalForm` wraps TanStack Form with an unsaved-changes guard via `useBlocker()`. See ADR-0019.
 
 ### Form Hooks
 
@@ -196,7 +251,7 @@ fields. See `ast-grep/rules/frontend/features/hooks/__docs__/form-hooks.md` for 
 
 - Admin app must not import store schemas from http-schemas
 - `@tanstack/react-table` imports only allowed inside `components/data-table/`
-- No circular dependencies
+- No circular dependencies; the store's feature graph is acyclic (ADR-0020)
 
 ## Testing
 
@@ -240,7 +295,9 @@ Backend tests are integration tests against a real Postgres database. Custom Vit
 - `logger` — noopLogger
 - `dto.generate` — Faker-based data builders (e.g., `generateCreateProductDTO`)
 
-Tests construct services manually with injected repos. Vitest config at `apps/backend/vitest.config.ts` runs tests sequentially (`fileParallelism: false`). Path aliases: `@tests/*`, `@core/*`.
+Tests construct services manually with injected repos. The suite claims its worker databases
+(`proteus_test_1..N`) with an advisory lock, so a second vitest run — an orphaned process, or an
+editor's watcher — fails rather than corrupting the first.
 
 ### Test data comes from factories, per test
 
@@ -288,10 +345,13 @@ catalogue data is fixture data and does not belong there.
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/`. Guides at `docs/adding-a-module.md`,
-`docs/backend-test-infrastructure.md`, `docs/error-handling.md`, `docs/middleware-and-openapi.md`,
-`docs/soft-delete-cascade.md`, `docs/product-options.md`,
-`apps/backend/src/core/event-bus/readme.md`.
+Architecture Decision Records in `docs/adr/` (0001–0024, indexed by `docs/architecture-decisions.md`).
+
+A subsystem's guide lives beside it: `apps/backend/src/api/README.md` (route conventions and helper
+placement), `src/modules/README.md` (module layout), `src/workflows/README.md` (workflows, steps,
+utils), `src/core/event-bus/readme.md` (events and subscribers). Cross-cutting guides are in `docs/`:
+`adding-a-module.md`, `backend-test-infrastructure.md`, `error-handling.md`,
+`middleware-and-openapi.md`, `soft-delete-cascade.md`, `product-options.md`.
 
 A convention with a rule behind it is documented beside that rule, not in `docs/` — form hooks, form
 components, query hooks and mutation hooks all live under `ast-grep/rules/`. `ast-grep/README.md` is
