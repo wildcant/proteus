@@ -11,7 +11,7 @@ import { toSmallestUnit } from './smallest-unit'
 
 /**
  * The Stripe client adapter. Every Stripe symbol in the storefront lives under this directory, and
- * `stripe-stays-in-its-adapter` in `deps-analyzer/.dependency-cruiser.cjs` fails the build if one
+ * `stripe-stays-in-its-adapter` in `structure/.dependency-cruiser.cjs` fails the build if one
  * escapes — so "the checkout depends on an adapter, not on Stripe" is enforced rather than hoped.
  */
 

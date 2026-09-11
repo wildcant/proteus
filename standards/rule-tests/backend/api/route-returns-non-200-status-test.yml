@@ -1,0 +1,41 @@
+id: route-returns-non-200-status
+valid:
+  # What all 79 of these returns answer with.
+  - |
+    export const GET = async (req) => {
+      return { status: 200, json: { customers } }
+    }
+  - |
+    export const DELETE = async (req) => {
+      return { status: 200, json: { id, deleted: true } }
+    }
+  # A create is a POST, and a POST is out of scope: only the service call says create from update.
+  - |
+    export const POST = async (req) => {
+      return { status: 201, json: { customers } }
+    }
+  # A `status` key on something that is not the response — the filter passed to a list query.
+  - |
+    export const GET = async (req) => {
+      const products = await productService.list({ ...filters, status: 'published' })
+      return { status: 200, json: { products } }
+    }
+invalid:
+  # A DELETE answering 204: no body for the shared `DeleteResponse` to travel in.
+  - |
+    export const DELETE = async (req) => {
+      return { status: 204 }
+    }
+  # A GET answering a create's status.
+  - |
+    export const GET = async (req) => {
+      return { status: 201, json: { customers } }
+    }
+  # A PATCH taking the second branch out — the rule reads every return, not the first.
+  - |
+    export const PATCH = async (req) => {
+      if (!existing) {
+        return { status: 202, json: { queued: true } }
+      }
+      return { status: 200, json: { customer } }
+    }

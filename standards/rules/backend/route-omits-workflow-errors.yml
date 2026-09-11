@@ -1,0 +1,21 @@
+id: route-omits-workflow-errors
+language: typescript
+severity: error
+message: This calls $WF but never spreads `...$WF.throws`, so the failures it raises reach the client undocumented.
+note: 'Spread the callee rather than restating it — `[...$WF.throws, ErrorTypes.CONFLICT]`. This is what carries an error raised three step-frames down into the OpenAPI document, at any depth. standards/rules/backend/api/__docs__/routes.md'
+files:
+  - "**/src/api/**/route.ts"
+  - "**/src/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  pattern: $WF.run($$$)
+  not:
+    inside:
+      kind: program
+      stopBy: end
+      has:
+        stopBy: end
+        pattern:
+          context: "const t = [...$WF.throws]"
+          selector: spread_element

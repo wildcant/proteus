@@ -1,0 +1,59 @@
+id: field-suffix-without-field-context
+snapshots:
+  ? |
+    export const QuantityField = ({ value, onChange }: QuantityFieldProps) => (
+      <Stepper value={value} onChange={onChange} />
+    )
+  : labels:
+    - source: |-
+        QuantityField = ({ value, onChange }: QuantityFieldProps) => (
+          <Stepper value={value} onChange={onChange} />
+        )
+      style: primary
+      start: 13
+      end: 125
+    - source: QuantityField
+      style: secondary
+      start: 13
+      end: 26
+    - source: |-
+        ({ value, onChange }: QuantityFieldProps) => (
+          <Stepper value={value} onChange={onChange} />
+        )
+      style: secondary
+      start: 29
+      end: 125
+  ? |
+    export function SearchField({ onSubmit }: { onSubmit: (term: string) => void }) {
+      const [term, setTerm] = useState('')
+      return <Input value={term} onChange={(event) => setTerm(event.target.value)} />
+    }
+  : labels:
+    - source: |-
+        function SearchField({ onSubmit }: { onSubmit: (term: string) => void }) {
+          const [term, setTerm] = useState('')
+          return <Input value={term} onChange={(event) => setTerm(event.target.value)} />
+        }
+      style: primary
+      start: 7
+      end: 204
+    - source: SearchField
+      style: secondary
+      start: 16
+      end: 27
+  ? |
+    function AddressField({ field }: { field: AnyFieldApi }) {
+      return <Input value={field.state.value} onChange={(event) => field.handleChange(event.target.value)} />
+    }
+  : labels:
+    - source: |-
+        function AddressField({ field }: { field: AnyFieldApi }) {
+          return <Input value={field.state.value} onChange={(event) => field.handleChange(event.target.value)} />
+        }
+      style: primary
+      start: 0
+      end: 166
+    - source: AddressField
+      style: secondary
+      start: 9
+      end: 21

@@ -45,6 +45,32 @@ src/
 | Update body       | `[Scope]Update[Entity]`             | `AdminUpdateCustomer`                |
 | List query params | `[Scope][Entity]ListParams`         | `AdminCustomerListParams`            |
 
+## Two constraints on every schema
+
+Both are invisible until something downstream breaks, and neither is caught by typecheck.
+
+### No `node:` imports
+
+The package is bundled into the admin browser SPA *and* the store on Cloudflare Workers. Anything
+Node-only breaks both. That rules out validating with a real Node parser inside a schema — `node:util`'s
+`MIMEType`, say — even when the backend route already uses one.
+
+Keep the isomorphic check in the schema and let the route do the stricter parsing. The route must
+convert any parser throw into `AppError(INVALID_DATA)`, or a bare `TypeError` reaches
+`error-handler.ts` and answers 500 where 400 was meant.
+
+### No regex flags in `.regex()`
+
+zod-to-openapi serialises the flag into the generated JSON Schema `pattern` as literal text:
+`/^…$/i` becomes `"^…$/i"`, which no client can match. Spell the alternatives out instead —
+`[a-zA-Z0-9]`, not `[a-z0-9]` with `i`.
+
+The leak is invisible until you look at the output, so after changing a schema run
+`npm run openapi:generate` and diff the generated `pattern` and type against what you meant. One
+wrinkle when you do: the dump script writes expanded JSON arrays and Biome reformats them compact,
+so a regeneration shows thousands of churn lines until Biome has run over `apps/backend/openapi` —
+do that before reading the real diff.
+
 ## Patterns
 
 ### Dual export (runtime value + type)

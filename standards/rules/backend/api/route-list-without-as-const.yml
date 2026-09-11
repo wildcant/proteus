@@ -1,0 +1,19 @@
+id: route-list-without-as-const
+language: typescript
+severity: error
+message: '`$NAME` is declared without `as const`, so TypeScript widens it to its common element type and the route loses what each entry contributed.'
+note: 'Add `as const`: `export const GetMiddlewares = [requireCustomer()] as const`. `HttpRequest`''s second parameter turns a middleware list into whatever those middlewares put on the request, and a widened `MiddlewareFunction<object>[]` puts nothing there — so `req.customer` silently stops being typed while the file still compiles. A `Throws` list widens the same way, to `ErrorTypes[]`, and a route that spreads it into another carries the widening on. A single-element list happens to survive the widening; do not rely on it. standards/rules/backend/api/__docs__/routes.md'
+files:
+  - "**/src/api/**/route.ts"
+ignores:
+  - "**/__tests__/**"
+# The initialiser is the whole test. With `as const` the node is an `as_expression`; without it the
+# array is the initialiser itself, which is what `kind: array` names. Nothing here reads the list's
+# contents, because the widening costs the same whatever is in it.
+rule:
+  pattern: export const $NAME = $LIST
+constraints:
+  NAME:
+    regex: '^(Get|Post|Patch|Put|Delete)(Throws|Middlewares)$'
+  LIST:
+    kind: array

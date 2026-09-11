@@ -29,6 +29,19 @@ Both share the `@proteus/testing` package (`packages/testing/`) for fixtures, fa
 - **Make globally-unique or UI-listed values unique per test** — option titles are suffixed with the product id, shipping option names with a random string, because other tests' rows render alongside yours.
 - **Select the row you created, never `.first()`** — a neighbour's row may render first and disappear when that test disposes it: `getByRole('radio', { name: shipping.name })`.
 
+### Where a test goes
+- **One spec per domain, not per surface.** Before creating a new `*.spec.ts`, check whether one for
+  that domain already exists and add to it — `product-media.spec.ts` was written alongside
+  `products.spec.ts` and merged back into it. A suite split per screen stops being navigable.
+  Put the primary journey first in the file.
+- **A separate spec needs a reason you can name**, and it is about what is being exercised rather
+  than about size: `checkout-payment`, `checkout-async-payment` and `saved-cards` are three specs
+  because they cover a card payment, the classification of a payment still settling, and a wallet
+  across two surfaces — different claims, not different screens.
+- **Shared helpers that are not Playwright fixtures go in `tests/setup/utils.ts`**, imported as
+  `'../setup/utils.js'`. `imageFile` there returns an in-memory PNG for `setInputFiles`, so upload
+  tests need no fixture files on disk.
+
 ### Running tests
 ```bash
 npx -w admin playwright test                    # All admin tests
@@ -41,7 +54,9 @@ npx -w admin playwright test --trace on         # Capture trace for debugging
 ## Instructions
 
 1. Explore the UI with Playwright MCP tools before writing assertions — use `browser_snapshot` / `browser_find` to get the accessibility tree and verify selectors against the actual rendered DOM
-2. One test, one scenario — create isolated data per test, clean up after
+2. One test per *user journey*, not per assertion — E2E setup is expensive, so merge tests that
+   share an arrange phase and keep them apart only when the persona, the app or the data shape
+   genuinely differs. Create isolated data per test and clean up after.
 3. Assert what users see, not implementation details
 4. Run the test after writing it — verify it passes before moving on
 

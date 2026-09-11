@@ -1,0 +1,18 @@
+id: route-method-without-output
+snapshots:
+  ? |
+    export const GetOutput = AdminCustomersResponse
+    export const GET = async (req) => ({ status: 200, json: { customers } })
+    export const DELETE = async (req) => ({ status: 200, json: { id, deleted: true } })
+  : labels:
+    - source: 'export const DELETE = async (req) => ({ status: 200, json: { id, deleted: true } })'
+      style: primary
+      start: 121
+      end: 204
+  ? |
+    export const POST = async (req) => ({ status: 201, json: { customers } })
+  : labels:
+    - source: 'export const POST = async (req) => ({ status: 201, json: { customers } })'
+      style: primary
+      start: 0
+      end: 73

@@ -15,7 +15,7 @@ import { GENERATED_WORKFLOWS } from './registry.gen.js'
  * parses `src/workflows/` for `createWorkflow` calls. It is still an import list, and still a
  * committed file — that is the point. Static imports are what put the closures in this process at
  * all, what gives `tsx --watch` a module graph to reload the Worker from, and what lets `tsc` and
- * `check:deps` see the edge. What generating it removes is only the step where a human remembers to
+ * `check:structure` see the edge. What generating it removes is only the step where a human remembers to
  * add a line.
  *
  * Still not a runtime scan of the directory, for the reason that has not changed: a directory can

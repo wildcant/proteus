@@ -51,8 +51,9 @@ Four consequences of that choice are themselves decisions:
 - **A cascade child with no `deleted_at` is destroyed, not hidden.** The absence of the column is a
   deliberate statement that the table is destroy-only. Only password reset tokens are in this
   position: a retained token hash *is* the threat model, and restoring a spent credential has no
-  legitimate meaning. `scripts/checks/standard-timestamps.ts` holds that exemption list, so the
-  next such table is a decision someone makes rather than three characters someone omits.
+  legitimate meaning. The `model-without-standard-timestamps` ast-grep rule fails on a table that
+  does not spread `...timestamps`, so the next such table is an `ast-grep-ignore` with the reason
+  written above it rather than three characters someone omits.
 - **The walker writes to tables directly**, not through repositories, because coverage must not
   depend on which tables happened to get one.
 

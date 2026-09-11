@@ -1,0 +1,23 @@
+id: route-omits-context-query
+language: typescript
+severity: error
+message: 'This route runs `setPricingContext()` but no `<Method>Input` declares `contextQuery: StorePricingContextParams`, so the params it reads are absent from the OpenAPI document and from the generated client.'
+note: 'Declare it beside the body or query it accompanies: `export const PostInput = { body: CreateCart, contextQuery: StorePricingContextParams }`. The middleware parses `req.query` itself, before `applyMiddleware` validates anything, so `contextQuery` is the only thing that documents what it reads. standards/rules/backend/api/__docs__/routes.md'
+files:
+  - "**/src/api/**/route.ts"
+ignores:
+  - "**/__tests__/**"
+# Scope is the file, not the method — nothing correlates `PostInput` with `PostMiddlewares` for
+# ast-grep, the same narrowing `route-throws-undeclared-error` takes. A declaration on one method
+# satisfies the middleware on another; the OpenAPI diff catches what that lets through.
+rule:
+  pattern: setPricingContext()
+  not:
+    inside:
+      kind: program
+      stopBy: end
+      has:
+        stopBy: end
+        pattern:
+          context: "const o = { contextQuery: StorePricingContextParams }"
+          selector: pair

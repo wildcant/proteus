@@ -1,42 +1,13 @@
 # Event Bus
 
-"This should happen because that happened", without also saying "and the shopper waits for it, and
-if it fails nothing tries again."
+How a published event reaches a subscriber: the port, the three adapters behind it, and what each
+transport does with a delivery.
 
-A publisher names an event and hands over its payload. A subscriber is a plain function in a file
-shaped like a job. Nothing about the transport underneath reaches either file.
-
-## Quick start
-
-Publishing — anywhere that has the container: a workflow's final step, a route handler, a job.
-
-```ts
-import type { EventBus } from '@core/event-bus/types.js'
-import { ContainerRegistrationKeys } from '@core/utils/index.js'
-
-const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
-await bus.emit('order.placed', { id: order.id })
-```
-
-Subscribing — one file in `src/subscribers/`, the same shape as `src/jobs/`:
-
-```ts
-type OrderEvent = 'order.placed' | 'order.canceled'
-
-async function orderNotifier({ event, container }: SubscriberArgs<OrderEvent>) {
-  const { id } = event.data
-  // …
-}
-
-export const config: SubscriberConfig<OrderEvent> = {
-  name: 'order-notifier',
-  event: ['order.placed', 'order.canceled'],
-  handler: orderNotifier,
-}
-```
-
-Then `npm run --workspace=backend subscribers:generate` and commit `registry.gen.ts`. Nothing else
-wires it up; `npm run verify` fails if you forget.
+Writing one is elsewhere — adding a name to the event map is
+[`standards/rules/backend/subscribers/__docs__/events.md`](../../../../../standards/rules/backend/subscribers/__docs__/events.md),
+and handling one is
+[`subscribers.md`](../../../../../standards/rules/backend/subscribers/__docs__/subscribers.md)
+beside it.
 
 ## Architecture
 
@@ -52,7 +23,7 @@ registry.ts                   — event name → subscribers, from the generated
 ```
 
 `src/core/event-bus/` and `src/core/workflows/` are peers and may not import each other, enforced by
-`check:deps`. They share a vendor on node — the engine runs workflow executions, the bus runs
+`check:structure`. They share a vendor on node — the engine runs workflow executions, the bus runs
 standalone activities — and that is exactly the coupling the rule forbids: a fix in the engine's
 replay code has to be structurally incapable of changing event dispatch. What they genuinely share
 lives in `src/core/temporal/`: the payload converter, the failure encoding, and the client *factory*. Each
@@ -65,22 +36,6 @@ exists to forbid.
 
 `src/notifications/` is under neither, for the same kind of reason: its builders are called by the
 `order.placed` subscriber and, before it, by a checkout step, so it may not reach either tree.
-
-## Adding an event
-
-Add it to `EventPayloads` in `events.ts`, with a payload carrying `id` — the resource it is about.
-The name and the payload are then checked at compile time, so a typo is a build failure rather than
-an event nobody receives.
-
-Add an event **because a subscriber wants it**. A catalogue of names nothing consumes is one nobody
-can safely delete from. `order.placed` arrived with `src/subscribers/send-order-confirmation.ts`
-and `payment.captured` with `src/subscribers/process-payment-captured.ts`; either is the shape to
-copy.
-
-Publish it from a workflow's **final step**, and derive its id from something an earlier step
-already recorded. A step that retries runs its action again: an id minted inside the action is a new
-one per attempt, so the dispatch identity changes, dedup has nothing to match, and the subscriber
-runs twice. `order.placed` carries `order.id`, which `create-order` produced.
 
 ## Dispatch identity
 
@@ -98,17 +53,6 @@ an event that can legitimately fire twice against one thing. That is what the ex
 captured, so keying on the session alone would dedup the capture into the authorization and never
 deliver it. A *redelivery* of either still keys identically, which is what makes a repeat of one
 webhook a duplicate rather than a second capture.
-
-## Subscribers must be idempotent
-
-Not advice — the contract. Two transports with two delivery guarantees, and every subscriber runs
-unchanged on both, so each one is written to the weaker: at-least-once, no dedup, which is what
-Cloudflare Queues offers. Temporal's server-side dedup is extra safety, not permission to depend on
-it. `event.dispatchId` is the key to be idempotent against.
-
-Concurrent deliveries of one event are therefore possible on workerd in a way they are not on node.
-That is exactly as exposed as processing the same work inline already is, so it is neutral rather
-than a regression — but it is a fact a subscriber is written against, not one to discover.
 
 ## Publishing resolves on acceptance, not on completion
 
@@ -216,22 +160,39 @@ log line. The generated `Env` types it as always present because this app's `wra
 it, and that is a claim about one config file rather than about the runtime a bundle ends up in — a
 Worker without a `queues` block would otherwise build cleanly and die at the first publish.
 
+### Exercising it locally
+
+`npm run --workspace=backend dev:workerd` is a genuine test of this transport, not a stub of it.
+Wrangler binds `EVENTS` through miniflare and delivers to the Worker's own `queue()` export, so the
+whole arc runs locally: publish → message → consumer → `withConnection` → subscriber, with
+`max_retries` and `proteus-events-dlq` honoured — four attempts, then a *"Moving message … to dead
+letter queue"* warning.
+
+To trigger a publish by hand, POST a signed Stripe webhook to `/hooks/payment/pp_stripe_default`.
+Two things are easy to get wrong:
+
+- **The path segment is the container key, not the vendor name** — `pp_stripe_default`, not `stripe`.
+- **The intent must carry `metadata.sessionId`**, or `getWebhookActionAndData` returns
+  `not_supported` and nothing is published at all.
+
+Sign the body as `t=<unix>,v1=<hmac-sha256(STRIPE_WEBHOOK_SECRET, "<t>.<rawBody>")>`.
+
+`.env.workerd` is untracked and plaintext — the root `.env` is dotenvx-encrypted — so it drifts from
+`src/env.ts` on its own. A missing key kills the Worker at boot with `Invalid environment variables`;
+diff the key lists against the root `.env` when it will not start.
+
 ## The generated registry
 
-`src/subscribers/registry.gen.ts` is written by `scripts/generate-subscriber-registry.ts`, which
-parses `src/subscribers/` for exported `config` objects. It is committed, and `--check` runs in the
-verify gate.
+`src/subscribers/registry.gen.ts` is written by
+`apps/backend/scripts/generate-subscriber-registry.ts`, which parses `src/subscribers/` for exported
+`config` objects. It is committed, and `--check` runs in the verify gate.
 
 Static imports, not a directory scan, for the three reasons the workflow registry has the same
 shape: the handler closures have to exist in the process that dispatches, `tsx --watch` reloads off
-the module graph, and `check:deps` cannot follow a scan. A committed artifact is also identical in
+the module graph, and `check:structure` cannot follow a scan. A committed artifact is also identical in
 every environment, which a directory is not.
 
-Every file in `src/subscribers/` is a subscriber. A helper module there is rejected by the generator
-rather than skipped — a file that looks registered and never runs is the failure the generator
-exists to remove.
-
-## Testing
+## How the bus itself is tested
 
 The in-process adapter is a production adapter that happens to be the test seam, exactly as
 `simple-adapter.ts` is to the Temporal workflow engine. It is not a mock, and
@@ -256,34 +217,8 @@ pool and no queue. What is worth protecting there is what the adapter does with 
 Cloudflare does with a message: ack and retry per message, and one connection per batch. Both are
 silent when wrong, which is why they are asserted rather than read.
 
-`src/subscribers/bus-probe.ts` is the bus's `pingWorkflow` — a subscriber whose only job is to prove
-the arc works end to end. It logs its dispatch identity, which is the assertion in one string: the
-event name, the key derived from the payload, and the subscriber's own name.
-
-`send-order-confirmation` is the first production subscriber, and its tests split the same way the
-adapters' do: `src/subscribers/__tests__/` covers what the handler does with one delivery, and
-`src/workflows/cart/__tests__/complete-cart.test.ts` covers that checkout publishes at all — and
-publishes nothing when it unwinds.
-
-`process-payment-captured` splits the same way, one layer up: `src/subscribers/__tests__/` covers what
-one delivery does, and `src/api/hooks/payment/[provider]/__tests__/payment-webhook.api.test.ts` drives
-the whole arc through the real route — a signed webhook in, an order and one charge out. That file also
-pins the half that is easy to lose: with the publish intercepted, the route does *nothing*.
-
-## Subscribers, and what each one is for
-
-| Subscriber | Event | What it does |
-|---|---|---|
-| `send-order-confirmation` | `order.placed` | the shopper's confirmation, off checkout's critical path |
-| `process-payment-captured` | `payment.captured` | records what the provider reported, then re-runs cart completion for the cart behind the session |
-| `bus-probe` | `bus.probe`, `bus.probe.repeatable` | the bus's own round trip; no production behaviour rides on it |
-
-`process-payment-captured` is deliberately **one subscriber doing two things in sequence** rather than
-two on one event. Two subscribers run concurrently, so both would call `authorizePaymentSession` for
-the same session at once and the unique index on the payment's session id would make one lose — which
-converges on a retry on a real transport, and is nothing at all under the in-process adapter. In
-sequence there is no race to converge from. The cost is that a completion failure retries the whole
-unit, re-running a capture that already succeeded; that re-run is a no-op against `capturedAt`.
+Where a *subscriber's* own tests go is
+[`subscribers.md`](../../../../../standards/rules/backend/subscribers/__docs__/subscribers.md#tests-split-by-what-they-cover).
 
 ## Decisions
 

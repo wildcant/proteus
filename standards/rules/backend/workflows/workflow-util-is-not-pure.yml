@@ -1,0 +1,29 @@
+id: workflow-util-is-not-pure
+language: typescript
+severity: error
+message: This `utils/` helper does I/O — it awaits, or it takes a service to call. Utils are data in, data out.
+note: 'A helper that needs a service is a step in `steps/`, or a method on that module`s service when it stays inside one module. `check:workflow-purity` owns the handler body and does not follow imports, so nothing else is watching this file. standards/rules/backend/workflows/__docs__/workflows.md'
+files:
+  - "**/src/workflows/*/utils/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  all:
+    - any:
+        - kind: function_declaration
+        - kind: function_expression
+        - kind: arrow_function
+    - any:
+        - regex: "^async\\b"
+        - has:
+            stopBy: end
+            kind: await_expression
+        # A service or the container reached through a parameter: the helper does the I/O itself,
+        # whether or not it awaits — `listStores` returns a promise the caller may await instead.
+        - has:
+            stopBy: end
+            kind: type_identifier
+            regex: "Service$|^AwilixContainer$"
+            inside:
+              stopBy: end
+              kind: formal_parameters

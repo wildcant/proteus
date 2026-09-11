@@ -1,0 +1,27 @@
+id: route-throws-undeclared-error
+language: typescript
+severity: error
+message: This handler raises $TYPE, but no `<Method>Throws` in the file declares it — the OpenAPI document will not mention the status it answers with.
+note: 'Add it to the method`s `Throws` export, beside the handler: `export const PostThrows = [ErrorTypes.$TYPE] as const`. standards/rules/backend/api/__docs__/routes.md'
+files:
+  - "**/src/api/**/route.ts"
+# Scope is the file, not the method: nothing correlates `PostThrows` with the `POST` handler for
+# ast-grep, so a type declared on one method satisfies a throw in another. The narrowing is the
+# same one `replay-purity.ts` takes, and the OpenAPI diff catches what it lets through.
+rule:
+  # Matched on the `ErrorTypes` reference rather than the whole `throw`, so the ternary form
+  # `type: isDuplicate ? ErrorTypes.CONFLICT : ErrorTypes.INVALID_DATA` reports both arms.
+  pattern: ErrorTypes.$TYPE
+  inside:
+    stopBy: end
+    pattern: new AppError($$$)
+  not:
+    inside:
+      kind: program
+      stopBy: end
+      has:
+        stopBy: end
+        pattern: ErrorTypes.$TYPE
+        inside:
+          stopBy: end
+          pattern: "export const $NAME = [$$$] as const"

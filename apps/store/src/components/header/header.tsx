@@ -15,7 +15,7 @@ import { SideMenu } from './side-menu'
  * `actions` is a slot because the bag belongs in the action cluster but reads the cart, and shared
  * chrome may not reach up into a feature. The two drawers used to mount here too; they are portalled
  * overlays whose open state is a URL param, so they are siblings in the `_main` layout route now
- * rather than props threaded through the bar. See `packages/frontend-conventions` for the rule.
+ * rather than props threaded through the bar. See `packages/frontend-structure` for the rule.
  */
 export function Header({ actions }: { actions?: ReactNode }) {
   const { setOpen: setMenuOpen } = useModal('menu')

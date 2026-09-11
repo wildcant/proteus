@@ -31,7 +31,7 @@ throw new AppError({
 |----------|------|-------------|
 | `type` | `ErrorTypes` | Semantic error category |
 | `message` | `string` | Human-readable description |
-| `code` | `string?` | Optional domain-specific code |
+| `code` | `string?` | Optional domain-specific code — see [Domain codes](#domain-codes) |
 | `date` | `Date` | When the error occurred |
 | `__isAppError` | `true` | Brand flag for runtime detection |
 
@@ -49,6 +49,36 @@ throw new AppError({
 | `DUPLICATE_ERROR` | 422 | `invalid_request_error` | Logical duplicate (application-level) |
 | `UNEXPECTED_STATE` | 500 | `invalid_state_error` | Invariant violation, should-not-happen |
 | `DB_ERROR` | 500 | `unknown_error` | Unrecoverable database failure |
+
+### Domain codes
+
+`code` carries the detail `type` is too coarse for — which decline a payment hit, not merely that
+something was `NOT_ALLOWED`. **A domain's codes never go in `core/errors/`.** They go in that
+domain's port folder as their own enum, exported from its barrel:
+
+```ts
+// core/types/payment/errors.ts
+export enum PaymentErrorCodes {
+  DECLINED = 'payment_declined',
+  REQUIRES_ACTION = 'payment_requires_action',
+}
+```
+
+`AppError` and `ErrorTypes` are domain-agnostic; nine payment-specific members in a core enum made
+`core/errors/` know about checkout. `core/types/<domain>/` is already importable by the module, its
+providers, the workflows and `test-exports`, so it is the widest surface the codes need without
+leaking upward — `core/types/cron-expression.ts` is the precedent for a runtime enum living there.
+
+Three details that are easy to get wrong:
+
+- **Member names drop the domain prefix; wire values keep it.** `PaymentErrorCodes.DECLINED` reads
+  as `'payment_declined'` in the response body, because the storefront and the e2e suite branch on
+  that string and it has to be unambiguous there.
+- **`AppError.code` stays typed `string`.** There is deliberately no union of every domain's codes:
+  it would have to be widened each time a domain adds a member, and nothing gains by it.
+- **Each member carries the case it is for**, as a doc comment. A code is a contract with the
+  storefront; what separates it from its neighbour is the part a caller needs and the name cannot
+  say.
 
 ### Type Guard
 
@@ -190,4 +220,7 @@ backend/src/core/errors/
   error-handler.ts     — AppError → HTTP response mapping
   validate-input.ts    — Zod schema validation helper
   index.ts             — Barrel exports
+
+backend/src/core/types/<domain>/
+  errors.ts            — that domain's code enum, re-exported from the domain barrel
 ```

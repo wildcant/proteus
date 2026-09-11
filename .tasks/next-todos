@@ -158,3 +158,19 @@ Future nice to have TODOs
 - routes that Spectral cannot reach: the API-design half of apps/backend/src/api/README.md is now enforced in the
   verify gate, so what is left is whatever the ruleset cannot express. Name those rules before doing a sweep.
 - white label all proteus references, get rid of magic strings that mention proteus
+- DOC-LINK / DOC-STRUCTURE GATE: nothing checks that a path named in an agent-facing document still resolves.
+  Found one dead pointer in AGENTS.md (`docs/refactoring/replace_nested_conditional_with_guard_clauses.txt`,
+  now `guard-clauses.md`) — fixed by hand. A prototype `scripts/check-doc-links.sh` worked (93 paths across 13
+  documents, mutation-tested red/green through the verify gate) and was removed on purpose: it is the wrong
+  shape until the `__docs__` standard lands, and the real target is a superset of it.
+  - What the prototype learned, so it is not rediscovered: ADRs and `docs/research/` must be OUT of scope
+    (a broad scan over `docs/**` produced 163 violations, nearly all legitimate — an ADR's paths are true
+    about the tree that existed then, and research docs cite upstream repos). Workspace-relative prose
+    (`src/core/db/columns.ts`, `scripts/replay-purity.ts`) is ambiguous and needs either a guessed base
+    directory or root-anchored paths in the prose. `find -path` handles globs without bash 4 globstar.
+  - The bigger prize once the standard exists — none of these are checked today:
+    every rule id appears in exactly one `## Enforcement` table (13 backend rules currently appear in none);
+    every rule's `note:` path resolves and is not a `README.md`; every `__docs__/` has an index listing every
+    sibling and nothing else; documents use the fixed section order.
+  - Markdown structure is not expressible as an ast-grep rule or a dependency-cruiser rule, so this is a
+    legitimate script — record that verdict in the "when a rule cannot express it" section when it lands.

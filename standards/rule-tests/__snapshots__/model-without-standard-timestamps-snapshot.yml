@@ -1,0 +1,34 @@
+id: model-without-standard-timestamps
+snapshots:
+  ? |
+    export const notificationTable = pgTable('notification', {
+      id: text().primaryKey(),
+      createdAt: timestamp({ withTimezone: true }).notNull(),
+      updatedAt: timestamp({ withTimezone: true }).notNull(),
+      deletedAt: timestamp({ withTimezone: true }),
+    })
+  : labels:
+    - source: |-
+        pgTable('notification', {
+          id: text().primaryKey(),
+          createdAt: timestamp({ withTimezone: true }).notNull(),
+          updatedAt: timestamp({ withTimezone: true }).notNull(),
+          deletedAt: timestamp({ withTimezone: true }),
+        })
+      style: primary
+      start: 33
+      end: 252
+  ? |
+    export const refundReasonTable = pgTable('refund_reason', {
+      id: text().primaryKey(),
+      label: text().notNull(),
+    })
+  : labels:
+    - source: |-
+        pgTable('refund_reason', {
+          id: text().primaryKey(),
+          label: text().notNull(),
+        })
+      style: primary
+      start: 33
+      end: 116

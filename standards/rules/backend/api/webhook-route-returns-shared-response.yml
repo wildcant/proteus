@@ -1,0 +1,17 @@
+id: webhook-route-returns-shared-response
+language: typescript
+severity: error
+message: 'This webhook answers with `$OUT` rather than the shared `WebhookReceivedResponse`, so one gateway is told something different from the next.'
+note: 'Use `WebhookReceivedResponse` — `{ received: true }` — from `@proteus/http-schemas/store`. A gateway reads the body only to decide whether to redeliver, so a per-provider shape is a schema in the OpenAPI document and a generated model that nothing consumes, and a provider-specific field in it is the start of a per-provider contract this route exists to avoid. standards/rules/backend/api/__docs__/routes.md'
+files:
+  - "**/src/api/hooks/**/route.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  pattern: export const $NAME = $OUT
+constraints:
+  NAME:
+    regex: '^(Get|Post|Patch|Put|Delete)Output$'
+  OUT:
+    not:
+      regex: '^WebhookReceivedResponse$'

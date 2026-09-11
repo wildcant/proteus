@@ -1,0 +1,29 @@
+id: workflow-throws-undeclared-error
+language: typescript
+severity: error
+message: This workflow raises $TYPE but does not declare it, so every route that spreads `.throws` under-documents the status it answers with.
+note: 'Add it to the `createWorkflow` config: `{ name: ..., throws: [ErrorTypes.$TYPE] }`. A step in its own file exports its own `…Throws` for the workflow to spread. standards/rules/backend/workflows/__docs__/workflows.md'
+files:
+  - "**/src/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  pattern: ErrorTypes.$TYPE
+  inside:
+    stopBy: end
+    pattern: new WorkflowTerminalError($$$)
+  not:
+    inside:
+      kind: program
+      stopBy: end
+      has:
+        stopBy: end
+        pattern: ErrorTypes.$TYPE
+        inside:
+          stopBy: end
+          any:
+            # `throws:` inside the createWorkflow config, and the `…Throws` a standalone step exports.
+            - pattern:
+                context: "const o = { throws: [$$$] }"
+                selector: pair
+            - pattern: "export const $NAME = [$$$] as const"

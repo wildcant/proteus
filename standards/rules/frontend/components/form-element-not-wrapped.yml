@@ -1,0 +1,21 @@
+id: form-element-not-wrapped
+language: tsx
+severity: error
+message: This is a bare `<form>`. Every form goes through a wrapper that owns `noValidate`.
+note: 'Use `<Form>` from `#/components/form/form.tsx`, or `KeyboundForm` from `@proteus/ui` for an admin route modal. Fields carry type="email" and type="tel" for the mobile keyboard, which also opts them into the browser''s constraint validation — a native bubble in place of the field error the schema produces. The wrapper also owns the `preventDefault`, and calls `onSubmit` with no arguments so `form.handleSubmit` can be passed bare. standards/rules/frontend/components/__docs__/form-components.md'
+files:
+  - "**/src/**/*.tsx"
+ignores:
+  # The wrapper itself — the raw element has to live somewhere.
+  - "**/src/components/form/form.tsx"
+  # packages/ui holds primitives, not app forms: `KeyboundForm` is the modal wrapper, and the
+  # prompt dialog's form is internal to the component.
+  - "**/src/route-modals/keybound-form.tsx"
+  - "**/src/components/ui/prompt.tsx"
+rule:
+  kind: jsx_element
+  has:
+    kind: jsx_opening_element
+    has:
+      field: name
+      regex: '^form$'

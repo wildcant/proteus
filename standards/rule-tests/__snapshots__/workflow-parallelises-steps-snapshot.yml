@@ -1,0 +1,54 @@
+id: workflow-parallelises-steps
+snapshots:
+  ? |
+    await Promise.all(images.map((image) => ctx.step(`link-${image.id}`, linkImage(image), unlinkImage(image))))
+  : labels:
+    - source: Promise.all(images.map((image) => ctx.step(`link-${image.id}`, linkImage(image), unlinkImage(image))))
+      style: primary
+      start: 6
+      end: 108
+    - source: Promise.all
+      style: secondary
+      start: 6
+      end: 17
+    - source: ctx.step
+      style: secondary
+      start: 40
+      end: 48
+  ? |
+    await Promise.allSettled([ctx.step('a', doA, undoA), ctx.step('b', doB, undoB)])
+  : labels:
+    - source: Promise.allSettled([ctx.step('a', doA, undoA), ctx.step('b', doB, undoB)])
+      style: primary
+      start: 6
+      end: 80
+    - source: Promise.allSettled
+      style: secondary
+      start: 6
+      end: 24
+    - source: ctx.step
+      style: secondary
+      start: 26
+      end: 34
+  ? |
+    const [product, inventory] = await Promise.all([
+      ctx.step('create-product', createProduct, deleteProduct),
+      ctx.step('create-inventory', createInventory, deleteInventory),
+    ])
+  : labels:
+    - source: |-
+        Promise.all([
+          ctx.step('create-product', createProduct, deleteProduct),
+          ctx.step('create-inventory', createInventory, deleteInventory),
+        ])
+      style: primary
+      start: 35
+      end: 177
+    - source: Promise.all
+      style: secondary
+      start: 35
+      end: 46
+    - source: ctx.step
+      style: secondary
+      start: 51
+      end: 59

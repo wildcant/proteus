@@ -1,0 +1,20 @@
+id: workflow-parallelises-steps
+language: typescript
+severity: error
+message: This `Promise.all` runs `ctx.step` calls concurrently. Steps are awaited one after another.
+note: 'Compensation is one array unwound in reverse, which only means anything over a sequential history — concurrent steps have no defined rollback order. Where the parallelism is genuinely available, await the steps in sequence and record the opportunity as `// TODO(workflows): …`. standards/rules/backend/workflows/__docs__/workflows.md'
+files:
+  - "**/src/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  all:
+    - kind: call_expression
+    - has:
+        field: function
+        regex: "^Promise\\.(all|allSettled)$"
+    - has:
+        field: arguments
+        stopBy: end
+        kind: member_expression
+        regex: "^ctx\\.step$"

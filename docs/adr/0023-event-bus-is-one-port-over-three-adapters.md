@@ -150,7 +150,7 @@ channel only the webhook uses would be a port change for one caller.
 ### Isolation from the workflow engine
 
 `src/core/event-bus/` and `src/core/workflows/` are peers that may not import each other, enforced by
-`check:deps`. They share a vendor on node — the engine runs workflow executions, the bus runs
+`check:structure`. They share a vendor on node — the engine runs workflow executions, the bus runs
 standalone activities — and that is exactly the coupling the rule forbids: a fix in the engine's
 replay code has to be *structurally* incapable of changing event dispatch.
 
@@ -196,7 +196,7 @@ silently.
 **A new subscriber wires itself up.** `src/subscribers/registry.gen.ts` is generated from the source tree
 and committed, with `--check` in the verify gate, for the three reasons the workflow registry has the same
 shape: the handler closures have to exist in the process that dispatches, `tsx --watch` reloads off the
-module graph, and `check:deps` cannot follow a runtime directory scan.
+module graph, and `check:structure` cannot follow a runtime directory scan.
 
 ## References
 
@@ -204,5 +204,5 @@ module graph, and `check:deps` cannot follow a runtime directory scan.
 - ADR-0021, ADR-0022 — the workflow engine this mirrors, and the runtime split it inherits
 - `apps/backend/src/core/event-bus/readme.md` — the working guide, kept next to the code
 - `apps/backend/src/core/event-bus/adapter-selection.ts` — the derivation, with the reasoning inline
-- `apps/backend/deps-analyzer/.dependency-cruiser.cjs` — `event-bus-and-workflows-stay-peers`,
+- `apps/backend/structure/.dependency-cruiser.cjs` — `event-bus-and-workflows-stay-peers`,
   `shared-temporal-stays-shared`, `no-temporal-in-workerd`

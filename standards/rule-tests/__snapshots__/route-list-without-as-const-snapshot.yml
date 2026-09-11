@@ -1,0 +1,23 @@
+id: route-list-without-as-const
+snapshots:
+  ? |
+    export const DeleteMiddlewares = [validateToken()]
+  : labels:
+    - source: export const DeleteMiddlewares = [validateToken()]
+      style: primary
+      start: 0
+      end: 50
+  ? |
+    export const GetMiddlewares = [requireCustomer(), setPricingContext()]
+  : labels:
+    - source: export const GetMiddlewares = [requireCustomer(), setPricingContext()]
+      style: primary
+      start: 0
+      end: 70
+  ? |
+    export const PostThrows = [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA]
+  : labels:
+    - source: export const PostThrows = [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA]
+      style: primary
+      start: 0
+      end: 72

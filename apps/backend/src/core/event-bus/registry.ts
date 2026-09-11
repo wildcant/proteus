@@ -16,7 +16,7 @@ import type { SubscriberDefinition } from './types.js'
  *   something imported the module that built it.
  * - **`tsx --watch` reloads off the module graph.** Editing a subscriber restarts the worker because
  *   the graph reaches it; a directory scan is invisible to the watcher.
- * - **`tsc` and `check:deps` can see it.** A dependency-cruiser rule cannot follow a runtime scan,
+ * - **`tsc` and `check:structure` can see it.** A dependency-cruiser rule cannot follow a runtime scan,
  *   so the boundary rules that keep a subscriber free of queue vocabulary would have nothing to read.
  *
  * A generated artifact is also identical in every environment because it is in git, and

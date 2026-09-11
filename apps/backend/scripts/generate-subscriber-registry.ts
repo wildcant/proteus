@@ -9,7 +9,7 @@
  *   imported the module that built it.
  * - **`tsx --watch` reloads off that same graph.** Editing a subscriber restarts the worker because
  *   the graph reaches it.
- * - **`tsc` and `check:deps` can see it.** A dependency-cruiser rule cannot follow a directory scan,
+ * - **`tsc` and `check:structure` can see it.** A dependency-cruiser rule cannot follow a directory scan,
  *   so the rules that keep queue vocabulary out of a subscriber would have nothing to read.
  *
  * The artifact is committed, so every environment runs the identical file, and `--check` fails the

@@ -1,0 +1,28 @@
+id: workflow-declares-unthrown-error
+language: typescript
+severity: error
+message: This workflow declares $TYPE but nothing in the file raises it — every route spreading `.throws` inherits a response it can never receive.
+note: 'Remove it, or suppress with the reason written above when the throw belongs to a module service this workflow calls. standards/rules/backend/workflows/__docs__/workflows.md'
+files:
+  - "**/src/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  pattern: ErrorTypes.$TYPE
+  inside:
+    stopBy: end
+    any:
+      - pattern:
+          context: "const o = { throws: [$$$] }"
+          selector: pair
+      - pattern: "export const $NAME = [$$$] as const"
+  not:
+    inside:
+      kind: program
+      stopBy: end
+      has:
+        stopBy: end
+        pattern: ErrorTypes.$TYPE
+        inside:
+          stopBy: end
+          pattern: new WorkflowTerminalError($$$)

@@ -31,7 +31,7 @@ import { ThemeToggle } from './theme-toggle'
  * The two slots exist because this file is shared-layer and the things that belong in them are
  * features — the notification bell reads the notifications API, the user menu reads auth. Shared
  * code may not reach up into a feature, so the route composes them instead. See
- * `routes/_authed/_shell/route.tsx`, and `packages/frontend-conventions` for the rule.
+ * `routes/_authed/_shell/route.tsx`, and `packages/frontend-structure` for the rule.
  */
 type ShellProps = {
   /** Rendered at the end of the topbar, after the theme toggle. */

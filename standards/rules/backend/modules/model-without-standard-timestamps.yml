@@ -1,0 +1,20 @@
+id: model-without-standard-timestamps
+language: typescript
+severity: error
+message: This table does not spread `...timestamps`, so it has no `deletedAt` and cannot be soft-deleted.
+note: 'Spread `...timestamps` from `core/db/columns.js` into the column object. A table without `deletedAt` is destroy-only — the cascade walker hard-deletes it and nothing can restore it — which is a decision to state in a suppression comment, not to make by omitting three characters. standards/rules/backend/modules/__docs__/modules.md'
+files:
+  - "**/src/modules/*/models/*.ts"
+  - "**/src/link-modules/definitions/*.ts"
+ignores:
+  - "**/models/index.ts"
+rule:
+  all:
+    - any:
+        - pattern: pgTable($NAME, { $$$COLUMNS })
+        - pattern: pgTable($NAME, { $$$COLUMNS }, $EXTRAS)
+    - not:
+        has:
+          stopBy: end
+          kind: spread_element
+          regex: '^\.\.\.timestamps$'

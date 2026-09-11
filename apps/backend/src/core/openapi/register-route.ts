@@ -86,7 +86,7 @@ export function registerOpenApiRoute(registry: OpenAPIRegistry, routePath: strin
   }
 
   // `throws` is the complete failure contract, so it names `UNEXPECTED_STATE` and the other
-  // invariant violations too — the code-shape rules demand it, or they could not tell a missing
+  // invariant violations too — the rules in `standards/` demand it, or they could not tell a missing
   // declaration from a deliberate one. The *document* publishes only the part a caller can act on.
   // A 5xx is not something the request can be reshaped to avoid, and declaring it would put a
   // dead error branch in every generated client.

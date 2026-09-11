@@ -1,11 +1,13 @@
 /**
  * Schema convention checks.
  *
- * The other convention checks in `scripts/` are bash and grep, which is enough when the rule is
- * about the text of a file. These rules are not: whether a relationship cascades, which column an
- * index leads with, and whether a predicate excludes soft-deleted rows are all facts that only
- * exist once drizzle has built the table. So this runner imports the models and reads their
- * metadata, and every schema rule that follows belongs here rather than in a new bash script.
+ * A rule about the *text* of a model file belongs in `standards/rules/backend/modules/` — that is
+ * where "every table spreads ...timestamps" lives. These rules are not about the text: whether a
+ * relationship cascades, which column an index leads with, whether a predicate excludes
+ * soft-deleted rows, and what a cascade closure reaches are all facts that exist only once drizzle
+ * has built the table. So this runner imports the models and reads their metadata. A new schema
+ * rule belongs here only once it has been shown that a rule file cannot express it; standards/README.md
+ * records the verdict for each of the ones below.
  *
  * A check is a `{ name, rule, run }` triple over the collected models. Add one to CHECKS below.
  */
@@ -15,14 +17,12 @@ import { guardOutsideItsClosure } from './guard-outside-its-closure.js'
 import { modelBarrelReachable } from './model-barrel-reachable.js'
 import { collectModels } from './models.js'
 import { softDeleteIndexPredicate } from './soft-delete-index-predicate.js'
-import { standardTimestamps } from './standard-timestamps.js'
 import type { Check } from './types.js'
 
 const CHECKS: Check[] = [
   softDeleteIndexPredicate,
   cascadeRelationshipIndex,
   modelBarrelReachable,
-  standardTimestamps,
   destroyOnlyChildren,
   guardOutsideItsClosure,
 ]

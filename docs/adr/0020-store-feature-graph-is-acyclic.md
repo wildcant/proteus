@@ -5,7 +5,7 @@
 ## Context
 
 `apps/store/src/features/` holds seven features, and nothing has ever constrained which of them
-may import which. The rules in `deps-analyzer/.dependency-cruiser.cjs` were `no-admin-schemas-in-store`
+may import which. The rules in `structure/.dependency-cruiser.cjs` were `no-admin-schemas-in-store`
 and `no-circular`; neither says anything about feature boundaries.
 
 In practice six cross-feature edges had accumulated, and one pair pointed both ways:
@@ -127,6 +127,6 @@ the graph to be updated deliberately.
 
 ## References
 
-- `apps/store/deps-analyzer/.dependency-cruiser.cjs` — `FEATURE_GRAPH` and the generated rules
+- `apps/store/structure/.dependency-cruiser.cjs` — `FEATURE_GRAPH` and the generated rules
 - ADR 0005 — the same instinct on the backend: public contracts in `core/types/` to prevent
   circular imports

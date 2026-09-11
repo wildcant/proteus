@@ -19,7 +19,7 @@ export interface WorkflowConfig {
    * the output type. A route that calls the workflow spreads this into its own `throws`, which is
    * how a `CONFLICT` raised three step-frames down still reaches the OpenAPI document. The array is
    * kept in step with the `WorkflowTerminalError` throws in this file by the `workflow-*-error`
-   * code-shape rules, in both directions.
+   * rules in `standards/`, in both directions.
    *
    * Retryable failures are not listed. Only what a caller can act on belongs here.
    */

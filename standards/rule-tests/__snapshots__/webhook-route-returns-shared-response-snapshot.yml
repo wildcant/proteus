@@ -1,0 +1,16 @@
+id: webhook-route-returns-shared-response
+snapshots:
+  ? |
+    export const PostOutput = DeleteResponse
+  : labels:
+    - source: export const PostOutput = DeleteResponse
+      style: primary
+      start: 0
+      end: 40
+  ? |
+    export const PostOutput = StripeWebhookAckResponse
+  : labels:
+    - source: export const PostOutput = StripeWebhookAckResponse
+      style: primary
+      start: 0
+      end: 50

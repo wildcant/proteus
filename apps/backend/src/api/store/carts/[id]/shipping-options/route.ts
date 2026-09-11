@@ -22,7 +22,8 @@ export const GetOutput = StoreShippingOptionListResponse
  * offering none.
  *
  * Three reads across two modules and no writes, so it stays here rather than becoming a workflow
- * — there is nothing to unwind. See "Several reads, even across modules" in `src/api/README.md`.
+ * — there is nothing to unwind. See "Several reads, even across modules" in
+ * `standards/rules/backend/api/__docs__/route-helpers.md`.
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const { province, city, postalCode } = req.validatedQuery.filters

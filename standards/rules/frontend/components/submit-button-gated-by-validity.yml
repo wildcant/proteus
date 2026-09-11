@@ -1,0 +1,33 @@
+id: submit-button-gated-by-validity
+language: tsx
+severity: error
+message: This submit button disables itself. A form that cannot be submitted cannot say which field is missing.
+note: 'Leave submit enabled and let the validator refuse it — the offending field renders its own error, which a greyed-out button never does. `disabled` on a submit is for the request already in flight (`isPending`, `isSubmitting`) and nothing else. standards/rules/frontend/components/__docs__/form-components.md'
+files:
+  - "**/src/**/*.tsx"
+utils:
+  IS_SUBMIT:
+    kind: jsx_attribute
+    regex: '^type="submit"$'
+  # A `||` chain of in-flight flags is the one allowed shape: it hides no error, it only stops the
+  # merchant sending the same request twice. Anything else is the form judging its own values.
+  GATING_DISABLED:
+    kind: jsx_attribute
+    all:
+      - regex: '^disabled='
+      - not:
+          regex: '^disabled=\{ *(?:[A-Za-z_$][\w$]*\.)?(?:isPending|isSubmitting|isLoading|isMutating)(?: *\|\| *(?:[A-Za-z_$][\w$]*\.)?(?:isPending|isSubmitting|isLoading|isMutating))* *\}$'
+rule:
+  # The whole element rather than the attribute, so a considered exception can be suppressed with a
+  # comment above it — ast-grep reads those off the matched node's preceding sibling.
+  any:
+    - kind: jsx_element
+      has:
+        kind: jsx_opening_element
+        all:
+          - has: { matches: IS_SUBMIT }
+          - has: { matches: GATING_DISABLED }
+    - kind: jsx_self_closing_element
+      all:
+        - has: { matches: IS_SUBMIT }
+        - has: { matches: GATING_DISABLED }

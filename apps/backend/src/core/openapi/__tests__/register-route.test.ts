@@ -145,7 +145,7 @@ test.describe('registerOpenApiRoute', () => {
     expect(Object.keys(responses ?? {}).sort()).toEqual(['200', '400', '409'])
   })
 
-  // `throws` stays complete so the code-shape rules can check it; the document drops the 5xx half.
+  // `throws` stays complete so the rules in `standards/` can check it; the document drops the 5xx half.
   test('omits a 5xx response for an invariant violation named in throws', ({ expect }) => {
     const document = buildDocument({
       method: 'POST',

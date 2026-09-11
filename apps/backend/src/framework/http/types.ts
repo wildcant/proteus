@@ -70,7 +70,7 @@ type BaseRoute = {
   //
   //     export const PostThrows = [...createOrderShipmentWorkflow.throws, ErrorTypes.CONFLICT] as const
   //
-  // The `route-*-error` code-shape rules keep this in step with the handler in both directions.
+  // The `route-*-error` rules in `standards/` keep this in step with the handler in both directions.
   throws?: readonly ErrorTypes[]
   // Method syntax gives bivariant parameter checking. Route handlers declare
   // specific input/output types, but definitions store them opaquely.

@@ -1,0 +1,30 @@
+id: workflow-parallelises-steps
+valid:
+  # Steps awaited one after another — the shape every workflow uses.
+  - |
+    const product = await ctx.step('create-product', createProduct, deleteProduct)
+    const variants = await ctx.step('create-variants', createVariants, deleteVariants)
+  # Reads inside a single step's action are not steps, so they may run concurrently.
+  - |
+    await ctx.step('load', async ({ container }) => {
+      const [lineItems, shippingMethods] = await Promise.all([listLineItems(container), listShippingMethods(container)])
+      return { lineItems, shippingMethods }
+    })
+  # A step whose action fans out over rows is still one step, and still one compensation.
+  - |
+    await ctx.step('reserve', async ({ container }) => {
+      return Promise.all(items.map((item) => reserve(container, item)))
+    })
+invalid:
+  # The shape this rule was written for: two steps started at once.
+  - |
+    const [product, inventory] = await Promise.all([
+      ctx.step('create-product', createProduct, deleteProduct),
+      ctx.step('create-inventory', createInventory, deleteInventory),
+    ])
+  # A step per row is the same violation, with an unbounded number of compensations to unwind.
+  - |
+    await Promise.all(images.map((image) => ctx.step(`link-${image.id}`, linkImage(image), unlinkImage(image))))
+  # allSettled hides the failure as well as parallelising it.
+  - |
+    await Promise.allSettled([ctx.step('a', doA, undoA), ctx.step('b', doB, undoB)])

@@ -37,7 +37,7 @@ test.beforeEach(async ({ createApi }) => {
 | `matchers` | Narrow to specific matchers. Omitted mounts everything passed |
 | `config` | `InputConfig` overrides, e.g. `authVerificationsPerActor` |
 | `namespaceAuth` | Inject the auth middleware `prepareRoutes` applies to `/admin` and `/store`. Off by default |
-| `register` | Runs after the container is built, before the server listens — where a fake provider is registered |
+| `register` | Runs after the container is built, before the server listens — overrides a registration in the **shared** container. It cannot reach a module's providers; see below |
 
 ### What it returns
 | Member | Use |
@@ -330,8 +330,22 @@ Querying or mutating through a resolved service is a `service.read.*` / `service
 factory that was not written — write it. A `container.resolve` not immediately followed by
 `vi.spyOn` is the smell.
 
-Prefer `createApi`'s `register` hook when the goal is swapping a provider for the whole test —
-it is the sanctioned seam, and it runs before the server listens.
+### `register` cannot swap a *module* provider
+
+`register` reaches the **shared** container. `bootstrapModule` builds a **private** container per
+module, registers that module's repositories and runs its loaders there, and exposes only the
+service upward — so a payment provider registered as `pp_<identifier>_<id>` in the shared container
+is never resolved. `PaymentProviderService` resolves from the module's own container, which nothing
+outside the module can write to.
+
+The symptom is silent rather than loud: the test's provider is ignored, the real one answers —
+built from `env` by the declarations `container.ts` passes to `bootstrapModule` — and only the
+assertions about provider *options* fail, while everything around them passes.
+
+So a test that needs a vendor to behave a particular way fakes the **vendor SDK**, not the provider:
+`vi.mock('stripe', async () => (await import('@tests/mocks/vitest/stripe.mock.js')).stripeTest.moduleMock())`.
+The real adapter class is still constructed, so its boot-time `validateOptions` stays under test.
+`register` remains the right seam for anything registered in the shared container.
 
 ## Debugging
 

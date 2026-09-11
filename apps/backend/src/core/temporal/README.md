@@ -4,7 +4,7 @@ This folder is the Temporal plumbing that more than one subsystem builds on: the
 (`src/core/workflows/temporal/`) and the event bus (`src/core/event-bus/`). That is the
 whole rule for what belongs here. A change to any file in this folder changes behaviour for every
 one of them at once, so it needs to be weighed against all of them — and, conversely, anything that
-serves only one of them belongs in that subsystem's own folder, not here. `check:deps` enforces the
+serves only one of them belongs in that subsystem's own folder, not here. `check:structure` enforces the
 direction with `shared-temporal-stays-shared`: the subsystems import this folder, this folder never
 imports them.
 
@@ -27,7 +27,7 @@ bundle path and the driver's workflow type are the workflow engine's alone and l
 
 `ping.ts` is the exception, and the only one: it is an operator script (`npm run temporal:ping`)
 that starts the workflow driver's own `pingWorkflow` on the workflow task queue, so it does reach
-into `src/core/workflows/temporal/`. It is exempted from the `check:deps` rule by name because
+into `src/core/workflows/temporal/`. It is exempted from the `check:structure` rule by name because
 nothing imports it — it is a process entrypoint, so the dependency ends there rather than dragging
 the engine into anything that uses this folder. A second probe for a second subsystem belongs with
 that subsystem.

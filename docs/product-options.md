@@ -138,6 +138,40 @@ this did before the pivot — now cascades straight through every variant's opti
 unrelated edit would strip a product's variants of their identity. Keeping ids stable is also what
 lets a plan computed before the write still name what it meant afterwards.
 
+## What a client sees
+
+The two APIs answer the same question differently, and the store's answer is the one that misleads.
+
+**Admin** returns `AdminProductVariant.optionValues` as an array of
+`{ optionId, optionTitle, valueId, value }` — each entry carries its own labels, so a table cell
+renders straight from it.
+
+**Store** returns `StoreProductVariant.optionValues` as `{ [key: string]: string }`. That type reads
+like `{ "Size": "S" }` and **is not**. It is option id → option *value* id:
+
+```json
+{ "opt_b625468f…": "optval_2480b24f…", "opt_7777b811…": "optval_5ed0c486…" }
+```
+
+**Never render it.** `Object.values(variant.optionValues).join(' · ')` prints raw `optval_…` ids to
+the shopper, and nothing catches it: typecheck passes because the values are strings, and an e2e
+assertion written against seeded data with no options wired passes too. It shipped once and was
+found by looking at the cart panel.
+
+To display, resolve against `product.options`, driving the order off `options` rather than the map's
+key order — `options` is rank-ordered and a JSON object is not:
+
+```ts
+options
+  .map((option) => option.values.find((value) => value.id === variant.optionValues[option.id])?.value)
+  .filter((value) => value !== undefined)
+  .join(' · ')
+```
+
+`variant.title` already carries the same combination as a slash-joined string (`"S / Blue"`), and is
+the right answer wherever that formatting is acceptable — which is why nothing in the storefront
+reads `optionValues` today.
+
 ## Where the product layer stops
 
 At the module service. `product_variant_option` stores product-layer ids and the service resolves
