@@ -140,59 +140,7 @@ Registration keys: `GET_DB`, `DB_PROVIDER`, `LOGGER`, `LINK`, `EVENT_BUS` (in `C
 
 - **Link modules** (`src/link-modules/`) — Cross-module join tables and relations. Accessed via `LinkService.repo("cartProduct")`. Two types: writeable (own table + BaseRepository) and readonly (Drizzle relations only + ReadonlyLinkRepository).
 - **Workflows** (`src/workflows/`) — Cross-module orchestration with `ctx.step()` calls and compensation for rollback. Executed by a Temporal Worker on node, by a simple in-process engine on workerd. Workflow handlers must stay replay-pure (`check:workflow-purity`).
-- **Subscribers** (`src/subscribers/`) — Work caused by something that happened, off the caller's critical path. See below.
-
-### Where a Route Helper Goes
-
-A handler calls out; it does not carry its own helpers. The signal is **mutation**, not how many
-modules are touched:
-
-- **Pure** (no `req`, no service, awaits nothing) → `src/workflows/<domain>/utils/`.
-- **Several reads, even across modules** → inline them. There is nothing to unwind, so there is
-  nothing for a workflow to compensate.
-- **Mutations that must not half-happen** → one mutation: call the service. Several in one module:
-  one method under `this.withTransaction`. Several across modules: a workflow. Prefer the
-  transaction wherever it reaches — compensation is hand-written rollback that needs one per step
-  and can itself fail. The module boundary is where the transaction stops, because a `Context` is
-  never threaded across one.
-- **Fetch or validation reused by several routes** → a middleware in `middlewares.ts`.
-
-`src/api/` holds exactly four kinds of file — `route.ts`, `definitions.ts`, `middlewares.ts`,
-`__tests__/` — enforced by `api-holds-only-four-file-kinds`. Full table and worked examples:
-`standards/rules/backend/api/__docs__/routes.md`, and
-`standards/rules/backend/api/__docs__/route-helpers.md` for the placement above.
-
-### Adding a Subscriber
-
-A subscriber is "this should happen because that happened", without "and the shopper waits for it, and if it fails nothing tries again". Same file shape as a job in `src/jobs/`: a named function plus an exported `config`.
-
-1. **Add the event** to `EventPayloads` in `src/core/event-bus/events.ts`, with a payload carrying `id` — the resource it is about. Add it *because a subscriber wants it*; a catalogue of names nothing consumes is one nobody can safely delete from.
-2. **Write the file** in `src/subscribers/`. Every file there is a subscriber — the generator rejects a helper module rather than skipping it.
-
-   ```ts
-   async function orderNotifier({ event, container }: SubscriberArgs<'order.placed'>) {
-     const { id } = event.data
-     // …
-   }
-
-   export const config: SubscriberConfig<'order.placed'> = {
-     name: 'order-notifier', // required, and the dedup key — not derived from the filename
-     event: 'order.placed',  // or an array
-     handler: orderNotifier,
-   }
-   ```
-
-   The type argument on `SubscriberConfig<…>` is load-bearing: leave it off and the event union widens to every event, so the handler stops type-checking instead of failing to compile.
-3. **Regenerate**: `npm run --workspace=backend subscribers:generate`, and commit `registry.gen.ts`. Nothing else wires it up, and `npm run verify` fails if you forget.
-
-Non-negotiables, because the transports differ:
-
-- **Every subscriber must be idempotent.** The weaker of the two transports is at-least-once with no dedup, and the same file runs on both. `event.dispatchId` is the key to be idempotent against.
-- **Publish from a workflow's final step**, and derive the payload's `id` from something an earlier step already recorded. A retried step runs its action again: an id minted inside it is new per attempt, so dedup has nothing to match and the subscriber runs twice.
-- **`emit` never rejects and resolves on acceptance**, never on completion. A subscriber's failure is the transport's to retry; throwing is how you ask for that retry.
-- **A subscriber file imports no transport vocabulary** — no `@temporalio/*`, no `cloudflare:workers`, no queue types. `check:structure` keeps `src/core/event-bus/` and `src/core/workflows/` from importing each other; a subscriber may reach both.
-
-Full guide: `standards/rules/backend/subscribers/__docs__/events.md` for adding an event, `subscribers.md` beside it for handling one. The transports and their guarantees are `apps/backend/src/core/event-bus/readme.md`; the design decisions are ADR-0023 and ADR-0024.
+- **Subscribers** (`src/subscribers/`) — Work caused by something that happened, off the caller's critical path. Two transports with different guarantees, so a subscriber is written idempotent and the event it handles is published from a workflow's final step — `standards/rules/backend/subscribers/__docs__/`, and ADR-0023, ADR-0024.
 
 ### Server & Routing
 
@@ -227,17 +175,10 @@ which the server cannot read; `__root__` and `_main` carry `ssr: true` to provid
 and `<Outlet />`, and the two product routes opt in for SEO. Adding a route means deciding which
 side it is on — see ADR-0013.
 
-### API Layer
-
-Orval generates typed API clients from the backend's OpenAPI spec into `src/api/generated/`
-(tags-split mode). Custom fetcher at `src/lib/fetcher.ts` uses `qs.stringify()` for nested query
-params. The store additionally calls the backend as a library from server functions.
-
-Feature modules wrap generated functions with React Query hooks in `features/{name}/api/`. Every
-mutation hook accepts an optional `UseMutationOptions`, shows an error toast on failure, and
-forwards callbacks. Every query is an exported `*QueryOptions` factory built with `queryOptions()`;
-hooks and route loaders both read that one factory, and queries never toast. Contracts:
-`standards/rules/frontend/features/api/__docs__/`.
+Both apps call the backend through typed clients Orval generates from its OpenAPI spec into
+`src/api/generated/` (tags-split mode), over a custom fetcher at `src/lib/fetcher.ts` that
+`qs.stringify()`s nested query params. The store additionally calls the backend as a library from
+server functions.
 
 ### Admin DataTable System (`src/components/data-table/`)
 
@@ -250,12 +191,6 @@ Global cell renderers (datetime, date, boolean, text) configured via `configureD
 ### Route-Driven Modals
 
 Create/edit forms open as child routes using `RouteFocusModal` (full viewport drawer) or `RouteDrawer` (side drawer). `RouteModalForm` wraps TanStack Form with an unsaved-changes guard via `useBlocker()`. See ADR-0019.
-
-### Form Hooks
-
-Form logic lives in `features/{name}/hooks/use-{action}-form.ts`, not in components. Components only render
-fields. See `standards/rules/frontend/features/hooks/__docs__/form-hooks.md` for the hook contract and
-`standards/rules/frontend/components/__docs__/form-components.md` for the form element and its submit button.
 
 ### Dependency Rules (dependency-cruiser)
 
@@ -308,34 +243,6 @@ Backend tests are integration tests against a real Postgres database. Custom Vit
 Tests construct services manually with injected repos. The suite claims its worker databases
 (`proteus_test_1..N`) with an advisory lock, so a second vitest run — an orphaned process, or an
 editor's watcher — fails rather than corrupting the first.
-
-### Test data comes from factories, per test
-
-Every row a test needs is created **by that test** and disposed with it. `apps/store/playwright.config.ts`
-sets `fullyParallel: true`, so specs run concurrently against one database and each test's rows are
-visible to the others.
-
-- **Never create fixture data in `beforeAll`/`afterAll`.** Two specs owning one set of shared rows is
-  a race: whichever finishes first tears down what the other is still using. This has already caused
-  `Entity with id "so_..." not found` in checkout. Use `await using` so the lifetime is the test's.
-- **Look for an existing factory before writing setup by hand.** `factories.create.*` and
-  `factories.destroy.*` come from the `factories` fixture; `apps/backend/tests/factories/db/` is the
-  full list. `shippingOptionWithZone` already existed while two specs hand-rolled it in `beforeAll`.
-- **Composed factories return their parts plus `Symbol.asyncDispose`, and take `Partial` overrides per
-  entity.** `db/product-with-pricing.ts` is the reference; `db/shipping-option-with-zone.ts` follows it.
-  A composition used by more than one spec belongs in `db/`; one specific to a single spec stays in
-  that spec — see `createProductWithColourways` in `tests/e2e/products.spec.ts` — and returns a
-  disposable the same way.
-- **Anything globally unique, or listed in the UI, must be unique per test.** Product option titles are
-  unique by title, so they are suffixed with the product id. Shipping options are listed together at
-  the delivery step, so their name carries a random suffix.
-- **Select the row you created — never `.first()`.** A neighbouring test's row may render first and
-  will vanish when that test disposes it. Assert against the factory's own return value:
-  `getByRole('radio', { name: shipping.name })`.
-
-Global setup (`packages/testing/fixtures/global-setup.ts`) is for provider registrations and schema
-only — it truncates every table and seeds payment/fulfillment/notification providers. Merchant or
-catalogue data is fixture data and does not belong there.
 
 ## Code Style
 
