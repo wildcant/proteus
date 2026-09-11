@@ -31,28 +31,28 @@ packages:
 # in one mechanism rather than by hand-pinning the two that were fatal.
 # ---------------------------------------------------------------------------
 catalog:
-  '@asteasolutions/zod-to-openapi': ^8.5.0
-  '@biomejs/biome': 2.5.4
-  '@dotenvx/dotenvx': ^2.17.1
-  '@faker-js/faker': ^10.5.0
-  '@playwright/test': ^1.62.1
-  '@tailwindcss/vite': ^4.3.3
-  '@tanstack/devtools-vite': ^0.8.5 # was: latest
-  '@tanstack/form-core': ^1.33.2
-  '@tanstack/history': ^1.162.2 # was: latest
-  '@tanstack/react-devtools': ^0.10.12 # was: latest
-  '@tanstack/react-form': ^1.33.2
-  '@tanstack/react-query': ^5.101.4
-  '@tanstack/react-query-devtools': ^5.101.4
-  '@tanstack/react-router': ^1.170.33 # was: latest
-  '@tanstack/react-router-devtools': ^1.167.1 # was: latest (in apps/store)
-  '@tanstack/router-cli': ^1.167.19
-  '@tanstack/router-plugin': ^1.168.36 # was: latest (in apps/admin)
-  '@types/node': ^22.20.1
-  '@types/qs': ^6.15.1
-  '@types/react': ^19.2.17
-  '@types/react-dom': ^19.2.3
-  '@vitejs/plugin-react': ^6.0.3
+  "@asteasolutions/zod-to-openapi": ^8.5.0
+  "@biomejs/biome": 2.5.4
+  "@dotenvx/dotenvx": ^2.17.1
+  "@faker-js/faker": ^10.5.0
+  "@playwright/test": ^1.62.1
+  "@tailwindcss/vite": ^4.3.3
+  "@tanstack/devtools-vite": ^0.8.5 # was: latest
+  "@tanstack/form-core": ^1.33.2
+  "@tanstack/history": ^1.162.2 # was: latest
+  "@tanstack/react-devtools": ^0.10.12 # was: latest
+  "@tanstack/react-form": ^1.33.2
+  "@tanstack/react-query": ^5.101.4
+  "@tanstack/react-query-devtools": ^5.101.4
+  "@tanstack/react-router": ^1.170.33 # was: latest
+  "@tanstack/react-router-devtools": ^1.167.1 # was: latest (in apps/store)
+  "@tanstack/router-cli": ^1.167.19
+  "@tanstack/router-plugin": ^1.168.36 # was: latest (in apps/admin)
+  "@types/node": ^22.20.1
+  "@types/qs": ^6.15.1
+  "@types/react": ^19.2.17
+  "@types/react-dom": ^19.2.3
+  "@vitejs/plugin-react": ^6.0.3
   bignumber.js: ^11.1.5
   class-variance-authority: ^0.7.1
   dependency-cruiser: ^18.1.0
@@ -107,40 +107,58 @@ catalog:
 # `scripts/checks/one-version.mts` is the only thing that will notice.
 # ---------------------------------------------------------------------------
 overrides:
-  '@tanstack/form-core': 1.33.2
-  '@tanstack/history': 1.162.2
+  "@tanstack/form-core": 1.33.2
+  "@tanstack/history": 1.162.2
 
 # ---------------------------------------------------------------------------
-# Which pnpm. The root package.json pins `packageManager: pnpm@10.x`, and pnpm enforces that pin
-# itself — not only corepack. Running a pnpm 12 binary in this repo re-execs 10.x, which is worth
-# knowing before concluding an upgrade has happened.
+# Which pnpm. The root package.json pins `packageManager: pnpm@12.4.1`, and pnpm enforces that pin
+# itself — not only corepack. A pnpm binary of another major run in this repo re-execs 12.4.1, which
+# is worth knowing before concluding an upgrade has or has not happened.
 #
-# 10 rather than the latest major, measured on this tree rather than assumed:
+# The migration landed on 10 and moved to 12 a day later, once 12 was measured on this tree rather
+# than assumed. What the measurement said:
 #
-#   - pnpm 12 keeps `lockfileVersion: '9.0'`, so scripts/checks/one-version.mts parses either.
-#   - pnpm 12 *rejects this lockfile*. `minimumReleaseAge` is a new default supply-chain policy and
-#     entries published inside the cutoff fail the install; its own remedy is
-#     `pnpm clean --lockfile && pnpm install` — a full re-resolution. That is precisely the
-#     180-package silent upgrade the migration order was designed to avoid, and it would throw away
-#     the fidelity measurement the whole migration rests on (3 packages resolving to a version npm
-#     did not have, all three extra copies rather than replacements).
-#   - pnpm 12 also makes an unrecognized key in *this file* a hard error rather than a warning when
-#     the version is pinned. Every key here is recognized today, but it means the pin and this file
-#     have to move together.
+#   - The lockfile survives intact. `lockfileVersion` stays '9.0', not one of the 1180 entries
+#     re-resolves, and the whole diff is pnpm 12 recording its own binary under
+#     `packageManagerDependencies`. So the migration's fidelity against npm is untouched, and
+#     scripts/checks/one-version.mts parses the file unchanged.
+#   - `minimumReleaseAge` is a new supply-chain policy, defaulting to 1440 minutes, and pnpm 12
+#     applies it to the *existing* lockfile on every install — and, through `verifyDepsBeforeRun`,
+#     on every `pnpm run` as well. Ten entries failed on upgrade day: wrangler, workerd and its
+#     five platform binaries, @cloudflare/vite-plugin, miniflare, electron-to-chromium. Every one
+#     of them had been published that same day, because ticket 05 pinned the Cloudflare line at its
+#     newest release. Nothing in the repo ran until they aged.
 #
-# So the jump to 12 is its own piece of work, where a full re-resolution is the point and the drift
-# gets measured, rather than a side effect of changing package managers. The pin is what keeps that
-# from happening by accident on somebody's machine.
+# The error calls that lockfile stale and suggests `pnpm clean --lockfile && pnpm install` — a full
+# re-resolution, which is exactly the silent 180-package upgrade the migration order existed to
+# avoid. `trustLockfile` below is the answer instead. It turns the policy off for entries already
+# in the lockfile and leaves it on for new resolutions, which is the split that matches this
+# repository: the lockfile is written by the only person who commits to it, while a package arriving
+# from the registry for the first time is the thing the cooldown is for.
+#
+# So `minimumReleaseAge` stays at its default and there is no exclusion list. What it now catches is
+# a hand-bump on publish day — a resolution, not a replay — and a bump that arrives as a Dependabot
+# pull request is already past the cutoff, since Dependabot applies a three-day cooldown of its own
+# (`docs/research/dependabot.md` §3.3). To take a package that is newer than the cutoff deliberately:
+#
+#     pnpm_config_minimum_release_age=0 pnpm add …
+#
+# Note the snake_case: pnpm 11 dropped `npm_config_*` for `pnpm_config_*`, and the camelCase
+# spelling of the same variable is read as a different setting and ignored in silence.
+trustLockfile: true
+
 # ---------------------------------------------------------------------------
 
-# Every package in the tree with a preinstall/install/postinstall script, which pnpm 10 blocks by
-# default. `@scarf/scarf` also has one and is deliberately absent — it is telemetry, and leaving
-# it unapproved is the point.
-onlyBuiltDependencies:
-  - '@ast-grep/cli'
-  - '@swc/core'
-  - esbuild
-  - msgpackr-extract
-  - msw
-  - protobufjs
-  - workerd
+# Every package in the tree with a preinstall/install/postinstall script. pnpm blocks all of them by
+# default, and `strictDepBuilds` — on by default since 11 — makes an unapproved one fail the install
+# rather than warn. `@scarf/scarf` is denied explicitly rather than omitted: it is telemetry, and
+# under `allowBuilds` a `false` says so where an absence only leaves the install red.
+allowBuilds:
+  "@ast-grep/cli": true
+  "@swc/core": true
+  esbuild: true
+  msgpackr-extract: true
+  msw: true
+  protobufjs: true
+  workerd: true
+  "@scarf/scarf": false
