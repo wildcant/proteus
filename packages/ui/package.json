@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "shadcn:add": "pnpm dlx shadcn@4.16.1 add",
-    "shadcn:re-eject": "node scripts/re-eject-shadcn.ts",
+    "shadcn:add": "pnpm dlx shadcn@4.21.0 add",
+    "shadcn:re-eject": "node scripts/re-eject-shadcn.ts 4.21.0",
     "typecheck": "tsc --noEmit"
   },
   "imports": {
