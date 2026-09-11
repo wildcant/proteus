@@ -315,7 +315,7 @@ that behaviour, and no chance of the two disagreeing.
 
 ## What CI enforces
 
-`npm run verify` runs `scripts/checks/`, which fails the build when:
+`pnpm run verify` runs `scripts/checks/`, which fails the build when:
 
 - a model is not reachable from its module's barrel — the graph is built from the barrel and
   nothing else, so an unexported model keeps its foreign keys and quietly stops being reached;

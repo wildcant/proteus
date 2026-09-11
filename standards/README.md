@@ -2,12 +2,12 @@
 
 The counterpart to the dependency rules in each app's `structure/.dependency-cruiser.cjs`.
 Those say which file may import which; these say what a file's *contents* must look like. Both are
-declarative — these run in the `standards` gate of `npm run verify`, those in `structure` — and
+declarative — these run in the `standards` gate of `pnpm run verify`, those in `structure` — and
 neither is a script.
 
 ```bash
-npm run check:standards        # scan the repo
-npm run check:standards:test   # run the rules' own tests
+pnpm run check:standards        # scan the repo
+pnpm run check:standards:test   # run the rules' own tests
 ```
 
 ## The words
@@ -123,12 +123,12 @@ place to keep in step, and the rule's `note:` already names the document at the 
 |---|---|---|
 | What a file's contents must look like | `standards/rules/` | ast-grep — `check:standards` |
 | Which file may import which | each app's `structure/.dependency-cruiser.cjs` | dependency-cruiser — `check:structure` |
-| Formatting, naming, and the language rules | `biome.json` | Biome — `npm run check` |
+| Formatting, naming, and the language rules | `biome.json` | Biome — `pnpm run check` |
 | API design | `apps/backend/openapi/ruleset.yaml` | Spectral — `check:openapi` |
 | Facts that exist only once drizzle has built the table | `apps/backend/scripts/checks/` | `check:schema` — and see [when a rule cannot express it](#when-a-rule-cannot-express-it) |
 | One version of each declared dependency | `pnpm-workspace.yaml`'s `catalog:` and `overrides:` | `scripts/checks/one-version.mts` — and see [checks that read what no rule engine reads](#checks-that-read-what-no-rule-engine-reads) |
 
-The first and the third-from-last run in the `standards` gate of `npm run verify`; the import rules
+The first and the third-from-last run in the `standards` gate of `pnpm run verify`; the import rules
 run in `structure`, Biome in `lint`, Spectral in `openapi`, and the version check in `versions`.
 
 ## Where a rule goes
@@ -252,7 +252,7 @@ that it enforces:
 
 That table is the join between the two halves of this directory, and it is the thing to update first
 when a rule is added or renamed. Everything general about rules — that they run in the `standards`
-gate of `npm run verify`, that each owns a test in `rule-tests/`, how a suppression works — belongs
+gate of `pnpm run verify`, that each owns a test in `rule-tests/`, how a suppression works — belongs
 here in this README and not repeated per doc, which is how the two `features/api/` docs had drifted
 into two slightly different accounts of the same mechanics.
 

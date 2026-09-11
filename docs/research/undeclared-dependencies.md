@@ -13,6 +13,14 @@ source and are labelled unverified where that matters.
 `preserveSymlinks: true`, catches every case including the two workspace-package ones, with zero false
 positives, in 2.6 seconds.
 
+> **Amended 2026-09-11, after the pnpm migration. The recommendation in §11 was not built, and should
+> not be.** The repo moved to pnpm, whose strict layout makes an undeclared import unresolvable rather
+> than detectable, and fails it through `typecheck` — a gate that already exists. The rule would be a
+> second, slower way to learn the same thing. The findings below stand as measured; what changed is the
+> mechanism that was available, not the arithmetic. Three amendments are marked inline: this one, the
+> verification of §7's pnpm claim, and a class of phantom in §8 that no tool surveyed here can see.
+> `.scratch/pnpm-migration/spec.md` §6 records the decision.
+
 ---
 
 ## Table of Contents
@@ -504,9 +512,16 @@ recommendation for this repo right now:
    only *declared* workspace deps into each package's own `node_modules`, so it would close them — but
    that is a claim about pnpm's linker that **was not verified here**, since installing pnpm was out of
    scope.
+   > **Amended 2026-09-11: verified, and it holds.** Both workspace-package rows close under pnpm —
+   > `backend` and `@proteus/frontend-structure` are unresolvable from a workspace that does not declare
+   > them. Measured by applying the layout and running `tsc --noEmit` per app;
+   > `.scratch/pnpm-migration/spec.md` §3 has the per-app error counts.
 3. A strict layout makes the failure a *runtime resolution error*, discovered by whoever runs the app
    next. A rule makes it a named gate failure with a file, a line and a fix. Those are different
    ergonomics, and the second is what `scripts/verify.sh` exists to provide.
+   > **Amended 2026-09-11: this one did not survive contact.** The failure is not a runtime resolution
+   > error found later. It is a `typecheck` failure, in the same `verify` run, naming the file, the line
+   > and the module — the ergonomics this point wanted from a rule, from a gate that already existed.
 
 `--install-strategy=nested` or `linked` on npm would get partway there without the migration, but both
 change the on-disk layout for every developer and CI job, `linked` is experimental, and **neither was
@@ -519,19 +534,27 @@ tested here** — testing them requires a destructive reinstall. Treat them as u
 The five questions from the brief, answered per tool. "All 11" means the eleven of §2, including both
 workspace-package rows.
 
-| Tool | 1. Catches all 11? | 2. General, or per-package config? | 3. Offline, deterministic, fast? | 4. Catches the inverse (declared, unimported)? | 5. New dependency / duplicates a tool we run? |
-|---|---|---|---|---|---|
-| **dependency-cruiser rule** | **Yes — 11/11, 0 false positives** (measured) | General: reads the nearest `package.json`; zero package names in the config | Yes — 2.6 s, one process, no network | **No** | **None** — already in `devDependencies` and already in the `structure` gate |
-| **Biome `noUndeclaredDependencies`** | Yes — 11/11, **plus ~1,130 false positives** from tsconfig `paths` (measured) | General | Yes — 2.1 s | No | None — already pinned, already in the `lint` gate |
-| **knip** | Very likely, incl. binaries — **not verified here** | General, but needs per-workspace config for entry points | Yes, by design | **Yes** — `dependencies` / `devDependencies` issue types | New dependency; overlaps dependency-cruiser and Biome |
-| **depcheck** | No — no workspace support; archived 2025-06-16 | Per-package invocation | n/a | Yes | New dependency, unmaintained |
-| **eslint-plugin-import** | Likely, but `packageDir` arrays reopen the hole | General by default | Yes | No | New **toolchain** (ESLint in a Biome repo) |
-| **manypkg / syncpack** | No — never reads source | n/a | Yes | No | New dependency, wrong subject |
-| **publint** | No — no published packages here | n/a | n/a | No | New dependency, no subject |
-| **Nx `@nx/dependency-checks`** | Unverified | Needs the Nx project graph | n/a | Partially | Nx **and** ESLint |
-| **TypeScript settings** | No — no such capability | n/a | n/a | No | n/a |
-| **npm `--install-strategy=nested\|linked`** | Unverified; `linked` is experimental | Structural, not a check | Changes every install | No | Changes the layout for everyone |
-| **pnpm strict `node_modules`** | Structurally prevents most of it; workspace rows unverified | Structural | Changes every install | No | Package-manager migration |
+> **Amended 2026-09-11: this table is missing a question and a row.** Question 6 below — the `@types/*`
+> class — was not in the brief because nothing here could see it. Every tool in this table works from
+> import specifiers, and a `@types/*` package is never named in one: TypeScript loads it implicitly from
+> `node_modules/@types`. `packages/ui` writes JSX in every component and declares neither `@types/react`
+> nor `@types/react-dom`; under the strict layout that is **171 type errors**, and it is invisible to
+> dependency-cruiser, Biome and knip alike. The last row is the mechanism that found it.
+
+| Tool | 1. Catches all 11? | 2. General, or per-package config? | 3. Offline, deterministic, fast? | 4. Catches the inverse (declared, unimported)? | 5. New dependency / duplicates a tool we run? | 6. Catches the `@types/*` class? |
+|---|---|---|---|---|---|---|
+| **dependency-cruiser rule** | **Yes — 11/11, 0 false positives** (measured) | General: reads the nearest `package.json`; zero package names in the config | Yes — 2.6 s, one process, no network | **No** | **None** — already in `devDependencies` and already in the `structure` gate | **No** — never sees an implicit type package |
+| **Biome `noUndeclaredDependencies`** | Yes — 11/11, **plus ~1,130 false positives** from tsconfig `paths` (measured) | General | Yes — 2.1 s | No | None — already pinned, already in the `lint` gate | No — same reason |
+| **knip** | Very likely, incl. binaries — **not verified here** | General, but needs per-workspace config for entry points | Yes, by design | **Yes** — `dependencies` / `devDependencies` issue types | New dependency; overlaps dependency-cruiser and Biome | No — same reason |
+| **depcheck** | No — no workspace support; archived 2025-06-16 | Per-package invocation | n/a | Yes | New dependency, unmaintained | No |
+| **eslint-plugin-import** | Likely, but `packageDir` arrays reopen the hole | General by default | Yes | No | New **toolchain** (ESLint in a Biome repo) | No |
+| **manypkg / syncpack** | No — never reads source | n/a | Yes | No | New dependency, wrong subject | No |
+| **publint** | No — no published packages here | n/a | n/a | No | New dependency, no subject | No |
+| **Nx `@nx/dependency-checks`** | Unverified | Needs the Nx project graph | n/a | Partially | Nx **and** ESLint | No |
+| **TypeScript settings** | No — no such capability | n/a | n/a | No | n/a | No — `types` narrows what is loaded, it does not check declaration |
+| **npm `--install-strategy=nested\|linked`** | Unverified; `linked` is experimental | Structural, not a check | Changes every install | No | Changes the layout for everyone | Unverified |
+| **pnpm strict `node_modules`** | Structurally prevents most of it; workspace rows unverified | Structural | Changes every install | No | Package-manager migration | Not by itself — it makes the module missing, `tsc` is what says so |
+| **pnpm layout + the existing `typecheck` gate** *(added 2026-09-11)* | **Yes — 11/11 measured, plus both workspace rows, plus the `@types/*` class and the nine binaries of §9** | Structural: no config, no package names anywhere | Yes — it is a gate `verify` already runs | No | Package-manager migration, since done | **Yes — 171 errors in `packages/ui`, which is how the class was found at all** | Not by itself — it makes the module missing, `tsc` is what says so |
 
 Note that **no candidate does both halves**: dependency-cruiser answers question 1 cleanly and question 4
 not at all; knip answers both but costs a tool and a triage pass. They are separate decisions, and the
@@ -588,6 +611,17 @@ Summary: **eight are "declare it"** (3, 4, 5, 6, 7, 8, 10, 11), **two are "the i
 ---
 
 ## 11. Recommendation for this repo
+
+> **Amended 2026-09-11: the rule below was not built, and should not be.** The standard in §11.1 stands
+> word for word — it is now enforced by the layout rather than by a cruise. §§11.2–11.5 are kept as the
+> design that was arrived at and the evidence that it worked, not as work to do. What changed:
+> §7's third point argued a rule beats a strict layout on ergonomics, because a layout turns the mistake
+> into a runtime resolution error found by whoever runs the app next. Measured, it does not: under pnpm
+> the same mistake fails `typecheck`, in the same `verify` run, with the file, the line and the module
+> name — so the rule would be a second, slower way to learn the same thing, and it would need
+> `preserveSymlinks: true` and a config of its own to avoid breaking the three cruises that already run.
+> The layout also covers the two classes a rule cannot: the undeclared **binaries** of §9, and the
+> **`@types/*`** class amended into §8.
 
 ### 11.1 The standard
 
@@ -742,7 +776,8 @@ catch all eleven plus the nine binaries — but "very likely" is what this is, a
 first-run false-positive volume in this tree is entirely unmeasured, and that is the number that decides
 whether it is adoptable.
 
-**The npm and pnpm install-strategy claims are read, not run.** Nothing in §7 was tested, because testing
+**The npm and pnpm install-strategy claims are read, not run.** *(Amended 2026-09-11: the pnpm half was
+since run — see §7 and §8. The npm `--install-strategy` half remains untested and unused.)* Nothing in §7 was tested, because testing
 it means a destructive reinstall of a repo with a working `node_modules`. Specifically unverified: whether
 `--install-strategy=nested` or `linked` actually stops a *workspace* from reaching another workspace's
 hoisted dependency, and whether pnpm's linker would close the `backend` and `@proteus/frontend-structure`

@@ -6,9 +6,9 @@ Standalone API server built with Ports & Adapters architecture, Drizzle ORM, and
 
 **On Node, Temporal is the engine that runs your workflows.** `RUNTIME` defaults to `node`, and
 `src/core/workflows/engine-selection.ts` resolves `node` to the Temporal adapter — so under
-`npm run dev` every `createWorkflow(...).run()` becomes an execution on the `proteus` task queue and
+`pnpm run dev` every `createWorkflow(...).run()` becomes an execution on the `proteus` task queue and
 is executed step by step by a Worker. The in-process simple adapter
-(`src/core/workflows/simple-adapter.ts`) is what `npm run dev:workerd` and the Cloudflare deployment
+(`src/core/workflows/simple-adapter.ts`) is what `pnpm run dev:workerd` and the Cloudflare deployment
 get, because workerd cannot load Temporal's native Worker. Which engine runs is never an env var —
 see `src/core/workflows/readme.md`.
 
@@ -16,10 +16,10 @@ see `src/core/workflows/readme.md`.
 
 ```bash
 docker compose -f apps/backend/docker-compose.yml up -d --wait   # postgres, temporal, temporal-ui, worker, events-worker
-npm run --workspace=backend dev
+pnpm --filter backend run dev
 ```
 
-On a volume that has never been migrated, use `npm run --workspace=backend stack:reset` instead: the
+On a volume that has never been migrated, use `pnpm --filter backend run stack:reset` instead: the
 `worker` service reads `proteus` at boot and exits if the tables are not there, and only that script
 gets Postgres migrated before the Worker starts looking for it.
 
@@ -32,23 +32,23 @@ called with no execution timeout.
 The `worker` service builds `Dockerfile.worker` and bind-mounts `src/` over the image, so editing a
 step action needs only `docker compose -f apps/backend/docker-compose.yml restart worker`. A
 dependency change needs `--build`. It reads `.env.local` the same way the API does, so
-`npm run setup` (which fetches `.env.keys`) must have run first — the same precondition `npm run dev`
+`pnpm run setup` (which fetches `.env.keys`) must have run first — the same precondition `pnpm run dev`
 already has. Compose overrides only the two addresses that differ inside the network: Postgres and
 Temporal are reached by service name rather than on `localhost`.
 
-**Iterating on Worker code itself is what `npm run --workspace=backend worker` is for.** It runs the
+**Iterating on Worker code itself is what `pnpm --filter backend run worker` is for.** It runs the
 same entrypoint through the same script, on the host, with no container in the loop:
 
 ```bash
 docker compose -f apps/backend/docker-compose.yml stop worker   # don't let two Workers share the queue
-npm run --workspace=backend worker
+pnpm --filter backend run worker
 ```
 
 ### Two Workers, two queues
 
 The stack runs a second Worker, `events-worker`, on the `proteus-events` queue. It is the event bus's
 side of Temporal: every `bus.emit(...)` on node becomes a standalone activity execution there, and
-this is the process that runs the subscriber. `npm run --workspace=backend worker:events` is the same
+this is the process that runs the subscriber. `pnpm --filter backend run worker:events` is the same
 entrypoint on the host, and `docker compose ... stop events-worker` first for the same reason.
 
 The queues are split so a burst of event deliveries cannot take the Worker slots a shopper's
@@ -63,11 +63,11 @@ Standalone activities need `activity.enableStandalone` in Temporal's dynamic con
 
 The UI is at <http://localhost:8088>; the gRPC frontend is at `localhost:7233`. Every execution and
 its full history show up there — including the one a route just dispatched.
-`npm run --workspace=backend temporal:ping` is a standalone round-trip probe left from the first
+`pnpm --filter backend run temporal:ping` is a standalone round-trip probe left from the first
 stage.
 
 The Worker needs `@temporalio/core-bridge`, a native addon, so it is a **Node-only** process.
-`npm run dev:workerd` and the Cloudflare deployment neither run nor bundle it — which is also why the
+`pnpm run dev:workerd` and the Cloudflare deployment neither run nor bundle it — which is also why the
 container carries its own `node_modules` instead of mounting the host's.
 
 ### Three services, not one
@@ -100,8 +100,8 @@ Temporal points at the existing `postgres` service rather than bringing its own,
 sit alongside `proteus`. One server, one volume, three databases. (The upstream sample runs a second
 Postgres with its own `temporal`/`temporal` user; that part is deliberately not copied.)
 
-The one thing worth knowing: **`npm run db:reset` is safe.** It drops and recreates `proteus` only,
-so workflow history survives. `npm run stack:reset` is the command that destroys it — `down -v`, then
+The one thing worth knowing: **`pnpm run db:reset` is safe.** It drops and recreates `proteus` only,
+so workflow history survives. `pnpm run stack:reset` is the command that destroys it — `down -v`, then
 Postgres, migrate, seed, and the rest of the stack, with `temporal-schema` rebuilding Temporal's two
 databases from empty. That teardown-and-rebuild is the supported way to move Temporal versions here;
 nothing is deployed, so there is no history worth migrating forward.
@@ -113,23 +113,23 @@ connection settings, and nothing more. Which engine executes a workflow is not a
 
 ### Tests
 
-Three runs, and only one of them is `npm test`.
+Three runs, and only one of them is `pnpm test`.
 
 | Command | What it runs | What it needs |
 |---|---|---|
-| `npm test` | the whole suite, engine pinned to `simple` | Postgres |
-| `npm run test:temporal:server` | `src/**/*.server.test.ts` — the adapter against a real server | a downloaded test-server binary |
-| `npm run test:temporal` | the `npm test` files again, engine pinned to `temporal` | Postgres + the Compose stack |
+| `pnpm test` | the whole suite, engine pinned to `simple` | Postgres |
+| `pnpm run test:temporal:server` | `src/**/*.server.test.ts` — the adapter against a real server | a downloaded test-server binary |
+| `pnpm run test:temporal` | the `pnpm test` files again, engine pinned to `temporal` | Postgres + the Compose stack |
 
 `*.server.test.ts` is a **separate run on purpose**. Those three files each boot
 `@temporalio/testing`'s time-skipping server, which downloads a binary on first use and
 webpack-bundles the workflow sandbox — minutes, and a network dependency on a cold cache. They cover
 the seam between this adapter and the SDK, which moves when the SDK version does and not otherwise,
-so paying that on every `npm test` buys very little. Name a new one `*.server.test.ts` and it lands
+so paying that on every `pnpm test` buys very little. Name a new one `*.server.test.ts` and it lands
 in that run automatically; `vitest.config.ts` excludes the glob so it cannot drift back.
 
 The replay mechanism and the payload converter keep the plain `.test.ts` suffix and stay in
-`npm test`: they cover the same code with no server at all, which is where the edge cases belong.
+`pnpm test`: they cover the same code with no server at all, which is where the edge cases belong.
 
 Neither the default run nor `verify.sh` needs the Compose stack. The parity run does, which is why
 it is deliberately outside `verify.sh` — `src/core/workflows/readme.md` explains what its number does

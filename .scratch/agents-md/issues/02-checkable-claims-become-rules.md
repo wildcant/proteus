@@ -68,7 +68,7 @@ reason.
       must flag and the code it must not
 - [ ] Each rule's `note:` ends with the repo-relative path of the `__docs__` document that explains
       it — never an index — and that document's `## Enforcement` table gains the row
-- [ ] `npm run check:standards:test` passes, and the rule count it reports has gone up by the number
+- [ ] `pnpm run check:standards:test` passes, and the rule count it reports has gone up by the number
       of rules added
 - [ ] **Every new rule is proved able to fail.** For each: introduce the violation, confirm the
       `standards` gate goes red, restore. A rule that never matched its target prints exactly what a
@@ -81,7 +81,7 @@ reason.
 - [ ] Any candidate you evaluate and reject for a reason **not** in the table above is added to
       `standards/README.md` → "when a rule cannot express it", so the next person has to clear the
       same bar
-- [ ] `npm run verify` green
+- [ ] `pnpm run verify` green
 
 ---
 

@@ -15,9 +15,9 @@ Add Playwright E2E testing infrastructure across the monorepo. A new `packages/t
 
 ## User Stories
 
-1. As a developer, I want to run `npm run --workspace=admin test:e2e` to execute all admin E2E tests, so that I can verify admin app behavior before merging.
-2. As a developer, I want to run `npm run --workspace=store test:e2e` to execute all store E2E tests, so that I can verify storefront behavior before merging.
-3. As a developer, I want to run `npm run test:e2e -- --ui` in either app to launch Playwright's visual UI mode, so that I can iterate on tests with a live feedback loop.
+1. As a developer, I want to run `pnpm --filter admin run test:e2e` to execute all admin E2E tests, so that I can verify admin app behavior before merging.
+2. As a developer, I want to run `pnpm --filter store run test:e2e` to execute all store E2E tests, so that I can verify storefront behavior before merging.
+3. As a developer, I want to run `pnpm run test:e2e --ui` in either app to launch Playwright's visual UI mode, so that I can iterate on tests with a live feedback loop.
 4. As a developer, I want tests to start the backend and frontend dev servers automatically via Playwright's webServer config, so that I don't need to manually start services before running tests.
 5. As a developer, I want tests to reuse an already-running backend server when developing locally, so that I can keep the backend up in a separate terminal without conflicts.
 6. As a developer, I want a `navigate` fixture that provides type-safe TanStack Router navigation with path interpolation, so that test navigation is consistent with the app's route definitions.
@@ -148,14 +148,14 @@ Tests generate unique data via `@faker-js/faker` (random emails, names, product 
 
 | Script | Command | Purpose |
 |--------|---------|---------|
-| Backend test server | `npm run --workspace=backend dev:test` | Starts backend on :3010 with `MOCKS=true` and `.env.test`. Hand-run only — each e2e suite starts its own on 3013/3015 via `dev:test:e2e` |
-| Admin test server | `npm run --workspace=admin dev:test` | Starts admin Vite on :3012 with `.env.test` |
-| Store test server | `npm run --workspace=store dev:test` | Starts store Vite on :3011 with `.env.test` |
-| Admin E2E tests | `npm run --workspace=admin test:e2e` | Runs admin Playwright suite (auto-starts servers) |
-| Store E2E tests | `npm run --workspace=store test:e2e` | Runs store Playwright suite (auto-starts servers) |
-| Admin E2E UI mode | `npm run --workspace=admin test:e2e:dev` | Launches Playwright UI for visual debugging |
-| Store E2E UI mode | `npm run --workspace=store test:e2e:dev` | Launches Playwright UI for visual debugging |
-| Every test at once | `npm run verify:full` | Both e2e suites, the full backend suite and the app unit/component suites, in parallel — possible only because no two share a database |
+| Backend test server | `pnpm --filter backend run dev:test` | Starts backend on :3010 with `MOCKS=true` and `.env.test`. Hand-run only — each e2e suite starts its own on 3013/3015 via `dev:test:e2e` |
+| Admin test server | `pnpm --filter admin run dev:test` | Starts admin Vite on :3012 with `.env.test` |
+| Store test server | `pnpm --filter store run dev:test` | Starts store Vite on :3011 with `.env.test` |
+| Admin E2E tests | `pnpm --filter admin run test:e2e` | Runs admin Playwright suite (auto-starts servers) |
+| Store E2E tests | `pnpm --filter store run test:e2e` | Runs store Playwright suite (auto-starts servers) |
+| Admin E2E UI mode | `pnpm --filter admin run test:e2e:dev` | Launches Playwright UI for visual debugging |
+| Store E2E UI mode | `pnpm --filter store run test:e2e:dev` | Launches Playwright UI for visual debugging |
+| Every test at once | `pnpm run verify:full` | Both e2e suites, the full backend suite and the app unit/component suites, in parallel — possible only because no two share a database |
 
 ### Auth token details
 

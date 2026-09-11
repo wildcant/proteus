@@ -34,5 +34,5 @@
 ## Migration
 
 - [ ] Remove existing cart migration: `rm -rf ./src/modules/cart/migrations/*`
-- [ ] Regenerate: `npx drizzle-kit generate --name create_cart_tables --config ./src/modules/cart/database.config.ts`
+- [ ] Regenerate: `pnpm exec drizzle-kit generate --name create_cart_tables --config ./src/modules/cart/database.config.ts`
 - [ ] Verify generated SQL uses `numeric` instead of `integer` for the 3 changed columns

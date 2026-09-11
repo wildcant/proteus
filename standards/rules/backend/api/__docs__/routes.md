@@ -112,7 +112,7 @@ without anything in between restating it. Structural failures stay off the list 
 from schema validation and the 401 from an auth middleware are derived from the definition itself.
 
 The list is checked in both directions and at the workflow boundary, so a wrong one fails
-`npm run verify` rather than shipping a lying spec.
+`pnpm run verify` rather than shipping a lying spec.
 
 ### A middleware's contribution is derived, not asserted
 
@@ -263,6 +263,6 @@ the ones that fire most often.
    whatever the handler itself can raise
 3. Create or update `definitions.ts` with the definition — handler, schemas, `throws`, OpenAPI metadata
 4. Add the definition import to `src/routes.ts`
-5. `npm run --workspace=backend typecheck` — zero errors
-6. `npm run openapi:generate` to regenerate the specs and clients
-7. `npm run verify` — the rules above check the `Throws` list against the handler in both directions
+5. `pnpm --filter backend run typecheck` — zero errors
+6. `pnpm run openapi:generate` to regenerate the specs and clients
+7. `pnpm run verify` — the rules above check the `Throws` list against the handler in both directions

@@ -81,7 +81,7 @@ still offers (`:450-457`), and `replaceOptionValues` refuses a value products st
 
 - [ ] `docs/product-options.md` (new) documents the five tables, both rule sets, and where each rule is enforced
 - [ ] ADR 0016 records two decisions: the pivot to the product value with the modelling bug it fixes, and that I2/I3/I4 are service-enforced — with the accepted cost that any caller reaching a repository directly, or writing raw SQL, bypasses them
-- [ ] Full backend suite green; `npm run verify` green
+- [ ] Full backend suite green; `pnpm run verify` green
 
 ## Tests that encode behaviour this ticket reverses
 

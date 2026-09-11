@@ -197,7 +197,7 @@ Seed integrity is tested at the API seam rather than by inspecting the database:
 
 **Frontend unit tests are deliberately absent.** They were written during the build and removed before merge — the FE projects are not taking unit tests yet. Backend API coverage is unaffected.
 
-**The end-to-end suite runs outside `npm run verify`**, so it is a manual gate. It was never run against this branch by an agent: Playwright needs a browser and a running stack. Everything else — all ten verify suites including Spectral, plus the full backend suite — passes.
+**The end-to-end suite runs outside `pnpm run verify`**, so it is a manual gate. It was never run against this branch by an agent: Playwright needs a browser and a running stack. Everything else — all ten verify suites including Spectral, plus the full backend suite — passes.
 
 ---
 

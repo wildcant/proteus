@@ -79,7 +79,7 @@ Install the base components into `packages/ui`:
 
 ```bash
 cd packages/ui
-npm dlx shadcn@latest add drawer alert-dialog tabs
+pnpm dlx shadcn@latest add drawer alert-dialog tabs
 ```
 
 This adds three files to `packages/ui/src/components/ui/`:

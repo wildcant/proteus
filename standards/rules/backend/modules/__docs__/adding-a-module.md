@@ -285,11 +285,11 @@ export default defineConfig({
 ### 10. Generate and run migrations
 
 ```bash
-npx drizzle-kit generate --config=src/modules/inventory/database.config.ts --name=create_inventory_tables
-npx drizzle-kit migrate --config=src/modules/inventory/database.config.ts
+pnpm exec drizzle-kit generate --config=src/modules/inventory/database.config.ts --name=create_inventory_tables
+pnpm exec drizzle-kit migrate --config=src/modules/inventory/database.config.ts
 ```
 
-`npm run --workspace=backend db:generate` does the same for every module at once, and `db:migrate:dev`
+`pnpm --filter backend run db:generate` does the same for every module at once, and `db:migrate:dev`
 applies them.
 
 **Regenerate, never append.** A module keeps exactly one migration file. When its schema changes, do
@@ -297,7 +297,7 @@ not generate an incremental `0001_*` — delete the directory and regenerate it 
 
 ```bash
 rm -rf src/modules/inventory/migrations
-npx dotenvx run -f ../../.env.local -- npx drizzle-kit generate \
+pnpm exec dotenvx run -f ../../.env.local -- drizzle-kit generate \
   --config=src/modules/inventory/database.config.ts --name=create_inventory_tables
 ```
 
@@ -307,7 +307,7 @@ The `--name` is what keeps the tag stable, so the diff is additions inside the e
 
 The project is pre-release with no deployed database to migrate forward, so an append-only history
 buys nothing and accumulates churn instead. The test suite migrates from cold, so a rewritten
-migration is picked up for free; a local dev database needs `npm run --workspace=backend db:restart`
+migration is picked up for free; a local dev database needs `pnpm --filter backend run db:restart`
 afterwards, since the migration it already applied has changed underneath it. Revisit this once there
 is a real deployment to migrate.
 

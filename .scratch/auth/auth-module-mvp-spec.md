@@ -38,8 +38,8 @@ The MVP ships with one auth provider (emailpass), one verification provider (tok
 ## Dependencies
 
 ```bash
-npm install jsonwebtoken scrypt-kdf
-npm install -D @types/jsonwebtoken
+pnpm --filter backend add jsonwebtoken scrypt-kdf
+pnpm --filter backend add -D @types/jsonwebtoken
 ```
 
 | Package | Version | Purpose |

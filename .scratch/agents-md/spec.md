@@ -190,7 +190,7 @@ moment it is needed.
 
    It is cheaper still for the ones that are not auto-fixable. `noExplicitAny` is not `FIXABLE`:
    clearing it means finding the right type, which is the expensive part. `useNamingConvention` is
-   `warn` in `biome.json`, so a local `npm run check` does not even fail on it — only the gate's
+   `warn` in `biome.json`, so a local `pnpm run check` does not even fail on it — only the gate's
    `--error-on-warnings` does. And the `type`-over-`interface` bullet covers ground the rule does
    not: the override is `apps/admin/**` and `apps/store/**`, so on the backend it is convention only.
 

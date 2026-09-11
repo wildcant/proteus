@@ -211,7 +211,7 @@ claiming nothing holds it.
       matching the root's `CLAUDE.md -> AGENTS.md`, and both are committed as symlinks — check
       `git ls-files -s` reports mode `120000`, not a copied file. **Skip this if the nested files end
       up empty** (see the next criterion): a symlink to nothing is a file to keep in step
-- [ ] `npx @tanstack/intent@latest install` **without `--map`** is run in both apps, shrinking the
+- [ ] `pnpm dlx @tanstack/intent@latest install` **without `--map`** is run in both apps, shrinking the
       block to discover-on-demand guidance. If the result is still noise, delete the block — and if
       that leaves the file with nothing but a heading, **delete the file**. Record which was chosen
       and why
@@ -223,7 +223,7 @@ claiming nothing holds it.
       PR against 290 lines / 20,886 bytes
 - [ ] No pointer anywhere names a section that no longer exists — grep `AGENTS.md`, `standards/`,
       `.claude/rules/` and `docs/` for "DataTable", "Route-Driven Modals" and "Dependency Rules"
-- [ ] `npm run verify` green
+- [ ] `pnpm run verify` green
 
 ---
 

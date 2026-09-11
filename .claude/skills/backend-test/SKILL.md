@@ -1,7 +1,7 @@
 ---
 name: backend-test
 description: Write backend integration tests (Vitest against a real Postgres) following project conventions. Use when creating, editing, or debugging tests under apps/backend.
-allowed-tools: Read Grep Glob Edit Write Bash(npx -w backend *) Bash(npm run *) Bash(npx biome *) Bash(pgrep *)
+allowed-tools: Read Grep Glob Edit Write Bash(pnpm --filter backend *) Bash(pnpm run *) Bash(pnpm exec biome *) Bash(pgrep *)
 ---
 
 ## Project-Specific Setup
@@ -43,9 +43,9 @@ Everything else is `{subject}.test.ts`.
 
 ### Running tests
 ```bash
-npx -w backend dotenvx run -f ../../.env.test --quiet -- vitest run src/api/admin/products
-npm run --workspace=backend test    # full suite, ~40s
-npm run verify                      # gate: format, typecheck, lint, deps, src/api tests only
+pnpm --filter backend exec dotenvx run -f ../../.env.test --quiet -- vitest run src/api/admin/products
+pnpm --filter backend run test  # full suite, ~40s
+pnpm run verify                 # gate: format, typecheck, lint, deps, src/api tests only
 ```
 **Never run two backend test processes at once** — `globalSetup` takes an advisory lock and
 the second run exits immediately naming the collision.

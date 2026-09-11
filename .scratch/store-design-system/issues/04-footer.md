@@ -117,13 +117,13 @@ payload, which is the right trade at this size and would not be at thirty.
 simple-icons (CC0-1.0) into `packages/icons/assets/{payment,social}/`, with provenance in
 `packages/icons/assets/README.md`. `@proteus/icons` generates a React component per asset, so this
 ticket imports marks rather than copying path data into the app; regenerating after an asset changes
-is `npm run --workspace=@proteus/icons build:icons`. Sezzle is not in simple-icons and Discord is
+is `pnpm --filter @proteus/icons run build:icons`. Sezzle is not in simple-icons and Discord is
 specific to the reference's own community programme; both are dropped. Klarna and Afterpay are BNPL
 we do not have — Klarna is generated and simply unused until it is.
 
 ## Work
 
-- **`packages/ui` — add the accordion.** `npx shadcn@latest add accordion` from `packages/ui`,
+- **`packages/ui` — add the accordion.** `pnpm dlx shadcn@latest add accordion` from `packages/ui`,
   then export it from `src/index.ts` beside the others. Adding a component there is additive and
   safe; it is only `packages/ui`'s `:root` that is off limits, because admin shares it.
 

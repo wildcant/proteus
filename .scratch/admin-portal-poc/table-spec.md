@@ -766,7 +766,7 @@ Every toolbar piece shows a skeleton while `isPending` is true (from `useData`).
 
 ### Layer 1 — shadcn `<Table>` primitives (presentation only)
 
-Installed via `npx shadcn@latest add table`. Pure styled HTML table elements — no state, no TanStack, no logic:
+Installed via `pnpm dlx shadcn@latest add table`. Pure styled HTML table elements — no state, no TanStack, no logic:
 
 ```tsx
 import {

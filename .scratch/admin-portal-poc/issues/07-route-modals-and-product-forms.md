@@ -14,10 +14,10 @@
 
 ### 1a. Install shadcn components into `@proteus/ui`
 
-- [x] Run `npx shadcn@latest add drawer alert-dialog` in `packages/ui` (adds `drawer.tsx` and `alert-dialog.tsx` to `packages/ui/src/components/ui/`)
+- [x] Run `pnpm dlx shadcn@latest add drawer alert-dialog` in `packages/ui` (adds `drawer.tsx` and `alert-dialog.tsx` to `packages/ui/src/components/ui/`)
 - [x] Export all Drawer parts from `packages/ui/src/index.ts`: `Drawer`, `DrawerClose`, `DrawerContent`, `DrawerDescription`, `DrawerFooter`, `DrawerHeader`, `DrawerOverlay`, `DrawerPortal`, `DrawerSwipeHandle`, `DrawerTitle`, `DrawerTrigger`
 - [x] Export all AlertDialog parts from `packages/ui/src/index.ts`: `AlertDialog`, `AlertDialogAction`, `AlertDialogCancel`, `AlertDialogContent`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogHeader`, `AlertDialogMedia`, `AlertDialogOverlay`, `AlertDialogPortal`, `AlertDialogTitle`, `AlertDialogTrigger`
-- [x] Verify `npm run --workspace=frontend typecheck` (or equivalent) still passes -- alert-dialog install may try to overwrite `button.tsx`, decline the overwrite
+- [x] Verify `pnpm --filter frontend run typecheck` (or equivalent) still passes -- alert-dialog install may try to overwrite `button.tsx`, decline the overwrite
 
 ### 1b. RouteModalProvider -- context layer
 

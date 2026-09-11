@@ -12,4 +12,4 @@
   - Test: product detail page — authenticate as admin, seed a product via `createProduct()`, navigate to `/products/$id`, assert correct product title and details are displayed
   - Test: variant navigation — authenticate as admin, seed a product, navigate to its detail page, navigate to a variant page, assert the variant view loads
 - [ ] All tests use the admin persona (no re-login), faker-generated data (no collisions), and `await using` or `cleanup` for teardown
-- [ ] Verify: `npm run --workspace=admin test:e2e` passes with both auth and product tests
+- [ ] Verify: `pnpm --filter admin run test:e2e` passes with both auth and product tests

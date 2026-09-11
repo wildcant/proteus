@@ -36,7 +36,7 @@
 
 ## Migrations
 
-- [ ] Generate initial migration: `npx drizzle-kit generate --name create_order_tables --config ./src/modules/order/database.config.ts`
+- [ ] Generate initial migration: `pnpm exec drizzle-kit generate --name create_order_tables --config ./src/modules/order/database.config.ts`
 
 ## Test factories
 

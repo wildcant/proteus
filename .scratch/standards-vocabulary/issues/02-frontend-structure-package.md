@@ -31,11 +31,11 @@ code. No rule changes, no behaviour change — both apps must report exactly wha
       prototype that carried the old name, and rewriting it would make it describe something that
       never ran
 - [ ] `.scratch/frontend-conventions/` is **not** renamed — working record, same reason
-- [ ] `npm run --workspace=store check:deps` and `--workspace=admin check:deps` both still pass, and
+- [ ] `pnpm --filter store run check:deps` and `--workspace=admin check:deps` both still pass, and
       the rename is proved non-vacuous: add a folder that breaks the feature vocabulary (e.g.
       `apps/store/src/features/cart/helpers/x.ts`), confirm both the rule fires and the diagnostic
       names the rule, then remove it. Say in the PR description that you ran it
-- [ ] `npm run verify` green
+- [ ] `pnpm run verify` green
 
 ## Notes
 

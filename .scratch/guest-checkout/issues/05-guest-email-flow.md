@@ -11,7 +11,7 @@
 - [ ] `updateCartWorkflow` has a new `find-or-create-customer` step that runs when email is present — sets `customerId` and `email` on the cart from the result
 - [ ] Compensation: if a customer was newly created and the workflow fails, the customer is deleted
 - [ ] `completeCartWorkflow` has a new validation step that rejects carts without an email (terminal error before order creation)
-- [ ] Orval clients regenerated (`npm run openapi:generate`) to pick up schema changes
+- [ ] Orval clients regenerated (`pnpm run openapi:generate`) to pick up schema changes
 - [ ] Workflow test: email provided, no existing guest — creates guest customer, sets `customerId` and `email` on cart
 - [ ] Workflow test: email provided, existing guest found — reuses customer, sets `customerId` on cart
 - [ ] Workflow test: email provided with `firstName`/`lastName` — passes name fields to customer creation

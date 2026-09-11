@@ -185,13 +185,13 @@ Use the CLI to narrow down which file causes the conflict — no code changes ne
 
 ```bash
 # Confirm the test passes alone
-npx -w admin playwright test products.spec.ts
+pnpm --filter admin exec playwright test products.spec.ts
 
 # Pair it with suspect files to find the conflict
-npx -w admin playwright test products.spec.ts auth.spec.ts --workers=2
+pnpm --filter admin exec playwright test products.spec.ts auth.spec.ts --workers=2
 
 # Or exclude a file from the full suite to confirm
-npx -w admin playwright test --ignore-pattern="**/auth.spec.ts" --workers=4
+pnpm --filter admin exec playwright test --ignore-pattern="**/auth.spec.ts" --workers=4
 ```
 
 ### Step 2: Trace — capture evidence of what went wrong
@@ -199,13 +199,13 @@ npx -w admin playwright test --ignore-pattern="**/auth.spec.ts" --workers=4
 Once you've found the conflicting pair, re-run with tracing enabled to get a full timeline:
 
 ```bash
-npx -w admin playwright test products.spec.ts auth.spec.ts --workers=2 --trace on
+pnpm --filter admin exec playwright test products.spec.ts auth.spec.ts --workers=2 --trace on
 ```
 
 Then inspect the trace:
 
 ```bash
-npx playwright show-trace ./test-results/<failing-test>/trace.zip
+pnpm --filter admin exec playwright show-trace ./test-results/<failing-test>/trace.zip
 ```
 
 ### Step 3: Diagnose — identify the root cause
@@ -228,12 +228,12 @@ Only after confirming the root cause, apply a targeted fix. The fix is almost al
 ## Debugging
 
 ### UI Mode
-Launch with `npx -w admin playwright test --ui` for a full visual debugging environment with watch mode.
+Launch with `pnpm --filter admin exec playwright test --ui` for a full visual debugging environment with watch mode.
 
 ### Trace Viewer
 ```bash
-npx -w admin playwright test --trace on          # Capture trace
-npx playwright show-trace ./test-results/*/trace.zip  # Inspect
+pnpm --filter admin exec playwright test --trace on          # Capture trace
+pnpm --filter admin exec playwright show-trace ./test-results/*/trace.zip  # Inspect
 ```
 Traces show DOM snapshots, network requests, console logs, and timing.
 

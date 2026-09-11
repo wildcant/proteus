@@ -111,7 +111,7 @@ already exposes it, and `enrichLineItems` spreads the row untouched. The only th
 `StoreOrderLineItem` in `packages/http-schemas/src/store/order/entities.ts`, which does not declare
 the key, so Zod strips it on the way out.
 
-Add the key, run `npm run openapi:generate`, and the order row can say `M · Olive` — the same string
+Add the key, run `pnpm run openapi:generate`, and the order row can say `M · Olive` — the same string
 the cart drawer and the checkout summary showed the shopper twice already. Fall back to
 `variantTitle` when it is null, which is what orders placed before that column will have, and drop
 the `Variant:` prefix — neither of the other two rows prefixes it.
@@ -337,7 +337,7 @@ link: there is nothing behind it to go back to.
   `logger.error` lines and gains the same row with `resourceType: 'order'`, `resourceId: order.id`
   and `idempotencyKey: \`order-confirmation-failed:${order.id}\``. It stays inside the `catch` —
   the step must not start throwing.
-- **`npm run openapi:generate`** — regenerates the store and admin Orval clients.
+- **`pnpm run openapi:generate`** — regenerates the store and admin Orval clients.
 - **`apps/backend/src/api/store/orders/__tests__/order.api.test.ts`** — assert the detail response
   carries `id` and `variantOptionValues` per line item, so neither can be dropped from the schema
   again silently.

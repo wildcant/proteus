@@ -23,5 +23,5 @@ inherit it instead of restyling themselves.
 
 ## Done when
 
-`npm run verify` passes and the storefront renders square-cornered with `#0d1012` ink, with no
+`pnpm run verify` passes and the storefront renders square-cornered with `#0d1012` ink, with no
 page-level edits anywhere.

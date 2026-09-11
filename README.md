@@ -217,22 +217,29 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 ### Prerequisites
 
 - Node.js 20+
+- pnpm 12 — `corepack enable pnpm` is enough: corepack reads the `packageManager` field in
+  `package.json` and fetches the exact version pinned there. Without corepack, `npm i -g pnpm@12`.
 - Docker (PostgreSQL, Temporal, and the Temporal UI)
+
+npm will not do. Every workspace here declares what it imports, and that only holds up because
+pnpm's layout refuses the rest; installing with npm produces a second lockfile and a `node_modules`
+where undeclared imports resolve again. ADR-0025 has the reasoning.
 
 ### Setup
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
-# Start local Postgres (the dev task below does this for you; needed here for the migrations)
-npm run --workspace=backend db:start
+# Bring up the compose stack — Postgres, Temporal, both Workers (the dev task below does this
+# for you; needed here for the migrations)
+pnpm --filter backend run db:start
 
 # Run database migrations
-npm run --workspace=backend db:migrate:dev
+pnpm --filter backend run db:migrate:dev
 
 # (Optional) Seed dev data
-npm run --workspace=backend db:seed:dev
+pnpm --filter backend run db:seed:dev
 ```
 
 ### Running
@@ -246,10 +253,10 @@ the same task is `Tasks: Run Task` → `dev`.
 
 | | URL | Pane |
 |---|---|---|
-| API | http://localhost:3000 (Swagger at `/admin/docs/`, `/store/docs/`) | `npm run --workspace=backend dev` |
-| Temporal Worker | — polls the `proteus` task queue | `npm run --workspace=backend worker:dev` |
-| Store | http://localhost:3001 | `npm run --workspace=store dev` |
-| Admin | http://localhost:3002 | `npm run --workspace=admin dev` |
+| API | http://localhost:3000 (Swagger at `/admin/docs/`, `/store/docs/`) | `pnpm --filter backend run dev` |
+| Temporal Worker | — polls the `proteus` task queue | `pnpm --filter backend run worker:dev` |
+| Store | http://localhost:3001 | `pnpm --filter store run dev` |
+| Admin | http://localhost:3002 | `pnpm --filter admin run dev` |
 | Temporal UI | http://localhost:8088 | Docker |
 
 Every pane reloads itself. The Worker runs under `tsx --watch`, so editing a workflow, a step action
@@ -258,12 +265,12 @@ SIGTERM, a restart mid-execution finishes the in-flight step instead of losing i
 to restart by hand.
 
 `Tasks: Terminate Task` → `All Running Tasks` stops the four panes and leaves Docker up, which is
-what you usually want between sessions. `npm run --workspace=backend db:stop` takes the containers
+what you usually want between sessions. `pnpm --filter backend run db:stop` takes the containers
 down too.
 
 **Running a piece on its own**
 
-The task is a convenience, not a requirement — each pane is just an npm script, and the table above
+The task is a convenience, not a requirement — each pane is just a package script, and the table above
 lists them. Note that `dev` stops the containerised Worker on the way up, because it and
 `worker:dev` both poll `proteus` and whichever is free claims the task; start it again with
 `docker compose -f apps/backend/docker-compose.yml start worker` if you want that one instead.
@@ -276,9 +283,9 @@ at 3000.
 
 | | URL | Pane |
 |---|---|---|
-| API | http://localhost:8787 (cron trigger at `/__scheduled`) | `npm run --workspace=backend dev:workerd` |
-| Store | http://localhost:3001 | `npm run --workspace=store dev:workerd` |
-| Admin | http://localhost:3002 | `npm run --workspace=admin dev:workerd` |
+| API | http://localhost:8787 (cron trigger at `/__scheduled`) | `pnpm --filter backend run dev:workerd` |
+| Store | http://localhost:3001 | `pnpm --filter store run dev:workerd` |
+| Admin | http://localhost:3002 | `pnpm --filter admin run dev:workerd` |
 
 Three panes, not four, and only Postgres in Docker. `resolveWorkflowEngineName` returns `simple` for
 workerd, so there is no Temporal Worker to run and no history for the Temporal UI to show — a
@@ -289,34 +296,34 @@ build if anything reachable from `src/index.workerd.ts` so much as imports it.
 
 It shares 3001 and 3002 with `dev`, so run one session or the other, not both. `wrangler dev` reads
 `apps/backend/.env.workerd`, which is gitignored and generated from `.env.local`; the task creates it
-if it is missing, but after editing `.env.local` you need `npm run gen:workerd-env` yourself.
+if it is missing, but after editing `.env.local` you need `pnpm run gen:workerd-env` yourself.
 
 ### Common tasks
 
 ```bash
 # Type-check everything
-npm run typecheck
+pnpm run typecheck
 
 # Run backend tests
-npm run --workspace=backend test
+pnpm --filter backend run test
 
 # Run store tests
-npm run --workspace=store test
+pnpm --filter store run test
 
 # Lint and format
-npm run check
+pnpm run check
 
 # Generate OpenAPI spec + store client
-npm run openapi:generate
+pnpm run openapi:generate
 
 # Generate DB migration after schema change
-npm run --workspace=backend db:generate
+pnpm --filter backend run db:generate
 
 # Run dependency-cruiser rules
-npm run --workspace=backend check:structure
+pnpm --filter backend run check:structure
 
 # Generate dependency graph SVG
-npm run --workspace=backend check:structure:graph
+pnpm --filter backend run check:structure:graph
 ```
 
 ---

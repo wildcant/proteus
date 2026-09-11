@@ -97,7 +97,7 @@ Who states what:
 | `container.node.ts` (API) | derived → `temporal` | Nothing to say; the derived answer is the right one. |
 | `container.workerd.ts` | `cloudflare-queues`, named | Derived anyway, but written out so a deploy's transport reads next to the binding that supplies it. |
 | `container.worker.ts` (both Workers) | **required parameter** | Two Worker processes share one root. A default would hand one of them a choice made for the other, silently. |
-| the test container | `inline` | For the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and `npm test` must not need a running server. |
+| the test container | `inline` | For the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and `pnpm test` must not need a running server. |
 
 ## The node transport
 
@@ -123,7 +123,7 @@ Two operational requirements, both easy to miss:
   server at boot and refuses to start when the answer is no: `temporal/preflight.ts`, which
   describes an activity id that cannot exist and reads `UNIMPLEMENTED` as the disabled answer and
   `NOT_FOUND` as the working one.
-- **Something has to poll `proteus-events`.** That is `npm run --workspace=backend worker:events`,
+- **Something has to poll `proteus-events`.** That is `pnpm --filter backend run worker:events`,
   and the `events-worker` service in `docker-compose.yml`. A queue nobody polls does not fail; the
   event waits, durably, until something does.
 
@@ -162,7 +162,7 @@ Worker without a `queues` block would otherwise build cleanly and die at the fir
 
 ### Exercising it locally
 
-`npm run --workspace=backend dev:workerd` is a genuine test of this transport, not a stub of it.
+`pnpm --filter backend run dev:workerd` is a genuine test of this transport, not a stub of it.
 Wrangler binds `EVENTS` through miniflare and delivers to the Worker's own `queue()` export, so the
 whole arc runs locally: publish → message → consumer → `withConnection` → subscriber, with
 `max_retries` and `proteus-events-dlq` honoured — four attempts, then a *"Moving message … to dead
@@ -203,7 +203,7 @@ There is deliberately **no parity suite** mirroring `test:temporal`. Only a hand
 the bus, so the cost/benefit inverts: each transport's own behaviour is covered directly, against a
 real server, where the assertions can be about dedup and retry rather than about the same business
 outcome twice. `__tests__/temporal-adapter.server.test.ts` is that suite, run by
-`npm run --workspace=backend test:temporal:server` — dedup, the retry budget and the recorded
+`pnpm --filter backend run test:temporal:server` — dedup, the retry budget and the recorded
 priority are all the *server's* behaviour, so a double would only be asserting the test's own
 arithmetic. It boots a full Temporal from the CLI rather than the time-skipping server the workflow
 engine's tests use, because standalone activities are not part of what that implementation supports.

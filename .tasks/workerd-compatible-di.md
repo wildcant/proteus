@@ -14,8 +14,8 @@ Introduce a `DbProvider` port with two implementations — one for Node (singlet
 
 ## User Stories
 
-1. As a developer, I want `npm run dev` from the frontend workspace (with `@cloudflare/vite-plugin`) to work without I/O isolation errors, so that I can develop locally against the Workers runtime.
-2. As a developer, I want the standalone backend API (`npm run --workspace=backend start`) to continue using a singleton connection pool, so that Node deployments remain efficient.
+1. As a developer, I want `pnpm run dev` from the frontend workspace (with `@cloudflare/vite-plugin`) to work without I/O isolation errors, so that I can develop locally against the Workers runtime.
+2. As a developer, I want the standalone backend API (`pnpm --filter backend run start`) to continue using a singleton connection pool, so that Node deployments remain efficient.
 3. As a developer, I want transactions to work identically on both platforms, so that I don't need platform-specific business logic.
 4. As a developer, I want the payment provider loader to register DI dependencies on both platforms, so that payment resolution works regardless of runtime.
 5. As a developer, I want the database seeding (payment provider upsert) to run as a separate script in CI/CD, so that Workers bootstrap doesn't require init-time DB writes.

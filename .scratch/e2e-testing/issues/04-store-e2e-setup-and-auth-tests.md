@@ -1,6 +1,6 @@
 # 04 — Store E2E setup + auth tests
 
-**What to build:** The complete Playwright setup for the store app and auth E2E tests covering the full customer authentication lifecycle. After this ticket, running `npm run --workspace=store test:e2e` starts the backend test server (with MSW intercepting Resend) and store Vite dev server, executes auth tests covering login, registration, email verification, forgot password, and unauthenticated redirect, and reports results.
+**What to build:** The complete Playwright setup for the store app and auth E2E tests covering the full customer authentication lifecycle. After this ticket, running `pnpm --filter store run test:e2e` starts the backend test server (with MSW intercepting Resend) and store Vite dev server, executes auth tests covering login, registration, email verification, forgot password, and unauthenticated redirect, and reports results.
 
 **Blocked by:**
 - 01 — Foundation: backend test exports + packages/testing
@@ -20,7 +20,7 @@
 - [ ] Add scripts to store `package.json`:
   - `"dev:test": "dotenvx run --env-file=../../.env.test -- vite dev --port 3011"`
   - `"test:e2e": "dotenvx run --env-file=../../.env.test -- playwright test"`
-  - `"test:e2e:dev": "npm run test:e2e -- --ui"`
+  - `"test:e2e:dev": "pnpm run test:e2e --ui"`
 - [ ] Add `.gitignore` entries for Playwright artifacts (if not already added by ticket 03)
 - [ ] Create `apps/store/tests/e2e/auth.spec.ts` using `test` and `expect` from `@proteus/testing` fixtures:
   - Test: login with valid credentials — create customer via `createCustomer()` with `await using`, navigate to `/login`, fill email and password, submit, assert redirect to `/account`
@@ -28,4 +28,4 @@
   - Test: register new customer — navigate to `/login`, switch to register view, fill registration form with `generateRegisterFormValues()`, submit, assert verification-pending state shown (MSW intercepts the Resend email call)
   - Test: forgot password — navigate to `/forgot-password`, fill email, submit, assert confirmation message visible (MSW intercepts email)
   - Test: unauthenticated access — navigate to `/account`, assert redirect to `/login`
-- [ ] Verify: `npm run --workspace=store test:e2e` runs all auth tests and they pass
+- [ ] Verify: `pnpm --filter store run test:e2e` runs all auth tests and they pass

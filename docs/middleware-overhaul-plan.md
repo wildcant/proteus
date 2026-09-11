@@ -381,12 +381,12 @@ Nothing from `src/framework/http/` is kept. The learnings have been incorporated
 
 ## Verification
 
-1. All existing tests pass (`npm run --workspace=backend test`)
+1. All existing tests pass (`pnpm --filter backend run test`)
 2. New `namespace-auth.test.ts` passes (8 tests)
 3. New `apply-middleware.test.ts` passes
-4. `npm run check` passes (linting)
-5. `npm run typecheck` passes
-6. `npm run openapi:generate` produces the same OpenAPI spec
+4. `pnpm run check` passes (linting)
+5. `pnpm run typecheck` passes
+6. `pnpm run openapi:generate` produces the same OpenAPI spec
 7. Admin endpoints require auth (manual test or integration test)
 8. Store product endpoints are public (manual test)
 9. Auth endpoints work with explicit middleware (token refresh, verification)

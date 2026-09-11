@@ -147,7 +147,7 @@ contract and will be the stale one. If a reader needs the contract, the file nam
       confirm it does not. A scoped rule that never fires is a contract that silently left the repo
 - [ ] `AGENTS.md`'s new size is recorded in the PR alongside the `/context` token figure before and
       after, so the claim this phase makes is measured rather than asserted
-- [ ] `npm run verify` green — nothing here touches code, so a failure means something else moved
+- [ ] `pnpm run verify` green — nothing here touches code, so a failure means something else moved
 
 ---
 

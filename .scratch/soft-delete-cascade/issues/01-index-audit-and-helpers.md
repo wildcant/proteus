@@ -23,7 +23,7 @@ traverse gain the indexes they need, and CI starts rejecting new indexes that ge
 - [ ] The conventions job fails when a unique index on a soft-deletable table omits the soft-delete predicate
 - [ ] The conventions job fails when a cascade or restrict relationship has no leading-column index
 - [ ] Affected migrations are regenerated in place under their existing tags, per the project convention
-- [ ] Full backend suite green; `npm run verify` green
+- [ ] Full backend suite green; `pnpm run verify` green
 
 ## Notes
 

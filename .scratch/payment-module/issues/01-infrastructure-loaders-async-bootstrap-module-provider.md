@@ -12,4 +12,4 @@
 - [ ] `ModuleProvider(moduleName, { services })` utility created in `core/utils/` — returns a descriptor that `bootstrapModule` options can reference
 - [ ] All call sites in `container.ts` updated to `await bootstrapModule(...)` (top-level await or async IIFE)
 - [ ] Existing modules (user, customer, cart, inventory, product) still boot and work correctly
-- [ ] Type-checks pass (`npm run --workspace=backend typecheck`)
+- [ ] Type-checks pass (`pnpm --filter backend run typecheck`)

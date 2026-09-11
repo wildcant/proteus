@@ -26,7 +26,7 @@
 ## Link migrations
 
 - [ ] Remove existing link migration: `rm -rf ./src/link-modules/migrations/*`
-- [ ] Regenerate: `npx drizzle-kit generate --name create_link_tables --config ./src/link-modules/database.config.ts`
+- [ ] Regenerate: `pnpm exec drizzle-kit generate --name create_link_tables --config ./src/link-modules/database.config.ts`
 - [ ] Verify generated SQL includes all 6 tables (3 existing + 3 new)
 
 ## Inventory module prerequisites

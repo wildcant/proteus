@@ -111,10 +111,10 @@ worth the mechanical edit. Recorded so the reversal is visible rather than looki
 
 ```
 # Code generation — all three are committed, and `verify` fails when they have drifted
-npm run openapi:generate                         # OpenAPI spec → Orval clients (admin + store)
-npm run --workspace=backend workflows:generate   # src/workflows → temporal/registry.gen.ts
-npm run --workspace=backend subscribers:generate # src/subscribers → registry.gen.ts
-npm run --workspace=admin generate-routes        # TanStack Router route tree
+pnpm run openapi:generate                         # OpenAPI spec → Orval clients (admin + store)
+pnpm --filter backend run workflows:generate   # src/workflows → temporal/registry.gen.ts
+pnpm --filter backend run subscribers:generate # src/subscribers → registry.gen.ts
+pnpm --filter admin run generate-routes        # TanStack Router route tree
 ```
 
 It lists **four** generators, says "all three", and only **two** are gated —
