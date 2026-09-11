@@ -1,3 +1,7 @@
+Memory management
+- clean up .scratch and docs
+- migrate rules from ts checks to standards (i'm talking about checks that live in scripts and apps/backend/scripts)
+
 Fixes and improvements
 - CHECKOUT IDEMPOTENCY: spam-clicking Place Order creates one throwaway order per click until the unique index
   rejects it (422); clicks landing between link-order and mark-cart-completed get 409. Confirmed under dev:slow,

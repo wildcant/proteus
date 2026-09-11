@@ -12,7 +12,7 @@
     "@faker-js/faker": "^10.5.0",
     "@playwright/test": "^1.52.0",
     "@tanstack/react-router": "latest",
-    "drizzle-orm": "^0.39.0",
+    "drizzle-orm": "^0.45.2",
     "playwright-persona": "^0.3.0",
     "postgres": "^3.4.7",
     "scrypt-kdf": "^4.0.0",

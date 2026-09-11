@@ -1,3 +1,4 @@
+import { DrizzleQueryError } from 'drizzle-orm'
 import { AppError, ErrorTypes } from './app-error.js'
 
 interface PgError {
@@ -12,6 +13,21 @@ interface PgError {
 
 function isPgError(err: unknown): err is PgError & Error {
   return err instanceof Error && 'code' in err
+}
+
+/**
+ * Since 0.44 Drizzle wraps a failed query in a `DrizzleQueryError` carrying the SQL and its params,
+ * and hangs the driver's own error — the one with Postgres' `code` and `detail` — on `cause`.
+ * Everything below reads those fields, so the wrapper has to come off before they are legible.
+ * The wrapper is still what gets rethrown when no case matches: on an unrecognised failure the
+ * query text is the part worth reading.
+ */
+function unwrapDriverError(err: unknown): unknown {
+  let unwrapped = err
+  while (unwrapped instanceof DrizzleQueryError) {
+    unwrapped = unwrapped.cause
+  }
+  return unwrapped
 }
 
 const getConstraintInfo = (err: PgError) => {
@@ -55,14 +71,15 @@ export function dbErrorMapper(err: unknown): never {
     throw err
   }
 
-  if (!isPgError(err)) {
+  const driverError = unwrapDriverError(err)
+  if (!isPgError(driverError)) {
     throw err
   }
 
-  switch (err.code) {
+  switch (driverError.code) {
     // unique_violation
     case '23505': {
-      const info = getConstraintInfo(err)
+      const info = getConstraintInfo(driverError)
       const message = info
         ? `${info.table}: ${info.keys.map((k, i) => `${k} "${info.values[i] ?? ''}"`).join(', ')} already exists`
         : 'Already exists'
@@ -73,7 +90,7 @@ export function dbErrorMapper(err: unknown): never {
     }
     // not_null_violation
     case '23502': {
-      const column = err.column || 'unknown'
+      const column = driverError.column || 'unknown'
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
         message: `Cannot be null: ${column}`,
@@ -83,7 +100,7 @@ export function dbErrorMapper(err: unknown): never {
     // names a parent that is not there, a delete leaves a child that still points at it. Reading
     // it as "the referenced row is missing" either way turned an in-use delete into a 404.
     case '23503': {
-      const blocking = blockingTable(err)
+      const blocking = blockingTable(driverError)
       if (blocking) {
         throw new AppError({
           // The walker's restrict check raises this same shape, so a caller sees one contract
@@ -123,8 +140,9 @@ export function restoreErrorMapper(err: unknown): never {
     throw err
   }
 
-  if (isPgError(err) && err.code === '23505') {
-    const info = getConstraintInfo(err)
+  const driverError = unwrapDriverError(err)
+  if (isPgError(driverError) && driverError.code === '23505') {
+    const info = getConstraintInfo(driverError)
     const slot = info ? `${info.keys.map((k, i) => `${k} "${info.values[i] ?? ''}"`).join(', ')}` : 'a unique value'
     throw new AppError({
       type: ErrorTypes.DUPLICATE_ERROR,
