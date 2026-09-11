@@ -2,7 +2,7 @@ id: workflow-util-is-not-pure
 language: typescript
 severity: error
 message: This `utils/` helper does I/O — it awaits, or it takes a service to call. Utils are data in, data out.
-note: 'A helper that needs a service is a step in `steps/`, or a method on that module`s service when it stays inside one module. `check:workflow-purity` owns the handler body and does not follow imports, so nothing else is watching this file. apps/backend/src/workflows/README.md'
+note: 'A helper that needs a service is a step in `steps/`, or a method on that module`s service when it stays inside one module. `check:workflow-purity` owns the handler body and does not follow imports, so nothing else is watching this file. standards/rules/backend/workflows/__docs__/workflows.md'
 files:
   - "**/src/workflows/*/utils/*.ts"
 ignores:

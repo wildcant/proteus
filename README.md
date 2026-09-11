@@ -106,7 +106,6 @@ proteus/
 └── docs/
     ├── adr/                            # Architecture Decision Records
     ├── research/                       # Deep-dive research notes
-    ├── adding-a-module.md              # Step-by-step guide
     ├── error-handling.md               # Error handling patterns
     └── middleware-and-openapi.md        # Middleware + OpenAPI guide
 ```
@@ -326,7 +325,7 @@ npm run --workspace=backend check:structure:graph
 
 | Document | What it covers |
 |----------|---------------|
-| [`docs/adding-a-module.md`](docs/adding-a-module.md) | Step-by-step guide to creating a new module (with checklist) |
+| [`standards/rules/backend/modules/__docs__/`](standards/rules/backend/modules/__docs__/) | What a module may hold, and the step-by-step guide to adding one |
 | [`docs/error-handling.md`](docs/error-handling.md) | AppError, DB error mapping, validation, HTTP response shape |
 | [`docs/middleware-and-openapi.md`](docs/middleware-and-openapi.md) | Declarative middleware, HTTP schemas, OpenAPI generation |
 | [`docs/architecture-decisions.md`](docs/architecture-decisions.md) | Quick-reference map of all ADRs |

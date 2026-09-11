@@ -2,7 +2,7 @@ id: workflow-declares-unthrown-error
 language: typescript
 severity: error
 message: This workflow declares $TYPE but nothing in the file raises it — every route spreading `.throws` inherits a response it can never receive.
-note: 'Remove it, or suppress with the reason written above when the throw belongs to a module service this workflow calls.'
+note: 'Remove it, or suppress with the reason written above when the throw belongs to a module service this workflow calls. standards/rules/backend/workflows/__docs__/workflows.md'
 files:
   - "**/src/workflows/**/*.ts"
 ignores:

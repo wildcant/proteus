@@ -2,7 +2,7 @@ id: route-declares-unthrown-error
 language: typescript
 severity: error
 message: This route declares $TYPE but nothing in the file raises it — the OpenAPI document promises a response the route cannot send.
-note: 'Remove it, or, when the throw belongs to a module service this handler calls rather than to the handler itself, suppress with the reason written above. ILLO-77: do not declare a response the endpoint never sends.'
+note: 'Remove it, or, when the throw belongs to a module service this handler calls rather than to the handler itself, suppress with the reason written above. ILLO-77: do not declare a response the endpoint never sends. standards/rules/backend/api/__docs__/routes.md'
 files:
   - "**/src/api/**/route.ts"
 rule:

@@ -1,0 +1,56 @@
+id: route-returns-non-200-status
+snapshots:
+  ? |
+    export const DELETE = async (req) => {
+      return { status: 204 }
+    }
+  : labels:
+    - source: 'return { status: 204 }'
+      style: primary
+      start: 41
+      end: 63
+    - source: |-
+        export const DELETE = async (req) => {
+          return { status: 204 }
+        }
+      style: secondary
+      start: 0
+      end: 65
+  ? |
+    export const GET = async (req) => {
+      return { status: 201, json: { customers } }
+    }
+  : labels:
+    - source: 'return { status: 201, json: { customers } }'
+      style: primary
+      start: 38
+      end: 81
+    - source: |-
+        export const GET = async (req) => {
+          return { status: 201, json: { customers } }
+        }
+      style: secondary
+      start: 0
+      end: 83
+  ? |
+    export const PATCH = async (req) => {
+      if (!existing) {
+        return { status: 202, json: { queued: true } }
+      }
+      return { status: 200, json: { customer } }
+    }
+  : labels:
+    - source: 'return { status: 202, json: { queued: true } }'
+      style: primary
+      start: 61
+      end: 107
+    - source: |-
+        export const PATCH = async (req) => {
+          if (!existing) {
+            return { status: 202, json: { queued: true } }
+          }
+          return { status: 200, json: { customer } }
+        }
+      style: secondary
+      start: 0
+      end: 158

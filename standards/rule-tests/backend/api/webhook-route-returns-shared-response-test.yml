@@ -1,0 +1,16 @@
+id: webhook-route-returns-shared-response
+valid:
+  # What `/hooks/payment/[provider]` answers with.
+  - |
+    export const PostInput = { params: ProviderParams }
+    export const PostOutput = WebhookReceivedResponse
+  # The input and the throws list are not the response and are not checked here.
+  - |
+    export const PostThrows = [ErrorTypes.INVALID_DATA] as const
+invalid:
+  # A per-provider shape: a schema in the specification and a generated model nothing reads.
+  - |
+    export const PostOutput = StripeWebhookAckResponse
+  # Reusing another route's response is the same mistake wearing a familiar name.
+  - |
+    export const PostOutput = DeleteResponse

@@ -109,7 +109,7 @@ two things to keep in step, and the second one is always the stale one.
 **What a code directory's `README.md` may not hold:** an "adding one" section, a checklist, or a
 file-shape or folder-vocabulary list. All three are use cases. A directory whose prose is entirely
 use case therefore has **no `README.md` at all** — that is the expected outcome, not a gap, and it is
-why `src/api/` will not keep one. Nothing is left behind as a signpost: a pointer file is a second
+why `src/api/` does not keep one. Nothing is left behind as a signpost: a pointer file is a second
 place to keep in step, and the rule's `note:` already names the document at the moment it is needed.
 
 ### Which standards live here, and which do not
@@ -149,14 +149,17 @@ standards/
         __docs__/     README.md → form-components.md
       lib/            fetcher, form-hook, query keys
     backend/
-      modules/        models, repositories, services   → docs/adding-a-module.md
-                      what a table must carry            → docs/soft-delete-cascade.md
-      api/            route files                      → docs/middleware-and-openapi.md
-                      the error contract; plus route-helper placement and the DELETE
-                      response shape → apps/backend/src/api/README.md
+      modules/        models, repositories, services
+        __docs__/     README.md → modules.md, adding-a-module.md
+      api/            route files
+        __docs__/     README.md → routes.md, route-helpers.md
       workflows/      steps and compensation
-                      the error contract spans both, so `route-omits-workflow-errors`
-                      sits at `backend/` rather than inside either one
+        __docs__/     README.md → workflows.md
+                      the error contract spans routes and workflows, so
+                      `route-omits-workflow-errors` sits at `backend/` rather than
+                      inside either one
+      subscribers/    no rules yet — the documents arrived first
+        __docs__/     README.md → events.md, subscribers.md
   rule-tests/
     <same tree>/<rule-id>-test.yml
     __snapshots__/    flat — ast-grep keys these by rule id, not by path
@@ -209,10 +212,12 @@ the `__docs__/` beside its own rules, cross-linked where the argument crosses ov
 rules live in two directories has not been sliced yet**, and that is the most reliable signal you
 have: rules follow the code, so if yours are scattered, so is the thing you are describing.
 
-The backend half has not been migrated yet. Its rules still point at `apps/backend/src/*/README.md`
-and into `docs/`, which is the arrangement the table above replaces: the use-case halves of those
-guides become `__docs__/` documents under `backend/`, and what is left of each `README.md` is
-mechanism or nothing. Tracked in `.scratch/agents-md/spec.md`.
+The backend half was migrated last, and `subscribers/` is what the transition looks like from the
+other end: it has no rules and four of the documents it would need, because a use case is a thing
+someone sets out to build whether or not anything checks it yet. Three of the four source guides had
+no mechanism left once their use cases were lifted out and were deleted; `src/core/event-bus/readme.md`
+kept its half — the adapters, the two transports, what each guarantees — and the two documents beside
+`subscribers/` link into it rather than restating any of it.
 
 ## How a doc is laid out
 
@@ -299,11 +304,16 @@ stale, so keep the glob as narrow as the one file it is for.
 
 ## When a rule cannot express it
 
-Sometimes the answer is that the tooling will not reach. That is a real verdict, and it is worth
-exactly as much as the work behind it — so **write down which options you evaluated and why each one
-failed**. Two things then become possible that are not possible from a bare "we had to script it":
-the next person proposing a hand-written walker has to clear the same bar, and a tool that improves
-can be reconsidered against a recorded reason instead of a vague memory.
+Sometimes the answer is that the tooling will not reach, and sometimes it is that something else
+already reaches. Either is a real verdict, and it is worth exactly as much as the work behind it — so
+**write down which options you evaluated and why each one failed**. Two things then become possible
+that are not possible from a bare "we had to script it": the next person proposing a hand-written
+walker has to clear the same bar, and a tool that improves can be reconsidered against a recorded
+reason instead of a vague memory.
+
+The bar is "show it cannot be expressed", not "it would be awkward". A rule that is possible but ugly
+gets written ugly, with the reason in its `note:`. The sections below are the verdicts that have
+cleared it.
 
 ### Tools considered, and rejected
 
@@ -322,6 +332,24 @@ the specific thing that made it unusable for the rules this directory holds.
   the line. Both halves of [exempting a site](#exempting-a-site) — naming the rule, and
   `--error=unused-suppression` noticing when the exemption goes stale — depend on the thing Biome
   does not offer.
+
+### Already enforced, somewhere that is not here
+
+The other verdict that closes a candidate, and the cheaper one to get wrong: the claim is checked,
+just not by a rule under `standards/rules/`. Writing one anyway buys nothing and costs a second place
+to keep in step — so record it, with the gate that actually holds it, and move on.
+
+| Claim | Held by |
+|---|---|
+| A route never answers `HttpResult<any>` | Biome's `suspicious/noExplicitAny`, through `preset: recommended` — the `lint` gate |
+| A `SubscriberConfig` carries its event type argument | `TEvent` has no default, so omitting it is `TS2314` — the `typecheck` gate, pinned by a `@ts-expect-error` in `subscriber-contract.test.ts` |
+| A subscriber's `config` sets `name` | `name` is a required field, so omitting it is `TS2741` — the `typecheck` gate |
+| A subscriber imports no transport vocabulary | `subscribers-name-no-transport`, a dependency-cruiser rule — the `structure` gate |
+| A module's tests live in `__tests__/` | `module-tests-live-in-a-tests-folder`, likewise |
+| A third-party provider lives outside every module | `no-module-internals`, which refuses any import of `src/modules/` from outside one — so a provider reaching for a repository fails the moment it is written |
+
+The test for this verdict is the same as for the one below: name the gate, and be able to say what
+introducing the violation prints. "Typecheck probably catches it" is not a verdict.
 
 ### Checks that are genuinely runtime
 

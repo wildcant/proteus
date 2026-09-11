@@ -202,7 +202,10 @@ moment it is needed.
    agrees — all seven rules live in one directory, so nothing signals an unsliced document. Revisit
    if the definitions contract grows rules of its own.
 
-7. **Then the `.claude/rules/` layer.** One file per migrated area, `paths:` scoped to it, carrying
+7. **Then the `.claude/rules/` layer** — ticket `issues/03-claude-rules-pointer-layer.md`, which
+   carries the measured per-section figures and one open decision.
+
+   **Superseded detail, kept for the argument:** One file per migrated area, `paths:` scoped to it, carrying
    **no convention of its own** — a pointer to the `__docs__/` document and nothing else, so there is
    nothing in it that can drift. This is what turns the migration into the always-on budget cut:
    `AGENTS.md` keeps the rules that must always hold, and the per-area detail loads on path match.

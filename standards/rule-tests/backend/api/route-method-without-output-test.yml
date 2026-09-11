@@ -1,0 +1,24 @@
+id: route-method-without-output
+valid:
+  # The constant above its handler, which is where every route in the tree puts it.
+  - |
+    export const GetOutput = AdminCustomersResponse
+    export const GET = async (req) => ({ status: 200, json: { customers } })
+  # Two methods in one file, each with its own.
+  - |
+    export const GetOutput = AdminProductOptionsResponse
+    export const GET = async (req) => ({ status: 200, json: { productOptions } })
+    export const PutOutput = AdminSetProductOptionsResponse
+    export const PUT = async (req) => ({ status: 200, json: { productOptions } })
+  # A file of constants and no handler has nothing to satisfy.
+  - |
+    export const PostInput = { body: StoreSignupBody }
+invalid:
+  # The handler alone: the definition has no `output:` to forward.
+  - |
+    export const POST = async (req) => ({ status: 201, json: { customers } })
+  # A near miss — the `Output` belongs to another method.
+  - |
+    export const GetOutput = AdminCustomersResponse
+    export const GET = async (req) => ({ status: 200, json: { customers } })
+    export const DELETE = async (req) => ({ status: 200, json: { id, deleted: true } })

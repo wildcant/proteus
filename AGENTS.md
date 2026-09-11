@@ -119,7 +119,7 @@ eight folders and four root files, enforced by `module-holds-only-known-file-kin
 
 Only `services/` and `index.ts` are universal. A module that owns no tables has no `models/`,
 `repositories/`, `migrations/` or `database.config.ts` — `file` is the one today. Full table:
-`apps/backend/src/modules/README.md`.
+`standards/rules/backend/modules/__docs__/modules.md`.
 
 Modules: auth, cart, customer, file, fulfillment, inventory, notification, order, payment, pricing,
 product, region, store, user.
@@ -159,7 +159,8 @@ modules are touched:
 
 `src/api/` holds exactly four kinds of file — `route.ts`, `definitions.ts`, `middlewares.ts`,
 `__tests__/` — enforced by `api-holds-only-four-file-kinds`. Full table and worked examples:
-`apps/backend/src/api/README.md`.
+`standards/rules/backend/api/__docs__/routes.md`, and
+`standards/rules/backend/api/__docs__/route-helpers.md` for the placement above.
 
 ### Adding a Subscriber
 
@@ -191,7 +192,7 @@ Non-negotiables, because the transports differ:
 - **`emit` never rejects and resolves on acceptance**, never on completion. A subscriber's failure is the transport's to retry; throwing is how you ask for that retry.
 - **A subscriber file imports no transport vocabulary** — no `@temporalio/*`, no `cloudflare:workers`, no queue types. `check:structure` keeps `src/core/event-bus/` and `src/core/workflows/` from importing each other; a subscriber may reach both.
 
-Full guide, including the transports and their guarantees: `apps/backend/src/core/event-bus/readme.md`. The design decisions are ADR-0023 and ADR-0024.
+Full guide: `standards/rules/backend/subscribers/__docs__/events.md` for adding an event, `subscribers.md` beside it for handling one. The transports and their guarantees are `apps/backend/src/core/event-bus/readme.md`; the design decisions are ADR-0023 and ADR-0024.
 
 ### Server & Routing
 
@@ -367,10 +368,11 @@ each app's `structure/.dependency-cruiser.cjs`, `biome.json`, the Spectral rules
 `apps/backend/scripts/checks/` — and defines the words for them in "The words": a standard is a
 convention with a check behind it, and a check that is not a rule owes a recorded reason.
 
-Cross-cutting guides in `docs/`: `adding-a-module.md`, `backend-test-infrastructure.md`,
-`error-handling.md`, `middleware-and-openapi.md`, `soft-delete-cascade.md`, `product-options.md`.
-The backend's beside-the-code guides — `apps/backend/src/api/README.md`, `src/modules/README.md`,
-`src/workflows/README.md`, `src/core/event-bus/readme.md` — have not been split yet.
+Cross-cutting guides in `docs/`: `backend-test-infrastructure.md`, `error-handling.md`,
+`middleware-and-openapi.md`, `soft-delete-cascade.md`, `product-options.md`.
+The backend's use-case guides live in `standards/rules/backend/*/__docs__/` — `api/` (routes,
+route helpers), `modules/` (modules, adding a module), `workflows/` and `subscribers/` (events,
+subscribers).
 
 Work in progress lives in `.scratch/<feature>/` — the spec at `.scratch/<feature>/spec.md`, its tickets in
 `.scratch/<feature>/issues/`. That is the issue tracker for this repo; GitHub Issues is not used. Once the work

@@ -64,7 +64,8 @@ change, and which would close the gap for grouped and ungrouped emits alike.
 
 **One publisher per event, by convention rather than by rule.** The ordering guarantee only holds
 while the emit is in the final step, so an emit added halfway through a workflow quietly gives it
-up. Nothing enforces the placement today; `src/core/event-bus/readme.md` says it, and the
+up. Nothing enforces the placement today; `standards/rules/backend/subscribers/__docs__/events.md`
+says it, and the
 `complete-cart` test that asserts a compensated checkout publishes nothing is what would notice.
 
 ## What would trigger revisiting

@@ -2,7 +2,7 @@ id: route-throws-undeclared-error
 language: typescript
 severity: error
 message: This handler raises $TYPE, but no `<Method>Throws` in the file declares it — the OpenAPI document will not mention the status it answers with.
-note: 'Add it to the method`s `Throws` export, beside the handler: `export const PostThrows = [ErrorTypes.$TYPE] as const`. docs/middleware-and-openapi.md'
+note: 'Add it to the method`s `Throws` export, beside the handler: `export const PostThrows = [ErrorTypes.$TYPE] as const`. standards/rules/backend/api/__docs__/routes.md'
 files:
   - "**/src/api/**/route.ts"
 # Scope is the file, not the method: nothing correlates `PostThrows` with the `POST` handler for

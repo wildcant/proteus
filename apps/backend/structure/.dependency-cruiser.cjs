@@ -268,7 +268,8 @@ module.exports = {
         service (a collaborator class the service keeps private, like ProductOptionService, is
         still services/), a pure helper a service consumes in utils/, provider DI registration in
         loaders/ and a provider that ships with the module in providers/. Logic that spans modules
-        is not a module file at all — it is a workflow. See docs/adding-a-module.md.'
+        is not a module file at all — it is a workflow. See
+        standards/rules/backend/modules/__docs__/modules.md.'
       `,
       severity: 'error',
       module: {

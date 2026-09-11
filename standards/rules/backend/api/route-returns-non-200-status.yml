@@ -1,0 +1,26 @@
+id: route-returns-non-200-status
+language: typescript
+severity: error
+message: 'This handler answers `$S`. A `GET`, `PATCH` or `DELETE` answers 200 — 201 belongs to a create, which is a `POST`.'
+note: 'Return `{ status: 200, json: … }`. The uniformity is what a generated client leans on, and `registerOpenApiRoute` declares 200 for every route regardless, so a handler sending anything else here is a status the specification does not describe. `POST` is left out on purpose: create (201) and update (200) are the same syntax, and only the service call underneath says which this is. standards/rules/backend/api/__docs__/routes.md'
+files:
+  - "**/src/api/**/route.ts"
+ignores:
+  - "**/__tests__/**"
+# Two return patterns rather than one: `$$$REST` after a comma does not match the empty tail, so
+# `return { status: 200 }` needs its own. Matching the `return` rather than the bare `status:` pair
+# is what keeps a filter object like `{ ...filters, status: 'published' }` out of the results.
+rule:
+  any:
+    - pattern: 'return { status: $S, $$$REST }'
+    - pattern: 'return { status: $S }'
+  inside:
+    stopBy: end
+    any:
+      - pattern: export const GET = $HANDLER
+      - pattern: export const PATCH = $HANDLER
+      - pattern: export const DELETE = $HANDLER
+constraints:
+  S:
+    not:
+      regex: '^200$'

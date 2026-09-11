@@ -2,7 +2,7 @@ id: route-chains-mutations-on-one-service
 language: typescript
 severity: error
 message: 'This handler awaits `$SVC.$M1` and then `$SVC.$M2` — two mutations on one module, sequenced in the route file. A failure in the second leaves the first applied.'
-note: 'Move the pair behind one method on that service and wrap it in `this.withTransaction`, so Postgres unwinds a failure rather than the route leaving half of it standing — `setShippingMethod` on the cart service and `markPaymentCollectionAsPaid` on the payment service are the two this rule was written from. Not a workflow: workflows exist to cross modules, and compensation is hand-written rollback that can itself fail. A read that decided the write moves with them, and stops being able to go stale between the two calls. apps/backend/src/api/README.md'
+note: 'Move the pair behind one method on that service and wrap it in `this.withTransaction`, so Postgres unwinds a failure rather than the route leaving half of it standing — `setShippingMethod` on the cart service and `markPaymentCollectionAsPaid` on the payment service are the two this rule was written from. Not a workflow: workflows exist to cross modules, and compensation is hand-written rollback that can itself fail. A read that decided the write moves with them, and stops being able to go stale between the two calls. standards/rules/backend/api/__docs__/route-helpers.md'
 files:
   - "**/src/api/**/route.ts"
 ignores:

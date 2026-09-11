@@ -2,7 +2,7 @@ id: route-declares-helper-function
 language: typescript
 severity: error
 message: '`$NAME` is a helper declared in a route file, where nothing else can reach it. A handler calls out; it does not carry its own helpers.'
-note: 'Place it by what it touches: pure shaping goes to `src/workflows/<domain>/utils/`, service calls go behind a method on that module''s service, and anything reading `req` is either a guard clause that stays inline or — once a second route needs it — a `MiddlewareFunction` in `middlewares.ts`. A read chain crossing modules stays inline however long it runs; there is nothing to unwind, so there is nothing to extract it for. apps/backend/src/api/README.md'
+note: 'Place it by what it touches: pure shaping goes to `src/workflows/<domain>/utils/`, service calls go behind a method on that module''s service, and anything reading `req` is either a guard clause that stays inline or — once a second route needs it — a `MiddlewareFunction` in `middlewares.ts`. A read chain crossing modules stays inline however long it runs; there is nothing to unwind, so there is nothing to extract it for. standards/rules/backend/api/__docs__/route-helpers.md'
 files:
   - "**/src/api/**/route.ts"
 ignores:

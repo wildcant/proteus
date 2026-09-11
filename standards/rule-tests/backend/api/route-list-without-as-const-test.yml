@@ -1,0 +1,30 @@
+id: route-list-without-as-const
+valid:
+  # What all 73 of these declarations look like.
+  - |
+    export const PostThrows = [ErrorTypes.CONFLICT] as const
+  - |
+    export const GetMiddlewares = [requireCustomer(), setPricingContext()] as const
+  # A multi-line list, and one that spreads a workflow's own contract into itself.
+  - |
+    export const PostThrows = [
+      ErrorTypes.CONFLICT,
+      ...completeCustomerAuthWorkflow.throws,
+    ] as const
+  # The other co-exported constants are not lists and have nothing to widen.
+  - |
+    export const PostInput = { body: StoreSignupBody }
+    export const PostOutput = AuthenticateResponse
+  # A list that is not part of a route's contract is not this rule's business.
+  - |
+    const paymentActions = ['authorized', 'captured']
+invalid:
+  # The widening that costs the middleware's contribution: `req.customer` stops being typed.
+  - |
+    export const GetMiddlewares = [requireCustomer(), setPricingContext()]
+  # The same on the failure half — the list widens to `ErrorTypes[]`.
+  - |
+    export const PostThrows = [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA]
+  # A single-element list survives the widening by accident; the rule still refuses it.
+  - |
+    export const DeleteMiddlewares = [validateToken()]
