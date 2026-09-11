@@ -4,7 +4,7 @@
 
 **Goal:** every workspace declares what it imports, no advisory is open that a version bump closes,
 and the package manager makes the first of those structural rather than aspirational. After this,
-`node_modules` at the root holds the two root devDependencies and nothing else, and a workspace that
+`node_modules` at the root holds the root devDependencies and nothing else, and a workspace that
 reaches for a package it did not declare fails on the developer's machine rather than on a deploy.
 
 **Scope:** every `package.json` in the tree, the lockfile, `scripts/verify.sh`,
@@ -46,7 +46,8 @@ Install speed is a real but modest win, in one of three cases. **It is not the r
 Nothing here changes `verify` (16s) or the backend suite (~96s), both of which are vitest and tsc.
 
 The reason is the strict layout: under pnpm the root `node_modules` contains `.pnpm`, `.bin` and the
-two root devDependencies — measured, `ls node_modules` returns 2 package directories. A workspace
+root devDependencies — measured on migration day, when there were two of them, `ls node_modules`
+returned 2 package directories. A workspace
 can only reach what it declared. That converts an entire class of latent deploy failure into a
 local typecheck error, and it is the only mechanism in §8 of the research doc that does so.
 
@@ -460,8 +461,12 @@ rather than enshrined.
 ## Acceptance criteria
 
 - [ ] `pnpm install --frozen-lockfile` from a clean checkout succeeds with no `ERR_PNPM_*`
-- [ ] `ls node_modules` at the root lists exactly `.bin`, `.pnpm`, `.modules.yaml`,
-      `.pnpm-workspace-state-v1.json`, `@ast-grep` and `@biomejs` — nothing else
+- [ ] `ls -A node_modules` at the root lists pnpm's own bookkeeping and **one entry per root
+      devDependency, nothing else** — today `@ast-grep`, `@biomejs`, `@dotenvx`, `@types`, `knip`,
+      `typescript` and `wrangler`, against `.bin`, `.cache`, `.modules.yaml`, `.pnpm`,
+      `.pnpm-task-run-state-v1` and `.pnpm-workspace-state-v1.json`. The claim is the *rule*, not
+      the count: the count moves whenever a root devDependency is added, and naming two of them
+      here is what made this criterion stale before issue 09 added `knip` to it.
 - [ ] `npm audit` reports 0 advisories that a bump inside the declared range would close
 - [ ] `pnpm verify` green, and `pnpm verify:full` green with the test database up
 - [ ] `apps/backend/tests` pass against a real Postgres, and the Temporal suites pass against a

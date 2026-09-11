@@ -764,17 +764,33 @@ shape:
 - **knip** — can do this *and* the inverse *and* undeclared binaries (§9), which nothing else covers.
   Deferred, not rejected: it is a new tool whose first run in a repo this size is a triage pass across
   several issue types at once. It is the right next conversation if undeclared **binaries** or unused
-  declarations become a concern.
+  declarations become a concern. *(2026-09-11: that conversation happened, for the unused half only —
+  knip is adopted as `verify`'s `unused` gate, scoped to `dependencies` and `catalog`. The undeclared
+  half stays with the pnpm layout and `typecheck`. Measurements in §12.)*
 
 ---
 
 ## 12. Where the evidence is thin
 
-**knip was never run here.** Every claim about it is from its documentation. Its "unlisted" and "unlisted
-binaries" issue types are exactly on target and it resolves tsconfig `paths`, so it would very likely
-catch all eleven plus the nine binaries — but "very likely" is what this is, and the §8 row says so. Its
-first-run false-positive volume in this tree is entirely unmeasured, and that is the number that decides
-whether it is adoptable.
+**~~knip was never run here.~~** *(Closed 2026-09-11.)* It was, for the **unused** direction, and it is
+now adopted — knip 6.35.1 as a root devDependency, `knip.jsonc` at the root, and the `unused` gate in
+`scripts/verify.sh`. The number this paragraph said would decide adoptability: zero-config across all
+four dependency issue types gave **18 findings in 6.6s, 7 of them noise**; scoped to `dependencies` and
+`catalog` by a ten-line config, **10 findings in 3.2s with no false positives**, each checked against the
+source by hand. The seven it removed are the shapes this document predicted it would need help with —
+string-registered providers, the drizzle configs, and `cloudflare:workers`, a workerd built-in whose
+specifier reads as a package name. Of the ten real findings, one was `@hono/node-server`, which this
+tree carried an advisory for and did not use, and three were a devtools panel whose imports had been
+commented out rather than deleted — the case that a grep cannot tell from a live import, and the reason
+the check is a tool and not a script. `standards/README.md` carries the verdict and the alternatives
+rejected alongside it.
+
+What remains unrun is the **undeclared** direction, which is what the paragraph above was originally
+about: knip's `unlisted` and `unlisted binaries` types were measured only incidentally, in the
+zero-config pass, and are deliberately out of the gate's scope. The pnpm migration's §6 gives that
+direction to the strict install layout plus `typecheck`, so the question this document asked is closed
+by a different mechanism than the one it expected. `files` and the export-level types remain genuinely
+unmeasured beyond a count — `files` reported 58 — and are a separate conversation.
 
 **The npm and pnpm install-strategy claims are read, not run.** *(Amended 2026-09-11: the pnpm half was
 since run — see §7 and §8. The npm `--install-strategy` half remains untested and unused.)* Nothing in §7 was tested, because testing

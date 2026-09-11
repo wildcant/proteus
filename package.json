@@ -15,6 +15,7 @@
     "verify:full": "./scripts/verify-full.sh",
     "check:standards": "ast-grep scan --config sgconfig.yml --error=unused-suppression .",
     "check:standards:test": "ast-grep test --config sgconfig.yml",
+    "check:unused": "knip --no-progress",
     "sync-secrets:admin": "./scripts/sync-secrets.sh proteus-admin",
     "sync-secrets:backend": "./scripts/sync-secrets.sh proteus-backend",
     "sync-secrets:store": "./scripts/sync-secrets.sh proteus",
@@ -25,6 +26,7 @@
     "@biomejs/biome": "catalog:",
     "@dotenvx/dotenvx": "catalog:",
     "@types/node": "catalog:",
+    "knip": "^6.35.1",
     "typescript": "catalog:",
     "wrangler": "catalog:"
   }

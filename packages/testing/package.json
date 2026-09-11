@@ -8,14 +8,13 @@
     "./playwright": "./fixtures/e2e-config.ts"
   },
   "devDependencies": {
-    "backend": "workspace:*",
     "@faker-js/faker": "catalog:",
     "@playwright/test": "catalog:",
     "@tanstack/react-router": "catalog:",
+    "@types/node": "catalog:",
+    "backend": "workspace:*",
     "drizzle-orm": "catalog:",
     "playwright-persona": "^0.3.0",
-    "postgres": "catalog:",
-    "scrypt-kdf": "catalog:",
-    "@types/node": "catalog:"
+    "postgres": "catalog:"
   }
 }

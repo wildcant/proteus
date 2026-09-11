@@ -50,12 +50,13 @@ pnpm run typecheck       # root tooling scripts (tsconfig.json), then every work
 pnpm run check:standards # ast-grep rules; :test runs the rules' own tests
 
 # Verification gate — run after finishing any implementation task
-pnpm run verify      # Formats, then eleven gates in parallel: typecheck, lint
+pnpm run verify      # Formats, then twelve gates in parallel: typecheck, lint
                      # (warnings fail here), the code standards, the import structure
-                     # rules, one version per declared dependency, generated-file
-                     # currency, Spectral on both OpenAPI specs, `test:gate`, the
-                     # http-schemas bound tests, the store's unit + component tests, and
-                     # the utils tests. ~60s. Component tests need
+                     # rules, one version per declared dependency, every declared
+                     # dependency referenced (knip), generated-file currency, Spectral on
+                     # both OpenAPI specs, `test:gate`, the http-schemas bound tests, the
+                     # store's unit + component tests, and the utils tests. ~60s.
+                     # Component tests need
                      # `pnpm --filter store exec playwright install chromium`.
 pnpm run verify --ci # CI mode: fails on unformatted files instead of rewriting them
                      # (implied when the CI env var is set)
@@ -107,7 +108,9 @@ the package to that workspace's manifest.
 
 A package that two manifests name is written `"catalog:"` in both, and the version lives in the
 `catalog:` block of `pnpm-workspace.yaml`. `verify`'s `versions` gate reads the lockfile and fails
-when a declared package resolves to more than one version; `overrides:` in the same file is the fix
+when a declared package resolves to more than one version, and its `unused` gate runs knip and fails
+on a package a workspace declares and never references — `knip.jsonc` at the root is where an
+exception to that goes, with a comment saying why; `overrides:` in the same file is the fix
 for the case where the second copy comes from a third party's manifest rather than from ours.
 Siblings are declared `"workspace:*"`. See ADR-0025.
 

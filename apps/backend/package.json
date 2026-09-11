@@ -68,7 +68,6 @@
     "@bull-board/api": "^6.0.0",
     "@bull-board/express": "^6.0.0",
     "@dotenvx/dotenvx": "catalog:",
-    "@hono/node-server": "^2.0.0",
     "@proteus/http-schemas": "workspace:*",
     "@proteus/utils": "workspace:*",
     "@sendgrid/mail": "^8.1.6",

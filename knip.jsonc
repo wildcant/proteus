@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "include": ["dependencies", "catalog"],
+  "workspaces": {
+    "apps/backend": {
+      // Three shapes nothing reaches from a default entry point: providers are registered by
+      // string, the drizzle configs are invoked by drizzle-kit, and the scripts by package.json.
+      "entry": ["src/providers/*/index.ts", "src/**/database.config.ts", "scripts/**/*.{ts,mjs}"]
+    }
+  }
+}

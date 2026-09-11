@@ -46,7 +46,7 @@ RESET='\033[0m'
 # Commenting a gate out means dropping its name from here as well as its `job_*` function and
 # label — this string is what the loop iterates, and a name with no function behind it fails the
 # run with an empty label rather than being skipped.
-JOBS="typecheck lint standards structure versions generated openapi test schemas store packages"
+JOBS="typecheck lint standards structure versions unused generated openapi test schemas store packages"
 
 job_typecheck() { pnpm run typecheck; }
 
@@ -125,6 +125,45 @@ job_structure() {
 # See scripts/checks/one-version.mts; its `accepted` map carries the reason for each split we keep.
 job_versions() { node scripts/checks/one-version.mts; }
 
+# The inverse of `versions`: that a package a workspace declares is referenced by that workspace.
+# Nothing else here can make that claim. The strict pnpm layout and `typecheck` catch an undeclared
+# *import*, because the module is genuinely missing; a declaration nothing imports installs and
+# resolves perfectly. dependency-cruiser reads source and reports import to import, never walking a
+# manifest in the unused direction. Biome has no unused rule, and a file-at-a-time linter cannot
+# make a whole-project claim anyway. `versions` only visits packages the lockfile resolved twice,
+# and an unused declaration resolves to exactly one version.
+#
+# A tool rather than a script — the sibling `one-version.mts` is 40 lines because its claim is a
+# regex over a lockfile, while this one needs a real module graph. All four of the things a naive
+# script would get wrong are in this tree: `@import "tailwindcss"` in a stylesheet is a reference;
+# src/providers/* is reached by string and never imported; drizzle-kit is invoked inside a nested
+# `sh -c`; and a commented-out import must not count. Getting any of those wrong makes a gate that
+# lies in the expensive direction — red on something real, so you delete what the build needs.
+#
+# Scoped to `dependencies` (which covers devDependencies) plus `catalog`. `catalog` is in because it
+# is the one thing one-version.mts structurally cannot see: it iterates packages that manifests
+# declare, so an entry left behind after the last declaration goes has no declaration site and is
+# never visited — and this gate is what creates them, since resolving its findings removes
+# declarations. Everything else knip reports is deliberately out: `unlisted`/`unresolved`/`binaries`
+# duplicate the pnpm layout's job, `catalogReferences` sits behind an outright install error,
+# `cycles` belongs to dependency-cruiser per ADR-0020, and `files`/`exports`/`types` are a real
+# backlog and a separate conversation. Note that knip's `duplicates` is duplicate *exports*, not
+# duplicate versions — it reads like this gate's neighbour and is not.
+#
+# knip.jsonc carries the entry patterns and is where a judgment call goes: a package that is needed
+# but unreferenced belongs in `ignoreDependencies` with a comment saying why, the same discipline as
+# one-version.mts's `accepted` map. The gate never passes --fix; which declaration to delete is the
+# question it exists to surface. ~3s, offline.
+#
+# Through the root `check:unused` alias rather than invoking knip directly, because the flags here
+# and the flags for ad-hoc use are the same — there is no asymmetry for the gate to own, so one
+# definition beats two. Run it by hand as `pnpm -w run check:unused`, and note the `-w`: knip roots
+# its project at the current directory, so from a workspace directory it finds neither `knip.jsonc`
+# nor `pnpm-workspace.yaml` and reports a tree it was never configured for — unresolvable `catalog:`
+# references from `packages/utils`, 41 unreachable files from `apps/backend`. No config can fix
+# that, because the failure is that the config was not read.
+job_unused() { pnpm --silent run check:unused; }
+
 # The API tests plus the unit tests worth gating — the option-combination matrix, the Stripe
 # adapter's currency and status tables, which decide what a shopper is charged, the platform
 # adapters, which decide whether a webhook signature can be verified at all, and the event bus,
@@ -174,8 +213,8 @@ for arg in "$@"; do
       echo "Usage: pnpm verify [--ci]"
       echo ""
       echo "  Formats the tree, then runs typecheck, lint, the code standards, the import"
-      echo "  structure rules, version alignment, generated-file currency, the backend API tests"
-      echo "  and the store's unit and component tests in parallel."
+      echo "  structure rules, version alignment, dependency usage, generated-file currency, the"
+      echo "  backend API tests and the store's unit and component tests in parallel."
       echo ""
       echo "  --ci   Fail on unformatted files instead of rewriting them."
       echo "         Implied when the CI environment variable is set."
@@ -196,6 +235,7 @@ label_of() {
     standards) echo "Code standards" ;;
     structure) echo "Import structure (backend, admin, store)" ;;
     versions) echo "One version per declared dependency" ;;
+    unused) echo "Every declared dependency is referenced" ;;
     generated) echo "Generated registries (workflow, subscriber)" ;;
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;
