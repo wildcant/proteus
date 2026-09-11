@@ -1,0 +1,42 @@
+id: field-suffix-without-field-context
+valid:
+  # A registered field: the suffix is earned by reading the context `form.AppField` provides.
+  - |
+    export function TextField({ label }: TextFieldProps) {
+      const field = useFieldContext<string>()
+      return <FloatingLabelInput label={label} value={field.state.value} onBlur={field.handleBlur} />
+    }
+  # A generic field is still a field.
+  - |
+    export function FileUploadField<TValue>({ accept }: FileUploadFieldProps<TValue>) {
+      const field = useFieldContext<TValue[]>()
+      return <Dropzone accept={accept} onDrop={field.handleChange} />
+    }
+  # The control the header search became once it was named for what it is.
+  - |
+    export function SearchForm({ onSubmit }: { onSubmit: (term: string) => void }) {
+      const [term, setTerm] = useState('')
+      return <Form onSubmit={() => onSubmit(term)}><Input value={term} onChange={setTerm} /></Form>
+    }
+  # `Field*` is the ui primitive, not the suffix — only a name *ending* in Field is reserved.
+  - |
+    export function FieldError({ errors }: { errors: string[] }) {
+      return <p role="alert">{errors[0]}</p>
+    }
+invalid:
+  # The shape this rule was written for: a self-managed control wearing the suffix.
+  - |
+    export function SearchField({ onSubmit }: { onSubmit: (term: string) => void }) {
+      const [term, setTerm] = useState('')
+      return <Input value={term} onChange={(event) => setTerm(event.target.value)} />
+    }
+  # An arrow component is the same claim made a different way.
+  - |
+    export const QuantityField = ({ value, onChange }: QuantityFieldProps) => (
+      <Stepper value={value} onChange={onChange} />
+    )
+  # Taking the field as a prop is what a registered field never has to do.
+  - |
+    function AddressField({ field }: { field: AnyFieldApi }) {
+      return <Input value={field.state.value} onChange={(event) => field.handleChange(event.target.value)} />
+    }

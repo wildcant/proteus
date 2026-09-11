@@ -1,0 +1,35 @@
+id: model-without-standard-timestamps
+valid:
+  # The shape every table takes: the helper spread in among the columns.
+  - |
+    export const refundReasonTable = pgTable('refund_reason', {
+      id: text().primaryKey(),
+      label: text().notNull(),
+      ...timestamps,
+    })
+  # A table declaring indexes in its extras spreads it just the same.
+  - |
+    export const customerTable = pgTable(
+      'customer',
+      {
+        id: text().primaryKey(),
+        email: text().notNull(),
+        ...timestamps,
+      },
+      (table) => [liveUniqueIndex('idx_customer_email').on(table.email)],
+    )
+invalid:
+  # The shape this rule was written for: three characters left out, and no soft delete.
+  - |
+    export const refundReasonTable = pgTable('refund_reason', {
+      id: text().primaryKey(),
+      label: text().notNull(),
+    })
+  # Writing the columns out by hand is not the same claim — the helper is the only sanctioned spelling.
+  - |
+    export const notificationTable = pgTable('notification', {
+      id: text().primaryKey(),
+      createdAt: timestamp({ withTimezone: true }).notNull(),
+      updatedAt: timestamp({ withTimezone: true }).notNull(),
+      deletedAt: timestamp({ withTimezone: true }),
+    })

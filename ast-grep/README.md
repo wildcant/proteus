@@ -4,6 +4,10 @@ The counterpart to the dependency rules in each app's `deps-analyzer/.dependency
 Those say which file may import which; these say what a file's *contents* must look like. Both are
 declarative, both run in the `conventions` job of `npm run verify`, and neither is a script.
 
+A convention that can be checked is checked, and the check is a rule file. Reach for a script only
+after showing a rule cannot express it — and when you do,
+[record what you tried](#when-a-rule-cannot-express-it).
+
 ```bash
 npm run check:code-shape        # scan the repo
 npm run check:code-shape:test   # run the rules' own tests
@@ -32,6 +36,7 @@ ast-grep/
       lib/            fetcher, form-hook, query keys
     backend/
       modules/        models, repositories, services   → docs/adding-a-module.md
+                      what a table must carry            → docs/soft-delete-cascade.md
       api/            route files                      → docs/middleware-and-openapi.md
                       the error contract; plus route-helper placement and the DELETE
                       response shape → apps/backend/src/api/README.md
@@ -173,3 +178,52 @@ back apart, which it does. So a considered exception to a JSX rule goes in that 
 instead, with the reason written above it — see `submit-button-not-from-form-hook`. It exempts a
 whole file rather than one line, and `--error=unused-suppression` cannot tell you when it goes
 stale, so keep the glob as narrow as the one file it is for.
+
+## When a rule cannot express it
+
+Sometimes the answer is that the tooling will not reach. That is a real verdict, and it is worth
+exactly as much as the work behind it — so **write down which options you evaluated and why each one
+failed**. Two things then become possible that are not possible from a bare "we had to script it":
+the next person proposing a hand-written walker has to clear the same bar, and a tool that improves
+can be reconsidered against a recorded reason instead of a vague memory.
+
+### Tools considered, and rejected
+
+ast-grep was chosen over three alternatives. None of these is a general verdict on the tool; each is
+the specific thing that made it unusable for the rules this directory holds.
+
+- **semgrep** — object fields match unordered. Several rules here are about *order*:
+  `mutation-hook-spread-not-first` is the whole claim that `...options` comes before the overrides
+  it must not shadow. A pattern language that cannot see the difference between the two orderings
+  cannot express the rule at all.
+- **ArchUnitTS** — a custom rule is `(file: FileInfo) => boolean` over the file's raw text. So you
+  end up writing the AST traversal anyway, inside someone else's harness, and you lose the line
+  numbers a diagnostic needs. That is the hand-written walker with extra steps.
+- **Biome GritQL plugins** — every diagnostic is labelled `plugin`, so a failure does not say which
+  rule failed, and the only suppression is `// biome-ignore lint:`, which silences *every* rule on
+  the line. Both halves of [exempting a site](#exempting-a-site) — naming the rule, and
+  `--error=unused-suppression` noticing when the exemption goes stale — depend on the thing Biome
+  does not offer.
+
+### Checks that are genuinely runtime
+
+`apps/backend/scripts/checks/` is the one place a convention check is still code, and `run.ts`'s
+header says why: whether a relationship cascades, which column an index leads with, whether a
+predicate excludes soft-deleted rows, and what one deletion reaches are facts that exist only once
+drizzle has built the table. A rule file reads source; these questions are about the object the
+source produces.
+
+The verdict per check, so the question is not re-litigated:
+
+| Check | Verdict |
+|---|---|
+| `soft-delete-index-predicate` | **Runtime.** An index predicate is a `SQL` object the drizzle builder assembles and `PgDialect` renders; there is no predicate in the source to read. Its one textual sub-claim — no hand-written `sql` fragment naming the soft-delete column — is expressible, but splitting one rule across two mechanisms would leave it with no single home. |
+| `cascade-relationship-index` | **Runtime.** `references(() => other.id, { onDelete: 'cascade' })` resolves through a thunk, and the check is a *join*: this table's foreign-key column against the leading column of an index declared in a separate argument. A rule matches one node with constraints on its neighbourhood; it cannot bind a value in one subtree and test it in an unrelated one. |
+| `destroy-only-children` | **Runtime.** The question is about the *parent* — whether the table on the other end of the foreign key is soft-deletable — which is in another file. |
+| `guard-outside-its-closure` | **Runtime.** Transitive reachability over the whole module's cascade graph. Not a property of any file. |
+| `model-barrel-reachable` | **Cross-file, and a rule file cannot see two files at once.** A dependency-cruiser reachability rule from `models/index.ts` would catch the common case — a model file the barrel never mentions. It would *not* catch a named re-export that lists one table out of a file's two, which is precisely the case the cascade graph silently loses. Converting would trade the rule for a weaker one, so it stays. |
+| `standard-timestamps` | **Converted.** Now `model-without-standard-timestamps` in `rules/backend/modules/`. The claim was always about the source — that a table spreads `...timestamps` — and moving it also moved its one exemption from a central `EXEMPT` map keyed by table name to an `ast-grep-ignore` at the declaration, which `--error=unused-suppression` can police. |
+| `models.ts`, `metadata.ts`, `run.ts`, `types.ts` | Harness, not rules. |
+
+Two larger checks have not been through this question yet: `scripts/replay-purity.ts` (392 lines,
+parses the workflow handlers) and `scripts/check-generic-errors.sh`. Same question, separate pass.

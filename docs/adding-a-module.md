@@ -265,6 +265,21 @@ Key patterns:
 - `InjectedDependencies` keys must exactly match the keys in the `Module()` definition's `repositories` object, plus `withTransaction` (auto-registered by bootstrap)
 - The service implements the interface from `core/types/`
 
+### Helpers are private methods, not module-level functions
+
+A helper the service needs goes **on the class**, `private`, under the `── Helpers ──` banner at the
+bottom — reached through `this.`. Not a free function above the class, and not a new file.
+
+Statelessness is not a reason to hoist one out. `resolveThumbnail` touches no instance state and is
+still a private method: the services already group their helpers in one place, so a free function
+sits outside the established shape and splits one concern across two scopes for no gain.
+
+A module-level function is for logic genuinely shared across several classes or files, and then it
+belongs in `src/core/utils/` rather than floating at the top of a service file. When a service grows
+too large for one class, the split is an internal collaborator the service constructs from its own
+injected dependencies and keeps private — `ProductOptionService` inside `product` is the reference.
+Nothing registers or exports it, so the module's public surface stays exactly one service.
+
 Re-export from `services/index.ts`:
 
 ```typescript
@@ -333,11 +348,37 @@ export default defineConfig({
 
 ```bash
 # Generate migration from model changes
-npx drizzle-kit generate --config=src/modules/inventory/database.config.ts
+npx drizzle-kit generate --config=src/modules/inventory/database.config.ts --name=create_inventory_tables
 
 # Run migration against the database
 npx drizzle-kit migrate --config=src/modules/inventory/database.config.ts
 ```
+
+`npm run --workspace=backend db:generate` does the same for every module at once, and
+`db:migrate:dev` applies them.
+
+### Changing a schema: regenerate, never append
+
+**A module keeps exactly one migration file.** When its schema changes, do not generate an
+incremental `0001_*`. Delete the whole directory and regenerate it under the same tag:
+
+```bash
+rm -rf src/modules/inventory/migrations
+npx dotenvx run -f ../../.env.local -- npx drizzle-kit generate \
+  --config=src/modules/inventory/database.config.ts --name=create_inventory_tables
+```
+
+The `--name` is what keeps the tag stable, so the diff is additions inside the existing `.sql` plus
+a `when` timestamp in `meta/_journal.json`. Without it drizzle-kit invents a name — `0000_perpetual_paper_doll.sql`
+in `pricing` is one that got through, and it is a leftover rather than a precedent to follow.
+
+The project is pre-release with no deployed database to migrate forward, so an append-only history
+buys nothing and accumulates churn instead. The test suite migrates from cold, so a rewritten
+migration is picked up for free. A local dev database needs
+`npm run --workspace=backend db:restart` afterwards, since the migration it already applied has
+changed underneath it.
+
+Revisit this once there is a real deployment to migrate.
 
 ---
 
@@ -352,4 +393,4 @@ npx drizzle-kit migrate --config=src/modules/inventory/database.config.ts
 - [ ] `Module()` definition with matching repository keys
 - [ ] Registered in `container.ts` via `bootstrapModule()`
 - [ ] `database.config.ts` configured
-- [ ] Migration generated and run
+- [ ] Migration generated with `--name` and run — one `0000_*` file per module, regenerated rather than appended to

@@ -1,3 +1,19 @@
+/**
+ * Hand-written. shadcn has no `CommandBar` — its `Command` is a cmdk palette — so there is no
+ * registry entry to `npx shadcn add` and no upstream to re-sync from. Change it in place.
+ *
+ * It was ported from Medusa's design system with four deliberate departures:
+ *
+ * - **No popover primitive.** Medusa wraps Radix `Popover` + `Portal` + a zero-size anchor purely
+ *   to portal and animate. base-ui's Popover has no `Anchor` part, so this positions itself with a
+ *   plain `fixed bottom-8 left-1/2`.
+ * - **Root and Bar are flattened** into one `CommandBar`.
+ * - **Named exports** (`CommandBarValue`, `CommandBarSeparator`, `CommandBarCommand`), matching
+ *   `Card` and `DropdownMenu` in this package. Spelled `Separator`; Medusa's is `Seperator`.
+ * - **Stays mounted while closed** so it can animate, which is why an open-state context gates the
+ *   `keydown` registration that Medusa gets for free from unmounting.
+ */
+
 import * as React from 'react'
 import { cn } from '#/lib/utils.ts'
 

@@ -63,7 +63,7 @@ export const CountryLocaleSelect = withForm({
                   {field.state.value.map((assignment, index) => (
                     <form.Field key={assignment.id} name={`countries[${index}].localeCode`}>
                       {(localeField) => (
-                        <CountryLocaleField
+                        <CountryLocaleInput
                           label={displayNames.get(assignment.id) ?? assignment.id.toUpperCase()}
                           localeCode={localeField.state.value}
                           onLocaleChange={localeField.handleChange}
@@ -82,14 +82,14 @@ export const CountryLocaleSelect = withForm({
   },
 })
 
-type CountryLocaleFieldProps = {
+type CountryLocaleInputProps = {
   label: string
   localeCode: string
   onLocaleChange: (localeCode: string) => void
   errors?: Array<{ message?: string } | undefined>
 }
 
-function CountryLocaleField({ label, localeCode, onLocaleChange, errors }: CountryLocaleFieldProps) {
+function CountryLocaleInput({ label, localeCode, onLocaleChange, errors }: CountryLocaleInputProps) {
   const id = useId()
   const isInvalid = !!errors?.length
 

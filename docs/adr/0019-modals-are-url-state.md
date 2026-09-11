@@ -1,8 +1,18 @@
-# 19. Modals Are URL State in the Store App
+# 19. URL State Is the Default in the Store App
 
-**Status:** Accepted
+**Status:** Accepted. **Widened** — this ADR was originally *"modals are URL state"*, and the
+filename keeps that slug. The decision turned out to be the general one; modals are the case that
+needed the extra mechanism.
 
 ## Context
+
+Any piece of UI state that *can* be expressed as a URL search param should be, and `useState` is
+the exception that needs justifying. The payoffs are the ones the modal argument below makes —
+shareable, survives a refresh, hardware back works — and they are not specific to modals.
+
+Component-local state also forces hacks that disappear once the state moves. The product list
+carried a `key={q}` remount on its grid purely to reset a page number that had no business being
+local; moving `offset` into the route's search schema deleted the remount along with the `useState`.
 
 The storefront's search panel opens over whatever the shopper is reading — the home page, the
 PLP, a PDP, the cart. It needed an open/closed state, and the obvious first answer was
@@ -23,6 +33,33 @@ the page the panel is supposed to be sitting over. On desktop the panel is auto-
 visible strip of the page below it would go empty.
 
 ## Decision
+
+**New list, panel or view state goes in a validated search param.** Pagination, sort, filters, the
+selected tab, an expanded row — `_main/index.tsx` declares `q`, `sort` and `offset` this way. State
+genuinely scoped to one interaction is the exception, and it says so in a comment: a drawer's
+in-flight search term that should not survive reopening is local on purpose.
+
+Two details are load-bearing whenever a param is added.
+
+**`.optional().catch(undefined)`, never a zod `.default()`.** A default writes the value into the
+URL, so the "unset" state stops being absent and every `toHaveURL` assertion written against the
+clean URL starts failing. `.catch(undefined)` also keeps a hand-typed `?sort=nonsense` from erroring
+the route.
+
+```ts
+const productsSearchSchema = z.object({
+  q: z.string().trim().min(1).optional().catch(undefined),
+  sort: z.enum(PRODUCT_SORT_NAMES).optional().catch(undefined),
+  offset: z.coerce.number().int().min(0).optional().catch(undefined),
+})
+```
+
+**The param belongs in `loaderDeps` too.** A route `loader` that hardcodes the value will SSR a
+different page than the link points at — the shopper following `?offset=24` gets page one rendered
+on the server and page three after hydration. Check what else has to move with the state, not just
+where it now lives.
+
+### Modals
 
 Modals that have no natural parent route are **globally defined search params**, declared once
 on the root route.
@@ -74,6 +111,9 @@ A route that spreads the whole search into `loaderDeps` would refetch on every m
 
 ## Consequences
 
+- Any state in the URL survives refresh, is linkable, and is reachable by hardware back.
+- A route's `loaderDeps` and its `validateSearch` have to be read together: the first names which
+  params re-run the loader, and forgetting one is an SSR/hydration mismatch rather than a crash.
 - A modal survives refresh, is linkable (`/products?modal=search`), and hardware back closes it.
 - Opening pushes a history entry; closing uses `replace`, so the pushed entry is consumed rather
   than left for a forward navigation to re-enter.
@@ -94,5 +134,6 @@ A route that spreads the whole search into `loaderDeps` would refetch on every m
 ## References
 
 - <https://tanstack.com/blog/search-params-are-state>
+- `src/routes/_main/index.tsx` — the product list's `q` / `sort` / `offset`
 - `src/lib/modal-state.ts`, `src/components/header/search-drawer.tsx`,
   `src/components/header/side-menu.tsx`

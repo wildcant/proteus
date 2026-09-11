@@ -94,6 +94,19 @@ Utils are reusable from both route handlers and workflow steps. They are the rig
 - **Crossing a module boundary is not itself the signal — mutating across one is.** A read that
   touches three modules stays in the route handler; there is nothing to unwind, so there is nothing
   for a workflow to do.
+- **Steps are awaited one after another.** Never `Promise.all([ctx.step(...), ctx.step(...)])`, even
+  when the steps touch disjoint data and the engine tolerates it. Compensation is one array pushed to
+  in order and unwound in reverse, which only means anything over a sequential history — concurrent
+  steps have no defined rollback order, and parallel step support is engine work that has not been
+  done. Where the parallelism is genuinely available, write the steps in sequence and record the
+  opportunity as `// TODO(workflows): …` — the repo's convention is a parenthesised topic
+  (`TODO(locking)`, `TODO(pricing)`), not a bare TODO. Enforced by the
+  `workflow-parallelises-steps` ast-grep rule.
+  Concurrency *inside* one step's action is fine and common: one step means one compensation
+  whatever its action fans out over, which is why `create-payment-collection-for-cart` reads line
+  items and shipping methods with a `Promise.all`.
+- **Serial order narrows a compensation test.** If step 1 throws, step 2 never runs — so drive a
+  rollback test from a step downstream of everything you want to see unwound.
 - **Workflows orchestrate multi-step operations.** Steps can be mutations with compensation, read-only queries, or data transformations.
 - **Steps need `WorkflowContext`.** They can only run inside a workflow, not from route handlers directly.
 - **Utils are pure.** No services, no `container`, no async I/O. If it needs a service, it's a step, not a util.

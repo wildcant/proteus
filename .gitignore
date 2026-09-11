@@ -19,3 +19,10 @@ apps/backend/static
 # regenerated on the next failing run.
 .vitest-attachments/
 **/__screenshots__/
+
+# Personal, per-project agent instructions. `AGENTS.local.md` is the source of truth and
+# `CLAUDE.local.md` is a symlink to it, kept only until Codex reads the AGENTS-named one
+# (openai/codex#26957). Both are untracked on purpose: project conventions go in AGENTS.md,
+# where a reviewer can see them.
+AGENTS.local.md
+CLAUDE.local.md

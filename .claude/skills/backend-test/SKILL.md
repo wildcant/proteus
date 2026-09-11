@@ -31,6 +31,11 @@ builds one schema per vitest worker once per run; `db-setup.ts` `TRUNCATE`s ever
 - `expect` comes from the test callback — `test('...', async ({ expect }) => {})`. Never import it.
 - `vi` is the one legitimate `vitest` import (for `vi.spyOn`).
 - Use `test.describe` / `test.beforeEach`, never the bare vitest equivalents.
+- **Do not infer this from the surrounding files.** A shrinking set still does
+  `import { describe, expect } from 'vitest'` — legacy, not the target. Converting them is a
+  mechanical sweep nobody has asked for; new and edited files use the shape above.
+- Do not add `export { describe, expect } from 'vitest'` re-exports to `test-extend.ts`. That was
+  tried and rejected: the fixture exports `test` alone.
 
 ### Naming
 Tests that exercise a route live in `__tests__/` beside it and are named `{resource}.api.test.ts`.

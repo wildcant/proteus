@@ -7,10 +7,24 @@
 # tests). Each suite's output is buffered and printed as it finishes, so the streams never
 # interleave.
 #
-# The job list below is the single definition of what "checked" means for this repo — each
-# suite invokes its tool directly so the gate owns the flags it passes. Biome is the reason:
-# it needs --error-on-warnings here, while plain `npm run check` stays lenient for ad-hoc use.
-# A new project-wide check belongs in this list; nothing else aggregates them.
+# The job list below is the single definition of what "checked" means for this repo. A new
+# project-wide check belongs in JOBS and in label_of, or it runs nowhere: nothing else aggregates
+# checks, and the root `check:all` that used to was deleted for that reason.
+#
+# Each suite invokes its tool directly rather than going through an `npm run` alias, because that
+# is what lets the gate own the flags it passes. Biome is the reason it matters: a
+# `useNamingConvention` warning once passed a green gate, since Biome exits 0 on warnings and an
+# aggregator summing exit codes never saw it. The gate passes --error-on-warnings; plain
+# `npm run check` stays lenient for ad-hoc use. The asymmetry is deliberate — the flags belong to
+# the gate, not to package.json.
+#
+# Two conventions inside a job: `npm exec -- <tool>` rather than `npx`, so the pinned workspace
+# binary is always the one that runs; and sub-checks joined with `|| code=1` rather than `&&`, so a
+# single run reports every violation instead of stopping at the first.
+#
+# After changing a gate, prove it bites: reintroduce the violation, confirm the suite goes red,
+# then restore it. A check that has silently stopped matching prints exactly what a clean tree
+# prints.
 
 set -uo pipefail
 
@@ -42,9 +56,10 @@ job_conventions() {
   # env check stays here because it spans backend and store.
   npm run --workspace=backend --silent check:errors || code=1
   npm run --workspace=@proteus/http-schemas --silent check:datetime || code=1
-  # Schema rules that grep cannot express — cascade relationships and index predicates only
-  # exist once drizzle has built the table, so this one imports the models. See
-  # apps/backend/scripts/checks/run.ts.
+  # The schema rules a rule file cannot express — cascade relationships, index predicates and
+  # closure reachability exist only once drizzle has built the table, so this one imports the
+  # models. ast-grep/README.md carries the per-check verdict; the ones that were expressible have
+  # already moved. See apps/backend/scripts/checks/run.ts.
   npm run --workspace=backend --silent check:schema || code=1
   # Replay purity — the rule the Temporal adapter rests on. Parses the workflow handlers, so it
   # cannot be a grep. See apps/backend/scripts/replay-purity.ts.
@@ -56,8 +71,9 @@ job_conventions() {
   # The event bus dispatches subscribers from a generated import list for the same reasons, so it
   # drifts the same way. See scripts/generate-subscriber-registry.ts.
   npm run --workspace=backend --silent check:subscriber-registry || code=1
-  # Code-shape rules — the mutation-hook contract in ast-grep/rules/ today. Spans store and
-  # admin, so it lives at the root like the env check. ast-grep matches the syntax tree rather than
+  # Code-shape rules — what a file's contents must look like, across both frontends, the backend's
+  # routes and workflows, and its models. Lives at the root like the env check because it spans
+  # workspaces. ast-grep matches the syntax tree rather than
   # lines: a hook forwarding one callback and swallowing the other reads as compliant to any
   # line-wise pattern. `--error=unused-suppression` fails the run when an `ast-grep-ignore` outlives
   # the code it exempted. See ast-grep/README.md for the rule tree.
@@ -94,6 +110,13 @@ job_deps() {
 # suite is ~96s and would dominate the gate. One vitest process, not two: every backend test file
 # pulls in db-setup, and the suite is not safe to run twice concurrently against the shared test
 # database.
+#
+# The scope is narrowed on purpose, so do not quietly widen it "to be safe" — the logic lives in
+# src/modules and src/workflows, and the gate can miss a service-layer regression by design. The
+# answer is `npm run --workspace=backend test` before opening a PR, not a slower gate. If speed
+# comes up again the leverage is in the per-test schema recreation in tests/setup/db-setup.ts, not
+# in more parallelism: measured at the time the split was made, the checks were 3.5s serial against
+# 96s of tests.
 job_test() { npm run --workspace=backend test:gate; }
 
 # The admin's pure logic — the variant matrix the create wizard enumerates and what the options
@@ -208,14 +231,14 @@ report() {
   else
     echo -e "${RED}✖${RESET} ${BOLD}$(label_of "$name")${RESET} ${DIM}(${duration}s)${RESET}"
     cat "$LOG_DIR/$name.log"
-    # The suite drops and recreates the public schema in a beforeEach against a single
-    # shared database, so a second test process (an orphaned run, or an editor's test
-    # watcher) corrupts this one's schema mid-flight rather than failing on its own.
-    if grep -qE 'pg_namespace_nspname_index|relation "drizzle\.migrations_' "$LOG_DIR/$name.log"; then
+    # VITEST_POOL_ID restarts at 1 every run, so a second run claims the same proteus_test_1..N
+    # databases as this one. globalSetup takes an advisory lock and refuses rather than corrupting;
+    # this surfaces that refusal, which otherwise scrolls past inside a suite's buffered log.
+    if grep -q 'already holds the test databases' "$LOG_DIR/$name.log"; then
       echo ""
-      echo -e "  ${BOLD}Hint:${RESET} these errors mean another process was running tests against the same"
-      echo -e "  test database. The backend suite is not safe to run twice concurrently."
-      echo -e "  Check with ${BOLD}ps aux | grep vitest${RESET} and re-run once it is clear."
+      echo -e "  ${BOLD}Hint:${RESET} another vitest run holds the test databases. The backend suite is not"
+      echo -e "  safe to run twice concurrently — an editor watcher (vitest-vscode) is the usual culprit."
+      echo -e "  Find it with ${BOLD}pgrep -fl vitest${RESET} and re-run once it is clear."
     fi
     # The component tests render in a real Chromium, which a fresh checkout has not downloaded.
     if grep -q "Executable doesn't exist" "$LOG_DIR/$name.log"; then

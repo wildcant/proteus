@@ -206,7 +206,7 @@ Each major decision is documented as an ADR in [`docs/adr/`](docs/adr/). Here's 
 | [0016](docs/adr/0016-derived-soft-delete-cascade.md) | Derived soft-delete cascade | The cascade is read off the schema graph, so a new table cannot be forgotten |
 | [0017](docs/adr/0017-cart-state-is-a-timestamp.md) | Cart state is a timestamp | `completedAt` is the whole state machine — no status column to disagree with it |
 | [0018](docs/adr/0018-layered-product-options.md) | Layered product options | Global option definitions, per-product scoping, per-variant values |
-| [0019](docs/adr/0019-modals-are-url-state.md) | Modals are URL state | Open/closed lives in search params, so back, refresh and a shared link all behave |
+| [0019](docs/adr/0019-modals-are-url-state.md) | URL state is the default | Pagination, sort, filters and modal open/closed live in search params, so back, refresh and a shared link all behave |
 | [0020](docs/adr/0020-store-feature-graph-is-acyclic.md) | Store feature graph is acyclic | Declared feature DAG enforced by dependency-cruiser, so a latent cycle cannot accumulate |
 | [0021](docs/adr/0021-temporal-adapter-replays-to-the-next-step.md) | Temporal adapter replays to the next step | Durable execution with zero changes to 26 workflows — the handler is re-entered per step, so purity between steps is enforced |
 | [0022](docs/adr/0022-durable-execution-is-a-runtime-split.md) | Durable execution is a runtime split | Cloudflare cannot load Temporal's native Worker, so it has no durability — accepted, documented, and covered by a parity suite |

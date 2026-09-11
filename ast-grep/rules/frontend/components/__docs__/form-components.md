@@ -1,7 +1,7 @@
 # Form components
 
-The element a form is wrapped in, and the button that submits it. The hook behind them — where the
-schema, the defaults and the submit live — is in
+The element a form is wrapped in, the fields inside it, and the button that submits it. The hook
+behind them — where the schema, the defaults and the submit live — is in
 [form hooks](../../features/hooks/__docs__/form-hooks.md).
 
 ## Structure
@@ -10,7 +10,14 @@ schema, the defaults and the submit live — is in
 components/form/
   form.tsx           — the <Form> wrapper, one copy per app
   submit-button.tsx  — registered on the form hook as form.SubmitButton
+  *-field.tsx        — one file per registered field, reached as field.TextField
+lib/
+  form-hook.ts       — the registration: fieldComponents and formComponents
 ```
+
+The two apps register different sets, because they ask for different things: the store has
+`TextField`, `SelectField`, `CheckboxField` and `CountryField`; the admin adds `TextareaField`,
+`SwitchField`, `SingleComboboxField`, `NumberField` and `FileUploadField`.
 
 ## Shape
 
@@ -39,6 +46,18 @@ SubmitEvent as TanStack's `submitMeta`.
 
 Admin's route modals are the exception: they use `KeyboundForm` from `@proteus/ui`, which owns the
 same `preventDefault` plus the ⌘+Enter binding a drawer needs.
+
+### The `Field` suffix is reserved
+
+A component named `*Field` is one of the components registered under `fieldComponents` in
+`src/lib/form-hook.ts`. Nothing else may carry the suffix. A control that manages its own state gets
+a different noun — `*Form`, `*Input`, `*Picker` — which is why the header search is `SearchForm` and
+the region editor's locale input is `CountryLocaleInput`.
+
+The suffix is a type signal rather than decoration: `form.AppField`'s children are exactly the
+registered set, so a `SomethingField` that cannot be passed there sends a reader looking for a
+`useFieldContext()` consumer that does not exist. Registered fields take no `value` and no
+`onChange`; they read both from the context, which is what the rule below looks for.
 
 ### Submit comes from the form hook
 
@@ -83,6 +102,7 @@ withholding it because the merchant has not filled it in correctly yet is not.
 | `form-element-not-wrapped` | a form is `<Form>` or `KeyboundForm`, never a bare `<form>` |
 | `submit-button-not-from-form-hook` | submit is `form.SubmitButton`, not a raw `<Button type="submit">` |
 | `submit-button-gated-by-validity` | a `disabled` on a submit is an in-flight flag and nothing else |
+| `field-suffix-without-field-context` | a `*Field` component reads `useFieldContext()` |
 
 `ast-grep/README.md` covers how rules run, how their tests work, and how to suppress one.
 
@@ -105,6 +125,12 @@ a whole file and `--error=unused-suppression` cannot tell you when it goes stale
 narrow as the one file it is for.
 
 ## What is deliberately not enforced
+
+- **That a `*Field` is actually registered.** The rule checks the half a single file can see — that
+  the component reads `useFieldContext()` — not that `form-hook.ts` lists it. A cross-file lookup is
+  outside what an ast-grep rule can express, and the half it does check is the one that goes wrong:
+  the suffix gets borrowed by a self-managed control, never by a context consumer somebody forgot to
+  register. A field that reads the context and is not registered fails at its first use site instead.
 
 - **Fields have to render their errors.** For any of the above to be worth anything, a refused submit
   has to show up somewhere. The `field.*` components do it already; a custom control takes an `errors`

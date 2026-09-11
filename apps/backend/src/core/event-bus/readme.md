@@ -216,6 +216,27 @@ log line. The generated `Env` types it as always present because this app's `wra
 it, and that is a claim about one config file rather than about the runtime a bundle ends up in — a
 Worker without a `queues` block would otherwise build cleanly and die at the first publish.
 
+### Exercising it locally
+
+`npm run --workspace=backend dev:workerd` is a genuine test of this transport, not a stub of it.
+Wrangler binds `EVENTS` through miniflare and delivers to the Worker's own `queue()` export, so the
+whole arc runs locally: publish → message → consumer → `withConnection` → subscriber, with
+`max_retries` and `proteus-events-dlq` honoured — four attempts, then a *"Moving message … to dead
+letter queue"* warning.
+
+To trigger a publish by hand, POST a signed Stripe webhook to `/hooks/payment/pp_stripe_default`.
+Two things are easy to get wrong:
+
+- **The path segment is the container key, not the vendor name** — `pp_stripe_default`, not `stripe`.
+- **The intent must carry `metadata.sessionId`**, or `getWebhookActionAndData` returns
+  `not_supported` and nothing is published at all.
+
+Sign the body as `t=<unix>,v1=<hmac-sha256(STRIPE_WEBHOOK_SECRET, "<t>.<rawBody>")>`.
+
+`.env.workerd` is untracked and plaintext — the root `.env` is dotenvx-encrypted — so it drifts from
+`src/env.ts` on its own. A missing key kills the Worker at boot with `Invalid environment variables`;
+diff the key lists against the root `.env` when it will not start.
+
 ## The generated registry
 
 `src/subscribers/registry.gen.ts` is written by `scripts/generate-subscriber-registry.ts`, which

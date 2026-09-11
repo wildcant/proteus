@@ -73,6 +73,12 @@ does not catch, so an unguarded write surfaces as an unhandled rejection rather 
 the two — `mutate()` with callbacks *and* a `finally` — fires `onSettled` twice, one of them before
 the request has landed.
 
+Anything the write depends on goes **inside the same `try`**, before the `await`. A media upload is
+a pre-step, not a second mutation, so it keeps its place there rather than being made to handle its
+own failure. Never `await uploadMedia(...).catch(() => null)` with a guard clause after it: a failed
+upload is a real failure the merchant has to see, and swallowing it persists dead blob URLs. One
+`try` means one `catch`, and `params.onError` gets the message either way.
+
 `errorMessage(error)` turns the `unknown` a catch binding is typed as back into a string. It lives
 beside `SubmitFormParams`. Don't hand-write `error instanceof Error ? … : '…'` per hook: the
 fallback is unreachable — the fetcher only ever throws `Error` — and the message the merchant reads
@@ -122,6 +128,19 @@ run, how their tests work, and how to suppress one. None of these three has an e
   it — the admin login route's body is the shared `AuthBody`, a `z.record(z.string(), z.string())` too
   loose to drive a form; the variant-image batch endpoints have no request body schema at all. A rule
   here would have to know which endpoint a form writes to.
+- **That the payload is parsed rather than cast.** Assemble a request body with the schema's
+  `.parse()`, not `as Parameters<typeof mutation.mutate>[0]`. A cast asserts a shape nothing checks;
+  `.parse()` validates it *and* strips keys the endpoint rejects — in `use-create-product-form` it
+  drops the image `id`s that only the update endpoint accepts, which a cast would have sent. It
+  throws, so it belongs inside the `try` the submit already has, and `.omit()` / `.extend()` narrow
+  the schema where a form writes only part of a body. A rule cannot tell a payload cast from any
+  other, which is why this is written down instead.
+- **That I/O lives in a hook.** A helper that needs a mutation handed to it is a hook that has not
+  been written yet. `resolveMediaPayload(media, uploadFiles)` awaited an upload and then shaped a
+  payload under a name that promised only shaping; it became `useUploadProductMedia` — a hook
+  wrapping the mutation — plus a `resolveMediaPayload(media)` that is pure and synchronous. The call
+  site then reads as the two steps it is. Renaming to lead with the verb is the minimum fix;
+  extracting is the real one.
 - **Where the queries live.** A form hook owns form state and its one write, and reads nothing. Queries
   that fetch options for the UI go in the component that renders them — `useOptionCombinationSearch` in
   `create-variant-form.tsx` — or in the page's [data hook](./data-hooks.md) when more than one
