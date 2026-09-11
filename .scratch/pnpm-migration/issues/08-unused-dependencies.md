@@ -1,4 +1,4 @@
-# 09 — Every declared dependency is used
+# 08 — Every declared dependency is used
 
 **What to build:** knip at the root, scoped to one issue type, as an `unused` job in
 `scripts/verify.sh` — plus the ten findings it reports today, each resolved as a decision rather
