@@ -8,7 +8,7 @@ import { PAYLOAD_CONVERTER_PATH } from '../../src/core/temporal/config.js'
  * it.
  *
  * It lives here rather than under either subsystem because two of them now boot servers — the
- * workflow engine and the event bus — and `check:deps` forbids them from reaching each other, so a
+ * workflow engine and the event bus — and `check:structure` forbids them from reaching each other, so a
  * helper owned by one is a helper the other cannot have. The pieces below are Temporal's, not any
  * subsystem's: a process-global SDK Runtime and a `require` hook.
  *

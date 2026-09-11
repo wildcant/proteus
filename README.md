@@ -314,10 +314,10 @@ npm run openapi:generate
 npm run --workspace=backend db:generate
 
 # Run dependency-cruiser rules
-npm run --workspace=backend check:deps
+npm run --workspace=backend check:structure
 
 # Generate dependency graph SVG
-npm run --workspace=backend check:deps:graph
+npm run --workspace=backend check:structure:graph
 ```
 
 ---

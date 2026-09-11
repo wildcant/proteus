@@ -17,7 +17,7 @@ const logger = new WinstonLogger()
 /**
  * Held here rather than only inside the container because `setWorkflowEngine` stores the engine in
  * a module global that `container.dispose()` never sees, so nothing else can give the gRPC
- * connection back. `container.ts` cannot hold the concrete type: `check:deps` counts a type-only
+ * connection back. `container.ts` cannot hold the concrete type: `check:structure` counts a type-only
  * import as a dependency, and `no-temporal-in-workerd` would fail on it.
  */
 let temporalEngine: TemporalWorkflowEngine | undefined

@@ -2,16 +2,16 @@
 # Post-implementation verification gate.
 #
 # Formatting runs first and alone: `biome format --write` rewrites files, so it cannot
-# race the suites that read them. The read-only suites afterwards share no state, so they
+# race the gates that read them. The read-only gates afterwards share no state, so they
 # run concurrently and the wall clock collapses to the slowest one (the backend integration
-# tests). Each suite's output is buffered and printed as it finishes, so the streams never
+# tests). Each gate's output is buffered and printed as it finishes, so the streams never
 # interleave.
 #
 # The job list below is the single definition of what "checked" means for this repo. A new
 # project-wide check belongs in JOBS and in label_of, or it runs nowhere: nothing else aggregates
 # checks, and the root `check:all` that used to was deleted for that reason.
 #
-# Each suite invokes its tool directly rather than going through an `npm run` alias, because that
+# Each gate invokes its tool directly rather than going through an `npm run` alias, because that
 # is what lets the gate own the flags it passes. Biome is the reason it matters: a
 # `useNamingConvention` warning once passed a green gate, since Biome exits 0 on warnings and an
 # aggregator summing exit codes never saw it. The gate passes --error-on-warnings; plain
@@ -22,7 +22,7 @@
 # binary is always the one that runs; and sub-checks joined with `|| code=1` rather than `&&`, so a
 # single run reports every violation instead of stopping at the first.
 #
-# After changing a gate, prove it bites: reintroduce the violation, confirm the suite goes red,
+# After changing a gate, prove it bites: reintroduce the violation, confirm the gate goes red,
 # then restore it. A check that has silently stopped matching prints exactly what a clean tree
 # prints.
 
@@ -37,7 +37,7 @@ DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-# Commenting a suite out means dropping its name from here as well as its `job_*` function and
+# Commenting a gate out means dropping its name from here as well as its `job_*` function and
 # label — this string is what the loop iterates, and a name with no function behind it fails the
 # run with an empty label rather than being skipped.
 JOBS="typecheck lint standards structure generated openapi test schemas store packages"
@@ -104,9 +104,9 @@ job_schemas() { npm run --workspace=@proteus/http-schemas test; }
 
 job_structure() {
   local code=0
-  npm run --workspace=backend check:deps || code=1
-  npm run --workspace=admin check:deps || code=1
-  npm run --workspace=store check:deps || code=1
+  npm run --workspace=backend check:structure || code=1
+  npm run --workspace=admin check:structure || code=1
+  npm run --workspace=store check:structure || code=1
   return $code
 }
 
@@ -189,7 +189,7 @@ label_of() {
 echo ""
 if [[ "$ci_mode" == true ]]; then
   # CI must not rewrite the tree: unformatted code has to fail the build rather than be
-  # silently fixed here, which would also mask it from the lint suite's `biome check`.
+  # silently fixed here, which would also mask it from the lint gate's `biome check`.
   echo -e "${BOLD}Checking formatting${RESET} ${DIM}(CI — reporting only, no files rewritten)${RESET}"
   if ! npm run format:check; then
     echo ""
@@ -221,7 +221,7 @@ run_job() {
 
 echo ""
 job_count="$(echo "$JOBS" | wc -w | xargs)"
-echo -e "${BOLD}Running ${job_count} suites in parallel${RESET} ${DIM}(output appears as each finishes)${RESET}"
+echo -e "${BOLD}Running ${job_count} gates in parallel${RESET} ${DIM}(output appears as each finishes)${RESET}"
 
 for name in $JOBS; do
   run_job "$name" "job_$name" &
@@ -242,7 +242,7 @@ report() {
     cat "$LOG_DIR/$name.log"
     # VITEST_POOL_ID restarts at 1 every run, so a second run claims the same proteus_test_1..N
     # databases as this one. globalSetup takes an advisory lock and refuses rather than corrupting;
-    # this surfaces that refusal, which otherwise scrolls past inside a suite's buffered log.
+    # this surfaces that refusal, which otherwise scrolls past inside a gate's buffered log.
     if grep -q 'already holds the test databases' "$LOG_DIR/$name.log"; then
       echo ""
       echo -e "  ${BOLD}Hint:${RESET} another vitest run holds the test databases. The backend suite is not"
@@ -276,7 +276,7 @@ wait
 
 echo ""
 if [[ $failures -gt 0 ]]; then
-  echo -e "${RED}✖${RESET} ${BOLD}${failures} suite(s) failed.${RESET}"
+  echo -e "${RED}✖${RESET} ${BOLD}${failures} gate(s) failed.${RESET}"
   echo ""
   exit 1
 fi

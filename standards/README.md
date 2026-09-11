@@ -12,11 +12,12 @@ npm run check:standards:test   # run the rules' own tests
 
 ## The words
 
-Six names in this repo pointed at roughly one idea — a claim about our code that the build enforces —
-and the tell was that `scripts/verify.sh` labelled a job by enumerating it: *"Env usage, error,
-schema & standards conventions"* is what you write when no noun covers the bucket. That gate is now
-`standards`. Five words, defined here because this file is already the front door to all of them. They are not in `CONTEXT.md`, which is
-the e-commerce glossary and takes domain language only.
+This repo had several names for one idea — a claim about our code that the build enforces — and no
+single word that covered it. The tell was that `scripts/verify.sh` labelled a job by enumerating the
+bucket: *"Env usage, error, schema & standards conventions"* is what you write when no noun fits.
+That gate is now `standards`. Five words replace the enumeration, defined here because this file is
+already the front door to all of them. They are not in `CONTEXT.md`, which is the e-commerce glossary
+and takes domain language only.
 
 The pair that does the work is a transition rather than two labels: **a convention hardens into a
 standard the day someone writes the check.** Nothing stays a convention on purpose — a convention
@@ -42,7 +43,9 @@ _Avoid_: standard, test, gate
 
 **Rule**:
 A check expressed declaratively as a file rather than as code — a `.yml` under `standards/rules/`,
-or a dependency-cruiser rule in an app's config. Everything else is a script.
+or a dependency-cruiser rule in an app's config. Every other check is a script — meaning a check
+written as code, not every executable under `scripts/`: `verify.sh` is a script and enforces no
+standard of its own, it runs the gates.
 _Avoid_: check (where the distinction is the point), lint rule
 
 **Gate**:
@@ -80,7 +83,8 @@ This is the first question, and it has one answer per kind of prose. Ask them in
 | "How do I add one?" · "Where does this go?" · "What must this file contain?" | `standards/rules/<area>/__docs__/<use-case>.md` |
 | "What happens when this runs?" · "Why does it behave that way at runtime?" | the `README.md` of the code directory it describes |
 | "Why is it this way, and what did we reject?" | `docs/adr/` |
-| "What does this word mean here?" | `CONTEXT.md` |
+| "What does this word mean here?" — a domain word: cart, colourway, market | `CONTEXT.md` |
+| "What does this word mean here?" — how we build and check: convention, standard, gate | [The words](#the-words), above |
 | Something true across several areas and owned by none | `docs/<topic>.md` |
 | Not finished yet | `.scratch/<feature>/` |
 
@@ -115,7 +119,7 @@ place to keep in step, and the rule's `note:` already names the document at the 
 | Standard | Lives in | Enforced by |
 |---|---|---|
 | What a file's contents must look like | `standards/rules/` | ast-grep — `check:standards` |
-| Which file may import which | each app's `structure/.dependency-cruiser.cjs` | dependency-cruiser — `check:deps` |
+| Which file may import which | each app's `structure/.dependency-cruiser.cjs` | dependency-cruiser — `check:structure` |
 | Formatting, naming, and the language rules | `biome.json` | Biome — `npm run check` |
 | API design | `apps/backend/openapi/ruleset.yaml` | Spectral — `check:openapi` |
 | Facts that exist only once drizzle has built the table | `apps/backend/scripts/checks/` | `check:schema` — and see [when a rule cannot express it](#when-a-rule-cannot-express-it) |

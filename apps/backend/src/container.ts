@@ -46,7 +46,7 @@ export type BootstrapContainerDeps = {
    *
    * Injected for the same reason `logger` and `dbProvider` are: `@temporalio/*` reaches
    * `@temporalio/core-bridge`, a native addon workerd cannot load, and a static import here would
-   * put it in the workerd bundle whether or not that build ever uses it. `check:deps` enforces
+   * put it in the workerd bundle whether or not that build ever uses it. `check:structure` enforces
    * that boundary, so this is not a stylistic choice — an import here fails the gate.
    */
   createTemporalWorkflowEngine?: () => WorkflowEngine

@@ -46,10 +46,10 @@ npm run --workspace=admin test:e2e
 # Linting & type-checking
 npm run check                  # Biome lint + format (warnings do not fail)
 npm run typecheck              # backend, store, admin
-npm run check:standards       # ast-grep rules; :test runs the rules' own tests
+npm run check:standards        # ast-grep rules; :test runs the rules' own tests
 
 # Verification gate — run after finishing any implementation task
-npm run verify                 # Formats, then ten suites in parallel: typecheck, lint
+npm run verify                 # Formats, then ten gates in parallel: typecheck, lint
                                # (warnings fail here), the code standards, the import structure
                                # rules, generated-file currency, Spectral on both OpenAPI specs,
                                # `test:gate`, the http-schemas bound tests, the store's unit +
@@ -189,7 +189,7 @@ Non-negotiables, because the transports differ:
 - **Every subscriber must be idempotent.** The weaker of the two transports is at-least-once with no dedup, and the same file runs on both. `event.dispatchId` is the key to be idempotent against.
 - **Publish from a workflow's final step**, and derive the payload's `id` from something an earlier step already recorded. A retried step runs its action again: an id minted inside it is new per attempt, so dedup has nothing to match and the subscriber runs twice.
 - **`emit` never rejects and resolves on acceptance**, never on completion. A subscriber's failure is the transport's to retry; throwing is how you ask for that retry.
-- **A subscriber file imports no transport vocabulary** — no `@temporalio/*`, no `cloudflare:workers`, no queue types. `check:deps` keeps `src/core/event-bus/` and `src/core/workflows/` from importing each other; a subscriber may reach both.
+- **A subscriber file imports no transport vocabulary** — no `@temporalio/*`, no `cloudflare:workers`, no queue types. `check:structure` keeps `src/core/event-bus/` and `src/core/workflows/` from importing each other; a subscriber may reach both.
 
 Full guide, including the transports and their guarantees: `apps/backend/src/core/event-bus/readme.md`. The design decisions are ADR-0023 and ADR-0024.
 

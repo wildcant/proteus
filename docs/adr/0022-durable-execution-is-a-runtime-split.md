@@ -34,7 +34,7 @@ through `projectConfig.workflows.engine`, in code, next to the reason: the Tempo
 `simple` for itself so that the two workflows calling another workflow's `.run()` from inside a step
 stay inline, and the test container pins one per suite so the default run needs no Temporal server.
 
-`check:deps` enforces the boundary structurally: `no-temporal-in-workerd` fails if
+`check:structure` enforces the boundary structurally: `no-temporal-in-workerd` fails if
 `src/index.workerd.ts` can reach `@temporalio/*`, `src/temporal/` or
 `src/core/workflows/temporal/` at all, through any path.
 

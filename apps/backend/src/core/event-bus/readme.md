@@ -52,7 +52,7 @@ registry.ts                   — event name → subscribers, from the generated
 ```
 
 `src/core/event-bus/` and `src/core/workflows/` are peers and may not import each other, enforced by
-`check:deps`. They share a vendor on node — the engine runs workflow executions, the bus runs
+`check:structure`. They share a vendor on node — the engine runs workflow executions, the bus runs
 standalone activities — and that is exactly the coupling the rule forbids: a fix in the engine's
 replay code has to be structurally incapable of changing event dispatch. What they genuinely share
 lives in `src/core/temporal/`: the payload converter, the failure encoding, and the client *factory*. Each
@@ -245,7 +245,7 @@ diff the key lists against the root `.env` when it will not start.
 
 Static imports, not a directory scan, for the three reasons the workflow registry has the same
 shape: the handler closures have to exist in the process that dispatches, `tsx --watch` reloads off
-the module graph, and `check:deps` cannot follow a scan. A committed artifact is also identical in
+the module graph, and `check:structure` cannot follow a scan. A committed artifact is also identical in
 every environment, which a directory is not.
 
 Every file in `src/subscribers/` is a subscriber. A helper module there is rejected by the generator

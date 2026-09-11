@@ -330,7 +330,7 @@ the nested workflow's own compensation stack dies with the process instead of un
 the durability of the outer workflow's steps and no more, where the other 24 get it for every step.
 `src/core/workflows/temporal/__tests__/nested-workflow.server.test.ts` pins that shape; ADR-0021 records it as a residual.
 
-`check:deps` enforces the boundary — `no-temporal-in-workerd` fails if `src/index.workerd.ts` can
+`check:structure` enforces the boundary — `no-temporal-in-workerd` fails if `src/index.workerd.ts` can
 reach `@temporalio/*`, `src/core/temporal/` or `src/core/workflows/temporal/` at all.
 
 **A workerd deployment therefore has no durable execution.** That is deliberate and recorded as an

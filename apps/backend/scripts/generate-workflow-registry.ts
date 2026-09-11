@@ -9,7 +9,7 @@
  *   because something imported the module that built them.
  * - **`tsx --watch` reloads the Worker off that same graph.** Editing a step action restarts the
  *   Worker because `worker.ts` → `registry.ts` → `registry.gen.ts` → the file just edited.
- * - **`tsc` and `check:deps` can see it.** A dependency-cruiser rule cannot follow a directory scan.
+ * - **`tsc` and `check:structure` can see it.** A dependency-cruiser rule cannot follow a directory scan.
  *
  * So this is deliberately *not* the runtime scan the old hand-written list warned against. The
  * artifact is committed, so every environment runs the identical file, and `--check` fails the
