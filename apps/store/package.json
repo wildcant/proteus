@@ -20,7 +20,7 @@
     "cf-typegen": "wrangler types",
     "typecheck": "tsc --noEmit",
     "openapi:client": "orval",
-    "check:deps": "depcruise src/ --config deps-analyzer/.dependency-cruiser.cjs"
+    "check:deps": "depcruise src/ --config structure/.dependency-cruiser.cjs"
   },
   "dependencies": {
     "@proteus/http-schemas": "*",

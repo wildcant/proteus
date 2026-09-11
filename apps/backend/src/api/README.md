@@ -31,7 +31,7 @@ A fifth kind is invisible to the routing layer — route discovery reads `defini
 becomes a private convention nobody else follows. Where a Route Helper Goes, below, says where that
 logic belongs instead.
 
-Enforced by `api-holds-only-four-file-kinds` in `deps-analyzer/.dependency-cruiser.cjs`. Nested
+Enforced by `api-holds-only-four-file-kinds` in `structure/.dependency-cruiser.cjs`. Nested
 sub-resources are fine at any depth (`payment-collections/[id]/payment-sessions/route.ts`); only the
 filename is constrained. `src/api/index.ts` is exempt as the backend-as-library composition root.
 
@@ -219,7 +219,7 @@ Spreading is what carries a failure raised several step-frames down into the Ope
 without anything in between restating it. Structural failures stay off the list entirely — the 400
 from schema validation and the 401 from an auth middleware are derived from the definition itself.
 
-Three code-shape rules keep this honest in both directions, so a wrong list fails `npm run verify`
+Three rules in `standards/` keep this honest in both directions, so a wrong list fails `npm run verify`
 rather than shipping a lying spec: `route-throws-undeclared-error` (handler raises a type the list
 omits), `route-declares-unthrown-error` (list names a type nothing raises), and
 `route-omits-workflow-errors` (a `.run()` whose caller does not spread the callee's `.throws`). Full
@@ -340,4 +340,4 @@ handler on `/hooks/` that verifies nothing is the bug this paragraph exists to m
 4. Add the definition import to `src/routes.ts`
 5. Run `npm run --workspace=backend typecheck` — zero errors
 6. Run `npm run openapi:generate` to regenerate OpenAPI specs and clients
-7. Run `npm run verify` — the code-shape rules check the `Throws` list against the handler in both directions
+7. Run `npm run verify` — the rules in `standards/` check the `Throws` list against the handler in both directions

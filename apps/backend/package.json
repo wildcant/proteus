@@ -58,8 +58,8 @@
     "check:subscriber-registry": "tsx scripts/generate-subscriber-registry.ts --check",
     "subscribers:generate": "tsx scripts/generate-subscriber-registry.ts",
     "check:schema": "tsx scripts/checks/run.ts",
-    "check:deps": "depcruise src/ --config deps-analyzer/.dependency-cruiser.cjs",
-    "check:deps:graph": "depcruise src/ --config deps-analyzer/.dependency-cruiser.cjs --output-type archi --exclude '(node_modules|__tests__)' --collapse 3 | dot -T svg -o deps-analyzer/dependency-graph.svg && open deps-analyzer/dependency-graph.svg"
+    "check:deps": "depcruise src/ --config structure/.dependency-cruiser.cjs",
+    "check:deps:graph": "depcruise src/ --config structure/.dependency-cruiser.cjs --output-type archi --exclude '(node_modules|__tests__)' --collapse 3 | dot -T svg -o structure/dependency-graph.svg && open structure/dependency-graph.svg"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",

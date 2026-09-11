@@ -8,7 +8,7 @@ import type { Check, Violation } from './types.js'
  * Overlaps that are known and deliberate, keyed by the guard relationship, with the reason.
  *
  * The shape stays visible in one place, stated once, rather than being silently tolerated wherever it
- * happens to occur — the same reason a code-shape exemption is an `ast-grep-ignore` naming its rule.
+ * happens to occur — the same reason a standards exemption is an `ast-grep-ignore` naming its rule.
  */
 const ALLOWED: Record<string, string> = {}
 

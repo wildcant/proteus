@@ -173,7 +173,7 @@ Two consequences worth knowing before writing a workflow:
 > synchronous.
 
 `scripts/replay-purity.ts` parses every handler under `src/workflows/` and enforces it. It
-runs in `verify.sh`'s `conventions` job, or on its own with `npm run check:workflow-purity`. In the
+runs in `verify.sh`'s `standards` gate, or on its own with `npm run check:workflow-purity`. In the
 handler body, outside every `ctx.step` callback, these are rejected:
 
 | Rejected | Instead |

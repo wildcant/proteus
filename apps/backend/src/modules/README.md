@@ -7,7 +7,7 @@ Every module is a private local container of repositories with **exactly one ser
 shared container. Nothing else crosses the boundary — no repository, no model, no helper. Another
 module that needs this one's data asks its service, and orchestration that spans two modules is not a
 module's job at all; it is a workflow. This is enforced by `no-module-internals` and
-`no-cross-module-imports` in `deps-analyzer/.dependency-cruiser.cjs`.
+`no-cross-module-imports` in `structure/.dependency-cruiser.cjs`.
 
 `index.ts` is that boundary, declared once:
 
@@ -70,7 +70,7 @@ A ninth folder or a fifth root file is invisible to bootstrap and to drizzle-kit
 module follows. Every kind of code already has a home: a table in `models/`, data access in
 `repositories/`, business logic on the service, a pure helper in `utils/`.
 
-Enforced by **`module-holds-only-known-file-kinds`** in `deps-analyzer/.dependency-cruiser.cjs`.
+Enforced by **`module-holds-only-known-file-kinds`** in `structure/.dependency-cruiser.cjs`.
 Nesting *inside* the eight folders is unconstrained, which `migrations/meta/`,
 `__tests__/fixtures/` and `payment/loaders/__tests__/` all rely on.
 
@@ -81,7 +81,7 @@ In `__tests__/`, never beside the file they cover — including pure-function te
 `product/utils/`. One place to look holds both kinds, and the folder is what tells a reader the
 difference between a module file and a file *about* a module file. `__tests__/` may nest.
 
-Enforced by **`module-tests-live-in-a-tests-folder`** in `deps-analyzer/.dependency-cruiser.cjs`.
+Enforced by **`module-tests-live-in-a-tests-folder`** in `structure/.dependency-cruiser.cjs`.
 
 ## Where a Provider Goes
 

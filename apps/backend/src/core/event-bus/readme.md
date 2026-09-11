@@ -239,9 +239,9 @@ diff the key lists against the root `.env` when it will not start.
 
 ## The generated registry
 
-`src/subscribers/registry.gen.ts` is written by `scripts/generate-subscriber-registry.ts`, which
-parses `src/subscribers/` for exported `config` objects. It is committed, and `--check` runs in the
-verify gate.
+`src/subscribers/registry.gen.ts` is written by
+`apps/backend/scripts/generate-subscriber-registry.ts`, which parses `src/subscribers/` for exported
+`config` objects. It is committed, and `--check` runs in the verify gate.
 
 Static imports, not a directory scan, for the three reasons the workflow registry has the same
 shape: the handler closures have to exist in the process that dispatches, `tsx --watch` reloads off

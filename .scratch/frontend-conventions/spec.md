@@ -154,7 +154,7 @@ exact failure this spec exists to fix, reintroduced one section later. Level sel
 the fixture and factory mechanics can be lazy. `code-style.md` at `**/*.{ts,tsx}` is not a meaningful
 narrowing either, so scoping it buys almost nothing against the same risk. See Open decision 1.
 
-`.claude/rules/` also becomes a *third* home for conventions, alongside `ast-grep/rules/**/__docs__/`
+`.claude/rules/` also becomes a *third* home for conventions, alongside `standards/rules/**/__docs__/`
 and each app's `deps-analyzer/`. The boundary is one sentence and belongs in `AGENTS.md` before this
 ticket starts: **`.claude/rules/` holds conventions that cannot be checked; a convention with a check
 stays documented beside its check.** Without it, `admin-app.md` and the ast-grep docs drift into each
@@ -221,8 +221,8 @@ path is built from `SHARED_FOLDERS` the same way, so `src/rotues/` is equally si
 ~30 lines of `fs` in `job_conventions`: assert each anchored directory exists in both apps, and that
 `src/` holds no near-miss sibling of any of them.
 
-**`packages/frontend-conventions` has no tests at all** — unlike `ast-grep/rules/`, where
-`check:code-shape:test` runs each rule's `valid`/`invalid` cases *because* "a rule that stops matching
+**`packages/frontend-conventions` has no tests at all** — unlike `standards/rules/`, where
+`check:standards:test` runs each rule's `valid`/`invalid` cases *because* "a rule that stops matching
 prints exactly what a clean codebase prints." That is this ticket's own argument, already made and
 already tooled elsewhere in the repo. The negative test under Verification below is that test, written
 out by hand; automate it instead.

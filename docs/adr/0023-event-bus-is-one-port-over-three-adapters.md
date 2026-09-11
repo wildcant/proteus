@@ -204,5 +204,5 @@ module graph, and `check:deps` cannot follow a runtime directory scan.
 - ADR-0021, ADR-0022 — the workflow engine this mirrors, and the runtime split it inherits
 - `apps/backend/src/core/event-bus/readme.md` — the working guide, kept next to the code
 - `apps/backend/src/core/event-bus/adapter-selection.ts` — the derivation, with the reasoning inline
-- `apps/backend/deps-analyzer/.dependency-cruiser.cjs` — `event-bus-and-workflows-stay-peers`,
+- `apps/backend/structure/.dependency-cruiser.cjs` — `event-bus-and-workflows-stay-peers`,
   `shared-temporal-stays-shared`, `no-temporal-in-workerd`

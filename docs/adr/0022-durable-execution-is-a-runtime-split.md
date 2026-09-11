@@ -98,5 +98,5 @@ history along with everything else.
 
 - ADR-0021 — the adapter, its replay design, and what it costs
 - `apps/backend/src/core/workflows/engine-selection.ts` — the derivation, with the reasoning inline
-- `apps/backend/deps-analyzer/.dependency-cruiser.cjs` — `no-temporal-in-workerd`
+- `apps/backend/structure/.dependency-cruiser.cjs` — `no-temporal-in-workerd`
 - `apps/backend/docker-compose.yml` — the local Temporal services

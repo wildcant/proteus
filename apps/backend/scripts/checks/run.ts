@@ -1,12 +1,12 @@
 /**
  * Schema convention checks.
  *
- * A rule about the *text* of a model file belongs in `ast-grep/rules/backend/modules/` — that is
+ * A rule about the *text* of a model file belongs in `standards/rules/backend/modules/` — that is
  * where "every table spreads ...timestamps" lives. These rules are not about the text: whether a
  * relationship cascades, which column an index leads with, whether a predicate excludes
  * soft-deleted rows, and what a cascade closure reaches are all facts that exist only once drizzle
  * has built the table. So this runner imports the models and reads their metadata. A new schema
- * rule belongs here only once it has been shown that a rule file cannot express it; ast-grep/README.md
+ * rule belongs here only once it has been shown that a rule file cannot express it; standards/README.md
  * records the verdict for each of the ones below.
  *
  * A check is a `{ name, rule, run }` triple over the collected models. Add one to CHECKS below.

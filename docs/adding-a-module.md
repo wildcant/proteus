@@ -119,7 +119,7 @@ Optional, add when needed:
 - `sync-providers.ts` — out-of-band provider upsert for workerd
 
 That list is closed, and `module-holds-only-known-file-kinds` in
-`deps-analyzer/.dependency-cruiser.cjs` enforces it — a ninth folder or a fifth root file fails
+`structure/.dependency-cruiser.cjs` enforces it — a ninth folder or a fifth root file fails
 `npm run verify`. Widen the rule deliberately rather than working around it; the rule's comment says
 where each kind of code belongs.
 

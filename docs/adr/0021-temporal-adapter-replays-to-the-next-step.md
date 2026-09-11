@@ -66,7 +66,7 @@ than documented: `apps/backend/scripts/replay-purity.ts` parses every handler an
 than `ctx.step`, or a helper whose name ends in `Step` *and* which is handed `ctx`), `new Date()`,
 `Date.now()`, `Math.random()`, `crypto.*`, `process.env` and `container.*` outside a `ctx.step`
 callback. Being handed the context is not on its own enough to be a step: `await db.query(ctx)` is
-raw I/O and is reported. It runs in `verify.sh`'s `conventions` job, and it checks itself first
+raw I/O and is reported. It runs in `verify.sh`'s `standards` gate, and it checks itself first
 against a deliberately impure fixture — a checker that has silently stopped matching produces the
 same output as a clean tree.
 

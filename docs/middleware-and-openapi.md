@@ -200,7 +200,7 @@ from the spec, and therefore absent from the Orval client the storefront calls t
 It is declared on the `<Method>Input` constant beside the handler, not in `definitions.ts`, so the
 declaration travels with the constant. Two rules keep it paired with the middleware that reads it —
 `route-omits-context-query` and `route-declares-unread-context-query`, in
-`ast-grep/rules/backend/api/`.
+`standards/rules/backend/api/`.
 
 ---
 
@@ -253,9 +253,9 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
 Spreading rather than restating is what makes this work at any depth: `storeAuthLogin` inherits a `409` raised four frames down, in a step of a workflow called by the workflow it calls, without anything in between knowing about it. A step that lives in its own file exports its own `…Throws` for the same reason — see `setAuthAppMetadataThrows`.
 
-`throws` names the *complete* failure contract, including `UNEXPECTED_STATE` and the other invariant violations, because the code-shape rules cannot otherwise tell a missing declaration from a deliberate one. The published document drops the `5xx` half: a server error is not something the caller can reshape a request to avoid, and declaring it puts a dead branch in every generated client.
+`throws` names the *complete* failure contract, including `UNEXPECTED_STATE` and the other invariant violations, because the rules in `standards/` cannot otherwise tell a missing declaration from a deliberate one. The published document drops the `5xx` half: a server error is not something the caller can reshape a request to avoid, and declaring it puts a dead branch in every generated client.
 
-Five rules keep the declarations honest, in both directions, and they run in the `conventions` job:
+Five rules keep the declarations honest, in both directions, and they run in the `standards` gate:
 
 | Rule | Catches |
 |------|---------|
@@ -265,7 +265,7 @@ Five rules keep the declarations honest, in both directions, and they run in the
 | `workflow-declares-unthrown-error` | the same, in reverse |
 | `route-omits-workflow-errors` | a `.run()` call whose caller does not spread the callee's `.throws` |
 
-Their scope is one file and syntactic, so a type raised by a **module service** the handler calls is invisible to them — `auth-module-service.ts` raises `UNAUTHORIZED` from `updateProvider`, and nothing declares it. Declaring such a type is correct and trips `*-declares-unthrown-error`; suppress that one site by id with the reason written above it, as `ast-grep/README.md` describes. Until that tier is covered, `registerOpenApiRoute` also keeps declaring a `404` on any route that takes a path parameter.
+Their scope is one file and syntactic, so a type raised by a **module service** the handler calls is invisible to them — `auth-module-service.ts` raises `UNAUTHORIZED` from `updateProvider`, and nothing declares it. Declaring such a type is correct and trips `*-declares-unthrown-error`; suppress that one site by id with the reason written above it, as `standards/README.md` describes. Until that tier is covered, `registerOpenApiRoute` also keeps declaring a `404` on any route that takes a path parameter.
 
 ### Tags
 

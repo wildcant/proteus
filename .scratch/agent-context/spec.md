@@ -48,14 +48,14 @@ classification is the part that drives the work.
 | `api-folder-holds-only-four-file-kinds` | the `api-holds-only-four-file-kinds` dep-cruiser rule + `apps/backend/src/api/README.md`. The note itself says *"this is now enforced, so you do not have to remember it"* |
 | `backend-test-skill` | a pointer to `.claude/skills/backend-test/`, which is tracked and surfaced in the skill listing |
 | `stripe-sdk-is-faked-at-the-module-boundary` | **stale** — `tests/mocks/stripe.ts` is gone (now `mocks/vitest/stripe.mock.ts`, `mocks/stripe-factories.ts`, `mocks/msw/handlers/`). Superseded by `f1e42f35` and the CLAUDE.md testing section |
-| `exemptions-are-named-and-expire` | `ast-grep/README.md` + `--error=unused-suppression` in `verify.sh` |
+| `exemptions-are-named-and-expire` | `standards/README.md` + `--error=unused-suppression` in `verify.sh` |
 | `command-bar-is-hand-written` | nothing yet — but it belongs as a header comment in `packages/ui/src/components/ui/command-bar.tsx`, not as a memory. Promote in place, then delete |
 
 ### Tier 2 — real knowledge, nowhere in the repo; promote (17)
 
 | target | memories | note |
 |---|---|---|
-| `ast-grep/README.md` | `conventions-go-in-a-declarative-dsl` | see Ticket 3 — the rejected-tools list is the highest-value orphan in the whole directory |
+| `standards/README.md` | `conventions-go-in-a-declarative-dsl` | see Ticket 3 — the rejected-tools list is the highest-value orphan in the whole directory |
 | `scripts/verify.sh` header | `verify-is-the-only-check-aggregator`, `verify-gate-runs-api-tests-only` | both **stale**: "five suites" → nine; "the three `scripts/check-*.sh`" → one |
 | `docs/backend-test-infrastructure.md` | `backend-tests-share-one-database` | **stale**: cites `docs/research/test-suite-migration-and-parallelism.md`, which does not exist |
 | `docs/error-handling.md` | `error-codes-live-in-their-domain` | the doc says only *"Optional domain-specific code"* today |
@@ -144,7 +144,7 @@ Seventeen notes, targets in the table above. Three rules for the rewrite:
 Each promoted note is deleted from the memory directory as it lands, so the remaining count is the
 progress bar.
 
-## Ticket 3 — `ast-grep/README.md` gains a "Tools considered" section
+## Ticket 3 — `standards/README.md` gains a "Tools considered" section
 
 The single most expensive orphan. `conventions-go-in-a-declarative-dsl` records three tools evaluated
 and rejected **with the specific reason each failed**:
@@ -167,15 +167,15 @@ companion to the existing *"Reach for a script only after showing a rule cannot 
 Both are checkable, and `conventions-go-in-a-declarative-dsl` is the reason to check rather than
 document them.
 
-- **`workflow-steps-stay-serial`** → ast-grep rule under `ast-grep/rules/backend/workflows/`:
+- **`workflow-steps-stay-serial`** → ast-grep rule under `standards/rules/backend/workflows/`:
   flag `Promise.all` whose argument array contains a `ctx.step(...)` call. Pairs with the existing
   `workflow-util-is-not-pure` and `workflow-*-error` rules.
-- **`field-suffix-is-reserved`** → ast-grep rule under `ast-grep/rules/frontend/components/`:
+- **`field-suffix-is-reserved`** → ast-grep rule under `standards/rules/frontend/components/`:
   a component named `*Field` that is not registered in `fieldComponents` in
   `apps/store/src/lib/form-hook.ts`. If the cross-file lookup proves inexpressible, this becomes a
   doc in `__docs__/` instead — and Ticket 3's new section is where that gets recorded.
 
-Each rule ships with its `valid`/`invalid` test, per `ast-grep/README.md`.
+Each rule ships with its `valid`/`invalid` test, per `standards/README.md`.
 
 ## Ticket 5 — Widen ADR 0019, or write its successor
 
@@ -284,7 +284,7 @@ predicates only exist once drizzle has built the table, so this one imports the 
 genuine reason a rule DSL cannot express them, and it is exactly the bar Ticket 3's section asks for.
 
 **Deliverable:** a per-file verdict — *expressible as an ast-grep rule* / *genuinely runtime, and why*
-— with the runtime ones' reasons written into `ast-grep/README.md` beside the tools section, so the
+— with the runtime ones' reasons written into `standards/README.md` beside the tools section, so the
 next person does not re-litigate it. Convert the expressible ones; leave `run.ts` holding only what
 needs drizzle.
 
@@ -314,8 +314,8 @@ readlink CLAUDE.local.md      # -> AGENTS.local.md
 npm run verify
 
 # 5. The new rules bite (per assertions-must-be-able-to-fail, which is itself being promoted)
-#    Add a Promise.all around two ctx.step calls -> check:code-shape must fail
-#    Name a component *Field without registering it -> check:code-shape must fail
+#    Add a Promise.all around two ctx.step calls -> check:standards must fail
+#    Name a component *Field without registering it -> check:standards must fail
 ```
 
 Neither `AGENTS.local.md` nor `CLAUDE.local.md` may appear in `git status`.

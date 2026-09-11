@@ -73,7 +73,7 @@ alone, so the store defines its own contract and one adapter per provider behind
 - **The adapters** live at `apps/store/src/features/checkout/utils/payment/adapters/{provider}/`,
   resolved by `utils/payment/registry.ts` — the client-side twin of `PaymentProviderService`.
 
-`stripe-stays-in-its-adapter` in `apps/store/deps-analyzer/.dependency-cruiser.cjs` enforces it:
+`stripe-stays-in-its-adapter` in `apps/store/structure/.dependency-cruiser.cjs` enforces it:
 nothing outside the adapter directory may import from `@stripe/*`. A component or route that finds
 itself wanting `useStripe()` needs something added to the contract instead, which is the point.
 
