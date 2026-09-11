@@ -393,6 +393,21 @@ One finding feeds back into P2: Dependabot has **no handling for `overrides:` in
 `pnpm-workspace.yaml`**, so the two pins P2 adds are invisible to it and will go stale silently. That
 makes P2's `versions` gate the only thing that would notice — it ships with the overrides, not after.
 
+### P6 — the other direction: declared but unused
+
+P3 makes an *undeclared* import impossible. The inverse — a declaration nothing references — is
+invisible to every gate in the tree: it installs fine under the strict layout, `typecheck` sees
+nothing missing, dependency-cruiser never walks a manifest in that direction, Biome has no such rule,
+and `one-version.mts` only looks at packages resolved twice. pnpm has no command for it either.
+
+Measured on the post-migration tree: **ten unused declarations, zero false positives, 3.2 s**, via
+knip scoped to one issue type with a ten-line config. One of them, `@hono/node-server`, is an F1
+advisory on a package the repo does not use. Ticket 09.
+
+This is `docs/research/undeclared-dependencies.md` §11 coming due — it deferred knip with the trigger
+*"if undeclared binaries or unused declarations become a concern"* — and it closes one of the three
+entries in that document's §12.
+
 ---
 
 ## The tickets
@@ -409,6 +424,7 @@ Numbered in execution order.
 | `06-the-migration` | P3 | 01, 02; interleaved with 05 |
 | `07-the-prose` | P4 | 06 |
 | `08-alerts-ci-and-the-audit-command` | P5 | step 1 blocked by nothing — do it today |
+| `09-unused-dependencies` | P6 | 06 (its declarations change the report) |
 
 03 and 04 are independent of each other and of everything downstream, so they can run as two
 branches at once. 05 and 06 are one branch with two claims.

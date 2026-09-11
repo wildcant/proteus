@@ -1,4 +1,3 @@
-import { deleteProductById } from 'backend/test'
 import { expect, test } from '../setup/test-extend.js'
 import { imageFile } from '../setup/utils.js'
 
@@ -20,7 +19,7 @@ test('product CRUD journey', async ({ page, authenticate, navigate, factories, c
   await expect(page.getByText('Product created successfully')).toBeVisible({ timeout: 10000 })
   await page.waitForURL(/\/products\/prod_/, { timeout: 10000 })
   const createdProductId = page.url().split('/products/')[1]?.split('/')[0]
-  if (createdProductId) cleanup.add(() => deleteProductById(createdProductId))
+  if (createdProductId) cleanup.add(() => factories.destroy.product(createdProductId))
 
   // Detail — go back to list, click seeded product row, verify title + handle
   await page.locator('[data-slot="sidebar-menu-button"]', { hasText: 'Products' }).click()
@@ -129,7 +128,7 @@ test('edit media modal uploads, promotes a thumbnail and deletes', async ({
   await expect(images).toHaveCount(1, { timeout: 10000 })
 })
 
-test('product create form uploads staged media', async ({ page, authenticate, navigate, cleanup }) => {
+test('product create form uploads staged media', async ({ page, authenticate, navigate, factories, cleanup }) => {
   await authenticate({ as: 'admin' })
   await navigate({ to: '/products/create' })
 
@@ -152,7 +151,7 @@ test('product create form uploads staged media', async ({ page, authenticate, na
   await page.waitForURL(/\/products\/prod_/, { timeout: 10000 })
 
   const productId = page.url().split('/products/')[1]?.split('/')[0]
-  if (productId) cleanup.add(() => deleteProductById(productId))
+  if (productId) cleanup.add(() => factories.destroy.product(productId))
 
   const mediaSection = page.locator('[data-slot="card"]').filter({ has: page.getByText('Media', { exact: true }) })
   const images = mediaSection.getByRole('img', { name: `${title} media` })

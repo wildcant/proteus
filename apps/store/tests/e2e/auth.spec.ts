@@ -1,5 +1,4 @@
-import { BACKEND_TIMEOUT, pollDatabase } from '@proteus/testing'
-import { NotificationTemplates } from 'backend/test'
+import { BACKEND_TIMEOUT, NotificationTemplates, pollDatabase } from '@proteus/testing'
 import { expect, test } from '../setup/test-extend.js'
 
 // Signup and verification each span a backend round trip plus email dispatch, and the

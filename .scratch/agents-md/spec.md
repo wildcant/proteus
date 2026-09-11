@@ -280,7 +280,9 @@ than before it.
 ## Backend-as-library is removed
 
 **Not part of the phases above — a code change, surfaced by them, and the next task.** Landing it
-first removes three of the references P2 and P3 would otherwise carry forward.
+first removes three of the references P2 and P3 would otherwise carry forward. Ticket
+`issues/05-remove-backend-as-library.md`, where every line number below is re-verified against the
+current tree — two of them have already drifted.
 
 **What is deprecated:** the *frontend* backend-as-library path — the store calling route handlers
 directly from TanStack Start server functions instead of over HTTP. **Not** the shared test package's

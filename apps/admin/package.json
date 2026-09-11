@@ -62,7 +62,6 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "backend": "workspace:*",
     "dependency-cruiser": "catalog:",
     "orval": "catalog:",
     "typescript": "catalog:",

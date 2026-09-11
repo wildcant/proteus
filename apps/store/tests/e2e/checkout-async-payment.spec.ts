@@ -1,11 +1,20 @@
 import type { Page } from '@playwright/test'
-import { FAKE_GATEWAY, PaymentErrorCodes } from 'backend/test'
+import { PaymentErrorCodes } from '@proteus/testing'
 import type { FileRouteTypes } from '../../src/routeTree.gen'
 import { useFakeStripe } from '../mocks/fake-gateway.js'
 import { FAKE_CARDS } from '../mocks/fake-stripe-js.js'
 import { watchPaymentSessions } from '../setup/payment-sessions.js'
 import { expect, test } from '../setup/test-extend.js'
 import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
+
+/**
+ * The total the fake gateway reads as "hold this intent in `processing`", kept in step by hand with
+ * `FAKE_GATEWAY.settlingTotalCents` in `apps/backend/tests/mocks/stripe-factories.ts`. Held here
+ * rather than imported because the store declares no dependency on the backend. Drift fails this
+ * spec rather than passing it: a different figure authorizes normally, and the classification
+ * assertion below goes red.
+ */
+const SETTLING_TOTAL_CENTS = 4277
 
 /**
  * A payment the gateway has confirmed and not finished settling.
@@ -22,7 +31,7 @@ import { disposeCartAfterTest, fillShippingAddress } from '../setup/utils.js'
  *
  * Both halves of "still settling" are arranged by the cart's own total: the browser confirms with
  * a card the fake Stripe.js leaves in `processing`, and the server reads back a `processing`
- * intent because `FAKE_GATEWAY.settlingTotalCents` is what the cart came to. The gateway keeps no
+ * intent because `SETTLING_TOTAL_CENTS` is what the cart came to. The gateway keeps no
  * state either side of that, which is why the total has to carry the instruction.
  *
  * That statelessness is also why the second half of the story — the money arrives and the order
@@ -60,7 +69,7 @@ test.describe('Checkout — a payment that is still settling', () => {
     await fillCard(page, FAKE_CARDS.settlesLater)
 
     expect(await readTotal(page), 'the cart no longer totals the settling amount').toBe(
-      formatCents(FAKE_GATEWAY.settlingTotalCents),
+      formatCents(SETTLING_TOTAL_CENTS),
     )
     const cartId = await readCartId(page)
 

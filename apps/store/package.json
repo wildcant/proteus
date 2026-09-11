@@ -40,7 +40,6 @@
     "@tanstack/react-router-ssr-query": "^1.167.1",
     "@tanstack/react-start": "^1.168.50",
     "@tanstack/router-plugin": "catalog:",
-    "backend": "workspace:*",
     "class-variance-authority": "catalog:",
     "lucide-react": "catalog:",
     "react": "catalog:",

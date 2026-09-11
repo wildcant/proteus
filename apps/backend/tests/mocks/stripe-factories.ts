@@ -42,8 +42,9 @@ export const MOCK_PAYMENT_METHOD_ID = 'pm_test_mock'
  * card removed in another tab is gone because it was removed, and the ownership check answers its
  * 404 on its own.
  *
- * Exported through `backend/test` so the spec and the handler share one constant rather than two
- * magic numbers that have to be kept in step by hand.
+ * The store's async-payment e2e holds the same figure as `SETTLING_TOTAL_CENTS`, kept in step by
+ * hand: the store declares no dependency on the backend. Drift fails that spec rather than passing
+ * it, because a total this handler does not recognise authorizes normally.
  */
 export const FAKE_GATEWAY = {
   /** A total the gateway confirms and keeps settling: its intent reads back as `processing`. */
