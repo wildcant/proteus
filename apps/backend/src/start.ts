@@ -63,8 +63,10 @@ export async function start(options?: StartOptions): Promise<StartResult> {
 
   // ---- HTTP server ----
 
-  const server = await new Promise<Server>((resolve) => {
-    const onListening = () => resolve(httpServer)
+  const server = await new Promise<Server>((resolve, reject) => {
+    // Express 5 delivers a bind failure to this callback instead of throwing it, so a port
+    // collision resolves `start()` with a server that never listened unless we reject here.
+    const onListening = (error?: Error) => (error ? reject(error) : resolve(httpServer))
     const httpServer = host ? expressApp.listen(port, host, onListening) : expressApp.listen(port, onListening)
   })
 

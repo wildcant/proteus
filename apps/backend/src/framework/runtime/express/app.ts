@@ -60,6 +60,9 @@ export function createExpressApp({ routes, container, logger, corsOrigins }: Cre
       verify: (req, _res, buffer) => rawBodies.set(req as express.Request, new Uint8Array(buffer)),
     }),
   )
+  // Express 5 defaults its query parser to 'simple', which flattens `?id[$in][]=a` into the
+  // literal key `id[$in][]`. Every admin list endpoint documents nested operator params
+  // (`$eq`, `$in`, `$gte`), so this line is the only thing keeping them parsed.
   app.set('query parser', (str: string) => qs.parse(str))
 
   app.use((req, res, next) => {
