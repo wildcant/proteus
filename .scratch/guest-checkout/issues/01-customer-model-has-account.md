@@ -18,7 +18,7 @@
 - [ ] Registration flow (`createCustomerAccountWorkflow` or equivalent) passes `hasAccount: true` when creating a customer with an auth identity
 - [ ] Test factories updated for nullable names and `hasAccount` field
 - [ ] Customer migration deleted and regenerated via `drizzle-kit generate`
-- [ ] Orval clients regenerated (`npm run openapi:generate`) after entity schema changes
+- [ ] Orval clients regenerated (`pnpm run openapi:generate`) after entity schema changes
 - [ ] Test: create customer with `hasAccount: false` and only an email (no name) succeeds
 - [ ] Test: two customers with same email but different `hasAccount` values both persist
 - [ ] Test: two customers with same email and same `hasAccount` value fails (partial unique index violation)

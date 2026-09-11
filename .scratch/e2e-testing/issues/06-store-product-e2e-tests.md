@@ -10,4 +10,4 @@
   - Test: product list page — authenticate as customer, seed products via `createProduct()` with `await using`, navigate to `/products`, assert seeded product titles are visible
   - Test: product detail page — authenticate as customer, seed a product via `createProduct()`, navigate to `/products/$productId`, assert correct product title and details are displayed
 - [ ] All tests use the customer persona, faker-generated data, and `await using` for teardown
-- [ ] Verify: `npm run --workspace=store test:e2e` passes with both auth and product tests
+- [ ] Verify: `pnpm --filter store run test:e2e` passes with both auth and product tests

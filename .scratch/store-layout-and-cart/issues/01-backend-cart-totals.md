@@ -22,7 +22,7 @@ Totals computation is a presentation concern — it belongs in the API route han
 
 **Zod schema:** The `StoreCartTotals` schema fields must use `bigNumberToString` (not `z.string()`), so the API route can pass `BigNumber` objects and Zod transforms them to strings. Reference `StoreOrderTotals` in `packages/http-schemas/src/store/order/entities.ts` for the exact pattern — same shape, just with `cartTotal` instead of `orderTotal`.
 
-Add the `StoreCartTotals` schema to the cart entities in `http-schemas` and extend `StoreCartDetailResponse` to include it. After the schema change, regenerate everything with `npm run openapi:generate` (this dumps the OpenAPI spec AND regenerates both admin and store Orval clients in one command).
+Add the `StoreCartTotals` schema to the cart entities in `http-schemas` and extend `StoreCartDetailResponse` to include it. After the schema change, regenerate everything with `pnpm run openapi:generate` (this dumps the OpenAPI spec AND regenerates both admin and store Orval clients in one command).
 
 **Blocked by:** None — can start immediately.
 
@@ -36,4 +36,4 @@ Add the `StoreCartTotals` schema to the cart entities in `http-schemas` and exte
 - [ ] Cart detail API route computes `shippingTotal` from shipping methods (`amount` summed)
 - [ ] Cart detail API route computes `cartTotal` as `itemsTotal + shippingTotal`
 - [ ] Totals are zero-safe (empty cart returns `"0"` for all totals, not null or undefined)
-- [ ] Orval store client regenerated — generated types include `totals` on the cart detail response (run `npm run openapi:generate` which does both OpenAPI dump + Orval regen)
+- [ ] Orval store client regenerated — generated types include `totals` on the cart detail response (run `pnpm run openapi:generate` which does both OpenAPI dump + Orval regen)

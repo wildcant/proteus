@@ -173,7 +173,7 @@ Two consequences worth knowing before writing a workflow:
 > synchronous.
 
 `scripts/replay-purity.ts` parses every handler under `src/workflows/` and enforces it. It
-runs in `verify.sh`'s `standards` gate, or on its own with `npm run check:workflow-purity`. In the
+runs in `verify.sh`'s `standards` gate, or on its own with `pnpm run check:workflow-purity`. In the
 handler body, outside every `ctx.step` callback, these are rejected:
 
 | Rejected | Instead |
@@ -270,7 +270,7 @@ Every `advanceWorkflow` call carries every prior step's output, so request *k* s
 1..*k*-1 and the bytes over a run grow with the square of the step count. Temporal enforces a hard
 2 MiB per-message gRPC limit, so what matters is the **largest single request**, not the total.
 
-Measured, not modelled — `npm run --workspace=backend measure:workflow-payload -- 1 10 25 50 100`
+Measured, not modelled — `pnpm --filter backend run measure:workflow-payload 1 10 25 50 100`
 runs real `complete-cart` executions and reads the encoded bytes out of Temporal's history:
 
 | line items | largest request | total shipped | % of 2 MiB |
@@ -364,12 +364,12 @@ suite runs a second time with the engine pinned to Temporal, asserting exactly t
 
 ```bash
 docker compose -f apps/backend/docker-compose.yml up -d --wait   # Temporal
-npm run --workspace=backend test              # 70 files, engine pinned to simple
-npm run --workspace=backend test:temporal     # the same 70 files, pinned to temporal
+pnpm --filter backend run test              # 70 files, engine pinned to simple
+pnpm --filter backend run test:temporal     # the same 70 files, pinned to temporal
 ```
 
 Neither run includes `src/**/*.server.test.ts` — the three files that boot a Temporal server of their
-own. `npm run --workspace=backend test:temporal:server` runs those, and it is the file set that keeps
+own. `pnpm --filter backend run test:temporal:server` runs those, and it is the file set that keeps
 the two runs above identical to each other.
 
 Both report 820 passed / 3 skipped. Same files, same assertions, two engines — so a divergence
@@ -407,7 +407,7 @@ travel through `projectConfig.workflows.engine`. The Worker lives in the vitest 
 (`tests/setup/temporal-parity.ts`) because each vitest worker owns its own database, so a Worker
 started anywhere else would run steps against the wrong one.
 
-`test:temporal` is **not** in `verify.sh`'s default job list: it needs Docker, and `npm run verify`
+`test:temporal` is **not** in `verify.sh`'s default job list: it needs Docker, and `pnpm run verify`
 has to keep working for contributors who have not started Temporal.
 
 ### Seeing durability actually work
@@ -416,8 +416,8 @@ has to keep working for contributors who have not started Temporal.
 docker compose -f apps/backend/docker-compose.yml up -d --wait
 docker compose -f apps/backend/docker-compose.yml stop worker   # it owns the same queue
 docker compose -f apps/backend/docker-compose.test.yml up -d --wait
-npm run --workspace=backend db:migrate:test
-npm run --workspace=backend temporal:crash-resume
+pnpm --filter backend run db:migrate:test
+pnpm --filter backend run temporal:crash-resume
 ```
 
 Stopping the `worker` service is not optional here. It polls `proteus`, which is the queue this

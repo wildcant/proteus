@@ -1,3 +1,25 @@
+/*
+ * shadcn.gen.css beside this file was `@import "shadcn/tailwind.css"` until `shadcn eject` inlined
+ * it. It holds the keyframes and custom variants this package's components use — accordion-down,
+ * data-open, data-closed — so it lives here rather than in either app, and here is where
+ * components.json is. It is generated: biome.json excludes it, and nothing should hand-edit it.
+ *
+ * Why inline it: `shadcn` is a CLI, and depending on it for one stylesheet pulled 73 packages into
+ * both apps' graphs, including zod 3 and @dotenvx/dotenvx 1 against our own 4 and 2. Those were two
+ * of the three exceptions in scripts/checks/one-version.mts, and they are now none of them.
+ * Upgrading shadcn would not have helped: 4.21.0 pins the same two ranges as the 4.16.1 we ran.
+ *
+ * The cost is the CLI's own warning — that file no longer tracks shadcn, so a release which changes
+ * tailwind.css will not reach it. `pnpm --filter @proteus/ui run shadcn:re-eject` picks that up and
+ * re-pins `shadcn:add` to whatever it ejected from, so a scaffolded component cannot reference a
+ * variant the CSS does not define. Adding one is `pnpm --filter @proteus/ui run shadcn:add <name>`.
+ *
+ * Both apps' compiled CSS was byte-identical before and after the eject, verified by building them
+ * and diffing the output — the point was to change the dependency graph and nothing else. Do that
+ * again after a re-eject, because then it is a real upgrade and the diff is what matters.
+ */
+@import "./shadcn.gen.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

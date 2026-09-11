@@ -7,7 +7,7 @@ import { testAliases, testConfig, testSetupFiles } from './vitest.config.js'
  * Same files, same assertions, same database — the only difference is one extra setup file, which
  * sets the default `projectConfig.workflows.engine` to `temporal` before any container is built.
  * There is no `WORKFLOW_ENGINE` env var and no separate expectations file, deliberately: a
- * divergence between this run and `npm test` is an adapter bug, and it can only be that if both runs
+ * divergence between this run and `pnpm test` is an adapter bug, and it can only be that if both runs
  * are asserting the same things.
  *
  * Needs a Temporal server (`docker compose -f apps/backend/docker-compose.yml up -d --wait`), which

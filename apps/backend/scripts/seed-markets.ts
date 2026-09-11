@@ -2,7 +2,7 @@
  * Seed only the markets: regions, the ISO country table, the store, and each region's payment
  * providers.
  *
- * Usage: npx tsx scripts/seed-markets.ts
+ * Usage: pnpm --filter backend exec tsx scripts/seed-markets.ts
  *
  * The end-to-end database truncates every table between runs, and the storefront cannot render
  * without markets — its routable URL segments are the locale codes on sellable countries. This is

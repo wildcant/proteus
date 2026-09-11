@@ -15,10 +15,13 @@
     "./store": "./src/store/index.ts"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.5.0",
-    "zod": "^4.4.3"
+    "@asteasolutions/zod-to-openapi": "catalog:",
+    "bignumber.js": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "vitest": "^4.1.5"
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

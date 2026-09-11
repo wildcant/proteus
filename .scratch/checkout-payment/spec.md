@@ -544,7 +544,7 @@ No provider-level test seam is introduced. Adapter behaviour — status mapping,
 
 - `IPaymentProvider` and ADR 0010's opaque-data contract are load-bearing and stay. The client port mirrors them rather than inventing a second philosophy.
 - Repo conventions apply without exception: `camelCase` throughout (the Stripe SDK's `snake_case` parameters need the existing per-line Biome suppression), `type` over `interface`, no `any`, no non-null assertions, guard clauses over nesting, comments that say why.
-- The verification gate — `npm run verify` — must pass. Lint warnings fail there.
+- The verification gate — `pnpm run verify` — must pass. Lint warnings fail there.
 - Money is a major-unit decimal everywhere above the adapter. The smallest-unit boundary is inside the adapter and nowhere else.
 - Amounts are never accepted from the browser.
 - Tailwind v4 canonical classes; tokens from `@proteus/ui`, not literals.
@@ -579,7 +579,7 @@ No provider-level test seam is introduced. Adapter behaviour — status mapping,
 17. `publicConfig` carries only allowlisted, publishable values. Asserted per provider.
 18. The checkout imports no Stripe symbol outside `apps/store/src/features/checkout/payment/adapters/stripe/`. Enforced by a dependency-cruiser rule, so the abstraction cannot rot.
 19. `.scratch/checkout-payment/spec.md` exists and `.scratch/payment-stripe/` is gone.
-20. `npm run verify` passes and the Playwright specs pass.
+20. `pnpm run verify` passes and the Playwright specs pass.
 
 ## Further Notes
 

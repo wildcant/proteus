@@ -15,7 +15,7 @@
 
 - [ ] Create `packages/testing/package.json` with name `@proteus/testing`, type `module`, and devDependencies: `backend`, `@faker-js/faker`, `@playwright/test`, `@tanstack/react-router`, `drizzle-orm`, `playwright-persona`, `postgres`, `scrypt-kdf`
 - [ ] Add `packages/testing` to the root `package.json` workspaces (already covered by `packages/*` glob — verify it resolves)
-- [ ] Run `npm install` to link the new workspace
+- [ ] Run `pnpm install` to link the new workspace
 
 ## DB client
 

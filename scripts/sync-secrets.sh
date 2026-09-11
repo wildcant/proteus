@@ -22,6 +22,6 @@ SECRETS_JSON=$(dotenvx get -f "$ENV_FILE" --format json \
   | jq 'with_entries(select(.key | startswith("DOTENV_") | not))')
 
 echo "Setting $(echo "$SECRETS_JSON" | jq 'length') secrets..."
-echo "$SECRETS_JSON" | npx wrangler secret bulk --name "$WORKER_NAME"
+echo "$SECRETS_JSON" | wrangler secret bulk --name "$WORKER_NAME"
 
 echo "Done."

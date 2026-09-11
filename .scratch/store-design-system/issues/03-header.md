@@ -156,8 +156,8 @@ is what would ship here; the table is its own backend ticket and probably wants 
 `typeof localStorage !== 'undefined'`.
 
 **The e2e specs have never been run.** They were rewritten across this ticket — drawer selectors,
-URL assertions, the `header nav` → `header` rescope — and `npm run verify` does not cover them.
-Run `npx -w store playwright test` before this branch merges.
+URL assertions, the `header nav` → `header` rescope — and `pnpm run verify` does not cover them.
+Run `pnpm --filter store exec playwright test` before this branch merges.
 
 ## Decisions still open
 

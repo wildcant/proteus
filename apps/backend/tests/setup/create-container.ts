@@ -90,7 +90,7 @@ export async function createTestContainer(
  *
  * `RUNTIME` is `node` under vitest, so both derived defaults would be Temporal and every test that
  * ran a workflow or published an event would need a running server. Which values the run pins come
- * from `workflow-engine.ts` — `simple` for `npm test`, `temporal` for `npm run test:temporal` — and
+ * from `workflow-engine.ts` — `simple` for `pnpm test`, `temporal` for `pnpm test:temporal` — and
  * `event-bus-adapter.ts`, both through `projectConfig` and neither through the environment (D4).
  * This only supplies defaults; a test that names an engine or an adapter still gets the one it named.
  */

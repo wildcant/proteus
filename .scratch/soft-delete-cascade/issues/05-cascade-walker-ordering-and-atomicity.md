@@ -25,7 +25,7 @@ this ships on its own.
 - [ ] A conventions check rejects a soft-deletable child of a destroy-only table — the walker stops descending after a hard delete, so Postgres would remove it outright
 - [ ] Restoring a row whose unique slot was refilled produces a restore-aware error rather than a bare "already exists"
 - [ ] `docs/soft-delete-cascade.md` gains the vocabulary (owner, owned child, guard, guarded table, cascade closure, overlap), replaces its "Known issue" section with the resolution, updates the walk diagram to the three phases, and records the ~65k id ceiling from Postgres's bind-parameter limit
-- [ ] Full backend suite green; `npm run verify` green
+- [ ] Full backend suite green; `pnpm run verify` green
 
 ## Out of scope, and why
 

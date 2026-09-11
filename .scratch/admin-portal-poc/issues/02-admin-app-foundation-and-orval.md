@@ -36,4 +36,4 @@
 - [ ] Generated client functions exist at `src/api/generated/admin/products/`
 - [ ] `src/features/products/api/products.ts` exports `productQueryOptions(id)`, `productsListQueryOptions(params)`, `useProducts()`, `useProduct()`, `useCreateProduct()`, `useUpdateProduct()`, `useDeleteProduct()`
 - [ ] Mutation hooks auto-invalidate relevant query keys on success (lists after create/delete, detail + lists after update)
-- [ ] `npm run dev` starts the admin app and renders the root route without errors
+- [ ] `pnpm run dev` starts the admin app and renders the root route without errors

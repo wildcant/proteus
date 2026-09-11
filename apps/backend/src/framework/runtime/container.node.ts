@@ -54,7 +54,7 @@ export const container = await bootstrapContainer({
    * that needs it.
    *
    * This process is a publisher only. What runs the subscribers is
-   * `npm run --workspace=backend worker:events` — and an event published with nothing polling
+   * `pnpm --filter backend run worker:events` — and an event published with nothing polling
    * `proteus-events` waits on the queue rather than being lost, which is the point of the transport.
    */
   createEventBusAdapter: () => {

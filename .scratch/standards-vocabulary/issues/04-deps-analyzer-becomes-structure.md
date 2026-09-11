@@ -35,7 +35,7 @@ for it. 01 and 03 need not be finished, but in practice all three land first.
       surveyed and prototyped, and editing them would make them describe a repository that did not
       exist at the time
 - [ ] `.scratch/` is not touched
-- [ ] `npm run verify` green, `job_structure` included — and proved non-vacuous per app: add a
+- [ ] `pnpm run verify` green, `job_structure` included — and proved non-vacuous per app: add a
       forbidden import in each of backend, store and admin, confirm `check:deps` fails there and
       names the rule, then remove all three. Say in the PR description that you ran it
 - [ ] `git grep deps-analyzer` returns only the two research documents

@@ -31,7 +31,7 @@ const name = new URL(target).pathname.slice(1)
 await createIfMissing()
 
 // `db:migrate` sets MIGRATING, which is what points `env.DATABASE_URL` at DIRECT_DATABASE_URL.
-execSync('npm run db:migrate', {
+execSync('pnpm run db:migrate', {
   stdio: 'inherit',
   env: { ...process.env, DIRECT_DATABASE_URL: target },
 })
@@ -40,7 +40,7 @@ execSync('npm run db:migrate', {
 // the same order `globalSetup` re-seeds in. Both are idempotent, so a reused database pays only
 // for the checks.
 for (const seed of ['db:seed:providers:test', 'db:seed:markets:test']) {
-  execSync(`npm run ${seed}`, {
+  execSync(`pnpm run ${seed}`, {
     stdio: 'inherit',
     env: { ...process.env, POOLER_DATABASE_URL: target, DIRECT_DATABASE_URL: target },
   })

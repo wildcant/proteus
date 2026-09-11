@@ -1,9 +1,8 @@
 import { env } from '@env'
 import type { ActorType } from '@proteus/http-schemas/auth'
-import type { StringValue } from 'ms'
 import type { ConfigModule } from '../../config/types.js'
 import type { AuthIdentityDTO, IAuthModuleService, ProviderIdentityDTO } from '../../types/index.js'
-import { generateJwtToken } from './token.js'
+import { generateJwtToken, type JwtExpiresIn } from './token.js'
 import { validateVerification } from './validate-verification.js'
 
 type AuthIdentityWithProviders = AuthIdentityDTO & {
@@ -18,11 +17,11 @@ type GenerateTokenInput = {
 
 export type AuthJwtConfig = {
   secret: string
-  expiresIn: StringValue | number
+  expiresIn: JwtExpiresIn
 }
 
 export function getAuthJwtConfig(): AuthJwtConfig {
-  return { secret: env.JWT_SECRET, expiresIn: env.JWT_EXPIRES_IN as StringValue }
+  return { secret: env.JWT_SECRET, expiresIn: env.JWT_EXPIRES_IN as JwtExpiresIn }
 }
 
 /**

@@ -311,7 +311,7 @@ readlink CLAUDE.local.md      # -> AGENTS.local.md
 /memory                       # auto memory shows as off
 
 # 4. Nothing promoted points at a dead path
-npm run verify
+pnpm run verify
 
 # 5. The new rules bite (per assertions-must-be-able-to-fail, which is itself being promoted)
 #    Add a Promise.all around two ctx.step calls -> check:standards must fail

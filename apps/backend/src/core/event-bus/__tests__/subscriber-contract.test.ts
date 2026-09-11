@@ -8,7 +8,7 @@ import { defineSubscriber, type SubscriberArgs, type SubscriberConfig } from '..
 /**
  * The half of the contract that is a compile error rather than a failing assertion.
  *
- * Every `@ts-expect-error` below is an assertion enforced by `npm run typecheck`, not by this run:
+ * Every `@ts-expect-error` below is an assertion enforced by `pnpm typecheck`, not by this run:
  * the directive fails the build when the line it marks *stops* being an error, which is what turns
  * "a typo in an event name is a build failure" into something that can regress visibly. vitest sees
  * the same file with the types stripped, so the `test` blocks assert the runtime half.

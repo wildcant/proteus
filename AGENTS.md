@@ -6,62 +6,65 @@ Guidance for coding agents working in this repository. Personal, untracked prefe
 
 ```bash
 # Install
-npm install
-npm run setup                  # install + pull dotenvx keys + generate apps/backend/.env.workerd
+pnpm install
+pnpm run setup                 # install + pull dotenvx keys + generate apps/backend/.env.workerd
 
 # Dev — the whole stack is five processes plus Docker. In VS Code, run the `dev` task
 # (Cmd+Shift+B): it brings up Postgres + Temporal, then the API, both Workers, store and admin,
 # and opens the three URLs. `dev: workerd` is the same session on the workerd runtime.
 docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui
-npm run --workspace=backend dev            # API at :3000 (Swagger at /admin/docs/, /store/docs/)
-npm run --workspace=backend worker:dev     # Temporal Worker for src/workflows (watch mode)
-npm run --workspace=backend worker:events  # Temporal Worker for src/subscribers
-npm run --workspace=store dev              # Storefront at :3001
-npm run --workspace=admin dev              # Admin SPA at :3002
-                                           # Temporal UI at :8088
+pnpm --filter backend run dev           # API at :3000 (Swagger at /admin/docs/, /store/docs/)
+pnpm --filter backend run worker:dev    # Temporal Worker for src/workflows (watch mode)
+pnpm --filter backend run worker:events # Temporal Worker for src/subscribers
+pnpm --filter store run dev             # Storefront at :3001
+pnpm --filter admin run dev             # Admin SPA at :3002
+                                        # Temporal UI at :8088
 
 # Stop the compose-run Workers when running them locally. Both poll the same task queues, and
 # whichever is free claims the task — leaving both up makes edits appear to apply at random.
 
 # Database (Docker Postgres)
-npm run --workspace=backend db:start        # Start Postgres
-npm run --workspace=backend db:migrate:dev  # Run migrations (every module + link-modules)
-npm run --workspace=backend db:generate     # Generate migration after a schema change
-npm run --workspace=backend db:seed:dev     # Seed dev data
-npm run --workspace=backend db:test:up      # Test Postgres — needed by the backend + e2e suites
-npm run --workspace=backend stack:reset     # Wipe the volume and rebuild: proteus *and* Temporal's
-                                            # two databases, then migrate + seed. db:reset drops
-                                            # proteus only, so workflow history survives it
+pnpm --filter backend run db:start       # The whole compose stack, not just Postgres — it brings
+                                         # up Temporal and both Workers too
+pnpm --filter backend run db:migrate:dev # Run migrations (every module + link-modules)
+pnpm --filter backend run db:generate    # Generate migration after a schema change
+pnpm --filter backend run db:seed:dev    # Seed dev data
+pnpm --filter backend run db:test:up     # Test Postgres — needed by the backend + e2e suites
+pnpm --filter backend run stack:reset    # Wipe the volume and rebuild: proteus *and* Temporal's
+                                         # two databases, then migrate + seed. db:reset drops
+                                         # proteus only, so workflow history survives it
 
 # Testing
-npm run --workspace=backend test                          # Full backend suite (~96s)
-npm run --workspace=backend test:gate                     # The slice `verify` runs
-npx -w backend vitest run src/modules/product             # Single module
-npx -w backend dotenvx run -f ../../.env.test -- vitest run src/modules/product  # With env
-npm run --workspace=backend test:temporal                 # Needs a Temporal server up
-npm run --workspace=store test                            # Unit (node) + component (Chromium)
-npm run --workspace=store test:e2e                        # Playwright; :e2e:dev for the UI
-npm run --workspace=admin test:e2e
+pnpm --filter backend run test                            # Full backend suite (~96s)
+pnpm --filter backend run test:gate                       # The slice `verify` runs
+pnpm --filter backend exec vitest run src/modules/product # Single module — vitest.config loads .env.test
+pnpm --filter backend run test:temporal                   # Needs a Temporal server up
+pnpm --filter store run test                              # Unit (node) + component (Chromium)
+pnpm --filter store run test:e2e                          # Playwright; :e2e:dev for the UI
+pnpm --filter admin run test:e2e
 
 # Linting & type-checking
-npm run check                  # Biome lint + format (warnings do not fail)
-npm run typecheck              # backend, store, admin
-npm run check:standards        # ast-grep rules; :test runs the rules' own tests
+pnpm run check           # Biome lint + format (warnings do not fail)
+pnpm run typecheck       # root tooling scripts (tsconfig.json), then every workspace with a
+                         # typecheck script, via `pnpm -r` — so a new workspace needs no edit
+pnpm run check:standards # ast-grep rules; :test runs the rules' own tests
 
 # Verification gate — run after finishing any implementation task
-npm run verify                 # Formats, then ten gates in parallel: typecheck, lint
-                               # (warnings fail here), the code standards, the import structure
-                               # rules, generated-file currency, Spectral on both OpenAPI specs,
-                               # `test:gate`, the http-schemas bound tests, the store's unit +
-                               # component tests, and the utils tests. ~16s. Component tests need
-                               # `npx playwright install chromium`.
-npm run verify -- --ci         # CI mode: fails on unformatted files instead of rewriting them
-                               # (implied when the CI env var is set)
-npm run verify:full            # Every test, in parallel: the whole backend suite, the store's unit
-                               # and component tests, the http-schemas and utils package tests, and
-                               # both Playwright e2e suites. No static checks — that is verify.
-                               # Needs the test database up. Excludes the Temporal suites, which
-                               # need a server of their own.
+pnpm run verify      # Formats, then twelve gates in parallel: typecheck, lint
+                     # (warnings fail here), the code standards, the import structure
+                     # rules, one version per declared dependency, every declared
+                     # dependency referenced (knip), generated-file currency, Spectral on
+                     # both OpenAPI specs, `test:gate`, the http-schemas bound tests, the
+                     # store's unit + component tests, and the utils tests. ~60s.
+                     # Component tests need
+                     # `pnpm --filter store exec playwright install chromium`.
+pnpm run verify --ci # CI mode: fails on unformatted files instead of rewriting them
+                     # (implied when the CI env var is set)
+pnpm run verify:full # Every test, in parallel: the whole backend suite, the store's unit
+                     # and component tests, the http-schemas and utils package tests, and
+                     # both Playwright e2e suites. No static checks — that is verify.
+                     # Needs the test database up. Excludes the Temporal suites, which
+                     # need a server of their own.
 
 # scripts/verify.sh is the single definition of what "checked" means here. A new project-wide
 # check belongs in its JOBS list; nothing else aggregates them.
@@ -73,15 +76,15 @@ npm run verify:full            # Every test, in parallel: the whole backend suit
 
 # Code generation — all four outputs are committed. Only the two registries are checked for
 # drift, by `verify`'s `generated` gate; the Orval clients and routeTree.gen.ts are not.
-npm run openapi:generate                        # OpenAPI spec → Orval clients (admin + store)
-npm run --workspace=backend workflows:generate  # src/workflows → temporal/registry.gen.ts  (gated)
-npm run --workspace=backend subscribers:generate # src/subscribers → registry.gen.ts        (gated)
-npm run --workspace=admin generate-routes       # TanStack Router route tree
+pnpm run openapi:generate                      # OpenAPI spec → Orval clients (admin + store)
+pnpm --filter backend run workflows:generate   # src/workflows → temporal/registry.gen.ts  (gated)
+pnpm --filter backend run subscribers:generate # src/subscribers → registry.gen.ts        (gated)
+pnpm --filter admin run generate-routes        # TanStack Router route tree
 ```
 
 ## Project Structure
 
-Monorepo with npm workspaces:
+Monorepo with pnpm workspaces — the member list lives in `pnpm-workspace.yaml`:
 
 - `apps/backend` — API server (Ports & Adapters / Hexagonal Architecture)
 - `apps/admin` — Admin SPA (TanStack Router + React Query + React Table)
@@ -95,6 +98,21 @@ Monorepo with npm workspaces:
 
 Path aliases: backend `@core/*`, `@framework/*`, `@server/*`, `@workflows/*`, `@env`, `@tests/*`;
 both frontends `#/*` → `./src/*`.
+
+### Dependencies
+
+`node_modules` is not shared. A workspace resolves only what its own `package.json` declares, so an
+import it did not declare fails `typecheck` and a CLI its scripts invoke without declaring is
+`command not found` — on your machine, not on a deploy. Adding an import to a workspace means adding
+the package to that workspace's manifest.
+
+A package that two manifests name is written `"catalog:"` in both, and the version lives in the
+`catalog:` block of `pnpm-workspace.yaml`. `verify`'s `versions` gate reads the lockfile and fails
+when a declared package resolves to more than one version, and its `unused` gate runs knip and fails
+on a package a workspace declares and never references — `knip.jsonc` at the root is where an
+exception to that goes, with a comment saying why; `overrides:` in the same file is the fix
+for the case where the second copy comes from a third party's manifest rather than from ours.
+Siblings are declared `"workspace:*"`. See ADR-0025.
 
 ## Backend Architecture
 
@@ -261,7 +279,7 @@ editor's watcher — fails rather than corrupting the first.
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/` (0001–0024, indexed by `docs/architecture-decisions.md`).
+Architecture Decision Records in `docs/adr/` (0001–0025, indexed by `docs/architecture-decisions.md`).
 
 **Before writing or moving any document, read `standards/README.md` — "Where a document goes".** It
 carries the decision table and the tie-breakers, and it is the only copy: *how to build a kind of

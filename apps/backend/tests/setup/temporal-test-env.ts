@@ -50,7 +50,7 @@ export function installTemporalRuntime(): void {
 
 /**
  * Temporal loads `payloadConverterPath` with `require()`, and this repo ships TypeScript sources
- * with no build step — `npm run worker` and `npm run dev` both go through tsx, which handles that.
+ * with no build step — `pnpm worker` and `pnpm dev` both go through tsx, which handles that.
  * Vitest does not: it leaves node_modules on plain Node, where requiring a `.ts` file fails on the
  * first `.js` specifier that has no `.js` on disk.
  *

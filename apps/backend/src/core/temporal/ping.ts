@@ -4,7 +4,7 @@ import { pingWorkflow } from '../workflows/temporal/workflows.js'
 import { createTemporalClient } from './client.js'
 
 /**
- * Round-trip probe — `npm run --workspace=backend temporal:ping`.
+ * Round-trip probe — `pnpm --filter backend run temporal:ping`.
  *
  * Starts `pingWorkflow` on the shared task queue and waits for it, so a successful run proves the
  * whole path: client → frontend → task queue → Worker → activity → history. Needs a Worker running.

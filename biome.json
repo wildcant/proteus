@@ -10,6 +10,7 @@
     "includes": [
       "**",
       "!**/*.gen.ts",
+      "!**/*.gen.css",
       "!**/src/api/generated",
       "!apps/backend/openapi/openapi-*.json",
       "!apps/backend/structure/dependency-graph.svg",

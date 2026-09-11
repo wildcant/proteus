@@ -1,7 +1,7 @@
 ---
 name: e2e-test
 description: Write Playwright E2E tests following best practices. Use when creating, editing, or debugging E2E test files.
-allowed-tools: Read Grep Glob Bash(npx playwright *) mcp__playwright__*
+allowed-tools: Read Grep Glob Bash(pnpm --filter admin exec playwright *) Bash(pnpm --filter store exec playwright *) mcp__playwright__*
 ---
 
 ## Project-Specific Setup
@@ -44,11 +44,11 @@ Both share the `@proteus/testing` package (`packages/testing/`) for fixtures, fa
 
 ### Running tests
 ```bash
-npx -w admin playwright test                    # All admin tests
-npx -w admin playwright test products           # Single test file
-npx -w store playwright test                    # All store tests
-npx -w admin playwright test --ui               # UI mode for debugging
-npx -w admin playwright test --trace on         # Capture trace for debugging
+pnpm --filter admin exec playwright test                    # All admin tests
+pnpm --filter admin exec playwright test products           # Single test file
+pnpm --filter store exec playwright test                    # All store tests
+pnpm --filter admin exec playwright test --ui               # UI mode for debugging
+pnpm --filter admin exec playwright test --trace on         # Capture trace for debugging
 ```
 
 ## Instructions

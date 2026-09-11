@@ -619,7 +619,7 @@ Migrate 3 money columns from `integer()` to `bignum()`. Remove the existing migr
 
 ```bash
 rm -rf ./src/modules/cart/migrations/*
-npx drizzle-kit generate --name create_cart_tables --config ./src/modules/cart/database.config.ts
+pnpm exec drizzle-kit generate --name create_cart_tables --config ./src/modules/cart/database.config.ts
 ```
 
 ### Order module (new)
@@ -641,7 +641,7 @@ export default defineConfig({
 
 Generate the initial migration:
 ```bash
-npx drizzle-kit generate --name create_order_tables --config ./src/modules/order/database.config.ts
+pnpm exec drizzle-kit generate --name create_order_tables --config ./src/modules/order/database.config.ts
 ```
 
 ### Link modules (existing -- regenerate)
@@ -650,7 +650,7 @@ The link-modules migration config at `apps/backend/src/link-modules/database.con
 
 ```bash
 rm -rf ./src/link-modules/migrations/*
-npx drizzle-kit generate --name create_link_tables --config ./src/link-modules/database.config.ts
+pnpm exec drizzle-kit generate --name create_link_tables --config ./src/link-modules/database.config.ts
 ```
 
 After generating, verify the SQL includes all 6 tables: `cart_payment_collection`, `product_variant_inventory_item`, `product_variant_price_set`, `order_cart`, `order_payment_collection`, `order_fulfillment`.

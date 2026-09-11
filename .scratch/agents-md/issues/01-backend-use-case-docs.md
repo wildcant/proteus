@@ -227,7 +227,7 @@ to review.
       goes red, then restore: drop `...timestamps` from a model; declare a `throws` nothing raises;
       wrap two `ctx.step` calls in `Promise.all`; declare a helper function in a `route.ts`. Say in
       the PR that you ran them
-- [ ] `npm run verify` green
+- [ ] `pnpm run verify` green
 
 ---
 

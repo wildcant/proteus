@@ -125,7 +125,7 @@ Build a Product domain POC in `apps/admin` that proves every architectural build
 
 ### UI Components
 
-- All UI primitives from **shadcn/ui Base UI edition** (`npx shadcn@latest init` with Base UI adapter).
+- All UI primitives from **shadcn/ui Base UI edition** (`pnpm dlx shadcn@latest init` with Base UI adapter).
 - Components needed: Button, Input, Badge, Table, DropdownMenu (for ActionMenu), Drawer (for modals), Sidebar, Breadcrumb, Popover (for filter chips), Select, Skeleton.
 - `ActionMenu` component wraps shadcn DropdownMenu with discriminated union action type: `{ to: string }` (link) or `{ onClick }` (handler), plus `icon`, `label`, optional `disabled`.
 - `SectionRow` component: title/value grid for detail page sections.

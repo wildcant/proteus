@@ -7,7 +7,7 @@ import type { SubscriberDefinition } from './types.js'
  * Event name → the subscribers that asked for it.
  *
  * The list lives in `src/subscribers/registry.gen.ts` and is written by
- * `npm run --workspace=backend subscribers:generate`, which parses `src/subscribers/` for exported
+ * `pnpm --filter backend run subscribers:generate`, which parses `src/subscribers/` for exported
  * `config` objects. It is a committed file of real static imports, not a runtime directory scan, for
  * the three reasons the workflow registry has the same shape:
  *
@@ -20,7 +20,7 @@ import type { SubscriberDefinition } from './types.js'
  *   so the boundary rules that keep a subscriber free of queue vocabulary would have nothing to read.
  *
  * A generated artifact is also identical in every environment because it is in git, and
- * `npm run verify` fails when it drifts from the source tree rather than letting the difference
+ * `pnpm verify` fails when it drifts from the source tree rather than letting the difference
  * reach a deploy.
  */
 export type SubscriberRegistry = {

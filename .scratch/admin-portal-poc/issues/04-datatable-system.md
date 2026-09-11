@@ -16,7 +16,7 @@ The consumer API is `useDefineTable<T>(config)` + `<DataTable use={table} />`. O
 
 ## Prerequisites — UI components to add to `@proteus/ui`
 
-These components are needed by the DataTable but don't exist in `@proteus/ui` yet. Install via `npx shadcn@latest add <name>` into `packages/ui`, then export from `packages/ui/src/index.ts`.
+These components are needed by the DataTable but don't exist in `@proteus/ui` yet. Install via `pnpm dlx shadcn@latest add <name>` into `packages/ui`, then export from `packages/ui/src/index.ts`.
 
 - [ ] `DropdownMenu` — used by SortingMenu, FilterMenu, per-row action menu (kebab)
 - [ ] `Popover` — used by FilterPill to host filter content popovers

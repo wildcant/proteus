@@ -869,7 +869,7 @@ if (existingReasons.length === 0) {
 }
 
 // --- Notifications (feed channel, addressed to dev admin) ---
-// Pass --notifications flag to seed: npm run db:seed:dev -- --notifications
+// Pass --notifications flag to seed: pnpm --filter backend run db:seed:dev --notifications
 const seedNotifications = process.argv.includes('--notifications')
 if (seedNotifications && (await notificationService.listNotifications({ channel: 'feed' })).length === 0) {
   const now = Date.now()

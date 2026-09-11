@@ -22,7 +22,7 @@ something, but the two do not touch the same files.
 - [ ] The standards gate keeps all seven remaining checks — env usage, errors, datetime, schema,
       workflow purity, `check:standards`, `check:standards:test` — and keeps running every one even
       after a failure, so a single run still reports every violation at once
-- [ ] `AGENTS.md`'s `npm run verify` block says **ten** suites, not nine, and names the new gate.
+- [ ] `AGENTS.md`'s `pnpm run verify` block says **ten** suites, not nine, and names the new gate.
       The current text — "convention checks, dependency rules" — is updated to match the gate names
 - [ ] `AGENTS.md`'s code-generation comment is corrected. It currently reads "all three are
       committed, and `verify` fails when they have drifted" above **four** commands, and only
@@ -34,7 +34,7 @@ something, but the two do not touch the same files.
       break a rule (e.g. drop `...options` out of a mutation hook) → `standards` goes red;
       add a forbidden import → `structure` goes red; edit `src/subscribers/` without regenerating
       → `generated` goes red. Restore all three
-- [ ] `npm run verify` green, and its summary lists ten jobs
+- [ ] `pnpm run verify` green, and its summary lists ten jobs
 
 ## Notes
 

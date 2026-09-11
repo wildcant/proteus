@@ -13,4 +13,4 @@
 - [ ] Create `apps/backend/tests/mocks/server.ts` — `setupServer(...handlers)` and exports the server + `onUnhandledRequest`
 - [ ] Add conditional MSW initialization in the backend entry point: when `process.env.MOCKS === 'true'`, dynamically import `../tests/mocks/server.js` and call `server.listen({ onUnhandledRequest })`
 - [ ] Add `dev:test` script to backend `package.json`: `"dev:test": "MOCKS=true dotenvx run --env-file=../../.env.test -- tsx watch src/index.ts --port 3010"`
-- [ ] Verify: starting the backend with `npm run --workspace=backend dev:test` boots successfully, and any outbound fetch to `api.resend.com` is intercepted by MSW rather than hitting the real API
+- [ ] Verify: starting the backend with `pnpm --filter backend run dev:test` boots successfully, and any outbound fetch to `api.resend.com` is intercepted by MSW rather than hitting the real API

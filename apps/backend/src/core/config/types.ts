@@ -35,7 +35,7 @@ export type EventBusConfig = {
    * it because two Workers share one composition root and neither should inherit the other's choice.
    * The test container is the only caller pinning something a runtime would not derive — `inline`,
    * for the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and
-   * `npm test` must not need a running server.
+   * `pnpm test` must not need a running server.
    */
   adapter?: EventBusAdapterName
 }

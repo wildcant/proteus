@@ -28,8 +28,8 @@ import { seedCheckoutCart } from './checkout-cart.js'
  *
  *   docker compose -f apps/backend/docker-compose.yml up -d --wait
  *   docker compose -f apps/backend/docker-compose.test.yml up -d --wait
- *   npm run --workspace=backend db:migrate:test
- *   npm run --workspace=backend measure:workflow-payload -- 1 10 25 50 100
+ *   pnpm --filter backend run db:migrate:test
+ *   pnpm --filter backend run measure:workflow-payload 1 10 25 50 100
  *
  * Against `.env.test` with `NODE_ENV=test`, not the dev environment. Two reasons, and the second is
  * the important one: the rows this writes are throwaway checkouts that belong in a disposable

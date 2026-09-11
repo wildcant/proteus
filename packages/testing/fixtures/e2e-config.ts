@@ -45,8 +45,8 @@ export type E2eConfig = {
 
 export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }: E2eConfig) {
   // Set on the main process, and so inherited by the workers and web servers forked from it. This
-  // is what `withAppDatabase` reads, so putting it here rather than in the npm script means a bare
-  // `npx playwright test` cannot reach the wrong database.
+  // is what `withAppDatabase` reads, so putting it here rather than in the package.json script
+  // means a bare `pnpm exec playwright test` cannot reach the wrong database.
   //
   // Derived from POOLER_DATABASE_URL but never written back to it: the config is re-evaluated in
   // every worker, so a rewritten base would suffix itself once per process.
@@ -64,7 +64,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
    * This suite's own Temporal queue.
    *
    * A queue is shared across environments, not scoped by one: a Temporal server hands a task to
-   * whoever is polling, so a Worker started by `npm run worker:dev` on `.env.local` will happily
+   * whoever is polling, so a Worker started by `pnpm --filter backend run worker:dev` on `.env.local` will happily
    * execute this suite's checkout against the *dev* database. That is not hypothetical — it is
    * what a whole run of red store specs turned out to be. Naming the queue per suite is what makes
    * the two invisible to each other, and the Worker below is the only thing polling this one.
@@ -114,7 +114,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
         // override `.env.test` for this process without a second env file to keep in step.
         // `dev:test:e2e`, not `dev:test`: Playwright starts a web server before globalSetup, so the
         // suite's database has to be created and migrated by the server's own command.
-        command: 'npm run --workspace=backend dev:test:e2e',
+        command: 'pnpm --filter backend run dev:test:e2e',
         url: `http://localhost:${backendPort}/health`,
         reuseExistingServer: true,
         env: {
@@ -129,7 +129,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
         // Where the checkout workflow actually runs. `reuseExistingServer` is off: a Worker left
         // over from a previous run holds this suite's queue but was started against whatever
         // database that run used, which is the exact failure the queue name exists to prevent.
-        command: 'npm run --workspace=backend worker:test',
+        command: 'pnpm --filter backend run worker:test',
         url: `http://localhost:${workerHealthPort}`,
         reuseExistingServer: false,
         env: {
@@ -141,7 +141,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
         },
       },
       {
-        command: 'npm run dev:test',
+        command: 'pnpm run dev:test',
         url: `http://localhost:${appPort}`,
         reuseExistingServer: true,
         // Vite's own env loading picks prefixed variables up from the process, which is how this

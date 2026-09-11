@@ -8,8 +8,8 @@ test does, and which decisions were measured rather than guessed.
 Merged from three superseded docs: the `createApi` refactor plan, the workflow-tests-on-real-modules
 plan, and the migration-cost/parallelism research.
 
-**Current shape:** 55 files, 612 tests, ~40s wall clock. `npm run verify` runs `src/api` and pure
-unit tests only (~20s); the full suite is `npm run --workspace=backend test`.
+**Current shape:** 55 files, 612 tests, ~40s wall clock. `pnpm run verify` runs `src/api` and pure
+unit tests only (~20s); the full suite is `pnpm --filter backend run test`.
 
 ## The pieces
 
@@ -222,7 +222,7 @@ Assert on the state a compensation restored, never on the call that restored it.
 ## Re-measuring
 
 Probe files were throwaway: written to `apps/backend/src/__<name>.test.ts`, run with
-`npx dotenvx run -f ../../.env.test --quiet -- npx vitest run src/__<name>.test.ts`, deleted after.
+`pnpm --filter backend exec dotenvx run -f ../../.env.test --quiet -- vitest run src/__<name>.test.ts`, deleted after.
 Timings go through `process.stderr.write`, since the console spy swallows `console.info`.
 
 Check `pgrep -fl vitest` first and stop any editor watcher, or the numbers — and the run — will be

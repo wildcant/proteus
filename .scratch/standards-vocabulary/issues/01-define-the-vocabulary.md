@@ -36,7 +36,7 @@ is worth landing on its own so the renames can be read against it.
 - [ ] Nothing is added to `CONTEXT.md`. If the temptation arises, the reason not to is that
       `CONTEXT.md` is the e-commerce glossary and this is not domain language — say so in the new
       section in one clause so the question is not reopened
-- [ ] `npm run verify` green
+- [ ] `pnpm run verify` green
 
 ## Notes
 

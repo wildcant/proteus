@@ -16,7 +16,7 @@ services:
       retries: 10
 
   # A second way in to the same Postgres, for making the API behave like its database is not on
-  # localhost. The proxy passes traffic through untouched until `npm run dev:slow` adds a latency
+  # localhost. The proxy passes traffic through untouched until `pnpm --filter backend run dev:slow` adds a latency
   # toxic — toxiproxy's config file can declare proxies but not toxics, so that part is a curl.
   toxiproxy:
     image: ghcr.io/shopify/toxiproxy:2.12.0
@@ -42,8 +42,8 @@ services:
   # `temporal-postgresql` service dropped: schema setup runs to completion, then the server boots,
   # then the `default` namespace is registered.
   #
-  # `npm run db:reset` only drops `proteus`, so workflow history survives a database reset —
-  # `npm run stack:reset` is what wipes it, along with everything else in the volume.
+  # `pnpm --filter backend run db:reset` only drops `proteus`, so workflow history survives a database reset —
+  # `pnpm --filter backend run stack:reset` is what wipes it, along with everything else in the volume.
   temporal-schema:
     image: temporalio/admin-tools:1.31.2
     restart: on-failure:6
@@ -137,7 +137,7 @@ services:
       retries: 12
       start_period: 10s
 
-  # What makes `npm run dev` work with no extra setup. `RUNTIME` defaults to `node`, so
+  # What makes `pnpm --filter backend run dev` work with no extra setup. `RUNTIME` defaults to `node`, so
   # `engine-selection.ts` resolves the Temporal engine and every `createWorkflow(...).run()` becomes
   # a task on the `proteus` queue. Nothing polling that queue is not an error — `workflow.execute`
   # has no execution timeout, so the HTTP request simply never returns. This is what polls it.
@@ -167,9 +167,9 @@ services:
       DIRECT_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
       TEMPORAL_ADDRESS: temporal:7233
     volumes:
-      # The Worker resolves the same secrets the API does, and reads them the same way — `npm run
+      # The Worker resolves the same secrets the API does, and reads them the same way — `pnpm
       # setup` (specifically `pull-keys`) has to have produced `.env.keys`, exactly as it must for
-      # `npm run dev`.
+      # `pnpm --filter backend run dev`.
       - ../../.env.local:/app/.env.local:ro
       - ../../.env.keys:/app/.env.keys:ro
       # Source only. `node_modules` stays the image's, because `@temporalio/core-bridge` is a native
@@ -182,7 +182,7 @@ services:
     healthcheck:
       # Asks Temporal whether the queue has a poller, rather than whether a process exists — a
       # Worker that booted and failed to connect is exactly the case the second one misses.
-      test: ['CMD', 'npm', 'run', '--workspace=backend', '--silent', 'temporal:worker-ready']
+      test: ['CMD', 'pnpm', '--silent', '--filter', 'backend', 'run', 'temporal:worker-ready']
       interval: 5s
       timeout: 20s
       retries: 12
@@ -206,7 +206,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/backend/Dockerfile.worker
-    command: ['npm', 'run', '--workspace=backend', 'worker:events']
+    command: ['pnpm', '--filter', 'backend', 'run', 'worker:events']
     depends_on:
       postgres:
         condition: service_healthy

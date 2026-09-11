@@ -139,7 +139,7 @@ On signout, `useLogout` must clear the cart ID from localStorage (call `clearCar
 - `UpdateCart`: add `firstName: z.string().optional()`, `lastName: z.string().optional()`
 - Customer entity schemas (admin + store): add `hasAccount: z.boolean()`, make `firstName`/`lastName` nullable
 - Admin create customer schemas: keep `firstName`/`lastName` required (admins create registered customers)
-- After all schema changes, run `npm run openapi:generate` to regenerate Orval clients in both admin and store apps
+- After all schema changes, run `pnpm run openapi:generate` to regenerate Orval clients in both admin and store apps
 
 ## Testing Decisions
 

@@ -9,7 +9,7 @@ import { EVENTS_TASK_QUEUE } from './config.js'
 import { assertStandaloneActivitiesEnabled } from './preflight.js'
 
 /**
- * Events Worker entrypoint — `npm run --workspace=backend worker:events`.
+ * Events Worker entrypoint — `pnpm --filter backend run worker:events`.
  *
  * A second Worker process, not a second task queue on the first one. It polls `proteus-events` and
  * runs subscribers; the workflow Worker polls `proteus` and runs checkout steps. Splitting the

@@ -45,8 +45,8 @@
 ### 1.1 Install dependency
 
 ```
-npm install --workspace=backend bignumber.js
-npm install --workspace=http-schemas bignumber.js
+pnpm --filter backend add bignumber.js
+pnpm --filter @proteus/http-schemas add bignumber.js
 ```
 
 ### 1.2 Custom Drizzle column type

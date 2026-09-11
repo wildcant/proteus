@@ -240,7 +240,7 @@ the only region that scrolls.
   `variantTitle: z.string().optional()` and `variantOptionValues: z.string().optional()`. Both
   columns already exist on `cart_line_item` and both are already on `StoreCartLineItem`; the
   payload is the only thing dropping them. No migration.
-- **`npm run openapi:generate`** — regenerates `AddStoreCartLineItemBody` for the store and admin
+- **`pnpm run openapi:generate`** — regenerates `AddStoreCartLineItemBody` for the store and admin
   clients. Nothing else in the spec moves.
 
 `productHandle` is deliberately not added: the store's PDP route is `/products/$productId` and

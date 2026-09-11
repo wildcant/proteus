@@ -28,7 +28,7 @@ export const testSetupFiles = ['./tests/setup/setup-test-env.ts']
  * `TestWorkflowEnvironment.createTimeSkipping()` downloads a server binary on first run and
  * webpack-bundles the workflow sandbox — a minutes-long, network-dependent boot that the rest of
  * the suite needs nothing but Postgres for. They cover the adapter's wiring to the SDK, which
- * changes about as often as the SDK version does, so paying that on every `npm test` buys very
+ * changes about as often as the SDK version does, so paying that on every `pnpm test` buys very
  * little.
  *
  * It is a filename convention rather than a list so a new one lands in the right bucket by being

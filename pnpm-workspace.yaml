@@ -1,0 +1,164 @@
+packages:
+  - apps/backend
+  - apps/store
+  - apps/admin
+  - packages/*
+
+# ---------------------------------------------------------------------------
+# One version per package, part 1 of 2: the declarations.
+#
+# Every package that more than one manifest declares lives here, and every one of those
+# declarations is the string `catalog:`. That is the whole of what a catalog does — it is a
+# macro over the *specifier*, expanded before resolution, so it guarantees the ten manifests
+# ask the same question. It does NOT guarantee they get the same answer, and it cannot reach a
+# third party's manifest at all. `overrides:` below is for that.
+#
+# Every version here is `^` the version npm resolved before the migration, not the highest range
+# any manifest declared. The two differ, and picking the highest would have been a silent upgrade
+# on migration day: three manifests declared `@types/node: ^22`, one declared `^24`, and the apps
+# all ran 22.20.1. So the catalog records the status quo and nothing else. Bumping an entry is a
+# separate, reviewable change.
+#
+# `@biomejs/biome` is the one exact pin, because the root manifest already pinned it exactly —
+# a formatter that drifts by patch rewrites the tree, and `verify`'s lint gate runs this binary.
+# Collapsing it also ends a real split: apps/admin was on 2.4.5 while the gate ran 2.5.4.
+#
+# The six entries marked "was: latest" were the literal string `latest`. Two of them
+# (@tanstack/history, @tanstack/react-router, in packages/ui's peerDependencies) made
+# `pnpm install` fail outright:
+#   ERR_PNPM_INVALID_PEER_DEPENDENCY_SPECIFICATION … has an invalid value: 'latest'
+# `catalog:` is one of the values that field accepts, so this fixes those two and the other ten
+# in one mechanism rather than by hand-pinning the two that were fatal.
+# ---------------------------------------------------------------------------
+catalog:
+  "@asteasolutions/zod-to-openapi": ^8.5.0
+  "@biomejs/biome": 2.5.4
+  "@dotenvx/dotenvx": ^2.17.1
+  "@faker-js/faker": ^10.5.0
+  "@playwright/test": ^1.62.1
+  "@tailwindcss/vite": ^4.3.3
+  "@tanstack/devtools-vite": ^0.8.5 # was: latest
+  "@tanstack/form-core": ^1.33.2
+  "@tanstack/history": ^1.162.2 # was: latest
+  "@tanstack/react-devtools": ^0.10.12 # was: latest
+  "@tanstack/react-form": ^1.33.2
+  "@tanstack/react-query": ^5.101.4
+  "@tanstack/react-query-devtools": ^5.101.4
+  "@tanstack/react-router": ^1.170.33 # was: latest
+  "@tanstack/react-router-devtools": ^1.167.1 # was: latest (in apps/store)
+  "@tanstack/router-cli": ^1.167.19
+  "@tanstack/router-plugin": ^1.168.36 # was: latest (in apps/admin)
+  "@types/node": ^22.20.1
+  "@types/qs": ^6.15.1
+  "@types/react": ^19.2.17
+  "@types/react-dom": ^19.2.3
+  "@vitejs/plugin-react": ^6.0.3
+  bignumber.js: ^11.1.5
+  class-variance-authority: ^0.7.1
+  dependency-cruiser: ^18.1.0
+  drizzle-orm: ^0.45.2
+  lucide-react: ^0.545.0
+  orval: ^8.31.0
+  postgres: ^3.4.7
+  qs: ^6.16.0
+  react: ^19.2.8
+  react-dom: ^19.2.8
+  scrypt-kdf: ^4.0.0
+  tailwindcss: ^4.3.3
+  tw-animate-css: ^1.4.0
+  typescript: ^6.0.3
+  vite: ^8.1.4
+  vitest: ^4.1.11
+  wrangler: ^4.131.1
+  zod: ^4.4.3
+
+# ---------------------------------------------------------------------------
+# One version per package, part 2 of 2: the resolutions.
+#
+# An override rewrites the dependency spec in EVERY manifest in the graph, including packages we
+# do not own. It is the only mechanism that can, and it is the only thing that fixes the two
+# duplicates below — both of which are a third party's EXACT pin sitting against our own caret,
+# so there is no disagreement between our manifests for the catalog above to remove:
+#
+#   @tanstack/react-form@1.33.2 depends on "@tanstack/form-core": "1.33.2". We declare ^1.33.2,
+#   which resolves to 1.33.5. Two copies, and TypeScript treats the two copies' types as
+#   unrelated: 21 errors in apps/admin. @tanstack/react-router does the same to @tanstack/history,
+#   which is one TS2353 in packages/ui, visible only once the first is fixed.
+#
+# For a type-only library the symptom is a compile error. For anything holding module state — a
+# router, a context, React — the same split is a runtime failure. That is why this is gated.
+#
+# The values are literal exact versions rather than `catalog:`, for two measured reasons.
+# (1) A RANGE override does not re-resolve against an existing lockfile: the already-locked
+#     1.33.2 still satisfies ^1.33.2 and `pnpm update -r` does not dislodge it. `catalog:` here
+#     would expand to the caret above and be exactly that range.
+# (2) The version has to be the one the repo ran under npm, not the one the caret resolves to.
+#     The caret gives 1.33.5; npm's hoisted tree ran 1.33.2, because the exact pin won the hoist.
+#     Pinning to 1.33.5 would be a silent minor upgrade of a form library on migration day.
+#
+# Exactness is not enough on its own: an override added to an already-resolved tree is sticky
+# either way. After adding or changing one, delete `node_modules` and reinstall — NOT
+# `pnpm-lock.yaml`, which would discard the `pnpm import` and put the drift against npm back to
+# 180 packages.
+#
+# Dependabot cannot see this block at all — it rewrites an `overrides` field in a package.json,
+# but the only pnpm-workspace-aware parsing it has is for catalogs. So it will keep bumping the
+# declarations above and leave these two pins stale and silently in force.
+# `scripts/checks/one-version.mts` is the only thing that will notice.
+# ---------------------------------------------------------------------------
+overrides:
+  "@tanstack/form-core": 1.33.2
+  "@tanstack/history": 1.162.2
+
+# ---------------------------------------------------------------------------
+# Which pnpm. The root package.json pins `packageManager: pnpm@12.4.1`, and pnpm enforces that pin
+# itself — not only corepack. A pnpm binary of another major run in this repo re-execs 12.4.1, which
+# is worth knowing before concluding an upgrade has or has not happened.
+#
+# The migration landed on 10 and moved to 12 a day later, once 12 was measured on this tree rather
+# than assumed. What the measurement said:
+#
+#   - The lockfile survives intact. `lockfileVersion` stays '9.0', not one of the 1180 entries
+#     re-resolves, and the whole diff is pnpm 12 recording its own binary under
+#     `packageManagerDependencies`. So the migration's fidelity against npm is untouched, and
+#     scripts/checks/one-version.mts parses the file unchanged.
+#   - `minimumReleaseAge` is a new supply-chain policy, defaulting to 1440 minutes, and pnpm 12
+#     applies it to the *existing* lockfile on every install — and, through `verifyDepsBeforeRun`,
+#     on every `pnpm run` as well. Ten entries failed on upgrade day: wrangler, workerd and its
+#     five platform binaries, @cloudflare/vite-plugin, miniflare, electron-to-chromium. Every one
+#     of them had been published that same day, because ticket 05 pinned the Cloudflare line at its
+#     newest release. Nothing in the repo ran until they aged.
+#
+# The error calls that lockfile stale and suggests `pnpm clean --lockfile && pnpm install` — a full
+# re-resolution, which is exactly the silent 180-package upgrade the migration order existed to
+# avoid. `trustLockfile` below is the answer instead. It turns the policy off for entries already
+# in the lockfile and leaves it on for new resolutions, which is the split that matches this
+# repository: the lockfile is written by the only person who commits to it, while a package arriving
+# from the registry for the first time is the thing the cooldown is for.
+#
+# So `minimumReleaseAge` stays at its default and there is no exclusion list. What it now catches is
+# a hand-bump on publish day — a resolution, not a replay — and a bump that arrives as a Dependabot
+# pull request is already past the cutoff, since Dependabot applies a three-day cooldown of its own
+# (`docs/research/dependabot.md` §3.3). To take a package that is newer than the cutoff deliberately:
+#
+#     pnpm_config_minimum_release_age=0 pnpm add …
+#
+# Note the snake_case: pnpm 11 dropped `npm_config_*` for `pnpm_config_*`, and the camelCase
+# spelling of the same variable is read as a different setting and ignored in silence.
+trustLockfile: true
+
+# ---------------------------------------------------------------------------
+
+# Every package in the tree with a preinstall/install/postinstall script. pnpm blocks all of them by
+# default, and `strictDepBuilds` — on by default since 11 — makes an unapproved one fail the install
+# rather than warn. `@scarf/scarf` is denied explicitly rather than omitted: it is telemetry, and
+# under `allowBuilds` a `false` says so where an absence only leaves the install red.
+allowBuilds:
+  "@ast-grep/cli": true
+  "@swc/core": true
+  esbuild: true
+  msgpackr-extract: true
+  msw: true
+  protobufjs: true
+  workerd: true
+  "@scarf/scarf": false

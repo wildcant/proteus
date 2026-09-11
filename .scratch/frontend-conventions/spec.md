@@ -106,7 +106,7 @@ Ticket 2 now inherits noticeably more than it did — the subscriber guide alone
 
 - the monorepo layout (which workspace is what)
 - **the seven-folder feature vocabulary, phrased as a prohibition**
-- `npm run verify` as the gate
+- `pnpm run verify` as the gate
 - where ADRs, `docs/specs/` and `.scratch/` live
 - the global prohibitions: no `snake_case`, no `any`, no non-null assertions
 - the "a convention that can be checked is checked, and the check is a rule file rather than a
@@ -260,7 +260,7 @@ message's account of a `payment-row` override is not what the diff did — no su
 Ticket 1–3 are documentation and have no automated check beyond the gate staying green:
 
 ```bash
-npm run verify
+pnpm run verify
 ```
 
 For Ticket 4, if it survives Open decision 2 as a generator:
@@ -275,7 +275,7 @@ automate rather than run by hand, one case per anchored path:
 
 ```bash
 mkdir -p apps/admin/src/features/orders/scratch && echo 'export const x = 1' > apps/admin/src/features/orders/scratch/x.ts
-npm run --workspace=admin check:deps    # must fail: feature-folder-vocabulary
+pnpm --filter admin run check:deps    # must fail: feature-folder-vocabulary
 rm -rf apps/admin/src/features/orders/scratch
 ```
 

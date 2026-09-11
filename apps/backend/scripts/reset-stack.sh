@@ -2,7 +2,7 @@
 #
 # Take a dirty local stack back to a working seeded one, in one command.
 #
-#   npm run --workspace=backend stack:reset
+#   pnpm --filter backend run stack:reset
 #
 # `db:restart` is the smaller hammer and the usual one: it drops and recreates `proteus` only, so
 # workflow history survives. This is the bigger one — `down -v` destroys the volume, which takes the
@@ -28,12 +28,12 @@ echo "==> Starting Postgres on an empty volume"
 docker compose up -d --wait postgres
 
 echo "==> Migrating proteus"
-npm run db:migrate:dev
+pnpm run db:migrate:dev
 
 echo "==> Seeding proteus"
-npm run db:seed:dev
+pnpm run db:seed:dev
 
 echo "==> Starting the rest of the stack; temporal-schema rebuilds Temporal's databases from empty"
-npm run db:start
+pnpm run db:start
 
 echo "==> Stack reset. Temporal UI on http://localhost:8088, frontend on localhost:7233"

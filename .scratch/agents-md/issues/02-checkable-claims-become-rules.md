@@ -7,7 +7,7 @@ recorded verdict in `## What is deliberately not enforced`, naming what was trie
 **Blocked by:** 01. The documents have to exist before their `## Enforcement` tables can gain rows,
 and 01's per-claim verdict list is this ticket's input.
 
-**Status:** ready-for-agent
+**Status:** done — four rules landed, three candidates closed without one. See *Outcome* below.
 
 **Spec:** `.scratch/agents-md/spec.md`, P1 — the "a convention that can be checked is checked" half.
 
@@ -68,7 +68,7 @@ reason.
       must flag and the code it must not
 - [ ] Each rule's `note:` ends with the repo-relative path of the `__docs__` document that explains
       it — never an index — and that document's `## Enforcement` table gains the row
-- [ ] `npm run check:standards:test` passes, and the rule count it reports has gone up by the number
+- [ ] `pnpm run check:standards:test` passes, and the rule count it reports has gone up by the number
       of rules added
 - [ ] **Every new rule is proved able to fail.** For each: introduce the violation, confirm the
       `standards` gate goes red, restore. A rule that never matched its target prints exactly what a
@@ -81,7 +81,7 @@ reason.
 - [ ] Any candidate you evaluate and reject for a reason **not** in the table above is added to
       `standards/README.md` → "when a rule cannot express it", so the next person has to clear the
       same bar
-- [ ] `npm run verify` green
+- [ ] `pnpm run verify` green
 
 ---
 
@@ -105,3 +105,30 @@ directions and are deliberately two files.
 **Suppressions.** A considered exception is `// ast-grep-ignore: <id>` with the reason written above
 it, and `--error=unused-suppression` fails the build the day it outlives the code. A JSX match cannot
 carry one — not relevant to this ticket, every rule here is backend TypeScript.
+
+---
+
+## Outcome
+
+**Four rules landed** and each was mutation-tested red then restored: `route-list-without-as-const`,
+`route-method-without-output`, `route-returns-non-200-status`, `webhook-route-returns-shared-response`.
+All 37 rules in the repo now appear in exactly one `## Enforcement` table, and all 37 own a test.
+
+**Three candidates closed without a rule**, and the verdicts are recorded in `standards/README.md`
+rather than here, because that is where the question gets re-asked.
+
+| Candidate | Verdict |
+|---|---|
+| E — `SubscriberConfig` carries its event type argument | **Already enforced.** `TEvent` has no default, so omitting it is `TS2314` on the `typecheck` gate. Verified: *"Generic type 'SubscriberConfig' requires 1 type argument(s)"*. Pinned against regression by a `@ts-expect-error` in `src/core/event-bus/__tests__/subscriber-contract.test.ts`, which fails the build the day that line stops erroring |
+| F — a subscriber's `config` sets `name` | **Already enforced.** `name` is required, so omitting it is `TS2741` on the `typecheck` gate. Verified: *"Property 'name' is missing … but required in type `SubscriberConfig<'bus.probe'>`"* |
+| G — a `TODO` names its topic | **Not worth a rule.** A bare `TODO` is a note to a human, not a claim about what the code does; the cost of policing it exceeds what a parenthesised topic buys |
+
+`standards/rules/backend/subscribers/` therefore holds no rules on purpose, and
+`subscribers/__docs__/` says so. That is the "already enforced, somewhere that is not here" verdict
+doing its job — a rule under `standards/rules/` for either E or F would be a second place to keep in
+step with the type it duplicates.
+
+**One gap left open.** E is pinned by a `@ts-expect-error`; **F is not.** Nothing in
+`subscriber-contract.test.ts` covers a `config` written without `name`, so if the field were ever
+made optional or given a default, the typecheck gate would simply stop erroring and no test would
+notice. The fix is three lines in the file that already holds E's pin, following the same pattern.

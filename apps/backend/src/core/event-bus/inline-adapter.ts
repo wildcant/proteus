@@ -10,7 +10,7 @@ import type { EventBus } from './types.js'
  * A production adapter that happens to also be the test seam — not a mock, exactly as
  * `simple-adapter.ts` is to the Temporal workflow engine. Without it the derived default under
  * vitest would be Temporal and every test touching an emit would need a running server, which
- * `npm test` must not require. `__tests__/bus-pin.test.ts` is what stops a suite silently running on
+ * `pnpm test` must not require. `__tests__/bus-pin.test.ts` is what stops a suite silently running on
  * something else.
  *
  * ## Subscriber failures stop here

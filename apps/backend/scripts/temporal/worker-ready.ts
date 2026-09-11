@@ -7,7 +7,7 @@ import { env } from '../../src/env.js'
  * It asks Temporal the only question that matters — *is anything polling the `proteus` task queue?*
  * — rather than whether a process exists. Those differ in the case that actually bites: a Worker
  * that booted, failed to connect, and is retrying. `docker compose up -d --wait` returns when this
- * passes, so a workflow route served by `npm run dev` has somewhere to run by the time it does.
+ * passes, so a workflow route served by `pnpm dev` has somewhere to run by the time it does.
  *
  * `describeTaskQueue` defaults to the workflow queue, which is the one the driver's tasks land on;
  * a Worker polls it and the activity queue together, so one is enough to answer the question.

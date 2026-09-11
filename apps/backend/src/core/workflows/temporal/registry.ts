@@ -11,7 +11,7 @@ import { GENERATED_WORKFLOWS } from './registry.gen.js'
  * non-retryably rather than falling back to something, because "the deploy forgot a workflow" and
  * "the workflow legitimately does not exist" look identical from inside the Activity.
  *
- * The list itself lives in `registry.gen.ts` and is written by `npm run workflows:generate`, which
+ * The list itself lives in `registry.gen.ts` and is written by `pnpm workflows:generate`, which
  * parses `src/workflows/` for `createWorkflow` calls. It is still an import list, and still a
  * committed file — that is the point. Static imports are what put the closures in this process at
  * all, what gives `tsx --watch` a module graph to reload the Worker from, and what lets `tsc` and
@@ -20,7 +20,7 @@ import { GENERATED_WORKFLOWS } from './registry.gen.js'
  *
  * Still not a runtime scan of the directory, for the reason that has not changed: a directory can
  * resolve differently in another environment, and nothing would say so. A generated artifact is
- * identical everywhere because it is in git, and `npm run verify` fails when it drifts from the
+ * identical everywhere because it is in git, and `pnpm verify` fails when it drifts from the
  * source tree rather than letting the difference reach a deploy.
  *
  * The duplicate check below survives that move. It now catches a generator bug rather than a typo,

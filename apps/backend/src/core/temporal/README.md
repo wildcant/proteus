@@ -25,7 +25,7 @@ connection, because one subsystem's shutdown would take the other's client down 
 bundle path and the driver's workflow type are the workflow engine's alone and live in
 `src/core/workflows/temporal/config.ts`.
 
-`ping.ts` is the exception, and the only one: it is an operator script (`npm run temporal:ping`)
+`ping.ts` is the exception, and the only one: it is an operator script (`pnpm run temporal:ping`)
 that starts the workflow driver's own `pingWorkflow` on the workflow task queue, so it does reach
 into `src/core/workflows/temporal/`. It is exempted from the `check:structure` rule by name because
 nothing imports it — it is a process entrypoint, so the dependency ends there rather than dragging

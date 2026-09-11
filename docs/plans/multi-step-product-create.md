@@ -157,7 +157,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
 
 #### 1a. Install shadcn Textarea
 ```bash
-cd packages/ui && npx shadcn@latest add textarea
+pnpm --filter @proteus/ui run shadcn:add textarea
 ```
 Export from `packages/ui/src/index.ts`.
 
@@ -220,7 +220,7 @@ Update `apps/backend/src/api/admin/products/middlewares.ts` to reflect new schem
 
 #### 2c. Regenerate clients
 ```bash
-npm run openapi:generate
+pnpm run openapi:generate
 ```
 
 ### Phase 3: ProgressTabs Component

@@ -4,7 +4,7 @@ Source SVGs for `@proteus/icons`. Anything can live here — a brand mark, an ic
 lifted from an open set — as long as it meets the contract below. Subdirectories are organisational
 only and carry no meaning to the build.
 
-`npm run --workspace=@proteus/icons build:icons` walks this tree and writes one React component per
+`pnpm --filter @proteus/icons run build:icons` walks this tree and writes one React component per
 file into `packages/icons/icons/`, plus a barrel. That output is generated and committed; edit the
 SVG here and regenerate rather than touching it.
 

@@ -66,7 +66,7 @@ zod-to-openapi serialises the flag into the generated JSON Schema `pattern` as l
 `[a-zA-Z0-9]`, not `[a-z0-9]` with `i`.
 
 The leak is invisible until you look at the output, so after changing a schema run
-`npm run openapi:generate` and diff the generated `pattern` and type against what you meant. One
+`pnpm -w run openapi:generate` and diff the generated `pattern` and type against what you meant. One
 wrinkle when you do: the dump script writes expanded JSON arrays and Biome reformats them compact,
 so a regeneration shows thousands of churn lines until Biome has run over `apps/backend/openapi` —
 do that before reading the real diff.

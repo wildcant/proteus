@@ -25,9 +25,9 @@ import { seedCheckoutCart } from './checkout-cart.js'
  *   docker compose -f apps/backend/docker-compose.yml up -d --wait
  *   docker compose -f apps/backend/docker-compose.yml stop worker
  *   docker compose -f apps/backend/docker-compose.test.yml up -d --wait
- *   npm run --workspace=backend db:migrate:test
- *   npm run --workspace=backend temporal:crash-resume
- *   npm run --workspace=backend temporal:crash-resume -- --hard
+ *   pnpm --filter backend run db:migrate:test
+ *   pnpm --filter backend run temporal:crash-resume
+ *   pnpm --filter backend run temporal:crash-resume --hard
  *
  * The `stop worker` line is load-bearing. The dev stack's Worker polls `env.TEMPORAL_TASK_QUEUE`, the
  * same queue this script's own Workers use, so leaving it running means the step "lost" below is
@@ -132,15 +132,17 @@ type RunningWorker = {
 }
 
 /**
- * A real Worker in a real OS process, started the way `npm run worker` starts one.
+ * A real Worker in a real OS process, started the way `pnpm worker` starts one.
  *
  * In-process would be easier and would prove nothing: the claim is that the execution survives
  * losing the process, so the process has to be losable. It inherits this script's environment, which
  * dotenvx has already decrypted, so both Workers and this script agree on the database.
  */
 function startWorker(label: string): RunningWorker {
-  // `node --import tsx`, not the tsx binary: npm hoists `.bin` to the repo root, and the path to it
-  // is not something this script should have to know.
+  // `node --import tsx`, not the tsx binary: node resolves the loader as a module from `cwd`, which
+  // is the backend and is where tsx is declared. Under pnpm the binary lives in that workspace's own
+  // `.bin` rather than a hoisted root one, and the path to it is still not something this script
+  // should have to know.
   const child = spawn(process.execPath, ['--import', 'tsx', 'src/core/workflows/temporal/worker.ts'], {
     cwd: backend,
     env: process.env,

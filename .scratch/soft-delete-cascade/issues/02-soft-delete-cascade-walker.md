@@ -29,7 +29,7 @@ traverses indexed columns, but that is a performance concern, not a correctness 
 - [ ] Soft-deleting a fulfillment set cascades through service zones to geo zones — a two-hop chain that cascades to nothing today
 - [ ] The cart module gains its first service-level test file, covering cart cascade directly rather than through workflow and API tests
 - [ ] An ADR records the decision to derive the cascade rather than declare it per service, and the address-ownership decision that ticket 03 implements
-- [ ] Full backend suite green; `npm run verify` green
+- [ ] Full backend suite green; `pnpm run verify` green
 
 ## Notes
 

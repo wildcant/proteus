@@ -19,7 +19,7 @@ database cascade into a soft delete that cascades nowhere, orphaning children ac
 - [ ] **The account-holder operation is a hybrid** — it destroys at the provider *and* soft-deletes our local record. Both halves must survive; do not normalise it into a pure passthrough
 - [ ] **Carve-out B — password reset tokens keep `deleteX` and stay hard.** This is our own table, exempt for a different reason: it is a single-use bearer credential with no soft-delete column at all. A retained token hash *is* the threat model, and restoring a consumed credential has no legitimate meaning
 - [ ] No other table-backed deletion keeps the destructive verb
-- [ ] Full backend suite green; `npm run verify` green
+- [ ] Full backend suite green; `pnpm run verify` green
 
 ## Notes
 

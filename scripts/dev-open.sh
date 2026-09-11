@@ -29,7 +29,7 @@ fi
 readonly TARGETS
 
 # Vite is the slow one, and a cold TanStack Router route generation can push it past 20s on a first
-# run after `npm install`. Sixty one-second attempts is far more headroom than that needs and still
+# run after `pnpm install`. Sixty one-second attempts is far more headroom than that needs and still
 # bounded, so a genuinely dead server gives up rather than hanging the task forever.
 readonly ATTEMPTS="${DEV_OPEN_ATTEMPTS:-60}"
 

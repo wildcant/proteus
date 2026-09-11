@@ -25,7 +25,7 @@ for the soft path once the walker exists.
 - [ ] The store cart route returns each cart's shipping and billing address after the change, asserted in the existing cart API tests. The store order route has no test file today; if one is added for this, that is a second new seam beyond the cart module test in ticket 02
 - [ ] Order and cart migrations are regenerated in place under their existing tags. Cart's migration has **already** been regenerated to drop the three unused tables (credit lines and two tax-line tables) — only the live dev database still holds them, which a cold re-migrate resolves
 - [ ] The ADR from ticket 02 is accurate about what was built
-- [ ] Full backend suite green; `npm run verify` green
+- [ ] Full backend suite green; `pnpm run verify` green
 
 ## Notes — read before touching the pointer columns
 

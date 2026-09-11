@@ -58,10 +58,10 @@ it looks like it works. Which is why `TEvent` is declared with **no default**: o
 ### Regenerate the registry and commit it
 
 ```bash
-npm run --workspace=backend subscribers:generate
+pnpm --filter backend run subscribers:generate
 ```
 
-Nothing else wires a subscriber up, and `npm run verify` fails if you forget: `registry.gen.ts` is
+Nothing else wires a subscriber up, and `pnpm run verify` fails if you forget: `registry.gen.ts` is
 committed and the generator's `--check` runs in the `generated` gate. Static imports rather than a
 directory scan, for reasons that are
 [the registry's](../../../../../apps/backend/src/core/event-bus/readme.md#the-generated-registry).

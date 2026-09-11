@@ -182,9 +182,24 @@ owned by none.
 would be a second place to keep in step, and the rule's `note:` already names the document at the
 moment it is needed.
 
-5. **Collapse Code Style to what no linter catches.** Unchanged from the original plan: replace the
-   five Biome-enforced bullets with one line — *style is Biome's, `npm run check` fixes it; what
-   follows is what no linter enforces* — and keep the six that earn their place.
+5. ~~**Collapse Code Style to what no linter catches.**~~ **Considered and rejected — the bullets
+   stay.** The original argument was that they cost tokens every session and prevent nothing the
+   gate would not catch. The second half is wrong: the gate catches a violation *after* the work,
+   and the fix cycle — write, run `verify`, read the diagnostic, edit, re-run — costs more than the
+   ~1.2 KB the instruction costs. Prevention is the cheaper side of that trade.
+
+   It is cheaper still for the ones that are not auto-fixable. `noExplicitAny` is not `FIXABLE`:
+   clearing it means finding the right type, which is the expensive part. `useNamingConvention` is
+   `warn` in `biome.json`, so a local `pnpm run check` does not even fail on it — only the gate's
+   `--error-on-warnings` does. And the `type`-over-`interface` bullet covers ground the rule does
+   not: the override is `apps/admin/**` and `apps/store/**`, so on the backend it is convention only.
+
+   One bullet is genuinely free — the formatter settings (spaces, 120, single quotes, no semicolons,
+   trailing commas). `biome format --write` runs first in `verify` and rewrites the file before any
+   gate reads it, so writing semicolons costs nothing to get wrong. Not worth a diff on its own.
+
+   **Recorded so it is not re-litigated.** The F4 finding below stands as measurement — those bullets
+   *are* machine-enforced — but the conclusion drawn from it does not.
 
 6. **Migrate the backend half into `__docs__/`.** All 20 frontend rules already sit in a
    `## Enforcement` table; all 13 backend rules sit in none. This closes that gap.
@@ -259,6 +274,66 @@ P0 → P4's baseline → P1 → P2 → P3.
 P0 is free and independent. P4 before P1 because P1 is the only phase that can lose information. P3
 is additive and can land at any point, but it adds bytes, so it reads better after the subtraction
 than before it.
+
+---
+
+## Backend-as-library is removed
+
+**Not part of the phases above — a code change, surfaced by them, and the next task.** Landing it
+first removes three of the references P2 and P3 would otherwise carry forward. Ticket
+`issues/05-remove-backend-as-library.md`, where every line number below is re-verified against the
+current tree — two of them have already drifted.
+
+**What is deprecated:** the *frontend* backend-as-library path — the store calling route handlers
+directly from TanStack Start server functions instead of over HTTP. **Not** the shared test package's
+import of `backend`, which stays exactly as it is.
+
+### It has no live consumer
+
+Nothing imports `backend/api`. Verified by grep across `apps/` and `packages/`: zero hits for
+`apiCall`, `usersApi`, `customersApi`, `userByIdApi` or `customerByIdApi` outside the files that
+define them. `docs/specs/e2e-testing-infrastructure.md:142` already records the pattern as
+deprecated. Its four exports are all `/admin/...` routes, which a storefront would not have called
+anyway.
+
+### Delete
+
+| What | Note |
+|---|---|
+| `apps/backend/src/server/api-caller.ts` (94 ln) | the whole file — it has no test |
+| `apps/backend/src/api/index.ts` | the four `withMiddleware(...)` wrappers and `export { apiCall }` |
+| `"./api": "./src/api/index.ts"` in `apps/backend/package.json` | the export entry |
+| `AGENTS.md:149` | the `src/server/api-caller.ts` bullet under §Server & Routing |
+| `AGENTS.md:180` | *"The store additionally calls the backend as a library from server functions"* |
+| `docs/middleware-and-openapi.md:363` | the whole `## Backend-as-library` section |
+| `docs/middleware-overhaul-plan.md:312` | the `src/api/index.ts (backend-as-library)` line |
+| `standards/rules/backend/api/__docs__/routes.md:44` | *"`src/api/index.ts` is exempt as the backend-as-library composition root"* |
+
+**And the exemption it bought.** `api-holds-only-four-file-kinds` in
+`apps/backend/structure/.dependency-cruiser.cjs:255` carries `(?!index\.ts$)` in its path regex, and
+`:251` carries the sentence of its comment explaining why. Both go, which **tightens** the rule — `src/api/` becomes
+four kinds of file with no carve-out at all. Prove it: after removing the lookahead, add
+`src/api/index.ts` back and confirm the `structure` gate goes red, then delete it again.
+
+### Keep — this is the half that is easy to take too far
+
+| What | Why |
+|---|---|
+| `"backend": "*"` in `apps/store/package.json` and `packages/testing/package.json` | the `backend/test*` subpaths are live |
+| exports `./test`, `./test/database-url`, `./test/fake-gateway` | five live consumers: `packages/testing/db/client.ts`, `packages/testing/fixtures/{test-extend,global-setup,e2e-config}.ts`, `apps/store/tests/e2e/{auth,checkout-async-payment}.spec.ts`, `apps/admin/tests/e2e/products.spec.ts` |
+| `applyMiddleware` (`src/framework/http/apply-middleware.ts`) | `src/routes.ts:116` is the HTTP path's own use of it |
+| `dbProvider.withConnection` | used by the Hono app, the Cloudflare Queues adapter and both DB providers |
+| `src/framework/runtime/container.workerd.ts` | the workerd runtime still exists; only the library *entry* into it goes |
+
+### Two things to check while in there
+
+- **`.tasks/workerd-compatible-di.md` is `Status: ready-for-agent`, and its entire problem statement
+  is this pattern** — *"The backend-as-library pattern (used by TanStack Start on Cloudflare Workers)
+  fails at runtime…"*. Either it already landed (the tree has `workers-provider.ts` and a per-request
+  connection) or it is obsolete. Resolve it rather than leaving a ready task pointed at deleted code.
+- **`apps/admin` declares no dependency on `backend`**, yet `apps/admin/tests/e2e/products.spec.ts`
+  imports from `backend/test`. It resolves through workspace hoisting today. Adjacent, not in scope,
+  but worth a line somewhere.
 
 ---
 

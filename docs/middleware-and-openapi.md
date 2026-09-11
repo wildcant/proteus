@@ -278,12 +278,12 @@ Paths name resources, not actions — the method is the verb. `POST /auth/:actor
 ### Dumping the spec to a file
 
 ```bash
-npm run openapi:generate
+pnpm run openapi:generate
 ```
 
 This writes `apps/backend/openapi/openapi-admin.json` and `openapi-store.json` without a running server, then regenerates the Orval clients for admin and store. Both specs and both clients are committed — regenerate and commit them in the same change as any route, schema or tag edit.
 
-`openapi:dump:offline` runs through `dotenvx`, so it needs `.env.keys` at the repo root (`npm run pull-keys`).
+`openapi:dump:offline` runs through `dotenvx`, so it needs `.env.keys` at the repo root (`pnpm run pull-keys`).
 
 The dump is the only authority on how the spec files are formatted. Biome skips `apps/backend/openapi/openapi-*.json` for exactly that reason — a formatter and a generator disagreeing over the same file produces a whole-file diff on every regeneration, and the drift hook below would then fail for a reason that has nothing to do with drift. `--out-dir <dir>` writes the pair somewhere else; the hook uses it to dump into a temp directory.
 
@@ -292,10 +292,10 @@ The dump is the only authority on how the spec files are formatted. Biome skips 
 ## Linting the spec
 
 ```bash
-npm run --workspace=backend check:openapi
+pnpm --filter backend run check:openapi
 ```
 
-Spectral lints both committed specs against `apps/backend/openapi/ruleset.yaml` — the one hand-written file in that directory. It also runs inside `npm run verify` as the `openapi` suite.
+Spectral lints both committed specs against `apps/backend/openapi/ruleset.yaml` — the one hand-written file in that directory. It also runs inside `pnpm run verify` as the `openapi` suite.
 
 The ruleset extends `spectral:oas` and adds guards for the conventions this repo cares about: kebab-case paths with no verb in them, camelCase schema properties and `operationId`s, every property typed, every `…At` property serialised as a `date-time` string, and a documented security scheme with a `security` block on every operation plus a `401` on every authenticated one.
 
@@ -323,7 +323,7 @@ It runs only when the staged diff touches something that can change a spec:
 When it does run, it dumps both specs into a temp directory and diffs them against the staged versions. On a difference it fails the commit and prints the remedy:
 
 ```bash
-npm run openapi:generate
+pnpm run openapi:generate
 ```
 
 **The hook never writes into the working tree.** A hook that regenerated files mid-commit would stage changes the developer never wrote and never reviewed, so it only ever reads. It compares against the *index* rather than the working tree, so regenerating without staging the result still fails.
@@ -334,7 +334,7 @@ Installation carries no dependency — no husky, no lefthook. The root `prepare`
 "hooks:install": "git rev-parse --git-dir > /dev/null 2>&1 && git config core.hooksPath .githooks || true"
 ```
 
-`npm install` runs `prepare`, so a fresh clone is set up by `npm run setup` or by installing at all.
+`pnpm install` runs the root `prepare`, so a fresh clone is set up by `pnpm run setup` or by installing at all.
 
 Two limits, both accepted: `--no-verify` skips the hook, and it does not run in CI. It catches the mistake for developers rather than gating the branch. The hook also needs `.env.keys` to decrypt `.env.test` for the dump; without it the hook fails and says so.
 

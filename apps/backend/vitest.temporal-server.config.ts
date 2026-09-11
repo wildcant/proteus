@@ -5,7 +5,7 @@ import { TEMPORAL_SERVER_TESTS, testAliases, testConfig, testSetupFiles } from '
  * The tests that boot a Temporal server of their own — the adapter end to end, the nested-workflow
  * topology the production Worker deploys, and the ping smoke test.
  *
- * Split out of `npm test` because `TestWorkflowEnvironment.createTimeSkipping()` downloads a server
+ * Split out of `pnpm test` because `TestWorkflowEnvironment.createTimeSkipping()` downloads a server
  * binary on first run and webpack-bundles the workflow sandbox, three times over. That is minutes
  * and a network dependency on a cold cache, paid by every full run, to cover the seam between this
  * adapter and the SDK — which moves when the SDK version does and not otherwise.

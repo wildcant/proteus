@@ -5,8 +5,8 @@ Welcome to your new TanStack Start app!
 To run this application:
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 # Building For Production
@@ -14,7 +14,7 @@ npm run dev
 To build this application for production:
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 ## Styling
@@ -36,9 +36,9 @@ This project uses [Biome](https://biomejs.dev/) for linting and formatting. The 
 
 
 ```bash
-npm run lint
-npm run format
-npm run check
+pnpm run lint
+pnpm run format
+pnpm run check
 ```
 
 
@@ -154,7 +154,7 @@ The loader ensures data is available before the route renders (no loading spinne
 API clients and types are generated from the backend's OpenAPI specs:
 
 ```bash
-npm run openapi:generate
+pnpm -w run openapi:generate
 ```
 
 This produces typed hooks and request/response types in `src/api/generated/`.

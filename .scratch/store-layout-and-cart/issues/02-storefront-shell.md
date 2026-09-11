@@ -9,7 +9,7 @@
 
 URL paths are unchanged — underscore-prefixed layout routes don't appear in URLs. `/login` stays `/login`, `/account` stays `/account`.
 
-**Important: route file migration.** When route files move under `_main/`, their `createFileRoute()` path strings must update (e.g., `createFileRoute('/login')` becomes `createFileRoute('/_main/login')`). Run the route tree generator after moving files — it auto-updates these strings. The root index (`routes/index.tsx`) becomes `routes/_main/index.tsx` with path `'/_main/'`. The products layout route and `_authed` guard also move and get new path prefixes. After all moves, run `npm run --workspace=store generate-routes` to regenerate `routeTree.gen.ts`.
+**Important: route file migration.** When route files move under `_main/`, their `createFileRoute()` path strings must update (e.g., `createFileRoute('/login')` becomes `createFileRoute('/_main/login')`). Run the route tree generator after moving files — it auto-updates these strings. The root index (`routes/index.tsx`) becomes `routes/_main/index.tsx` with path `'/_main/'`. The products layout route and `_authed` guard also move and get new path prefixes. After all moves, run `pnpm --filter store run generate-routes` to regenerate `routeTree.gen.ts`.
 
 **Nav component:** Sticky 3-column header (`sticky top-0 z-50`):
 - Left: hamburger button that opens the side menu
@@ -48,4 +48,4 @@ Links are placeholder (point to `/` or `#`). Copyright row below. Uses `page-wra
 - [ ] Footer shows 3-column placeholder links (Shop/Help/Company) and copyright
 - [ ] `_checkout` layout route exists with minimal header: "Back to cart" link + "Proteus" logo
 - [ ] `/checkout` renders the minimal header and a placeholder page — no nav hamburger, no footer
-- [ ] Route tree auto-generation still works (`npm run --workspace=store generate-routes` or equivalent)
+- [ ] Route tree auto-generation still works (`pnpm --filter store run generate-routes` or equivalent)

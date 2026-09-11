@@ -2,12 +2,12 @@
 
 The counterpart to the dependency rules in each app's `structure/.dependency-cruiser.cjs`.
 Those say which file may import which; these say what a file's *contents* must look like. Both are
-declarative — these run in the `standards` gate of `npm run verify`, those in `structure` — and
+declarative — these run in the `standards` gate of `pnpm run verify`, those in `structure` — and
 neither is a script.
 
 ```bash
-npm run check:standards        # scan the repo
-npm run check:standards:test   # run the rules' own tests
+pnpm run check:standards        # scan the repo
+pnpm run check:standards:test   # run the rules' own tests
 ```
 
 ## The words
@@ -57,7 +57,7 @@ A script is therefore a check that could not be written as a rule, and that is w
 demand for a recorded reason comes from: it is the distinction, not a separate policy. The reasons
 live in [when a rule cannot express it](#when-a-rule-cannot-express-it).
 
-### The four kinds a standard can be about
+### The six kinds a standard can be about
 
 | Kind | The claim | Where it lives | Gate |
 |---|---|---|---|
@@ -65,12 +65,18 @@ live in [when a rule cannot express it](#when-a-rule-cannot-express-it).
 | Structure | which file may import which | `packages/frontend-structure`, each app's `structure/.dependency-cruiser.cjs` | `structure` |
 | Schema | facts that exist only once drizzle has built the table | `apps/backend/scripts/checks/` | `standards` |
 | Currency | whether a committed generated file is stale | the two registry generators, run with `--check` | `generated` |
+| Resolution | what the lockfile resolved a declared package to | `scripts/checks/one-version.mts` | `versions` |
+| Usage | whether a declared package is referenced by the workspace that declares it | `knip.jsonc` | `unused` |
 
 Contents and schema share a gate because a failure in either means one thing to the reader: *the
 code does not meet a standard*. Currency has its own, because a failure there means something
 else — *a generated file was not regenerated*, which is a generator to re-run rather than code to
-fix. Which tool enforces what, including the two kinds
-this table leaves to Biome and Spectral, is [below](#which-standards-live-here-and-which-do-not).
+fix. Resolution has its own for the same reason: nothing in the source is wrong, a dependency
+resolved twice, and the fix is a line in `pnpm-workspace.yaml`. Usage is the last two's neighbour
+and still a third gate, because its fix is a line *removed* from a `package.json` and the question
+it asks is the inverse of resolution's — not what a declaration resolved to, but whether anything
+wanted it. Which tool enforces what, including the two kinds this table leaves to Biome and
+Spectral, is [below](#which-standards-live-here-and-which-do-not).
 
 ## Where a document goes
 
@@ -120,12 +126,15 @@ place to keep in step, and the rule's `note:` already names the document at the 
 |---|---|---|
 | What a file's contents must look like | `standards/rules/` | ast-grep — `check:standards` |
 | Which file may import which | each app's `structure/.dependency-cruiser.cjs` | dependency-cruiser — `check:structure` |
-| Formatting, naming, and the language rules | `biome.json` | Biome — `npm run check` |
+| Formatting, naming, and the language rules | `biome.json` | Biome — `pnpm run check` |
 | API design | `apps/backend/openapi/ruleset.yaml` | Spectral — `check:openapi` |
 | Facts that exist only once drizzle has built the table | `apps/backend/scripts/checks/` | `check:schema` — and see [when a rule cannot express it](#when-a-rule-cannot-express-it) |
+| One version of each declared dependency | `pnpm-workspace.yaml`'s `catalog:` and `overrides:` | `scripts/checks/one-version.mts` — and see [checks that read what no rule engine reads](#checks-that-read-what-no-rule-engine-reads) |
+| That every declared dependency is referenced | `knip.jsonc` | knip — and see [checks that read what no rule engine reads](#checks-that-read-what-no-rule-engine-reads) |
 
-The first and the last run in the `standards` gate of `npm run verify`; the import rules run in
-`structure`, Biome in `lint`, and Spectral in `openapi`.
+The first and the third-from-last run in the `standards` gate of `pnpm run verify`; the import rules
+run in `structure`, Biome in `lint`, Spectral in `openapi`, the version check in `versions`, and
+knip in `unused`.
 
 ## Where a rule goes
 
@@ -248,7 +257,7 @@ that it enforces:
 
 That table is the join between the two halves of this directory, and it is the thing to update first
 when a rule is added or renamed. Everything general about rules — that they run in the `standards`
-gate of `npm run verify`, that each owns a test in `rule-tests/`, how a suppression works — belongs
+gate of `pnpm run verify`, that each owns a test in `rule-tests/`, how a suppression works — belongs
 here in this README and not repeated per doc, which is how the two `features/api/` docs had drifted
 into two slightly different accounts of the same mechanics.
 
@@ -374,3 +383,73 @@ The verdict per check, so the question is not re-litigated:
 Two larger checks have not been through this question yet:
 `apps/backend/scripts/replay-purity.ts` (392 lines, parses the workflow handlers) and
 `apps/backend/scripts/check-generic-errors.sh`. Same question, separate pass.
+
+### Checks that read what no rule engine reads
+
+`scripts/checks/one-version.mts` asserts that a package a workspace declares is installed at one
+version. It is a script, and the reason is not that a rule would be awkward — it is that **no rule
+engine here reads a lockfile**. ast-grep, Biome and dependency-cruiser all work from source, and
+`.dependency-cruiser.cjs` has no vocabulary for "resolved version": its `to` clauses name modules and
+paths, never the version the module resolved to.
+
+The lockfile is also the only artefact that can answer the question. The break that produced this
+check was `@tanstack/form-core` installing at both 1.33.2 and 1.33.5, which made TypeScript treat the
+two copies' types as unrelated — 21 errors in `apps/admin`. The manifests were *not* wrong:
+`apps/admin` and `packages/ui` both declared `^1.33.2` and agreed. `@tanstack/react-form` pinned
+`form-core` exactly, and a third party's pin against our caret is what split it. Any check that
+compares manifests is blind to that by construction, which is what the next section measures.
+
+`knip.jsonc` asserts the inverse — that a package a workspace *declares* is referenced by that
+workspace — and it is the one check here that is a third-party tool rather than our own code. The
+reason is again not awkwardness. It is that **the claim needs a real module graph**, and all four of
+the things a hand-written check would get wrong are present in this tree: `@import "tailwindcss"` in
+a stylesheet is a reference, so `packages/ui` is flagged and the two apps are not; `src/providers/*`
+is registered by string and imported by nothing, so its files are only reachable once declared entry
+points; `drizzle-kit` is invoked inside a nested `sh -c` *and* imported by the `database.config.ts`
+files nothing else reaches; and a commented-out import must not count, which is the difference
+between parsing and grepping. Three of the ten findings its first run produced were exactly that
+last case. A check that got any of them wrong would be a gate that lies in the expensive
+direction — red on something real, so you delete a dependency the build needs.
+
+Its first run against this tree, zero-config across all four dependency issue types, reported 18
+findings in 6.6s, of which 7 were noise; scoped to `dependencies` and `catalog`, 10 findings in
+3.2s and no false positives, each checked against the source by hand. `catalog` is in scope for a
+reason `one-version.mts` cannot cover: that script iterates the packages manifests declare, so a
+catalog entry left behind after its last declaration goes has no declaration site and is never
+visited — and this gate is what creates them, since resolving its findings removes declarations.
+Everything else knip reports is deliberately out, including `files` (58 findings, a real backlog and
+a separate conversation) and `duplicates`, which is duplicate *exports* rather than duplicate
+versions and so reads like the `versions` gate's job without being it.
+
+`knip.jsonc` is `.jsonc` because it is where the judgment calls live: a package that is genuinely
+needed but unreferenced goes in `ignoreDependencies` **with a comment saying why**, the same
+discipline as `one-version.mts`'s `accepted` map, and for the same reason — an exception that cannot
+be added silently is one somebody revisits. There are none today.
+
+### Dependency-usage tools considered, and rejected
+
+| | Why not |
+|---|---|
+| **Biome `noUndeclaredDependencies`** | Answers the inverse question, and was rejected on measurement in `docs/research/undeclared-dependencies.md` §5: ~1,130 false positives from `tsconfig` `paths`, with no ignore list and no alias option. |
+| **A hand-written script, as for `versions`** | The four ways to be confidently wrong, above. `one-version.mts` is 40 lines with no dependency because its claim is a regex over a lockfile; this one is not that shape. |
+| **depcheck** | Archived 2025-06-16. Its maintainers recommend knip. |
+| **syncpack, manypkg** | Compare manifests to each other. Neither reads an import statement, so neither can tell used from unused — the same blindness that disqualified them for `versions`, from the other side. |
+| **knip `--fix`** | It edits `package.json`. Fine to run by hand; the **gate never fixes**, because *which* declaration to delete is the question the gate exists to surface — three of the first ten were a commented-out devtools panel, and the answer was to restore it, not to delete anything. |
+| **`--cache`** | Unnecessary at ~3s, and a cache is a second thing that can be stale. |
+| **knip's other issue types** | `unlisted`, `unresolved` and `binaries` restate what the strict pnpm layout plus `typecheck` already make impossible; `catalogReferences` sits behind an outright `pnpm install` failure, and a gate behind an install error is not a gate; `cycles` belongs to dependency-cruiser per ADR-0020. |
+
+### Version-alignment tools considered, and rejected
+
+Each was run against this tree before being rejected; the evidence is in
+`docs/research/monorepo-version-alignment.md`.
+
+| | Why not |
+|---|---|
+| **syncpack** | The best tool in this space, and what it does is compare `package.json` files. Reported **0 rows** for the three packages actually installed at two versions, while reporting 14 rows of `DependsOnInvalidLocalPackage` that are artefacts of every workspace being `private: true` with no `version`. Still worth revisiting as a one-time catalog *generator*, and as a catalog-freshness checker. Not as the gate. |
+| **manypkg** | Same blindness, plus a "most common range" target that proposed *downgrading* `apps/backend`'s vitest. Its `INVALID_DEV_AND_PEER_DEPENDENCY_RELATIONSHIP` check did surface one real finding — `packages/ui` declared six peerDependencies and installed none of them — which was worth acting on without adopting the tool. |
+| **`pnpm dedupe --check`** | A real gate for a *different*, weaker claim: that the lockfile is minimal. It needs the registry and takes seconds, so it cannot sit in a 16-second offline `verify`. CI, if anywhere. |
+| **`resolutionMode: lowest-direct`** | Would have collapsed `form-core` today by coincidence, at the cost of resolving every range in the repo to its floor forever. |
+| **`dedupePeerDependents`** | Already at its default `true`. Measured inert here — 122 duplicated names before and after. |
+| **`peerDependencyRules`** | Suppresses the warning and installs nothing differently. Rejected on principle: it makes the symptom of this exact bug invisible. |
+| **`resolutions`** | pnpm merges it into `overrides` anyway. Two spellings for one field is a trap, not a feature. |
+| **`strictPeerDependencies: true`** | **Deferred, not rejected.** It would turn a class of these into install failures, which is the right direction, but it needs a triage pass over the whole tree first and that is its own piece of work. |

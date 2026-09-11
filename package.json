@@ -1,32 +1,33 @@
 {
   "name": "ports-and-adapters-prototype",
   "private": true,
-  "workspaces": [
-    "apps/backend",
-    "apps/store",
-    "apps/admin",
-    "packages/*"
-  ],
+  "packageManager": "pnpm@12.4.1",
   "scripts": {
-    "setup": "npm install && npm run pull-keys && npm run gen:workerd-env",
+    "setup": "pnpm install && pnpm run pull-keys && pnpm run gen:workerd-env",
     "gen:workerd-env": "dotenvx get -f .env.local --format eval 2>/dev/null > apps/backend/.env.workerd",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "check": "biome check .",
-    "openapi:generate": "npm run --workspace=backend openapi:dump:offline && npm run --workspace=admin openapi:client && npm run --workspace=store openapi:client",
-    "typecheck": "npm run --workspace=backend typecheck && npm run --workspace=store typecheck && npm run --workspace=admin typecheck",
+    "openapi:generate": "pnpm --filter backend run openapi:dump:offline && pnpm --filter admin run openapi:client && pnpm --filter store run openapi:client",
+    "typecheck": "tsc --noEmit && pnpm -r run typecheck",
     "verify": "./scripts/verify.sh",
     "verify:full": "./scripts/verify-full.sh",
     "check:standards": "ast-grep scan --config sgconfig.yml --error=unused-suppression .",
     "check:standards:test": "ast-grep test --config sgconfig.yml",
+    "check:unused": "knip --no-progress",
     "sync-secrets:admin": "./scripts/sync-secrets.sh proteus-admin",
     "sync-secrets:backend": "./scripts/sync-secrets.sh proteus-backend",
     "sync-secrets:store": "./scripts/sync-secrets.sh proteus",
-    "pull-keys": "npx wrangler r2 object get dotenv-keys/.env.keys --file=.env.keys --remote"
+    "pull-keys": "wrangler r2 object get dotenv-keys/.env.keys --file=.env.keys --remote"
   },
   "devDependencies": {
     "@ast-grep/cli": "^0.45.3",
-    "@biomejs/biome": "2.5.4"
+    "@biomejs/biome": "catalog:",
+    "@dotenvx/dotenvx": "catalog:",
+    "@types/node": "catalog:",
+    "knip": "^6.35.1",
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
   }
 }

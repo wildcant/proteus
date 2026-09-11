@@ -1,0 +1,35 @@
+{
+  // The repo's own tooling scripts — the checks and generators that sit beside scripts/verify.sh
+  // rather than inside a workspace. Nothing else typechecked them before; a `.mts` file whose types
+  // no tsc reads is decoration, so this config is what makes them real, and `pnpm typecheck`
+  // runs it alongside the three apps.
+  //
+  // `erasableSyntaxOnly` is the load-bearing option. These scripts are run with plain `node`, which
+  // strips types rather than compiling them, so anything needing a real transform — an enum, a
+  // namespace, a parameter property — fails at runtime rather than here. This turns that into a
+  // compile error. `.mts` rather than `.ts` because the root package.json has no `"type": "module"`,
+  // and node reparses an ESM `.ts` in a CommonJS scope with a warning on every run.
+  "include": ["scripts/**/*.mts"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022"],
+    "types": ["node"],
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "noEmit": true,
+
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  }
+}
