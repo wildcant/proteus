@@ -1,13 +1,13 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   AdminCountryResponse,
   AdminUpdateCountryLocale,
   DeleteResponse,
   RegionCountryParams,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { params: RegionCountryParams, body: AdminUpdateCountryLocale }
 export const PostOutput = AdminCountryResponse

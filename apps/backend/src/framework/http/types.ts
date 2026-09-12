@@ -1,8 +1,8 @@
 import type { ErrorTypes } from '@core/errors/app-error.js'
-import type { HttpRequest, HttpResult, MiddlewareFunction } from '@server/ports.js'
+import type { HttpRequest, HttpResult, MiddlewareFunction } from '@framework/http/ports.js'
 import type { z } from 'zod'
 
-export type { MiddlewareFunction } from '@server/ports.js'
+export type { MiddlewareFunction } from '@framework/http/ports.js'
 
 export type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
 

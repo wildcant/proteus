@@ -1,5 +1,6 @@
 import type { ILinkService, IPricingModuleService, IProductModuleService } from '@core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   AdminProductVariantResponse,
   AdminUpdateProductVariant,
@@ -7,7 +8,6 @@ import {
   DeleteResponse,
   VariantIdParams,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { deleteProductVariantWorkflow } from '@workflows/product/delete-product-variant.js'
 import { updateProductVariantWorkflow } from '@workflows/product/update-product-variant.js'
 

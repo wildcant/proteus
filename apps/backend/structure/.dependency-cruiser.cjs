@@ -49,10 +49,7 @@ module.exports = {
         'always either a schema, which lives in packages/http-schemas and is already shared, or ' +
         'logic that belongs in a module service or in a workflow when it spans modules. ' +
         'This is no-module-internals one layer up: that rule names the composition roots allowed to ' +
-        'see inside modules/, this one names the single composition root allowed to see inside api/. ' +
-        'src/api/index.ts is the backend-as-library entry the store imports as `backend/api`, and it ' +
-        'is exempt as part of the layer — that import crosses a workspace boundary this cruise never ' +
-        'reaches, since depcruise is pointed at src/.',
+        'see inside modules/, this one names the single composition root allowed to see inside api/.',
       severity: 'error',
       from: {
         pathNot: '^src/api/|^src/routes\\.ts$',
@@ -62,27 +59,33 @@ module.exports = {
       },
     },
     {
-      name: 'below-the-request-layer-knows-no-http',
+      name: 'business-layers-do-not-import-the-runtime',
       comment:
-        'modules/, workflows/, subscribers/, link-modules/ and providers/ may not import src/server/ ' +
-        'or src/routes.ts. src/server/ports.ts is where HttpRequest and HttpResponse are defined, so ' +
-        'naming it below the API layer is business logic learning that it was reached over HTTP — ' +
-        'and it was not, necessarily: the same service and the same workflow run from a Temporal ' +
-        'Worker, a queue consumer and a scheduled job, where there is no request to take a shape ' +
-        'from. What a caller has to supply arrives as a DTO, which is why a module service can be ' +
-        'constructed in a test with no server at all. ' +
-        'src/framework/ is deliberately not a target here. It holds the HTTP runtimes *and* the ' +
-        'logger, so a workflow test reaching for noopLogger would fail a rule aimed at the runtimes ' +
-        'while being nothing of the sort; the HTTP-shaped half of framework/ is reachable only ' +
-        'through src/server/, which this rule does cover. ' +
-        'no-api-internals covers the third request-shaped path, src/api/ itself, and for a different ' +
+        'modules/, workflows/, subscribers/, link-modules/ and providers/ may not import ' +
+        'src/framework/ or src/routes.ts. This is the core/framework split stated as a rule: core/ ' +
+        'is what is *known* and framework/ is what *runs*, so a layer that holds business logic may ' +
+        'name the first and never the second. Concretely it stops that logic learning it was reached ' +
+        'over HTTP — HttpRequest and HttpResult live in framework/http/ports.ts — when the same ' +
+        'service and the same workflow also run from a Temporal Worker, a queue consumer and a ' +
+        'scheduled job, where there is no request to take a shape from. What a caller supplies ' +
+        'arrives as a DTO, which is why a module service can be constructed in a test with no ' +
+        'process at all. ' +
+        'The one thing these layers used to need from framework/ was noopLogger, a null-object ' +
+        'implementation of the core Logger port that had no business in the adapter layer; it now ' +
+        'lives at core/logger/noop-logger.ts, which is what lets this rule name all of framework/ ' +
+        'rather than carving out a subfolder. ' +
+        '__tests__/ is exempt: a test may build the runtime it is testing against — two workflow ' +
+        'tests construct the in-process engine from framework/workflows/simple-adapter.ts, which is ' +
+        'the engine doing its job, not a workflow reaching for it. ' +
+        'no-api-internals covers the other request-shaped path, src/api/ itself, and for a different ' +
         'reason — it is about who may see a route, not about who may know what a request is.',
       severity: 'error',
       from: {
         path: '^src/(modules|workflows|subscribers|link-modules|providers)/',
+        pathNot: '__tests__/',
       },
       to: {
-        path: '^src/server/|^src/routes\\.ts$',
+        path: '^src/framework/|^src/routes\\.ts$',
       },
     },
     {
@@ -152,48 +155,51 @@ module.exports = {
       },
       to: {
         path:
-          '@temporalio/|^src/core/temporal/|^src/core/workflows/temporal(-adapter\\.ts$|/)' +
-          '|^src/core/event-bus/temporal(-adapter\\.ts$|/)',
+          '@temporalio/|^src/framework/temporal/|^src/framework/workflows/temporal(-adapter\\.ts$|/)' +
+          '|^src/framework/event-bus/temporal(-adapter\\.ts$|/)',
         reachable: true,
       },
     },
     {
       name: 'shared-temporal-stays-shared',
       comment:
-        'src/core/temporal/ is the Temporal plumbing the workflow engine and the event bus both ' +
-        'build on: the client, the payload converter, the failure encoding. It may reach the core ' +
-        'primitives every layer shares — BigNumber, AppError, the DTO types, the workflow port ' +
-        "type — and nothing else in src/core/, least of all the workflow engine's own Temporal " +
-        'internals in src/core/workflows/temporal/. The dependency runs one way: the engine imports ' +
-        'the plumbing, never the reverse. Without this rule the split rots the first time someone ' +
-        '"shares" a workflow helper by moving it back into src/core/temporal/, and the shared ' +
-        'folder quietly becomes the workflow engine again. ' +
-        'It sits under src/core/ because it is infrastructure the layers above it share rather than ' +
-        'a layer of its own, and that is why the exemption list has to name the folder itself: every ' +
-        'import here is read against src/core/, so client.ts reaching config.ts next door is the ' +
-        'plumbing being plumbing, not a reach across a boundary. ' +
+        'src/framework/temporal/ is the Temporal plumbing the workflow engine and the event bus ' +
+        'both build on: the client, the payload converter, the failure encoding. It may reach core/ ' +
+        'freely — BigNumber, AppError, the DTO types, the workflow port type are all *known* things ' +
+        "— and nothing else in src/framework/, least of all the workflow engine's own Temporal " +
+        'internals in src/framework/workflows/temporal/. The dependency runs one way: the engine ' +
+        'imports the plumbing, never the reverse. Without this rule the split rots the first time ' +
+        'someone "shares" a workflow helper by moving it back into src/framework/temporal/, and the ' +
+        'shared folder quietly becomes the workflow engine again. ' +
+        'It sits under src/framework/ rather than src/core/ because connecting to a server is ' +
+        'something that *runs*. That is also what makes the rule simpler than it used to be: when ' +
+        'this folder lived in core/ the exemption list had to enumerate the core primitives it was ' +
+        'allowed to reach, because every import was read against its own layer. Now core/ is below ' +
+        'it and needs no exemption at all — only the framework siblings do. ' +
         'ping.ts is the one exemption: it is an operator script (`pnpm temporal:ping`) rather ' +
         "than plumbing — it starts the driver's own pingWorkflow on the workflow task queue, and " +
         'nothing imports it, so it takes nothing with it.',
       severity: 'error',
       from: {
-        path: '^src/core/temporal/',
-        pathNot: '^src/core/temporal/ping\\.ts$',
+        path: '^src/framework/temporal/',
+        pathNot: '^src/framework/temporal/ping\\.ts$',
       },
       to: {
-        path: '^src/core/',
-        pathNot: '^src/core/(temporal/|bignumber\\.ts$|errors/|types/|workflows/types\\.ts$)',
+        path: '^src/framework/',
+        pathNot: '^src/framework/temporal/',
       },
     },
     {
       name: 'event-bus-and-workflows-stay-peers',
       comment:
-        'src/core/event-bus/ and src/core/workflows/ are peers that must not import each other. ' +
+        'The event bus and the workflow engine are peers that must not import each other, on either ' +
+        'side of the core/framework line — core/ holds their ports, framework/ holds their engines, ' +
+        'and none of those four folders may reach the other feature. ' +
         'They share a vendor on node — the workflow engine runs workflow executions, the bus runs ' +
         'standalone activities — and that is exactly the coupling this forbids: a fix ' +
         "in the engine's replay code must be structurally incapable of changing event dispatch, " +
         'which it is only while dispatch never enters that file. What they genuinely share (the ' +
-        'client factory, the payload converter, the failure encoding) lives in src/core/temporal/, ' +
+        'client factory, the payload converter, the failure encoding) lives in src/framework/temporal/, ' +
         'which ' +
         'shared-temporal-stays-shared keeps from growing back into either of them. ' +
         'Direct imports, not reachability, and deliberately so: a subscriber that runs a workflow ' +
@@ -202,11 +208,11 @@ module.exports = {
         'thing the split exists to allow. The hazard is shared machinery, and machinery is imported.',
       severity: 'error',
       from: {
-        path: '^src/core/(event-bus|workflows)/',
+        path: '^src/(?:core|framework)/(event-bus|workflows)/',
       },
       to: {
-        path: '^src/core/(event-bus|workflows)/',
-        pathNot: '^src/core/$1/',
+        path: '^src/(?:core|framework)/(event-bus|workflows)/',
+        pathNot: '^src/(?:core|framework)/$1/',
       },
     },
     {
@@ -238,7 +244,7 @@ module.exports = {
       to: {
         path:
           '@temporalio/|cloudflare:' +
-          '|^src/core/event-bus/(cloudflare-queues-adapter\\.ts$|temporal(-adapter\\.ts$|/))',
+          '|^src/framework/event-bus/(cloudflare-queues-adapter\\.ts$|temporal(-adapter\\.ts$|/))',
       },
     },
     {
@@ -278,7 +284,7 @@ module.exports = {
       module: {
         path:
           '^src/' +
-          '(?!(?:api|core|framework|jobs|link-modules|modules|providers|server' +
+          '(?!(?:api|core|framework|jobs|link-modules|modules|providers' +
           '|subscribers|workflows)/)' +
           '(?!(?:config|container|env|index|index\\.workerd|routes|schema\\.gen|schema\\.type|start' +
           '|test-exports)\\.ts$)',
@@ -294,11 +300,10 @@ module.exports = {
         "MiddlewareFunction in middlewares.ts, wired through the definition's `middlewares: [...]` " +
         'array (src/api/store/customers/middlewares.ts is the reference). Logic that is not ' +
         'request-shaped belongs below the API layer: a module service, or a workflow when it spans ' +
-        'modules. src/api/index.ts is exempt — it is the backend-as-library composition root, not a ' +
-        'route.',
+        'modules.',
       severity: 'error',
       module: {
-        path: '^src/api/(?!index\\.ts$)(?!(?:.+/)?(?:route|definitions|middlewares)\\.ts$)(?!(?:.+/)?__tests__/)',
+        path: '^src/api/(?!(?:.+/)?(?:route|definitions|middlewares)\\.ts$)(?!(?:.+/)?__tests__/)',
       },
       to: { path: '(?!)' },
     },

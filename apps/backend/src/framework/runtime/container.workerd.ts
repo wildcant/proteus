@@ -4,8 +4,8 @@ import { env } from '@env'
 import { appConfigInput } from '../../config.js'
 import { bootstrapContainer } from '../../container.js'
 import { createWorkersDbProvider } from '../../core/db/workers-provider.js'
-import { createCloudflareQueuesEventBus, type QueuedEvent } from '../../core/event-bus/cloudflare-queues-adapter.js'
-import { subscriberRegistry } from '../../core/event-bus/registry.js'
+import { createCloudflareQueuesEventBus, type QueuedEvent } from '../event-bus/cloudflare-queues-adapter.js'
+import { subscriberRegistry } from '../event-bus/registry.js'
 import { ConsoleLogger } from '../logger/console-logger.js'
 
 const dbProvider = createWorkersDbProvider(env.DATABASE_URL)

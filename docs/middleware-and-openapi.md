@@ -317,7 +317,7 @@ The committed specs are generated, so a change to the routes or schemas they are
 It runs only when the staged diff touches something that can change a spec:
 
 - `apps/backend/src/api/**`
-- `apps/backend/src/core/openapi/**`
+- `apps/backend/src/framework/http/openapi/**`
 - `packages/http-schemas/**`
 
 When it does run, it dumps both specs into a temp directory and diffs them against the staged versions. On a difference it fails the commit and prints the remedy:
@@ -343,8 +343,8 @@ Two limits, both accepted: `--no-verify` skips the hook, and it does not run in 
 | File | Purpose |
 |------|---------|
 | `packages/http-schemas/src/openapi-setup.ts` | Calls `extendZodWithOpenApi(z)` — must be imported before any `.openapi()` usage |
-| `backend/src/core/openapi/registry.ts` | `createRegistry()`, `generateDocument()`, the `bearerAuth` scheme, the derived tag list and the per-document `documentInfo` (title + description) |
-| `backend/src/core/openapi/register-route.ts` | Converts a `RouteDefinition` to a `registry.registerPath()` call — path, operation `security` and the synthesised `200` / `400` / `401` / `404` responses |
+| `backend/src/framework/http/openapi/registry.ts` | `createRegistry()`, `generateDocument()`, the `bearerAuth` scheme, the derived tag list and the per-document `documentInfo` (title + description) |
+| `backend/src/framework/http/openapi/register-route.ts` | Converts a `RouteDefinition` to a `registry.registerPath()` call — path, operation `security` and the synthesised `200` / `400` / `401` / `404` responses |
 | `backend/scripts/openapi-dump.ts` | Writes both specs to `apps/backend/openapi/`, or to `--out-dir` |
 | `backend/openapi/ruleset.yaml` | The Spectral rules `check:openapi` enforces — hand-written, unlike the two JSON files beside it |
 | `.githooks/pre-commit` | Fails a commit that changes a spec's sources without regenerating the specs |
@@ -356,27 +356,6 @@ Schemas that call `.openapi('Name')` are registered in `components/schemas` and 
 ```
 components/schemas/Customer    ← from Customer.openapi('Customer')
 components/schemas/CreateCustomer  ← from CreateCustomer.openapi('CreateCustomer')
-```
-
----
-
-## Backend-as-library
-
-The middleware system only applies to the HTTP layer. When the store imports the backend container directly (via `createServerFn`), it bypasses the router entirely:
-
-- **HTTP path**: Request → middleware (validates) → handler → service
-- **Direct import path**: `createServerFn` → container → service
-
-The store can import the same Zod schemas from `core/http-schemas/` for its own validation in TanStack's `.validator()`:
-
-```typescript
-import { CreateCustomers } from 'backend/src/core/http-schemas/customer/payloads.js'
-
-export const createCustomers = createServerFn({ method: 'POST' })
-  .validator((data) => CreateCustomers.parse(data))
-  .handler(async ({ data }) => {
-    // ...
-  })
 ```
 
 ---

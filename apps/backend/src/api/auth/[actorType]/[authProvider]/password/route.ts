@@ -1,10 +1,10 @@
-import { validateScopeProviderAssociation } from '@core/auth/utils/validate-scope-provider-association.js'
-import { validateToken } from '@core/auth/utils/validate-token.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import { validateScopeProviderAssociation } from '@framework/http/middlewares/validate-scope-provider-association.js'
+import { validateToken } from '@framework/http/middlewares/validate-token.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AuthParams, UpdatePasswordBody, UpdatePasswordResponse } from '@proteus/http-schemas/auth'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { body: UpdatePasswordBody, params: AuthParams }
 export const PostMiddlewares = [validateScopeProviderAssociation(), validateToken()] as const

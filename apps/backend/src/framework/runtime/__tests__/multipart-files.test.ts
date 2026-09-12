@@ -1,4 +1,4 @@
-import type { PreparedRoute, RouteHandler } from '@server/ports.js'
+import type { PreparedRoute, RouteHandler } from '@framework/http/ports.js'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import request from 'supertest'

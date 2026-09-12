@@ -1,12 +1,12 @@
 import type { ICartModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   DeleteResponse,
   LineIdParams,
   StoreUpdateCartLineItemResponse,
   UpdateLineItem,
 } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { params: LineIdParams, body: UpdateLineItem }
 export const PostOutput = StoreUpdateCartLineItemResponse

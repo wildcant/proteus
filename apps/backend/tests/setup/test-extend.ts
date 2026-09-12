@@ -1,10 +1,10 @@
-import { defineAppConfig } from '@core/config/index.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { defineAppConfig } from '@framework/config/index.js'
 import { test as testBase } from 'vitest'
+import { noopLogger } from '../../src/core/logger/noop-logger.js'
 import type { Logger } from '../../src/core/types/logger.js'
-import { noopLogger } from '../../src/framework/logger/noop-logger.js'
+import type { HttpRequest } from '../../src/framework/http/ports.js'
 import type { Database } from '../../src/schema.type.js'
-import type { HttpRequest } from '../../src/server/ports.js'
 import {
   generateAuthIdentityDTO,
   generateConfirmAuthVerificationDTO,

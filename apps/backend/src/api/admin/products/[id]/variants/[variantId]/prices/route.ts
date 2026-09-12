@@ -1,11 +1,11 @@
 import type { IProductModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   AdminUpdateVariantPrices,
   AdminUpdateVariantPricesResponse,
   VariantIdParams,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { updateVariantPricesWorkflow } from '@workflows/product/update-variant-prices.js'
 
 export const PutInput = { params: VariantIdParams, body: AdminUpdateVariantPrices }

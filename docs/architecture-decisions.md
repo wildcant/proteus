@@ -33,6 +33,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0023](adr/0023-event-bus-is-one-port-over-three-adapters.md) | The event bus is one port over three adapters | Subscribers are written to the weakest adapter's guarantees |
 | [0024](adr/0024-grouped-events-are-replaced-by-final-step-ordering.md) | Final-step ordering replaces grouped events | No staging store; a workflow publishes from its last step |
 | [0025](adr/0025-the-package-manager-is-pnpm.md) | The package manager is pnpm | A workspace resolves only what it declares; the catalog and the `versions` gate keep one version of each |
+| [0026](adr/0026-core-is-known-framework-runs.md) | `core/` is what is known, `framework/` is what runs | If it would differ between node and workerd it runs; `framework/` imports `core/`, never the reverse |
 
 ---
 

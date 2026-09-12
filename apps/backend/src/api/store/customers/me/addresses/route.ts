@@ -1,12 +1,12 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ICustomerModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   StoreCreateAddress,
   StoreCustomerAddressListResponse,
   StoreCustomerAddressResponse,
 } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetOutput = StoreCustomerAddressListResponse
 export const GetThrows = [ErrorTypes.UNAUTHORIZED] as const

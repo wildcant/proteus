@@ -3,8 +3,8 @@ import type { IAuthModuleService } from '@core/types/index.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { Modules } from '@core/utils/index.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { VerificationRequestBody, VerificationRequestResponse } from '@proteus/http-schemas/auth'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { sendVerificationEmail } from '@workflows/auth/send-verification-email.js'
 
 export const PostInput = { body: VerificationRequestBody }

@@ -224,7 +224,7 @@ have: rules follow the code, so if yours are scattered, so is the thing you are 
 The backend half was migrated last, and `subscribers/` is what the transition looks like from the
 other end: it has no rules and four of the documents it would need, because a use case is a thing
 someone sets out to build whether or not anything checks it yet. Three of the four source guides had
-no mechanism left once their use cases were lifted out and were deleted; `src/core/event-bus/readme.md`
+no mechanism left once their use cases were lifted out and were deleted; `src/framework/event-bus/README.md`
 kept its half — the adapters, the two transports, what each guarantees — and the two documents beside
 `subscribers/` link into it rather than restating any of it.
 

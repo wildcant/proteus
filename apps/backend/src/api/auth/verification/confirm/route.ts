@@ -2,8 +2,8 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { VerificationConfirmBody, VerificationConfirmResponse } from '@proteus/http-schemas/auth'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { body: VerificationConfirmBody }
 export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const

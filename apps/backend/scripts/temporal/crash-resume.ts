@@ -3,12 +3,12 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { Client, Connection, type WorkflowHandle } from '@temporalio/client'
 import { ulid } from 'ulid'
-import { PAYLOAD_CONVERTER_PATH } from '../../src/core/temporal/config.js'
-import { payloadConverter } from '../../src/core/temporal/payload-converter.js'
-import { PROTEUS_WORKFLOW_TYPE } from '../../src/core/workflows/temporal/config.js'
-import type { AdvanceWorkflowResult, DriverInput } from '../../src/core/workflows/temporal/types.js'
 import { env } from '../../src/env.js'
 import { createWorkerContainer } from '../../src/framework/runtime/container.worker.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../src/framework/temporal/config.js'
+import { payloadConverter } from '../../src/framework/temporal/payload-converter.js'
+import { PROTEUS_WORKFLOW_TYPE } from '../../src/framework/workflows/temporal/config.js'
+import type { AdvanceWorkflowResult, DriverInput } from '../../src/framework/workflows/temporal/types.js'
 import { completeCartWorkflow } from '../../src/workflows/cart/complete-cart.js'
 import { seedCheckoutCart } from './checkout-cart.js'
 
@@ -143,7 +143,7 @@ function startWorker(label: string): RunningWorker {
   // is the backend and is where tsx is declared. Under pnpm the binary lives in that workspace's own
   // `.bin` rather than a hoisted root one, and the path to it is still not something this script
   // should have to know.
-  const child = spawn(process.execPath, ['--import', 'tsx', 'src/core/workflows/temporal/worker.ts'], {
+  const child = spawn(process.execPath, ['--import', 'tsx', 'src/framework/workflows/temporal/worker.ts'], {
     cwd: backend,
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],

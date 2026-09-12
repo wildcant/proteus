@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { PreparedRoute } from '@server/ports.js'
+import type { PreparedRoute } from '@framework/http/ports.js'
 import type { AwilixContainer } from 'awilix'
 import express from 'express'
 import qs from 'qs'

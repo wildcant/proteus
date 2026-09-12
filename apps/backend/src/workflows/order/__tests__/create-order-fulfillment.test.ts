@@ -1,7 +1,7 @@
 import type { OrderDTO } from '@core/types/order/common.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
-import { createSimpleWorkflowEngine } from '@core/workflows/simple-adapter.js'
 import { setWorkflowEngine } from '@core/workflows/types.js'
+import { createSimpleWorkflowEngine } from '@framework/workflows/simple-adapter.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { vi } from 'vitest'

@@ -5,8 +5,8 @@ import type { IPaymentModuleService } from '@core/types/index.js'
 import type { Logger } from '@core/types/logger.js'
 import type { PaymentActions } from '@core/types/payment/common.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { ProviderParams, WebhookReceivedResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 /**
  * What this route does with each action a provider can report. Total over `PaymentActions`, so

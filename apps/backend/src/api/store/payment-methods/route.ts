@@ -1,7 +1,7 @@
 import type { IPaymentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { StoreSavedMethodListResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { describeAccountHolder } from '@workflows/payment/utils/describe-account-holder.js'
 import { requireCustomer } from '../middlewares.js'
 

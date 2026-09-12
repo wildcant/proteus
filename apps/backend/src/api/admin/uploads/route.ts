@@ -1,5 +1,5 @@
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminUploadResponse } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { uploadFilesWorkflow } from '@workflows/file/upload-files.js'
 
 export const PostOutput = AdminUploadResponse

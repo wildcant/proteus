@@ -1,4 +1,4 @@
-import type { RouteHandler } from '@server/ports.js'
+import type { RouteHandler } from '@framework/http/ports.js'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import { formatZodIssues } from '../../core/errors/format-zod-issues.js'
 import { buildSearchFilter } from '../../core/utils/build-search-filter.js'

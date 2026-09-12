@@ -23,7 +23,7 @@ correct. It was considered and rejected for this scope.
 **The engine is derived from the runtime, not configured per deployment.**
 
 ```ts
-// src/core/workflows/engine-selection.ts
+// src/framework/workflows/engine-selection.ts
 runtime === 'workerd' ? 'simple' : 'temporal'
 ```
 
@@ -36,7 +36,7 @@ stay inline, and the test container pins one per suite so the default run needs 
 
 `check:structure` enforces the boundary structurally: `no-temporal-in-workerd` fails if
 `src/index.workerd.ts` can reach `@temporalio/*`, `src/temporal/` or
-`src/core/workflows/temporal/` at all, through any path.
+`src/framework/workflows/temporal/` at all, through any path.
 
 **The consequence is accepted and stated plainly: a Cloudflare deployment of this backend has no
 durable execution.** Its workflows run in-process. A `complete-cart` interrupted between
@@ -97,6 +97,6 @@ history along with everything else.
 ## References
 
 - ADR-0021 — the adapter, its replay design, and what it costs
-- `apps/backend/src/core/workflows/engine-selection.ts` — the derivation, with the reasoning inline
+- `apps/backend/src/framework/workflows/engine-selection.ts` — the derivation, with the reasoning inline
 - `apps/backend/structure/.dependency-cruiser.cjs` — `no-temporal-in-workerd`
 - `apps/backend/docker-compose.yml` — the local Temporal services

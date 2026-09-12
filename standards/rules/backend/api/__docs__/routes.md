@@ -41,13 +41,13 @@ that logic belongs instead.
 
 Enforced by `api-holds-only-four-file-kinds` in `structure/.dependency-cruiser.cjs`. Nested
 sub-resources are fine at any depth (`payment-collections/[id]/payment-sessions/route.ts`); only the
-filename is constrained. `src/api/index.ts` is exempt as the backend-as-library composition root.
+filename is constrained.
 
 ## Shape
 
 ```ts
 import { AdminCreateCustomers, AdminCreateCustomersResponse } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 
 export const PostInput = { body: AdminCreateCustomers }
 export const PostOutput = AdminCreateCustomersResponse

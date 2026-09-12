@@ -1,5 +1,6 @@
 import type { IFulfillmentModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   AdminShippingOptionResponse,
   AdminUpdateShippingOption,
@@ -7,7 +8,6 @@ import {
   DeleteResponse,
   IdParams,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminShippingOptionResponse

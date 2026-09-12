@@ -6,8 +6,8 @@ import type {
   IProductModuleService,
 } from '@core/types/index.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StorePricingContextParams, StoreProductResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
 import { buildVariantStock } from '@workflows/product/utils/build-variant-stock.js'

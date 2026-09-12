@@ -117,6 +117,34 @@ Siblings are declared `"workspace:*"`. See ADR-0025.
 
 ## Backend Architecture
 
+### `core/` and `framework/`
+
+**`core/` is what is *known*. `framework/` is what *runs*.** One test decides which:
+
+> If it would differ between node and workerd, or needs a process, a port, a request, a clock or a
+> connection to exist — **`framework/`**. If it would be identical inside a unit test with no process
+> at all — **`core/`**.
+
+The dependency runs one way: **`framework/` imports `core/`, never the reverse.** Below them,
+`modules/`, `workflows/`, `subscribers/`, `link-modules/` and `providers/` may import `core/` and
+must not name `framework/` at all — enforced by `business-layers-do-not-import-the-runtime`, with
+`__tests__/` exempt so a test may construct the engine it is testing. See ADR-0026.
+
+| `core/` — known | `framework/` — runs |
+| --- | --- |
+| `types/` the DTO and port vocabulary · `utils/` module and provider primitives · `errors/` · `db/` BaseRepository, columns, cascade graph · `bignumber.ts` · `logger/` the null object · `auth/` token and verification helpers | `bootstrap/` · `config/` the loader singleton · `http/` `ports.ts`, middleware, multipart, CORS, `openapi/` · `runtime/` the node, worker and workerd containers plus the hono and express adapters · `scheduler/` · `temporal/` client, payload converter, failure encoding |
+| `event-bus/` **the port**: `events.ts`, `types.ts` | `event-bus/` **the engines**: inline, Cloudflare Queues and Temporal adapters, the registry |
+| `workflows/` **the port**: `types.ts` | `workflows/` **the engines**: the in-process adapter, the Temporal adapter, the Worker |
+
+A port lives in `core/` so that a workflow, a subscriber or a module service names it without
+learning which runtime it is on; the adapter behind it lives in `framework/` because choosing one is
+exactly what differs between node and workerd. When a folder appears on both sides, that is the
+split doing its job, not duplication.
+
+Two edges point upward and are declared composition roots, the same shape as `src/routes.ts`
+reaching `src/api/`: `framework/workflows/temporal/registry.gen.ts` reaches `src/workflows/`, and
+`framework/event-bus/registry.ts` reaches `src/subscribers/`.
+
 ### Module System
 
 Each module at `apps/backend/src/modules/{name}/` follows one layout, and **the list is closed** —
@@ -166,9 +194,9 @@ Registration keys: `GET_DB`, `DB_PROVIDER`, `LOGGER`, `LINK`, `EVENT_BUS` (in `C
 
 ### Server & Routing
 
-- `src/server/app.ts` — Zero-dependency router: `fetch(Request) → Response`. File-based route discovery from `src/api/`.
-- `src/server/platforms.ts` — Platform adapters (Node via Hono, Express with Swagger, Workers).
-- `src/server/api-caller.ts` — Backend-as-library adapter for TanStack Start server functions (no HTTP round-trip).
+- `src/routes.ts` — The route table: every `definitions.ts` imported once, sorted, middleware applied, registered into the OpenAPI document.
+- `src/framework/http/ports.ts` — `HttpRequest`, `HttpResult`, `MiddlewareFunction`, `PreparedRoute`: the contract a handler is written against, independent of any runtime.
+- `src/framework/runtime/{hono,express}/app.ts` — Platform adapters, each with its own container (`container.{node,worker,workerd}.ts`).
 - Route files: `src/api/admin/{resource}/route.ts` export `GET`, `POST`, etc.; `definitions.ts` wires each handler to its schemas, auth and OpenAPI metadata.
 - Handlers declare the errors they raise with `throws` — see `docs/middleware-and-openapi.md`. Webhooks under `src/api/hooks/` are the carve-out: they verify by signature inside the handler, because a middleware runs before input validation and signature checks need the raw bytes.
 - Query parsing uses `qs` (supports nested operator params like `$eq`, `$in`, `$gte`).
@@ -199,8 +227,7 @@ side it is on — see ADR-0013.
 
 Both apps call the backend through typed clients Orval generates from its OpenAPI spec into
 `src/api/generated/` (tags-split mode), over a custom fetcher at `src/lib/fetcher.ts` that
-`qs.stringify()`s nested query params. The store additionally calls the backend as a library from
-server functions.
+`qs.stringify()`s nested query params.
 
 ### Admin DataTable System (`src/components/data-table/`)
 

@@ -2,10 +2,10 @@ import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'
 import type { RouteDefinition } from '@framework/http/types.js'
-import { registerOpenApiRoute } from './core/openapi/register-route.js'
 import type { Logger } from './core/types/logger.js'
+import { registerOpenApiRoute } from './framework/http/openapi/register-route.js'
+import type { PreparedRoute } from './framework/http/ports.js'
 import { RoutesSorter } from './framework/http/routes-sorter.js'
-import type { PreparedRoute } from './server/ports.js'
 
 // ---- Definition imports ----
 

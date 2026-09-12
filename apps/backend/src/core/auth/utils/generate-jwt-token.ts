@@ -1,6 +1,6 @@
 import { env } from '@env'
 import type { ActorType } from '@proteus/http-schemas/auth'
-import type { ConfigModule } from '../../config/types.js'
+import type { ConfigModule } from '../../types/config.js'
 import type { AuthIdentityDTO, IAuthModuleService, ProviderIdentityDTO } from '../../types/index.js'
 import { generateJwtToken, type JwtExpiresIn } from './token.js'
 import { validateVerification } from './validate-verification.js'

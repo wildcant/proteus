@@ -6,7 +6,7 @@ event that already exists is the common case and never touches `events.ts`.
 
 The transports underneath, their delivery guarantees and which runtime resolves which are mechanism,
 and live in
-[`src/core/event-bus/readme.md`](../../../../../apps/backend/src/core/event-bus/readme.md).
+[`src/framework/event-bus/README.md`](../../../../../apps/backend/src/framework/event-bus/README.md).
 
 ## Structure
 
@@ -44,7 +44,7 @@ compile time, so a typo is a build failure rather than an event nobody receives.
 `id` is load-bearing rather than conventional: the bus derives each delivery's identity from it, so a
 payload without one has nothing for dedup to key on. An event that can legitimately fire twice
 against the same resource declares an extractor in `EVENT_KEYS` instead —
-[dispatch identity](../../../../../apps/backend/src/core/event-bus/readme.md#dispatch-identity)
+[dispatch identity](../../../../../apps/backend/src/framework/event-bus/README.md#dispatch-identity)
 explains what that changes.
 
 ### Add an event because a subscriber wants it
@@ -76,7 +76,7 @@ payment is authorized, so a failure that propagated back into the workflow would
 refund a valid order over a mail outage. Losing an event is recoverable by replay; refunding a paid
 order in front of a shopper is not. What that costs — a lost delivery leaves a log line and nothing
 else — is the residual recorded in
-[`readme.md`](../../../../../apps/backend/src/core/event-bus/readme.md#publishing-resolves-on-acceptance-not-on-completion)
+[`README.md`](../../../../../apps/backend/src/framework/event-bus/README.md#publishing-resolves-on-acceptance-not-on-completion)
 and in ADR-0023.
 
 ## Enforcement

@@ -1,8 +1,8 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ICartModuleService } from '@core/types/index.js'
 import { Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AddLineItem, IdParams, StoreCreateCartLineItemResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { addToCartWorkflow } from '@workflows/cart/add-to-cart.js'
 
 export const PostInput = { params: IdParams, body: AddLineItem }

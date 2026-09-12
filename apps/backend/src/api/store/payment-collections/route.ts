@@ -1,5 +1,5 @@
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { CreatePaymentCollection, StoreCreatePaymentCollectionResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { createPaymentCollectionForCartWorkflow } from '@workflows/payment/create-payment-collection-for-cart.js'
 
 export const PostInput = { body: CreatePaymentCollection }

@@ -1,4 +1,4 @@
-import type { PreparedRoute } from '@server/ports.js'
+import type { PreparedRoute } from '@framework/http/ports.js'
 import type { AwilixContainer } from 'awilix'
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/cloudflare-workers'

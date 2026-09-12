@@ -1,7 +1,7 @@
 import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/index.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminCountryListParams, AdminCountryListResponse } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { query: AdminCountryListParams }
 export const GetOutput = AdminCountryListResponse

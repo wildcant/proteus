@@ -47,7 +47,7 @@ type Problem = { location: string; message: string; remedy: string }
 /** Repo root, because `collect` yields repo-relative paths and the module specifiers derive from them. */
 const root = fileURLToPath(new URL('../../../', import.meta.url))
 const WORKFLOWS_DIR = `${root}apps/backend/src/workflows`
-const OUTPUT = `${root}apps/backend/src/core/workflows/temporal/registry.gen.ts`
+const OUTPUT = `${root}apps/backend/src/framework/workflows/temporal/registry.gen.ts`
 
 function discover(): { workflows: Discovered[]; problems: Problem[] } {
   const workflows: Discovered[] = []
@@ -80,7 +80,7 @@ function discover(): { workflows: Discovered[]; problems: Problem[] } {
       }
 
       // `file.path` is repo-relative (`apps/backend/src/workflows/cart/add-to-cart.ts`); the generated
-      // file sits in `src/core/workflows/temporal/`, three directories down from `src/`.
+      // file sits in `src/framework/workflows/temporal/`, three directories down from `src/`.
       const module = file.path.replace('apps/backend/src/workflows/', '../../../workflows/').replace(/\.ts$/, '.js')
       workflows.push({ binding, name, module, location })
     }
@@ -120,7 +120,7 @@ function render(workflows: Discovered[]): string {
 // Worker process and \`tsx --watch\` has a module graph to reload from. \`pnpm verify\` fails when
 // this file drifts from the source tree.
 
-import type { WorkflowDefinition } from '../types.js'
+import type { WorkflowDefinition } from '../../../core/workflows/types.js'
 ${imports}
 
 export const GENERATED_WORKFLOWS: WorkflowDefinition<never, unknown>[] = [
@@ -169,7 +169,9 @@ const existing = existingOutput()
 if (checking) {
   if (existing !== rendered) {
     heading('workflow-registry')
-    console.info(`  ${RED}✖${RESET} src/core/workflows/temporal/registry.gen.ts is out of date with src/workflows/.`)
+    console.info(
+      `  ${RED}✖${RESET} src/framework/workflows/temporal/registry.gen.ts is out of date with src/workflows/.`,
+    )
     console.info(`    ${DIM}${workflows.length} workflows found in the source tree.${RESET}`)
     console.info(`    ${YELLOW}→${RESET} run \`pnpm --filter backend run workflows:generate\` and commit the result`)
     console.info('')

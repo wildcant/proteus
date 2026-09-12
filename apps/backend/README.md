@@ -5,12 +5,12 @@ Standalone API server built with Ports & Adapters architecture, Drizzle ORM, and
 ## Temporal (local stack)
 
 **On Node, Temporal is the engine that runs your workflows.** `RUNTIME` defaults to `node`, and
-`src/core/workflows/engine-selection.ts` resolves `node` to the Temporal adapter — so under
+`src/framework/workflows/engine-selection.ts` resolves `node` to the Temporal adapter — so under
 `pnpm run dev` every `createWorkflow(...).run()` becomes an execution on the `proteus` task queue and
 is executed step by step by a Worker. The in-process simple adapter
-(`src/core/workflows/simple-adapter.ts`) is what `pnpm run dev:workerd` and the Cloudflare deployment
+(`src/framework/workflows/simple-adapter.ts`) is what `pnpm run dev:workerd` and the Cloudflare deployment
 get, because workerd cannot load Temporal's native Worker. Which engine runs is never an env var —
-see `src/core/workflows/readme.md`.
+see `src/framework/workflows/README.md`.
 
 ### Starting it
 
@@ -55,7 +55,7 @@ The queues are split so a burst of event deliveries cannot take the Worker slots
 checkout step is waiting for. The processes are split so the slot pools are genuinely separate, and
 so each can pin the workflow engine it wants — the workflow Worker keeps nested `.run()` calls
 in-process, the events Worker gives a subscriber's `.run()` a durable execution of its own. See
-`src/core/event-bus/readme.md`.
+`src/framework/event-bus/README.md`.
 
 Standalone activities need `activity.enableStandalone` in Temporal's dynamic config; this repo's
 `temporal/dynamicconfig/development-sql.yaml` sets it. Without it the server answers
@@ -132,7 +132,7 @@ The replay mechanism and the payload converter keep the plain `.test.ts` suffix 
 `pnpm test`: they cover the same code with no server at all, which is where the edge cases belong.
 
 Neither the default run nor `verify.sh` needs the Compose stack. The parity run does, which is why
-it is deliberately outside `verify.sh` — `src/core/workflows/readme.md` explains what its number does
+it is deliberately outside `verify.sh` — `src/framework/workflows/README.md` explains what its number does
 and does not prove.
 
 ## Date Handling

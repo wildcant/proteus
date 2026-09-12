@@ -3,9 +3,9 @@ import {
   generateJwtTokenWithChecks,
   getAuthJwtConfig,
 } from '@core/auth/utils/generate-jwt-token.js'
-import type { ConfigModule } from '@core/config/types.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/auth/service.js'
+import type { ConfigModule } from '@core/types/config.js'
 import type { CreateCustomerDTO } from '@core/types/customer/mutations.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'

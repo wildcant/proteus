@@ -309,7 +309,6 @@ Filesystem scanning is no longer used. All registration is static.
 
 Update any files that import from `routes-loader.ts` or `routes-static.ts`:
 - `src/server/platforms.ts` or wherever `loadRoutes` / `registerStaticRoutes` is called
-- `src/api/index.ts` (backend-as-library)
 
 Change to import `registerRoutes` from `src/routes.js`.
 

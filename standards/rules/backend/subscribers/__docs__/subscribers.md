@@ -6,7 +6,7 @@ nothing about the transport underneath reaches it.
 
 Adding the event it handles is [events](./events.md). The transports themselves — what each one
 guarantees, how a delivery is deduped, which runtime resolves which — are mechanism, and live in
-[`src/core/event-bus/readme.md`](../../../../../apps/backend/src/core/event-bus/readme.md).
+[`src/framework/event-bus/README.md`](../../../../../apps/backend/src/framework/event-bus/README.md).
 
 ## Structure
 
@@ -64,7 +64,7 @@ pnpm --filter backend run subscribers:generate
 Nothing else wires a subscriber up, and `pnpm run verify` fails if you forget: `registry.gen.ts` is
 committed and the generator's `--check` runs in the `generated` gate. Static imports rather than a
 directory scan, for reasons that are
-[the registry's](../../../../../apps/backend/src/core/event-bus/readme.md#the-generated-registry).
+[the registry's](../../../../../apps/backend/src/framework/event-bus/README.md#the-generated-registry).
 
 ### Every subscriber is idempotent
 

@@ -1,5 +1,5 @@
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
-import { noopLogger } from '../../framework/logger/index.js'
+import { noopLogger } from '../../core/logger/noop-logger.js'
 import type { Database } from '../../schema.type.js'
 import { seedProviders } from './loaders/providers.js'
 import { accountHolderTable } from './models/account-holder.js'

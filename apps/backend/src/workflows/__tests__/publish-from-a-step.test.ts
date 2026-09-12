@@ -4,7 +4,7 @@ import type { Logger } from '@core/types/logger.js'
 import { ContainerRegistrationKeys } from '@core/utils/index.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
-import { noopLogger } from '../../framework/logger/noop-logger.js'
+import { noopLogger } from '../../core/logger/noop-logger.js'
 
 /**
  * A workflow's final step is where events are published, and the ordering is the whole transactional

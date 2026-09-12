@@ -1,13 +1,13 @@
 import postgres from 'postgres'
 import { appConfigInput } from '../../config.js'
 import { bootstrapContainer } from '../../container.js'
-import type { EventBusAdapterName, WorkflowEngineName } from '../../core/config/types.js'
 import { createNodeDbProvider } from '../../core/db/node-provider.js'
-import { subscriberRegistry } from '../../core/event-bus/registry.js'
-import { createTemporalEventBus, type TemporalEventBus } from '../../core/event-bus/temporal-adapter.js'
-import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '../../core/workflows/temporal-adapter.js'
+import type { EventBusAdapterName, WorkflowEngineName } from '../../core/types/config.js'
 import { env } from '../../env.js'
+import { subscriberRegistry } from '../event-bus/registry.js'
+import { createTemporalEventBus, type TemporalEventBus } from '../event-bus/temporal-adapter.js'
 import { WinstonLogger } from '../logger/winston-logger.js'
+import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '../workflows/temporal-adapter.js'
 
 /**
  * A Worker's composition root. Same modules, same links, same database as the API's — it is the

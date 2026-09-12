@@ -154,7 +154,7 @@
       }
     },
     {
-      "includes": ["apps/backend/src/framework/logger/noop-logger.ts"],
+      "includes": ["apps/backend/src/core/logger/noop-logger.ts"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -164,7 +164,7 @@
       }
     },
     {
-      "includes": ["apps/backend/src/core/temporal/__tests__/payload-converter.test.ts"],
+      "includes": ["apps/backend/src/framework/temporal/__tests__/payload-converter.test.ts"],
       "linter": {
         "rules": {
           "style": {

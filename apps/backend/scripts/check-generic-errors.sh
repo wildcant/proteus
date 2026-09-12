@@ -25,7 +25,7 @@ SEARCH_DIR="$WORKSPACE/src"
 EXCLUDED_PATTERNS=(
   "__tests__/"
   "env.ts"
-  "core/config/"
+  "framework/config/"
   "core/db/"
   "core/utils/abstract-"
   "/loaders/"

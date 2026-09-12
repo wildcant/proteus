@@ -2,7 +2,7 @@ import type { ICartModuleService, ILinkService, IPaymentModuleService } from '@c
 import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
 import { IdParams, StorePaymentProviderListResponse } from '@proteus/http-schemas/store'
 import { env } from '../../../../../env.js'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '../../../../../framework/http/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = StorePaymentProviderListResponse

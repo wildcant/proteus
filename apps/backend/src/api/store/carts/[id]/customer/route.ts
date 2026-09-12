@@ -1,6 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreCartResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { transferCartCustomerWorkflow } from '@workflows/cart/transfer-cart-customer.js'
 
 export const PostInput = { params: IdParams }

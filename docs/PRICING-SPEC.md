@@ -641,7 +641,7 @@ apps/backend/src/link-modules/modules-definitions.ts             (re-export pric
 apps/backend/src/link-modules/definitions/index.ts               (re-export productVariantPriceSetTable)
 apps/backend/src/link-modules/database.config.ts                 (add new link table to schema array)
 apps/backend/src/link-modules/services/link-service.ts           (add productVariantPriceSet)
-apps/backend/src/server/ports.ts                                  (add pricingContext to HttpRequest type)
+apps/backend/src/framework/http/ports.ts                          (add pricingContext to HttpRequest type)
 
 packages/http-schemas/package.json                                (add bignumber.js dependency)
 packages/http-schemas/src/common.ts                               (add bigNumberToString, stringToBigNumber)
