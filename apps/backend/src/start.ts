@@ -8,6 +8,7 @@ import { env } from './env.js'
 import { createRegistry, documentInfo, generateDocument } from './framework/http/openapi/registry.js'
 import { closeWorkflowEngine, container } from './framework/runtime/container.node.js'
 import { createExpressApp } from './framework/runtime/express/app.js'
+import { assertTemporalFrontendReachable, probeTemporalFrontend } from './framework/temporal/preflight.js'
 import { jobs } from './jobs/index.js'
 import { prepareRoutes } from './routes.js'
 
@@ -24,6 +25,15 @@ type StartResult = {
 
 export async function start(options?: StartOptions): Promise<StartResult> {
   const { port = 3000, host, shutdownTimeout = 10_000 } = options ?? {}
+
+  // ---- Temporal preflight ----
+
+  // First, and before the port is bound, because everything below it depends on a reachable
+  // Temporal and nothing below it says so when it is missing: a checkout route dispatches a
+  // workflow, and `scheduler.start(jobs)` at the bottom of this function reconciles every job's
+  // Schedule. Without this the failure mode is a process that answered `/health` with 200 and then
+  // died on an unhandled rejection out of reconciliation. See `framework/temporal/preflight.ts`.
+  await assertTemporalFrontendReachable({ address: env.TEMPORAL_ADDRESS, probe: probeTemporalFrontend })
 
   const logger: Logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const dbProvider: DbProvider = container.resolve(ContainerRegistrationKeys.DB_PROVIDER)

@@ -25,6 +25,15 @@ connection, because one subsystem's shutdown would take the other's client down 
 bundle path and the driver's workflow type are the workflow engine's alone and live in
 `src/framework/workflows/temporal/config.ts`.
 
+`preflight.ts` is shared because its question — *is the frontend service reachable?* — is the same
+question for the workflow engine, the event bus and the cron scheduler, and one answer settles it for
+all three at once. The API process refuses to start on it (`src/start.ts`). It holds the decision
+and the message, not the connection: the probe is injected, so the check is tested with no server
+(`__tests__/preflight.test.ts`) and the one real implementation beside it is a single
+`Connection.connect`. A check that is true of one subsystem only — the events Worker's
+`activity.enableStandalone` gate — stays in that subsystem, which is why
+`src/framework/event-bus/temporal/preflight.ts` exists separately and is not this file.
+
 `ping.ts` is the exception, and the only one: it is an operator script (`pnpm run temporal:ping`)
 that starts the workflow driver's own `pingWorkflow` on the workflow task queue, so it does reach
 into `src/framework/workflows/temporal/`. It is exempted from the `check:structure` rule by name because
