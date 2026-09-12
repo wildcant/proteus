@@ -24,6 +24,7 @@ export const CreateGeoZoneInput = z.object({
   city: shortText.optional(),
   postalExpression: longText.optional(),
 })
+export type CreateGeoZoneBody = z.infer<typeof CreateGeoZoneInput>
 
 export const CreateServiceZone = z.object({
   name: shortText.min(1),
@@ -35,11 +36,6 @@ export const UpdateServiceZone = z.object({
   name: shortText.min(1).optional(),
 })
 export type UpdateServiceZoneBody = z.infer<typeof UpdateServiceZone>
-
-// Admin - GeoZone
-
-export const CreateGeoZone = CreateGeoZoneInput
-export type CreateGeoZoneBody = z.infer<typeof CreateGeoZone>
 
 // Admin - ShippingProfile
 
