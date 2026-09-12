@@ -1,14 +1,14 @@
 import { faker } from '@faker-js/faker'
 import { eq, sql } from 'drizzle-orm'
 import { hashPassword } from '../../../src/providers/auth-emailpass/password.js'
-import type { CreateCustomer, CreateCustomerAddress } from '../../../src/schema.js'
+import type { CreateCustomer, CreateCustomerAddress } from '../../../src/schema.gen.js'
 import {
   authIdentityTable,
   authVerificationTable,
   customerAddressTable,
   customerTable,
   providerIdentityTable,
-} from '../../../src/schema.js'
+} from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 export function generateCustomer(overrides?: Partial<CreateCustomer>): CreateCustomer {

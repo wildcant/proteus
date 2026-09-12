@@ -6,7 +6,7 @@ import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 type ManageProductOptionsFormValues = AdminSetProductOptionsBody
 
-export type ManageProductOptionsFormParams = SubmitFormParams<AdminSetProductOptionsResponse>
+type ManageProductOptionsFormParams = SubmitFormParams<AdminSetProductOptionsResponse>
 
 type UseManageProductOptionsFormArgs = {
   productId: string

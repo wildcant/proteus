@@ -8,7 +8,7 @@ export type MergeableLineItem = Pick<CartLineItemDTO, 'id' | 'variantId' | 'quan
  * A row an addition folds into. The patch the cart module writes, plus the variant it is for —
  * carried so the merged quantity can be confirmed against stock before anything is written.
  */
-export type LineItemMerge = LineItemUpdateDTO & { variantId: string }
+type LineItemMerge = LineItemUpdateDTO & { variantId: string }
 
 /** Assignable to `CartLineItemPlanDTO`, so it goes to the cart module as it stands. */
 export type LineItemPlan = {

@@ -1,5 +1,6 @@
 import type { AdminProduct } from '#/api/generated/model'
-import { StatusCell, useDefineTable } from '#/components/data-table'
+import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProductsForOption } from '#/features/product-options/api/product-options'
 import { productStatusColors } from '#/features/products/utils/product-status'
 

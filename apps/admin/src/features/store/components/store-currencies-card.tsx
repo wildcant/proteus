@@ -1,6 +1,6 @@
 import { CommandBar, CommandBarCommand, CommandBarSeparator, CommandBarValue, usePrompt } from '@proteus/ui'
 import { useState } from 'react'
-import { DataTable } from '#/components/data-table'
+import { DataTable } from '#/components/data-table/data-table'
 import { useRemoveStoreCurrencies } from '#/features/store/api/store'
 import { useStoreCurrencyTable } from '#/features/store/hooks/use-store-currency-table'
 

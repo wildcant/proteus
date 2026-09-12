@@ -14,7 +14,7 @@ export type WorkflowStep<TInput, TOutput> = (ctx: WorkflowContext, input: TInput
  * `instanceof` would be the obvious way and it does not survive the Temporal adapter: a step failure
  * that is neither an `AppError` nor a `WorkflowTerminalError` crosses the wire as `{ name, message }`
  * and is rebuilt as a plain `Error`, so the class the Worker threw is gone by the time the caller
- * sees it (`src/core/temporal/failures.ts`). The name is what both engines preserve, which is what lets
+ * sees it (`src/framework/temporal/failures.ts`). The name is what both engines preserve, which is what lets
  * one helper swallow its own scaffolding under either one.
  */
 const DELIBERATE_FAILURE = 'DeliberateFailure'

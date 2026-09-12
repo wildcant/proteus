@@ -1,5 +1,5 @@
 import type { AdminProductOption } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProductOptions } from '#/features/product-options/api/product-options'
 import { OptionRowActions } from '#/features/product-options/components/option-row-actions'
 

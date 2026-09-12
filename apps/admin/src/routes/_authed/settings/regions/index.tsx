@@ -1,6 +1,6 @@
 import { AdminRegionListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
-import { DataTable } from '#/components/data-table'
+import { DataTable } from '#/components/data-table/data-table'
 import { PageLayout } from '#/components/layout/page-layout'
 import { regionsListQueryOptions } from '#/features/regions/api/regions'
 import { useRegionTable } from '#/features/regions/hooks/use-region-table'

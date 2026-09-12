@@ -1,7 +1,8 @@
-import type { RouteHandler } from '@server/ports.js'
+import type { RouteHandler } from '@framework/http/ports.js'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import { formatZodIssues } from '../../core/errors/format-zod-issues.js'
 import { buildSearchFilter } from '../../core/utils/build-search-filter.js'
+import { validateBody } from '../../core/utils/validate-body.js'
 import { parseOrder, validateQuery } from '../../core/utils/validate-query.js'
 import { runMiddlewares } from './run-middlewares.js'
 import type { RouteDefinition } from './types.js'
@@ -38,14 +39,7 @@ export function applyMiddleware(definition: RouteDefinition): RouteHandler {
       (definition.method === 'POST' || definition.method === 'PUT' || definition.method === 'PATCH') &&
       definition.input?.body
     ) {
-      const result = definition.input.body.safeParse(req.body)
-      if (!result.success) {
-        throw new AppError({
-          type: ErrorTypes.INVALID_DATA,
-          message: `Invalid request body: ${formatZodIssues(result.error.issues)}`,
-        })
-      }
-      req = { ...req, body: result.data }
+      req = { ...req, body: validateBody(definition.input.body, req.body) }
     }
 
     const result = await definition.handler(req)

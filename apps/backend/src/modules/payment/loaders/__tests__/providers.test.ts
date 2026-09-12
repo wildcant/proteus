@@ -1,6 +1,6 @@
 import { asValue, createContainer } from 'awilix'
 import { describe, expect, test } from 'vitest'
-import { noopLogger } from '../../../../framework/logger/noop-logger.js'
+import { noopLogger } from '../../../../core/logger/noop-logger.js'
 import stripeProvider from '../../../../providers/payment-stripe/index.js'
 import { loadProviders, type ProviderConfig } from '../providers.js'
 

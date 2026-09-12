@@ -37,20 +37,6 @@ export type UpdatePaymentSessionDTO = {
 }
 
 // ---------------------------------------------------------------------------
-// Payment
-// ---------------------------------------------------------------------------
-
-export type CreatePaymentDTO = {
-  paymentCollectionId: string
-  paymentSessionId: string
-  amount: BigNumber
-  currencyCode: string
-  providerId: string
-  data?: Record<string, unknown> | null
-  metadata?: Record<string, unknown> | null
-}
-
-// ---------------------------------------------------------------------------
 // Capture
 // ---------------------------------------------------------------------------
 
@@ -123,29 +109,6 @@ export type EnsureAccountHoldersDTO = {
   customerId: string
   email?: string | null
   name?: string | null
-}
-
-// ---------------------------------------------------------------------------
-// PaymentMethod (provider-managed, no DB table)
-// ---------------------------------------------------------------------------
-
-export type CreatePaymentMethodDTO = {
-  providerId: string
-  data: Record<string, unknown>
-  context: Record<string, unknown>
-}
-
-export type DeletePaymentMethodDTO = {
-  id: string
-  providerId: string
-  data?: Record<string, unknown>
-  context?: Record<string, unknown>
-}
-
-export type SetDefaultPaymentMethodDTO = {
-  id: string
-  providerId: string
-  context?: Record<string, unknown>
 }
 
 // ---------------------------------------------------------------------------

@@ -1,13 +1,11 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type {
-  CustomerDTO,
-  ICartModuleService,
-  ICustomerModuleService,
-  IRegionModuleService,
-  IStoreModuleService,
-  RegionDTO,
-} from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { CustomerDTO } from '@core/types/customer/common.js'
+import type { ICustomerModuleService } from '@core/types/customer/service.js'
+import type { RegionDTO } from '@core/types/region/common.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
+import type { IStoreModuleService } from '@core/types/store/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { validateQuery } from '@core/utils/validate-query.js'
 import type { MiddlewareFunction } from '@framework/http/types.js'
 import { StorePricingContextParams } from '@proteus/http-schemas/store'

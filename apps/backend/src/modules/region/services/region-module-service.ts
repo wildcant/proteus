@@ -1,18 +1,19 @@
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
 import type {
-  Context,
   CountryDTO,
   CountryMarketDTO,
-  CreateCountryDTO,
-  CreateRegionDTO,
   FilterableCountryProps,
   FilterableRegionProps,
-  FindConfig,
-  IRegionModuleService,
-  ListCountryMarketsFilters,
   RegionDTO,
+} from '../../../core/types/region/common.js'
+import type {
+  CreateCountryDTO,
+  CreateRegionDTO,
   UpdateCountryDTO,
   UpdateRegionDTO,
-} from '../../../core/types/index.js'
+} from '../../../core/types/region/mutations.js'
+import type { IRegionModuleService, ListCountryMarketsFilters } from '../../../core/types/region/service.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { CountryRepository } from '../repositories/country.js'
 import type { RegionRepository } from '../repositories/region.js'

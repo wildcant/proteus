@@ -128,7 +128,7 @@ export type UpdateFulfillmentDTO = {
 
 // FulfillmentItem
 
-export type CreateFulfillmentItemDTO = {
+type CreateFulfillmentItemDTO = {
   title: string
   quantity: number
   sku?: string | null | undefined
@@ -140,7 +140,7 @@ export type CreateFulfillmentItemDTO = {
 
 // FulfillmentAddress
 
-export type CreateFulfillmentAddressDTO = {
+type CreateFulfillmentAddressDTO = {
   company?: string | null | undefined
   firstName?: string | null | undefined
   lastName?: string | null | undefined

@@ -1,6 +1,6 @@
 import type { ProductVariantDTO } from '@core/types/product/common.js'
 import type { IProductModuleService } from '@core/types/product/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import type { AdminUpdateProductVariantBody } from '@proteus/http-schemas/admin'
 

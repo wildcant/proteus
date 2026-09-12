@@ -15,7 +15,6 @@ export const testAliases = {
   '@core': resolve(__dirname, './src/core'),
   '@env': resolve(__dirname, './src/env.ts'),
   '@framework': resolve(__dirname, './src/framework'),
-  '@server': resolve(__dirname, './src/server'),
   '@workflows': resolve(__dirname, './src/workflows'),
 }
 

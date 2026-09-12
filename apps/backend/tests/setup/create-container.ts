@@ -4,8 +4,8 @@
  * directly, since a listening server would be scaffolding they never touch.
  */
 
-import type { InputConfig } from '@core/config/types.js'
 import type { DbProvider } from '@core/db/ports.js'
+import type { InputConfig } from '@core/types/config.js'
 import type { Logger } from '@core/types/logger.js'
 import type { AwilixContainer } from 'awilix'
 import { appConfigInput } from '../../src/config.js'

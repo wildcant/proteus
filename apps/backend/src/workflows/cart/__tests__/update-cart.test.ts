@@ -1,7 +1,7 @@
 import { BigNumber } from '@core/bignumber.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'

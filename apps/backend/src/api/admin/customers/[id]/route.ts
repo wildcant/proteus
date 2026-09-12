@@ -1,5 +1,6 @@
-import type { ICustomerModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { ICustomerModuleService } from '@core/types/customer/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   AdminCustomerResponse,
   AdminUpdateCustomer,
@@ -7,7 +8,6 @@ import {
   DeleteResponse,
   IdParams,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminCustomerResponse

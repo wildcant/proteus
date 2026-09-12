@@ -2,7 +2,7 @@ import { buildEvent, type PaymentCapturedAction } from '@core/event-bus/events.j
 import { defineSubscriber } from '@core/event-bus/types.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'

@@ -21,7 +21,7 @@ const countryKeys = queryKeysFactory<'countries', ListCountriesParams>('countrie
  * The ISO country list. Every screen here reads it: the region's Countries table asks for one
  * `regionId`, the Add-countries picker asks for all of them and offers the unclaimed ones.
  */
-export const countriesListQueryOptions = (params?: ListCountriesParams) =>
+const countriesListQueryOptions = (params?: ListCountriesParams) =>
   queryOptions({
     queryKey: countryKeys.list(params),
     queryFn: () => listCountries(params),

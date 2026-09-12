@@ -1,8 +1,11 @@
-import type { ICartModuleService, ILinkService, IPaymentModuleService } from '@core/types/index.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { IdParams, StorePaymentProviderListResponse } from '@proteus/http-schemas/store'
 import { env } from '../../../../../env.js'
-import type { HttpRequest, HttpResult } from '../../../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '../../../../../framework/http/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = StorePaymentProviderListResponse

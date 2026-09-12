@@ -1,6 +1,6 @@
 # 5. Central Types Package
 
-**Status:** Accepted
+**Status:** Accepted — superseded in part by [ADR-0028](0028-barrels-only-at-a-published-boundary.md). The contracts still live in `core/types/<domain>/`; the `index.ts` barrels this ADR describes are gone, and consumers import the concrete file.
 
 ## Context
 

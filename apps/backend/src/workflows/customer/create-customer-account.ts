@@ -1,7 +1,7 @@
 import type { CustomerDTO } from '@core/types/customer/common.js'
 import type { CreateCustomerDTO } from '@core/types/customer/mutations.js'
 import type { ICustomerModuleService } from '@core/types/customer/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { setAuthAppMetadataStep, setAuthAppMetadataThrows } from '../auth/steps/set-auth-app-metadata.js'
 

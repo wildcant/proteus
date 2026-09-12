@@ -14,7 +14,7 @@ type ProviderConstructor = (new (...args: any[]) => AbstractNotificationProvider
 
 const PROVIDER_REGISTRATION_PREFIX = 'np_'
 
-export function computeProviderConfigs(
+function computeProviderConfigs(
   configs?: NotificationProviderConfig[],
 ): { id: string; name: string; channels: NotificationChannel[] }[] {
   const result: { id: string; name: string; channels: NotificationChannel[] }[] = []

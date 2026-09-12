@@ -18,20 +18,21 @@ Handlers receive pre-validated data — no manual `validateBody()` calls needed.
 
 ## HTTP Schemas
 
-Schemas live in `backend/src/core/http-schemas/`, organized by domain following Medusa's naming conventions.
+Schemas live in `packages/http-schemas/src/`, organized by domain following Medusa's naming conventions.
 
 ### Directory structure
 
 ```
-backend/src/core/http-schemas/
-├── index.ts              # barrel re-export
+packages/http-schemas/src/
 ├── common.ts             # shared schemas (IdParams, etc.)
-└── <domain>/
-    ├── index.ts          # re-exports all domain schemas
-    ├── entities.ts       # entity shapes (response models)
-    ├── payloads.ts       # request body schemas (create/update)
-    ├── queries.ts        # query parameter schemas
-    └── responses.ts      # response wrapper schemas
+├── openapi-setup.ts      # runs extendZodWithOpenApi(z); imported by each entry
+└── <audience>/           # admin | store | auth — one `exports` entry each
+    ├── index.ts          # the entry, and the only barrel here (ADR-0028)
+    └── <domain>/
+        ├── entities.ts   # entity shapes (response models)
+        ├── payloads.ts   # request body schemas (create/update)
+        ├── queries.ts    # query parameter schemas
+        └── responses.ts  # response wrapper schemas
 ```
 
 ### Naming conventions
@@ -74,9 +75,14 @@ Each API subdirectory (e.g. `api/customers/`) has **one** `middlewares.ts` that 
 
 ```typescript
 // backend/src/api/customers/middlewares.ts
-import { IdParams } from '../../core/http-schemas/common.js'
-import { CreateCustomers, UpdateCustomer } from '../../core/http-schemas/customer/payloads.js'
-import { CustomerListResponse, CustomerResponse, CustomerDeleteResponse } from '../../core/http-schemas/customer/responses.js'
+import {
+  CreateCustomers,
+  CustomerDeleteResponse,
+  CustomerListResponse,
+  CustomerResponse,
+  IdParams,
+  UpdateCustomer,
+} from '@proteus/http-schemas/admin'
 import type { MiddlewareRoute } from '../../core/middleware/types.js'
 import { Tags } from '../../core/middleware/types.js'
 
@@ -317,7 +323,7 @@ The committed specs are generated, so a change to the routes or schemas they are
 It runs only when the staged diff touches something that can change a spec:
 
 - `apps/backend/src/api/**`
-- `apps/backend/src/core/openapi/**`
+- `apps/backend/src/framework/http/openapi/**`
 - `packages/http-schemas/**`
 
 When it does run, it dumps both specs into a temp directory and diffs them against the staged versions. On a difference it fails the commit and prints the remedy:
@@ -343,8 +349,8 @@ Two limits, both accepted: `--no-verify` skips the hook, and it does not run in 
 | File | Purpose |
 |------|---------|
 | `packages/http-schemas/src/openapi-setup.ts` | Calls `extendZodWithOpenApi(z)` — must be imported before any `.openapi()` usage |
-| `backend/src/core/openapi/registry.ts` | `createRegistry()`, `generateDocument()`, the `bearerAuth` scheme, the derived tag list and the per-document `documentInfo` (title + description) |
-| `backend/src/core/openapi/register-route.ts` | Converts a `RouteDefinition` to a `registry.registerPath()` call — path, operation `security` and the synthesised `200` / `400` / `401` / `404` responses |
+| `backend/src/framework/http/openapi/registry.ts` | `createRegistry()`, `generateDocument()`, the `bearerAuth` scheme, the derived tag list and the per-document `documentInfo` (title + description) |
+| `backend/src/framework/http/openapi/register-route.ts` | Converts a `RouteDefinition` to a `registry.registerPath()` call — path, operation `security` and the synthesised `200` / `400` / `401` / `404` responses |
 | `backend/scripts/openapi-dump.ts` | Writes both specs to `apps/backend/openapi/`, or to `--out-dir` |
 | `backend/openapi/ruleset.yaml` | The Spectral rules `check:openapi` enforces — hand-written, unlike the two JSON files beside it |
 | `.githooks/pre-commit` | Fails a commit that changes a spec's sources without regenerating the specs |
@@ -360,32 +366,11 @@ components/schemas/CreateCustomer  ← from CreateCustomer.openapi('CreateCustom
 
 ---
 
-## Backend-as-library
-
-The middleware system only applies to the HTTP layer. When the store imports the backend container directly (via `createServerFn`), it bypasses the router entirely:
-
-- **HTTP path**: Request → middleware (validates) → handler → service
-- **Direct import path**: `createServerFn` → container → service
-
-The store can import the same Zod schemas from `core/http-schemas/` for its own validation in TanStack's `.validator()`:
-
-```typescript
-import { CreateCustomers } from 'backend/src/core/http-schemas/customer/payloads.js'
-
-export const createCustomers = createServerFn({ method: 'POST' })
-  .validator((data) => CreateCustomers.parse(data))
-  .handler(async ({ data }) => {
-    // ...
-  })
-```
-
----
-
 ## Adding middleware to a new module
 
-1. Create HTTP schemas in `backend/src/core/http-schemas/<domain>/` (entities, payloads, queries, responses)
+1. Create HTTP schemas in `packages/http-schemas/src/<audience>/<domain>/` (entities, payloads, queries, responses)
 2. Call `.openapi('Name')` on entity and payload schemas (import `openapi/setup.js` first)
-3. Re-export from `backend/src/core/http-schemas/index.ts`
+3. Add one `export * from './<domain>/<file>.js'` line per new file to the audience's `index.ts`
 4. Add a tag to the `Tags` enum in `backend/src/core/middleware/types.ts`
 5. Create `backend/src/api/<domain>/middlewares.ts` with route configs
 6. Remove manual `validateBody()` / `validateQuery()` calls from handlers

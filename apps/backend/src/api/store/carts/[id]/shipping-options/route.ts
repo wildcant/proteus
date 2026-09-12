@@ -1,7 +1,9 @@
-import type { ICartModuleService, IFulfillmentModuleService, IRegionModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreShippingOptionListParams, StoreShippingOptionListResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { params: IdParams, query: StoreShippingOptionListParams }
 export const GetOutput = StoreShippingOptionListResponse

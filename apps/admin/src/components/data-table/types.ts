@@ -108,7 +108,7 @@ type DateFilterOptions = {
   presets?: { label: string; value: { $gte?: string; $lte?: string } }[]
 }
 
-export type FilterOptions = RadioFilterOptions | SelectFilterOptions | MultiselectFilterOptions | DateFilterOptions
+type FilterOptions = RadioFilterOptions | SelectFilterOptions | MultiselectFilterOptions | DateFilterOptions
 
 export type FilterDef = FilterOptions & {
   id: string
@@ -134,7 +134,7 @@ export type DataParams = {
   [key: string]: any
 }
 
-export type DataResult<T> = {
+type DataResult<T> = {
   data: T[]
   count: number | undefined
   isPending: boolean
@@ -147,7 +147,7 @@ export type DataResult<T> = {
 
 /** Controlled row selection, keyed by `TableConfig.getRowId`. State is owned by the consumer so
  * it survives pagination and search — the table only ever holds one page of server data. */
-export type RowSelection = {
+type RowSelection = {
   value: Record<string, boolean>
   onChange: (next: Record<string, boolean>) => void
 }

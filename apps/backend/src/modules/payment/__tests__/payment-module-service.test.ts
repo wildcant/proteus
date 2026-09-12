@@ -8,20 +8,18 @@ import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-import * as models from '../models/index.js'
-import {
-  AccountHolderRepository,
-  CaptureRepository,
-  PaymentCollectionRepository,
-  PaymentRepository,
-  PaymentSessionRepository,
-  RefundReasonRepository,
-  RefundRepository,
-} from '../repositories/index.js'
+import paymentModule from '../index.js'
+import { AccountHolderRepository } from '../repositories/account-holder.js'
+import { CaptureRepository } from '../repositories/capture.js'
+import { PaymentRepository } from '../repositories/payment.js'
+import { PaymentCollectionRepository } from '../repositories/payment-collection.js'
+import { PaymentSessionRepository } from '../repositories/payment-session.js'
+import { RefundRepository } from '../repositories/refund.js'
+import { RefundReasonRepository } from '../repositories/refund-reason.js'
 import { PaymentModuleService } from '../services/payment-module-service.js'
 import type { PaymentProviderService } from '../services/payment-provider-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(paymentModule.models)
 
 /**
  * The payment an authorization produced, or a failure naming what came back instead.

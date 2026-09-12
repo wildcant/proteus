@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { eq, sql } from 'drizzle-orm'
 import { hashPassword } from '../../../src/providers/auth-emailpass/password.js'
-import { authIdentityTable, type CreateUser, providerIdentityTable, userTable } from '../../../src/schema.js'
+import { authIdentityTable, type CreateUser, providerIdentityTable, userTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 export function generateUser(overrides?: Partial<CreateUser>): CreateUser {

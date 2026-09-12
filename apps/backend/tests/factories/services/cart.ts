@@ -13,7 +13,7 @@ import type {
   UpdateCartWithAddressesDTO,
 } from '../../../src/core/types/cart/mutations.js'
 import type { ICartModuleService } from '../../../src/core/types/cart/service.js'
-import { Modules } from '../../../src/core/utils/index.js'
+import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
   generateCreateCartDTO,
   generateCreateLineItemDTO,

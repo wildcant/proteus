@@ -1,11 +1,43 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "include": ["dependencies", "catalog"],
+  // Two shapes, neither of them shipped code and neither of them a finding:
+  // - `.scratch/` is the working record — specs, tickets, and the odd proof-of-concept script.
+  // - Orval's output, in both frontends. Every endpoint gets two `*Result` type aliases emitted
+  //   whether or not anything names them, so the directory accounted for 161 of 326 findings and
+  //   there is no per-export knob — the only lever is Orval's tag list. Regenerating is the only
+  //   edit anyone makes here, which is what makes an unused export in it not a finding.
+  //   Note what this hides: seven admin tag groups nothing calls (fulfillment-providers,
+  //   fulfillment-sets, payment-collections, payments, refund-reasons, shipping-options,
+  //   shipping-profiles). That is admin feature coverage, not dependency debt, and it is written
+  //   down in .scratch/pnpm-migration/knip-triage.md so it does not go missing with the rows.
+  "ignore": [".scratch/**", "**/src/api/generated/**"],
+  // `import { env } from 'cloudflare:workers'` — a workerd built-in module namespace whose prefix
+  // reads as a package name. There is nothing to install.
+  "ignoreDependencies": ["cloudflare"],
+  // On the machine, not in a manifest: dropdb/createdb are postgresql-client (db:reset, db:test:up),
+  // dot is graphviz (db-diagram). Declaring them would mean shipping a Postgres install as an npm
+  // package.
+  "ignoreBinaries": ["dropdb", "createdb", "dot"],
   "workspaces": {
+    ".": {
+      // verify.sh runs this as `node scripts/checks/one-version.mts`, and knip does not parse shell.
+      "entry": ["scripts/**/*.mts"]
+    },
+    "apps/admin": {
+      // A `declare module '@tanstack/react-router'` augmentation. Seventeen route files depend on
+      // the `staticData.breadcrumb` it adds to the router's types; nothing imports the file, because
+      // there is no symbol in it to import.
+      "entry": ["src/types/router.ts"]
+    },
     "apps/backend": {
       // Three shapes nothing reaches from a default entry point: providers are registered by
       // string, the drizzle configs are invoked by drizzle-kit, and the scripts by package.json.
       "entry": ["src/providers/*/index.ts", "src/**/database.config.ts", "scripts/**/*.{ts,mjs}"]
+    },
+    "packages/icons": {
+      // Passed as `--templateSrc=` by build:icons and loaded with `await import(path.resolve(…))`
+      // in build-icons/cli.ts — a path assembled at runtime, so there is no import to follow.
+      "entry": ["scripts/export-template.ts"]
     }
   }
 }

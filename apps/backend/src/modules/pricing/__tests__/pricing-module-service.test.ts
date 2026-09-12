@@ -2,12 +2,12 @@ import { test } from '@tests/setup/test-extend.js'
 import { BigNumber } from '../../../core/bignumber.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-import * as models from '../models/index.js'
+import pricingModule from '../index.js'
 import { PriceRepository } from '../repositories/price.js'
 import { PriceSetRepository } from '../repositories/price-set.js'
 import { PricingModuleService } from '../services/pricing-module-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(pricingModule.models)
 
 let service: PricingModuleService
 

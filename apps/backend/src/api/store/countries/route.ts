@@ -1,7 +1,7 @@
-import type { IRegionModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { StoreCountryListParams, StoreCountryListResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '../../../server/ports.js'
+import type { HttpRequest, HttpResult } from '../../../framework/http/ports.js'
 
 export const GetInput = { query: StoreCountryListParams }
 export const GetOutput = StoreCountryListResponse

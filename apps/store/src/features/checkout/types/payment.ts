@@ -46,7 +46,7 @@ export type SavedMethod = {
  * gateway's client SDK in step — Stripe.js refuses a confirmation whose Elements amount disagrees
  * with the intent. The browser never sends an amount; it is only ever told one.
  */
-export type PaymentSessionOpened = {
+type PaymentSessionOpened = {
   data: Record<string, unknown>
   /** Major-unit decimal string, priced server-side from the cart. */
   amount: string
@@ -56,7 +56,7 @@ export type PaymentSessionOpened = {
 /** Opens the payment session. Injected, so an adapter can never talk to our API itself. */
 export type CreateSession = (providerData?: Record<string, unknown>) => Promise<PaymentSessionOpened>
 
-export type ConfirmArgs = {
+type ConfirmArgs = {
   /** `null` means "the new-method form", which is the only case this phase renders. */
   chosenMethodId: string | null
   saveMethod: boolean

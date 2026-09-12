@@ -53,7 +53,7 @@ export type IAuthModuleProvider = {
   ): Promise<AuthenticationResponse>
 }
 
-export type AuthProviderConfig = {
+type AuthProviderConfig = {
   resolve: { services: (new (...args: unknown[]) => unknown)[] }
   id: string
   options?: Record<string, unknown>

@@ -6,7 +6,8 @@ import type { ILinkService } from '@core/types/link/service.js'
 import type { Logger } from '@core/types/logger.js'
 import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import type { IProductModuleService } from '@core/types/product/service.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
 import { planLineItemActions } from './utils/plan-line-item-actions.js'
@@ -14,7 +15,7 @@ import { prepareLineItemData } from './utils/prepare-line-item-data.js'
 import { prepareVariantInventoryChecks } from './utils/variant-inventory.js'
 
 /** What a shopper picks: which variant, and how many. Everything else is the catalogue's to say. */
-export type AddToCartItem = {
+type AddToCartItem = {
   variantId: string
   quantity: number
 }

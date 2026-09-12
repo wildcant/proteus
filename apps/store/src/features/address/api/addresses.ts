@@ -16,7 +16,7 @@ import type {
 import { isRegistered } from '#/lib/auth-token'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
-export const addressesQueryKeys = queryKeysFactory('customer-addresses')
+const addressesQueryKeys = queryKeysFactory('customer-addresses')
 
 export const addressesQueryOptions = () =>
   queryOptions({

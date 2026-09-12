@@ -1,21 +1,23 @@
 import type { AwilixContainer } from 'awilix'
 import type { FindConfig } from '../../../src/core/types/common.js'
 import type {
-  CreateProductDTO,
-  CreateProductOptionDTO,
-  CreateProductVariantDTO,
   FilterableProductImageProps,
   FilterableProductProps,
   FilterableProductVariantImageProps,
   FilterableProductVariantProps,
-  IProductModuleService,
   ProductDTO,
   ProductImageDTO,
+} from '../../../src/core/types/product/common.js'
+import type {
+  CreateProductDTO,
+  CreateProductOptionDTO,
+  CreateProductVariantDTO,
   SetProductOptionsDTO,
   UpdateProductVariantDTO,
   VariantImageInput,
-} from '../../../src/core/types/index.js'
-import { Modules } from '../../../src/core/utils/index.js'
+} from '../../../src/core/types/product/mutations.js'
+import type { IProductModuleService } from '../../../src/core/types/product/service.js'
+import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
   generateCreateProductDTO,
   generateCreateProductOptionDTO,

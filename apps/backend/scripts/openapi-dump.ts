@@ -1,8 +1,8 @@
 import { writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { registerOpenApiRoute } from '../src/core/openapi/register-route.js'
-import { createRegistry, documentInfo, generateDocument } from '../src/core/openapi/registry.js'
+import { registerOpenApiRoute } from '../src/framework/http/openapi/register-route.js'
+import { createRegistry, documentInfo, generateDocument } from '../src/framework/http/openapi/registry.js'
 import { adminDefinitions, storeDefinitions } from '../src/routes.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

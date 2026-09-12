@@ -9,7 +9,7 @@ export type SvgNode = {
   children: SvgNode[]
 }
 
-export type ParsedIcon = {
+type ParsedIcon = {
   /** Text of the source `<title>`, e.g. `American Express`. Kept for documentation only. */
   label: string
   /** Presentation attributes lifted off the source root, e.g. `fill`/`stroke` for an outline mark. */
@@ -19,7 +19,7 @@ export type ParsedIcon = {
 
 export type IconsObject = Record<string, ParsedIcon>
 
-export type ExportTemplateOptions = {
+type ExportTemplateOptions = {
   componentName: string
   iconName: string
   label: string

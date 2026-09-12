@@ -41,13 +41,6 @@ export type CreateInventoryLevelDTO = {
   metadata?: string | null
 }
 
-export type UpdateInventoryLevelDTO = {
-  stockedQuantity?: number
-  reservedQuantity?: number
-  incomingQuantity?: number
-  metadata?: string | null
-}
-
 export type CreateReservationItemDTO = {
   inventoryItemId: string
   locationId: string
@@ -57,13 +50,5 @@ export type CreateReservationItemDTO = {
   externalId?: string | null
   description?: string | null
   createdBy?: string | null
-  metadata?: string | null
-}
-
-export type UpdateReservationItemDTO = {
-  quantity?: number
-  locationId?: string
-  lineItemId?: string | null
-  description?: string | null
   metadata?: string | null
 }

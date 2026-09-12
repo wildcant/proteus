@@ -5,7 +5,7 @@ import type {
 } from '../../../src/core/types/customer/common.js'
 import type { CreateCustomerAddressDTO, CreateCustomerDTO } from '../../../src/core/types/customer/mutations.js'
 import type { ICustomerModuleService } from '../../../src/core/types/customer/service.js'
-import { Modules } from '../../../src/core/utils/index.js'
+import { Modules } from '../../../src/core/utils/modules-definition.js'
 import { generateCreateCustomerAddressDTO, generateCreateCustomerDTO } from '../customer-dto.js'
 
 export async function createCustomer(container: AwilixContainer, overrides?: Partial<CreateCustomerDTO>) {

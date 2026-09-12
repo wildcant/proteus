@@ -19,9 +19,9 @@ export type FulfillmentModuleOptions = {
 // biome-ignore lint/suspicious/noExplicitAny: provider constructors accept varied dependency shapes
 type ProviderConstructor = (new (...args: any[]) => AbstractFulfillmentProvider) & { identifier: string }
 
-export const MANUAL_PROVIDER_KEY = 'manual_default'
+const MANUAL_PROVIDER_KEY = 'manual_default'
 
-export function computeProviderKeys(configs?: FulfillmentProviderConfig[]): string[] {
+function computeProviderKeys(configs?: FulfillmentProviderConfig[]): string[] {
   const keys = [MANUAL_PROVIDER_KEY]
   if (configs) {
     for (const config of configs) {

@@ -17,7 +17,7 @@ Errors flow upward. Route handlers and services throw `AppError` instances. The 
 The core error class. All domain/application errors should be instances of `AppError`.
 
 ```ts
-import { AppError, ErrorTypes } from '../core/errors/index.js'
+import { AppError, ErrorTypes } from '../core/errors/app-error.js'
 
 throw new AppError({
   type: ErrorTypes.NOT_FOUND,
@@ -54,7 +54,7 @@ throw new AppError({
 
 `code` carries the detail `type` is too coarse for — which decline a payment hit, not merely that
 something was `NOT_ALLOWED`. **A domain's codes never go in `core/errors/`.** They go in that
-domain's port folder as their own enum, exported from its barrel:
+domain's port folder as their own enum, in its own file:
 
 ```ts
 // core/types/payment/errors.ts
@@ -132,11 +132,11 @@ Unknown database errors are re-thrown as-is (not wrapped).
 
 ## Input Validation
 
-Use `validateInput` with a Zod schema to parse and validate request bodies:
+Use `validateBody` with a Zod schema to parse and validate request bodies:
 
 ```ts
 import { z } from 'zod'
-import { validateInput } from '../core/errors/index.js'
+import { validateBody } from '../core/utils/validate-body.js'
 
 const CreateCustomerSchema = z.object({
   name: z.string().min(1),
@@ -144,7 +144,7 @@ const CreateCustomerSchema = z.object({
 })
 
 export const POST = async (req: HttpRequest): Promise<HttpResult> => {
-  const data = validateInput(CreateCustomerSchema, req.body)
+  const data = validateBody(CreateCustomerSchema, req.body)
   // data is typed as { name: string; email: string }
   const customer = await customerService.create(data)
   return { status: 201, json: { customer } }
@@ -203,13 +203,13 @@ export const GET = async (req: HttpRequest<never, { id: string }>): Promise<Http
 
 export const POST = async (req: HttpRequest<CreateCustomerDTO>): Promise<HttpResult> => {
   const service = req.scope.resolve<ICustomerModuleService>('customerModuleService')
-  const data = validateInput(CreateCustomerSchema, req.body)
+  const data = validateBody(CreateCustomerSchema, req.body)
   const [customer] = await service.createCustomers([data], {})
   return { status: 201, json: { customer } }
 }
 ```
 
-No try/catch needed. If `retrieveCustomer` throws NOT_FOUND, the client gets a 404. If `validateInput` rejects, the client gets a 400. If the DB throws a unique violation, the client gets a 400 with "Already exists".
+No try/catch needed. If `retrieveCustomer` throws NOT_FOUND, the client gets a 404. If `validateBody` rejects, the client gets a 400. If the DB throws a unique violation, the client gets a 400 with "Already exists".
 
 ## File Layout
 
@@ -218,9 +218,8 @@ backend/src/core/errors/
   app-error.ts         — AppError class + ErrorTypes enum
   db-error-mapper.ts   — Postgres error code → AppError translation
   error-handler.ts     — AppError → HTTP response mapping
-  validate-input.ts    — Zod schema validation helper
-  index.ts             — Barrel exports
+  format-zod-issues.ts — Zod issue list → one readable message
 
 backend/src/core/types/<domain>/
-  errors.ts            — that domain's code enum, re-exported from the domain barrel
+  errors.ts            — that domain's code enum; import the file, not a barrel (ADR-0028)
 ```

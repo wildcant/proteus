@@ -1,5 +1,5 @@
 import type { ILinkService } from '@core/types/link/service.js'
-import { ContainerRegistrationKeys } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
 
 type SetRegionPaymentProvidersInput = {

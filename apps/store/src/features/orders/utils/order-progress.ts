@@ -6,7 +6,7 @@ import { fulfillmentLabels } from './fulfillment-labels'
  * no inherent sequence, so the sequence is stated once here rather than re-derived at each call
  * site that wants to know what comes next.
  */
-export const fulfillmentSequence = [
+const fulfillmentSequence = [
   'unfulfilled',
   'fulfilled',
   'shipped',

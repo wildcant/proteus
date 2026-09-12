@@ -1,6 +1,6 @@
 import { CommandBar, CommandBarCommand, CommandBarSeparator, CommandBarValue, usePrompt } from '@proteus/ui'
 import { useState } from 'react'
-import { DataTable } from '#/components/data-table'
+import { DataTable } from '#/components/data-table/data-table'
 import { useRemoveRegionCountries } from '#/features/regions/api/countries'
 import { useRegionCountryTable } from '#/features/regions/hooks/use-region-country-table'
 

@@ -1,12 +1,14 @@
-import { defineAppConfig } from '@core/config/index.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { defineAppConfig } from '@framework/config/index.js'
 import { test as testBase } from 'vitest'
+import { noopLogger } from '../../src/core/logger/noop-logger.js'
 import type { Logger } from '../../src/core/types/logger.js'
-import { noopLogger } from '../../src/framework/logger/noop-logger.js'
+import type { HttpRequest } from '../../src/framework/http/ports.js'
 import type { Database } from '../../src/schema.type.js'
-import type { HttpRequest } from '../../src/server/ports.js'
 import {
   generateAuthIdentityDTO,
+  generateAuthPasswordResetTokenDTO,
+  generateAuthVerificationDTO,
   generateConfirmAuthVerificationDTO,
   generateCreateAuthIdentityDTO,
   generateCreateAuthPasswordResetTokenDTO,
@@ -36,19 +38,14 @@ import {
   generateCustomerDTO,
   generateUpdateCustomerDTO,
 } from '../factories/customer-dto.js'
-import {
-  createCountry,
-  createProductWithPricing,
-  createRegion,
-  createRegionPaymentProvider,
-  createShippingOptionWithZone,
-  createStore,
-  createStoreCurrency,
-  generateCustomer,
-  generateProduct,
-  generateUser,
-  setPaymentProviderEnabled,
-} from '../factories/db/index.js'
+import { generateCustomer } from '../factories/db/customer.js'
+import { setPaymentProviderEnabled } from '../factories/db/payment.js'
+import { generateProduct } from '../factories/db/product.js'
+import { createProductWithPricing } from '../factories/db/product-with-pricing.js'
+import { createCountry, createRegion, createRegionPaymentProvider } from '../factories/db/region.js'
+import { createShippingOptionWithZone } from '../factories/db/shipping-option-with-zone.js'
+import { createStore, createStoreCurrency } from '../factories/db/store.js'
+import { generateUser } from '../factories/db/user.js'
 import {
   generateCreateFulfillmentSetDTO,
   generateCreateGeoZoneDTO,
@@ -56,7 +53,7 @@ import {
   generateFulfillmentDTO,
   generateUpdateFulfillmentDTO,
 } from '../factories/fulfillment-dto.js'
-import { generateStoreCreateAddressBody } from '../factories/http/index.js'
+import { generateStoreCreateAddressBody } from '../factories/http/store-customer.js'
 import {
   generateCreateInventoryItemDTO,
   generateCreateInventoryLevelDTO,
@@ -101,70 +98,75 @@ import {
   generateVariantImageInputDTO,
 } from '../factories/product-dto.js'
 import {
-  addCartAddresses,
-  addImageToVariant,
-  addInventoryLevel,
-  addLineItem,
-  addShippingMethod,
-  cancelPayment,
-  capturePayment,
   confirmAuthVerification,
   createAuthIdentity,
-  createCart,
-  createCheckoutReadyCart,
-  createCustomer,
-  createCustomerAddress,
-  createOrder,
-  createPaymentForSession,
-  createPaymentSessionForCart,
-  createProduct,
-  createProductOption,
-  createProducts,
-  createProductVariant,
-  createProductVariants,
-  createSellableVariant,
-  fulfillOrder,
-  linkRepo,
   listAuthVerifications,
+  requestAuthVerification,
+  retrieveAuthIdentity,
+  updateAuthIdentity,
+  updateAuthVerification,
+} from '../factories/services/auth.js'
+import {
+  addCartAddresses,
+  addLineItem,
+  addShippingMethod,
+  createCart,
   listCartAddresses,
   listCarts,
+  listLineItems,
+  listShippingMethods,
+  retrieveCart,
+  updateCart,
+} from '../factories/services/cart.js'
+import { createCheckoutReadyCart, createSellableVariant } from '../factories/services/checkout.js'
+import {
+  createCustomer,
+  createCustomerAddress,
   listCustomerAddresses,
   listCustomers,
-  listLineItems,
-  listNotifications,
+  retrieveCustomer,
+} from '../factories/services/customer.js'
+import { retrieveFulfillment, updateFulfillment } from '../factories/services/fulfillment.js'
+import { addInventoryLevel, listReservationItems, stockVariant } from '../factories/services/inventory.js'
+import { linkRepo } from '../factories/services/link.js'
+import { listNotifications } from '../factories/services/notification.js'
+import {
+  createOrder,
+  fulfillOrder,
   listOrderAddresses,
   listOrderLineItems,
   listOrderShippingMethods,
   listOrders,
   listOrderTransactions,
-  listPrices,
+  retrieveOrder,
+  shipOrder,
+  updateOrder,
+} from '../factories/services/order.js'
+import {
+  cancelPayment,
+  capturePayment,
+  createPaymentForSession,
+  createPaymentSessionForCart,
+  retrievePayment,
+  retrievePaymentCollection,
+} from '../factories/services/payment.js'
+import { listPrices, priceVariants } from '../factories/services/pricing.js'
+import {
+  addImageToVariant,
+  createProduct,
+  createProductOption,
+  createProducts,
+  createProductVariant,
+  createProductVariants,
   listProductImages,
   listProductOptionsForProduct,
   listProducts,
   listProductVariantImages,
   listProductVariants,
-  listReservationItems,
-  listShippingMethods,
-  priceVariants,
-  requestAuthVerification,
-  retrieveAuthIdentity,
-  retrieveCart,
-  retrieveCustomer,
-  retrieveFulfillment,
-  retrieveOrder,
-  retrievePayment,
-  retrievePaymentCollection,
   retrieveProductVariant,
   setProductOptions,
-  shipOrder,
-  stockVariant,
-  updateAuthIdentity,
-  updateAuthVerification,
-  updateCart,
-  updateFulfillment,
-  updateOrder,
   updateProductVariant,
-} from '../factories/services/index.js'
+} from '../factories/services/product.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
 import { type CreateApiOptions, createApi, type TestApi } from './create-api.js'
 import { type CreateContainerOptions, createTestContainer, type TestContainer } from './create-container.js'
@@ -249,10 +251,12 @@ export type Fixtures = {
       providerIdentity: typeof generateProviderIdentityDTO
       createProviderIdentity: typeof generateCreateProviderIdentityDTO
       updateProviderIdentity: typeof generateUpdateProviderIdentityDTO
+      authVerification: typeof generateAuthVerificationDTO
       createAuthVerification: typeof generateCreateAuthVerificationDTO
       requestAuthVerification: typeof generateRequestAuthVerificationDTO
       confirmAuthVerification: typeof generateConfirmAuthVerificationDTO
       updateAuthVerification: typeof generateUpdateAuthVerificationDTO
+      authPasswordResetToken: typeof generateAuthPasswordResetTokenDTO
       createAuthPasswordResetToken: typeof generateCreateAuthPasswordResetTokenDTO
       createCustomer: typeof generateCreateCustomerDTO
       createCustomerAddress: typeof generateCreateCustomerAddressDTO
@@ -456,10 +460,12 @@ export const test = testBase.extend<Fixtures>({
         providerIdentity: generateProviderIdentityDTO,
         createProviderIdentity: generateCreateProviderIdentityDTO,
         updateProviderIdentity: generateUpdateProviderIdentityDTO,
+        authVerification: generateAuthVerificationDTO,
         createAuthVerification: generateCreateAuthVerificationDTO,
         requestAuthVerification: generateRequestAuthVerificationDTO,
         confirmAuthVerification: generateConfirmAuthVerificationDTO,
         updateAuthVerification: generateUpdateAuthVerificationDTO,
+        authPasswordResetToken: generateAuthPasswordResetTokenDTO,
         createAuthPasswordResetToken: generateCreateAuthPasswordResetTokenDTO,
         createCustomer: generateCreateCustomerDTO,
         createCustomerAddress: generateCreateCustomerAddressDTO,

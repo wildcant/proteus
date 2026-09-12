@@ -68,10 +68,12 @@ function featureStructureRules(options = {}) {
       name: 'no-loose-feature-files',
       comment:
         'A feature root holds folders, not files. A helper or constants file at the root is a file ' +
-        'with no stated kind — move it into utils/ (or api/, types/, ...). Only an index.ts ' +
-        "barrel, the feature's public face, may sit at the root.",
+        'with no stated kind — move it into utils/ (or api/, types/, ...). Not even an index.ts: a ' +
+        "feature has no public face here, because Biome's performance/noBarrelFile forbids the " +
+        'barrel that would be one, and ADR-0020 is why — routing cart through a barrel turns the ' +
+        'latent cart/checkout cycle into a real one.',
       severity: 'error',
-      module: { path: `^src/features/[^/]+/(?!(?:${vocabulary})/|index\\.ts$)[^/]+\\.[^/]+$` },
+      module: { path: `^src/features/[^/]+/(?!(?:${vocabulary})/)[^/]+\\.[^/]+$` },
       to: { path: '(?!)' },
     },
   ]

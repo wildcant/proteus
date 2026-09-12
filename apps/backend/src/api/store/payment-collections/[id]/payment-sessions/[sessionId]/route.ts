@@ -1,5 +1,5 @@
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { SessionIdParams, StoreUpdatePaymentSessionResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { repricePaymentSessionWorkflow } from '@workflows/payment/reprice-payment-session.js'
 
 export const PatchInput = { params: SessionIdParams }

@@ -18,7 +18,7 @@ type Token = (typeof TOKENS)[number]
 export type ThemeTokens = Record<Token, string>
 
 /** Only reachable in the browser: the Payment Element does not render on the server. */
-export function readThemeTokens(): ThemeTokens {
+function readThemeTokens(): ThemeTokens {
   const styles = getComputedStyle(document.documentElement)
   const entries = TOKENS.map((token) => [token, styles.getPropertyValue(token).trim()] as const)
   return Object.fromEntries(entries) as ThemeTokens

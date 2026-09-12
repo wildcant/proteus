@@ -42,7 +42,7 @@ export const DEFAULT_MARKET: Market = {
 }
 
 /** Where the resolved locale code is persisted, so a later visit to `/` lands on the same market. */
-export const MARKET_COOKIE = 'proteus_store_market'
+const MARKET_COOKIE = 'proteus_store_market'
 
 /** A year: the market is a preference, not a session, and re-choosing it every month is noise. */
 const MARKET_COOKIE_MAX_AGE = 60 * 60 * 24 * 365

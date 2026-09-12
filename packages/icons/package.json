@@ -7,7 +7,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build:icons": "node ./src/build-icons/cli.ts --input=./assets --output=. --templateSrc=./scripts/export-template.ts --renderUniqueKey --iconFileExtension=.ts --exportFileName=index.ts --exportNameSuffix=Icon --importFileExtension=.ts && biome format --write ./icons"
+    "build:icons": "node ./src/build-icons/cli.ts --input=./assets --output=. --templateSrc=./scripts/export-template.ts --renderUniqueKey --iconFileExtension=.ts --exportFileName=index.gen.ts --exportNameSuffix=Icon --importFileExtension=.ts && biome format --write ./icons"
   },
   "dependencies": {
     "react": "catalog:"

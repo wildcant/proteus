@@ -46,7 +46,7 @@ export type WritableLinkRepoKey = LinkColumnRegistry[keyof LinkColumnRegistry][n
 
 export type DismissLinksInput = { [K in keyof LinkColumnRegistry]?: string[] }
 
-export type WritableLinkDTOMap = {
+type WritableLinkDTOMap = {
   productVariantPriceSet: ProductVariantPriceSetDTO
   productVariantInventoryItem: ProductVariantInventoryItemDTO
   cartPaymentCollection: CartPaymentCollectionDTO

@@ -1,6 +1,6 @@
 import type { CreateNotificationDTO } from '@core/types/notification/mutations.js'
 import type { EnrichedOrderLineItemDTO, OrderAddressDTO, OrderDTO, OrderTotals } from '@core/types/order/common.js'
-import { NotificationTemplates } from '@core/utils/index.js'
+import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { prepareOrderConfirmationData } from './prepare-order-confirmation-data.js'
 
 export type OrderConfirmationInput = {

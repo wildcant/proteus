@@ -10,14 +10,14 @@
 
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { DRIZZLE_OPTIONS } from '../src/core/db/config.js'
+import { DB_OPTIONS } from '../src/core/db/config.js'
 import { env } from '../src/env.js'
-import { syncFulfillmentProviders } from '../src/modules/fulfillment/index.js'
-import { syncNotificationProviders } from '../src/modules/notification/index.js'
-import { syncPaymentProviders } from '../src/modules/payment/index.js'
+import { syncFulfillmentProviders } from '../src/modules/fulfillment/sync-providers.js'
+import { syncNotificationProviders } from '../src/modules/notification/sync-providers.js'
+import { syncPaymentProviders } from '../src/modules/payment/sync-providers.js'
 
 const client = postgres(env.POOLER_DATABASE_URL, { prepare: false })
-const db = drizzle(client, DRIZZLE_OPTIONS)
+const db = drizzle(client, DB_OPTIONS)
 const getDb = () => db
 
 await syncPaymentProviders(getDb)

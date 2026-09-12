@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
-import type { CreateStore, CreateStoreCurrency } from '../../../src/schema.js'
-import { storeCurrencyTable, storeTable } from '../../../src/schema.js'
+import type { CreateStore, CreateStoreCurrency } from '../../../src/schema.gen.js'
+import { storeCurrencyTable, storeTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 // --- Store ---

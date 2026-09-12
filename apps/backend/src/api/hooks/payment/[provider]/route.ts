@@ -1,12 +1,13 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { PaymentCapturedAction } from '@core/event-bus/events.js'
 import type { EventBus } from '@core/event-bus/types.js'
-import type { IPaymentModuleService } from '@core/types/index.js'
 import type { Logger } from '@core/types/logger.js'
 import type { PaymentActions } from '@core/types/payment/common.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { ProviderParams, WebhookReceivedResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 /**
  * What this route does with each action a provider can report. Total over `PaymentActions`, so

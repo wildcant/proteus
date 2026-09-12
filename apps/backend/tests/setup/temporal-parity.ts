@@ -1,18 +1,18 @@
-import { createTemporalWorkflowEngine } from '@core/workflows/temporal-adapter.js'
 import type { StepContext, WorkflowDefinition, WorkflowEngine } from '@core/workflows/types.js'
+import { createTemporalWorkflowEngine } from '@framework/workflows/temporal-adapter.js'
 import { Context } from '@temporalio/activity'
 import { Client, Connection } from '@temporalio/client'
 import { NativeConnection, Worker } from '@temporalio/worker'
 import type { AwilixContainer } from 'awilix'
-import { PAYLOAD_CONVERTER_PATH } from '../../src/core/temporal/config.js'
+import { env } from '../../src/env.js'
+import { PAYLOAD_CONVERTER_PATH } from '../../src/framework/temporal/config.js'
 import {
   createWorkflowActivities,
   type RegisteredWorkflowActivities,
   withStepActivities,
-} from '../../src/core/workflows/temporal/activities.js'
-import { WORKFLOWS_PATH } from '../../src/core/workflows/temporal/config.js'
-import type { WorkflowRegistry } from '../../src/core/workflows/temporal/registry.js'
-import { env } from '../../src/env.js'
+} from '../../src/framework/workflows/temporal/activities.js'
+import { WORKFLOWS_PATH } from '../../src/framework/workflows/temporal/config.js'
+import type { WorkflowRegistry } from '../../src/framework/workflows/temporal/registry.js'
 // The two process-global installers every Temporal test needs: a Runtime whose logger does not go
 // through `console.warn` (which `setup-test-env.ts` turns into a thrown error), and a
 // TypeScript-aware `require` hook, because Temporal loads `payloadConverterPath` with `require()`

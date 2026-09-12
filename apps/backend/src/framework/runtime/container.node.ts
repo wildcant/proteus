@@ -4,11 +4,11 @@ import { env } from '@env'
 import postgres from 'postgres'
 import { bootstrapContainer } from '../../container.js'
 import { createNodeDbProvider } from '../../core/db/node-provider.js'
-import { subscriberRegistry } from '../../core/event-bus/registry.js'
-import { createTemporalEventBus, type TemporalEventBus } from '../../core/event-bus/temporal-adapter.js'
-import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '../../core/workflows/temporal-adapter.js'
+import { subscriberRegistry } from '../event-bus/registry.js'
+import { createTemporalEventBus, type TemporalEventBus } from '../event-bus/temporal-adapter.js'
 import { WinstonLogger } from '../logger/winston-logger.js'
 import { registerScheduler } from '../scheduler/index.js'
+import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '../workflows/temporal-adapter.js'
 
 const client = postgres(env.DATABASE_URL, { prepare: false })
 const dbProvider = createNodeDbProvider(client)

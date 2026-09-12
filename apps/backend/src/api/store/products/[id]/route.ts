@@ -1,13 +1,12 @@
-import { AppError, ErrorTypes } from '@core/errors/index.js'
-import type {
-  IInventoryModuleService,
-  ILinkService,
-  IPricingModuleService,
-  IProductModuleService,
-} from '@core/types/index.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StorePricingContextParams, StoreProductResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
 import { buildVariantStock } from '@workflows/product/utils/build-variant-stock.js'

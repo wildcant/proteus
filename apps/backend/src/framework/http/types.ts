@@ -1,10 +1,10 @@
 import type { ErrorTypes } from '@core/errors/app-error.js'
-import type { HttpRequest, HttpResult, MiddlewareFunction } from '@server/ports.js'
+import type { HttpRequest, HttpResult, MiddlewareFunction } from '@framework/http/ports.js'
 import type { z } from 'zod'
 
-export type { MiddlewareFunction } from '@server/ports.js'
+export type { MiddlewareFunction } from '@framework/http/ports.js'
 
-export type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
+type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
 
 export function searchable<T>(...columns: Array<keyof T & string>): string[] {
   return columns
@@ -37,9 +37,9 @@ export const Tags = {
   WEBHOOKS: 'Webhooks',
 } as const
 
-export type Tag = (typeof Tags)[keyof typeof Tags]
+type Tag = (typeof Tags)[keyof typeof Tags]
 
-export type RouteInput = {
+type RouteInput = {
   params?: z.ZodType
   body?: z.ZodType
   query?: z.ZodType

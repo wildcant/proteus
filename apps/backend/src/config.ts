@@ -1,5 +1,5 @@
-import { defineAppConfig } from '@core/config/index.js'
-import type { InputConfig } from '@core/config/types.js'
+import type { InputConfig } from '@core/types/config.js'
+import { defineAppConfig } from '@framework/config/index.js'
 
 /**
  * The raw input, exported alongside the loaded config so a second composition root can start from

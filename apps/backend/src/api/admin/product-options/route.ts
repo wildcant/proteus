@@ -1,12 +1,12 @@
-import type { IProductModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   AdminCreateProductOption,
   AdminProductOptionListParams,
   AdminProductOptionListResponse,
   AdminProductOptionResponse,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { query: AdminProductOptionListParams }
 export const GetOutput = AdminProductOptionListResponse

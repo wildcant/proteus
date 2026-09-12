@@ -1,10 +1,9 @@
+import type { AuthIdentityDTO, ProviderIdentityDTO } from '../../core/types/auth/common.js'
 import type {
   AuthenticationInput,
   AuthenticationResponse,
-  AuthIdentityDTO,
   AuthIdentityProviderService,
-  ProviderIdentityDTO,
-} from '../../core/types/index.js'
+} from '../../core/types/auth/provider.js'
 import { AbstractAuthModuleProvider } from '../../core/utils/abstract-auth-module-provider.js'
 import { DEFAULT_SCRYPT_CONFIG, hashPassword, type ScryptConfig, verifyPassword } from './password.js'
 

@@ -1,12 +1,9 @@
 import { Field, FieldDescription, FieldError, FieldLabel } from '@proteus/ui'
 import { useId } from 'react'
-import {
-  type AcceptedFormat,
-  DEFAULT_MAX_FILE_SIZE,
-  type FileType,
-  FileUpload,
-  type RejectedFile,
-} from '#/components/common/file-upload'
+import type { AcceptedFormat } from '#/components/common/file-upload/constants'
+import { DEFAULT_MAX_FILE_SIZE } from '#/components/common/file-upload/constants'
+import type { FileType, RejectedFile } from '#/components/common/file-upload/file-upload'
+import { FileUpload } from '#/components/common/file-upload/file-upload'
 import { useFieldContext } from '#/lib/form-context.ts'
 import { formatFileSize } from '#/lib/format-file-size.ts'
 

@@ -1,20 +1,22 @@
 import type { BigNumber } from '../../../core/bignumber.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
+import type { Logger } from '../../../core/types/logger.js'
 import type {
   CalculatedPriceSetDTO,
-  Context,
-  CreatePriceDTO,
-  CreatePriceSetDTO,
   FilterablePriceProps,
-  FindConfig,
-  IPricingModuleService,
   PriceDTO,
   PriceSetDTO,
   PricingContext,
+} from '../../../core/types/pricing/common.js'
+import type {
+  CreatePriceDTO,
+  CreatePriceSetDTO,
   UpdatePriceDTO,
   UpdatePriceSetDTO,
   UpsertPriceSetDTO,
-} from '../../../core/types/index.js'
-import type { Logger } from '../../../core/types/logger.js'
+} from '../../../core/types/pricing/mutations.js'
+import type { IPricingModuleService } from '../../../core/types/pricing/service.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { PriceRepository } from '../repositories/price.js'
 import type { PriceSetRepository } from '../repositories/price-set.js'

@@ -1,21 +1,16 @@
 import { BigNumber } from '../../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
+import type { Logger } from '../../../core/types/logger.js'
 import type {
   ComputeOrderTotalsDTO,
-  Context,
-  CreateOrderAddressDTO,
-  CreateOrderDTO,
-  CreateOrderLineItemDTO,
-  CreateOrderShippingMethodDTO,
-  CreateOrderTransactionDTO,
   EnrichedOrderLineItemDTO,
   FilterableOrderAddressProps,
   FilterableOrderLineItemProps,
   FilterableOrderProps,
   FilterableOrderShippingMethodProps,
   FilterableOrderTransactionProps,
-  FindConfig,
-  IOrderModuleService,
   OrderAddressDTO,
   OrderAddressType,
   OrderAllowedActions,
@@ -26,9 +21,16 @@ import type {
   OrderTotals,
   OrderTransactionDTO,
   PaymentStatus,
+} from '../../../core/types/order/common.js'
+import type {
+  CreateOrderAddressDTO,
+  CreateOrderDTO,
+  CreateOrderLineItemDTO,
+  CreateOrderShippingMethodDTO,
+  CreateOrderTransactionDTO,
   UpdateOrderDTO,
-} from '../../../core/types/index.js'
-import type { Logger } from '../../../core/types/logger.js'
+} from '../../../core/types/order/mutations.js'
+import type { IOrderModuleService } from '../../../core/types/order/service.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { OrderRepository } from '../repositories/order.js'
 import type { OrderAddressRepository } from '../repositories/order-address.js'

@@ -6,7 +6,7 @@ import { isRegistered } from '#/lib/auth-token'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const CUSTOMERS_QUERY_KEY = 'customers' as const
-export const customersQueryKeys = queryKeysFactory(CUSTOMERS_QUERY_KEY)
+const customersQueryKeys = queryKeysFactory(CUSTOMERS_QUERY_KEY)
 
 type CustomerMeOptions = Omit<UseQueryOptions<CustomerResponse, Error, CustomerResponse>, 'queryFn' | 'queryKey'>
 export const customerMeQueryOptions = (options?: CustomerMeOptions) =>

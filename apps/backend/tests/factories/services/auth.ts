@@ -1,14 +1,16 @@
 import type { AwilixContainer } from 'awilix'
 import type {
-  ConfirmAuthVerificationDTO,
   CreateAuthIdentityDTO,
-  FilterableAuthVerificationProps,
-  IAuthModuleService,
-  RequestAuthVerificationDTO,
   UpdateAuthIdentityDTO,
   UpdateAuthVerificationDTO,
-} from '../../../src/core/types/index.js'
-import { Modules } from '../../../src/core/utils/index.js'
+} from '../../../src/core/types/auth/mutations.js'
+import type { IAuthModuleService } from '../../../src/core/types/auth/service.js'
+import type {
+  ConfirmAuthVerificationDTO,
+  FilterableAuthVerificationProps,
+  RequestAuthVerificationDTO,
+} from '../../../src/core/types/auth/verification.js'
+import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
   generateConfirmAuthVerificationDTO,
   generateCreateAuthIdentityDTO,

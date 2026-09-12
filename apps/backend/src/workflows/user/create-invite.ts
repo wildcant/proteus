@@ -1,7 +1,8 @@
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { InviteDTO } from '@core/types/user/invite-common.js'
 import type { IUserModuleService } from '@core/types/user/service.js'
-import { Modules, NotificationTemplates } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { env } from '@env'
 

@@ -36,8 +36,6 @@ export const productQueryOptions = (id: string) =>
 
 export const useProducts = (params?: ListProductsParams) => useQuery(productsListQueryOptions(params))
 
-export const useProduct = (id: string) => useQuery(productQueryOptions(id))
-
 export const useCreateProduct = (
   options?: UseMutationOptions<AdminCreateProductResponse, Error, AdminCreateProduct>,
 ) => {

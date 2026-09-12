@@ -1,4 +1,5 @@
-import type { CreateCustomerAddressDTO, CreateCustomerDTO, CustomerDTO, UpdateCustomerDTO } from '@core/types/index.js'
+import type { CustomerDTO } from '@core/types/customer/common.js'
+import type { CreateCustomerAddressDTO, CreateCustomerDTO, UpdateCustomerDTO } from '@core/types/customer/mutations.js'
 import { faker } from '@faker-js/faker'
 
 /**

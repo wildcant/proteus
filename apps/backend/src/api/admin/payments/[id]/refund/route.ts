@@ -1,7 +1,7 @@
-import type { IPaymentModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminPaymentResponse, AdminRefundPayment, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const PostInput = { params: IdParams, body: AdminRefundPayment }
 export const PostOutput = AdminPaymentResponse

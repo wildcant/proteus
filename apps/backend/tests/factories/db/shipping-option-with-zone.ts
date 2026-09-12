@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import type { CreateGeoZone, CreateShippingOption } from '../../../src/schema.js'
+import type { CreateGeoZone, CreateShippingOption } from '../../../src/schema.gen.js'
 import {
   createFulfillmentSet,
   createGeoZone,

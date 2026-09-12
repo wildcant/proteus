@@ -1,7 +1,7 @@
 // biome-ignore-all lint/style/useNamingConvention: Matches Cloudflare Workers type conventions (Bindings, Variables)
 
-export type Bindings = object
-export type Variables = object
+type Bindings = object
+type Variables = object
 
 export type Env = {
   Bindings?: Bindings

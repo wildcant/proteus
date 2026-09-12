@@ -5,7 +5,7 @@ import type {
   IAuthVerificationProvider,
   RequestAuthVerificationDTO,
   RequestAuthVerificationResult,
-} from '../types/auth/index.js'
+} from '../types/auth/verification.js'
 
 /**
  * Abstract base class for auth verification providers.

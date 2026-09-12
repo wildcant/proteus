@@ -49,7 +49,7 @@ const envSchema = z.object({
    * Temporal connection settings only. Which engine runs a workflow is not configured here:
    * `RUNTIME` decides it — `workerd` cannot load Temporal's native Worker and keeps the in-process
    * adapter, `node` gets Temporal — and a composition root can pin the other one through
-   * `projectConfig.workflows.engine`. See `core/workflows/engine-selection.ts`. Pointing at a
+   * `projectConfig.workflows.engine`. See `framework/workflows/engine-selection.ts`. Pointing at a
    * different cluster and choosing an engine stay separate knobs.
    */
   TEMPORAL_ADDRESS: z.string().default('localhost:7233'),
@@ -64,7 +64,7 @@ const envSchema = z.object({
    * `proteus_test_store` sharing one name means the dev Worker executes the e2e's checkout against
    * the dev database. Each e2e suite therefore names its own queue — see `defineE2eConfig`.
    *
-   * The literal is duplicated in `core/workflows/temporal/config.ts` rather than imported, because
+   * The literal is duplicated in `framework/workflows/temporal/config.ts` rather than imported, because
    * `index.workerd.ts` reaches this file and the `no-temporal-in-workerd` rule stops it reaching
    * that one. Both sides say so.
    */

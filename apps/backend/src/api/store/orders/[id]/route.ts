@@ -1,8 +1,8 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IOrderModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IOrderModuleService } from '@core/types/order/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreOrderResponse } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = StoreOrderResponse

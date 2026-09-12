@@ -4,7 +4,7 @@ import { asValue, createContainer } from 'awilix'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import { EmailpassProvider } from '../../../providers/auth-emailpass/emailpass.js'
-import * as models from '../models/index.js'
+import authModule from '../index.js'
 import { AuthIdentityRepository } from '../repositories/auth-identity.js'
 import { AuthPasswordResetTokenRepository } from '../repositories/auth-password-reset-token.js'
 import { AuthVerificationRepository } from '../repositories/auth-verification.js'
@@ -13,7 +13,7 @@ import { AuthModuleService } from '../services/auth-module-service.js'
 import { AuthProviderService } from '../services/auth-provider-service.js'
 import { VerificationProviderService } from '../services/verification-provider-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(authModule.models)
 
 let service: AuthModuleService
 

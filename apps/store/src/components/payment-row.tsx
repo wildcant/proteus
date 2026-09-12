@@ -80,4 +80,4 @@ function PaymentRow({ className, state, ...props }: ComponentProps<'div'> & Vari
   return <div data-slot="payment-row" className={cn(paymentRowVariants({ state, className }))} {...props} />
 }
 
-export { PaymentRow, paymentRowLabelVariants, paymentRowVariants }
+export { PaymentRow, paymentRowLabelVariants }

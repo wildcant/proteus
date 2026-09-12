@@ -31,7 +31,7 @@ export function selectableCountries(countries: AdminCountry[]): AdminCountry[] {
  * The region check is what makes an unknown code produce no suggestion rather than a wrong one:
  * `und-ZZ` maximizes to `en-Latn-US`, a locale that has nothing to do with the code asked about.
  */
-export function suggestLocaleCode(iso2: string): string | null {
+function suggestLocaleCode(iso2: string): string | null {
   const region = iso2.toUpperCase()
 
   try {

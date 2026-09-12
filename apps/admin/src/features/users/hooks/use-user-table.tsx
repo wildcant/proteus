@@ -1,5 +1,5 @@
 import type { AdminUser } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useUsers } from '#/features/users/api/users'
 
 export const useUserTable = () =>

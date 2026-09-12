@@ -1,6 +1,6 @@
-import { validateScopeProviderAssociation } from '@core/auth/utils/validate-scope-provider-association.js'
+import { validateScopeProviderAssociation } from '@framework/http/middlewares/validate-scope-provider-association.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AuthParams, ResetPasswordBody, ResetPasswordResponse } from '@proteus/http-schemas/auth'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { requestPasswordResetWorkflow } from '@workflows/auth/request-password-reset.js'
 
 export const PostInput = { body: ResetPasswordBody, params: AuthParams }

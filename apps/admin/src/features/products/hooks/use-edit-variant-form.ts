@@ -15,7 +15,7 @@ const editVariantSchema = AdminUpdateProductVariant.pick({ sku: true, material: 
   combination: z.custom<CombinationOption>().nullable(),
 })
 
-export type EditVariantFormParams = SubmitFormParams<AdminUpdateProductVariantResponse>
+type EditVariantFormParams = SubmitFormParams<AdminUpdateProductVariantResponse>
 
 type UseEditVariantFormArgs = {
   productId: string

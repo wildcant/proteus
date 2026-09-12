@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
-import { type CreateProductVariant, productVariantTable } from '../../../src/schema.js'
+import { type CreateProductVariant, productVariantTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 export function generateProductVariant(overrides?: Partial<CreateProductVariant>): CreateProductVariant {

@@ -1,0 +1,33 @@
+# `src/framework/temporal/` — shared Temporal plumbing
+
+This folder is the Temporal plumbing that more than one subsystem builds on: the workflow engine
+(`src/framework/workflows/temporal/`) and the event bus (`src/core/event-bus/`). That is the
+whole rule for what belongs here. A change to any file in this folder changes behaviour for every
+one of them at once, so it needs to be weighed against all of them — and, conversely, anything that
+serves only one of them belongs in that subsystem's own folder, not here. `check:structure` enforces the
+direction with `shared-temporal-stays-shared`: the subsystems import this folder, this folder never
+imports them.
+
+`payload-converter.ts` is the clearest case of shared **on purpose**. Two converters would mean two
+encodings of `BigNumber` and `Date` on the wire, and a value written by one subsystem and read by
+the other would come back subtly wrong rather than failing — corrupt data instead of an error. The
+same argument covers `failures.ts` / `failure-details.ts`, which are the one encoding of an error
+crossing the boundary, and `client.ts`, which is the one way to open a connection with that
+converter attached.
+
+`client.ts` is shared as a **factory**, not as an instance. Each subsystem calls it and gets its own
+`Client` on its own connection: the workflow engine starts workflow executions on `proteus`, the
+event bus starts standalone activities on `proteus-events`, and each hands its own connection back
+in its own `close()`. What must not diverge is the encoding; what must not be shared is the
+connection, because one subsystem's shutdown would take the other's client down with it.
+
+`config.ts` holds only `PAYLOAD_CONVERTER_PATH` for the same reason. The queue name, the workflow
+bundle path and the driver's workflow type are the workflow engine's alone and live in
+`src/framework/workflows/temporal/config.ts`.
+
+`ping.ts` is the exception, and the only one: it is an operator script (`pnpm run temporal:ping`)
+that starts the workflow driver's own `pingWorkflow` on the workflow task queue, so it does reach
+into `src/framework/workflows/temporal/`. It is exempted from the `check:structure` rule by name because
+nothing imports it — it is a process entrypoint, so the dependency ends there rather than dragging
+the engine into anything that uses this folder. A second probe for a second subsystem belongs with
+that subsystem.

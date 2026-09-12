@@ -10,12 +10,10 @@ import { getStoreProduct, listStoreProducts } from '#/api/generated/products/pro
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const PRODUCTS_QUERY_KEY = 'products' as const
-export const productsQueryKeys = queryKeysFactory<typeof PRODUCTS_QUERY_KEY, ListStoreProductsParams>(
-  PRODUCTS_QUERY_KEY,
-)
+const productsQueryKeys = queryKeysFactory<typeof PRODUCTS_QUERY_KEY, ListStoreProductsParams>(PRODUCTS_QUERY_KEY)
 
 export const PRODUCTS_DEFAULT_LIMIT = 12
-export const PRODUCTS_DEFAULT_OFFSET = 0
+const PRODUCTS_DEFAULT_OFFSET = 0
 
 /**
  * The orders the catalogue can actually be sorted by. Price is absent on purpose: the starting
@@ -34,7 +32,7 @@ export const PRODUCT_SORT_DEFAULT: ProductSort = 'newest'
  * catalogue shares one `createdAt` to the microsecond, and an offset pager over rows the database
  * considers equal is free to repeat one page's row on the next.
  */
-export const PRODUCT_SORTS: Record<ProductSort, string> = {
+const PRODUCT_SORTS: Record<ProductSort, string> = {
   newest: '-createdAt,id',
   az: 'title,id',
   za: '-title,id',

@@ -1,7 +1,7 @@
 import type { AwilixContainer } from 'awilix'
 import type { UpdateFulfillmentDTO } from '../../../src/core/types/fulfillment/mutations.js'
 import type { IFulfillmentModuleService } from '../../../src/core/types/fulfillment/service.js'
-import { Modules } from '../../../src/core/utils/index.js'
+import { Modules } from '../../../src/core/utils/modules-definition.js'
 import { generateUpdateFulfillmentDTO } from '../fulfillment-dto.js'
 
 // ---- Update ----

@@ -1,8 +1,9 @@
 import { test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'
-import type { ConfigModule } from '../../config/types.js'
 import { ErrorTypes } from '../../errors/app-error.js'
-import type { AuthIdentityDTO, IAuthModuleService, ProviderIdentityDTO } from '../../types/index.js'
+import type { AuthIdentityDTO, ProviderIdentityDTO } from '../../types/auth/common.js'
+import type { IAuthModuleService } from '../../types/auth/service.js'
+import type { ConfigModule } from '../../types/config.js'
 import { validateVerification } from '../utils/validate-verification.js'
 
 const customerVerificationConfig: ConfigModule['projectConfig']['http']['authVerificationsPerActor'] = {

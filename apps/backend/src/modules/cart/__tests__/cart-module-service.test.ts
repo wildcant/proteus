@@ -2,14 +2,14 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-import * as models from '../models/index.js'
+import cartModule from '../index.js'
 import { CartRepository } from '../repositories/cart.js'
 import { CartAddressRepository } from '../repositories/cart-address.js'
 import { CartLineItemRepository } from '../repositories/cart-line-item.js'
 import { CartShippingMethodRepository } from '../repositories/cart-shipping-method.js'
 import { CartModuleService } from '../services/cart-module-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(cartModule.models)
 
 let service: CartModuleService
 

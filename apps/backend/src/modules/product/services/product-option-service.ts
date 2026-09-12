@@ -1,15 +1,14 @@
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
+import type { Logger } from '../../../core/types/logger.js'
 import type {
-  Context,
-  CreateProductOptionDTO,
-  CreateProductOptionValueDTO,
   EnrichedProductVariantDTO,
   FilterableProductOptionCombinationProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
   FilterableProductVariantOptionProps,
-  FindConfig,
   PickerVariantDTO,
   ProductDTO,
   ProductOptionCombinationDTO,
@@ -21,12 +20,15 @@ import type {
   ProductScopedOptionDTO,
   ProductVariantDTO,
   ProductVariantOptionDTO,
+  VariantOptionValueDTO,
+} from '../../../core/types/product/common.js'
+import type {
+  CreateProductOptionDTO,
+  CreateProductOptionValueDTO,
   SetProductOptionsDTO,
   UpdateProductOptionDTO,
   UpsertProductOptionValueInput,
-  VariantOptionValueDTO,
-} from '../../../core/types/index.js'
-import type { Logger } from '../../../core/types/logger.js'
+} from '../../../core/types/product/mutations.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductRepository } from '../repositories/product.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'

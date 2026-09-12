@@ -1,4 +1,5 @@
-import { DataGrid, type DataGridColumn } from '#/components/data-grid'
+import { DataGrid } from '#/components/data-grid/data-grid'
+import type { DataGridColumn } from '#/components/data-grid/types'
 import { useProductOptions } from '#/features/product-options/api/product-options'
 import { buildPriceColumns } from '#/features/products/utils/price-columns'
 import { useStoreCurrencies } from '#/features/store/api/store'

@@ -5,26 +5,28 @@ import type {
   CartAddressType,
   CartDTO,
   CartLineItemDTO,
-  CartLineItemPlanDTO,
   CartShippingMethodDTO,
   CartTotalsDTO,
   ComputeCartTotalsDTO,
-  Context,
-  CreateCartAddressDTO,
-  CreateCartDTO,
-  CreateLineItemDTO,
-  CreateShippingMethodDTO,
   EnrichedCartLineItemDTO,
   FilterableCartAddressProps,
   FilterableCartLineItemProps,
   FilterableCartProps,
   FilterableCartShippingMethodProps,
-  FindConfig,
-  ICartModuleService,
+} from '../../../core/types/cart/common.js'
+import type {
+  CartLineItemPlanDTO,
+  CreateCartAddressDTO,
+  CreateCartDTO,
+  CreateLineItemDTO,
+  CreateShippingMethodDTO,
   UpdateCartDTO,
   UpdateCartWithAddressesDTO,
   UpdateLineItemDTO,
-} from '../../../core/types/index.js'
+} from '../../../core/types/cart/mutations.js'
+import type { ICartModuleService } from '../../../core/types/cart/service.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { CartRepository } from '../repositories/cart.js'

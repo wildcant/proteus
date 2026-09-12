@@ -1,4 +1,4 @@
-import type { CreateProduct, CreateProductVariant } from '../../../src/schema.js'
+import type { CreateProduct, CreateProductVariant } from '../../../src/schema.gen.js'
 import {
   createProductOption,
   createProductOptionValue,

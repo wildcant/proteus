@@ -1,5 +1,5 @@
 /** The route a gateway that leaves the tab sends the shopper back to. */
-export const CHECKOUT_RETURN_PATH = '/checkout-return'
+const CHECKOUT_RETURN_PATH = '/checkout-return'
 
 /**
  * Where a redirect payment method returns to.

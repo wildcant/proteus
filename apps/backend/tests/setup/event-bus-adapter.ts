@@ -1,4 +1,4 @@
-import type { EventBusAdapterName } from '@core/config/types.js'
+import type { EventBusAdapterName } from '@core/types/config.js'
 
 /**
  * Which event bus adapter `createTestContainer` pins when a test does not ask for one.

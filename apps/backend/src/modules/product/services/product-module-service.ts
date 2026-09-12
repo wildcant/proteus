@@ -1,12 +1,9 @@
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
+import type { Logger } from '../../../core/types/logger.js'
 import type {
   AppliedProductOptionChangeDTO,
-  Context,
-  CreateProductDTO,
-  CreateProductImageDTO,
-  CreateProductOptionDTO,
-  CreateProductOptionValueDTO,
-  CreateProductVariantDTO,
   EnrichedProductVariantDTO,
   FilterableProductImageProps,
   FilterableProductOptionCombinationProps,
@@ -16,8 +13,6 @@ import type {
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
-  FindConfig,
-  IProductModuleService,
   PickerVariantDTO,
   ProductDTO,
   ProductImageDTO,
@@ -30,6 +25,14 @@ import type {
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
+  VariantReassignmentDTO,
+} from '../../../core/types/product/common.js'
+import type {
+  CreateProductDTO,
+  CreateProductImageDTO,
+  CreateProductOptionDTO,
+  CreateProductOptionValueDTO,
+  CreateProductVariantDTO,
   SetProductOptionsDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
@@ -37,9 +40,8 @@ import type {
   UpsertProductImageInput,
   UpsertProductVariantDTO,
   VariantImageInput,
-  VariantReassignmentDTO,
-} from '../../../core/types/index.js'
-import type { Logger } from '../../../core/types/logger.js'
+} from '../../../core/types/product/mutations.js'
+import type { IProductModuleService } from '../../../core/types/product/service.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductRepository } from '../repositories/product.js'

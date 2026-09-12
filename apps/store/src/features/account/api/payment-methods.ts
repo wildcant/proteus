@@ -22,7 +22,7 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
  * It lives under `features/account` rather than under the checkout because the wallet is an
  * account concept and the feature graph runs `checkout -> account`, never the reverse.
  */
-export const paymentMethodsQueryKeys = queryKeysFactory('customer-payment-methods')
+const paymentMethodsQueryKeys = queryKeysFactory('customer-payment-methods')
 
 export const paymentMethodsQueryOptions = () =>
   queryOptions({
@@ -41,8 +41,6 @@ export const paymentMethodsQueryOptions = () =>
      */
     retry: 1,
   })
-
-export type SavedMethod = StoreSavedMethod
 
 /**
  * The wallet, plus the one thing a caller cannot recover from `data` alone.

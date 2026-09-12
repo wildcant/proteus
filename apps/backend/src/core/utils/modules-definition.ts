@@ -15,14 +15,3 @@ export const Modules = {
   REGION: 'region',
   STORE: 'store',
 } as const
-
-export const Links = {
-  PRODUCT_VARIANT_INVENTORY_ITEM: 'productVariantInventoryItem',
-  CART_PRODUCT: 'cartProduct',
-  CART_PAYMENT_COLLECTION: 'cartPaymentCollection',
-  PRODUCT_VARIANT_PRICE_SET: 'productVariantPriceSet',
-  ORDER_CART: 'orderCart',
-  ORDER_PAYMENT_COLLECTION: 'orderPaymentCollection',
-  ORDER_FULFILLMENT: 'orderFulfillment',
-  REGION_PAYMENT_PROVIDER: 'regionPaymentProvider',
-} as const

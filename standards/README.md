@@ -224,7 +224,7 @@ have: rules follow the code, so if yours are scattered, so is the thing you are 
 The backend half was migrated last, and `subscribers/` is what the transition looks like from the
 other end: it has no rules and four of the documents it would need, because a use case is a thing
 someone sets out to build whether or not anything checks it yet. Three of the four source guides had
-no mechanism left once their use cases were lifted out and were deleted; `src/core/event-bus/readme.md`
+no mechanism left once their use cases were lifted out and were deleted; `src/framework/event-bus/README.md`
 kept its half — the adapters, the two transports, what each guarantees — and the two documents beside
 `subscribers/` link into it rather than restating any of it.
 
@@ -355,7 +355,7 @@ to keep in step — so record it, with the gate that actually holds it, and move
 | A subscriber's `config` sets `name` | `name` is a required field, so omitting it is `TS2741` — the `typecheck` gate |
 | A subscriber imports no transport vocabulary | `subscribers-name-no-transport`, a dependency-cruiser rule — the `structure` gate |
 | A module's tests live in `__tests__/` | `module-tests-live-in-a-tests-folder`, likewise |
-| A third-party provider lives outside every module | `no-module-internals`, which refuses any import of `src/modules/` from outside one — so a provider reaching for a repository fails the moment it is written |
+| A third-party provider lives outside every module | `layer-graph-providers` — `providers` may import `core` and nothing else under `src/`, so a provider reaching for a repository fails the moment it is written |
 
 The test for this verdict is the same as for the one below: name the gate, and be able to say what
 introducing the violation prints. "Typecheck probably catches it" is not a verdict.
@@ -376,7 +376,7 @@ The verdict per check, so the question is not re-litigated:
 | `cascade-relationship-index` | **Runtime.** `references(() => other.id, { onDelete: 'cascade' })` resolves through a thunk, and the check is a *join*: this table's foreign-key column against the leading column of an index declared in a separate argument. A rule matches one node with constraints on its neighbourhood; it cannot bind a value in one subtree and test it in an unrelated one. |
 | `destroy-only-children` | **Runtime.** The question is about the *parent* — whether the table on the other end of the foreign key is soft-deletable — which is in another file. |
 | `guard-outside-its-closure` | **Runtime.** Transitive reachability over the whole module's cascade graph. Not a property of any file. |
-| `model-barrel-reachable` | **Cross-file, and a rule file cannot see two files at once.** A dependency-cruiser reachability rule from `models/index.ts` would catch the common case — a model file the barrel never mentions. It would *not* catch a named re-export that lists one table out of a file's two, which is precisely the case the cascade graph silently loses. Converting would trade the rule for a weaker one, so it stays. |
+| `model-reaches-cascade-graph` | **Cross-file, and a rule file cannot see two files at once.** A dependency-cruiser reachability rule from `index.ts` would catch the common case — a model file the module definition never imports. It would *not* catch a table imported for a repository and then left out of the `models` object, which is precisely the case the cascade graph silently loses. Converting would trade the rule for a weaker one, so it stays. |
 | `standard-timestamps` | **Converted.** Now `model-without-standard-timestamps` in `rules/backend/modules/`. The claim was always about the source — that a table spreads `...timestamps` — and moving it also moved its one exemption from a central `EXEMPT` map keyed by table name to an `ast-grep-ignore` at the declaration, which `--error=unused-suppression` can police. |
 | `models.ts`, `metadata.ts`, `run.ts`, `types.ts` | Harness, not rules. |
 

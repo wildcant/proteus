@@ -1,14 +1,15 @@
 import type { ILinkService } from '@core/types/link/service.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import type { IRegionModuleService } from '@core/types/region/service.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   AdminCreateRegion,
   AdminRegionListParams,
   AdminRegionListResponse,
   AdminRegionResponse,
 } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { createRegionWorkflow } from '@workflows/region/create-region.js'
 import { regionsWithRelations, regionWithRelations } from '@workflows/region/utils/region-with-relations.js'
 

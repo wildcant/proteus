@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./api": "./src/api/index.ts",
     "./test": "./src/test-exports.ts",
     "./test/database-url": "./tests/setup/database-url.ts",
     "./test/fake-gateway": "./tests/mocks/msw/handlers/stripe-wallet.ts"
@@ -15,11 +14,11 @@
     "db:test:prepare": "dotenvx run --env-file=../../.env.test -- tsx scripts/prepare-test-database.ts",
     "dev:test:e2e": "pnpm run db:test:prepare && pnpm run dev:test",
     "dev:workerd": "wrangler dev --test-scheduled --config wrangler.jsonc --env-file .env.workerd",
-    "worker": "dotenvx run -f ../../.env.local -- tsx src/core/workflows/temporal/worker.ts",
-    "worker:test": "pnpm run workflows:generate && NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx src/core/workflows/temporal/worker.ts",
-    "worker:dev": "dotenvx run -f ../../.env.local -- tsx watch --include 'src/workflows/**/*.ts' --exclude 'src/core/workflows/temporal/registry.gen.ts' src/core/workflows/temporal/worker.dev.ts",
-    "worker:events": "dotenvx run -f ../../.env.local -- tsx src/core/event-bus/temporal/worker.ts",
-    "temporal:ping": "dotenvx run -f ../../.env.local -- tsx src/core/temporal/ping.ts",
+    "worker": "dotenvx run -f ../../.env.local -- tsx src/framework/workflows/temporal/worker.ts",
+    "worker:test": "pnpm run workflows:generate && NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test -- tsx src/framework/workflows/temporal/worker.ts",
+    "worker:dev": "dotenvx run -f ../../.env.local -- tsx watch --include 'src/workflows/**/*.ts' --exclude 'src/framework/workflows/temporal/registry.gen.ts' src/framework/workflows/temporal/worker.dev.ts",
+    "worker:events": "dotenvx run -f ../../.env.local -- tsx src/framework/event-bus/temporal/worker.ts",
+    "temporal:ping": "dotenvx run -f ../../.env.local -- tsx src/framework/temporal/ping.ts",
     "temporal:worker-ready": "dotenvx run -f ../../.env.local --quiet -- tsx scripts/temporal/worker-ready.ts",
     "measure:workflow-payload": "NODE_ENV=test dotenvx run -f ../../.env.test -- tsx scripts/temporal/measure-payload.ts",
     "temporal:crash-resume": "NODE_ENV=test dotenvx run -f ../../.env.test -- tsx scripts/temporal/crash-resume.ts",
@@ -29,7 +28,7 @@
     "test:temporal": "dotenvx run -f ../../.env.test -- vitest run --config vitest.temporal.config.ts",
     "test:temporal:server": "dotenvx run -f ../../.env.test -- vitest run --config vitest.temporal-server.config.ts",
     "test:api": "dotenvx run -f ../../.env.test -- vitest run src/api",
-    "test:gate": "dotenvx run -f ../../.env.test -- vitest run src/api src/core/event-bus src/core/utils src/modules/payment src/framework/runtime",
+    "test:gate": "dotenvx run -f ../../.env.test -- vitest run src/api src/core/event-bus src/framework/event-bus src/core/utils src/modules/payment src/framework/runtime",
     "db:test:up": "docker compose -f docker-compose.test.yml up -d --wait",
     "db:test:down": "docker compose -f docker-compose.test.yml down",
     "typecheck": "tsc --noEmit",
@@ -57,9 +56,11 @@
     "workflows:generate": "tsx scripts/generate-workflow-registry.ts",
     "check:subscriber-registry": "tsx scripts/generate-subscriber-registry.ts --check",
     "subscribers:generate": "tsx scripts/generate-subscriber-registry.ts",
+    "check:schema-registry": "tsx scripts/generate-schema.ts --check",
+    "schema:generate": "tsx scripts/generate-schema.ts",
     "check:schema": "tsx scripts/checks/run.ts",
     "check:structure": "depcruise src/ --config structure/.dependency-cruiser.cjs",
-    "check:structure:graph": "depcruise src/ --config structure/.dependency-cruiser.cjs --output-type archi --exclude '(node_modules|__tests__)' --collapse 3 | dot -T svg -o structure/dependency-graph.svg && open structure/dependency-graph.svg"
+    "check:structure:graph": "depcruise src/ --config structure/.dependency-cruiser.cjs --output-type archi --collapse 3 --exclude '(node_modules|__tests__|^tests/|^\\.\\./|^src/env\\.ts$|^src/schema\\.type\\.ts$|^cloudflare:|^[a-z_]+$|^fs/promises$)' | dot -T svg -o structure/dependency-graph.svg && open structure/dependency-graph.svg"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "catalog:",

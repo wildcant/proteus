@@ -123,7 +123,7 @@ export type VariantReassignmentDTO = {
 }
 
 /** Why a variant cannot survive a change to its product's options. */
-export type VariantRemovalReason = 'value-dropped' | 'collapsed'
+type VariantRemovalReason = 'value-dropped' | 'collapsed'
 
 /**
  * What a proposed set of Product-Scoped Options would do to a product's variants. Structurally
@@ -202,7 +202,7 @@ export type ProductOptionWithValuesDTO = ProductOptionDTO & {
 }
 
 /** A Product Option Value as one product offers it, with that product's usage attached. */
-export type ProductScopedOptionValueDTO = ProductOptionValueDTO & {
+type ProductScopedOptionValueDTO = ProductOptionValueDTO & {
   /** Variants of this product carrying the value. Non-zero means it cannot be unlinked yet. */
   variantCount: number
 }
@@ -245,28 +245,6 @@ export type ProductProductOptionDTO = {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
-}
-
-export interface FilterableProductProductOptionProps extends BaseFilterable<FilterableProductProductOptionProps> {
-  id?: string | string[]
-  productId?: string | string[]
-  optionId?: string | string[]
-}
-
-export type ProductProductOptionValueDTO = {
-  id: string
-  productProductOptionId: string
-  optionValueId: string
-  createdAt: Date
-  updatedAt: Date
-  deletedAt: Date | null
-}
-
-export interface FilterableProductProductOptionValueProps
-  extends BaseFilterable<FilterableProductProductOptionValueProps> {
-  id?: string | string[]
-  productProductOptionId?: string | string[]
-  optionValueId?: string | string[]
 }
 
 export type ProductImageDTO = {

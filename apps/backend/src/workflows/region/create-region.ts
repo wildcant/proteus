@@ -1,6 +1,6 @@
 import type { RegionDTO } from '@core/types/region/common.js'
 import type { IRegionModuleService } from '@core/types/region/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { assertStoreSellsCurrencyStep, assertStoreSellsCurrencyThrows } from './steps/assert-store-sells-currency.js'
 import { setRegionPaymentProvidersStep } from './steps/set-region-payment-providers.js'

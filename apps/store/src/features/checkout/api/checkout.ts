@@ -46,7 +46,7 @@ type ShippingOptionsQueryOptions = Omit<
 >
 
 /** Shared query config. Keyed by cart *and* address, since the rates are quoted against both. */
-export const shippingOptionsQueryOptions = (
+const shippingOptionsQueryOptions = (
   cartId: string,
   params: ListStoreCartShippingOptionsParams,
   options?: ShippingOptionsQueryOptions,
@@ -74,7 +74,7 @@ export const useShippingOptions = (
  * not every method the deployment has enabled. The cart is also what carries the region, so a
  * cached list can never outlive the market it was quoted for.
  */
-export const paymentProvidersQueryOptions = (cartId: string) =>
+const paymentProvidersQueryOptions = (cartId: string) =>
   queryOptions({
     queryKey: paymentProviderKeys.list({ cartId }),
     queryFn: () => listStoreCartPaymentProviders(cartId),

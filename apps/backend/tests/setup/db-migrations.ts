@@ -7,7 +7,7 @@ const backendRoot = join(import.meta.dirname, '../../src')
 const modulesRoot = join(backendRoot, 'modules')
 
 /** One migration folder per module, plus the cross-module link tables. */
-export const moduleMigrations = readdirSync(modulesRoot, { withFileTypes: true })
+const moduleMigrations = readdirSync(modulesRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => ({
     migrationsFolder: join(modulesRoot, entry.name, 'migrations'),

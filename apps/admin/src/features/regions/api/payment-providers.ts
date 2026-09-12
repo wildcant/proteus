@@ -4,7 +4,7 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const paymentProviderKeys = queryKeysFactory<'paymentProviders'>('paymentProviders')
 
-export const paymentProvidersQueryOptions = () =>
+const paymentProvidersQueryOptions = () =>
   queryOptions({
     queryKey: paymentProviderKeys.lists(),
     queryFn: () => listPaymentProviders(),

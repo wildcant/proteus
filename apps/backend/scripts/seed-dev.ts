@@ -1,23 +1,22 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { BigNumber } from '../src/core/bignumber.js'
-import type {
-  IAuthModuleService,
-  ICartModuleService,
-  ICustomerModuleService,
-  IFileModuleService,
-  IFulfillmentModuleService,
-  IInventoryModuleService,
-  ILinkService,
-  INotificationModuleService,
-  IPaymentModuleService,
-  IPricingModuleService,
-  IProductModuleService,
-  IRegionModuleService,
-  IStoreModuleService,
-  IUserModuleService,
-} from '../src/core/types/index.js'
-import { ContainerRegistrationKeys, Modules } from '../src/core/utils/index.js'
+import type { IAuthModuleService } from '../src/core/types/auth/service.js'
+import type { ICartModuleService } from '../src/core/types/cart/service.js'
+import type { ICustomerModuleService } from '../src/core/types/customer/service.js'
+import type { IFileModuleService } from '../src/core/types/file/service.js'
+import type { IFulfillmentModuleService } from '../src/core/types/fulfillment/service.js'
+import type { IInventoryModuleService } from '../src/core/types/inventory/service.js'
+import type { ILinkService } from '../src/core/types/link/service.js'
+import type { INotificationModuleService } from '../src/core/types/notification/service.js'
+import type { IPaymentModuleService } from '../src/core/types/payment/service.js'
+import type { IPricingModuleService } from '../src/core/types/pricing/service.js'
+import type { IProductModuleService } from '../src/core/types/product/service.js'
+import type { IRegionModuleService } from '../src/core/types/region/service.js'
+import type { IStoreModuleService } from '../src/core/types/store/service.js'
+import type { IUserModuleService } from '../src/core/types/user/service.js'
+import { ContainerRegistrationKeys } from '../src/core/utils/container.js'
+import { Modules } from '../src/core/utils/modules-definition.js'
 import { container } from '../src/framework/runtime/container.node.js'
 import { amountIn, MARKETS, seedMarkets } from './seed/markets.js'
 

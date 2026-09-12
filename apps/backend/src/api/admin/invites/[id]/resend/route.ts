@@ -1,5 +1,5 @@
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminInviteResponse, IdParams } from '@proteus/http-schemas/admin'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { resendInviteWorkflow } from '@workflows/user/resend-invite.js'
 
 export const PostInput = { params: IdParams }

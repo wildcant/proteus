@@ -1,36 +1,42 @@
 import crypto from 'node:crypto'
-import { AppError, ErrorTypes } from '../../../core/errors/index.js'
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type {
+  AuthIdentityDTO,
+  FilterableAuthIdentityProps,
+  FilterableProviderIdentityProps,
+  ProviderIdentityDTO,
+} from '../../../core/types/auth/common.js'
+import type {
+  ConsumePasswordResetTokenDTO,
+  CreateAuthIdentityDTO,
+  CreateAuthPasswordResetTokenDTO,
+  CreateAuthVerificationDTO,
+  CreatePasswordResetTokenDTO,
+  CreateProviderIdentityDTO,
+  UpdateAuthIdentityDTO,
+  UpdateAuthVerificationDTO,
+  UpdateProviderIdentityDTO,
+} from '../../../core/types/auth/mutations.js'
 import type {
   AuthenticationInput,
   AuthenticationResponse,
-  AuthIdentityDTO,
   AuthIdentityProviderService,
+} from '../../../core/types/auth/provider.js'
+import type { IAuthModuleService } from '../../../core/types/auth/service.js'
+import type {
   AuthPasswordResetTokenDTO,
   AuthVerificationDTO,
   AuthVerificationService,
   ConfirmAuthVerificationDTO,
   ConfirmAuthVerificationResult,
-  ConsumePasswordResetTokenDTO,
   ConsumePasswordResetTokenResult,
-  Context,
-  CreateAuthIdentityDTO,
-  CreateAuthPasswordResetTokenDTO,
-  CreateAuthVerificationDTO,
-  CreatePasswordResetTokenDTO,
   CreatePasswordResetTokenResult,
-  CreateProviderIdentityDTO,
-  FilterableAuthIdentityProps,
   FilterableAuthVerificationProps,
-  FilterableProviderIdentityProps,
-  FindConfig,
-  IAuthModuleService,
-  ProviderIdentityDTO,
   RequestAuthVerificationDTO,
   RequestAuthVerificationResult,
-  UpdateAuthIdentityDTO,
-  UpdateAuthVerificationDTO,
-  UpdateProviderIdentityDTO,
-} from '../../../core/types/index.js'
+} from '../../../core/types/auth/verification.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { AuthIdentityRepository } from '../repositories/auth-identity.js'

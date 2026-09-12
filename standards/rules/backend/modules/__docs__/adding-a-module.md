@@ -100,8 +100,9 @@ export type IInventoryModuleService = {
 }
 ```
 
-**`index.ts`** re-exports all three, and `src/core/types/index.ts` gains
-`export * from './inventory/index.js'`.
+Nothing re-exports them. `core/types/` has no barrels — a consumer imports
+`@core/types/inventory/service.js`, which is what says which of the three files it took
+(ADR-0028).
 
 ### 3. Create the module folder
 
@@ -144,8 +145,9 @@ export type CreateInventoryItem = typeof inventoryItemTable.$inferInsert
   does the translation, so never write a column name out.
 - `pgEnum` for constrained string columns.
 
-Re-export from `models/index.ts`; that barrel is what the cascade graph is built from, so a table
-missing from it is a table the walker cannot reach.
+Nothing to re-export — there is no `models/` barrel. The table reaches drizzle through
+`src/schema.gen.ts`, which is generated from the files, and reaches the cascade graph through the
+`models` object in step 7. `model-reaches-cascade-graph` fails the build if you miss the second.
 
 ### 5. Create repositories
 
@@ -175,8 +177,6 @@ async findBySku(sku: string, context?: Context) {
   return rows[0] ?? null
 }
 ```
-
-Re-export from `repositories/index.ts`.
 
 ### 6. Create the module service
 
@@ -226,8 +226,6 @@ no gain. A module-level function is for logic genuinely shared across several cl
 then it belongs in `src/core/utils/`. When a service grows too large for one class, the split is an
 internal collaborator — see [modules](./modules.md#exactly-one-service-crosses-the-boundary).
 
-Re-export from `services/index.ts`.
-
 ### 7. Wire the module definition
 
 `index.ts` at the module root:
@@ -235,21 +233,25 @@ Re-export from `services/index.ts`.
 ```ts
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
-import * as models from './models/index.js'
+import { inventoryItemTable } from './models/inventory-item.js'
 import { InventoryItemRepository } from './repositories/inventory-item.js'
 import { InventoryModuleService } from './services/inventory-module-service.js'
 
 export default Module(Modules.INVENTORY, {
   service: InventoryModuleService,
-  models,
+  models: {
+    inventoryItemTable,
+  },
   repositories: {
     inventoryItemRepository: InventoryItemRepository,
   },
 })
 ```
 
-The repository key must match what the service expects in `InjectedDependencies`, and `models` is the
-whole barrel — that is what the cascade graph is derived from.
+The repository key must match what the service expects in `InjectedDependencies`. `models` must name
+every table the module owns — that is what the cascade graph is derived from, and
+`model-reaches-cascade-graph` checks it. Any other place that builds a graph from a literal — a
+`sync-providers.ts`, a test — is a separate list and is found and checked the same way.
 
 ### 8. Register in the bootstrap
 
@@ -320,9 +322,9 @@ No rule is held by this document. The two that fail while you are following thes
 ## What is deliberately not enforced
 
 - **The nine steps themselves.** Nothing checks that a module was registered in `container.ts`, that
-  its key is in the `Modules` enum, or that `core/types/index.ts` re-exports its types. Each one fails
-  loudly the first time something resolves the module, which is cheaper than a rule that would have to
-  read four files at once.
+  its key is in the `Modules` enum, or that its service implements the interface in `core/types/`.
+  Each one fails loudly the first time something resolves the module, which is cheaper than a rule
+  that would have to read four files at once.
 - **Private helpers over module-level functions.** A free function at the top of a service file is
   indistinguishable from any other export; the claim is about where a reader expects to find it, not
   about a shape.
@@ -333,12 +335,12 @@ No rule is held by this document. The two that fail while you are following thes
 ## Checklist
 
 - [ ] Module key added to `Modules` enum
-- [ ] Public types in `core/types/<name>/` — common, mutations, service, index
-- [ ] Re-export added to `core/types/index.ts`
-- [ ] Model(s) with a prefixed ID and `...timestamps`, re-exported from `models/index.ts`
+- [ ] Public types in `core/types/<name>/` — common, mutations, service
+- [ ] Model(s) with a prefixed ID and `...timestamps`
 - [ ] Repository extending `BaseRepository(<table>)`
 - [ ] Service implementing the interface from `core/types/`
-- [ ] `Module()` definition with `models` and matching repository keys
+- [ ] `Module()` definition naming every table in `models`, and matching repository keys
+- [ ] `pnpm --filter backend run schema:generate` run and `src/schema.gen.ts` committed
 - [ ] Registered in `container.ts` via `bootstrapModule()`
 - [ ] `database.config.ts` configured, with its own migrations table
 - [ ] Migration generated with `--name` and run — one `0000_*` file per module, regenerated rather

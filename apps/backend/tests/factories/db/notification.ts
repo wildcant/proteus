@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray } from 'drizzle-orm'
 import type { NotificationTemplate } from '../../../src/core/utils/notification-templates.js'
-import { notificationTable } from '../../../src/schema.js'
+import { notificationTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 type NotificationFilters = {

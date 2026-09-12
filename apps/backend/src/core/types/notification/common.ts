@@ -34,16 +34,6 @@ export type NotificationDTO = {
   deletedAt: Date | null
 }
 
-export type NotificationProviderDTO = {
-  id: string
-  name: string
-  isEnabled: boolean
-  channels: NotificationChannel[]
-  createdAt: Date
-  updatedAt: Date
-  deletedAt: Date | null
-}
-
 // ---------------------------------------------------------------------------
 // Filterable types
 // ---------------------------------------------------------------------------
@@ -59,11 +49,6 @@ export interface FilterableNotificationProps extends BaseFilterable<FilterableNo
   idempotencyKey?: string | string[]
   createdAt?: OperatorMap<Date>
   updatedAt?: OperatorMap<Date>
-}
-
-export interface FilterableNotificationProviderProps extends BaseFilterable<FilterableNotificationProviderProps> {
-  id?: string | string[]
-  isEnabled?: boolean
 }
 
 // ---------------------------------------------------------------------------

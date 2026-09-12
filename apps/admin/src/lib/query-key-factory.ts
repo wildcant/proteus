@@ -1,7 +1,7 @@
 // biome-ignore lint/suspicious/noExplicitAny: query key factory needs flexible typing for arbitrary query shapes
 type AnyQuery = any
 
-export type TQueryKey<TKey, TListQuery = AnyQuery, TDetailQuery = string> = {
+type TQueryKey<TKey, TListQuery = AnyQuery, TDetailQuery = string> = {
   all: readonly [TKey]
   lists: () => readonly [...TQueryKey<TKey>['all'], 'list']
   list: (query?: TListQuery) => readonly [...ReturnType<TQueryKey<TKey>['lists']>, { query: TListQuery }]

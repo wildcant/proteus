@@ -1,4 +1,4 @@
-import { IMAGE_FORMATS } from '#/components/common/file-upload'
+import { IMAGE_FORMATS } from '#/components/common/file-upload/constants'
 import { FileUploadField } from '#/components/form/file-upload-field.tsx'
 import type { ProductMedia } from '#/features/products/utils/media'
 

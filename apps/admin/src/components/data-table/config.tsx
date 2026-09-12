@@ -1,6 +1,6 @@
 import { formatDate, formatDatetime } from '@proteus/utils'
-import { configureDataTable } from '#/components/data-table'
 import { ThumbnailCell } from '#/components/data-table/data-table-ui/thumbnail-cell'
+import { configureDataTable } from '#/components/data-table/utils/configure'
 
 export function setupDataTable() {
   configureDataTable({

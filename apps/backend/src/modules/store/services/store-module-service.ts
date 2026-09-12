@@ -1,15 +1,14 @@
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
 import type {
-  Context,
-  CreateStoreDTO,
   FilterableStoreCurrencyProps,
   FilterableStoreProps,
-  FindConfig,
-  IStoreModuleService,
   StoreCurrencyDTO,
   StoreDTO,
-  UpdateStoreDTO,
-} from '../../../core/types/index.js'
+} from '../../../core/types/store/common.js'
+import type { CreateStoreDTO, UpdateStoreDTO } from '../../../core/types/store/mutations.js'
+import type { IStoreModuleService } from '../../../core/types/store/service.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { StoreRepository } from '../repositories/store.js'
 import type { StoreCurrencyRepository } from '../repositories/store-currency.js'

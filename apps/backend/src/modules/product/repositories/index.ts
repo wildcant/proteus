@@ -1,6 +1,0 @@
-export { ProductRepository } from './product.js'
-export { ProductImageRepository } from './product-image.js'
-export { ProductOptionRepository } from './product-option.js'
-export { ProductOptionValueRepository } from './product-option-value.js'
-export { ProductVariantRepository } from './product-variant.js'
-export { ProductVariantImageRepository } from './product-variant-image.js'

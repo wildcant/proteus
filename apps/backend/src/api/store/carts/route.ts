@@ -1,7 +1,8 @@
-import type { ICartModuleService, ICustomerModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { ICustomerModuleService } from '@core/types/customer/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { CreateCart, StoreCreateCartResponse, StorePricingContextParams } from '@proteus/http-schemas/store'
-import type { HttpRequest, HttpResult } from '@server/ports.js'
 import { addToCartWorkflow } from '@workflows/cart/add-to-cart.js'
 import { setPricingContext } from '../middlewares.js'
 

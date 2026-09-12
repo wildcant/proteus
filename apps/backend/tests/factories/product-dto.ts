@@ -1,14 +1,14 @@
+import type { ProductOptionRenderAs } from '@core/types/product/common.js'
 import type {
   CreateProductDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductVariantDTO,
-  ProductOptionRenderAs,
   SetProductOptionsDTO,
   UpdateProductDTO,
   UpdateProductVariantDTO,
   VariantImageInput,
-} from '@core/types/index.js'
+} from '@core/types/product/mutations.js'
 import { faker } from '@faker-js/faker'
 
 export function generateCreateProductDTO(overrides?: Partial<CreateProductDTO>): CreateProductDTO {

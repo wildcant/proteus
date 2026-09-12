@@ -1,7 +1,7 @@
 import { and, eq, isNull } from 'drizzle-orm'
 import type { Context } from '../../core/types/context.js'
 import { BaseRepository } from '../../core/utils/base-repository.js'
-import { orderFulfillmentTable } from '../definitions/index.js'
+import { orderFulfillmentTable } from '../definitions/order-fulfillment.js'
 
 export class OrderFulfillmentRepository extends BaseRepository(orderFulfillmentTable) {
   async findByOrderId(orderId: string, context?: Context) {

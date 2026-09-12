@@ -1,6 +1,6 @@
 import { Badge } from '@proteus/ui'
 import type { AdminProductVariant } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProductOptionsForProduct } from '#/features/product-options/api/product-options'
 import { useProductVariants } from '#/features/products/api/product-variants'
 import { VariantRowActions } from '#/features/products/components/variant/variant-row-actions'

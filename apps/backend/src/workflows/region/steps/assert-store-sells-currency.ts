@@ -1,6 +1,6 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { IStoreModuleService } from '@core/types/store/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { type WorkflowContext, WorkflowTerminalError } from '@core/workflows/types.js'
 
 /** A step in its own file still owns its failure contract; the workflow calling it spreads this. */

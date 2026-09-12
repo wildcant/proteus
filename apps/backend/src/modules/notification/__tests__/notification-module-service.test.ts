@@ -3,12 +3,12 @@ import { test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-import * as models from '../models/index.js'
+import notificationModule from '../index.js'
 import { NotificationRepository } from '../repositories/notification.js'
 import { NotificationModuleService } from '../services/notification-module-service.js'
 import type { NotificationProviderService } from '../services/notification-provider-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(notificationModule.models)
 
 function createMockProviderService() {
   return {

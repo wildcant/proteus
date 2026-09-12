@@ -171,7 +171,7 @@ would be the import the rule exists to forbid.
 need `activity.enableStandalone` in dynamic config: without it a self-hosted 1.31.2 answers
 `Standalone activity is disabled`, and because `emit` never rejects, a stack that missed the flag would
 drop *every* event with one log line each. That is why the events Worker asks the server at boot and
-refuses to start when the answer is no (`src/core/event-bus/temporal/preflight.ts`).
+refuses to start when the answer is no (`src/framework/event-bus/temporal/preflight.ts`).
 
 The fallback, if the preview surface moves, is a dedicated `dispatchEvent` workflow type: one
 registered workflow type and no redesign. The isolation above holds either way.
@@ -202,7 +202,7 @@ module graph, and `check:structure` cannot follow a runtime directory scan.
 
 - ADR-0024 — why grouped events were not built
 - ADR-0021, ADR-0022 — the workflow engine this mirrors, and the runtime split it inherits
-- `apps/backend/src/core/event-bus/readme.md` — the working guide, kept next to the code
-- `apps/backend/src/core/event-bus/adapter-selection.ts` — the derivation, with the reasoning inline
+- `apps/backend/src/framework/event-bus/README.md` — the working guide, kept next to the code
+- `apps/backend/src/framework/event-bus/adapter-selection.ts` — the derivation, with the reasoning inline
 - `apps/backend/structure/.dependency-cruiser.cjs` — `event-bus-and-workflows-stay-peers`,
   `shared-temporal-stays-shared`, `no-temporal-in-workerd`

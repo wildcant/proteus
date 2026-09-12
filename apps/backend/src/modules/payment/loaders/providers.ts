@@ -26,7 +26,7 @@ type ProviderConstructor = AnyProviderConstructor & {
 }
 
 /** Computes the full list of provider keys (including system_default) from a config array. */
-export function computeProviderKeys(configs?: ProviderConfig[]): string[] {
+function computeProviderKeys(configs?: ProviderConfig[]): string[] {
   const keys = [SYSTEM_PROVIDER_KEY]
   if (configs) {
     for (const config of configs) {

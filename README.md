@@ -30,7 +30,6 @@ This prototype proves you don't have to accept that. It demonstrates:
 - **Swappable HTTP frameworks** — same route handlers work with a zero-dep router, Express, or Hono
 - **Swappable platform runners** — Node.js, Cloudflare Workers, Bun, Deno, Vercel, Lambda — same code
 - **Swappable payment providers** — Stripe, system (mark-as-paid), or your own — same payment module
-- **Backend as a library** — the store can call services directly via the DI container, skipping HTTP entirely
 - **True module independence** — modules don't import each other; cross-module concerns live in dedicated link modules and workflows
 
 ---

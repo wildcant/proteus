@@ -1,6 +1,6 @@
 import { AdminOrderListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
-import { DataTable } from '#/components/data-table'
+import { DataTable } from '#/components/data-table/data-table'
 import { PageLayout } from '#/components/layout/page-layout'
 import { ordersListQueryOptions } from '#/features/orders/api/orders'
 import { useOrderTable } from '#/features/orders/hooks/use-order-table'

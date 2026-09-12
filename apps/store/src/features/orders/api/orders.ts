@@ -5,10 +5,10 @@ import { getStoreOrder, listStoreOrders } from '#/api/generated/orders/orders'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const ORDERS_QUERY_KEY = 'orders' as const
-export const ordersQueryKeys = queryKeysFactory<typeof ORDERS_QUERY_KEY, ListStoreOrdersParams>(ORDERS_QUERY_KEY)
+const ordersQueryKeys = queryKeysFactory<typeof ORDERS_QUERY_KEY, ListStoreOrdersParams>(ORDERS_QUERY_KEY)
 
 /** Five rows is what the account panel shows before it pages. */
-export const ORDERS_DEFAULT_LIMIT = 5
+const ORDERS_DEFAULT_LIMIT = 5
 export const ORDERS_DEFAULT_OFFSET = 0
 
 /**

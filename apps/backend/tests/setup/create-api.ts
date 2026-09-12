@@ -4,7 +4,7 @@
  */
 
 import { createServer, type Server } from 'node:http'
-import type { errorHandler } from '@core/errors/index.js'
+import type { errorHandler } from '@core/errors/error-handler.js'
 import type { Logger } from '@core/types/logger.js'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'
@@ -47,14 +47,14 @@ export type TestResponse<T = Record<string, unknown>> = {
   body: InferBody<T>
 }
 
-export type RequestOptions = {
+type RequestOptions = {
   headers?: Record<string, string>
   /** Serialized with `qs`, matching the parser the server uses, so nested operator params
    *  (`$eq`, `$in`) survive the trip. */
   query?: Record<string, unknown>
 }
 
-export type RequestVerb = <T = Record<string, unknown>>(
+type RequestVerb = <T = Record<string, unknown>>(
   path: string,
   body?: object,
   options?: RequestOptions,

@@ -1,4 +1,4 @@
-export type CreateStoreCurrencyDTO = {
+type CreateStoreCurrencyDTO = {
   currencyCode: string
   isDefault?: boolean
 }

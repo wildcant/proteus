@@ -3,7 +3,8 @@ import type { ILinkService } from '@core/types/link/service.js'
 import type { OrderDTO } from '@core/types/order/common.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 
 type CancelOrderInput = { orderId: string }

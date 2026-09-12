@@ -1,7 +1,7 @@
 import type { AwilixContainer } from 'awilix'
 import type { FilterableNotificationProps } from '../../../src/core/types/notification/common.js'
 import type { INotificationModuleService } from '../../../src/core/types/notification/service.js'
-import { Modules } from '../../../src/core/utils/index.js'
+import { Modules } from '../../../src/core/utils/modules-definition.js'
 
 // ---- Reads ----
 

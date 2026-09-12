@@ -1,6 +1,6 @@
 import type { SubscriberArgs, SubscriberConfig } from '@core/event-bus/types.js'
 import type { Logger } from '@core/types/logger.js'
-import { ContainerRegistrationKeys } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 
 /**
  * The bus's round trip, the way `pingWorkflow` is the workflow engine's.

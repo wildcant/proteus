@@ -8,7 +8,7 @@ import type {
   CreateShippingOption,
   CreateShippingOptionType,
   CreateShippingProfile,
-} from '../../../src/schema.js'
+} from '../../../src/schema.gen.js'
 import {
   fulfillmentProviderTable,
   fulfillmentSetTable,
@@ -17,7 +17,7 @@ import {
   shippingOptionTable,
   shippingOptionTypeTable,
   shippingProfileTable,
-} from '../../../src/schema.js'
+} from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 // --- FulfillmentProvider ---

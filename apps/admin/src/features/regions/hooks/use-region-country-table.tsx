@@ -1,5 +1,5 @@
 import type { AdminCountry } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useCountries } from '#/features/regions/api/countries'
 import { RegionCountryRowActions } from '#/features/regions/components/region-country-row-actions'
 

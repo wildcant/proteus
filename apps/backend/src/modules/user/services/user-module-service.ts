@@ -1,20 +1,14 @@
 import { env } from '@env'
 import jwt from 'jsonwebtoken'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
-import type {
-  Context,
-  CreateInviteDTO,
-  CreateUserDTO,
-  FilterableInviteProps,
-  FilterableUserProps,
-  FindConfig,
-  InviteDTO,
-  IUserModuleService,
-  UpdateInviteDTO,
-  UpdateUserDTO,
-  UserDTO,
-} from '../../../core/types/index.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
+import type { FilterableUserProps, UserDTO } from '../../../core/types/user/common.js'
+import type { FilterableInviteProps, InviteDTO } from '../../../core/types/user/invite-common.js'
+import type { CreateInviteDTO, UpdateInviteDTO } from '../../../core/types/user/invite-mutations.js'
+import type { CreateUserDTO, UpdateUserDTO } from '../../../core/types/user/mutations.js'
+import type { IUserModuleService } from '../../../core/types/user/service.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { InviteRepository } from '../repositories/invite.js'
 import type { UserRepository } from '../repositories/user.js'

@@ -1,4 +1,4 @@
-import type { WorkflowEngineName } from '@core/config/types.js'
+import type { WorkflowEngineName } from '@core/types/config.js'
 
 /**
  * Which engine `createTestContainer` pins when a test does not ask for one.

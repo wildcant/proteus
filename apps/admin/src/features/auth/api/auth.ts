@@ -9,7 +9,7 @@ import { clearToken, setToken } from '#/lib/auth-token'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const AUTH_QUERY_KEY = 'auth' as const
-export const authQueryKeys = queryKeysFactory(AUTH_QUERY_KEY)
+const authQueryKeys = queryKeysFactory(AUTH_QUERY_KEY)
 
 export const meQueryOptions = () =>
   queryOptions({
