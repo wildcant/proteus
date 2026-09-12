@@ -206,8 +206,8 @@ async function doomedWorkerOn(taskQueue: string): Promise<Worker> {
 }
 
 /**
- * A scheduler that records what it warned about, so the operational signal the never-unpause
- * decision owes an operator is asserted rather than assumed.
+ * A scheduler that records what it warned about, so the operational signal reconciling over a
+ * server-side pause owes an operator is asserted rather than assumed.
  */
 function schedulerCollectingWarnings(warnings: string[]): TemporalCronScheduler {
   return new TemporalCronScheduler({
@@ -415,7 +415,7 @@ describe('the temporal cron scheduler', () => {
   )
 
   it(
-    'leaves an enabled job paused when its schedule was already paused, and says so',
+    'drives the pause flag from the definition in both directions, and warns when it unpauses',
     async () => {
       const warnings: string[] = []
       const speaking = schedulerCollectingWarnings(warnings)
@@ -430,20 +430,32 @@ describe('the temporal cron scheduler', () => {
         await speaking.schedule(toggled)
         expect((await handleFor('toggled-job').describe()).state.paused).toBe(true)
 
-        // Enabled now, and with a different cron expression — so that "still paused" cannot be
-        // explained by the update having been a no-op. The spec must move; the pause must not.
+        // Enabled now, and with a different cron expression — so that the unpause cannot be
+        // explained away as the schedule having been recreated rather than updated. Both move.
         await speaking.schedule({ ...toggled, schedule: CronExpression.EVERY_DAY_AT_NOON, disabled: false })
 
-        const description = await handleFor('toggled-job').describe()
-        expect(description.spec.calendars?.[0]).toMatchObject({ hour: [{ start: 12, end: 12, step: 1 }] })
+        const enabled = await handleFor('toggled-job').describe()
+        expect(enabled.spec.calendars?.[0]).toMatchObject({ hour: [{ start: 12, end: 12, step: 1 }] })
+        expect(enabled.state.paused).toBe(false)
 
-        // The deliberate deviation from "reconcile to the declared state", pinned. `pauseOnFailure`
-        // and an operator's own pause write this one flag and Temporal cannot tell them apart, so
-        // clearing it at boot would undo an incident containment on the next deploy.
-        expect(description.state.paused).toBe(true)
+        // Nothing in this test paused the schedule by hand, so the warning is the only trace that
+        // reconciliation overruled a pause it did not set — assert it fires on the transition.
+        expect(warnings.join('\n')).toContain('"toggled-job" was paused on the server and has been unpaused')
 
-        // And it is not silent, which is the whole of what makes the deviation affordable.
-        expect(warnings.join('\n')).toContain('"toggled-job" is enabled but its schedule is paused')
+        // A pause applied outside the definition — an operator's, or `pauseOnFailure`'s — and then
+        // reconciled over. This is the cost ADR-0029 accepts, pinned so it cannot regress silently.
+        await handleFor('toggled-job').pause('an operator stopped this job')
+        expect((await handleFor('toggled-job').describe()).state.paused).toBe(true)
+
+        await speaking.schedule({ ...toggled, schedule: CronExpression.EVERY_DAY_AT_NOON, disabled: false })
+        const reconciled = await handleFor('toggled-job').describe()
+        expect(reconciled.state.paused).toBe(false)
+        // The operator's reason is replaced rather than left standing over a running schedule.
+        expect(reconciled.state.note).not.toContain('an operator stopped this job')
+
+        // And back off again: `disabled` re-pauses, so the definition is authoritative both ways.
+        await speaking.schedule({ ...toggled, schedule: CronExpression.EVERY_DAY_AT_NOON, disabled: true })
+        expect((await handleFor('toggled-job').describe()).state.paused).toBe(true)
       } finally {
         await speaking.remove('toggled-job')
         await speaking.shutdown()

@@ -39,6 +39,13 @@ import type { CronJobInput } from './types.js'
  *
  * A disabled job still gets its Schedule, paused. That is what keeps "turn it back on" a one-line
  * edit rather than a rediscovery that the job ever existed.
+ *
+ * **The definition is authoritative, including the pause flag.** Every reconcile writes `paused`
+ * from `disabled`, so enabling a job unpauses its Schedule exactly as disabling one pauses it, and
+ * the source file is the only place the answer to "does this job run" lives. The price is that a
+ * pause applied on the server — by `pauseOnFailure`, or by an operator in the UI — survives only
+ * until the next boot; unpausing one logs a warning naming what it overruled. ADR-0029 records why
+ * this is the trade we take.
  */
 
 export type TemporalCronSchedulerOptions = {
@@ -118,8 +125,8 @@ export class TemporalCronScheduler implements CronScheduler {
 
   /**
    * `schedule()`, plus the one fact `start()` needs back from it: whether the job's Schedule is
-   * paused now that it has been reconciled. That is not the same question as whether the job is
-   * declared `disabled`, and the gap between the two is what `start()` has to report.
+   * paused now that it has been reconciled — which, since reconciliation is total, is `disabled`
+   * read back off the server rather than off the definition.
    */
   private async reconcile(job: JobDefinition): Promise<{ paused: boolean }> {
     const options = this.optionsFor(job)
@@ -150,34 +157,46 @@ export class TemporalCronScheduler implements CronScheduler {
         state: {
           ...previous.state,
           /**
-           * Disabling pauses. Enabling does **not** unpause, deliberately: `pauseOnFailure` and an
-           * operator's own pause both write this flag, and a boot that cleared it would restart a
-           * job that was stopped for a reason — the next deploy silently undoing the thing that
-           * contained the incident. Turning a paused job back on is a Temporal UI or CLI action,
-           * the same one that paused it.
+           * The definition wins, in both directions: disabling pauses, and enabling unpauses. The
+           * `disabled` flag in the source file is the whole answer to "should this job run", so a
+           * schedule that disagrees with it is drift to be corrected at boot like the spec and the
+           * action are, not a state to be preserved.
+           *
+           * The cost is stated in ADR-0029 and is not small: `pauseOnFailure` and an operator's
+           * own pause write this same flag, and Temporal cannot tell either of them from a
+           * deliberate one — so both last only until the next restart. `note` below is what keeps
+           * that from being silent, and it is the reason a pause meant to survive belongs in the
+           * definition rather than in the UI.
            */
-          paused: job.disabled === true ? true : previous.state.paused,
+          paused: job.disabled === true,
+          /**
+           * Overwritten rather than carried through, because `previous.state.note` is the sentence
+           * explaining a pause this reconcile may have just cleared — `pauseOnFailure` writes one,
+           * and the UI prompts for one. Leaving it in place over a running schedule would leave
+           * "paused due to workflow failure" sitting under a job that is firing every minute.
+           */
+          note: `reconciled from the job definition at ${new Date().toISOString()}`,
         },
         typedSearchAttributes: previous.typedSearchAttributes,
       }
     })
 
-    const paused = job.disabled === true ? true : wasPaused
-
     /**
-     * The cost of the decision above, said out loud where someone can act on it. A job that is
-     * enabled in code and paused on the server will never fire, and the only other trace of that
-     * is a flag in a UI nobody is looking at. A code comment is not a signal to whoever is on call.
+     * Unpausing is the half of this that undoes someone else's decision, so it is the half that
+     * gets said out loud. A schedule does not pause itself for no reason: either an operator did
+     * it, or `pauseOnFailure` did, and in both cases the run history holds a "why" that this
+     * process has just overruled on the strength of a flag in a source file.
      */
-    if (!job.disabled && wasPaused) {
+    if (wasPaused && !job.disabled) {
       this.logger.warn(
-        `[CronScheduler] "${job.name}" is enabled but its schedule is paused, and reconciliation ` +
-          "does not unpause — it cannot tell an operator's pause from pause-on-failure. It will " +
-          `not run until someone unpauses ${cronScheduleId(job.name)} in the Temporal UI or CLI.`,
+        `[CronScheduler] "${job.name}" was paused on the server and has been unpaused to match its ` +
+          'definition. If it was paused by `pauseOnFailure` or by hand, that pause is now gone — ' +
+          `set \`disabled: true\` on the job to stop it across restarts, and check ${cronScheduleId(job.name)}'s ` +
+          'run history for what paused it.',
       )
     }
 
-    return { paused }
+    return { paused: job.disabled === true }
   }
 
   /** Deletes the job's Schedule. Absent is the desired state, so a missing one is not an error. */

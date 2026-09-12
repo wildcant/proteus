@@ -226,12 +226,22 @@ so a stack missing `cron-worker` creates every schedule, starts every run, and f
 own timeout. That is the same "queue nobody polls" failure mode ADR-0023 records for the event bus,
 and the same thing it is easy to misread as a broken job.
 
-**Reconciliation pauses but never unpauses.** Marking a job `disabled` pauses its schedule rather
-than deleting it, so turning it back on stays a one-line edit rather than a rediscovery that the job
-existed. Enabling one, however, does *not* unpause: `pauseOnFailure` and an operator's own pause write
-the same flag, and a boot that cleared it would restart a job that was stopped for a reason. The
-scheduler logs a warning naming the schedule when a job is enabled in code and paused on the server,
-because that combination never fires and has no other signal.
+**Reconciliation writes the pause flag from the definition, in both directions.** Marking a job
+`disabled` pauses its schedule rather than deleting it, so turning it back on stays a one-line edit
+rather than a rediscovery that the job existed — and enabling one unpauses it, because `disabled` in
+the source file is the whole answer to "does this job run". A schedule that disagrees is drift, and
+is corrected at boot exactly as the cron spec and the workflow action are.
+
+The cost is real and is accepted knowingly. `pauseOnFailure` and an operator's pause in the UI write
+that same flag, and Temporal cannot tell either from a deliberate one, so **a pause applied on the
+server survives only until the next boot**: an incident contained by pausing a job is uncontained by
+the next deploy or restart. Two things make that affordable rather than merely cheap. Unpausing
+something that was paused logs a warning naming the schedule and saying what was overruled, so it is
+never silent. And a pause meant to outlive a restart has a place to go that reconciliation respects
+— `disabled: true` on the job, which is a one-line change on the same branch that would carry the
+fix. The alternative, preserving a server-side pause, was tried first and traded one silent failure
+for another: a job enabled in code that never fires, whose only trace is a flag in a UI nobody is
+looking at.
 
 **Orphan schedules are not swept.** Renaming or deleting a job leaves its old schedule on the server
 until someone removes it; `remove()` is the explicit way, and a stale local schedule is a
@@ -242,8 +252,8 @@ namespace, and there is not one yet.
 server feature, so `__tests__/temporal-cron-scheduler.server.test.ts` boots a full dev server rather
 than the time-skipping one, claims a task queue of its own, and runs a real Worker — the event bus's
 server test is the prior art, not the workflow engine's. It asserts the spec and policies, that a
-disabled job ends up paused, that a manually triggered action reaches the handler through the whole
-path, that a handler outrunning its timeout fails the run, and that a handler whose Worker is killed
+disabled job ends up paused and an enabled one is unpaused even over a pause applied by hand, that a
+manually triggered action reaches the handler through the whole path, that a handler outrunning its timeout fails the run, and that a handler whose Worker is killed
 mid-run is failed within roughly the heartbeat timeout rather than the far longer start-to-close one.
 That last assertion is what makes the heartbeat a tested property rather than a hopeful one; without
 it the wrapper could be deleted and every other test would stay green. Like the other
