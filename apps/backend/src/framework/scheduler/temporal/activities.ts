@@ -3,6 +3,7 @@ import { ApplicationFailure } from '@temporalio/common'
 import type { AwilixContainer } from 'awilix'
 import type { JobDefinition } from '../../../core/types/scheduler.js'
 import { serializeError } from '../../temporal/failures.js'
+import { cronHeartbeatIntervalMs } from './config.js'
 import { CRON_JOB_FAILURE_TYPE, type CronActivities, type CronJobFailureDetail } from './types.js'
 
 /**
@@ -50,17 +51,6 @@ export function createCronActivities(deps: { container: AwilixContainer; jobs: J
 }
 
 /**
- * How many heartbeats are meant to fit inside one heartbeat timeout.
- *
- * Three, so a single missed or throttled beat is not a dead Worker. The SDK throttles heartbeats to
- * `heartbeatTimeout * 0.8` anyway, so beating faster than that costs nothing and buys the margin.
- */
-const HEARTBEATS_PER_TIMEOUT = 3
-
-/** A floor, so a very short timeout in a test cannot turn the interval into a busy loop. */
-const MIN_HEARTBEAT_INTERVAL_MS = 50
-
-/**
  * Heartbeats until the returned function is called.
  *
  * **This wrapper's job, never the handler's.** `JobDefinition` is the one type both runtimes read,
@@ -74,6 +64,11 @@ const MIN_HEARTBEAT_INTERVAL_MS = 50
  * and the SDK is explicit that an activity must *not* heartbeat in that case — hence the early
  * return rather than a default.
  *
+ * **Calling `heartbeat()` this often is only half of it.** Core throttles *delivery*, so a Worker
+ * that has not had its `maxHeartbeatThrottleInterval` set to the same number drops every beat but
+ * the first in each `0.8 * timeout` window — see `cronHeartbeatIntervalMs`, which both sides read.
+ * The Worker is where that is configured; this is where it is spent.
+ *
  * It deliberately keeps beating through *cancellation*. `shutdownGraceTime` defaults to 0, so an
  * ordinary `worker.shutdown()` cancels every in-flight activity immediately and then waits for the
  * ones that do not confirm it — which every cron handler is, since `JobDefinition` has no
@@ -85,8 +80,7 @@ function startHeartbeat(): () => void {
   const timeout = context.info.heartbeatTimeoutMs
   if (timeout === undefined) return () => undefined
 
-  const interval = Math.max(MIN_HEARTBEAT_INTERVAL_MS, Math.floor(timeout / HEARTBEATS_PER_TIMEOUT))
-  const timer = setInterval(() => context.heartbeat(), interval)
+  const timer = setInterval(() => context.heartbeat(), cronHeartbeatIntervalMs(timeout))
 
   // Nothing about a heartbeat should keep this process alive: on a drained Worker the handler has
   // already returned and cleared it, and after a forced shutdown the run is over whatever this

@@ -37,3 +37,48 @@ export const CRON_WORKFLOWS_PATH = fileURLToPath(new URL('./workflows.ts', impor
  * which pulls in `@temporalio/workflow` and only makes sense inside the sandbox.
  */
 export const CRON_JOB_WORKFLOW_TYPE = 'cronJobWorkflow'
+
+/**
+ * How many heartbeats are meant to *reach the server* inside one heartbeat timeout.
+ *
+ * Three, so a single lost or delayed beat is not read as a dead Worker. Private, because the
+ * number on its own is not the knob anyone should reach for: beating three times a window in
+ * JavaScript is not the same as delivering three, and only a Worker configured with the interval
+ * below can close that gap. `cronHeartbeatIntervalMs` is what both sides read.
+ */
+const HEARTBEATS_PER_TIMEOUT = 3
+
+/**
+ * The heartbeat timeout every cron run declares unless the scheduler is constructed with another.
+ *
+ * Short enough that a dead Worker is noticed in about half a minute, which is the property the
+ * whole mechanism exists for. Long enough that an ordinary GC pause or a slow poll is not mistaken
+ * for a corpse. Lives here rather than beside the scheduler because the Worker has to derive its
+ * throttle from the same number, and two copies that drift silently disarm the heartbeat.
+ */
+export const CRON_HEARTBEAT_TIMEOUT_MS = 30_000
+
+/** A floor, so a very short timeout in a test cannot turn the interval into a busy loop. */
+const MIN_HEARTBEAT_INTERVAL_MS = 50
+
+/**
+ * How often a run should beat, and — the part that is easy to miss — how often the Worker must be
+ * allowed to *deliver* one.
+ *
+ * Core throttles heartbeat delivery to `min(heartbeatTimeout * 0.8, maxHeartbeatThrottleInterval)`:
+ * it reports the first beat immediately, then sleeps that interval and flushes only the last
+ * details recorded in the meantime (`sdk-core/src/worker/activities.rs:588-594` and
+ * `activities/activity_heartbeat_manager.rs`). `maxHeartbeatThrottleInterval` defaults to 60
+ * seconds, so left alone it never binds and the *delivered* rate is `0.8 * timeout` no matter how
+ * often the wrapper calls `heartbeat()` — one beat per window, with 20% of the timeout as the
+ * entire margin. A synchronous CPU-bound job or any event-loop stall longer than that margin then
+ * times out a perfectly healthy Worker, and with `maximumAttempts: 1`, `pauseOnFailure` and a
+ * reconciliation that never unpauses, that transient stall is permanent.
+ *
+ * So every cron Worker passes this as its `maxHeartbeatThrottleInterval`, and the wrapper uses it
+ * as its own interval. One number in both places is what makes `HEARTBEATS_PER_TIMEOUT` describe
+ * what actually reaches the server rather than what JavaScript intended.
+ */
+export function cronHeartbeatIntervalMs(heartbeatTimeoutMs: number): number {
+  return Math.max(MIN_HEARTBEAT_INTERVAL_MS, Math.floor(heartbeatTimeoutMs / HEARTBEATS_PER_TIMEOUT))
+}

@@ -10,7 +10,7 @@ import {
 } from '@temporalio/client'
 import type { Duration } from '@temporalio/common'
 import { createTemporalClient, type TemporalClientHandle } from '../../temporal/client.js'
-import { CRON_JOB_WORKFLOW_TYPE, CRON_TASK_QUEUE } from './config.js'
+import { CRON_HEARTBEAT_TIMEOUT_MS, CRON_JOB_WORKFLOW_TYPE, CRON_TASK_QUEUE } from './config.js'
 import type { CronJobInput } from './types.js'
 
 /**
@@ -72,11 +72,11 @@ export type TemporalCronSchedulerOptions = {
 const DEFAULT_START_TO_CLOSE_TIMEOUT: Duration = '5 minutes'
 
 /**
- * Short enough that a dead Worker is noticed in about a minute, which is the property this whole
- * mechanism exists for. Long enough that an ordinary GC pause or a slow poll is not mistaken for
- * a corpse.
+ * The same number the cron Worker derives its delivery throttle from, so the two cannot drift — a
+ * Worker throttling for a 30-second timeout while a schedule declares five is a heartbeat that
+ * disarms itself. See `cronHeartbeatIntervalMs`.
  */
-const DEFAULT_HEARTBEAT_TIMEOUT: Duration = '30 seconds'
+const DEFAULT_HEARTBEAT_TIMEOUT: Duration = CRON_HEARTBEAT_TIMEOUT_MS
 
 /** The Schedule id for a job. `cron_${name}`, which is the key the BullMQ adapter used. */
 export function cronScheduleId(jobName: string): string {
@@ -113,35 +113,71 @@ export class TemporalCronScheduler implements CronScheduler {
 
   /** Creates the job's Schedule, or updates an existing one to match the definition. */
   async schedule(job: JobDefinition): Promise<void> {
+    await this.reconcile(job)
+  }
+
+  /**
+   * `schedule()`, plus the one fact `start()` needs back from it: whether the job's Schedule is
+   * paused now that it has been reconciled. That is not the same question as whether the job is
+   * declared `disabled`, and the gap between the two is what `start()` has to report.
+   */
+  private async reconcile(job: JobDefinition): Promise<{ paused: boolean }> {
     const options = this.optionsFor(job)
     const client = await this.client()
 
     try {
       await client.schedule.create(options)
-      return
+      return { paused: job.disabled === true }
     } catch (error) {
       // The only expected failure: this job has been scheduled before, by an earlier boot of this
       // process or by another one. Anything else is a real problem and is not swallowed.
       if (!(error instanceof ScheduleAlreadyRunning)) throw error
     }
 
-    await client.schedule.getHandle(options.scheduleId).update((previous) => ({
-      spec: options.spec,
-      action: options.action,
-      policies: options.policies,
-      state: {
-        ...previous.state,
-        /**
-         * Disabling pauses. Enabling does **not** unpause, deliberately: `pauseOnFailure` and an
-         * operator's own pause both write this flag, and a boot that cleared it would restart a
-         * job that was stopped for a reason — the next deploy silently undoing the thing that
-         * contained the incident. Turning a paused job back on is a Temporal UI or CLI action, the
-         * same one that paused it.
-         */
-        paused: job.disabled === true ? true : previous.state.paused,
-      },
-      typedSearchAttributes: previous.typedSearchAttributes,
-    }))
+    /**
+     * Read out of the update rather than logged inside it: the SDK reserves the right to call the
+     * callback more than once, so anything with an effect belongs after `update()` resolves.
+     */
+    let wasPaused = false
+
+    await client.schedule.getHandle(options.scheduleId).update((previous) => {
+      wasPaused = previous.state.paused
+
+      return {
+        spec: options.spec,
+        action: options.action,
+        policies: options.policies,
+        state: {
+          ...previous.state,
+          /**
+           * Disabling pauses. Enabling does **not** unpause, deliberately: `pauseOnFailure` and an
+           * operator's own pause both write this flag, and a boot that cleared it would restart a
+           * job that was stopped for a reason — the next deploy silently undoing the thing that
+           * contained the incident. Turning a paused job back on is a Temporal UI or CLI action,
+           * the same one that paused it.
+           */
+          paused: job.disabled === true ? true : previous.state.paused,
+        },
+        typedSearchAttributes: previous.typedSearchAttributes,
+      }
+    })
+
+    const paused = job.disabled === true ? true : wasPaused
+
+    /**
+     * The cost of the decision above, said out loud where someone can act on it. A job that is
+     * enabled in code and paused on the server will never fire, and the only other trace of that
+     * is a flag in a UI nobody is looking at. A code comment is not a signal to whoever is on call.
+     */
+    if (!job.disabled && wasPaused) {
+      this.logger.warn(
+        `[CronScheduler] "${job.name}" is enabled but its schedule is paused, and reconciliation ` +
+          "does not unpause — it cannot tell an operator's pause from pause-on-failure. It will " +
+          `not run until someone unpauses ${cronScheduleId(job.name)} in the Temporal UI or CLI.`,
+      )
+    }
+
+    return { paused }
   }
 
   /** Deletes the job's Schedule. Absent is the desired state, so a missing one is not an error. */
@@ -160,14 +196,48 @@ export class TemporalCronScheduler implements CronScheduler {
    * Reconciles the whole job list. Unlike the BullMQ adapter this starts no Worker — the cron
    * Worker is its own process, and whether one is polling is deliberately not this method's
    * business: the schedules should exist whether or not a Worker happens to be up.
+   *
+   * `allSettled` rather than `all`, because from the change that registers this adapter it runs at
+   * API boot: one malformed job must not take reconciliation down for every other one, and the
+   * summary naming which schedules *did* land is exactly what is worth having when one did not.
+   * It still throws — a boot that half-reconciled is not a boot that succeeded — but it throws
+   * after every job has had its turn and after each failure has been named.
    */
   async start(jobs: JobDefinition[]): Promise<void> {
-    await Promise.all(jobs.map((job) => this.schedule(job)))
+    const settled = await Promise.allSettled(jobs.map((job) => this.reconcile(job)))
 
-    const paused = jobs.filter((job) => job.disabled).length
+    const failures: string[] = []
+    let paused = 0
+
+    settled.forEach((outcome, index) => {
+      // `jobs[index]` is the job this outcome came from; the index is only unprovable to the
+      // compiler, which cannot know `allSettled` preserves order.
+      const name = jobs[index]?.name ?? `job #${index + 1}`
+
+      if (outcome.status === 'fulfilled') {
+        if (outcome.value.paused) paused += 1
+        return
+      }
+
+      const reason = outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason)
+      failures.push(`${name}: ${reason}`)
+      this.logger.error(`[CronScheduler] Could not reconcile "${name}": ${reason}`)
+    })
+
+    const landed = jobs.length - failures.length
     this.logger.info(
-      `[CronScheduler] Reconciled ${jobs.length} schedule(s) against '${this.taskQueue}', ${paused} of them disabled`,
+      `[CronScheduler] Reconciled ${landed} of ${jobs.length} schedule(s) against '${this.taskQueue}', ` +
+        `${paused} of them paused`,
     )
+
+    if (failures.length > 0) {
+      throw new AppError({
+        type: ErrorTypes.UNEXPECTED_STATE,
+        message:
+          `[CronScheduler] ${failures.length} of ${jobs.length} schedule(s) could not be reconciled — ` +
+          `${failures.join('; ')}`,
+      })
+    }
   }
 
   async shutdown(): Promise<void> {

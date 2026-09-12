@@ -4,7 +4,7 @@ import { NativeConnection, Worker } from '@temporalio/worker'
 import { jobs } from '../../../jobs/index.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../temporal/config.js'
 import { createCronActivities } from './activities.js'
-import { CRON_TASK_QUEUE, CRON_WORKFLOWS_PATH } from './config.js'
+import { CRON_HEARTBEAT_TIMEOUT_MS, CRON_TASK_QUEUE, CRON_WORKFLOWS_PATH, cronHeartbeatIntervalMs } from './config.js'
 
 /**
  * Cron Worker entrypoint — `pnpm --filter backend run worker:cron`.
@@ -43,6 +43,16 @@ const worker = await Worker.create({
   // two Workers use. Two encodings of `BigNumber` and `Date` would appear as corrupt payload data
   // rather than as an error.
   dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
+  /**
+   * The other half of the heartbeat, and the half that is easy to leave out.
+   *
+   * Core delivers at most one heartbeat per `min(heartbeatTimeout * 0.8, this)`, and this defaults
+   * to 60 seconds — so without the line the activity's beats are coalesced down to one per 24s
+   * against a 30s deadline, whatever the wrapper does, and a job that blocks the event loop for
+   * seven seconds is declared dead. Setting it to the wrapper's own interval is what makes
+   * `HEARTBEATS_PER_TIMEOUT` a statement about the wire rather than about intent.
+   */
+  maxHeartbeatThrottleInterval: cronHeartbeatIntervalMs(CRON_HEARTBEAT_TIMEOUT_MS),
   activities: createCronActivities({ container, jobs }),
 })
 

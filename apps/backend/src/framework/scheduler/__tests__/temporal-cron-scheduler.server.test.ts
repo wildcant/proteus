@@ -1,8 +1,13 @@
 import { CronExpression } from '@core/types/cron-expression.js'
 import type { JobDefinition } from '@core/types/scheduler.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
-import { type ScheduleHandle, ScheduleOverlapPolicy } from '@temporalio/client'
-import { TimeoutFailure, TimeoutType } from '@temporalio/common'
+import {
+  type ScheduleExecutionResult,
+  type ScheduleHandle,
+  ScheduleNotFoundError,
+  ScheduleOverlapPolicy,
+} from '@temporalio/client'
+import { ActivityFailure, ApplicationFailure, RetryState, TimeoutFailure, TimeoutType } from '@temporalio/common'
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { createTemporalDevServerEnvironment, TEMPORAL_BOOT_TIMEOUT } from '@tests/setup/temporal-test-env.js'
@@ -11,8 +16,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { noopLogger } from '../../../core/logger/noop-logger.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../temporal/config.js'
 import { createCronActivities } from '../temporal/activities.js'
-import { CRON_JOB_WORKFLOW_TYPE, CRON_WORKFLOWS_PATH } from '../temporal/config.js'
+import { CRON_JOB_WORKFLOW_TYPE, CRON_WORKFLOWS_PATH, cronHeartbeatIntervalMs } from '../temporal/config.js'
 import { cronScheduleId, TemporalCronScheduler } from '../temporal/temporal-cron-scheduler.js'
+import { CRON_JOB_FAILURE_TYPE } from '../temporal/types.js'
 
 /**
  * The `CronScheduler` port end to end: a real Temporal server, real Schedules, a real Worker
@@ -137,6 +143,18 @@ const jobs: JobDefinition[] = [
   },
 ]
 
+/**
+ * Deliberately absent from `jobs` above, which is what the Worker is built with. A schedule can
+ * outlive the job it names — a rename, a half-rolled-out deploy — and this is that schedule.
+ */
+const ghostJob: JobDefinition = {
+  name: 'ghost-job',
+  schedule: CronExpression.EVERY_HOUR,
+  handler: () => {
+    ran.push('ghost-job')
+  },
+}
+
 /** A scheduler writing into this file's server, pointed at whichever queue the test runs a Worker on. */
 function schedulerOn(taskQueue: string): TemporalCronScheduler {
   return new TemporalCronScheduler({
@@ -158,6 +176,10 @@ async function workerOn(taskQueue: string): Promise<Worker> {
     workflowsPath: CRON_WORKFLOWS_PATH,
     dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
     activities: createCronActivities({ container, jobs }),
+    // The production Worker's line, and load-bearing here for the same reason: without it core
+    // delivers one beat per `0.8 * timeout` however often the wrapper calls `heartbeat()`, and
+    // "survives past its heartbeat timeout" below would be passing on a one-second margin.
+    maxHeartbeatThrottleInterval: cronHeartbeatIntervalMs(HEARTBEAT_TIMEOUT_MS),
   })
 }
 
@@ -177,8 +199,27 @@ async function doomedWorkerOn(taskQueue: string): Promise<Worker> {
     workflowsPath: CRON_WORKFLOWS_PATH,
     dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
     activities: createCronActivities({ container, jobs }),
+    maxHeartbeatThrottleInterval: cronHeartbeatIntervalMs(HEARTBEAT_TIMEOUT_MS),
     shutdownGraceTime: '1s',
     shutdownForceTime: '2s',
+  })
+}
+
+/**
+ * A scheduler that records what it warned about, so the operational signal the never-unpause
+ * decision owes an operator is asserted rather than assumed.
+ */
+function schedulerCollectingWarnings(warnings: string[]): TemporalCronScheduler {
+  return new TemporalCronScheduler({
+    logger: {
+      ...noopLogger,
+      warn(message) {
+        warnings.push(message)
+      },
+    },
+    taskQueue: TASK_QUEUE,
+    heartbeatTimeout: HEARTBEAT_TIMEOUT,
+    connect: async () => ({ client: testEnv.client, close: async () => undefined }),
   })
 }
 
@@ -186,13 +227,35 @@ function handleFor(jobName: string): ScheduleHandle {
   return testEnv.client.schedule.getHandle(cronScheduleId(jobName))
 }
 
-/** The workflow the schedule's most recent action started, waited to whichever terminal state. */
-async function lastRunOutcome(handle: ScheduleHandle): Promise<unknown> {
-  const description = await handle.describe()
-  const recent = description.info.recentActions.at(-1)
-  if (!recent) throw new Error(`schedule "${handle.scheduleId}" has taken no action`)
+/**
+ * Triggers the schedule and hands back the action the server recorded for it.
+ *
+ * The poll is not politeness. `trigger()` is a `PatchSchedule` RPC the server applies
+ * asynchronously, so a `describe()` issued straight after it can legitimately come back before the
+ * action exists — and reading `recentActions.at(-1)` at that moment gets the *previous* run, or
+ * nothing at all. Counting from before the trigger is what makes "the run this test started"
+ * unambiguous even when the schedule has run before.
+ */
+async function triggerRun(handle: ScheduleHandle): Promise<ScheduleExecutionResult> {
+  const before = (await handle.describe()).info.recentActions.length
+  await handle.trigger()
 
-  const { workflowId, firstExecutionRunId } = recent.action.workflow
+  const deadline = Date.now() + 20_000
+  for (;;) {
+    const actions = (await handle.describe()).info.recentActions
+    const recent = actions.at(-1)
+    if (actions.length > before && recent) return recent
+
+    if (Date.now() > deadline) {
+      throw new Error(`schedule "${handle.scheduleId}" recorded no action after trigger()`)
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25))
+  }
+}
+
+/** The workflow an action started, waited to whichever terminal state, failure returned not thrown. */
+async function outcomeOf(action: ScheduleExecutionResult): Promise<unknown> {
+  const { workflowId, firstExecutionRunId } = action.action.workflow
   return await testEnv.client.workflow
     .getHandle(workflowId, firstExecutionRunId)
     .result()
@@ -288,11 +351,11 @@ describe('the temporal cron scheduler', () => {
       ran.length = 0
       handlerArgs.length = 0
 
-      await handleFor('recording-job').trigger()
+      const action = await triggerRun(handleFor('recording-job'))
 
       // Nothing here is mocked: schedule action -> driver workflow on the cron queue -> activity ->
       // the container-taking function, on a real Worker.
-      await expect(lastRunOutcome(handleFor('recording-job'))).resolves.toBeUndefined()
+      await expect(outcomeOf(action)).resolves.toBeUndefined()
       expect(ran).toEqual(['recording-job'])
       // The handler got the container the Worker was built with, which is the whole of what
       // `JobDefinition` promises a job author.
@@ -308,8 +371,7 @@ describe('the temporal cron scheduler', () => {
       releaseBlockedHandler()
 
       try {
-        await handleFor('impatient-job').trigger()
-        const failure = await lastRunOutcome(handleFor('impatient-job'))
+        const failure = await outcomeOf(await triggerRun(handleFor('impatient-job')))
 
         // Failed, not hung — and failed on the *run's* timeout, which is the per-job knob the
         // scheduler was constructed with rather than any default.
@@ -329,20 +391,112 @@ describe('the temporal cron scheduler', () => {
       releaseBlockedHandler()
 
       try {
-        await handleFor('patient-job').trigger()
+        const action = await triggerRun(handleFor('patient-job'))
         await waitFor(blockedHandlerReached)
 
-        // Longer than the heartbeat timeout, on a Worker that is perfectly healthy. Without the
-        // wrapper's heartbeat the server has nothing to distinguish this from the dead Worker in
-        // the next test, and fails a run that was going to succeed — which is why this assertion
-        // and that one only mean something together.
-        await new Promise((resolve) => setTimeout(resolve, HEARTBEAT_TIMEOUT_MS + 3_000))
+        // Twice the heartbeat timeout, on a Worker that is perfectly healthy. Without the wrapper's
+        // heartbeat the server has nothing to distinguish this from the dead Worker in the next
+        // test, and fails a run that was going to succeed — which is why this assertion and that
+        // one only mean something together.
+        //
+        // Two whole windows rather than one and a bit, because that is what the delivery throttle
+        // now affords: beats land every `HEARTBEAT_TIMEOUT_MS / HEARTBEATS_PER_TIMEOUT`, so the
+        // margin is two thirds of the deadline and does not depend on the machine being idle.
+        await new Promise((resolve) => setTimeout(resolve, HEARTBEAT_TIMEOUT_MS * 2))
         releaseBlockedHandler()
 
-        await expect(lastRunOutcome(handleFor('patient-job'))).resolves.toBeUndefined()
+        await expect(outcomeOf(action)).resolves.toBeUndefined()
         expect(ran).toEqual(['patient-job'])
       } finally {
         releaseBlockedHandler()
+      }
+    },
+    TEST_TIMEOUT,
+  )
+
+  it(
+    'leaves an enabled job paused when its schedule was already paused, and says so',
+    async () => {
+      const warnings: string[] = []
+      const speaking = schedulerCollectingWarnings(warnings)
+      const toggled: JobDefinition = {
+        name: 'toggled-job',
+        schedule: CronExpression.EVERY_DAY_AT_MIDNIGHT,
+        handler: () => undefined,
+        disabled: true,
+      }
+
+      try {
+        await speaking.schedule(toggled)
+        expect((await handleFor('toggled-job').describe()).state.paused).toBe(true)
+
+        // Enabled now, and with a different cron expression — so that "still paused" cannot be
+        // explained by the update having been a no-op. The spec must move; the pause must not.
+        await speaking.schedule({ ...toggled, schedule: CronExpression.EVERY_DAY_AT_NOON, disabled: false })
+
+        const description = await handleFor('toggled-job').describe()
+        expect(description.spec.calendars?.[0]).toMatchObject({ hour: [{ start: 12, end: 12, step: 1 }] })
+
+        // The deliberate deviation from "reconcile to the declared state", pinned. `pauseOnFailure`
+        // and an operator's own pause write this one flag and Temporal cannot tell them apart, so
+        // clearing it at boot would undo an incident containment on the next deploy.
+        expect(description.state.paused).toBe(true)
+
+        // And it is not silent, which is the whole of what makes the deviation affordable.
+        expect(warnings.join('\n')).toContain('"toggled-job" is enabled but its schedule is paused')
+      } finally {
+        await speaking.remove('toggled-job')
+        await speaking.shutdown()
+      }
+    },
+    TEST_TIMEOUT,
+  )
+
+  it(
+    'removes a schedule, and treats an already-absent one as the desired state',
+    async () => {
+      const removable: JobDefinition = {
+        name: 'removable-job',
+        schedule: CronExpression.EVERY_HOUR,
+        handler: () => undefined,
+      }
+
+      await scheduler.schedule(removable)
+      expect((await handleFor('removable-job').describe()).scheduleId).toBe(cronScheduleId('removable-job'))
+
+      await scheduler.remove('removable-job')
+      await expect(handleFor('removable-job').describe()).rejects.toBeInstanceOf(ScheduleNotFoundError)
+
+      // Absent is what `remove` is asking for, so a schedule that is already gone is not a failure
+      // — reconciliation and a re-run of a teardown both call this for names that may never have
+      // existed. The bare await is the assertion: it throws on the second path if this regresses.
+      await scheduler.remove('never-scheduled-job')
+      await expect(handleFor('never-scheduled-job').describe()).rejects.toBeInstanceOf(ScheduleNotFoundError)
+    },
+    TEST_TIMEOUT,
+  )
+
+  it(
+    'fails a run without retrying when the Worker has no such job registered',
+    async () => {
+      ran.length = 0
+
+      try {
+        await scheduler.schedule(ghostJob)
+        const failure = await outcomeOf(await triggerRun(handleFor('ghost-job')))
+
+        // The job name is in the message because that is the whole of what an operator has to go
+        // on: nobody awaited this run and no route handler will report it.
+        expect(applicationFailureIn(failure)?.message).toContain('No job is registered as "ghost-job"')
+        expect(applicationFailureIn(failure)?.type).toBe(CRON_JOB_FAILURE_TYPE)
+
+        // Non-retryable, and distinguishable from "ran out of attempts": the lookup happens before
+        // any handler runs, so repeating it produces the same answer until the budget is gone.
+        // `MAXIMUM_ATTEMPTS_REACHED` is what the other failing cases in this file report.
+        expect(activityFailureIn(failure)?.retryState).toBe(RetryState.NON_RETRYABLE_FAILURE)
+        expect(ran).toEqual([])
+      } finally {
+        await scheduler.remove('ghost-job')
       }
     },
     TEST_TIMEOUT,
@@ -363,7 +517,7 @@ describe('the temporal cron scheduler', () => {
         // adapter's *update* path — the half of reconciliation a first boot never exercises — and
         // repoints the action at the Worker this test is about to kill.
         await doomedScheduler.schedule(blockingJob())
-        await handleFor('blocking-job').trigger()
+        const action = await triggerRun(handleFor('blocking-job'))
 
         // Wait until the handler is actually inside the Worker, so what follows kills a *running*
         // activity rather than racing the dispatch.
@@ -384,7 +538,7 @@ describe('the temporal cron scheduler', () => {
         const replacementRun = replacementWorker.run()
         void replacementRun.catch(() => undefined)
 
-        const failure = await lastRunOutcome(handleFor('blocking-job'))
+        const failure = await outcomeOf(action)
         const elapsed = Date.now() - started
 
         replacementWorker.shutdown()
@@ -417,12 +571,28 @@ function blockingJob(): JobDefinition {
  * The classes are the SDK's, so the chain is walked structurally rather than with a cast.
  */
 function timeoutTypeOf(error: unknown): TimeoutType | undefined {
+  return causeChain(error).find((link) => link instanceof TimeoutFailure)?.timeoutType
+}
+
+/** The activity-level failure, which carries the retry verdict the server reached. */
+function activityFailureIn(error: unknown): ActivityFailure | undefined {
+  return causeChain(error).find((link) => link instanceof ActivityFailure)
+}
+
+/** The failure the activity itself raised, with the message and type it chose. */
+function applicationFailureIn(error: unknown): ApplicationFailure | undefined {
+  return causeChain(error).find((link) => link instanceof ApplicationFailure)
+}
+
+/** A failed workflow's causes, outermost first. Bounded, because a cycle here would hang the suite. */
+function causeChain(error: unknown): Error[] {
+  const chain: Error[] = []
   let current: unknown = error
-  for (let depth = 0; current instanceof Error && depth < 8; depth += 1) {
-    if (current instanceof TimeoutFailure) return current.timeoutType
+  while (current instanceof Error && chain.length < 8) {
+    chain.push(current)
     current = current.cause
   }
-  return undefined
+  return chain
 }
 
 /** Polls a condition the Worker satisfies from another task. Cheaper than plumbing a signal out. */
