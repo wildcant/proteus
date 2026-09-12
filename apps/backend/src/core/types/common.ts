@@ -17,8 +17,6 @@ export type BaseFilterable<T> = {
   $or?: T[]
 }
 
-export type IdParams = { id: string }
-
 export type FindConfig<Entity> = {
   select?: (keyof Entity)[]
   offset?: number

@@ -42,8 +42,6 @@ export const paymentMethodsQueryOptions = () =>
     retry: 1,
   })
 
-export type SavedMethod = StoreSavedMethod
-
 /**
  * The wallet, plus the one thing a caller cannot recover from `data` alone.
  *

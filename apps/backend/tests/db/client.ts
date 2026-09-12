@@ -17,7 +17,3 @@ const sql = postgres(withAppDatabase(withWorkerDatabase(DATABASE_URL)), {
   },
 })
 export const db = drizzle(sql, DB_OPTIONS)
-
-export async function shutdown() {
-  await sql.end()
-}

@@ -81,9 +81,6 @@ export const useOptionCombinations = (productId: string, params?: ListOptionComb
 export const useProductVariants = (productId: string, params?: ListProductVariantsParams) =>
   useQuery(productVariantsListQueryOptions(productId, params))
 
-export const useProductVariant = (productId: string, variantId: string) =>
-  useQuery(productVariantQueryOptions(productId, variantId))
-
 export const useCreateProductVariant = (
   productId: string,
   options?: UseMutationOptions<AdminCreateProductVariantResponse, Error, AdminCreateProductVariant>,

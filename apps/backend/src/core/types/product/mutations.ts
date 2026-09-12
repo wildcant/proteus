@@ -144,21 +144,9 @@ export type CreateProductOptionValueDTO = {
   metadata?: Record<string, unknown> | null
 }
 
-export type UpdateProductOptionValueDTO = {
-  value?: string
-  rank?: number
-  metadata?: Record<string, unknown> | null
-}
-
 export type CreateProductImageDTO = {
   productId: string
   url: string
-  rank?: number
-  metadata?: Record<string, unknown> | null
-}
-
-export type UpdateProductImageDTO = {
-  url?: string
   rank?: number
   metadata?: Record<string, unknown> | null
 }

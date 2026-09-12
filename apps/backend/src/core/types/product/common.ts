@@ -247,28 +247,6 @@ export type ProductProductOptionDTO = {
   deletedAt: Date | null
 }
 
-export interface FilterableProductProductOptionProps extends BaseFilterable<FilterableProductProductOptionProps> {
-  id?: string | string[]
-  productId?: string | string[]
-  optionId?: string | string[]
-}
-
-export type ProductProductOptionValueDTO = {
-  id: string
-  productProductOptionId: string
-  optionValueId: string
-  createdAt: Date
-  updatedAt: Date
-  deletedAt: Date | null
-}
-
-export interface FilterableProductProductOptionValueProps
-  extends BaseFilterable<FilterableProductProductOptionValueProps> {
-  id?: string | string[]
-  productProductOptionId?: string | string[]
-  optionValueId?: string | string[]
-}
-
 export type ProductImageDTO = {
   id: string
   productId: string

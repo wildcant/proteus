@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 import type { Page } from '@playwright/test'
 import { BACKEND_TIMEOUT } from '@proteus/testing'
 import { expect, test } from '../setup/test-extend.js'
-import { disposeCartAfterTest, placeOrder } from '../setup/utils.js'
+import { DEFAULT_MARKET, disposeCartAfterTest, placeOrder } from '../setup/utils.js'
 
 /**
  * Routing is only observable through a real browser against a real server: the redirect is an HTTP
@@ -12,7 +12,6 @@ import { disposeCartAfterTest, placeOrder } from '../setup/utils.js'
  * The markets are the seeded ones — United States in `en-US` and Colombia in `es-CO` — because the
  * routable segments are whichever countries the store sells to, not a list the storefront carries.
  */
-const DEFAULT_MARKET = 'en-US'
 const SECOND_MARKET = 'es-CO'
 /** How the second market is listed. The control names markets the way a shopper reads them. */
 const SECOND_MARKET_NAME = 'Colombia'

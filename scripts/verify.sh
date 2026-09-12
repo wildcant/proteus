@@ -143,15 +143,20 @@ job_versions() { node scripts/checks/one-version.mts; }
 # `sh -c`; and a commented-out import must not count. Getting any of those wrong makes a gate that
 # lies in the expensive direction — red on something real, so you delete what the build needs.
 #
-# Scoped to `dependencies` (which covers devDependencies) plus `catalog`. `catalog` is in because it
-# is the one thing one-version.mts structurally cannot see: it iterates packages that manifests
+# The whole report, with no `include` filter, so the claim is wider than the paragraph above: no
+# unused file, export or type either. The widening was earned rather than chosen — knip's first wide
+# run was 436 findings, and the triage in .scratch/pnpm-migration/knip-triage.md turned them into
+# config (Orval's output, four entry points nothing imports), barrels the repo never went through,
+# `export` written on autopilot for ninety file-local symbols, and ports for operations no service
+# has. The tree reaches zero, which is the only moment holding every issue type is free.
+#
+# `catalog` is the row one-version.mts structurally cannot see: it iterates packages that manifests
 # declare, so an entry left behind after the last declaration goes has no declaration site and is
 # never visited — and this gate is what creates them, since resolving its findings removes
-# declarations. Everything else knip reports is deliberately out: `unlisted`/`unresolved`/`binaries`
-# duplicate the pnpm layout's job, `catalogReferences` sits behind an outright install error,
-# `cycles` belongs to dependency-cruiser per ADR-0020, and `files`/`exports`/`types` are a real
-# backlog and a separate conversation. Note that knip's `duplicates` is duplicate *exports*, not
-# duplicate versions — it reads like this gate's neighbour and is not.
+# declarations. `catalogReferences` sits behind an outright install error, and `cycles` is not in
+# knip's default report and stays dependency-cruiser's, per ADR-0020. Note that knip's
+# `duplicates` is duplicate *exports*, not duplicate versions — it reads like this gate's neighbour
+# and is not.
 #
 # knip.jsonc carries the entry patterns and is where a judgment call goes: a package that is needed
 # but unreferenced belongs in `ignoreDependencies` with a comment saying why, the same discipline as
@@ -238,7 +243,7 @@ label_of() {
     standards) echo "Code standards" ;;
     structure) echo "Import structure (backend, admin, store)" ;;
     versions) echo "One version per declared dependency" ;;
-    unused) echo "Every declared dependency is referenced" ;;
+    unused) echo "Nothing declared or exported is unreferenced" ;;
     generated) echo "Generated registries (workflow, subscriber)" ;;
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;

@@ -1,13 +1,7 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
-import {
-  createCustomers,
-  deleteCustomer,
-  getCustomer,
-  listCustomers,
-  updateCustomer,
-} from '#/api/generated/customers/customers'
+import { createCustomers, deleteCustomer, listCustomers, updateCustomer } from '#/api/generated/customers/customers'
 import type {
   AdminCreateCustomer,
   AdminCreateCustomersResponse,
@@ -37,23 +31,7 @@ export const customersListQueryOptions = (query?: ListCustomersParams, options?:
     ...options,
   })
 
-type CustomerQueryOptions = Omit<
-  UseQueryOptions<AdminCustomerResponse, Error, AdminCustomerResponse>,
-  'queryFn' | 'queryKey'
->
-export const customerQueryOptions = (id: string, options?: CustomerQueryOptions) =>
-  queryOptions({
-    queryKey: customersQueryKeys.detail(id),
-    queryFn: () => getCustomer(id),
-    ...options,
-  })
-
 // --- Query hooks ---
-
-export const useCustomer = (id: string, options?: CustomerQueryOptions) => {
-  const { data, ...rest } = useQuery(customerQueryOptions(id, options))
-  return { ...data, ...rest }
-}
 
 export const useCustomers = (query?: ListCustomersParams, options?: CustomersListQueryOptions) => {
   const { data, ...rest } = useQuery(customersListQueryOptions(query, options))

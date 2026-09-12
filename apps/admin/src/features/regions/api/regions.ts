@@ -32,8 +32,6 @@ export const regionQueryOptions = (id: string) =>
 
 export const useRegions = (params?: ListRegionsParams) => useQuery(regionsListQueryOptions(params))
 
-export const useRegion = (id: string) => useQuery(regionQueryOptions(id))
-
 export const useCreateRegion = (options?: UseMutationOptions<AdminRegionResponse, Error, AdminCreateRegion>) => {
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({

@@ -1,5 +1,5 @@
 import type { BigNumber } from '../../bignumber.js'
-import type { BaseFilterable, OperatorMap } from '../common.js'
+import type { BaseFilterable } from '../common.js'
 
 // ---------------------------------------------------------------------------
 // Status enums
@@ -171,12 +171,6 @@ export type AccountHolderDTO = {
   deletedAt: Date | null
 }
 
-export type PaymentMethodDTO = {
-  id: string
-  data: Record<string, unknown>
-  providerId: string
-}
-
 /**
  * A stored card, in the checkout's vocabulary rather than a gateway's.
  *
@@ -204,54 +198,9 @@ export type SavedMethodDTO = {
 // Filterable types
 // ---------------------------------------------------------------------------
 
-export interface FilterablePaymentCollectionProps extends BaseFilterable<FilterablePaymentCollectionProps> {
-  id?: string | string[]
-  status?: PaymentCollectionStatus | PaymentCollectionStatus[]
-  createdAt?: OperatorMap<Date>
-  updatedAt?: OperatorMap<Date>
-}
-
-export interface FilterablePaymentSessionProps extends BaseFilterable<FilterablePaymentSessionProps> {
-  id?: string | string[]
-  paymentCollectionId?: string | string[]
-  providerId?: string | string[]
-  status?: PaymentSessionStatus | PaymentSessionStatus[]
-  createdAt?: OperatorMap<Date>
-}
-
-export interface FilterablePaymentProps extends BaseFilterable<FilterablePaymentProps> {
-  id?: string | string[]
-  paymentCollectionId?: string | string[]
-  paymentSessionId?: string | string[]
-  providerId?: string | string[]
-  createdAt?: OperatorMap<Date>
-}
-
-export interface FilterableCaptureProps extends BaseFilterable<FilterableCaptureProps> {
-  id?: string | string[]
-  paymentId?: string | string[]
-  createdAt?: OperatorMap<Date>
-}
-
-export interface FilterableRefundProps extends BaseFilterable<FilterableRefundProps> {
-  id?: string | string[]
-  paymentId?: string | string[]
-  createdAt?: OperatorMap<Date>
-}
-
-export interface FilterableRefundReasonProps extends BaseFilterable<FilterableRefundReasonProps> {
-  id?: string | string[]
-  code?: string | string[]
-}
-
 export interface FilterablePaymentProviderProps extends BaseFilterable<FilterablePaymentProviderProps> {
   id?: string | string[]
   isEnabled?: boolean
-}
-
-export interface FilterablePaymentMethodProps {
-  providerId: string
-  context: Record<string, unknown>
 }
 
 export interface FilterableAccountHolderProps extends BaseFilterable<FilterableAccountHolderProps> {

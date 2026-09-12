@@ -7,6 +7,8 @@ import type { HttpRequest } from '../../src/framework/http/ports.js'
 import type { Database } from '../../src/schema.type.js'
 import {
   generateAuthIdentityDTO,
+  generateAuthPasswordResetTokenDTO,
+  generateAuthVerificationDTO,
   generateConfirmAuthVerificationDTO,
   generateCreateAuthIdentityDTO,
   generateCreateAuthPasswordResetTokenDTO,
@@ -249,10 +251,12 @@ export type Fixtures = {
       providerIdentity: typeof generateProviderIdentityDTO
       createProviderIdentity: typeof generateCreateProviderIdentityDTO
       updateProviderIdentity: typeof generateUpdateProviderIdentityDTO
+      authVerification: typeof generateAuthVerificationDTO
       createAuthVerification: typeof generateCreateAuthVerificationDTO
       requestAuthVerification: typeof generateRequestAuthVerificationDTO
       confirmAuthVerification: typeof generateConfirmAuthVerificationDTO
       updateAuthVerification: typeof generateUpdateAuthVerificationDTO
+      authPasswordResetToken: typeof generateAuthPasswordResetTokenDTO
       createAuthPasswordResetToken: typeof generateCreateAuthPasswordResetTokenDTO
       createCustomer: typeof generateCreateCustomerDTO
       createCustomerAddress: typeof generateCreateCustomerAddressDTO
@@ -456,10 +460,12 @@ export const test = testBase.extend<Fixtures>({
         providerIdentity: generateProviderIdentityDTO,
         createProviderIdentity: generateCreateProviderIdentityDTO,
         updateProviderIdentity: generateUpdateProviderIdentityDTO,
+        authVerification: generateAuthVerificationDTO,
         createAuthVerification: generateCreateAuthVerificationDTO,
         requestAuthVerification: generateRequestAuthVerificationDTO,
         confirmAuthVerification: generateConfirmAuthVerificationDTO,
         updateAuthVerification: generateUpdateAuthVerificationDTO,
+        authPasswordResetToken: generateAuthPasswordResetTokenDTO,
         createAuthPasswordResetToken: generateCreateAuthPasswordResetTokenDTO,
         createCustomer: generateCreateCustomerDTO,
         createCustomerAddress: generateCreateCustomerAddressDTO,

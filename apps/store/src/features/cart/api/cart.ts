@@ -16,7 +16,6 @@ import type {
   StoreCartDetailResponse,
   StoreCartResponse,
   StoreCreateCartLineItemResponse,
-  StoreCreateCartResponse,
   StoreUpdateCartLineItemResponse,
   StoreUpdateCartResponse,
   UpdateStoreCartLineItemBody,
@@ -55,33 +54,6 @@ export const useSuspenseCart = (options?: CartQueryOptions) => {
 export const useCart = (options?: CartQueryOptions) => {
   const { data, ...rest } = useQuery(cartQueryOptions(options))
   return { cart: data?.cart ?? null, ...rest }
-}
-
-export const useCreateCart = (options?: UseMutationOptions<StoreCreateCartResponse, Error, void>) => {
-  const queryClient = useQueryClient()
-  const { current } = useMarket()
-  const { onSuccess, onError, ...rest } = options ?? {}
-
-  return useMutation({
-    ...rest,
-    mutationFn: async () => {
-      // The market a cart is opened in is the market it keeps: the country picks the region, the
-      // region owns the currency, and the cart carries that currency for the rest of its life.
-      // Nothing re-reads this later, so it is the one moment it can be got right.
-      const response = await createStoreCart({}, { countryCode: current.iso2 })
-      setCartId(response.cart.id)
-      return response
-    },
-    onSuccess: (...args) => {
-      queryClient.invalidateQueries({ queryKey: cartQueryKeys.all })
-      onSuccess?.(...args)
-    },
-    onError: (...args) => {
-      const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create cart', description: error.message })
-      onError?.(...args)
-    },
-  })
 }
 
 /**

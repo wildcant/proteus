@@ -186,21 +186,6 @@ function Toaster({ children, toastManager = toast, viewportClassName, ...props }
   )
 }
 
-const createToastManager = ToastPrimitive.createToastManager
 const useToastManager = ToastPrimitive.useToastManager
 
-export {
-  createToastManager,
-  Toast,
-  ToastAction,
-  ToastClose,
-  ToastContent,
-  ToastDescription,
-  Toaster,
-  ToastPortal,
-  ToastProvider,
-  ToastTitle,
-  ToastViewport,
-  toast,
-  useToastManager,
-}
+export { Toaster, toast, useToastManager }
