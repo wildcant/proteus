@@ -20,7 +20,8 @@ import { db } from '../../db/client.js'
  * before that has to come from here.
  *
  * The order module's tables are not in `src/schema.ts` — nothing outside the module reads them —
- * so they are imported from the module, which `no-module-internals` allows `tests/` to do.
+ * so they are imported from the module directly. `LAYER_GRAPH` governs `src/` only, so a fixture
+ * here is outside it.
  */
 
 type CreateOrderOptions = {

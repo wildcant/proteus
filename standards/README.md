@@ -355,7 +355,7 @@ to keep in step — so record it, with the gate that actually holds it, and move
 | A subscriber's `config` sets `name` | `name` is a required field, so omitting it is `TS2741` — the `typecheck` gate |
 | A subscriber imports no transport vocabulary | `subscribers-name-no-transport`, a dependency-cruiser rule — the `structure` gate |
 | A module's tests live in `__tests__/` | `module-tests-live-in-a-tests-folder`, likewise |
-| A third-party provider lives outside every module | `no-module-internals`, which refuses any import of `src/modules/` from outside one — so a provider reaching for a repository fails the moment it is written |
+| A third-party provider lives outside every module | `layer-graph-providers` — `providers` may import `core` and nothing else under `src/`, so a provider reaching for a repository fails the moment it is written |
 
 The test for this verdict is the same as for the one below: name the gate, and be able to say what
 introducing the violation prints. "Typecheck probably catches it" is not a verdict.

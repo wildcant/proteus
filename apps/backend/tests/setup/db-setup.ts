@@ -2,7 +2,7 @@ import { sql as dsql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { afterAll, beforeEach } from 'vitest'
-import { DRIZZLE_OPTIONS } from '../../src/core/db/config.js'
+import { DB_OPTIONS } from '../../src/core/db/config.js'
 import { env } from '../../src/env.js'
 import { withWorkerDatabase } from './database-url.js'
 
@@ -16,7 +16,7 @@ const sql = postgres(withWorkerDatabase(env.DATABASE_URL), {
     // noop
   },
 })
-export const db = drizzle(sql, DRIZZLE_OPTIONS)
+export const db = drizzle(sql, DB_OPTIONS)
 
 /**
  * `TRUNCATE` of every table in `public`, resolved once per test file. The schema itself is

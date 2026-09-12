@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { DRIZZLE_OPTIONS } from '../../src/core/db/config.js'
+import { DB_OPTIONS } from '../../src/core/db/config.js'
 import { DEFAULT_TEST_DATABASE_URL, withAppDatabase, withWorkerDatabase } from '../setup/database-url.js'
 
 const DATABASE_URL = process.env.POOLER_DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL
@@ -16,7 +16,7 @@ const sql = postgres(withAppDatabase(withWorkerDatabase(DATABASE_URL)), {
     // noop
   },
 })
-export const db = drizzle(sql, DRIZZLE_OPTIONS)
+export const db = drizzle(sql, DB_OPTIONS)
 
 export async function shutdown() {
   await sql.end()

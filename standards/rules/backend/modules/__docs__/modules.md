@@ -134,9 +134,8 @@ a module file. `__tests__/` may nest.
 configure.
 
 **A provider that integrates a third party goes in `src/providers/`**, outside every module, so that
-`no-module-internals` catches it the moment it reaches for a repository — that rule's `from` is
-everything except `src/modules/` and the three composition roots, so nothing in `src/providers/` can
-import a module's internals at all. See
+`layer-graph-providers` catches it the moment it reaches for a repository — `providers` may import
+`core` and nothing else under `src/`, so nothing in `src/providers/` can import a module at all. See
 [`src/providers/README.md`](../../../../../apps/backend/src/providers/README.md).
 
 ## Enforcement
@@ -144,7 +143,7 @@ import a module's internals at all. See
 | Rule id | The paragraph it enforces |
 |---|---|
 | `model-without-standard-timestamps` | that every table spreads `...timestamps`, so it has a `deletedAt` |
-| `no-module-internals` | that only the service crosses the boundary — and so, from the other side, that a third-party provider outside every module cannot reach a repository |
+| `layer-graph-*` | that only `container.ts`, `schema.gen.ts` and `link-modules/` may name a module at all — and so, from the other side, that a third-party provider outside every module cannot reach a repository |
 | `no-cross-module-imports` | that a module never reaches into another module |
 | `module-holds-only-known-file-kinds` | the eight folders and four root files, and nothing else |
 | `module-tests-live-in-a-tests-folder` | that every test is under `__tests__/` |

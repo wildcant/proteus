@@ -1,20 +1,166 @@
+/**
+ * Which layer may import which, as a directed graph over everything under `src/`.
+ *
+ * Default-deny, the same shape as the store's FEATURE_GRAPH: the value is the *complete* list of
+ * what a node may reach, and anything else under `src/` is an error. That is the whole reason to
+ * write this as a graph rather than as pairwise `forbidden` rules — a pairwise rule only ever
+ * catches the edge someone thought to forbid, while a graph catches the edge nobody thought of.
+ *
+ * The first nine are the layers, one folder each. The rest are the single files that *compose* a
+ * layer — `routes.ts` imports every route, `container.ts` every module, `registry.gen.ts` every
+ * workflow. Each of those is an upward edge that exists on purpose, and giving it a row is what
+ * lets the folder around it stay closed: `framework` may not name a workflow, the generated
+ * registry inside it may. Their paths are in COMPOSITION_ROOTS below.
+ *
+ * See docs/adr/0027-the-backend-layer-graph-is-default-deny.md for the reasoning, and
+ * docs/adr/0026-core-is-known-framework-runs.md for what `core/` and `framework/` mean.
+ */
+const LAYER_GRAPH = {
+  core: ['dbConfig'],
+  jobs: ['core'],
+  providers: ['core'],
+  workflows: ['core'],
+  modules: ['core', 'providers'],
+  subscribers: ['core', 'workflows'],
+  'link-modules': ['core', 'modules'],
+  framework: ['core', 'workflowRegistry', 'subscriberRegistry'],
+  api: ['core', 'framework', 'workflows'],
+
+  dbConfig: ['appSchema'],
+  appSchema: ['modules', 'link-modules'],
+  appConfig: ['core', 'framework'],
+  workflowRegistry: ['core', 'workflows'],
+  subscriberRegistry: ['core', 'subscribers'],
+  routes: ['core', 'framework', 'api'],
+  container: ['core', 'framework', 'modules', 'link-modules', 'appConfig', 'subscriberRegistry'],
+  runtimeContainers: ['core', 'framework', 'container', 'appConfig', 'subscriberRegistry'],
+  entrypoints: '*',
+}
+
+/**
+ * Where the non-folder nodes live. A layer's path is just its name — `core` is `^src/core/` — so
+ * only the composition roots need one written down.
+ *
+ * `entrypoints` is the process mains: the API's, the workerd fetch handler, the two Temporal
+ * Workers and the surface the e2e suites import. Each starts something and may name anything to do
+ * it; nothing under `src/` may name one back, which every other row says by omission.
+ */
+const COMPOSITION_ROOTS = {
+  dbConfig: '^src/core/db/config\\.ts$',
+  appSchema: '^src/schema\\.gen\\.ts$',
+  appConfig: '^src/config\\.ts$',
+  workflowRegistry: '^src/framework/workflows/temporal/registry\\.gen\\.ts$',
+  subscriberRegistry: '^src/framework/event-bus/registry\\.ts$',
+  routes: '^src/routes\\.ts$',
+  container: '^src/container\\.ts$',
+  runtimeContainers: '^src/framework/runtime/container\\.(?:node|worker|workerd)\\.ts$',
+  entrypoints: [
+    '^src/(?:index|index\\.workerd|start|test-exports)\\.ts$',
+    '^src/framework/(?:event-bus|workflows)/temporal/worker(?:\\.dev)?\\.ts$',
+  ],
+}
+
+/**
+ * What `__tests__/` under a node may reach on top of its row, because a test may construct the
+ * runtime it is testing: two workflow tests build the in-process engine, and one framework test
+ * reads the route table to check the shipped OpenAPI documents against it.
+ *
+ * Deliberately two entries rather than exempting `__tests__/` from the graph — a blanket exemption
+ * would also let an API test reach a module service directly, which is the thing it must not do.
+ */
+const TESTS_MAY_ALSO_IMPORT = {
+  workflows: ['framework'],
+  framework: ['routes'],
+}
+
+/**
+ * Root vocabulary the graph deliberately does not model: every layer may name these, so putting
+ * them in it would mean listing them in every row and saying nothing.
+ */
+const SHARED_VOCABULARY = ['^src/env\\.ts$', '^src/schema\\.type\\.ts$']
+
+const NODES = Object.keys(LAYER_GRAPH)
+
+/** A node's path is one regex or several; everything below works in branches either way. */
+const branchesOf = (name) => [COMPOSITION_ROOTS[name] ?? `^src/${name}/`].flat()
+
+/** Every other node's path that sits *inside* this one, so a folder rule skips its own roots. */
+const nestedBranches = (name) =>
+  NODES.filter((other) => other !== name)
+    .flatMap(branchesOf)
+    .filter((branch) => branchesOf(name).some((outer) => outer.endsWith('/') && branch.startsWith(outer)))
+
+/** Everything under src/ that `allowed` does not cover — the default-deny half of the graph. */
+const forbiddenFor = (name, allowed) =>
+  NODES.filter((other) => other !== name && !allowed.includes(other))
+    .flatMap(branchesOf)
+    .join('|')
+
+const describe = (name, allowed) =>
+  `${name} may import ${allowed.length ? allowed.join(', ') : 'nothing else under src/'}. ` +
+  'Add the edge to LAYER_GRAPH with the reason, or move the shared code down to a layer both sides ' +
+  'may already reach.'
+
+const layerGraphRules = NODES.flatMap((name) => {
+  const mayImport = LAYER_GRAPH[name]
+  if (mayImport === '*') return []
+  const nested = nestedBranches(name)
+  const alsoInTests = TESTS_MAY_ALSO_IMPORT[name]
+  const rules = [
+    {
+      name: `layer-graph-${name}`,
+      comment: describe(name, mayImport),
+      severity: 'error',
+      from: {
+        path: branchesOf(name).join('|'),
+        ...(nested.length || alsoInTests
+          ? { pathNot: [...nested, ...(alsoInTests ? ['__tests__/'] : [])].join('|') }
+          : {}),
+      },
+      to: { path: forbiddenFor(name, mayImport) },
+    },
+  ]
+  if (!alsoInTests) return rules
+  const withTests = [...mayImport, ...alsoInTests]
+  return [
+    ...rules,
+    {
+      name: `layer-graph-${name}-tests`,
+      comment:
+        `${describe(name, withTests)} A test may construct the runtime it is testing against, which ` +
+        `is why __tests__/ under ${name} adds ${alsoInTests.join(', ')}.`,
+      severity: 'error',
+      from: {
+        path: branchesOf(name).map((branch) => `${branch}.*__tests__/`),
+        ...(nested.length ? { pathNot: nested.join('|') } : {}),
+      },
+      to: { path: forbiddenFor(name, withTests) },
+    },
+  ]
+})
+
+const ALL_NODE_PATHS = NODES.flatMap(branchesOf)
+
+/**
+ * A top-level folder under src/ that is not a node yet may not import one. Without this the graph
+ * is default-deny only for what it already knows about: `src-holds-only-known-top-level-entries`
+ * makes adding a layer deliberate, and this makes declaring its edges the same.
+ */
+layerGraphRules.push({
+  name: 'layer-graph-undeclared',
+  comment:
+    'A new layer is added to LAYER_GRAPH before it may import anything under src/, so its edges are ' +
+    'declared with the layer rather than inherited by being unlisted.',
+  severity: 'error',
+  from: { path: '^src/', pathNot: [...ALL_NODE_PATHS, ...SHARED_VOCABULARY].join('|') },
+  to: { path: ALL_NODE_PATHS.join('|') },
+})
+
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
   forbidden: [
-    {
-      name: 'no-module-internals',
-      comment:
-        'Only composition roots (container.ts, schema.gen.ts, modules-definitions.ts) ' +
-        "and a module's own files may import from src/modules/.",
-      severity: 'error',
-      from: {
-        pathNot:
-          '^src/modules/|^src/(container\\.ts|schema\\.gen\\.ts)$|^src/link-modules/modules-definitions\\.ts$|^tests/',
-      },
-      to: {
-        path: '^src/modules/',
-      },
-    },
+    // The layer graph: one rule per node, default-deny. See LAYER_GRAPH above.
+    ...layerGraphRules,
     {
       name: 'no-cross-module-imports',
       comment: 'A module may not import from a sibling module.',
@@ -38,54 +184,6 @@ module.exports = {
       },
       to: {
         path: '^src/link-modules/(definitions/|modules-definitions\\.ts$)',
-      },
-    },
-    {
-      name: 'no-api-internals',
-      comment:
-        'Only src/routes.ts and the API layer itself may import from src/api/. A route is the ' +
-        'outermost layer — it exists to turn a Request into a call on something below it — so an ' +
-        'import pointing back up at one is a layer inversion, and what is being reached for is ' +
-        'always either a schema, which lives in packages/http-schemas and is already shared, or ' +
-        'logic that belongs in a module service or in a workflow when it spans modules. ' +
-        'This is no-module-internals one layer up: that rule names the composition roots allowed to ' +
-        'see inside modules/, this one names the single composition root allowed to see inside api/.',
-      severity: 'error',
-      from: {
-        pathNot: '^src/api/|^src/routes\\.ts$',
-      },
-      to: {
-        path: '^src/api/',
-      },
-    },
-    {
-      name: 'business-layers-do-not-import-the-runtime',
-      comment:
-        'modules/, workflows/, subscribers/, link-modules/ and providers/ may not import ' +
-        'src/framework/ or src/routes.ts. This is the core/framework split stated as a rule: core/ ' +
-        'is what is *known* and framework/ is what *runs*, so a layer that holds business logic may ' +
-        'name the first and never the second. Concretely it stops that logic learning it was reached ' +
-        'over HTTP — HttpRequest and HttpResult live in framework/http/ports.ts — when the same ' +
-        'service and the same workflow also run from a Temporal Worker, a queue consumer and a ' +
-        'scheduled job, where there is no request to take a shape from. What a caller supplies ' +
-        'arrives as a DTO, which is why a module service can be constructed in a test with no ' +
-        'process at all. ' +
-        'The one thing these layers used to need from framework/ was noopLogger, a null-object ' +
-        'implementation of the core Logger port that had no business in the adapter layer; it now ' +
-        'lives at core/logger/noop-logger.ts, which is what lets this rule name all of framework/ ' +
-        'rather than carving out a subfolder. ' +
-        '__tests__/ is exempt: a test may build the runtime it is testing against — two workflow ' +
-        'tests construct the in-process engine from framework/workflows/simple-adapter.ts, which is ' +
-        'the engine doing its job, not a workflow reaching for it. ' +
-        'no-api-internals covers the other request-shaped path, src/api/ itself, and for a different ' +
-        'reason — it is about who may see a route, not about who may know what a request is.',
-      severity: 'error',
-      from: {
-        path: '^src/(modules|workflows|subscribers|link-modules|providers)/',
-        pathNot: '__tests__/',
-      },
-      to: {
-        path: '^src/framework/|^src/routes\\.ts$',
       },
     },
     {
@@ -361,6 +459,17 @@ module.exports = {
     reporterOptions: {
       text: {
         highlightFocused: true,
+      },
+      archi: {
+        /*
+         * `concentrate` merges edges that run between the same pair, which is what makes the
+         * rendered graph legible — without it the hubs every layer imports throw one line each and
+         * the result is a wall. It halves the height: 1175x3305 to 1175x1798 at the time of writing.
+         * The default rank and node separation is left alone; widening it only grew the canvas.
+         */
+        theme: {
+          graph: { concentrate: 'true' },
+        },
       },
     },
   },

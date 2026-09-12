@@ -68,10 +68,14 @@ loads them went to `framework/config/`. That split is what keeps `workflows → 
 `src/server/` — by then a single file, `ports.ts` — disappeared into `framework/http/`, and with it
 the `@server/*` alias.
 
-Enforced by **`business-layers-do-not-import-the-runtime`**: `modules/`, `workflows/`,
-`subscribers/`, `link-modules/` and `providers/` may not import `src/framework/` or `src/routes.ts`.
-Moving `noopLogger` down is what let this rule name all of `framework/` instead of carving out a
-subfolder. `__tests__/` is exempt — a test may construct the engine it is testing.
+Enforced by a dependency-cruiser rule, `business-layers-do-not-import-the-runtime`: `modules/`,
+`workflows/`, `subscribers/`, `link-modules/` and `providers/` may not import `src/framework/` or
+`src/routes.ts`. Moving `noopLogger` down is what let this rule name all of `framework/` instead of
+carving out a subfolder. `__tests__/` is exempt — a test may construct the engine it is testing.
+
+That rule was later folded into `LAYER_GRAPH`, where it is four rows rather than one rule, and the
+same boundary is stated as what each layer *may* import instead of as one thing it may not. See
+[ADR-0027](0027-the-backend-layer-graph-is-default-deny.md).
 
 ## Alternatives rejected
 

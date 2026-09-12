@@ -1,7 +1,7 @@
 import { sql as dsql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres, { type Sql } from 'postgres'
-import { DRIZZLE_OPTIONS } from '../../src/core/db/config.js'
+import { DB_OPTIONS } from '../../src/core/db/config.js'
 import { env } from '../../src/env.js'
 import { WORKER_COUNT, withWorkerDatabase } from './database-url.js'
 import { migrateAll } from './db-migrations.js'
@@ -91,7 +91,7 @@ async function createMissingDatabases(urls: string[]) {
 
 async function migrateDatabase(url: string) {
   const sql = connect(url)
-  const db = drizzle(sql, DRIZZLE_OPTIONS)
+  const db = drizzle(sql, DB_OPTIONS)
 
   try {
     await db.execute(dsql`SET client_min_messages = WARNING`)

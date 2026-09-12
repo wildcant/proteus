@@ -127,8 +127,9 @@ Siblings are declared `"workspace:*"`. See ADR-0025.
 
 The dependency runs one way: **`framework/` imports `core/`, never the reverse.** Below them,
 `modules/`, `workflows/`, `subscribers/`, `link-modules/` and `providers/` may import `core/` and
-must not name `framework/` at all — enforced by `business-layers-do-not-import-the-runtime`, with
-`__tests__/` exempt so a test may construct the engine it is testing. See ADR-0026.
+must not name `framework/` at all. That is one row of `LAYER_GRAPH` in
+`apps/backend/structure/.dependency-cruiser.cjs`, which declares what every layer may import and
+forbids everything else — see ADR-0026 for the `core`/`framework` split and ADR-0027 for the graph.
 
 | `core/` — known | `framework/` — runs |
 | --- | --- |
