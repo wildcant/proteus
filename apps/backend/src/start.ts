@@ -1,5 +1,4 @@
 import type { Server } from 'node:http'
-import type { RequestHandler } from 'express'
 import swaggerUi from 'swagger-ui-express'
 import type { DbProvider } from './core/db/ports.js'
 import type { Logger } from './core/types/logger.js'
@@ -52,10 +51,6 @@ export async function start(options?: StartOptions): Promise<StartResult> {
   expressApp.get('/admin/openapi.json', (_req, res) => res.json(adminDocument))
   expressApp.get('/store/openapi.json', (_req, res) => res.json(storeDocument))
 
-  // ---- Scheduler monitor ----
-
-  expressApp.use('/admin/queues', scheduler.mountMonitor() as RequestHandler)
-
   // ---- Static routes ----
 
   expressApp.get('/health', (_req, res) => res.json({ status: 'ok' }))
@@ -72,14 +67,10 @@ export async function start(options?: StartOptions): Promise<StartResult> {
 
   // ---- Cron jobs ----
 
-  // The test server shares its database with the backend test suite, and BullMQ's
-  // queue lives in that same database. A worker here would compete with the suite's
-  // own worker for `proteus-cron-jobs` and swallow the jobs its tests enqueue.
-  if (env.NODE_ENV === 'test') {
-    logger.info('[CronScheduler] Not started: NODE_ENV=test')
-  } else {
-    await scheduler.start(jobs)
-  }
+  // Reconciliation only: this writes each job's Temporal Schedule and starts no Worker. The runs
+  // those schedules trigger are picked up by `pnpm --filter backend run worker:cron`, in its own
+  // process, so this process schedules work and executes none of it.
+  await scheduler.start(jobs)
 
   // ---- Graceful shutdown ----
 

@@ -23,8 +23,8 @@ import { CRON_JOB_FAILURE_TYPE } from '../temporal/types.js'
 /**
  * The `CronScheduler` port end to end: a real Temporal server, real Schedules, a real Worker
  * polling a real cron queue with the real payload converter, and the real driver workflow and
- * activity behind it. This is the file that replaces `bullmq-cron-scheduler.test.ts` — the same
- * seam, a different implementation behind it.
+ * activity behind it. This is the file that replaces the deleted queue adapter's port test — the
+ * same seam, a different implementation behind it.
  *
  * Almost nothing here is *this code's* behaviour, which is why a double would prove nothing. The
  * schedule spec is the server's decoding of a cron string; pause-on-failure and overlap are
@@ -36,7 +36,7 @@ import { CRON_JOB_FAILURE_TYPE } from '../temporal/types.js'
  * not part of what that separate Java implementation supports, which is the same reason the event
  * bus's server test needs this one. See `tests/setup/temporal-test-env.ts`.
  *
- * Runs are triggered by hand rather than waited for. The BullMQ test needed a polling loop with a
+ * Runs are triggered by hand rather than waited for. The previous adapter's test needed a polling loop with a
  * ten-second budget to watch a once-a-minute schedule; a manual trigger is the same observation
  * without the wait, and it is also the operator affordance this migration is partly for.
  */
@@ -299,7 +299,7 @@ describe('the temporal cron scheduler', () => {
       const description = await handleFor('recording-job').describe()
 
       // Stated policies rather than whatever the library happened to do. `SKIP` is the behaviour
-      // the BullMQ adapter documented and got implicitly; `pauseOnFailure` had no analogue at all.
+      // the previous adapter documented and got implicitly; `pauseOnFailure` had no analogue at all.
       expect(description.policies).toMatchObject({
         overlap: ScheduleOverlapPolicy.SKIP,
         pauseOnFailure: true,

@@ -110,7 +110,7 @@ const main = async () => {
     .waitFor({ timeout: 60_000 })
   await page.getByRole('button', { name: 'Import', exact: true }).click({ timeout: 60_000 })
 
-  // The picker opens with every schema ticked — bullmq and drizzle included. Clearing first is
+  // The picker opens with every schema ticked — drizzle's migration bookkeeping included. Clearing first is
   // what makes the "Select all <n>" button appear; it only shows when a filter is narrowing an
   // empty selection, so the order here matters.
   await page.getByRole('button', { name: 'Clear selection' }).click()
