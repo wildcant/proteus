@@ -1,7 +1,8 @@
 import type { ILinkService } from '@core/types/link/service.js'
 import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import type { IProductModuleService } from '@core/types/product/service.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 
 type DeleteProductVariantInput = { variantId: string }

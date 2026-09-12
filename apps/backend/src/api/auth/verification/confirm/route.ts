@@ -1,6 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IAuthModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IAuthModuleService } from '@core/types/auth/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { VerificationConfirmBody, VerificationConfirmResponse } from '@proteus/http-schemas/auth'

@@ -1,5 +1,5 @@
 import type { IOrderModuleService } from '@core/types/order/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'

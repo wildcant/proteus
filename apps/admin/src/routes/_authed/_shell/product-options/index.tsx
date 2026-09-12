@@ -1,6 +1,6 @@
 import { AdminProductOptionListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
-import { DataTable } from '#/components/data-table'
+import { DataTable } from '#/components/data-table/data-table'
 import { PageLayout } from '#/components/layout/page-layout'
 import { productOptionsListQueryOptions } from '#/features/product-options/api/product-options'
 import { useProductOptionTable } from '#/features/product-options/hooks/use-product-option-table'

@@ -1,7 +1,7 @@
 import type { FileDTO } from '@core/types/file/common.js'
 import type { CreateFileDTO } from '@core/types/file/mutations.js'
 import type { IFileModuleService } from '@core/types/file/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 
 type UploadFilesInput = {

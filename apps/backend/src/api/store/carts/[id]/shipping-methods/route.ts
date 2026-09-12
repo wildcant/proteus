@@ -1,7 +1,8 @@
 import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { ICartModuleService, IFulfillmentModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AddCartShippingMethod, IdParams, StoreCreateCartShippingMethodResponse } from '@proteus/http-schemas/store'
 

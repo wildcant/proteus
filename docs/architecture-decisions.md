@@ -23,7 +23,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0013](adr/0013-selective-ssr.md) | Selective SSR for the store | `defaultSsr: false`, re-enabled per route where SEO needs it |
 | [0014](adr/0014-dual-file-upload-strategy.md) | Dual file upload strategy | Multipart and presigned URLs both stay; each answers a case the other cannot |
 | [0015](adr/0015-server-computed-option-projections.md) | Server-computed option projections | The backend answers the questions; clients render the answers |
-| [0016](adr/0016-derived-soft-delete-cascade.md) | Derived soft-delete cascade | The cascade is derived from the models barrel, not declared per service |
+| [0016](adr/0016-derived-soft-delete-cascade.md) | Derived soft-delete cascade | The cascade is derived from each module's `models` list, not declared per service |
 | [0017](adr/0017-cart-state-is-a-timestamp.md) | Cart state is a timestamp | `cart.status` is removed; state is `completedAt` and `deletedAt` |
 | [0018](adr/0018-layered-product-options.md) | Layered product options | The variant pivot points at the product's option value, not at a string |
 | [0019](adr/0019-modals-are-url-state.md) | URL state is the default | List, panel and modal state goes in a validated search param |
@@ -35,6 +35,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0025](adr/0025-the-package-manager-is-pnpm.md) | The package manager is pnpm | A workspace resolves only what it declares; the catalog and the `versions` gate keep one version of each |
 | [0026](adr/0026-core-is-known-framework-runs.md) | `core/` is what is known, `framework/` is what runs | If it would differ between node and workerd it runs; `framework/` imports `core/`, never the reverse |
 | [0027](adr/0027-the-backend-layer-graph-is-default-deny.md) | The backend's layer graph is declared and default-deny | `LAYER_GRAPH` says what each layer may import; everything else under `src/` is an error |
+| [0028](adr/0028-barrels-only-at-a-published-boundary.md) | A barrel lives only at a published boundary | Biome's `noBarrelFile` repo-wide; the nine exemptions are the files a `package.json` `exports` map names |
 
 ---
 

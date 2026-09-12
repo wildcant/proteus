@@ -1,6 +1,6 @@
 import type { EventBus } from '@core/event-bus/types.js'
 import type { Logger } from '@core/types/logger.js'
-import { ContainerRegistrationKeys } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import type { HttpRequest } from '@framework/http/ports.js'
 import { type RouteDefinition, Tags } from '@framework/http/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'

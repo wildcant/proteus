@@ -1,6 +1,6 @@
 import { BigNumber } from '@core/bignumber.js'
-import type { IPaymentModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'

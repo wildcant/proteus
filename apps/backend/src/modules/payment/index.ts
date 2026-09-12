@@ -19,9 +19,6 @@ import { RefundRepository } from './repositories/refund.js'
 import { RefundReasonRepository } from './repositories/refund-reason.js'
 import { PaymentModuleService } from './services/payment-module-service.js'
 
-export { paymentProviderDeclarations } from './provider-declarations.js'
-export { syncPaymentProviders } from './sync-providers.js'
-
 export default Module(Modules.PAYMENT, {
   service: PaymentModuleService,
   models: {

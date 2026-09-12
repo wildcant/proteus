@@ -28,7 +28,7 @@ export type EventPayloads = {
 ```ts
 // publishing — anywhere that has the container: a workflow's final step, a route handler, a job
 import type { EventBus } from '@core/event-bus/types.js'
-import { ContainerRegistrationKeys } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 
 const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
 await bus.emit('order.placed', { id: order.id })

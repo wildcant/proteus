@@ -4,7 +4,7 @@
  */
 
 import { createServer, type Server } from 'node:http'
-import type { errorHandler } from '@core/errors/index.js'
+import type { errorHandler } from '@core/errors/error-handler.js'
 import type { Logger } from '@core/types/logger.js'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'

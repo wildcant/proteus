@@ -1,6 +1,6 @@
 import { Button, KeyboundForm, RouteDrawer, toast, useRouteModal } from '@proteus/ui'
 import type { AdminProductImage } from '#/api/generated/model'
-import { DataTable } from '#/components/data-table'
+import { DataTable } from '#/components/data-table/data-table'
 import { useImageVariantsTable } from '#/features/products/hooks/use-image-variants-table'
 import { useManageImageVariantsForm } from '#/features/products/hooks/use-manage-image-variants-form'
 

@@ -1,6 +1,6 @@
 import type { EventBus } from '@core/event-bus/types.js'
 import type { Logger } from '@core/types/logger.js'
-import { ContainerRegistrationKeys } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { pinnedTestEventBusAdapter } from '@tests/setup/event-bus-adapter.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { noopLogger } from '../../logger/noop-logger.js'

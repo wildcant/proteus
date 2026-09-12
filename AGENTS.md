@@ -305,13 +305,14 @@ editor's watcher — fails rather than corrupting the first.
 - For best-effort async calls, use `.catch((e) => this.logger.error(e))` instead of wrapping in try/catch with an empty or comment-only catch block.
 - Use `Promise.all` with `.map()` instead of `for` loops with `await` inside when iterations are independent.
 - Use `type` instead of `interface`. Interfaces allow declaration merging on name overlap, which can cause subtle bugs. Composable `type` aliases with `&` intersections are safer and more predictable. Biome enforces this in admin and store (`useConsistentTypeDefinitions`); the backend is not covered, so there it is a convention you have to keep.
+- **Never write a barrel.** Import the file that declares the symbol, not an `index.ts` that re-exports it. Biome's `performance/noBarrelFile` is an error repo-wide, and the only exemptions are the nine files a `package.json` `exports` map names — `@proteus/ui`, the three `@proteus/http-schemas` entries, and so on. See ADR-0028.
 - **Never use non-null assertions (`!`).** Use proper narrowing (guard clauses, `if` checks, `?.`, `?? fallback`, or explicit error throws) instead.
 - **Never use `any`.** If the type feels like `unknown`, stop and find a more precise type — a generic, a union, a mapped type, or a named type from the codebase.
 - **Tailwind v4 canonical classes.** Always use the short canonical form for Tailwind classes. Write `text-foreground` not `text-(--foreground)` or `text-[var(--foreground)]`. Write `max-w-350` not `max-w-[1400px]`. Only use the `(--var)` syntax for CSS variables that are NOT registered in the `@theme` (e.g., component-scoped variables like `--drawer-height`).
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/` (0001–0025, indexed by `docs/architecture-decisions.md`).
+Architecture Decision Records in `docs/adr/` (0001–0028, indexed by `docs/architecture-decisions.md`).
 
 **Before writing or moving any document, read `standards/README.md` — "Where a document goes".** It
 carries the decision table and the tie-breakers, and it is the only copy: *how to build a kind of

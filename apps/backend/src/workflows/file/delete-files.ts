@@ -1,5 +1,5 @@
 import type { IFileModuleService } from '@core/types/file/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 
 type DeleteFilesInput = {

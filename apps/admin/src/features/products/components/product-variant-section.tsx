@@ -1,5 +1,5 @@
 import { Card } from '@proteus/ui'
-import { DataTable } from '#/components/data-table'
+import { DataTable } from '#/components/data-table/data-table'
 import { useVariantTable } from '#/features/products/hooks/use-variant-table'
 
 export function ProductVariantSection({ productId }: { productId: string }) {

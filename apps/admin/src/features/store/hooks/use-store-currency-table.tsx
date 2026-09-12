@@ -1,6 +1,7 @@
 import { getCurrencyName } from '@proteus/utils'
 import type { AdminStoreCurrency } from '#/api/generated/model'
-import { StatusCell, useDefineTable } from '#/components/data-table'
+import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useStore } from '#/features/store/api/store'
 import { StoreCurrencyRowActions } from '#/features/store/components/store-currency-row-actions'
 

@@ -9,13 +9,12 @@
  * the smallest seed that gets it back, with none of the development seed's catalogue.
  */
 
-import type {
-  ILinkService,
-  IPaymentModuleService,
-  IRegionModuleService,
-  IStoreModuleService,
-} from '../src/core/types/index.js'
-import { ContainerRegistrationKeys, Modules } from '../src/core/utils/index.js'
+import type { ILinkService } from '../src/core/types/link/service.js'
+import type { IPaymentModuleService } from '../src/core/types/payment/service.js'
+import type { IRegionModuleService } from '../src/core/types/region/service.js'
+import type { IStoreModuleService } from '../src/core/types/store/service.js'
+import { ContainerRegistrationKeys } from '../src/core/utils/container.js'
+import { Modules } from '../src/core/utils/modules-definition.js'
 import { container } from '../src/framework/runtime/container.node.js'
 import { seedMarkets } from './seed/markets.js'
 

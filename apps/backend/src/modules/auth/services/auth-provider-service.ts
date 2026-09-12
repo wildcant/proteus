@@ -1,10 +1,10 @@
 import type { AwilixContainer } from 'awilix'
-import { AppError, ErrorTypes } from '../../../core/errors/index.js'
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   AuthenticationInput,
   AuthenticationResponse,
   AuthIdentityProviderService,
-} from '../../../core/types/index.js'
+} from '../../../core/types/auth/provider.js'
 import type { AbstractAuthModuleProvider } from '../../../core/utils/abstract-auth-module-provider.js'
 
 type InjectedDependencies = {

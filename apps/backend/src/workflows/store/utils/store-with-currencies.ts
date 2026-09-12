@@ -1,4 +1,4 @@
-import type { StoreCurrencyDTO, StoreDTO } from '@core/types/index.js'
+import type { StoreCurrencyDTO, StoreDTO } from '@core/types/store/common.js'
 import type { AdminStore } from '@proteus/http-schemas/admin'
 
 /** What every admin store route answers with when a deployment has no store to describe. */

@@ -83,6 +83,9 @@
             "maxAllowedComplexity": 25
           }
         }
+      },
+      "performance": {
+        "noBarrelFile": "error"
       }
     }
   },
@@ -188,6 +191,26 @@
         "rules": {
           "style": {
             "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/ui/src/index.ts",
+        "packages/utils/src/index.ts",
+        "packages/icons/src/index.ts",
+        "packages/testing/index.ts",
+        "packages/http-schemas/src/admin/index.ts",
+        "packages/http-schemas/src/auth/index.ts",
+        "packages/http-schemas/src/store/index.ts",
+        "apps/backend/src/link-modules/modules-definitions.ts",
+        "apps/backend/src/test-exports.ts"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
           }
         }
       }

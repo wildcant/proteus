@@ -1,6 +1,6 @@
 import type { CustomerDTO } from '@core/types/customer/common.js'
 import type { ICustomerModuleService } from '@core/types/customer/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
 
 export type FindOrCreateCustomerInput = {

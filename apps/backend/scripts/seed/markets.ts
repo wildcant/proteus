@@ -1,9 +1,7 @@
-import type {
-  ILinkService,
-  IPaymentModuleService,
-  IRegionModuleService,
-  IStoreModuleService,
-} from '../../src/core/types/index.js'
+import type { ILinkService } from '../../src/core/types/link/service.js'
+import type { IPaymentModuleService } from '../../src/core/types/payment/service.js'
+import type { IRegionModuleService } from '../../src/core/types/region/service.js'
+import type { IStoreModuleService } from '../../src/core/types/store/service.js'
 import { SEED_COUNTRIES } from '../fixtures/countries.js'
 
 /**

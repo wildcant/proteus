@@ -99,7 +99,11 @@ list is complete, and finds them by searching for the two shapes that build a gr
 naming the files that do, so a new one is covered the day it is written. See ADR 0016.
 
 The rule for any folder added later is the same one that emptied these: a barrel exists only where
-something consumes the namespace *whole*, and when it does, say which consumer and why.
+something consumes the namespace *whole*, and when it does, say which consumer and why. That rule is
+now repo-wide and checked — Biome's `performance/noBarrelFile`, with the nine exemptions and the
+consumer behind each one recorded in [ADR-0028](../../../../../docs/adr/0028-barrels-only-at-a-published-boundary.md).
+None of them is inside a module: a module's public surface is its `index.ts`, and that file is a
+`Module()` definition, not a re-export of one.
 
 ### Every table spreads `...timestamps`
 
@@ -143,14 +147,16 @@ configure.
 | Rule id | The paragraph it enforces |
 |---|---|
 | `model-without-standard-timestamps` | that every table spreads `...timestamps`, so it has a `deletedAt` |
+| `noBarrelFile` | that there are no barrels — no `index.ts` inside `models/`, `repositories/` or `services/`, and no re-export line in the module's own `index.ts` |
 | `layer-graph-*` | that only `container.ts`, `schema.gen.ts` and `link-modules/` may name a module at all — and so, from the other side, that a third-party provider outside every module cannot reach a repository |
 | `no-cross-module-imports` | that a module never reaches into another module |
 | `module-holds-only-known-file-kinds` | the eight folders and four root files, and nothing else |
 | `module-tests-live-in-a-tests-folder` | that every test is under `__tests__/` |
 
-The first is an ast-grep rule under `standards/rules/backend/modules/`; the other four are
-dependency-cruiser rules in `apps/backend/structure/.dependency-cruiser.cjs`, run by the `structure`
-gate. `standards/README.md` covers how each kind runs and how to suppress one.
+The first is an ast-grep rule under `standards/rules/backend/modules/`; `noBarrelFile` is a Biome
+rule in `biome.json`, run by the `lint` gate; the other four are dependency-cruiser rules in
+`apps/backend/structure/.dependency-cruiser.cjs`, run by the `structure` gate. `standards/README.md`
+covers how each kind runs and how to suppress one.
 
 ### Exemptions
 

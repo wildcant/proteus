@@ -1,4 +1,5 @@
-import type { CreateUserDTO, UpdateUserDTO, UserDTO } from '@core/types/index.js'
+import type { UserDTO } from '@core/types/user/common.js'
+import type { CreateUserDTO, UpdateUserDTO } from '@core/types/user/mutations.js'
 import { faker } from '@faker-js/faker'
 
 export function generateCreateUserDTO(overrides?: Partial<CreateUserDTO>): CreateUserDTO {

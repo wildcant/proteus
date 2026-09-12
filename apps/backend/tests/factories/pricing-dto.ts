@@ -1,5 +1,6 @@
 import { BigNumber } from '@core/bignumber.js'
-import type { CalculatedPriceSetDTO, CreatePriceDTO, CreatePriceSetDTO } from '@core/types/index.js'
+import type { CalculatedPriceSetDTO } from '@core/types/pricing/common.js'
+import type { CreatePriceDTO, CreatePriceSetDTO } from '@core/types/pricing/mutations.js'
 import { faker } from '@faker-js/faker'
 
 export function generateCreatePriceSetDTO(overrides?: Partial<CreatePriceSetDTO>): CreatePriceSetDTO {

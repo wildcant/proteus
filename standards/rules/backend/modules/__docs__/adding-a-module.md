@@ -100,8 +100,9 @@ export type IInventoryModuleService = {
 }
 ```
 
-**`index.ts`** re-exports all three, and `src/core/types/index.ts` gains
-`export * from './inventory/index.js'`.
+Nothing re-exports them. `core/types/` has no barrels — a consumer imports
+`@core/types/inventory/service.js`, which is what says which of the three files it took
+(ADR-0028).
 
 ### 3. Create the module folder
 
@@ -177,8 +178,6 @@ async findBySku(sku: string, context?: Context) {
 }
 ```
 
-Re-export from `repositories/index.ts`.
-
 ### 6. Create the module service
 
 A class with constructor injection in `services/<name>-module-service.ts`:
@@ -226,8 +225,6 @@ already group their helpers in one place and a free function splits one concern 
 no gain. A module-level function is for logic genuinely shared across several classes or files, and
 then it belongs in `src/core/utils/`. When a service grows too large for one class, the split is an
 internal collaborator — see [modules](./modules.md#exactly-one-service-crosses-the-boundary).
-
-Re-export from `services/index.ts`.
 
 ### 7. Wire the module definition
 
@@ -325,9 +322,9 @@ No rule is held by this document. The two that fail while you are following thes
 ## What is deliberately not enforced
 
 - **The nine steps themselves.** Nothing checks that a module was registered in `container.ts`, that
-  its key is in the `Modules` enum, or that `core/types/index.ts` re-exports its types. Each one fails
-  loudly the first time something resolves the module, which is cheaper than a rule that would have to
-  read four files at once.
+  its key is in the `Modules` enum, or that its service implements the interface in `core/types/`.
+  Each one fails loudly the first time something resolves the module, which is cheaper than a rule
+  that would have to read four files at once.
 - **Private helpers over module-level functions.** A free function at the top of a service file is
   indistinguishable from any other export; the claim is about where a reader expects to find it, not
   about a shape.
@@ -338,8 +335,7 @@ No rule is held by this document. The two that fail while you are following thes
 ## Checklist
 
 - [ ] Module key added to `Modules` enum
-- [ ] Public types in `core/types/<name>/` — common, mutations, service, index
-- [ ] Re-export added to `core/types/index.ts`
+- [ ] Public types in `core/types/<name>/` — common, mutations, service
 - [ ] Model(s) with a prefixed ID and `...timestamps`
 - [ ] Repository extending `BaseRepository(<table>)`
 - [ ] Service implementing the interface from `core/types/`

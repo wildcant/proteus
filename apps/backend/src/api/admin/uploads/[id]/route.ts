@@ -1,5 +1,5 @@
-import type { IFileModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IFileModuleService } from '@core/types/file/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminFileResponse, DeleteResponse, IdParams } from '@proteus/http-schemas/admin'
 import { deleteFilesWorkflow } from '@workflows/file/delete-files.js'

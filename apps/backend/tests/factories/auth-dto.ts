@@ -1,18 +1,19 @@
+import type { AuthIdentityDTO, ProviderIdentityDTO } from '@core/types/auth/common.js'
 import type {
-  AuthIdentityDTO,
-  AuthPasswordResetTokenDTO,
-  AuthVerificationDTO,
-  ConfirmAuthVerificationDTO,
   CreateAuthIdentityDTO,
   CreateAuthPasswordResetTokenDTO,
   CreateAuthVerificationDTO,
   CreateProviderIdentityDTO,
-  ProviderIdentityDTO,
-  RequestAuthVerificationDTO,
   UpdateAuthIdentityDTO,
   UpdateAuthVerificationDTO,
   UpdateProviderIdentityDTO,
-} from '@core/types/index.js'
+} from '@core/types/auth/mutations.js'
+import type {
+  AuthPasswordResetTokenDTO,
+  AuthVerificationDTO,
+  ConfirmAuthVerificationDTO,
+  RequestAuthVerificationDTO,
+} from '@core/types/auth/verification.js'
 import { faker } from '@faker-js/faker'
 
 // --- AuthIdentity ---

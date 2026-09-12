@@ -2,7 +2,7 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/auth/service.js'
 import type { UserDTO } from '@core/types/user/common.js'
 import type { IUserModuleService } from '@core/types/user/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 
 export type AcceptInviteInput = {

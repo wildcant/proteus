@@ -1,4 +1,4 @@
-import type { DataGridColumn } from '#/components/data-grid'
+import type { DataGridColumn } from '#/components/data-grid/types'
 
 /**
  * A grid row holding one amount per currency, keyed by ISO 4217 code.

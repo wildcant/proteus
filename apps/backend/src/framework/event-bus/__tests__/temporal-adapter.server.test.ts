@@ -1,5 +1,5 @@
 import type { Logger } from '@core/types/logger.js'
-import { ContainerRegistrationKeys } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { createTemporalDevServerEnvironment, TEMPORAL_BOOT_TIMEOUT } from '@tests/setup/temporal-test-env.js'

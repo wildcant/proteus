@@ -1,7 +1,7 @@
 import { Button, KeyboundForm, RouteFocusModal, useRouteModal } from '@proteus/ui'
 import { useCallback, useMemo, useState } from 'react'
 import type { AdminProductVariant, AdminUpdateVariantPricesPricesItem } from '#/api/generated/model'
-import { DataGrid } from '#/components/data-grid'
+import { DataGrid } from '#/components/data-grid/data-grid'
 import { useUpdateVariantPrices } from '#/features/products/api/product-variants'
 import { buildPriceColumns, type CurrencyAmounts } from '#/features/products/utils/price-columns'
 import { useStoreCurrencies } from '#/features/store/api/store'

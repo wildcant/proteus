@@ -1,5 +1,5 @@
-import type { IFulfillmentModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminCreateGeoZone, AdminCreateGeoZoneResponse, AdminZoneIdParams } from '@proteus/http-schemas/admin'
 

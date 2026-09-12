@@ -1,6 +1,7 @@
 import { daysAgoIso, todayIso } from '@proteus/utils'
 import type { AdminProduct } from '#/api/generated/model'
-import { StatusCell, useDefineTable } from '#/components/data-table'
+import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProducts } from '#/features/products/api/products'
 import { ProductRowActions } from '#/features/products/components/product-row-actions'
 import { productStatusColors } from '#/features/products/utils/product-status'

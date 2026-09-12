@@ -2,8 +2,8 @@ import type { MiddlewareFunction } from '@framework/http/types.js'
 import type { AuthContext } from '../../../core/auth/types.js'
 import { extractTokenPayload } from '../../../core/auth/utils/token.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
-import type { IAuthModuleService } from '../../../core/types/index.js'
-import { Modules } from '../../../core/utils/index.js'
+import type { IAuthModuleService } from '../../../core/types/auth/service.js'
+import { Modules } from '../../../core/utils/modules-definition.js'
 
 /**
  * Middleware that validates a purpose-bound reset JWT.

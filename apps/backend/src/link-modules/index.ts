@@ -1,7 +1,7 @@
 import { type AwilixContainer, asValue } from 'awilix'
 import { buildCascadeGraph } from '../core/db/cascade-graph.js'
 import type { DbProvider } from '../core/db/ports.js'
-import { ContainerRegistrationKeys } from '../core/utils/index.js'
+import { ContainerRegistrationKeys } from '../core/utils/container.js'
 import { createWithTransaction } from '../core/utils/with-transaction.js'
 import { cartPaymentCollectionTable } from './definitions/cart-payment-collection.js'
 import { orderCartTable } from './definitions/order-cart.js'

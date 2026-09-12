@@ -1,5 +1,8 @@
-import type { ILinkService, IPricingModuleService, IProductModuleService } from '@core/types/index.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   AdminProductVariantResponse,

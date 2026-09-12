@@ -2,7 +2,7 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CartDTO } from '@core/types/cart/common.js'
 import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { ICustomerModuleService } from '@core/types/customer/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 
 type TransferCartCustomerInput = { cartId: string; customerId: string }

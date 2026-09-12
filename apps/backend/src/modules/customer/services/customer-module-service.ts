@@ -1,17 +1,19 @@
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
 import type {
-  AddressDefaultOption,
-  Context,
-  CreateCustomerAddressDTO,
-  CreateCustomerDTO,
   CustomerAddressDTO,
   CustomerDTO,
   FilterableCustomerAddressProps,
   FilterableCustomerProps,
-  FindConfig,
-  ICustomerModuleService,
+} from '../../../core/types/customer/common.js'
+import type {
+  AddressDefaultOption,
+  CreateCustomerAddressDTO,
+  CreateCustomerDTO,
   UpdateCustomerAddressDTO,
   UpdateCustomerDTO,
-} from '../../../core/types/index.js'
+} from '../../../core/types/customer/mutations.js'
+import type { ICustomerModuleService } from '../../../core/types/customer/service.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { CustomerRepository } from '../repositories/customer.js'

@@ -1,6 +1,7 @@
 import { daysAgoIso, todayIso } from '@proteus/utils'
 import type { AdminOrder } from '#/api/generated/model'
-import { StatusCell, useDefineTable } from '#/components/data-table'
+import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useOrders } from '#/features/orders/api/orders'
 import { fulfillmentStatusColors, orderStatusColors } from '#/features/orders/utils/order-status'
 

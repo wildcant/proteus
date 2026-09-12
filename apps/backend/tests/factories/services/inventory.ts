@@ -2,7 +2,8 @@ import type { AwilixContainer } from 'awilix'
 import type { CreateInventoryItemDTO, CreateInventoryLevelDTO } from '../../../src/core/types/inventory/mutations.js'
 import type { IInventoryModuleService } from '../../../src/core/types/inventory/service.js'
 import type { ILinkService } from '../../../src/core/types/link/service.js'
-import { ContainerRegistrationKeys, Modules } from '../../../src/core/utils/index.js'
+import { ContainerRegistrationKeys } from '../../../src/core/utils/container.js'
+import { Modules } from '../../../src/core/utils/modules-definition.js'
 import { generateCreateInventoryItemDTO, generateCreateInventoryLevelDTO } from '../inventory-dto.js'
 
 export type StockVariantOptions = {

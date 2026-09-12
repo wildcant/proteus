@@ -18,20 +18,21 @@ Handlers receive pre-validated data — no manual `validateBody()` calls needed.
 
 ## HTTP Schemas
 
-Schemas live in `backend/src/core/http-schemas/`, organized by domain following Medusa's naming conventions.
+Schemas live in `packages/http-schemas/src/`, organized by domain following Medusa's naming conventions.
 
 ### Directory structure
 
 ```
-backend/src/core/http-schemas/
-├── index.ts              # barrel re-export
+packages/http-schemas/src/
 ├── common.ts             # shared schemas (IdParams, etc.)
-└── <domain>/
-    ├── index.ts          # re-exports all domain schemas
-    ├── entities.ts       # entity shapes (response models)
-    ├── payloads.ts       # request body schemas (create/update)
-    ├── queries.ts        # query parameter schemas
-    └── responses.ts      # response wrapper schemas
+├── openapi-setup.ts      # runs extendZodWithOpenApi(z); imported by each entry
+└── <audience>/           # admin | store | auth — one `exports` entry each
+    ├── index.ts          # the entry, and the only barrel here (ADR-0028)
+    └── <domain>/
+        ├── entities.ts   # entity shapes (response models)
+        ├── payloads.ts   # request body schemas (create/update)
+        ├── queries.ts    # query parameter schemas
+        └── responses.ts  # response wrapper schemas
 ```
 
 ### Naming conventions
@@ -74,9 +75,14 @@ Each API subdirectory (e.g. `api/customers/`) has **one** `middlewares.ts` that 
 
 ```typescript
 // backend/src/api/customers/middlewares.ts
-import { IdParams } from '../../core/http-schemas/common.js'
-import { CreateCustomers, UpdateCustomer } from '../../core/http-schemas/customer/payloads.js'
-import { CustomerListResponse, CustomerResponse, CustomerDeleteResponse } from '../../core/http-schemas/customer/responses.js'
+import {
+  CreateCustomers,
+  CustomerDeleteResponse,
+  CustomerListResponse,
+  CustomerResponse,
+  IdParams,
+  UpdateCustomer,
+} from '@proteus/http-schemas/admin'
 import type { MiddlewareRoute } from '../../core/middleware/types.js'
 import { Tags } from '../../core/middleware/types.js'
 
@@ -362,9 +368,9 @@ components/schemas/CreateCustomer  ← from CreateCustomer.openapi('CreateCustom
 
 ## Adding middleware to a new module
 
-1. Create HTTP schemas in `backend/src/core/http-schemas/<domain>/` (entities, payloads, queries, responses)
+1. Create HTTP schemas in `packages/http-schemas/src/<audience>/<domain>/` (entities, payloads, queries, responses)
 2. Call `.openapi('Name')` on entity and payload schemas (import `openapi/setup.js` first)
-3. Re-export from `backend/src/core/http-schemas/index.ts`
+3. Add one `export * from './<domain>/<file>.js'` line per new file to the audience's `index.ts`
 4. Add a tag to the `Tags` enum in `backend/src/core/middleware/types.ts`
 5. Create `backend/src/api/<domain>/middlewares.ts` with route configs
 6. Remove manual `validateBody()` / `validateQuery()` calls from handlers

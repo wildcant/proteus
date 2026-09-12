@@ -1,5 +1,5 @@
 import { KeyboundForm, RouteFocusModal, toast } from '@proteus/ui'
-import { DataTable } from '#/components/data-table'
+import { DataTable } from '#/components/data-table/data-table'
 import { useInviteForm } from '#/features/users/hooks/use-invite-form'
 import { useInviteTable } from '#/features/users/hooks/use-invite-table'
 

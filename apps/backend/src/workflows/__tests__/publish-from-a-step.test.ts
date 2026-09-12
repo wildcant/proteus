@@ -1,7 +1,7 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { EventBus } from '@core/event-bus/types.js'
 import type { Logger } from '@core/types/logger.js'
-import { ContainerRegistrationKeys } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { noopLogger } from '../../core/logger/noop-logger.js'

@@ -4,7 +4,8 @@ import type { ILinkService } from '@core/types/link/service.js'
 import type { Logger } from '@core/types/logger.js'
 import type { PaymentCollectionDTO } from '@core/types/payment/common.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 
 type CreatePaymentCollectionForCartInput = { cartId: string }

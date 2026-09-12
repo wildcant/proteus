@@ -23,9 +23,6 @@ import { ShippingOptionTypeRepository } from './repositories/shipping-option-typ
 import { ShippingProfileRepository } from './repositories/shipping-profile.js'
 import { FulfillmentModuleService } from './services/fulfillment-module-service.js'
 
-export { fulfillmentProviderDeclarations } from './provider-declarations.js'
-export { syncFulfillmentProviders } from './sync-providers.js'
-
 export default Module(Modules.FULFILLMENT, {
   service: FulfillmentModuleService,
   models: {

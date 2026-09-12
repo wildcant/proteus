@@ -7,9 +7,6 @@ import { NotificationRepository } from './repositories/notification.js'
 import { NotificationProviderRepository } from './repositories/notification-provider.js'
 import { NotificationModuleService } from './services/notification-module-service.js'
 
-export { notificationProviderDeclarations } from './provider-declarations.js'
-export { syncNotificationProviders } from './sync-providers.js'
-
 export default Module(Modules.NOTIFICATION, {
   service: NotificationModuleService,
   models: {

@@ -1,19 +1,21 @@
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { FindConfig } from '../../../core/types/common.js'
+import type { Context } from '../../../core/types/context.js'
 import type {
-  Context,
-  CreateInventoryItemDTO,
-  CreateInventoryLevelDTO,
-  CreateReservationItemDTO,
   FilterableInventoryItemProps,
   FilterableInventoryLevelProps,
   FilterableReservationItemProps,
-  FindConfig,
-  IInventoryModuleService,
   InventoryItemDTO,
   InventoryLevelDTO,
   ReservationItemDTO,
+} from '../../../core/types/inventory/common.js'
+import type {
+  CreateInventoryItemDTO,
+  CreateInventoryLevelDTO,
+  CreateReservationItemDTO,
   UpdateInventoryItemDTO,
-} from '../../../core/types/index.js'
+} from '../../../core/types/inventory/mutations.js'
+import type { IInventoryModuleService } from '../../../core/types/inventory/service.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { InventoryItemRepository } from '../repositories/inventory-item.js'

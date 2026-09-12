@@ -1,12 +1,12 @@
 import type { AwilixContainer } from 'awilix'
-import { AppError, ErrorTypes } from '../../../core/errors/index.js'
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   AuthVerificationService,
   ConfirmAuthVerificationDTO,
   ConfirmAuthVerificationResult,
   RequestAuthVerificationDTO,
   RequestAuthVerificationResult,
-} from '../../../core/types/index.js'
+} from '../../../core/types/auth/verification.js'
 import type { AbstractAuthVerificationProvider } from '../../../core/utils/abstract-auth-verification-provider.js'
 
 type InjectedDependencies = {

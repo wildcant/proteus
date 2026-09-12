@@ -1,6 +1,6 @@
 import { Badge } from '@proteus/ui'
 import type { AdminInvite } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useInvites } from '#/features/users/api/invites'
 import { InviteRowActions } from '#/features/users/components/invite-row-actions'
 

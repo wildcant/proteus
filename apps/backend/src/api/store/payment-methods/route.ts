@@ -1,5 +1,5 @@
-import type { IPaymentModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { StoreSavedMethodListResponse } from '@proteus/http-schemas/store'
 import { describeAccountHolder } from '@workflows/payment/utils/describe-account-holder.js'

@@ -1,6 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IUserModuleService } from '@core/types/index.js'
-import { Modules } from '@core/utils/index.js'
+import type { IUserModuleService } from '@core/types/user/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminUserResponse } from '@proteus/http-schemas/admin'
 

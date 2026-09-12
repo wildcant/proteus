@@ -1,6 +1,6 @@
 import type { CreateNotificationDTO } from '@core/types/notification/mutations.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
-import { Modules } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
 
 export type NotifyOnFailureInput = {

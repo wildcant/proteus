@@ -1,5 +1,5 @@
 import type { AdminProductVariant } from '#/api/generated/model'
-import { useDefineTable } from '#/components/data-table'
+import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProductVariants } from '#/features/products/api/product-variants'
 
 /**

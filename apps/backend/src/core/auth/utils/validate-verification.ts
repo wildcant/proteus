@@ -1,7 +1,8 @@
 import type { ActorType } from '@proteus/http-schemas/auth'
 import { AppError, ErrorTypes } from '../../errors/app-error.js'
+import type { AuthIdentityDTO, ProviderIdentityDTO } from '../../types/auth/common.js'
+import type { IAuthModuleService } from '../../types/auth/service.js'
 import type { ConfigModule } from '../../types/config.js'
-import type { AuthIdentityDTO, IAuthModuleService, ProviderIdentityDTO } from '../../types/index.js'
 
 type AuthIdentityWithProviders = AuthIdentityDTO & {
   providerIdentities?: ProviderIdentityDTO[]

@@ -3,7 +3,8 @@ import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.
 import type { ILinkService } from '@core/types/link/service.js'
 import type { OrderDTO } from '@core/types/order/common.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
-import { ContainerRegistrationKeys, Modules } from '@core/utils/index.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 
 type MarkOrderDeliveredInput = {

@@ -1,7 +1,7 @@
 import { ApplicationFailure } from '@temporalio/common'
 import type { AwilixContainer } from 'awilix'
 import type { Logger } from '../../../core/types/logger.js'
-import { ContainerRegistrationKeys } from '../../../core/utils/index.js'
+import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { serializeError } from '../../temporal/failures.js'
 import type { SubscriberRegistry } from '../registry.js'
 import { DISPATCH_ACTIVITY_NAME } from './config.js'

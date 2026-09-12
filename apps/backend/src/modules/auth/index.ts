@@ -11,8 +11,6 @@ import { AuthVerificationRepository } from './repositories/auth-verification.js'
 import { ProviderIdentityRepository } from './repositories/provider-identity.js'
 import { AuthModuleService } from './services/auth-module-service.js'
 
-export { authProviderDeclarations } from './provider-declarations.js'
-
 export default Module(Modules.AUTH, {
   service: AuthModuleService,
   models: {

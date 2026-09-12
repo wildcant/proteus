@@ -2,7 +2,8 @@ import { generateResetJwtToken, getAuthJwtConfig } from '@core/auth/utils/genera
 import { AppError } from '@core/errors/app-error.js'
 import type { IAuthModuleService } from '@core/types/auth/service.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
-import { Modules, NotificationTemplates } from '@core/utils/index.js'
+import { Modules } from '@core/utils/modules-definition.js'
+import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { env } from '@env'
 

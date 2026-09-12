@@ -1,6 +1,6 @@
 import type { AwilixContainer } from 'awilix'
 import type { ILinkRepositoryMap, ILinkService } from '../../../src/core/types/link/service.js'
-import { ContainerRegistrationKeys } from '../../../src/core/utils/index.js'
+import { ContainerRegistrationKeys } from '../../../src/core/utils/container.js'
 
 /**
  * A link repository, for the two things reads cannot cover: asserting on a link row, and

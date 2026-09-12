@@ -1,5 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { CreateProductDTO, VariantImageInput } from '@core/types/index.js'
+import type { CreateProductDTO, VariantImageInput } from '@core/types/product/mutations.js'
 import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { buildSearchFilter } from '../../../core/utils/build-search-filter.js'
