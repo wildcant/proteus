@@ -29,7 +29,7 @@ const QUEUES = {
 
 const requested = process.argv[2] ?? 'workflow'
 
-if (!(requested in QUEUES)) {
+if (!Object.hasOwn(QUEUES, requested)) {
   // Exit 2 rather than 1: "you asked the wrong question" is not "the Worker is not ready", and a
   // healthcheck that retries a typo for a minute before failing hides which of the two happened.
   console.info(`[worker-ready] unknown worker "${requested}" — expected one of ${Object.keys(QUEUES).join(', ')}`)

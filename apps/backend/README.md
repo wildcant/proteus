@@ -61,24 +61,17 @@ scheduled run is a driver workflow on `proteus-cron`, and this is the process th
 one of these on the host and `docker compose ... stop <service>` first, for the same reason `worker`
 needs it: both poll the same queue, and whichever is free claims the task.
 
-**The queues are split by lifecycle, and the split is what keeps a tick and a checkout out of each
-other's way.** A nightly job that runs for an hour must not hold a slot a shopper's
-`authorize-payment` step is waiting for, and a checkout burst must not delay a scheduled run past
-its next tick — under overlap `SKIP` a late run is a *dropped* run, not a queued one. One pool of
-slots per kind of work is the only arrangement where neither can starve the other.
+**The queues are split by lifecycle, so that a tick and a checkout cannot starve each other, and
+urgency *within* a queue is a priority key rather than a fourth queue. ADR-0029 has both arguments.**
 
-Urgency *within* a queue is a different question with a different answer: a priority key, not a
-fourth queue. See ADR-0029.
+The *processes* are split so those slot pools are genuinely separate, and so each can pin the
+workflow engine it wants — the workflow Worker keeps nested `.run()` calls in-process, while the
+events and cron Workers give a subscriber's or a job's `.run()` a durable execution of its own, which
+is what makes "a nightly cleanup and an admin button share one implementation" true rather than
+aspirational. See `src/framework/event-bus/README.md`.
 
-The processes are split so those slot pools are genuinely separate, and so each can pin the workflow
-engine it wants — the workflow Worker keeps nested `.run()` calls in-process, while the events and
-cron Workers give a subscriber's or a job's `.run()` a durable execution of its own, which is what
-makes "a nightly cleanup and an admin button share one implementation" true rather than aspirational.
-See `src/framework/event-bus/README.md`.
-
-`cron-worker` is the one non-workflow Worker with a healthcheck, and the reason is structural: a
-Schedule's action can only start a *workflow*, so unlike `events-worker` this process registers one
-and pays the same webpack pass over the sandbox entrypoint that `worker` does.
+`cron-worker` is the one non-workflow Worker with a healthcheck, because it registers the driver
+workflow and so pays the same sandbox-bundle build `worker` does.
 `temporal:worker-ready cron` is what `--wait` blocks on, so the cron queue has a poller by the time
 the command returns rather than a minute later.
 

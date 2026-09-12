@@ -246,33 +246,36 @@ pnpm --filter backend run db:seed:dev
 In VS Code, press **`Cmd+Shift+B`**. That is the whole dev session.
 
 It runs the `dev` task from `.vscode/tasks.json`, which brings up Postgres, Temporal and the Temporal
-UI in Docker, then opens four terminal panes side by side — API, Worker, store, admin — and opens the
-store, admin and Temporal UI in your browser once each one actually answers. From the Command Palette
-the same task is `Tasks: Run Task` → `dev`.
+UI in Docker, then opens six panes across two terminals — API and the three Workers in one, store and
+admin in the other — and opens the store, admin and Temporal UI in your browser once each one
+actually answers. From the Command Palette the same task is `Tasks: Run Task` → `dev`.
 
 | | URL | Pane |
 |---|---|---|
 | API | http://localhost:3000 (Swagger at `/admin/docs/`, `/store/docs/`) | `pnpm --filter backend run dev` |
-| Temporal Worker | — polls the `proteus` task queue | `pnpm --filter backend run worker:dev` |
+| Workflow Worker | — polls the `proteus` task queue | `pnpm --filter backend run worker:dev` |
+| Events Worker | — polls the `proteus-events` task queue | `pnpm --filter backend run worker:events` |
+| Cron Worker | — polls the `proteus-cron` task queue | `pnpm --filter backend run worker:cron` |
 | Store | http://localhost:3001 | `pnpm --filter store run dev` |
 | Admin | http://localhost:3002 | `pnpm --filter admin run dev` |
 | Temporal UI | http://localhost:8088 | Docker |
 
-Every pane reloads itself. The Worker runs under `tsx --watch`, so editing a workflow, a step action
-or any service beneath one restarts it in about five seconds — and because `worker.ts` drains on
-SIGTERM, a restart mid-execution finishes the in-flight step instead of losing it. There is nothing
-to restart by hand.
+The API, the store and the admin reload themselves, and so does the workflow Worker: it runs under
+`tsx --watch`, so editing a workflow, a step action or any service beneath one restarts it in about
+five seconds — and because `worker.ts` drains on SIGTERM, a restart mid-execution finishes the
+in-flight step instead of losing it. The events and cron Workers run their entrypoints directly, so
+editing a subscriber or a job means restarting that pane by hand.
 
-`Tasks: Terminate Task` → `All Running Tasks` stops the four panes and leaves Docker up, which is
+`Tasks: Terminate Task` → `All Running Tasks` stops the six panes and leaves Docker up, which is
 what you usually want between sessions. `pnpm --filter backend run db:stop` takes the containers
 down too.
 
 **Running a piece on its own**
 
 The task is a convenience, not a requirement — each pane is just a package script, and the table above
-lists them. Note that `dev` stops the containerised Worker on the way up, because it and
-`worker:dev` both poll `proteus` and whichever is free claims the task; start it again with
-`docker compose -f apps/backend/docker-compose.yml start worker` if you want that one instead.
+lists them. Note that `dev` stops all three containerised Workers on the way up, because each polls
+the same queue as its pane and whichever is free claims the task; start one again with
+`docker compose -f apps/backend/docker-compose.yml start <service>` if you want that one instead.
 
 **The workerd session**
 

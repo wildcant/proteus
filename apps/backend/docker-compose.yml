@@ -200,8 +200,8 @@ services:
   # standalone activity on `proteus-events`. A queue nobody polls does not fail — the event simply
   # waits, durably, until something does.
   #
-  # No healthcheck. `temporal:worker-ready` asks about the `proteus` queue specifically, and nothing
-  # else in the stack waits on this service.
+  # No healthcheck. `temporal:worker-ready` asks about a named Worker's queue — see
+  # `scripts/temporal/worker-ready.ts` — and nothing else in the stack waits on this service.
   events-worker:
     build:
       context: ../..
@@ -224,9 +224,8 @@ services:
       - ./static:/app/apps/backend/static
 
   # The cron Worker. Same image again, a third entrypoint and a third queue: this one polls
-  # `proteus-cron` and runs the jobs in `src/jobs/`. Three services rather than three queues on one,
-  # so a nightly job that takes an hour cannot hold a slot a shopper's checkout step is waiting for,
-  # and a checkout burst cannot delay a tick.
+  # `proteus-cron` and runs the jobs in `src/jobs/`. A third service rather than a third queue on one
+  # of the others, so the slot pools stay separate — ADR-0029 has the reasoning.
   #
   # It joins the stack because the API only *schedules*. `scheduler.start(jobs)` writes one Temporal
   # Schedule per job at boot and starts no Worker, so a stack without this service creates every
@@ -234,11 +233,9 @@ services:
   # fails on its own timeout — and under overlap `SKIP` that failed run also suppresses the ticks
   # behind it. This is what polls it.
   #
-  # Unlike `events-worker` it has a healthcheck, and the difference is forced rather than a
-  # preference: a Schedule's action can only start a *workflow*, so this Worker registers one and
-  # pays the same webpack pass over the sandbox entrypoint that `worker` does. Without a probe
-  # `--wait` would return while that bundle is still building, which is exactly the window in which
-  # the cron queue has no poller on it.
+  # Unlike `events-worker` it has a healthcheck, because it registers the driver workflow and so pays
+  # the same sandbox-bundle build `worker` does. Without a probe, `--wait` would return while that
+  # build is still running, which is exactly the window in which the cron queue has no poller on it.
   cron-worker:
     build:
       context: ../..
@@ -268,8 +265,7 @@ services:
       interval: 5s
       timeout: 20s
       retries: 12
-      # The same reason `worker` needs one: the first probe is late rather than slow, because the
-      # workflow bundle has to be built before anything polls.
+      # `worker`'s reason, verbatim — see its healthcheck above.
       start_period: 60s
 
 volumes:

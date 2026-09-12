@@ -32,7 +32,7 @@ type EventBusConfig = {
    * Both transports exist, so this is no longer a pin with a date on it. The node roots leave it
    * unset and take the derived answer; the workerd root names the one it derives anyway, so a
    * deploy's transport reads next to the wiring that supplies its binding; a Worker process states
-   * it because two Workers share one composition root and neither should inherit the other's choice.
+   * it because all three Workers share one composition root and none should inherit another's choice.
    * The test container is the only caller pinning something a runtime would not derive — `inline`,
    * for the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and
    * `pnpm test` must not need a running server.

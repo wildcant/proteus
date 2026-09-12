@@ -22,7 +22,7 @@ pnpm --filter admin run dev             # Admin SPA at :3002
                                         # Temporal UI at :8088
 
 # Stop the compose-run Workers when running them locally. Each polls the same task queue as its
-# pane, and whichever is free claims the task — leaving both up makes edits appear to apply at
+# pane, and whichever is free claims the task — leaving them up makes edits appear to apply at
 # random, to a step, a subscriber or a job.
 
 # Database (Docker Postgres)

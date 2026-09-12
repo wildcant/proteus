@@ -5,10 +5,11 @@
 ## Context
 
 Scheduled work on node ran on a second job system that existed for nothing else. BullMQ's Postgres
-backend kept its own schema, needed a carve-out in the test suite's TRUNCATE, and was bridged into
-TypeScript with two `@ts-expect-error`s because the library's types only admit a Redis connection.
-Bull Board was mounted into Express purely to look at it, which was the only reason the
-`CronScheduler` port had a method returning framework-specific middleware.
+backend kept its own schema — one more non-`public` schema the test suite's `TRUNCATE` scoping had to
+be explained around — and was bridged into TypeScript with two `@ts-expect-error`s because the
+library's types only admit a Redis connection. Bull Board was mounted into Express purely to look at
+it, which was the only reason the `CronScheduler` port had a method returning framework-specific
+middleware.
 
 The Worker that executed jobs ran **inside the API process.** That is why the API refused to start
 its scheduler under `NODE_ENV=test`: two Workers polling one queue on a shared database means
@@ -39,8 +40,10 @@ already a hard dependency of every workflow on node, so the queue-backed schedul
 backing store, a second schema, a second set of concepts and a second dashboard bought for a
 capability the first one already had. Deleting it removed three dependencies (`bullmq`,
 `@bull-board/api`, `@bull-board/express`), an Express mount, a port method that existed only to
-render that mount, a TRUNCATE carve-out, and the `NODE_ENV=test` guard — which is gone rather than
-documented, because a Worker in its own process cannot steal the test suite's tasks.
+render that mount, a sentence of test-infrastructure prose, and the `NODE_ENV=test` guard — which is
+gone rather than documented, because a Worker in its own process cannot steal the test suite's tasks.
+The `TRUNCATE` in `tests/setup/db-setup.ts` is untouched: it was always scoped to `schemaname =
+'public'` for drizzle's sake, and the `bullmq` schema merely happened to sit outside it too.
 
 The second is what the operator gains, none of which the previous adapter had and none of which is
 application code here:
@@ -154,10 +157,19 @@ four fields as before the migration. Two additions were considered and rejected:
 
 That stability is also what keeps **one job list serving both runtimes.** workerd runs the same
 handlers under Cloudflare cron triggers, unaware that node's side changed; a Temporal-shaped variant
-in the type would have been a field one of the two runtimes could never honour. The scheduler is a
-second adapter behind the existing `CronScheduler` port, chosen by runtime, exactly as the event bus
-picks its transport — and `mountMonitor()` is gone from that port, because the Schedules tab is the
-monitor and it is not something this codebase mounts.
+in the type would have been a field one of the two runtimes could never honour.
+
+`TemporalCronScheduler` is the **port's one implementation**, and workerd does not go through the
+port at all: `index.workerd.ts` drives `scheduler/kuron/` directly from that same `src/jobs/` list,
+through Kuron's own `cron.schedule(pattern, handler)` API rather than the port's
+`schedule(job: JobDefinition)`. So this is a **runtime split rather than an adapter selection**,
+which is the difference from the event bus — there is no `scheduler-selection.ts` and nothing derives
+an implementation. The split is deliberate, not an omission: `no-temporal-in-workerd` forbids the
+workerd entry point every Temporal-shaped path *except* `scheduler/kuron/`, which it names as the
+half of the scheduler workerd is meant to reach.
+
+`mountMonitor()` is gone from the port, because the Schedules tab is the monitor and it is not
+something this codebase mounts.
 
 Per-job configuration that *is* Temporal-shaped lives where it is honoured: `startToCloseTimeout` is
 a map at the scheduler's composition root, which is the same place the workflow engine's per-step
@@ -252,7 +264,7 @@ and the driver being one activity call is what keeps that surface as small as it
 - ADR-0021, ADR-0022 — the workflow engine and the runtime split this inherits
 - ADR-0023 — the event bus, whose second Worker this one is modelled on, and its "queue nobody polls"
   failure mode
-- `.scratch/temporal-schedules/spec.md` — the working spec, including the rejected alternatives in full
+- `.scratch/temporal-schedules/spec.md` — the working spec
 - `apps/backend/src/framework/scheduler/temporal/config.ts` — the queue, the driver path and the
   heartbeat arithmetic, with the reasoning inline
 - `apps/backend/src/framework/scheduler/temporal/temporal-cron-scheduler.ts` — reconciliation and the
@@ -260,4 +272,6 @@ and the driver being one activity call is what keeps that surface as small as it
 - `apps/backend/src/framework/scheduler/temporal/workflows.ts` — the driver, and the branch point the
   exit above describes
 - `apps/backend/src/core/types/scheduler.ts` — `JobDefinition`, unchanged
+- `apps/backend/src/framework/scheduler/kuron/README.md` — the workerd half, and why it does not
+  implement the port
 - `apps/backend/docker-compose.yml`, `.vscode/tasks.json` — the sixth process

@@ -130,11 +130,9 @@
       "problemMatcher": []
     },
     {
-      // The scheduler, and a separate process from the two panes above for the same reason: it polls
-      // `proteus-cron` while they poll `proteus-events` and `proteus`, so a nightly job that runs for
-      // an hour cannot hold the slot a shopper's `authorize-payment` step is waiting for — and a
-      // checkout burst cannot delay a tick past its next one, which under overlap `SKIP` means
-      // dropping that tick rather than queueing it.
+      // The scheduler, and a separate process from the two panes above so that the three slot pools
+      // stay separate: it polls `proteus-cron` while they poll `proteus-events` and `proteus`.
+      // ADR-0029 has the reasoning.
       //
       // Without this pane the API still reconciles every Schedule at boot and the Temporal UI still
       // lists their next fire times; the runs they start just wait on a queue nobody reads until
