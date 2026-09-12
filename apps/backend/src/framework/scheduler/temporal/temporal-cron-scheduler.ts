@@ -17,8 +17,8 @@ import type { CronJobInput } from './types.js'
  * `CronScheduler` backed by **Temporal Schedules** — one Schedule per job, whose action starts the
  * cron driver workflow on the cron task queue.
  *
- * What the server gives us that the BullMQ adapter had to do without, and that no application code
- * here implements:
+ * What the server gives us that the queue-backed adapter this replaced had to do without, and that
+ * no application code here implements:
  *
  * - **A manual trigger**, so a job can be tested without waiting for its next tick or editing its
  *   cron expression.
@@ -78,7 +78,7 @@ const DEFAULT_START_TO_CLOSE_TIMEOUT: Duration = '5 minutes'
  */
 const DEFAULT_HEARTBEAT_TIMEOUT: Duration = CRON_HEARTBEAT_TIMEOUT_MS
 
-/** The Schedule id for a job. `cron_${name}`, which is the key the BullMQ adapter used. */
+/** The Schedule id for a job. `cron_${name}`, which is the key the adapter this replaced used. */
 export function cronScheduleId(jobName: string): string {
   return `cron_${jobName}`
 }
@@ -193,7 +193,7 @@ export class TemporalCronScheduler implements CronScheduler {
   }
 
   /**
-   * Reconciles the whole job list. Unlike the BullMQ adapter this starts no Worker — the cron
+   * Reconciles the whole job list. Unlike the adapter this replaced it starts no Worker — the cron
    * Worker is its own process, and whether one is polling is deliberately not this method's
    * business: the schedules should exist whether or not a Worker happens to be up.
    *
@@ -246,21 +246,6 @@ export class TemporalCronScheduler implements CronScheduler {
     await connected?.close()
   }
 
-  /**
-   * There is no monitor to mount. The Temporal UI's Schedules tab is the dashboard, and it is not
-   * something this codebase serves — which is why the port loses this method in the change that
-   * registers this adapter. Until then it must exist, and the honest implementation of "the answer
-   * is somewhere else" is a refusal that says where.
-   */
-  mountMonitor(): unknown {
-    throw new AppError({
-      type: ErrorTypes.NOT_ALLOWED,
-      message:
-        'TemporalCronScheduler has no monitor to mount: schedules are inspected, triggered, paused ' +
-        "and backfilled in the Temporal UI's Schedules tab, not through an Express route.",
-    })
-  }
-
   private async client(): Promise<Client> {
     // Caching the promise is what makes concurrent first calls share one connection instead of
     // racing to open several. Caching a *rejected* one would be a different thing entirely: a
@@ -296,10 +281,10 @@ export class TemporalCronScheduler implements CronScheduler {
         args: [input],
       },
       policies: {
-        // What BullMQ gave implicitly, stated. A job slower than its interval must not overlap
+        // What the previous adapter gave implicitly, stated. A job slower than its interval must not overlap
         // itself; the tick that would have overlapped is dropped rather than queued.
         overlap: ScheduleOverlapPolicy.SKIP,
-        // No BullMQ analogue. A job failing every minute stops after the first failure instead of
+        // No analogue in the previous adapter. A job failing every minute stops after the first failure instead of
         // filling the history before anyone notices.
         pauseOnFailure: true,
         // `catchupWindow` left at the server default: what to do about ticks missed during an
