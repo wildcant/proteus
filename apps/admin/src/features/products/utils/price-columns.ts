@@ -10,7 +10,7 @@ import type { DataGridColumn } from '#/components/data-grid/types'
 export type CurrencyAmounts = Record<string, string>
 
 /** `Price USD`, `Price COP` — the currency named in the header, since the cell shows only a symbol. */
-export function priceColumnHeader(currencyCode: string): string {
+function priceColumnHeader(currencyCode: string): string {
   return `Price ${currencyCode.toUpperCase()}`
 }
 

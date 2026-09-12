@@ -23,7 +23,7 @@ type NotificationsInfiniteQueryOptions = { enabled?: boolean }
  * badge count read one cache entry, so opening the drawer cannot show a list the badge disagrees
  * with.
  */
-export const notificationsInfiniteQueryOptions = (
+const notificationsInfiniteQueryOptions = (
   params?: Omit<ListNotificationsParams, 'offset'>,
   options?: NotificationsInfiniteQueryOptions,
 ) =>

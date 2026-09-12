@@ -3,7 +3,7 @@ import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
 import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
 import { indexVariantInventory } from './variant-inventory.js'
 
-export type ConfirmInventoryItem = {
+type ConfirmInventoryItem = {
   lineItemId: string
   variantId: string
   inventoryItemId: string

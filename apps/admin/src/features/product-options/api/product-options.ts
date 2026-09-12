@@ -112,7 +112,7 @@ const productsForOptionKeys = queryKeysFactory<'productsForOption', ListProducts
   'productsForOption',
 )
 
-export const productsForOptionQueryOptions = (optionId: string, params?: ListProductsForOptionParams) =>
+const productsForOptionQueryOptions = (optionId: string, params?: ListProductsForOptionParams) =>
   queryOptions({
     queryKey: productsForOptionKeys.list({ ...params, optionId }),
     queryFn: () => listProductsForOption(optionId, params),
@@ -126,7 +126,7 @@ const valuesForOptionKeys = queryKeysFactory<'valuesForOption', ListValuesForOpt
   'valuesForOption',
 )
 
-export const valuesForOptionQueryOptions = (optionId: string, params?: ListValuesForOptionParams) =>
+const valuesForOptionQueryOptions = (optionId: string, params?: ListValuesForOptionParams) =>
   queryOptions({
     queryKey: valuesForOptionKeys.list({ ...params, optionId }),
     queryFn: () => listValuesForOption(optionId, params),
@@ -138,7 +138,7 @@ export const useValuesForOption = (optionId: string, params?: ListValuesForOptio
 
 const productOptionsForProductKeys = queryKeysFactory<'productOptionsForProduct'>('productOptionsForProduct')
 
-export const productOptionsForProductQueryOptions = (productId: string) =>
+const productOptionsForProductQueryOptions = (productId: string) =>
   queryOptions({
     queryKey: productOptionsForProductKeys.detail(productId),
     queryFn: () => getProductOptions(productId),

@@ -10,7 +10,7 @@ export type ProductVariantInventoryItemDTO = {
   deletedAt: Date | null
 }
 
-export type VariantInventoryAvailabilityDTO = {
+type VariantInventoryAvailabilityDTO = {
   variantId: string
   inventoryItemId: string
   requiredQuantity: number
@@ -19,7 +19,7 @@ export type VariantInventoryAvailabilityDTO = {
   reservedQuantity: number
 }
 
-export type LineItemWithProductDTO = {
+type LineItemWithProductDTO = {
   lineItemId: string
   quantity: number
   unitPrice: BigNumber
@@ -32,7 +32,7 @@ export type LineItemWithProductDTO = {
   productStatus: string | null
 }
 
-export type VariantProductDTO = {
+type VariantProductDTO = {
   variantId: string
   variantTitle: string
   variantSku: string | null

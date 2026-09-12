@@ -40,7 +40,7 @@ export type VariantRemovalReason =
   /** Dropping an option landed it on a combination an older variant already holds. */
   | 'collapsed'
 
-export type PlannedReassignment = {
+type PlannedReassignment = {
   variantId: string
   /** What it was called before, for the admin to read alongside the new label. */
   fromLabel: string

@@ -61,7 +61,7 @@ type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) exten
  * Everything a middleware list contributes, intersected — two middlewares each add their own
  * field, so the handler sees both. An empty list contributes nothing.
  */
-export type ContextOf<M extends readonly MiddlewareFunction<object>[]> = UnionToIntersection<
+type ContextOf<M extends readonly MiddlewareFunction<object>[]> = UnionToIntersection<
   { [K in keyof M]: M[K] extends MiddlewareFunction<infer A> ? A : object }[number]
 >
 

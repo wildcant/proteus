@@ -110,7 +110,7 @@ export type AuthorizePaymentSessionResult =
   /** Declined, cancelled, or still waiting on the shopper. `sessionStatus` says which. */
   | { outcome: 'not_authorized'; sessionStatus: UnauthorizedSessionStatus }
 
-export type CaptureDTO = {
+type CaptureDTO = {
   id: string
   paymentId: string
   amount: BigNumber
@@ -119,7 +119,7 @@ export type CaptureDTO = {
   createdAt: Date
 }
 
-export type RefundDTO = {
+type RefundDTO = {
   id: string
   paymentId: string
   refundReasonId: string | null

@@ -47,7 +47,7 @@ function CheckoutSummaryPanel({ cart }: CheckoutSummaryProps) {
  * The order as a band above the form, below `lg`. Collapsed by default and carrying the total, so
  * the one number a shopper checks before paying is readable without opening anything.
  */
-export function CheckoutSummaryDisclosure({ cart }: CheckoutSummaryProps) {
+function CheckoutSummaryDisclosure({ cart }: CheckoutSummaryProps) {
   const { formatPrice } = useFormatters()
 
   return (

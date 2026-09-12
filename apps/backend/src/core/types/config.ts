@@ -1,6 +1,6 @@
 import type { ActorType } from '@proteus/http-schemas/auth'
 
-export type HttpConfig = {
+type HttpConfig = {
   authMethodsPerActor: Partial<Record<ActorType, string[]>>
   authVerificationsPerActor: Partial<Record<ActorType, { entityType: string; authProvider: string }[]>>
 }
@@ -8,7 +8,7 @@ export type HttpConfig = {
 /** Which `WorkflowEngine` adapter `bootstrapContainer` wires. */
 export type WorkflowEngineName = 'simple' | 'temporal'
 
-export type WorkflowsConfig = {
+type WorkflowsConfig = {
   /**
    * Left unset — the normal case — the composition root derives the engine from `RUNTIME`:
    * workerd cannot load Temporal's native worker, so it keeps the in-process adapter, and Node
@@ -22,7 +22,7 @@ export type WorkflowsConfig = {
 /** Which `EventBus` adapter `bootstrapContainer` wires. */
 export type EventBusAdapterName = 'inline' | 'cloudflare-queues' | 'temporal'
 
-export type EventBusConfig = {
+type EventBusConfig = {
   /**
    * Left unset, the composition root derives the adapter from `RUNTIME`, the same way it derives
    * the workflow engine and for the same reason: workerd cannot load Temporal's native worker and
@@ -40,7 +40,7 @@ export type EventBusConfig = {
   adapter?: EventBusAdapterName
 }
 
-export type ProjectConfig = {
+type ProjectConfig = {
   http: HttpConfig
   workflows: WorkflowsConfig
   eventBus: EventBusConfig

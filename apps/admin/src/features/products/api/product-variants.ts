@@ -47,7 +47,7 @@ export const imageVariantsQueryOptions = (productId: string, imageId: string) =>
     queryFn: () => listImageVariants(productId, imageId),
   })
 
-export const productVariantsListQueryOptions = (productId: string, params?: ListProductVariantsParams) =>
+const productVariantsListQueryOptions = (productId: string, params?: ListProductVariantsParams) =>
   queryOptions({
     queryKey: variantKeys.list({ ...params, productId }),
     queryFn: () => listProductVariants(productId, params),
@@ -68,7 +68,7 @@ export const productVariantQueryOptions = (productId: string, variantId: string)
  * the variant's own. Searched and paginated server-side because the count is the product of the
  * option value counts.
  */
-export const optionCombinationsQueryOptions = (productId: string, params?: ListOptionCombinationsParams) =>
+const optionCombinationsQueryOptions = (productId: string, params?: ListOptionCombinationsParams) =>
   queryOptions({
     queryKey: combinationKeys.list({ ...params, productId }),
     queryFn: () => listOptionCombinations(productId, params),

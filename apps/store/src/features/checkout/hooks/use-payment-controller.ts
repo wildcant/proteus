@@ -10,7 +10,7 @@ import type { Confirm } from '../types/payment'
  * checkout form keeps "which card" a fact about the payment step: nothing in the form, the
  * schema, or the submit sequence gains a field it would then have to keep in step with the list.
  */
-export type WalletChoice = {
+type WalletChoice = {
   /** `null` means the new-method form, which is what a guest and an empty wallet always mean. */
   chosenMethodId: string | null
   /** Consent to keep the card, gated on the session rather than on how many cards are stored. */

@@ -15,7 +15,7 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const inviteKeys = queryKeysFactory<'invites', ListInvitesParams>('invites')
 
-export const invitesListQueryOptions = (params?: ListInvitesParams) =>
+const invitesListQueryOptions = (params?: ListInvitesParams) =>
   queryOptions({
     queryKey: inviteKeys.list(params),
     queryFn: () => listInvites(params),

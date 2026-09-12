@@ -26,7 +26,7 @@ import { useOpenPaymentSession } from './use-payment-session'
  * The checkout form depends on this hook, so this hook must not depend on the form — and the
  * narrower shape is honest anyway: the payment step reads four of its fields and no others.
  */
-export type PlaceOrderValues = {
+type PlaceOrderValues = {
   paymentProviderId: string
   email: string
   shippingAddress: CartAddressInputBody

@@ -1,6 +1,6 @@
 import type { ProductOptionRenderAs, ProductStatusType } from './common.js'
 
-export type CreateProductImageInput = {
+type CreateProductImageInput = {
   url: string
 }
 

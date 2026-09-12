@@ -29,7 +29,7 @@ export type CombinableVariant = {
   inStock?: boolean
 }
 
-export type OptionCombinationValue = {
+type OptionCombinationValue = {
   optionId: string
   optionTitle: string
   valueId: string

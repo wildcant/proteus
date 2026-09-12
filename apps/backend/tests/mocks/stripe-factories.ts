@@ -27,8 +27,8 @@ export const gatewayIntentId = (sessionId: string) => `pi_test_${sessionId}`
  * shoppers: anything reached by shopping is keyed by the session or the customer it belongs to.
  */
 export const MOCK_INTENT_ID = gatewayIntentId('mock')
-export const MOCK_CUSTOMER_ID = gatewayCustomerId('mock')
-export const MOCK_PAYMENT_METHOD_ID = 'pm_test_mock'
+const MOCK_CUSTOMER_ID = gatewayCustomerId('mock')
+const MOCK_PAYMENT_METHOD_ID = 'pm_test_mock'
 
 /**
  * Values the fake reads as instructions rather than as data.

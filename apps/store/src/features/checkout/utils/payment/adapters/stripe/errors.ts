@@ -30,7 +30,7 @@ export type StripeFailure = {
 export const GENERIC_FAILURE_MESSAGE = 'We could not process your payment. Please try again or use a different card.'
 
 /** The one string every issuer decline collapses to, except the four a shopper can act on. */
-export const DECLINED_MESSAGE = 'Your card was declined. Please try another card or contact your bank.'
+const DECLINED_MESSAGE = 'Your card was declined. Please try another card or contact your bank.'
 
 const AUTHENTICATION_FAILED_MESSAGE =
   'We could not authenticate your card with your bank. Please try again or use a different card.'

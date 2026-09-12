@@ -21,7 +21,7 @@ import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const CUSTOMERS_QUERY_KEY = 'customers' as const
-export const customersQueryKeys = queryKeysFactory<typeof CUSTOMERS_QUERY_KEY, ListCustomersParams>(CUSTOMERS_QUERY_KEY)
+const customersQueryKeys = queryKeysFactory<typeof CUSTOMERS_QUERY_KEY, ListCustomersParams>(CUSTOMERS_QUERY_KEY)
 
 // --- Query options (for route loaders) ---
 

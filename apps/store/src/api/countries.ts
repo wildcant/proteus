@@ -16,14 +16,14 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
  * selling there.
  */
 
-export const countriesQueryKeys = queryKeysFactory('store-countries')
+const countriesQueryKeys = queryKeysFactory('store-countries')
 
 /**
  * Static reference data: the ISO table does not change, and a merchant opting a country into a
  * region is not something a mounted form has to notice. Never stale, so the two address forms and
  * the order panel share one request per session rather than one each.
  */
-export const countriesQueryOptions = (scope: ListStoreCountriesScope) =>
+const countriesQueryOptions = (scope: ListStoreCountriesScope) =>
   queryOptions({
     queryKey: countriesQueryKeys.list({ scope }),
     queryFn: () => listStoreCountries({ scope }),

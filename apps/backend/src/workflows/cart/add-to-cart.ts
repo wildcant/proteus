@@ -15,7 +15,7 @@ import { prepareLineItemData } from './utils/prepare-line-item-data.js'
 import { prepareVariantInventoryChecks } from './utils/variant-inventory.js'
 
 /** What a shopper picks: which variant, and how many. Everything else is the catalogue's to say. */
-export type AddToCartItem = {
+type AddToCartItem = {
   variantId: string
   quantity: number
 }

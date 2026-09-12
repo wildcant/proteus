@@ -32,7 +32,7 @@ export type WorkflowRegistry = {
   names(): string[]
 }
 
-export function createWorkflowRegistry(definitions: WorkflowDefinition<never, unknown>[]): WorkflowRegistry {
+function createWorkflowRegistry(definitions: WorkflowDefinition<never, unknown>[]): WorkflowRegistry {
   const byName = new Map<string, WorkflowDefinition<unknown, unknown>>()
 
   for (const definition of definitions) {
