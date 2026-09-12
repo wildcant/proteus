@@ -20,10 +20,13 @@ import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
  * naming the flag, which is what an operator already watches. The alternative — booting happily and
  * dropping every delivery — is precisely the failure this check exists to remove.
  *
- * The API process is deliberately *not* checked. It connects on first publish rather than at
- * bootstrap, on purpose: building a container must not require a reachable Temporal, or every
- * script and test that only touches the database would. Turning that into a boot dependency to
- * report a misconfiguration the Worker already reports would be a worse trade.
+ * The API process does not check *this flag*. It does have a boot preflight of its own —
+ * `framework/temporal/preflight.ts` refuses to start when the frontend is unreachable — but that
+ * asks a different question: reachability is fatal to every workflow the API dispatches, while a
+ * missing `activity.enableStandalone` is a misconfiguration the events Worker already refuses to
+ * start over, and a second probe here would report it twice. What stays deliberate is the *bus's*
+ * client: it connects on first publish rather than at bootstrap, so that building a container does
+ * not require a reachable Temporal, or every script and test that only touches the database would.
  *
  * ## Why a describe rather than a start
  *

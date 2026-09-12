@@ -96,7 +96,7 @@ Who states what:
 |---|---|---|
 | `container.node.ts` (API) | derived → `temporal` | Nothing to say; the derived answer is the right one. |
 | `container.workerd.ts` | `cloudflare-queues`, named | Derived anyway, but written out so a deploy's transport reads next to the binding that supplies it. |
-| `container.worker.ts` (both Workers) | **required parameter** | Two Worker processes share one root. A default would hand one of them a choice made for the other, silently. |
+| `container.worker.ts` (all three Workers) | **required parameter** | Three Worker processes share one root. A default would hand one of them a choice made for another, silently. |
 | the test container | `inline` | For the reason the workflow suite pins `simple`: `RUNTIME` is `node` under vitest, and `pnpm test` must not need a running server. |
 
 ## The node transport
@@ -122,7 +122,9 @@ Two operational requirements, both easy to miss:
   catch that — the CLI dev server the tests boot has the flag on. So the events Worker asks the
   server at boot and refuses to start when the answer is no: `temporal/preflight.ts`, which
   describes an activity id that cannot exist and reads `UNIMPLEMENTED` as the disabled answer and
-  `NOT_FOUND` as the working one.
+  `NOT_FOUND` as the working one. It is not the only boot check in the repo and not to be confused
+  with the API's — `framework/temporal/preflight.ts` asks whether the frontend is reachable at all,
+  which is a different question with a different fatal consequence.
 - **Something has to poll `proteus-events`.** That is `pnpm --filter backend run worker:events`,
   and the `events-worker` service in `docker-compose.yml`. A queue nobody polls does not fail; the
   event waits, durably, until something does.

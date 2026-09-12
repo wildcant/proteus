@@ -9,23 +9,25 @@ Guidance for coding agents working in this repository. Personal, untracked prefe
 pnpm install
 pnpm run setup                 # install + pull dotenvx keys + generate apps/backend/.env.workerd
 
-# Dev — the whole stack is five processes plus Docker. In VS Code, run the `dev` task
-# (Cmd+Shift+B): it brings up Postgres + Temporal, then the API, both Workers, store and admin,
-# and opens the three URLs. `dev: workerd` is the same session on the workerd runtime.
+# Dev — the whole stack is six processes plus Docker. In VS Code, run the `dev` task
+# (Cmd+Shift+B): it brings up Postgres + Temporal, then the API, all three Workers, store and
+# admin, and opens the three URLs. `dev: workerd` is the same session on the workerd runtime.
 docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui
 pnpm --filter backend run dev           # API at :3000 (Swagger at /admin/docs/, /store/docs/)
 pnpm --filter backend run worker:dev    # Temporal Worker for src/workflows (watch mode)
 pnpm --filter backend run worker:events # Temporal Worker for src/subscribers
+pnpm --filter backend run worker:cron   # Temporal Worker for src/jobs
 pnpm --filter store run dev             # Storefront at :3001
 pnpm --filter admin run dev             # Admin SPA at :3002
                                         # Temporal UI at :8088
 
-# Stop the compose-run Workers when running them locally. Both poll the same task queues, and
-# whichever is free claims the task — leaving both up makes edits appear to apply at random.
+# Stop the compose-run Workers when running them locally. Each polls the same task queue as its
+# pane, and whichever is free claims the task — leaving them up makes edits appear to apply at
+# random, to a step, a subscriber or a job.
 
 # Database (Docker Postgres)
 pnpm --filter backend run db:start       # The whole compose stack, not just Postgres — it brings
-                                         # up Temporal and both Workers too
+                                         # up Temporal and all three Workers too
 pnpm --filter backend run db:migrate:dev # Run migrations (every module + link-modules)
 pnpm --filter backend run db:generate    # Generate migration after a schema change
 pnpm --filter backend run db:seed:dev    # Seed dev data
@@ -312,7 +314,7 @@ editor's watcher — fails rather than corrupting the first.
 
 ## Documentation
 
-Architecture Decision Records in `docs/adr/` (0001–0028, indexed by `docs/architecture-decisions.md`).
+Architecture Decision Records in `docs/adr/` (0001–0029, indexed by `docs/architecture-decisions.md`).
 
 **Before writing or moving any document, read `standards/README.md` — "Where a document goes".** It
 carries the decision table and the tie-breakers, and it is the only copy: *how to build a kind of

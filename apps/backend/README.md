@@ -15,7 +15,7 @@ see `src/framework/workflows/README.md`.
 ### Starting it
 
 ```bash
-docker compose -f apps/backend/docker-compose.yml up -d --wait   # postgres, temporal, temporal-ui, worker, events-worker
+docker compose -f apps/backend/docker-compose.yml up -d --wait   # postgres, temporal, temporal-ui, worker, events-worker, cron-worker
 pnpm --filter backend run dev
 ```
 
@@ -44,18 +44,36 @@ docker compose -f apps/backend/docker-compose.yml stop worker   # don't let two 
 pnpm --filter backend run worker
 ```
 
-### Two Workers, two queues
+### Three Workers, three queues
 
-The stack runs a second Worker, `events-worker`, on the `proteus-events` queue. It is the event bus's
-side of Temporal: every `bus.emit(...)` on node becomes a standalone activity execution there, and
-this is the process that runs the subscriber. `pnpm --filter backend run worker:events` is the same
-entrypoint on the host, and `docker compose ... stop events-worker` first for the same reason.
+| Service | Queue | Runs | Host command |
+|---|---|---|---|
+| `worker` | `proteus` | `src/workflows/` — a workflow's steps | `pnpm --filter backend run worker` |
+| `events-worker` | `proteus-events` | `src/subscribers/` — one standalone activity per delivery | `pnpm --filter backend run worker:events` |
+| `cron-worker` | `proteus-cron` | `src/jobs/` — one driver workflow per scheduled run | `pnpm --filter backend run worker:cron` |
 
-The queues are split so a burst of event deliveries cannot take the Worker slots a shopper's
-checkout step is waiting for. The processes are split so the slot pools are genuinely separate, and
-so each can pin the workflow engine it wants — the workflow Worker keeps nested `.run()` calls
-in-process, the events Worker gives a subscriber's `.run()` a durable execution of its own. See
-`src/framework/event-bus/README.md`.
+`events-worker` is the event bus's side of Temporal: every `bus.emit(...)` on node becomes a
+standalone activity execution on `proteus-events`, and this is the process that runs the subscriber.
+
+`cron-worker` is the scheduler's. The API reconciles one Temporal Schedule per job in `src/jobs/` at
+boot and starts no Worker — `scheduler.start(jobs)` writes schedules and executes nothing — so every
+scheduled run is a driver workflow on `proteus-cron`, and this is the process that answers it. Run
+one of these on the host and `docker compose ... stop <service>` first, for the same reason `worker`
+needs it: both poll the same queue, and whichever is free claims the task.
+
+**The queues are split by lifecycle, so that a tick and a checkout cannot starve each other, and
+urgency *within* a queue is a priority key rather than a fourth queue. ADR-0029 has both arguments.**
+
+The *processes* are split so those slot pools are genuinely separate, and so each can pin the
+workflow engine it wants — the workflow Worker keeps nested `.run()` calls in-process, while the
+events and cron Workers give a subscriber's or a job's `.run()` a durable execution of its own, which
+is what makes "a nightly cleanup and an admin button share one implementation" true rather than
+aspirational. See `src/framework/event-bus/README.md`.
+
+`cron-worker` is the one non-workflow Worker with a healthcheck, because it registers the driver
+workflow and so pays the same sandbox-bundle build `worker` does.
+`temporal:worker-ready cron` is what `--wait` blocks on, so the cron queue has a poller by the time
+the command returns rather than a minute later.
 
 Standalone activities need `activity.enableStandalone` in Temporal's dynamic config; this repo's
 `temporal/dynamicconfig/development-sql.yaml` sets it. Without it the server answers
@@ -92,7 +110,7 @@ into `scripts/temporal/compose/` — re-sync by overwriting them, and read the h
 image is one binary plus busybox, with no `temporal` CLI in it, so its own healthcheck can only ask
 whether the port is open. The namespace service polls `operator cluster health` before it does
 anything and creates the namespace every client here connects to, so "that service exited 0" is the
-stronger and more useful signal — `worker` and `temporal-ui` both depend on it.
+stronger and more useful signal — all three Workers and `temporal-ui` depend on it.
 
 ### It shares the Postgres you already have
 
