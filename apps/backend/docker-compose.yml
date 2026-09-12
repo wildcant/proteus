@@ -223,5 +223,54 @@ services:
       - ../../packages:/app/packages:ro
       - ./static:/app/apps/backend/static
 
+  # The cron Worker. Same image again, a third entrypoint and a third queue: this one polls
+  # `proteus-cron` and runs the jobs in `src/jobs/`. Three services rather than three queues on one,
+  # so a nightly job that takes an hour cannot hold a slot a shopper's checkout step is waiting for,
+  # and a checkout burst cannot delay a tick.
+  #
+  # It joins the stack because the API only *schedules*. `scheduler.start(jobs)` writes one Temporal
+  # Schedule per job at boot and starts no Worker, so a stack without this service creates every
+  # schedule and answers none of them: the run is started, waits durably for a poller, and then
+  # fails on its own timeout — and under overlap `SKIP` that failed run also suppresses the ticks
+  # behind it. This is what polls it.
+  #
+  # Unlike `events-worker` it has a healthcheck, and the difference is forced rather than a
+  # preference: a Schedule's action can only start a *workflow*, so this Worker registers one and
+  # pays the same webpack pass over the sandbox entrypoint that `worker` does. Without a probe
+  # `--wait` would return while that bundle is still building, which is exactly the window in which
+  # the cron queue has no poller on it.
+  cron-worker:
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile.worker
+    command: ['pnpm', '--filter', 'backend', 'run', 'worker:cron']
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal-create-namespace:
+        condition: service_completed_successfully
+    environment:
+      POOLER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
+      DIRECT_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
+      TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      - ../../.env.local:/app/.env.local:ro
+      - ../../.env.keys:/app/.env.keys:ro
+      - ./src:/app/apps/backend/src:ro
+      - ../../packages:/app/packages:ro
+      - ./static:/app/apps/backend/static
+    healthcheck:
+      # `cron` is the Worker to ask about, not the queue to ask for: the argument resolves to
+      # `CRON_TASK_QUEUE` inside the script, so the queue string stays in
+      # `src/framework/scheduler/temporal/config.ts` and a compose file cannot name a queue nothing
+      # polls. Bare — as the `worker` service calls it — it still means the workflow queue.
+      test: ['CMD', 'pnpm', '--silent', '--filter', 'backend', 'run', 'temporal:worker-ready', 'cron']
+      interval: 5s
+      timeout: 20s
+      retries: 12
+      # The same reason `worker` needs one: the first probe is late rather than slow, because the
+      # workflow bundle has to be built before anything polls.
+      start_period: 60s
+
 volumes:
   proteus-dev-data:

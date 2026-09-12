@@ -230,8 +230,8 @@ where undeclared imports resolve again. ADR-0025 has the reasoning.
 # Install dependencies
 pnpm install
 
-# Bring up the compose stack — Postgres, Temporal, both Workers (the dev task below does this
-# for you; needed here for the migrations)
+# Bring up the compose stack — Postgres, Temporal, all three Workers (the dev task below does
+# this for you; needed here for the migrations)
 pnpm --filter backend run db:start
 
 # Run database migrations
