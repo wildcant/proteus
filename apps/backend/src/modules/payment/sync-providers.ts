@@ -2,12 +2,28 @@ import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
 import { noopLogger } from '../../framework/logger/index.js'
 import type { Database } from '../../schema.type.js'
 import { seedProviders } from './loaders/providers.js'
-import * as models from './models/index.js'
+import { accountHolderTable } from './models/account-holder.js'
+import { captureTable } from './models/capture.js'
+import { paymentTable } from './models/payment.js'
+import { paymentCollectionTable } from './models/payment-collection.js'
+import { paymentProviderTable } from './models/payment-provider.js'
+import { paymentSessionTable } from './models/payment-session.js'
+import { refundTable } from './models/refund.js'
+import { refundReasonTable } from './models/refund-reason.js'
 import { paymentProviderDeclarations } from './provider-declarations.js'
-import { PaymentProviderRepository } from './repositories/index.js'
+import { PaymentProviderRepository } from './repositories/payment-provider.js'
 import { PaymentProviderService } from './services/payment-provider-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph({
+  accountHolderTable,
+  captureTable,
+  paymentCollectionTable,
+  paymentProviderTable,
+  paymentSessionTable,
+  paymentTable,
+  refundReasonTable,
+  refundTable,
+})
 
 /** Syncs configured payment providers to the database. Used out-of-band for workerd deployments. */
 export async function syncPaymentProviders(getDb: () => Database) {

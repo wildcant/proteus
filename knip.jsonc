@@ -1,6 +1,5 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "include": ["dependencies", "catalog"],
   "workspaces": {
     "apps/backend": {
       // Three shapes nothing reaches from a default entry point: providers are registered by

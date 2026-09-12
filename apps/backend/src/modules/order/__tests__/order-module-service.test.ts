@@ -3,17 +3,15 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-import * as models from '../models/index.js'
-import {
-  OrderAddressRepository,
-  OrderLineItemRepository,
-  OrderRepository,
-  OrderShippingMethodRepository,
-  OrderTransactionRepository,
-} from '../repositories/index.js'
+import orderModule from '../index.js'
+import { OrderRepository } from '../repositories/order.js'
+import { OrderAddressRepository } from '../repositories/order-address.js'
+import { OrderLineItemRepository } from '../repositories/order-line-item.js'
+import { OrderShippingMethodRepository } from '../repositories/order-shipping-method.js'
+import { OrderTransactionRepository } from '../repositories/order-transaction.js'
 import { OrderModuleService } from '../services/order-module-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(orderModule.models)
 
 let service: OrderModuleService
 let orderRepository: OrderRepository

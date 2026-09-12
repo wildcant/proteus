@@ -5,7 +5,7 @@ import {
   type CreateProductVariantImage,
   productImageTable,
   productVariantImageTable,
-} from '../../../src/schema.js'
+} from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 export function generateProductImage(overrides?: Partial<CreateProductImage>): CreateProductImage {

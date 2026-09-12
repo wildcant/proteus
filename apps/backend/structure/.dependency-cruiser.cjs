@@ -4,11 +4,12 @@ module.exports = {
     {
       name: 'no-module-internals',
       comment:
-        'Only composition roots (container.ts, schema.ts, modules-definitions.ts) ' +
+        'Only composition roots (container.ts, schema.gen.ts, modules-definitions.ts) ' +
         "and a module's own files may import from src/modules/.",
       severity: 'error',
       from: {
-        pathNot: '^src/modules/|^src/(container|schema)\\.ts$|^src/link-modules/modules-definitions\\.ts$|^tests/',
+        pathNot:
+          '^src/modules/|^src/(container\\.ts|schema\\.gen\\.ts)$|^src/link-modules/modules-definitions\\.ts$|^tests/',
       },
       to: {
         path: '^src/modules/',
@@ -30,13 +31,58 @@ module.exports = {
       name: 'no-link-definition-leaks',
       comment:
         'link-modules/definitions/ and modules-definitions.ts must only be ' +
-        'imported from within link-modules/ or schema.ts.',
+        'imported from within link-modules/ or schema.gen.ts.',
       severity: 'error',
       from: {
-        pathNot: '^src/(link-modules/|schema\\.ts$)',
+        pathNot: '^src/(link-modules/|schema\\.gen\\.ts$)',
       },
       to: {
         path: '^src/link-modules/(definitions/|modules-definitions\\.ts$)',
+      },
+    },
+    {
+      name: 'no-api-internals',
+      comment:
+        'Only src/routes.ts and the API layer itself may import from src/api/. A route is the ' +
+        'outermost layer — it exists to turn a Request into a call on something below it — so an ' +
+        'import pointing back up at one is a layer inversion, and what is being reached for is ' +
+        'always either a schema, which lives in packages/http-schemas and is already shared, or ' +
+        'logic that belongs in a module service or in a workflow when it spans modules. ' +
+        'This is no-module-internals one layer up: that rule names the composition roots allowed to ' +
+        'see inside modules/, this one names the single composition root allowed to see inside api/. ' +
+        'src/api/index.ts is the backend-as-library entry the store imports as `backend/api`, and it ' +
+        'is exempt as part of the layer — that import crosses a workspace boundary this cruise never ' +
+        'reaches, since depcruise is pointed at src/.',
+      severity: 'error',
+      from: {
+        pathNot: '^src/api/|^src/routes\\.ts$',
+      },
+      to: {
+        path: '^src/api/',
+      },
+    },
+    {
+      name: 'below-the-request-layer-knows-no-http',
+      comment:
+        'modules/, workflows/, subscribers/, link-modules/ and providers/ may not import src/server/ ' +
+        'or src/routes.ts. src/server/ports.ts is where HttpRequest and HttpResponse are defined, so ' +
+        'naming it below the API layer is business logic learning that it was reached over HTTP — ' +
+        'and it was not, necessarily: the same service and the same workflow run from a Temporal ' +
+        'Worker, a queue consumer and a scheduled job, where there is no request to take a shape ' +
+        'from. What a caller has to supply arrives as a DTO, which is why a module service can be ' +
+        'constructed in a test with no server at all. ' +
+        'src/framework/ is deliberately not a target here. It holds the HTTP runtimes *and* the ' +
+        'logger, so a workflow test reaching for noopLogger would fail a rule aimed at the runtimes ' +
+        'while being nothing of the sort; the HTTP-shaped half of framework/ is reachable only ' +
+        'through src/server/, which this rule does cover. ' +
+        'no-api-internals covers the third request-shaped path, src/api/ itself, and for a different ' +
+        'reason — it is about who may see a route, not about who may know what a request is.',
+      severity: 'error',
+      from: {
+        path: '^src/(modules|workflows|subscribers|link-modules|providers)/',
+      },
+      to: {
+        path: '^src/server/|^src/routes\\.ts$',
       },
     },
     {
@@ -234,7 +280,7 @@ module.exports = {
           '^src/' +
           '(?!(?:api|core|framework|jobs|link-modules|modules|providers|server' +
           '|subscribers|workflows)/)' +
-          '(?!(?:config|container|env|index|index\\.workerd|routes|schema|schema\\.type|start' +
+          '(?!(?:config|container|env|index|index\\.workerd|routes|schema\\.gen|schema\\.type|start' +
           '|test-exports)\\.ts$)',
       },
       to: { path: '(?!)' },

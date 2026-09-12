@@ -1,8 +1,0 @@
-export type { CartAddress, CreateCartAddress } from './address.js'
-export { cartAddressTable, cartAddressTypeEnum } from './address.js'
-export type { Cart, CreateCart } from './cart.js'
-export { cartTable } from './cart.js'
-export type { CartLineItem, CreateCartLineItem } from './line-item.js'
-export { cartLineItemTable } from './line-item.js'
-export type { CartShippingMethod, CreateCartShippingMethod } from './shipping-method.js'
-export { cartShippingMethodTable } from './shipping-method.js'

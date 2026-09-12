@@ -8,7 +8,7 @@ import {
   priceSetTable,
   priceTable,
   productVariantPriceSetTable,
-} from '../../../src/schema.js'
+} from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 export function generatePriceSet(overrides?: Partial<CreatePriceSet>): CreatePriceSet {

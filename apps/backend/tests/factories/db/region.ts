@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
-import type { CreateCountry, CreateRegion, CreateRegionPaymentProvider } from '../../../src/schema.js'
-import { countryTable, regionPaymentProviderTable, regionTable } from '../../../src/schema.js'
+import type { CreateCountry, CreateRegion, CreateRegionPaymentProvider } from '../../../src/schema.gen.js'
+import { countryTable, regionPaymentProviderTable, regionTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 // --- Region ---

@@ -4,7 +4,7 @@ import type { ILinkService } from '../../../src/core/types/link/service.js'
 import type { IPaymentModuleService } from '../../../src/core/types/payment/service.js'
 import { ContainerRegistrationKeys, Modules } from '../../../src/core/utils/index.js'
 import { MANUAL_PROVIDER_ID } from '../../../src/modules/payment/utils/provider-ids.js'
-import { type CreatePayment, paymentTable } from '../../../src/schema.js'
+import { type CreatePayment, paymentTable } from '../../../src/schema.gen.js'
 import type { Database } from '../../../src/schema.type.js'
 import { generateCreatePaymentCollectionDTO, generateCreatePaymentSessionDTO } from '../payment-dto.js'
 

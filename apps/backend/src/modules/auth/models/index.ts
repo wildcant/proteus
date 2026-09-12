@@ -1,8 +1,0 @@
-export type { AuthIdentity, CreateAuthIdentity } from './auth-identity.js'
-export { authIdentityTable } from './auth-identity.js'
-export type { AuthPasswordResetToken, CreateAuthPasswordResetToken } from './auth-password-reset-token.js'
-export { authPasswordResetTokenTable } from './auth-password-reset-token.js'
-export type { AuthVerification, CreateAuthVerification } from './auth-verification.js'
-export { authVerificationTable } from './auth-verification.js'
-export type { CreateProviderIdentity, ProviderIdentity } from './provider-identity.js'
-export { providerIdentityTable } from './provider-identity.js'

@@ -2,7 +2,7 @@ import { test } from '@tests/setup/test-extend.js'
 import { createContainer } from 'awilix'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-import * as models from '../models/index.js'
+import fulfillmentModule from '../index.js'
 import { FulfillmentRepository } from '../repositories/fulfillment.js'
 import { FulfillmentAddressRepository } from '../repositories/fulfillment-address.js'
 import { FulfillmentItemRepository } from '../repositories/fulfillment-item.js'
@@ -16,7 +16,7 @@ import { ShippingProfileRepository } from '../repositories/shipping-profile.js'
 import { FulfillmentModuleService } from '../services/fulfillment-module-service.js'
 import { FulfillmentProviderService } from '../services/fulfillment-provider-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(fulfillmentModule.models)
 
 let service: FulfillmentModuleService
 

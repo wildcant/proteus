@@ -4,7 +4,7 @@ import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { buildSearchFilter } from '../../../core/utils/build-search-filter.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-import * as models from '../models/index.js'
+import productModule from '../index.js'
 import { ProductRepository } from '../repositories/product.js'
 import { ProductImageRepository } from '../repositories/product-image.js'
 import { ProductOptionRepository } from '../repositories/product-option.js'
@@ -16,7 +16,7 @@ import { ProductVariantImageRepository } from '../repositories/product-variant-i
 import { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
 import { ProductModuleService } from '../services/product-module-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(productModule.models)
 
 let service: ProductModuleService
 /** Two rules have no service verb to reach them: the product module has no restore, and the

@@ -57,6 +57,8 @@
     "workflows:generate": "tsx scripts/generate-workflow-registry.ts",
     "check:subscriber-registry": "tsx scripts/generate-subscriber-registry.ts --check",
     "subscribers:generate": "tsx scripts/generate-subscriber-registry.ts",
+    "check:schema-registry": "tsx scripts/generate-schema.ts --check",
+    "schema:generate": "tsx scripts/generate-schema.ts",
     "check:schema": "tsx scripts/checks/run.ts",
     "check:structure": "depcruise src/ --config structure/.dependency-cruiser.cjs",
     "check:structure:graph": "depcruise src/ --config structure/.dependency-cruiser.cjs --output-type archi --exclude '(node_modules|__tests__)' --collapse 3 | dot -T svg -o structure/dependency-graph.svg && open structure/dependency-graph.svg"

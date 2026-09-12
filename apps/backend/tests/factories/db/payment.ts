@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
-import type { CreatePaymentProvider } from '../../../src/schema.js'
-import { paymentProviderTable } from '../../../src/schema.js'
+import type { CreatePaymentProvider } from '../../../src/schema.gen.js'
+import { paymentProviderTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 // --- PaymentProvider ---

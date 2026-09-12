@@ -2,12 +2,12 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
-import * as models from '../models/index.js'
+import userModule from '../index.js'
 import { InviteRepository } from '../repositories/invite.js'
 import { UserRepository } from '../repositories/user.js'
 import { UserModuleService } from '../services/user-module-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph(userModule.models)
 
 let service: UserModuleService
 

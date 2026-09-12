@@ -1,8 +1,12 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
 import { BigNumber } from '../../../src/core/bignumber.js'
-import type { CreateOrder, CreateOrderAddress, CreateOrderLineItem } from '../../../src/modules/order/models/index.js'
-import { orderAddressTable, orderLineItemTable, orderTable } from '../../../src/modules/order/models/index.js'
+import type { CreateOrderAddress } from '../../../src/modules/order/models/address.js'
+import { orderAddressTable } from '../../../src/modules/order/models/address.js'
+import type { CreateOrderLineItem } from '../../../src/modules/order/models/line-item.js'
+import { orderLineItemTable } from '../../../src/modules/order/models/line-item.js'
+import type { CreateOrder } from '../../../src/modules/order/models/order.js'
+import { orderTable } from '../../../src/modules/order/models/order.js'
 import { db } from '../../db/client.js'
 
 /**

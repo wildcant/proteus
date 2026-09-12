@@ -1,7 +1,6 @@
 import type { PgTable } from 'drizzle-orm/pg-core'
 import { buildCascadeGraph } from '../../src/core/db/cascade-graph.js'
 import { tableName } from '../../src/core/db/utils.js'
-import { collectBarrelTables } from './models.js'
 import type { Check, Violation } from './types.js'
 
 /**
@@ -30,12 +29,18 @@ export const guardOutsideItsClosure: Check = {
   name: 'guard-outside-its-closure',
   rule: 'no cascade closure contains both a guard and the table it guards',
   severity: 'warning',
-  run: async () => {
+  run: (models) => {
     const violations: Violation[] = []
 
-    for (const [module, tables] of await collectBarrelTables()) {
-      const barrel = Object.fromEntries([...tables].map((table) => [tableName(table), table]))
-      const graph = buildCascadeGraph(barrel)
+    // Grouped by module because that is the scope a graph is built at — no foreign key crosses a
+    // module boundary, so a module's own tables are already the whole closure.
+    const byModule = new Map<string, PgTable[]>()
+    for (const model of models) {
+      byModule.set(model.module, [...(byModule.get(model.module) ?? []), model.table])
+    }
+
+    for (const [module, tables] of byModule) {
+      const graph = buildCascadeGraph(Object.fromEntries(tables.map((table) => [tableName(table), table])))
 
       for (const root of tables) {
         const closure = closureOf(graph, root)

@@ -94,6 +94,9 @@ job_generated() {
   # The event bus dispatches subscribers from a generated import list for the same reasons, so it
   # drifts the same way. See scripts/generate-subscriber-registry.ts.
   pnpm --silent --filter backend run check:subscriber-registry || code=1
+  # The module half of the drizzle schema is one `export *` per model file, so a new model reaches
+  # drizzle only once it is regenerated. See scripts/generate-schema.ts.
+  pnpm --silent --filter backend run check:schema-registry || code=1
   return $code
 }
 

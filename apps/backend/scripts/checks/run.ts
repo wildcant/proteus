@@ -14,7 +14,7 @@
 import { cascadeRelationshipIndex } from './cascade-relationship-index.js'
 import { destroyOnlyChildren } from './destroy-only-children.js'
 import { guardOutsideItsClosure } from './guard-outside-its-closure.js'
-import { modelBarrelReachable } from './model-barrel-reachable.js'
+import { modelReachesCascadeGraph } from './model-reaches-cascade-graph.js'
 import { collectModels } from './models.js'
 import { softDeleteIndexPredicate } from './soft-delete-index-predicate.js'
 import type { Check } from './types.js'
@@ -22,7 +22,7 @@ import type { Check } from './types.js'
 const CHECKS: Check[] = [
   softDeleteIndexPredicate,
   cascadeRelationshipIndex,
-  modelBarrelReachable,
+  modelReachesCascadeGraph,
   destroyOnlyChildren,
   guardOutsideItsClosure,
 ]

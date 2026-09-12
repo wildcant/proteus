@@ -25,7 +25,7 @@ restate it in TypeScript.
 
 **The cascade is derived from the model, not declared per service.**
 
-Each module passes its models barrel to its module definition. Bootstrap filters it to drizzle
+Each module names its tables in the `models` object of its module definition. Bootstrap filters it to drizzle
 tables, resolves the foreign keys in the inverse direction, and builds a `CascadeGraph` once per
 module. `BaseRepository.softDelete` and `.restore` walk it. No service names its children, and a
 new child table is covered the moment it declares its relationship.
@@ -95,7 +95,7 @@ opposite: it is a snapshot, duplication is free, and each snapshot is of exactly
 A repository now needs its module's cascade graph to be constructed, which is a required
 constructor dependency rather than an optional one. Bootstrap supplies it; the handful of places
 that build a repository by hand — module service tests, the provider sync scripts, the link layer —
-build the graph from the same barrel. Required rather than optional is the point: an omitted graph
+build the graph from the same list. Required rather than optional is the point: an omitted graph
 would silently reinstate the defect this ADR exists to remove.
 
 Two shapes the walker cannot follow now throw at build time rather than under-cascading silently: a
@@ -109,9 +109,9 @@ rejected: 400 is what the product-option guard already threw and what Medusa use
 deletes, so no live admin endpoint changes status code. The walker's restrict check raises the same
 shape, so callers handle one contract regardless of origin.
 
-The model barrel becomes load-bearing. A model the barrel does not re-export is invisible to the
+That list becomes load-bearing. A model it does not name is invisible to the
 graph: it keeps its foreign keys, keeps looking correct in review, and quietly stops being reached
-by them. `scripts/checks/model-barrel-reachable.ts` makes that a build failure.
+by them. `scripts/checks/model-reaches-cascade-graph.ts` makes that a build failure.
 
 The address inversion diverges from Medusa, which places the pointer on the parent for cart, order
 and fulfillment. Medusa contradicts itself there — its customer address is inverted, and of the

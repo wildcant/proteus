@@ -25,7 +25,7 @@ Six words the rest of this page leans on. They name shapes in the *schema*, not 
 ```mermaid
 flowchart LR
   subgraph boot["Bootstrap — once per module"]
-    B1["models/index.ts<br/>(the barrel)"] --> B2["buildCascadeGraph()"]
+    B1["index.ts<br/>(the models object)"] --> B2["buildCascadeGraph()"]
     B2 --> B3[("CascadeGraph<br/>inverse FK index")]
   end
   subgraph run["Every softDelete / restore"]
@@ -102,7 +102,7 @@ Why the phases are separate is the whole point:
 
 - **Checking before writing is what makes the answer deterministic.** A restrict check run halfway
   through the hiding reads a table the same cascade has already emptied — so whether it finds a
-  live guard depends on which edge the traversal reached first, which is barrel export order.
+  live guard depends on which edge the traversal reached first, which is the order tables are listed in.
 - **One transaction is what makes a refusal mean nothing happened.** A refusal raised two hops down
   used to leave the root and everything above it already hidden.
 - **A guard the same cascade would itself hide still blocks**, because every check reads the state
@@ -294,11 +294,11 @@ This used to be the bug on this page. The restrict check was interleaved with th
 - Reach `product_variant_option` first → it is hidden → nothing live blocks → **the value is hidden
   too**, stripping variants of their identity
 
-Which one happened was barrel export order, and a re-ordered export list is not a change to the
+Which one happened was the order tables are listed in, and a re-ordered list is not a change to the
 schema. Both are now refused, because every check reads the pre-cascade state: a guard this same
 cascade *would* hide still blocks. Pinned from both directions by
 `refuse whichever of the pair the walker reaches first` in
-`src/core/db/__tests__/cascade-walker.test.ts`, which runs the same fixture under two barrel
+`src/core/db/__tests__/cascade-walker.test.ts`, which runs the same fixture under two listing
 orderings.
 
 Deterministic, but still worth noticing: an author who writes two `cascade` edges expecting both
@@ -317,7 +317,7 @@ that behaviour, and no chance of the two disagreeing.
 
 `pnpm run verify` runs `scripts/checks/`, which fails the build when:
 
-- a model is not reachable from its module's barrel — the graph is built from the barrel and
+- a model is not named in its module's `models` object — the graph is built from that list and
   nothing else, so an unexported model keeps its foreign keys and quietly stops being reached;
 - a cascade or restrict relationship has no index leading with its column;
 - an index on a soft-deletable table does not exclude soft-deleted rows, or spells the predicate

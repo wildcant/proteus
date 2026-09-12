@@ -74,11 +74,12 @@ pnpm run verify:full # Every test, in parallel: the whole backend suite, the sto
 # against the dev database. packages/testing/fixtures/e2e-config.ts holds the port map and the
 # queue names, and is where a new suite is defined.
 
-# Code generation — all four outputs are committed. Only the two registries are checked for
+# Code generation — all five outputs are committed. Only the three marked (gated) are checked for
 # drift, by `verify`'s `generated` gate; the Orval clients and routeTree.gen.ts are not.
 pnpm run openapi:generate                      # OpenAPI spec → Orval clients (admin + store)
 pnpm --filter backend run workflows:generate   # src/workflows → temporal/registry.gen.ts  (gated)
 pnpm --filter backend run subscribers:generate # src/subscribers → registry.gen.ts        (gated)
+pnpm --filter backend run schema:generate      # models + link definitions → schema.gen.ts (gated)
 pnpm --filter admin run generate-routes        # TanStack Router route tree
 ```
 
@@ -122,7 +123,9 @@ Each module at `apps/backend/src/modules/{name}/` follows one layout, and **the 
 eight folders and four root files, enforced by `module-holds-only-known-file-kinds`. Nesting
 *inside* them is unconstrained.
 
-- `models/` — Drizzle table definitions (use the `timestamps` helper from `src/core/db/columns.ts`)
+- `models/` — Drizzle table definitions, one per file, no barrel (use the `timestamps` helper from
+  `src/core/db/columns.ts`). `index.ts` names them all in its `models` object; that list is what the
+  cascade graph is built from, and `check:schema` fails when a table is missing from it
 - `repositories/` — Extend `BaseRepository(table)`, receive `{ getDb }` factory
 - `services/` — Business logic implementing an interface from `src/core/types/`
 - `migrations/` — drizzle-kit output; regenerated in place, never hand-edited
@@ -146,7 +149,8 @@ A module too large for one service class splits internally: the module service c
 collaborator from its own injected dependencies and keeps it private. Nothing registers or exports
 it, so the module's public surface stays exactly one service — see `ProductOptionService` inside
 `product`. Splitting into two *modules* is usually not the alternative, because the cascade graph is
-built per module from one models barrel, so tables with foreign keys between them must share one.
+built per module from the `models` object of its `Module()` definition, so tables with foreign keys
+between them must share one.
 
 ### Two-Container Bootstrap
 

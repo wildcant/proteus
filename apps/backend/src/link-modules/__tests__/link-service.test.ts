@@ -1,7 +1,13 @@
 import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../core/utils/with-transaction.js'
-import * as models from '../definitions/index.js'
+import { cartPaymentCollectionTable } from '../definitions/cart-payment-collection.js'
+import { orderCartTable } from '../definitions/order-cart.js'
+import { orderFulfillmentTable } from '../definitions/order-fulfillment.js'
+import { orderPaymentCollectionTable } from '../definitions/order-payment-collection.js'
+import { productVariantInventoryItemTable } from '../definitions/product-variant-inventory-item.js'
+import { productVariantPriceSetTable } from '../definitions/product-variant-price-set.js'
+import { regionPaymentProviderTable } from '../definitions/region-payment-provider.js'
 import { CartPaymentCollectionRepository } from '../repositories/cart-payment-collection.js'
 import { CartProductRepository } from '../repositories/cart-product.js'
 import { OrderCartRepository } from '../repositories/order-cart.js'
@@ -12,7 +18,15 @@ import { ProductVariantPriceSetRepository } from '../repositories/product-varian
 import { RegionPaymentProviderRepository } from '../repositories/region-payment-provider.js'
 import { LinkService } from '../services/link-service.js'
 
-const cascadeGraph = buildCascadeGraph(models)
+const cascadeGraph = buildCascadeGraph({
+  cartPaymentCollectionTable,
+  orderCartTable,
+  orderFulfillmentTable,
+  orderPaymentCollectionTable,
+  productVariantInventoryItemTable,
+  productVariantPriceSetTable,
+  regionPaymentProviderTable,
+})
 
 let linkService: LinkService
 let productVariantPriceSet: ProductVariantPriceSetRepository

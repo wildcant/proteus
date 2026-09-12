@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
-import { type CreateCart, cartTable } from '../../../src/schema.js'
+import { type CreateCart, cartTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 export function generateCart(overrides?: Partial<CreateCart>): CreateCart {

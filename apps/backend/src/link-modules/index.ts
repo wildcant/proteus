@@ -3,7 +3,13 @@ import { buildCascadeGraph } from '../core/db/cascade-graph.js'
 import type { DbProvider } from '../core/db/ports.js'
 import { ContainerRegistrationKeys } from '../core/utils/index.js'
 import { createWithTransaction } from '../core/utils/with-transaction.js'
-import * as definitions from './definitions/index.js'
+import { cartPaymentCollectionTable } from './definitions/cart-payment-collection.js'
+import { orderCartTable } from './definitions/order-cart.js'
+import { orderFulfillmentTable } from './definitions/order-fulfillment.js'
+import { orderPaymentCollectionTable } from './definitions/order-payment-collection.js'
+import { productVariantInventoryItemTable } from './definitions/product-variant-inventory-item.js'
+import { productVariantPriceSetTable } from './definitions/product-variant-price-set.js'
+import { regionPaymentProviderTable } from './definitions/region-payment-provider.js'
 import { CartPaymentCollectionRepository } from './repositories/cart-payment-collection.js'
 import { CartProductRepository } from './repositories/cart-product.js'
 import { OrderCartRepository } from './repositories/order-cart.js'
@@ -20,7 +26,15 @@ export function registerLinkService(sharedContainer: AwilixContainer): void {
   // Empty in practice — a link table declares no foreign keys, because a link's whole point is to
   // join across modules where the database cannot. Built from the definitions anyway, so the day
   // one of them gains an owned child the cascade covers it without anybody wiring it up.
-  const cascadeGraph = buildCascadeGraph(definitions)
+  const cascadeGraph = buildCascadeGraph({
+    cartPaymentCollectionTable,
+    orderCartTable,
+    orderFulfillmentTable,
+    orderPaymentCollectionTable,
+    productVariantInventoryItemTable,
+    productVariantPriceSetTable,
+    regionPaymentProviderTable,
+  })
 
   const productVariantInventoryItem = new ProductVariantInventoryItemRepository({ getDb, cascadeGraph })
   const cartProduct = new CartProductRepository({ getDb })
