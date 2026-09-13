@@ -119,14 +119,25 @@ where a wrong guess is most expensive: migrations and schema changes, adding a d
 The nearest thing that exists is "surface a divergence before building the alternative" in
 `AGENTS.local.md` — a personal working preference, invisible to any other contributor's agent.
 
-### F6 — no git workflow
+### F6 — no commit convention  *(decided)*
 
 The last twelve commits use four subject styles: `[proteus] …`, `chore: …`,
 `refactor(cart, order): …`, `[ILLO-47] …`. Nothing documents which is wanted, so an agent asked to
 commit has no rule to follow and will pick one.
 
-"Never commit unprompted" also lives only in `AGENTS.local.md`, which is gitignored. It is a repo
-norm wearing a personal file's clothes.
+**Settled: [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/).** One line
+in `AGENTS.md` naming the spec and linking it — *not* a git workflow section. Branching, PR shape and
+when to push stay undocumented on purpose.
+
+No check behind it, and that is the recorded reason rather than an omission: enforcing it means
+commitlint plus a husky hook, and this repo has no `.husky`, no `.github/workflows` and one
+committer. A hook that can only ever fire on the person who chose the convention is a moving part
+guarding a scenario that cannot happen. If CI arrives, `@commitlint/config-conventional` is the
+off-the-shelf gate and the convention is already the one it ships with.
+
+**"Never commit unprompted" stays in `AGENTS.local.md`.** The original argument for promoting it was
+that it is "invisible to any other contributor's agent" — there are no other contributors, so the
+argument is void.
 
 ### F7 — no task→document routing
 
@@ -247,8 +258,8 @@ moment it is needed.
 ### P3 — the gaps
 
 8. An **Ask first** section listing F5's five cases.
-9. A **git workflow** section: the commit subject convention we actually want, and the
-   never-commit-unprompted norm promoted out of `AGENTS.local.md`.
+9. **One line** naming Conventional Commits v1.0.0 and linking the spec. No git workflow section, no
+   promotion out of `AGENTS.local.md` — see F6, decided.
 10. A **task → read this first** table at the top of the file. Six to eight rows, task on the left,
     one path on the right. This is what makes P1 and P2 subtraction rather than loss.
 
@@ -269,7 +280,10 @@ moment it is needed.
 
 ## Suggested order
 
-P0 → P4's baseline → P1 → P2 → P3.
+P0 → P4's baseline → P1 → P2 → P3, with P5 after P2.
+
+P5 was added once P1 had landed and made the duplication visible; it is the same subtraction applied
+to the one section P1 left alone, so it wants the same P4 baseline in front of it.
 
 P0 is free and independent. P4 before P1 because P1 is the only phase that can lose information. P3
 is additive and can land at any point, but it adds bytes, so it reads better after the subtraction
@@ -337,10 +351,27 @@ four kinds of file with no carve-out at all. Prove it: after removing the lookah
 
 ---
 
+## P5 — Backend Architecture splits along the planner/writer line
+
+12. The section P1 never touched, and now the largest in the file at **7,627 bytes / 32%**. P1.6
+    moved the backend's guides into `__docs__/` and P1.7 added the pointer layer, but the root file
+    kept its own summary of the same material — so three of its claims are now written down twice,
+    and one of them disagrees with the copy in `framework/README.md`.
+
+    What a *planning* agent needs stays, compressed, with pointers: the `core`/`framework` one-test
+    rule, the one-way dependency, that the module list is closed, which modules exist, why a new
+    module is usually not the answer, that a module cannot reach another's internals, and the
+    three-way choice between a link module, a workflow and a subscriber. Everything read while
+    *writing* a file moves to the `__docs__/` or code `README.md` that already holds it. Roughly
+    5,100 bytes out, two-thirds of it deletion rather than relocation.
+
+    Ticket `issues/05-backend-architecture-split.md`, where every block is measured and every
+    receiving document is one that already exists.
+
+---
+
 ## Decisions still open
 
-- **The commit subject convention (P3.9).** Four styles are in use. Someone has to pick, and it is
-  not a decision an agent should make by frequency count.
 - **Whether the intent manifest can be redirected (P2).** Determines whether P2 is a config change
   or a file-layout change.
 - **How far P1.6 goes.** Three files is the conservative cut. The Testing section (5.1 KB) is the

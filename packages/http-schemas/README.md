@@ -88,7 +88,9 @@ Every schema that appears in API responses or request bodies must call `.openapi
 
 ### Datetime fields — the `dateToIso` pipeline
 
-Timestamp fields use the `dateToIso` pipeline from `common.ts`, which accepts a `Date` and outputs an ISO 8601 string:
+A timestamp keeps one shape until the last moment: the column is `timestamptz`, Drizzle returns a
+`Date`, the DTO carries that `Date`, and the ISO string is produced here, at the HTTP edge. Timestamp
+fields use the `dateToIso` pipeline from `common.ts`, which accepts a `Date` and outputs an ISO 8601 string:
 
 ```ts
 export const dateToIso = z
