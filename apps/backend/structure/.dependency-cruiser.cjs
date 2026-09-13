@@ -41,7 +41,7 @@ const LAYER_GRAPH = {
  * Where the non-folder nodes live. A layer's path is just its name — `core` is `^src/core/` — so
  * only the composition roots need one written down.
  *
- * `entrypoints` is the process mains: the API's, the workerd fetch handler, the two Temporal
+ * `entrypoints` is the process mains: the API's, the workerd fetch handler, the three Temporal
  * Workers and the surface the e2e suites import. Each starts something and may name anything to do
  * it; nothing under `src/` may name one back, which every other row says by omission.
  */
@@ -56,7 +56,7 @@ const COMPOSITION_ROOTS = {
   runtimeContainers: '^src/framework/runtime/container\\.(?:node|worker|workerd)\\.ts$',
   entrypoints: [
     '^src/(?:index|index\\.workerd|start|test-exports)\\.ts$',
-    '^src/framework/(?:event-bus|workflows)/temporal/worker(?:\\.dev)?\\.ts$',
+    '^src/framework/(?:event-bus|scheduler|workflows)/temporal/worker(?:\\.dev)?\\.ts$',
   ],
 }
 
@@ -244,9 +244,11 @@ module.exports = {
         'engine as an injected factory instead of importing the adapter, exactly as it takes its ' +
         'logger and dbProvider — this rule is what keeps that boundary deliberate rather than ' +
         'incidental. Reachability, not a direct import: the hazard is transitive. ' +
-        "The event bus paths are listed alongside the workflow engine's: `@temporalio/` already " +
-        'catches them transitively, but naming them is what makes a future Temporal-shaped file ' +
-        'that has not yet imported the SDK fail here rather than on a deploy.',
+        "The event bus and cron scheduler paths are listed alongside the workflow engine's: " +
+        '`@temporalio/` already catches them transitively, but naming them is what makes a future ' +
+        'Temporal-shaped file that has not yet imported the SDK fail here rather than on a deploy. ' +
+        'src/framework/scheduler/kuron/ is deliberately absent — that is the Cloudflare cron ' +
+        'dispatcher, the half of the scheduler workerd is meant to reach.',
       severity: 'error',
       from: {
         path: '^src/index\\.workerd\\.ts$',
@@ -254,7 +256,7 @@ module.exports = {
       to: {
         path:
           '@temporalio/|^src/framework/temporal/|^src/framework/workflows/temporal(-adapter\\.ts$|/)' +
-          '|^src/framework/event-bus/temporal(-adapter\\.ts$|/)',
+          '|^src/framework/event-bus/temporal(-adapter\\.ts$|/)|^src/framework/scheduler/temporal/',
         reachable: true,
       },
     },

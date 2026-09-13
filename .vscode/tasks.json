@@ -1,8 +1,8 @@
 {
   // Two dev sessions live in here.
   //
-  //   `dev`          — Node runtime. Two terminals: backend (API, workflow Worker, events Worker)
-  //                    and frontend (store, admin).
+  //   `dev`          — Node runtime. Two terminals: backend (API, workflow Worker, events
+  //                    Worker, cron Worker) and frontend (store, admin).
   //   `dev: workerd` — workerd runtime. One terminal, three panes: API under `wrangler dev`, store,
   //                    admin.
   //
@@ -17,8 +17,8 @@
   // `presentation.group` is the whole trick: every task sharing a group name opens as a split pane
   // inside one terminal rather than as its own, so a group name is a terminal and its members are
   // that terminal's panes. `dev` uses two — `dev-backend` and `dev-frontend` — which is why it comes
-  // up as two entries in the terminal list, split three ways and two ways, instead of one terminal
-  // split five ways where every pane is too narrow to read a stack trace.
+  // up as two entries in the terminal list, split four ways and two ways, instead of one terminal
+  // split six ways where every pane is too narrow to read a stack trace.
   //
   // `panel: "dedicated"` keeps each pane bound to its own task across reruns, so a restarted store
   // reuses the store pane instead of stacking a new one beside it. Every session uses group names of
@@ -35,15 +35,15 @@
       "problemMatcher": []
     },
     {
-      // Split out from `dev` only so the five below start in parallel while still sitting behind
+      // Split out from `dev` only so the six below start in parallel while still sitting behind
       // the infra step — `dependsOrder` applies per task, so one list cannot mix the two orders.
       "label": "dev: apps",
-      "dependsOn": ["dev: api", "dev: worker", "dev: events", "dev: store", "dev: admin", "dev: open"],
+      "dependsOn": ["dev: api", "dev: worker", "dev: events", "dev: cron", "dev: store", "dev: admin", "dev: open"],
       "dependsOrder": "parallel",
       "problemMatcher": []
     },
     {
-      // Runs alongside the five rather than after them, because it waits on the ports itself —
+      // Runs alongside the six rather than after them, because it waits on the ports itself —
       // sequencing it would mean nothing starts until the browser is open. Deliberately in neither
       // presentation group: a member that exits after a few seconds would leave a dead pane wedged
       // into a terminal the others are still using. Delete it from `dev: apps` to stop opening tabs.
@@ -54,13 +54,14 @@
       "problemMatcher": []
     },
     {
-      // Stopping the compose Workers is not tidiness. `worker` polls `proteus` and `events-worker`
-      // polls `proteus-events`, and so do the two panes below; whichever is free claims the task, so
-      // leaving both up means edits appear to apply at random — to a step or to a subscriber.
+      // Stopping the compose Workers is not tidiness. `worker` polls `proteus`, `events-worker`
+      // polls `proteus-events` and `cron-worker` polls `proteus-cron`, and so do the three panes
+      // below; whichever is free claims the task, so leaving them up means edits appear to apply at
+      // random — to a step, to a subscriber or to a job.
       // `--wait` blocks on the healthchecks, which is what makes the sequence above worth having.
       "label": "dev: infra",
       "type": "shell",
-      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui && docker compose -f apps/backend/docker-compose.yml stop worker events-worker",
+      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui && docker compose -f apps/backend/docker-compose.yml stop worker events-worker cron-worker",
       "presentation": { "reveal": "silent", "panel": "shared", "close": true },
       "problemMatcher": []
     },
@@ -109,13 +110,54 @@
       // publish still succeeds and the activity waits durably on a queue nobody reads — the
       // "No workers polling" banner in the Temporal UI is what that looks like.
       //
-      // No `watch`: `worker:events` runs `worker.ts` directly, so editing a subscriber means
-      // restarting this pane. It refuses to boot when the server has `activity.enableStandalone`
-      // off, which a Temporal container older than `dynamicconfig/development-sql.yaml` will —
-      // recreate it rather than reading the refusal as a broken task.
+      // `worker:events:dev`, not `worker:events` — it boots via `worker.dev.ts`, which regenerates
+      // `src/subscribers/registry.gen.ts` and then runs the Worker under `tsx watch`, exactly as
+      // `dev: worker` does. `--include` on `src/subscribers/**` is what makes a brand-new subscriber
+      // file register without a manual `subscribers:generate`; the generated file itself is excluded
+      // from the watch, or writing it would restart the Worker that just wrote it.
+      //
+      // The `events-worker` compose service keeps the production script on purpose: a watcher inside
+      // a container never fires, because the bind mount carries writes but not filesystem events.
+      //
+      // It refuses to boot when the server has `activity.enableStandalone` off, which a Temporal
+      // container older than `dynamicconfig/development-sql.yaml` will — recreate it rather than
+      // reading the refusal as a broken task.
       "label": "dev: events",
       "type": "shell",
-      "command": "pnpm --filter backend run worker:events",
+      "command": "pnpm --filter backend run worker:events:dev",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev-backend",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+    {
+      // The scheduler, and a separate process from the two panes above so that the three slot pools
+      // stay separate: it polls `proteus-cron` while they poll `proteus-events` and `proteus`.
+      // ADR-0029 has the reasoning.
+      //
+      // This pane owns cron end to end: it reconciles every Schedule in `src/jobs/` at boot and then
+      // answers the runs they start. Without it there are no Schedules at all — which is the point,
+      // since a Schedule nothing can run was the failure this arrangement removes. The API process
+      // does not touch cron.
+      //
+      // `worker:cron:dev` boots via `worker.dev.ts`, which regenerates `src/jobs/registry.gen.ts` and
+      // then runs the Worker under `tsx watch` — the same shape as the other two panes. `--include`
+      // on `src/jobs/**` is what makes a brand-new job file reload at all, and the generated file is
+      // excluded so writing it cannot restart the Worker that just wrote it. A restart
+      // re-reconciles, so editing a cron expression and editing a handler take effect together.
+      //
+      // The `cron-worker` compose service keeps the production script, for the reason `dev: events`
+      // gives: a watcher inside a container never fires.
+      "label": "dev: cron",
+      "type": "shell",
+      "command": "pnpm --filter backend run worker:cron:dev",
       "isBackground": true,
       "presentation": {
         "group": "dev-backend",

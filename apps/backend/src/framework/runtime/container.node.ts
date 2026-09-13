@@ -7,7 +7,6 @@ import { createNodeDbProvider } from '../../core/db/node-provider.js'
 import { subscriberRegistry } from '../event-bus/registry.js'
 import { createTemporalEventBus, type TemporalEventBus } from '../event-bus/temporal-adapter.js'
 import { WinstonLogger } from '../logger/winston-logger.js'
-import { registerScheduler } from '../scheduler/index.js'
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '../workflows/temporal-adapter.js'
 
 const client = postgres(env.DATABASE_URL, { prepare: false })
@@ -62,7 +61,6 @@ export const container = await bootstrapContainer({
     return temporalEventBus
   },
 })
-registerScheduler(container, logger)
 
 /**
  * Closes the Temporal connections, if this process opened any — the workflow engine's and the event

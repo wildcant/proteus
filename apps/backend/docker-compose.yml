@@ -200,8 +200,8 @@ services:
   # standalone activity on `proteus-events`. A queue nobody polls does not fail — the event simply
   # waits, durably, until something does.
   #
-  # No healthcheck. `temporal:worker-ready` asks about the `proteus` queue specifically, and nothing
-  # else in the stack waits on this service.
+  # No healthcheck. `temporal:worker-ready` asks about a named Worker's queue — see
+  # `scripts/temporal/worker-ready.ts` — and nothing else in the stack waits on this service.
   events-worker:
     build:
       context: ../..
@@ -222,6 +222,51 @@ services:
       - ./src:/app/apps/backend/src:ro
       - ../../packages:/app/packages:ro
       - ./static:/app/apps/backend/static
+
+  # The cron Worker. Same image again, a third entrypoint and a third queue: this one polls
+  # `proteus-cron` and runs the jobs in `src/jobs/`. A third service rather than a third queue on one
+  # of the others, so the slot pools stay separate — ADR-0029 has the reasoning.
+  #
+  # It joins the stack because the API only *schedules*. `scheduler.start(jobs)` writes one Temporal
+  # Schedule per job at boot and starts no Worker, so a stack without this service creates every
+  # schedule and answers none of them: the run is started, waits durably for a poller, and then
+  # fails on its own timeout — and under overlap `SKIP` that failed run also suppresses the ticks
+  # behind it. This is what polls it.
+  #
+  # Unlike `events-worker` it has a healthcheck, because it registers the driver workflow and so pays
+  # the same sandbox-bundle build `worker` does. Without a probe, `--wait` would return while that
+  # build is still running, which is exactly the window in which the cron queue has no poller on it.
+  cron-worker:
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile.worker
+    command: ['pnpm', '--filter', 'backend', 'run', 'worker:cron']
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal-create-namespace:
+        condition: service_completed_successfully
+    environment:
+      POOLER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
+      DIRECT_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
+      TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      - ../../.env.local:/app/.env.local:ro
+      - ../../.env.keys:/app/.env.keys:ro
+      - ./src:/app/apps/backend/src:ro
+      - ../../packages:/app/packages:ro
+      - ./static:/app/apps/backend/static
+    healthcheck:
+      # `cron` is the Worker to ask about, not the queue to ask for: the argument resolves to
+      # `CRON_TASK_QUEUE` inside the script, so the queue string stays in
+      # `src/framework/scheduler/temporal/config.ts` and a compose file cannot name a queue nothing
+      # polls. Bare — as the `worker` service calls it — it still means the workflow queue.
+      test: ['CMD', 'pnpm', '--silent', '--filter', 'backend', 'run', 'temporal:worker-ready', 'cron']
+      interval: 5s
+      timeout: 20s
+      retries: 12
+      # `worker`'s reason, verbatim — see its healthcheck above.
+      start_period: 60s
 
 volumes:
   proteus-dev-data:

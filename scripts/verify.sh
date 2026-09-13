@@ -84,8 +84,8 @@ job_standards() {
 }
 
 # Whether a committed generated file is still what its generator would produce. A failure here is
-# not a code problem — it says to re-run a generator — which is why these two do not sit in
-# job_standards. --check never writes, so both behave the same here and under --ci.
+# not a code problem — it says to re-run a generator — which is why these do not sit in
+# job_standards. --check never writes, so all of them behave the same here and under --ci.
 job_generated() {
   local code=0
   # The Worker's workflow list is generated from src/workflows/ rather than typed by hand, so this
@@ -94,6 +94,10 @@ job_generated() {
   # The event bus dispatches subscribers from a generated import list for the same reasons, so it
   # drifts the same way. See scripts/generate-subscriber-registry.ts.
   pnpm --silent --filter backend run check:subscriber-registry || code=1
+  # The cron Worker's job list, third of the same kind — and the one where drift costs the most,
+  # since that list is also the desired state reconciliation deletes schedules against. See
+  # scripts/generate-job-registry.ts.
+  pnpm --silent --filter backend run check:job-registry || code=1
   # The module half of the drizzle schema is one `export *` per model file, so a new model reaches
   # drizzle only once it is regenerated. See scripts/generate-schema.ts.
   pnpm --silent --filter backend run check:schema-registry || code=1
@@ -244,7 +248,7 @@ label_of() {
     structure) echo "Import structure (backend, admin, store)" ;;
     versions) echo "One version per declared dependency" ;;
     unused) echo "Nothing declared or exported is unreferenced" ;;
-    generated) echo "Generated registries (workflow, subscriber)" ;;
+    generated) echo "Generated registries (workflow, subscriber, job)" ;;
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;
     # admin) echo "Admin unit tests" ;;

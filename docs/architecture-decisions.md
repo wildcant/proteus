@@ -36,6 +36,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0026](adr/0026-core-is-known-framework-runs.md) | `core/` is what is known, `framework/` is what runs | If it would differ between node and workerd it runs; `framework/` imports `core/`, never the reverse |
 | [0027](adr/0027-the-backend-layer-graph-is-default-deny.md) | The backend's layer graph is declared and default-deny | `LAYER_GRAPH` says what each layer may import; everything else under `src/` is an error |
 | [0028](adr/0028-barrels-only-at-a-published-boundary.md) | A barrel lives only at a published boundary | Biome's `noBarrelFile` repo-wide; the nine exemptions are the files a `package.json` `exports` map names |
+| [0029](adr/0029-cron-is-a-temporal-schedule-on-a-worker-of-its-own.md) | Cron is a Temporal Schedule on a Worker of its own | One Schedule per job starting a driver workflow on `proteus-cron`; `JobDefinition` unchanged, handler outside the sandbox |
 
 ---
 

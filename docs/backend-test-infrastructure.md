@@ -81,8 +81,7 @@ There is a comment in `global-setup.ts` saying so.
 ### What `TRUNCATE` must not touch
 
 Scoped to `schemaname = 'public'` on purpose. Drizzle's bookkeeping lives in the `drizzle` schema
-and must survive or the next file replays every migration. The `bullmq` schema also sits outside
-`public`.
+and must survive or the next file replays every migration.
 
 Prefixed IDs are generated with `gen_random_uuid()`, so no sequences are involved and reusing a
 database carries no collision risk. The one `serial` column, `order.display_id`, is reset by

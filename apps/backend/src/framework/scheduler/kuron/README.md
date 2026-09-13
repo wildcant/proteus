@@ -8,7 +8,7 @@ Kuron is a thin wrapper around Cloudflare Workers' native cron triggers (`Schedu
 
 ## What it is _not_
 
-Kuron does **not** implement the `CronScheduler` port (`src/core/types/scheduler.ts`). That port is designed around persistent job queues with backing stores, upsert/remove semantics, workers, and monitoring UIs (e.g. BullMQ).
+Kuron does **not** implement the `CronScheduler` port (`src/core/types/scheduler.ts`). That port is designed around a persistent backing store with upsert/remove semantics and a separate worker process — today, Temporal Schedules and the cron Worker.
 
 Kuron has none of that. CF Workers cron triggers are defined declaratively in `wrangler.jsonc` and dispatched by Cloudflare's infrastructure. Kuron just routes incoming `scheduled` events to the right handler.
 

@@ -1,15 +1,13 @@
 import type { Server } from 'node:http'
-import type { RequestHandler } from 'express'
 import swaggerUi from 'swagger-ui-express'
 import type { DbProvider } from './core/db/ports.js'
 import type { Logger } from './core/types/logger.js'
-import type { CronScheduler } from './core/types/scheduler.js'
 import { ContainerRegistrationKeys } from './core/utils/container.js'
 import { env } from './env.js'
 import { createRegistry, documentInfo, generateDocument } from './framework/http/openapi/registry.js'
 import { closeWorkflowEngine, container } from './framework/runtime/container.node.js'
 import { createExpressApp } from './framework/runtime/express/app.js'
-import { jobs } from './jobs/index.js'
+import { assertTemporalFrontendReachable, probeTemporalFrontend } from './framework/temporal/preflight.js'
 import { prepareRoutes } from './routes.js'
 
 type StartOptions = {
@@ -26,9 +24,17 @@ type StartResult = {
 export async function start(options?: StartOptions): Promise<StartResult> {
   const { port = 3000, host, shutdownTimeout = 10_000 } = options ?? {}
 
+  // ---- Temporal preflight ----
+
+  // First, and before the port is bound, because everything below it depends on a reachable
+  // Temporal and nothing below it says so when it is missing: a checkout route dispatches a
+  // workflow, and every `bus.emit` becomes an activity on a queue. Without this the failure mode is
+  // a process that answered `/health` with 200 and then died on an unhandled rejection out of the
+  // first request that needed the server. See `framework/temporal/preflight.ts`.
+  await assertTemporalFrontendReachable({ address: env.TEMPORAL_ADDRESS, probe: probeTemporalFrontend })
+
   const logger: Logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const dbProvider: DbProvider = container.resolve(ContainerRegistrationKeys.DB_PROVIDER)
-  const scheduler: CronScheduler = container.resolve(ContainerRegistrationKeys.SCHEDULER)
 
   // ---- Routes + OpenAPI ----
 
@@ -52,10 +58,6 @@ export async function start(options?: StartOptions): Promise<StartResult> {
   expressApp.get('/admin/openapi.json', (_req, res) => res.json(adminDocument))
   expressApp.get('/store/openapi.json', (_req, res) => res.json(storeDocument))
 
-  // ---- Scheduler monitor ----
-
-  expressApp.use('/admin/queues', scheduler.mountMonitor() as RequestHandler)
-
   // ---- Static routes ----
 
   expressApp.get('/health', (_req, res) => res.json({ status: 'ok' }))
@@ -70,24 +72,12 @@ export async function start(options?: StartOptions): Promise<StartResult> {
     const httpServer = host ? expressApp.listen(port, host, onListening) : expressApp.listen(port, onListening)
   })
 
-  // ---- Cron jobs ----
-
-  // The test server shares its database with the backend test suite, and BullMQ's
-  // queue lives in that same database. A worker here would compete with the suite's
-  // own worker for `proteus-cron-jobs` and swallow the jobs its tests enqueue.
-  if (env.NODE_ENV === 'test') {
-    logger.info('[CronScheduler] Not started: NODE_ENV=test')
-  } else {
-    await scheduler.start(jobs)
-  }
-
   // ---- Graceful shutdown ----
 
   async function shutdown() {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()))
     })
-    await scheduler.shutdown()
     await closeWorkflowEngine()
     await dbProvider.shutdown()
     await container.dispose()
