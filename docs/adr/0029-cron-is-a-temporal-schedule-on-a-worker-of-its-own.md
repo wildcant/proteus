@@ -428,8 +428,7 @@ keeping a dead Schedule buys nothing.
 - ADR-0021, ADR-0022 — the workflow engine and the runtime split this inherits
 - ADR-0023 — the event bus, whose second Worker this one is modelled on, and its "queue nobody polls"
   failure mode
-- `.scratch/temporal-schedules/spec.md` — the working spec
-- `.scratch/cron-registration/spec.md` — the amendment's working spec
+- `.scratch/temporal-schedules/spec.md` — the working spec, covering both this ADR and its amendment
 - `apps/backend/src/framework/scheduler/temporal/config.ts` — the queue, the driver path and the
   heartbeat arithmetic, with the reasoning inline
 - `apps/backend/src/framework/scheduler/temporal/temporal-cron-scheduler.ts` — reconciliation, the
