@@ -83,11 +83,46 @@ job_standards() {
   return $code
 }
 
+# Route trees are checked by content rather than by regeneration, and both apps are checked the same
+# way. Two different generators write this file — the `tsr generate` CLI and the router vite plugin —
+# and they order the same imports differently, so "run the generator and compare" reports drift
+# according to which one wrote it last. Worse, `pnpm dev` regenerates it on every route change, so
+# the answer would depend on whether a dev server happened to be running. Both were observed: the
+# admin tree alternates between two byte-different-but-equivalent files depending on which generator
+# touched it.
+#
+# So ask the ordering-insensitive question instead — does the tree reference every route file that
+# exists? That is the failure that actually bites (a route added, the tree not regenerated), no
+# generator disagrees about it, and reading cannot race a writer. The reverse direction needs no
+# check: a reference to a route file that was deleted is a broken import, which job_typecheck
+# already fails on.
+check_route_tree() {
+  local label=$1 routes_dir=$2 tree=$3 code=0 file rel
+  while IFS= read -r file; do
+    rel="${file#"$routes_dir"/}"
+    rel="${rel%.tsx}"
+    if ! grep -qF "'./routes/${rel}'" "$tree"; then
+      echo "$label: src/routes/${rel}.tsx has no entry in routeTree.gen.ts — run its generate-routes"
+      code=1
+    fi
+  done < <(find "$routes_dir" -type f -name '*.tsx')
+  return $code
+}
+
 # Whether a committed generated file is still what its generator would produce. A failure here is
 # not a code problem — it says to re-run a generator — which is why these do not sit in
-# job_standards. --check never writes, so all of them behave the same here and under --ci.
+# job_standards. The four --check generators below never write, so they behave the same here and
+# under --ci; the Orval clients and both route trees have no --check of their own and are
+# established by the serial step before the parallel batch instead. See regenerate_check.
 job_generated() {
   local code=0
+  # Decided by regenerate_check during the prologue, because establishing it means running a
+  # generator that rewrites files this job's neighbours are reading. Reported here so that all of
+  # generated-file currency still has exactly one gate.
+  if [ -n "$REGEN_DRIFT" ]; then
+    printf '%s' "$REGEN_DRIFT"
+    code=1
+  fi
   # The Worker's workflow list is generated from src/workflows/ rather than typed by hand, so this
   # is the step that notices when the two have drifted. See scripts/generate-workflow-registry.ts.
   pnpm --silent --filter backend run check:workflow-registry || code=1
@@ -101,6 +136,19 @@ job_generated() {
   # The module half of the drizzle schema is one `export *` per model file, so a new model reaches
   # drizzle only once it is regenerated. See scripts/generate-schema.ts.
   pnpm --silent --filter backend run check:schema-registry || code=1
+  # Both route trees, by content — see check_route_tree for why not by regeneration. These read and
+  # never write, so unlike the Orval check they are safe to run here in the parallel batch.
+  check_route_tree "The admin route tree" apps/admin/src/routes apps/admin/src/routeTree.gen.ts || code=1
+  check_route_tree "The store route tree" apps/store/src/routes apps/store/src/routeTree.gen.ts || code=1
+  # The store is a TanStack Start app, so its tree ends in a footer registering getRouter and
+  # startInstance. Only the vite plugin emits that block: `tsr generate` drops it, and losing it
+  # leaves src/router.tsx and src/start.ts referenced by nothing, which job_unused then reports as
+  # dead files. That is a real regression someone can commit, so assert the block rather than
+  # trusting it — `apps/store`'s own `generate-routes` script is what removes it.
+  if ! grep -q "declare module '@tanstack/react-start'" apps/store/src/routeTree.gen.ts; then
+    echo "The store route tree has lost its '@tanstack/react-start' registration footer — regenerate it with a vite build, not with \`pnpm --filter store run generate-routes\`"
+    code=1
+  fi
   return $code
 }
 
@@ -248,7 +296,7 @@ label_of() {
     structure) echo "Import structure (backend, admin, store)" ;;
     versions) echo "One version per declared dependency" ;;
     unused) echo "Nothing declared or exported is unreferenced" ;;
-    generated) echo "Generated registries (workflow, subscriber, job)" ;;
+    generated) echo "Generated files (registries, schema, Orval clients, route trees)" ;;
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;
     # admin) echo "Admin unit tests" ;;
@@ -277,6 +325,56 @@ else
     exit 1
   fi
 fi
+
+# Orval's clients and both route trees have no `--check` mode: the only way to learn whether the
+# committed output is current is to run the generator and see whether anything moved. That writes to
+# the working tree — so, like formatting above and for the same reason, it happens here, alone,
+# rather than inside the parallel batch where typecheck, lint and structure are reading those same
+# files. Both generators are deterministic (regenerating twice running produces identical bytes), so
+# a difference means the committed output is stale, not that the generator is noisy.
+#
+# Whatever was there is put back either way: this reports drift, it does not fix it, which is the
+# same contract as the four `--check` generators in job_generated.
+#
+# The store needed one thing before it could be gated at all, and `apps/store/tsr.config.json` is
+# where it lives because JSON cannot hold the comment. The store is a TanStack Start app, so its
+# route tree ends in a `declare module '@tanstack/react-start'` block registering getRouter and
+# startInstance — and that block is a *footer*, appended by the `tanstackStart()` vite plugin
+# through the generator's `routeTreeFileFooter` option (see start-plugin-core's
+# buildRouteTreeFileFooter). The `tsr generate` CLI reads only tsr.config.json, so it knew nothing
+# about the footer and regenerated the file without it, which deletes the only reference to
+# src/router.tsx and src/start.ts and makes knip call them dead files. Declaring the same footer
+# statically in tsr.config.json makes the CLI and the vite build produce byte-identical output —
+# verified by running a real `vite build` and diffing — so the gate and a dev session agree.
+# The admin needs none of this: it is a plain SPA, so the CLI is already its whole generator.
+REGEN_DRIFT=""
+regenerate_check() {
+  local label=$1 generator=$2
+  shift 2
+  local snapshot path
+  snapshot="$(mktemp -d)"
+  tar cf - "$@" | (cd "$snapshot" && tar xf -)
+  if ! eval "$generator" >/dev/null 2>&1; then
+    REGEN_DRIFT="${REGEN_DRIFT}${label}: the generator itself failed — run \`${generator}\`"$'\n'
+  else
+    for path in "$@"; do
+      if ! diff -rq "$snapshot/$path" "$path" >/dev/null 2>&1; then
+        REGEN_DRIFT="${REGEN_DRIFT}${label} — not what the generator produces. Run \`${generator}\` and commit the result"$'\n'
+        break
+      fi
+    done
+  fi
+  # Delete before restoring, so a generator that *added* a file does not leave it behind for
+  # someone to commit by accident. The snapshot is the authority on what was there.
+  rm -rf "$@"
+  tar cf - -C "$snapshot" . | tar xf -
+  rm -rf "$snapshot"
+}
+
+echo -e "${BOLD}Regenerating${RESET} ${DIM}(writes in place, so it must finish before the checks read the files)${RESET}"
+regenerate_check "The Orval clients" "pnpm run openapi:generate" \
+  apps/admin/src/api/generated apps/store/src/api/generated
+
 
 LOG_DIR="$(mktemp -d)"
 trap 'rm -rf "$LOG_DIR"' EXIT

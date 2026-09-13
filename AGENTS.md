@@ -76,14 +76,16 @@ pnpm run verify:full # Every test, in parallel: the whole backend suite, the sto
 # against the dev database. packages/testing/fixtures/e2e-config.ts holds the port map and the
 # queue names, and is where a new suite is defined.
 
-# Code generation — all six outputs are committed. Only the four marked (gated) are checked for
-# drift, by `verify`'s `generated` gate; the Orval clients and routeTree.gen.ts are not.
+# Code generation — all six outputs are committed, and `verify`'s `generated` gate checks every one
+# of them for drift. Never hand-edit one: the next generator run discards the edit anyway.
 pnpm run openapi:generate                      # OpenAPI spec → Orval clients (admin + store)
-pnpm --filter backend run workflows:generate   # src/workflows → temporal/registry.gen.ts  (gated)
-pnpm --filter backend run subscribers:generate # src/subscribers → registry.gen.ts        (gated)
-pnpm --filter backend run jobs:generate        # src/jobs → registry.gen.ts               (gated)
-pnpm --filter backend run schema:generate      # models + link definitions → schema.gen.ts (gated)
-pnpm --filter admin run generate-routes        # TanStack Router route tree
+pnpm --filter backend run workflows:generate   # src/workflows → temporal/registry.gen.ts
+pnpm --filter backend run subscribers:generate # src/subscribers → registry.gen.ts
+pnpm --filter backend run jobs:generate        # src/jobs → registry.gen.ts
+pnpm --filter backend run schema:generate      # models + link definitions → schema.gen.ts
+pnpm --filter admin run generate-routes        # TanStack Router route tree. The store's own
+                                               # generate-routes script is broken — regenerate its
+                                               # tree with a vite build. Why: verify.sh.
 ```
 
 ## Project Structure
