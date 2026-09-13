@@ -22,8 +22,6 @@ import type { CronJobInput } from './types.js'
  *
  * - **A manual trigger**, so a job can be tested without waiting for its next tick or editing its
  *   cron expression.
- * - **Pause**, so a misbehaving job stops without a deploy — and **pause-on-failure**, so a job
- *   failing every minute stops on its own before it fills the history.
  * - **Backfill** over a missed window, so an outage is replayed deliberately rather than lost.
  * - **A per-run history with the failure inside it**, so diagnosis does not depend on having kept
  *   the process's logs.
@@ -31,21 +29,36 @@ import type { CronJobInput } from './types.js'
  *
  * ## Reconciliation
  *
- * `start()` is the whole of it: create each job's Schedule, or update it to match if one already
- * exists. It is deliberately *not* a two-way sync — a Schedule whose job has been renamed or
- * deleted stays on the server until someone removes it, and `remove()` is the explicit way to do
- * that. Sweeping orphans needs a rule about what else may own a Schedule in this namespace, and
- * there isn't one yet.
+ * `start()` is a **total desired-state sync**: create each job's Schedule or update it to match,
+ * then delete every Schedule this code owns that the list does not name. A renamed or deleted job
+ * takes its Schedule with it, so the Schedules tab is the source tree rather than the history of
+ * every job that ever existed. `remove()` stays as the way to drop one by name.
+ *
+ * **The sweep is scoped by the `cron_` prefix `cronScheduleId()` stamps**, which is the rule about
+ * what else may own a Schedule in this namespace: anything without that prefix is not ours and is
+ * never touched.
+ *
+ * Deleting rather than pausing an orphan, because a paused orphan is indistinguishable in the UI
+ * from a deliberately disabled job — and nothing is lost either way. Run history does not live in
+ * the Schedule: past runs survive its deletion and stay queryable by the `TemporalScheduledById`
+ * search attribute, bounded only by namespace retention.
+ *
+ * Deletion is safe *here* because the process that sweeps is the process that executes — the cron
+ * Worker reconciles from the same import it builds its activity from, so "this Schedule exists" and
+ * "this process can run it" are consequences of one thing. See ADR-0029.
  *
  * A disabled job still gets its Schedule, paused. That is what keeps "turn it back on" a one-line
  * edit rather than a rediscovery that the job ever existed.
  *
  * **The definition is authoritative, including the pause flag.** Every reconcile writes `paused`
  * from `disabled`, so enabling a job unpauses its Schedule exactly as disabling one pauses it, and
- * the source file is the only place the answer to "does this job run" lives. The price is that a
- * pause applied on the server — by `pauseOnFailure`, or by an operator in the UI — survives only
- * until the next boot; unpausing one logs a warning naming what it overruled. ADR-0029 records why
- * this is the trade we take.
+ * the source file is the only place the answer to "does this job run" lives. A pause applied in the
+ * UI therefore survives only until the next boot, and unpausing one logs a warning naming what it
+ * overruled — that is not a cost so much as the point: code is the only control plane for cron.
+ *
+ * `pauseOnFailure` is deliberately **not** set, as the one piece of cron state that could not be
+ * expressed in the source tree. A job that fails keeps failing visibly; `disabled: true` is the only
+ * thing that stops it.
  */
 
 export type TemporalCronSchedulerOptions = {
@@ -85,9 +98,18 @@ const DEFAULT_START_TO_CLOSE_TIMEOUT: Duration = '5 minutes'
  */
 const DEFAULT_HEARTBEAT_TIMEOUT: Duration = CRON_HEARTBEAT_TIMEOUT_MS
 
+/**
+ * What marks a Schedule as this code's, and the whole of the rule the sweep is scoped by.
+ *
+ * Named rather than inlined so that "ours" reads as a string comparison rather than a heuristic:
+ * every Schedule this adapter creates is named by `cronScheduleId()`, so every Schedule carrying
+ * this prefix is one the sweep may delete and every Schedule without it belongs to someone else.
+ */
+const CRON_SCHEDULE_ID_PREFIX = 'cron_'
+
 /** The Schedule id for a job. `cron_${name}`, which is the key the adapter this replaced used. */
 export function cronScheduleId(jobName: string): string {
-  return `cron_${jobName}`
+  return `${CRON_SCHEDULE_ID_PREFIX}${jobName}`
 }
 
 export class TemporalCronScheduler implements CronScheduler {
@@ -162,18 +184,17 @@ export class TemporalCronScheduler implements CronScheduler {
            * schedule that disagrees with it is drift to be corrected at boot like the spec and the
            * action are, not a state to be preserved.
            *
-           * The cost is stated in ADR-0029 and is not small: `pauseOnFailure` and an operator's
-           * own pause write this same flag, and Temporal cannot tell either of them from a
-           * deliberate one — so both last only until the next restart. `note` below is what keeps
-           * that from being silent, and it is the reason a pause meant to survive belongs in the
-           * definition rather than in the UI.
+           * What this overwrites is a pause applied in the UI, which ADR-0029 records as an
+           * unsupported operation rather than an accepted cost: code is the only control plane for
+           * cron, and a pause meant to outlive a deploy belongs in the definition. `note` below and
+           * the warning after this call are what keep the overwrite from being silent.
            */
           paused: job.disabled === true,
           /**
            * Overwritten rather than carried through, because `previous.state.note` is the sentence
-           * explaining a pause this reconcile may have just cleared — `pauseOnFailure` writes one,
-           * and the UI prompts for one. Leaving it in place over a running schedule would leave
-           * "paused due to workflow failure" sitting under a job that is firing every minute.
+           * explaining a pause this reconcile may have just cleared — the UI prompts for one.
+           * Leaving it in place over a running schedule would leave "paused by an operator" sitting
+           * under a job that is firing every minute.
            */
           note: `reconciled from the job definition at ${new Date().toISOString()}`,
         },
@@ -183,16 +204,16 @@ export class TemporalCronScheduler implements CronScheduler {
 
     /**
      * Unpausing is the half of this that undoes someone else's decision, so it is the half that
-     * gets said out loud. A schedule does not pause itself for no reason: either an operator did
-     * it, or `pauseOnFailure` did, and in both cases the run history holds a "why" that this
-     * process has just overruled on the strength of a flag in a source file.
+     * gets said out loud. Nothing on the server pauses a schedule on its own any more — there is no
+     * `pauseOnFailure` — so a pause found here was applied by hand, and the run history holds a
+     * "why" that this process has just overruled on the strength of a flag in a source file.
      */
     if (wasPaused && !job.disabled) {
       this.logger.warn(
         `[CronScheduler] "${job.name}" was paused on the server and has been unpaused to match its ` +
-          'definition. If it was paused by `pauseOnFailure` or by hand, that pause is now gone — ' +
-          `set \`disabled: true\` on the job to stop it across restarts, and check ${cronScheduleId(job.name)}'s ` +
-          'run history for what paused it.',
+          'definition. Pausing from the Temporal UI is not a supported operation — it lasts until ' +
+          `the next reconcile — so set \`disabled: true\` on the job to stop it, and check ${cronScheduleId(job.name)}'s ` +
+          'run history for what the pause was about.',
       )
     }
 
@@ -201,26 +222,25 @@ export class TemporalCronScheduler implements CronScheduler {
 
   /** Deletes the job's Schedule. Absent is the desired state, so a missing one is not an error. */
   async remove(jobName: string): Promise<void> {
-    const client = await this.client()
-
-    try {
-      await client.schedule.getHandle(cronScheduleId(jobName)).delete()
-    } catch (error) {
-      if (error instanceof ScheduleNotFoundError) return
-      throw error
-    }
+    await this.deleteSchedule(cronScheduleId(jobName))
   }
 
   /**
-   * Reconciles the whole job list. Unlike the adapter this replaced it starts no Worker — the cron
-   * Worker is its own process, and whether one is polling is deliberately not this method's
-   * business: the schedules should exist whether or not a Worker happens to be up.
+   * Reconciles the whole job list, in both directions: every job gets its Schedule, and every
+   * Schedule this code owns that no job names is deleted.
    *
-   * `allSettled` rather than `all`, because from the change that registers this adapter it runs at
-   * API boot: one malformed job must not take reconciliation down for every other one, and the
-   * summary naming which schedules *did* land is exactly what is worth having when one did not.
-   * It still throws — a boot that half-reconciled is not a boot that succeeded — but it throws
-   * after every job has had its turn and after each failure has been named.
+   * Unlike the adapter this replaced it starts no Worker. It runs *in* one — the cron Worker calls
+   * this at boot, before it begins polling, from the same job list it builds its activity from. That
+   * is what makes the sweep safe: the list being swept against is the list that defines what can
+   * run, so a Schedule can never outlive the process's ability to serve it.
+   *
+   * `allSettled` rather than `all`: one malformed job must not take reconciliation down for every
+   * other one, and the summary naming which schedules *did* land is exactly what is worth having
+   * when one did not. It still throws — a boot that half-reconciled is not a boot that succeeded —
+   * but it throws after every job has had its turn and after each failure has been named.
+   *
+   * The sweep runs even when a reconcile failed, because a failure cannot make it delete something
+   * it should not: what survives is decided by the job *list*, not by the outcomes.
    */
   async start(jobs: JobDefinition[]): Promise<void> {
     const settled = await Promise.allSettled(jobs.map((job) => this.reconcile(job)))
@@ -243,10 +263,17 @@ export class TemporalCronScheduler implements CronScheduler {
       this.logger.error(`[CronScheduler] Could not reconcile "${name}": ${reason}`)
     })
 
+    const swept = await this.sweep(jobs).catch((error: unknown) => {
+      const reason = error instanceof Error ? error.message : String(error)
+      failures.push(`sweep: ${reason}`)
+      this.logger.error(`[CronScheduler] Could not sweep orphaned schedules: ${reason}`)
+      return 0
+    })
+
     const landed = jobs.length - failures.length
     this.logger.info(
       `[CronScheduler] Reconciled ${landed} of ${jobs.length} schedule(s) against '${this.taskQueue}', ` +
-        `${paused} of them paused`,
+        `${paused} of them paused, and removed ${swept} no longer in the job list`,
     )
 
     if (failures.length > 0) {
@@ -256,6 +283,53 @@ export class TemporalCronScheduler implements CronScheduler {
           `[CronScheduler] ${failures.length} of ${jobs.length} schedule(s) could not be reconciled — ` +
           `${failures.join('; ')}`,
       })
+    }
+  }
+
+  /**
+   * Deletes every Schedule this code owns that the job list does not name, and returns how many.
+   *
+   * "Owns" is the `cron_` prefix and nothing else — a Schedule created by anything but
+   * `cronScheduleId()` is outside the sweep by construction, which is the rule that makes deleting
+   * safe in a namespace this process does not have to itself.
+   *
+   * `list()` reads the visibility store, which the server writes to asynchronously. That lag cannot
+   * cost us a live Schedule: a name in `jobs` is kept whether or not the listing mentions it, and
+   * one that has just been deleted comes back absent from the delete below rather than as an error.
+   */
+  private async sweep(jobs: JobDefinition[]): Promise<number> {
+    const client = await this.client()
+    const wanted = new Set(jobs.map((job) => cronScheduleId(job.name)))
+    const orphans: string[] = []
+
+    for await (const summary of client.schedule.list()) {
+      if (!summary.scheduleId.startsWith(CRON_SCHEDULE_ID_PREFIX)) continue
+      if (wanted.has(summary.scheduleId)) continue
+      orphans.push(summary.scheduleId)
+    }
+
+    await Promise.all(
+      orphans.map(async (scheduleId) => {
+        await this.deleteSchedule(scheduleId)
+        this.logger.info(
+          `[CronScheduler] Removed "${scheduleId}", which no job in the list defines. Its past runs ` +
+            'are unaffected and stay queryable by `TemporalScheduledById`.',
+        )
+      }),
+    )
+
+    return orphans.length
+  }
+
+  /** Absent is what a delete asks for, so a Schedule that is already gone is not a failure. */
+  private async deleteSchedule(scheduleId: string): Promise<void> {
+    const client = await this.client()
+
+    try {
+      await client.schedule.getHandle(scheduleId).delete()
+    } catch (error) {
+      if (error instanceof ScheduleNotFoundError) return
+      throw error
     }
   }
 
@@ -303,9 +377,16 @@ export class TemporalCronScheduler implements CronScheduler {
         // What the previous adapter gave implicitly, stated. A job slower than its interval must not overlap
         // itself; the tick that would have overlapped is dropped rather than queued.
         overlap: ScheduleOverlapPolicy.SKIP,
-        // No analogue in the previous adapter. A job failing every minute stops after the first failure instead of
-        // filling the history before anyone notices.
-        pauseOnFailure: true,
+        /**
+         * `pauseOnFailure` is deliberately absent, where an earlier version of this adapter set it.
+         *
+         * It is the one piece of cron state that cannot be expressed in the source tree, and the
+         * source tree is the only control plane for cron. It is also a wedge: reconciliation runs
+         * once, at Worker boot, so a pause applied after the last Worker of a rollout has started is
+         * never undone — a transient mid-rollout failure stops the job indefinitely with no code
+         * change that explains it. The behaviour it guarded, a job failing every minute filling up
+         * history, is bounded by namespace retention and is better visible than silenced.
+         */
         // `catchupWindow` left at the server default: what to do about ticks missed during an
         // outage is an operator's judgement, and `backfill` is how they express it.
       },

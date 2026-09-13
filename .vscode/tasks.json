@@ -110,13 +110,21 @@
       // publish still succeeds and the activity waits durably on a queue nobody reads — the
       // "No workers polling" banner in the Temporal UI is what that looks like.
       //
-      // No `watch`: `worker:events` runs `worker.ts` directly, so editing a subscriber means
-      // restarting this pane. It refuses to boot when the server has `activity.enableStandalone`
-      // off, which a Temporal container older than `dynamicconfig/development-sql.yaml` will —
-      // recreate it rather than reading the refusal as a broken task.
+      // `worker:events:dev`, not `worker:events` — it boots via `worker.dev.ts`, which regenerates
+      // `src/subscribers/registry.gen.ts` and then runs the Worker under `tsx watch`, exactly as
+      // `dev: worker` does. `--include` on `src/subscribers/**` is what makes a brand-new subscriber
+      // file register without a manual `subscribers:generate`; the generated file itself is excluded
+      // from the watch, or writing it would restart the Worker that just wrote it.
+      //
+      // The `events-worker` compose service keeps the production script on purpose: a watcher inside
+      // a container never fires, because the bind mount carries writes but not filesystem events.
+      //
+      // It refuses to boot when the server has `activity.enableStandalone` off, which a Temporal
+      // container older than `dynamicconfig/development-sql.yaml` will — recreate it rather than
+      // reading the refusal as a broken task.
       "label": "dev: events",
       "type": "shell",
-      "command": "pnpm --filter backend run worker:events",
+      "command": "pnpm --filter backend run worker:events:dev",
       "isBackground": true,
       "presentation": {
         "group": "dev-backend",
@@ -134,17 +142,22 @@
       // stay separate: it polls `proteus-cron` while they poll `proteus-events` and `proteus`.
       // ADR-0029 has the reasoning.
       //
-      // Without this pane the API still reconciles every Schedule at boot and the Temporal UI still
-      // lists their next fire times; the runs they start just wait on a queue nobody reads until
-      // their own timeout fails them. The Schedules tab is where that looks wrong, not a log line.
+      // This pane owns cron end to end: it reconciles every Schedule in `src/jobs/` at boot and then
+      // answers the runs they start. Without it there are no Schedules at all — which is the point,
+      // since a Schedule nothing can run was the failure this arrangement removes. The API process
+      // does not touch cron.
       //
-      // No `watch`, for the reason `dev: events` has none: `worker:cron` runs `worker.ts` directly,
-      // so editing a job in `src/jobs/` means restarting this pane. Only the cron driver is
-      // registered as a workflow and it does not change; a job's handler is ordinary Node code in
-      // this process, with the container, outside the sandbox.
+      // `worker:cron:dev` boots via `worker.dev.ts`, which regenerates `src/jobs/registry.gen.ts` and
+      // then runs the Worker under `tsx watch` — the same shape as the other two panes. `--include`
+      // on `src/jobs/**` is what makes a brand-new job file reload at all, and the generated file is
+      // excluded so writing it cannot restart the Worker that just wrote it. A restart
+      // re-reconciles, so editing a cron expression and editing a handler take effect together.
+      //
+      // The `cron-worker` compose service keeps the production script, for the reason `dev: events`
+      // gives: a watcher inside a container never fires.
       "label": "dev: cron",
       "type": "shell",
-      "command": "pnpm --filter backend run worker:cron",
+      "command": "pnpm --filter backend run worker:cron:dev",
       "isBackground": true,
       "presentation": {
         "group": "dev-backend",

@@ -13,13 +13,13 @@ pnpm run setup                 # install + pull dotenvx keys + generate apps/bac
 # (Cmd+Shift+B): it brings up Postgres + Temporal, then the API, all three Workers, store and
 # admin, and opens the three URLs. `dev: workerd` is the same session on the workerd runtime.
 docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui
-pnpm --filter backend run dev           # API at :3000 (Swagger at /admin/docs/, /store/docs/)
-pnpm --filter backend run worker:dev    # Temporal Worker for src/workflows (watch mode)
-pnpm --filter backend run worker:events # Temporal Worker for src/subscribers
-pnpm --filter backend run worker:cron   # Temporal Worker for src/jobs
-pnpm --filter store run dev             # Storefront at :3001
-pnpm --filter admin run dev             # Admin SPA at :3002
-                                        # Temporal UI at :8088
+pnpm --filter backend run dev               # API at :3000 (Swagger at /admin/docs/, /store/docs/)
+pnpm --filter backend run worker:dev        # Temporal Worker for src/workflows
+pnpm --filter backend run worker:events:dev # Temporal Worker for src/subscribers
+pnpm --filter backend run worker:cron:dev   # Temporal Worker for src/jobs; owns cron reconciliation
+pnpm --filter store run dev                 # Storefront at :3001
+pnpm --filter admin run dev                 # Admin SPA at :3002
+                                            # Temporal UI at :8088
 
 # Stop the compose-run Workers when running them locally. Each polls the same task queue as its
 # pane, and whichever is free claims the task — leaving them up makes edits appear to apply at
@@ -76,11 +76,12 @@ pnpm run verify:full # Every test, in parallel: the whole backend suite, the sto
 # against the dev database. packages/testing/fixtures/e2e-config.ts holds the port map and the
 # queue names, and is where a new suite is defined.
 
-# Code generation — all five outputs are committed. Only the three marked (gated) are checked for
+# Code generation — all six outputs are committed. Only the four marked (gated) are checked for
 # drift, by `verify`'s `generated` gate; the Orval clients and routeTree.gen.ts are not.
 pnpm run openapi:generate                      # OpenAPI spec → Orval clients (admin + store)
 pnpm --filter backend run workflows:generate   # src/workflows → temporal/registry.gen.ts  (gated)
 pnpm --filter backend run subscribers:generate # src/subscribers → registry.gen.ts        (gated)
+pnpm --filter backend run jobs:generate        # src/jobs → registry.gen.ts               (gated)
 pnpm --filter backend run schema:generate      # models + link definitions → schema.gen.ts (gated)
 pnpm --filter admin run generate-routes        # TanStack Router route tree
 ```

@@ -7,7 +7,7 @@ import { subscriberRegistry } from './framework/event-bus/registry.js'
 import { createWorkerdContainer, dbProvider } from './framework/runtime/container.workerd.js'
 import { createHonoApp } from './framework/runtime/hono/app.js'
 import { Cron } from './framework/scheduler/kuron/cron.js'
-import { jobs } from './jobs/index.js'
+import { GENERATED_JOBS } from './jobs/registry.gen.js'
 import { prepareRoutes } from './routes.js'
 
 /**
@@ -29,7 +29,7 @@ const app = createHonoApp({
 })
 
 const cron = new Cron()
-for (const job of jobs.filter((j) => !j.disabled)) {
+for (const job of GENERATED_JOBS.filter((j) => !j.disabled)) {
   cron.schedule(job.schedule, async () => {
     logger.info(`[CronScheduler] Running "${job.name}"`)
     await job.handler(container)

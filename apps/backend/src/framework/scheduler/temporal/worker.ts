@@ -1,8 +1,11 @@
+import type { Logger } from '@core/types/logger.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { env } from '@env'
 import { createWorkerContainer } from '@framework/runtime/container.worker.js'
 import { NativeConnection, Worker } from '@temporalio/worker'
-import { jobs } from '../../../jobs/index.js'
+import { GENERATED_JOBS } from '../../../jobs/registry.gen.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../temporal/config.js'
+import { createCronScheduler } from '../index.js'
 import { createCronActivities } from './activities.js'
 import { CRON_HEARTBEAT_TIMEOUT_MS, CRON_TASK_QUEUE, CRON_WORKFLOWS_PATH, cronHeartbeatIntervalMs } from './config.js'
 
@@ -28,8 +31,32 @@ import { CRON_HEARTBEAT_TIMEOUT_MS, CRON_TASK_QUEUE, CRON_WORKFLOWS_PATH, cronHe
  * **Unlike the events Worker, this one registers a workflow.** A Schedule's action can only start
  * a workflow, never a standalone activity, so the driver in `workflows.ts` has to be bundled here.
  * It is the only workflow this process knows.
+ *
+ * **And unlike either of them, this one writes server-side state before it polls.** Cron's Schedules
+ * are reconciled here, from the same `jobs` import the activity resolves handlers out of — so the
+ * deploy that teaches this process to run a job is the deploy that creates its Schedule, and the
+ * deploy that removes the job removes it. The API does none of this and no longer resolves a
+ * scheduler at all. ADR-0029 records why the owning process is this one.
  */
 const { container, shutdown } = await createWorkerContainer({ engine: 'temporal', eventBus: 'temporal' })
+
+const logger: Logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+
+/**
+ * Before the Worker is built, and fatal if it throws: a process that could not write its Schedules
+ * has nothing useful to poll for, and booting anyway would leave the previous deploy's job list on
+ * the server with no log line tying the two facts together.
+ *
+ * Its client is closed immediately. Reconciliation happens once, at boot, so holding the connection
+ * for the life of the process would be a gRPC channel open for nothing — the Worker's own
+ * `NativeConnection` below is a different one, and is what this process actually runs on.
+ */
+const scheduler = createCronScheduler(logger)
+try {
+  await scheduler.start(GENERATED_JOBS)
+} finally {
+  await scheduler.shutdown()
+}
 
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS })
 
@@ -53,7 +80,7 @@ const worker = await Worker.create({
    * `HEARTBEATS_PER_TIMEOUT` a statement about the wire rather than about intent.
    */
   maxHeartbeatThrottleInterval: cronHeartbeatIntervalMs(CRON_HEARTBEAT_TIMEOUT_MS),
-  activities: createCronActivities({ container, jobs }),
+  activities: createCronActivities({ container, jobs: GENERATED_JOBS }),
 })
 
 /**
@@ -69,8 +96,8 @@ function handleSignal(signal: string) {
   if (worker.getState() !== 'RUNNING') {
     // Deliberately not escalating to a force-exit. A killed run is failed by its heartbeat timeout
     // rather than retried — `maximumAttempts: 1` — so the cost of SIGKILL here is one skipped tick
-    // and a paused schedule. Worth saying, so an operator watching a slow drain knows it is waiting
-    // on a job rather than hung.
+    // and one failed run in the schedule's history; nothing pauses over it. Worth saying, so an
+    // operator watching a slow drain knows it is waiting on a job rather than hung.
     console.info(
       `[cron-worker] received ${signal}, already draining — waiting for the in-flight job. ` +
         'SIGKILL to stop now; the run then fails on its heartbeat timeout.',
@@ -87,7 +114,7 @@ process.on('SIGINT', () => handleSignal('SIGINT'))
 
 console.info(
   `[cron-worker] polling '${CRON_TASK_QUEUE}' on ${env.TEMPORAL_ADDRESS} ` +
-    `(namespace ${env.TEMPORAL_NAMESPACE}) with ${jobs.length} job(s) registered`,
+    `(namespace ${env.TEMPORAL_NAMESPACE}) with ${GENERATED_JOBS.length} job(s) registered and reconciled`,
 )
 
 await worker.run()

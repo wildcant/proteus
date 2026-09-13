@@ -5,9 +5,10 @@ import { fileURLToPath } from 'node:url'
  *
  * A constant rather than an environment variable, for the reason `EVENTS_TASK_QUEUE` is one:
  * `env.TEMPORAL_TASK_QUEUE` is configurable because the workflow queue is what a *deployment*
- * routes on, while this queue only ever has to mean the same thing to the process that reconciles
- * the schedules and the process that polls them. Two constants that agree cost nothing; two
- * environment variables that have drifted are a schedule firing into a queue nobody answers.
+ * routes on, while this queue only ever has to mean the same thing to the process that writes the
+ * schedules and the process that polls them — which, since the amendment to ADR-0029, is one
+ * process reading one constant. An environment variable here would be a schedule firing into a
+ * queue nobody answers, bought for nothing.
  *
  * Separate from `proteus-events` and `proteus` on purpose. Cron is a separate process with a
  * separate lifecycle and a tick that must not be starved — the axis Temporal's own guidance
@@ -72,8 +73,8 @@ const MIN_HEARTBEAT_INTERVAL_MS = 50
  * seconds, so left alone it never binds and the *delivered* rate is `0.8 * timeout` no matter how
  * often the wrapper calls `heartbeat()` — one beat per window, with 20% of the timeout as the
  * entire margin. A synchronous CPU-bound job or any event-loop stall longer than that margin then
- * times out a perfectly healthy Worker, and with `maximumAttempts: 1`, `pauseOnFailure` and a
- * reconciliation that never unpauses, that transient stall is permanent.
+ * times out a perfectly healthy Worker, and with `maximumAttempts: 1` that stall costs the tick
+ * outright rather than a retry.
  *
  * So every cron Worker passes this as its `maxHeartbeatThrottleInterval`, and the wrapper uses it
  * as its own interval. One number in both places is what makes `HEARTBEATS_PER_TIMEOUT` describe

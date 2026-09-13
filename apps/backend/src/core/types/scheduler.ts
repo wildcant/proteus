@@ -19,9 +19,12 @@ export type CronScheduler = {
   schedule(job: JobDefinition): Promise<void>
   remove(jobName: string): Promise<void>
   /**
-   * Syncs job definitions against the backing store. Whether anything is *running* them is a
-   * separate process's business — the cron Worker's — so this returning cleanly says the schedules
-   * exist, not that a tick will be picked up.
+   * Syncs job definitions against the backing store, in both directions: this list is the desired
+   * state, so a job that is gone from it has its schedule removed rather than left behind.
+   *
+   * Called by the process that *runs* the jobs, at boot, from the same list it resolves handlers
+   * from. That is what makes removal safe, and what makes "a schedule exists" and "something can
+   * run it" one fact instead of two — see ADR-0029.
    */
   start(jobs: JobDefinition[]): Promise<void>
   shutdown(): Promise<void>

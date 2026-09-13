@@ -5,6 +5,7 @@ import {
   type ScheduleExecutionResult,
   type ScheduleHandle,
   ScheduleNotFoundError,
+  type ScheduleOptions,
   ScheduleOverlapPolicy,
 } from '@temporalio/client'
 import { ActivityFailure, ApplicationFailure, RetryState, TimeoutFailure, TimeoutType } from '@temporalio/common'
@@ -36,9 +37,12 @@ import { CRON_JOB_FAILURE_TYPE } from '../temporal/types.js'
  * not part of what that separate Java implementation supports, which is the same reason the event
  * bus's server test needs this one. See `tests/setup/temporal-test-env.ts`.
  *
- * Runs are triggered by hand rather than waited for. The previous adapter's test needed a polling loop with a
- * ten-second budget to watch a once-a-minute schedule; a manual trigger is the same observation
- * without the wait, and it is also the operator affordance this migration is partly for.
+ * Runs are triggered by hand rather than waited for, with one deliberate exception. The previous
+ * adapter's test needed a polling loop with a ten-second budget to watch a once-a-minute schedule; a
+ * manual trigger is the same observation without the wait, and it is also the operator affordance
+ * this migration is partly for. The exception is "a failed run does not pause the schedule", which
+ * has to wait for a real tick: `pauseOnFailure` was measured never to trip on a manual trigger, so
+ * asserting its absence from a triggered run would assert nothing.
  */
 
 const TEST_TIMEOUT = 60_000
@@ -51,6 +55,13 @@ const TASK_QUEUE = 'proteus-cron-test'
 
 /** A second queue, for the one test that has to kill the Worker polling it. */
 const DOOMED_TASK_QUEUE = 'proteus-cron-test-doomed'
+
+/**
+ * A Schedule in the same namespace that this code did not create, and whose id therefore carries no
+ * `cron_` prefix. It exists so the sweep is asserted to be scoped rather than total: without it the
+ * deletion test passes just as well against a `start()` that deletes every Schedule on the server.
+ */
+const FOREIGN_SCHEDULE_ID = 'someone-elses-schedule'
 
 /**
  * Short, so "failed on the heartbeat rather than on the run's timeout" is a few seconds of test
@@ -140,6 +151,20 @@ const jobs: JobDefinition[] = [
       ran.push('blocking-job')
       await block()
     },
+  },
+  /**
+   * Registered so the Worker can reach it, and `disabled` so it only ticks inside the one test that
+   * enables it — a job that fails every minute for the length of this file would be noise in every
+   * other test's `recentActions`.
+   */
+  {
+    name: 'failing-job',
+    schedule: CronExpression.EVERY_MINUTE,
+    handler: () => {
+      ran.push('failing-job')
+      throw new Error('this job always fails')
+    },
+    disabled: true,
   },
 ]
 
@@ -294,15 +319,16 @@ describe('the temporal cron scheduler', () => {
   })
 
   it(
-    'creates a schedule whose spec, overlap policy and pause-on-failure match the job',
+    'creates a schedule whose spec and overlap policy match the job, and which cannot pause itself',
     async () => {
       const description = await handleFor('recording-job').describe()
 
-      // Stated policies rather than whatever the library happened to do. `SKIP` is the behaviour
-      // the previous adapter documented and got implicitly; `pauseOnFailure` had no analogue at all.
+      // `SKIP` is a stated policy rather than whatever the library happened to do. `pauseOnFailure`
+      // is off because the pause flag is the definition's to write: a job that fails keeps failing
+      // visibly, and the only thing that stops it is `disabled: true` in the source file.
       expect(description.policies).toMatchObject({
         overlap: ScheduleOverlapPolicy.SKIP,
-        pauseOnFailure: true,
+        pauseOnFailure: false,
       })
 
       // The action is a workflow on the cron queue, because a Schedule cannot start anything else.
@@ -489,6 +515,81 @@ describe('the temporal cron scheduler', () => {
   )
 
   it(
+    'sweeps a schedule the job list no longer names, and spares one it does not own',
+    async () => {
+      // Not created through the scheduler, so its id carries no `cron_` prefix: this is the
+      // "something else owns a schedule in this namespace" case the sweep has to be scoped around.
+      await testEnv.client.schedule.create(foreignScheduleOptions())
+
+      const departing: JobDefinition = {
+        name: 'departing-job',
+        schedule: CronExpression.EVERY_HOUR,
+        handler: () => undefined,
+      }
+
+      try {
+        await scheduler.schedule(departing)
+        // `list()` reads the visibility store, which the server writes to asynchronously. A sweep
+        // that ran before this landed would not see the schedule and the test would pass without
+        // deleting anything.
+        await waitUntilListed(cronScheduleId('departing-job'))
+        await waitUntilListed(FOREIGN_SCHEDULE_ID)
+
+        // The canonical list, which names every job in this file and not `departing-job`.
+        await scheduler.start(jobs)
+
+        // Gone, because reconciliation is a desired-state sync and the list is the desired state.
+        // Keep the old `start()` — reconcile-only, no sweep — and this schedule is still here.
+        await expect(handleFor('departing-job').describe()).rejects.toBeInstanceOf(ScheduleNotFoundError)
+
+        // And the neighbour is untouched, which is the half that makes the prefix rule a property
+        // rather than a comment. A sweep that deleted everything would pass the assertion above.
+        const foreign = await testEnv.client.schedule.getHandle(FOREIGN_SCHEDULE_ID).describe()
+        expect(foreign.scheduleId).toBe(FOREIGN_SCHEDULE_ID)
+
+        // Every job the list *does* name survived, including the paused ones — a sweep that read
+        // "paused" as "not wanted" would take `disabled-job` with it.
+        expect((await handleFor('disabled-job').describe()).state.paused).toBe(true)
+        expect((await handleFor('recording-job').describe()).scheduleId).toBe(cronScheduleId('recording-job'))
+      } finally {
+        await testEnv.client.schedule.getHandle(FOREIGN_SCHEDULE_ID).delete()
+      }
+    },
+    TEST_TIMEOUT,
+  )
+
+  it(
+    'leaves a job whose scheduled run failed unpaused, so it keeps failing visibly',
+    async () => {
+      ran.length = 0
+
+      try {
+        // Enabled, and left to fire on its own. A manual `trigger()` is not a substitute here:
+        // `pauseOnFailure` only ever tripped on *scheduled* actions, so a triggered failure would
+        // have left the schedule unpaused even with the policy on.
+        await scheduler.schedule(enabledFailingJob())
+
+        const handle = handleFor('failing-job')
+        const action = await waitForScheduledAction(handle)
+
+        // The run really did fail — otherwise "still unpaused" says nothing at all.
+        expect(applicationFailureIn(await outcomeOf(action))?.type).toBe(CRON_JOB_FAILURE_TYPE)
+        expect(ran).toContain('failing-job')
+
+        // The assertion `pauseOnFailure: true` fails: put the policy back and the server pauses
+        // this schedule the moment the run above closes.
+        const description = await handle.describe()
+        expect(description.state.paused).toBe(false)
+        expect(description.policies.pauseOnFailure).toBe(false)
+      } finally {
+        await scheduler.remove('failing-job')
+      }
+    },
+    // A real tick on a once-a-minute schedule, so the budget is a whole minute plus the run.
+    LONG_TEST_TIMEOUT,
+  )
+
+  it(
     'fails a run without retrying when the Worker has no such job registered',
     async () => {
       ran.length = 0
@@ -576,6 +677,63 @@ function blockingJob(): JobDefinition {
   const job = jobs.find((candidate) => candidate.name === 'blocking-job')
   if (!job) throw new Error("blocking-job is missing from this file's job list")
   return job
+}
+
+/** The registered failing job, enabled — the one state this file's job list never leaves it in. */
+function enabledFailingJob(): JobDefinition {
+  const job = jobs.find((candidate) => candidate.name === 'failing-job')
+  if (!job) throw new Error("failing-job is missing from this file's job list")
+  return { ...job, disabled: false }
+}
+
+/**
+ * A Schedule with an id no `cronScheduleId()` could produce. Its action is this file's driver on
+ * this file's queue so the server accepts it, and it is paused so it can never actually fire —
+ * what it is for is occupying the namespace while a sweep runs past it.
+ */
+function foreignScheduleOptions(): ScheduleOptions {
+  return {
+    scheduleId: FOREIGN_SCHEDULE_ID,
+    spec: { cronExpressions: [CronExpression.EVERY_YEAR] },
+    action: {
+      type: 'startWorkflow',
+      workflowType: CRON_JOB_WORKFLOW_TYPE,
+      taskQueue: TASK_QUEUE,
+      args: [{ job: 'not-a-job', startToCloseTimeout: '1 minute', heartbeatTimeout: HEARTBEAT_TIMEOUT }],
+    },
+    state: { paused: true },
+  }
+}
+
+/** Waits until the visibility store has caught up enough for `list()` to report the schedule. */
+async function waitUntilListed(scheduleId: string, timeoutMs = 30_000): Promise<void> {
+  const deadline = Date.now() + timeoutMs
+  for (;;) {
+    for await (const summary of testEnv.client.schedule.list()) {
+      if (summary.scheduleId === scheduleId) return
+    }
+    if (Date.now() > deadline) throw new Error(`schedule "${scheduleId}" never appeared in list()`)
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+}
+
+/**
+ * Waits for the schedule to fire on its own and hands back the action it took.
+ *
+ * `triggerRun` cannot stand in for this: a triggered action is a manual one, and manual actions are
+ * exactly the ones `pauseOnFailure` was measured never to trip on.
+ */
+async function waitForScheduledAction(handle: ScheduleHandle, timeoutMs = 90_000): Promise<ScheduleExecutionResult> {
+  const deadline = Date.now() + timeoutMs
+  for (;;) {
+    const recent = (await handle.describe()).info.recentActions.at(-1)
+    if (recent) return recent
+
+    if (Date.now() > deadline) {
+      throw new Error(`schedule "${handle.scheduleId}" did not fire within ${timeoutMs}ms`)
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500))
+  }
 }
 
 /**

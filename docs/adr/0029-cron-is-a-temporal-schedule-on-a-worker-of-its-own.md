@@ -1,6 +1,9 @@
 # 29. Cron Is a Temporal Schedule on a Worker of Its Own, and a Job Stays Ordinary Node Code
 
-**Status:** Accepted
+**Status:** Accepted, and amended — see [Amendment: the cron Worker owns cron, end to
+end](#amendment-the-cron-worker-owns-cron-end-to-end) at the bottom. The decision recorded here
+stands; what changed is which process reconciles, how complete reconciliation is, and
+`pauseOnFailure`.
 
 ## Context
 
@@ -55,6 +58,11 @@ application code here:
 | **Pause** a misbehaving job without a deploy | UI / `temporal schedule pause` |
 | **Pause on failure**, so a job failing every minute stops before it fills the history | `policies.pauseOnFailure`, set per schedule |
 | **Backfill** over a missed window, so an outage is replayed deliberately rather than lost | `temporal schedule backfill` |
+
+Two rows of that table did not survive the amendment below. `pauseOnFailure` is no longer set, and
+pausing from the UI is no longer a supported operation — both for the same reason, that code is the
+only control plane for cron. They are left in place because they are what the server offers, and
+because the amendment's argument is only readable against them.
 | **A per-run history with the failure inside it** | the driver execution, in the UI |
 
 Two more properties that were previously implicit are now stated. **Overlap is `SKIP`:** a job
@@ -127,8 +135,9 @@ module service or a subscriber, rather than a third dialect with its own rules.
 can diverge.** A Worker that restarts mid-run fails that activity — `maximumAttempts: 1`, because a
 cron handler is ordinary application code and nothing makes it idempotent — while the work the
 handler already dispatched carries on to completion. The schedule then reports a failure for a job
-that in some sense succeeded, and `pauseOnFailure` stops the next tick over it. For a job that does
-its work inline this is the honest answer. For a job that dispatches work elsewhere it is wrong, and
+that in some sense succeeded. (At the time this was written `pauseOnFailure` also stopped the next
+tick over it; the amendment removes that, so the divergence is now a failed run in the history and
+nothing more.) For a job that does its work inline this is the honest answer. For a job that dispatches work elsewhere it is wrong, and
 the exit below is how it gets fixed.
 
 A second cost had to be paid for rather than accepted. Absent a heartbeat, Temporal cannot tell a
@@ -220,11 +229,13 @@ non-workflow Worker with a healthcheck, because registering the driver means it 
 pass over the sandbox entrypoint that `worker` does — without the probe, `docker compose up --wait`
 would return during exactly the window in which `proteus-cron` has no poller.
 
-**A schedule whose queue nobody polls does not fail loudly.** The API reconciles schedules whether or
-not a Worker is running — deliberately, so the schedules exist independently of process lifetimes —
-so a stack missing `cron-worker` creates every schedule, starts every run, and fails each one on its
-own timeout. That is the same "queue nobody polls" failure mode ADR-0023 records for the event bus,
-and the same thing it is easy to misread as a broken job.
+**A schedule whose queue nobody polls does not fail loudly.** ~~The API reconciles schedules whether
+or not a Worker is running — deliberately, so the schedules exist independently of process lifetimes
+— so a stack missing `cron-worker` creates every schedule, starts every run, and fails each one on
+its own timeout.~~ *Superseded by the amendment:* the Worker that polls is the process that
+reconciles, so a stack missing `cron-worker` has no cron schedules at all rather than schedules
+nothing answers. The "queue nobody polls" failure mode ADR-0023 records for the event bus no longer
+has a cron analogue.
 
 **Reconciliation writes the pause flag from the definition, in both directions.** Marking a job
 `disabled` pauses its schedule rather than deleting it, so turning it back on stays a one-line edit
@@ -235,7 +246,8 @@ is corrected at boot exactly as the cron spec and the workflow action are.
 The cost is real and is accepted knowingly. `pauseOnFailure` and an operator's pause in the UI write
 that same flag, and Temporal cannot tell either from a deliberate one, so **a pause applied on the
 server survives only until the next boot**: an incident contained by pausing a job is uncontained by
-the next deploy or restart. Two things make that affordable rather than merely cheap. Unpausing
+the next deploy or restart. *The amendment turns this from an accepted cost into the point, and
+removes `pauseOnFailure` as the half of it that no source file could express.* Two things make that affordable rather than merely cheap. Unpausing
 something that was paused logs a warning naming the schedule and saying what was overruled, so it is
 never silent. And a pause meant to outlive a restart has a place to go that reconciliation respects
 — `disabled: true` on the job, which is a one-line change on the same branch that would carry the
@@ -243,10 +255,11 @@ fix. The alternative, preserving a server-side pause, was tried first and traded
 for another: a job enabled in code that never fires, whose only trace is a flag in a UI nobody is
 looking at.
 
-**Orphan schedules are not swept.** Renaming or deleting a job leaves its old schedule on the server
-until someone removes it; `remove()` is the explicit way, and a stale local schedule is a
+**Orphan schedules are not swept.** ~~Renaming or deleting a job leaves its old schedule on the
+server until someone removes it; `remove()` is the explicit way, and a stale local schedule is a
 `temporal schedule delete` away. Sweeping needs a rule about what else may own a schedule in this
-namespace, and there is not one yet.
+namespace, and there is not one yet.~~ *Superseded by the amendment:* there is such a rule — the
+`cron_` prefix `cronScheduleId()` stamps — and reconciliation sweeps by it.
 
 **The primary test seam is the `CronScheduler` port, and it needs a real server.** Schedules are a
 server feature, so `__tests__/temporal-cron-scheduler.server.test.ts` boots a full dev server rather
@@ -255,6 +268,10 @@ server test is the prior art, not the workflow engine's. It asserts the spec and
 disabled job ends up paused and an enabled one is unpaused even over a pause applied by hand, that a
 manually triggered action reaches the handler through the whole path, that a handler outrunning its timeout fails the run, and that a handler whose Worker is killed
 mid-run is failed within roughly the heartbeat timeout rather than the far longer start-to-close one.
+The amendment adds three more at the same seam: that a job the list no longer names has its schedule
+swept, that a schedule without the `cron_` prefix survives that sweep, and that a job whose
+*scheduled* run fails is still unpaused afterwards — the one assertion in the file that waits for a
+real tick, because a manual trigger never tripped `pauseOnFailure` to begin with.
 That last assertion is what makes the heartbeat a tested property rather than a hopeful one; without
 it the wrapper could be deleted and every other test would stay green. Like the other
 server-dependent suites it is excluded from the default verification gate, which keeps working for a
@@ -269,16 +286,156 @@ position, applied to a third subsystem.
 changes the driver's shape while a run is in flight is the same hazard it is for any workflow here,
 and the driver being one activity call is what keeps that surface as small as it can be.
 
+## Amendment: the cron Worker owns cron, end to end
+
+**Amended 2026-09-12.** Everything above stands — a Schedule per job, a driver workflow, a third
+Worker, a handler that is ordinary Node code. What follows replaces the parts of it that put
+registration in the API process.
+
+### The problem it fixes
+
+**Two processes had to agree about the job list, and nothing made them.** The API reconciled
+Schedules at boot; the cron Worker executed the runs those Schedules started. They deploy
+independently and held the list in different places — the API wrote server-side state from
+`src/jobs/`, the Worker held the same list in process memory. When they disagreed the failure was
+quiet and the UI actively misleading: the Schedules tab listed the job with its next fire times,
+because the Schedule was exactly what the API created, while every run failed with
+`No job is registered as "…" on this Worker`. An operator reading that tab saw a healthy job.
+
+Reproduced on a running stack: a job added to `src/jobs/` produced a Schedule within seconds — the
+API runs under `tsx --watch` — and then failed on every tick against a cron Worker started before the
+job existed, while a pre-existing job on the same Worker completed on every tick. One Worker, two
+jobs, opposite outcomes, decided entirely by which deploy the Worker's memory came from.
+
+### The decision
+
+**The process that holds the job list writes the Schedules.** Reconciliation moved into the cron
+Worker's bootstrap, before it begins polling, from the same `src/jobs/` import it builds its activity
+from. The API stops constructing, registering or calling the `CronScheduler`, and
+`ContainerRegistrationKeys.SCHEDULER` is gone from the node container. A Schedule existing without a
+Worker able to run it stops being a deploy-ordering rule nobody wrote down and becomes structurally
+impossible: the same import, in the same process, produces both. Nothing else about the Worker
+changed — same queue, same driver, same activity, same heartbeat.
+
+**Reconciliation became total.** `start(jobs)` creates, updates *and deletes*: it lists the
+namespace's Schedules, keeps those whose id carries the `cron_` prefix `cronScheduleId()` stamps, and
+deletes any the job list does not name. Schedules without that prefix are not this code's and are
+never touched — that is the rule the original said did not exist yet. Deleting a job file deletes its
+Schedule; renaming a job removes the old one and creates the new one.
+
+Deletion is safe here precisely because the sweeping process is the executing process: the list it
+sweeps against is the list that defines what can run. Deletion rather than pause, because a paused
+orphan is indistinguishable in the UI from a deliberately disabled job — and because **run history
+does not live in the Schedule.** Measured against a real server: seven runs, Schedule deleted, all
+seven still present with full history and still queryable by the `TemporalScheduledById` search
+attribute, bounded only by namespace retention (three days locally).
+
+**`pauseOnFailure` is removed.** It is the one piece of cron state that cannot be expressed in the
+source tree, which the control-plane decision below rules out. It is also a wedge: reconciliation
+runs only at boot, so a pause applied after the last Worker of a rollout has started is never undone
+— during a rolling deploy an old replica can claim a newly added job's first tick, fail it with
+`No job is registered`, and pause the Schedule indefinitely with no code change that explains it. The
+behaviour it guarded, a job failing every minute filling up history, is bounded by namespace
+retention and is now visible rather than silenced.
+
+A measured detail worth keeping: `pauseOnFailure` only ever tripped on *scheduled* runs. Three
+consecutive failures from manual `trigger()` calls paused nothing. That is why the test asserting its
+absence waits for a real tick instead of triggering one.
+
+**Code is the only control plane for cron, and that is now a decision rather than a cost.** Pausing,
+backfilling or editing a Schedule from the Temporal UI stays possible and stays unsupported:
+reconciliation overwrites the pause flag from the definition in both directions, and logs a warning
+naming what it overruled. `disabled: true` is the only way to stop a job, and flipping it back
+resumes the job on deploy.
+
+**The measured cost of an orphaned Schedule, recorded so the severity is not overstated later.** An
+orphan fired once, failed, and was paused by the server after exactly one scheduled run; a reconcile
+whose list did not name it left it paused and untouched. The standing cost was one failed run and an
+inert paused row per deleted job — not a runaway, but a row that accumulated and that nothing would
+ever clean up.
+
+### Consequences of the amendment
+
+**Rolling a deploy back removes the jobs that deploy added.** A consequence of desired-state
+reconciliation, and correct — the jobs that exist are the jobs the running code defines. It is called
+out because a Schedule vanishing after a rollback otherwise looks like data loss.
+
+**Two Worker versions reconciling concurrently during a rollout is accepted, not solved.** It
+self-heals on the next boot of the newer version. Solving it needs leader election, which is a larger
+decision than this one and is not taken here.
+
+**The job list is generated, and every Worker now has a watch-mode dev entrypoint.**
+`src/jobs/index.ts` was hand-written — the last of the three registries that was — and is replaced by
+`src/jobs/registry.gen.ts`, written by `scripts/generate-job-registry.ts` from the same `export const
+config` convention the subscriber generator reads. That makes all three Workers one shape: a
+`worker.dev.ts` that regenerates its registry before booting, under `tsx watch` with an `--include`
+over the source directory so a brand-new file reloads at all, and the generated file excluded so
+writing it cannot restart the Worker that just wrote it.
+
+Generating this particular list carries more weight than the other two. It is not only the set of
+handlers that can run; it is the **desired state reconciliation deletes against**, so a job file the
+generator failed to notice would have its Schedule swept rather than merely go unrun. That is why the
+generator *rejects* a file in `src/jobs/` it cannot read instead of skipping it, and why duplicate job
+names are a hard error — two jobs of one name reconcile to one `cron_` id, and the second silently
+overwrites the first. `check:job-registry` joins the other two in `verify`'s `generated` gate.
+
+The three `:dev` scripts are **new** rather than changes to the existing ones: those are the
+`command:` of the compose services, and a watcher inside a container silently never fires, because
+the bind mount carries writes but not filesystem events.
+
+### Rejected: removing Temporal from the clock
+
+Recorded because it was the starting proposal, so that the next person asking "why not just use
+timers" gets the measured answer rather than the argument again.
+
+**Worker-side timers** would remove the Schedule and with it the orphan question, but they need a
+cron parser dependency that left the tree with BullMQ, they fire once per replica unless deduplicated
+by a per-tick workflow id, and they lose any tick that falls during a restart with no record that one
+was owed. **A long-running cron workflow per job** is *more* server state than a Schedule, plus a
+determinism and versioning burden on code that is currently exempt from both.
+
+The property actually wanted was never statelessness — the event bus is not stateless either, it
+deduplicates on server-side activity ids. It is that the state be shaped like an *occurrence* rather
+than a *definition*, so it expires on its own and cannot drift from the source tree. Cron's state is
+definition-shaped by nature, so the answer is to reconcile it totally from one process rather than to
+eliminate it.
+
+### Rejected: an archived state for retired Schedules
+
+There is none to use. The whole handle surface is describe, update, delete, trigger, backfill, pause
+and unpause; a Schedule is running or paused. Temporal's Archival is a namespace-level feature for
+closed workflow histories going to blob storage, is marked experimental, is explicitly unsupported
+when running Temporal through Docker, and is disabled in this namespace. It is not a schedule state.
+
+It is also unnecessary: run history survives deletion and is bounded by retention either way, so
+keeping a dead Schedule buys nothing.
+
+### Non-goals
+
+- **UI-driven control as a supported operation.** Making a UI pause durable — a three-way merge
+  against a last-applied marker in the Schedule's memo, or any similar scheme — is a separate
+  decision. The original's "a pause applied on the server survives only until the next boot" is a
+  stated non-goal here rather than an accepted cost.
+- **Leader election among cron Workers.**
+- **Worker Versioning**, still the outstanding follow-up ADR-0022 and this ADR already name.
+- **Any change to the workerd runtime.** Cloudflare owns that clock through `wrangler.jsonc`, which
+  stays hand-synced with the job list. `JobDefinition`, the driver workflow, the activity and the
+  heartbeat are all untouched by this amendment.
+- **Schedules in the namespace that this code did not create.** The sweep is scoped by prefix.
+
 ## References
 
 - ADR-0021, ADR-0022 — the workflow engine and the runtime split this inherits
 - ADR-0023 — the event bus, whose second Worker this one is modelled on, and its "queue nobody polls"
   failure mode
 - `.scratch/temporal-schedules/spec.md` — the working spec
+- `.scratch/cron-registration/spec.md` — the amendment's working spec
 - `apps/backend/src/framework/scheduler/temporal/config.ts` — the queue, the driver path and the
   heartbeat arithmetic, with the reasoning inline
-- `apps/backend/src/framework/scheduler/temporal/temporal-cron-scheduler.ts` — reconciliation and the
-  schedule policies
+- `apps/backend/src/framework/scheduler/temporal/temporal-cron-scheduler.ts` — reconciliation, the
+  sweep and the schedule policies
+- `apps/backend/src/framework/scheduler/temporal/worker.ts` — where reconciliation now runs
+- `apps/backend/scripts/generate-job-registry.ts` — the job list, generated like the other two
 - `apps/backend/src/framework/scheduler/temporal/workflows.ts` — the driver, and the branch point the
   exit above describes
 - `apps/backend/src/core/types/scheduler.ts` — `JobDefinition`, unchanged

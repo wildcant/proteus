@@ -16,8 +16,9 @@ import type { CronActivities, CronJobInput } from './types.js'
  * **`maximumAttempts: 1`.** A cron handler is ordinary application code with a database, and
  * nothing makes it idempotent — re-running one that failed halfway is the workflow engine's
  * default stance restated here for the same reason. A failed run is meant to be *visible*, and it
- * is: `pauseOnFailure` on the Schedule stops the next tick, which is a better answer than a silent
- * second attempt.
+ * is: the run closes as failed, in the Schedule's history, where a silent second attempt would have
+ * hidden it. Nothing pauses over it — the next tick fires and fails again until the code is fixed,
+ * which is the point. See ADR-0029's amendment.
  */
 export async function cronJobWorkflow(input: CronJobInput): Promise<void> {
   const { runCronJob } = proxyActivities<CronActivities>({

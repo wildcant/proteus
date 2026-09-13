@@ -94,8 +94,9 @@ function startHeartbeat(): () => void {
  * Wraps whatever the handler threw in the one failure shape this boundary uses.
  *
  * Not marked `nonRetryable`, because nothing retries it: the driver schedules this activity with
- * `maximumAttempts: 1`, so the flag would decide nothing. What acts on the failure is the
- * Schedule's `pauseOnFailure`, one level up.
+ * `maximumAttempts: 1`, so the flag would decide nothing. Nothing acts on the failure either — the
+ * Schedule has no `pauseOnFailure` — so this shape is the whole of what an operator gets, which is
+ * why it carries the job name and the serialized cause rather than a bare message.
  */
 function toCronJobFailure(error: unknown, job: string): ApplicationFailure {
   const detail: CronJobFailureDetail = { job, error: serializeError(error) }
