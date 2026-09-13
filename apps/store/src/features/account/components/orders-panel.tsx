@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, PackageIcon } from 'lucide-react'
 import { Suspense, useState } from 'react'
 import type { StoreOrderListResponseOrdersItem } from '#/api/generated/model'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { Pagination } from '#/components/pagination'
 import { Panel } from '#/components/panel'
 import { ORDERS_DEFAULT_OFFSET, ordersPageQuery, useSuspenseOrders } from '#/features/orders/api/orders'
@@ -104,9 +104,9 @@ function OrdersEmpty() {
         You haven't made any orders yet. When you make an order it'll show up here.
       </p>
       {/* One link, not the reference's gendered pair: there is no category taxonomy behind it. */}
-      <Button render={<Link to="/" />} className="mt-8">
+      <ButtonLink to="/" className="mt-8">
         Shop all products
-      </Button>
+      </ButtonLink>
     </div>
   )
 }

@@ -1,8 +1,7 @@
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { PlusIcon } from 'lucide-react'
 import { useEffect } from 'react'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { AddressLines } from '#/features/address/components/address-lines'
 import { useMarket } from '#/hooks/use-market'
 import { withForm } from '#/lib/form-hook'
@@ -80,10 +79,10 @@ export const ShppingAddressPicker = withForm({
                     })}
                   </RadioGroup>
 
-                  <Button variant="link" render={<Link to="/checkout/addresses/new" />} className="mt-4 gap-2 text-sm">
+                  <ButtonLink variant="link" to="/checkout/addresses/new" className="mt-4 gap-2 text-sm">
                     <PlusIcon className="size-4" />
                     Use a different address
-                  </Button>
+                  </ButtonLink>
                 </div>
 
                 {!!isInvalid && <FieldError errors={field.state.meta.errors} />}

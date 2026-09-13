@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { orderQueryOptions } from '#/features/orders/api/orders'
 import { OrderConfirmedContent } from '#/features/orders/components/order-confirmed-content'
 import { OrderConfirmedSkeleton } from '#/features/orders/components/order-confirmed-skeleton'
@@ -30,9 +30,9 @@ function OrderConfirmedError() {
   return (
     // Continue shopping, not "back to account": a guest who just checked out has no account.
     <OrderError orderId={orderId}>
-      <Button variant="outline" render={<Link to="/" />}>
+      <ButtonLink variant="outline" to="/">
         Continue shopping
-      </Button>
+      </ButtonLink>
     </OrderError>
   )
 }

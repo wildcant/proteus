@@ -1,5 +1,4 @@
-import { Button, cn } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
+import { ButtonLink, cn } from '@proteus/ui'
 import {
   getCoreRowModel,
   type RowSelectionState as TanStackRowSelectionState,
@@ -134,9 +133,9 @@ export function DataTable<T>({ use, heading, description, actions, className }: 
             {actions &&
               actions.length > 0 &&
               actions.map((action) => (
-                <Button key={action.to} variant="outline" size="sm" render={<Link to={action.to} />}>
+                <ButtonLink key={action.to} variant="outline" size="sm" to={action.to}>
                   {action.label}
-                </Button>
+                </ButtonLink>
               ))}
           </ToolbarSection>
         </ToolbarRow>

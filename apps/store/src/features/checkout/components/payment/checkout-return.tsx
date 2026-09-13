@@ -1,6 +1,5 @@
-import { Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { useCart } from '#/features/cart/api/cart'
 import { usePaymentProviders } from '../../api/checkout'
 import { useCompleteOrder } from '../../hooks/use-complete-order'
@@ -112,9 +111,9 @@ function ReturnFailure({ message }: { message: string }) {
       <p role="alert" className="mt-2 text-ink-muted text-sm">
         {message}
       </p>
-      <Button variant="outline" className="mt-6" render={<Link to="/checkout" />}>
+      <ButtonLink variant="outline" className="mt-6" to="/checkout">
         Back to checkout
-      </Button>
+      </ButtonLink>
     </div>
   )
 }

@@ -1,8 +1,7 @@
 import { usePrompt } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { MoreVerticalIcon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
-import { Button } from '#/components/button'
+import { Button, ButtonLink } from '#/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/popover'
 import { useDeleteAddress } from '#/features/address/api/addresses'
 
@@ -39,13 +38,14 @@ export function AddressActions({ address }: { address: StoreCustomerAddress }) {
         <MoreVerticalIcon className="size-5" />
       </PopoverTrigger>
       <PopoverContent>
-        <Button
+        <ButtonLink
           variant="ghost"
-          render={<Link to="/checkout/addresses/$addressId/edit" params={{ addressId: address.id }} />}
+          to="/checkout/addresses/$addressId/edit"
+          params={{ addressId: address.id }}
           className="h-10 w-full justify-start px-3 hover:bg-transparent dark:hover:bg-transparent"
         >
           Edit address
-        </Button>
+        </ButtonLink>
         <Button
           variant="ghost"
           onClick={confirmAndDelete}

@@ -1,0 +1,19 @@
+id: button-renders-a-link
+valid:
+  - 'const A = () => <ButtonLink to="/">Browse products</ButtonLink>'
+  - 'const A = () => <ButtonLink variant="link" to="/login" search={{ redirect: "/checkout" }}>Sign in</ButtonLink>'
+  - 'const A = () => <Button onClick={onSubmit}>Place order</Button>'
+  # The other direction of the render prop: a primitive rendering a Button is a button either way.
+  - 'const A = () => <DrawerClose render={<Button variant="ghost" size="icon" />}><XIcon /></DrawerClose>'
+  # `useRender` components take no button semantics, so an anchor keeps its role. Their names end in
+  # Button, which is why the rule matches the tag exactly rather than by suffix.
+  - 'const A = () => <SidebarMenuButton render={<Link to="/" />}>Orders</SidebarMenuButton>'
+  - 'const A = () => <Panel title="Address Book" chevron render={<Link to="/account/addresses" />} />'
+  # base-ui documents this one: a tab is a navigation item, so it takes the role and the link both.
+  - 'const A = () => <Tabs.Tab nativeButton={false} render={<Link to="/overview" />} value="overview">Overview</Tabs.Tab>'
+invalid:
+  - 'const A = () => <Button render={<Link to="/" />} className="w-full">Browse products</Button>'
+  - 'const A = () => <Button variant="link" render={<Link to="/account" />}>Back</Button>'
+  # Silencing the dev warning is what the rule is here to catch — it swaps the link role for a button one.
+  - 'const A = () => <Button nativeButton={false} render={<Link to="/checkout" />}>Checkout</Button>'
+  - 'const A = () => <Button render={<Link to="/products/$id" params={{ id }} />} />'

@@ -1,5 +1,4 @@
-import { Link } from '@tanstack/react-router'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { Form } from '#/components/form/form.tsx'
 import type { LoginFormParams } from '#/features/auth/hooks/use-login-form'
 import { useLoginForm } from '#/features/auth/hooks/use-login-form'
@@ -18,9 +17,9 @@ export function LoginForm(props: LoginFormParams) {
             {(field) => <field.TextField label="Password" type="password" autoComplete="current-password" />}
           </form.AppField>
         </div>
-        <Button variant="link" render={<Link to="/forgot-password" />} className="mt-6 w-full justify-center text-base">
+        <ButtonLink variant="link" to="/forgot-password" className="mt-6 w-full justify-center text-base">
           Forgot password?
-        </Button>
+        </ButtonLink>
         <form.Subscribe selector={(state) => state.isSubmitting}>
           {(isSubmitting) => (
             <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">

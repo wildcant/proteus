@@ -1,6 +1,6 @@
-import { getRouteApi, Link } from '@tanstack/react-router'
+import { getRouteApi } from '@tanstack/react-router'
 import { ChevronLeftIcon } from 'lucide-react'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { useSuspenseOrder } from '#/features/orders/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
 import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'
@@ -20,10 +20,10 @@ export function OrderContent() {
 
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-      <Button variant="link" render={<Link to="/account" />} className="font-medium text-ink-muted no-underline">
+      <ButtonLink variant="link" to="/account" className="font-medium text-ink-muted no-underline">
         <ChevronLeftIcon />
         Account
-      </Button>
+      </ButtonLink>
 
       {/* The word that was an eyebrow above the number is inside the heading now. A screen
           reader announced the old pair as "heading level one, number one", because the eyebrow

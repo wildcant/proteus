@@ -86,9 +86,11 @@ function SettingsSidebar({ groups }: { groups: SettingsNavGroup[] }) {
             {i > 0 && <SidebarSeparator className="border-dashed" />}
             <Collapsible defaultOpen>
               <SidebarGroup>
+                {/* The label is the trigger, so it renders a real <button>: base-ui asks for one
+                    here, and a section header that opens and closes is a button in any case. */}
                 <CollapsibleTrigger
                   className="group/collapsible flex w-full items-center"
-                  render={<SidebarGroupLabel />}
+                  render={<SidebarGroupLabel render={<button type="button" />} />}
                 >
                   {group.label}
                   <ChevronDownIcon className="ml-auto transition-transform group-data-panel-open/collapsible:rotate-180" />

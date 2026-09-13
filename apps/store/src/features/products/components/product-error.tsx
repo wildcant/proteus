@@ -1,6 +1,5 @@
-import { Button } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { PackageIcon } from 'lucide-react'
+import { ButtonLink } from '#/components/button'
 
 /**
  * What the detail route renders when the product it was asked for cannot be read.
@@ -18,9 +17,9 @@ export function ProductError() {
       <PackageIcon className="size-8 text-ink-subtle" strokeWidth={1.5} />
       <h1 className="type-title mt-6 text-ink">We couldn't show this product</h1>
       <p className="mt-4 max-w-70 text-ink-muted text-sm">It may not be one we sell here.</p>
-      <Button render={<Link to="/" />} className="mt-8">
+      <ButtonLink to="/" className="mt-8">
         Browse products
-      </Button>
+      </ButtonLink>
     </main>
   )
 }
