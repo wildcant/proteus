@@ -8,6 +8,24 @@ one-way rule (`framework/` imports `core/`, never the reverse) are recorded.
 Nothing in `modules/`, `workflows/`, `subscribers/`, `link-modules/` or `providers/` may name this
 directory. They call ports; `runtime/` decides what is behind them.
 
+## What is here
+
+| Directory | Holds |
+|---|---|
+| `bootstrap/` | `bootstrapModule`, the step every composition root runs per module |
+| `config/` | The `projectConfig` loader, a singleton |
+| `http/` | `ports.ts`, `applyMiddleware` and the middlewares, multipart, content type, CORS, namespace auth, the route sorter, `openapi/` |
+| `runtime/` | The three containers, and the two platform adapters — `express/` on node, `hono/` elsewhere |
+| `logger/` | The Console and Winston loggers |
+| `scheduler/` | The cron runners: `bullmq/` on node, `kuron/` on workerd |
+| `temporal/` | Client, config, payload converter, failure encoding — shared by two engines |
+| `event-bus/` | The engines: inline, Cloudflare Queues and Temporal adapters, and the registry |
+| `workflows/` | The engines: the in-process adapter, the Temporal adapter and its Worker |
+
+`event-bus/`, `workflows/` and `logger/` are the three names that also exist under `core/`: the first
+two hold nothing but the port there, and the null logger is there for the reason
+[`core/README.md`](../core/README.md) gives. That is the split doing its job rather than duplication.
+
 ## Three composition roots, one bootstrap
 
 `src/container.ts` exposes `bootstrapContainer`, which registers the modules, the link service and
@@ -54,6 +72,11 @@ serves it: `runtime/express/app.ts` on node, `runtime/hono/app.ts` elsewhere. `s
 what wires the rest of the node process around that app — Swagger UI over the two generated
 documents, the scheduler monitor, the health route, and an ordered shutdown that closes the server,
 the scheduler, the workflow engine, the database pool and the container in that order.
+
+Each adapter parses the query string with `qs` — Express through its `query parser` setting, Hono per
+request — because every list endpoint documents nested operator params (`$eq`, `$in`, `$gte`) and
+neither platform's own parser produces them: Express 5's default flattens `?id[$in][]=a` into the
+literal key `id[$in][]`.
 
 `http/ports.ts` is the contract in the middle. A handler is typed `HttpRequest<Input, Middlewares>`
 and returns `HttpResult`, and neither type names Express, Hono or workerd — which is what lets the

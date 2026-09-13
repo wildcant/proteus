@@ -1,9 +1,4 @@
 {
-  "autoMemoryEnabled": false,
-  "enabledPlugins": {
-    "stripe@claude-plugins-official": false,
-    "mercadopago@claude-plugins-official": false
-  },
   "permissions": {
     "deny": [
       "Workflow",
@@ -19,5 +14,11 @@
       "EnterWorktree",
       "ExitWorktree"
     ]
-  }
+  },
+  "enabledPlugins": {
+    "stripe@claude-plugins-official": false,
+    "mercadopago@claude-plugins-official": false,
+    "cloudflare@cloudflare": false
+  },
+  "autoMemoryEnabled": false
 }

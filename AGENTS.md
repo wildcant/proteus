@@ -76,14 +76,16 @@ pnpm run verify:full # Every test, in parallel: the whole backend suite, the sto
 # against the dev database. packages/testing/fixtures/e2e-config.ts holds the port map and the
 # queue names, and is where a new suite is defined.
 
-# Code generation — all six outputs are committed. Only the four marked (gated) are checked for
-# drift, by `verify`'s `generated` gate; the Orval clients and routeTree.gen.ts are not.
+# Code generation — all six outputs are committed, and `verify`'s `generated` gate checks every one
+# of them for drift. Never hand-edit one: the next generator run discards the edit anyway.
 pnpm run openapi:generate                      # OpenAPI spec → Orval clients (admin + store)
-pnpm --filter backend run workflows:generate   # src/workflows → temporal/registry.gen.ts  (gated)
-pnpm --filter backend run subscribers:generate # src/subscribers → registry.gen.ts        (gated)
-pnpm --filter backend run jobs:generate        # src/jobs → registry.gen.ts               (gated)
-pnpm --filter backend run schema:generate      # models + link definitions → schema.gen.ts (gated)
-pnpm --filter admin run generate-routes        # TanStack Router route tree
+pnpm --filter backend run workflows:generate   # src/workflows → temporal/registry.gen.ts
+pnpm --filter backend run subscribers:generate # src/subscribers → registry.gen.ts
+pnpm --filter backend run jobs:generate        # src/jobs → registry.gen.ts
+pnpm --filter backend run schema:generate      # models + link definitions → schema.gen.ts
+pnpm --filter admin run generate-routes        # TanStack Router route tree. The store's own
+                                               # generate-routes script is broken — regenerate its
+                                               # tree with a vite build. Why: verify.sh.
 ```
 
 ## Project Structure
@@ -130,89 +132,46 @@ Siblings are declared `"workspace:*"`. See ADR-0025.
 
 The dependency runs one way: **`framework/` imports `core/`, never the reverse.** Below them,
 `modules/`, `workflows/`, `subscribers/`, `link-modules/` and `providers/` may import `core/` and
-must not name `framework/` at all. That is one row of `LAYER_GRAPH` in
-`apps/backend/structure/.dependency-cruiser.cjs`, which declares what every layer may import and
-forbids everything else — see ADR-0026 for the `core`/`framework` split and ADR-0027 for the graph.
-
-| `core/` — known | `framework/` — runs |
-| --- | --- |
-| `types/` the DTO and port vocabulary · `utils/` module and provider primitives · `errors/` · `db/` BaseRepository, columns, cascade graph · `bignumber.ts` · `logger/` the null object · `auth/` token and verification helpers | `bootstrap/` · `config/` the loader singleton · `http/` `ports.ts`, middleware, multipart, CORS, `openapi/` · `runtime/` the node, worker and workerd containers plus the hono and express adapters · `scheduler/` · `temporal/` client, payload converter, failure encoding |
-| `event-bus/` **the port**: `events.ts`, `types.ts` | `event-bus/` **the engines**: inline, Cloudflare Queues and Temporal adapters, the registry |
-| `workflows/` **the port**: `types.ts` | `workflows/` **the engines**: the in-process adapter, the Temporal adapter, the Worker |
-
-A port lives in `core/` so that a workflow, a subscriber or a module service names it without
-learning which runtime it is on; the adapter behind it lives in `framework/` because choosing one is
-exactly what differs between node and workerd. When a folder appears on both sides, that is the
-split doing its job, not duplication.
-
-Two edges point upward and are declared composition roots, the same shape as `src/routes.ts`
-reaching `src/api/`: `framework/workflows/temporal/registry.gen.ts` reaches `src/workflows/`, and
-`framework/event-bus/registry.ts` reaches `src/subscribers/`.
+must not name `framework/` at all. Both are rows of `LAYER_GRAPH` in
+`apps/backend/structure/.dependency-cruiser.cjs` — ADR-0026 for the split, ADR-0027 for the graph.
+What sits on each side is in `src/core/README.md` and `src/framework/README.md`.
 
 ### Module System
 
 Each module at `apps/backend/src/modules/{name}/` follows one layout, and **the list is closed** —
-eight folders and four root files, enforced by `module-holds-only-known-file-kinds`. Nesting
-*inside* them is unconstrained.
-
-- `models/` — Drizzle table definitions, one per file, no barrel (use the `timestamps` helper from
-  `src/core/db/columns.ts`). `index.ts` names them all in its `models` object; that list is what the
-  cascade graph is built from, and `check:schema` fails when a table is missing from it
-- `repositories/` — Extend `BaseRepository(table)`, receive `{ getDb }` factory
-- `services/` — Business logic implementing an interface from `src/core/types/`
-- `migrations/` — drizzle-kit output; regenerated in place, never hand-edited
-- `__tests__/` — Every test the module has, including pure-function ones
-- `utils/` — optional; pure helpers a service consumes
-- `loaders/` — optional; provider registration into the local container
-- `providers/` — optional; a provider that ships with the module
-- `index.ts` — `Module()` factory definition, and the module's whole public surface
-- `database.config.ts` — drizzle-kit config
-- `provider-declarations.ts` — optional; the configured providers
-- `sync-providers.ts` — optional; out-of-band provider upsert for workerd
-
-Only `services/` and `index.ts` are universal. A module that owns no tables has no `models/`,
-`repositories/`, `migrations/` or `database.config.ts` — `file` is the one today. Full table:
-`standards/rules/backend/modules/__docs__/modules.md`.
+eight folders and four root files, enforced by `module-holds-only-known-file-kinds`. What is on the
+list: `standards/rules/backend/modules/__docs__/modules.md`.
 
 Modules: auth, cart, customer, file, fulfillment, inventory, notification, order, payment, pricing,
 product, region, store, user.
 
-A module too large for one service class splits internally: the module service constructs the
-collaborator from its own injected dependencies and keeps it private. Nothing registers or exports
-it, so the module's public surface stays exactly one service — see `ProductOptionService` inside
-`product`. Splitting into two *modules* is usually not the alternative, because the cascade graph is
-built per module from the `models` object of its `Module()` definition, so tables with foreign keys
-between them must share one.
+A module too large for one service class splits internally, and splitting it into two *modules* is
+usually not the alternative: the cascade graph is built per module from the `models` object of its
+`Module()` definition, so tables with foreign keys between them must share one.
 
 ### Two-Container Bootstrap
 
-`src/container.ts` creates a shared Awilix container. Each module gets a private local container with its repos. Only the module's service is exposed to the shared container. Modules cannot access each other's internals.
-
-Registration keys: `GET_DB`, `DB_PROVIDER`, `LOGGER`, `LINK`, `EVENT_BUS` (in `ContainerRegistrationKeys`).
+One shared Awilix container, plus a private one per module holding its repositories. Only the
+module's service is exposed to the shared one, so **a module cannot reach another's internals** —
+which is what makes link modules and workflows necessary.
 
 ### Cross-Module Patterns
 
-- **Link modules** (`src/link-modules/`) — Cross-module join tables and relations. Accessed via `LinkService.repo("cartProduct")`. Two types: writeable (own table + BaseRepository) and readonly (Drizzle relations only + ReadonlyLinkRepository).
-- **Workflows** (`src/workflows/`) — Cross-module orchestration with `ctx.step()` calls and compensation for rollback. Executed by a Temporal Worker on node, by a simple in-process engine on workerd. Workflow handlers must stay replay-pure (`check:workflow-purity`).
-- **Subscribers** (`src/subscribers/`) — Work caused by something that happened, off the caller's critical path. Two transports with different guarantees, so a subscriber is written idempotent and the event it handles is published from a workflow's final step — `standards/rules/backend/subscribers/__docs__/`, and ADR-0023, ADR-0024.
+- **Link modules** (`src/link-modules/`) — a cross-module join table, or Drizzle relations only,
+  reached through `LinkService.repo('cartProduct')`. Writeable ones own a table and a
+  `BaseRepository`; readonly ones go through `ReadonlyLinkRepository`.
+- **Workflows** (`src/workflows/`) — a mutation spanning two modules, with the compensation that
+  unwinds it. Handlers stay replay-pure (`check:workflow-purity`) —
+  `standards/rules/backend/workflows/__docs__/`.
+- **Subscribers** (`src/subscribers/`) — work caused by something that happened, off the caller's
+  critical path: written idempotent, published from a workflow's final step —
+  `standards/rules/backend/subscribers/__docs__/`, ADR-0023, ADR-0024.
 
 ### Server & Routing
 
-- `src/routes.ts` — The route table: every `definitions.ts` imported once, sorted, middleware applied, registered into the OpenAPI document.
-- `src/framework/http/ports.ts` — `HttpRequest`, `HttpResult`, `MiddlewareFunction`, `PreparedRoute`: the contract a handler is written against, independent of any runtime.
-- `src/framework/runtime/{hono,express}/app.ts` — Platform adapters, each with its own container (`container.{node,worker,workerd}.ts`).
-- Route files: `src/api/admin/{resource}/route.ts` export `GET`, `POST`, etc.; `definitions.ts` wires each handler to its schemas, auth and OpenAPI metadata.
-- Handlers declare the errors they raise with `throws` — see `docs/middleware-and-openapi.md`. Webhooks under `src/api/hooks/` are the carve-out: they verify by signature inside the handler, because a middleware runs before input validation and signature checks need the raw bytes.
-- Query parsing uses `qs` (supports nested operator params like `$eq`, `$in`, `$gte`).
-
-### Key Conventions
-
-- `getDb` is always a factory function `() => Database`, never a direct instance. Repositories call `getDb()` and support transaction context via `getClient(context?)`.
-- `createWithTransaction(getDb)` wraps mutations. Services use `this.withTransaction(context, async (ctx) => { ... })`, and an outer method passes `ctx` down so a whole sequence commits or rolls back once.
-- Date handling: DB stores `timestamptz` → Drizzle returns `Date` → DTOs use `Date` → API serializes to ISO strings. In `http-schemas`, use `dateToIso` pipeline and `z.input` (not `z.infer`) for entity types.
-- Soft-delete by default: every table has `deletedAt`, BaseRepository auto-filters.
-- SQL-level prefixed IDs (e.g., `cus_550e8400...`) generated by Postgres.
-- `DbProvider` port: Node uses singleton pool; Workers uses per-request connection via AsyncLocalStorage.
+An endpoint is two files written together: a `route.ts` with the handler and its schemas, and the
+domain's `definitions.ts` wiring it to auth, a matcher and OpenAPI —
+`standards/rules/backend/api/__docs__/`.
 
 ## Frontend Apps
 
@@ -222,34 +181,15 @@ feature-based. A feature at `src/features/{name}/` may contain only `api/`, `ass
 `packages/frontend-structure` through each app's `structure/.dependency-cruiser.cjs`. Anything
 deeper than that second level is the feature's own business.
 
-The admin is a plain SPA: Vite + TanStack Router, built to a static `dist` and deployed to
-Cloudflare Pages. The store is **not** — it is TanStack Start on workerd with selective SSR.
-`src/start.ts` sets `defaultSsr: false` because auth tokens and cart IDs live in `localStorage`,
-which the server cannot read; `__root__` and `_main` carry `ssr: true` to provide the document shell
-and `<Outlet />`, and the two product routes opt in for SEO. Adding a route means deciding which
-side it is on — see ADR-0013.
+The store is TanStack Start on workerd with selective SSR, so adding a route means deciding which
+side it is on — see ADR-0013. That decision binds the layout too: a route that renders on the server
+cannot detect the viewport, so a design that changes *structure* between breakpoints is a choice
+between shipping two DOM trees and one layout that stacks, never a client-side media query picking
+between them.
 
 Both apps call the backend through typed clients Orval generates from its OpenAPI spec into
 `src/api/generated/` (tags-split mode), over a custom fetcher at `src/lib/fetcher.ts` that
 `qs.stringify()`s nested query params.
-
-### Admin DataTable System (`src/components/data-table/`)
-
-Consumer API: `useDefineTable<T>(config)` returns a table definition passed to `<DataTable use={table} />`.
-
-All table state (pagination, sorting, filters, search) lives in URL params via TanStack Router. Params are prefixed per table instance (e.g., `products_offset`, `products_order`).
-
-Global cell renderers (datetime, date, boolean, text) configured via `configureDataTable()` in `main.tsx`. Cell resolution order: inline `cell` fn → named `render` string → text fallback.
-
-### Route-Driven Modals
-
-Create/edit forms open as child routes using `RouteFocusModal` (full viewport drawer) or `RouteDrawer` (side drawer). `RouteModalForm` wraps TanStack Form with an unsaved-changes guard via `useBlocker()`. See ADR-0019.
-
-### Dependency Rules (dependency-cruiser)
-
-- Admin app must not import store schemas from http-schemas
-- `@tanstack/react-table` imports only allowed inside `components/data-table/`
-- No circular dependencies; the store's feature graph is acyclic (ADR-0020)
 
 ## Testing
 

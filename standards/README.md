@@ -118,6 +118,32 @@ use case therefore has **no `README.md` at all** — that is the expected outcom
 why `src/api/` does not keep one. Nothing is left behind as a signpost: a pointer file is a second
 place to keep in step, and the rule's `note:` already names the document at the moment it is needed.
 
+### What may be scoped, and what may not
+
+Everything above decides *which file* a claim goes in. This decides whether the claim may be put
+somewhere that loads **conditionally** — a `.claude/rules/` file with `paths:`, a nested
+`CLAUDE.md`, or a `__docs__/` document reached from either. One line separates the two:
+
+> **Scope "how to build X once you're building X." Never scope "which X to build."**
+
+A path-scoped rule loads when a matching file is read, so it arrives *after* the decision that a file
+under that path is what you are writing. The DataTable column contract is safe to scope: you are
+already inside `apps/admin/src/components/data-table/` when you need it, and the path match fires at
+that moment. A store route's SSR side is not: `defaultSsr: false` means you pick which side a route is
+on **before the file exists**, so nothing can path-match on it. Same for the closed feature-folder
+vocabulary — a plan invents `src/features/{name}/reducers/` without reading a single file under it.
+
+The test is one question: **can this be violated by a decision taken before any matching file is
+read?** If yes, it belongs in root `AGENTS.md`, unscoped.
+
+Two things this is not. It is not a claim that scoping makes a rule more likely to be followed —
+`docs/research/agent-memory-and-write-time-determinism.md` §4.1 rates just-in-time rules a
+context-budget mechanism and *"never an enforcement one"*, with no measurement of scoped-versus-
+unscoped compliance anywhere. And it is not defeatable by configuration: §6.2 quotes the vendor docs
+saying the built-in Explore and Plan agents load no project rules at all, and that *"there is no
+frontmatter field or per-agent setting to change which agents skip them."* So scoping buys bytes, and
+the rule that survives a planner is the one that was never scoped.
+
 ### Which standards live here, and which do not
 
 `standards/` is the front door, not the whole house. What it does not hold, it names:
