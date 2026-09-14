@@ -60,6 +60,12 @@ export type IInventoryModuleService = {
     adjustment: number,
     context?: Context,
   ): Promise<InventoryLevelDTO>
+  setInventoryLevelStockedQuantity(
+    inventoryItemId: string,
+    locationId: string,
+    stockedQuantity: number,
+    context?: Context,
+  ): Promise<InventoryLevelDTO>
   createReservationItems(data: CreateReservationItemDTO[], context?: Context): Promise<ReservationItemDTO[]>
   softDeleteReservationItems(ids: string[], context?: Context): Promise<void>
   restoreReservationItems(ids: string[], context?: Context): Promise<void>

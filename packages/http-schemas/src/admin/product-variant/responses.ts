@@ -1,11 +1,17 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
 import { AdminProductImage } from '../product/entities.js'
-import { AdminOptionCombination, AdminProductVariant } from './entities.js'
+import {
+  AdminOptionCombination,
+  AdminProductVariant,
+  AdminProductVariantWithStock,
+  AdminVariantStock,
+} from './entities.js'
 
 // Only the detail endpoint resolves the images assigned to the variant through the pivot.
 const AdminProductVariantDetail = AdminProductVariant.extend({
   images: z.array(AdminProductImage).optional(),
+  stock: AdminVariantStock.nullable(),
 })
 
 export const AdminProductVariantResponse = z
@@ -28,8 +34,13 @@ export const AdminUpdateVariantPricesResponse = z
   .openapi('AdminUpdateVariantPricesResponse')
 export type AdminUpdateVariantPricesResponse = z.input<typeof AdminUpdateVariantPricesResponse>
 
+export const AdminSetVariantStockResponse = z
+  .object({ stock: AdminVariantStock })
+  .openapi('AdminSetVariantStockResponse')
+export type AdminSetVariantStockResponse = z.input<typeof AdminSetVariantStockResponse>
+
 export const AdminProductVariantListResponse = PaginatedResponse.extend({
-  variants: z.array(AdminProductVariant),
+  variants: z.array(AdminProductVariantWithStock),
 }).openapi('AdminProductVariantListResponse')
 export type AdminProductVariantListResponse = z.input<typeof AdminProductVariantListResponse>
 

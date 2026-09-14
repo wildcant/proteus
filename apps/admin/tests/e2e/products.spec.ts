@@ -299,6 +299,13 @@ test('variant options journey: create variants from the available combinations',
   factories,
 }) => {
   await using product = await factories.create.product({ status: 'published' })
+  await using stockLocation = await factories.create.stockLocation({ name: 'Main Warehouse' })
+  await using untracked = await factories.create.productVariant({
+    productId: product.id,
+    title: 'Made to order',
+    manageInventory: false,
+    allowBackorder: false,
+  })
   await using size = await factories.create.productOption({ renderAs: 'text' })
   await using small = await factories.create.productOptionValue({ optionId: size.id, value: 'S', rank: 0 })
   await using medium = await factories.create.productOptionValue({ optionId: size.id, value: 'M', rank: 1 })
@@ -340,6 +347,8 @@ test('variant options journey: create variants from the available combinations',
   await expect(page.getByText('Variant created successfully')).toBeVisible({ timeout: 10000 })
 
   await page.waitForURL(new RegExp(`/products/${product.id}/variants/variant_`), { timeout: 10000 })
+  const smallVariantId = page.url().split('/variants/')[1]?.split('/')[0]
+  if (!smallVariantId) throw new Error('Expected the created variant URL to carry its id')
   const generalCard = page.locator('[data-slot="variant-general-section"]')
   // The title was never typed — the service took it from the combination's label.
   await expect(generalCard.getByText('S', { exact: true }).first()).toBeVisible()
@@ -371,13 +380,40 @@ test('variant options journey: create variants from the available combinations',
   await page.waitForURL(new RegExp(`/products/${product.id}/variants/variant_`), { timeout: 10000 })
 
   // The variants table reads as the matrix it is: one column per option, filled from each variant's
-  // own resolved values.
+  // own resolved values. Stock is Available Quantity, with an em dash for an untracked variant so
+  // it cannot be mistaken for one that sold out.
   await navigate({ to: '/products/$id', params: { id: product.id } })
   const variantsTable = page.getByRole('table').last()
   await expect(variantsTable.getByRole('columnheader', { name: size.title })).toBeVisible()
+  const untrackedRow = variantsTable.getByRole('row').filter({
+    has: page.getByRole('cell', { name: untracked.title, exact: true }),
+  })
+  await expect(untrackedRow.getByRole('cell', { name: '—', exact: true })).toBeVisible()
+
+  // The absolute count is edited on the variant, beside its prices, and comes back through the
+  // table's Available Quantity rather than through a client-side inventory lookup.
+  await navigate({
+    to: '/products/$id/variants/$variantId/stock',
+    params: { id: product.id, variantId: smallVariantId },
+  })
+  const stockModal = page.getByRole('dialog').last()
+  await stockModal.getByLabel('Stocked quantity').fill('7')
+  const stockWrite = page.waitForResponse(
+    (response) => response.url().endsWith(`/variants/${smallVariantId}/stock`) && response.request().method() === 'PUT',
+  )
+  await stockModal.getByRole('button', { name: 'Save' }).click()
+  await stockWrite
+
+  await navigate({ to: '/products/$id', params: { id: product.id } })
+  const updatedTable = page.getByRole('table').last()
+  const stockedRow = updatedTable.getByRole('row').filter({
+    has: page.getByRole('cell', { name: 'S', exact: true }).first(),
+  })
+  await expect(stockedRow.getByRole('cell', { name: '7', exact: true })).toBeVisible()
 
   void offersSmall
   void offersMedium
+  void stockLocation
 })
 
 test('editing a variant is never offered a combination another variant holds', async ({

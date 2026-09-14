@@ -9,6 +9,7 @@ import * as productByIdRoutes from './[id]/route.js'
 import * as variantImageBatchRoutes from './[id]/variants/[variantId]/images/batch/route.js'
 import * as variantPricesRoutes from './[id]/variants/[variantId]/prices/route.js'
 import * as variantByIdRoutes from './[id]/variants/[variantId]/route.js'
+import * as variantStockRoutes from './[id]/variants/[variantId]/stock/route.js'
 import * as variantBatchRoutes from './[id]/variants/batch/route.js'
 import * as variantRoutes from './[id]/variants/route.js'
 import * as productRoutes from './route.js'
@@ -161,6 +162,17 @@ export default [
     summary: 'Update variant prices',
     tags: [Tags.PRODUCT_VARIANTS],
     output: variantPricesRoutes.PutOutput,
+  },
+  {
+    method: 'PUT',
+    matcher: '/admin/products/:id/variants/:variantId/stock',
+    handler: variantStockRoutes.PUT,
+    throws: variantStockRoutes.PutThrows,
+    input: variantStockRoutes.PutInput,
+    operationId: 'setVariantStock',
+    summary: 'Set stock for a product variant',
+    tags: [Tags.PRODUCT_VARIANTS],
+    output: variantStockRoutes.PutOutput,
   },
   {
     method: 'DELETE',

@@ -5,11 +5,11 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
-import type { AdminProductVariant } from './adminProductVariant.ts';
+import type { AdminProductVariantWithStock } from './adminProductVariantWithStock.ts';
 
 export interface AdminProductVariantListResponse {
   count: number;
   offset: number;
   limit: number;
-  variants: AdminProductVariant[];
+  variants: AdminProductVariantWithStock[];
 }

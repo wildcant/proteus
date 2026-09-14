@@ -1,5 +1,5 @@
 import { Badge } from '@proteus/ui'
-import type { AdminProductVariant } from '#/api/generated/model'
+import type { AdminProductVariantWithStock } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProductOptionsForProduct } from '#/features/product-options/api/product-options'
 import { useProductVariants } from '#/features/products/api/product-variants'
@@ -10,7 +10,7 @@ export const useVariantTable = (productId: string) => {
   const { data: optionsData } = useProductOptionsForProduct(productId)
   const options = optionsData?.productOptions ?? []
 
-  return useDefineTable<AdminProductVariant>({
+  return useDefineTable<AdminProductVariantWithStock>({
     useData: (params) => {
       const { data, isPending, isFetching } = useProductVariants(productId, params)
       return {
@@ -24,6 +24,7 @@ export const useVariantTable = (productId: string) => {
     columns: (col) => [
       col.accessor('title', { header: 'Title', sortable: true }),
       col.accessor('sku', { header: 'SKU' }),
+      col.accessor('availableQuantity', { header: 'Stock', cell: ({ value }) => value ?? '—' }),
       // One column per option, so the table reads as the matrix it is. The API already resolved
       // and ordered each variant's values, so this only has to find the matching one.
       ...options.map((option) =>

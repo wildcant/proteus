@@ -55,6 +55,21 @@ export const AdminProductVariant = z
   .openapi('AdminProductVariant')
 export type AdminProductVariant = z.input<typeof AdminProductVariant>
 
+/** The admin's inventory answer: a number for tracked stock, no number when tracking is off. */
+export const AdminProductVariantWithStock = AdminProductVariant.extend({
+  availableQuantity: z.number().nullable(),
+}).openapi('AdminProductVariantWithStock')
+export type AdminProductVariantWithStock = z.input<typeof AdminProductVariantWithStock>
+
+export const AdminVariantStock = z
+  .object({
+    stockedQuantity: z.number(),
+    reservedQuantity: z.number(),
+    availableQuantity: z.number(),
+  })
+  .openapi('AdminVariantStock')
+export type AdminVariantStock = z.input<typeof AdminVariantStock>
+
 /**
  * An Option Combination this product could sell — one Product Option Value per option it offers.
  *

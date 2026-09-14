@@ -68,6 +68,34 @@ function purchasableUnits(
 }
 
 /**
+ * Available units for the admin to count, independent of whether the catalogue permits backorder.
+ * `null` belongs only to an untracked variant; a tracked variant with broken backing reports zero
+ * so bad data is never made to look like the shop deliberately turned tracking off.
+ */
+export function variantAvailableQuantityProjection(
+  links: ProductVariantInventoryItemDTO[],
+  availableByItemId: Map<string, number>,
+): (variant: Pick<VariantStockFlags, 'id' | 'manageInventory'>) => number | null {
+  const linksByVariantId = new Map<string, ProductVariantInventoryItemDTO[]>()
+  for (const link of links) {
+    linksByVariantId.set(link.variantId, [...(linksByVariantId.get(link.variantId) ?? []), link])
+  }
+
+  return (variant) => {
+    if (!variant.manageInventory) return null
+
+    const variantLinks = linksByVariantId.get(variant.id) ?? []
+    if (variantLinks.length === 0) return 0
+
+    return Math.min(
+      ...variantLinks.map((link) =>
+        Math.floor((availableByItemId.get(link.inventoryItemId) ?? 0) / link.requiredQuantity),
+      ),
+    )
+  }
+}
+
+/**
  * The stock projection over one inventory picture: hand it a variant, it answers what the shopper
  * is told about that variant.
  *
