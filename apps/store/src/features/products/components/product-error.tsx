@@ -2,11 +2,12 @@ import { PackageIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/button'
 
 /**
- * What the detail route renders when the product it was asked for cannot be read.
+ * What the detail route shows when it has no product to show: the route's `errorComponent` when the
+ * read failed, and `ProductDetail`'s own answer to a 404.
  *
- * The copy does not guess why. A product the store never had and one this market cannot price
- * arrive here as the same not-found — the second is the ordinary case now that a market decides
- * the catalogue, and the bag notice above says so by name when that is what happened.
+ * The copy does not guess why. A product the store never had, one this market cannot price and one
+ * whose read fell over all read the same — the middle one is the ordinary case now that a market
+ * decides the catalogue, and the bag notice above says so by name when that is what happened.
  *
  * The way out is the catalogue, because it is the one page that is certainly there: whatever the
  * shopper is standing in, it has products it can sell them.

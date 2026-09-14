@@ -1,8 +1,8 @@
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { type GroupRefs, Tab } from './constants'
+import { RegisterCreateProductFormStep } from './register-create-product-form-step'
 import { organizeSchema } from './schemas'
-import { useRegisterCreateProductFormStep } from './use-register-create-product-form-step'
 
 export const ProductCreateOrganizeForm = withForm({
   ...productCreateFormOpts,
@@ -10,10 +10,9 @@ export const ProductCreateOrganizeForm = withForm({
   render: function ProductCreateOrganizeForm({ form, groupRefs }) {
     return (
       <form.FormGroup name="organize" validators={{ onSubmit: organizeSchema }}>
-        {(formGroup) => {
-          useRegisterCreateProductFormStep(groupRefs, Tab.ORGANIZE, formGroup)
-
-          return (
+        {(formGroup) => (
+          <>
+            <RegisterCreateProductFormStep groupRefs={groupRefs} tab={Tab.ORGANIZE} formGroup={formGroup} />
             <div className="flex flex-col gap-y-8">
               <h2 className="font-semibold text-xl">Organize</h2>
               <div className="flex flex-col gap-y-4">
@@ -27,8 +26,8 @@ export const ProductCreateOrganizeForm = withForm({
                 </form.AppField>
               </div>
             </div>
-          )
-        }}
+          </>
+        )}
       </form.FormGroup>
     )
   },

@@ -3,8 +3,8 @@ import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { type GroupRefs, Tab } from './constants'
 import { ProductCreateMediaSection } from './product-create-details-media-section'
 import { ProductCreateVariantsSection } from './product-create-variants-section'
+import { RegisterCreateProductFormStep } from './register-create-product-form-step'
 import { detailsSchema } from './schemas'
-import { useRegisterCreateProductFormStep } from './use-register-create-product-form-step'
 
 export const ProductCreateDetailsForm = withForm({
   ...productCreateFormOpts,
@@ -12,10 +12,9 @@ export const ProductCreateDetailsForm = withForm({
   render: function ProductCreateDetailsForm({ form, groupRefs }) {
     return (
       <form.FormGroup name="details" validators={{ onSubmit: detailsSchema }}>
-        {(formGroup) => {
-          useRegisterCreateProductFormStep(groupRefs, Tab.DETAILS, formGroup)
-
-          return (
+        {(formGroup) => (
+          <>
+            <RegisterCreateProductFormStep groupRefs={groupRefs} tab={Tab.DETAILS} formGroup={formGroup} />
             <div className="flex flex-col gap-y-8">
               <h2 className="font-semibold text-xl">General</h2>
               <div className="flex flex-col gap-y-4">
@@ -33,8 +32,8 @@ export const ProductCreateDetailsForm = withForm({
               <ProductCreateMediaSection form={form} />
               <ProductCreateVariantsSection form={form} />
             </div>
-          )
-        }}
+          </>
+        )}
       </form.FormGroup>
     )
   },

@@ -1,3 +1,4 @@
+import type { Response } from '@playwright/test'
 import { test as base, expect } from '@playwright/test'
 import { interpolatePath } from '@tanstack/react-router'
 import {
@@ -84,7 +85,8 @@ import {
 } from 'backend/test'
 import { type AuthenticateFunction, combinePersonas, definePersona } from 'playwright-persona'
 import { generateLoginFormValues, generateRegisterFormValues } from '../factories/form-values.js'
-import { watchConsole } from './console-guard.js'
+import { type ConsoleWatch, watchConsole } from './console-guard.js'
+import { gotoSettled } from './navigation.js'
 
 type NavigateOptions<RoutePath extends string> = {
   to: RoutePath
@@ -93,6 +95,9 @@ type NavigateOptions<RoutePath extends string> = {
 }
 
 type NavigateFunction<RoutePath extends string> = (options: NavigateOptions<RoutePath>) => Promise<void>
+
+/** A raw URL, for the addresses a typed route cannot express. See the `goto` fixture. */
+type GotoFunction = (url: string) => Promise<Response | null>
 
 export type CleanupFunction = {
   add: (fn: () => Promise<void>) => void
@@ -109,7 +114,7 @@ const admin = definePersona('admin', {
     return { userId: user.id, name: user.name }
   },
   async verifySession({ page, session }) {
-    await page.goto('/', { waitUntil: 'networkidle' })
+    await gotoSettled(page, '/')
     await expect(page.getByRole('button', { name: session.name })).toBeVisible({
       timeout: 2_000,
     })
@@ -133,7 +138,7 @@ const customer = definePersona('customer', {
     return { customerId: customer.id, email: customer.email }
   },
   async verifySession({ page, session }) {
-    await page.goto('/account', { waitUntil: 'networkidle' })
+    await gotoSettled(page, '/account')
     // The Details panel is the only place the signed-in customer's email appears, and it is
     // customer-scoped, so seeing it proves the restored session still resolves /store/customers/me.
     await expect(page.getByText(session.email).first()).toBeVisible({
@@ -243,9 +248,11 @@ export function createTest<RoutePath extends string = string>() {
   const test = base.extend<{
     factories: Factories
     navigate: NavigateFunction<RoutePath>
+    goto: GotoFunction
     authenticate: AuthenticateFunction<[typeof admin, typeof customer]>
     cleanup: CleanupFunction
-    consoleIsClean: undefined
+    consoleGuard: ConsoleWatch
+    seededImages: undefined
   }>({
     factories: {
       generate: {
@@ -348,11 +355,41 @@ export function createTest<RoutePath extends string = string>() {
      * only place either one is reported. `auto` is what makes this a gate rather than a helper —
      * a guard nobody remembers to add is not one.
      */
-    consoleIsClean: [
+    consoleGuard: [
       async ({ page }, use) => {
-        const complaints = watchConsole(page)
+        const guard = watchConsole(page)
+        await use(guard)
+        expect(guard.complaints(), 'the page logged warnings — see packages/testing/fixtures/console-guard.ts').toEqual(
+          [],
+        )
+      },
+      { auto: true },
+    ],
+
+    /**
+     * Answers `cdn.test` — the host every seeded image is on (`factories/image-url.ts`) — with one
+     * transparent pixel.
+     *
+     * It is the whole of what keeps a run off the public internet. Left unanswered, a reserved
+     * `.test` host fails DNS and the browser logs that at `error` level for the guard above, and a
+     * real host is worse: `waitUntil: 'networkidle'` waits on every photo in a product grid, so a
+     * slow CDN is a 30-second timeout on a test about the market cookie.
+     *
+     * Nothing asserts on the pixels — the claim is always about `src` — so one response serves
+     * every image. On the context rather than the page, so a spec's second tab is covered too.
+     */
+    seededImages: [
+      async ({ page }, use) => {
+        const pixel = Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+          'base64',
+        )
+        await page
+          .context()
+          .route('https://cdn.test/**', (route) =>
+            route.fulfill({ status: 200, contentType: 'image/png', body: pixel }),
+          )
         await use(undefined)
-        expect(complaints, 'the page logged warnings — see packages/testing/fixtures/console-guard.ts').toEqual([])
       },
       { auto: true },
     ],
@@ -361,9 +398,19 @@ export function createTest<RoutePath extends string = string>() {
       const navigate: NavigateFunction<RoutePath> = async ({ to, params, search }) => {
         const { interpolatedPath } = interpolatePath({ path: to, params: params ?? {} })
         const query = new URLSearchParams(search).toString()
-        await page.goto(query ? `${interpolatedPath}?${query}` : interpolatedPath, { waitUntil: 'networkidle' })
+        await gotoSettled(page, query ? `${interpolatedPath}?${query}` : interpolatedPath)
       }
       await use(navigate)
+    },
+
+    /**
+     * The addresses `navigate` cannot express: a market-prefixed path, which the route tree does
+     * not carry (see the rewrite in the store's router), and the bare root, which is not a page at
+     * all but the address the market middleware answers with a redirect. Both settle the same way
+     * a typed navigation does, so a spec never chooses a waiting strategy.
+     */
+    goto: async ({ page }, use) => {
+      await use((url: string) => gotoSettled(page, url))
     },
 
     authenticate: combinePersonas(admin, customer),

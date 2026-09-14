@@ -400,5 +400,12 @@ export const FAKE_STRIPE_JS = String.raw`
   }
 
   window.Stripe = function (publishableKey) { return new FakeStripe(publishableKey) }
+
+  /**
+   * @stripe/stripe-js warns on every test key when window.Stripe.version disagrees with the
+   * release train it asked for. Read back out of the src we were served for, so the fake stays in
+   * step with the package on the day it moves to the next train.
+   */
+  window.Stripe.version = String((document.currentScript && document.currentScript.src) || '').split('/')[3]
 })()
 `

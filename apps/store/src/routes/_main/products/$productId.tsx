@@ -15,9 +15,10 @@ export const Route = createFileRoute('/_main/products/$productId')({
   ssr: true,
   validateSearch: productSearchSchema,
   component: ProductDetailPage,
-  // Contains the read to this match. Without it a product this market cannot price — an ordinary
-  // answer now that the market decides the catalogue — takes the whole document down to the
-  // router's default error page, and with it the header, the bag and the notice that explains it.
+  // Contains the read to this match, so a failure takes the panel and not the document — the
+  // header, the bag and the market notice keep rendering around it. Only a genuine failure arrives
+  // here: a product this market cannot price answers 404, which the query resolves as an absent
+  // product for `ProductDetail` to render.
   errorComponent: ProductError,
   loader: async ({ context, params }) => {
     // See the list route: the market's country is what the price on this page is quoted in.

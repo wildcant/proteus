@@ -1,6 +1,7 @@
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { useSuspenseProduct } from '#/features/products/api/products'
 import { AddToCart } from '#/features/products/components/add-to-cart'
+import { ProductError } from '#/features/products/components/product-error'
 import { ProductGallery } from '#/features/products/components/product-gallery'
 import { ProductSpecs } from '#/features/products/components/product-specs'
 import { VariantPicker } from '#/features/products/components/variant-picker'
@@ -17,13 +18,9 @@ export function ProductDetail() {
   const { formatPrice } = useFormatters()
   const { product } = useSuspenseProduct(productId, { countryCode: current.iso2 })
 
-  if (!product) {
-    return (
-      <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-        <p className="text-ink-muted">Product not found.</p>
-      </main>
-    )
-  }
+  // The market has no product under this id — either none exists or none of its variants have a
+  // price here. Both arrive as the API's one not-found, and both read the same to the shopper.
+  if (!product) return <ProductError />
 
   // An unknown id in the URL falls back to the first variant rather than erroring.
   const selectedVariant = product.variants.find((variant) => variant.id === variantId) ?? product.variants[0]

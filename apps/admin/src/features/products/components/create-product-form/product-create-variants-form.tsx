@@ -7,8 +7,8 @@ import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import type { GroupRefs } from './constants'
 import { Tab } from './constants'
+import { RegisterCreateProductFormStep } from './register-create-product-form-step'
 import { variantsSchema } from './schemas'
-import { useRegisterCreateProductFormStep } from './use-register-create-product-form-step'
 import { fromVariantGridRows, toVariantGridRows, type VariantGridRow } from './variant-rows'
 
 /**
@@ -36,10 +36,9 @@ export const ProductCreateVariantsForm = withForm({
 
     return (
       <form.FormGroup name="variants" validators={{ onSubmit: variantsSchema }}>
-        {(formGroup) => {
-          useRegisterCreateProductFormStep(groupRefs, Tab.VARIANTS, formGroup)
-
-          return (
+        {(formGroup) => (
+          <>
+            <RegisterCreateProductFormStep groupRefs={groupRefs} tab={Tab.VARIANTS} formGroup={formGroup} />
             <form.Subscribe selector={(state) => state.values.variants}>
               {(variants) => {
                 if (!variants.hasVariants) {
@@ -76,8 +75,8 @@ export const ProductCreateVariantsForm = withForm({
                 )
               }}
             </form.Subscribe>
-          )
-        }}
+          </>
+        )}
       </form.FormGroup>
     )
   },

@@ -7,12 +7,13 @@ import {
   productVariantImageTable,
 } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
+import { fakeImageUrl } from '../image-url.js'
 
 export function generateProductImage(overrides?: Partial<CreateProductImage>): CreateProductImage {
   return {
     id: `img_${faker.string.alphanumeric(32)}`,
     productId: `prod_${faker.string.alphanumeric(32)}`,
-    url: faker.image.url(),
+    url: fakeImageUrl(),
     rank: 0,
     metadata: null,
     createdAt: faker.date.recent(),

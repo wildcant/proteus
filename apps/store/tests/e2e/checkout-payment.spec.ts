@@ -262,6 +262,7 @@ test.describe('Checkout — card payment', () => {
     navigate,
     factories,
     cleanup,
+    consoleGuard,
   }) => {
     await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
     await using shipping = await factories.create.shippingOptionWithZone()
@@ -269,10 +270,9 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const logged: string[] = []
-    page.on('console', (message) => {
-      if (message.type() === 'error') logged.push(message.text())
-    })
+    // Logged on purpose, and asserted on below — so the spec excuses it rather than the guard's
+    // global list, which would excuse it for every other spec too.
+    const declines = consoleGuard.allow(/Stripe confirmation failed/)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('declined@example.com')
@@ -298,11 +298,10 @@ test.describe('Checkout — card payment', () => {
     expect(lostCardMessage).toContain('declined')
 
     // Distinct in the log, with the link that opens the exact request in the dashboard.
-    const declines = logged.filter((entry) => entry.includes('Stripe confirmation failed'))
-    expect(declines).toHaveLength(2)
-    expect(declines.some((entry) => entry.includes('lost_card'))).toBe(true)
-    expect(declines.some((entry) => entry.includes('generic_decline'))).toBe(true)
-    expect(declines.every((entry) => entry.includes('dashboard.stripe.com'))).toBe(true)
+    expect(declines()).toHaveLength(2)
+    expect(declines().some((entry) => entry.includes('lost_card'))).toBe(true)
+    expect(declines().some((entry) => entry.includes('generic_decline'))).toBe(true)
+    expect(declines().every((entry) => entry.includes('dashboard.stripe.com'))).toBe(true)
   })
 
   /**
@@ -318,12 +317,17 @@ test.describe('Checkout — card payment', () => {
     navigate,
     factories,
     cleanup,
+    consoleGuard,
   }) => {
     await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
     await using shipping = await factories.create.shippingOptionWithZone()
 
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
+
+    // Two declines on the way to the card that works, each one logged. The spec above is the one
+    // that asserts on the wording; here the line is a byproduct of getting to the third press.
+    consoleGuard.allow(/Stripe confirmation failed/)
 
     const sessions = watchPaymentSessions(page)
 
@@ -369,6 +373,7 @@ test.describe('Checkout — card payment', () => {
     navigate,
     factories,
     cleanup,
+    consoleGuard,
   }) => {
     await using product = await factories.create.productWithPricing({ price: { amount: '25.00' } })
     await using shipping = await factories.create.shippingOptionWithZone()
@@ -376,10 +381,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    const logged: string[] = []
-    page.on('console', (message) => {
-      if (message.type() === 'error') logged.push(message.text())
-    })
+    const declines = consoleGuard.allow(/returned from a redirect unpaid/)
 
     await addToCartAndCheckout(page, navigate, product.id)
     await page.getByLabel('Email').fill('redirect-declined@example.com')
@@ -401,10 +403,9 @@ test.describe('Checkout — card payment', () => {
 
     // Correct copy on screen was already true before this was fixed; the log was empty. On-call
     // needs the decline code and the link that opens the exact request in the dashboard.
-    const declines = logged.filter((entry) => entry.includes('returned from a redirect unpaid'))
-    expect(declines).toHaveLength(1)
-    expect(declines[0]).toContain('lost_card')
-    expect(declines[0]).toContain('dashboard.stripe.com')
+    expect(declines()).toHaveLength(1)
+    expect(declines()[0]).toContain('lost_card')
+    expect(declines()[0]).toContain('dashboard.stripe.com')
   })
 
   test('there is exactly one control over whether billing matches shipping', async ({
