@@ -38,9 +38,12 @@ test('inventory journey: scan what the shop has and what its orders hold', async
   })
   await authenticate({ as: 'admin' })
 
-  // One Inventory nav entry, with Reservations beneath it.
   await navigate({ to: '/inventory' })
   await expect(page.getByRole('heading', { name: 'Inventory' })).toBeVisible()
+
+  // The endpoint takes no `q`, so the toolbar must not offer a box that would leave the rows
+  // unchanged — the defect this assertion exists to catch.
+  await expect(page.getByPlaceholder('Search...')).toHaveCount(0)
 
   const row = page.getByRole('row').filter({ has: page.getByRole('cell', { name: sku, exact: true }) })
   await expect(row.getByRole('cell', { name: product.title, exact: true })).toBeVisible()
@@ -61,6 +64,7 @@ test('inventory journey: scan what the shop has and what its orders hold', async
   await navigate({ to: '/inventory' })
   await page.getByRole('link', { name: 'Reservations' }).click()
   await expect(page.getByRole('heading', { name: 'Reservations' })).toBeVisible()
+  await expect(page.getByPlaceholder('Search...')).toHaveCount(0)
   const reservationRow = page.getByRole('row').filter({ has: page.getByRole('cell', { name: sku, exact: true }) })
   await expect(reservationRow.getByRole('cell', { name: `#${order.displayId}`, exact: true })).toBeVisible()
   await expect(reservationRow.getByRole('cell', { name: '5', exact: true })).toBeVisible()

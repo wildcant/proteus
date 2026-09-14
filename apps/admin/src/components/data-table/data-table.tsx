@@ -109,6 +109,7 @@ export function DataTable<T>({ use, heading, description, actions, className }: 
   })
 
   const hasSecondRow = (actions && actions.length > 0) || filterDefs.length > 0
+  const isSearchable = config.searchable ?? true
 
   return (
     <div className={cn('flex flex-col overflow-hidden rounded-lg border', className)}>
@@ -120,7 +121,9 @@ export function DataTable<T>({ use, heading, description, actions, className }: 
           <ToolbarSection position="right">
             {!hasSecondRow && (
               <>
-                <Search value={search.value} onChange={search.onChange} isPending={isFetching} />
+                {isSearchable ? (
+                  <Search value={search.value} onChange={search.onChange} isPending={isFetching} />
+                ) : null}
                 <SortingMenu
                   sortableColumns={sorting.sortableColumns}
                   current={sorting.current}
@@ -156,7 +159,7 @@ export function DataTable<T>({ use, heading, description, actions, className }: 
               />
             </ToolbarSection>
             <ToolbarSection position="right">
-              <Search value={search.value} onChange={search.onChange} isPending={isFetching} />
+              {isSearchable ? <Search value={search.value} onChange={search.onChange} isPending={isFetching} /> : null}
               <SortingMenu
                 sortableColumns={sorting.sortableColumns}
                 current={sorting.current}

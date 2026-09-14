@@ -30,6 +30,9 @@ export const useReservationTable = () =>
       col.accessor('createdAt', { header: 'Date', render: 'datetime', sortable: true }),
     ],
 
+    // The endpoint takes no `q`: these rows are scanned, sorted and filtered, never searched.
+    searchable: false,
+
     getRowId: (row) => row.id,
     // A reservation whose line item is gone has no order to open, so its row stays unclickable.
     rowHref: (row) => (row.orderId ? `/orders/${row.orderId}` : ''),

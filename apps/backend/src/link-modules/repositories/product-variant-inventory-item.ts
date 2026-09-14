@@ -5,7 +5,10 @@ import { BaseRepository } from '../../core/utils/base-repository.js'
 import { productVariantInventoryItemTable } from '../definitions/product-variant-inventory-item.js'
 import { inventoryItemTable, inventoryLevelTable, productTable, productVariantTable } from '../modules-definitions.js'
 
-/** What the Inventory list sorts by, and the expression each name sorts on. */
+/**
+ * A closed list, so a client cannot order by a column the join does not select — the summed
+ * quantities are output aliases rather than columns, which only Postgres's ORDER BY resolves.
+ */
 const SORTABLE = {
   productTitle: sql`${productTable.title}`,
   variantTitle: sql`${productVariantTable.title}`,

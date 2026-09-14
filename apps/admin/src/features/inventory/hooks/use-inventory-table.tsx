@@ -53,6 +53,9 @@ export const useInventoryTable = () => {
           ]
         : [],
 
+    // The endpoint takes no `q`: these rows are scanned, sorted and filtered, never searched.
+    searchable: false,
+
     getRowId: (row) => row.id,
     rowHref: (row) => `/products/${row.productId}/variants/${row.variantId}`,
 
