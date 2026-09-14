@@ -173,6 +173,57 @@ test.describe('POST /store/carts/:id/complete — the last unit goes to one cart
 })
 
 /**
+ * The two flags the catalogue carries about a variant's stock, at the seam a shopper meets them:
+ * what the shop tracks it never counts, what it lets go on backorder it sells past zero, and what
+ * it says to track with nothing behind it is refused rather than sold without limit.
+ */
+test.describe('POST /store/carts/:id/complete — what the variant says about its own stock', () => {
+  test('completes an untracked variant with no reservation, and a backorder one past zero', async ({
+    service,
+    expect,
+  }) => {
+    const untracked = await service.create.checkoutReadyCart(api.container, {
+      variant: { manageInventory: false },
+      lineItem: { quantity: 4 },
+      inventory: { level: { stockedQuantity: 0 } },
+    })
+    const backordered = await service.create.checkoutReadyCart(api.container, {
+      variant: { allowBackorder: true },
+      lineItem: { quantity: 3 },
+      inventory: { level: { stockedQuantity: 1 } },
+    })
+    assertDefined(backordered.inventoryItem)
+
+    expect((await api.post<StoreCompleteCartResponse>(`/store/carts/${untracked.cart.id}/complete`)).status).toBe(200)
+    expect((await api.post<StoreCompleteCartResponse>(`/store/carts/${backordered.cart.id}/complete`)).status).toBe(200)
+
+    // Both were stocked at less than they ordered, and only the backorder holds units: the
+    // untracked one has no shelf to take them off, which is what keeps it permanently buyable.
+    expect(await service.read.reservationItems(api.container)).toMatchObject([
+      { inventoryItemId: backordered.inventoryItem.id, quantity: 3, allowBackorder: true },
+    ])
+    expect(await service.read.availableQuantity(api.container, backordered.inventoryItem.id)).toBe(-2)
+  })
+
+  test('refuses a tracked variant with no inventory item instead of selling it', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(api.container, {
+      variant: {},
+      inventory: null,
+    })
+    assertDefined(variantId)
+
+    const { status, body } = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/complete`)
+
+    // Bad data about the variant, answered as such — before the flags were read this cart
+    // completed, reserved nothing, and left the shop selling the same units for ever.
+    expect(status).toBe(400)
+    expect(body.type).toBe('invalid_data')
+    expect(body.message).toContain(variantId)
+    expect(await service.read.orders(api.container)).toEqual([])
+  })
+})
+
+/**
  * The cart's addresses are rows the cart owns, keyed by `type`, rather than two columns pointing
  * outward. This is the seam where that shape reaches a client, so it is asserted here.
  */

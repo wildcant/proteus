@@ -71,8 +71,11 @@ export function generateCreateProductVariantDTO(overrides?: Partial<CreateProduc
     barcode: faker.string.numeric(12),
     ean: faker.string.numeric(13),
     upc: faker.string.numeric(12),
-    allowBackorder: faker.datatype.boolean(),
-    manageInventory: faker.datatype.boolean(),
+    // The column defaults rather than a coin flip. Both flags are read now — by confirmation, by
+    // reservation and by the storefront projection — so a random one decides at random whether a
+    // variant is checked against stock at all. A test that means untracked, or backorder, says so.
+    allowBackorder: false,
+    manageInventory: true,
     hsCode: faker.string.numeric(6),
     originCountry: faker.location.countryCode(),
     midCode: faker.string.alphanumeric(10),
@@ -121,8 +124,10 @@ export function generateUpdateProductVariantDTO(overrides?: Partial<UpdateProduc
     barcode: faker.string.numeric(12),
     ean: faker.string.numeric(13),
     upc: faker.string.numeric(12),
-    allowBackorder: faker.datatype.boolean(),
-    manageInventory: faker.datatype.boolean(),
+    // Pinned for the same reason as the create generator above: an update that flipped tracking
+    // at random would make a variant stop being checked against stock halfway through a spec.
+    allowBackorder: false,
+    manageInventory: true,
     hsCode: faker.string.numeric(6),
     originCountry: faker.location.countryCode(),
     midCode: faker.string.alphanumeric(10),

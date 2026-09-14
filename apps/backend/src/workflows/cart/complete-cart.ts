@@ -16,6 +16,7 @@ import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { PaymentSessionStatus, UnauthorizedSessionStatus } from '@core/types/payment/common.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import type { IRegionModuleService } from '@core/types/region/service.js'
 import type { IStockLocationModuleService } from '@core/types/stock-location/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
@@ -24,7 +25,7 @@ import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { env } from '@env'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
-import { prepareLineItemInventoryChecks } from './utils/variant-inventory.js'
+import { missingInventoryItemMessage, prepareLineItemInventoryChecks } from './utils/variant-inventory.js'
 
 type CompleteCartInput = { cartId: string }
 
@@ -426,6 +427,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       'reserve-inventory',
       async ({ container }) => {
         const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
         const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
         const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
@@ -437,11 +439,21 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         const variantIds = lineItems.map((item) => item.variantId).filter((id) => id != null)
         if (variantIds.length === 0) return []
 
+        /** An untracked variant is dropped before reservation and holds nothing, and a backorder
+         *  variant reserves past what is on the shelf — so the flags are read here, before any
+         *  row is written, rather than left to the inventory module to infer from a mapping. */
+        const variants = await productService.listProductVariants({ id: variantIds })
         const mappings = await linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds)
+
+        const missingInventoryItem = missingInventoryItemMessage(variants, mappings)
+        if (missingInventoryItem) {
+          throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: missingInventoryItem })
+        }
+
         const inventoryItemIds = [...new Set(mappings.map((mapping) => mapping.inventoryItemId))]
         const levels = await inventoryService.listInventoryLevels({ inventoryItemId: inventoryItemIds })
 
-        const reservationInput = prepareLineItemInventoryChecks(lineItems, mappings, levels).map((item) => {
+        const reservationInput = prepareLineItemInventoryChecks(lineItems, variants, mappings, levels).map((item) => {
           /** An item's available locations are the ones it has a level at, and the reservation is
            *  written against the first. Medusa ranks a wider candidate set; at one location every
            *  tier of that ranking selects the same element, so the ranking is not built.
@@ -462,6 +474,9 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
             locationId,
             quantity: item.quantity * item.requiredQuantity,
             lineItemId: item.lineItemId,
+            // Carried onto the row rather than re-read from the variant when the reservation is
+            // released: the flag can be turned off while the order it was taken under is open.
+            allowBackorder: item.allowBackorder,
           }
         })
 
