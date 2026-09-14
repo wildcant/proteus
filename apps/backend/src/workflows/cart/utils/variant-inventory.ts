@@ -2,7 +2,7 @@ import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
 import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
 
 /** One inventory item standing behind a variant, and where its stock can be drawn from. */
-export type VariantInventoryBacking = {
+type VariantInventoryBacking = {
   inventoryItemId: string
   /** Units of that item one unit of the variant consumes. */
   requiredQuantity: number
@@ -17,13 +17,28 @@ export type VariantDemand = {
 
 export type VariantInventoryCheck = VariantInventoryBacking & VariantDemand
 
+/** A line item as inventory reads one: which row, for which variant, in what quantity. Structural
+ *  rather than a module's DTO, because a cart's line items and an order's are both read this way —
+ *  confirmation is handed the cart's, reservation the order's. */
+export type InventoryLineItem = {
+  id: string
+  variantId: string | null
+  quantity: number
+}
+
+export type LineItemInventoryCheck = VariantInventoryBacking & {
+  lineItemId: string
+  variantId: string
+  quantity: number
+}
+
 /**
  * The inventory backing each variant, keyed for lookup.
  *
  * A variant with no mapping is absent rather than empty, which is what lets both callers treat
  * "not stock-managed" as "always available" without a second flag.
  */
-export function indexVariantInventory(
+function indexVariantInventory(
   mappings: ProductVariantInventoryItemDTO[],
   levels: InventoryLevelDTO[],
 ): Map<string, VariantInventoryBacking[]> {
@@ -71,4 +86,32 @@ export function prepareVariantInventoryChecks(
   return [...quantityByVariantId].flatMap(([variantId, quantity]) =>
     (backingByVariantId.get(variantId) ?? []).map((backing) => ({ ...backing, variantId, quantity })),
   )
+}
+
+/**
+ * What has to be confirmed in stock, or reserved, for line items that already exist.
+ *
+ * Keyed by line item rather than by variant, unlike {@link prepareVariantInventoryChecks}: a
+ * reservation points back at the row it was taken for, which is how cancelling and fulfilling find
+ * it again. Quantities are therefore left per row rather than summed — two lines for one variant
+ * are two reservations, each answerable on its own.
+ */
+export function prepareLineItemInventoryChecks(
+  lineItems: InventoryLineItem[],
+  mappings: ProductVariantInventoryItemDTO[],
+  levels: InventoryLevelDTO[],
+): LineItemInventoryCheck[] {
+  const backingByVariantId = indexVariantInventory(mappings, levels)
+
+  return lineItems.flatMap((lineItem) => {
+    const variantId = lineItem.variantId
+    if (!variantId) return []
+
+    return (backingByVariantId.get(variantId) ?? []).map((backing) => ({
+      ...backing,
+      lineItemId: lineItem.id,
+      variantId,
+      quantity: lineItem.quantity,
+    }))
+  })
 }

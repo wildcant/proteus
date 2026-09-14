@@ -24,7 +24,7 @@ import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { env } from '@env'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
-import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
+import { prepareLineItemInventoryChecks } from './utils/variant-inventory.js'
 
 type CompleteCartInput = { cartId: string }
 
@@ -425,33 +425,47 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     await ctx.step(
       'reserve-inventory',
       async ({ container }) => {
-        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
         const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
         const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-        const lineItems = await cartService.listLineItems({ cartId: input.cartId })
-        const variantIds = lineItems.map((li) => li.variantId).filter((id) => id != null)
+        /** The order's line items, not the cart's — which is why this step runs after the order
+         *  exists. A reservation is read back by the line item it was taken for, and cancelling
+         *  and fulfilling only ever hold the order's ids; keyed to the cart's, every reservation
+         *  the shop holds would be unreachable. */
+        const lineItems = await orderService.listOrderLineItems({ orderId: order.id })
+        const variantIds = lineItems.map((item) => item.variantId).filter((id) => id != null)
         if (variantIds.length === 0) return []
 
         const mappings = await linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds)
-        const inventoryItemIds = [...new Set(mappings.map((m) => m.inventoryItemId))]
+        const inventoryItemIds = [...new Set(mappings.map((mapping) => mapping.inventoryItemId))]
         const levels = await inventoryService.listInventoryLevels({ inventoryItemId: inventoryItemIds })
 
-        const confirmInput = prepareConfirmInventoryInput({
-          cartId: input.cartId,
-          lineItems,
-          mappings,
-          levels,
+        const reservationInput = prepareLineItemInventoryChecks(lineItems, mappings, levels).map((item) => {
+          /** An item's available locations are the ones it has a level at, and the reservation is
+           *  written against the first. Medusa ranks a wider candidate set; at one location every
+           *  tier of that ranking selects the same element, so the ranking is not built.
+           *
+           *  None at all is a tracked variant with nowhere to draw stock from — bad data about the
+           *  variant, not a shopper who arrived too late. Named here rather than left to the
+           *  resolve below, which would only be able to report the empty id it was handed. */
+          const locationId = item.locationIds[0]
+          if (!locationId) {
+            throw new WorkflowTerminalError({
+              type: ErrorTypes.INVALID_DATA,
+              message: `Variant "${item.variantId}" is tracked, but its inventory item "${item.inventoryItemId}" is stocked at no location`,
+            })
+          }
+
+          return {
+            inventoryItemId: item.inventoryItemId,
+            locationId,
+            quantity: item.quantity * item.requiredQuantity,
+            lineItemId: item.lineItemId,
+          }
         })
 
-        if (confirmInput.items.length === 0) return []
-
-        const reservationInput = confirmInput.items.map((item) => ({
-          inventoryItemId: item.inventoryItemId,
-          locationId: item.locationIds[0] ?? '',
-          quantity: item.quantity * item.requiredQuantity,
-          lineItemId: item.lineItemId,
-        }))
+        if (reservationInput.length === 0) return []
 
         // `locationId` crosses a module boundary, so it carries no foreign key (ADR-0004).
         // Resolving before the write is what stands in for one: an id naming no Stock Location
@@ -461,7 +475,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
         const reservations = await inventoryService.createReservationItems(reservationInput)
 
-        return reservations.map((r) => r.id)
+        return reservations.map((reservation) => reservation.id)
       },
       async (ids, { container }) => {
         if (ids.length === 0) return
