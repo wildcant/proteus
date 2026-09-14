@@ -13,6 +13,7 @@ import type { IPaymentModuleService } from '../src/core/types/payment/service.js
 import type { IPricingModuleService } from '../src/core/types/pricing/service.js'
 import type { IProductModuleService } from '../src/core/types/product/service.js'
 import type { IRegionModuleService } from '../src/core/types/region/service.js'
+import type { IStockLocationModuleService } from '../src/core/types/stock-location/service.js'
 import type { IStoreModuleService } from '../src/core/types/store/service.js'
 import type { IUserModuleService } from '../src/core/types/user/service.js'
 import { ContainerRegistrationKeys } from '../src/core/utils/container.js'
@@ -32,6 +33,7 @@ const notificationService = container.resolve<INotificationModuleService>(Module
 const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
 const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+const stockLocationService = container.resolve<IStockLocationModuleService>(Modules.STOCK_LOCATION)
 const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
@@ -543,6 +545,19 @@ if (customerIdentity) {
 // scripts/seed/markets.ts.
 await seedMarkets({ regionService, storeService, paymentService, linkService })
 
+// --- Stock location ---
+// The shop holds exactly one, and every Inventory Level below names it. It is seeded rather than
+// created on demand for the same reason the store, the regions and the default shipping profile
+// are: nothing in the admin creates one.
+const [existingStockLocation] = await stockLocationService.listStockLocations()
+const stockLocation =
+  existingStockLocation ?? (await stockLocationService.createStockLocation({ name: 'Main Warehouse' }))
+console.info(
+  existingStockLocation
+    ? `Skipped stock location (${existingStockLocation.name} already exists)`
+    : `Seeded stock location "${stockLocation.name}"`,
+)
+
 // --- Products ---
 const existingProducts = await productService.listProducts()
 if (existingProducts.length > 0) {
@@ -731,7 +746,7 @@ if (existingProducts.length > 0) {
   const createdItems = await inventoryService.createInventoryItems(inventoryData)
   console.info(`Seeded ${createdItems.length} inventory items`)
 
-  // Create inventory levels (all items at a single default location with stock). One SKU is left
+  // Create inventory levels (every item stocked at the one Stock Location). One SKU is left
   // with nothing on hand so the storefront's sold-out option state is reachable without editing
   // the database by hand.
   const SOLD_OUT_SKU = 'MENS-TSHIRT-XL-GREEN'
@@ -739,7 +754,7 @@ if (existingProducts.length > 0) {
   await inventoryService.createInventoryLevels(
     createdItems.map((item) => ({
       inventoryItemId: item.id,
-      locationId: 'loc_default',
+      locationId: stockLocation.id,
       stockedQuantity: item.sku === SOLD_OUT_SKU ? 0 : 100,
       reservedQuantity: 0,
       incomingQuantity: 0,

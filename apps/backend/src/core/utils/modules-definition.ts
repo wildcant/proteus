@@ -13,5 +13,6 @@ export const Modules = {
   NOTIFICATION: 'notification',
   FILE: 'file',
   REGION: 'region',
+  STOCK_LOCATION: 'stockLocation',
   STORE: 'store',
 } as const
