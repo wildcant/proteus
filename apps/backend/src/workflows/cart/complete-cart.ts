@@ -17,6 +17,7 @@ import type { PaymentSessionStatus, UnauthorizedSessionStatus } from '@core/type
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import type { IRegionModuleService } from '@core/types/region/service.js'
+import type { IStockLocationModuleService } from '@core/types/stock-location/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
@@ -445,14 +446,20 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
         if (confirmInput.items.length === 0) return []
 
-        const reservations = await inventoryService.createReservationItems(
-          confirmInput.items.map((item) => ({
-            inventoryItemId: item.inventoryItemId,
-            locationId: item.locationIds[0] ?? '',
-            quantity: item.quantity * item.requiredQuantity,
-            lineItemId: item.lineItemId,
-          })),
-        )
+        const reservationInput = confirmInput.items.map((item) => ({
+          inventoryItemId: item.inventoryItemId,
+          locationId: item.locationIds[0] ?? '',
+          quantity: item.quantity * item.requiredQuantity,
+          lineItemId: item.lineItemId,
+        }))
+
+        // `locationId` crosses a module boundary, so it carries no foreign key (ADR-0004).
+        // Resolving before the write is what stands in for one: an id naming no Stock Location
+        // fails here rather than silently at fulfillment, when the units are already sold.
+        const stockLocationService = container.resolve<IStockLocationModuleService>(Modules.STOCK_LOCATION)
+        await stockLocationService.resolveStockLocations(reservationInput.map((item) => item.locationId))
+
+        const reservations = await inventoryService.createReservationItems(reservationInput)
 
         return reservations.map((r) => r.id)
       },

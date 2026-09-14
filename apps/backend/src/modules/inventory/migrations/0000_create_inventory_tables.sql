@@ -13,7 +13,6 @@ CREATE TABLE "inventory_item" (
 	"description" text,
 	"title" text,
 	"thumbnail" text,
-	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -26,7 +25,6 @@ CREATE TABLE "inventory_level" (
 	"stocked_quantity" integer DEFAULT 0 NOT NULL,
 	"reserved_quantity" integer DEFAULT 0 NOT NULL,
 	"incoming_quantity" integer DEFAULT 0 NOT NULL,
-	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -42,7 +40,6 @@ CREATE TABLE "reservation_item" (
 	"external_id" text,
 	"description" text,
 	"created_by" text,
-	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone

@@ -1,10 +1,19 @@
 import type { AwilixContainer } from 'awilix'
-import type { CreateInventoryItemDTO, CreateInventoryLevelDTO } from '../../../src/core/types/inventory/mutations.js'
+import type {
+  CreateInventoryItemDTO,
+  CreateInventoryLevelDTO,
+  CreateReservationItemDTO,
+} from '../../../src/core/types/inventory/mutations.js'
 import type { IInventoryModuleService } from '../../../src/core/types/inventory/service.js'
 import type { ILinkService } from '../../../src/core/types/link/service.js'
 import { ContainerRegistrationKeys } from '../../../src/core/utils/container.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
-import { generateCreateInventoryItemDTO, generateCreateInventoryLevelDTO } from '../inventory-dto.js'
+import {
+  generateCreateInventoryItemDTO,
+  generateCreateInventoryLevelDTO,
+  generateCreateReservationItemDTO,
+} from '../inventory-dto.js'
+import { createStockLocation } from './stock-location.js'
 
 export type StockVariantOptions = {
   variantId: string
@@ -15,9 +24,12 @@ export type StockVariantOptions = {
 }
 
 /**
- * Backs a variant with real stock: inventory item, a level holding it, and the
- * variant↔item link that `reserve-inventory` walks. Without the link the workflow
- * silently reserves nothing, so all three go together.
+ * Backs a variant with real stock: a Stock Location, an inventory item, a level holding it at that
+ * location, and the variant↔item link that `reserve-inventory` walks. Without the link the
+ * workflow silently reserves nothing, so all of it goes together.
+ *
+ * The location is created rather than faked because `reserve-inventory` resolves the id before it
+ * writes a reservation — a minted `sloc_...` string would fail there, not here.
  */
 export async function stockVariant(container: AwilixContainer, options: StockVariantOptions) {
   const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
@@ -26,8 +38,10 @@ export async function stockVariant(container: AwilixContainer, options: StockVar
   const [inventoryItem] = await inventoryService.createInventoryItems([generateCreateInventoryItemDTO(options.item)])
   if (!inventoryItem) throw new Error('createInventoryItems returned no rows')
 
+  const locationId = options.level?.locationId ?? (await createStockLocation(container)).id
+
   const [inventoryLevel] = await inventoryService.createInventoryLevels([
-    generateCreateInventoryLevelDTO({ ...options.level, inventoryItemId: inventoryItem.id }),
+    generateCreateInventoryLevelDTO({ ...options.level, locationId, inventoryItemId: inventoryItem.id }),
   ])
   if (!inventoryLevel) throw new Error('createInventoryLevels returned no rows')
 
@@ -51,12 +65,30 @@ export async function addInventoryLevel(
 ) {
   const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
 
+  const locationId = overrides?.locationId ?? (await createStockLocation(container)).id
+
   const [inventoryLevel] = await inventoryService.createInventoryLevels([
-    generateCreateInventoryLevelDTO({ ...overrides, inventoryItemId }),
+    generateCreateInventoryLevelDTO({ ...overrides, locationId, inventoryItemId }),
   ])
   if (!inventoryLevel) throw new Error('createInventoryLevels returned no rows')
 
   return inventoryLevel
+}
+
+/**
+ * Stock committed to something, which is the only way `reservedQuantity` moves. A test that wants
+ * a level with units already spoken for reserves them; the create DTO cannot set the counter.
+ */
+export async function reserveStock(
+  container: AwilixContainer,
+  overrides: Pick<CreateReservationItemDTO, 'inventoryItemId' | 'locationId'> & Partial<CreateReservationItemDTO>,
+) {
+  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+  const [reservation] = await inventoryService.createReservationItems([generateCreateReservationItemDTO(overrides)])
+  if (!reservation) throw new Error('createReservationItems returned no rows')
+
+  return reservation
 }
 
 // ---- Reads ----
