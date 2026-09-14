@@ -40,6 +40,11 @@ export function AddToCart({ product, selectedVariant }: AddToCartProps) {
     return <p className="text-ink-muted text-sm">This product isn't available to order yet.</p>
   }
 
+  // A render of `soldOut`, not a field beside it. The backend already collapsed untracked,
+  // backorder and in-stock into `available`, so there is no second question to ask here — and no
+  // second answer that could drift out of step with the one the picker strikes values through on.
+  const isSoldOut = selectedVariant?.stock.state === 'soldOut'
+
   return (
     // Pinned to the phone viewport from first paint rather than revealed once the inline button
     // scrolls away: this is the page's entire job, and the reveal pattern costs a scroll observer
@@ -56,9 +61,15 @@ export function AddToCart({ product, selectedVariant }: AddToCartProps) {
         size="lg"
       />
 
-      <Button className="flex-1" disabled={addLineItem.isPending || !selectedVariant} onClick={handleAddToCart}>
+      {/* Relabelled as well as disabled: a dead "Add to cart" is a button a shopper presses twice
+          before deciding the site is broken, which is the trip to checkout this replaces. */}
+      <Button
+        className="flex-1"
+        disabled={addLineItem.isPending || !selectedVariant || isSoldOut}
+        onClick={handleAddToCart}
+      >
         {addLineItem.isPending ? <Loader2Icon className="mr-2 size-4 animate-spin" /> : null}
-        Add to cart
+        {isSoldOut ? 'Sold out' : 'Add to cart'}
       </Button>
     </div>
   )

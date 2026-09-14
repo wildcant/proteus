@@ -5,6 +5,7 @@ import { ProductError } from '#/features/products/components/product-error'
 import { ProductGallery } from '#/features/products/components/product-gallery'
 import { ProductSpecs } from '#/features/products/components/product-specs'
 import { VariantPicker } from '#/features/products/components/variant-picker'
+import { VariantStock } from '#/features/products/components/variant-stock'
 import { useFormatters } from '#/hooks/use-formatters'
 import { useMarket } from '#/hooks/use-market'
 
@@ -68,6 +69,10 @@ export function ProductDetail() {
                 )}
               </p>
             )}
+            {/* Under the price and above the picker: it is an answer about the variant the shopper
+                is currently on, so it belongs beside the other one — and ahead of the control that
+                changes which variant that is. */}
+            {!!selectedVariant && <VariantStock stock={selectedVariant.stock} />}
           </div>
 
           {/* Above the pickers, where the reference puts its teaser — and in full, because one

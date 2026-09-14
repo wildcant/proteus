@@ -8,7 +8,7 @@ export function ProductCard({ product, priority }: { product: StoreProductListIt
 
   return (
     <Link to="/products/$productId" params={{ productId: product.id }} className="group block no-underline">
-      <div className="aspect-4/5 overflow-hidden bg-surface-subtle">
+      <div className="relative aspect-4/5 overflow-hidden bg-surface-subtle">
         {product.thumbnail ? (
           <img
             src={product.thumbnail}
@@ -25,6 +25,9 @@ export function ProductCard({ product, priority }: { product: StoreProductListIt
             <PackageIcon className="h-10 w-10" />
           </div>
         )}
+        {/* Inside the image box and a sibling of the photograph, so the hover zoom moves the
+            garment and leaves the label where it was. */}
+        {product.soldOut ? <SoldOutBadge /> : null}
       </div>
       {/* No side inset on a phone: at a 4px column gutter a 185px card needs its full width for
           the title, and insetting would cost more than the 4px it buys. */}
@@ -42,5 +45,24 @@ export function ProductCard({ product, priority }: { product: StoreProductListIt
         )}
       </div>
     </Link>
+  )
+}
+
+/**
+ * The one thing said over a photograph.
+ *
+ * Bottom left, where the reference design puts it: the top of a 4:5 crop is where the garment is,
+ * and a label in the corner nearest the title reads as belonging to the card rather than floating
+ * over the model.
+ *
+ * A pill, and the only rounded thing in a squared-off system. That is what tells the eye it is a
+ * label laid on the image and not part of the photograph's own composition; `--radius: 0` squares
+ * everything that sits *in* the grid, and this sits on top of it.
+ */
+function SoldOutBadge() {
+  return (
+    <span className="absolute bottom-2 left-2 rounded-full bg-surface px-2.5 py-1 font-medium text-ink text-xs">
+      Sold out
+    </span>
   )
 }
