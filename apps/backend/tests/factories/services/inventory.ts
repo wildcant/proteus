@@ -102,7 +102,31 @@ export async function reserveStock(
   return reservation
 }
 
+/**
+ * Moves what is on the shelf. The module takes an adjustment rather than an absolute, and the
+ * level a variant is born with holds zero — so a test that needs units in stock adds them here.
+ */
+export async function adjustInventoryLevel(
+  container: AwilixContainer,
+  ...args: Parameters<IInventoryModuleService['adjustInventoryLevel']>
+) {
+  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+  return inventoryService.adjustInventoryLevel(...args)
+}
+
 // ---- Reads ----
+
+/** The Inventory Items themselves — the only read that can tell an item that was never created
+ *  from one that untracking hid, which takes `{ withDeleted: true }`. */
+export async function listInventoryItems(
+  container: AwilixContainer,
+  ...args: Parameters<IInventoryModuleService['listInventoryItems']>
+) {
+  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+  return inventoryService.listInventoryItems(...args)
+}
 
 export async function listReservationItems(
   container: AwilixContainer,

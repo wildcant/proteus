@@ -112,6 +112,17 @@ export class InventoryModuleService implements IInventoryModuleService {
     })
   }
 
+  /**
+   * Brings back exactly what the matching soft delete hid — the item, its levels and the stock
+   * they hold. This is what makes untracking a variant a reversible act rather than a destructive
+   * one; nothing else calls it.
+   */
+  async restoreInventoryItems(itemIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.inventoryItemRepository.restore(itemIds, ctx)
+    })
+  }
+
   async listInventoryLevels(
     filters?: FilterableInventoryLevelProps,
     config?: FindConfig<InventoryLevelDTO>,

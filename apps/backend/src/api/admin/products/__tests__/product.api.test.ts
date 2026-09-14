@@ -321,6 +321,60 @@ test.describe('GET /admin/products/:id/variants/:variantId', () => {
   })
 })
 
+test.describe('PATCH /admin/products/:id/variants/:variantId', () => {
+  /** A variant created the way the shopkeeper creates one, with units on the shelf behind it. */
+  const createStockedVariant = async (service: Services, stockedQuantity: number) => {
+    const location = await service.create.stockLocation(api.container)
+    const { product } = await service.create.product(api.container)
+    const response = await api.post<typeof variantRoutes.PostOutput>(`/admin/products/${product.id}/variants`, {
+      optionValues: {},
+    })
+    const variant = response.body.variant
+
+    const [link] = await service.read
+      .linkRepo(api.container, 'productVariantInventoryItem')
+      .findByVariantIds([variant.id])
+    if (!link) throw new Error('Expected the created variant to be linked to an inventory item')
+    await service.update.inventoryLevel(api.container, link.inventoryItemId, location.id, stockedQuantity)
+
+    return { product, variant, location, inventoryItemId: link.inventoryItemId }
+  }
+
+  test('refuses to untrack a variant whose stock an order is holding', async ({ expect, service }) => {
+    const { product, variant, location, inventoryItemId } = await createStockedVariant(service, 3)
+    const reservation = await service.create.reservedStock(api.container, {
+      inventoryItemId,
+      locationId: location.id,
+      quantity: 1,
+      lineItemId: 'orderli_open',
+    })
+
+    const { status, body } = await api.patch(`/admin/products/${product.id}/variants/${variant.id}`, {
+      manageInventory: false,
+    })
+
+    // Untracking hides the inventory item, and the reservations against it would go with it —
+    // stranding an order that has been paid for and still needs fulfilling.
+    expect(status).toBe(400)
+    expect(body.type).toBe(ErrorTypes.NOT_ALLOWED)
+    expect(body.message).toContain(reservation.id)
+    expect(await service.read.inventoryItems(api.container, { id: inventoryItemId })).toHaveLength(1)
+  })
+
+  test('untracks a variant nothing is holding, and hides its inventory with it', async ({ expect, service }) => {
+    const { product, variant, inventoryItemId } = await createStockedVariant(service, 3)
+
+    const response = await api.patch<typeof variantByIdRoutes.PatchOutput>(
+      `/admin/products/${product.id}/variants/${variant.id}`,
+      { manageInventory: false },
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.body.variant.manageInventory).toBe(false)
+    expect(await service.read.inventoryItems(api.container, { id: inventoryItemId })).toEqual([])
+  })
+})
+
 test.describe('GET /admin/products/:id/images/:imageId/variants', () => {
   const createProductWithTwoImages = async (service: Services) => {
     const { product, images } = await service.create.product(api.container, {
