@@ -13,7 +13,11 @@ import {
 } from '@proteus/http-schemas/store'
 import { buildStartingPrices } from '@workflows/product/utils/build-starting-prices.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
-import { isPurchasable, variantStockProjection } from '@workflows/product/utils/build-variant-stock.js'
+import {
+  buildAvailableQuantities,
+  isPurchasable,
+  variantStockProjection,
+} from '@workflows/product/utils/build-variant-stock.js'
 import { setPricingContext } from '../middlewares.js'
 
 export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
@@ -68,8 +72,11 @@ export const GET = async (
    * The grid's stock answer, at the product's grain: sold out when no variant of it can be bought.
    *
    * Read for the page that is being drawn rather than for the catalogue the pricing filter walked,
-   * because this is the one part of the response that costs a query per inventory item — and a
-   * card the shopper will never scroll to does not need its badge resolved.
+   * because the inventory rows are the one thing here the whole catalogue does not already need —
+   * and a card the shopper will never scroll to does not need its badge resolved. It is one query
+   * over the levels of whatever the page holds, not one per inventory item: `limit` reaches 100 and
+   * every variant has an item of its own, so per-item reads would put hundreds of concurrent
+   * `SELECT`s against a pool of ten and hold it for the duration.
    *
    * Only the variants a price was found for count, which is the same set the product page would
    * offer: a variant this market cannot quote is one no shopper can buy here either, and letting
@@ -84,13 +91,16 @@ export const GET = async (
     .findByVariantIds(pagedVariants.map((variant) => variant.id))
 
   const itemIds = [...new Set(inventoryLinks.map((link) => link.inventoryItemId))]
-  const [availableQuantities, store] = await Promise.all([
-    Promise.all(
-      itemIds.map(async (itemId) => [itemId, await inventoryService.retrieveAvailableQuantity(itemId)] as const),
-    ),
+  const [levels, store] = await Promise.all([
+    // An empty filter array would reach the query builder as `inArray(column, [])`.
+    itemIds.length > 0 ? inventoryService.listInventoryLevels({ inventoryItemId: itemIds }) : [],
     storeService.resolveStore(),
   ])
-  const stockOf = variantStockProjection(inventoryLinks, new Map(availableQuantities), store?.lowStockThreshold ?? null)
+  const stockOf = variantStockProjection(
+    inventoryLinks,
+    buildAvailableQuantities(levels),
+    store?.lowStockThreshold ?? null,
+  )
 
   const purchasableProductIds = new Set(
     pagedVariants.filter((variant) => isPurchasable(stockOf(variant))).map((variant) => variant.productId),

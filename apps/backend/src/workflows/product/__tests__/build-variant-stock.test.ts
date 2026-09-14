@@ -51,6 +51,15 @@ test.describe('variantStockProjection', () => {
     expect(stockOf(variant('var_1'))).toEqual({ state: 'low', remaining: 2 })
   })
 
+  test('a variant needing more of an item than is left is sold out, not fractionally low', ({ expect }) => {
+    // Three per unit against two on the shelf buys nothing. Dividing without flooring would call
+    // this `low` with a `remaining` of 0.667 — a fraction of a unit, on the wire, for copy that
+    // says "only N left".
+    const stockOf = variantStockProjection([link('var_1', 'item_1', 3)], new Map([['item_1', 2]]), 5)
+
+    expect(stockOf(variant('var_1'))).toEqual({ state: 'soldOut' })
+  })
+
   test('a variant is sold out once any one of its items runs short', ({ expect }) => {
     // The rule this projection exists for: several items, and the scarcest decides. Taking the
     // largest — or the first — would offer a variant the cart cannot assemble.

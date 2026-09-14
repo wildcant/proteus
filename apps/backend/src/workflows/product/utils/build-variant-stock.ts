@@ -1,5 +1,28 @@
+import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
 import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
 import type { VariantStockFlags } from '../../cart/utils/variant-inventory.js'
+
+/**
+ * Available quantity per inventory item, from one read of their levels.
+ *
+ * Stocked minus reserved, summed across the locations the item is held at — the same subtraction
+ * {@link IInventoryModuleService.retrieveAvailableQuantity} makes for one item, made here for a
+ * page of them. Asking per item is one `SELECT` per variant on the page, which a hundred-card grid
+ * turns into hundreds of concurrent queries against a pool of ten; the levels of every item on the
+ * page come back in a single `listInventoryLevels`, the way the cart workflows already read them.
+ *
+ * An item with no level anywhere contributes no key rather than a zero, which
+ * {@link variantStockProjection} already reads as nothing available.
+ */
+export function buildAvailableQuantities(levels: InventoryLevelDTO[]): Map<string, number> {
+  const availableByItemId = new Map<string, number>()
+  for (const level of levels) {
+    const running = availableByItemId.get(level.inventoryItemId) ?? 0
+    availableByItemId.set(level.inventoryItemId, running + level.stockedQuantity - level.reservedQuantity)
+  }
+
+  return availableByItemId
+}
 
 /**
  * The answer the storefront renders, rather than the number it would have to threshold itself.

@@ -10,7 +10,11 @@ import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StorePricingContextParams, StoreProductResponse } from '@proteus/http-schemas/store'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
-import { isPurchasable, variantStockProjection } from '@workflows/product/utils/build-variant-stock.js'
+import {
+  buildAvailableQuantities,
+  isPurchasable,
+  variantStockProjection,
+} from '@workflows/product/utils/build-variant-stock.js'
 import { setPricingContext } from '../../middlewares.js'
 
 export const GetInput = { params: IdParams, contextQuery: StorePricingContextParams }
@@ -57,15 +61,20 @@ export const GET = async (
   const linkedImages = new Set(variantImages.map((variantImage) => `${variantImage.variantId}:${variantImage.imageId}`))
 
   const itemIds = [...new Set(inventoryLinks.map((link) => link.inventoryItemId))]
-  const [availableQuantities, store] = await Promise.all([
-    Promise.all(
-      itemIds.map(async (itemId) => [itemId, await inventoryService.retrieveAvailableQuantity(itemId)] as const),
-    ),
+  const [levels, store] = await Promise.all([
+    // Every item's levels in one read, the way the cart workflows read them — asking the module
+    // per item would be one `SELECT` per variant. An empty filter array would reach the query
+    // builder as `inArray(column, [])`.
+    itemIds.length > 0 ? inventoryService.listInventoryLevels({ inventoryItemId: itemIds }) : [],
     // The threshold that decides `low` is store-wide and nullable, and a deployment with no store
     // row yet has no threshold — which reads the same way an unset one does: no variant is low.
     storeService.resolveStore(),
   ])
-  const stockOf = variantStockProjection(inventoryLinks, new Map(availableQuantities), store?.lowStockThreshold ?? null)
+  const stockOf = variantStockProjection(
+    inventoryLinks,
+    buildAvailableQuantities(levels),
+    store?.lowStockThreshold ?? null,
+  )
 
   const variantsForResponse = variants.flatMap((variant) => {
     const calculatedPrice = priceByVariantId.get(variant.id)
