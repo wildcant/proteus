@@ -115,6 +115,62 @@ export function buildStartingPrices(
 ): Map<string, CalculatedPriceSetDTO>
 ```
 
+### A handler holds steps and nothing else
+
+A handler is not run once. `advanceWorkflow` re-executes it from the top on every step, handing back
+stored outputs for the steps already done and running exactly the next one — so everything *between*
+`ctx.step` calls runs once per remaining step, 91 times over `complete-cart`'s 14, and what it
+computes is never recorded anywhere. A `Date.now()` there does not fail. It produces a different
+value on every pass and the workflow proceeds on it, which is corruption rather than an error.
+
+> Outside a step callback, a handler holds step calls and the returns that end it early. Nothing
+> else.
+
+That is an allowlist, and it has to stay one. Naming the impure things instead — `Date.now()`,
+`new Date()`, `Math.random()`, `crypto.*`, `container.*` — is wrong the moment someone reaches for
+the one you did not name: `performance.now()`, `process.hrtime.bigint()`,
+`globalThis.crypto.randomUUID()`, a destructured `const { random } = Math`, a fire-and-forget
+`fetch()`. Measured against sixteen impure expressions, that seven-name list catches five. Asking
+what a handler is *allowed* to contain catches all sixteen, and needs no revisiting when the platform
+grows a new clock.
+
+| Outside a step | Legal |
+|---|---|
+| `const cart = await ctx.step('load', …)` | yes — a binding a step produced |
+| `await someStep(ctx, …)` | yes — a helper whose name ends in `Step` **and** which is handed `ctx` |
+| `return cart`, `return { added, removed }` | yes |
+| `if (!cart) return` | yes — ending the handler early is the one decision that belongs here |
+| `const total = cart.total` | **no** — a binding no step produced |
+| `for (const id of ids) { await …Step(ctx, …) }` | **no** — give the step the whole list |
+| `buildPrices(a, b)`, `Date.now()`, `new Date()` | **no** — any call, any `new` |
+| `return await loadCart(id)` | **no** — an await of anything that is not a step |
+| `if (x) { await …Step(ctx, …) }` | **no** — a step behind an `if` |
+| a `try` around a `ctx.step(…)` | **no** — see below |
+
+The step *name* argument counts as outside the step, because it is rebuilt on every replay like the
+rest of the glue — `ctx.step(`sync-${Date.now()}`, …)` addresses a different step each pass.
+
+**Why a loop is banned rather than allowed carefully.** `for (const c of countries) { assigned.push(await assignCountryToRegionStep(ctx, c)) }`
+is N steps whose count depends on the input. Give the step the whole list instead: the work is
+recorded once, one compensation covers all of it, and if the writes belong to a single module the
+answer is better still — one service method wrapped in `this.withTransaction`, because a database
+transaction beats compensation wherever it reaches.
+
+**Why a step may not sit behind an `if`.** A conditionally called step means the recorded step
+sequence differs between runs, which is the shape `StepSequenceChangedError` exists for. It is stable
+today only because the conditions happen to read a previous step's recorded output, and nothing says
+the next one will. Call the step unconditionally and let its action return early when there is
+nothing to do — and where the step has compensation, record on the no-op path that it did not act, so
+the rollback does not undo work it never did.
+
+**Why a `try` around a step is here at all.** It is not about purity. Once the step it was replaying
+to is done the handler is *abandoned*: the replay hands back a promise that never settles, so the
+handler stops at its next `await` and a `catch` it wrote around `ctx.step` never runs — while the
+simple adapter rejects into the handler and both do. Ordinary recovery code, two behaviours, no error
+anywhere. A `try` *inside* a step action is the legal form and stays legal: it runs Worker-local,
+once, on both engines. The mechanism is in
+[`src/framework/workflows/README.md`](../../../../../apps/backend/src/framework/workflows/README.md#the-purity-rule).
+
 ### A workflow declares what it raises
 
 `throws` on the `createWorkflow` config is the workflow's half of the error contract, and it exists so
@@ -134,8 +190,34 @@ same way a route spreads the workflow's. Nothing in the chain restates a type it
 | `workflow-util-is-not-pure` | that a `utils/` helper does no I/O and takes no service |
 | `workflow-throws-undeclared-error` | that a type raised as `WorkflowTerminalError` is on the `throws` list |
 | `workflow-declares-unthrown-error` | that a type on the list is one the file actually raises |
+| `workflow-holds-logic-between-steps` | that a handler holds only step calls and the returns that end it early |
+| `workflow-calls-a-step-conditionally` | that a step is not reached on only some paths |
+| `workflow-wraps-a-step-in-try` | that no `try` outside a step wraps a `ctx.step` |
+| `workflow-handler-is-not-inline` | that the handler is inline, so the three above can read it |
 
-`standards/README.md` covers how rules run, how their tests work, and how to suppress one.
+The first is one rule rather than several because it is one claim, and the shapes it rejects are not
+each their own standard: a binding, a loop, a call, a `new` and an `await` outside a step are all the
+handler doing work that nothing records. Splitting it into one rule per impure global is the shape to
+avoid: seven such rules catch five of sixteen impure expressions, letting `performance.now()`,
+`process.hrtime.bigint()`, `globalThis.crypto.randomUUID()` and a destructured `const { random } = Math`
+through. Asking what a handler may *contain* catches all sixteen and needs no revisiting when the
+platform grows a new clock.
+
+The other three stay separate because each is a different claim. A conditional step is about *when* a
+step runs rather than about extra code; a `try` around a step is not about replay at all but about the
+two adapters disagreeing; and an inline handler is the precondition for reading any of it.
+
+They share four fragments under `standards/utils/backend/workflows/`: `outside-a-step`,
+`logic-statement`, `produced-by-a-step`, and the two that recognise a step call. `ctx-step-call.yml`
+carries the reason that matters — `await ctx.step<Output>(…)` parses with the `await` *inside* the
+call expression, so the obvious matcher misses all 18 typed steps in this directory, and misses them
+silently. That subtraction going quiet is the one way these rules could pass a tree they should fail,
+which is what their tests in `standards/rule-tests/` exist to catch.
+
+`logic-statement` is the one denylist left, and it is a list of the grammar's statement kinds rather
+than of globals: ast-grep needs a positive `kind:` to enumerate candidates, and TypeScript exposes no
+`statement` supertype, so "any statement that is not a step" cannot be said directly. A denylist over
+statement kinds is closed; the one over impure globals was not, which is why it kept missing things.
 
 ### Exemptions
 
@@ -157,10 +239,24 @@ the raise. Write the reason above the suppression.
 - **That compensation actually reverses the action.** A compensation is an arbitrary function; that
   it undoes what the action did is a claim about behaviour, and the only thing that can check it is a
   rollback test driven from a step downstream.
-- **Purity beyond the file.** `workflow-util-is-not-pure` matches an `await`, an `async` keyword or a
-  service-typed parameter. A util that calls an impure import is invisible to it, and
-  `check:workflow-purity` does not help — that script owns the *handler* body and does not follow
-  imports, so nothing else is watching a `utils/` file.
+- **Purity beyond the file.** Every rule here is single-file. `workflow-util-is-not-pure` matches an
+  `await`, an `async` keyword or a service-typed parameter, and a util that calls an impure import is
+  invisible to it; the rules above own the *handler* body and do not follow imports either, so a
+  helper that is not named `…Step` and does I/O passes both. Following the import is what a
+  whole-program check would do, and ADR-0021 (D11) trusts `utils/` by convention instead.
+- **Which context parameter the handler took.** The rules spell it `ctx`, because ast-grep cannot
+  bind a name in one clause and require it in a `not:`. All 32 handlers name it `ctx`. One that did
+  not would have its own step actions reported as impure — loud, not silent, which is the direction
+  a purity check is allowed to fail in.
+- **That `process.env` stays out of a handler.** It does, but
+  [`env-read-outside-env-module`](../../../env-read-outside-env-module.yml) already holds it across
+  all of `src/` — strictly more than the handler — and one claim gets one rule. A denylist rule for
+  it here was written and then deleted for that reason.
+- **What a step action contains.** Nothing above applies inside a `ctx.step` callback, and that is
+  the point rather than a gap: the action runs once, its output is recorded, and every replay is
+  handed the recorded value. A clock read, a loop, a `try` and a `container.resolve` are all correct
+  in there. The rules exist to push code *into* that callback, so constraining it too would leave
+  the code nowhere to go.
 - **That a `TODO(workflows)` gets written.** The rule refuses the `Promise.all`; recording why the
   parallelism was available is the convention it cannot see the absence of.
 

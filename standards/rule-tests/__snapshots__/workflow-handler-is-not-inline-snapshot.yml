@@ -1,0 +1,24 @@
+id: workflow-handler-is-not-inline
+snapshots:
+  ? |
+    export const w = createWorkflow('w', detachedHandler)
+  : labels:
+    - source: createWorkflow('w', detachedHandler)
+      style: primary
+      start: 17
+      end: 53
+    - source: createWorkflow
+      style: secondary
+      start: 17
+      end: 31
+  ? |
+    export const w = createWorkflow<Input, string>('w', handlers.settle)
+  : labels:
+    - source: createWorkflow<Input, string>('w', handlers.settle)
+      style: primary
+      start: 17
+      end: 68
+    - source: createWorkflow
+      style: secondary
+      start: 17
+      end: 31

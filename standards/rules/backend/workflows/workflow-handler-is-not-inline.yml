@@ -1,0 +1,23 @@
+id: workflow-handler-is-not-inline
+language: typescript
+severity: error
+message: This workflow does not pass its handler inline, so nothing about its body is checkable.
+note: 'Write the handler as an inline `async (ctx, input) => { … }` argument to `createWorkflow`. Every other rule in this directory reads the handler body out of the call; a handler passed by name is a body the purity rules cannot see, and they report nothing rather than reporting a problem. standards/rules/backend/workflows/__docs__/workflows.md'
+files:
+  - "**/src/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  kind: call_expression
+  all:
+    - has:
+        field: function
+        regex: '^createWorkflow$'
+    - not:
+        has:
+          field: arguments
+          has:
+            nthChild: 2
+            any:
+              - kind: arrow_function
+              - kind: function_expression

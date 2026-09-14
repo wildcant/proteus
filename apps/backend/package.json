@@ -53,8 +53,6 @@
     "db:diagram": "dotenvx run -f ../../.env.local -- ./scripts/db-diagram/run.sh",
     "openapi:dump:offline": "dotenvx run -f ../../.env.test -- tsx scripts/openapi-dump.ts",
     "check:openapi": "spectral lint openapi/openapi-admin.json openapi/openapi-store.json --ruleset openapi/ruleset.yaml --fail-severity=error",
-    "check:errors": "./scripts/check-generic-errors.sh",
-    "check:workflow-purity": "tsx scripts/replay-purity.ts",
     "check:workflow-registry": "tsx scripts/generate-workflow-registry.ts --check",
     "workflows:generate": "tsx scripts/generate-workflow-registry.ts",
     "check:subscriber-registry": "tsx scripts/generate-subscriber-registry.ts --check",

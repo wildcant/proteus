@@ -211,6 +211,40 @@ export const POST = async (req: HttpRequest<CreateCustomerDTO>): Promise<HttpRes
 
 No try/catch needed. If `retrieveCustomer` throws NOT_FOUND, the client gets a 404. If `validateBody` rejects, the client gets a 400. If the DB throws a unique violation, the client gets a 400 with "Already exists".
 
+## Enforcement
+
+| Rule id | The claim it enforces |
+|---|---|
+| `constructs-a-generic-error` | that backend code raises `AppError`, never a bare `Error` |
+
+It matches the *construction* rather than the throw, because the two are routinely written apart:
+`const error = new Error(…)` two lines above `throw error`, `Promise.reject(new Error(…))`,
+`Object.assign(new Error(…), { status })`, an error handed to a callback. A text search for
+`throw new Error(` sees none of them.
+
+Five paths are exempt, each because `AppError` is the wrong answer there rather than because the rule
+is inconvenient: `__tests__/` throws deliberately odd errors to be caught two lines down; `src/env.ts`
+and `framework/config/` and the loaders run before the container does, so `AppError` is not reachable;
+`core/db/` is infrastructure below the error layer, whose failures are programming errors rather than
+anything a client should read; and a `core/utils/abstract-*` base class saying "you did not override
+this" is talking to the provider author, not to a client. The exemptions are globs in the rule.
+
+One site carries an `ast-grep-ignore` instead. `deserializeError` in
+`framework/temporal/failures.ts` rebuilds a plain `Error` on purpose — it is the inverse of
+`serializeError`'s `kind: 'plain'` branch, and rebuilding it as an `AppError` would invent a `type`
+the Worker never threw, which `errorHandler` would then answer with a status the failure never had.
+
+### What is deliberately not enforced
+
+- **That the `type` is the right one.** Whether a failure is a `CONFLICT` or an `INVALID_DATA` is the
+  judgement the enum exists to record; nothing can check it from syntax.
+- **That a domain `code` is set where the type is too coarse.** `code` is optional by design, and a
+  rule cannot tell a failure that needs one from a failure the type already describes.
+- **That a thrown non-`Error` never happens.** `throw 'cart missing'` passes every gate here —
+  Biome's `noThrowLiterals` is not on in this repo, and TypeScript permits throwing any value. It
+  reaches `errorHandler` as an unrecognised throw and answers 500, the same as a bare `Error` would,
+  which is why the rule above is written about `AppError` rather than about `Error` specifically.
+
 ## File Layout
 
 ```

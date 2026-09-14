@@ -309,9 +309,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
       },
     )
 
-    const updatedCart = cartUpdate.cart
-
-    if (!regionChange) return updatedCart
+    if (!regionChange) return cartUpdate.cart
 
     /**
      * Moves the cart into the new market: its region, the currency that region settles in, and —
@@ -338,8 +336,8 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
 
         const unchangedAddress = {
           cart,
-          previousRegionId: updatedCart.regionId,
-          previousCurrencyCode: updatedCart.currencyCode,
+          previousRegionId: cartUpdate.cart.regionId,
+          previousCurrencyCode: cartUpdate.cart.currencyCode,
           createdShippingAddressId: null,
           overwrittenShippingAddress: null,
           removedShippingAddressId: null,

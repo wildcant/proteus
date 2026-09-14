@@ -1,0 +1,12 @@
+id: env-read-outside-env-module-in-jsx
+language: tsx
+severity: error
+message: This reads the environment directly. Application code imports the validated `env` object.
+note: 'Import `env` from the app''s `env.ts` — `#/env` in the two frontends. Same claim as `env-read-outside-env-module`, in a second file because ast-grep treats `typescript` and `tsx` as different languages and a rule declares exactly one: a `typescript` rule never opens a `.tsx` file, whatever its `files:` glob says. Only the frontends have any, which is why the backend is not globbed here. docs/configuration.md'
+files:
+  - "apps/store/src/**/*.tsx"
+  - "apps/admin/src/**/*.tsx"
+rule:
+  any:
+    - pattern: process.env
+    - pattern: import.meta.env

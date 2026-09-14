@@ -1,5 +1,6 @@
 import { Context } from '@temporalio/activity'
 import type { AwilixContainer } from 'awilix'
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { isTerminal, toStepApplicationFailure } from '../../temporal/failures.js'
@@ -82,7 +83,10 @@ export function createWorkflowActivities(deps: {
     // Non-retryable on purpose: a name the Worker does not know is a deploy problem, and retrying
     // it just fills history until the workflow times out.
     throw toStepApplicationFailure({
-      error: new Error(`No workflow is registered as "${name}" on this Worker`),
+      error: new AppError({
+        type: ErrorTypes.UNEXPECTED_STATE,
+        message: `No workflow is registered as "${name}" on this Worker`,
+      }),
       step: null,
       nonRetryable: true,
     })

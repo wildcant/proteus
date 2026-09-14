@@ -1,0 +1,17 @@
+# The value a legal binding is initialised from: a step call, in every spelling the grammar has for
+# one. `const cart = await ctx.step(…)` is the handler doing its job; `const total = cart.total` is
+# the handler doing work, and the two are told apart here.
+id: produced-by-a-step
+language: typescript
+rule:
+  any:
+    - matches: ctx-step-call
+    - matches: ctx-step-helper-call
+    - kind: await_expression
+      has:
+        any:
+          - matches: ctx-step-call
+          - matches: ctx-step-helper-call
+          # `await ctx.step<T>(…)`: the grammar puts the await inside the call, so the
+          # await_expression's own child is the bare `ctx.step` member expression.
+          - pattern: ctx.step

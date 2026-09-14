@@ -1,0 +1,16 @@
+id: schema-datetime-bypasses-date-to-iso
+snapshots:
+  ? |
+    export const AdminInvite = z.object({ id: z.string(), expiresAt: z.iso.datetime() }).openapi('AdminInvite')
+  : labels:
+    - source: z.iso.datetime()
+      style: primary
+      start: 65
+      end: 81
+  ? |
+    export const StoreOrder = z.object({ placedAt: z.string().datetime({ offset: true }) }).openapi('StoreOrder')
+  : labels:
+    - source: 'z.string().datetime({ offset: true })'
+      style: primary
+      start: 47
+      end: 84

@@ -61,7 +61,7 @@ live in [when a rule cannot express it](#when-a-rule-cannot-express-it).
 
 | Kind | The claim | Where it lives | Gate |
 |---|---|---|---|
-| Contents | what a file holds | `standards/rules/`, plus the env, error, datetime and replay-purity scripts | `standards` |
+| Contents | what a file holds | `standards/rules/` | `standards` |
 | Structure | which file may import which | `packages/frontend-structure`, each app's `structure/.dependency-cruiser.cjs` | `structure` |
 | Schema | facts that exist only once drizzle has built the table | `apps/backend/scripts/checks/` | `standards` |
 | Currency | whether a committed generated file is stale | the two registry generators, run with `--check` | `generated` |
@@ -188,17 +188,35 @@ standards/
         __docs__/     README.md → modules.md, adding-a-module.md
       api/            route files
         __docs__/     README.md → routes.md, route-helpers.md
-      workflows/      steps and compensation
+      workflows/      steps and compensation, and the replay-purity rules
         __docs__/     README.md → workflows.md
                       the error contract spans routes and workflows, so
                       `route-omits-workflow-errors` sits at `backend/` rather than
-                      inside either one
+                      inside either one — as does `constructs-a-generic-error`,
+                      which spans every directory under `src/`
       subscribers/    no rules yet — the documents arrived first
         __docs__/     README.md → events.md, subscribers.md
+    http-schemas/     the shared Zod schemas
+        __docs__/     README.md → schemas.md, datetimes.md
+                      `packages/http-schemas` has no README of its own: its prose was
+                      use case end to end, so it moved here and left no signpost
+    env-read-outside-env-module{,-in-jsx}.yml
+                      at the root, because the claim spans all three apps and belongs
+                      to none of them. docs/configuration.md holds the prose
+  utils/
+    <same tree>/<util-id>.yml
+                      sub-rules two or more rules share, referenced with `matches:`.
+                      A util has no `severity` and reports nothing on its own
   rule-tests/
     <same tree>/<rule-id>-test.yml
     __snapshots__/    flat — ast-grep keys these by rule id, not by path
 ```
+
+A rule declares exactly one `language:`, and ast-grep treats `typescript` and `tsx` as different
+ones — a `typescript` rule never opens a `.tsx` file, whatever its `files:` glob says. A claim that
+holds in both is therefore two rule files, which is why `env-read-outside-env-module` has an
+`-in-jsx` twin. Only split a rule for this when `.tsx` sites are actually possible: the backend has
+no `.tsx` at all.
 
 A directory appears when its first rule *or its first document* does — an area that is documented
 before it is checked gets its `__docs__/` now and its rules when they harden. Rules that span both
@@ -382,6 +400,7 @@ to keep in step — so record it, with the gate that actually holds it, and move
 | A subscriber imports no transport vocabulary | `subscribers-name-no-transport`, a dependency-cruiser rule — the `structure` gate |
 | A module's tests live in `__tests__/` | `module-tests-live-in-a-tests-folder`, likewise |
 | A third-party provider lives outside every module | `layer-graph-providers` — `providers` may import `core` and nothing else under `src/`, so a provider reaching for a repository fails the moment it is written |
+| A workflow handler does not read `process.env` between steps | `env-read-outside-env-module`, which holds it across all of `src/` rather than only the handler. A workflow-specific rule for it would be the same claim twice |
 
 The test for this verdict is the same as for the one below: name the gate, and be able to say what
 introducing the violation prints. "Typecheck probably catches it" is not a verdict.
@@ -403,12 +422,7 @@ The verdict per check, so the question is not re-litigated:
 | `destroy-only-children` | **Runtime.** The question is about the *parent* — whether the table on the other end of the foreign key is soft-deletable — which is in another file. |
 | `guard-outside-its-closure` | **Runtime.** Transitive reachability over the whole module's cascade graph. Not a property of any file. |
 | `model-reaches-cascade-graph` | **Cross-file, and a rule file cannot see two files at once.** A dependency-cruiser reachability rule from `index.ts` would catch the common case — a model file the module definition never imports. It would *not* catch a table imported for a repository and then left out of the `models` object, which is precisely the case the cascade graph silently loses. Converting would trade the rule for a weaker one, so it stays. |
-| `standard-timestamps` | **Converted.** Now `model-without-standard-timestamps` in `rules/backend/modules/`. The claim was always about the source — that a table spreads `...timestamps` — and moving it also moved its one exemption from a central `EXEMPT` map keyed by table name to an `ast-grep-ignore` at the declaration, which `--error=unused-suppression` can police. |
 | `models.ts`, `metadata.ts`, `run.ts`, `types.ts` | Harness, not rules. |
-
-Two larger checks have not been through this question yet:
-`apps/backend/scripts/replay-purity.ts` (392 lines, parses the workflow handlers) and
-`apps/backend/scripts/check-generic-errors.sh`. Same question, separate pass.
 
 ### Checks that read what no rule engine reads
 

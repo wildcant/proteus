@@ -12,3 +12,8 @@ ruleDirs:
   - standards/rules
 testConfigs:
   - testDir: standards/rule-tests
+# Sub-rules shared by more than one rule, referenced with `matches:`. Discovered recursively, so
+# they mirror `rules/`. What lives here is a *fragment* — the shape of a `ctx.step` call, say —
+# never a standard of its own: a util has no `severity` and reports nothing on its own.
+utilDirs:
+  - standards/utils

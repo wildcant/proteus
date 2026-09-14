@@ -7,7 +7,7 @@ files:
   - "**/src/api/**/route.ts"
 # Scope is the file, not the method: nothing correlates `PostThrows` with the `POST` handler for
 # ast-grep, so a type declared on one method satisfies a throw in another. The narrowing is the
-# same one `replay-purity.ts` takes, and the OpenAPI diff catches what it lets through.
+# same one the workflow rules take, and the OpenAPI diff catches what it lets through.
 rule:
   # Matched on the `ErrorTypes` reference rather than the whole `throw`, so the ternary form
   # `type: isDuplicate ? ErrorTypes.CONFLICT : ErrorTypes.INVALID_DATA` reports both arms.

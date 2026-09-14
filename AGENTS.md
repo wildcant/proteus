@@ -161,8 +161,8 @@ which is what makes link modules and workflows necessary.
   reached through `LinkService.repo('cartProduct')`. Writeable ones own a table and a
   `BaseRepository`; readonly ones go through `ReadonlyLinkRepository`.
 - **Workflows** (`src/workflows/`) — a mutation spanning two modules, with the compensation that
-  unwinds it. Handlers stay replay-pure (`check:workflow-purity`) —
-  `standards/rules/backend/workflows/__docs__/`.
+  unwinds it. A handler holds step calls and the returns that end it early, and nothing else —
+  `standards/rules/backend/workflows/` and its `__docs__/`.
 - **Subscribers** (`src/subscribers/`) — work caused by something that happened, off the caller's
   critical path: written idempotent, published from a workflow's final step —
   `standards/rules/backend/subscribers/__docs__/`, ADR-0023, ADR-0024.
@@ -269,8 +269,8 @@ each app's `structure/.dependency-cruiser.cjs`, `biome.json`, the Spectral rules
 `apps/backend/scripts/checks/` — and defines the words for them in "The words": a standard is a
 convention with a check behind it, and a check that is not a rule owes a recorded reason.
 
-Cross-cutting guides in `docs/`: `backend-test-infrastructure.md`, `error-handling.md`,
-`middleware-and-openapi.md`, `soft-delete-cascade.md`, `product-options.md`.
+Cross-cutting guides in `docs/`: `backend-test-infrastructure.md`, `configuration.md`,
+`error-handling.md`, `middleware-and-openapi.md`, `soft-delete-cascade.md`, `product-options.md`.
 The backend's use-case guides live in `standards/rules/backend/*/__docs__/` — `api/` (routes,
 route helpers), `modules/` (modules, adding a module), `workflows/` and `subscribers/` (events,
 subscribers).

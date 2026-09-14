@@ -1,0 +1,43 @@
+id: workflow-holds-logic-between-steps
+language: typescript
+severity: error
+message: This is logic outside a step. A handler holds step calls, the returns that end it early, and nothing else.
+note: 'Move it inside the `ctx.step(…)` action it belongs to. The handler re-runs from the top once per remaining step — 91 times over `complete-cart`''s 14 — and nothing it computes out here is recorded, so the value differs on every pass and the workflow proceeds on it. A binding is legal only when a step produced it: `const cart = await ctx.step(…)` yes, `const total = cart.total` no. A loop over steps is the same claim from the other side — give the step the whole list, so the work is recorded once and one compensation covers all of it. This is an allowlist rather than a list of banned globals on purpose: seven named globals catch five of sixteen impure expressions, letting `performance.now()`, `process.hrtime.bigint()`, `globalThis.crypto.randomUUID()` and a destructured `const { random } = Math` through. standards/rules/backend/workflows/__docs__/workflows.md'
+files:
+  - "**/src/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  all:
+    - matches: outside-a-step
+    - any:
+        - matches: logic-statement
+        # The expressions that survive inside the two statement forms that stay legal — a `return`
+        # and an `if`. `return await loadCart(id)`, `if (await isReady(cart)) return`,
+        # `return buildPrices(a, b)`, `if (cart.total > threshold())`.
+        - all:
+            - any:
+                - kind: await_expression
+                - kind: call_expression
+                - kind: new_expression
+            - not:
+                any:
+                  - matches: ctx-step-call
+                  - matches: ctx-step-helper-call
+                  - has: { matches: ctx-step-call }
+                  - has: { matches: ctx-step-helper-call }
+                  - has: { pattern: ctx.step }
+            # One diagnostic per violation. An awaited call belongs to the await that wraps it, and
+            # anything inside a banned statement belongs to the statement.
+            - not:
+                inside:
+                  kind: await_expression
+            - not:
+                inside:
+                  stopBy: end
+                  all:
+                    # Both halves: the `export const w = createWorkflow(…)` wrapping every handler
+                    # is itself a lexical_declaration, so an unqualified ancestor test excludes the
+                    # whole file and this branch reports nothing.
+                    - matches: logic-statement
+                    - matches: outside-a-step

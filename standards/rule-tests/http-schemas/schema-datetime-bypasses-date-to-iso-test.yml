@@ -1,0 +1,22 @@
+id: schema-datetime-bypasses-date-to-iso
+valid:
+  # The one pipeline. `z.input` on the schema gives the backend back its `Date`.
+  - |
+    export const AdminInvite = z.object({ id: z.string(), expiresAt: dateToIso }).openapi('AdminInvite')
+  # The standard trio, spread.
+  - |
+    export const AdminUser = z
+      .object({ id: z.string(), name: z.string(), ...timestamps.shape })
+      .openapi('AdminUser')
+  # Query filters parse ISO strings into Dates on the way in — the other direction, and not this rule.
+  - |
+    export function createDateOperatorMap() {
+      const t = z.coerce.date().optional()
+      return z.object({ $gte: t, $lte: t })
+    }
+invalid:
+  # Types the field as `string` on the way in, so the backend can no longer hand it the Date it has.
+  - |
+    export const AdminInvite = z.object({ id: z.string(), expiresAt: z.iso.datetime() }).openapi('AdminInvite')
+  - |
+    export const StoreOrder = z.object({ placedAt: z.string().datetime({ offset: true }) }).openapi('StoreOrder')

@@ -84,6 +84,7 @@ import {
 } from 'backend/test'
 import { type AuthenticateFunction, combinePersonas, definePersona } from 'playwright-persona'
 import { generateLoginFormValues, generateRegisterFormValues } from '../factories/form-values.js'
+import { watchConsole } from './console-guard.js'
 
 type NavigateOptions<RoutePath extends string> = {
   to: RoutePath
@@ -244,6 +245,7 @@ export function createTest<RoutePath extends string = string>() {
     navigate: NavigateFunction<RoutePath>
     authenticate: AuthenticateFunction<[typeof admin, typeof customer]>
     cleanup: CleanupFunction
+    consoleIsClean: void
   }>({
     factories: {
       generate: {
@@ -339,6 +341,21 @@ export function createTest<RoutePath extends string = string>() {
         order: deleteOrderById,
       },
     },
+
+    /**
+     * Every spec in both suites, without opting in: a React key warning or a Base UI semantics
+     * warning is a defect on whatever screen the test just walked through, and the console is the
+     * only place either one is reported. `auto` is what makes this a gate rather than a helper —
+     * a guard nobody remembers to add is not one.
+     */
+    consoleIsClean: [
+      async ({ page }, use) => {
+        const complaints = watchConsole(page)
+        await use()
+        expect(complaints, 'the page logged warnings — see packages/testing/fixtures/console-guard.ts').toEqual([])
+      },
+      { auto: true },
+    ],
 
     navigate: async ({ page }, use) => {
       const navigate: NavigateFunction<RoutePath> = async ({ to, params, search }) => {

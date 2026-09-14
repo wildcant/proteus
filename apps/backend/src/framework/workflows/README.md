@@ -169,66 +169,36 @@ Two consequences worth knowing before writing a workflow:
 
 ### The purity rule
 
-> Inside a `createWorkflow` handler, everything outside a `ctx.step` callback must be pure and
-> synchronous.
+> Outside a `ctx.step` callback, a handler holds step calls and the returns that end it early.
+> Nothing else.
 
-`scripts/replay-purity.ts` parses every handler under `src/workflows/` and enforces it. It
-runs in `verify.sh`'s `standards` gate, or on its own with `pnpm run check:workflow-purity`. In the
-handler body, outside every `ctx.step` callback, these are rejected:
+Four rules under `standards/rules/backend/workflows/` enforce it, in the `standards` gate. What they
+reject and what to write instead is
+[workflows](../../../../../standards/rules/backend/workflows/__docs__/workflows.md#a-handler-holds-steps-and-nothing-else);
+what follows here is why replay makes them necessary at all.
 
-| Rejected | Instead |
-|---|---|
-| `await` anything | `await ctx.step(…)`, or `await someStep(ctx, …)` — a helper whose name ends in `Step` **and** which is handed `ctx`, like `notifyOnFailureStep`. Being handed `ctx` is not enough on its own: `await db.query(ctx)` is still raw I/O |
-| `for await (…)` | collect inside a step action, iterate the result synchronously |
-| `new Date()`, `Date.now()` | take the timestamp inside a step action, where it is recorded once and replayed |
-| `Math.random()`, `crypto.*` | generate inside a step action, so every replay sees the same value |
-| `process.env` | the validated `env` object from `src/env.ts`, read once at startup |
-| `container.*` | resolve services inside a step action, which is handed the container |
-| a `try` wrapping `ctx.step(…)` | handle the failure inside the step action, or let the step throw and let the workflow compensate — see the `try`/`catch` row below |
+Everything outside a step callback re-runs once per remaining step and none of it is recorded, so a
+value computed there differs on each pass and the workflow proceeds on it — corruption rather than an
+error, which is why it is checked rather than written down. The step *name* argument counts as
+outside, because it is rebuilt on every replay like the rest of the glue. Stating it as what a
+handler may *hold* rather than as a list of impure globals is deliberate: the list version named
+seven and let `performance.now()` and `globalThis.crypto` through.
 
-`new Date(iso)` is a parse and is allowed; it is the zero-argument form that reads a clock. The step
-*name* argument is inside the checked region too, because it is rebuilt on every replay like the rest
-of the glue.
-
-The last row is not about purity — it is the abandoned-handler divergence in the table below, checked
+One of the four is not about purity at all. A `try` the handler wraps around a `ctx.step` never
+reaches its `catch` or its `finally` under Temporal, and does under the simple adapter — checked
 here because it fails the same silent way. A `try` *inside* a step action is untouched by it.
 
-What it does not do: it does not follow imports, so helpers under `src/workflows/*/utils/` are trusted
-to be pure; and it does not police step concurrency, which the replay asserts at runtime instead. It
-checks itself against `scripts/fixtures/impure-workflow.ts` before checking anything else — a
-rule that has silently stopped matching produces exactly the output of a clean tree, and that fixture
-is what tells the two apart.
-
-It lives in this workspace because it reads only this workspace, and it can only live here because
-`typescript` is pinned repo-wide to 6.x — the last line whose npm package is a JS library rather than
-a wrapper around the Go binary, and so the last one that can turn source text into a tree. The
-backend was on 7.x until the check moved; unifying the version is what made the move possible.
-
-### What is different from the simple adapter, and what is not
-
-| | Simple | Temporal |
-|---|---|---|
-| Step order, compensation order, swallowed compensation errors | same | same |
-| `AppError` and `WorkflowTerminalError` a caller catches (class, message, `type`) | same | same |
-| A *custom* `Error` subclass thrown by a step | arrives as itself | arrives as `Error` with the same `name` and `message` |
-| A handler's own `try` around `ctx.step` | the `catch`/`finally` runs | **never runs** — the handler is abandoned at that `await` |
-| Default retry | none | none (`maximumAttempts: 1`) |
-| Survives the Worker restarting *between* steps | no | yes |
-| Survives the Worker dying *during* a step | no | no — see below |
-| Accumulated payload per run | none | O(n²) — see below |
-
-The one row that is not "same" for an ordinary caller is the third: only the two error shapes the
-adapter knows how to rebuild survive as classes. Anything else crosses the wire as `{ name, message }`
-and comes back as a plain `Error`, so `catch (e) { if (e instanceof MyError) … }` on a bespoke class
-thrown from a step will not hold. Match on `error.name` if you need that —
-`tests/setup/run-step.ts` does exactly this for its own injected sentinel.
+The rules do not follow imports, so helpers under `src/workflows/*/utils/` are trusted to be pure and
+`workflow-util-is-not-pure` watches them separately — though a handler may no longer *call* one
+between steps, so that trust now only has to hold inside a step action. They do not police step
+concurrency, which the replay asserts at runtime instead.
 
 The `try` row is the sharper one, because the code that trips it looks entirely ordinary. Once the
 step it was replaying to is done, the replay hands the handler a promise that never settles
 (`src/framework/workflows/temporal/replay.ts`) — the handler stops at that `await` and is never resumed, so a `catch` it
 wrote around `ctx.step` does not run and neither does a `finally`. The simple adapter rejects into
 the handler, so both do. A recovery path written that way therefore recovers on workerd and fails
-the checkout on Node. It is **rejected by `check:workflow-purity`** rather than left to this table:
+the checkout on Node. It is **rejected by `workflow-wraps-a-step-in-try`** rather than left to this table:
 `try` *inside* the step action is the form that works on both engines, and it is what the two
 `catch` sites in `src/workflows/` already use. Changing the replay to reject into the handler was
 considered and refused — the handler would resume and keep calling steps inside a failed replay,

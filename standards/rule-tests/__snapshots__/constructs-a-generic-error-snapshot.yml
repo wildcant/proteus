@@ -1,0 +1,46 @@
+id: constructs-a-generic-error
+snapshots:
+  ? |
+    export function assertCart(cart: CartDTO | undefined) {
+      if (!cart) throw new Error('cart missing')
+    }
+  : labels:
+    - source: new Error('cart missing')
+      style: primary
+      start: 75
+      end: 100
+  ? |
+    export function assertCart(cart: CartDTO | undefined) {
+      if (cart) return
+      const error = new Error('cart missing')
+      error.name = 'CartMissing'
+      throw error
+    }
+  : labels:
+    - source: new Error('cart missing')
+      style: primary
+      start: 91
+      end: 116
+  ? |
+    export function loadCart(id: string) {
+      return known.has(id) ? fetchCart(id) : Promise.reject(new Error(`unknown cart ${id}`))
+    }
+  : labels:
+    - source: new Error(`unknown cart ${id}`)
+      style: primary
+      start: 95
+      end: 126
+  ? |
+    stream.on('timeout', () => callback(new Error('upload timed out')))
+  : labels:
+    - source: new Error('upload timed out')
+      style: primary
+      start: 36
+      end: 65
+  ? |
+    throw Object.assign(new Error('upstream refused'), { status: 502 })
+  : labels:
+    - source: new Error('upstream refused')
+      style: primary
+      start: 20
+      end: 49

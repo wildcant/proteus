@@ -1,0 +1,105 @@
+id: workflow-holds-logic-between-steps
+snapshots:
+  ? |
+    export const w = createWorkflow('w', async (ctx) => ctx.step(`sync-${Date.now()}`, async () => 'done'))
+  : labels:
+    - source: Date.now()
+      style: primary
+      start: 69
+      end: 79
+  ? |
+    export const w = createWorkflow('w', async (ctx) => {
+      const id = globalThis.crypto.randomUUID()
+      return await ctx.step('settle', async () => id)
+    })
+  : labels:
+    - source: const id = globalThis.crypto.randomUUID()
+      style: primary
+      start: 56
+      end: 97
+  ? |
+    export const w = createWorkflow('w', async (ctx) => {
+      const stamp = Date.now()
+      return await ctx.step('settle', async () => stamp)
+    })
+  : labels:
+    - source: const stamp = Date.now()
+      style: primary
+      start: 56
+      end: 80
+  ? |
+    export const w = createWorkflow('w', async (ctx) => {
+      const stamp = performance.now()
+      return await ctx.step('settle', async () => stamp)
+    })
+  : labels:
+    - source: const stamp = performance.now()
+      style: primary
+      start: 56
+      end: 87
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      await ctx.step('load', async () => input.id)
+      return await loadCart(input.id)
+    })
+  : labels:
+    - source: await loadCart(input.id)
+      style: primary
+      start: 117
+      end: 141
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const assigned: CountryDTO[] = []
+      for (const country of input.countries) {
+        assigned.push(await assignCountryToRegionStep(ctx, { code: country.id }))
+      }
+      return assigned
+    })
+  : labels:
+    - source: 'const assigned: CountryDTO[] = []'
+      style: primary
+      start: 63
+      end: 96
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const cart = await ctx.step('load', async () => input.id)
+      const total = cart.total
+      return await ctx.step('settle', async () => total)
+    })
+  : labels:
+    - source: const total = cart.total
+      style: primary
+      start: 123
+      end: 147
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const cart = await ctx.step('load', async () => input.id)
+      if (await isReady(cart)) return cart
+      return null
+    })
+  : labels:
+    - source: await isReady(cart)
+      style: primary
+      start: 127
+      end: 146
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const links = await ctx.step('load', async () => input.id)
+      return buildStartingPrices(input.variants, links)
+    })
+  : labels:
+    - source: buildStartingPrices(input.variants, links)
+      style: primary
+      start: 131
+      end: 173
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const pending = await ctx.step('start', async () => input.id)
+      if (await pending) return null
+      return null
+    })
+  : labels:
+    - source: await pending
+      style: primary
+      start: 131
+      end: 144

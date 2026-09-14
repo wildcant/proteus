@@ -1,0 +1,22 @@
+id: constructs-a-generic-error
+language: typescript
+severity: error
+message: This constructs a generic `Error`. Backend code raises `AppError`, which carries a type and a code.
+note: 'Use `AppError` from `core/errors/app-error.ts` — it carries the `ErrorTypes` member `errorHandler` maps to a status and the domain `code` the client reads, both of which a bare `Error` loses on the way out as a 500 with no code. This matches the *construction* rather than the throw, because the two are routinely written apart: `const error = new Error(…)` then `throw error`, `Promise.reject(new Error(…))`, `Object.assign(new Error(…), …)`. A text search for `throw new Error(` sees none of them. docs/error-handling.md'
+files:
+  - "apps/backend/src/**/*.ts"
+ignores:
+  # Deliberately odd errors, thrown to be caught by the assertion two lines down.
+  - "**/__tests__/**"
+  # The validated env object does not exist yet when this throws.
+  - "**/src/env.ts"
+  # Both run before the container does, so `AppError` is not reachable from either.
+  - "**/src/framework/config/**"
+  - "**/loaders/**"
+  # `core/db/` is the cascade walker and the connection provider: infrastructure below the error
+  # layer, whose failures are programming errors rather than anything a client should read.
+  - "**/src/core/db/**"
+  # A base class saying "you did not override this" is talking to the provider author, not a client.
+  - "**/src/core/utils/abstract-*"
+rule:
+  pattern: new Error($$$ARGUMENTS)

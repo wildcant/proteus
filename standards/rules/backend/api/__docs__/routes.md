@@ -232,7 +232,7 @@ see it raise. Write the reason above the suppression.
 
 - **That the `Throws` list matches the *method* that raises.** Nothing correlates `PostThrows` with
   the `POST` handler for ast-grep, so both error rules are scoped to the file: a type declared on one
-  method satisfies a throw in another. This is the same narrowing `replay-purity.ts` takes, and the
+  method satisfies a throw in another. This is the same narrowing the workflow rules take, and the
   OpenAPI diff catches what it lets through.
 - **That a POST or PUT answers the right status.** `route-returns-non-200-status` speaks for the
   three methods that have one answer and stops there. Create and update are the same syntax, so only

@@ -1,0 +1,12 @@
+id: schema-datetime-bypasses-date-to-iso
+language: typescript
+severity: error
+message: This declares a datetime field itself. `dateToIso` is the one pipeline every timestamp goes through.
+note: 'Import `dateToIso` from `common.ts`, or spread `...timestamps.shape` for the `createdAt`/`updatedAt`/`deletedAt` trio. A timestamp keeps one shape until the last moment — the column is `timestamptz`, Drizzle returns a `Date`, the DTO carries that `Date` — and `dateToIso` is where the ISO string is produced. A hand-written `z.iso.datetime()` types the field as `string` on the way in, so the backend can no longer hand it the `Date` it has. standards/rules/http-schemas/__docs__/datetimes.md'
+files:
+  - "packages/http-schemas/src/**/*.ts"
+ignores:
+  # Where `dateToIso` is defined; the pipeline has to end in a `.datetime()` somewhere.
+  - "**/http-schemas/src/common.ts"
+rule:
+  pattern: $RECEIVER.datetime($$$ARGUMENTS)

@@ -1,0 +1,25 @@
+id: env-read-outside-env-module
+valid:
+  # The validated object: a missing variable is a startup failure naming it, not an `undefined`
+  # that reaches a query.
+  - |
+    import { env } from '@env'
+    export const url = env.DATABASE_URL
+  - |
+    import { env } from '#/env'
+    export const backend = env.VITE_BACKEND_URL
+  # A property that happens to be called `env` on something else.
+  - |
+    export function spawnWorker(options: { env: Record<string, string> }) {
+      return run(options.env)
+    }
+invalid:
+  - |
+    export const url = process.env.DATABASE_URL
+  - |
+    export const backend = import.meta.env.VITE_BACKEND_URL
+  # Guarded, defaulted and still wrong: the schema never saw it, so nothing says what shape it is.
+  - |
+    export const region = process.env.REGION ?? 'us-east-1'
+  - |
+    if (process.env.NODE_ENV === 'production') enableCaching()

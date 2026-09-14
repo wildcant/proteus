@@ -1,0 +1,16 @@
+id: env-read-outside-env-module-in-jsx
+snapshots:
+  ? |
+    export const Devtools = () => (import.meta.env.DEV ? <RouterDevtools /> : null)
+  : labels:
+    - source: import.meta.env
+      style: primary
+      start: 31
+      end: 46
+  ? |
+    export const Footer = () => <span>build {import.meta.env.VITE_COMMIT}</span>
+  : labels:
+    - source: import.meta.env
+      style: primary
+      start: 41
+      end: 56

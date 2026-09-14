@@ -1,0 +1,83 @@
+id: workflow-wraps-a-step-in-try
+snapshots:
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      try {
+        await notifyOnFailureStep(ctx, { cartId: input.cartId })
+      } catch {
+        return 'recovered'
+      }
+      return 'ok'
+    })
+  : labels:
+    - source: |-
+        try {
+            await notifyOnFailureStep(ctx, { cartId: input.cartId })
+          } catch {
+            return 'recovered'
+          }
+      style: primary
+      start: 63
+      end: 168
+    - source: 'notifyOnFailureStep(ctx, { cartId: input.cartId })'
+      style: secondary
+      start: 79
+      end: 129
+    - source: 'notifyOnFailureStep(ctx, { cartId: input.cartId })'
+      style: secondary
+      start: 79
+      end: 129
+  ? |
+    export const w = createWorkflow<Input, string>('w', async (ctx, input) => {
+      let outcome = 'pending'
+      try {
+        outcome = await ctx.step('settle', async () => `settled ${input.cartId}`)
+      } finally {
+        outcome = `${outcome} (cleaned up)`
+      }
+      return outcome
+    })
+  : labels:
+    - source: |-
+        try {
+            outcome = await ctx.step('settle', async () => `settled ${input.cartId}`)
+          } finally {
+            outcome = `${outcome} (cleaned up)`
+          }
+      style: primary
+      start: 104
+      end: 245
+    - source: ctx.step('settle', async () => `settled ${input.cartId}`)
+      style: secondary
+      start: 130
+      end: 187
+    - source: ctx.step('settle', async () => `settled ${input.cartId}`)
+      style: secondary
+      start: 130
+      end: 187
+  ? |
+    export const w = createWorkflow<Input, string>('w', async (ctx, input) => {
+      try {
+        return await ctx.step('charge', async () => `charged ${input.cartId}`)
+      } catch {
+        return 'recovered'
+      }
+    })
+  : labels:
+    - source: |-
+        try {
+            return await ctx.step('charge', async () => `charged ${input.cartId}`)
+          } catch {
+            return 'recovered'
+          }
+      style: primary
+      start: 78
+      end: 197
+    - source: ctx.step('charge', async () => `charged ${input.cartId}`)
+      style: secondary
+      start: 101
+      end: 158
+    - source: ctx.step('charge', async () => `charged ${input.cartId}`)
+      style: secondary
+      start: 101
+      end: 158
