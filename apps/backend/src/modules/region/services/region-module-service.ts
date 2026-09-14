@@ -10,6 +10,7 @@ import type {
 import type {
   CreateCountryDTO,
   CreateRegionDTO,
+  SetCountryMarketDTO,
   UpdateCountryDTO,
   UpdateRegionDTO,
 } from '../../../core/types/region/mutations.js'
@@ -81,6 +82,23 @@ export class RegionModuleService implements IRegionModuleService {
 
   async updateCountries(iso2Codes: string[], data: UpdateCountryDTO, context?: Context): Promise<CountryDTO[]> {
     return this.withTransaction(context, async (ctx) => this.countryRepository.updateMany(iso2Codes, data, ctx))
+  }
+
+  async setCountryMarkets(markets: SetCountryMarketDTO[], context?: Context): Promise<CountryDTO[]> {
+    return this.withTransaction(context, async (ctx) => {
+      const updated: CountryDTO[] = []
+      // Sequential rather than Promise.all: the statements share one transaction's connection, and
+      // the transaction is the whole point — it is what makes the batch all-or-none.
+      for (const market of markets) {
+        const rows = await this.countryRepository.updateMany(
+          [market.iso2],
+          { regionId: market.regionId, localeCode: market.localeCode },
+          ctx,
+        )
+        updated.push(...rows)
+      }
+      return updated
+    })
   }
 
   async listCountryMarkets(filters?: ListCountryMarketsFilters, context?: Context): Promise<CountryMarketDTO[]> {

@@ -1,6 +1,5 @@
-import { Link } from '@tanstack/react-router'
 import { ShoppingBagIcon } from 'lucide-react'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 
 /**
  * The panel's empty state. The link needs no `onClick`: a plain `<Link>` drops the search params,
@@ -12,9 +11,9 @@ export function CartEmpty() {
       <ShoppingBagIcon className="mb-4 h-10 w-10 text-ink-subtle" />
       <h2 className="type-heading m-0 text-ink">Your bag is empty</h2>
       <p className="m-0 mt-2 mb-6 text-ink-muted text-sm">There are no products in your bag</p>
-      <Button render={<Link to="/" />} className="w-full">
+      <ButtonLink to="/" className="w-full">
         Browse products
-      </Button>
+      </ButtonLink>
     </div>
   )
 }

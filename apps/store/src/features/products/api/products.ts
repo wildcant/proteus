@@ -1,5 +1,6 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { ApiError } from '#/api/api-error'
 import type {
   GetStoreProductParams,
   ListStoreProductsParams,
@@ -102,10 +103,10 @@ export const useProducts = (query: ListStoreProductsParams, options?: ProductsLi
   return { ...data, ...rest }
 }
 
-type ProductQueryOptions = Omit<
-  UseQueryOptions<StoreProductResponse, Error, StoreProductResponse>,
-  'queryFn' | 'queryKey'
->
+/** The detail answer, with the product absent when this market has none under that id. */
+type ProductDetail = { product: StoreProductResponse['product'] | undefined }
+
+type ProductQueryOptions = Omit<UseQueryOptions<ProductDetail, Error, ProductDetail>, 'queryFn' | 'queryKey'>
 /**
  * Shared query config. Use in route loaders via `prefetchQuery(productQueryOptions(id, market))`.
  *
@@ -116,7 +117,21 @@ type ProductQueryOptions = Omit<
 export const productQueryOptions = (id: string, query: GetStoreProductParams, options?: ProductQueryOptions) =>
   queryOptions({
     queryKey: productsQueryKeys.detail(id, query),
-    queryFn: () => getStoreProduct(id, query),
+    /**
+     * A 404 resolves rather than throws, because it is an answer: the API returns one both for an
+     * id we never had and for a product this market cannot price, which is the ordinary case now
+     * that a market decides the catalogue. Thrown, it reached the route's error boundary — and an
+     * error boundary on a routine path costs a retry, a dev console pair per attempt, and the
+     * whole match's data. Every other status still throws, which is what the boundary is for.
+     */
+    queryFn: async () => {
+      try {
+        return await getStoreProduct(id, query)
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) return { product: undefined }
+        throw error
+      }
+    },
     ...options,
   })
 /** Suspends until product detail resolves. Use inside a `<Suspense>` boundary. */

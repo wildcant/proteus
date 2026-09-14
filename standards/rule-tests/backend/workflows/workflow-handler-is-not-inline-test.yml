@@ -1,0 +1,25 @@
+id: workflow-handler-is-not-inline
+valid:
+  - |
+    export const w = createWorkflow<Input, string>('w', async (ctx, input) => {
+      return await ctx.step('settle', async () => input.cartId)
+    })
+  # A `function` expression is inline too.
+  - |
+    export const w = createWorkflow('w', async function (ctx, input) {
+      return await ctx.step('settle', async () => input.cartId)
+    })
+  # The multi-line call form the formatter produces for a long name.
+  - |
+    export const w = createWorkflow<Input, string>(
+      'finally-around-step',
+      async (ctx, input) => {
+        return await ctx.step('settle', async () => input.cartId)
+      },
+    )
+invalid:
+  # A handler passed by name is a body every other rule in this directory reports nothing about.
+  - |
+    export const w = createWorkflow('w', detachedHandler)
+  - |
+    export const w = createWorkflow<Input, string>('w', handlers.settle)

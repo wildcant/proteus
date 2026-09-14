@@ -62,7 +62,7 @@ dies restarts the checkout from step 1. Rejected: refactoring all 72 steps into 
 re-runs on every replay: `complete-cart`'s 14 steps cost 91 glue executions across one run. A
 `Date.now()` there does not fail — it produces a different value every replay and the workflow
 proceeds on it. Because the consequence is corruption rather than an error, purity is checked rather
-than documented: `apps/backend/scripts/replay-purity.ts` parses every handler and rejects `await` (other
+than documented: rules under `standards/rules/backend/workflows/` parse every handler and reject `await` (other
 than `ctx.step`, or a helper whose name ends in `Step` *and* which is handed `ctx`), `new Date()`,
 `Date.now()`, `Math.random()`, `crypto.*`, `process.env` and `container.*` outside a `ctx.step`
 callback. Being handed the context is not on its own enough to be a step: `await db.query(ctx)` is
@@ -205,7 +205,8 @@ which is the point.
   Worker after 8 steps, starts a new one, and prints from Temporal's history which OS process ran each
   step: 1–8 on the first pid, 9–14 on the second, no step twice, order created.
 - **Purity.** `npm run check:workflow-purity` reports 26 workflows checked and all 8 rules still
-  tripping on the fixture.
+  tripping on the fixture. *(That script has since become rules under
+  `standards/rules/backend/workflows/`, and the fixture's role moved to `standards/rule-tests/`.)*
 
 ## Risks
 
@@ -237,7 +238,7 @@ which is the point.
 - **The abandoned handler is observable to ordinary code.** A handler that wraps `ctx.step` in its
   own `try` recovers under the simple adapter and is abandoned under Temporal, because the replay
   returns a promise that never settles and the `catch`/`finally` is never reached. It is rejected by
-  `apps/backend/scripts/replay-purity.ts` (`try-around-step`) rather than documented alone, for the same
+  `workflow-wraps-a-step-in-try` rather than documented alone, for the same
   reason purity is: nothing about it fails loudly. Making the replay reject into the handler instead
   was refused — the handler would resume and go on calling steps inside a failed replay.
 - **Two adapters, two behaviours, one codebase.** A bug reproducible only on Cloudflare, or only on
@@ -250,8 +251,8 @@ which is the point.
 - `apps/backend/src/framework/workflows/temporal/` — the driver, the replay, the Activities, the registry
 - `apps/backend/src/temporal/` — the shared plumbing underneath it: the client, the converter, the
   failure encoding
-- `apps/backend/scripts/replay-purity.ts` — the purity rule, the `try`-around-`ctx.step` rule, and why
-  they are an AST check rather than a Biome plugin
+- `standards/rules/backend/workflows/` — the purity rules and the `try`-around-`ctx.step` rule; the
+  shared matchers in `standards/utils/backend/workflows/` carry why an AST check was the answer
 - `apps/backend/src/framework/workflows/temporal/__tests__/nested-workflow.server.test.ts` — the production nested topology
 - ADR-0009 — the port this adapter implements
 - ADR-0022 — which runtime gets which adapter, and what that costs

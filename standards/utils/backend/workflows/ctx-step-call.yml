@@ -1,0 +1,34 @@
+# A call to `ctx.step(…)`, in both of the shapes tree-sitter produces for it.
+#
+# The second alternative is not defensive, it is the grammar. `await ctx.step<Output>(…)` parses as
+#
+#     call_expression
+#       function: await_expression        ← the await lands in the callee slot
+#         member_expression  ctx.step
+#       type_arguments: <Output>
+#       arguments: (…)
+#
+# so the obvious `has: { field: function, pattern: ctx.step }` misses every typed awaited step —
+# 18 of them in `src/workflows/` today. It misses them *silently*, which is why this fragment is
+# written once here instead of inline in each of the six rules that need it: the first draft of the
+# wall-clock rule reported a `new Date()` from inside a step action, because the region-subtracting
+# `not:` had quietly stopped recognising the step it was meant to subtract.
+#
+# Untyped `await ctx.step(…)` parses the ordinary way — an await_expression wrapping a
+# call_expression — and the call underneath it is matched by the first alternative.
+#
+# The context parameter is spelled `ctx` here rather than bound from the handler's signature, which
+# ast-grep cannot do across a `not:`. All 32 handlers name it `ctx`. A handler that renamed it would
+# make every rule below fire on its own step actions — noisy, not silent — which is the direction a
+# purity check is allowed to fail in.
+id: ctx-step-call
+language: typescript
+rule:
+  kind: call_expression
+  has:
+    field: function
+    any:
+      - pattern: ctx.step
+      - kind: await_expression
+        has:
+          pattern: ctx.step

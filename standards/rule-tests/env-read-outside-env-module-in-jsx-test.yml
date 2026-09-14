@@ -1,0 +1,11 @@
+id: env-read-outside-env-module-in-jsx
+valid:
+  - |
+    import { env } from '#/env'
+    export const Devtools = () => (env.SHOW_DEVTOOLS ? <RouterDevtools /> : null)
+invalid:
+  - |
+    export const Devtools = () => (import.meta.env.DEV ? <RouterDevtools /> : null)
+  # Inside JSX, where the reference reads as harmless and is the same unvalidated string.
+  - |
+    export const Footer = () => <span>build {import.meta.env.VITE_COMMIT}</span>

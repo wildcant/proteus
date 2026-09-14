@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { orderQueryOptions } from '#/features/orders/api/orders'
 import { OrderContent } from '#/features/orders/components/order-content'
 import { OrderContentSkeleton } from '#/features/orders/components/order-content-skeleton'
@@ -25,9 +25,9 @@ function OrderDetailError() {
 
   return (
     <OrderError orderId={orderId}>
-      <Button variant="outline" render={<Link to="/account" />}>
+      <ButtonLink variant="outline" to="/account">
         Back to account
-      </Button>
+      </ButtonLink>
     </OrderError>
   )
 }

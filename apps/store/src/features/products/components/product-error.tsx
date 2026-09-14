@@ -1,13 +1,13 @@
-import { Button } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { PackageIcon } from 'lucide-react'
+import { ButtonLink } from '#/components/button'
 
 /**
- * What the detail route renders when the product it was asked for cannot be read.
+ * What the detail route shows when it has no product to show: the route's `errorComponent` when the
+ * read failed, and `ProductDetail`'s own answer to a 404.
  *
- * The copy does not guess why. A product the store never had and one this market cannot price
- * arrive here as the same not-found — the second is the ordinary case now that a market decides
- * the catalogue, and the bag notice above says so by name when that is what happened.
+ * The copy does not guess why. A product the store never had, one this market cannot price and one
+ * whose read fell over all read the same — the middle one is the ordinary case now that a market
+ * decides the catalogue, and the bag notice above says so by name when that is what happened.
  *
  * The way out is the catalogue, because it is the one page that is certainly there: whatever the
  * shopper is standing in, it has products it can sell them.
@@ -18,9 +18,9 @@ export function ProductError() {
       <PackageIcon className="size-8 text-ink-subtle" strokeWidth={1.5} />
       <h1 className="type-title mt-6 text-ink">We couldn't show this product</h1>
       <p className="mt-4 max-w-70 text-ink-muted text-sm">It may not be one we sell here.</p>
-      <Button render={<Link to="/" />} className="mt-8">
+      <ButtonLink to="/" className="mt-8">
         Browse products
-      </Button>
+      </ButtonLink>
     </main>
   )
 }

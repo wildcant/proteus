@@ -1,6 +1,5 @@
-import { Button } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { PackageIcon } from 'lucide-react'
+import { ButtonLink } from '#/components/button'
 
 /**
  * Replaces the grid rather than following it — an empty result set used to paint an empty grid
@@ -17,9 +16,9 @@ export function ProductEmpty({ q }: { q?: string }) {
         <>
           {/* The header search panel's own phrasing, so the same miss reads the same either way. */}
           <p className="mt-6 max-w-70 text-ink-muted text-sm">No products match &ldquo;{q}&rdquo;.</p>
-          <Button render={<Link to="/" />} className="mt-8">
+          <ButtonLink to="/" className="mt-8">
             Clear search
-          </Button>
+          </ButtonLink>
         </>
       ) : (
         <p className="mt-6 max-w-70 text-ink-muted text-sm">No products yet.</p>

@@ -1,0 +1,16 @@
+id: env-read-outside-env-module
+language: typescript
+severity: error
+message: This reads the environment directly. Application code imports the validated `env` object.
+note: 'Import `env` from the app''s `env.ts` — `@env` in the backend, `#/env` in the two frontends. A raw `process.env.FOO` is `string | undefined` whatever the schema says about it, so a missing or misspelt variable becomes `undefined` flowing into a query rather than a startup failure naming the variable. This rule sits at the root of `rules/` because it holds across all three apps. docs/configuration.md'
+files:
+  - "apps/backend/src/**/*.ts"
+  - "apps/store/src/**/*.ts"
+  - "apps/admin/src/**/*.ts"
+ignores:
+  # The validated object has to be built out of the raw one somewhere.
+  - "**/src/env.ts"
+rule:
+  any:
+    - pattern: process.env
+    - pattern: import.meta.env

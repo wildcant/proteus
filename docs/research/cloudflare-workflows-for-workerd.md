@@ -71,7 +71,7 @@ here.
 | `WorkflowTerminalError` | `NonRetryableError` — but see §5 |
 | `WorkflowConfig.idempotent` → default policy | per-step `retries: { limit, delay, backoff }` |
 | `StepContext { container }` | `this.env` on the entrypoint → `createWorkerdContainer` |
-| replay purity (`check:workflow-purity`) | identical requirement — glue outside `step.do` re-runs |
+| replay purity (`standards/rules/backend/workflows/`) | identical requirement — glue outside `step.do` re-runs |
 
 **No closure/process boundary.** Temporal forced the generic `advanceWorkflow` driver and
 `framework/workflows/temporal/replay.ts`, because a step action is a closure and an Activity is a
@@ -371,7 +371,7 @@ and beyond that it is ~$0.11 per 1,000 checkouts.
 - **98/98 `ctx.step` names are string literals** — no duplicates within a workflow, none inside a loop.
   Cloudflare memoizes on name and occurrence where `replay.ts` memoizes on call index; with unique
   literal names and no loops the two agree.
-- **All eight `check:workflow-purity` rules stay correct and necessary.** Cloudflare's replay model is
+- **All eight replay-purity rules stay correct and necessary.** Cloudflare's replay model is
   the same shape: glue outside `step.do` re-runs on engine restart. `try-around-step` stays valuable as
   the conservative common denominator — Cloudflare allows it, `simple` allows it, Temporal abandons the
   handler.

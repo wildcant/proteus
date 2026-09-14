@@ -1,8 +1,7 @@
 import { Field, FieldLabel, RadioGroupItem, usePrompt } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
-import { Button } from '#/components/button'
+import { Button, ButtonLink } from '#/components/button'
 import { useDeleteAddress } from '#/features/address/api/addresses'
 import { AddressLines } from '#/features/address/components/address-lines'
 
@@ -34,13 +33,10 @@ export function AddressCard({ address, isDefault }: AddressCardProps) {
       {/* A wrapping row beneath the address on a phone, where there is no room beside it; a
           right-aligned column from lg, which is where the reference puts it. */}
       <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 lg:flex-col lg:items-end">
-        <Button
-          variant="link"
-          render={<Link to="/account/addresses/$addressId/edit" params={{ addressId: address.id }} />}
-        >
+        <ButtonLink variant="link" to="/account/addresses/$addressId/edit" params={{ addressId: address.id }}>
           <PencilIcon />
           Edit
-        </Button>
+        </ButtonLink>
         <DeleteAddressButton address={address} />
 
         <Field orientation="horizontal" className="w-auto cursor-pointer items-center">

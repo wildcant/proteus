@@ -1,8 +1,7 @@
 import { RadioGroup } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { ChevronLeftIcon } from 'lucide-react'
 import type { StoreSavedMethod } from '#/api/generated/model'
-import { Button } from '#/components/button'
+import { Button, ButtonLink } from '#/components/button'
 import { SavedCardRow, WalletSkeleton } from '#/features/account/components/saved-card-row'
 import { isUsable } from '#/features/account/utils/expiry'
 import { savedMethodName } from '#/lib/card-networks'
@@ -38,10 +37,10 @@ export function PaymentMethodsBookView({
 
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-      <Button variant="link" render={<Link to="/account" />} className="gap-1 text-ink-muted">
+      <ButtonLink variant="link" to="/account" className="gap-1 text-ink-muted">
         <ChevronLeftIcon className="size-4" />
         Back to account
-      </Button>
+      </ButtonLink>
       <h1 className="type-display mt-4 text-ink">Payment methods</h1>
 
       <div className="mt-10 max-w-160">
@@ -99,9 +98,9 @@ function WalletEmpty() {
         Cards are saved at checkout — choose "Save this card for next time" when you pay and it will be here for your
         next order.
       </p>
-      <Button render={<Link to="/" />} className="mt-6">
+      <ButtonLink to="/" className="mt-6">
         Start shopping
-      </Button>
+      </ButtonLink>
     </div>
   )
 }

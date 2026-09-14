@@ -9,12 +9,12 @@ type UpdateRegionInput = {
   regionId: string
   name?: string
   currencyCode?: string
-  /** Omitted leaves the region's providers alone; given, it replaces them. */
-  paymentProviderIds?: string[]
+  /** Replaces the region's providers; `[]` leaves it offering none. */
+  paymentProviderIds: string[]
 }
 
 /**
- * Edits a region and, when the payload names them, the payment providers it offers.
+ * Edits a region and the payment providers it offers, as one act.
  *
  * Retrieving first is what makes an unknown id a 404 rather than a silent no-op, and it is also
  * what the compensation puts back — the region and its providers move together, so a failure
@@ -48,12 +48,10 @@ export const updateRegionWorkflow = createWorkflow<UpdateRegionInput, RegionDTO>
       },
     )
 
-    if (input.paymentProviderIds) {
-      await setRegionPaymentProvidersStep(ctx, {
-        regionId: input.regionId,
-        paymentProviderIds: input.paymentProviderIds,
-      })
-    }
+    await setRegionPaymentProvidersStep(ctx, {
+      regionId: input.regionId,
+      paymentProviderIds: input.paymentProviderIds,
+    })
 
     return region.updated
   },

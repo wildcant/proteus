@@ -2,10 +2,9 @@
  * Turning a `.ts` file into a syntax tree, for the checks and generators that read this backend
  * without running it.
  *
- * Three tools need it: `replay-purity.ts` and `generate-workflow-registry.ts` over
- * `src/workflows/`, and `generate-subscriber-registry.ts` over `src/subscribers/`. It lives on its
- * own so none of them owns the `typescript` import, and so a fourth does not have to pick one of
- * them to borrow from.
+ * Four tools need it: the workflow, job and subscriber registry generators, each over its own
+ * directory, and `checks/models.ts`, which reads a module's model files. It lives on its own so none
+ * of them owns the `typescript` import, and so a fifth does not have to pick one to borrow from.
  *
  * Syntactic and single-file on purpose. No `ts.Program`, no type checker, no tsconfig: every
  * question those tools ask is answerable from one file's syntax, and a Program over this backend

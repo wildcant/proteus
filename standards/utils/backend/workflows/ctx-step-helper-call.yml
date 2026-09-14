@@ -1,0 +1,25 @@
+# A call to a shared step helper — `notifyOnFailureStep(ctx, …)`, `findOrCreateCustomerStep(ctx, …)`,
+# `setAuthAppMetadataStep(ctx, …)`. The helper calls `ctx.step` itself, so awaiting one is awaiting a
+# step, and wrapping one in a `try` abandons the handler at exactly the same await.
+#
+# Both halves are load-bearing. "Is handed `ctx`" alone admits `await db.query(ctx)` and
+# `await loadCartWith(ctx, input.id)` — raw I/O outside a step, let through by the shape of an
+# argument list rather than by anything about the callee. The `Step$` naming convention is what
+# separates the two; all three real helpers follow it, and a new helper that does not is a rename
+# away from passing rather than a hole.
+#
+# This is single-file by design. Following the import to confirm the callee really reaches `ctx.step`
+# is what a whole-program check would do, and it would answer a question nobody has asked here.
+id: ctx-step-helper-call
+language: typescript
+rule:
+  kind: call_expression
+  all:
+    - has:
+        field: function
+        regex: 'Step$'
+    - has:
+        field: arguments
+        has:
+          kind: identifier
+          regex: '^ctx$'

@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { confirmVerification } from '#/features/auth/api/auth'
 import { AuthHeading } from '#/features/auth/components/auth-heading'
 import { getToken } from '#/lib/auth-token'
@@ -38,9 +38,9 @@ function VerifyError() {
       <AuthHeading title="Invalid link">
         This verification link is invalid or has expired. Request a new one from your account.
       </AuthHeading>
-      <Button variant="outline" render={<Link to="/login" />} className="mt-10 h-14 w-full font-semibold text-base">
+      <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
         Back to sign in
-      </Button>
+      </ButtonLink>
     </main>
   )
 }
@@ -54,9 +54,9 @@ function VerifyPage() {
         <AuthHeading title="Email verified">
           Your email is confirmed. Sign in to pick up where you left off.
         </AuthHeading>
-        <Button render={<Link to="/login" />} className="mt-10 h-14 w-full font-semibold text-base">
+        <ButtonLink to="/login" className="mt-10 h-14 w-full font-semibold text-base">
           Sign in
-        </Button>
+        </ButtonLink>
       </main>
     )
   }
@@ -69,9 +69,9 @@ function VerifyPage() {
           Open this link in the same browser you signed up with.
         </p>
       )}
-      <Button variant="outline" render={<Link to="/login" />} className="mt-10 h-14 w-full font-semibold text-base">
+      <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
         Back to sign in
-      </Button>
+      </ButtonLink>
     </main>
   )
 }

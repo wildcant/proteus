@@ -1,0 +1,20 @@
+id: workflow-wraps-a-step-in-try
+language: typescript
+severity: error
+message: This `try` wraps a `ctx.step(…)`, so its `catch`/`finally` runs under the simple adapter and never under Temporal.
+note: 'Handle the failure inside the `ctx.step(…)` action, where it runs on both engines — or let the step throw and let the workflow compensate. Once the step it was replaying to is done the handler is abandoned: `replay.ts` hands back a promise that never settles, so the handler stops at its next await and the guard is never reached. A `try` *inside* a step action is the legal form and stays legal. standards/rules/backend/workflows/__docs__/workflows.md'
+files:
+  - "**/src/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  all:
+    - kind: try_statement
+    - matches: outside-a-step
+    - has:
+        field: body
+        has:
+          stopBy: end
+          any:
+            - matches: ctx-step-call
+            - matches: ctx-step-helper-call

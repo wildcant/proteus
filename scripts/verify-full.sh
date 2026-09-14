@@ -37,8 +37,33 @@ JOBS="backend store schemas packages storeE2e adminE2e"
 # Temporal Workers' readiness endpoints on 3017/3018. A suite added there needs its ports here.
 E2E_PORTS="3011,3012,3013,3015,3017,3018"
 
+# How many workers each suite gets while five others share the machine.
+#
+# Left to their defaults these three ask for roughly twice the cores this box has: the backend
+# suite takes one vitest worker per core bar one, and each Playwright suite takes half the cores
+# again, on top of two dev servers rendering on the server and two API processes. Oversubscribed
+# that far, specs stop failing on assertions and start failing on the clock — a page that renders
+# correctly, three seconds after the budget ran out. So the budget is set here, where the fact
+# that six suites are running at once is known. A suite run on its own keeps its own defaults,
+# which is why `test:e2e` is still the faster way to run one.
+BACKEND_WORKERS=4
+E2E_WORKERS=2
+
+# And how long a spec may take while they do. Playwright's 30s is measured against a machine
+# running one suite. The longest journey here — the admin's image/variant one, which uploads two
+# files and drives three drawers — takes a shade over 30s on its own, and every page load in it
+# competes with four vitest workers, a second browser suite and two dev servers rendering on the
+# server. It went past 60s. Four times the single-suite budget is what leaves the tail room to
+# finish; a suite run on its own still has 30s, which is where a genuine hang is caught quickly.
+E2E_TIMEOUT=120000
+
+# The same allowance for a single assertion, which has its own budget: Playwright retries one for
+# 5s by default, and a cart drawer that answers in six seconds under this much load has not failed
+# — `packages/testing/fixtures/e2e-config.ts` reads this, and keeps the 5s without it.
+export E2E_EXPECT_TIMEOUT=15000
+
 # The whole suite, not `test:gate`. ~96s, and the reason this script exists separately.
-job_backend() { pnpm --filter backend run test; }
+job_backend() { pnpm --filter backend run test --maxWorkers="$BACKEND_WORKERS"; }
 
 job_store() { pnpm --filter store run test; }
 
@@ -59,8 +84,12 @@ job_packages() { pnpm --filter @proteus/utils run test; }
 # No `--` before it. npm consumed that separator; pnpm forwards it to the script, so Playwright
 # would receive a bare `--` as its first argument. pnpm passes everything after the script name
 # through already, which is why the separator has nothing left to separate.
-job_storeE2e() { pnpm --filter store run test:e2e --reporter=line; }
-job_adminE2e() { pnpm --filter admin run test:e2e --reporter=line; }
+job_storeE2e() {
+  pnpm --filter store run test:e2e --reporter=line --workers="$E2E_WORKERS" --timeout="$E2E_TIMEOUT"
+}
+job_adminE2e() {
+  pnpm --filter admin run test:e2e --reporter=line --workers="$E2E_WORKERS" --timeout="$E2E_TIMEOUT"
+}
 
 for arg in "$@"; do
   case "$arg" in

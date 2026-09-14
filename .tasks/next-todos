@@ -138,13 +138,11 @@ Future features TODOs
 
 Future Infra TODOs
 - dependabot
-- migrate node cron jobs from bull mq to temporal schedules.
 - Monitoring — nothing today: no opentelemetry, no sentry, no exporter of any kind.
 - cloudflare workflows (https://developers.cloudflare.com/workflows/) as replacement of simple workflows for workerd. Temporal has serverless support but only google and aws (https://docs.temporal.io/demos/serverless-workers)
 - aws deployment
 - composing workflows
-- ci workflow to handle deployment! — there is no .github/workflows directory at all, so this is CI from zero,
-  not just the deploy step.
+- ci workflow to handle deployment! — there is no .github/workflows directory at all, so this is CI from zero, not just the deploy step.
 - migration order in prod (first modules and then link modules, are there edge cases?).
 - reusable workflow setup function for tests — done for 15 of 17 workflow test files (they now run against a real
   container from `createTestContainer()`; see docs/backend-test-infrastructure.md). cancel-order and

@@ -8,7 +8,7 @@ import { setRegionPaymentProvidersStep } from './steps/set-region-payment-provid
 type CreateRegionInput = {
   name: string
   currencyCode: string
-  paymentProviderIds?: string[]
+  paymentProviderIds: string[]
 }
 
 /**
@@ -35,12 +35,10 @@ export const createRegionWorkflow = createWorkflow<CreateRegionInput, RegionDTO>
       },
     )
 
-    if (input.paymentProviderIds?.length) {
-      await setRegionPaymentProvidersStep(ctx, {
-        regionId: region.id,
-        paymentProviderIds: input.paymentProviderIds,
-      })
-    }
+    await setRegionPaymentProvidersStep(ctx, {
+      regionId: region.id,
+      paymentProviderIds: input.paymentProviderIds,
+    })
 
     return region
   },

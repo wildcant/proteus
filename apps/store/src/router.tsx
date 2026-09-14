@@ -2,6 +2,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { loadSellableMarkets } from '#/api/sellable-markets'
+import { NotFound } from '#/components/not-found'
 import { DEFAULT_MARKET, joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
 import { routeTree } from './routeTree.gen'
 
@@ -17,6 +18,9 @@ export async function getRouter() {
     routeTree,
     context: { queryClient, market },
     scrollRestoration: true,
+    // Every unmatched URL, in one place: not-founds are raised at `__root__` here — an unroutable
+    // first segment is left alone by the rewrite below — so no route owns one to answer.
+    defaultNotFoundComponent: NotFound,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     // The market rides in the URL the browser shows, not in the route tree. Splitting the two

@@ -1,0 +1,11 @@
+id: button-renders-a-link
+language: tsx
+severity: error
+message: This `<Button>` renders a `<Link>`. A control that navigates is a link, whatever it looks like.
+note: 'Use `ButtonLink` — from `@proteus/ui` in admin, from `#/components/button.tsx` in the store, which adds the storefront treatment. base-ui''s own guidance is that "links have their own semantics and should not be rendered as buttons through the `render` prop": `Button` runs `useButton`, which warns in dev and — once `nativeButton={false}` silences it — stamps `role="button"` over the link role, costing the anchor its rotor entry and its open-in-new-tab affordance. standards/rules/frontend/components/__docs__/button-links.md'
+files:
+  - "**/src/**/*.tsx"
+rule:
+  any:
+    - pattern: <Button $$$BEFORE render={<Link $$$LINK />} $$$AFTER>
+    - pattern: <Button $$$BEFORE render={<Link $$$LINK />} $$$AFTER />

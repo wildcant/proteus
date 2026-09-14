@@ -1,8 +1,7 @@
 import { RadioGroup, Skeleton } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { ChevronLeftIcon, PlusIcon } from 'lucide-react'
 import { Suspense } from 'react'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { useSuspenseAddresses, useUpdateAddress } from '#/features/address/api/addresses'
 import { AddressCard } from '#/features/address/components/address-card'
 import { MainAddressPanel } from '#/features/address/components/main-address-panel'
@@ -15,10 +14,10 @@ import { MainAddressPanel } from '#/features/address/components/main-address-pan
 export function AddressBook() {
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-      <Button variant="link" render={<Link to="/account" />} className="gap-1 text-ink-muted">
+      <ButtonLink variant="link" to="/account" className="gap-1 text-ink-muted">
         <ChevronLeftIcon className="size-4" />
         Back to account
-      </Button>
+      </ButtonLink>
       <h1 className="type-display mt-4 text-ink">Address book</h1>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-10">
@@ -28,10 +27,10 @@ export function AddressBook() {
           <Suspense fallback={<Skeleton className="h-44 w-full" />}>
             <MainAddressPanel />
           </Suspense>
-          <Button render={<Link to="/account/addresses/new" />} className="w-full">
+          <ButtonLink to="/account/addresses/new" className="w-full">
             <PlusIcon />
             Add an address
-          </Button>
+          </ButtonLink>
         </div>
 
         <div>

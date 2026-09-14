@@ -1,0 +1,30 @@
+id: env-read-outside-env-module
+snapshots:
+  ? |
+    export const backend = import.meta.env.VITE_BACKEND_URL
+  : labels:
+    - source: import.meta.env
+      style: primary
+      start: 23
+      end: 38
+  ? |
+    export const region = process.env.REGION ?? 'us-east-1'
+  : labels:
+    - source: process.env
+      style: primary
+      start: 22
+      end: 33
+  ? |
+    export const url = process.env.DATABASE_URL
+  : labels:
+    - source: process.env
+      style: primary
+      start: 19
+      end: 30
+  ? |
+    if (process.env.NODE_ENV === 'production') enableCaching()
+  : labels:
+    - source: process.env
+      style: primary
+      start: 4
+      end: 15

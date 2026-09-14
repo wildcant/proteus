@@ -1,0 +1,59 @@
+id: workflow-wraps-a-step-in-try
+valid:
+  # The legal form: the recovery path is inside the action, where it runs Worker-local, once, on
+  # both engines.
+  - |
+    export const w = createWorkflow<Input, string>('w', async (ctx, input) => {
+      return await ctx.step('charge', async () => {
+        try {
+          const cart = await loadCart(input.cartId)
+          return `charged ${cart.total}`
+        } catch {
+          return 'declined'
+        }
+      })
+    })
+  # A `try` outside a step around something that is not a step at all is not this rule's claim —
+  # workflow-holds-logic-between-steps has the await inside it.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      let parsed: number
+      try {
+        parsed = Number.parseInt(input.raw, 10)
+      } catch {
+        parsed = 0
+      }
+      return await ctx.step('settle', async () => parsed)
+    })
+invalid:
+  # An ordinary recovery path around a step. Under the simple adapter the `catch` runs and this
+  # returns 'recovered'; under Temporal the handler is abandoned at the await and it never does.
+  - |
+    export const w = createWorkflow<Input, string>('w', async (ctx, input) => {
+      try {
+        return await ctx.step('charge', async () => `charged ${input.cartId}`)
+      } catch {
+        return 'recovered'
+      }
+    })
+  # A `finally` is abandoned for the same reason a `catch` is.
+  - |
+    export const w = createWorkflow<Input, string>('w', async (ctx, input) => {
+      let outcome = 'pending'
+      try {
+        outcome = await ctx.step('settle', async () => `settled ${input.cartId}`)
+      } finally {
+        outcome = `${outcome} (cleaned up)`
+      }
+      return outcome
+    })
+  # A shared helper calls `ctx.step` itself, so wrapping one abandons the handler at the same await.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      try {
+        await notifyOnFailureStep(ctx, { cartId: input.cartId })
+      } catch {
+        return 'recovered'
+      }
+      return 'ok'
+    })

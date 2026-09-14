@@ -1,9 +1,8 @@
 import { ShoppingBagIcon } from '@proteus/icons'
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
 import { InfoIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
-import { Button } from '#/components/button'
+import { Button, ButtonLink } from '#/components/button'
 import { useCart } from '#/features/cart/api/cart'
 import { CartDrawerSkeleton } from '#/features/cart/components/cart-drawer-skeleton'
 import { CartEmpty } from '#/features/cart/components/cart-empty'
@@ -106,10 +105,10 @@ export function CartDrawer() {
                 near-bleed, which is what makes it read as the floor rather than another block. */}
             <div className="shrink-0 bg-surface px-2 pt-4 pb-6 shadow-panel">
               {/* "Checkout", not "securely": that is a payment claim one test-only provider cannot make. */}
-              <Button render={<Link to="/checkout" />} className="w-full gap-2">
+              <ButtonLink to="/checkout" className="w-full gap-2">
                 <ShoppingBagIcon className="h-4 w-4" />
                 Checkout
-              </Button>
+              </ButtonLink>
             </div>
           </>
         )}

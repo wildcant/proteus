@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
 import { type CreateProduct, productTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
+import { fakeImageUrl } from '../image-url.js'
 
 export function generateProduct(overrides?: Partial<CreateProduct>): CreateProduct {
   const title = faker.commerce.productName()
@@ -16,7 +17,7 @@ export function generateProduct(overrides?: Partial<CreateProduct>): CreateProdu
     description: faker.commerce.productDescription(),
     isGiftcard: faker.datatype.boolean(),
     status: faker.helpers.arrayElement(['draft', 'proposed', 'published', 'rejected'] as const),
-    thumbnail: faker.image.url(),
+    thumbnail: fakeImageUrl(),
     weight: faker.number.float({ min: 0.1, max: 50, fractionDigits: 2 }),
     length: faker.number.float({ min: 1, max: 100, fractionDigits: 2 }),
     height: faker.number.float({ min: 1, max: 100, fractionDigits: 2 }),

@@ -97,6 +97,13 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 1 : undefined,
+    /**
+     * How long an assertion may retry. Playwright's 5s is a fine budget for a machine running one
+     * suite, and too tight for one running six: `verify:full` raises it, because a bag that takes
+     * six seconds to answer while four vitest workers and a second browser suite share the cores
+     * is slow, not wrong. A suite run on its own keeps the 5s.
+     */
+    expect: { timeout: Number(process.env.E2E_EXPECT_TIMEOUT ?? 5_000) },
     reporter: 'html',
     use: {
       baseURL: `http://localhost:${appPort}`,

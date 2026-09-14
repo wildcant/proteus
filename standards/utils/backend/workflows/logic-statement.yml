@@ -1,0 +1,36 @@
+# A statement that is not a step call and not a return — the statement forms a handler may not hold.
+#
+# Written as a list of node kinds because ast-grep needs a positive `kind:` to enumerate candidates
+# and the TypeScript grammar exposes no `statement` supertype, so "any statement that is not a step"
+# cannot be said directly. `kind: statement` parses and matches nothing. That makes this the one
+# denylist left in the set — but a denylist over the grammar's statement kinds is closed, where a
+# denylist over impure globals is open and was the thing that kept missing `performance.now()`.
+#
+# `workflow-holds-logic-between-steps` matches these directly, and also uses them as an ancestor
+# test so a `compute(x)` inside a banned `const` is reported once, as the statement, rather than
+# twice.
+id: logic-statement
+language: typescript
+rule:
+  any:
+    # Every loop form. There is no version of iterating outside a step that is not the step being
+    # asked to do less than it should: give it the whole list.
+    - kind: for_in_statement
+    - kind: for_statement
+    - kind: while_statement
+    - kind: do_statement
+    - kind: switch_statement
+    - kind: labeled_statement
+    # A nested function or class is a closure the replay rebuilds on every pass.
+    - kind: function_declaration
+    - kind: class_declaration
+    # `var` never carries a step; `const`/`let` do, and are legal only then.
+    - kind: variable_declaration
+    - all:
+        - kind: lexical_declaration
+        - not:
+            has:
+              kind: variable_declarator
+              has:
+                field: value
+                matches: produced-by-a-step

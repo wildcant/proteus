@@ -1,0 +1,48 @@
+id: constructs-a-generic-error
+valid:
+  # The type is what errorHandler maps to a status; the code is what the client reads off the body.
+  - |
+    if (!cart) {
+      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Cart ${id} not found` })
+    }
+  - |
+    throw new AppError({
+      type: ErrorTypes.CONFLICT,
+      message: 'This payment method is unavailable',
+      code: PaymentErrorCodes.PAYMENT_METHOD_UNAVAILABLE,
+    })
+  # A subclass carrying a verdict of its own.
+  - |
+    throw new WorkflowTerminalError(
+      new AppError({ type: ErrorTypes.CONFLICT, message: 'cart already completed' }),
+    )
+  # Reading someone else's Error is not constructing one.
+  - |
+    export function isTransient(error: unknown): boolean {
+      return error instanceof Error && error.message.includes('ECONNRESET')
+    }
+invalid:
+  # The obvious shape.
+  - |
+    export function assertCart(cart: CartDTO | undefined) {
+      if (!cart) throw new Error('cart missing')
+    }
+  # And four a text search for `throw new Error(` would miss. Construction and throw written apart:
+  - |
+    export function assertCart(cart: CartDTO | undefined) {
+      if (cart) return
+      const error = new Error('cart missing')
+      error.name = 'CartMissing'
+      throw error
+    }
+  # a rejected promise, which is a throw at the await site:
+  - |
+    export function loadCart(id: string) {
+      return known.has(id) ? fetchCart(id) : Promise.reject(new Error(`unknown cart ${id}`))
+    }
+  # a wrapped construction:
+  - |
+    throw Object.assign(new Error('upstream refused'), { status: 502 })
+  # and one handed to a callback rather than thrown at all.
+  - |
+    stream.on('timeout', () => callback(new Error('upload timed out')))

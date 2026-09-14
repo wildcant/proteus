@@ -77,6 +77,10 @@ export function deserializeError(serialized: SerializedError): Error {
     })
   }
 
+  // The inverse of serializeError's `kind: 'plain'` branch, so the class has to be the one that was
+  // serialized. Rebuilding it as an AppError would invent a `type` the Worker never threw, and
+  // errorHandler would answer the caller with a status this failure never had.
+  // ast-grep-ignore: constructs-a-generic-error
   const rebuilt = new Error(serialized.message)
   rebuilt.name = serialized.name
   return rebuilt

@@ -1,8 +1,8 @@
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { type GroupRefs, Tab } from './constants'
+import { RegisterCreateProductFormStep } from './register-create-product-form-step'
 import { attributesSchema } from './schemas'
-import { useRegisterCreateProductFormStep } from './use-register-create-product-form-step'
 
 export const ProductCreateAttributesForm = withForm({
   ...productCreateFormOpts,
@@ -10,10 +10,9 @@ export const ProductCreateAttributesForm = withForm({
   render: function ProductCreateAttributesForm({ form, groupRefs }) {
     return (
       <form.FormGroup name="attributes" validators={{ onSubmit: attributesSchema }}>
-        {(formGroup) => {
-          useRegisterCreateProductFormStep(groupRefs, Tab.ATTRIBUTES, formGroup)
-
-          return (
+        {(formGroup) => (
+          <>
+            <RegisterCreateProductFormStep groupRefs={groupRefs} tab={Tab.ATTRIBUTES} formGroup={formGroup} />
             <div className="flex flex-col gap-y-8">
               <h2 className="font-semibold text-xl">Attributes</h2>
               <div className="flex flex-col gap-y-4">
@@ -47,8 +46,8 @@ export const ProductCreateAttributesForm = withForm({
                 </div>
               </div>
             </div>
-          )
-        }}
+          </>
+        )}
       </form.FormGroup>
     )
   },

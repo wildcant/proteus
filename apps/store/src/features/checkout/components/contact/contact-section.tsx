@@ -1,6 +1,5 @@
-import { Link } from '@tanstack/react-router'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
 import type { CheckoutForm } from '../../hooks/use-checkout-form'
 import { CheckoutSection } from '../checkout-section'
@@ -23,9 +22,9 @@ export function ContactSection(props: ContactSectionProps) {
     <CheckoutSection
       title="Contact"
       action={
-        <Button variant="link" render={<Link to="/login" search={{ redirect: '/checkout' }} />} className="text-sm">
+        <ButtonLink variant="link" to="/login" search={{ redirect: '/checkout' }} className="text-sm">
           Sign in
-        </Button>
+        </ButtonLink>
       }
     >
       <ContactForm form={form} />

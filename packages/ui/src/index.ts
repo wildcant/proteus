@@ -38,6 +38,7 @@ export {
   BreadcrumbSeparator,
 } from './components/ui/breadcrumb.tsx'
 export { Button, buttonVariants } from './components/ui/button.tsx'
+export { ButtonLink } from './components/ui/button-link.tsx'
 export {
   Card,
   CardAction,

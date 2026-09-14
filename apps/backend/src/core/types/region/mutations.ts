@@ -27,3 +27,12 @@ export type UpdateCountryDTO = {
   regionId?: string | null
   localeCode?: string | null
 }
+
+/** One country's market: the region that sells to it, and the locale that region reads it in. */
+export type SetCountryMarketDTO = {
+  /** ISO 3166-1 alpha-2, lowercased. */
+  iso2: string
+  /** `null` closes the market — the country stops being sold to. */
+  regionId: string | null
+  localeCode: string | null
+}

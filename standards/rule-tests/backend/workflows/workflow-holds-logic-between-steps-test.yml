@@ -1,0 +1,91 @@
+id: workflow-holds-logic-between-steps
+valid:
+  # A binding a step produced, in all three spellings the grammar has for a step call.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const cart = await ctx.step('load', async ({ container }) => container.resolve('cart').get(input.id))
+      const typed = await ctx.step<string>('token', async () => 'tok')
+      const { customer } = await findOrCreateCustomerStep(ctx, { email: input.email })
+      return { cart, typed, customer }
+    })
+  # A step with no binding, and a guard that ends the handler early. Ending early is the one
+  # decision that belongs out here — the alternative is every later step growing its own branch.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const existingOrder = await ctx.step('check-idempotency', async () => input.id)
+      if (existingOrder) return existingOrder
+      await ctx.step('place', async () => input.id)
+      return null
+    })
+  # Everything is legal inside the action: the action runs once and its output is recorded.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      return await ctx.step('settle', async ({ container }) => {
+        const at = new Date()
+        const rows = []
+        for (const id of input.ids) rows.push(await container.resolve('cart').get(id))
+        return `${at.toISOString()} ${rows.length}`
+      })
+    })
+invalid:
+  # A binding no step produced. Rebuilt once per remaining step, recorded nowhere.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const cart = await ctx.step('load', async () => input.id)
+      const total = cart.total
+      return await ctx.step('settle', async () => total)
+    })
+  # A loop over steps. Give the step the whole list: one record, one compensation.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const assigned: CountryDTO[] = []
+      for (const country of input.countries) {
+        assigned.push(await assignCountryToRegionStep(ctx, { code: country.id }))
+      }
+      return assigned
+    })
+  # The clock, and the four shapes a list of banned globals kept missing.
+  - |
+    export const w = createWorkflow('w', async (ctx) => {
+      const stamp = Date.now()
+      return await ctx.step('settle', async () => stamp)
+    })
+  - |
+    export const w = createWorkflow('w', async (ctx) => {
+      const stamp = performance.now()
+      return await ctx.step('settle', async () => stamp)
+    })
+  - |
+    export const w = createWorkflow('w', async (ctx) => {
+      const id = globalThis.crypto.randomUUID()
+      return await ctx.step('settle', async () => id)
+    })
+  # A call surviving inside a `return` — one of the two statement forms that stays legal.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const links = await ctx.step('load', async () => input.id)
+      return buildStartingPrices(input.variants, links)
+    })
+  # An await surviving inside a `return`, and one inside an `if` condition.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      await ctx.step('load', async () => input.id)
+      return await loadCart(input.id)
+    })
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const cart = await ctx.step('load', async () => input.id)
+      if (await isReady(cart)) return cart
+      return null
+    })
+  # An await of a bare identifier: no call in it at all, so nothing about calls would see it.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const pending = await ctx.step('start', async () => input.id)
+      if (await pending) return null
+      return null
+    })
+  # The step *name* is glue, rebuilt on every replay, so a name from the clock addresses a
+  # different step each pass.
+  - |
+    export const w = createWorkflow('w', async (ctx) => ctx.step(`sync-${Date.now()}`, async () => 'done'))

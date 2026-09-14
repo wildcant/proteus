@@ -1,0 +1,65 @@
+id: workflow-calls-a-step-conditionally
+snapshots:
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const check = await ctx.step('verify', async () => input.code)
+      if (!check.verified) {
+        await ctx.step('send-verification-email', async ({ container }) => container.resolve('n').send(check.email))
+      }
+      return check
+    })
+  : labels:
+    - source: |-
+        if (!check.verified) {
+            await ctx.step('send-verification-email', async ({ container }) => container.resolve('n').send(check.email))
+          }
+      style: primary
+      start: 128
+      end: 267
+    - source: ctx.step('send-verification-email', async ({ container }) => container.resolve('n').send(check.email))
+      style: secondary
+      start: 161
+      end: 263
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const check = await ctx.step('verify', async () => input.code)
+      if (check.verified) {
+        return check
+      } else {
+        return await ctx.step('resend', async () => check.email)
+      }
+    })
+  : labels:
+    - source: |-
+        if (check.verified) {
+            return check
+          } else {
+            return await ctx.step('resend', async () => check.email)
+          }
+      style: primary
+      start: 128
+      end: 242
+    - source: ctx.step('resend', async () => check.email)
+      style: secondary
+      start: 195
+      end: 238
+  ? |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const region = await ctx.step('create-region', async () => input.name)
+      if (input.paymentProviderIds?.length) {
+        await setRegionPaymentProvidersStep(ctx, { regionId: region.id, paymentProviderIds: input.paymentProviderIds })
+      }
+      return region
+    })
+  : labels:
+    - source: |-
+        if (input.paymentProviderIds?.length) {
+            await setRegionPaymentProvidersStep(ctx, { regionId: region.id, paymentProviderIds: input.paymentProviderIds })
+          }
+      style: primary
+      start: 136
+      end: 295
+    - source: 'setRegionPaymentProvidersStep(ctx, { regionId: region.id, paymentProviderIds: input.paymentProviderIds })'
+      style: secondary
+      start: 186
+      end: 291

@@ -192,10 +192,10 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
         // back the real output lets the handler run its glue as far as the next `ctx.step`, whose
         // name is what labels the following Activity. That glue is the same glue the next attempt
         // would replay anyway, so this costs nothing beyond running it one step earlier — and it
-        // is pure and synchronous, which `scripts/replay-purity.ts` enforces rather than
-        // hopes for. A handler that awaits something non-`ctx.step` here would stall this Activity
-        // until `startToCloseTimeout` instead of being abandoned, which is exactly what that
-        // check's `await-outside-step` rule is for.
+        // is pure and synchronous, which the rules under `standards/rules/backend/workflows/`
+        // enforce rather than hope for. A handler that awaits something non-`ctx.step` here would
+        // stall this Activity until `startToCloseTimeout` instead of being abandoned, which is
+        // exactly what `workflow-holds-logic-between-steps` is for.
         return output as T
       } catch (error) {
         // A failed step abandons as before: rethrowing into the handler would run its `catch` and

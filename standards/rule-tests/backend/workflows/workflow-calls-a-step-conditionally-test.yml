@@ -1,0 +1,54 @@
+id: workflow-calls-a-step-conditionally
+valid:
+  # The step runs every time and decides internally that there is nothing to do, so the recorded
+  # step sequence is the same on every run.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const region = await ctx.step('create-region', async () => input.name)
+      await setRegionPaymentProvidersStep(ctx, { regionId: region.id, paymentProviderIds: input.ids })
+      return region
+    })
+  # An `if` that only ends the handler early holds no step, so it is not this rule's claim.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const existing = await ctx.step('check', async () => input.id)
+      if (existing) return existing
+      return await ctx.step('place', async () => input.id)
+    })
+  # A branch *inside* the action is ordinary code: the action runs once either way.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      return await ctx.step('settle', async ({ container }) => {
+        if (!input.ids.length) return null
+        return container.resolve('region').set(input.ids)
+      })
+    })
+invalid:
+  # A step reached on only some paths: the sequence differs run to run, which is what
+  # StepSequenceChangedError is for.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const region = await ctx.step('create-region', async () => input.name)
+      if (input.paymentProviderIds?.length) {
+        await setRegionPaymentProvidersStep(ctx, { regionId: region.id, paymentProviderIds: input.paymentProviderIds })
+      }
+      return region
+    })
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const check = await ctx.step('verify', async () => input.code)
+      if (!check.verified) {
+        await ctx.step('send-verification-email', async ({ container }) => container.resolve('n').send(check.email))
+      }
+      return check
+    })
+  # An `else` branch is the same shape.
+  - |
+    export const w = createWorkflow('w', async (ctx, input) => {
+      const check = await ctx.step('verify', async () => input.code)
+      if (check.verified) {
+        return check
+      } else {
+        return await ctx.step('resend', async () => check.email)
+      }
+    })

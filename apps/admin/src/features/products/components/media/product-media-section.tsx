@@ -1,5 +1,5 @@
 import {
-  Button,
+  ButtonLink,
   Card,
   CardAction,
   CardHeader,
@@ -128,14 +128,9 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
             <span className="font-medium">No media</span>
             <span className="text-muted-foreground">Add media to showcase this product in your storefront.</span>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            nativeButton={false}
-            render={<Link to="/products/$id/media" params={{ id: product.id }} />}
-          >
+          <ButtonLink size="sm" variant="outline" to="/products/$id/media" params={{ id: product.id }}>
             Add media
-          </Button>
+          </ButtonLink>
         </div>
       )}
       <CommandBar open={selectedKeys.length > 0}>

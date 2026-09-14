@@ -10,6 +10,7 @@ import type {
   VariantImageInput,
 } from '@core/types/product/mutations.js'
 import { faker } from '@faker-js/faker'
+import { fakeImageUrl } from './image-url.js'
 
 export function generateCreateProductDTO(overrides?: Partial<CreateProductDTO>): CreateProductDTO {
   return {
@@ -65,7 +66,7 @@ export function generateCreateProductVariantDTO(overrides?: Partial<CreateProduc
   return {
     productId: `prod_${faker.string.alphanumeric(32)}`,
     optionValues: {},
-    thumbnail: faker.image.url(),
+    thumbnail: fakeImageUrl(),
     sku: faker.string.alphanumeric({ length: 12, casing: 'upper' }),
     barcode: faker.string.numeric(12),
     ean: faker.string.numeric(13),
@@ -115,7 +116,7 @@ export function generateSetProductOptionsDTO(overrides?: Partial<SetProductOptio
  */
 export function generateUpdateProductVariantDTO(overrides?: Partial<UpdateProductVariantDTO>): UpdateProductVariantDTO {
   return {
-    thumbnail: faker.image.url(),
+    thumbnail: fakeImageUrl(),
     sku: faker.string.alphanumeric({ length: 12, casing: 'upper' }),
     barcode: faker.string.numeric(12),
     ean: faker.string.numeric(13),

@@ -1,7 +1,7 @@
 import { toast } from '@proteus/ui'
-import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
-import { Button } from '#/components/button'
+import { ButtonLink } from '#/components/button'
 import { AuthHeading } from '#/features/auth/components/auth-heading'
 import { LoginForm } from '#/features/auth/components/login-form'
 import { VerifyPending } from '#/features/auth/components/verify-pending'
@@ -44,9 +44,9 @@ function LoginPage() {
           </div>
           <p className="mt-6 text-center text-ink-muted text-sm">
             Don't have an account?{' '}
-            <Button variant="link" render={<Link to="/signup" />} className="align-baseline text-sm">
+            <ButtonLink variant="link" to="/signup" className="align-baseline text-sm">
               Sign up
-            </Button>
+            </ButtonLink>
           </p>
         </>
       )}

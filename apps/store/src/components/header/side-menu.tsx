@@ -8,7 +8,10 @@ import { ThemeToggle } from '#/components/theme-toggle'
 import { useModal } from '#/lib/modal-state'
 
 /** No `Cart` entry: the bag sits in the header at every width, and a nav link that opens a modal
- *  is a weaker copy of a control already on screen. */
+ *  is a weaker copy of a control already on screen.
+ *
+ *  Home and Products both point at `/` until a category taxonomy exists, which is why the rows are
+ *  keyed by label rather than by destination. */
 const menuLinks = [
   { to: '/' as const, label: 'Home' },
   { to: '/' as const, label: 'Products' },
@@ -53,7 +56,7 @@ export function SideMenu() {
         <nav className="flex-1 overflow-y-auto px-4 pt-2 sm:px-6 lg:px-8">
           <ul className="m-0 flex list-none flex-col p-0">
             {menuLinks.map(({ to, label }) => (
-              <li key={to}>
+              <li key={label}>
                 <Link
                   to={to}
                   className="flex items-center justify-between gap-3 py-4 text-base text-ink no-underline hover:text-ink-muted"

@@ -57,28 +57,23 @@ job_lint() { pnpm exec biome check --error-on-warnings .; }
 # Every check runs even after one fails, so a single run reports every violation at once.
 job_standards() {
   local code=0
-  ./scripts/check-env-usage.sh || code=1
-  # Both of these inspect exactly one workspace, so they live in it and are invoked through it. The
-  # env check stays here because it spans backend and store.
-  pnpm --silent --filter backend run check:errors || code=1
-  pnpm --silent --filter @proteus/http-schemas run check:datetime || code=1
   # The schema rules a rule file cannot express — cascade relationships, index predicates and
   # closure reachability exist only once drizzle has built the table, so this one imports the
   # models. standards/README.md carries the per-check verdict; the ones that were expressible have
   # already moved. See apps/backend/scripts/checks/run.ts.
   pnpm --silent --filter backend run check:schema || code=1
-  # Replay purity — the rule the Temporal adapter rests on. Parses the workflow handlers, so it
-  # cannot be a grep. See apps/backend/scripts/replay-purity.ts.
-  pnpm --silent --filter backend run check:workflow-purity || code=1
   # The standards — what a file's contents must look like, across both frontends, the backend's
-  # routes and workflows, and its models. Lives at the root like the env check because it spans
-  # workspaces. ast-grep matches the syntax tree rather than
+  # routes, workflows and models, the environment reads in all three apps, and the http schemas.
+  # Lives at the root because it spans workspaces. ast-grep matches the syntax tree rather than
   # lines: a hook forwarding one callback and swallowing the other reads as compliant to any
-  # line-wise pattern. `--error=unused-suppression` fails the run when an `ast-grep-ignore` outlives
+  # line-wise pattern, and `throw new Error(` misses the `const error = new Error(…)` two lines
+  # above the throw. `--error=unused-suppression` fails the run when an `ast-grep-ignore` outlives
   # the code it exempted. See standards/README.md for the rule tree.
   pnpm --silent run check:standards || code=1
   # The rules' own tests. A rule that stops matching its `invalid` case prints exactly what a clean
-  # codebase prints, and this is what tells the two apart.
+  # codebase prints, and this is what tells the two apart. Replay purity depends on this more than
+  # the rest: its rules subtract the step-action region from the handler, and a subtraction that
+  # stops recognising `ctx.step` is the one failure that would go quiet.
   pnpm --silent run check:standards:test || code=1
   return $code
 }

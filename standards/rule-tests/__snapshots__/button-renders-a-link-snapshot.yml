@@ -1,0 +1,26 @@
+id: button-renders-a-link
+snapshots:
+  const A = () => <Button nativeButton={false} render={<Link to="/checkout" />}>Checkout</Button>:
+    labels:
+    - source: <Button nativeButton={false} render={<Link to="/checkout" />}>
+      style: primary
+      start: 16
+      end: 78
+  const A = () => <Button render={<Link to="/" />} className="w-full">Browse products</Button>:
+    labels:
+    - source: <Button render={<Link to="/" />} className="w-full">
+      style: primary
+      start: 16
+      end: 68
+  const A = () => <Button render={<Link to="/products/$id" params={{ id }} />} />:
+    labels:
+    - source: <Button render={<Link to="/products/$id" params={{ id }} />} />
+      style: primary
+      start: 16
+      end: 79
+  const A = () => <Button variant="link" render={<Link to="/account" />}>Back</Button>:
+    labels:
+    - source: <Button variant="link" render={<Link to="/account" />}>
+      style: primary
+      start: 16
+      end: 71

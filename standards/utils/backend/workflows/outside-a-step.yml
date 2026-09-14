@@ -1,0 +1,39 @@
+# Inside a `createWorkflow` handler, outside every `ctx.step` callback.
+#
+# Not "the pure region" — that name framed it as a place you may write careful code in, and the
+# claim is that nothing lives there at all. A handler is a sequence of steps, the returns that end
+# it early, and nothing else. What is *inside* a step callback is ordinary code and unconstrained;
+# this matcher is only how a rule tells the two apart.
+#
+# `advanceWorkflow` re-executes the handler from the top on every step, handing back stored outputs
+# for the steps already done and running exactly the next one. Everything between `ctx.step` calls
+# therefore runs once per remaining step — 91 times over `complete-cart`'s 14 — and what it computes
+# is never recorded anywhere. That is the region every rule referencing this util is about.
+#
+# What is subtracted is the step's *callbacks*, not the whole step call. The step's name argument
+# stays in the region on purpose: it is rebuilt on every replay like the rest of the glue, so
+# `ctx.step(\`sync-${Date.now()}\`, …)` is the same bug as a `Date.now()` between two steps.
+#
+# `createWorkflow` is matched through `field: function` rather than as the pattern
+# `createWorkflow($$$)`, which does not match `createWorkflow<Input, Output>(…)` — every real
+# workflow has the type arguments, so the pattern form would match nothing and report a clean tree.
+id: outside-a-step
+language: typescript
+rule:
+  all:
+    - inside:
+        stopBy: end
+        kind: call_expression
+        has:
+          field: function
+          regex: '^createWorkflow$'
+    - not:
+        inside:
+          stopBy: end
+          any:
+            - kind: arrow_function
+            - kind: function_expression
+          inside:
+            kind: arguments
+            inside:
+              matches: ctx-step-call

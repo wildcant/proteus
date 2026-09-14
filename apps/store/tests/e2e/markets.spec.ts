@@ -32,9 +32,9 @@ async function switchMarket(page: Page, displayName: string) {
 }
 
 test.describe('Markets', () => {
-  test('both markets render the storefront under their own locale code', async ({ page }) => {
+  test('both markets render the storefront under their own locale code', async ({ page, goto }) => {
     for (const localeCode of [DEFAULT_MARKET, SECOND_MARKET]) {
-      const response = await page.goto(`/${localeCode}`, { waitUntil: 'networkidle' })
+      const response = await goto(`/${localeCode}`)
       expect(response?.status(), `GET /${localeCode}`).toBe(200)
 
       // The storefront, not a shell: the header is what every page of it carries.
@@ -44,8 +44,11 @@ test.describe('Markets', () => {
     }
   })
 
-  test('the root is a router: it redirects to the default market and renders nothing itself', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'networkidle' })
+  test('the root is a router: it redirects to the default market and renders nothing itself', async ({
+    page,
+    goto,
+  }) => {
+    await goto('/')
 
     // The default market is prefixed like every other one. If `/` rendered instead, the same
     // storefront would answer at two addresses.
@@ -53,16 +56,16 @@ test.describe('Markets', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', DEFAULT_MARKET)
   })
 
-  test('a path with no market keeps its route and gains the prefix', async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'networkidle' })
+  test('a path with no market keeps its route and gains the prefix', async ({ page, goto }) => {
+    await goto('/login')
 
     // A real route missing its market is a shopper to be placed, not a wrong address.
     await expect(page).toHaveURL(`/${DEFAULT_MARKET}/login`)
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
   })
 
-  test('an unknown locale code is a not-found at its own address', async ({ page }) => {
-    const response = await page.goto('/fr-FR')
+  test('an unknown locale code is a not-found at its own address', async ({ page, goto }) => {
+    const response = await goto('/fr-FR')
 
     // Both halves matter, and the second is the one that is easy to lose: a market asked for by
     // name that the store does not sell in has nowhere to be redirected to. Answering at
@@ -72,14 +75,14 @@ test.describe('Markets', () => {
     await expect(page).toHaveURL('/fr-FR')
   })
 
-  test('the market chosen by URL is remembered, and the root resolves to it', async ({ page }) => {
+  test('the market chosen by URL is remembered, and the root resolves to it', async ({ page, goto }) => {
     // Choosing a market by its URL is what persists it.
-    await page.goto(`/${SECOND_MARKET}`, { waitUntil: 'networkidle' })
+    await goto(`/${SECOND_MARKET}`)
     await expect(page.locator('html')).toHaveAttribute('lang', SECOND_MARKET)
 
     // A later visit to the root lands back on it rather than on the default, and lands there by
     // redirect: the URL carries the market, so the address stays shareable.
-    await page.goto('/', { waitUntil: 'networkidle' })
+    await goto('/')
     await expect(page).toHaveURL(`/${SECOND_MARKET}`)
     await expect(page.locator('html')).toHaveAttribute('lang', SECOND_MARKET)
 
@@ -100,8 +103,8 @@ test.describe('Markets', () => {
  * interesting because a peso amount comes back, so the peso amount is the claim.
  */
 test.describe('Market control', () => {
-  test('lists exactly the markets the store sells in', async ({ page }) => {
-    await page.goto(`/${DEFAULT_MARKET}`, { waitUntil: 'networkidle' })
+  test('lists exactly the markets the store sells in', async ({ page, goto }) => {
+    await goto(`/${DEFAULT_MARKET}`)
 
     // The seeded markets, sorted by display name the way the country endpoint returns them.
     // Exhaustive on purpose: a control offering a market the store does not sell in quotes a
@@ -120,6 +123,7 @@ test.describe('Market control', () => {
     authenticate,
     navigate,
     factories,
+    goto,
   }) => {
     const term = faker.string.alpha({ length: 10, casing: 'lower' })
     // Priced in both currencies: the list is the catalogue a market can quote, so a product
@@ -147,7 +151,7 @@ test.describe('Market control', () => {
 
     // And the choice is persisted, which is what the cookie the switch writes is for: a later
     // visit to the root lands in the market that was chosen rather than the default.
-    await page.goto('/', { waitUntil: 'networkidle' })
+    await goto('/')
     await expect(page).toHaveURL(`/${SECOND_MARKET}`)
   })
 
@@ -156,6 +160,7 @@ test.describe('Market control', () => {
     authenticate,
     navigate,
     factories,
+    goto,
   }) => {
     const term = faker.string.alpha({ length: 10, casing: 'lower' })
     // Priced in both currencies, and the peso price is not the dollar price: 100000 could not be
@@ -186,7 +191,7 @@ test.describe('Market control', () => {
 
     // The detail page prices the same way, off its own request rather than the list's — the two
     // are separate queries and only one of them has been proven to carry the market so far.
-    await page.goto(`/${SECOND_MARKET}/products/${product.id}`, { waitUntil: 'networkidle' })
+    await goto(`/${SECOND_MARKET}/products/${product.id}`)
     const price = page.locator('main').getByText(/100\.000/)
     await expect(price).toBeVisible()
     await expect(price).toContainText('$')
@@ -337,6 +342,7 @@ test.describe('Cart across markets', () => {
     navigate,
     factories,
     cleanup,
+    goto,
   }) => {
     await using product = await factories.create.productWithPricing({
       prices: [
@@ -353,7 +359,7 @@ test.describe('Cart across markets', () => {
 
     // A shared link or a bookmark: the shopper arrives in the other market without ever touching
     // the control, carrying the same cart in their browser's storage.
-    await page.goto(`/${SECOND_MARKET}`, { waitUntil: 'networkidle' })
+    await goto(`/${SECOND_MARKET}`)
 
     const bag = page.locator('header').getByLabel('Cart')
     await expect(bag).toContainText('1', { timeout: BACKEND_TIMEOUT })
