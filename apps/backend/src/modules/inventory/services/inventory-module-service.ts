@@ -295,6 +295,18 @@ export class InventoryModuleService implements IInventoryModuleService {
     }
   }
 
+  /**
+   * Moves the counter for every level the given reservations name.
+   *
+   * A pair with no level is skipped rather than raised, and that asymmetry is deliberate. On the
+   * create path it cannot happen — `assertEveryPairHasALevel` runs first — so the skip only ever
+   * describes a release: a reservation whose level row has gone between the reservation being
+   * written and being released. Releasing has to finish anyway. Refusing would strand the units
+   * *and* block the cancellation or fulfillment that was releasing them, which is worse than a
+   * counter that has nothing left to move. It is logged at warn rather than passed over in silence,
+   * because the two rows disagreeing is a data fault somebody has to look at — nothing deletes a
+   * level today, so this line firing at all means something new does.
+   */
   private async moveReservedQuantity(
     rows: { inventoryItemId: string; locationId: string; quantity: number }[],
     levels: Map<string, InventoryLevelDTO>,
@@ -308,7 +320,12 @@ export class InventoryModuleService implements IInventoryModuleService {
 
     for (const [key, quantity] of moved) {
       const level = levels.get(key)
-      if (!level) continue
+      if (!level) {
+        this.logger.warn(
+          `Reserved quantity not moved by ${sign * quantity}: no inventory level for ${key}. A reservation names an item and location that has no level row.`,
+        )
+        continue
+      }
 
       await this.inventoryLevelRepository.update(
         level.id,

@@ -15,11 +15,8 @@ export interface AdminCreateOrderFulfillment {
      * @maxLength 64
      */
   providerId: string;
-  /**
-     * @minLength 1
-     * @maxLength 64
-     */
-  locationId: string;
+  /** @maxLength 64 */
+  locationId?: string;
   /**
      * @minItems 1
      * @maxItems 100

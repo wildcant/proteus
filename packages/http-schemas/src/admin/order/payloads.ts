@@ -16,7 +16,10 @@ export const AdminCreateFulfillmentItem = z.object({
   quantity: z.number().int().min(1),
   sku: machineCode.optional(),
   barcode: machineCode.optional(),
-  lineItemId: entityId.optional(),
+  // Required, unlike the fulfillment module's own item shape: a fulfillment created *for an order*
+  // has to cover every one of its line items, and an item that names none cannot be counted towards
+  // that. See `create-order-fulfillment`.
+  lineItemId: entityId,
   inventoryItemId: entityId.optional(),
 })
 
@@ -36,7 +39,9 @@ export const AdminCreateFulfillmentAddress = z.object({
 export const AdminCreateOrderFulfillment = z
   .object({
     providerId: entityId.min(1),
-    locationId: entityId.min(1),
+    // Optional: omitted, the server ships from the location the order's stock is reserved at, which
+    // is the only one that can hold it. Naming a different one is refused rather than recorded.
+    locationId: entityId.optional(),
     items: z.array(AdminCreateFulfillmentItem).min(1).max(MAX_ITEMS.batch),
     address: AdminCreateFulfillmentAddress,
     shippingOptionId: entityId.optional(),
