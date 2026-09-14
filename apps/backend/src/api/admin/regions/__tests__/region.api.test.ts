@@ -85,7 +85,11 @@ test.describe('POST /admin/regions', () => {
   }) => {
     await createStoreSellingIn(factories, 'usd')
 
-    const { status, body } = await createRegion({ name: 'United States', currencyCode: 'USD' })
+    const { status, body } = await createRegion({
+      name: 'United States',
+      currencyCode: 'USD',
+      paymentProviderIds: [],
+    })
 
     expect(status).toBe(201)
     expect(body.region.currencyCode).toBe('usd')
@@ -96,7 +100,11 @@ test.describe('POST /admin/regions', () => {
     // market whose products can never be priced, so it must not come into existence at all.
     await createStoreSellingIn(factories, 'usd', 'cop')
 
-    const { status, body } = await api.post<ApiErrorBody>('/admin/regions', { name: 'Japan', currencyCode: 'jpy' })
+    const { status, body } = await api.post<ApiErrorBody>('/admin/regions', {
+      name: 'Japan',
+      currencyCode: 'jpy',
+      paymentProviderIds: [],
+    })
 
     expect(status).toBe(400)
     expect(body.type).toBe(ErrorTypes.INVALID_DATA)
@@ -108,7 +116,11 @@ test.describe('POST /admin/regions', () => {
   test('a store with no currencies configured can have no regions', async ({ expect, factories }) => {
     await createStoreSellingIn(factories)
 
-    const { status } = await api.post<ApiErrorBody>('/admin/regions', { name: 'Nowhere', currencyCode: 'usd' })
+    const { status } = await api.post<ApiErrorBody>('/admin/regions', {
+      name: 'Nowhere',
+      currencyCode: 'usd',
+      paymentProviderIds: [],
+    })
 
     expect(status).toBe(400)
   })
@@ -179,12 +191,27 @@ test.describe('POST /admin/regions/:id', () => {
     ])
   })
 
-  test('a payload that does not mention providers leaves them alone', async ({ expect, factories }) => {
+  test('a payload that does not name the providers is refused, and changes nothing', async ({ expect, factories }) => {
+    // The editor shows the whole set and submits the whole set, so a missing list is a broken
+    // client rather than a rename — answering it by silently keeping the old set would hide that.
     await createStoreSellingIn(factories, 'usd')
     const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
     await factories.create.regionPaymentProvider({ regionId: region.id, paymentProviderId: MANUAL_PROVIDER_ID })
 
-    const { body } = await updateRegion(region.id, { name: 'USA' })
+    const { status } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}`, { name: 'USA' })
+
+    expect(status).toBe(400)
+    const { body } = await getRegion(region.id)
+    expect(body.region.name).toBe('United States')
+    expect(body.region.paymentProviders).toEqual([{ id: MANUAL_PROVIDER_ID, isEnabled: true }])
+  })
+
+  test('a rename keeps the providers it resends', async ({ expect, factories }) => {
+    await createStoreSellingIn(factories, 'usd')
+    const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
+    await factories.create.regionPaymentProvider({ regionId: region.id, paymentProviderId: MANUAL_PROVIDER_ID })
+
+    const { body } = await updateRegion(region.id, { name: 'USA', paymentProviderIds: [MANUAL_PROVIDER_ID] })
 
     expect(body.region.name).toBe('USA')
     expect(body.region.paymentProviders).toEqual([{ id: MANUAL_PROVIDER_ID, isEnabled: true }])
@@ -210,6 +237,7 @@ test.describe('POST /admin/regions/:id', () => {
     const { status, body } = await api.post<ApiErrorBody>(`/admin/regions/${region.id}`, {
       name: 'Japan',
       currencyCode: 'jpy',
+      paymentProviderIds: [],
     })
 
     expect(status).toBe(400)
@@ -407,8 +435,8 @@ test.describe('POST /admin/regions/:id/countries', () => {
   })
 
   test('assigns none of them when one country in the batch is refused', async ({ expect, factories }) => {
-    // Every country is its own compensating step, so a batch that fails halfway is unwound rather
-    // than left half-applied — a merchant reading the table afterwards sees what they asked for or
+    // Every country is read and checked before any of them is written, and the writes themselves
+    // are one transaction — a merchant reading the table afterwards sees what they asked for or
     // nothing at all, never some of it.
     const europe = await factories.create.region({ name: 'Europe', currencyCode: 'eur' })
     const nordics = await factories.create.region({ name: 'Nordics', currencyCode: 'eur' })

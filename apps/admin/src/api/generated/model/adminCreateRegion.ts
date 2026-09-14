@@ -22,5 +22,5 @@ export interface AdminCreateRegion {
      * @items.minLength 1
      * @items.maxLength 64
      */
-  paymentProviderIds?: string[];
+  paymentProviderIds: string[];
 }

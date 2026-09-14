@@ -4095,7 +4095,8 @@
         },
         "required": [
           "name",
-          "currencyCode"
+          "currencyCode",
+          "paymentProviderIds"
         ]
       },
       "AdminUpdateRegion": {
@@ -4120,7 +4121,10 @@
             },
             "maxItems": 20
           }
-        }
+        },
+        "required": [
+          "paymentProviderIds"
+        ]
       },
       "AdminRegionCountriesResponse": {
         "type": "object",

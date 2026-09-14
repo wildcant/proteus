@@ -14,28 +14,31 @@ const currencyCode = machineCode
   .max(3)
   .transform((code) => code.toLowerCase())
 
-/** Which gateways the region offers. Ids only: the providers themselves are registered code. */
+/**
+ * Which gateways the region offers. Ids only: the providers themselves are registered code.
+ *
+ * Required on both payloads, and the list replaces the region's set rather than adding to it — a
+ * region that offers none is `[]`, which the form sends. An optional field would make "offers
+ * nothing" and "do not touch this" the same absent key on the wire, and both screens show the whole
+ * set and submit the whole set, so there is nothing for the second meaning to express.
+ */
 const paymentProviderIds = z.array(entityId.min(1)).max(MAX_ITEMS.small)
 
 export const AdminCreateRegion = z
   .object({
     name: shortText.min(1),
     currencyCode,
-    paymentProviderIds: paymentProviderIds.optional(),
+    paymentProviderIds,
   })
   .openapi('AdminCreateRegion')
 export type AdminCreateRegionBody = z.infer<typeof AdminCreateRegion>
 
-/**
- * Every field optional, and `paymentProviderIds` replaces the set rather than adding to it —
- * omitting it leaves the region's providers alone, which is what lets the name be renamed on its
- * own without the caller having to resend a list it never showed the merchant.
- */
+/** The region's own columns are optional, so it can be renamed without being redenominated. */
 export const AdminUpdateRegion = z
   .object({
     name: shortText.min(1).optional(),
     currencyCode: currencyCode.optional(),
-    paymentProviderIds: paymentProviderIds.optional(),
+    paymentProviderIds,
   })
   .openapi('AdminUpdateRegion')
 export type AdminUpdateRegionBody = z.infer<typeof AdminUpdateRegion>

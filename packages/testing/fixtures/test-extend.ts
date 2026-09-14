@@ -245,7 +245,7 @@ export function createTest<RoutePath extends string = string>() {
     navigate: NavigateFunction<RoutePath>
     authenticate: AuthenticateFunction<[typeof admin, typeof customer]>
     cleanup: CleanupFunction
-    consoleIsClean: void
+    consoleIsClean: undefined
   }>({
     factories: {
       generate: {
@@ -351,7 +351,7 @@ export function createTest<RoutePath extends string = string>() {
     consoleIsClean: [
       async ({ page }, use) => {
         const complaints = watchConsole(page)
-        await use()
+        await use(undefined)
         expect(complaints, 'the page logged warnings — see packages/testing/fixtures/console-guard.ts').toEqual([])
       },
       { auto: true },

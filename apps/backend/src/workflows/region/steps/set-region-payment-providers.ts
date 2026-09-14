@@ -4,12 +4,15 @@ import type { WorkflowContext } from '@core/workflows/types.js'
 
 type SetRegionPaymentProvidersInput = {
   regionId: string
+  /** Replaces the region's providers; `[]` leaves it offering none. */
   paymentProviderIds: string[]
 }
 
 type StepOutput = {
   /** Restored on compensation, so the region ends up offering exactly what it offered before. */
   previousProviderIds: string[]
+  /** False when the step wrote nothing, so the rollback does not undo work it never did. */
+  changed: boolean
 }
 
 /**
@@ -19,6 +22,10 @@ type StepOutput = {
  * set, so a provider absent from the payload is one they removed. Links already in place are left
  * alone — re-creating them would churn ids that nothing else depends on, and the unique index on
  * `(regionId, paymentProviderId)` would refuse the duplicate anyway.
+ *
+ * A payload that changes nothing is the action's own early return rather than an `if` around the
+ * call, so the recorded step sequence is the same on every run — and it records that it did not
+ * act, so the rollback does not undo work it never did.
  */
 export async function setRegionPaymentProvidersStep(
   ctx: WorkflowContext,
@@ -35,6 +42,8 @@ export async function setRegionPaymentProvidersStep(
       const removed = existing.filter((link) => !wanted.has(link.paymentProviderId))
       const added = input.paymentProviderIds.filter((providerId) => !previousProviderIds.includes(providerId))
 
+      if (removed.length === 0 && added.length === 0) return { previousProviderIds, changed: false }
+
       if (removed.length > 0) {
         await linkService.repo('regionPaymentProvider').softDelete(removed.map((link) => link.id))
       }
@@ -47,9 +56,11 @@ export async function setRegionPaymentProvidersStep(
         )
       }
 
-      return { previousProviderIds }
+      return { previousProviderIds, changed: true }
     },
-    async ({ previousProviderIds }, { container }) => {
+    async ({ previousProviderIds, changed }, { container }) => {
+      if (!changed) return
+
       const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       await linkService.dismissLinks({ regionId: [input.regionId] })
       if (previousProviderIds.length === 0) return

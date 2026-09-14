@@ -86,12 +86,14 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
       return { verified: true as const, token: tokenResult.token, hasCustomer }
     })
 
-    if (!verificationCheck.verified) {
-      await ctx.step('send-verification-email', async ({ container }) => {
-        const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
-        await sendVerificationEmail(notificationService, verificationCheck.email, verificationCheck.verificationCode)
-      })
-    }
+    await ctx.step('send-verification-email', async ({ container }) => {
+      // An identity that is already verified has nothing to send, and no compensation to record:
+      // the step only ever writes an email.
+      if (verificationCheck.verified) return
+
+      const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+      await sendVerificationEmail(notificationService, verificationCheck.email, verificationCheck.verificationCode)
+    })
 
     const result = await ctx.step<CompleteCustomerAuthOutput>('reconcile-customer', async ({ container }) => {
       if (!verificationCheck.verified) {
