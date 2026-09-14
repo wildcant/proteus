@@ -203,6 +203,26 @@ test.describe('completeCartWorkflow', () => {
     expect(await service.read.cartAddresses(container, { cartId: cart.id })).toHaveLength(2)
   })
 
+  /**
+   * `locationId` crosses a module boundary, so the level and the reservation carry no foreign key
+   * to a Stock Location (ADR-0004). Resolving the id before the reservation is written is what
+   * stands in for one — without it a typo survives checkout and surfaces at fulfillment, once the
+   * units are already sold.
+   */
+  test('refuses a reservation whose location names no Stock Location', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container, {
+      inventory: { level: { locationId: 'sloc_gone' } },
+    })
+
+    const error = await completeCartWorkflow.run({ cartId: cart.id }).catch((e) => e)
+
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('sloc_gone')
+    // The order the reserve step runs after is unwound with it, so nothing half-succeeded.
+    expect(await service.read.orders(container)).toEqual([])
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
   test('refuses a line item with no variant', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container, {
       lineItem: { variantId: null },

@@ -281,16 +281,26 @@ test.describe('GET /store/products/:id options', () => {
 
   test('inStock follows stocked minus reserved against the required quantity', async ({ expect, service }) => {
     const { product, small, medium } = await createProductWithOptions(service)
-    await service.create.variantStock(api.container, {
+    const inStock = await service.create.variantStock(api.container, {
       variantId: small.id,
       item: { sku: `IN-${small.id}`, title: 'in stock' },
-      level: { stockedQuantity: 5, reservedQuantity: 1 },
+      level: { stockedQuantity: 5 },
     })
-    await service.create.variantStock(api.container, {
+    await service.create.reservedStock(api.container, {
+      inventoryItemId: inStock.inventoryItem.id,
+      locationId: inStock.inventoryLevel.locationId,
+      quantity: 1,
+    })
+    const soldOut = await service.create.variantStock(api.container, {
       variantId: medium.id,
       item: { sku: `OUT-${medium.id}`, title: 'out of stock' },
-      // Everything on hand is already reserved, so nothing is available.
-      level: { stockedQuantity: 3, reservedQuantity: 3 },
+      level: { stockedQuantity: 3 },
+    })
+    // Everything on hand is already reserved, so nothing is available.
+    await service.create.reservedStock(api.container, {
+      inventoryItemId: soldOut.inventoryItem.id,
+      locationId: soldOut.inventoryLevel.locationId,
+      quantity: 3,
     })
     const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
 

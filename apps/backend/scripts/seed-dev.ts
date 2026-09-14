@@ -756,7 +756,6 @@ if (existingProducts.length > 0) {
       inventoryItemId: item.id,
       locationId: stockLocation.id,
       stockedQuantity: item.sku === SOLD_OUT_SKU ? 0 : 100,
-      reservedQuantity: 0,
       incomingQuantity: 0,
     })),
   )

@@ -20,7 +20,6 @@ export const inventoryItemTable = pgTable(
     description: text(),
     title: text(),
     thumbnail: text(),
-    metadata: text(),
     ...timestamps,
   },
   (table) => [liveUniqueIndex('idx_inventory_item_sku').on(table.sku)],

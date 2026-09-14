@@ -15,7 +15,6 @@ export const inventoryLevelTable = pgTable(
     stockedQuantity: integer().notNull().default(0),
     reservedQuantity: integer().notNull().default(0),
     incomingQuantity: integer().notNull().default(0),
-    metadata: text(),
     ...timestamps,
   },
   (table) => [
