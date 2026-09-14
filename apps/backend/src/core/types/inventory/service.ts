@@ -32,6 +32,11 @@ export type IInventoryModuleService = {
   updateInventoryItem(itemId: string, data: UpdateInventoryItemDTO, context?: Context): Promise<InventoryItemDTO>
   createInventoryLevel(data: CreateInventoryLevelDTO, context?: Context): Promise<InventoryLevelDTO>
   softDeleteInventoryItems(itemIds: string[], context?: Context): Promise<void>
+  /**
+   * Brings back exactly what the matching soft delete hid — the item, its levels and the stock
+   * they hold, so untracking a variant is reversible rather than destructive.
+   */
+  restoreInventoryItems(itemIds: string[], context?: Context): Promise<void>
   listInventoryLevels(
     filters?: FilterableInventoryLevelProps,
     config?: FindConfig<InventoryLevelDTO>,

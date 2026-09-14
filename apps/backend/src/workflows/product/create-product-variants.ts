@@ -6,6 +6,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import type { AdminCreateProductVariantBody } from '@proteus/http-schemas/admin'
+import { createVariantInventoryStep } from './steps/create-variant-inventory.js'
 
 type CreateProductVariantsInput = {
   productId: string
@@ -30,7 +31,11 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       },
     )
 
-    // Step 2: Create price sets for variants that have prices
+    // Step 2: Give every tracked variant the inventory it is born with, so that no variant added
+    // through the admin is silently treated as having no limit.
+    await createVariantInventoryStep(ctx, { variants })
+
+    // Step 3: Create price sets for variants that have prices
     const priceSets = await ctx.step(
       'create-price-sets',
       async ({ container }) => {
@@ -59,7 +64,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       },
     )
 
-    // Step 3: Link variants to price sets
+    // Step 4: Link variants to price sets
     await ctx.step(
       'link-variants-to-price-sets',
       async ({ container }) => {
@@ -84,7 +89,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       },
     )
 
-    // Step 4: Enrich variants with their created prices
+    // Step 5: Enrich variants with their created prices
     const enriched = await ctx.step('enrich-with-prices', async ({ container }) => {
       if (priceSets.length === 0) return variants as ProductVariantExtendedDTO[]
 

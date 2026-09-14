@@ -131,6 +131,8 @@ import {
 import { retrieveFulfillment, updateFulfillment } from '../factories/services/fulfillment.js'
 import {
   addInventoryLevel,
+  adjustInventoryLevel,
+  listInventoryItems,
   listInventoryLevels,
   listReservationItems,
   reserveStock,
@@ -371,6 +373,7 @@ export type Fixtures = {
       authIdentity: typeof createAuthIdentity
     }
     update: {
+      inventoryLevel: typeof adjustInventoryLevel
       productOptions: typeof setProductOptions
       productVariant: typeof updateProductVariant
       authIdentity: typeof updateAuthIdentity
@@ -401,6 +404,7 @@ export type Fixtures = {
       payment: typeof retrievePayment
       paymentCollection: typeof retrievePaymentCollection
       reservationItems: typeof listReservationItems
+      inventoryItems: typeof listInventoryItems
       inventoryLevels: typeof listInventoryLevels
       availableQuantity: typeof retrieveAvailableQuantity
       linkRepo: typeof linkRepo
@@ -589,6 +593,7 @@ export const test = testBase.extend<Fixtures>({
         authIdentity: createAuthIdentity,
       },
       update: {
+        inventoryLevel: adjustInventoryLevel,
         productOptions: setProductOptions,
         productVariant: updateProductVariant,
         authIdentity: updateAuthIdentity,
@@ -619,6 +624,7 @@ export const test = testBase.extend<Fixtures>({
         payment: retrievePayment,
         paymentCollection: retrievePaymentCollection,
         reservationItems: listReservationItems,
+        inventoryItems: listInventoryItems,
         inventoryLevels: listInventoryLevels,
         availableQuantity: retrieveAvailableQuantity,
         linkRepo,
