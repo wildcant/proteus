@@ -78,6 +78,13 @@ function StoreLayout() {
           description="The market — and so the currency — a shopper is priced in before they pick one."
           value={region?.name ?? null}
         />
+        {/* Stringified so an empty threshold takes `SectionRow`'s `-`, the same way an unset
+            default region does: a store without one is not a store with none left. */}
+        <SectionRow
+          title="Low stock threshold"
+          description="At or below this many units available, a variant counts as running low. Leave it empty and nothing is ever low."
+          value={store.lowStockThreshold?.toString() ?? null}
+        />
       </Card>
       <StoreCurrenciesCard />
     </PageLayout.SingleColumn>

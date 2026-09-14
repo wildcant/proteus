@@ -89,15 +89,3 @@ export const StoreCartAddress = z
   })
   .openapi('StoreCartAddress')
 export type StoreCartAddress = z.input<typeof StoreCartAddress>
-
-export const StoreConfirmInventoryItem = z
-  .object({
-    lineItemId: z.string(),
-    variantId: z.string(),
-    inventoryItemId: z.string(),
-    requiredQuantity: z.number(),
-    quantity: z.number(),
-    locationIds: z.array(z.string()),
-  })
-  .openapi('StoreConfirmInventoryItem')
-export type StoreConfirmInventoryItem = z.input<typeof StoreConfirmInventoryItem>

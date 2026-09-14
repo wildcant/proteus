@@ -12,5 +12,7 @@ export interface AdminStore {
   name: string;
   /** @nullable */
   defaultRegionId: string | null;
+  /** @nullable */
+  lowStockThreshold: number | null;
   currencies: AdminStoreCurrency[];
 }

@@ -6,6 +6,7 @@ type CreateStoreCurrencyDTO = {
 export type CreateStoreDTO = {
   name: string
   defaultRegionId?: string | null
+  lowStockThreshold?: number | null
   metadata?: string | null
   /** Created with the store, so a store never exists without the currencies it trades in. */
   currencies?: CreateStoreCurrencyDTO[]
@@ -14,5 +15,6 @@ export type CreateStoreDTO = {
 export type UpdateStoreDTO = {
   name?: string
   defaultRegionId?: string | null
+  lowStockThreshold?: number | null
   metadata?: string | null
 }
