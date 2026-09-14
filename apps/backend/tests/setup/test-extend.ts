@@ -53,6 +53,7 @@ import {
   generateFulfillmentDTO,
   generateUpdateFulfillmentDTO,
 } from '../factories/fulfillment-dto.js'
+import { generateAdminCreateOrderFulfillmentBody } from '../factories/http/admin-order.js'
 import { generateStoreCreateAddressBody } from '../factories/http/store-customer.js'
 import {
   generateCreateInventoryItemDTO,
@@ -250,6 +251,9 @@ export type Fixtures = {
    *  DTO: it has its own required fields, so a test that posts one needs a generator for the same
    *  reason a test that persists one does. */
   http: {
+    admin: {
+      createOrderFulfillment: typeof generateAdminCreateOrderFulfillmentBody
+    }
     store: {
       createAddress: typeof generateStoreCreateAddressBody
     }
@@ -464,6 +468,9 @@ export const test = testBase.extend<Fixtures>({
   },
   async http({ task: _ }, use) {
     await use({
+      admin: {
+        createOrderFulfillment: generateAdminCreateOrderFulfillmentBody,
+      },
       store: {
         createAddress: generateStoreCreateAddressBody,
       },

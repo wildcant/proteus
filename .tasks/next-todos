@@ -144,9 +144,9 @@ Future Infra TODOs
 - composing workflows
 - ci workflow to handle deployment! — there is no .github/workflows directory at all, so this is CI from zero, not just the deploy step.
 - migration order in prod (first modules and then link modules, are there edge cases?).
-- reusable workflow setup function for tests — done for 15 of 17 workflow test files (they now run against a real
-  container from `createTestContainer()`; see docs/backend-test-infrastructure.md). cancel-order and
-  create-order-fulfillment are still on `vi.fn()` mocks, blocked on the reservation keying bug above.
+- reusable workflow setup function for tests — done. Every workflow test file now runs against a real container
+  from `createTestContainer()`; no hand-written mock is left under src/workflows. See
+  docs/backend-test-infrastructure.md.
 - features flags — `featureFlags` is on the config type (core/config/types.ts:51) and config-manager.ts:36
   defaults it to `{}`, but nothing anywhere reads it. A stub, not a feature: pick a first flag and a read path.
 - investigate locking

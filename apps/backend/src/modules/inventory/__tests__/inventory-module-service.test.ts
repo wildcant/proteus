@@ -149,6 +149,34 @@ test.describe('InventoryModuleService reservations', () => {
     expect(backordered.type).toBe(ErrorTypes.NOT_FOUND)
   })
 
+  test('releasing a reservation whose level has gone still releases it, and says so', async ({
+    expect,
+    dto,
+    logger,
+  }) => {
+    const item = await service.createInventoryItem(dto.generate.createInventoryItem())
+    const level = await service.createInventoryLevel(
+      dto.generate.createInventoryLevel({ inventoryItemId: item.id, stockedQuantity: 10 }),
+    )
+    const [reservation] = await service.createReservationItems([
+      dto.generate.createReservationItem({ inventoryItemId: item.id, locationId: level.locationId, quantity: 4 }),
+    ])
+    if (!reservation) throw new Error('createReservationItems returned no rows')
+
+    const warn = vi.spyOn(logger, 'warn')
+    // Nothing deletes a level today, so this is arranged rather than reached. The release paths run
+    // no equivalent of `assertEveryPairHasALevel`, and cancelling an order is the first real caller.
+    await inventoryLevelRepository.softDelete([level.id])
+
+    await service.softDeleteReservationItems([reservation.id])
+
+    // Refusing would strand the units *and* fail the cancellation that was releasing them, so the
+    // release finishes. The counter it could not move is a data fault, so it is not passed over in
+    // silence either.
+    expect(await service.listReservationItems({ inventoryItemId: item.id })).toEqual([])
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining(`${item.id}@${level.locationId}`))
+  })
+
   // TODO: reserving is check-then-act across a read and a write, so two checkouts can both take the
   // last unit. This test is `fails` because that lost update is the current behaviour: when
   // reserving becomes atomic — a row lock, or `reserved_quantity = reserved_quantity + n` — the

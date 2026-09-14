@@ -1284,7 +1284,6 @@
           },
           "locationId": {
             "type": "string",
-            "minLength": 1,
             "maxLength": 64
           },
           "items": {
@@ -1320,7 +1319,8 @@
               },
               "required": [
                 "title",
-                "quantity"
+                "quantity",
+                "lineItemId"
               ]
             },
             "minItems": 1,
@@ -1386,7 +1386,6 @@
         },
         "required": [
           "providerId",
-          "locationId",
           "items",
           "address"
         ]

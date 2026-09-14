@@ -38,8 +38,10 @@ export async function listOrders(container: AwilixContainer, filters?: Filterabl
 }
 
 export type FulfillOrderOptions = {
+  /** Omitted, the workflow ships from the location the order's stock is reserved at. */
   locationId?: string
-  /** Defaults to everything on the order. Name items to fulfil a subset. */
+  /** Defaults to every line item at its full quantity, which is the only request the workflow
+   *  accepts. Name items to make a partial one, which it refuses. */
   items?: { lineItemId?: string; title: string; quantity: number }[]
 }
 
@@ -53,12 +55,17 @@ export async function fulfillOrder(container: AwilixContainer, orderId: string, 
   const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
   const lineItems = await orderService.listOrderLineItems({ orderId })
-  const items = options?.items ?? lineItems.map((item) => ({ title: item.title, quantity: item.quantity }))
+  const items =
+    options?.items ?? lineItems.map((item) => ({ lineItemId: item.id, title: item.title, quantity: item.quantity }))
 
   const order = await createOrderFulfillmentWorkflow.run({
     orderId,
-    locationId: options?.locationId ?? 'sloc_default',
-    fulfillmentData: { providerId: 'manual', items, address: { firstName: 'John', lastName: 'Doe' } },
+    fulfillmentData: {
+      providerId: 'manual',
+      items,
+      address: { firstName: 'John', lastName: 'Doe' },
+      ...(options?.locationId ? { locationId: options.locationId } : {}),
+    },
   })
 
   const link = await linkService.repo('orderFulfillment').findByOrderId(orderId)

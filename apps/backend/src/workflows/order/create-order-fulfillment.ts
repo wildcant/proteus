@@ -14,7 +14,6 @@ import { computeInventoryAdjustments } from './utils/compute-inventory-adjustmen
 type CreateOrderFulfillmentInput = {
   orderId: string
   fulfillmentData: CreateFulfillmentDTO
-  locationId: string
 }
 
 // Drives an order from unfulfilled -> fulfilled. Creates the physical fulfillment record,
@@ -45,20 +44,48 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
     })
 
     /** Validate fulfillment data against the order before creating any resources.
-     *  Rejects requests that reference non-existent line items or orders whose items
-     *  have mixed shipping requirements (shippable + non-shippable in one fulfillment). */
+     *
+     *  Whole order or nothing. The steps below de-reserve and adjust *every* line item on the order
+     *  and mark the whole order fulfilled, whatever subset was asked for — so a request covering
+     *  part of it, accepted, would be reported back as a fulfillment of all of it. Medusa's partial
+     *  semantics (deduct the requested quantity, reduce the reservation, delete it only at zero) are
+     *  a separate piece of work, and half of them — a correctly reduced reservation on an order
+     *  marked fully fulfilled — is worse than none.
+     *
+     *  Also rejects orders whose items have mixed shipping requirements (shippable and
+     *  non-shippable in one fulfillment). */
     await ctx.step('validate-fulfillment-items', async ({ container }) => {
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
       const lineItems = await orderService.listOrderLineItems({ orderId: input.orderId })
       const lineItemIds = new Set(lineItems.map((item) => item.id))
 
+      const requested = new Map<string, number>()
       for (const item of input.fulfillmentData.items) {
-        if (item.lineItemId != null && !lineItemIds.has(item.lineItemId)) {
+        if (item.lineItemId == null) {
+          throw new WorkflowTerminalError({
+            type: ErrorTypes.NOT_ALLOWED,
+            message: `Fulfillment item "${item.title}" names no line item of order ${input.orderId}`,
+          })
+        }
+
+        if (!lineItemIds.has(item.lineItemId)) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_ALLOWED,
             message: `Fulfillment item references line item "${item.lineItemId}" which does not exist in order ${input.orderId}`,
           })
         }
+
+        requested.set(item.lineItemId, (requested.get(item.lineItemId) ?? 0) + item.quantity)
+      }
+
+      const uncovered = lineItems.filter((item) => (requested.get(item.id) ?? 0) !== item.quantity)
+      if (uncovered.length > 0) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Fulfillment for order ${input.orderId} must cover every line item at its full quantity: ${uncovered
+            .map((item) => `"${item.id}" asked for ${requested.get(item.id) ?? 0} of ${item.quantity}`)
+            .join('; ')}`,
+        })
       }
 
       const shippingRequirements = new Set(lineItems.map((item) => item.requiresShipping))
@@ -70,13 +97,60 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       }
     })
 
+    /** Where the units actually leave from, which is what the fulfillment record's `locationId`
+     *  claims to anyone reading it afterwards.
+     *
+     *  A reservation can only be written where a level exists, so the location its rows name is the
+     *  only one that can hold this order's stock. That is why the payload's `locationId` is optional
+     *  and resolved from the reservations when it is absent, and why one that disagrees with them is
+     *  refused rather than stamped on a record the stock never left. Medusa instead falls back
+     *  through the shipping option's fulfillment set to a linked Stock Location; that link exists to
+     *  decide *which* location ships, a question one location does not raise. */
+    const locationId = await ctx.step('resolve-fulfillment-location', async ({ container }) => {
+      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+      const lineItems = await orderService.listOrderLineItems({ orderId: input.orderId })
+      const reservations =
+        lineItems.length > 0
+          ? await inventoryService.listReservationItems({ lineItemId: lineItems.map((item) => item.id) })
+          : []
+      const held = [...new Set(reservations.map((reservation) => reservation.locationId))]
+
+      const requested = input.fulfillmentData.locationId
+      if (requested == null) {
+        // Unreachable while the shop has one location. A second one makes this the caller's choice,
+        // and guessing it would put a location on the record the shopkeeper never picked.
+        if (held.length > 1) {
+          throw new WorkflowTerminalError({
+            type: ErrorTypes.NOT_ALLOWED,
+            message: `Order ${input.orderId} reserves stock at more than one location (${held.join(', ')}), so the fulfillment has to name the one it ships from`,
+          })
+        }
+
+        return held[0] ?? null
+      }
+
+      const elsewhere = held.filter((location) => location !== requested)
+      if (elsewhere.length > 0) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cannot fulfill order ${input.orderId} from location "${requested}": its stock is reserved at ${elsewhere
+            .map((location) => `"${location}"`)
+            .join(', ')}`,
+        })
+      }
+
+      return requested
+    })
+
     /** Create the fulfillment record in the fulfillment module (items, address, provider).
      *  Compensates by canceling the fulfillment if a later step fails. */
     const fulfillment = await ctx.step(
       'create-fulfillment',
       async ({ container }) => {
         const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
-        return fulfillmentService.createFulfillment(input.fulfillmentData)
+        return fulfillmentService.createFulfillment({ ...input.fulfillmentData, locationId })
       },
       async (created, { container }) => {
         const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)

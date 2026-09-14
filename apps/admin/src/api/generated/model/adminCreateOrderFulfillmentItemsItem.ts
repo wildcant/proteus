@@ -19,7 +19,7 @@ export type AdminCreateOrderFulfillmentItemsItem = {
   /** @maxLength 64 */
   barcode?: string;
   /** @maxLength 64 */
-  lineItemId?: string;
+  lineItemId: string;
   /** @maxLength 64 */
   inventoryItemId?: string;
 };
