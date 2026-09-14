@@ -58,6 +58,45 @@ Variant Reconciliation Plan derives it. A variant's identity — its SKU, price,
 history — survives a reassignment; only which combination it stands for changes.
 _Avoid_: move, remap, re-link
 
+### Inventory
+
+**Stock Location**:
+A place the shop holds stock. The shop keeps exactly one, but nothing about the concept is
+singular — an Inventory Level and a Reservation each name the location they belong to, so a second
+one adds rows rather than changing what the words mean.
+_Avoid_: warehouse, fulfillment center, site, stock room
+
+**Inventory Item**:
+The stock-keeping identity a Product Variant is linked to — the thing quantities are counted
+against. Not the variant itself: the variant is what a shopper buys and prices, the Inventory Item
+is what the shop counts and ships.
+_Avoid_: stock item, inventory record, SKU (as an entity), variant (for the thing counted)
+
+**Inventory Level**:
+One Inventory Item's quantities at one Stock Location — its Stocked Quantity and everything
+reserved against it there. An Inventory Item has one Level per location it is stocked at, and a
+location it has no Level at is a location it cannot be reserved or shipped from.
+_Avoid_: stock level, inventory (for the row), quantity row, stock record
+
+**Reservation**:
+Quantity of an Inventory Item committed to one of an order's line items and not yet shipped. It is
+written when the order is placed, released when the order is cancelled, and turned into a deduction
+from Stocked Quantity when the order is fulfilled.
+_Avoid_: allocation, hold, commitment, committed stock
+
+**Stocked Quantity**:
+What is physically on the shelf at one Stock Location, including the units already committed to
+orders by a Reservation. It moves only when stock physically moves or a shopkeeper corrects the
+count — placing an order never lowers it.
+_Avoid_: on hand, physical stock, total stock, inventory quantity
+
+**Available Quantity**:
+Stocked Quantity at a Stock Location minus everything reserved there: what a shopper can still buy.
+The two are the pair most often confused — Stocked is the shelf, Available is the shelf less the
+orders already promised from it — and it is Available that decides sold out, low stock and whether
+a cart can be completed.
+_Avoid_: stock, in stock, remaining stock, free quantity, stocked quantity
+
 ### Markets
 
 **Region**:
