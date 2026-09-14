@@ -24,6 +24,33 @@ export type StockVariantOptions = {
 }
 
 /**
+ * A variant the shop tracks and holds nothing of: an inventory item and the variant↔item link
+ * `reserve-inventory` walks, with no level at any location.
+ *
+ * Separate from {@link stockVariant} rather than an option on it, because every other caller wants
+ * the level and would otherwise have to prove it came back. This is the one arrangement checkout
+ * refuses as invalid data.
+ */
+export async function trackVariantWithoutStock(
+  container: AwilixContainer,
+  options: Omit<StockVariantOptions, 'level'>,
+) {
+  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+
+  const [inventoryItem] = await inventoryService.createInventoryItems([generateCreateInventoryItemDTO(options.item)])
+  if (!inventoryItem) throw new Error('createInventoryItems returned no rows')
+
+  await linkService.repo('productVariantInventoryItem').create({
+    variantId: options.variantId,
+    inventoryItemId: inventoryItem.id,
+    requiredQuantity: options.requiredQuantity,
+  })
+
+  return { inventoryItem }
+}
+
+/**
  * Backs a variant with real stock: a Stock Location, an inventory item, a level holding it at that
  * location, and the variant↔item link that `reserve-inventory` walks. Without the link the
  * workflow silently reserves nothing, so all of it goes together.
@@ -32,24 +59,8 @@ export type StockVariantOptions = {
  * writes a reservation — a minted `sloc_...` string would fail there, not here.
  */
 export async function stockVariant(container: AwilixContainer, options: StockVariantOptions) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-  const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-
-  const [inventoryItem] = await inventoryService.createInventoryItems([generateCreateInventoryItemDTO(options.item)])
-  if (!inventoryItem) throw new Error('createInventoryItems returned no rows')
-
-  const locationId = options.level?.locationId ?? (await createStockLocation(container)).id
-
-  const [inventoryLevel] = await inventoryService.createInventoryLevels([
-    generateCreateInventoryLevelDTO({ ...options.level, locationId, inventoryItemId: inventoryItem.id }),
-  ])
-  if (!inventoryLevel) throw new Error('createInventoryLevels returned no rows')
-
-  await linkService.repo('productVariantInventoryItem').create({
-    variantId: options.variantId,
-    inventoryItemId: inventoryItem.id,
-    requiredQuantity: options.requiredQuantity,
-  })
+  const { inventoryItem } = await trackVariantWithoutStock(container, options)
+  const inventoryLevel = await addInventoryLevel(container, inventoryItem.id, options.level)
 
   return { inventoryItem, inventoryLevel }
 }
@@ -100,4 +111,25 @@ export async function listReservationItems(
   const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
 
   return inventoryService.listReservationItems(...args)
+}
+
+/** The level rows themselves, for the one number no other read exposes: `reservedQuantity`. */
+export async function listInventoryLevels(
+  container: AwilixContainer,
+  ...args: Parameters<IInventoryModuleService['listInventoryLevels']>
+) {
+  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+  return inventoryService.listInventoryLevels(...args)
+}
+
+/** Stocked minus reserved — what the storefront's `inStock` is derived from, and what an order
+ *  in flight is supposed to take off the shelf. */
+export async function retrieveAvailableQuantity(
+  container: AwilixContainer,
+  ...args: Parameters<IInventoryModuleService['retrieveAvailableQuantity']>
+) {
+  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+
+  return inventoryService.retrieveAvailableQuantity(...args)
 }

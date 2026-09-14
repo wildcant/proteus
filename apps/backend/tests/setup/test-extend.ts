@@ -128,7 +128,15 @@ import {
   retrieveCustomer,
 } from '../factories/services/customer.js'
 import { retrieveFulfillment, updateFulfillment } from '../factories/services/fulfillment.js'
-import { addInventoryLevel, listReservationItems, reserveStock, stockVariant } from '../factories/services/inventory.js'
+import {
+  addInventoryLevel,
+  listInventoryLevels,
+  listReservationItems,
+  reserveStock,
+  retrieveAvailableQuantity,
+  stockVariant,
+  trackVariantWithoutStock,
+} from '../factories/services/inventory.js'
 import { linkRepo } from '../factories/services/link.js'
 import { listNotifications } from '../factories/services/notification.js'
 import {
@@ -334,6 +342,7 @@ export type Fixtures = {
       lineItem: typeof addLineItem
       shippingMethod: typeof addShippingMethod
       variantStock: typeof stockVariant
+      trackedVariantWithoutStock: typeof trackVariantWithoutStock
       inventoryLevel: typeof addInventoryLevel
       reservedStock: typeof reserveStock
       stockLocation: typeof createStockLocation
@@ -388,6 +397,8 @@ export type Fixtures = {
       payment: typeof retrievePayment
       paymentCollection: typeof retrievePaymentCollection
       reservationItems: typeof listReservationItems
+      inventoryLevels: typeof listInventoryLevels
+      availableQuantity: typeof retrieveAvailableQuantity
       linkRepo: typeof linkRepo
       prices: typeof listPrices
       products: typeof listProducts
@@ -546,6 +557,7 @@ export const test = testBase.extend<Fixtures>({
         lineItem: addLineItem,
         shippingMethod: addShippingMethod,
         variantStock: stockVariant,
+        trackedVariantWithoutStock: trackVariantWithoutStock,
         inventoryLevel: addInventoryLevel,
         reservedStock: reserveStock,
         stockLocation: createStockLocation,
@@ -600,6 +612,8 @@ export const test = testBase.extend<Fixtures>({
         payment: retrievePayment,
         paymentCollection: retrievePaymentCollection,
         reservationItems: listReservationItems,
+        inventoryLevels: listInventoryLevels,
+        availableQuantity: retrieveAvailableQuantity,
         linkRepo,
         prices: listPrices,
         products: listProducts,
