@@ -13,6 +13,7 @@ export * from '../tests/factories/db/product-with-option.js'
 export * from '../tests/factories/db/product-with-pricing.js'
 export * from '../tests/factories/db/region.js'
 export * from '../tests/factories/db/shipping-option-with-zone.js'
+export * from '../tests/factories/db/stock-location.js'
 export * from '../tests/factories/db/store.js'
 export * from '../tests/factories/db/user.js'
 /** The classifications the checkout e2e pins, so a typo cannot pass as a match. */

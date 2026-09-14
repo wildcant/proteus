@@ -8,6 +8,8 @@ import type {
   AdminBatchVariantImagesResponse,
   AdminCreateProductVariant,
   AdminCreateProductVariantResponse,
+  AdminSetVariantStock,
+  AdminSetVariantStockResponse,
   AdminUpdateProductVariant,
   AdminUpdateProductVariantResponse,
   AdminUpdateVariantPrices,
@@ -23,6 +25,7 @@ import {
   getProductVariant,
   listOptionCombinations,
   listProductVariants,
+  setVariantStock,
   updateProductVariant,
   updateVariantPrices,
 } from '#/api/generated/product-variants/product-variants'
@@ -171,6 +174,29 @@ export const useUpdateVariantPrices = (
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: 'Failed to update variant prices', description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+export const useSetVariantStock = (
+  productId: string,
+  variantId: string,
+  options?: UseMutationOptions<AdminSetVariantStockResponse, Error, AdminSetVariantStock>,
+) => {
+  const queryClient = useQueryClient()
+  const { onSuccess, onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
+    mutationFn: (data: AdminSetVariantStock) => setVariantStock(productId, variantId, data),
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: variantKeys.detail(variantId) })
+      queryClient.invalidateQueries({ queryKey: variantKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: 'Failed to update variant stock', description: error.message })
       onError?.(...args)
     },
   })

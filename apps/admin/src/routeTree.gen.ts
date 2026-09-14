@@ -56,6 +56,7 @@ import { Route as AuthedSettingsRegionsIdDetailEditRouteImport } from './routes/
 import { Route as AuthedShellProductsIdVariantsVariantIdEditRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/edit'
 import { Route as AuthedShellProductsIdVariantsVariantIdMediaRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/media'
 import { Route as AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/prices/route'
+import { Route as AuthedShellProductsIdVariantsVariantIdStockRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/stock'
 import { Route as AuthedSettingsRegionsIdDetailCountriesIndexRouteImport } from './routes/_authed/settings/regions/$id/_detail/countries/index'
 import { Route as AuthedSettingsRegionsIdDetailCountriesCodeRouteImport } from './routes/_authed/settings/regions/$id/_detail/countries/$code'
 import { Route as AuthedShellProductsIdDetailImagesImageIdVariantsRouteImport } from './routes/_authed/_shell/products/$id/_detail/images/$imageId/variants'
@@ -324,6 +325,12 @@ const AuthedShellProductsIdVariantsVariantIdPricesRouteRoute =
     path: '/prices',
     getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
   } as any)
+const AuthedShellProductsIdVariantsVariantIdStockRoute =
+  AuthedShellProductsIdVariantsVariantIdStockRouteImport.update({
+    id: '/stock',
+    path: '/stock',
+    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
+  } as any)
 const AuthedSettingsRegionsIdDetailCountriesIndexRoute =
   AuthedSettingsRegionsIdDetailCountriesIndexRouteImport.update({
     id: '/countries/',
@@ -384,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
   '/products/$id/variants/$variantId/edit': typeof AuthedShellProductsIdVariantsVariantIdEditRoute
   '/products/$id/variants/$variantId/media': typeof AuthedShellProductsIdVariantsVariantIdMediaRoute
+  '/products/$id/variants/$variantId/stock': typeof AuthedShellProductsIdVariantsVariantIdStockRoute
   '/settings/regions/$id/countries/$code': typeof AuthedSettingsRegionsIdDetailCountriesCodeRoute
   '/settings/regions/$id/countries/': typeof AuthedSettingsRegionsIdDetailCountriesIndexRoute
   '/products/$id/images/$imageId/variants': typeof AuthedShellProductsIdDetailImagesImageIdVariantsRoute
@@ -420,6 +428,7 @@ export interface FileRoutesByTo {
   '/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
   '/products/$id/variants/$variantId/edit': typeof AuthedShellProductsIdVariantsVariantIdEditRoute
   '/products/$id/variants/$variantId/media': typeof AuthedShellProductsIdVariantsVariantIdMediaRoute
+  '/products/$id/variants/$variantId/stock': typeof AuthedShellProductsIdVariantsVariantIdStockRoute
   '/settings/regions/$id/countries/$code': typeof AuthedSettingsRegionsIdDetailCountriesCodeRoute
   '/settings/regions/$id/countries': typeof AuthedSettingsRegionsIdDetailCountriesIndexRoute
   '/products/$id/images/$imageId/variants': typeof AuthedShellProductsIdDetailImagesImageIdVariantsRoute
@@ -473,6 +482,7 @@ export interface FileRoutesById {
   '/_authed/_shell/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
   '/_authed/_shell/products/$id/variants/$variantId/edit': typeof AuthedShellProductsIdVariantsVariantIdEditRoute
   '/_authed/_shell/products/$id/variants/$variantId/media': typeof AuthedShellProductsIdVariantsVariantIdMediaRoute
+  '/_authed/_shell/products/$id/variants/$variantId/stock': typeof AuthedShellProductsIdVariantsVariantIdStockRoute
   '/_authed/settings/regions/$id/_detail/countries/$code': typeof AuthedSettingsRegionsIdDetailCountriesCodeRoute
   '/_authed/settings/regions/$id/_detail/countries/': typeof AuthedSettingsRegionsIdDetailCountriesIndexRoute
   '/_authed/_shell/products/$id/_detail/images/$imageId/variants': typeof AuthedShellProductsIdDetailImagesImageIdVariantsRoute
@@ -520,6 +530,7 @@ export interface FileRouteTypes {
     | '/products/$id/variants/$variantId/prices'
     | '/products/$id/variants/$variantId/edit'
     | '/products/$id/variants/$variantId/media'
+    | '/products/$id/variants/$variantId/stock'
     | '/settings/regions/$id/countries/$code'
     | '/settings/regions/$id/countries/'
     | '/products/$id/images/$imageId/variants'
@@ -556,6 +567,7 @@ export interface FileRouteTypes {
     | '/products/$id/variants/$variantId/prices'
     | '/products/$id/variants/$variantId/edit'
     | '/products/$id/variants/$variantId/media'
+    | '/products/$id/variants/$variantId/stock'
     | '/settings/regions/$id/countries/$code'
     | '/settings/regions/$id/countries'
     | '/products/$id/images/$imageId/variants'
@@ -608,6 +620,7 @@ export interface FileRouteTypes {
     | '/_authed/_shell/products/$id/variants/$variantId/prices'
     | '/_authed/_shell/products/$id/variants/$variantId/edit'
     | '/_authed/_shell/products/$id/variants/$variantId/media'
+    | '/_authed/_shell/products/$id/variants/$variantId/stock'
     | '/_authed/settings/regions/$id/_detail/countries/$code'
     | '/_authed/settings/regions/$id/_detail/countries/'
     | '/_authed/_shell/products/$id/_detail/images/$imageId/variants'
@@ -949,6 +962,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport
       parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
     }
+    '/_authed/_shell/products/$id/variants/$variantId/stock': {
+      id: '/_authed/_shell/products/$id/variants/$variantId/stock'
+      path: '/stock'
+      fullPath: '/products/$id/variants/$variantId/stock'
+      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdStockRouteImport
+      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
+    }
     '/_authed/settings/regions/$id/_detail/countries/': {
       id: '/_authed/settings/regions/$id/_detail/countries/'
       path: '/countries'
@@ -1100,6 +1120,7 @@ interface AuthedShellProductsIdVariantsVariantIdRouteRouteChildren {
   AuthedShellProductsIdVariantsVariantIdPricesRouteRoute: typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
   AuthedShellProductsIdVariantsVariantIdEditRoute: typeof AuthedShellProductsIdVariantsVariantIdEditRoute
   AuthedShellProductsIdVariantsVariantIdMediaRoute: typeof AuthedShellProductsIdVariantsVariantIdMediaRoute
+  AuthedShellProductsIdVariantsVariantIdStockRoute: typeof AuthedShellProductsIdVariantsVariantIdStockRoute
 }
 
 const AuthedShellProductsIdVariantsVariantIdRouteRouteChildren: AuthedShellProductsIdVariantsVariantIdRouteRouteChildren =
@@ -1110,6 +1131,8 @@ const AuthedShellProductsIdVariantsVariantIdRouteRouteChildren: AuthedShellProdu
       AuthedShellProductsIdVariantsVariantIdEditRoute,
     AuthedShellProductsIdVariantsVariantIdMediaRoute:
       AuthedShellProductsIdVariantsVariantIdMediaRoute,
+    AuthedShellProductsIdVariantsVariantIdStockRoute:
+      AuthedShellProductsIdVariantsVariantIdStockRoute,
   }
 
 const AuthedShellProductsIdVariantsVariantIdRouteRouteWithChildren =

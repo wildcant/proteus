@@ -184,6 +184,36 @@ export class InventoryModuleService implements IInventoryModuleService {
   }
 
   /**
+   * Replaces the physical shelf count while preserving the units already committed to orders.
+   * The check and write share one transaction, so the route cannot accidentally make Available
+   * Quantity negative by setting Stocked Quantity below the maintained reservation counter.
+   */
+  async setInventoryLevelStockedQuantity(
+    inventoryItemId: string,
+    locationId: string,
+    stockedQuantity: number,
+    context?: Context,
+  ): Promise<InventoryLevelDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const [level] = await this.inventoryLevelRepository.find({ inventoryItemId, locationId }, undefined, ctx)
+      if (!level) {
+        throw new AppError({
+          type: ErrorTypes.NOT_FOUND,
+          message: `Inventory level not found for item ${inventoryItemId} at location ${locationId}`,
+        })
+      }
+      if (stockedQuantity < level.reservedQuantity) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Stocked Quantity cannot be set to ${stockedQuantity}: ${level.reservedQuantity} unit(s) are reserved. Set it to at least ${level.reservedQuantity}.`,
+        })
+      }
+
+      return this.inventoryLevelRepository.update(level.id, { stockedQuantity }, ctx)
+    })
+  }
+
+  /**
    * Writes reservations and moves `reservedQuantity` by the same amount in the same transaction,
    * which is what makes available quantity reflect orders in flight rather than the column default.
    *

@@ -29,6 +29,7 @@ import {
   createShippingOptionType,
   createShippingOptionWithZone,
   createShippingProfile,
+  createStockLocation,
   createUser,
   deleteCartById,
   deleteCustomerAddressById,
@@ -54,6 +55,7 @@ import {
   deleteShippingOptionById,
   deleteShippingOptionTypeById,
   deleteShippingProfileById,
+  deleteStockLocationById,
   deleteUserById,
   generateCart,
   generateCustomer,
@@ -79,6 +81,7 @@ import {
   generateShippingOption,
   generateShippingOptionType,
   generateShippingProfile,
+  generateStockLocation,
   generateUser,
   retrieveCustomer,
   retrieveNotification,
@@ -174,6 +177,7 @@ export type Factories = {
     serviceZone: typeof generateServiceZone
     geoZone: typeof generateGeoZone
     shippingProfile: typeof generateShippingProfile
+    stockLocation: typeof generateStockLocation
     shippingOptionType: typeof generateShippingOptionType
     shippingOption: typeof generateShippingOption
     paymentProvider: typeof generatePaymentProvider
@@ -210,6 +214,7 @@ export type Factories = {
     serviceZone: typeof createServiceZone
     geoZone: typeof createGeoZone
     shippingProfile: typeof createShippingProfile
+    stockLocation: typeof createStockLocation
     shippingOptionType: typeof createShippingOptionType
     shippingOption: typeof createShippingOption
     paymentProvider: typeof createPaymentProvider
@@ -237,6 +242,7 @@ export type Factories = {
     serviceZone: typeof deleteServiceZoneById
     geoZone: typeof deleteGeoZoneById
     shippingProfile: typeof deleteShippingProfileById
+    stockLocation: typeof deleteStockLocationById
     shippingOptionType: typeof deleteShippingOptionTypeById
     shippingOption: typeof deleteShippingOptionById
     paymentProvider: typeof deletePaymentProviderById
@@ -277,6 +283,7 @@ export function createTest<RoutePath extends string = string>() {
         serviceZone: generateServiceZone,
         geoZone: generateGeoZone,
         shippingProfile: generateShippingProfile,
+        stockLocation: generateStockLocation,
         shippingOptionType: generateShippingOptionType,
         shippingOption: generateShippingOption,
         paymentProvider: generatePaymentProvider,
@@ -315,6 +322,7 @@ export function createTest<RoutePath extends string = string>() {
         serviceZone: createServiceZone,
         geoZone: createGeoZone,
         shippingProfile: createShippingProfile,
+        stockLocation: createStockLocation,
         shippingOptionType: createShippingOptionType,
         shippingOption: createShippingOption,
         paymentProvider: createPaymentProvider,
@@ -342,6 +350,7 @@ export function createTest<RoutePath extends string = string>() {
         serviceZone: deleteServiceZoneById,
         geoZone: deleteGeoZoneById,
         shippingProfile: deleteShippingProfileById,
+        stockLocation: deleteStockLocationById,
         shippingOptionType: deleteShippingOptionTypeById,
         shippingOption: deleteShippingOptionById,
         paymentProvider: deletePaymentProviderById,
