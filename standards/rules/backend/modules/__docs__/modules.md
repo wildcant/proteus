@@ -1,8 +1,8 @@
 # Modules
 
 A module owns one domain's data and the behaviour over it: auth, cart, customer, file, fulfillment,
-inventory, notification, order, payment, pricing, product, region, store, user. This covers what a
-module is, the closed list of files it may hold, and what its tables must carry.
+inventory, notification, order, payment, pricing, product, region, stock-location, store, user. This
+covers what a module is, the closed list of files it may hold, and what its tables must carry.
 
 Building a new one from nothing is the ten steps in [adding a module](./adding-a-module.md).
 

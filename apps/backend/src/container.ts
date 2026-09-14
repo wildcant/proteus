@@ -39,6 +39,7 @@ import { paymentProviderDeclarations } from './modules/payment/provider-declarat
 import pricingModule from './modules/pricing/index.js'
 import productModule from './modules/product/index.js'
 import regionModule from './modules/region/index.js'
+import stockLocationModule from './modules/stock-location/index.js'
 import storeModule from './modules/store/index.js'
 import userModule from './modules/user/index.js'
 
@@ -102,6 +103,7 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   await bootstrapModule(container, orderModule)
   await bootstrapModule(container, paymentModule, paymentProviderDeclarations)
   await bootstrapModule(container, regionModule)
+  await bootstrapModule(container, stockLocationModule)
   await bootstrapModule(container, storeModule)
   await bootstrapModule(container, userModule)
 

@@ -143,7 +143,7 @@ eight folders and four root files, enforced by `module-holds-only-known-file-kin
 list: `standards/rules/backend/modules/__docs__/modules.md`.
 
 Modules: auth, cart, customer, file, fulfillment, inventory, notification, order, payment, pricing,
-product, region, store, user.
+product, region, stock-location, store, user.
 
 A module too large for one service class splits internally, and splitting it into two *modules* is
 usually not the alternative: the cascade graph is built per module from the `models` object of its
