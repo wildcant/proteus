@@ -203,6 +203,83 @@ test.describe('completeCartWorkflow', () => {
     expect(await service.read.reservationItems(container)).toEqual([])
   })
 
+  test('reserves nothing for a variant the shop does not track', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(container, {
+      variant: { manageInventory: false },
+      lineItem: { quantity: 4 },
+      inventory: { level: { stockedQuantity: 0 } },
+    })
+    assertDefined(variantId)
+
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
+
+    // Stocked at nothing and bought four deep: an untracked variant is dropped before the
+    // reservation, so there is no shelf for the order to take units off. The inventory item is
+    // there on purpose — the pass has to come from the flag, not from nothing being linked.
+    expect(await service.read.order(container, order.id)).toMatchObject({ id: order.id })
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
+  test('reserves a backorder variant past what is on the shelf, and says so on the row', async ({
+    service,
+    expect,
+  }) => {
+    const { cart, inventoryItem, inventoryLevel } = await service.create.checkoutReadyCart(container, {
+      variant: { allowBackorder: true },
+      lineItem: { quantity: 3 },
+      inventory: { level: { stockedQuantity: 1 } },
+    })
+    assertDefined(inventoryItem)
+    assertDefined(inventoryLevel)
+
+    await completeCartWorkflow.run({ cartId: cart.id })
+
+    // The flag travels onto the row so releasing it is symmetric with writing it: cancelling this
+    // order has to give back three units it was never covered for.
+    expect(await service.read.reservationItems(container)).toMatchObject([{ quantity: 3, allowBackorder: true }])
+    // Reserved past the shelf is the point — available goes negative rather than the checkout
+    // being refused, which is what the same cart without the flag gets.
+    expect(await service.read.inventoryLevels(container, { id: inventoryLevel.id })).toMatchObject([
+      { stockedQuantity: 1, reservedQuantity: 3 },
+    ])
+    expect(await service.read.availableQuantity(container, inventoryItem.id)).toBe(-2)
+  })
+
+  test('refuses a backorder variant with no level at any location', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(container, {
+      variant: { allowBackorder: true },
+      inventory: null,
+    })
+    assertDefined(variantId)
+    await service.create.trackedVariantWithoutStock(container, { variantId })
+
+    const error = await completeCartWorkflow.run({ cartId: cart.id }).catch((raised) => raised)
+
+    // Backorder skips the coverage check and nothing else. With no level there is no row for
+    // fulfillment to adjust, so the location still has to be one the item is held at.
+    expect(error.cause).toMatchObject({ type: ErrorTypes.INVALID_DATA })
+    expect(error.message).toContain(variantId)
+    expect(await service.read.orders(container)).toEqual([])
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
+  test('refuses a tracked variant with no inventory item behind it', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(container, {
+      variant: {},
+      inventory: null,
+    })
+    assertDefined(variantId)
+
+    const error = await completeCartWorkflow.run({ cartId: cart.id }).catch((raised) => raised)
+
+    // The arrangement every admin-created variant is in until slice 7 creates its inventory: the
+    // catalogue says to track it and nothing does. Sold without limit before the flags were read.
+    expect(error.cause).toMatchObject({ type: ErrorTypes.INVALID_DATA })
+    expect(error.message).toContain(variantId)
+    expect(await service.read.orders(container)).toEqual([])
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
   /**
    * Releasing the rows is only half of a rollback: `reservedQuantity` is a counter, and a release
    * that hid the reservation without moving it back would leave those units unsellable for ever.

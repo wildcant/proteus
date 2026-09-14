@@ -69,6 +69,7 @@ test.describe('addToCartWorkflow', () => {
       optionValues: { [size.id]: sizeValue.id, [colour.id]: colourValue.id },
     })
     await service.create.variantPrices(container, [variant.id])
+    await service.create.variantStock(container, { variantId: variant.id, level: { stockedQuantity: 5 } })
 
     await addToCartWorkflow.run({ cartId: cart.id, items: [{ variantId: variant.id, quantity: 1 }] })
 
@@ -130,15 +131,48 @@ test.describe('addToCartWorkflow', () => {
     expect(lineItems[0]).toMatchObject({ quantity: 2 })
   })
 
-  test('adds a variant nothing stocks', async ({ service, expect }) => {
+  test('adds a variant the shop does not track', async ({ service, expect }) => {
     const cart = await usdCart(service)
-    const { variant } = await service.create.sellableVariant(container, { inventory: null })
+    const { variant } = await service.create.sellableVariant(container, {
+      variant: { manageInventory: false },
+      inventory: { level: { stockedQuantity: 0 } },
+    })
 
     await addToCartWorkflow.run({ cartId: cart.id, items: [{ variantId: variant.id, quantity: 4 }] })
 
-    // No inventory item behind it means it is not stock-managed, which the storefront already
-    // treats as buyable — refusing it here would take every unmanaged product off sale.
+    // A made-to-order item is dropped before the coverage check rather than measured against its
+    // shelf — refusing it here would take every untracked product off sale. The item is stocked
+    // at nothing on purpose: read the flag and this passes, ignore it and four units are short.
     expect(await service.read.cartLineItems(container, { cartId: cart.id })).toHaveLength(1)
+  })
+
+  test('adds a backorder variant past what is on the shelf', async ({ service, expect }) => {
+    const cart = await usdCart(service)
+    const { variant } = await service.create.sellableVariant(container, {
+      variant: { allowBackorder: true },
+      inventory: { level: { stockedQuantity: 1 } },
+    })
+
+    await addToCartWorkflow.run({ cartId: cart.id, items: [{ variantId: variant.id, quantity: 4 }] })
+
+    // Tracked, stocked at one, and four in the bag: the flag is what says this pre-order may go
+    // past the shelf. Without it the same addition is the conflict the spec above asserts.
+    expect(await service.read.cartLineItems(container, { cartId: cart.id })).toMatchObject([{ quantity: 4 }])
+  })
+
+  test('refuses a tracked variant with no inventory item', async ({ service, expect }) => {
+    const cart = await usdCart(service)
+    const { variant } = await service.create.sellableVariant(container, { inventory: null })
+
+    const error = await addToCartWorkflow
+      .run({ cartId: cart.id, items: [{ variantId: variant.id, quantity: 1 }] })
+      .catch((raised) => raised)
+
+    // Bad data about the variant rather than a shopper who arrived too late: tracked with nothing
+    // behind it is what let an admin-created variant be sold without limit.
+    expect(error.cause).toMatchObject({ type: ErrorTypes.INVALID_DATA })
+    expect(error.message).toContain(variant.id)
+    expect(await service.read.cartLineItems(container, { cartId: cart.id })).toEqual([])
   })
 
   test('refuses a variant the catalogue cannot price in the cart’s currency', async ({ service, expect }) => {

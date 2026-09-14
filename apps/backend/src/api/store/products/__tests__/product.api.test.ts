@@ -166,6 +166,10 @@ test.describe('GET /store/products/:id options', () => {
 
   test('precomputes where every option value would take the shopper', async ({ expect, service }) => {
     const { product, size, small, medium, valueId } = await createProductWithOptions(service)
+    // Both stocked: the picker only offers a variant a shopper could buy, so a size with nothing
+    // behind it would be reported unreachable and this spec would be asserting the wrong thing.
+    await service.create.variantStock(api.container, { variantId: small.id, level: { stockedQuantity: 5 } })
+    await service.create.variantStock(api.container, { variantId: medium.id, level: { stockedQuantity: 5 } })
     const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
 
     const fromSmall = response.body.product.pickerTargets[small.id]
@@ -272,11 +276,34 @@ test.describe('GET /store/products/:id options', () => {
     expect(response.body.product.variants[0]?.optionValues).toEqual({})
   })
 
-  test('a variant with no inventory link counts as in stock', async ({ expect, service }) => {
-    const { product } = await createProductWithOptions(service)
+  test('an untracked variant stays in stock, and a backorder one is offered past zero', async ({ expect, service }) => {
+    const { product, small, medium } = await createProductWithOptions(service)
+    await service.update.productVariant(api.container, small.id, { manageInventory: false })
+    await service.update.productVariant(api.container, medium.id, { allowBackorder: true })
+    // Both are backed by an item holding nothing, so the answer cannot come from an absent number:
+    // one is not tracked at all, the other is tracked and sold anyway.
+    await service.create.variantStock(api.container, { variantId: small.id, level: { stockedQuantity: 0 } })
+    await service.create.variantStock(api.container, { variantId: medium.id, level: { stockedQuantity: 0 } })
+
     const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
 
-    expect(response.body.product.variants.every((variant) => variant.inStock)).toBe(true)
+    const inStockByVariantId = new Map(response.body.product.variants.map((v) => [v.id, v.inStock]))
+    expect(inStockByVariantId.get(small.id)).toBe(true)
+    expect(inStockByVariantId.get(medium.id)).toBe(true)
+  })
+
+  test('a tracked variant with no inventory item is not offered', async ({ expect, service }) => {
+    // What an admin-created variant looks like until slice 7 gives it an inventory item: tracked,
+    // with nothing behind it. Checkout refuses it as invalid data, so the storefront must not
+    // offer it — this is the arrangement that used to be silently sold without limit.
+    const { product, small, medium } = await createProductWithOptions(service)
+    await service.create.variantStock(api.container, { variantId: small.id, level: { stockedQuantity: 5 } })
+
+    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+
+    const inStockByVariantId = new Map(response.body.product.variants.map((v) => [v.id, v.inStock]))
+    expect(inStockByVariantId.get(small.id)).toBe(true)
+    expect(inStockByVariantId.get(medium.id)).toBe(false)
   })
 
   test('inStock follows stocked minus reserved against the required quantity', async ({ expect, service }) => {

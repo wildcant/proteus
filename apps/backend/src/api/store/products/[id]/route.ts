@@ -7,9 +7,9 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StorePricingContextParams, StoreProductResponse } from '@proteus/http-schemas/store'
+import { buildBuyableVariantIds } from '@workflows/product/utils/build-buyable-variant-ids.js'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
-import { buildVariantStock } from '@workflows/product/utils/build-variant-stock.js'
 import { setPricingContext } from '../../middlewares.js'
 
 export const GetInput = { params: IdParams, contextQuery: StorePricingContextParams }
@@ -60,17 +60,14 @@ export const GET = async (
       itemIds.map(async (itemId) => [itemId, await inventoryService.retrieveAvailableQuantity(itemId)] as const),
     ),
   )
-  const inStockByVariantId = buildVariantStock(inventoryLinks, availableByItemId)
+  const buyableVariantIds = buildBuyableVariantIds(variants, inventoryLinks, availableByItemId)
 
   const variantsForResponse = variants.flatMap((variant) => {
     const calculatedPrice = priceByVariantId.get(variant.id)
     if (!calculatedPrice) return []
     // Filtering the rank-ordered images means `imageIds` inherits that order for free.
     const imageIds = images.filter((image) => linkedImages.has(`${variant.id}:${image.id}`)).map((image) => image.id)
-    // TODO(inventory): evaluate stock availability logic after inventory feature is complete.
-    // A variant with no inventory link is absent from the map and counts as buyable, which is what
-    // checkout does today — `prepareConfirmInventoryInput` skips unmapped variants entirely.
-    const inStock = inStockByVariantId.get(variant.id) ?? true
+    const inStock = buyableVariantIds.has(variant.id)
     return { ...variant, imageIds, inStock, optionValues: optionValuesByVariantId[variant.id] ?? {}, calculatedPrice }
   })
 
