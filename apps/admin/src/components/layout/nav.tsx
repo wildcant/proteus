@@ -1,4 +1,11 @@
-import { PackageIcon, SettingsIcon, ShoppingCartIcon, SlidersHorizontalIcon } from 'lucide-react'
+import {
+  BoxesIcon,
+  ClipboardListIcon,
+  PackageIcon,
+  SettingsIcon,
+  ShoppingCartIcon,
+  SlidersHorizontalIcon,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
 
 export type NavItem = {
@@ -15,6 +22,13 @@ export const navItems: NavItem[] = [
     to: '/products',
     icon: <PackageIcon />,
     children: [{ label: 'Options', to: '/product-options', icon: <SlidersHorizontalIcon /> }],
+  },
+  {
+    // Reservations are a lens on inventory rather than a peer of it, so they sit beneath it.
+    label: 'Inventory',
+    to: '/inventory',
+    icon: <BoxesIcon />,
+    children: [{ label: 'Reservations', to: '/reservations', icon: <ClipboardListIcon /> }],
   },
 ]
 

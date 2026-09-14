@@ -1,6 +1,7 @@
 export * from '../tests/factories/db/cart.js'
 export * from '../tests/factories/db/customer.js'
 export * from '../tests/factories/db/fulfillment.js'
+export * from '../tests/factories/db/inventory.js'
 export * from '../tests/factories/db/notification.js'
 export * from '../tests/factories/db/order.js'
 export * from '../tests/factories/db/payment.js'

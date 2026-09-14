@@ -8,6 +8,8 @@ import {
   createFulfillmentProvider,
   createFulfillmentSet,
   createGeoZone,
+  createInventoryItem,
+  createInventoryLevel,
   createOrder,
   createPaymentProvider,
   createPrice,
@@ -20,10 +22,12 @@ import {
   createProductProductOptionValue,
   createProductVariant,
   createProductVariantImage,
+  createProductVariantInventoryItem,
   createProductVariantOption,
   createProductVariantPriceSet,
   createProductWithOption,
   createProductWithPricing,
+  createReservationItem,
   createServiceZone,
   createShippingOption,
   createShippingOptionType,
@@ -215,6 +219,10 @@ export type Factories = {
     geoZone: typeof createGeoZone
     shippingProfile: typeof createShippingProfile
     stockLocation: typeof createStockLocation
+    inventoryItem: typeof createInventoryItem
+    inventoryLevel: typeof createInventoryLevel
+    productVariantInventoryItem: typeof createProductVariantInventoryItem
+    reservationItem: typeof createReservationItem
     shippingOptionType: typeof createShippingOptionType
     shippingOption: typeof createShippingOption
     paymentProvider: typeof createPaymentProvider
@@ -323,6 +331,10 @@ export function createTest<RoutePath extends string = string>() {
         geoZone: createGeoZone,
         shippingProfile: createShippingProfile,
         stockLocation: createStockLocation,
+        inventoryItem: createInventoryItem,
+        inventoryLevel: createInventoryLevel,
+        productVariantInventoryItem: createProductVariantInventoryItem,
+        reservationItem: createReservationItem,
         shippingOptionType: createShippingOptionType,
         shippingOption: createShippingOption,
         paymentProvider: createPaymentProvider,

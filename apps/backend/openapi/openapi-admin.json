@@ -32,6 +32,9 @@
       "name": "Fulfillment Sets"
     },
     {
+      "name": "Inventory"
+    },
+    {
       "name": "Invites"
     },
     {
@@ -63,6 +66,9 @@
     },
     {
       "name": "Regions"
+    },
+    {
+      "name": "Reservations"
     },
     {
       "name": "Shipping Options"
@@ -530,6 +536,85 @@
           "id",
           "isEnabled",
           "deletedAt"
+        ]
+      },
+      "AdminInventoryItemListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "inventoryItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminInventoryItem"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "inventoryItems"
+        ]
+      },
+      "AdminInventoryItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "productId": {
+            "type": "string"
+          },
+          "productTitle": {
+            "type": "string"
+          },
+          "variantId": {
+            "type": "string"
+          },
+          "variantTitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stockedQuantity": {
+            "type": "number"
+          },
+          "reservedQuantity": {
+            "type": "number"
+          },
+          "availableQuantity": {
+            "type": "number"
+          },
+          "lowStock": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "productId",
+          "productTitle",
+          "variantId",
+          "variantTitle",
+          "stockedQuantity",
+          "reservedQuantity",
+          "availableQuantity",
+          "lowStock"
         ]
       },
       "AdminInviteListResponse": {
@@ -4046,6 +4131,94 @@
           "code"
         ]
       },
+      "AdminReservationListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "reservations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminReservation"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "reservations"
+        ]
+      },
+      "AdminReservation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "lineItemId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "orderId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "orderDisplayId": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "productTitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "variantTitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sku": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "quantity",
+          "lineItemId",
+          "orderId",
+          "orderDisplayId",
+          "productTitle",
+          "variantTitle",
+          "sku",
+          "createdAt"
+        ]
+      },
       "AdminRegionListResponse": {
         "type": "object",
         "properties": {
@@ -5634,6 +5807,87 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminFulfillmentProviderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/admin/inventory-items": {
+      "get": {
+        "operationId": "listInventoryItems",
+        "summary": "List inventory items",
+        "tags": [
+          "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": false,
+            "name": "lowStock",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminInventoryItemListResponse"
                 }
               }
             }
@@ -9617,6 +9871,72 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/reservations": {
+      "get": {
+        "operationId": "listReservations",
+        "summary": "List reservations",
+        "tags": [
+          "Reservations"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReservationListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
