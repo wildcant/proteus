@@ -157,6 +157,12 @@ export type TableConfig<T> = {
   columns: (col: ColumnHelper<T>) => ColumnDef<T>[]
   filters?: (filter: FilterHelper<T>) => FilterDef[]
   prefix?: string
+  /**
+   * Whether the toolbar offers a search box. Default `true`, which every list whose endpoint
+   * takes `q` relies on; set it `false` when the endpoint has no search to run, so the toolbar
+   * cannot offer a control that silently returns the same rows.
+   */
+  searchable?: boolean
   pageSize?: number
   paramMap?: Record<string, string>
   getRowId: (row: T) => string

@@ -277,6 +277,15 @@ export class InventoryModuleService implements IInventoryModuleService {
     return this.reservationItemRepository.find(filters, config, context)
   }
 
+  /** The same read a page needs, with the total the pager has to show beside it. */
+  async listAndCountReservationItems(
+    filters?: FilterableReservationItemProps,
+    config?: FindConfig<ReservationItemDTO>,
+    context?: Context,
+  ): Promise<[ReservationItemDTO[], number]> {
+    return this.reservationItemRepository.findAndCount(filters, config, context)
+  }
+
   /** The level rows behind these reservations, keyed by the item/location pair they name. */
   private async findLevelsFor(
     rows: { inventoryItemId: string; locationId: string }[],

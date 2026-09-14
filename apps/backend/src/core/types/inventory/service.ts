@@ -74,4 +74,9 @@ export type IInventoryModuleService = {
     config?: FindConfig<ReservationItemDTO>,
     context?: Context,
   ): Promise<ReservationItemDTO[]>
+  listAndCountReservationItems(
+    filters?: FilterableReservationItemProps,
+    config?: FindConfig<ReservationItemDTO>,
+    context?: Context,
+  ): Promise<[ReservationItemDTO[], number]>
 }

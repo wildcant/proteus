@@ -9,6 +9,8 @@ test('product CRUD journey', async ({ page, authenticate, navigate, factories, c
   // List — seeded product appears in the table
   await navigate({ to: '/products' })
   await expect(page.getByRole('cell', { name: product.title })).toBeVisible()
+  // Products search the server, so the toolbar offers the box the inventory lists opt out of.
+  await expect(page.getByPlaceholder('Search...')).toBeVisible()
 
   // Create — fill form, save as draft, verify toast + redirect
   await page.getByRole('link', { name: 'Create Product' }).click()
