@@ -35,6 +35,11 @@ export default defineConfig({
         // React and Tailwind only for the project that renders them; the unit project stays a
         // plain node run.
         plugins: [react(), tailwindcss()],
+        // A component that owns a mutation — the PDP's action bar is one — imports its way to the
+        // generated client, and `src/env.ts` refuses to load without a backend address. Defined
+        // here rather than pulled from `.env`: nothing in this project sends a request, so the
+        // value only has to parse, and a real address would invite a test to use it.
+        define: { 'import.meta.env.VITE_BACKEND_URL': JSON.stringify('http://component-tests.invalid') },
         test: {
           name: 'browser',
           include: ['src/**/*.browser.test.tsx'],
