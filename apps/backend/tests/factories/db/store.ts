@@ -10,6 +10,7 @@ export function generateStore(overrides?: Partial<CreateStore>): CreateStore {
   return {
     name: faker.company.name(),
     defaultRegionId: null,
+    lowStockThreshold: null,
     metadata: null,
     createdAt: faker.date.recent(),
     updatedAt: faker.date.recent(),

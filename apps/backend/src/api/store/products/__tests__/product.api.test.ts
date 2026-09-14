@@ -1,3 +1,5 @@
+import type { IStoreModuleService } from '@core/types/store/service.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import type * as productByIdRoutes from '../[id]/route.js'
@@ -10,6 +12,19 @@ type Factories = Fixtures['factories']
 let api: TestApi
 /** Held for the market specs below, which sell the `us` country through this region. */
 let usRegionId: string
+
+/**
+ * The store-wide setting a shopkeeper edits in store settings, written the way they would write it.
+ *
+ * `resolveStore` takes the oldest row, which is the one this file's `beforeEach` creates — so the
+ * routes read back exactly what a spec sets here.
+ */
+const setLowStockThreshold = async (threshold: number | null) => {
+  const storeService = api.container.resolve<IStoreModuleService>(Modules.STORE)
+  const store = await storeService.resolveStore()
+  if (!store) throw new Error('Expected the store this suite seeds to exist')
+  await storeService.updateStores([store.id], { lowStockThreshold: threshold })
+}
 
 /**
  * The store's default market, because every route here is priced: with no region to fall back on,
@@ -276,64 +291,169 @@ test.describe('GET /store/products/:id options', () => {
     expect(response.body.product.variants[0]?.optionValues).toEqual({})
   })
 
-  test('an untracked variant stays in stock, and a backorder one is offered past zero', async ({ expect, service }) => {
+  /** The shopper-visible answer per variant, which is the only thing these specs assert. */
+  const stockByVariantId = async (productId: string) => {
+    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${productId}`)
+    return new Map(response.body.product.variants.map((variant) => [variant.id, variant.stock]))
+  }
+
+  test('an untracked variant and a backorder one both read as available, and never as low', async ({
+    expect,
+    service,
+  }) => {
+    // Both are backed by an item holding nothing, so the answer cannot come from an absent number:
+    // one is not tracked at all, the other is tracked and sold anyway. The threshold is set, so
+    // this also says neither ever earns an "only N left" line.
+    await setLowStockThreshold(5)
     const { product, small, medium } = await createProductWithOptions(service)
     await service.update.productVariant(api.container, small.id, { manageInventory: false })
     await service.update.productVariant(api.container, medium.id, { allowBackorder: true })
-    // Both are backed by an item holding nothing, so the answer cannot come from an absent number:
-    // one is not tracked at all, the other is tracked and sold anyway.
     await service.create.variantStock(api.container, { variantId: small.id, level: { stockedQuantity: 0 } })
     await service.create.variantStock(api.container, { variantId: medium.id, level: { stockedQuantity: 0 } })
 
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const stock = await stockByVariantId(product.id)
 
-    const inStockByVariantId = new Map(response.body.product.variants.map((v) => [v.id, v.inStock]))
-    expect(inStockByVariantId.get(small.id)).toBe(true)
-    expect(inStockByVariantId.get(medium.id)).toBe(true)
+    expect(stock.get(small.id)).toEqual({ state: 'available' })
+    expect(stock.get(medium.id)).toEqual({ state: 'available' })
   })
 
-  test('a tracked variant with no inventory item is not offered', async ({ expect, service }) => {
-    // What an admin-created variant looks like until slice 7 gives it an inventory item: tracked,
-    // with nothing behind it. Checkout refuses it as invalid data, so the storefront must not
-    // offer it — this is the arrangement that used to be silently sold without limit.
+  test('a tracked variant with no inventory item reads as sold out', async ({ expect, service }) => {
+    // Tracked with nothing behind it. Checkout refuses it as invalid data, so the storefront must
+    // not offer it — this is the arrangement that used to be silently sold without limit.
     const { product, small, medium } = await createProductWithOptions(service)
     await service.create.variantStock(api.container, { variantId: small.id, level: { stockedQuantity: 5 } })
 
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const stock = await stockByVariantId(product.id)
 
-    const inStockByVariantId = new Map(response.body.product.variants.map((v) => [v.id, v.inStock]))
-    expect(inStockByVariantId.get(small.id)).toBe(true)
-    expect(inStockByVariantId.get(medium.id)).toBe(false)
+    expect(stock.get(small.id)).toEqual({ state: 'available' })
+    expect(stock.get(medium.id)).toEqual({ state: 'soldOut' })
   })
 
-  test('inStock follows stocked minus reserved against the required quantity', async ({ expect, service }) => {
+  test('stocked minus reserved decides the answer: above the threshold available, at it low with the count', async ({
+    expect,
+    service,
+  }) => {
+    await setLowStockThreshold(2)
     const { product, small, medium } = await createProductWithOptions(service)
-    const inStock = await service.create.variantStock(api.container, {
+    const plenty = await service.create.variantStock(api.container, {
       variantId: small.id,
       item: { sku: `IN-${small.id}`, title: 'in stock' },
       level: { stockedQuantity: 5 },
     })
     await service.create.reservedStock(api.container, {
-      inventoryItemId: inStock.inventoryItem.id,
-      locationId: inStock.inventoryLevel.locationId,
+      inventoryItemId: plenty.inventoryItem.id,
+      locationId: plenty.inventoryLevel.locationId,
       quantity: 1,
     })
-    const soldOut = await service.create.variantStock(api.container, {
+    // Stocked at three with one spoken for, so it is the reservation and not the shelf that puts
+    // this variant on the threshold.
+    const running = await service.create.variantStock(api.container, {
       variantId: medium.id,
-      item: { sku: `OUT-${medium.id}`, title: 'out of stock' },
+      item: { sku: `LOW-${medium.id}`, title: 'running low' },
       level: { stockedQuantity: 3 },
     })
-    // Everything on hand is already reserved, so nothing is available.
     await service.create.reservedStock(api.container, {
-      inventoryItemId: soldOut.inventoryItem.id,
-      locationId: soldOut.inventoryLevel.locationId,
+      inventoryItemId: running.inventoryItem.id,
+      locationId: running.inventoryLevel.locationId,
+      quantity: 1,
+    })
+
+    const stock = await stockByVariantId(product.id)
+
+    expect(stock.get(small.id)).toEqual({ state: 'available' })
+    expect(stock.get(medium.id)).toEqual({ state: 'low', remaining: 2 })
+  })
+
+  test('sold out wins over low when everything on the shelf is already spoken for', async ({ expect, service }) => {
+    // The threshold is high enough to catch zero, so a variant with nothing left has to be refused
+    // rather than counted down to. The second variant is the control: same threshold, still low.
+    await setLowStockThreshold(5)
+    const { product, small, medium } = await createProductWithOptions(service)
+    const gone = await service.create.variantStock(api.container, {
+      variantId: small.id,
+      item: { sku: `OUT-${small.id}`, title: 'sold out' },
+      level: { stockedQuantity: 3 },
+    })
+    await service.create.reservedStock(api.container, {
+      inventoryItemId: gone.inventoryItem.id,
+      locationId: gone.inventoryLevel.locationId,
       quantity: 3,
     })
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    await service.create.variantStock(api.container, {
+      variantId: medium.id,
+      item: { sku: `LOW-${medium.id}`, title: 'running low' },
+      level: { stockedQuantity: 4 },
+    })
 
-    const inStockByVariantId = new Map(response.body.product.variants.map((v) => [v.id, v.inStock]))
-    expect(inStockByVariantId.get(small.id)).toBe(true)
-    expect(inStockByVariantId.get(medium.id)).toBe(false)
+    const stock = await stockByVariantId(product.id)
+
+    expect(stock.get(small.id)).toEqual({ state: 'soldOut' })
+    expect(stock.get(medium.id)).toEqual({ state: 'low', remaining: 4 })
+  })
+
+  test('with no threshold set, one unit left still reads as plainly available', async ({ expect, service }) => {
+    // A shop that has never set a threshold is never told a variant is running out — the same one
+    // setting silences the shopkeeper's alert and the shopper's "only N left" line. Sold out is not
+    // a threshold state, so the second variant still says so.
+    await setLowStockThreshold(null)
+    const { product, small, medium } = await createProductWithOptions(service)
+    await service.create.variantStock(api.container, {
+      variantId: small.id,
+      item: { sku: `ONE-${small.id}`, title: 'one left' },
+      level: { stockedQuantity: 1 },
+    })
+    await service.create.variantStock(api.container, {
+      variantId: medium.id,
+      item: { sku: `OUT-${medium.id}`, title: 'sold out' },
+      level: { stockedQuantity: 0 },
+    })
+
+    const stock = await stockByVariantId(product.id)
+
+    expect(stock.get(small.id)).toEqual({ state: 'available' })
+    expect(stock.get(medium.id)).toEqual({ state: 'soldOut' })
+  })
+})
+
+test.describe('GET /store/products stock', () => {
+  test('a product no variant of which can be bought is sold out, and keeps its place in the list', async ({
+    expect,
+    service,
+  }) => {
+    // Not filtered out: unlike a product with no price in this market, which has no amount to draw
+    // at all, a sold-out product renders fine — and delisting it would discard an indexed URL.
+    const { product: gone } = await service.create.product(api.container, { status: 'published' })
+    const { product: stocked } = await service.create.product(api.container, { status: 'published' })
+    const [goneVariant] = await service.create.productVariants(api.container, gone.id)
+    const [stockedVariant] = await service.create.productVariants(api.container, stocked.id)
+    if (!goneVariant || !stockedVariant) throw new Error('Expected a variant on each product')
+    await service.create.variantPrices(api.container, [goneVariant.id, stockedVariant.id])
+    await service.create.variantStock(api.container, { variantId: goneVariant.id, level: { stockedQuantity: 0 } })
+    await service.create.variantStock(api.container, { variantId: stockedVariant.id, level: { stockedQuantity: 4 } })
+
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products')
+
+    const soldOutByProductId = new Map(response.body.products.map((product) => [product.id, product.soldOut]))
+    expect(soldOutByProductId.get(gone.id)).toBe(true)
+    expect(soldOutByProductId.get(stocked.id)).toBe(false)
+  })
+
+  test('one variant still on the shelf keeps the whole product out of the sold-out state', async ({
+    expect,
+    service,
+  }) => {
+    // The product-level answer is "no variant is purchasable", not "some variant is not" — an
+    // `Array.some` here would badge a product a shopper can still buy in another size.
+    const { product } = await service.create.product(api.container, { status: 'published' })
+    const [gone, stocked] = await service.create.productVariants(api.container, product.id, [{}, {}])
+    if (!gone || !stocked) throw new Error('Expected two variants to exist')
+    await service.create.variantPrices(api.container, [gone.id, stocked.id])
+    await service.create.variantStock(api.container, { variantId: gone.id, level: { stockedQuantity: 0 } })
+    await service.create.variantStock(api.container, { variantId: stocked.id, level: { stockedQuantity: 2 } })
+
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products')
+
+    expect(response.body.products.find((candidate) => candidate.id === product.id)?.soldOut).toBe(false)
   })
 })
 

@@ -1,5 +1,5 @@
 {
-  "id": "19287f26-42f8-410b-8ecb-27e5329ba3b9",
+  "id": "a3c2fb50-45e0-4feb-a308-8edecb27d6d1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -132,6 +132,12 @@
         "default_region_id": {
           "name": "default_region_id",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "low_stock_threshold": {
+          "name": "low_stock_threshold",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },

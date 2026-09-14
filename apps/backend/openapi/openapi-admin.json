@@ -4540,6 +4540,12 @@
               "null"
             ]
           },
+          "lowStockThreshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
           "currencies": {
             "type": "array",
             "items": {
@@ -4551,6 +4557,7 @@
           "id",
           "name",
           "defaultRegionId",
+          "lowStockThreshold",
           "currencies"
         ]
       },
@@ -4584,6 +4591,13 @@
             ],
             "minLength": 1,
             "maxLength": 64
+          },
+          "lowStockThreshold": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
           }
         }
       },

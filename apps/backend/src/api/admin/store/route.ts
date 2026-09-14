@@ -57,7 +57,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     throw new AppError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
   }
 
-  const { name, defaultRegionId } = req.body
+  const { name, defaultRegionId, lowStockThreshold } = req.body
 
   if (defaultRegionId) {
     const [region] = await regionService.listRegions({ id: defaultRegionId })
@@ -72,6 +72,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const changes = {
     ...(name !== undefined && { name }),
     ...(defaultRegionId !== undefined && { defaultRegionId }),
+    ...(lowStockThreshold !== undefined && { lowStockThreshold }),
   }
   const [updated] = Object.keys(changes).length ? await storeService.updateStores([store.id], changes) : [store]
 
