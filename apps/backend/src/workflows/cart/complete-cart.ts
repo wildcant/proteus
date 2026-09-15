@@ -639,21 +639,19 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
      *  with nothing to say it had. */
     await ctx.step('publish-order-placed', async ({ container }) => {
       const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+      await bus.emit('order.placed', { id: order.id })
 
       /** The reservation this checkout took is one of the three ways Available Quantity falls, and
        *  it is announced from here rather than from `reserve-inventory` for the reason that step
        *  is not the last one: a checkout that unwinds releases what it reserved, and a low-stock
        *  alert already sent about a shelf that filled back up cannot be taken back.
        *
-       *  The levels are read before any emit, so a failure in a fallible read does not leave an
-       *  event already escaped. The quantities are re-read rather than carried, so what is
-       *  published is what the level holds now — including whatever else moved it between the
-       *  reservation and here. */
-      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-      const levels =
-        reserved.levelIds.length > 0 ? await inventoryService.listInventoryLevels({ id: reserved.levelIds }) : []
+       *  The quantities are re-read rather than carried, so what is published is what the level
+       *  holds now — including whatever else moved it between the reservation and here. */
+      if (reserved.levelIds.length === 0) return
 
-      await bus.emit('order.placed', { id: order.id })
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      const levels = await inventoryService.listInventoryLevels({ id: reserved.levelIds })
 
       await Promise.all(
         levels.map((level) =>
@@ -661,7 +659,6 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
             id: level.id,
             stockedQuantity: level.stockedQuantity,
             reservedQuantity: level.reservedQuantity,
-            updatedAt: level.updatedAt.toISOString(),
           }),
         ),
       )

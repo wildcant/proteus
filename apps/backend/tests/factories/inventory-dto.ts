@@ -32,7 +32,6 @@ export function generateInventoryLevelDTO(overrides?: Partial<InventoryLevelDTO>
     reservedQuantity: 0,
     incomingQuantity: 0,
     createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
     deletedAt: null,
     ...overrides,
   }

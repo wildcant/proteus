@@ -177,7 +177,7 @@ export class InventoryModuleService implements IInventoryModuleService {
       }
       return this.inventoryLevelRepository.update(
         level.id,
-        { stockedQuantity: level.stockedQuantity + adjustment, updatedAt: new Date() },
+        { stockedQuantity: level.stockedQuantity + adjustment },
         ctx,
       )
     })
@@ -209,7 +209,7 @@ export class InventoryModuleService implements IInventoryModuleService {
         })
       }
 
-      return this.inventoryLevelRepository.update(level.id, { stockedQuantity, updatedAt: new Date() }, ctx)
+      return this.inventoryLevelRepository.update(level.id, { stockedQuantity }, ctx)
     })
   }
 
@@ -379,7 +379,7 @@ export class InventoryModuleService implements IInventoryModuleService {
 
       await this.inventoryLevelRepository.update(
         level.id,
-        { reservedQuantity: level.reservedQuantity + sign * quantity, updatedAt: new Date() },
+        { reservedQuantity: level.reservedQuantity + sign * quantity },
         context,
       )
     }

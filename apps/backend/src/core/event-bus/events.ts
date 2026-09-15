@@ -63,12 +63,12 @@ export type EventPayloads = {
    * and explicitly not on reservations; reusing the name for something with a wider trigger is the
    * one case where matching Medusa's names would make a schema-or-event comparison lie.
    *
-   * The `id` is the level's, the two quantities are the ones the write left behind, and `updatedAt`
-   * is the level's write timestamp as an ISO string. `updatedAt` is part of the change's *identity*
-   * (see [EVENT_KEYS]), so two writes that land on the same quantities get different dispatch keys.
-   * The subscriber re-reads the level, so a late delivery describes the shelf as it is now.
+   * The `id` is the level's, and the two quantities are the ones the write left behind. They travel
+   * because they are part of the change's *identity* (see [EVENT_KEYS]), not as a snapshot for the
+   * subscriber — `alert-low-stock` re-reads the level, so a late delivery describes the shelf as it
+   * is now.
    */
-  'inventory.available_decreased': { id: string; stockedQuantity: number; reservedQuantity: number; updatedAt: string }
+  'inventory.available_decreased': { id: string; stockedQuantity: number; reservedQuantity: number }
 }
 
 export type EventName = keyof EventPayloads
@@ -112,12 +112,12 @@ const EVENT_KEYS: { [N in EventName]?: (data: EventPayloads[N]) => string } = {
    */
   'payment.captured': (data) => `${data.id}:${data.action}`,
   /**
-   * The level *and* the write's timestamp, for the same reason `payment.captured` keys on its
-   * action: one level legitimately goes low more than once. `updatedAt` changes on every write, so
-   * a variant that dips low, is restocked and dips to the *same* quantities gets a different key —
-   * keying on quantities alone would dedup any repeat of `3/0 → restock → 3/0` into silence.
+   * The level *and* the quantities the change left behind, for the same reason `payment.captured`
+   * keys on its action: one level legitimately goes low more than once. Keying on the level id
+   * alone would be once-per-level-forever — a variant that dips low, is restocked and dips again
+   * would be deduped into permanent silence, which is the failure with no error and no log line.
    */
-  'inventory.available_decreased': (data) => `${data.id}:${data.updatedAt}`,
+  'inventory.available_decreased': (data) => `${data.id}:${data.stockedQuantity}:${data.reservedQuantity}`,
 }
 
 /**

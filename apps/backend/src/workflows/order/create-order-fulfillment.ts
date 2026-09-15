@@ -290,7 +290,6 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
             id: level.id,
             stockedQuantity: level.stockedQuantity,
             reservedQuantity: level.reservedQuantity,
-            updatedAt: level.updatedAt.toISOString(),
           }),
         ),
       )
