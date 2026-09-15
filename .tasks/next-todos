@@ -1,6 +1,5 @@
 Memory management
 - clean up .scratch and docs
-- migrate rules from ts checks to standards (i'm talking about checks that live in scripts and apps/backend/scripts)
 
 Fixes and improvements
 - CHECKOUT IDEMPOTENCY: spam-clicking Place Order creates one throwaway order per click until the unique index
@@ -162,6 +161,11 @@ Future nice to have TODOs
 - routes that Spectral cannot reach: the API-design half of apps/backend/src/api/README.md is now enforced in the
   verify gate, so what is left is whatever the ruleset cannot express. Name those rules before doing a sweep.
 - white label all proteus references, get rid of magic strings that mention proteus
+- DEAD `metadata` COLUMNS: `metadata: text()` sits on 14 tables across 5 modules (fulfillment x7, inventory x3,
+  customer_address, geo_zone, region, store), mirrored from Medusa and written by nothing, read by nothing. The
+  live `metadata` in this codebase is always something else — auth's `app_metadata` on the identity, Stripe's
+  intent metadata, `product_variant.metadata` which is `jsonb`. The inventory module's three are dropped by the
+  inventory spec; the other 11 are a schema sweep of their own, one regenerated migration per module.
 - DOC-LINK / DOC-STRUCTURE GATE: nothing checks that a path named in an agent-facing document still resolves.
   Found one dead pointer in AGENTS.md (`docs/refactoring/replace_nested_conditional_with_guard_clauses.txt`,
   now `guard-clauses.md`) — fixed by hand. A prototype `scripts/check-doc-links.sh` worked (93 paths across 13
