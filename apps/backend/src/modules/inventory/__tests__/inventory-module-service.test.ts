@@ -177,6 +177,67 @@ test.describe('InventoryModuleService reservations', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining(`${item.id}@${level.locationId}`))
   })
 
+  /**
+   * The counter's one job. `inventory.available_decreased` keys on `levelId:version`, so two
+   * genuinely different changes that commit the same version would hand one identity to both and
+   * the transport would drop the second — a low-stock alert silently deduplicated away, with no
+   * error and no log line to find it by.
+   *
+   * Arranged so both transactions read the level before either writes, which is the interleaving
+   * that breaks an application-side `level.version + 1`: both read 0, both compute 1. The bump is
+   * `version = version + 1` evaluated by Postgres instead, so the second write lands on what the
+   * first committed rather than on what it read, and the two versions cannot meet. Nothing here
+   * depends on timing — the ordering is settled by hand, not by a sleep.
+   *
+   * Deliberately *not* asserted on the quantities: those keep the lost-update shape the spec below
+   * documents, and a wrong number the next read corrects is a different problem from two changes
+   * wearing one name.
+   */
+  test('two transactions that read one level before either writes still commit different versions', async ({
+    expect,
+    dto,
+    getDb,
+  }) => {
+    const item = await service.createInventoryItem(dto.generate.createInventoryItem())
+    const level = await service.createInventoryLevel(
+      dto.generate.createInventoryLevel({ inventoryItemId: item.id, stockedQuantity: 10 }),
+    )
+
+    const second = openTransaction(getDb())
+    const secondTransaction = await second.transaction
+    const first = openTransaction(getDb())
+
+    const firstHasCommitted = deferred<void>()
+    const secondIsAboutToWrite = deferred<void>()
+    const write = inventoryLevelRepository.updateBumpingVersion.bind(inventoryLevelRepository)
+    vi.spyOn(inventoryLevelRepository, 'updateBumpingVersion').mockImplementation(async (id, data, context) => {
+      if (context?.transaction === secondTransaction) {
+        secondIsAboutToWrite.settle()
+        await firstHasCommitted.promise
+      }
+      return write(id, data, context)
+    })
+
+    // The second has read the level and is holding at its write; the first has not started.
+    const secondAdjustment = service.adjustInventoryLevel(item.id, level.locationId, -1, {
+      transaction: secondTransaction,
+    })
+    await secondIsAboutToWrite.promise
+
+    const firstLevel = await service.adjustInventoryLevel(item.id, level.locationId, -1, {
+      transaction: await first.transaction,
+    })
+    await first.commit()
+    firstHasCommitted.settle()
+
+    const secondLevel = await secondAdjustment
+    await second.commit()
+
+    expect(firstLevel.version).toBe(level.version + 1)
+    expect(secondLevel.version).toBe(level.version + 2)
+    expect(secondLevel.version).not.toBe(firstLevel.version)
+  })
+
   // TODO: reserving is check-then-act across a read and a write, so two checkouts can both take the
   // last unit. This test is `fails` because that lost update is the current behaviour: when
   // reserving becomes atomic — a row lock, or `reserved_quantity = reserved_quantity + n` — the
@@ -204,8 +265,8 @@ test.describe('InventoryModuleService reservations', () => {
     // second writes is arranged here; *what* it writes is the service's own arithmetic.
     const firstHasCommitted = deferred<void>()
     const secondIsAboutToWrite = deferred<void>()
-    const write = inventoryLevelRepository.update.bind(inventoryLevelRepository)
-    vi.spyOn(inventoryLevelRepository, 'update').mockImplementation(async (id, data, context) => {
+    const write = inventoryLevelRepository.updateBumpingVersion.bind(inventoryLevelRepository)
+    vi.spyOn(inventoryLevelRepository, 'updateBumpingVersion').mockImplementation(async (id, data, context) => {
       if (context?.transaction === secondTransaction) {
         secondIsAboutToWrite.settle()
         await firstHasCommitted.promise
