@@ -807,6 +807,7 @@ if (existingProducts.length > 0) {
           id: lowStockLevel.id,
           stockedQuantity: lowStockLevel.stockedQuantity,
           reservedQuantity: lowStockLevel.reservedQuantity,
+          updatedAt: lowStockLevel.updatedAt.toISOString(),
         },
         alertLowStock.name,
       ),

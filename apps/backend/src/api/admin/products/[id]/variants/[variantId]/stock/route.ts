@@ -60,6 +60,7 @@ export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult
       id: updated.id,
       stockedQuantity: updated.stockedQuantity,
       reservedQuantity: updated.reservedQuantity,
+      updatedAt: updated.updatedAt.toISOString(),
     })
   }
 

@@ -508,6 +508,7 @@ test.describe('completeCartWorkflow', () => {
       id: inventoryLevel?.id,
       stockedQuantity: inventoryLevel?.stockedQuantity,
       reservedQuantity: inventoryLevel?.stockedQuantity,
+      updatedAt: expect.any(String),
     })
     expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
       { template: 'low-stock', resourceType: 'product_variant' },

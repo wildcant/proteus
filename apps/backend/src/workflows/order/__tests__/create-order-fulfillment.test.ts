@@ -146,6 +146,7 @@ test.describe('createOrderFulfillmentWorkflow', () => {
       id: level.id,
       stockedQuantity: 7,
       reservedQuantity: 0,
+      updatedAt: expect.any(String),
     })
   })
 

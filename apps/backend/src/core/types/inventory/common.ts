@@ -35,6 +35,7 @@ export type InventoryLevelDTO = {
   reservedQuantity: number
   incomingQuantity: number
   createdAt: Date
+  updatedAt: Date
   deletedAt: Date | null
 }
 
