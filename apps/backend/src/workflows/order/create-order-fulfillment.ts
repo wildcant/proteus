@@ -288,6 +288,7 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
         touched.map((level) =>
           bus.emit('inventory.available_decreased', {
             id: level.id,
+            version: level.version,
             stockedQuantity: level.stockedQuantity,
             reservedQuantity: level.reservedQuantity,
           }),

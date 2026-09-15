@@ -29,11 +29,18 @@ test.beforeEach(async ({ createTestContainer }) => {
  * The quantities come from the level as it was at the moment of the change, which is what a
  * publisher carries; the handler re-reads the row rather than trusting them.
  */
-function deliver(level: Pick<InventoryLevelDTO, 'id' | 'stockedQuantity' | 'reservedQuantity'>): Promise<void> {
+function deliver(
+  level: Pick<InventoryLevelDTO, 'id' | 'version' | 'stockedQuantity' | 'reservedQuantity'>,
+): Promise<void> {
   return defineSubscriber(config).handler({
     event: buildEvent(
       'inventory.available_decreased',
-      { id: level.id, stockedQuantity: level.stockedQuantity, reservedQuantity: level.reservedQuantity },
+      {
+        id: level.id,
+        version: level.version,
+        stockedQuantity: level.stockedQuantity,
+        reservedQuantity: level.reservedQuantity,
+      },
       config.name,
     ),
     container,
@@ -98,11 +105,18 @@ test.describe('the low-stock subscriber', () => {
   })
 
   /**
-   * The reason the quantities are part of the alert's key rather than only of its body. Keyed on
-   * the level alone this would be once-per-level-forever: a variant restocked after its first
-   * alert would never produce a second, and the silence would have no error and no log line.
+   * The reason the alert is keyed on the level's write counter rather than on the numbers it left
+   * behind. Keyed on the level alone this would be once-per-level-forever; keyed on the quantities
+   * it would be once-per-*shelf-state*-forever, and the second crossing here proves the difference
+   * — it dips back to exactly 3/0, byte-identical to the first, so a quantity key would swallow it
+   * as a redelivery. A wall-clock stamp has the same hole: nothing in this test waits, and the two
+   * writes can land in one millisecond. The counter is bumped by the write, so it cannot collide.
    */
-  test('alerts again when a restocked variant dips low a second time', async ({ factories, service, expect }) => {
+  test('alerts again when a restocked variant dips to the quantities it alerted at before', async ({
+    factories,
+    service,
+    expect,
+  }) => {
     await using _store = await storeWithThreshold(factories, 5)
     const { inventoryLevel } = await variantHolding(service, 3)
 
@@ -118,10 +132,14 @@ test.describe('the low-stock subscriber', () => {
       container,
       inventoryLevel.inventoryItemId,
       inventoryLevel.locationId,
-      -18,
+      -17,
     )
     expect(restocked.stockedQuantity).toBe(20)
-    expect(lowAgain.stockedQuantity).toBe(2)
+
+    // The whole point: same shelf, same numbers, different write.
+    expect(lowAgain.stockedQuantity).toBe(inventoryLevel.stockedQuantity)
+    expect(lowAgain.reservedQuantity).toBe(inventoryLevel.reservedQuantity)
+    expect(lowAgain.version).toBeGreaterThan(inventoryLevel.version)
 
     await deliver(lowAgain)
 

@@ -27,9 +27,10 @@ import { env } from '@env'
  *
  * Required to be — the weaker transport is at-least-once with no dedup. The notification's
  * `idempotencyKey` is derived from the event's payload and from nothing minted here, so a repeat
- * delivery of one crossing finds the existing row. It carries the quantities for the same reason
- * the dispatch key does: keyed on the level alone, a variant that dips low, is restocked and dips
- * again would be silenced forever after its first alert.
+ * delivery of one crossing finds the existing row. It carries the level's write counter for the
+ * same reason the dispatch key does: keyed on the level alone a variant would be silenced forever
+ * after its first alert, and keyed on the quantities a shelf that dips to 3, is restocked and dips
+ * to 3 again would have its second crossing swallowed as a repeat of the first.
  */
 async function alertLowStock({ event, container }: SubscriberArgs<'inventory.available_decreased'>) {
   const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
@@ -82,8 +83,8 @@ async function alertLowStock({ event, container }: SubscriberArgs<'inventory.ava
     triggerType: 'inventory.available_decreased',
     resourceType: 'product_variant',
     resourceId: variant.id,
-    // The quantities, not just the level: this crossing, not this level forever.
-    idempotencyKey: `low-stock:${event.data.id}:${event.data.stockedQuantity}:${event.data.reservedQuantity}`,
+    // The write counter, not just the level: this crossing, not this level forever.
+    idempotencyKey: `low-stock:${event.data.id}:${event.data.version}`,
   })
 }
 

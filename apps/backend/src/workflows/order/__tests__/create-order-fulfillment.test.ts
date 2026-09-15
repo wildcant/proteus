@@ -144,6 +144,7 @@ test.describe('createOrderFulfillmentWorkflow', () => {
 
     expect(emit).toHaveBeenCalledWith('inventory.available_decreased', {
       id: level.id,
+      version: expect.any(Number),
       stockedQuantity: 7,
       reservedQuantity: 0,
     })

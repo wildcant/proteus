@@ -805,6 +805,7 @@ if (existingProducts.length > 0) {
         'inventory.available_decreased',
         {
           id: lowStockLevel.id,
+          version: lowStockLevel.version,
           stockedQuantity: lowStockLevel.stockedQuantity,
           reservedQuantity: lowStockLevel.reservedQuantity,
         },

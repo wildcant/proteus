@@ -31,6 +31,7 @@ export function generateInventoryLevelDTO(overrides?: Partial<InventoryLevelDTO>
     stockedQuantity: faker.number.int({ min: 0, max: 1000 }),
     reservedQuantity: 0,
     incomingQuantity: 0,
+    version: 0,
     createdAt: faker.date.recent(),
     deletedAt: null,
     ...overrides,

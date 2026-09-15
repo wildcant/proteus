@@ -58,6 +58,7 @@ export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult
     const bus = req.scope.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
     await bus.emit('inventory.available_decreased', {
       id: updated.id,
+      version: updated.version,
       stockedQuantity: updated.stockedQuantity,
       reservedQuantity: updated.reservedQuantity,
     })

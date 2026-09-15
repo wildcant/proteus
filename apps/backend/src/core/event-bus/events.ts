@@ -63,12 +63,12 @@ export type EventPayloads = {
    * and explicitly not on reservations; reusing the name for something with a wider trigger is the
    * one case where matching Medusa's names would make a schema-or-event comparison lie.
    *
-   * The `id` is the level's, and the two quantities are the ones the write left behind. They travel
-   * because they are part of the change's *identity* (see [EVENT_KEYS]), not as a snapshot for the
-   * subscriber — `alert-low-stock` re-reads the level, so a late delivery describes the shelf as it
-   * is now.
+   * The `id` is the level's and `version` is the row's write counter — together they are the
+   * change's *identity* (see [EVENT_KEYS]). The two quantities travel for the reader's benefit
+   * only; `alert-low-stock` re-reads the level, so a late delivery describes the shelf as it is
+   * now rather than as the payload found it.
    */
-  'inventory.available_decreased': { id: string; stockedQuantity: number; reservedQuantity: number }
+  'inventory.available_decreased': { id: string; version: number; stockedQuantity: number; reservedQuantity: number }
 }
 
 export type EventName = keyof EventPayloads
@@ -112,12 +112,18 @@ const EVENT_KEYS: { [N in EventName]?: (data: EventPayloads[N]) => string } = {
    */
   'payment.captured': (data) => `${data.id}:${data.action}`,
   /**
-   * The level *and* the quantities the change left behind, for the same reason `payment.captured`
-   * keys on its action: one level legitimately goes low more than once. Keying on the level id
-   * alone would be once-per-level-forever — a variant that dips low, is restocked and dips again
-   * would be deduped into permanent silence, which is the failure with no error and no log line.
+   * The level *and* the row's write counter, for the same reason `payment.captured` keys on its
+   * action: one level legitimately goes low more than once. Keying on the level id alone would be
+   * once-per-level-forever — a variant that dips low, is restocked and dips again would be deduped
+   * into permanent silence, the failure with no error and no log line.
+   *
+   * The counter rather than the quantities, because the quantities do not identify the change: a
+   * shelf that dips to 3, is restocked and dips to 3 again produces the same pair twice, and the
+   * second crossing would be swallowed as a redelivery of the first. A wall-clock stamp has the
+   * same hole at millisecond resolution; the counter is bumped by the write itself, so two writes
+   * can never share one. A *redelivery* still keys identically, which is what keeps dedup working.
    */
-  'inventory.available_decreased': (data) => `${data.id}:${data.stockedQuantity}:${data.reservedQuantity}`,
+  'inventory.available_decreased': (data) => `${data.id}:${data.version}`,
 }
 
 /**

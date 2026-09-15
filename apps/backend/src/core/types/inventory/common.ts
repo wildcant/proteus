@@ -34,6 +34,8 @@ export type InventoryLevelDTO = {
   stockedQuantity: number
   reservedQuantity: number
   incomingQuantity: number
+  /** Bumped by every write to this row. The identity of the change, where the numbers cannot be. */
+  version: number
   createdAt: Date
   deletedAt: Date | null
 }
