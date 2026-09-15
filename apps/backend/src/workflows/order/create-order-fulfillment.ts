@@ -1,4 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { EventBus } from '@core/event-bus/types.js'
 import type { CreateFulfillmentDTO } from '@core/types/fulfillment/mutations.js'
 import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import type { ReservationItemDTO } from '@core/types/inventory/common.js'
@@ -192,7 +193,7 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
      *  lineItemQty × requiredQuantity (from the variant-inventory link). Throws if
      *  a managed item is missing a reservation or the reservation is insufficient.
      *  Compensates by reversing inventory adjustments and restoring reservations. */
-    await ctx.step(
+    const adjusted = await ctx.step(
       'adjust-inventory',
       async ({ container }) => {
         const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
@@ -258,6 +259,41 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
         }
       },
     )
+
+    /** Fulfillment is the second of the three ways stock moves down, and the last step is where it
+     *  is announced — an emit inside `adjust-inventory` would already be gone by the time a
+     *  failure below it compensated the adjustment away.
+     *
+     *  Published for every level the adjustment touched, without asking whether Available Quantity
+     *  actually fell: taking units off the shelf and releasing their reservation move stocked and
+     *  reserved by the same amount, so what changed is which number holds them. Whether that is
+     *  worth telling anyone about is `alert-low-stock`'s single comparison to make. */
+    await ctx.step('publish-available-decreased', async ({ container }) => {
+      if (adjusted.adjustments.length === 0) return
+
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+
+      const levels = await inventoryService.listInventoryLevels({
+        inventoryItemId: adjusted.adjustments.map((adjustment) => adjustment.inventoryItemId),
+      })
+      const touched = levels.filter((level) =>
+        adjusted.adjustments.some(
+          (adjustment) =>
+            adjustment.inventoryItemId === level.inventoryItemId && adjustment.locationId === level.locationId,
+        ),
+      )
+
+      await Promise.all(
+        touched.map((level) =>
+          bus.emit('inventory.available_decreased', {
+            id: level.id,
+            stockedQuantity: level.stockedQuantity,
+            reservedQuantity: level.reservedQuantity,
+          }),
+        ),
+      )
+    })
 
     return updated
   },

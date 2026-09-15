@@ -1,7 +1,9 @@
+import type { EventBus } from '@core/event-bus/types.js'
 import type { CreateLineItemDTO } from '@core/types/cart/mutations.js'
 import type { CreateFulfillmentDTO } from '@core/types/fulfillment/mutations.js'
 import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { OrderLineItemDTO } from '@core/types/order/common.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -113,6 +115,38 @@ test.describe('createOrderFulfillmentWorkflow', () => {
       availableQuantity: 7,
     })
     expect(await service.read.reservationItems(container, { lineItemId: lineItems.map((item) => item.id) })).toEqual([])
+  })
+
+  /**
+   * Fulfillment is the second of the three ways stock moves down, and it announces every level it
+   * touched — without asking whether Available Quantity actually fell. Taking units off the shelf
+   * and releasing their reservation move stocked and reserved by the same amount, so what changed
+   * is which number holds them; whether that is worth telling anyone about is the subscriber's one
+   * comparison to make, and it is covered in `subscribers/__tests__/alert-low-stock.test.ts`.
+   *
+   * Published from the last step rather than from `adjust-inventory`, so a failure below it
+   * compensates the adjustment away before anything was announced.
+   */
+  test('announces the level the adjustment moved, with the quantities the write left behind', async ({
+    service,
+    expect,
+  }) => {
+    const { orderId, inventoryItemId, lineItems } = await placedOrder(service, { quantity: 3, stockedQuantity: 10 })
+    const [level] = await service.read.inventoryLevels(container, { inventoryItemId })
+    assertDefined(level)
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    await createOrderFulfillmentWorkflow.run({
+      orderId,
+      fulfillmentData: { ...shipment, items: cover(lineItems) },
+    })
+
+    expect(emit).toHaveBeenCalledWith('inventory.available_decreased', {
+      id: level.id,
+      stockedQuantity: 7,
+      reservedQuantity: 0,
+    })
   })
 
   test('ships from the location the stock is reserved at when the request names none', async ({ service, expect }) => {

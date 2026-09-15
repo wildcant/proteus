@@ -65,6 +65,8 @@ export type IProductVariantInventoryItemRepository = {
   softDelete(ids: string[], context?: Context): Promise<void>
   restore(ids: string[], context?: Context): Promise<void>
   findByVariantIds(variantIds: string[], context?: Context): Promise<ProductVariantInventoryItemDTO[]>
+  /** The other direction, for a reader that starts from an Inventory Level rather than a variant. */
+  findByInventoryItemIds(inventoryItemIds: string[], context?: Context): Promise<ProductVariantInventoryItemDTO[]>
   getInventoryAvailability(variantIds: string[], context?: Context): Promise<VariantInventoryAvailabilityDTO[]>
   listVariantStockAndCount(options: ListVariantStockOptions, context?: Context): Promise<[VariantStockDTO[], number]>
 }

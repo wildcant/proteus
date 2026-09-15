@@ -28,6 +28,20 @@ export class ProductVariantInventoryItemRepository extends BaseRepository(produc
       .where(and(inArray(this.table.variantId, variantIds), isNull(this.table.deletedAt)))
   }
 
+  /**
+   * The mirror of {@link findByVariantIds}, for a reader holding an Inventory Item id and needing
+   * the variant it belongs to — the low-stock subscriber starts from a level, and a level names
+   * the item rather than the variant.
+   */
+  async findByInventoryItemIds(inventoryItemIds: string[], context?: Context) {
+    if (inventoryItemIds.length === 0) return []
+    const client = this.getClient(context)
+    return client
+      .select()
+      .from(this.table)
+      .where(and(inArray(this.table.inventoryItemId, inventoryItemIds), isNull(this.table.deletedAt)))
+  }
+
   async getInventoryAvailability(variantIds: string[], context?: Context) {
     if (variantIds.length === 0) return []
     const client = this.getClient(context)

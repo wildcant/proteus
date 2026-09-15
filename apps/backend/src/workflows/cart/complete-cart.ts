@@ -29,6 +29,13 @@ import { missingInventoryItemMessage, prepareLineItemInventoryChecks } from './u
 
 type CompleteCartInput = { cartId: string }
 
+/**
+ * What `reserve-inventory` returns when it reserves nothing — an untracked basket, or one whose
+ * line items name no variant. Named rather than written twice so both early returns and the
+ * compensation agree on the shape.
+ */
+const EMPTY_RESERVATION: { reservationIds: string[]; levelIds: string[] } = { reservationIds: [], levelIds: [] }
+
 const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
   'pending',
   'requires_more',
@@ -423,7 +430,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
     /** Reserve inventory so the purchased quantities can't be oversold between now
      *  and fulfillment. Reservations are released if later steps fail. */
-    await ctx.step(
+    const reserved = await ctx.step(
       'reserve-inventory',
       async ({ container }) => {
         const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
@@ -437,7 +444,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
          *  the shop holds would be unreachable. */
         const lineItems = await orderService.listOrderLineItems({ orderId: order.id })
         const variantIds = lineItems.map((item) => item.variantId).filter((id) => id != null)
-        if (variantIds.length === 0) return []
+        if (variantIds.length === 0) return EMPTY_RESERVATION
 
         /** An untracked variant is dropped before reservation and holds nothing, and a backorder
          *  variant reserves past what is on the shelf — so the flags are read here, before any
@@ -480,7 +487,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
           }
         })
 
-        if (reservationInput.length === 0) return []
+        if (reservationInput.length === 0) return EMPTY_RESERVATION
 
         // `locationId` crosses a module boundary, so it carries no foreign key (ADR-0004).
         // Resolving before the write is what stands in for one: an id naming no Stock Location
@@ -490,12 +497,27 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
         const reservations = await inventoryService.createReservationItems(reservationInput)
 
-        return reservations.map((reservation) => reservation.id)
+        /** The levels the reservations moved, carried out of the step so the final one can
+         *  announce them. Ids only: the quantities are read at publish time, because a step's
+         *  return value is what a retry replays rather than what the shelf holds. */
+        const levelIds = [
+          ...new Set(
+            reservationInput.flatMap((item) =>
+              levels
+                .filter(
+                  (level) => level.inventoryItemId === item.inventoryItemId && level.locationId === item.locationId,
+                )
+                .map((level) => level.id),
+            ),
+          ),
+        ]
+
+        return { reservationIds: reservations.map((reservation) => reservation.id), levelIds }
       },
-      async (ids, { container }) => {
-        if (ids.length === 0) return
+      async (result, { container }) => {
+        if (!result || result.reservationIds.length === 0) return
         const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-        await inventoryService.softDeleteReservationItems(ids)
+        await inventoryService.softDeleteReservationItems(result.reservationIds)
       },
     )
 
@@ -618,6 +640,28 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     await ctx.step('publish-order-placed', async ({ container }) => {
       const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
       await bus.emit('order.placed', { id: order.id })
+
+      /** The reservation this checkout took is one of the three ways Available Quantity falls, and
+       *  it is announced from here rather than from `reserve-inventory` for the reason that step
+       *  is not the last one: a checkout that unwinds releases what it reserved, and a low-stock
+       *  alert already sent about a shelf that filled back up cannot be taken back.
+       *
+       *  The quantities are re-read rather than carried, so what is published is what the level
+       *  holds now — including whatever else moved it between the reservation and here. */
+      if (reserved.levelIds.length === 0) return
+
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      const levels = await inventoryService.listInventoryLevels({ id: reserved.levelIds })
+
+      await Promise.all(
+        levels.map((level) =>
+          bus.emit('inventory.available_decreased', {
+            id: level.id,
+            stockedQuantity: level.stockedQuantity,
+            reservedQuantity: level.reservedQuantity,
+          }),
+        ),
+      )
     })
 
     return order

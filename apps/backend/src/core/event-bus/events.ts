@@ -55,6 +55,20 @@ export type EventPayloads = {
    * the session alone would dedup the second into the first and silently never deliver it.
    */
   'payment.captured': { id: string; action: PaymentCapturedAction }
+  /**
+   * An Inventory Level's Available Quantity moved **down** — published wherever it can: the
+   * reservation checkout takes, the adjustment fulfillment makes, and the admin's stock write.
+   *
+   * Deliberately **not** Medusa's `inventory-level.updated`. That one fires on stocked changes only
+   * and explicitly not on reservations; reusing the name for something with a wider trigger is the
+   * one case where matching Medusa's names would make a schema-or-event comparison lie.
+   *
+   * The `id` is the level's, and the two quantities are the ones the write left behind. They travel
+   * because they are part of the change's *identity* (see [EVENT_KEYS]), not as a snapshot for the
+   * subscriber — `alert-low-stock` re-reads the level, so a late delivery describes the shelf as it
+   * is now.
+   */
+  'inventory.available_decreased': { id: string; stockedQuantity: number; reservedQuantity: number }
 }
 
 export type EventName = keyof EventPayloads
@@ -97,6 +111,13 @@ const EVENT_KEYS: { [N in EventName]?: (data: EventPayloads[N]) => string } = {
    * which is what makes a repeat of one webhook a duplicate rather than a second capture.
    */
   'payment.captured': (data) => `${data.id}:${data.action}`,
+  /**
+   * The level *and* the quantities the change left behind, for the same reason `payment.captured`
+   * keys on its action: one level legitimately goes low more than once. Keying on the level id
+   * alone would be once-per-level-forever — a variant that dips low, is restocked and dips again
+   * would be deduped into permanent silence, which is the failure with no error and no log line.
+   */
+  'inventory.available_decreased': (data) => `${data.id}:${data.stockedQuantity}:${data.reservedQuantity}`,
 }
 
 /**

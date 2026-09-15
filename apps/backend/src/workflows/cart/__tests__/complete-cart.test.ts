@@ -482,6 +482,38 @@ test.describe('completeCartWorkflow', () => {
     ])
   })
 
+  /**
+   * The reservation is one of the three ways Available Quantity falls, and checkout announces it
+   * from the same final step the order is announced from — deliberately not from
+   * `reserve-inventory`, because a checkout that unwinds releases what it reserved and a low-stock
+   * alert already sent about a shelf that filled back up cannot be taken back.
+   *
+   * Asserted on the notification rather than on the emit alone: the publish would pass with
+   * nothing listening, and what a shopkeeper actually gets is the row.
+   */
+  test('announces the reservation, so a variant it leaves low reaches the admin feed', async ({
+    factories,
+    service,
+    expect,
+  }) => {
+    await using _store = await factories.create.store({ lowStockThreshold: 5 })
+    const { cart, inventoryLevel } = await service.create.checkoutReadyCart(container, { variant: {} })
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    await completeCartWorkflow.run({ cartId: cart.id })
+
+    // Stock was exactly what the cart ordered, so the reservation leaves nothing available.
+    expect(emit).toHaveBeenCalledWith('inventory.available_decreased', {
+      id: inventoryLevel?.id,
+      stockedQuantity: inventoryLevel?.stockedQuantity,
+      reservedQuantity: inventoryLevel?.stockedQuantity,
+    })
+    expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
+      { template: 'low-stock', resourceType: 'product_variant' },
+    ])
+  })
+
   test('publishes nothing when the checkout compensates', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
     const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)

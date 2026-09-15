@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { BigNumber } from '../src/core/bignumber.js'
+import { buildEvent } from '../src/core/event-bus/events.js'
+import { defineSubscriber } from '../src/core/event-bus/types.js'
 import type { IAuthModuleService } from '../src/core/types/auth/service.js'
 import type { ICartModuleService } from '../src/core/types/cart/service.js'
 import type { ICustomerModuleService } from '../src/core/types/customer/service.js'
@@ -19,6 +21,7 @@ import type { IUserModuleService } from '../src/core/types/user/service.js'
 import { ContainerRegistrationKeys } from '../src/core/utils/container.js'
 import { Modules } from '../src/core/utils/modules-definition.js'
 import { container } from '../src/framework/runtime/container.node.js'
+import { config as alertLowStock } from '../src/subscribers/alert-low-stock.js'
 import { amountIn, MARKETS, seedMarkets } from './seed/markets.js'
 
 const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
@@ -751,15 +754,29 @@ if (existingProducts.length > 0) {
   // the database by hand.
   const SOLD_OUT_SKU = 'MENS-TSHIRT-XL-GREEN'
 
-  await inventoryService.createInventoryLevels(
+  // And one left genuinely low — at or below the threshold `seedMarkets` writes onto the store —
+  // so the shopper's "only N left" line and the shopkeeper's alert are both reachable on a fresh
+  // database without anyone editing a row by hand.
+  const LOW_STOCK_SKU = 'MENS-TSHIRT-M-OCEAN'
+  const LOW_STOCK_QUANTITY = 3
+
+  const stockedQuantityFor = (sku: string | null) => {
+    if (sku === SOLD_OUT_SKU) return 0
+    if (sku === LOW_STOCK_SKU) return LOW_STOCK_QUANTITY
+    return 100
+  }
+
+  const createdLevels = await inventoryService.createInventoryLevels(
     createdItems.map((item) => ({
       inventoryItemId: item.id,
       locationId: stockLocation.id,
-      stockedQuantity: item.sku === SOLD_OUT_SKU ? 0 : 100,
+      stockedQuantity: stockedQuantityFor(item.sku),
       incomingQuantity: 0,
     })),
   )
-  console.info(`Seeded ${createdItems.length} inventory levels (${SOLD_OUT_SKU} deliberately sold out)`)
+  console.info(
+    `Seeded ${createdItems.length} inventory levels (${SOLD_OUT_SKU} deliberately sold out, ${LOW_STOCK_SKU} left low at ${LOW_STOCK_QUANTITY})`,
+  )
 
   // Link variants -> inventory items (1:1 by matching SKU order)
   const links = createdVariants.map((variant, i) => {
@@ -769,6 +786,34 @@ if (existingProducts.length > 0) {
   })
   await linkService.repo('productVariantInventoryItem').createMany(links)
   console.info(`Seeded ${links.length} variant-inventory links`)
+
+  // --- The low-stock alert, produced rather than written ---
+  // The notification is the subscriber's, not the seed's: it does the threshold comparison, writes
+  // the body and links to the variant, so a dev database shows the real thing rather than a fixture
+  // that can drift from it.
+  //
+  // Delivered to the handler directly rather than through `bus.emit`, because this script boots the
+  // node root, whose bus is Temporal-backed — an emitted event would sit on `proteus-events` until
+  // someone ran `worker:events`, and seeding has to be self-contained. Through `defineSubscriber`
+  // for the reason the generated registry calls it: that erased handler is what an adapter invokes.
+  const lowStockItem = createdItems.find((item) => item.sku === LOW_STOCK_SKU)
+  const lowStockLevel = createdLevels.find((level) => level.inventoryItemId === lowStockItem?.id)
+
+  if (lowStockLevel) {
+    await defineSubscriber(alertLowStock).handler({
+      event: buildEvent(
+        'inventory.available_decreased',
+        {
+          id: lowStockLevel.id,
+          stockedQuantity: lowStockLevel.stockedQuantity,
+          reservedQuantity: lowStockLevel.reservedQuantity,
+        },
+        alertLowStock.name,
+      ),
+      container,
+    })
+    console.info(`Delivered the low-stock event for ${LOW_STOCK_SKU} — "${alertLowStock.name}" wrote the alert`)
+  }
 
   // --- Cart with line items (for testing payment endpoints) ---
   const existingCarts = await cartService.listCarts()
@@ -915,19 +960,6 @@ if (seedNotifications && (await notificationService.listNotifications({ channel:
         description: 'Order #1042 for $170.00 from customer@example.com.',
       },
       idempotencyKey: `seed-notif-2-${now}`,
-    },
-    {
-      to: DEV_ADMIN_EMAIL,
-      channel: 'feed',
-      template: 'low-stock',
-      triggerType: 'inventory.low_stock',
-      resourceType: 'inventory',
-      receiverId: DEV_ADMIN_ID,
-      data: {
-        title: 'Low stock alert',
-        description: "Men's T-shirt (Green / XL) has only 3 units remaining.",
-      },
-      idempotencyKey: `seed-notif-3-${now}`,
     },
     {
       to: DEV_ADMIN_ID,
