@@ -87,6 +87,14 @@ export const AdminUpdateVariantPrices = z
   .openapi('AdminUpdateVariantPrices')
 export type AdminUpdateVariantPricesBody = z.infer<typeof AdminUpdateVariantPrices>
 
+/** An absolute shelf count. A negative number can never be a Stocked Quantity. */
+export const AdminSetVariantStock = z
+  .object({
+    stockedQuantity: z.number().int().nonnegative(),
+  })
+  .openapi('AdminSetVariantStock')
+export type AdminSetVariantStockBody = z.infer<typeof AdminSetVariantStock>
+
 export const AdminCreateProductVariantsBatch = z
   .object({
     variants: z.array(AdminCreateProductVariant).min(1).max(MAX_ITEMS.bulk),

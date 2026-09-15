@@ -23,15 +23,20 @@ export const storeCurrencyCode = machineCode
  * The store's own details. Every field optional, so the Edit drawer can save a rename without
  * resending a region it never showed the merchant.
  *
- * `defaultRegionId` is nullable rather than merely optional, and the two mean different things:
- * omitting it leaves the default region alone, sending `null` clears it. A merchant who has no
- * region they want shoppers to land in needs the second, and an optional-only field offers no way
- * to say it.
+ * `defaultRegionId` and `lowStockThreshold` are nullable rather than merely optional, and the two
+ * mean different things: omitting one leaves it alone, sending `null` clears it. A merchant who has
+ * no region they want shoppers to land in — or who does not want a low-stock state at all — needs
+ * the second, and an optional-only field offers no way to say it.
+ *
+ * The threshold is a whole number of units and zero is refused: `low` is `available <= threshold`,
+ * and nothing in stock is ever at or below zero, so a zero would be a setting that reads as on and
+ * behaves as off. A merchant who wants it off clears it.
  */
 export const AdminUpdateStore = z
   .object({
     name: shortText.min(1).optional(),
     defaultRegionId: entityId.min(1).nullable().optional(),
+    lowStockThreshold: z.number().int().min(1).nullable().optional(),
   })
   .openapi('AdminUpdateStore')
 export type AdminUpdateStoreBody = z.infer<typeof AdminUpdateStore>

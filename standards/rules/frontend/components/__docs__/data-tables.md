@@ -80,6 +80,17 @@ sorts on that field before shipping it.
 `order` is one string — `createdAt` ascending, `-createdAt` descending. There is no second direction
 param.
 
+### A list whose endpoint cannot search says so
+
+`searchable: false` takes the search box out of the toolbar. Every other list leaves it alone: the
+box is on by default because most admin endpoints accept `q`, and the two that do not — the
+Inventory and Reservations lists — would otherwise render a control that changes the URL and
+returns the same rows. The capability is a property of the endpoint, not of the screen, so it is
+set in the definition beside `useData` rather than passed to `<DataTable>` at the call site.
+
+There is no partial state: a list either searches server-side or offers no box. Filtering rows the
+client already holds is what `manualFiltering` exists to refuse.
+
 ### `useData` is a hook, called on every render
 
 `DataTable` calls `config.useData(params)` during its own render, unconditionally. It is therefore

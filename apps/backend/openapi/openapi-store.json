@@ -860,58 +860,6 @@
           "orderId"
         ]
       },
-      "StoreCartInventoryResponse": {
-        "type": "object",
-        "properties": {
-          "cartId": {
-            "type": "string"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StoreConfirmInventoryItem"
-            }
-          }
-        },
-        "required": [
-          "cartId",
-          "items"
-        ]
-      },
-      "StoreConfirmInventoryItem": {
-        "type": "object",
-        "properties": {
-          "lineItemId": {
-            "type": "string"
-          },
-          "variantId": {
-            "type": "string"
-          },
-          "inventoryItemId": {
-            "type": "string"
-          },
-          "requiredQuantity": {
-            "type": "number"
-          },
-          "quantity": {
-            "type": "number"
-          },
-          "locationIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "lineItemId",
-          "variantId",
-          "inventoryItemId",
-          "requiredQuantity",
-          "quantity",
-          "locationIds"
-        ]
-      },
       "StoreCartResponse": {
         "type": "object",
         "properties": {
@@ -1966,8 +1914,14 @@
             "properties": {
               "startingPrice": {
                 "$ref": "#/components/schemas/StoreCalculatedPrice"
+              },
+              "soldOut": {
+                "type": "boolean"
               }
-            }
+            },
+            "required": [
+              "soldOut"
+            ]
           }
         ]
       },
@@ -2237,8 +2191,8 @@
               "type": "string"
             }
           },
-          "inStock": {
-            "type": "boolean"
+          "stock": {
+            "$ref": "#/components/schemas/StoreVariantStock"
           },
           "sku": {
             "type": [
@@ -2293,7 +2247,7 @@
           "thumbnail",
           "imageIds",
           "optionValues",
-          "inStock",
+          "stock",
           "sku",
           "barcode",
           "material",
@@ -2302,6 +2256,56 @@
           "height",
           "width",
           "calculatedPrice"
+        ]
+      },
+      "StoreVariantStock": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "available"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "low"
+                ]
+              },
+              "remaining": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "state",
+              "remaining"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "soldOut"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          }
         ]
       }
     },
@@ -3346,55 +3350,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreCompleteCartResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not found"
-          },
-          "409": {
-            "description": "Conflict"
-          }
-        }
-      }
-    },
-    "/store/carts/{id}/inventory": {
-      "get": {
-        "operationId": "checkStoreCartInventory",
-        "summary": "Check inventory availability for a cart",
-        "tags": [
-          "Carts"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StoreCartInventoryResponse"
                 }
               }
             }

@@ -1,5 +1,5 @@
 {
-  "id": "112fb3ea-2080-4a87-968f-e6ae0b85ac2d",
+  "id": "1a8dab1c-d79b-449f-8030-1b833ce535de",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -94,12 +94,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -189,12 +183,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -346,12 +334,6 @@
         },
         "created_by": {
           "name": "created_by",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metadata": {
-          "name": "metadata",
           "type": "text",
           "primaryKey": false,
           "notNull": false

@@ -10,4 +10,5 @@ import type { StoreProduct } from './storeProduct.ts';
 
 export type StoreProductListItem = StoreProduct & {
   startingPrice?: StoreCalculatedPrice;
+  soldOut: boolean;
 };

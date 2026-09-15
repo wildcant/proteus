@@ -1,5 +1,12 @@
-import { Card, CardAction, CardHeader, CardTitle, StatusBadge } from '@proteus/ui'
+import { Button, Card, CardAction, CardHeader, CardTitle, StatusBadge, usePrompt } from '@proteus/ui'
+import { PackageCheckIcon, PackageIcon, TruckIcon } from 'lucide-react'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
+import {
+  useCreateFulfillment,
+  useCreateShipment,
+  useFulfillmentProviders,
+  useMarkAsDelivered,
+} from '#/features/orders/api/orders'
 import { fulfillmentStatusColors } from '#/features/orders/utils/order-status'
 
 export function OrderFulfillmentSection({ order }: { order: AdminOrderResponseOrder }) {
@@ -7,12 +14,24 @@ export function OrderFulfillmentSection({ order }: { order: AdminOrderResponseOr
 
   if (shippableItems.length === 0) return null
 
+  const fulfillment = order.fulfillments[0]
+
   return (
     <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>Fulfillment</CardTitle>
-        <CardAction>
+        <CardAction className="flex items-center gap-x-3">
           <StatusBadge color={fulfillmentStatusColors[order.fulfillmentStatus]}>{order.fulfillmentStatus}</StatusBadge>
+          {/* TODO: move fulfillment action eligibility into backend allowedActions (see next-todos) */}
+          {order.fulfillmentStatus === 'unfulfilled' && order.status === 'pending' && (
+            <FulfillAction order={order} shippableItems={shippableItems} />
+          )}
+          {order.fulfillmentStatus === 'fulfilled' && fulfillment && (
+            <ShipAction orderId={order.id} fulfillmentId={fulfillment.id} />
+          )}
+          {order.fulfillmentStatus === 'shipped' && fulfillment && (
+            <DeliverAction orderId={order.id} fulfillmentId={fulfillment.id} />
+          )}
         </CardAction>
       </CardHeader>
 
@@ -29,5 +48,109 @@ export function OrderFulfillmentSection({ order }: { order: AdminOrderResponseOr
         </div>
       ))}
     </Card>
+  )
+}
+
+function FulfillAction({
+  order,
+  shippableItems,
+}: {
+  order: AdminOrderResponseOrder
+  shippableItems: AdminOrderResponseOrder['lineItems']
+}) {
+  const { mutateAsync: fulfill, isPending } = useCreateFulfillment(order.id)
+  const { data: providers } = useFulfillmentProviders()
+  const prompt = usePrompt()
+
+  const handleFulfill = async () => {
+    const provider = providers?.fulfillmentProviders.find((p) => p.isEnabled)
+    if (!provider) return
+
+    const confirmed = await prompt({
+      title: 'Fulfill order',
+      description: `Mark all ${shippableItems.length} item(s) as fulfilled? This will adjust inventory.`,
+      confirmText: 'Fulfill',
+    })
+    if (!confirmed) return
+
+    const addr = order.shippingAddress
+    const address = addr
+      ? {
+          company: addr.company ?? undefined,
+          firstName: addr.firstName ?? undefined,
+          lastName: addr.lastName ?? undefined,
+          address1: addr.address1 ?? undefined,
+          address2: addr.address2 ?? undefined,
+          city: addr.city ?? undefined,
+          countryCode: addr.countryCode ?? undefined,
+          province: addr.province ?? undefined,
+          postalCode: addr.postalCode ?? undefined,
+          phone: addr.phone ?? undefined,
+        }
+      : {}
+
+    await fulfill({
+      providerId: provider.id,
+      items: shippableItems.map((item) => ({
+        title: item.title,
+        quantity: item.quantity,
+        lineItemId: item.id,
+        ...(item.variantSku ? { sku: item.variantSku } : {}),
+      })),
+      address,
+    })
+  }
+
+  return (
+    <Button size="sm" variant="secondary" onClick={handleFulfill} disabled={isPending}>
+      <PackageIcon className="size-4" />
+      Fulfill
+    </Button>
+  )
+}
+
+function ShipAction({ orderId, fulfillmentId }: { orderId: string; fulfillmentId: string }) {
+  const { mutateAsync: ship, isPending } = useCreateShipment(orderId, fulfillmentId)
+  const prompt = usePrompt()
+
+  const handleShip = async () => {
+    const confirmed = await prompt({
+      title: 'Mark as shipped',
+      description: 'Mark this fulfillment as shipped?',
+      confirmText: 'Mark as shipped',
+    })
+    if (!confirmed) return
+
+    await ship({})
+  }
+
+  return (
+    <Button size="sm" variant="secondary" onClick={handleShip} disabled={isPending}>
+      <TruckIcon className="size-4" />
+      Ship
+    </Button>
+  )
+}
+
+function DeliverAction({ orderId, fulfillmentId }: { orderId: string; fulfillmentId: string }) {
+  const { mutateAsync: deliver, isPending } = useMarkAsDelivered(orderId, fulfillmentId)
+  const prompt = usePrompt()
+
+  const handleDeliver = async () => {
+    const confirmed = await prompt({
+      title: 'Mark as delivered',
+      description: 'Mark this fulfillment as delivered?',
+      confirmText: 'Mark as delivered',
+    })
+    if (!confirmed) return
+
+    await deliver()
+  }
+
+  return (
+    <Button size="sm" variant="secondary" onClick={handleDeliver} disabled={isPending}>
+      <PackageCheckIcon className="size-4" />
+      Delivered
+    </Button>
   )
 }

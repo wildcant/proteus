@@ -18,4 +18,9 @@ export interface AdminUpdateStore {
      * @nullable
      */
   defaultRegionId?: string | null;
+  /**
+     * @minimum 1
+     * @nullable
+     */
+  lowStockThreshold?: number | null;
 }

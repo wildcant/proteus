@@ -7,7 +7,9 @@
  */
 import type { AdminProductImage } from './adminProductImage.ts';
 import type { AdminProductVariant } from './adminProductVariant.ts';
+import type { AdminVariantStock } from './adminVariantStock.ts';
 
-export type AdminProductVariantResponseVariant = AdminProductVariant & {
+export type AdminProductVariantResponseVariant = AdminProductVariant & ({
   images?: AdminProductImage[];
-};
+  stock: AdminVariantStock | null;
+});

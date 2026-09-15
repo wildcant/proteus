@@ -18,7 +18,6 @@ export const reservationItemTable = pgTable(
     externalId: text(),
     description: text(),
     createdBy: text(),
-    metadata: text(),
     ...timestamps,
   },
   (table) => [

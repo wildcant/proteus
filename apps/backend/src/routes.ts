@@ -13,6 +13,7 @@ import adminCountryDefinitions from './api/admin/countries/definitions.js'
 import adminCustomerDefinitions from './api/admin/customers/definitions.js'
 import adminFulfillmentProviderDefinitions from './api/admin/fulfillment-providers/definitions.js'
 import adminFulfillmentSetDefinitions from './api/admin/fulfillment-sets/definitions.js'
+import adminInventoryItemDefinitions from './api/admin/inventory-items/definitions.js'
 import adminInviteDefinitions from './api/admin/invites/definitions.js'
 import adminNotificationDefinitions from './api/admin/notifications/definitions.js'
 import adminOrderDefinitions from './api/admin/orders/definitions.js'
@@ -23,6 +24,7 @@ import adminProductOptionDefinitions from './api/admin/product-options/definitio
 import adminProductDefinitions from './api/admin/products/definitions.js'
 import adminRefundReasonDefinitions from './api/admin/refund-reasons/definitions.js'
 import adminRegionDefinitions from './api/admin/regions/definitions.js'
+import adminReservationDefinitions from './api/admin/reservations/definitions.js'
 import adminShippingOptionDefinitions from './api/admin/shipping-options/definitions.js'
 import adminShippingProfileDefinitions from './api/admin/shipping-profiles/definitions.js'
 import adminStoreDefinitions from './api/admin/store/definitions.js'
@@ -54,6 +56,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminCountryDefinitions,
   ...adminCustomerDefinitions,
   ...adminFulfillmentProviderDefinitions,
+  ...adminInventoryItemDefinitions,
   ...adminInviteDefinitions,
   ...adminNotificationDefinitions,
   ...adminOrderDefinitions,
@@ -64,6 +67,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminProductOptionDefinitions,
   ...adminProductDefinitions,
   ...adminRefundReasonDefinitions,
+  ...adminReservationDefinitions,
   ...adminRegionDefinitions,
   ...adminShippingOptionDefinitions,
   ...adminShippingProfileDefinitions,

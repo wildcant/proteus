@@ -80,6 +80,36 @@ export const AdminOrderAllowedActions = z
   .openapi('AdminOrderAllowedActions')
 export type AdminOrderAllowedActions = z.input<typeof AdminOrderAllowedActions>
 
+export const AdminOrderAddress = z
+  .object({
+    id: z.string(),
+    company: z.string().nullable(),
+    firstName: z.string().nullable(),
+    lastName: z.string().nullable(),
+    address1: z.string().nullable(),
+    address2: z.string().nullable(),
+    city: z.string().nullable(),
+    countryCode: z.string().nullable(),
+    province: z.string().nullable(),
+    postalCode: z.string().nullable(),
+    phone: z.string().nullable(),
+  })
+  .openapi('AdminOrderAddress')
+export type AdminOrderAddress = z.input<typeof AdminOrderAddress>
+
+export const AdminOrderFulfillment = z
+  .object({
+    id: z.string(),
+    providerId: z.string(),
+    locationId: z.string().nullable(),
+    shippedAt: dateToIso.nullable(),
+    deliveredAt: dateToIso.nullable(),
+    canceledAt: dateToIso.nullable(),
+    ...timestamps.shape,
+  })
+  .openapi('AdminOrderFulfillment')
+export type AdminOrderFulfillment = z.input<typeof AdminOrderFulfillment>
+
 export const AdminOrder = z
   .object({
     id: z.string(),

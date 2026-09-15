@@ -3,13 +3,18 @@ import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import type { IProductModuleService } from '@core/types/product/service.js'
+import type { IStoreModuleService } from '@core/types/store/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StorePricingContextParams, StoreProductResponse } from '@proteus/http-schemas/store'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
-import { buildVariantStock } from '@workflows/product/utils/build-variant-stock.js'
+import {
+  buildAvailableQuantities,
+  isPurchasable,
+  variantStockProjection,
+} from '@workflows/product/utils/build-variant-stock.js'
 import { setPricingContext } from '../../middlewares.js'
 
 export const GetInput = { params: IdParams, contextQuery: StorePricingContextParams }
@@ -27,6 +32,7 @@ export const GET = async (
   const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const pricingService = req.scope.resolve<IPricingModuleService>(Modules.PRICING)
   const inventoryService = req.scope.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
   const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
   const [product, variants, images, options] = await Promise.all([
@@ -55,23 +61,33 @@ export const GET = async (
   const linkedImages = new Set(variantImages.map((variantImage) => `${variantImage.variantId}:${variantImage.imageId}`))
 
   const itemIds = [...new Set(inventoryLinks.map((link) => link.inventoryItemId))]
-  const availableByItemId = new Map(
-    await Promise.all(
-      itemIds.map(async (itemId) => [itemId, await inventoryService.retrieveAvailableQuantity(itemId)] as const),
-    ),
+  const [levels, store] = await Promise.all([
+    // Every item's levels in one read, the way the cart workflows read them — asking the module
+    // per item would be one `SELECT` per variant. An empty filter array would reach the query
+    // builder as `inArray(column, [])`.
+    itemIds.length > 0 ? inventoryService.listInventoryLevels({ inventoryItemId: itemIds }) : [],
+    // The threshold that decides `low` is store-wide and nullable, and a deployment with no store
+    // row yet has no threshold — which reads the same way an unset one does: no variant is low.
+    storeService.resolveStore(),
+  ])
+  const stockOf = variantStockProjection(
+    inventoryLinks,
+    buildAvailableQuantities(levels),
+    store?.lowStockThreshold ?? null,
   )
-  const inStockByVariantId = buildVariantStock(inventoryLinks, availableByItemId)
 
   const variantsForResponse = variants.flatMap((variant) => {
     const calculatedPrice = priceByVariantId.get(variant.id)
     if (!calculatedPrice) return []
     // Filtering the rank-ordered images means `imageIds` inherits that order for free.
     const imageIds = images.filter((image) => linkedImages.has(`${variant.id}:${image.id}`)).map((image) => image.id)
-    // TODO(inventory): evaluate stock availability logic after inventory feature is complete.
-    // A variant with no inventory link is absent from the map and counts as buyable, which is what
-    // checkout does today — `prepareConfirmInventoryInput` skips unmapped variants entirely.
-    const inStock = inStockByVariantId.get(variant.id) ?? true
-    return { ...variant, imageIds, inStock, optionValues: optionValuesByVariantId[variant.id] ?? {}, calculatedPrice }
+    return {
+      ...variant,
+      imageIds,
+      stock: stockOf(variant),
+      optionValues: optionValuesByVariantId[variant.id] ?? {},
+      calculatedPrice,
+    }
   })
 
   /**
@@ -92,8 +108,17 @@ export const GET = async (
   }
 
   // Built from the variants actually being shipped, so the picker never offers one the response
-  // dropped for having no price.
-  const pickerTargets = await productService.buildProductPickerTargets(req.params.id, variantsForResponse)
+  // dropped for having no price. It keeps a boolean, because striking a value through is a yes/no
+  // question — but one derived from the same projection the response carries rather than from a
+  // field on the wire, so what the picker crosses out and what the button refuses cannot disagree.
+  const pickerTargets = await productService.buildProductPickerTargets(
+    req.params.id,
+    variantsForResponse.map((variant) => ({
+      id: variant.id,
+      optionValues: variant.optionValues,
+      inStock: isPurchasable(variant.stock),
+    })),
+  )
 
   // Built from the same shipped variants as the picker, so a swatch can never point at an image
   // belonging to a variant the response dropped.

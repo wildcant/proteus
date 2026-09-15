@@ -6,6 +6,7 @@ import { productVariantQueryOptions } from '#/features/products/api/product-vari
 import { VariantGeneralSection } from '#/features/products/components/variant/variant-general-section'
 import { VariantMediaSection } from '#/features/products/components/variant/variant-media-section'
 import { VariantPricesSection } from '#/features/products/components/variant/variant-prices-section'
+import { VariantStockSection } from '#/features/products/components/variant/variant-stock-section'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/variants/$variantId')({
   beforeLoad: async ({ context, params }) => {
@@ -27,6 +28,7 @@ function VariantDetailLayout() {
         <VariantMediaSection variant={data.variant} />
       </PageLayout.TwoColumn.Main>
       <PageLayout.TwoColumn.Side>
+        <VariantStockSection variant={data.variant} />
         <VariantPricesSection variant={data.variant} />
       </PageLayout.TwoColumn.Side>
     </PageLayout.TwoColumn>

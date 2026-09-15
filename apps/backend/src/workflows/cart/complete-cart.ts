@@ -16,16 +16,25 @@ import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { PaymentSessionStatus, UnauthorizedSessionStatus } from '@core/types/payment/common.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import type { IRegionModuleService } from '@core/types/region/service.js'
+import type { IStockLocationModuleService } from '@core/types/stock-location/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { env } from '@env'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
-import { prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
+import { missingInventoryItemMessage, prepareLineItemInventoryChecks } from './utils/variant-inventory.js'
 
 type CompleteCartInput = { cartId: string }
+
+/**
+ * What `reserve-inventory` returns when it reserves nothing — an untracked basket, or one whose
+ * line items name no variant. Named rather than written twice so both early returns and the
+ * compensation agree on the shape.
+ */
+const EMPTY_RESERVATION: { reservationIds: string[]; levelIds: string[] } = { reservationIds: [], levelIds: [] }
 
 const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
   'pending',
@@ -421,45 +430,94 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
     /** Reserve inventory so the purchased quantities can't be oversold between now
      *  and fulfillment. Reservations are released if later steps fail. */
-    await ctx.step(
+    const reserved = await ctx.step(
       'reserve-inventory',
       async ({ container }) => {
-        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
         const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
         const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
-        const lineItems = await cartService.listLineItems({ cartId: input.cartId })
-        const variantIds = lineItems.map((li) => li.variantId).filter((id) => id != null)
-        if (variantIds.length === 0) return []
+        /** The order's line items, not the cart's — which is why this step runs after the order
+         *  exists. A reservation is read back by the line item it was taken for, and cancelling
+         *  and fulfilling only ever hold the order's ids; keyed to the cart's, every reservation
+         *  the shop holds would be unreachable. */
+        const lineItems = await orderService.listOrderLineItems({ orderId: order.id })
+        const variantIds = lineItems.map((item) => item.variantId).filter((id) => id != null)
+        if (variantIds.length === 0) return EMPTY_RESERVATION
 
+        /** An untracked variant is dropped before reservation and holds nothing, and a backorder
+         *  variant reserves past what is on the shelf — so the flags are read here, before any
+         *  row is written, rather than left to the inventory module to infer from a mapping. */
+        const variants = await productService.listProductVariants({ id: variantIds })
         const mappings = await linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds)
-        const inventoryItemIds = [...new Set(mappings.map((m) => m.inventoryItemId))]
+
+        const missingInventoryItem = missingInventoryItemMessage(variants, mappings)
+        if (missingInventoryItem) {
+          throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: missingInventoryItem })
+        }
+
+        const inventoryItemIds = [...new Set(mappings.map((mapping) => mapping.inventoryItemId))]
         const levels = await inventoryService.listInventoryLevels({ inventoryItemId: inventoryItemIds })
 
-        const confirmInput = prepareConfirmInventoryInput({
-          cartId: input.cartId,
-          lineItems,
-          mappings,
-          levels,
-        })
+        const reservationInput = prepareLineItemInventoryChecks(lineItems, variants, mappings, levels).map((item) => {
+          /** An item's available locations are the ones it has a level at, and the reservation is
+           *  written against the first. Medusa ranks a wider candidate set; at one location every
+           *  tier of that ranking selects the same element, so the ranking is not built.
+           *
+           *  None at all is a tracked variant with nowhere to draw stock from — bad data about the
+           *  variant, not a shopper who arrived too late. Named here rather than left to the
+           *  resolve below, which would only be able to report the empty id it was handed. */
+          const locationId = item.locationIds[0]
+          if (!locationId) {
+            throw new WorkflowTerminalError({
+              type: ErrorTypes.INVALID_DATA,
+              message: `Variant "${item.variantId}" is tracked, but its inventory item "${item.inventoryItemId}" is stocked at no location`,
+            })
+          }
 
-        if (confirmInput.items.length === 0) return []
-
-        const reservations = await inventoryService.createReservationItems(
-          confirmInput.items.map((item) => ({
+          return {
             inventoryItemId: item.inventoryItemId,
-            locationId: item.locationIds[0] ?? '',
+            locationId,
             quantity: item.quantity * item.requiredQuantity,
             lineItemId: item.lineItemId,
-          })),
-        )
+            // Carried onto the row rather than re-read from the variant when the reservation is
+            // released: the flag can be turned off while the order it was taken under is open.
+            allowBackorder: item.allowBackorder,
+          }
+        })
 
-        return reservations.map((r) => r.id)
+        if (reservationInput.length === 0) return EMPTY_RESERVATION
+
+        // `locationId` crosses a module boundary, so it carries no foreign key (ADR-0004).
+        // Resolving before the write is what stands in for one: an id naming no Stock Location
+        // fails here rather than silently at fulfillment, when the units are already sold.
+        const stockLocationService = container.resolve<IStockLocationModuleService>(Modules.STOCK_LOCATION)
+        await stockLocationService.resolveStockLocations(reservationInput.map((item) => item.locationId))
+
+        const reservations = await inventoryService.createReservationItems(reservationInput)
+
+        /** The levels the reservations moved, carried out of the step so the final one can
+         *  announce them. Ids only: the quantities are read at publish time, because a step's
+         *  return value is what a retry replays rather than what the shelf holds. */
+        const levelIds = [
+          ...new Set(
+            reservationInput.flatMap((item) =>
+              levels
+                .filter(
+                  (level) => level.inventoryItemId === item.inventoryItemId && level.locationId === item.locationId,
+                )
+                .map((level) => level.id),
+            ),
+          ),
+        ]
+
+        return { reservationIds: reservations.map((reservation) => reservation.id), levelIds }
       },
-      async (ids, { container }) => {
-        if (ids.length === 0) return
+      async (result, { container }) => {
+        if (!result || result.reservationIds.length === 0) return
         const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-        await inventoryService.softDeleteReservationItems(ids)
+        await inventoryService.softDeleteReservationItems(result.reservationIds)
       },
     )
 
@@ -581,7 +639,34 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
      *  with nothing to say it had. */
     await ctx.step('publish-order-placed', async ({ container }) => {
       const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+
+      /** The reservation this checkout took is one of the three ways Available Quantity falls, and
+       *  it is announced from here rather than from `reserve-inventory` for the reason that step
+       *  is not the last one: a checkout that unwinds releases what it reserved, and a low-stock
+       *  alert already sent about a shelf that filled back up cannot be taken back.
+       *
+       *  Read before the first emit, not between the two. `emit` cannot reject but this read can,
+       *  and a throw after `order.placed` had gone out would compensate a workflow whose event had
+       *  already escaped — the confirmation email sent for an order the unwind then removed.
+       *
+       *  The quantities are re-read rather than carried, so what is published is what the level
+       *  holds now — including whatever else moved it between the reservation and here. */
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      const levels =
+        reserved.levelIds.length > 0 ? await inventoryService.listInventoryLevels({ id: reserved.levelIds }) : []
+
       await bus.emit('order.placed', { id: order.id })
+
+      await Promise.all(
+        levels.map((level) =>
+          bus.emit('inventory.available_decreased', {
+            id: level.id,
+            version: level.version,
+            stockedQuantity: level.stockedQuantity,
+            reservedQuantity: level.reservedQuantity,
+          }),
+        ),
+      )
     })
 
     return order

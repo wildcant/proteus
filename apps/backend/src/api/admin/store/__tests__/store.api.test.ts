@@ -133,6 +133,33 @@ test.describe('POST /admin/store', () => {
     expect(body.store.defaultRegionId).toBeNull()
   })
 
+  test('sets the low-stock threshold, and clears it when the body sends null', async ({ expect, factories }) => {
+    // The setting is useless unless it can be set, and `null` is the only way to say "no low state
+    // at all" — one number drives both the shopkeeper's alert and the shopper's "only N left" line.
+    await factories.create.store({ name: 'Proteus' })
+
+    const set = await updateStore({ lowStockThreshold: 5 })
+    expect(set.body.store.lowStockThreshold).toBe(5)
+
+    // Renaming leaves it where it was: an omitted field means unchanged, not cleared.
+    const renamed = await updateStore({ name: 'Renamed' })
+    expect(renamed.body.store.lowStockThreshold).toBe(5)
+
+    const cleared = await updateStore({ lowStockThreshold: null })
+    expect(cleared.body.store.lowStockThreshold).toBeNull()
+  })
+
+  test('refuses a threshold of zero, which would read as on and behave as off', async ({ expect, factories }) => {
+    // `low` is `available <= threshold`, and nothing in stock is ever at or below zero. A merchant
+    // who wants the low state off clears the field.
+    await factories.create.store({ name: 'Proteus', lowStockThreshold: 5 })
+
+    const { status } = await api.post<ApiErrorBody>('/admin/store', { lowStockThreshold: 0 })
+
+    expect(status).toBe(400)
+    expect((await getStore()).body.store.lowStockThreshold).toBe(5)
+  })
+
   test('refuses a default region that does not exist, and changes nothing', async ({ expect, factories }) => {
     // `store.default_region_id` carries no foreign key — regions are another module — so an id
     // naming nothing would be stored happily and read back as a storefront serving from nowhere.
