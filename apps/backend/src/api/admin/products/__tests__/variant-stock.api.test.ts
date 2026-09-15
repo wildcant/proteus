@@ -78,6 +78,38 @@ test.describe('PUT /admin/products/:id/variants/:variantId/stock', () => {
     expect(listed.body.variants).toContainEqual(expect.objectContaining({ id: variant.id, availableQuantity: 2 }))
   })
 
+  /**
+   * The admin stock write is the third way Available Quantity falls, and the only one with no
+   * workflow behind it. Asserted on the notification rather than on the emit: the publish alone
+   * would pass with nothing listening, and the row is what the shopkeeper's bell renders.
+   *
+   * The suite pins the in-process adapter, which waits for its subscribers, so the row exists by
+   * the time the request resolves. On a real transport it would not, and nothing here may be read
+   * as a promise that it does.
+   */
+  test('a correction downwards past the threshold alerts the feed; one upwards says nothing', async ({
+    expect,
+    factories,
+    service,
+  }) => {
+    await using _store = await factories.create.store({ lowStockThreshold: 5 })
+    const { product, variant } = await createTrackedVariant(service)
+
+    await api.put(`/admin/products/${product.id}/variants/${variant.id}/stock`, { stockedQuantity: 9 })
+    expect(await service.read.notifications(api.container, { channel: 'feed' })).toEqual([])
+
+    await api.put(`/admin/products/${product.id}/variants/${variant.id}/stock`, { stockedQuantity: 2 })
+
+    expect(await service.read.notifications(api.container, { channel: 'feed' })).toMatchObject([
+      {
+        template: 'low-stock',
+        resourceType: 'product_variant',
+        resourceId: variant.id,
+        data: { href: `/products/${product.id}/variants/${variant.id}` },
+      },
+    ])
+  })
+
   test('shows no Available Quantity for an untracked variant and refuses a stock write', async ({
     expect,
     service,

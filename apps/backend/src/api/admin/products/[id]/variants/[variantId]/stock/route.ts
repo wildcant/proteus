@@ -1,4 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { EventBus } from '@core/event-bus/types.js'
 import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { IProductModuleService } from '@core/types/product/service.js'
@@ -49,9 +50,20 @@ export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult
     req.body.stockedQuantity,
   )
 
-  // TODO(inventory-events): when slice 12 defines the Available Quantity decrease event, publish
-  // it here when `updated.stockedQuantity < level.stockedQuantity` with the three quantities as
-  // its dispatch identity.
+  // A stock count corrected downwards is the third way Available Quantity falls, and the only one
+  // with no workflow behind it. Published after the write, so the quantities it carries are the
+  // ones the row now holds; a count that went up or stayed put announces nothing, because
+  // `alert-low-stock` has nothing to say about a shelf that just grew.
+  if (updated.stockedQuantity < level.stockedQuantity) {
+    const bus = req.scope.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    await bus.emit('inventory.available_decreased', {
+      id: updated.id,
+      version: updated.version,
+      stockedQuantity: updated.stockedQuantity,
+      reservedQuantity: updated.reservedQuantity,
+    })
+  }
+
   return {
     status: 200,
     json: {

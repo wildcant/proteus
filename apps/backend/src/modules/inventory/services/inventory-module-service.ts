@@ -175,7 +175,7 @@ export class InventoryModuleService implements IInventoryModuleService {
           message: `Inventory level not found for item ${inventoryItemId} at location ${locationId}`,
         })
       }
-      return this.inventoryLevelRepository.update(
+      return this.inventoryLevelRepository.updateBumpingVersion(
         level.id,
         { stockedQuantity: level.stockedQuantity + adjustment },
         ctx,
@@ -209,7 +209,7 @@ export class InventoryModuleService implements IInventoryModuleService {
         })
       }
 
-      return this.inventoryLevelRepository.update(level.id, { stockedQuantity }, ctx)
+      return this.inventoryLevelRepository.updateBumpingVersion(level.id, { stockedQuantity }, ctx)
     })
   }
 
@@ -377,7 +377,7 @@ export class InventoryModuleService implements IInventoryModuleService {
         continue
       }
 
-      await this.inventoryLevelRepository.update(
+      await this.inventoryLevelRepository.updateBumpingVersion(
         level.id,
         { reservedQuantity: level.reservedQuantity + sign * quantity },
         context,

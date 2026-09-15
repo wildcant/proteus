@@ -1,5 +1,6 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { EventBus } from '@core/event-bus/types.js'
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
@@ -480,6 +481,69 @@ test.describe('completeCartWorkflow', () => {
         resourceId: order.id,
       },
     ])
+  })
+
+  /**
+   * The reservation is one of the three ways Available Quantity falls, and checkout announces it
+   * from the same final step the order is announced from — deliberately not from
+   * `reserve-inventory`, because a checkout that unwinds releases what it reserved and a low-stock
+   * alert already sent about a shelf that filled back up cannot be taken back.
+   *
+   * Asserted on the notification rather than on the emit alone: the publish would pass with
+   * nothing listening, and what a shopkeeper actually gets is the row.
+   */
+  test('announces the reservation, so a variant it leaves low reaches the admin feed', async ({
+    factories,
+    service,
+    expect,
+  }) => {
+    await using _store = await factories.create.store({ lowStockThreshold: 5 })
+    const { cart, inventoryLevel } = await service.create.checkoutReadyCart(container, { variant: {} })
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    await completeCartWorkflow.run({ cartId: cart.id })
+
+    // Stock was exactly what the cart ordered, so the reservation leaves nothing available.
+    expect(emit).toHaveBeenCalledWith('inventory.available_decreased', {
+      id: inventoryLevel?.id,
+      version: expect.any(Number),
+      stockedQuantity: inventoryLevel?.stockedQuantity,
+      reservedQuantity: inventoryLevel?.stockedQuantity,
+    })
+    expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
+      { template: 'low-stock', resourceType: 'product_variant' },
+    ])
+  })
+
+  /**
+   * The publish step emits twice, and the read that feeds the second emit can throw. Ordering that
+   * read *before* the first emit is what keeps a failure here from leaving `order.placed` already
+   * escaped — an event announcing an order the unwind then removes, and a confirmation email for a
+   * purchase that did not happen. `emit` itself cannot reject, so this read is the only fallible
+   * thing in the step, and failing it is the only way to expose the ordering.
+   *
+   * The compensation spec below cannot: it fails during payment authorization, several steps
+   * earlier, so it stays green whether the emit comes first or last.
+   */
+  test('emits nothing when the level read inside the publish step fails', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    /** Only the publish step's read fails. `reserve-inventory` reads levels too, by
+     *  `inventoryItemId`; failing that one would abort the workflow before the step under test
+     *  ran at all. The publish step is the only caller that asks by level `id`. */
+    const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+    const listInventoryLevels = inventoryService.listInventoryLevels.bind(inventoryService)
+    vi.spyOn(inventoryService, 'listInventoryLevels').mockImplementation(async (filters, config, context) => {
+      if (filters && 'id' in filters) throw new Error('level read unavailable')
+      return listInventoryLevels(filters, config, context)
+    })
+
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('level read unavailable')
+
+    expect(emit).not.toHaveBeenCalled()
   })
 
   test('publishes nothing when the checkout compensates', async ({ service, expect }) => {
