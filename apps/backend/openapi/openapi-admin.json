@@ -1009,6 +1009,15 @@
                   },
                   "allowedActions": {
                     "$ref": "#/components/schemas/AdminOrderAllowedActions"
+                  },
+                  "shippingAddress": {
+                    "$ref": "#/components/schemas/AdminOrderAddress"
+                  },
+                  "fulfillments": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminOrderFulfillment"
+                    }
                   }
                 },
                 "required": [
@@ -1016,7 +1025,9 @@
                   "shippingMethods",
                   "transactions",
                   "totals",
-                  "allowedActions"
+                  "allowedActions",
+                  "shippingAddress",
+                  "fulfillments"
                 ]
               }
             ]
@@ -1346,6 +1357,154 @@
           "canComplete",
           "canCancel",
           "canArchive"
+        ]
+      },
+      "AdminOrderAddress": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "company": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "firstName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "address1": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "address2": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "countryCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "province": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "firstName",
+          "lastName",
+          "address1",
+          "address2",
+          "city",
+          "countryCode",
+          "province",
+          "postalCode",
+          "phone"
+        ]
+      },
+      "AdminOrderFulfillment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "shippedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "deliveredAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "canceledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "providerId",
+          "locationId",
+          "shippedAt",
+          "deliveredAt",
+          "canceledAt",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
         ]
       },
       "AdminOrderActionResponse": {

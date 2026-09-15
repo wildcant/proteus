@@ -32,7 +32,7 @@ export function EditVariantForm({ productId, variant }: EditVariantFormProps) {
           <RouteDrawer.Header>
             <RouteDrawer.Title>Edit Variant</RouteDrawer.Title>
           </RouteDrawer.Header>
-          <RouteDrawer.Body className="space-y-4">
+          <RouteDrawer.Body className="space-y-6">
             {/* Derived from the combination below, so it is shown rather than edited. */}
             <form.Subscribe selector={(state) => state.values.combination?.label}>
               {(label) => (
@@ -46,8 +46,6 @@ export function EditVariantForm({ productId, variant }: EditVariantFormProps) {
               {(field) => <field.TextField label="Material" placeholder="Optional" />}
             </form.AppField>
 
-            {/* The list already excludes combinations other variants hold, and already includes this
-                variant's own — so moving it can never collide. */}
             {hasNoOptions ? null : (
               <form.AppField name="combination">
                 {(field) => (
@@ -62,9 +60,33 @@ export function EditVariantForm({ productId, variant }: EditVariantFormProps) {
               </form.AppField>
             )}
 
-            <form.AppField name="sku">
-              {(field) => <field.TextField label="SKU" placeholder="Optional" />}
-            </form.AppField>
+            <div className="border-t pt-6">
+              <h3 className="mb-4 font-medium text-sm">Stock & Inventory</h3>
+              <div className="space-y-4">
+                <form.AppField name="sku">
+                  {(field) => <field.TextField label="SKU" placeholder="Optional" />}
+                </form.AppField>
+                <form.AppField name="barcode">
+                  {(field) => <field.TextField label="Barcode" placeholder="Optional" />}
+                </form.AppField>
+                <form.AppField name="manageInventory">
+                  {(field) => (
+                    <field.SwitchField
+                      label="Manage inventory"
+                      description="When enabled, stock is tracked and adjusted on orders and returns."
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="allowBackorder">
+                  {(field) => (
+                    <field.SwitchField
+                      label="Allow backorders"
+                      description="When enabled, the variant can be purchased even when out of stock."
+                    />
+                  )}
+                </form.AppField>
+              </div>
+            </div>
           </RouteDrawer.Body>
           <RouteDrawer.Footer>
             <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>

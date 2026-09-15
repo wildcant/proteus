@@ -11,7 +11,13 @@ import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
  * not a column — it stands for the Option Combination the variant will carry, and the payload takes
  * its `optionValues`.
  */
-const editVariantSchema = AdminUpdateProductVariant.pick({ sku: true, material: true }).extend({
+const editVariantSchema = AdminUpdateProductVariant.pick({
+  sku: true,
+  barcode: true,
+  material: true,
+  manageInventory: true,
+  allowBackorder: true,
+}).extend({
   combination: z.custom<CombinationOption>().nullable(),
 })
 
@@ -31,7 +37,10 @@ export function useEditVariantForm({ productId, variant, current, params }: UseE
   const defaultValues: z.input<typeof editVariantSchema> = {
     combination: current ?? null,
     sku: variant.sku ?? '',
+    barcode: variant.barcode ?? '',
     material: variant.material ?? '',
+    manageInventory: variant.manageInventory,
+    allowBackorder: variant.allowBackorder,
   }
 
   const form = useAppForm({
@@ -43,7 +52,10 @@ export function useEditVariantForm({ productId, variant, current, params }: UseE
         // L/White retitles it server-side.
         const updated = await updateMutation.mutateAsync({
           sku: value.sku || null,
+          barcode: value.barcode || null,
           material: value.material || null,
+          manageInventory: value.manageInventory,
+          allowBackorder: value.allowBackorder,
           ...(value.combination ? { optionValues: value.combination.optionValues } : {}),
         })
         form.reset()
