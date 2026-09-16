@@ -7,10 +7,6 @@ export const PostOutput = AdminOrderActionResponse
 export const PostThrows = [...createOrderFulfillmentWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const order = await createOrderFulfillmentWorkflow.run({
-    orderId: req.params.id,
-    locationId: req.body.locationId,
-    fulfillmentData: req.body,
-  })
+  const order = await createOrderFulfillmentWorkflow.run({ orderId: req.params.id, fulfillmentData: req.body })
   return { status: 200, json: { order } }
 }

@@ -2,7 +2,9 @@ import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
 import {
   AdminOrder,
+  AdminOrderAddress,
   AdminOrderAllowedActions,
+  AdminOrderFulfillment,
   AdminOrderLineItem,
   AdminOrderShippingMethod,
   AdminOrderTotals,
@@ -15,6 +17,8 @@ const AdminOrderWithDetails = AdminOrder.extend({
   transactions: z.array(AdminOrderTransaction),
   totals: AdminOrderTotals,
   allowedActions: AdminOrderAllowedActions,
+  shippingAddress: AdminOrderAddress.nullable(),
+  fulfillments: z.array(AdminOrderFulfillment),
 })
 
 export const AdminOrderResponse = z.object({ order: AdminOrderWithDetails }).openapi('AdminOrderResponse')

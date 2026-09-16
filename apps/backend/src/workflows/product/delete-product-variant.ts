@@ -1,3 +1,4 @@
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { ILinkService } from '@core/types/link/service.js'
 import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import type { IProductModuleService } from '@core/types/product/service.js'
@@ -24,7 +25,28 @@ export const deleteProductVariantWorkflow = createWorkflow<DeleteProductVariantI
       await pricingService.softDeletePriceSets(dismissedPriceSetLinks.map((link) => link.priceSetId))
     })
 
-    // Step 3: Delete variant
+    // Step 3: Take the variant's inventory with it, so the inventory list does not fill with rows
+    // pointing at nothing. An item another variant still links to stays — the link that just went
+    // is not the only one holding it.
+    await ctx.step('delete-inventory-items', async ({ container }) => {
+      const dismissedInventoryLinks = dismissed.productVariantInventoryItem ?? []
+      if (dismissedInventoryLinks.length === 0) return
+
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+      const inventoryItemIds = [...new Set(dismissedInventoryLinks.map((link) => link.inventoryItemId))]
+
+      const surviving = await linkService
+        .repo('productVariantInventoryItem')
+        .find({ inventoryItemId: inventoryItemIds })
+      const stillLinked = new Set(surviving.map((link) => link.inventoryItemId))
+      const orphaned = inventoryItemIds.filter((itemId) => !stillLinked.has(itemId))
+      if (orphaned.length === 0) return
+
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      await inventoryService.softDeleteInventoryItems(orphaned)
+    })
+
+    // Step 4: Delete variant
     await ctx.step('delete-variant', async ({ container }) => {
       const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
       await productService.softDeleteProductVariants([input.variantId])

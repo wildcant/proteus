@@ -15,6 +15,8 @@ import type {
   AdminOptionCombinationListResponse,
   AdminProductVariantListResponse,
   AdminProductVariantResponse,
+  AdminSetVariantStock,
+  AdminSetVariantStockResponse,
   AdminUpdateProductVariant,
   AdminUpdateProductVariantResponse,
   AdminUpdateVariantPrices,
@@ -138,6 +140,21 @@ export const updateVariantPrices = (
       );
     }
   /**
+ * @summary Set stock for a product variant
+ */
+export const setVariantStock = (
+    id: string,
+    variantId: string,
+    adminSetVariantStock?: BodyType<AdminSetVariantStock>,
+ ) => {
+      return fetcher<AdminSetVariantStockResponse>(
+      {url: `/admin/products/${id}/variants/${variantId}/stock`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: adminSetVariantStock
+    },
+      );
+    }
+  /**
  * @summary Add or remove images for a product variant
  */
 export const batchVariantImages = (
@@ -160,4 +177,5 @@ export type GetProductVariantResult = NonNullable<Awaited<ReturnType<typeof getP
 export type UpdateProductVariantResult = NonNullable<Awaited<ReturnType<typeof updateProductVariant>>>
 export type DeleteProductVariantResult = NonNullable<Awaited<ReturnType<typeof deleteProductVariant>>>
 export type UpdateVariantPricesResult = NonNullable<Awaited<ReturnType<typeof updateVariantPrices>>>
+export type SetVariantStockResult = NonNullable<Awaited<ReturnType<typeof setVariantStock>>>
 export type BatchVariantImagesResult = NonNullable<Awaited<ReturnType<typeof batchVariantImages>>>

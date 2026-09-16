@@ -153,9 +153,12 @@ of work, still not done.
 ## Workflow tests run against real modules
 
 Workflow tests used to build a fake world per file: an object literal per module service, a fake
-`ILinkService`, an Awilix container, `setWorkflowEngine`. Twelve of the fourteen now use
-`createTestContainer` and real Postgres. **A typed mock-builder was considered and rejected** — the
-reasoning is worth keeping because the instinct recurs:
+`ILinkService`, an Awilix container, `setWorkflowEngine`. Every one of them now uses
+`createTestContainer` and real Postgres — `cancel-order` and `create-order-fulfillment`, the last
+two, moved over in ILLO-128 once reservations were keyed to the order's line items and both
+workflows could reach one. No hand-written mock is left under `src/workflows`. **A typed
+mock-builder was considered and rejected** — the reasoning is worth keeping because the instinct
+recurs:
 
 - It contradicts the suite's first principle: nothing about the module graph is stubbed, so a
   passing test means the wiring works.
@@ -210,10 +213,6 @@ Assert on the state a compensation restored, never on the call that restored it.
 
 - **Whether `verify.sh` still needs to run API tests only.** It was scoped that way because the
   full suite took ~190s. At ~40s the trade-off has changed.
-- **`cancel-order` and `create-order-fulfillment` are still on mocks**, blocked on a production
-  defect the migration uncovered: `complete-cart` keys reservations to *cart* line items while both
-  workflows look them up by *order* line item, so cancelling never releases stock and fulfilling a
-  tracked variant always throws. Written up under `.tasks/next-todos`.
 - **Truncating only tables that have rows.** `pg_stat_user_tables.n_live_tup` is lagged and not
   trustworthy for correctness, so this needs a tracked write-set. Probably not worth it — 25ms is
   already 4% of the original cost.

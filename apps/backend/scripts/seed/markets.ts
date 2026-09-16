@@ -31,6 +31,13 @@ export const MARKETS: Market[] = [
 const STORE_NAME = 'Proteus'
 
 /**
+ * Units available at or below which a variant counts as running low, for both the shopkeeper's
+ * alert and the shopper's "only N left" line. Seeded so a dev store demonstrates the low state
+ * without a merchant having to go and set it first.
+ */
+const LOW_STOCK_THRESHOLD = 5
+
+/**
  * A price is stored in whole currency units — `amount` is a `numeric`, and `formatPrice` hands it
  * to `Intl` unscaled — so the peso price is the dollar price times the rate, with nothing to
  * convert between minor and major units. The rate is round rather than accurate: this is seed data.
@@ -118,6 +125,7 @@ export async function seedMarkets({ regionService, storeService, paymentService,
     const store = await storeService.createStore({
       name: STORE_NAME,
       defaultRegionId,
+      lowStockThreshold: LOW_STOCK_THRESHOLD,
       // The first market is the default one, so its currency is the store's default too.
       currencies: MARKETS.map((market, index) => ({ currencyCode: market.currencyCode, isDefault: index === 0 })),
     })

@@ -30,6 +30,11 @@ export function EditStoreForm({ store }: { store: AdminStore }) {
                 />
               )}
             </form.Field>
+            {/* Cleared rather than zeroed to turn the low state off: the field empties to `null`,
+                and the API refuses a zero precisely so the two ways of saying "off" do not differ. */}
+            <form.AppField name="lowStockThreshold">
+              {(field) => <field.NumberField label="Low stock threshold" placeholder="e.g. 5" />}
+            </form.AppField>
           </RouteDrawer.Body>
           <RouteDrawer.Footer>
             <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>

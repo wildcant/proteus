@@ -12,6 +12,7 @@ CREATE TABLE "store" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('store_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"name" text NOT NULL,
 	"default_region_id" text,
+	"low_stock_threshold" integer,
 	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,

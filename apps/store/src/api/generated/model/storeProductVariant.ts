@@ -7,6 +7,7 @@
  */
 import type { StoreCalculatedPrice } from './storeCalculatedPrice.ts';
 import type { StoreProductVariantOptionValues } from './storeProductVariantOptionValues.ts';
+import type { StoreVariantStock } from './storeVariantStock.ts';
 
 export interface StoreProductVariant {
   id: string;
@@ -16,7 +17,7 @@ export interface StoreProductVariant {
   thumbnail: string | null;
   imageIds: string[];
   optionValues: StoreProductVariantOptionValues;
-  inStock: boolean;
+  stock: StoreVariantStock;
   /** @nullable */
   sku: string | null;
   /** @nullable */

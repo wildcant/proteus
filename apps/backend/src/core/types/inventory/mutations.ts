@@ -12,7 +12,6 @@ export type CreateInventoryItemDTO = {
   description?: string | null
   title?: string | null
   thumbnail?: string | null
-  metadata?: string | null
 }
 
 export type UpdateInventoryItemDTO = {
@@ -29,16 +28,13 @@ export type UpdateInventoryItemDTO = {
   description?: string | null
   title?: string | null
   thumbnail?: string | null
-  metadata?: string | null
 }
 
 export type CreateInventoryLevelDTO = {
   inventoryItemId: string
   locationId: string
   stockedQuantity?: number
-  reservedQuantity?: number
   incomingQuantity?: number
-  metadata?: string | null
 }
 
 export type CreateReservationItemDTO = {
@@ -50,5 +46,4 @@ export type CreateReservationItemDTO = {
   externalId?: string | null
   description?: string | null
   createdBy?: string | null
-  metadata?: string | null
 }

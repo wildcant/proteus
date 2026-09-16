@@ -49,6 +49,28 @@ export const StoreProductScopedOption = z
   .openapi('StoreProductScopedOption')
 export type StoreProductScopedOption = z.infer<typeof StoreProductScopedOption>
 
+/**
+ * What the shopper is told about a variant's stock — the answer, not the number behind it.
+ *
+ * A discriminated union rather than a quantity plus a rule, per ADR-0015: the backend owns the
+ * threshold comparison and the arithmetic, and the storefront renders whichever branch it is
+ * handed. `remaining` exists only on the branch that renders it, so there is no number to show
+ * when the copy does not call for one.
+ *
+ * There is deliberately no second "can I buy this" field. The disabled Add to cart button reading
+ * Sold out is a render of `soldOut`, not a boolean beside it — two fields that must agree is the
+ * drift this union replaced a boolean to kill.
+ */
+export const StoreVariantStock = z
+  .discriminatedUnion('state', [
+    z.object({ state: z.literal('available') }),
+    /** How many units are still buyable. Only ever at or below the store's low-stock threshold. */
+    z.object({ state: z.literal('low'), remaining: z.number() }),
+    z.object({ state: z.literal('soldOut') }),
+  ])
+  .openapi('StoreVariantStock')
+export type StoreVariantStock = z.infer<typeof StoreVariantStock>
+
 export const StoreProductVariant = z
   .object({
     id: z.string(),
@@ -62,8 +84,7 @@ export const StoreProductVariant = z
      * ever compares these, and the labels already ship once on `product.options`.
      */
     optionValues: z.record(z.string(), z.string()),
-    /** Whether every inventory item this variant needs covers its required quantity. */
-    inStock: z.boolean(),
+    stock: StoreVariantStock,
     sku: z.string().nullable(),
     barcode: z.string().nullable(),
     material: z.string().nullable(),
@@ -94,7 +115,17 @@ export const StoreProduct = z
   .openapi('StoreProduct')
 export type StoreProduct = z.infer<typeof StoreProduct>
 
+/**
+ * A product as the grid draws it: no variants, so the stock answer arrives at the product's grain
+ * rather than the variant's.
+ *
+ * Sold-out products stay in the list. Unlike a product with no price in this market — which has no
+ * amount to render and so cannot be drawn at all — a sold-out product renders fine, and delisting
+ * it would discard an indexed URL for a shopper who is looking for exactly it.
+ */
 export const StoreProductListItem = StoreProduct.extend({
   startingPrice: StoreCalculatedPrice.optional(),
+  /** Whether no variant of this product can be bought. */
+  soldOut: z.boolean(),
 }).openapi('StoreProductListItem')
 export type StoreProductListItem = z.infer<typeof StoreProductListItem>

@@ -1,47 +1,33 @@
-import type { CartLineItemDTO } from '@core/types/cart/common.js'
 import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
 import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
-import { indexVariantInventory } from './variant-inventory.js'
-
-type ConfirmInventoryItem = {
-  lineItemId: string
-  variantId: string
-  inventoryItemId: string
-  requiredQuantity: number
-  quantity: number
-  locationIds: string[]
-}
+import {
+  type InventoryLineItem,
+  type LineItemInventoryCheck,
+  prepareLineItemInventoryChecks,
+  type VariantStockFlags,
+} from './variant-inventory.js'
 
 export type ConfirmInventoryResult = {
   cartId: string
-  items: ConfirmInventoryItem[]
+  items: LineItemInventoryCheck[]
 }
 
 /**
  * What a cart already holding its line items needs confirmed in stock.
  *
- * Keyed by line item, unlike {@link prepareVariantInventoryChecks}, because the reservations
- * `complete-cart` writes from this point back at the row they were taken for.
+ * The cart id travels with the items because this is `confirm-inventory`'s output, and the caller
+ * that reads it back is answering about a cart. Reservation shares the fan-out and not this shape:
+ * it runs after the order exists and keys to the order's line items instead.
  */
 export function prepareConfirmInventoryInput(data: {
   cartId: string
-  lineItems: CartLineItemDTO[]
+  lineItems: InventoryLineItem[]
+  variants: VariantStockFlags[]
   mappings: ProductVariantInventoryItemDTO[]
   levels: InventoryLevelDTO[]
 }): ConfirmInventoryResult {
-  const backingByVariantId = indexVariantInventory(data.mappings, data.levels)
-
-  const items = data.lineItems.flatMap((lineItem) => {
-    const variantId = lineItem.variantId
-    if (!variantId) return []
-
-    return (backingByVariantId.get(variantId) ?? []).map((backing) => ({
-      ...backing,
-      lineItemId: lineItem.id,
-      variantId,
-      quantity: lineItem.quantity,
-    }))
-  })
-
-  return { cartId: data.cartId, items }
+  return {
+    cartId: data.cartId,
+    items: prepareLineItemInventoryChecks(data.lineItems, data.variants, data.mappings, data.levels),
+  }
 }

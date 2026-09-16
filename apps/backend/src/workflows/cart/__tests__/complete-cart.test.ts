@@ -1,5 +1,6 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { EventBus } from '@core/event-bus/types.js'
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { IPaymentModuleService } from '@core/types/payment/service.js'
@@ -20,13 +21,19 @@ test.beforeEach(async ({ createTestContainer }) => {
 
 test.describe('completeCartWorkflow', () => {
   test('turns the cart into an order, reserves its stock, and locks the cart', async ({ service, expect }) => {
-    const { cart, lineItem, paymentCollection } = await service.create.checkoutReadyCart(container)
+    const { cart, lineItem, paymentCollection, inventoryItem, inventoryLevel } =
+      await service.create.checkoutReadyCart(container)
     assertDefined(paymentCollection)
+    assertDefined(inventoryItem)
+    assertDefined(inventoryLevel)
+    const availableBefore = await service.read.availableQuantity(container, inventoryItem.id)
 
     const order = await completeCartWorkflow.run({ cartId: cart.id })
 
     expect(order).toMatchObject({ status: 'pending', email: cart.email, currencyCode: cart.currencyCode })
-    expect(await service.read.orderLineItems(container, order.id)).toMatchObject([{ title: lineItem.title }])
+    const [orderLineItem] = await service.read.orderLineItems(container, order.id)
+    assertDefined(orderLineItem)
+    expect(orderLineItem).toMatchObject({ title: lineItem.title })
     expect(await service.read.orderShippingMethods(container, order.id)).toHaveLength(1)
 
     // Both links go out as one batch, order↔cart first so the unique index on `cartId` rejects
@@ -38,7 +45,25 @@ test.describe('completeCartWorkflow', () => {
       paymentCollectionId: paymentCollection.id,
     })
 
-    expect(await service.read.reservationItems(container)).toHaveLength(1)
+    // Keyed to the *order*'s line item, which is the id cancelling and fulfilling look a
+    // reservation up by. Against the cart's — the row the shopper's checkout already abandoned —
+    // every reservation the shop holds is unreachable for ever.
+    expect(await service.read.reservationItems(container)).toMatchObject([
+      {
+        lineItemId: orderLineItem.id,
+        inventoryItemId: inventoryItem.id,
+        locationId: inventoryLevel.locationId,
+        quantity: lineItem.quantity,
+      },
+    ])
+
+    // The counter behind availability moved with it, so the units this order took stop being
+    // offered to the next shopper the moment the cart completes.
+    expect(await service.read.inventoryLevels(container, { id: inventoryLevel.id })).toMatchObject([
+      { reservedQuantity: lineItem.quantity },
+    ])
+    expect(await service.read.availableQuantity(container, inventoryItem.id)).toBe(availableBefore - lineItem.quantity)
+
     expect(await service.read.cart(container, cart.id)).toMatchObject({ completedAt: expect.any(Date) })
   })
 
@@ -116,6 +141,177 @@ test.describe('completeCartWorkflow', () => {
     expect(await service.read.linkRepo(container, 'orderCart').findByCartId(cart.id)).toBeNull()
     expect(await service.read.reservationItems(container)).toEqual([])
     expect(await service.read.cart(container, cart.id)).toMatchObject({ completedAt: null })
+  })
+
+  /**
+   * The oversell this whole feature exists to remove, in the shape a shopper actually meets it:
+   * not two clicks on one cart, but two carts over the same last unit. The concurrency test in
+   * `cart.api.test.ts` holds the line on `order_cart.cart_id`, which says nothing about a second
+   * cart — only the reservation the first order left behind does.
+   *
+   * Sequential on purpose. Two checkouts racing each other through the coverage check is the lost
+   * update recorded by the `test.fails` marker in the inventory module's own suite, and locking is
+   * a separate item.
+   */
+  test('refuses a second cart for the unit the first order took', async ({ service, expect }) => {
+    const first = await service.create.checkoutReadyCart(container, { lineItem: { quantity: 1 } })
+    assertDefined(first.variantId)
+    assertDefined(first.inventoryItem)
+    // The same variant with no stock of its own: the single unit `first` stocked is all there is.
+    const second = await service.create.checkoutReadyCart(container, {
+      lineItem: { variantId: first.variantId, quantity: 1 },
+      inventory: null,
+    })
+    assertDefined(second.paymentCollection)
+
+    const order = await completeCartWorkflow.run({ cartId: first.cart.id })
+
+    const error = await completeCartWorkflow.run({ cartId: second.cart.id }).catch((raised) => raised)
+
+    expect(error).toMatchObject({
+      type: ErrorTypes.NOT_ALLOWED,
+      message: expect.stringContaining('Not enough stock'),
+    })
+    // Refused, not half-succeeded: no second order, and the reserve step runs ahead of
+    // authorization, so the shopper it turned away was never charged.
+    expect(await service.read.orders(container)).toMatchObject([{ id: order.id }])
+    expect(await service.read.cart(container, second.cart.id)).toMatchObject({ completedAt: null })
+    const collection = await service.read.paymentCollection(container, second.paymentCollection.id)
+    expect(collection.payments ?? []).toEqual([])
+    // The first order still holds the unit — the refusal cost it nothing.
+    expect(await service.read.availableQuantity(container, first.inventoryItem.id)).toBe(0)
+    expect(await service.read.reservationItems(container)).toHaveLength(1)
+  })
+
+  /**
+   * A tracked variant with no level anywhere used to reach `resolveStockLocations` as an empty
+   * string and be refused as `Unknown stock location id: ""` — the right error type for the wrong
+   * reason, naming nothing anyone could act on. It is bad data about the variant, not a shopper
+   * who arrived too late, so it names the variant and the item that has nowhere to stock it.
+   */
+  test('refuses a tracked variant whose inventory item has no location', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(container, { inventory: null })
+    assertDefined(variantId)
+    const { inventoryItem } = await service.create.trackedVariantWithoutStock(container, { variantId })
+
+    const error = await completeCartWorkflow.run({ cartId: cart.id }).catch((raised) => raised)
+
+    expect(error.cause).toMatchObject({ type: ErrorTypes.INVALID_DATA })
+    expect(error.message).toContain(variantId)
+    expect(error.message).toContain(inventoryItem.id)
+    expect(error.message).not.toContain('Unknown stock location')
+    expect(await service.read.orders(container)).toEqual([])
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
+  test('reserves nothing for a variant the shop does not track', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(container, {
+      variant: { manageInventory: false },
+      lineItem: { quantity: 4 },
+      inventory: { level: { stockedQuantity: 0 } },
+    })
+    assertDefined(variantId)
+
+    const order = await completeCartWorkflow.run({ cartId: cart.id })
+
+    // Stocked at nothing and bought four deep: an untracked variant is dropped before the
+    // reservation, so there is no shelf for the order to take units off. The inventory item is
+    // there on purpose — the pass has to come from the flag, not from nothing being linked.
+    expect(await service.read.order(container, order.id)).toMatchObject({ id: order.id })
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
+  test('reserves a backorder variant past what is on the shelf, and says so on the row', async ({
+    service,
+    expect,
+  }) => {
+    const { cart, inventoryItem, inventoryLevel } = await service.create.checkoutReadyCart(container, {
+      variant: { allowBackorder: true },
+      lineItem: { quantity: 3 },
+      inventory: { level: { stockedQuantity: 1 } },
+    })
+    assertDefined(inventoryItem)
+    assertDefined(inventoryLevel)
+
+    await completeCartWorkflow.run({ cartId: cart.id })
+
+    // The flag travels onto the row so releasing it is symmetric with writing it: cancelling this
+    // order has to give back three units it was never covered for.
+    expect(await service.read.reservationItems(container)).toMatchObject([{ quantity: 3, allowBackorder: true }])
+    // Reserved past the shelf is the point — available goes negative rather than the checkout
+    // being refused, which is what the same cart without the flag gets.
+    expect(await service.read.inventoryLevels(container, { id: inventoryLevel.id })).toMatchObject([
+      { stockedQuantity: 1, reservedQuantity: 3 },
+    ])
+    expect(await service.read.availableQuantity(container, inventoryItem.id)).toBe(-2)
+  })
+
+  test('refuses a backorder variant with no level at any location', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(container, {
+      variant: { allowBackorder: true },
+      inventory: null,
+    })
+    assertDefined(variantId)
+    await service.create.trackedVariantWithoutStock(container, { variantId })
+
+    const error = await completeCartWorkflow.run({ cartId: cart.id }).catch((raised) => raised)
+
+    // Backorder skips the coverage check and nothing else. With no level there is no row for
+    // fulfillment to adjust, so the location still has to be one the item is held at.
+    expect(error.cause).toMatchObject({ type: ErrorTypes.INVALID_DATA })
+    expect(error.message).toContain(variantId)
+    expect(await service.read.orders(container)).toEqual([])
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
+  test('refuses a tracked variant with no inventory item behind it', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(container, {
+      variant: {},
+      inventory: null,
+    })
+    assertDefined(variantId)
+
+    const error = await completeCartWorkflow.run({ cartId: cart.id }).catch((raised) => raised)
+
+    // The arrangement every admin-created variant is in until slice 7 creates its inventory: the
+    // catalogue says to track it and nothing does. Sold without limit before the flags were read.
+    expect(error.cause).toMatchObject({ type: ErrorTypes.INVALID_DATA })
+    expect(error.message).toContain(variantId)
+    expect(await service.read.orders(container)).toEqual([])
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
+  /**
+   * Releasing the rows is only half of a rollback: `reservedQuantity` is a counter, and a release
+   * that hid the reservation without moving it back would leave those units unsellable for ever.
+   * Asserted against a level that already has a unit committed to another order, so "back where it
+   * was" is a number this test could get wrong rather than a zero it starts at.
+   */
+  test('a compensated checkout gives the reserved units back', async ({ service, expect }) => {
+    const { cart, inventoryItem, inventoryLevel } = await service.create.checkoutReadyCart(container, {
+      lineItem: { quantity: 1 },
+      inventory: { level: { stockedQuantity: 3 } },
+    })
+    assertDefined(inventoryItem)
+    assertDefined(inventoryLevel)
+    await service.create.reservedStock(container, {
+      inventoryItemId: inventoryItem.id,
+      locationId: inventoryLevel.locationId,
+      quantity: 1,
+    })
+    const availableBefore = await service.read.availableQuantity(container, inventoryItem.id)
+
+    vi.spyOn(
+      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
+      'authorizePaymentSession',
+    ).mockRejectedValueOnce(new Error('provider unavailable'))
+
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
+
+    expect(await service.read.inventoryLevels(container, { id: inventoryLevel.id })).toMatchObject([
+      { reservedQuantity: 1 },
+    ])
+    expect(await service.read.availableQuantity(container, inventoryItem.id)).toBe(availableBefore)
   })
 
   /**
@@ -203,6 +399,26 @@ test.describe('completeCartWorkflow', () => {
     expect(await service.read.cartAddresses(container, { cartId: cart.id })).toHaveLength(2)
   })
 
+  /**
+   * `locationId` crosses a module boundary, so the level and the reservation carry no foreign key
+   * to a Stock Location (ADR-0004). Resolving the id before the reservation is written is what
+   * stands in for one — without it a typo survives checkout and surfaces at fulfillment, once the
+   * units are already sold.
+   */
+  test('refuses a reservation whose location names no Stock Location', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container, {
+      inventory: { level: { locationId: 'sloc_gone' } },
+    })
+
+    const error = await completeCartWorkflow.run({ cartId: cart.id }).catch((e) => e)
+
+    expect(error.type).toBe(ErrorTypes.INVALID_DATA)
+    expect(error.message).toContain('sloc_gone')
+    // The order the reserve step runs after is unwound with it, so nothing half-succeeded.
+    expect(await service.read.orders(container)).toEqual([])
+    expect(await service.read.reservationItems(container)).toEqual([])
+  })
+
   test('refuses a line item with no variant', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container, {
       lineItem: { variantId: null },
@@ -265,6 +481,69 @@ test.describe('completeCartWorkflow', () => {
         resourceId: order.id,
       },
     ])
+  })
+
+  /**
+   * The reservation is one of the three ways Available Quantity falls, and checkout announces it
+   * from the same final step the order is announced from — deliberately not from
+   * `reserve-inventory`, because a checkout that unwinds releases what it reserved and a low-stock
+   * alert already sent about a shelf that filled back up cannot be taken back.
+   *
+   * Asserted on the notification rather than on the emit alone: the publish would pass with
+   * nothing listening, and what a shopkeeper actually gets is the row.
+   */
+  test('announces the reservation, so a variant it leaves low reaches the admin feed', async ({
+    factories,
+    service,
+    expect,
+  }) => {
+    await using _store = await factories.create.store({ lowStockThreshold: 5 })
+    const { cart, inventoryLevel } = await service.create.checkoutReadyCart(container, { variant: {} })
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    await completeCartWorkflow.run({ cartId: cart.id })
+
+    // Stock was exactly what the cart ordered, so the reservation leaves nothing available.
+    expect(emit).toHaveBeenCalledWith('inventory.available_decreased', {
+      id: inventoryLevel?.id,
+      version: expect.any(Number),
+      stockedQuantity: inventoryLevel?.stockedQuantity,
+      reservedQuantity: inventoryLevel?.stockedQuantity,
+    })
+    expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
+      { template: 'low-stock', resourceType: 'product_variant' },
+    ])
+  })
+
+  /**
+   * The publish step emits twice, and the read that feeds the second emit can throw. Ordering that
+   * read *before* the first emit is what keeps a failure here from leaving `order.placed` already
+   * escaped — an event announcing an order the unwind then removes, and a confirmation email for a
+   * purchase that did not happen. `emit` itself cannot reject, so this read is the only fallible
+   * thing in the step, and failing it is the only way to expose the ordering.
+   *
+   * The compensation spec below cannot: it fails during payment authorization, several steps
+   * earlier, so it stays green whether the emit comes first or last.
+   */
+  test('emits nothing when the level read inside the publish step fails', async ({ service, expect }) => {
+    const { cart } = await service.create.checkoutReadyCart(container)
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const emit = vi.spyOn(bus, 'emit')
+
+    /** Only the publish step's read fails. `reserve-inventory` reads levels too, by
+     *  `inventoryItemId`; failing that one would abort the workflow before the step under test
+     *  ran at all. The publish step is the only caller that asks by level `id`. */
+    const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+    const listInventoryLevels = inventoryService.listInventoryLevels.bind(inventoryService)
+    vi.spyOn(inventoryService, 'listInventoryLevels').mockImplementation(async (filters, config, context) => {
+      if (filters && 'id' in filters) throw new Error('level read unavailable')
+      return listInventoryLevels(filters, config, context)
+    })
+
+    await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('level read unavailable')
+
+    expect(emit).not.toHaveBeenCalled()
   })
 
   test('publishes nothing when the checkout compensates', async ({ service, expect }) => {

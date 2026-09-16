@@ -112,6 +112,17 @@ export class InventoryModuleService implements IInventoryModuleService {
     })
   }
 
+  /**
+   * Brings back exactly what the matching soft delete hid — the item, its levels and the stock
+   * they hold. This is what makes untracking a variant a reversible act rather than a destructive
+   * one; nothing else calls it.
+   */
+  async restoreInventoryItems(itemIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.inventoryItemRepository.restore(itemIds, ctx)
+    })
+  }
+
   async listInventoryLevels(
     filters?: FilterableInventoryLevelProps,
     config?: FindConfig<InventoryLevelDTO>,
@@ -164,7 +175,7 @@ export class InventoryModuleService implements IInventoryModuleService {
           message: `Inventory level not found for item ${inventoryItemId} at location ${locationId}`,
         })
       }
-      return this.inventoryLevelRepository.update(
+      return this.inventoryLevelRepository.updateBumpingVersion(
         level.id,
         { stockedQuantity: level.stockedQuantity + adjustment },
         ctx,
@@ -172,22 +183,89 @@ export class InventoryModuleService implements IInventoryModuleService {
     })
   }
 
+  /**
+   * Replaces the physical shelf count while preserving the units already committed to orders.
+   * The check and write share one transaction, so the route cannot accidentally make Available
+   * Quantity negative by setting Stocked Quantity below the maintained reservation counter.
+   */
+  async setInventoryLevelStockedQuantity(
+    inventoryItemId: string,
+    locationId: string,
+    stockedQuantity: number,
+    context?: Context,
+  ): Promise<InventoryLevelDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const [level] = await this.inventoryLevelRepository.find({ inventoryItemId, locationId }, undefined, ctx)
+      if (!level) {
+        throw new AppError({
+          type: ErrorTypes.NOT_FOUND,
+          message: `Inventory level not found for item ${inventoryItemId} at location ${locationId}`,
+        })
+      }
+      if (stockedQuantity < level.reservedQuantity) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Stocked Quantity cannot be set to ${stockedQuantity}: ${level.reservedQuantity} unit(s) are reserved. Set it to at least ${level.reservedQuantity}.`,
+        })
+      }
+
+      return this.inventoryLevelRepository.updateBumpingVersion(level.id, { stockedQuantity }, ctx)
+    })
+  }
+
+  /**
+   * Writes reservations and moves `reservedQuantity` by the same amount in the same transaction,
+   * which is what makes available quantity reflect orders in flight rather than the column default.
+   *
+   * Two guards, in order: every item/location pair needs a level row, and — unless the reservation
+   * allows backorder — available quantity has to cover what is asked for. Backorder skips only the
+   * second; it still needs the level, which is what guarantees the fulfillment adjustment is never
+   * handed a location it cannot find.
+   *
+   * Reading the level and writing the sum back is not atomic, so two concurrent reservations can
+   * both take the last unit. That is proved by a deliberately failing test rather than fixed here —
+   * locking is its own item.
+   */
   async createReservationItems(data: CreateReservationItemDTO[], context?: Context): Promise<ReservationItemDTO[]> {
+    if (data.length === 0) return []
+
     this.logger.debug(`Creating ${data.length} reservation item(s)`)
     return this.withTransaction(context, async (ctx) => {
-      return this.reservationItemRepository.createMany(data, ctx)
+      const levels = await this.findLevelsFor(data, ctx)
+      this.assertEveryPairHasALevel(data, levels)
+      this.assertCoverage(data, levels)
+
+      const created = await this.reservationItemRepository.createMany(data, ctx)
+      await this.moveReservedQuantity(data, levels, 1, ctx)
+
+      return created
     })
   }
 
+  /** Releases the reservations that are still live, so a repeated release subtracts once. */
   async softDeleteReservationItems(ids: string[], context?: Context): Promise<void> {
+    if (ids.length === 0) return
+
     return this.withTransaction(context, async (ctx) => {
+      const released = await this.reservationItemRepository.find({ id: ids }, undefined, ctx)
       await this.reservationItemRepository.softDelete(ids, ctx)
+
+      const levels = await this.findLevelsFor(released, ctx)
+      await this.moveReservedQuantity(released, levels, -1, ctx)
     })
   }
 
+  /** Re-reserves only the ones that were actually hidden, so a repeated restore adds once. */
   async restoreReservationItems(ids: string[], context?: Context): Promise<void> {
+    if (ids.length === 0) return
+
     return this.withTransaction(context, async (ctx) => {
+      const rows = await this.reservationItemRepository.find({ id: ids }, { withDeleted: true }, ctx)
+      const reReserved = rows.filter((row) => row.deletedAt !== null)
       await this.reservationItemRepository.restore(ids, ctx)
+
+      const levels = await this.findLevelsFor(reReserved, ctx)
+      await this.moveReservedQuantity(reReserved, levels, 1, ctx)
     })
   }
 
@@ -198,4 +276,117 @@ export class InventoryModuleService implements IInventoryModuleService {
   ): Promise<ReservationItemDTO[]> {
     return this.reservationItemRepository.find(filters, config, context)
   }
+
+  /** The same read a page needs, with the total the pager has to show beside it. */
+  async listAndCountReservationItems(
+    filters?: FilterableReservationItemProps,
+    config?: FindConfig<ReservationItemDTO>,
+    context?: Context,
+  ): Promise<[ReservationItemDTO[], number]> {
+    return this.reservationItemRepository.findAndCount(filters, config, context)
+  }
+
+  /** The level rows behind these reservations, keyed by the item/location pair they name. */
+  private async findLevelsFor(
+    rows: { inventoryItemId: string; locationId: string }[],
+    context: Context,
+  ): Promise<Map<string, InventoryLevelDTO>> {
+    if (rows.length === 0) return new Map()
+
+    const levels = await this.inventoryLevelRepository.find(
+      { inventoryItemId: [...new Set(rows.map((row) => row.inventoryItemId))] },
+      undefined,
+      context,
+    )
+
+    return new Map(levels.map((level) => [levelKey(level), level]))
+  }
+
+  private assertEveryPairHasALevel(
+    rows: { inventoryItemId: string; locationId: string }[],
+    levels: Map<string, InventoryLevelDTO>,
+  ): void {
+    const missing = [...new Map(rows.map((row) => [levelKey(row), row])).values()].filter(
+      (row) => !levels.has(levelKey(row)),
+    )
+    if (missing.length === 0) return
+
+    throw new AppError({
+      type: ErrorTypes.NOT_FOUND,
+      message: missing
+        .map((row) => `Inventory level not found for item ${row.inventoryItemId} at location ${row.locationId}`)
+        .join('; '),
+    })
+  }
+
+  /**
+   * Demand is summed per level before it is compared, so two reservations for the same item at the
+   * same location cannot each pass a check the pair of them fails. Backordered rows are left out:
+   * the flag is what says this reservation may go past what is on the shelf.
+   */
+  private assertCoverage(data: CreateReservationItemDTO[], levels: Map<string, InventoryLevelDTO>): void {
+    const demand = new Map<string, number>()
+    for (const row of data) {
+      if (row.allowBackorder) continue
+      demand.set(levelKey(row), (demand.get(levelKey(row)) ?? 0) + row.quantity)
+    }
+
+    for (const [key, quantity] of demand) {
+      const level = levels.get(key)
+      if (!level) continue
+
+      const available = level.stockedQuantity - level.reservedQuantity
+      if (available >= quantity) continue
+
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: `Not enough stock to reserve ${quantity} of item ${level.inventoryItemId} at location ${level.locationId}: ${available} available`,
+      })
+    }
+  }
+
+  /**
+   * Moves the counter for every level the given reservations name.
+   *
+   * A pair with no level is skipped rather than raised, and that asymmetry is deliberate. On the
+   * create path it cannot happen — `assertEveryPairHasALevel` runs first — so the skip only ever
+   * describes a release: a reservation whose level row has gone between the reservation being
+   * written and being released. Releasing has to finish anyway. Refusing would strand the units
+   * *and* block the cancellation or fulfillment that was releasing them, which is worse than a
+   * counter that has nothing left to move. It is logged at warn rather than passed over in silence,
+   * because the two rows disagreeing is a data fault somebody has to look at — nothing deletes a
+   * level today, so this line firing at all means something new does.
+   */
+  private async moveReservedQuantity(
+    rows: { inventoryItemId: string; locationId: string; quantity: number }[],
+    levels: Map<string, InventoryLevelDTO>,
+    sign: 1 | -1,
+    context: Context,
+  ): Promise<void> {
+    const moved = new Map<string, number>()
+    for (const row of rows) {
+      moved.set(levelKey(row), (moved.get(levelKey(row)) ?? 0) + row.quantity)
+    }
+
+    for (const [key, quantity] of moved) {
+      const level = levels.get(key)
+      if (!level) {
+        this.logger.warn(
+          `Reserved quantity not moved by ${sign * quantity}: no inventory level for ${key}. A reservation names an item and location that has no level row.`,
+        )
+        continue
+      }
+
+      await this.inventoryLevelRepository.updateBumpingVersion(
+        level.id,
+        { reservedQuantity: level.reservedQuantity + sign * quantity },
+        context,
+      )
+    }
+  }
+}
+
+/** An inventory level is identified by its item and its location, never by one of them alone. */
+function levelKey(row: { inventoryItemId: string; locationId: string }): string {
+  return `${row.inventoryItemId}@${row.locationId}`
 }

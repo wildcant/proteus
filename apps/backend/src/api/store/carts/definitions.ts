@@ -2,7 +2,6 @@ import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
 import * as completeRoutes from './[id]/complete/route.js'
 import * as customerRoutes from './[id]/customer/route.js'
-import * as inventoryRoutes from './[id]/inventory/route.js'
 import * as lineItemByIdRoutes from './[id]/line-items/[lineId]/route.js'
 import * as lineItemRoutes from './[id]/line-items/route.js'
 import * as paymentProviderRoutes from './[id]/payment-providers/route.js'
@@ -127,18 +126,6 @@ export default [
     summary: 'Complete a cart (authorize payment and mark as completed)',
     tags: [Tags.CARTS],
     output: completeRoutes.PostOutput,
-  },
-  {
-    method: 'GET',
-    matcher: '/store/carts/:id/inventory',
-    handler: inventoryRoutes.GET,
-    throws: inventoryRoutes.GetThrows,
-    auth: 'optional',
-    input: inventoryRoutes.GetInput,
-    operationId: 'checkStoreCartInventory',
-    summary: 'Check inventory availability for a cart',
-    tags: [Tags.CARTS],
-    output: inventoryRoutes.GetOutput,
   },
   {
     method: 'POST',

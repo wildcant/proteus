@@ -65,7 +65,31 @@ export type IProductVariantInventoryItemRepository = {
   softDelete(ids: string[], context?: Context): Promise<void>
   restore(ids: string[], context?: Context): Promise<void>
   findByVariantIds(variantIds: string[], context?: Context): Promise<ProductVariantInventoryItemDTO[]>
+  /** The other direction, for a reader that starts from an Inventory Level rather than a variant. */
+  findByInventoryItemIds(inventoryItemIds: string[], context?: Context): Promise<ProductVariantInventoryItemDTO[]>
   getInventoryAvailability(variantIds: string[], context?: Context): Promise<VariantInventoryAvailabilityDTO[]>
+  listVariantStockAndCount(options: ListVariantStockOptions, context?: Context): Promise<[VariantStockDTO[], number]>
+}
+
+/** One tracked variant's stock, summed across the locations its Inventory Item is held at. */
+export type VariantStockDTO = {
+  id: string
+  sku: string | null
+  productId: string
+  productTitle: string
+  variantId: string
+  variantTitle: string | null
+  stockedQuantity: number
+  reservedQuantity: number
+  availableQuantity: number
+}
+
+export type ListVariantStockOptions = {
+  limit: number
+  offset: number
+  order?: Record<string, 'ASC' | 'DESC'>
+  /** At or below this many available units only. Omitted means every tracked variant. */
+  atOrBelow?: number
 }
 
 export type ICartProductRepository = {

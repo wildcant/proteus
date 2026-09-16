@@ -12,7 +12,7 @@ import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
 import { planLineItemActions } from './utils/plan-line-item-actions.js'
 import { prepareLineItemData } from './utils/prepare-line-item-data.js'
-import { prepareVariantInventoryChecks } from './utils/variant-inventory.js'
+import { missingInventoryItemMessage, prepareVariantInventoryChecks } from './utils/variant-inventory.js'
 
 /** What a shopper picks: which variant, and how many. Everything else is the catalogue's to say. */
 type AddToCartItem = {
@@ -168,6 +168,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
      */
     await ctx.step('confirm-inventory', async ({ container }) => {
       const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
       const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
 
@@ -181,14 +182,26 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       ]
 
       const variantIds = demands.map((demand) => demand.variantId)
+      /** Read again rather than carried down from `prepare-line-items`: a step's return value is
+       *  what a replay hands back, and the two flags are worth their own read at the point they
+       *  decide something. */
+      const variants = await productService.listProductVariants({ id: variantIds })
       const mappings = await linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds)
+
+      const missingInventoryItem = missingInventoryItemMessage(variants, mappings)
+      if (missingInventoryItem) {
+        throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: missingInventoryItem })
+      }
+
       const inventoryItemIds = [...new Set(mappings.map((mapping) => mapping.inventoryItemId))]
       const levels = await inventoryService.listInventoryLevels({ inventoryItemId: inventoryItemIds })
 
-      const checks = prepareVariantInventoryChecks(demands, mappings, levels)
+      /** A backorder is stock the shop promises before it has it, so it is asked to cover nothing;
+       *  an untracked variant never reached this list at all. */
+      const checks = prepareVariantInventoryChecks(demands, variants, mappings, levels).filter(
+        (check) => !check.allowBackorder,
+      )
       if (!checks.length) {
-        // A variant with no inventory item behind it is not stock-managed, which is what the
-        // storefront already treats as buyable.
         logger.debug('[add-to-cart] No stock-managed variants in the addition, skipping')
         return
       }

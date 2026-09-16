@@ -1,4 +1,7 @@
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminOrderResponse, IdParams } from '@proteus/http-schemas/admin'
@@ -8,17 +11,38 @@ export const GetOutput = AdminOrderResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const orderService = req.scope.resolve<IOrderModuleService>(Modules.ORDER)
-  const [order, lineItems, shippingMethods, transactions] = await Promise.all([
+  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+
+  const [order, lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([
     orderService.retrieveOrder(req.params.id),
     orderService.listOrderLineItems({ orderId: req.params.id }),
     orderService.listOrderShippingMethods({ orderId: req.params.id }),
     orderService.listOrderTransactions({ orderId: req.params.id }),
+    orderService.retrieveOrderAddress(req.params.id, 'shipping'),
   ])
+
+  const orderFulfillmentLink = await linkService.repo('orderFulfillment').findByOrderId(req.params.id)
+  const fulfillments = orderFulfillmentLink
+    ? [await fulfillmentService.retrieveFulfillment(orderFulfillmentLink.fulfillmentId)]
+    : []
+
   const enrichedLineItems = orderService.enrichLineItems(lineItems)
   const totals = orderService.computeOrderTotals({ lineItems, shippingMethods, transactions })
   const allowedActions = orderService.computeAllowedActions(order)
   return {
     status: 200,
-    json: { order: { ...order, lineItems: enrichedLineItems, shippingMethods, transactions, totals, allowedActions } },
+    json: {
+      order: {
+        ...order,
+        lineItems: enrichedLineItems,
+        shippingMethods,
+        transactions,
+        totals,
+        allowedActions,
+        shippingAddress,
+        fulfillments,
+      },
+    },
   }
 }

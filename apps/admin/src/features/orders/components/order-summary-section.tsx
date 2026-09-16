@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle } from '@proteus/ui'
 import { formatPrice } from '@proteus/utils'
+import { Link } from '@tanstack/react-router'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
 
 export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder }) {
@@ -24,7 +25,17 @@ export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder 
             <span className="truncate font-medium text-sm">{item.title}</span>
             {!!item.variantTitle && (
               <span className="text-muted-foreground text-xs">
-                {item.variantTitle}
+                {item.productId && item.variantId ? (
+                  <Link
+                    to="/products/$id/variants/$variantId"
+                    params={{ id: item.productId, variantId: item.variantId }}
+                    className="hover:text-foreground hover:underline"
+                  >
+                    {item.variantTitle}
+                  </Link>
+                ) : (
+                  item.variantTitle
+                )}
                 {!!item.variantSku && ` \u00b7 ${item.variantSku}`}
               </span>
             )}

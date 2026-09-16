@@ -53,10 +53,12 @@ import {
   generateFulfillmentDTO,
   generateUpdateFulfillmentDTO,
 } from '../factories/fulfillment-dto.js'
+import { generateAdminCreateOrderFulfillmentBody } from '../factories/http/admin-order.js'
 import { generateStoreCreateAddressBody } from '../factories/http/store-customer.js'
 import {
   generateCreateInventoryItemDTO,
   generateCreateInventoryLevelDTO,
+  generateCreateReservationItemDTO,
   generateInventoryLevelDTO,
   generateReservationItemDTO,
 } from '../factories/inventory-dto.js'
@@ -127,7 +129,17 @@ import {
   retrieveCustomer,
 } from '../factories/services/customer.js'
 import { retrieveFulfillment, updateFulfillment } from '../factories/services/fulfillment.js'
-import { addInventoryLevel, listReservationItems, stockVariant } from '../factories/services/inventory.js'
+import {
+  addInventoryLevel,
+  adjustInventoryLevel,
+  listInventoryItems,
+  listInventoryLevels,
+  listReservationItems,
+  reserveStock,
+  retrieveAvailableQuantity,
+  stockVariant,
+  trackVariantWithoutStock,
+} from '../factories/services/inventory.js'
 import { linkRepo } from '../factories/services/link.js'
 import { listNotifications } from '../factories/services/notification.js'
 import {
@@ -167,6 +179,8 @@ import {
   setProductOptions,
   updateProductVariant,
 } from '../factories/services/product.js'
+import { createStockLocation } from '../factories/services/stock-location.js'
+import { generateCreateStockLocationDTO } from '../factories/stock-location-dto.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
 import { type CreateApiOptions, createApi, type TestApi } from './create-api.js'
 import { type CreateContainerOptions, createTestContainer, type TestContainer } from './create-container.js'
@@ -239,6 +253,9 @@ export type Fixtures = {
    *  DTO: it has its own required fields, so a test that posts one needs a generator for the same
    *  reason a test that persists one does. */
   http: {
+    admin: {
+      createOrderFulfillment: typeof generateAdminCreateOrderFulfillmentBody
+    }
     store: {
       createAddress: typeof generateStoreCreateAddressBody
     }
@@ -312,6 +329,8 @@ export type Fixtures = {
       inventoryLevel: typeof generateInventoryLevelDTO
       createInventoryItem: typeof generateCreateInventoryItemDTO
       createInventoryLevel: typeof generateCreateInventoryLevelDTO
+      createReservationItem: typeof generateCreateReservationItemDTO
+      createStockLocation: typeof generateCreateStockLocationDTO
       productVariantInventoryItem: typeof generateProductVariantInventoryItemDTO
       productVariantPriceSet: typeof generateProductVariantPriceSetDTO
       calculatedPriceSet: typeof generateCalculatedPriceSetDTO
@@ -329,7 +348,10 @@ export type Fixtures = {
       lineItem: typeof addLineItem
       shippingMethod: typeof addShippingMethod
       variantStock: typeof stockVariant
+      trackedVariantWithoutStock: typeof trackVariantWithoutStock
       inventoryLevel: typeof addInventoryLevel
+      reservedStock: typeof reserveStock
+      stockLocation: typeof createStockLocation
       paymentSessionForCart: typeof createPaymentSessionForCart
       paymentForSession: typeof createPaymentForSession
       capturedPayment: typeof capturePayment
@@ -351,6 +373,7 @@ export type Fixtures = {
       authIdentity: typeof createAuthIdentity
     }
     update: {
+      inventoryLevel: typeof adjustInventoryLevel
       productOptions: typeof setProductOptions
       productVariant: typeof updateProductVariant
       authIdentity: typeof updateAuthIdentity
@@ -381,6 +404,9 @@ export type Fixtures = {
       payment: typeof retrievePayment
       paymentCollection: typeof retrievePaymentCollection
       reservationItems: typeof listReservationItems
+      inventoryItems: typeof listInventoryItems
+      inventoryLevels: typeof listInventoryLevels
+      availableQuantity: typeof retrieveAvailableQuantity
       linkRepo: typeof linkRepo
       prices: typeof listPrices
       products: typeof listProducts
@@ -446,6 +472,9 @@ export const test = testBase.extend<Fixtures>({
   },
   async http({ task: _ }, use) {
     await use({
+      admin: {
+        createOrderFulfillment: generateAdminCreateOrderFulfillmentBody,
+      },
       store: {
         createAddress: generateStoreCreateAddressBody,
       },
@@ -521,6 +550,8 @@ export const test = testBase.extend<Fixtures>({
         inventoryLevel: generateInventoryLevelDTO,
         createInventoryItem: generateCreateInventoryItemDTO,
         createInventoryLevel: generateCreateInventoryLevelDTO,
+        createReservationItem: generateCreateReservationItemDTO,
+        createStockLocation: generateCreateStockLocationDTO,
         productVariantInventoryItem: generateProductVariantInventoryItemDTO,
         productVariantPriceSet: generateProductVariantPriceSetDTO,
         calculatedPriceSet: generateCalculatedPriceSetDTO,
@@ -537,7 +568,10 @@ export const test = testBase.extend<Fixtures>({
         lineItem: addLineItem,
         shippingMethod: addShippingMethod,
         variantStock: stockVariant,
+        trackedVariantWithoutStock: trackVariantWithoutStock,
         inventoryLevel: addInventoryLevel,
+        reservedStock: reserveStock,
+        stockLocation: createStockLocation,
         paymentSessionForCart: createPaymentSessionForCart,
         paymentForSession: createPaymentForSession,
         capturedPayment: capturePayment,
@@ -559,6 +593,7 @@ export const test = testBase.extend<Fixtures>({
         authIdentity: createAuthIdentity,
       },
       update: {
+        inventoryLevel: adjustInventoryLevel,
         productOptions: setProductOptions,
         productVariant: updateProductVariant,
         authIdentity: updateAuthIdentity,
@@ -589,6 +624,9 @@ export const test = testBase.extend<Fixtures>({
         payment: retrievePayment,
         paymentCollection: retrievePaymentCollection,
         reservationItems: listReservationItems,
+        inventoryItems: listInventoryItems,
+        inventoryLevels: listInventoryLevels,
+        availableQuantity: retrieveAvailableQuantity,
         linkRepo,
         prices: listPrices,
         products: listProducts,

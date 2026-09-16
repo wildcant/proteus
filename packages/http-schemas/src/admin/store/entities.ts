@@ -26,6 +26,14 @@ export const AdminStore = z
     name: z.string(),
     /** The region a shopper is served from before they pick one. */
     defaultRegionId: z.string().nullable(),
+    /**
+     * At or below how many units available a variant counts as running low, or `null` when the
+     * shop does not want the idea at all.
+     *
+     * One number for both audiences: it is what alerts the shopkeeper and what puts "only N left"
+     * in front of the shopper. `null` silences both.
+     */
+    lowStockThreshold: z.number().nullable(),
     currencies: z.array(AdminStoreCurrency),
   })
   .openapi('AdminStore')

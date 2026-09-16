@@ -1,4 +1,5 @@
 import { formatRelativeTime } from '@proteus/utils'
+import { Link } from '@tanstack/react-router'
 import { DownloadIcon } from 'lucide-react'
 import type { AdminNotification } from '#/api/generated/model'
 
@@ -7,11 +8,20 @@ export function NotificationItem({ notification }: { notification: AdminNotifica
   const title = (data?.title as string) ?? notification.template ?? 'Notification'
   const description = data?.description as string | undefined
   const file = data?.file as string | undefined
+  // The in-app destination the notification is about — the low-stock alert's variant page, so
+  // acting on it is one click. Absent on a notification with nothing to open, which is most of them.
+  const href = data?.href as string | undefined
 
   return (
     <div className="border-b px-4 py-3">
       <div className="flex items-start justify-between gap-2">
-        <p className="font-medium text-sm">{title}</p>
+        {href ? (
+          <Link to={href} className="font-medium text-sm hover:underline">
+            {title}
+          </Link>
+        ) : (
+          <p className="font-medium text-sm">{title}</p>
+        )}
         <span className="shrink-0 text-muted-foreground text-xs">{formatRelativeTime(notification.createdAt)}</span>
       </div>
       {description ? <p className="mt-0.5 text-muted-foreground text-sm">{description}</p> : null}

@@ -15,7 +15,6 @@ export type InventoryItemDTO = {
   description: string | null
   title: string | null
   thumbnail: string | null
-  metadata: string | null
   createdAt: Date
   deletedAt: Date | null
 }
@@ -35,7 +34,8 @@ export type InventoryLevelDTO = {
   stockedQuantity: number
   reservedQuantity: number
   incomingQuantity: number
-  metadata: string | null
+  /** Bumped by every write to this row. The identity of the change, where the numbers cannot be. */
+  version: number
   createdAt: Date
   deletedAt: Date | null
 }
@@ -59,7 +59,6 @@ export type ReservationItemDTO = {
   externalId: string | null
   description: string | null
   createdBy: string | null
-  metadata: string | null
   createdAt: Date
   deletedAt: Date | null
 }

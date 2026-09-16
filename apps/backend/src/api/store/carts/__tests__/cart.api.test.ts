@@ -143,6 +143,87 @@ test.describe('POST /store/carts/:id/complete (concurrent)', () => {
 })
 
 /**
+ * What the concurrent test above does *not* cover, and what the shopper in user story 8 actually
+ * hits. That one proves one cart completes once, and the mechanism is `order_cart.cart_id` — a
+ * claim about duplicate completions of a single cart. Stock across two different carts is a
+ * separate line, held by the reservation the first order leaves behind.
+ */
+test.describe('POST /store/carts/:id/complete — the last unit goes to one cart', () => {
+  test('refuses the second cart instead of charging it', async ({ service, expect }) => {
+    const first = await service.create.checkoutReadyCart(api.container, { lineItem: { quantity: 1 } })
+    assertDefined(first.variantId)
+    // The same variant, stocked once: whichever cart completes first takes the only unit.
+    const second = await service.create.checkoutReadyCart(api.container, {
+      lineItem: { variantId: first.variantId, quantity: 1 },
+      inventory: null,
+    })
+    assertDefined(second.paymentCollection)
+
+    expect((await api.post<StoreCompleteCartResponse>(`/store/carts/${first.cart.id}/complete`)).status).toBe(200)
+
+    const { status, body } = await api.post<ApiErrorBody>(`/store/carts/${second.cart.id}/complete`)
+
+    // A refusal the storefront can act on — the shopper is told before the money moves, not after.
+    expect(status).toBe(400)
+    expect(body.type).toBe('not_allowed')
+    expect(await service.read.orders(api.container)).toHaveLength(1)
+    const collection = await service.read.paymentCollection(api.container, second.paymentCollection.id)
+    expect(collection.payments ?? []).toEqual([])
+  })
+})
+
+/**
+ * The two flags the catalogue carries about a variant's stock, at the seam a shopper meets them:
+ * what the shop tracks it never counts, what it lets go on backorder it sells past zero, and what
+ * it says to track with nothing behind it is refused rather than sold without limit.
+ */
+test.describe('POST /store/carts/:id/complete — what the variant says about its own stock', () => {
+  test('completes an untracked variant with no reservation, and a backorder one past zero', async ({
+    service,
+    expect,
+  }) => {
+    const untracked = await service.create.checkoutReadyCart(api.container, {
+      variant: { manageInventory: false },
+      lineItem: { quantity: 4 },
+      inventory: { level: { stockedQuantity: 0 } },
+    })
+    const backordered = await service.create.checkoutReadyCart(api.container, {
+      variant: { allowBackorder: true },
+      lineItem: { quantity: 3 },
+      inventory: { level: { stockedQuantity: 1 } },
+    })
+    assertDefined(backordered.inventoryItem)
+
+    expect((await api.post<StoreCompleteCartResponse>(`/store/carts/${untracked.cart.id}/complete`)).status).toBe(200)
+    expect((await api.post<StoreCompleteCartResponse>(`/store/carts/${backordered.cart.id}/complete`)).status).toBe(200)
+
+    // Both were stocked at less than they ordered, and only the backorder holds units: the
+    // untracked one has no shelf to take them off, which is what keeps it permanently buyable.
+    expect(await service.read.reservationItems(api.container)).toMatchObject([
+      { inventoryItemId: backordered.inventoryItem.id, quantity: 3, allowBackorder: true },
+    ])
+    expect(await service.read.availableQuantity(api.container, backordered.inventoryItem.id)).toBe(-2)
+  })
+
+  test('refuses a tracked variant with no inventory item instead of selling it', async ({ service, expect }) => {
+    const { cart, variantId } = await service.create.checkoutReadyCart(api.container, {
+      variant: {},
+      inventory: null,
+    })
+    assertDefined(variantId)
+
+    const { status, body } = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/complete`)
+
+    // Bad data about the variant, answered as such — before the flags were read this cart
+    // completed, reserved nothing, and left the shop selling the same units for ever.
+    expect(status).toBe(400)
+    expect(body.type).toBe('invalid_data')
+    expect(body.message).toContain(variantId)
+    expect(await service.read.orders(api.container)).toEqual([])
+  })
+})
+
+/**
  * The cart's addresses are rows the cart owns, keyed by `type`, rather than two columns pointing
  * outward. This is the seam where that shape reaches a client, so it is asserted here.
  */

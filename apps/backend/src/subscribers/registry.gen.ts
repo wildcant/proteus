@@ -9,11 +9,13 @@
 // subscriber file is meant to be a function plus a plain object, exactly like a job.
 
 import { defineSubscriber, type SubscriberDefinition } from '../core/event-bus/types.js'
+import { config as alertLowStock } from './alert-low-stock.js'
 import { config as busProbe } from './bus-probe.js'
 import { config as processPaymentCaptured } from './process-payment-captured.js'
 import { config as sendOrderConfirmation } from './send-order-confirmation.js'
 
 export const GENERATED_SUBSCRIBERS: SubscriberDefinition[] = [
+  defineSubscriber(alertLowStock),
   defineSubscriber(busProbe),
   defineSubscriber(processPaymentCaptured),
   defineSubscriber(sendOrderConfirmation),

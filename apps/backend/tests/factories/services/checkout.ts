@@ -20,9 +20,15 @@ export type CreateCheckoutReadyCartOptions = {
   cart?: Partial<CreateCartDTO>
   lineItem?: Partial<CreateLineItemDTO>
   shippingMethod?: Partial<CreateShippingMethodDTO>
-  /** Stock backing the line item's variant. `null` leaves the variant untracked, so
-   *  `reserve-inventory` finds no mapping and reserves nothing. */
+  /** Stock backing the line item's variant. `null` leaves the line item with no inventory item
+   *  behind it, which `reserve-inventory` refuses as invalid data unless `variant` says the shop
+   *  does not track it. */
   inventory?: Omit<StockVariantOptions, 'variantId'> | null
+  /** The catalogue row behind the line item. Omitted, the line item names a variant id no product
+   *  holds — enough for every spec that does not turn on what the variant says about its own
+   *  stock. Given, a published product and a real variant are created and the line item points at
+   *  it, which is the only way to set `manageInventory` or `allowBackorder` on a checkout. */
+  variant?: VariantOverrides
   /** `null` leaves the cart without a payment collection, which `validate-cart-payments` rejects. */
   payment?: { providerId?: string } | null
   /** Addresses attached before completion, the way `update-cart` does mid-checkout. Omitted
@@ -42,8 +48,21 @@ export async function createCheckoutReadyCart(
   container: AwilixContainer,
   options: CreateCheckoutReadyCartOptions = {},
 ) {
-  // Resolved up front so the variant backing the stock is the one the line item references.
-  const lineItemInput = generateCreateLineItemDTO(options.lineItem)
+  const variant = options.variant
+    ? await createProductVariant(
+        container,
+        (await createProduct(container, { status: 'published' })).product.id,
+        options.variant,
+      )
+    : null
+
+  // Resolved up front so the variant backing the stock is the one the line item references. An
+  // explicit `lineItem.variantId` still wins, including the `null` that makes a line item with no
+  // variant at all.
+  const lineItemInput = generateCreateLineItemDTO({
+    ...(variant ? { variantId: variant.id } : {}),
+    ...options.lineItem,
+  })
 
   const cart = await createCart(container, options.cart)
   const lineItem = await addLineItem(container, cart.id, lineItemInput)
