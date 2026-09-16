@@ -1,0 +1,64 @@
+id: service-standalone-function
+snapshots:
+  ? |
+    class InventoryModuleService {
+      async list() {
+        return []
+      }
+    }
+
+    function levelKey(row: { inventoryItemId: string; locationId: string }): string {
+      return `${row.inventoryItemId}@${row.locationId}`
+    }
+  : labels:
+    - source: |-
+        function levelKey(row: { inventoryItemId: string; locationId: string }): string {
+          return `${row.inventoryItemId}@${row.locationId}`
+        }
+      style: primary
+      start: 69
+      end: 204
+    - source: |
+        class InventoryModuleService {
+          async list() {
+            return []
+          }
+        }
+
+        function levelKey(row: { inventoryItemId: string; locationId: string }): string {
+          return `${row.inventoryItemId}@${row.locationId}`
+        }
+      style: secondary
+      start: 0
+      end: 205
+  ? |
+    function hashPrice(price: { currencyCode: string; priceSetId: string }): string {
+      return `${price.currencyCode}:${price.priceSetId}`
+    }
+
+    class PricingModuleService {
+      async create(data: CreatePriceDTO[]) {
+        return this.repository.create(data)
+      }
+    }
+  : labels:
+    - source: |-
+        function hashPrice(price: { currencyCode: string; priceSetId: string }): string {
+          return `${price.currencyCode}:${price.priceSetId}`
+        }
+      style: primary
+      start: 0
+      end: 136
+    - source: |
+        function hashPrice(price: { currencyCode: string; priceSetId: string }): string {
+          return `${price.currencyCode}:${price.priceSetId}`
+        }
+
+        class PricingModuleService {
+          async create(data: CreatePriceDTO[]) {
+            return this.repository.create(data)
+          }
+        }
+      style: secondary
+      start: 0
+      end: 254

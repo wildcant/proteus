@@ -31,7 +31,7 @@ type CreateProductWithPricingOptions = {
 
 export async function createProductWithPricing(options: CreateProductWithPricingOptions = {}) {
   const product = await createProduct({ status: 'published', ...options.product })
-  const variant = await createProductVariant({ productId: product.id, ...options.variant })
+  const variant = await createProductVariant({ productId: product.id, manageInventory: false, ...options.variant })
   const priceSet = await createPriceSet()
 
   // Partial rather than `PriceOverride`: a caller that names neither still gets one random price,

@@ -1,50 +1,25 @@
-import type { BigNumber } from '../../../core/bignumber.js'
-import type { FindConfig } from '../../../core/types/common.js'
-import type { Context } from '../../../core/types/context.js'
-import type { Logger } from '../../../core/types/logger.js'
+import type { FindConfig } from '@core/types/common.js'
+import type { Context } from '@core/types/context.js'
+import type { Logger } from '@core/types/logger.js'
 import type {
   CalculatedPriceSetDTO,
   FilterablePriceProps,
   PriceDTO,
   PriceSetDTO,
   PricingContext,
-} from '../../../core/types/pricing/common.js'
+} from '@core/types/pricing/common.js'
 import type {
   CreatePriceDTO,
   CreatePriceSetDTO,
   UpdatePriceDTO,
   UpdatePriceSetDTO,
   UpsertPriceSetDTO,
-} from '../../../core/types/pricing/mutations.js'
-import type { IPricingModuleService } from '../../../core/types/pricing/service.js'
-import type { WithTransaction } from '../../../core/utils/with-transaction.js'
+} from '@core/types/pricing/mutations.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
+import type { WithTransaction } from '@core/utils/with-transaction.js'
 import type { PriceRepository } from '../repositories/price.js'
 import type { PriceSetRepository } from '../repositories/price-set.js'
-
-type NormalizedPrice = { currencyCode: string; amount: BigNumber; priceSetId: string }
-
-// Deterministic identity hash for a price entry.
-// TODO(pricing): extend with priceListId, minQuantity, maxQuantity, and rules when those arrive.
-function hashPrice(price: { currencyCode: string; priceSetId: string }): string {
-  const parts: string[] = []
-  parts.push(`cc:${price.currencyCode.toLowerCase()}`)
-  parts.push(`ps:${price.priceSetId}`)
-  return parts.sort().join('|')
-}
-
-// Deduplicates incoming prices: last-one-wins per hash key.
-function normalizePrices(prices: CreatePriceDTO[], priceSetId: string): NormalizedPrice[] {
-  const map = new Map<string, NormalizedPrice>()
-  for (const price of prices) {
-    const normalized: NormalizedPrice = {
-      currencyCode: price.currencyCode.toLowerCase(),
-      amount: price.amount,
-      priceSetId,
-    }
-    map.set(hashPrice(normalized), normalized)
-  }
-  return Array.from(map.values())
-}
+import { normalizePrices } from '../utils/normalize-prices.js'
 
 type InjectedDependencies = {
   priceSetRepository: PriceSetRepository
