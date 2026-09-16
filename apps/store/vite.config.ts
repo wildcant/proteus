@@ -8,6 +8,11 @@ import { defineConfig } from 'vite'
 
 export default defineConfig(({ command }) => ({
   resolve: { tsconfigPaths: true },
+  server: {
+    proxy: {
+      '/static': process.env.VITE_BACKEND_URL ?? 'http://localhost:3000',
+    },
+  },
   plugins: [
     devtools(),
     tailwindcss(),

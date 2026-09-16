@@ -21,6 +21,7 @@ import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { InventoryItemRepository } from '../repositories/inventory-item.js'
 import type { InventoryLevelRepository } from '../repositories/inventory-level.js'
 import type { ReservationItemRepository } from '../repositories/reservation-item.js'
+import { levelKey } from '../utils/level-key.js'
 
 type InjectedDependencies = {
   inventoryItemRepository: InventoryItemRepository
@@ -384,9 +385,4 @@ export class InventoryModuleService implements IInventoryModuleService {
       )
     }
   }
-}
-
-/** An inventory level is identified by its item and its location, never by one of them alone. */
-function levelKey(row: { inventoryItemId: string; locationId: string }): string {
-  return `${row.inventoryItemId}@${row.locationId}`
 }

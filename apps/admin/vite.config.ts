@@ -6,6 +6,11 @@ import { defineConfig } from 'vite'
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
+  server: {
+    proxy: {
+      '/static': process.env.VITE_BACKEND_URL ?? 'http://localhost:3000',
+    },
+  },
   plugins: [devtools(), tailwindcss(), tanstackRouter({ target: 'react', autoCodeSplitting: true }), viteReact()],
 })
 

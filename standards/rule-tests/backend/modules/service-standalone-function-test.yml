@@ -1,0 +1,43 @@
+id: service-standalone-function
+valid:
+  # A service class with a private method — the helper lives where it can be tested through the class.
+  - |
+    class InventoryModuleService {
+      private levelKey(row: { inventoryItemId: string; locationId: string }): string {
+        return `${row.inventoryItemId}@${row.locationId}`
+      }
+
+      async list() {
+        return []
+      }
+    }
+  # A service class with no helpers at all.
+  - |
+    class PricingModuleService {
+      async create(data: CreatePriceDTO[]) {
+        return this.repository.create(data)
+      }
+    }
+invalid:
+  # A standalone function after the class — the shape this rule was written for.
+  - |
+    class InventoryModuleService {
+      async list() {
+        return []
+      }
+    }
+
+    function levelKey(row: { inventoryItemId: string; locationId: string }): string {
+      return `${row.inventoryItemId}@${row.locationId}`
+    }
+  # A standalone function before the class.
+  - |
+    function hashPrice(price: { currencyCode: string; priceSetId: string }): string {
+      return `${price.currencyCode}:${price.priceSetId}`
+    }
+
+    class PricingModuleService {
+      async create(data: CreatePriceDTO[]) {
+        return this.repository.create(data)
+      }
+    }

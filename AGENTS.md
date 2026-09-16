@@ -4,11 +4,9 @@
 
 ## Instruction Discovery
 
-Read `.codex/AGENTS.md` (if it exists) before starting any task for the personal working agreements used in this project.
+Read `.codex/AGENTS.md` (if exist) before start task. Have personal working agreement for project.
 
-Before editing a file, read applicable nested `AGENTS.md` files along its directory path (or
-`AGENTS.override.md` where present). Follow their pointers to relevant standards. Documentation
-paths in these instructions are relative to the repository root unless explicitly stated otherwise.
+Before edit file, read nested `AGENTS.md` along directory path (or `AGENTS.override.md` if there). Follow pointer to standard. Doc path relative to repo root unless say otherwise.
 
 ## Commands
 
@@ -57,73 +55,73 @@ pnpm --filter admin run generate-routes
 
 ## Verification
 
-- After implementation tasks, run `pnpm run verify` (formats files and runs the standard gates).
-  Use `pnpm run verify --ci` when formatting must be checked without rewriting files.
+- After implementation task, run `pnpm run verify` (format file, run standard gate).
+  Use `pnpm run verify --ci` when must check format without rewrite file.
 - **Store-only implementation**: skip `pnpm run verify`. Run
-  `pnpm exec biome check --write apps/store/src` and `pnpm --filter store run typecheck`, then verify visually.
-- **Documentation-only changes**: check the diff and referenced paths; implementation gates are not required.
-- **Never run Playwright e2e unprompted.** Offer it, don't run it. This includes
-  `pnpm run verify:full`, which runs storefront and admin e2e suites alongside other tests
-  and does not run static checks. Run it only when the user requests that suite or authorizes its e2e tests.
+  `pnpm exec biome check --write apps/store/src` and `pnpm --filter store run typecheck`, then check with eye.
+- **Documentation-only changes**: check diff and referenced path. No need implementation gate.
+- **Never run Playwright e2e unprompted.** Offer it, no run it. This include
+  `pnpm run verify:full`, which run storefront and admin e2e suite with other test
+  and no run static check. Run only when user ask for suite or allow e2e test.
 
 ## Dependencies
 
-Adding an import to a workspace means adding the package to that workspace's `package.json`.
-Shared versions use `"catalog:"` in manifests, resolved in `pnpm-workspace.yaml`. Siblings use
-`"workspace:*"`. `verify` fails on duplicate versions or unused declarations.
+Add import to workspace mean add package to that workspace `package.json`.
+Shared version use `"catalog:"` in manifest, resolve in `pnpm-workspace.yaml`. Sibling use
+`"workspace:*"`. `verify` fail on duplicate version or unused declaration.
 
 ## Backend Architecture
 
 <!-- Detail for each area is in .claude/rules/backend-*.md, loaded when touching those paths. -->
-Read the applicable `AGENTS.md` in `apps/backend/src/{core,framework,modules,workflows,subscribers,api}/`
-for pointers to detailed standards.
+Read applicable `AGENTS.md` in `apps/backend/src/{core,framework,modules,workflows,subscribers,api}/`
+for pointer to detailed standard.
 
-- **`core/`** = vocabulary and ports. **`framework/`** = containers, adapters, transports. `framework/` imports `core/`, never the reverse. Layers below (`modules/`, `workflows/`, `subscribers/`) import `core/` only.
-- **Modules** follow a closed layout at `src/modules/{name}/`. Tables with foreign keys between them share one module.
-- **Module isolation**: one shared Awilix container + one private container per module. Only the service is exposed — use link modules or workflows for cross-module work.
-- **Link modules** (`src/link-modules/`) — cross-module join tables via `LinkService.repo()`.
-- **Workflows** (`src/workflows/`) — cross-module mutations with compensation.
-- **Subscribers** (`src/subscribers/`) — async side-effects, idempotent, published from a workflow's final step.
-- **Endpoints** = `route.ts` (handler + schemas) + `definitions.ts` (auth, matcher, OpenAPI).
+- **`core/`** = vocabulary and port. **`framework/`** = container, adapter, transport. `framework/` import `core/`, never reverse. Layer below (`modules/`, `workflows/`, `subscribers/`) import `core/` only.
+- **Modules** follow closed layout at `src/modules/{name}/`. Table with foreign key between them share one module.
+- **Module isolation**: one shared Awilix container + one private container per module. Only service exposed — use link module or workflow for cross-module work.
+- **Link modules** (`src/link-modules/`) — cross-module join table via `LinkService.repo()`.
+- **Workflows** (`src/workflows/`) — cross-module mutation with compensation.
+- **Subscribers** (`src/subscribers/`) — async side-effect, idempotent, publish from workflow final step.
+- **Endpoints** = `route.ts` (handler + schema) + `definitions.ts` (auth, matcher, OpenAPI).
 
 ## Frontend Apps
 
 <!-- Detail in .claude/rules/frontend-*.md, loaded when touching those paths. -->
-Read `apps/store/src/AGENTS.md` or `apps/admin/src/AGENTS.md` for pointers to detailed frontend standards.
+Read `apps/store/src/AGENTS.md` or `apps/admin/src/AGENTS.md` for pointer to detailed frontend standard.
 
-Both apps follow Bulletproof React: features at `src/features/{name}/` with a closed set of subfolders (`api/`, `components/`, `hooks/`, `stores/`, `types/`, `utils/`).
+Both app follow Bulletproof React: feature at `src/features/{name}/` with closed set of subfolder (`api/`, `components/`, `hooks/`, `stores/`, `types/`, `utils/`).
 
-The store uses TanStack Start on workerd with selective SSR — adding a route means choosing server vs. client (ADR-0013). A server-rendered route cannot detect viewport, so structure changes between breakpoints need two DOM trees or a stacking layout, never a client-side media query.
+Store use TanStack Start on workerd with selective SSR — add route mean choose server vs. client (ADR-0013). Server-rendered route no can detect viewport, so structure change between breakpoint need two DOM tree or stacking layout, never client-side media query.
 
-Both apps use Orval-generated clients in `src/api/generated/` over `src/lib/fetcher.ts`.
+Both app use Orval-generated client in `src/api/generated/` over `src/lib/fetcher.ts`.
 
 ## Testing
 
-- **Never fake our own backend in e2e.** Fake the third-party gateway only.
-- **Write fewer, longer tests.** One test per user journey, not per assertion.
-- **UI/e2e tests assert what the user sees.** Backend persistence tests may assert database state.
-- **An assertion that cannot fail is not a test.** For each new or changed test, identify the behavior change it catches.
-  For regression tests, temporarily reintroduce the bug, confirm the test fails, then restore the fix.
-- Backend tests run against real Postgres. Fixtures in `tests/setup/test-extend.ts` provide `getDb`, `logger`, `dto.generate`.
+- **Never fake our own backend in e2e.** Fake third-party gateway only.
+- **Write fewer, longer tests.** One test per user journey, no per assertion.
+- **UI/e2e tests assert what the user sees.** Backend persistence test can assert database state.
+- **An assertion that cannot fail is not a test.** For each new or changed test, name behavior change it catch.
+  For regression test, put bug back for moment, confirm test fail, then restore fix.
+- Backend test run against real Postgres. Fixture in `tests/setup/test-extend.ts` give `getDb`, `logger`, `dto.generate`.
 
 ## Code Style
 
-- **Biome**: spaces, 120 chars, single quotes, no semicolons, trailing commas.
-- **Naming**: `camelCase` variables/functions/properties, `PascalCase` classes/types/components, `CONSTANT_CASE` enum members. Use `snake_case` only when required by an external contract or an established API.
-- **Variables**: name for what they represent, no suffixes (`Result`, `Data`), no abbreviations (`repo`, `cfg`) in new variable names. Preserve established API names such as `LinkService.repo()`.
-- **Guard clauses** over nested conditionals.
+- **Biome**: space, 120 char, single quote, no semicolon, trailing comma.
+- **Naming**: `camelCase` variable/function/property, `PascalCase` class/type/component, `CONSTANT_CASE` enum member. Use `snake_case` only when external contract or established API demand it.
+- **Variables**: name for what they mean, no suffix (`Result`, `Data`), no abbreviation (`repo`, `cfg`) in new variable name. Keep established API name such as `LinkService.repo()`.
+- **Guard clauses** over nested conditional.
 - **Comments**: *why*, not *what*.
 - **Async best-effort**: `.catch((e) => this.logger.error(e))`, not try/catch with empty catch.
-- **`Promise.all`** with `.map()` for independent iterations.
+- **`Promise.all`** with `.map()` for independent iteration.
 - **`type`** over `interface` everywhere.
-- **No barrels**, no non-null assertions (`!`), no `any`.
-- **Tailwind v4**: canonical short forms. `text-foreground` not `text-(--foreground)`. `(--var)` syntax only for CSS vars not in `@theme`.
+- **No barrels**, no non-null assertion (`!`), no `any`.
+- **Tailwind v4**: canonical short form. `text-foreground` not `text-(--foreground)`. `(--var)` syntax only for CSS var not in `@theme`.
 
 ## Project Conventions
 
-- **Tickets are read-only.** Never edit `.scratch/<feature>/issues/` files. Read the **Blocked by** line first. Skim the next ticket before designing — it may reshape the current one.
-- **No guards against hypothetical users.** Solo developer, not in production. Delete the thing instead of guarding it. Fewer moving parts over safety nets.
-- **Document the present, not the past.** If a passage only records that something changed, delete it — that belongs in git history or an ADR.
-- **Check Shopify and Medusa before inventing a guard.** For "what should the admin do when X", check both before designing. Bring divergences as named decisions, not objections.
-- **Never name the reference brand** in code, comments, CSS, or `.scratch/`. Use "the reference" or `<Brand>`.
-- **Mobile-first storefront.** Phone layout as base classes; `sm:`/`lg:` only to add. Never desktop-first undone with `lg:hidden`.
+- **Tickets are read-only.** Never edit `.scratch/<feature>/issues/` file. Read **Blocked by** line first. Skim next ticket before design — it may reshape current one.
+- **No guards against hypothetical users.** Solo developer, not in production. Delete thing instead of guard it. Fewer moving part over safety net.
+- **Document the present, not the past.** If passage only record that something change, delete it — that belong in git history or ADR.
+- **Check Shopify and Medusa before inventing a guard.** For "what should the admin do when X", check both before design. Bring divergence as named decision, not objection.
+- **Never name the reference brand** in code, comment, CSS, or `.scratch/`. Use "the reference" or `<Brand>`.
+- **Mobile-first storefront.** Phone layout as base class; `sm:`/`lg:` only to add. Never desktop-first undone with `lg:hidden`.

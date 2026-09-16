@@ -34,7 +34,7 @@ export class LocalFileProvider extends AbstractFileProviderService<LocalFileProv
 
     this.uploadDir = config.uploadDir ?? path.join(process.cwd(), 'static')
     this.privateUploadDir = config.privateUploadDir ?? this.uploadDir
-    this.backendUrl = config.backendUrl ?? 'http://localhost:3000/static'
+    this.backendUrl = config.backendUrl ?? '/static'
   }
 
   private getBaseDir(fileKey: string): string {
@@ -57,9 +57,7 @@ export class LocalFileProvider extends AbstractFileProviderService<LocalFileProv
   }
 
   private getUploadFileUrl(fileKey: string): string {
-    const baseUrl = new URL(this.backendUrl)
-    baseUrl.pathname = path.join(baseUrl.pathname, fileKey)
-    return baseUrl.href
+    return `${this.backendUrl}/${fileKey}`
   }
 
   private async ensureDirExists(baseDir: string, dirPath: string): Promise<void> {

@@ -121,6 +121,7 @@ Future Infra TODOs
   - https://www.youtube.com/watch?v=5_DyX3PnKxg
 
 Future nice to have TODOs
+- Data encryption for sensitive customer data.
 - per item fullfilment and shipment.
 - fix imports in backend to use alias — 408 occurrences of `../../../` or deeper under apps/backend/src.
 - routes that Spectral cannot reach: the API-design half of apps/backend/src/api/README.md is now enforced in the

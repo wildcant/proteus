@@ -24,3 +24,5 @@ apps/backend/static
 # share the same untracked working agreements.
 .codex/AGENTS.md
 CLAUDE.local.md
+
+__pycache__
