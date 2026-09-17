@@ -20,7 +20,6 @@ limit?: number;
 order?: string;
 q?: string;
 status?: 'pending' | 'completed' | 'canceled' | 'archived' | ('pending' | 'completed' | 'canceled' | 'archived')[];
-fulfillmentStatus?: 'unfulfilled' | 'fulfilled' | 'shipped' | 'delivered' | ('unfulfilled' | 'fulfilled' | 'shipped' | 'delivered')[];
 customerId?: string | string[];
 createdAt?: {
   /** @nullable */

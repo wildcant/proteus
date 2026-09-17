@@ -10,4 +10,7 @@ export interface AdminOrderAllowedActions {
   canComplete: boolean;
   canCancel: boolean;
   canArchive: boolean;
+  canFulfill: boolean;
+  canShip: boolean;
+  canMarkAsDelivered: boolean;
 }

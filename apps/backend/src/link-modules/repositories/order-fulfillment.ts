@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 import type { Context } from '../../core/types/context.js'
 import { BaseRepository } from '../../core/utils/base-repository.js'
 import { orderFulfillmentTable } from '../definitions/order-fulfillment.js'
@@ -11,6 +11,15 @@ export class OrderFulfillmentRepository extends BaseRepository(orderFulfillmentT
       .from(this.table)
       .where(and(eq(this.table.orderId, orderId), isNull(this.table.deletedAt)))
     return rows[0] ?? null
+  }
+
+  async findByOrderIds(orderIds: string[], context?: Context) {
+    if (orderIds.length === 0) return []
+    const client = this.getClient(context)
+    return client
+      .select()
+      .from(this.table)
+      .where(and(inArray(this.table.orderId, orderIds), isNull(this.table.deletedAt)))
   }
 
   async findByFulfillmentId(fulfillmentId: string, context?: Context) {

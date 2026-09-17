@@ -163,6 +163,7 @@ export type OrderFulfillmentDTO = {
 
 export type IOrderFulfillmentRepository = {
   findByOrderId(orderId: string, context?: Context): Promise<OrderFulfillmentDTO | null>
+  findByOrderIds(orderIds: string[], context?: Context): Promise<OrderFulfillmentDTO[]>
   findByFulfillmentId(fulfillmentId: string, context?: Context): Promise<OrderFulfillmentDTO | null>
   create(data: Partial<OrderFulfillmentDTO>, context?: Context): Promise<OrderFulfillmentDTO>
 }

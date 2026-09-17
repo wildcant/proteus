@@ -84,7 +84,7 @@ test.describe('POST /admin/orders/:id/fulfillments', () => {
 
     // The whole point of the refusal: the workflow marks the *order* fulfilled and de-reserves
     // every line on it, so accepting a subset would report a shipment that never went out.
-    expect(await service.read.order(api.container, orderId)).toMatchObject({ fulfillmentStatus: 'unfulfilled' })
+    expect(await service.read.linkRepo(api.container, 'orderFulfillment').findByOrderId(orderId)).toBeNull()
     const [level] = await service.read.inventoryLevels(api.container, { inventoryItemId })
     expect(level).toMatchObject({ stockedQuantity: tracked.quantity, reservedQuantity: tracked.quantity })
     expect(await service.read.reservationItems(api.container, { lineItemId: tracked.id })).toHaveLength(1)

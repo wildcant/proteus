@@ -104,8 +104,9 @@ test.describe('createOrderFulfillmentWorkflow', () => {
       fulfillmentData: { ...shipment, items: cover(lineItems) },
     })
 
-    expect(order.fulfillmentStatus).toBe('fulfilled')
-    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'fulfilled' })
+    expect(order.status).toBe('pending')
+    const created = await fulfillmentOf(service, orderId)
+    expect(created.packedAt).toBeInstanceOf(Date)
 
     // The units left the warehouse rather than staying committed to the order: stocked falls by
     // what shipped and the reservation holding them is gone, so available stays where it was.
@@ -182,7 +183,7 @@ test.describe('createOrderFulfillmentWorkflow', () => {
       }),
     ).rejects.toThrow(`Cannot fulfill order ${orderId} from location "${elsewhere.id}"`)
 
-    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'unfulfilled' })
+    expect(await service.read.linkRepo(container, 'orderFulfillment').findByOrderId(orderId)).toBeNull()
     expect(await stockOf(service, inventoryItemId)).toMatchObject({ stockedQuantity: 2, reservedQuantity: 2 })
   })
 
@@ -195,7 +196,7 @@ test.describe('createOrderFulfillmentWorkflow', () => {
 
     // Accepting it would mark the whole order fulfilled and de-reserve every line on it, so the
     // shopkeeper would be told a shipment went out that is still on the shelf.
-    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'unfulfilled' })
+    expect(await service.read.linkRepo(container, 'orderFulfillment').findByOrderId(orderId)).toBeNull()
     expect(await stockOf(service, inventoryItemId)).toMatchObject({ reservedQuantity: tracked.quantity })
     expect(await service.read.reservationItems(container, { lineItemId: tracked.id })).toHaveLength(1)
   })
@@ -263,7 +264,7 @@ test.describe('createOrderFulfillmentWorkflow', () => {
       }),
     ).rejects.toThrow('No reservation found for managed-inventory item')
 
-    expect(await service.read.order(container, checkout.order.id)).toMatchObject({ fulfillmentStatus: 'unfulfilled' })
+    expect(await service.read.linkRepo(container, 'orderFulfillment').findByOrderId(checkout.order.id)).toBeNull()
   })
 
   test('refuses an order whose items disagree about shipping', async ({ service, expect }) => {
@@ -307,7 +308,6 @@ test.describe('createOrderFulfillmentWorkflow', () => {
       createOrderFulfillmentWorkflow.run({ orderId, fulfillmentData: { ...shipment, items: cover(lineItems) } }),
     ).rejects.toThrow('inventory unavailable')
 
-    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'unfulfilled' })
     expect(await stockOf(service, inventoryItemId)).toEqual({
       stockedQuantity: 5,
       reservedQuantity: 2,

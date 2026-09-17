@@ -40,7 +40,6 @@ test.describe('OrderModuleService', () => {
 
       expect(order.id).toMatch(/^ord_/)
       expect(order.status).toBe('pending')
-      expect(order.fulfillmentStatus).toBe('unfulfilled')
       expect(order.currencyCode).toBe('usd')
       expect(order.displayId).toBeGreaterThan(0)
     })

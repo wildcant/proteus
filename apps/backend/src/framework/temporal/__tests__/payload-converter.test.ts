@@ -63,7 +63,6 @@ const order: OrderDTO = {
   id: 'order_01',
   displayId: 42,
   status: 'pending',
-  fulfillmentStatus: 'unfulfilled',
   email: 'shopper@example.com',
   customerId: 'cus_01',
   currencyCode: 'usd',

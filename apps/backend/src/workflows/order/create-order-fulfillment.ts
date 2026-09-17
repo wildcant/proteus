@@ -10,6 +10,7 @@ import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 import { computeInventoryAdjustments } from './utils/compute-inventory-adjustments.js'
 
 type CreateOrderFulfillmentInput = {
@@ -27,6 +28,8 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
      *  the fulfillment flow. Prevents double-fulfillment and fulfilling canceled orders. */
     await ctx.step('validate-guards', async ({ container }) => {
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       const order = await orderService.retrieveOrder(input.orderId)
 
       if (order.status !== 'pending') {
@@ -36,10 +39,14 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
         })
       }
 
-      if (order.fulfillmentStatus !== 'unfulfilled') {
+      const link = await linkService.repo('orderFulfillment').findByOrderId(input.orderId)
+      const fulfillments = link ? [await fulfillmentService.retrieveFulfillment(link.fulfillmentId)] : []
+      const status = computeFulfillmentStatus(fulfillments)
+
+      if (status !== 'unfulfilled') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot fulfill order ${input.orderId}: fulfillment status is "${order.fulfillmentStatus}", expected "unfulfilled"`,
+          message: `Cannot fulfill order ${input.orderId}: fulfillment status is "${status}", expected "unfulfilled"`,
         })
       }
     })
@@ -151,7 +158,7 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       'create-fulfillment',
       async ({ container }) => {
         const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
-        return fulfillmentService.createFulfillment({ ...input.fulfillmentData, locationId })
+        return fulfillmentService.createFulfillment({ ...input.fulfillmentData, locationId, packedAt: new Date() })
       },
       async (created, { container }) => {
         const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
@@ -171,20 +178,6 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       async (_output, { container }) => {
         const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
         await linkService.dismissLinks({ fulfillmentId: [fulfillment.id] })
-      },
-    )
-
-    /** Advance the order's fulfillment status so downstream workflows (shipment,
-     *  delivery) can gate on the correct state. Compensates back to "unfulfilled". */
-    const updated = await ctx.step(
-      'update-fulfillment-status',
-      async ({ container }) => {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-        return orderService.updateFulfillmentStatus(input.orderId, 'fulfilled')
-      },
-      async (_output, { container }) => {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-        await orderService.updateFulfillmentStatus(input.orderId, 'unfulfilled')
       },
     )
 
@@ -296,6 +289,9 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       )
     })
 
-    return updated
+    return ctx.step('retrieve-order', async ({ container }) => {
+      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      return orderService.retrieveOrder(input.orderId)
+    })
   },
 )

@@ -63,11 +63,11 @@ Fixes and improvements
   - Worth an ADR when it lands: restoring the guard is a named departure from Medusa, and soft-deleting the
     addresses is a second one (Medusa's transfer leaves addresses and shipping methods untouched).
 
-- ORDER DETAIL STATE REFACTOR: the order detail page duplicates lifecycle logic that belongs in the backend.
-  Fulfillment action eligibility (canFulfill, canShip, canMarkAsDelivered) is computed client-side in
-  order-fulfillment-section.tsx instead of via `allowedActions` from `computeAllowedActions`. Refactor to unify
-  order status, fulfillment status, and payment status into a single backend-driven `allowedActions` object, then
-  simplify the order detail page to read flags instead of reimplementing the state machine.
+- ADMIN FILTERS FOR COMPUTED PROPERTIES: fulfillmentStatus filter was dropped from admin order list because the
+  column no longer exists. Filtering by computed properties (fulfillmentStatus, paymentStatus, allowedActions)
+  requires a different approach — options include: a subquery joining through the link table to fulfillment
+  timestamps, a materialized view, or computing in the application layer and filtering post-query (only viable
+  for small result sets). This will recur for any property that moves from stored to computed.
 
 Future features TODOs
 - INVENTORY MODULE: `incoming_quantity` is read by the availability projection and never written. There is no

@@ -5,20 +5,12 @@ import { liveIndex } from '../../../core/db/indexes.js'
 
 export const orderStatusEnum = pgEnum('order_status', ['pending', 'completed', 'canceled', 'archived'])
 
-export const orderFulfillmentStatusEnum = pgEnum('order_fulfillment_status', [
-  'unfulfilled',
-  'fulfilled',
-  'shipped',
-  'delivered',
-])
-
 export const orderTable = pgTable(
   'order',
   {
     id: text().primaryKey().default(sql`CONCAT('ord_', REPLACE(gen_random_uuid()::text, '-', ''))`),
     displayId: serial().notNull(),
     status: orderStatusEnum().default('pending').notNull(),
-    fulfillmentStatus: orderFulfillmentStatusEnum().default('unfulfilled').notNull(),
     email: text().notNull(),
     customerId: text(),
     currencyCode: text().notNull(),

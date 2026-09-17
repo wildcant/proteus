@@ -10,14 +10,11 @@ import type {
   FilterableOrderTransactionProps,
   OrderAddressDTO,
   OrderAddressType,
-  OrderAllowedActions,
   OrderDTO,
-  OrderFulfillmentStatus,
   OrderLineItemDTO,
   OrderShippingMethodDTO,
   OrderTotals,
   OrderTransactionDTO,
-  PaymentStatus,
 } from './common.js'
 import type {
   CreateOrderAddressDTO,
@@ -92,13 +89,8 @@ export type IOrderModuleService = {
   completeOrder(id: string, context?: Context): Promise<OrderDTO>
   cancelOrder(id: string, context?: Context): Promise<OrderDTO>
   archiveOrder(id: string, context?: Context): Promise<OrderDTO>
-  updateFulfillmentStatus(id: string, status: OrderFulfillmentStatus, context?: Context): Promise<OrderDTO>
 
   // Computed
   enrichLineItems(lineItems: OrderLineItemDTO[]): EnrichedOrderLineItemDTO[]
   computeOrderTotals(data: ComputeOrderTotalsDTO): OrderTotals
-
-  // Computed status
-  computePaymentStatus(totals: OrderTotals): PaymentStatus
-  computeAllowedActions(order: OrderDTO): OrderAllowedActions
 }

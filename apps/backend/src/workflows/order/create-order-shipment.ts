@@ -6,6 +6,7 @@ import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 
 type CreateOrderShipmentInput = {
   orderId: string
@@ -24,6 +25,8 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
     // belong to this order (prevents shipping someone else's fulfillment).
     await ctx.step('validate-guards', async ({ container }) => {
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       const order = await orderService.retrieveOrder(input.orderId)
 
       if (order.status === 'canceled') {
@@ -33,20 +36,22 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
         })
       }
 
-      if (order.fulfillmentStatus !== 'fulfilled') {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot ship order ${input.orderId}: fulfillment status is "${order.fulfillmentStatus}", expected "fulfilled"`,
-        })
-      }
-
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       const link = await linkService.repo('orderFulfillment').findByFulfillmentId(input.fulfillmentId)
 
       if (!link || link.orderId !== input.orderId) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_FOUND,
           message: `Fulfillment ${input.fulfillmentId} is not linked to order ${input.orderId}`,
+        })
+      }
+
+      const fulfillment = await fulfillmentService.retrieveFulfillment(input.fulfillmentId)
+      const status = computeFulfillmentStatus([fulfillment])
+
+      if (status !== 'fulfilled') {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cannot ship order ${input.orderId}: fulfillment status is "${status}", expected "fulfilled"`,
         })
       }
     })
@@ -74,20 +79,9 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
       },
     )
 
-    // Advance the order so downstream consumers (admin UI, mark-as-delivered) see the
-    // correct state. Compensates back to "fulfilled" if this step fails.
-    const updated = await ctx.step(
-      'update-fulfillment-status',
-      async ({ container }) => {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-        return orderService.updateFulfillmentStatus(input.orderId, 'shipped')
-      },
-      async (_output, { container }) => {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-        await orderService.updateFulfillmentStatus(input.orderId, 'fulfilled')
-      },
-    )
-
-    return updated
+    return ctx.step('retrieve-order', async ({ container }) => {
+      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      return orderService.retrieveOrder(input.orderId)
+    })
   },
 )

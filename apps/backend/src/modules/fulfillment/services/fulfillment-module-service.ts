@@ -469,6 +469,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
           shippingOptionId: data.shippingOptionId,
           data: data.data,
           requiresShipping: data.requiresShipping ?? true,
+          packedAt: data.packedAt,
           metadata: data.metadata,
         },
         ctx,

@@ -26,10 +26,8 @@ test.describe('createOrderShipmentWorkflow', () => {
   test('stamps the fulfillment as shipped and advances the order', async ({ service, expect }) => {
     const { orderId, fulfillmentId } = await fulfilledOrder(service)
 
-    const result = await createOrderShipmentWorkflow.run({ orderId, fulfillmentId })
+    await createOrderShipmentWorkflow.run({ orderId, fulfillmentId })
 
-    expect(result.fulfillmentStatus).toBe('shipped')
-    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'shipped' })
     expect(await service.read.fulfillment(container, fulfillmentId)).toMatchObject({
       shippedAt: expect.any(Date),
     })
@@ -73,16 +71,20 @@ test.describe('createOrderShipmentWorkflow', () => {
     )
   })
 
-  test('rollback un-stamps the fulfillment when the order cannot be advanced', async ({ service, expect }) => {
+  test('rollback un-stamps the fulfillment when a later step fails', async ({ service, expect }) => {
     const { orderId, fulfillmentId } = await fulfilledOrder(service)
 
-    vi.spyOn(container.resolve<IOrderModuleService>(Modules.ORDER), 'updateFulfillmentStatus').mockRejectedValueOnce(
-      new Error('DB error'),
-    )
+    const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+    const original = orderService.retrieveOrder
+    let calls = 0
+    vi.spyOn(orderService, 'retrieveOrder').mockImplementation(async (...args) => {
+      calls++
+      if (calls > 1) throw new Error('DB error')
+      return original.apply(orderService, args)
+    })
 
     await expect(createOrderShipmentWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow('DB error')
 
     expect(await service.read.fulfillment(container, fulfillmentId)).toMatchObject({ shippedAt: null })
-    expect(await service.read.order(container, orderId)).toMatchObject({ fulfillmentStatus: 'fulfilled' })
   })
 })
