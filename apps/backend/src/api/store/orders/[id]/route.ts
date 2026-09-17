@@ -1,8 +1,13 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
 import type { IOrderModuleService } from '@core/types/order/service.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreOrderResponse } from '@proteus/http-schemas/store'
+import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
+import { computePaymentStatus } from '@workflows/order/utils/compute-payment-status.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = StoreOrderResponse
@@ -15,6 +20,8 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const customerId = req.authContext?.actorId
 
   const orderService = req.scope.resolve<IOrderModuleService>(Modules.ORDER)
+  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
   const order = await orderService.retrieveOrder(req.params.id)
 
   if (customerId && order.customerId !== customerId) {
@@ -28,14 +35,26 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     orderService.retrieveOrderAddress(order.id, 'shipping'),
   ])
 
+  const link = await linkService.repo('orderFulfillment').findByOrderId(order.id)
+  const fulfillments = link ? [await fulfillmentService.retrieveFulfillment(link.fulfillmentId)] : []
+
   const enrichedLineItems = orderService.enrichLineItems(lineItems)
   const totals = orderService.computeOrderTotals({ lineItems, shippingMethods, transactions })
-  const paymentStatus = orderService.computePaymentStatus(totals)
+  const fulfillmentStatus = computeFulfillmentStatus(fulfillments)
+  const paymentStatus = computePaymentStatus(totals)
 
   return {
     status: 200,
     json: {
-      order: { ...order, lineItems: enrichedLineItems, shippingAddress, shippingMethods, totals, paymentStatus },
+      order: {
+        ...order,
+        fulfillmentStatus,
+        lineItems: enrichedLineItems,
+        shippingAddress,
+        shippingMethods,
+        totals,
+        paymentStatus,
+      },
     },
   }
 }

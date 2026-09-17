@@ -8,7 +8,6 @@ export type OrderDTO = {
   id: string
   displayId: number
   status: OrderStatus
-  fulfillmentStatus: OrderFulfillmentStatus
   email: string
   customerId: string | null
   currencyCode: string
@@ -22,7 +21,6 @@ export interface FilterableOrderProps extends BaseFilterable<FilterableOrderProp
   id?: string | string[]
   displayId?: number | OperatorMap<number>
   status?: OrderStatus | OrderStatus[]
-  fulfillmentStatus?: OrderFulfillmentStatus | OrderFulfillmentStatus[]
   customerId?: string | string[]
   email?: string | OperatorMap<string>
   currencyCode?: string | string[]
@@ -152,4 +150,7 @@ export type OrderAllowedActions = {
   canComplete: boolean
   canCancel: boolean
   canArchive: boolean
+  canFulfill: boolean
+  canShip: boolean
+  canMarkAsDelivered: boolean
 }

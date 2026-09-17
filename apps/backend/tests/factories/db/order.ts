@@ -33,7 +33,6 @@ type CreateOrderOptions = {
 export function generateOrder(overrides?: Partial<CreateOrder>): CreateOrder {
   return {
     status: 'pending',
-    fulfillmentStatus: 'unfulfilled',
     email: faker.internet.email(),
     customerId: null,
     currencyCode: 'usd',

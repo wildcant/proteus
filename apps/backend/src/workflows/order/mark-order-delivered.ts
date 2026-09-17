@@ -6,6 +6,7 @@ import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 
 type MarkOrderDeliveredInput = {
   orderId: string
@@ -20,6 +21,8 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
     // Only shipped orders can be marked delivered, and the fulfillment must belong to this order.
     await ctx.step('validate-guards', async ({ container }) => {
       const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       const order = await orderService.retrieveOrder(input.orderId)
 
       if (order.status === 'canceled') {
@@ -29,14 +32,6 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
         })
       }
 
-      if (order.fulfillmentStatus !== 'shipped') {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot mark order ${input.orderId} as delivered: fulfillment status is "${order.fulfillmentStatus}", expected "shipped"`,
-        })
-      }
-
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       const link = await linkService.repo('orderFulfillment').findByFulfillmentId(input.fulfillmentId)
 
       if (!link || link.orderId !== input.orderId) {
@@ -46,13 +41,13 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
         })
       }
 
-      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
       const fulfillment = await fulfillmentService.retrieveFulfillment(input.fulfillmentId)
+      const status = computeFulfillmentStatus([fulfillment])
 
-      if (fulfillment.canceledAt) {
+      if (status !== 'shipped') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot deliver fulfillment ${input.fulfillmentId}: fulfillment is canceled`,
+          message: `Cannot mark order ${input.orderId} as delivered: fulfillment status is "${status}", expected "shipped"`,
         })
       }
     })
@@ -71,20 +66,9 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
       },
     )
 
-    // Terminal state — the order's physical lifecycle is complete. Compensates back to
-    // "shipped" if this step fails so the order doesn't get stuck in an inconsistent state.
-    const updated = await ctx.step(
-      'update-fulfillment-status',
-      async ({ container }) => {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-        return orderService.updateFulfillmentStatus(input.orderId, 'delivered')
-      },
-      async (_output, { container }) => {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-        await orderService.updateFulfillmentStatus(input.orderId, 'shipped')
-      },
-    )
-
-    return updated
+    return ctx.step('retrieve-order', async ({ container }) => {
+      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      return orderService.retrieveOrder(input.orderId)
+    })
   },
 )

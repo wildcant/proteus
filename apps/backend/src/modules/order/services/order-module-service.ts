@@ -13,14 +13,11 @@ import type {
   FilterableOrderTransactionProps,
   OrderAddressDTO,
   OrderAddressType,
-  OrderAllowedActions,
   OrderDTO,
-  OrderFulfillmentStatus,
   OrderLineItemDTO,
   OrderShippingMethodDTO,
   OrderTotals,
   OrderTransactionDTO,
-  PaymentStatus,
 } from '../../../core/types/order/common.js'
 import type {
   CreateOrderAddressDTO,
@@ -319,13 +316,6 @@ export class OrderModuleService implements IOrderModuleService {
         })
       }
 
-      if (order.fulfillmentStatus !== 'unfulfilled') {
-        throw new AppError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot cancel order ${id}: fulfillment status is "${order.fulfillmentStatus}", expected "unfulfilled"`,
-        })
-      }
-
       return this.orderRepository.update(id, { status: 'canceled', canceledAt: new Date() }, ctx)
     })
   }
@@ -345,40 +335,11 @@ export class OrderModuleService implements IOrderModuleService {
     })
   }
 
-  async updateFulfillmentStatus(id: string, status: OrderFulfillmentStatus, context?: Context): Promise<OrderDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      await this.orderRepository.findByIdOrFail(id, undefined, ctx)
-      return this.orderRepository.update(id, { fulfillmentStatus: status }, ctx)
-    })
-  }
-
-  // ---------------------------------------------------------------------------
-  // Computed status
-  // ---------------------------------------------------------------------------
-
   enrichLineItems(lineItems: OrderLineItemDTO[]): EnrichedOrderLineItemDTO[] {
     return lineItems.map((item) => ({
       ...item,
       lineTotal: item.unitPrice.multipliedBy(item.quantity),
     }))
-  }
-
-  computePaymentStatus(totals: OrderTotals): PaymentStatus {
-    if (totals.outstandingTotal.isZero()) {
-      return 'captured'
-    }
-    if (totals.paidTotal.isGreaterThan(0)) {
-      return 'authorized'
-    }
-    return 'awaiting'
-  }
-
-  computeAllowedActions(order: OrderDTO): OrderAllowedActions {
-    return {
-      canComplete: order.status === 'pending',
-      canCancel: order.status === 'pending' && order.fulfillmentStatus === 'unfulfilled',
-      canArchive: order.status === 'completed',
-    }
   }
 
   // ---------------------------------------------------------------------------

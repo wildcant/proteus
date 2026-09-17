@@ -103,6 +103,7 @@ export * from './adminOrderLineItem.ts';
 export * from './adminOrderListResponse.ts';
 export * from './adminOrderResponse.ts';
 export * from './adminOrderResponseOrder.ts';
+export * from './adminOrderResponseOrderPaymentStatus.ts';
 export * from './adminOrderShippingMethod.ts';
 export * from './adminOrderShippingMethodData.ts';
 export * from './adminOrderStatus.ts';

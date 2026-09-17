@@ -15,7 +15,6 @@ export function generateOrderDTO(overrides?: Partial<OrderDTO>): OrderDTO {
     id: `ord_${faker.string.alphanumeric(32)}`,
     displayId: faker.number.int({ min: 1, max: 99999 }),
     status: 'pending',
-    fulfillmentStatus: 'unfulfilled',
     email: faker.internet.email(),
     customerId: null,
     currencyCode: 'usd',

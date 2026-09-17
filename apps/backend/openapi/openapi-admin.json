@@ -1007,6 +1007,14 @@
                   "totals": {
                     "$ref": "#/components/schemas/AdminOrderTotals"
                   },
+                  "paymentStatus": {
+                    "type": "string",
+                    "enum": [
+                      "awaiting",
+                      "authorized",
+                      "captured"
+                    ]
+                  },
                   "allowedActions": {
                     "$ref": "#/components/schemas/AdminOrderAllowedActions"
                   },
@@ -1025,6 +1033,7 @@
                   "shippingMethods",
                   "transactions",
                   "totals",
+                  "paymentStatus",
                   "allowedActions",
                   "shippingAddress",
                   "fulfillments"
@@ -1351,12 +1360,24 @@
           },
           "canArchive": {
             "type": "boolean"
+          },
+          "canFulfill": {
+            "type": "boolean"
+          },
+          "canShip": {
+            "type": "boolean"
+          },
+          "canMarkAsDelivered": {
+            "type": "boolean"
           }
         },
         "required": [
           "canComplete",
           "canCancel",
-          "canArchive"
+          "canArchive",
+          "canFulfill",
+          "canShip",
+          "canMarkAsDelivered"
         ]
       },
       "AdminOrderAddress": {
@@ -6732,36 +6753,6 @@
             },
             "required": false,
             "name": "status",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "enum": [
-                    "unfulfilled",
-                    "fulfilled",
-                    "shipped",
-                    "delivered"
-                  ]
-                },
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "unfulfilled",
-                      "fulfilled",
-                      "shipped",
-                      "delivered"
-                    ]
-                  }
-                }
-              ]
-            },
-            "required": false,
-            "name": "fulfillmentStatus",
             "in": "query"
           },
           {

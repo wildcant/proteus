@@ -22,16 +22,13 @@ export function OrderFulfillmentSection({ order }: { order: AdminOrderResponseOr
         <CardTitle>Fulfillment</CardTitle>
         <CardAction className="flex items-center gap-x-3">
           <StatusBadge color={fulfillmentStatusColors[order.fulfillmentStatus]}>{order.fulfillmentStatus}</StatusBadge>
-          {/* TODO: move fulfillment action eligibility into backend allowedActions (see next-todos) */}
-          {order.fulfillmentStatus === 'unfulfilled' && order.status === 'pending' && (
-            <FulfillAction order={order} shippableItems={shippableItems} />
-          )}
-          {order.fulfillmentStatus === 'fulfilled' && fulfillment && (
+          {order.allowedActions.canFulfill ? <FulfillAction order={order} shippableItems={shippableItems} /> : null}
+          {order.allowedActions.canShip && fulfillment ? (
             <ShipAction orderId={order.id} fulfillmentId={fulfillment.id} />
-          )}
-          {order.fulfillmentStatus === 'shipped' && fulfillment && (
+          ) : null}
+          {order.allowedActions.canMarkAsDelivered && fulfillment ? (
             <DeliverAction orderId={order.id} fulfillmentId={fulfillment.id} />
-          )}
+          ) : null}
         </CardAction>
       </CardHeader>
 

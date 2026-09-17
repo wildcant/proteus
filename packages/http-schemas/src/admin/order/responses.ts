@@ -11,11 +11,14 @@ import {
   AdminOrderTransaction,
 } from './entities.js'
 
+export const PaymentStatus = z.enum(['awaiting', 'authorized', 'captured'])
+
 const AdminOrderWithDetails = AdminOrder.extend({
   lineItems: z.array(AdminOrderLineItem),
   shippingMethods: z.array(AdminOrderShippingMethod),
   transactions: z.array(AdminOrderTransaction),
   totals: AdminOrderTotals,
+  paymentStatus: PaymentStatus,
   allowedActions: AdminOrderAllowedActions,
   shippingAddress: AdminOrderAddress.nullable(),
   fulfillments: z.array(AdminOrderFulfillment),

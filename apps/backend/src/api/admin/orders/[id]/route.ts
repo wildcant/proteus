@@ -5,6 +5,9 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminOrderResponse, IdParams } from '@proteus/http-schemas/admin'
+import { computeAllowedActions } from '@workflows/order/utils/compute-allowed-actions.js'
+import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
+import { computePaymentStatus } from '@workflows/order/utils/compute-payment-status.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminOrderResponse
@@ -29,16 +32,21 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
   const enrichedLineItems = orderService.enrichLineItems(lineItems)
   const totals = orderService.computeOrderTotals({ lineItems, shippingMethods, transactions })
-  const allowedActions = orderService.computeAllowedActions(order)
+  const fulfillmentStatus = computeFulfillmentStatus(fulfillments)
+  const paymentStatus = computePaymentStatus(totals)
+  const allowedActions = computeAllowedActions(order, fulfillmentStatus)
+
   return {
     status: 200,
     json: {
       order: {
         ...order,
+        fulfillmentStatus,
         lineItems: enrichedLineItems,
         shippingMethods,
         transactions,
         totals,
+        paymentStatus,
         allowedActions,
         shippingAddress,
         fulfillments,

@@ -76,6 +76,9 @@ export const AdminOrderAllowedActions = z
     canComplete: z.boolean(),
     canCancel: z.boolean(),
     canArchive: z.boolean(),
+    canFulfill: z.boolean(),
+    canShip: z.boolean(),
+    canMarkAsDelivered: z.boolean(),
   })
   .openapi('AdminOrderAllowedActions')
 export type AdminOrderAllowedActions = z.input<typeof AdminOrderAllowedActions>

@@ -47,16 +47,6 @@ export const useOrderTable = () =>
           { label: 'Archived', value: 'archived' },
         ],
       }),
-      filter.accessor('fulfillmentStatus', {
-        type: 'select',
-        label: 'Fulfillment',
-        options: [
-          { label: 'Unfulfilled', value: 'unfulfilled' },
-          { label: 'Fulfilled', value: 'fulfilled' },
-          { label: 'Shipped', value: 'shipped' },
-          { label: 'Delivered', value: 'delivered' },
-        ],
-      }),
       filter.accessor('createdAt', {
         type: 'date',
         label: 'Date',

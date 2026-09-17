@@ -112,6 +112,7 @@ export type CreateFulfillmentDTO = {
   shippingOptionId?: string | null | undefined
   data?: unknown | undefined
   requiresShipping?: boolean | undefined
+  packedAt?: Date | null | undefined
   items: CreateFulfillmentItemDTO[]
   address: CreateFulfillmentAddressDTO
   metadata?: string | null | undefined
