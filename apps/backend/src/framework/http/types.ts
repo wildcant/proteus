@@ -4,6 +4,8 @@ import type { z } from 'zod'
 
 export type { MiddlewareFunction } from '@framework/http/ports.js'
 
+export type PermissionKey = string & { readonly __brand?: 'PermissionKey' }
+
 type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
 
 export function searchable<T>(...columns: Array<keyof T & string>): string[] {
@@ -60,6 +62,7 @@ type RouteInput = {
 
 type BaseRoute = {
   auth?: AuthPolicy
+  permissions?: PermissionKey[]
   description?: string
   // The failure half of the contract, next to `output`, which is the success half. Every type
   // listed becomes a declared response via the same `typeToStatus` map the runtime answers with,
