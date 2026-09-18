@@ -1,5 +1,6 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
+import * as userRoleRoutes from './[id]/roles/route.js'
 import * as userByIdRoutes from './[id]/route.js'
 import * as meRoutes from './me/route.js'
 import * as userRoutes from './route.js'
@@ -69,5 +70,28 @@ export default [
     summary: 'Delete a user',
     tags: [Tags.USERS],
     output: userByIdRoutes.DeleteOutput,
+  },
+  {
+    method: 'GET',
+    matcher: '/admin/users/:id/roles',
+    handler: userRoleRoutes.GET,
+    input: userRoleRoutes.GetInput,
+    permissions: ['access-control.assignment.read'],
+    operationId: 'listUserRoles',
+    summary: "List a user's roles",
+    tags: [Tags.USERS],
+    output: userRoleRoutes.GetOutput,
+  },
+  {
+    method: 'PUT',
+    matcher: '/admin/users/:id/roles',
+    handler: userRoleRoutes.PUT,
+    input: userRoleRoutes.PutInput,
+    permissions: ['access-control.assignment.manage'],
+    operationId: 'replaceUserRoles',
+    summary: "Replace a user's roles",
+    tags: [Tags.USERS],
+    throws: userRoleRoutes.PutThrows,
+    output: userRoleRoutes.PutOutput,
   },
 ] satisfies RouteDefinition[]

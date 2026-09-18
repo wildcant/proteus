@@ -2,9 +2,8 @@ import type { ErrorTypes } from '@core/errors/app-error.js'
 import type { HttpRequest, HttpResult, MiddlewareFunction } from '@framework/http/ports.js'
 import type { z } from 'zod'
 
-export type { MiddlewareFunction } from '@framework/http/ports.js'
-
 export type { PermissionKey } from '@core/types/access-control/common.js'
+export type { MiddlewareFunction } from '@framework/http/ports.js'
 
 type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
 
@@ -21,6 +20,7 @@ export const Tags = {
   FULFILLMENT_PROVIDERS: 'Fulfillment Providers',
   FULFILLMENT_SETS: 'Fulfillment Sets',
   PAYMENTS: 'Payments',
+  PERMISSIONS: 'Permissions',
   PAYMENT_COLLECTIONS: 'Payment Collections',
   PAYMENT_PROVIDERS: 'Payment Providers',
   PRODUCTS: 'Products',
@@ -28,6 +28,7 @@ export const Tags = {
   PRODUCT_VARIANTS: 'Product Variants',
   REFUND_REASONS: 'Refund Reasons',
   RESERVATIONS: 'Reservations',
+  ROLES: 'Roles',
   REGIONS: 'Regions',
   SHIPPING_OPTIONS: 'Shipping Options',
   SHIPPING_PROFILES: 'Shipping Profiles',
