@@ -16,10 +16,12 @@ BACKEND_DIR="$REPO_ROOT/apps/backend"
 # us here; this makes the script say so rather than depend on it.
 cd "$BACKEND_DIR"
 
-export NODE_OPTIONS="--dns-result-order=ipv4first"
-
-echo "==> Decrypting DIRECT_DATABASE_URL from .env..."
-DATABASE_URL=$(dotenvx get DIRECT_DATABASE_URL -f "$REPO_ROOT/.env")
+# Supabase direct-connection hostnames are IPv6-only; use the session-mode pooler (port 5432)
+# which keeps IPv4 and supports DDL.
+echo "==> Deriving session-mode pooler URL from POOLER_DATABASE_URL..."
+POOLER_URL=$(dotenvx get POOLER_DATABASE_URL -f "$REPO_ROOT/.env")
+DATABASE_URL="${POOLER_URL/6543/5432}"
+export DIRECT_DATABASE_URL="$DATABASE_URL"
 
 echo "==> Dropping public and drizzle schemas..."
 node -e "

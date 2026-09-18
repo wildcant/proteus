@@ -1,0 +1,32 @@
+# Access Control — Future TODOs
+
+Items explicitly deferred from Phase 1. Tracked here to avoid scope creep and ensure
+nothing falls through the cracks.
+
+## Phase 2: Policy Constraints
+
+- [ ] Audit events and action logs module (single table for all mutations, before/after snapshots, sync vs event bus decision, partitioning strategy)
+- [ ] Actor claim checks, resource attribute checks, ownership policies
+- [ ] Relationship resolvers
+- [ ] Query-filter compilation (`scope()` returns real filters instead of `undefined`)
+- [ ] Field policies (`fields()` returns real field restrictions instead of `'*'`)
+- [ ] `expires_at` enforcement on `actor_role_assignment` (temporary roles with UI support)
+- [ ] Per-user permission grants or denies (if ever needed beyond role assignment)
+- [ ] Role hierarchy or inheritance (evaluate if multiple role assignment is insufficient)
+
+## Phase 3: Scoped Tenancy
+
+- [ ] Organization/tenant membership
+- [ ] Scoped role assignments
+- [ ] PostgreSQL row-level security
+
+## Infrastructure / Pricing Tiers
+
+- [ ] Module enable/disable toggle — `filterGrantsByEnabledModules` is implemented but treats all modules as enabled. Wire to pricing tier module set when tiers ship.
+- [ ] Caching — permission resolution uses single indexed join query. Add in-memory cache keyed by `(actor_type, actor_id)` with short TTL if profiling shows bottleneck.
+
+## Considered and Deferred
+
+- [ ] CASL, Oso, Cedar, or external policy runtime — custom engine behind port is sufficient. Port makes swap possible later.
+- [ ] Customer roles — Phase 1 covers admin users only (`actor_type = 'user'`). `actor_type` discriminator supports future expansion.
+- [ ] Standalone `/admin/me/permissions` endpoint — permissions travel with `GET /admin/users/me` response. Revisit if client needs differ.
