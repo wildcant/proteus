@@ -13,11 +13,7 @@ type CustomerPermission = 'customer.read' | 'customer.create' | 'customer.update
 
 type PaymentPermission = 'payment.read' | 'payment.capture' | 'payment.refund'
 
-type FulfillmentPermission =
-  | 'fulfillment.read'
-  | 'fulfillment.create'
-  | 'fulfillment.update'
-  | 'fulfillment.delete'
+type FulfillmentPermission = 'fulfillment.read' | 'fulfillment.create' | 'fulfillment.update' | 'fulfillment.delete'
 
 type InventoryPermission = 'inventory.read'
 

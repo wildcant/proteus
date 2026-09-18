@@ -20,10 +20,7 @@ export function hasAllFeatures(granted: PermissionGrant[], required: PermissionK
   return required.every((r) => hasFeature(granted, r))
 }
 
-export function authorizeFeatures(
-  required: PermissionKey[],
-  subject: AuthorizationContext,
-): AuthorizationDecision {
+export function authorizeFeatures(required: PermissionKey[], subject: AuthorizationContext): AuthorizationDecision {
   if (subject.unrestricted) {
     return { allowed: true, missing: [] }
   }
@@ -60,10 +57,7 @@ export function resolveEffectiveFeatures(granted: PermissionGrant[]): Permission
   return [...result]
 }
 
-export function filterGrantsByEnabledModules(
-  grants: PermissionGrant[],
-  enabledModules: ModuleId[],
-): PermissionGrant[] {
+export function filterGrantsByEnabledModules(grants: PermissionGrant[], enabledModules: ModuleId[]): PermissionGrant[] {
   return grants.filter((grant) => {
     if (grant === '*') return true
     const moduleId = grant.split('.')[0] as ModuleId

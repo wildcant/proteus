@@ -4,7 +4,7 @@ import type { z } from 'zod'
 
 export type { MiddlewareFunction } from '@framework/http/ports.js'
 
-export type PermissionKey = string & { readonly __brand?: 'PermissionKey' }
+export type { PermissionKey } from '@core/types/access-control/common.js'
 
 type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
 
