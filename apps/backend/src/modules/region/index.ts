@@ -8,6 +8,11 @@ import { RegionModuleService } from './services/region-module-service.js'
 
 export default Module(Modules.REGION, {
   service: RegionModuleService,
+  features: [
+    { id: 'region.read', title: 'View regions' },
+    { id: 'region.create', title: 'Create regions' },
+    { id: 'region.update', title: 'Edit regions' },
+  ],
   models: {
     countryTable,
     regionTable,
