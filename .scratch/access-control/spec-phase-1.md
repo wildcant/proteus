@@ -445,6 +445,16 @@ if (grant === '*') {
 In Phase 1 all modules are enabled. When pricing tiers introduce module toggling, disabled modules
 are excluded from expansion and their permissions become inaccessible even for super admins.
 
+### Self-escalation prevention
+
+Assigning the super admin role requires the caller to already hold super admin. The service
+checks: if `roleIds` includes the super admin role, the calling actor must themselves be assigned
+to the super admin role. Otherwise the request is rejected with 403. This prevents any user with
+`access-control.assignment.manage` from escalating themselves or others to full access.
+
+Same pattern as the existing rule that only code deployments can modify the super admin role's
+definition — super admin is a trust boundary, not just another role.
+
 ### Last admin standing protection
 
 The service prevents:
@@ -502,7 +512,7 @@ queries become a bottleneck.
 | GET | `/admin/roles` | `access-control.role.read` | List roles |
 | POST | `/admin/roles` | `access-control.role.manage` | Create role |
 | GET | `/admin/roles/:id` | `access-control.role.read` | Get role detail |
-| POST | `/admin/roles/:id` | `access-control.role.manage` | Update role |
+| PATCH | `/admin/roles/:id` | `access-control.role.manage` | Update role |
 | DELETE | `/admin/roles/:id` | `access-control.role.manage` | Delete role |
 
 **User role assignment routes**
@@ -519,7 +529,7 @@ queries become a bottleneck.
 Request: `{ name: string, description?: string, features: PermissionGrant[] }`
 Response: `{ role: RoleResponse }`
 
-**`POST /admin/roles/:id` — update role**
+**`PATCH /admin/roles/:id` — update role**
 
 Request: `{ name?: string, description?: string, features?: PermissionGrant[] }`
 Response: `{ role: RoleResponse }`
@@ -530,7 +540,9 @@ rejected with 400.
 
 **`DELETE /admin/roles/:id`**
 
-Response: 200 on success. 400 if role is protected. 404 if not found.
+Response: 200 on success. 400 if role is protected. 400 if role has active assignments (message
+includes user count: `"Cannot delete role with N active assignments. Reassign users first."`).
+404 if not found.
 
 **`GET /admin/roles`**
 
@@ -546,7 +558,8 @@ Request: `{ roleIds: string[] }`
 Response: `{ roles: RoleResponse[] }`
 
 Validation: all role ids must exist. Empty array removes all roles (unless last super admin
-protection triggers).
+protection triggers). If `roleIds` includes the super admin role, the caller must hold super
+admin — otherwise 403.
 
 **Shared response type:**
 
@@ -789,6 +802,9 @@ Test cases:
 - `syncPermissions` soft-deletes keys no longer in catalogue if unassigned.
 - `syncPermissions` restores a soft-deleted key when re-registered.
 - Last super admin holder cannot have their assignment revoked.
+- Assigning super admin role requires caller to hold super admin.
+- Non-super-admin caller assigning super admin role is rejected.
+- Deleting a role with active assignments is rejected with user count in error message.
 - `replaceRoles` is atomic.
 - Duplicate feature ids across modules error during collection.
 
@@ -807,6 +823,9 @@ Test cases:
 - Super admin role cannot be deleted or modified via API.
 - Last super admin assignment cannot be removed via API.
 - Protected role cannot be deleted via API.
+- Role with active assignments cannot be deleted via API (400 with user count).
+- Non-super-admin user cannot assign super admin role via API (403).
+- Super admin user can assign super admin role via API.
 - `GET /admin/users/me` returns `allowedActions` and `sidebarGroups`.
 - A user with only `product.*` receives only product-related `allowedActions`.
 - A user with `'*'` receives all concrete keys in `allowedActions`.
