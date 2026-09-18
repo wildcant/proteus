@@ -14,6 +14,15 @@ import { OrderModuleService } from './services/order-module-service.js'
 
 export default Module(Modules.ORDER, {
   service: OrderModuleService,
+  features: [
+    { id: 'order.read', title: 'View orders' },
+    { id: 'order.complete', title: 'Complete orders' },
+    { id: 'order.cancel', title: 'Cancel orders' },
+    { id: 'order.archive', title: 'Archive orders' },
+    { id: 'order.fulfill', title: 'Fulfill orders' },
+    { id: 'order.ship', title: 'Ship orders' },
+    { id: 'order.deliver', title: 'Deliver orders' },
+  ],
   models: {
     orderAddressTable,
     orderLineItemTable,

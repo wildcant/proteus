@@ -1,16 +1,46 @@
 import { type AwilixContainer, asClass, asValue, createContainer } from 'awilix'
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
+import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import type { Logger } from '../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../core/utils/container.js'
-import type { ModuleDefinition } from '../../core/utils/module.js'
+import type { FeatureDeclaration, ModuleDefinition } from '../../core/utils/module.js'
 import { createWithTransaction } from '../../core/utils/with-transaction.js'
 import type { Database } from '../../schema.type.js'
+
+export type FeatureRegistryEntry = FeatureDeclaration & { module: string }
+
+const featureRegistry: FeatureRegistryEntry[] = []
+
+export function getFeatureRegistry(): readonly FeatureRegistryEntry[] {
+  return featureRegistry
+}
+
+export function resetFeatureRegistry(): void {
+  featureRegistry.length = 0
+}
+
+export function collectFeatures(moduleDefinition: ModuleDefinition): void {
+  if (!moduleDefinition.features) return
+
+  for (const feature of moduleDefinition.features) {
+    const existing = featureRegistry.find((entry) => entry.id === feature.id)
+    if (existing) {
+      throw new AppError({
+        type: ErrorTypes.UNEXPECTED_STATE,
+        message: `Duplicate feature id "${feature.id}": declared by both "${existing.module}" and "${moduleDefinition.key}"`,
+      })
+    }
+    featureRegistry.push({ ...feature, module: moduleDefinition.key })
+  }
+}
 
 export async function bootstrapModule<TOptions = Record<string, unknown>>(
   sharedContainer: AwilixContainer,
   moduleDefinition: ModuleDefinition,
   options?: TOptions,
 ): Promise<void> {
+  collectFeatures(moduleDefinition)
+
   const localContainer = createContainer()
 
   const getDb: () => Database = sharedContainer.resolve(ContainerRegistrationKeys.GET_DB)
