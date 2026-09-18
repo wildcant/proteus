@@ -95,9 +95,9 @@ test.describe('Protected and super admin immutability', () => {
   test('super admin role cannot be modified', async ({ expect }) => {
     const superRole = await roleRepository.create({
       name: 'Super Admin',
-      features: ['*'],
+      featuresJson: ['*'],
       isSuperAdmin: true,
-      isImmutable: true,
+      protected: true,
     })
 
     await expect(service.updateRole(superRole.id, { name: 'Not Super' })).rejects.toThrow(
@@ -109,8 +109,8 @@ test.describe('Protected and super admin immutability', () => {
   test('protected role cannot be renamed or deleted but features can be edited', async ({ expect }) => {
     const protectedRole = await roleRepository.create({
       name: 'System Role',
-      features: ['product.read'],
-      isImmutable: true,
+      featuresJson: ['product.read'],
+      protected: true,
     })
 
     await expect(service.updateRole(protectedRole.id, { name: 'Renamed' })).rejects.toThrow(
@@ -275,9 +275,9 @@ test.describe('Last super admin protection', () => {
   test('cannot revoke the last super admin assignment', async ({ expect }) => {
     const superRole = await roleRepository.create({
       name: 'Super Admin',
-      features: ['*'],
+      featuresJson: ['*'],
       isSuperAdmin: true,
-      isImmutable: true,
+      protected: true,
     })
     await service.assignRoles('user', 'usr_admin', [superRole.id], { callerGrantsIncludeSuperAdmin: true })
 
@@ -289,9 +289,9 @@ test.describe('Last super admin protection', () => {
   test('can revoke super admin when another holder exists', async ({ expect }) => {
     const superRole = await roleRepository.create({
       name: 'Super Admin',
-      features: ['*'],
+      featuresJson: ['*'],
       isSuperAdmin: true,
-      isImmutable: true,
+      protected: true,
     })
     await service.assignRoles('user', 'usr_admin1', [superRole.id], { callerGrantsIncludeSuperAdmin: true })
     await service.assignRoles('user', 'usr_admin2', [superRole.id], { callerGrantsIncludeSuperAdmin: true })
@@ -307,9 +307,9 @@ test.describe('Self-escalation prevention', () => {
   test('assigning super admin role requires caller to hold super admin', async ({ expect }) => {
     const superRole = await roleRepository.create({
       name: 'Super Admin',
-      features: ['*'],
+      featuresJson: ['*'],
       isSuperAdmin: true,
-      isImmutable: true,
+      protected: true,
     })
 
     await expect(
@@ -320,9 +320,9 @@ test.describe('Self-escalation prevention', () => {
   test('caller with super admin can assign super admin', async ({ expect }) => {
     const superRole = await roleRepository.create({
       name: 'Super Admin',
-      features: ['*'],
+      featuresJson: ['*'],
       isSuperAdmin: true,
-      isImmutable: true,
+      protected: true,
     })
 
     await service.assignRoles('user', 'usr_1', [superRole.id], { callerGrantsIncludeSuperAdmin: true })
@@ -364,9 +364,9 @@ test.describe('replaceRoles atomicity', () => {
   test('replace enforces last super admin protection', async ({ expect }) => {
     const superRole = await roleRepository.create({
       name: 'Super Admin',
-      features: ['*'],
+      featuresJson: ['*'],
       isSuperAdmin: true,
-      isImmutable: true,
+      protected: true,
     })
     const normalRole = await service.createRole({ name: 'Normal', features: ['product.read' as PermissionKey] })
 
