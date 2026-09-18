@@ -15,4 +15,5 @@ export const Modules = {
   REGION: 'region',
   STOCK_LOCATION: 'stockLocation',
   STORE: 'store',
+  ACCESS_CONTROL: 'accessControl',
 } as const
