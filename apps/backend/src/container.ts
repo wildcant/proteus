@@ -42,6 +42,7 @@ import productModule from './modules/product/index.js'
 import regionModule from './modules/region/index.js'
 import stockLocationModule from './modules/stock-location/index.js'
 import storeModule from './modules/store/index.js'
+import accessControlModule from './modules/access-control/index.js'
 import userModule from './modules/user/index.js'
 
 export type BootstrapContainerDeps = {
