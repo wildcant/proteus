@@ -41,6 +41,7 @@ import productModule from './modules/product/index.js'
 import regionModule from './modules/region/index.js'
 import stockLocationModule from './modules/stock-location/index.js'
 import storeModule from './modules/store/index.js'
+import accessControlModule from './modules/access-control/index.js'
 import userModule from './modules/user/index.js'
 
 export type BootstrapContainerDeps = {
@@ -106,6 +107,7 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   await bootstrapModule(container, stockLocationModule)
   await bootstrapModule(container, storeModule)
   await bootstrapModule(container, userModule)
+  await bootstrapModule(container, accessControlModule)
 
   registerLinkService(container)
   setWorkflowEngine(selectWorkflowEngine(deps, configModule.projectConfig.workflows.engine), container)
