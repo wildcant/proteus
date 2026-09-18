@@ -67,7 +67,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
   async createRole(data: CreateRoleDTO, context?: Context): Promise<RoleDTO> {
     this.validateFeatureIds(data.features)
     const role = await this.roleRepository.create(
-      { name: data.name, description: data.description ?? null, features: data.features },
+      { name: data.name, description: data.description ?? null, featuresJson: data.features },
       context,
     )
     return this.toRoleDTO(role)
@@ -84,7 +84,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         })
       }
 
-      if (existing.isImmutable) {
+      if (existing.protected) {
         if (data.name !== undefined && data.name !== existing.name) {
           throw new AppError({
             type: ErrorTypes.NOT_ALLOWED,
@@ -100,7 +100,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       const updates: Record<string, unknown> = {}
       if (data.name !== undefined) updates.name = data.name
       if (data.description !== undefined) updates.description = data.description
-      if (data.features !== undefined) updates.features = data.features
+      if (data.features !== undefined) updates.featuresJson = data.features
 
       if (Object.keys(updates).length === 0) return this.toRoleDTO(existing)
 
@@ -113,7 +113,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     return this.withTransaction(context, async (ctx) => {
       const role = await this.roleRepository.findByIdOrFail(roleId, undefined, ctx)
 
-      if (role.isSuperAdmin || role.isImmutable) {
+      if (role.isSuperAdmin || role.protected) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
           message: 'Protected role cannot be deleted',
@@ -133,17 +133,17 @@ export class AccessControlModuleService implements IAccessControlModuleService {
   }
 
   async retrieveRole(roleId: string, config?: FindConfig<RoleDTO>, context?: Context): Promise<RoleDTO> {
-    const role = await this.roleRepository.findByIdOrFail(roleId, config, context)
+    const role = await this.roleRepository.findByIdOrFail(roleId, this.toRoleFindConfig(config), context)
     return this.toRoleDTO(role)
   }
 
   async listRoles(config?: FindConfig<RoleDTO>, context?: Context): Promise<RoleDTO[]> {
-    const roles = await this.roleRepository.find(undefined, config, context)
+    const roles = await this.roleRepository.find(undefined, this.toRoleFindConfig(config), context)
     return roles.map((r) => this.toRoleDTO(r))
   }
 
   async listAndCountRoles(config?: FindConfig<RoleDTO>, context?: Context): Promise<[RoleDTO[], number]> {
-    const [roles, count] = await this.roleRepository.findAndCount(undefined, config, context)
+    const [roles, count] = await this.roleRepository.findAndCount(undefined, this.toRoleFindConfig(config), context)
     return [roles.map((r) => this.toRoleDTO(r)), count]
   }
 
@@ -432,7 +432,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
   private async findRolesReferencingPermission(key: PermissionKey, context: Context): Promise<Role[]> {
     const allRoles = await this.roleRepository.find(undefined, undefined, context)
     return allRoles.filter((role) => {
-      return role.features.some((grant) => {
+      return role.featuresJson.some((grant) => {
         if (grant === key) return true
         if (grant === '*') return true
         if (grant.endsWith('.*')) {
@@ -456,13 +456,34 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     }
   }
 
+  private static readonly DTO_TO_ENTITY_KEY: Record<string, string> = {
+    features: 'featuresJson',
+    isImmutable: 'protected',
+  }
+
+  private toRoleFindConfig(config?: FindConfig<RoleDTO>): FindConfig<Role> | undefined {
+    if (!config) return undefined
+    const mapped: FindConfig<Role> = { ...config, select: undefined, order: undefined }
+    if (config.select) {
+      mapped.select = config.select.map(
+        (k) => (AccessControlModuleService.DTO_TO_ENTITY_KEY[k as string] ?? k) as keyof Role,
+      )
+    }
+    if (config.order) {
+      mapped.order = Object.fromEntries(
+        Object.entries(config.order).map(([k, v]) => [AccessControlModuleService.DTO_TO_ENTITY_KEY[k] ?? k, v]),
+      ) as FindConfig<Role>['order']
+    }
+    return mapped
+  }
+
   private toRoleDTO(role: Role): RoleDTO {
     return {
       id: role.id,
       name: role.name,
       description: role.description,
-      features: role.features,
-      isImmutable: role.isImmutable || role.isSuperAdmin,
+      features: role.featuresJson as PermissionGrant[],
+      isImmutable: role.protected || role.isSuperAdmin,
       createdAt: role.createdAt,
       updatedAt: role.updatedAt,
       deletedAt: role.deletedAt,
