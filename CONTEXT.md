@@ -141,3 +141,53 @@ Text that reaches the shopper from the backend — product titles and descriptio
 titles and values, Variant Titles, shipping option names, payment provider labels, API error
 messages. The storefront cannot translate it; only the backend that owns it can.
 _Avoid_: catalogue copy, dynamic content, server strings
+
+### Access control
+
+**Feature**:
+A capability a module registers at startup — a string key and a human-readable title. Features are
+the unit of permission the system knows about. A module owns its features the way it owns its tables;
+no other module may register the same key.
+_Avoid_: permission (for the registration side), capability, privilege, entitlement
+
+**Permission Key**:
+The `model.action` string that identifies a Feature — `product.read`, `order.cancel`,
+`user.invite.create`. Sub-models nest with an extra dot segment. A Permission Key is always concrete:
+it names exactly one action on one model, never a wildcard.
+_Avoid_: permission string, scope, access key, ACL entry
+
+**Permission Grant**:
+What a Role stores: a Permission Key, a module wildcard (`product.*`), or the global wildcard
+(`'*'`). A Grant is what the admin picks; it may be broader than a single Permission Key. The
+authorization engine expands grants to concrete keys at check time.
+_Avoid_: permission (unqualified when the distinction matters), entitlement, access level
+
+**Role**:
+A named set of Permission Grants that can be assigned to actors. Roles compose by union — an actor
+with two Roles holds the union of both grant sets. There is no hierarchy, no inheritance, and no deny
+rules. A protected Role cannot be deleted; the super admin Role is also immutable.
+_Avoid_: access level, permission group, profile, tier
+
+**Super Admin**:
+The one Role whose grant set is `['*']` — the global wildcard that matches every Permission Key
+without enumeration. It is not a special code path; the engine treats `'*'` as a grant like any
+other, and `matchFeature` returns true for every requirement. Immutable through the admin API.
+_Avoid_: root, god mode, admin (unqualified)
+
+**Actor Role Assignment**:
+The record that binds an actor (identified by type and id) to a Role. Polymorphic: `actor_type`
+discriminates the kind of actor (`'user'` in Phase 1), and `actor_id` is an opaque reference to
+that actor's id. Lives inside the access-control module, not as a link module.
+_Avoid_: user role, role membership, role binding, ACL
+
+**Authorization Actor**:
+The identity carried on request context that the authorization engine evaluates — the actor's id,
+type, granted features, and whether it is unrestricted. Built from the session's auth context by
+middleware and threaded through service calls on the `Context` object.
+_Avoid_: current user, auth user, session user, principal
+
+**Effective Features**:
+The concrete Permission Keys an actor actually holds after all wildcard grants are expanded against
+the registered Feature catalogue. What the server sends to the frontend as `allowedActions`. Contains
+no wildcards — every entry is a Permission Key the client can match with exact string comparison.
+_Avoid_: resolved permissions, expanded grants, active permissions
