@@ -276,6 +276,11 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     })
   }
 
+  async countRoleAssignments(roleId: string, context?: Context): Promise<number> {
+    const assignments = await this.actorRoleAssignmentRepository.find({ roleId }, undefined, context)
+    return assignments.length
+  }
+
   async listActorRoles(actorType: string, actorId: string, context?: Context): Promise<RoleDTO[]> {
     const assignments = await this.actorRoleAssignmentRepository.find({ actorType, actorId }, undefined, context)
     if (assignments.length === 0) return []
@@ -296,6 +301,10 @@ export class AccessControlModuleService implements IAccessControlModuleService {
 
   async listUserRoles(userId: string, context?: Context): Promise<RoleDTO[]> {
     return this.listActorRoles('user', userId, context)
+  }
+
+  async listGrantedPermissionKeys(actorType: string, actorId: string, context?: Context): Promise<string[]> {
+    return this.resolveEffectiveFeatures(actorType, actorId, context)
   }
 
   // ── Resolution ───────────────────────────────────────────────────────
@@ -483,6 +492,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       name: role.name,
       description: role.description,
       features: role.featuresJson as PermissionGrant[],
+      isSuperAdmin: role.isSuperAdmin,
+      protected: role.protected,
       isImmutable: role.protected || role.isSuperAdmin,
       createdAt: role.createdAt,
       updatedAt: role.updatedAt,

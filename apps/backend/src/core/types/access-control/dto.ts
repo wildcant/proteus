@@ -18,6 +18,8 @@ export type RoleDTO = {
   name: string
   description: string | null
   features: PermissionGrant[]
+  isSuperAdmin: boolean
+  protected: boolean
   isImmutable: boolean
   createdAt: Date
   updatedAt: Date
