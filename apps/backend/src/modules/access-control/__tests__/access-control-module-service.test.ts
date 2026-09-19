@@ -1,6 +1,6 @@
 import type { FeatureDeclaration } from '@core/access-control/features.js'
 import { clearRegistry, registerFeatures } from '@core/access-control/features.js'
-import type { PermissionKey } from '@core/types/access-control/common.js'
+import type { PermissionGrant, PermissionKey } from '@core/types/access-control/common.js'
 import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
@@ -394,5 +394,29 @@ test.describe('Duplicate feature ids error', () => {
     await expect(
       service.updateRole(role.id, { features: ['order.read' as PermissionKey, 'order.read' as PermissionKey] }),
     ).rejects.toThrow('Duplicate feature id')
+  })
+})
+
+test.describe('Grant validation against registered features', () => {
+  test('rejects unknown concrete permission key', async ({ expect }) => {
+    await expect(service.createRole({ name: 'Bad', features: ['nonexistent.perm' as PermissionKey] })).rejects.toThrow(
+      'Unknown permission key: nonexistent.perm',
+    )
+  })
+
+  test('rejects unknown module wildcard', async ({ expect }) => {
+    await expect(service.createRole({ name: 'Bad', features: ['fake.*' as PermissionGrant] })).rejects.toThrow(
+      'Unknown module wildcard: fake.*',
+    )
+  })
+
+  test('accepts valid module wildcard', async ({ expect }) => {
+    const role = await service.createRole({ name: 'All Products', features: ['product.*'] })
+    expect(role.features).toEqual(['product.*'])
+  })
+
+  test('accepts global wildcard', async ({ expect }) => {
+    const role = await service.createRole({ name: 'Super', features: ['*'] })
+    expect(role.features).toEqual(['*'])
   })
 })

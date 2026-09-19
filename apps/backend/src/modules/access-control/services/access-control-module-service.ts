@@ -463,6 +463,34 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       }
       seen.add(feature)
     }
+
+    const registered = getRegisteredFeatures()
+    const moduleIds = new Set<string>()
+    for (const declaration of registered.values()) {
+      moduleIds.add(declaration.module)
+    }
+
+    for (const grant of features) {
+      if (grant === '*') continue
+
+      if (grant.endsWith('.*')) {
+        const module = grant.slice(0, -2)
+        if (!moduleIds.has(module)) {
+          throw new AppError({
+            type: ErrorTypes.INVALID_DATA,
+            message: `Unknown module wildcard: ${grant}`,
+          })
+        }
+        continue
+      }
+
+      if (!registered.has(grant as PermissionKey)) {
+        throw new AppError({
+          type: ErrorTypes.INVALID_DATA,
+          message: `Unknown permission key: ${grant}`,
+        })
+      }
+    }
   }
 
   private static readonly DTO_TO_ENTITY_KEY: Record<string, string> = {

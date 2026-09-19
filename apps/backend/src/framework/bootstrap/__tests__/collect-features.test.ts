@@ -1,4 +1,5 @@
 import { test } from '@tests/setup/test-extend.js'
+import { getRegisteredFeatures } from '../../../core/access-control/features.js'
 import type { ModuleDefinition } from '../../../core/utils/module.js'
 import { collectFeatures, getFeatureRegistry, resetFeatureRegistry } from '../index.js'
 
@@ -44,5 +45,22 @@ test.describe('collectFeatures', () => {
     expect(() => collectFeatures(stubModule('order', [{ id: 'product.read', title: 'Also view products' }]))).toThrow(
       'Duplicate feature id "product.read": declared by both "product" and "order"',
     )
+  })
+
+  test('populates core feature registry alongside bootstrap registry', ({ expect }) => {
+    collectFeatures(
+      stubModule('product', [
+        { id: 'product.read', title: 'View products' },
+        { id: 'product.create', title: 'Create products' },
+      ]),
+    )
+
+    const coreRegistry = getRegisteredFeatures()
+    expect(coreRegistry.size).toBe(2)
+    expect(coreRegistry.get('product.read' as never)).toEqual({
+      id: 'product.read',
+      title: 'View products',
+      module: 'product',
+    })
   })
 })

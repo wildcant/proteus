@@ -24,6 +24,7 @@ export type ModuleDefinition = {
    */
   models: Record<string, unknown>
   loaders?: LoaderFunction[]
+  postLoaders?: LoaderFunction[]
   features?: FeatureDeclaration[]
 }
 
@@ -34,6 +35,7 @@ export function Module<const Key extends string, const Service extends Construct
     repositories: Record<string, Constructor>
     models: Record<string, unknown>
     loaders?: LoaderFunction[]
+    postLoaders?: LoaderFunction[]
     features?: FeatureDeclaration[]
   },
 ): ModuleDefinition {
