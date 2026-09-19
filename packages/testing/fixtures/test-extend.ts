@@ -2,6 +2,7 @@ import type { Response } from '@playwright/test'
 import { test as base, expect } from '@playwright/test'
 import { interpolatePath } from '@tanstack/react-router'
 import {
+  createActorRoleAssignment,
   createCart,
   createCustomer,
   createCustomerAddress,
@@ -28,6 +29,7 @@ import {
   createProductWithOption,
   createProductWithPricing,
   createReservationItem,
+  createRole,
   createServiceZone,
   createShippingOption,
   createShippingOptionType,
@@ -35,6 +37,7 @@ import {
   createShippingProfile,
   createStockLocation,
   createUser,
+  deleteActorRoleAssignmentById,
   deleteCartById,
   deleteCustomerAddressById,
   deleteCustomerById,
@@ -55,12 +58,14 @@ import {
   deleteProductVariantImageById,
   deleteProductVariantOptionById,
   deleteProductVariantPriceSetById,
+  deleteRoleById,
   deleteServiceZoneById,
   deleteShippingOptionById,
   deleteShippingOptionTypeById,
   deleteShippingProfileById,
   deleteStockLocationById,
   deleteUserById,
+  generateActorRoleAssignment,
   generateCart,
   generateCustomer,
   generateCustomerAddress,
@@ -81,6 +86,7 @@ import {
   generateProductVariantImage,
   generateProductVariantOption,
   generateProductVariantPriceSet,
+  generateRole,
   generateServiceZone,
   generateShippingOption,
   generateShippingOptionType,
@@ -160,9 +166,11 @@ const customer = definePersona('customer', {
 /** The database factories exposed on the `factories` fixture. */
 export type Factories = {
   generate: {
+    actorRoleAssignment: typeof generateActorRoleAssignment
     cart: typeof generateCart
     customer: typeof generateCustomer
     customerAddress: typeof generateCustomerAddress
+    role: typeof generateRole
     user: typeof generateUser
     product: typeof generateProduct
     productImage: typeof generateProductImage
@@ -194,9 +202,11 @@ export type Factories = {
     notification: typeof retrieveNotification
   }
   create: {
+    actorRoleAssignment: typeof createActorRoleAssignment
     cart: typeof createCart
     customer: typeof createCustomer
     customerAddress: typeof createCustomerAddress
+    role: typeof createRole
     user: typeof createUser
     product: typeof createProduct
     productImage: typeof createProductImage
@@ -229,10 +239,12 @@ export type Factories = {
     order: typeof createOrder
   }
   destroy: {
+    actorRoleAssignment: typeof deleteActorRoleAssignmentById
     cart: typeof deleteCartById
     notification: typeof deleteNotificationsByIds
     customer: typeof deleteCustomerById
     customerAddress: typeof deleteCustomerAddressById
+    role: typeof deleteRoleById
     user: typeof deleteUserById
     product: typeof deleteProductById
     productImage: typeof deleteProductImageById
@@ -270,9 +282,11 @@ export function createTest<RoutePath extends string = string>() {
   }>({
     factories: {
       generate: {
+        actorRoleAssignment: generateActorRoleAssignment,
         cart: generateCart,
         customer: generateCustomer,
         customerAddress: generateCustomerAddress,
+        role: generateRole,
         user: generateUser,
         product: generateProduct,
         productImage: generateProductImage,
@@ -306,9 +320,11 @@ export function createTest<RoutePath extends string = string>() {
         notification: retrieveNotification,
       },
       create: {
+        actorRoleAssignment: createActorRoleAssignment,
         cart: createCart,
         customer: createCustomer,
         customerAddress: createCustomerAddress,
+        role: createRole,
         user: createUser,
         product: createProduct,
         productImage: createProductImage,
@@ -341,10 +357,12 @@ export function createTest<RoutePath extends string = string>() {
         order: createOrder,
       },
       destroy: {
+        actorRoleAssignment: deleteActorRoleAssignmentById,
         cart: deleteCartById,
         notification: deleteNotificationsByIds,
         customer: deleteCustomerById,
         customerAddress: deleteCustomerAddressById,
+        role: deleteRoleById,
         user: deleteUserById,
         product: deleteProductById,
         productImage: deleteProductImageById,
