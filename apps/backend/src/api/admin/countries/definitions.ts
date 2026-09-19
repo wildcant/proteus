@@ -12,8 +12,10 @@ export default [
     // The alpha-2 code as well as the name: a merchant looking for Colombia is as likely to type
     // `co` as `Colom`, and the code is what the Code column shows them.
     searchableColumns: searchable<CountryDTO>('displayName', 'id'),
+    permissions: ['region.read'],
     operationId: 'listCountries',
     summary: 'List countries',
+    auth: 'required',
     tags: [Tags.COUNTRIES],
     output: countryRoutes.GetOutput,
   },

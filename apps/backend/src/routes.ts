@@ -2,6 +2,7 @@ import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'
 import type { RouteDefinition } from '@framework/http/types.js'
+import { AppError, ErrorTypes } from './core/errors/app-error.js'
 import type { Logger } from './core/types/logger.js'
 import { registerOpenApiRoute } from './framework/http/openapi/register-route.js'
 import type { PreparedRoute } from './framework/http/ports.js'
@@ -20,11 +21,13 @@ import adminOrderDefinitions from './api/admin/orders/definitions.js'
 import adminPaymentCollectionDefinitions from './api/admin/payment-collections/definitions.js'
 import adminPaymentProviderDefinitions from './api/admin/payment-providers/definitions.js'
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
+import adminAccessControlPermissionDefinitions from './api/admin/permissions/definitions.js'
 import adminProductOptionDefinitions from './api/admin/product-options/definitions.js'
 import adminProductDefinitions from './api/admin/products/definitions.js'
 import adminRefundReasonDefinitions from './api/admin/refund-reasons/definitions.js'
 import adminRegionDefinitions from './api/admin/regions/definitions.js'
 import adminReservationDefinitions from './api/admin/reservations/definitions.js'
+import adminAccessControlRoleDefinitions from './api/admin/roles/definitions.js'
 import adminShippingOptionDefinitions from './api/admin/shipping-options/definitions.js'
 import adminShippingProfileDefinitions from './api/admin/shipping-profiles/definitions.js'
 import adminStoreDefinitions from './api/admin/store/definitions.js'
@@ -53,6 +56,8 @@ const storeSharedAuthRoutes = new Set([
 
 export const adminDefinitions: RouteDefinition[] = [
   ...authDefinitions,
+  ...adminAccessControlPermissionDefinitions,
+  ...adminAccessControlRoleDefinitions,
   ...adminCountryDefinitions,
   ...adminCustomerDefinitions,
   ...adminFulfillmentProviderDefinitions,
@@ -93,6 +98,30 @@ const allDefinitions = [...new Set([...adminDefinitions, ...storeDefinitions, ..
 
 // ---- Preparation ----
 
+function validatePermissionDeclarations(definitions: RouteDefinition[]): void {
+  const hasAnyPermissions = definitions.some((d) => d.permissions && d.permissions.length > 0)
+  if (!hasAnyPermissions) return
+
+  const missing: string[] = []
+  for (const definition of definitions) {
+    const auth = definition.auth ?? 'required'
+    if (auth !== 'required') continue
+    if (definition.permissions && definition.permissions.length > 0) continue
+    if (definition.matcher === '/admin/users/me' && definition.method === 'GET') continue
+    // Auth routes handle their own authentication via PostMiddlewares (not namespace auth) and don't participate in RBAC
+    if (definition.matcher.startsWith('/auth/')) continue
+
+    missing.push(`${definition.method} ${definition.matcher}`)
+  }
+
+  if (missing.length > 0) {
+    throw new AppError({
+      type: ErrorTypes.UNEXPECTED_STATE,
+      message: `Routes with auth: 'required' must declare permissions. Missing on:\n  ${missing.join('\n  ')}`,
+    })
+  }
+}
+
 export function prepareRoutes(
   logger: Logger,
   registries?: { admin: OpenAPIRegistry; store: OpenAPIRegistry },
@@ -100,6 +129,8 @@ export function prepareRoutes(
   for (const definition of allDefinitions) {
     applyNamespaceAuth(definition)
   }
+
+  validatePermissionDeclarations(adminDefinitions)
 
   if (registries) {
     for (const definition of adminDefinitions) {

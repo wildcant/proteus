@@ -25,6 +25,13 @@ valid:
       authorized: 'authorized',
       captured: 'captured',
     }
+  # An arrow inside a handler is a local lambda, not a file-scope helper.
+  - |
+    export const GET = async (req) => {
+      const transform = (r: Row) => ({ id: r.id, name: r.name })
+      const rows = await service.listThings()
+      return { status: 200, json: { items: rows.map(transform) } }
+    }
 invalid:
   # The shipping-options country fallback: no `req`, three reads across two modules, and invisible
   # to the workflow step that wanted the same answer.
@@ -44,3 +51,13 @@ invalid:
     function toCents(amount: number) {
       return Math.round(amount * 100)
     }
+  # Arrow form of a helper — same problem, different syntax.
+  - |
+    const findRoleOrFail = async (accessControl: IAccessControlModuleService, id: string) => {
+      const role = await accessControl.findRole(id)
+      if (!role) throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Role not found' })
+      return role
+    }
+  # One-liner arrow helper is still a helper.
+  - |
+    const toCents = (amount: number) => Math.round(amount * 100)

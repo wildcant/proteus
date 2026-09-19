@@ -9,6 +9,7 @@ import { NotificationModuleService } from './services/notification-module-servic
 
 export default Module(Modules.NOTIFICATION, {
   service: NotificationModuleService,
+  features: [{ id: 'notification.read', title: 'View notifications' }],
   models: {
     notificationProviderTable,
     notificationTable,

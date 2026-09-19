@@ -10,6 +10,7 @@ import { InventoryModuleService } from './services/inventory-module-service.js'
 
 export default Module(Modules.INVENTORY, {
   service: InventoryModuleService,
+  features: [{ id: 'inventory.read', title: 'View inventory' }],
   models: {
     inventoryItemTable,
     inventoryLevelTable,

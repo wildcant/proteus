@@ -15,6 +15,7 @@ export const meQueryOptions = () =>
   queryOptions({
     queryKey: authQueryKeys.detail('me'),
     queryFn: () => getMe(),
+    refetchOnWindowFocus: true,
   })
 
 export const useMe = () => {
