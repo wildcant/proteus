@@ -1,3 +1,4 @@
+import type { IAccessControlModuleService } from '@core/types/access-control/service.js'
 import type { IUserModuleService } from '@core/types/user/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -13,10 +14,19 @@ export const GetOutput = AdminUserListResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const userService = req.scope.resolve<IUserModuleService>(Modules.USER)
+  const accessControl = req.scope.resolve<IAccessControlModuleService>(Modules.ACCESS_CONTROL)
   const { pagination, filters } = req.validatedQuery
   const [users, count] = await userService.listAndCountUsers(filters, pagination)
   const { offset, limit } = pagination
-  return { status: 200, json: { users, count, offset, limit } }
+
+  const usersWithRoles = await Promise.all(
+    users.map(async (user) => {
+      const roles = await accessControl.listActorRoles('user', user.id)
+      return { ...user, roles: roles.map((r) => ({ id: r.id, name: r.name })) }
+    }),
+  )
+
+  return { status: 200, json: { users: usersWithRoles, count, offset, limit } }
 }
 
 export const PostInput = { body: AdminCreateUser }

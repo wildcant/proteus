@@ -234,6 +234,8 @@ export * from './adminUploadFiles.ts';
 export * from './adminUploadResponse.ts';
 export * from './adminUser.ts';
 export * from './adminUserListResponse.ts';
+export * from './adminUserListResponseUsersItem.ts';
+export * from './adminUserListResponseUsersItemRolesItem.ts';
 export * from './adminUserResponse.ts';
 export * from './adminUserRolesResponse.ts';
 export * from './adminVariantOptionValue.ts';

@@ -5546,7 +5546,37 @@
           "users": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AdminUser"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminUser"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "roles": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "roles"
+                  ]
+                }
+              ]
             }
           }
         },
