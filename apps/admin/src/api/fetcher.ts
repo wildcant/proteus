@@ -1,6 +1,7 @@
 import qs from 'qs'
 import { env } from '#/env'
 import { clearToken, getToken } from '#/lib/auth-token'
+import { ForbiddenError } from '#/lib/errors'
 
 export const fetcher = async <T>({
   url,
@@ -53,7 +54,14 @@ export const fetcher = async <T>({
     }
 
     const body = await response.json().catch(() => null)
-    throw new Error(body?.message ?? `${method} ${url} failed: ${response.status}`)
+    const message = body?.message ?? `${method} ${url} failed: ${response.status}`
+
+    if (response.status === 403) {
+      const error = new ForbiddenError(message)
+      throw error
+    }
+
+    throw new Error(message)
   }
 
   if ([204, 205, 304].includes(response.status)) return {} as T

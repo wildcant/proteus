@@ -7,9 +7,12 @@
  */
 import type {
   AdminCreateUser,
+  AdminMeResponse,
+  AdminReplaceUserRoles,
   AdminUpdateUser,
   AdminUserListResponse,
   AdminUserResponse,
+  AdminUserRolesResponse,
   DeleteResponse,
   ListUsersParams
 } from '../model';
@@ -25,7 +28,7 @@ import type { BodyType } from '../../fetcher.ts';
 export const getMe = (
 
  ) => {
-      return fetcher<AdminUserResponse>(
+      return fetcher<AdminMeResponse>(
       {url: `/admin/users/me`, method: 'GET'
     },
       );
@@ -91,9 +94,36 @@ export const deleteUser = (
     },
       );
     }
+  /**
+ * @summary List a user's roles
+ */
+export const listUserRoles = (
+    id: string,
+ ) => {
+      return fetcher<AdminUserRolesResponse>(
+      {url: `/admin/users/${id}/roles`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * @summary Replace a user's roles
+ */
+export const replaceUserRoles = (
+    id: string,
+    adminReplaceUserRoles?: BodyType<AdminReplaceUserRoles>,
+ ) => {
+      return fetcher<AdminUserRolesResponse>(
+      {url: `/admin/users/${id}/roles`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: adminReplaceUserRoles
+    },
+      );
+    }
   export type GetMeResult = NonNullable<Awaited<ReturnType<typeof getMe>>>
 export type ListUsersResult = NonNullable<Awaited<ReturnType<typeof listUsers>>>
 export type CreateUserResult = NonNullable<Awaited<ReturnType<typeof createUser>>>
 export type GetUserResult = NonNullable<Awaited<ReturnType<typeof getUser>>>
 export type UpdateUserResult = NonNullable<Awaited<ReturnType<typeof updateUser>>>
 export type DeleteUserResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>
+export type ListUserRolesResult = NonNullable<Awaited<ReturnType<typeof listUserRoles>>>
+export type ReplaceUserRolesResult = NonNullable<Awaited<ReturnType<typeof replaceUserRoles>>>

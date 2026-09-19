@@ -1,50 +1,39 @@
 import {
-  Collapsible,
-  CollapsibleContent,
   Separator,
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
   TooltipProvider,
 } from '@proteus/ui'
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
+import { SettingsIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Breadcrumbs } from './breadcrumbs'
-import { navItems, settingsItem } from './nav'
+import type { SidebarGroup as SidebarGroupType } from './nav'
 import { ThemeToggle } from './theme-toggle'
 
-/**
- * The admin chrome: sidebar, topbar, and the outlet between them.
- *
- * The two slots exist because this file is shared-layer and the things that belong in them are
- * features — the notification bell reads the notifications API, the user menu reads auth. Shared
- * code may not reach up into a feature, so the route composes them instead. See
- * `routes/_authed/_shell/route.tsx`, and `packages/frontend-structure` for the rule.
- */
 type ShellProps = {
-  /** Rendered at the end of the topbar, after the theme toggle. */
+  sidebar: SidebarGroupType[]
   topbarActions?: ReactNode
-  /** Rendered in the sidebar footer. */
   sidebarFooter?: ReactNode
 }
 
-export function Shell({ topbarActions, sidebarFooter }: ShellProps) {
+export function Shell({ sidebar, topbarActions, sidebarFooter }: ShellProps) {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar footer={sidebarFooter} />
+        <AppSidebar sidebar={sidebar} footer={sidebarFooter} />
         <SidebarInset>
           <Topbar actions={topbarActions} />
           <div className="flex-1 overflow-auto">
@@ -72,7 +61,7 @@ function Topbar({ actions }: { actions?: ReactNode }) {
   )
 }
 
-function AppSidebar({ footer }: { footer?: ReactNode }) {
+function AppSidebar({ sidebar, footer }: { sidebar: SidebarGroupType[]; footer?: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   return (
@@ -93,62 +82,35 @@ function AppSidebar({ footer }: { footer?: ReactNode }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            {navItems.map((item) => {
-              const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
-
-              if (!item.children?.length) {
-                return (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              }
-
-              const isGroupActive =
-                isActive || item.children.some((child) => pathname === child.to || pathname.startsWith(`${child.to}/`))
-
-              return (
-                <Collapsible key={item.to} open={isGroupActive}>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {item.children.map((child) => {
-                          const isChildActive = pathname === child.to || pathname.startsWith(`${child.to}/`)
-                          return (
-                            <SidebarMenuSubItem key={child.to}>
-                              <SidebarMenuSubButton isActive={isChildActive} render={<Link to={child.to} />}>
-                                <span>{child.label}</span>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          )
-                        })}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              )
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
+        {sidebar.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
+                  return (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
         <SidebarGroup className="mt-auto">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={pathname === settingsItem.to || pathname.startsWith(`${settingsItem.to}/`)}
-                tooltip={settingsItem.label}
-                render={<Link to={settingsItem.to} />}
+                isActive={pathname.startsWith('/settings')}
+                tooltip="Settings"
+                render={<Link to="/settings/store" />}
               >
-                {settingsItem.icon}
-                <span>{settingsItem.label}</span>
+                <SettingsIcon />
+                <span>Settings</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
