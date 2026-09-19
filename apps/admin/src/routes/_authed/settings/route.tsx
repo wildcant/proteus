@@ -3,30 +3,10 @@ import { SettingsLayout } from '#/components/layout/settings-layout'
 
 export const Route = createFileRoute('/_authed/settings')({
   staticData: { breadcrumb: 'Settings' },
-  component: () => (
-    <SettingsLayout
-      groups={[
-        {
-          label: 'General',
-          items: [
-            { label: 'Store', to: '/settings/store' },
-            { label: 'Users', to: '/settings/users' },
-            { label: 'Regions', to: '/settings/regions' },
-          ],
-        },
-        {
-          label: 'Auth',
-          items: [{ label: 'Roles', to: '/settings/roles' }],
-        },
-        {
-          label: 'Developer',
-          items: [{ label: 'Workflows', to: '/settings/workflows' }],
-        },
-        {
-          label: 'My Account',
-          items: [{ label: 'Profile', to: '/settings/profile' }],
-        },
-      ]}
-    />
-  ),
+  component: SettingsRoute,
 })
+
+function SettingsRoute() {
+  const { settingsSidebar } = Route.useRouteContext()
+  return <SettingsLayout groups={settingsSidebar} />
+}
