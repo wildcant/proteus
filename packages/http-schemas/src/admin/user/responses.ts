@@ -16,10 +16,11 @@ const SidebarGroup = z.object({
   items: z.array(SidebarItem),
 })
 
-const AdminUserRole = z.object({
+export const AdminUserRole = z.object({
   id: z.string(),
   name: z.string(),
 })
+export type AdminUserRole = z.input<typeof AdminUserRole>
 
 export const AdminMeResponse = z
   .object({
@@ -31,7 +32,9 @@ export const AdminMeResponse = z
   .openapi('AdminMeResponse')
 export type AdminMeResponse = z.input<typeof AdminMeResponse>
 
-export const AdminUserListResponse = PaginatedResponse.extend({ users: z.array(AdminUser) }).openapi(
+const AdminUserWithRoles = AdminUser.extend({ roles: z.array(AdminUserRole) })
+
+export const AdminUserListResponse = PaginatedResponse.extend({ users: z.array(AdminUserWithRoles) }).openapi(
   'AdminUserListResponse',
 )
 export type AdminUserListResponse = z.input<typeof AdminUserListResponse>

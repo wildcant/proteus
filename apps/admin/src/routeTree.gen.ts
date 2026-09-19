@@ -35,6 +35,7 @@ import { Route as AuthedShellProductOptionsIndexRouteImport } from './routes/_au
 import { Route as AuthedShellOrdersIndexRouteImport } from './routes/_authed/_shell/orders/index'
 import { Route as AuthedShellInventoryIndexRouteImport } from './routes/_authed/_shell/inventory/index'
 import { Route as AuthedSettingsUsersInviteRouteImport } from './routes/_authed/settings/users/invite'
+import { Route as AuthedSettingsUsersIdRouteImport } from './routes/_authed/settings/users/$id'
 import { Route as AuthedSettingsStoreEditRouteImport } from './routes/_authed/settings/store/edit'
 import { Route as AuthedSettingsStoreCurrenciesRouteImport } from './routes/_authed/settings/store/currencies'
 import { Route as AuthedSettingsRolesCreateRouteImport } from './routes/_authed/settings/roles/create'
@@ -212,6 +213,11 @@ const AuthedSettingsUsersInviteRoute =
     path: '/invite',
     getParentRoute: () => AuthedSettingsUsersRouteRoute,
   } as any)
+const AuthedSettingsUsersIdRoute = AuthedSettingsUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthedSettingsUsersRouteRoute,
+} as any)
 const AuthedSettingsStoreEditRoute = AuthedSettingsStoreEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -432,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
   '/settings/store/edit': typeof AuthedSettingsStoreEditRoute
+  '/settings/users/$id': typeof AuthedSettingsUsersIdRoute
   '/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
   '/inventory/': typeof AuthedShellInventoryIndexRoute
   '/orders/': typeof AuthedShellOrdersIndexRoute
@@ -478,6 +485,7 @@ export interface FileRoutesByTo {
   '/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
   '/settings/store/edit': typeof AuthedSettingsStoreEditRoute
+  '/settings/users/$id': typeof AuthedSettingsUsersIdRoute
   '/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
   '/inventory': typeof AuthedShellInventoryIndexRoute
   '/orders': typeof AuthedShellOrdersIndexRoute
@@ -532,6 +540,7 @@ export interface FileRoutesById {
   '/_authed/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/_authed/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
   '/_authed/settings/store/edit': typeof AuthedSettingsStoreEditRoute
+  '/_authed/settings/users/$id': typeof AuthedSettingsUsersIdRoute
   '/_authed/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
   '/_authed/_shell/inventory/': typeof AuthedShellInventoryIndexRoute
   '/_authed/_shell/orders/': typeof AuthedShellOrdersIndexRoute
@@ -592,6 +601,7 @@ export interface FileRouteTypes {
     | '/settings/roles/create'
     | '/settings/store/currencies'
     | '/settings/store/edit'
+    | '/settings/users/$id'
     | '/settings/users/invite'
     | '/inventory/'
     | '/orders/'
@@ -638,6 +648,7 @@ export interface FileRouteTypes {
     | '/settings/roles/create'
     | '/settings/store/currencies'
     | '/settings/store/edit'
+    | '/settings/users/$id'
     | '/settings/users/invite'
     | '/inventory'
     | '/orders'
@@ -691,6 +702,7 @@ export interface FileRouteTypes {
     | '/_authed/settings/roles/create'
     | '/_authed/settings/store/currencies'
     | '/_authed/settings/store/edit'
+    | '/_authed/settings/users/$id'
     | '/_authed/settings/users/invite'
     | '/_authed/_shell/inventory/'
     | '/_authed/_shell/orders/'
@@ -911,6 +923,13 @@ declare module '@tanstack/react-router' {
       path: '/invite'
       fullPath: '/settings/users/invite'
       preLoaderRoute: typeof AuthedSettingsUsersInviteRouteImport
+      parentRoute: typeof AuthedSettingsUsersRouteRoute
+    }
+    '/_authed/settings/users/$id': {
+      id: '/_authed/settings/users/$id'
+      path: '/$id'
+      fullPath: '/settings/users/$id'
+      preLoaderRoute: typeof AuthedSettingsUsersIdRouteImport
       parentRoute: typeof AuthedSettingsUsersRouteRoute
     }
     '/_authed/settings/store/edit': {
@@ -1482,11 +1501,13 @@ const AuthedSettingsStoreRouteRouteWithChildren =
   )
 
 interface AuthedSettingsUsersRouteRouteChildren {
+  AuthedSettingsUsersIdRoute: typeof AuthedSettingsUsersIdRoute
   AuthedSettingsUsersInviteRoute: typeof AuthedSettingsUsersInviteRoute
 }
 
 const AuthedSettingsUsersRouteRouteChildren: AuthedSettingsUsersRouteRouteChildren =
   {
+    AuthedSettingsUsersIdRoute: AuthedSettingsUsersIdRoute,
     AuthedSettingsUsersInviteRoute: AuthedSettingsUsersInviteRoute,
   }
 
