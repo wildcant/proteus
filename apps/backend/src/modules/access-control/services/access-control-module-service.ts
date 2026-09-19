@@ -496,7 +496,12 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     }
 
     for (const grant of features) {
-      if (grant === '*') continue
+      if (grant === '*') {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: 'Global wildcard grant is reserved for the super admin role',
+        })
+      }
 
       if (grant.endsWith('.*')) {
         const module = grant.slice(0, -2)
