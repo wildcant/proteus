@@ -415,8 +415,19 @@ test.describe('Grant validation against registered features', () => {
     expect(role.features).toEqual(['product.*'])
   })
 
-  test('accepts global wildcard', async ({ expect }) => {
-    const role = await service.createRole({ name: 'Super', features: ['*'] })
-    expect(role.features).toEqual(['*'])
+  test('rejects global wildcard on createRole', async ({ expect }) => {
+    await expect(service.createRole({ name: 'Super', features: ['*'] })).rejects.toThrow(
+      'Global wildcard grant is reserved for the super admin role',
+    )
+  })
+
+  test('rejects global wildcard on updateRole', async ({ expect }) => {
+    const role = await service.createRole({
+      name: 'Editor',
+      features: ['product.read' as PermissionKey],
+    })
+    await expect(service.updateRole(role.id, { features: ['*'] })).rejects.toThrow(
+      'Global wildcard grant is reserved for the super admin role',
+    )
   })
 })

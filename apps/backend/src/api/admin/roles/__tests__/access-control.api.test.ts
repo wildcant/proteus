@@ -178,9 +178,12 @@ test.describe('super admin immutability via API', () => {
     let superAdminRole = roles.find((r) => r.isSuperAdmin)
 
     if (!superAdminRole) {
-      const role = await accessControl.createRole({ name: 'Super Admin Test', features: grants('*') })
+      const role = await accessControl.createRole({
+        name: 'Super Admin Test',
+        features: grants('access-control.role.read'),
+      })
       const roleRepo = api.container.resolve<{ update(id: string, data: object): Promise<unknown> }>('roleRepository')
-      await roleRepo.update(role.id, { isSuperAdmin: true, protected: true })
+      await roleRepo.update(role.id, { isSuperAdmin: true, protected: true, featuresJson: ['*'] })
       superAdminRole = await accessControl.retrieveRole(role.id)
     }
 
@@ -217,9 +220,9 @@ test.describe('self-escalation prevention', () => {
     const roles = await accessControl.listRoles()
     let superAdminRole = roles.find((r) => r.isSuperAdmin)
     if (!superAdminRole) {
-      const role = await accessControl.createRole({ name: 'SA', features: grants('*') })
+      const role = await accessControl.createRole({ name: 'SA', features: grants('access-control.role.read') })
       const roleRepo = api.container.resolve<{ update(id: string, data: object): Promise<unknown> }>('roleRepository')
-      await roleRepo.update(role.id, { isSuperAdmin: true })
+      await roleRepo.update(role.id, { isSuperAdmin: true, featuresJson: ['*'] })
       superAdminRole = await accessControl.retrieveRole(role.id)
     }
 
@@ -233,9 +236,9 @@ test.describe('self-escalation prevention', () => {
   })
 
   test('super admin can assign super admin role', async ({ expect }) => {
-    const role = await accessControl.createRole({ name: 'SA2', features: grants('*') })
+    const role = await accessControl.createRole({ name: 'SA2', features: grants('access-control.role.read') })
     const roleRepo = api.container.resolve<{ update(id: string, data: object): Promise<unknown> }>('roleRepository')
-    await roleRepo.update(role.id, { isSuperAdmin: true })
+    await roleRepo.update(role.id, { isSuperAdmin: true, featuresJson: ['*'] })
 
     const manageRole = await accessControl.createRole({
       name: 'SA Manager',
@@ -254,9 +257,9 @@ test.describe('self-escalation prevention', () => {
 
 test.describe('last super admin assignment protection via API', () => {
   test('cannot remove the last super admin assignment', async ({ expect }) => {
-    const role = await accessControl.createRole({ name: 'SA Last', features: grants('*') })
+    const role = await accessControl.createRole({ name: 'SA Last', features: grants('access-control.role.read') })
     const roleRepo = api.container.resolve<{ update(id: string, data: object): Promise<unknown> }>('roleRepository')
-    await roleRepo.update(role.id, { isSuperAdmin: true })
+    await roleRepo.update(role.id, { isSuperAdmin: true, featuresJson: ['*'] })
 
     const manageRole = await accessControl.createRole({
       name: 'SA Manager 2',
