@@ -1,16 +1,19 @@
 import {
+  Collapsible,
+  CollapsibleContent,
   Separator,
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
@@ -20,7 +23,8 @@ import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { SettingsIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Breadcrumbs } from './breadcrumbs'
-import type { SidebarGroup as SidebarGroupType } from './nav'
+import type { SidebarGroup as SidebarGroupType, SidebarIcon } from './nav'
+import { sidebarIcons } from './nav'
 import { ThemeToggle } from './theme-toggle'
 
 type ShellProps = {
@@ -62,6 +66,11 @@ function Topbar({ actions }: { actions?: ReactNode }) {
   )
 }
 
+function resolveIcon(icon?: string) {
+  if (!icon) return undefined
+  return sidebarIcons[icon as SidebarIcon]
+}
+
 function AppSidebar({
   sidebar,
   settingsSidebar,
@@ -73,6 +82,8 @@ function AppSidebar({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const firstSettingsRoute = settingsSidebar?.[0]?.items?.[0]?.to
+
+  const navItems = sidebar.flatMap((g) => g.items)
 
   return (
     <Sidebar collapsible="icon">
@@ -92,25 +103,53 @@ function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {sidebar.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
-                  return (
-                    <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        <SidebarGroup>
+          <SidebarMenu>
+            {navItems.map((item) => {
+              const Icon = resolveIcon(item.icon)
+              const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
+
+              if (!item.children?.length) {
+                return (
+                  <SidebarMenuItem key={item.to}>
+                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
+                      {Icon && <Icon />}
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              }
+
+              const isGroupActive =
+                isActive || item.children.some((child) => pathname === child.to || pathname.startsWith(`${child.to}/`))
+
+              return (
+                <Collapsible key={item.to} open={isGroupActive}>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
+                      {Icon && <Icon />}
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.children.map((child) => {
+                          const isChildActive = pathname === child.to || pathname.startsWith(`${child.to}/`)
+                          return (
+                            <SidebarMenuSubItem key={child.to}>
+                              <SidebarMenuSubButton isActive={isChildActive} render={<Link to={child.to} />}>
+                                <span>{child.label}</span>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              )
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
         {!!firstSettingsRoute && (
           <SidebarGroup className="mt-auto">
             <SidebarMenu>

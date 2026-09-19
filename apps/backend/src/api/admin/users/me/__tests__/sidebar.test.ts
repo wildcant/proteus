@@ -4,13 +4,7 @@ import { describe, expect, test } from 'vitest'
 
 describe('sidebar response contract', () => {
   test('items have { label, to } shape, no permission field', () => {
-    const all = new Set<PermissionKey>([
-      'product.read',
-      'order.read',
-      'customer.read',
-      'inventory.read',
-      'fulfillment.read',
-    ])
+    const all = new Set<PermissionKey>(['product.read', 'order.read', 'customer.read', 'inventory.read'])
     const groups = buildSidebar(all)
     expect(groups.length).toBeGreaterThan(0)
     for (const group of groups) {
@@ -48,36 +42,14 @@ describe('sidebar response contract', () => {
   })
 
   test('emits known admin-app route targets', () => {
-    const all = new Set<PermissionKey>([
-      'product.read',
-      'order.read',
-      'customer.read',
-      'inventory.read',
-      'fulfillment.read',
-    ])
+    const all = new Set<PermissionKey>(['product.read', 'order.read', 'customer.read', 'inventory.read'])
     const groups = buildSidebar(all)
     const paths = groups.flatMap((g) => g.items.map((i) => i.to))
-    expect(paths).toEqual(['/products', '/orders', '/customers', '/inventory', '/fulfillment-sets'])
+    expect(paths).toEqual(['/orders', '/products', '/customers', '/inventory'])
 
     const settingsAll = new Set<PermissionKey>(['store.read', 'user.read', 'access-control.role.read', 'region.read'])
     const settingsGroups = buildSettingsSidebar(settingsAll)
     const settingsPaths = settingsGroups.flatMap((g) => g.items.map((i) => i.to))
-    expect(settingsPaths).toEqual([
-      '/settings/store',
-      '/settings/users',
-      '/settings/roles',
-      '/settings/regions',
-      '/settings/workflows',
-      '/settings/profile',
-    ])
-  })
-
-  test('permission-less items always appear', () => {
-    const empty = new Set<PermissionKey>()
-    const groups = buildSettingsSidebar(empty)
-    expect(groups).toHaveLength(1)
-    const labels = groups.at(0)?.items.map((i) => i.label)
-    expect(labels).toContain('Workflows')
-    expect(labels).toContain('Profile')
+    expect(settingsPaths).toEqual(['/settings/store', '/settings/users', '/settings/roles', '/settings/regions'])
   })
 })

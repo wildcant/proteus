@@ -1,4 +1,5 @@
 import React from 'react'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * Form wrapper that prevents accidental submission on bare Enter.
@@ -31,7 +32,15 @@ export const KeyboundForm = React.forwardRef<HTMLFormElement, KeyboundFormProps>
       onSubmit?.(event)
     }
 
-    return <form {...rest} onSubmit={handleSubmit} onKeyDown={onKeyDown ?? handleKeyDown} ref={ref} />
+    return (
+      <form
+        {...rest}
+        className={cn('min-h-0', rest.className)}
+        onSubmit={handleSubmit}
+        onKeyDown={onKeyDown ?? handleKeyDown}
+        ref={ref}
+      />
+    )
   },
 )
 

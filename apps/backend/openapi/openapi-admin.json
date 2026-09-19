@@ -5474,7 +5474,52 @@
                         "type": "string"
                       },
                       "icon": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "shopping-cart",
+                          "package",
+                          "sliders-horizontal",
+                          "boxes",
+                          "clipboard-list",
+                          "users",
+                          "store",
+                          "shield",
+                          "globe",
+                          "settings"
+                        ]
+                      },
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string"
+                            },
+                            "to": {
+                              "type": "string"
+                            },
+                            "icon": {
+                              "type": "string",
+                              "enum": [
+                                "shopping-cart",
+                                "package",
+                                "sliders-horizontal",
+                                "boxes",
+                                "clipboard-list",
+                                "users",
+                                "store",
+                                "shield",
+                                "globe",
+                                "settings"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "label",
+                            "to"
+                          ]
+                        }
                       }
                     },
                     "required": [
@@ -5510,7 +5555,52 @@
                         "type": "string"
                       },
                       "icon": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "shopping-cart",
+                          "package",
+                          "sliders-horizontal",
+                          "boxes",
+                          "clipboard-list",
+                          "users",
+                          "store",
+                          "shield",
+                          "globe",
+                          "settings"
+                        ]
+                      },
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string"
+                            },
+                            "to": {
+                              "type": "string"
+                            },
+                            "icon": {
+                              "type": "string",
+                              "enum": [
+                                "shopping-cart",
+                                "package",
+                                "sliders-horizontal",
+                                "boxes",
+                                "clipboard-list",
+                                "users",
+                                "store",
+                                "shield",
+                                "globe",
+                                "settings"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "label",
+                            "to"
+                          ]
+                        }
                       }
                     },
                     "required": [

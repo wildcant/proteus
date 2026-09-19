@@ -5,10 +5,30 @@ import { AdminUser } from './entities.js'
 export const AdminUserResponse = z.object({ user: AdminUser }).openapi('AdminUserResponse')
 export type AdminUserResponse = z.input<typeof AdminUserResponse>
 
+const SidebarIcon = z.enum([
+  'shopping-cart',
+  'package',
+  'sliders-horizontal',
+  'boxes',
+  'clipboard-list',
+  'users',
+  'store',
+  'shield',
+  'globe',
+  'settings',
+])
+
+const SidebarChildItem = z.object({
+  label: z.string(),
+  to: z.string(),
+  icon: SidebarIcon.optional(),
+})
+
 const SidebarItem = z.object({
   label: z.string(),
   to: z.string(),
-  icon: z.string().optional(),
+  icon: SidebarIcon.optional(),
+  children: z.array(SidebarChildItem).optional(),
 })
 
 const SidebarGroup = z.object({

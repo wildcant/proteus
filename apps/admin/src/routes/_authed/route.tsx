@@ -11,13 +11,7 @@ export const Route = createFileRoute('/_authed')({
       throw redirect({ to: '/login' })
     }
 
-    const me = await context.queryClient.ensureQueryData(meQueryOptions())
-    return {
-      user: me.user,
-      sidebar: me.sidebar,
-      settingsSidebar: me.settingsSidebar,
-      allowedActions: me.allowedActions,
-    }
+    return context.queryClient.ensureQueryData(meQueryOptions())
   },
   errorComponent: ({ error }) => {
     if (error instanceof ForbiddenError) {

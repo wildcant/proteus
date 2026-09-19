@@ -5,9 +5,12 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminMeResponseSettingsSidebarItemItemsItemChildrenItem } from './adminMeResponseSettingsSidebarItemItemsItemChildrenItem.ts';
+import type { AdminMeResponseSettingsSidebarItemItemsItemIcon } from './adminMeResponseSettingsSidebarItemItemsItemIcon.ts';
 
 export type AdminMeResponseSettingsSidebarItemItemsItem = {
   label: string;
   to: string;
-  icon?: string;
+  icon?: AdminMeResponseSettingsSidebarItemItemsItemIcon;
+  children?: AdminMeResponseSettingsSidebarItemItemsItemChildrenItem[];
 };
