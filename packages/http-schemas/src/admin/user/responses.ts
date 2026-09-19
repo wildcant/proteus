@@ -7,7 +7,8 @@ export type AdminUserResponse = z.input<typeof AdminUserResponse>
 
 const SidebarItem = z.object({
   label: z.string(),
-  permission: z.string().nullable(),
+  to: z.string(),
+  icon: z.string().optional(),
 })
 
 const SidebarGroup = z.object({
