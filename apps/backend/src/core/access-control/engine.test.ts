@@ -8,7 +8,7 @@ import {
   matchFeature,
   resolveEffectiveFeatures,
 } from './engine.js'
-import { getAllPermissionKeys, getPermissionKeysByModule } from './features.js'
+import { GENERATED_FEATURES } from './features.gen.js'
 import type { AuthorizationContext } from './types.js'
 
 describe('matchFeature', () => {
@@ -101,7 +101,7 @@ describe('authorizeFeatures', () => {
 
 describe('resolveEffectiveFeatures', () => {
   test('expands * to all concrete keys', () => {
-    const allKeys = getAllPermissionKeys()
+    const allKeys = GENERATED_FEATURES.map((f) => f.id)
     const result = resolveEffectiveFeatures(['*'])
     expect(result).toHaveLength(allKeys.length)
     for (const key of allKeys) {
@@ -111,7 +111,7 @@ describe('resolveEffectiveFeatures', () => {
 
   test('expands product.* to all product keys', () => {
     const result = resolveEffectiveFeatures(['product.*'])
-    const productKeys = getPermissionKeysByModule('product')
+    const productKeys = GENERATED_FEATURES.filter((f) => f.module === 'product').map((f) => f.id)
     expect(result).toHaveLength(productKeys.length)
     for (const key of productKeys) {
       expect(result).toContain(key)

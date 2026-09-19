@@ -1,7 +1,15 @@
-import type { FeatureDeclaration } from '@core/access-control/features.js'
-import { clearRegistry, registerFeatures } from '@core/access-control/features.js'
+import type { GeneratedFeature } from '@core/access-control/features.gen.js'
 import type { PermissionGrant, PermissionKey } from '@core/types/access-control/common.js'
 import { test } from '@tests/setup/test-extend.js'
+import { vi } from 'vitest'
+
+const mockState = vi.hoisted(() => ({ features: [] as Array<{ id: string; title: string; module: string }> }))
+
+vi.mock('@core/access-control/features.gen.js', () => ({
+  get GENERATED_FEATURES() {
+    return mockState.features
+  },
+}))
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import accessControlModule from '../index.js'
@@ -12,7 +20,7 @@ import { AccessControlModuleService } from '../services/access-control-module-se
 
 const cascadeGraph = buildCascadeGraph(accessControlModule.models)
 
-const TEST_FEATURES: FeatureDeclaration[] = [
+const TEST_FEATURES: GeneratedFeature[] = [
   { id: 'product.read' as PermissionKey, title: 'Read products', module: 'product' },
   { id: 'product.create' as PermissionKey, title: 'Create products', module: 'product' },
   { id: 'product.update' as PermissionKey, title: 'Update products', module: 'product' },
@@ -26,8 +34,7 @@ let service: AccessControlModuleService
 let roleRepository: RoleRepository
 
 test.beforeEach(({ getDb, logger }) => {
-  clearRegistry()
-  registerFeatures(TEST_FEATURES)
+  mockState.features = [...TEST_FEATURES]
 
   const permissionRepository = new PermissionRepository({ getDb, cascadeGraph })
   roleRepository = new RoleRepository({ getDb, cascadeGraph })
@@ -195,7 +202,12 @@ test.describe('resolveEffectiveFeatures expands wildcards', () => {
   })
 
   test('global wildcard expands to all registered permissions', async ({ expect }) => {
-    const role = await service.createRole({ name: 'Super', features: ['*'] })
+    const role = await roleRepository.create({
+      name: 'Super',
+      featuresJson: ['*'],
+      isSuperAdmin: true,
+      protected: true,
+    })
     await service.assignRoles('user', 'usr_1', [role.id], { callerGrantsIncludeSuperAdmin: true })
 
     const features = await service.resolveEffectiveFeatures('user', 'usr_1')
@@ -223,8 +235,7 @@ test.describe('Permission sync', () => {
   test('sync updates titles', async ({ expect }) => {
     await service.syncPermissions()
 
-    clearRegistry()
-    registerFeatures(TEST_FEATURES.map((f) => (f.id === 'product.read' ? { ...f, title: 'View products' } : f)))
+    mockState.features = TEST_FEATURES.map((f) => (f.id === 'product.read' ? { ...f, title: 'View products' } : f))
 
     await service.syncPermissions()
 
@@ -236,8 +247,7 @@ test.describe('Permission sync', () => {
   test('sync soft-deletes unassigned unregistered permissions', async ({ expect }) => {
     await service.syncPermissions()
 
-    clearRegistry()
-    registerFeatures(TEST_FEATURES.filter((f) => f.id !== 'order.fulfill'))
+    mockState.features = TEST_FEATURES.filter((f) => f.id !== 'order.fulfill')
 
     await service.syncPermissions()
 
@@ -249,8 +259,7 @@ test.describe('Permission sync', () => {
     await service.syncPermissions()
     await service.createRole({ name: 'Has Fulfill', features: ['order.fulfill' as PermissionKey] })
 
-    clearRegistry()
-    registerFeatures(TEST_FEATURES.filter((f) => f.id !== 'order.fulfill'))
+    mockState.features = TEST_FEATURES.filter((f) => f.id !== 'order.fulfill')
 
     await expect(service.syncPermissions()).rejects.toThrow('Cannot remove permissions still assigned to roles')
   })
@@ -258,12 +267,10 @@ test.describe('Permission sync', () => {
   test('sync restores re-registered permissions', async ({ expect }) => {
     await service.syncPermissions()
 
-    clearRegistry()
-    registerFeatures(TEST_FEATURES.filter((f) => f.id !== 'order.fulfill'))
+    mockState.features = TEST_FEATURES.filter((f) => f.id !== 'order.fulfill')
     await service.syncPermissions()
 
-    clearRegistry()
-    registerFeatures(TEST_FEATURES)
+    mockState.features = [...TEST_FEATURES]
     await service.syncPermissions()
 
     const permissions = await service.listPermissions()

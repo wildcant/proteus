@@ -1,5 +1,5 @@
 import { authorizeFeatures, resolveEffectiveFeatures } from '../../../core/access-control/engine.js'
-import { getRegisteredFeatures } from '../../../core/access-control/features.js'
+import { GENERATED_FEATURES } from '../../../core/access-control/features.gen.js'
 import type { AuthorizationContext, AuthorizationDecision } from '../../../core/access-control/types.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { PermissionGrant, PermissionKey } from '../../../core/types/access-control/common.js'
@@ -353,7 +353,6 @@ export class AccessControlModuleService implements IAccessControlModuleService {
   // ── Sync ─────────────────────────────────────────────────────────────
 
   async syncPermissions(context?: Context): Promise<void> {
-    const registered = getRegisteredFeatures()
     const now = new Date()
 
     return this.withTransaction(context, async (ctx) => {
@@ -365,11 +364,11 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       const toRestore: string[] = []
       const registeredKeys = new Set<string>()
 
-      for (const [key, declaration] of registered) {
-        registeredKeys.add(key)
-        const row = byKey.get(key)
+      for (const declaration of GENERATED_FEATURES) {
+        registeredKeys.add(declaration.id)
+        const row = byKey.get(declaration.id)
         if (!row) {
-          toCreate.push({ key, module: declaration.module, title: declaration.title, registeredAt: now })
+          toCreate.push({ key: declaration.id, module: declaration.module, title: declaration.title, registeredAt: now })
         } else {
           if (row.deletedAt) {
             toRestore.push(row.id)
@@ -489,11 +488,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       seen.add(feature)
     }
 
-    const registered = getRegisteredFeatures()
-    const moduleIds = new Set<string>()
-    for (const declaration of registered.values()) {
-      moduleIds.add(declaration.module)
-    }
+    const registeredKeys = new Set(GENERATED_FEATURES.map((f) => f.id))
+    const moduleIds = new Set(GENERATED_FEATURES.map((f) => f.module))
 
     for (const grant of features) {
       if (grant === '*') {
@@ -514,7 +510,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         continue
       }
 
-      if (!registered.has(grant as PermissionKey)) {
+      if (!registeredKeys.has(grant as PermissionKey)) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
           message: `Unknown permission key: ${grant}`,

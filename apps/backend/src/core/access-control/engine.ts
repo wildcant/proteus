@@ -1,5 +1,5 @@
 import type { ModuleId, PermissionGrant, PermissionKey } from '@core/types/access-control/common.js'
-import { getAllPermissionKeys } from './features.js'
+import { GENERATED_FEATURES } from './features.gen.js'
 import type { AuthorizationContext, AuthorizationDecision } from './types.js'
 
 export function matchFeature(required: PermissionKey, granted: PermissionGrant): boolean {
@@ -35,7 +35,7 @@ export function authorizeFeatures(required: PermissionKey[], subject: Authorizat
 }
 
 export function resolveEffectiveFeatures(granted: PermissionGrant[]): PermissionKey[] {
-  const allKeys = getAllPermissionKeys()
+  const allKeys = GENERATED_FEATURES.map((f) => f.id)
   const result = new Set<PermissionKey>()
 
   for (const grant of granted) {
