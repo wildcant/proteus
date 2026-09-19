@@ -360,7 +360,22 @@
           "roles": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AdminRole"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminRole"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "userCount": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "userCount"
+                  ]
+                }
+              ]
             }
           }
         },
@@ -5423,19 +5438,7 @@
                   "roles": {
                     "type": "array",
                     "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name"
-                      ]
+                      "$ref": "#/components/schemas/AdminUserRole"
                     }
                   }
                 },
@@ -5531,6 +5534,21 @@
           "settingsSidebar"
         ]
       },
+      "AdminUserRole": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
       "AdminUserListResponse": {
         "type": "object",
         "properties": {
@@ -5556,19 +5574,7 @@
                     "roles": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "name"
-                        ]
+                        "$ref": "#/components/schemas/AdminUserRole"
                       }
                     }
                   },

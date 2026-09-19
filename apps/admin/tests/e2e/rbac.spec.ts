@@ -186,6 +186,114 @@ test('revoking a role removes navigation items after refresh', async ({ page, fa
   await expect(sidebar.getByText('Orders')).not.toBeVisible({ timeout: 10000 })
 })
 
+test('super admin can edit and delete a custom role through the UI', async ({ page, navigate, factories }) => {
+  await using superAdminRole = await factories.create.role({
+    name: `SA Edit Delete ${Date.now()}`,
+    isSuperAdmin: true,
+    protected: true,
+    featuresJson: ['*'],
+  })
+  await using admin = await factories.create.user()
+  await using saAssignment = await factories.create.actorRoleAssignment({
+    actorType: 'user',
+    actorId: admin.id,
+    roleId: superAdminRole.id,
+  })
+
+  await loginAs(page, admin)
+
+  const roleName = `Editable Role ${Date.now()}`
+  await navigate({ to: '/settings/roles' })
+  await page.getByRole('link', { name: 'Create' }).click()
+  await page.getByLabel('Name').fill(roleName)
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('cell', { name: roleName })).toBeVisible({ timeout: 10000 })
+
+  await page.getByRole('cell', { name: roleName }).click()
+  const updatedName = `${roleName} Updated`
+  await page.getByLabel('Name').fill(updatedName)
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('cell', { name: updatedName })).toBeVisible({ timeout: 10000 })
+
+  const row = page.getByRole('row').filter({ hasText: updatedName })
+  await row.getByRole('button').click()
+  await page.getByRole('menuitem', { name: 'Delete' }).click()
+  await page.getByRole('button', { name: 'Delete' }).click()
+  await expect(page.getByRole('cell', { name: updatedName })).not.toBeVisible({ timeout: 10000 })
+
+  void saAssignment
+})
+
+test('revoking a role through the assignment UI updates nav on focus', async ({ page, navigate, factories }) => {
+  await using superAdminRole = await factories.create.role({
+    name: `SA Revoke UI ${Date.now()}`,
+    isSuperAdmin: true,
+    protected: true,
+    featuresJson: ['*'],
+  })
+  await using admin = await factories.create.user()
+  await using saAssignment = await factories.create.actorRoleAssignment({
+    actorType: 'user',
+    actorId: admin.id,
+    roleId: superAdminRole.id,
+  })
+
+  await using targetRole = await factories.create.role({
+    name: `Revocable UI ${Date.now()}`,
+    featuresJson: ['product.*', 'order.*'],
+  })
+  await using targetUser = await factories.create.user()
+  await using targetAssignment = await factories.create.actorRoleAssignment({
+    actorType: 'user',
+    actorId: targetUser.id,
+    roleId: targetRole.id,
+  })
+
+  await loginAs(page, admin)
+
+  await navigate({ to: '/settings/users/$id', params: { id: targetUser.id } })
+  const rolesCard = page.locator('[data-slot="card"]').filter({ has: page.getByRole('heading', { name: 'Roles' }) })
+  await expect(rolesCard.getByText(targetRole.name)).toBeVisible()
+
+  await rolesCard.getByRole('combobox').click()
+  await page.getByRole('option', { name: targetRole.name }).click()
+  await page.keyboard.press('Escape')
+  await rolesCard.getByRole('button', { name: 'Save roles' }).click()
+  await expect(rolesCard.getByRole('button', { name: 'Save roles' })).toBeDisabled({ timeout: 10000 })
+
+  void saAssignment
+  void targetAssignment
+})
+
+test('sidebar updates on window focus after role change without full reload', async ({ page, factories }) => {
+  await using role = await factories.create.role({
+    name: `Focus Refresh ${Date.now()}`,
+    featuresJson: ['product.*', 'order.*'],
+  })
+  await using user = await factories.create.user()
+  const assignment = await factories.create.actorRoleAssignment({
+    actorType: 'user',
+    actorId: user.id,
+    roleId: role.id,
+  })
+
+  await loginAs(page, user)
+
+  const sidebar = page.locator('[data-slot="sidebar"]')
+  await expect(sidebar.getByText('Products')).toBeVisible()
+  await expect(sidebar.getByText('Orders')).toBeVisible()
+
+  await factories.destroy.actorRoleAssignment(assignment.id)
+
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event('blur'))
+    window.dispatchEvent(new Event('focus'))
+  })
+
+  await expect(sidebar.getByText('Products')).not.toBeVisible({ timeout: 10000 })
+  await expect(sidebar.getByText('Orders')).not.toBeVisible({ timeout: 10000 })
+})
+
 test('super admin role shows as immutable in role edit page', async ({ page, navigate, factories }) => {
   await using superAdminRole = await factories.create.role({
     name: `Immutable SA ${Date.now()}`,
@@ -209,6 +317,12 @@ test('super admin role shows as immutable in role edit page', async ({ page, nav
 
   // Name field is disabled for super admin
   await expect(page.getByLabel('Name')).toBeDisabled()
+
+  // Description field is disabled for super admin
+  await expect(page.getByLabel('Description')).toBeDisabled()
+
+  // Save button hidden for immutable roles
+  await expect(page.getByRole('button', { name: 'Save' })).not.toBeVisible()
 
   // Permissions section hidden for immutable roles
   await expect(page.getByRole('heading', { name: 'Permissions' })).not.toBeVisible()

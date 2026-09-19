@@ -87,21 +87,26 @@ export function PermissionGrid({ value, onChange }: PermissionGridProps) {
         <div key={group.module} className="space-y-3">
           <div className="flex items-center gap-x-2 border-b pb-2">
             <Checkbox
+              id={`module-${group.module}`}
               checked={hasWildcard(value, group.module)}
               onCheckedChange={() => handleAllToggle(group.module, group.permissions)}
             />
-            <Label className="font-medium text-sm capitalize">{group.module}</Label>
-            <span className="text-muted-foreground text-xs">All</span>
+            <Label htmlFor={`module-${group.module}`} className="font-medium text-sm capitalize">
+              {group.module} — All
+            </Label>
           </div>
           <div className="space-y-2 pl-1">
             {group.permissions.map((permission) => (
               <div key={permission.id} className="flex items-start gap-x-2">
                 <Checkbox
+                  id={`perm-${permission.id}`}
                   checked={isChecked(permission.key, group.module)}
                   onCheckedChange={() => handlePermissionToggle(permission.key, group.module, group.permissions)}
                 />
                 <div className="flex flex-col">
-                  <Label className="text-sm">{permission.title}</Label>
+                  <Label htmlFor={`perm-${permission.id}`} className="text-sm">
+                    {permission.title}
+                  </Label>
                   <span className="text-muted-foreground text-xs">{permission.key}</span>
                 </div>
               </div>

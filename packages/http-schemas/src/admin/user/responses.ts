@@ -16,10 +16,12 @@ const SidebarGroup = z.object({
   items: z.array(SidebarItem),
 })
 
-export const AdminUserRole = z.object({
-  id: z.string(),
-  name: z.string(),
-})
+export const AdminUserRole = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+  })
+  .openapi('AdminUserRole')
 export type AdminUserRole = z.input<typeof AdminUserRole>
 
 export const AdminMeResponse = z

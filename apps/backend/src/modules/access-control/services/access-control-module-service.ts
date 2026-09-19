@@ -289,6 +289,31 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     return roles.map((r) => this.toRoleDTO(r))
   }
 
+  async listActorRolesBulk(actorType: string, actorIds: string[], context?: Context): Promise<Map<string, RoleDTO[]>> {
+    const result = new Map<string, RoleDTO[]>(actorIds.map((id) => [id, []]))
+    if (actorIds.length === 0) return result
+
+    const assignments = await this.actorRoleAssignmentRepository.find(
+      { actorType, actorId: actorIds },
+      undefined,
+      context,
+    )
+    if (assignments.length === 0) return result
+
+    const roleIds = [...new Set(assignments.map((a) => a.roleId))]
+    const roles = await this.roleRepository.find({ id: roleIds }, undefined, context)
+    const roleMap = new Map(roles.map((r) => [r.id, this.toRoleDTO(r)]))
+
+    for (const assignment of assignments) {
+      const role = roleMap.get(assignment.roleId)
+      if (role) {
+        result.get(assignment.actorId)!.push(role)
+      }
+    }
+
+    return result
+  }
+
   // ── IAccessControlModuleService compat ───────────────────────────────
 
   async assignRolesToUser(userId: string, roleIds: string[], context?: Context): Promise<void> {

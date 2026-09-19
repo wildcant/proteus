@@ -31,7 +31,9 @@ export function EditRoleForm({ role }: { role: AdminRoleDetailResponseRole }) {
                 {(field) => <field.TextField label="Name" disabled={isNameDisabled} />}
               </form.AppField>
               <form.AppField name="description">
-                {(field) => <field.TextareaField label="Description" placeholder="Optional description" />}
+                {(field) => (
+                  <field.TextareaField label="Description" placeholder="Optional description" disabled={isImmutable} />
+                )}
               </form.AppField>
             </CardContent>
           </Card>
@@ -54,9 +56,9 @@ export function EditRoleForm({ role }: { role: AdminRoleDetailResponseRole }) {
 
           <div className="flex justify-end gap-x-2">
             <Button variant="secondary" size="sm" onClick={() => navigate({ to: '/settings/roles' })}>
-              Cancel
+              {isImmutable ? 'Back' : 'Cancel'}
             </Button>
-            <form.SubmitButton size="sm">Save</form.SubmitButton>
+            {!isImmutable && <form.SubmitButton size="sm">Save</form.SubmitButton>}
           </div>
         </form.AppForm>
       </KeyboundForm>

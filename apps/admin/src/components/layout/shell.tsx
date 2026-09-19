@@ -25,15 +25,16 @@ import { ThemeToggle } from './theme-toggle'
 
 type ShellProps = {
   sidebar: SidebarGroupType[]
+  settingsSidebar?: SidebarGroupType[]
   topbarActions?: ReactNode
   sidebarFooter?: ReactNode
 }
 
-export function Shell({ sidebar, topbarActions, sidebarFooter }: ShellProps) {
+export function Shell({ sidebar, settingsSidebar, topbarActions, sidebarFooter }: ShellProps) {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar sidebar={sidebar} footer={sidebarFooter} />
+        <AppSidebar sidebar={sidebar} settingsSidebar={settingsSidebar} footer={sidebarFooter} />
         <SidebarInset>
           <Topbar actions={topbarActions} />
           <div className="flex-1 overflow-auto">
@@ -61,8 +62,17 @@ function Topbar({ actions }: { actions?: ReactNode }) {
   )
 }
 
-function AppSidebar({ sidebar, footer }: { sidebar: SidebarGroupType[]; footer?: ReactNode }) {
+function AppSidebar({
+  sidebar,
+  settingsSidebar,
+  footer,
+}: {
+  sidebar: SidebarGroupType[]
+  settingsSidebar?: SidebarGroupType[]
+  footer?: ReactNode
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const firstSettingsRoute = settingsSidebar?.[0]?.items?.[0]?.to
 
   return (
     <Sidebar collapsible="icon">
@@ -101,20 +111,22 @@ function AppSidebar({ sidebar, footer }: { sidebar: SidebarGroupType[]; footer?:
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
-        <SidebarGroup className="mt-auto">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={pathname.startsWith('/settings')}
-                tooltip="Settings"
-                render={<Link to="/settings/store" />}
-              >
-                <SettingsIcon />
-                <span>Settings</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+        {firstSettingsRoute && (
+          <SidebarGroup className="mt-auto">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={pathname.startsWith('/settings')}
+                  tooltip="Settings"
+                  render={<Link to={firstSettingsRoute} />}
+                >
+                  <SettingsIcon />
+                  <span>Settings</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>{footer}</SidebarFooter>
       <SidebarRail />
