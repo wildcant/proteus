@@ -20,7 +20,8 @@ describe('sidebar response contract', () => {
         expect(item).toHaveProperty('label')
         expect(item).toHaveProperty('to')
         expect(item).not.toHaveProperty('permission')
-        expect(item.to).toMatch(/^\/admin\//)
+        expect(item.to).toMatch(/^\//)
+        expect(item.to).not.toMatch(/^\/admin\//)
       }
     }
   })
@@ -44,6 +45,31 @@ describe('sidebar response contract', () => {
     expect(groups).toHaveLength(1)
     expect(groups.at(0)?.items).toHaveLength(1)
     expect(groups.at(0)?.items.at(0)?.label).toBe('Products')
+  })
+
+  test('emits known admin-app route targets', () => {
+    const all = new Set<PermissionKey>([
+      'product.read',
+      'order.read',
+      'customer.read',
+      'inventory.read',
+      'fulfillment.read',
+    ])
+    const groups = buildSidebar(all)
+    const paths = groups.flatMap((g) => g.items.map((i) => i.to))
+    expect(paths).toEqual(['/products', '/orders', '/customers', '/inventory', '/fulfillment-sets'])
+
+    const settingsAll = new Set<PermissionKey>(['store.read', 'user.read', 'access-control.role.read', 'region.read'])
+    const settingsGroups = buildSettingsSidebar(settingsAll)
+    const settingsPaths = settingsGroups.flatMap((g) => g.items.map((i) => i.to))
+    expect(settingsPaths).toEqual([
+      '/settings/store',
+      '/settings/users',
+      '/settings/roles',
+      '/settings/regions',
+      '/settings/workflows',
+      '/settings/profile',
+    ])
   })
 
   test('permission-less items always appear', () => {
