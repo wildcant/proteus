@@ -27,5 +27,5 @@ export default Module(Modules.ACCESS_CONTROL, {
     permissionRepository: PermissionRepository,
     roleRepository: RoleRepository,
   },
-  loaders: [syncPermissions],
+  postLoaders: [syncPermissions],
 })

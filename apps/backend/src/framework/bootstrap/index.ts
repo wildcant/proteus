@@ -1,6 +1,8 @@
 import { type AwilixContainer, asClass, asValue, createContainer } from 'awilix'
+import { clearRegistry, registerFeature } from '../../core/access-control/features.js'
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
+import type { ModuleId, PermissionKey } from '../../core/types/access-control/common.js'
 import type { Logger } from '../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../core/utils/container.js'
 import type { FeatureDeclaration, ModuleDefinition } from '../../core/utils/module.js'
@@ -17,6 +19,7 @@ export function getFeatureRegistry(): readonly FeatureRegistryEntry[] {
 
 export function resetFeatureRegistry(): void {
   featureRegistry.length = 0
+  clearRegistry()
 }
 
 export function collectFeatures(moduleDefinition: ModuleDefinition): void {
@@ -30,7 +33,9 @@ export function collectFeatures(moduleDefinition: ModuleDefinition): void {
         message: `Duplicate feature id "${feature.id}": declared by both "${existing.module}" and "${moduleDefinition.key}"`,
       })
     }
-    featureRegistry.push({ ...feature, module: moduleDefinition.key })
+    const entry = { ...feature, module: moduleDefinition.key }
+    featureRegistry.push(entry)
+    registerFeature({ id: feature.id as PermissionKey, title: feature.title, module: entry.module as ModuleId })
   }
 }
 
@@ -76,4 +81,11 @@ export async function bootstrapModule<TOptions = Record<string, unknown>>(
   sharedContainer.register({
     [moduleDefinition.key]: asValue(service),
   })
+
+  // Run post-loaders after service is registered in the shared container
+  if (moduleDefinition.postLoaders) {
+    for (const loader of moduleDefinition.postLoaders) {
+      await loader({ container: sharedContainer, options: options as Record<string, unknown> })
+    }
+  }
 }
