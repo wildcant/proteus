@@ -4,6 +4,7 @@ import { queryOptions, useMutation } from '@tanstack/react-query'
 import type { AdminUserRolesResponse } from '#/api/generated/model'
 import { listRoles } from '#/api/generated/roles/roles'
 import { listUserRoles, replaceUserRoles } from '#/api/generated/users/users'
+import { userKeys } from '#/features/users/api/users'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -32,7 +33,7 @@ export const useReplaceUserRoles = (
     mutationFn: (roleIds: string[]) => replaceUserRoles(userId, { roleIds }),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: userRoleKeys.detail(userId) })
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() })
       onSuccess?.(...args)
     },
     onError: (...args) => {

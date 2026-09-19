@@ -1,6 +1,6 @@
 import type { PermissionKey } from '@core/types/access-control/common.js'
+import { buildSettingsSidebar, buildSidebar } from '@workflows/admin/utils/build-sidebar.js'
 import { describe, expect, test } from 'vitest'
-import { buildSettingsSidebar, buildSidebar } from '../sidebar.js'
 
 describe('sidebar response contract', () => {
   test('items have { label, to } shape, no permission field', () => {

@@ -43,7 +43,7 @@ export function RoleRowActions({ role }: { role: AdminRole }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => navigate({ to: `/settings/roles/${role.id}` })}>Edit</DropdownMenuItem>
-        {canDelete && <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>}
+        {!!canDelete && <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>}
       </DropdownMenuContent>
     </DropdownMenu>
   )

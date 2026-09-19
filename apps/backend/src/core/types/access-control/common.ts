@@ -75,6 +75,6 @@ export type ModuleId =
   | FileModuleId
   | AccessControlModuleId
 
-export type ModuleWildcard = `${ModuleId}.*`
+type ModuleWildcard = `${ModuleId}.*`
 
 export type PermissionGrant = PermissionKey | ModuleWildcard | '*'

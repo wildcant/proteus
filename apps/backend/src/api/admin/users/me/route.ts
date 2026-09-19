@@ -1,11 +1,11 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { PermissionKey } from '@core/types/access-control/common.js'
+import type { IAccessControlModuleService } from '@core/types/access-control/service.js'
 import type { IUserModuleService } from '@core/types/user/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminMeResponse } from '@proteus/http-schemas/admin'
-import type { AccessControlModuleService } from '../../../../modules/access-control/services/access-control-module-service.js'
-import { buildSettingsSidebar, buildSidebar } from './sidebar.js'
+import { buildSettingsSidebar, buildSidebar } from '@workflows/admin/utils/build-sidebar.js'
 
 export const GetOutput = AdminMeResponse
 export const GetThrows = [ErrorTypes.NOT_FOUND] as const
@@ -17,7 +17,7 @@ export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput
   }
 
   const userService = req.scope.resolve<IUserModuleService>(Modules.USER)
-  const accessControl = req.scope.resolve<AccessControlModuleService>(Modules.ACCESS_CONTROL)
+  const accessControl = req.scope.resolve<IAccessControlModuleService>(Modules.ACCESS_CONTROL)
 
   const [user, allowedActions, roles] = await Promise.all([
     userService.retrieveUser(actorId),

@@ -4,6 +4,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import { authHeader } from '@tests/utils/auth-header.js'
+import { sql } from 'drizzle-orm'
 import type * as permissionByIdRoutes from '../../permissions/[id]/route.js'
 import adminPermissionDefinitions from '../../permissions/definitions.js'
 import type * as permissionRoutes from '../../permissions/route.js'
@@ -19,12 +20,18 @@ const grants = (...keys: string[]) => keys as PermissionGrant[]
 
 let api: TestApi
 let accessControl: IAccessControlModuleService
+let markSuperAdmin: (roleId: string) => Promise<unknown>
 
 const ADMIN_USER = 'user_admin'
 const VIEWER_USER = 'user_viewer'
 const UNASSIGNED_USER = 'user_unassigned'
 
-test.beforeEach(async ({ createApi }) => {
+test.beforeEach(async ({ createApi, getDb }) => {
+  const db = getDb()
+  markSuperAdmin = (roleId: string) =>
+    db.execute(
+      sql`UPDATE role SET is_super_admin = true, protected = true, features_json = '["*"]'::jsonb WHERE id = ${roleId}`,
+    )
   api = await createApi({ definitions, namespaceAuth: true })
   accessControl = api.container.resolve<IAccessControlModuleService>(Modules.ACCESS_CONTROL)
 
@@ -127,7 +134,7 @@ test.describe('GET /admin/permissions/:id', () => {
     await accessControl.syncPermissions()
     const headers = authHeader('user', ADMIN_USER)
     const all = await accessControl.listPermissions()
-    const target = all[0]!
+    const target = all[0] as (typeof all)[number]
 
     const { status, body } = await getPermission(target.id, headers)
 
@@ -182,8 +189,7 @@ test.describe('super admin immutability via API', () => {
         name: 'Super Admin Test',
         features: grants('access-control.role.read'),
       })
-      const roleRepo = api.container.resolve<{ update(id: string, data: object): Promise<unknown> }>('roleRepository')
-      await roleRepo.update(role.id, { isSuperAdmin: true, protected: true, featuresJson: ['*'] })
+      await markSuperAdmin(role.id)
       superAdminRole = await accessControl.retrieveRole(role.id)
     }
 
@@ -221,8 +227,7 @@ test.describe('self-escalation prevention', () => {
     let superAdminRole = roles.find((r) => r.isSuperAdmin)
     if (!superAdminRole) {
       const role = await accessControl.createRole({ name: 'SA', features: grants('access-control.role.read') })
-      const roleRepo = api.container.resolve<{ update(id: string, data: object): Promise<unknown> }>('roleRepository')
-      await roleRepo.update(role.id, { isSuperAdmin: true, featuresJson: ['*'] })
+      await markSuperAdmin(role.id)
       superAdminRole = await accessControl.retrieveRole(role.id)
     }
 
@@ -237,8 +242,7 @@ test.describe('self-escalation prevention', () => {
 
   test('super admin can assign super admin role', async ({ expect }) => {
     const role = await accessControl.createRole({ name: 'SA2', features: grants('access-control.role.read') })
-    const roleRepo = api.container.resolve<{ update(id: string, data: object): Promise<unknown> }>('roleRepository')
-    await roleRepo.update(role.id, { isSuperAdmin: true, featuresJson: ['*'] })
+    await markSuperAdmin(role.id)
 
     const manageRole = await accessControl.createRole({
       name: 'SA Manager',
@@ -251,15 +255,14 @@ test.describe('self-escalation prevention', () => {
 
     expect(result.status).toBe(200)
     expect(result.body.roles).toHaveLength(1)
-    expect(result.body.roles[0]!.isSuperAdmin).toBe(true)
+    expect(result.body.roles[0]?.isSuperAdmin).toBe(true)
   })
 })
 
 test.describe('last super admin assignment protection via API', () => {
   test('cannot remove the last super admin assignment', async ({ expect }) => {
     const role = await accessControl.createRole({ name: 'SA Last', features: grants('access-control.role.read') })
-    const roleRepo = api.container.resolve<{ update(id: string, data: object): Promise<unknown> }>('roleRepository')
-    await roleRepo.update(role.id, { isSuperAdmin: true, featuresJson: ['*'] })
+    await markSuperAdmin(role.id)
 
     const manageRole = await accessControl.createRole({
       name: 'SA Manager 2',
@@ -284,7 +287,7 @@ test.describe('GET /admin/users/:id/roles', () => {
 
     expect(status).toBe(200)
     expect(body.roles).toHaveLength(1)
-    expect(body.roles[0]!.name).toBe('Test Role')
+    expect(body.roles[0]?.name).toBe('Test Role')
   })
 })
 
@@ -299,7 +302,7 @@ test.describe('PUT /admin/users/:id/roles', () => {
 
     expect(status).toBe(200)
     expect(body.roles).toHaveLength(1)
-    expect(body.roles[0]!.name).toBe('Role B')
+    expect(body.roles[0]?.name).toBe('Role B')
   })
 
   test('400 when roleIds reference nonexistent roles', async ({ expect }) => {

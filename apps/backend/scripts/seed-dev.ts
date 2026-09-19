@@ -462,16 +462,15 @@ const existingRoles = await accessControlService.listRoles()
 if (existingRoles.length === 0) {
   const superAdminRole = await accessControlService.createRole({
     name: 'Super Admin',
-    features: ['*'],
+    features: [],
   })
 
-  // createRole does not expose isSuperAdmin/protected — update via the module's repository
-  // The service exposes updateRole but it blocks modifications to super admin roles,
-  // so we go through the internal repository for the initial seed setup.
+  // createRole validates features (rejects '*' for non-super-admin roles) and updateRole
+  // blocks super-admin modifications, so we set all privileged fields via the repository.
   type UpdatableRepo = { update(id: string, data: Record<string, unknown>): Promise<unknown> }
   // biome-ignore lint/suspicious/noExplicitAny: seed-only cast to reach private repository
   const roleRepo = (accessControlService as any).roleRepository as UpdatableRepo
-  await roleRepo.update(superAdminRole.id, { isSuperAdmin: true, protected: true })
+  await roleRepo.update(superAdminRole.id, { isSuperAdmin: true, protected: true, featuresJson: ['*'] })
 
   const adminUsers = await userService.listUsers({ email: DEV_ADMIN_EMAIL })
   const adminUser = adminUsers[0]

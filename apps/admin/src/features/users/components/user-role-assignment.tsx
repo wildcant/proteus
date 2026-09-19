@@ -9,14 +9,14 @@ export function UserRoleAssignment({ userId }: { userId: string }) {
   const { data: userRolesData } = useSuspenseQuery(userRolesQueryOptions(userId))
 
   const currentRoleIds = userRolesData.roles.map((r) => r.id)
-  const roleKey = currentRoleIds.join(',')
+  const serializedRoleIds = currentRoleIds.join(',')
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>(currentRoleIds)
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
-    setSelectedRoleIds(currentRoleIds)
+    setSelectedRoleIds(serializedRoleIds.split(',').filter(Boolean))
     setDirty(false)
-  }, [userId, roleKey])
+  }, [serializedRoleIds])
 
   const replaceRoles = useReplaceUserRoles(userId, {
     onSuccess: () => {

@@ -1,5 +1,4 @@
-import { Button } from '@proteus/ui'
-import { Link } from '@tanstack/react-router'
+import { ButtonLink } from '@proteus/ui'
 import { ShieldXIcon } from 'lucide-react'
 
 export function ForbiddenPage() {
@@ -9,7 +8,7 @@ export function ForbiddenPage() {
         <ShieldXIcon className="size-16 text-muted-foreground" />
         <h1 className="font-semibold text-2xl">Access Denied</h1>
         <p className="text-muted-foreground">You don't have permission to access this page.</p>
-        <Button render={<Link to="/" />}>Go to Home</Button>
+        <ButtonLink to="/">Go to Home</ButtonLink>
       </div>
     </div>
   )

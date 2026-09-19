@@ -1,4 +1,4 @@
-import type { PermissionGrant, PermissionKey } from '@core/types/access-control/common.js'
+import type { PermissionGrant } from '@core/types/access-control/common.js'
 import { describe, expect, test } from 'vitest'
 import {
   authorizeFeatures,

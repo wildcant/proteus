@@ -148,3 +148,6 @@ Future nice to have TODOs
     sibling and nothing else; documents use the fixed section order.
   - Markdown structure is not expressible as an ast-grep rule or a dependency-cruiser rule, so this is a
     legitimate script — record that verdict in the "when a rule cannot express it" section when it lands.
+- SERVICE `.throws` CONTRACT: add `.throws` to service interface methods (same pattern as workflows). Route files
+  spread them into `Throws` instead of suppressing `route-declares-unthrown-error`. Remove all 4 suppress
+  instances: `roles/[id]/route.ts` (3), `users/[id]/roles/route.ts` (1).

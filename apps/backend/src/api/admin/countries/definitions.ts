@@ -15,6 +15,7 @@ export default [
     permissions: ['region.read'],
     operationId: 'listCountries',
     summary: 'List countries',
+    auth: 'required',
     tags: [Tags.COUNTRIES],
     output: countryRoutes.GetOutput,
   },

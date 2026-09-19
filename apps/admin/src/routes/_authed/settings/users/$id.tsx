@@ -5,8 +5,8 @@ import { Suspense } from 'react'
 import { SectionRow } from '#/components/common/section-row'
 import { SingleColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
-import { userQueryOptions } from '#/features/users/api/users'
 import { rolesListQueryOptions, userRolesQueryOptions } from '#/features/users/api/user-roles'
+import { userQueryOptions } from '#/features/users/api/users'
 import { UserRoleAssignment } from '#/features/users/components/user-role-assignment'
 
 export const Route = createFileRoute('/_authed/settings/users/$id')({

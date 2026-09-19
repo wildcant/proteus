@@ -21,7 +21,7 @@ export const useRoleTable = () =>
         cell: ({ row }) => (
           <span className="flex items-center gap-x-2">
             {row.name}
-            {row.protected && (
+            {!!row.protected && (
               <span className="text-muted-foreground" title="Protected role">
                 🔒
               </span>

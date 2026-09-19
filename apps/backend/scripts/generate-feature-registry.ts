@@ -30,6 +30,7 @@ function extractFeatures(source: ts.SourceFile, modulePath: string): { features:
   const problems: Problem[] = []
   let moduleKey: string | undefined
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TS AST visitor inherently branchy
   const visit = (node: ts.Node) => {
     if (
       ts.isCallExpression(node) &&

@@ -12,7 +12,7 @@ import { createRole, deleteRole, getRole, listRoles, updateRole } from '#/api/ge
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
-export const roleKeys = queryKeysFactory<'roles'>('roles')
+const roleKeys = queryKeysFactory<'roles'>('roles')
 
 export const rolesListQueryOptions = () =>
   queryOptions({

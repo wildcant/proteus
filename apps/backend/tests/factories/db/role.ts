@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
 import {
+  actorRoleAssignmentTable,
   type CreateActorRoleAssignment,
   type CreateRole,
-  actorRoleAssignmentTable,
   roleTable,
 } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'

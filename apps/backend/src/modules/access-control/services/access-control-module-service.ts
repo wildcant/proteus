@@ -307,7 +307,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     for (const assignment of assignments) {
       const role = roleMap.get(assignment.roleId)
       if (role) {
-        result.get(assignment.actorId)!.push(role)
+        result.get(assignment.actorId)?.push(role)
       }
     }
 

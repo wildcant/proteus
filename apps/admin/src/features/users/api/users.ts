@@ -3,7 +3,7 @@ import type { ListUsersParams } from '#/api/generated/model'
 import { getUser, listUsers } from '#/api/generated/users/users'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
-const userKeys = queryKeysFactory<'users', ListUsersParams>('users')
+export const userKeys = queryKeysFactory<'users', ListUsersParams>('users')
 
 const usersListQueryOptions = (params?: ListUsersParams) =>
   queryOptions({

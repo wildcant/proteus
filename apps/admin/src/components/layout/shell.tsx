@@ -111,7 +111,7 @@ function AppSidebar({
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
-        {firstSettingsRoute && (
+        {!!firstSettingsRoute && (
           <SidebarGroup className="mt-auto">
             <SidebarMenu>
               <SidebarMenuItem>

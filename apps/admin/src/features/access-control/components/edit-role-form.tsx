@@ -22,8 +22,8 @@ export function EditRoleForm({ role }: { role: AdminRoleDetailResponseRole }) {
             <CardHeader>
               <CardTitle className="flex items-center gap-x-2">
                 {role.name}
-                {role.isSuperAdmin && <Badge variant="outline">Super Admin</Badge>}
-                {role.protected && !role.isSuperAdmin && <Badge variant="outline">Protected</Badge>}
+                {!!role.isSuperAdmin && <Badge variant="outline">Super Admin</Badge>}
+                {!!role.protected && !role.isSuperAdmin && <Badge variant="outline">Protected</Badge>}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-y-4">

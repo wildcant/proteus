@@ -9,93 +9,93 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
-import { Route as PublicLoginRouteImport } from './routes/_public/login'
-import { Route as PublicInviteRouteImport } from './routes/_public/invite'
-import { Route as AuthedSettingsRouteRouteImport } from './routes/_authed/settings/route'
+import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthedShellRouteRouteImport } from './routes/_authed/_shell/route'
+import { Route as AuthedSettingsRouteRouteImport } from './routes/_authed/settings/route'
+import { Route as PublicInviteRouteImport } from './routes/_public/invite'
+import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as AuthedShellIndexRouteImport } from './routes/_authed/_shell/index'
 import { Route as AuthedShellCustomersRouteImport } from './routes/_authed/_shell/customers'
-import { Route as AuthedSettingsUsersRouteRouteImport } from './routes/_authed/settings/users/route'
-import { Route as AuthedSettingsStoreRouteRouteImport } from './routes/_authed/settings/store/route'
-import { Route as AuthedSettingsRolesRouteRouteImport } from './routes/_authed/settings/roles/route'
-import { Route as AuthedSettingsRegionsRouteRouteImport } from './routes/_authed/settings/regions/route'
-import { Route as AuthedShellReservationsRouteRouteImport } from './routes/_authed/_shell/reservations/route'
-import { Route as AuthedShellProductsRouteRouteImport } from './routes/_authed/_shell/products/route'
-import { Route as AuthedShellProductOptionsRouteRouteImport } from './routes/_authed/_shell/product-options/route'
-import { Route as AuthedShellOrdersRouteRouteImport } from './routes/_authed/_shell/orders/route'
 import { Route as AuthedShellInventoryRouteRouteImport } from './routes/_authed/_shell/inventory/route'
-import { Route as AuthedSettingsStoreIndexRouteImport } from './routes/_authed/settings/store/index'
-import { Route as AuthedSettingsRolesIndexRouteImport } from './routes/_authed/settings/roles/index'
-import { Route as AuthedSettingsRegionsIndexRouteImport } from './routes/_authed/settings/regions/index'
-import { Route as AuthedShellReservationsIndexRouteImport } from './routes/_authed/_shell/reservations/index'
-import { Route as AuthedShellProductsIndexRouteImport } from './routes/_authed/_shell/products/index'
-import { Route as AuthedShellProductOptionsIndexRouteImport } from './routes/_authed/_shell/product-options/index'
-import { Route as AuthedShellOrdersIndexRouteImport } from './routes/_authed/_shell/orders/index'
+import { Route as AuthedShellOrdersRouteRouteImport } from './routes/_authed/_shell/orders/route'
+import { Route as AuthedShellProductOptionsRouteRouteImport } from './routes/_authed/_shell/product-options/route'
+import { Route as AuthedShellProductsRouteRouteImport } from './routes/_authed/_shell/products/route'
+import { Route as AuthedShellReservationsRouteRouteImport } from './routes/_authed/_shell/reservations/route'
+import { Route as AuthedSettingsRegionsRouteRouteImport } from './routes/_authed/settings/regions/route'
+import { Route as AuthedSettingsRolesRouteRouteImport } from './routes/_authed/settings/roles/route'
+import { Route as AuthedSettingsStoreRouteRouteImport } from './routes/_authed/settings/store/route'
+import { Route as AuthedSettingsUsersRouteRouteImport } from './routes/_authed/settings/users/route'
 import { Route as AuthedShellInventoryIndexRouteImport } from './routes/_authed/_shell/inventory/index'
-import { Route as AuthedSettingsUsersInviteRouteImport } from './routes/_authed/settings/users/invite'
-import { Route as AuthedSettingsUsersIdRouteImport } from './routes/_authed/settings/users/$id'
-import { Route as AuthedSettingsStoreEditRouteImport } from './routes/_authed/settings/store/edit'
-import { Route as AuthedSettingsStoreCurrenciesRouteImport } from './routes/_authed/settings/store/currencies'
-import { Route as AuthedSettingsRolesCreateRouteImport } from './routes/_authed/settings/roles/create'
-import { Route as AuthedSettingsRegionsCreateRouteImport } from './routes/_authed/settings/regions/create'
-import { Route as AuthedShellProductsCreateRouteImport } from './routes/_authed/_shell/products/create'
-import { Route as AuthedShellProductOptionsCreateRouteImport } from './routes/_authed/_shell/product-options/create'
-import { Route as AuthedSettingsRolesIdRouteRouteImport } from './routes/_authed/settings/roles/$id/route'
-import { Route as AuthedSettingsRegionsIdRouteRouteImport } from './routes/_authed/settings/regions/$id/route'
-import { Route as AuthedShellProductsIdRouteRouteImport } from './routes/_authed/_shell/products/$id/route'
-import { Route as AuthedShellProductOptionsIdRouteRouteImport } from './routes/_authed/_shell/product-options/$id/route'
+import { Route as AuthedShellOrdersIndexRouteImport } from './routes/_authed/_shell/orders/index'
 import { Route as AuthedShellOrdersIdRouteRouteImport } from './routes/_authed/_shell/orders/$id/route'
-import { Route as AuthedSettingsRegionsIdDetailRouteRouteImport } from './routes/_authed/settings/regions/$id/_detail/route'
-import { Route as AuthedShellProductsIdDetailRouteRouteImport } from './routes/_authed/_shell/products/$id/_detail/route'
-import { Route as AuthedShellProductOptionsIdDetailRouteRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/route'
+import { Route as AuthedShellProductOptionsIndexRouteImport } from './routes/_authed/_shell/product-options/index'
+import { Route as AuthedShellProductOptionsIdRouteRouteImport } from './routes/_authed/_shell/product-options/$id/route'
+import { Route as AuthedShellProductOptionsCreateRouteImport } from './routes/_authed/_shell/product-options/create'
+import { Route as AuthedShellProductsIndexRouteImport } from './routes/_authed/_shell/products/index'
+import { Route as AuthedShellProductsIdRouteRouteImport } from './routes/_authed/_shell/products/$id/route'
+import { Route as AuthedShellProductsCreateRouteImport } from './routes/_authed/_shell/products/create'
+import { Route as AuthedShellReservationsIndexRouteImport } from './routes/_authed/_shell/reservations/index'
+import { Route as AuthedSettingsRegionsIndexRouteImport } from './routes/_authed/settings/regions/index'
+import { Route as AuthedSettingsRegionsIdRouteRouteImport } from './routes/_authed/settings/regions/$id/route'
+import { Route as AuthedSettingsRegionsCreateRouteImport } from './routes/_authed/settings/regions/create'
+import { Route as AuthedSettingsRolesIndexRouteImport } from './routes/_authed/settings/roles/index'
+import { Route as AuthedSettingsRolesIdRouteRouteImport } from './routes/_authed/settings/roles/$id/route'
+import { Route as AuthedSettingsRolesCreateRouteImport } from './routes/_authed/settings/roles/create'
+import { Route as AuthedSettingsStoreIndexRouteImport } from './routes/_authed/settings/store/index'
+import { Route as AuthedSettingsStoreCurrenciesRouteImport } from './routes/_authed/settings/store/currencies'
+import { Route as AuthedSettingsStoreEditRouteImport } from './routes/_authed/settings/store/edit'
+import { Route as AuthedSettingsUsersIdRouteImport } from './routes/_authed/settings/users/$id'
+import { Route as AuthedSettingsUsersInviteRouteImport } from './routes/_authed/settings/users/invite'
 import { Route as AuthedShellOrdersIdDetailRouteRouteImport } from './routes/_authed/_shell/orders/$id/_detail/route'
-import { Route as AuthedSettingsRegionsIdDetailIndexRouteImport } from './routes/_authed/settings/regions/$id/_detail/index'
-import { Route as AuthedShellProductsIdDetailIndexRouteImport } from './routes/_authed/_shell/products/$id/_detail/index'
-import { Route as AuthedShellProductOptionsIdDetailIndexRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/index'
+import { Route as AuthedShellProductOptionsIdDetailRouteRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/route'
+import { Route as AuthedShellProductsIdDetailRouteRouteImport } from './routes/_authed/_shell/products/$id/_detail/route'
+import { Route as AuthedSettingsRegionsIdDetailRouteRouteImport } from './routes/_authed/settings/regions/$id/_detail/route'
 import { Route as AuthedShellOrdersIdDetailIndexRouteImport } from './routes/_authed/_shell/orders/$id/_detail/index'
-import { Route as AuthedSettingsRegionsIdDetailEditRouteImport } from './routes/_authed/settings/regions/$id/_detail/edit'
-import { Route as AuthedShellProductsIdVariantsCreateRouteImport } from './routes/_authed/_shell/products/$id/variants/create'
-import { Route as AuthedShellProductsIdDetailOptionsRouteImport } from './routes/_authed/_shell/products/$id/_detail/options'
-import { Route as AuthedShellProductsIdDetailMediaRouteImport } from './routes/_authed/_shell/products/$id/_detail/media'
-import { Route as AuthedShellProductsIdDetailEditRouteImport } from './routes/_authed/_shell/products/$id/_detail/edit'
+import { Route as AuthedShellProductOptionsIdDetailIndexRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/index'
 import { Route as AuthedShellProductOptionsIdDetailEditRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/edit'
+import { Route as AuthedShellProductsIdDetailIndexRouteImport } from './routes/_authed/_shell/products/$id/_detail/index'
+import { Route as AuthedShellProductsIdDetailEditRouteImport } from './routes/_authed/_shell/products/$id/_detail/edit'
+import { Route as AuthedShellProductsIdDetailMediaRouteImport } from './routes/_authed/_shell/products/$id/_detail/media'
+import { Route as AuthedShellProductsIdDetailOptionsRouteImport } from './routes/_authed/_shell/products/$id/_detail/options'
 import { Route as AuthedShellProductsIdVariantsVariantIdRouteRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/route'
+import { Route as AuthedShellProductsIdVariantsCreateRouteImport } from './routes/_authed/_shell/products/$id/variants/create'
+import { Route as AuthedSettingsRegionsIdDetailIndexRouteImport } from './routes/_authed/settings/regions/$id/_detail/index'
+import { Route as AuthedSettingsRegionsIdDetailEditRouteImport } from './routes/_authed/settings/regions/$id/_detail/edit'
+import { Route as AuthedShellProductsIdVariantsVariantIdEditRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/edit'
+import { Route as AuthedShellProductsIdVariantsVariantIdMediaRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/media'
+import { Route as AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/prices/route'
+import { Route as AuthedShellProductsIdVariantsVariantIdStockRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/stock'
 import { Route as AuthedSettingsRegionsIdDetailCountriesIndexRouteImport } from './routes/_authed/settings/regions/$id/_detail/countries/index'
 import { Route as AuthedSettingsRegionsIdDetailCountriesCodeRouteImport } from './routes/_authed/settings/regions/$id/_detail/countries/$code'
-import { Route as AuthedShellProductsIdVariantsVariantIdStockRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/stock'
-import { Route as AuthedShellProductsIdVariantsVariantIdMediaRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/media'
-import { Route as AuthedShellProductsIdVariantsVariantIdEditRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/edit'
-import { Route as AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/prices/route'
 import { Route as AuthedShellProductsIdDetailImagesImageIdVariantsRouteImport } from './routes/_authed/_shell/products/$id/_detail/images/$imageId/variants'
 
-const PublicRouteRoute = PublicRouteRouteImport.update({
-  id: '/_public',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicLoginRoute = PublicLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => PublicRouteRoute,
+const PublicRouteRoute = PublicRouteRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PublicInviteRoute = PublicInviteRouteImport.update({
-  id: '/invite',
-  path: '/invite',
-  getParentRoute: () => PublicRouteRoute,
+const AuthedShellRouteRoute = AuthedShellRouteRouteImport.update({
+  id: '/_shell',
+  getParentRoute: () => AuthedRouteRoute,
 } as any)
 const AuthedSettingsRouteRoute = AuthedSettingsRouteRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
-const AuthedShellRouteRoute = AuthedShellRouteRouteImport.update({
-  id: '/_shell',
-  getParentRoute: () => AuthedRouteRoute,
+const PublicInviteRoute = PublicInviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicLoginRoute = PublicLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const AuthedShellIndexRoute = AuthedShellIndexRouteImport.update({
   id: '/',
@@ -107,34 +107,21 @@ const AuthedShellCustomersRoute = AuthedShellCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AuthedShellRouteRoute,
 } as any)
-const AuthedSettingsUsersRouteRoute =
-  AuthedSettingsUsersRouteRouteImport.update({
-    id: '/users',
-    path: '/users',
-    getParentRoute: () => AuthedSettingsRouteRoute,
+const AuthedShellInventoryRouteRoute =
+  AuthedShellInventoryRouteRouteImport.update({
+    id: '/inventory',
+    path: '/inventory',
+    getParentRoute: () => AuthedShellRouteRoute,
   } as any)
-const AuthedSettingsStoreRouteRoute =
-  AuthedSettingsStoreRouteRouteImport.update({
-    id: '/store',
-    path: '/store',
-    getParentRoute: () => AuthedSettingsRouteRoute,
-  } as any)
-const AuthedSettingsRolesRouteRoute =
-  AuthedSettingsRolesRouteRouteImport.update({
-    id: '/roles',
-    path: '/roles',
-    getParentRoute: () => AuthedSettingsRouteRoute,
-  } as any)
-const AuthedSettingsRegionsRouteRoute =
-  AuthedSettingsRegionsRouteRouteImport.update({
-    id: '/regions',
-    path: '/regions',
-    getParentRoute: () => AuthedSettingsRouteRoute,
-  } as any)
-const AuthedShellReservationsRouteRoute =
-  AuthedShellReservationsRouteRouteImport.update({
-    id: '/reservations',
-    path: '/reservations',
+const AuthedShellOrdersRouteRoute = AuthedShellOrdersRouteRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AuthedShellRouteRoute,
+} as any)
+const AuthedShellProductOptionsRouteRoute =
+  AuthedShellProductOptionsRouteRouteImport.update({
+    id: '/product-options',
+    path: '/product-options',
     getParentRoute: () => AuthedShellRouteRoute,
   } as any)
 const AuthedShellProductsRouteRoute =
@@ -143,52 +130,52 @@ const AuthedShellProductsRouteRoute =
     path: '/products',
     getParentRoute: () => AuthedShellRouteRoute,
   } as any)
-const AuthedShellProductOptionsRouteRoute =
-  AuthedShellProductOptionsRouteRouteImport.update({
-    id: '/product-options',
-    path: '/product-options',
+const AuthedShellReservationsRouteRoute =
+  AuthedShellReservationsRouteRouteImport.update({
+    id: '/reservations',
+    path: '/reservations',
     getParentRoute: () => AuthedShellRouteRoute,
   } as any)
-const AuthedShellOrdersRouteRoute = AuthedShellOrdersRouteRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => AuthedShellRouteRoute,
+const AuthedSettingsRegionsRouteRoute =
+  AuthedSettingsRegionsRouteRouteImport.update({
+    id: '/regions',
+    path: '/regions',
+    getParentRoute: () => AuthedSettingsRouteRoute,
+  } as any)
+const AuthedSettingsRolesRouteRoute =
+  AuthedSettingsRolesRouteRouteImport.update({
+    id: '/roles',
+    path: '/roles',
+    getParentRoute: () => AuthedSettingsRouteRoute,
+  } as any)
+const AuthedSettingsStoreRouteRoute =
+  AuthedSettingsStoreRouteRouteImport.update({
+    id: '/store',
+    path: '/store',
+    getParentRoute: () => AuthedSettingsRouteRoute,
+  } as any)
+const AuthedSettingsUsersRouteRoute =
+  AuthedSettingsUsersRouteRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AuthedSettingsRouteRoute,
+  } as any)
+const AuthedShellInventoryIndexRoute =
+  AuthedShellInventoryIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellInventoryRouteRoute,
+  } as any)
+const AuthedShellOrdersIndexRoute = AuthedShellOrdersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedShellOrdersRouteRoute,
 } as any)
-const AuthedShellInventoryRouteRoute =
-  AuthedShellInventoryRouteRouteImport.update({
-    id: '/inventory',
-    path: '/inventory',
-    getParentRoute: () => AuthedShellRouteRoute,
-  } as any)
-const AuthedSettingsStoreIndexRoute =
-  AuthedSettingsStoreIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedSettingsStoreRouteRoute,
-  } as any)
-const AuthedSettingsRolesIndexRoute =
-  AuthedSettingsRolesIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedSettingsRolesRouteRoute,
-  } as any)
-const AuthedSettingsRegionsIndexRoute =
-  AuthedSettingsRegionsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedSettingsRegionsRouteRoute,
-  } as any)
-const AuthedShellReservationsIndexRoute =
-  AuthedShellReservationsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedShellReservationsRouteRoute,
-  } as any)
-const AuthedShellProductsIndexRoute =
-  AuthedShellProductsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedShellProductsRouteRoute,
+const AuthedShellOrdersIdRouteRoute =
+  AuthedShellOrdersIdRouteRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthedShellOrdersRouteRoute,
   } as any)
 const AuthedShellProductOptionsIndexRoute =
   AuthedShellProductOptionsIndexRouteImport.update({
@@ -196,56 +183,11 @@ const AuthedShellProductOptionsIndexRoute =
     path: '/',
     getParentRoute: () => AuthedShellProductOptionsRouteRoute,
   } as any)
-const AuthedShellOrdersIndexRoute = AuthedShellOrdersIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthedShellOrdersRouteRoute,
-} as any)
-const AuthedShellInventoryIndexRoute =
-  AuthedShellInventoryIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedShellInventoryRouteRoute,
-  } as any)
-const AuthedSettingsUsersInviteRoute =
-  AuthedSettingsUsersInviteRouteImport.update({
-    id: '/invite',
-    path: '/invite',
-    getParentRoute: () => AuthedSettingsUsersRouteRoute,
-  } as any)
-const AuthedSettingsUsersIdRoute = AuthedSettingsUsersIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthedSettingsUsersRouteRoute,
-} as any)
-const AuthedSettingsStoreEditRoute = AuthedSettingsStoreEditRouteImport.update({
-  id: '/edit',
-  path: '/edit',
-  getParentRoute: () => AuthedSettingsStoreRouteRoute,
-} as any)
-const AuthedSettingsStoreCurrenciesRoute =
-  AuthedSettingsStoreCurrenciesRouteImport.update({
-    id: '/currencies',
-    path: '/currencies',
-    getParentRoute: () => AuthedSettingsStoreRouteRoute,
-  } as any)
-const AuthedSettingsRolesCreateRoute =
-  AuthedSettingsRolesCreateRouteImport.update({
-    id: '/create',
-    path: '/create',
-    getParentRoute: () => AuthedSettingsRolesRouteRoute,
-  } as any)
-const AuthedSettingsRegionsCreateRoute =
-  AuthedSettingsRegionsCreateRouteImport.update({
-    id: '/create',
-    path: '/create',
-    getParentRoute: () => AuthedSettingsRegionsRouteRoute,
-  } as any)
-const AuthedShellProductsCreateRoute =
-  AuthedShellProductsCreateRouteImport.update({
-    id: '/create',
-    path: '/create',
-    getParentRoute: () => AuthedShellProductsRouteRoute,
+const AuthedShellProductOptionsIdRouteRoute =
+  AuthedShellProductOptionsIdRouteRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthedShellProductOptionsRouteRoute,
   } as any)
 const AuthedShellProductOptionsCreateRoute =
   AuthedShellProductOptionsCreateRouteImport.update({
@@ -253,17 +195,11 @@ const AuthedShellProductOptionsCreateRoute =
     path: '/create',
     getParentRoute: () => AuthedShellProductOptionsRouteRoute,
   } as any)
-const AuthedSettingsRolesIdRouteRoute =
-  AuthedSettingsRolesIdRouteRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => AuthedSettingsRolesRouteRoute,
-  } as any)
-const AuthedSettingsRegionsIdRouteRoute =
-  AuthedSettingsRegionsIdRouteRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => AuthedSettingsRegionsRouteRoute,
+const AuthedShellProductsIndexRoute =
+  AuthedShellProductsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellProductsRouteRoute,
   } as any)
 const AuthedShellProductsIdRouteRoute =
   AuthedShellProductsIdRouteRouteImport.update({
@@ -271,55 +207,101 @@ const AuthedShellProductsIdRouteRoute =
     path: '/$id',
     getParentRoute: () => AuthedShellProductsRouteRoute,
   } as any)
-const AuthedShellProductOptionsIdRouteRoute =
-  AuthedShellProductOptionsIdRouteRouteImport.update({
+const AuthedShellProductsCreateRoute =
+  AuthedShellProductsCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthedShellProductsRouteRoute,
+  } as any)
+const AuthedShellReservationsIndexRoute =
+  AuthedShellReservationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellReservationsRouteRoute,
+  } as any)
+const AuthedSettingsRegionsIndexRoute =
+  AuthedSettingsRegionsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedSettingsRegionsRouteRoute,
+  } as any)
+const AuthedSettingsRegionsIdRouteRoute =
+  AuthedSettingsRegionsIdRouteRouteImport.update({
     id: '/$id',
     path: '/$id',
-    getParentRoute: () => AuthedShellProductOptionsRouteRoute,
+    getParentRoute: () => AuthedSettingsRegionsRouteRoute,
   } as any)
-const AuthedShellOrdersIdRouteRoute =
-  AuthedShellOrdersIdRouteRouteImport.update({
+const AuthedSettingsRegionsCreateRoute =
+  AuthedSettingsRegionsCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthedSettingsRegionsRouteRoute,
+  } as any)
+const AuthedSettingsRolesIndexRoute =
+  AuthedSettingsRolesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedSettingsRolesRouteRoute,
+  } as any)
+const AuthedSettingsRolesIdRouteRoute =
+  AuthedSettingsRolesIdRouteRouteImport.update({
     id: '/$id',
     path: '/$id',
-    getParentRoute: () => AuthedShellOrdersRouteRoute,
+    getParentRoute: () => AuthedSettingsRolesRouteRoute,
   } as any)
-const AuthedSettingsRegionsIdDetailRouteRoute =
-  AuthedSettingsRegionsIdDetailRouteRouteImport.update({
-    id: '/_detail',
-    getParentRoute: () => AuthedSettingsRegionsIdRouteRoute,
+const AuthedSettingsRolesCreateRoute =
+  AuthedSettingsRolesCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthedSettingsRolesRouteRoute,
   } as any)
-const AuthedShellProductsIdDetailRouteRoute =
-  AuthedShellProductsIdDetailRouteRouteImport.update({
-    id: '/_detail',
-    getParentRoute: () => AuthedShellProductsIdRouteRoute,
+const AuthedSettingsStoreIndexRoute =
+  AuthedSettingsStoreIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedSettingsStoreRouteRoute,
   } as any)
-const AuthedShellProductOptionsIdDetailRouteRoute =
-  AuthedShellProductOptionsIdDetailRouteRouteImport.update({
-    id: '/_detail',
-    getParentRoute: () => AuthedShellProductOptionsIdRouteRoute,
+const AuthedSettingsStoreCurrenciesRoute =
+  AuthedSettingsStoreCurrenciesRouteImport.update({
+    id: '/currencies',
+    path: '/currencies',
+    getParentRoute: () => AuthedSettingsStoreRouteRoute,
+  } as any)
+const AuthedSettingsStoreEditRoute = AuthedSettingsStoreEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => AuthedSettingsStoreRouteRoute,
+} as any)
+const AuthedSettingsUsersIdRoute = AuthedSettingsUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthedSettingsUsersRouteRoute,
+} as any)
+const AuthedSettingsUsersInviteRoute =
+  AuthedSettingsUsersInviteRouteImport.update({
+    id: '/invite',
+    path: '/invite',
+    getParentRoute: () => AuthedSettingsUsersRouteRoute,
   } as any)
 const AuthedShellOrdersIdDetailRouteRoute =
   AuthedShellOrdersIdDetailRouteRouteImport.update({
     id: '/_detail',
     getParentRoute: () => AuthedShellOrdersIdRouteRoute,
   } as any)
-const AuthedSettingsRegionsIdDetailIndexRoute =
-  AuthedSettingsRegionsIdDetailIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedSettingsRegionsIdDetailRouteRoute,
+const AuthedShellProductOptionsIdDetailRouteRoute =
+  AuthedShellProductOptionsIdDetailRouteRouteImport.update({
+    id: '/_detail',
+    getParentRoute: () => AuthedShellProductOptionsIdRouteRoute,
   } as any)
-const AuthedShellProductsIdDetailIndexRoute =
-  AuthedShellProductsIdDetailIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
+const AuthedShellProductsIdDetailRouteRoute =
+  AuthedShellProductsIdDetailRouteRouteImport.update({
+    id: '/_detail',
+    getParentRoute: () => AuthedShellProductsIdRouteRoute,
   } as any)
-const AuthedShellProductOptionsIdDetailIndexRoute =
-  AuthedShellProductOptionsIdDetailIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthedShellProductOptionsIdDetailRouteRoute,
+const AuthedSettingsRegionsIdDetailRouteRoute =
+  AuthedSettingsRegionsIdDetailRouteRouteImport.update({
+    id: '/_detail',
+    getParentRoute: () => AuthedSettingsRegionsIdRouteRoute,
   } as any)
 const AuthedShellOrdersIdDetailIndexRoute =
   AuthedShellOrdersIdDetailIndexRouteImport.update({
@@ -327,28 +309,22 @@ const AuthedShellOrdersIdDetailIndexRoute =
     path: '/',
     getParentRoute: () => AuthedShellOrdersIdDetailRouteRoute,
   } as any)
-const AuthedSettingsRegionsIdDetailEditRoute =
-  AuthedSettingsRegionsIdDetailEditRouteImport.update({
+const AuthedShellProductOptionsIdDetailIndexRoute =
+  AuthedShellProductOptionsIdDetailIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellProductOptionsIdDetailRouteRoute,
+  } as any)
+const AuthedShellProductOptionsIdDetailEditRoute =
+  AuthedShellProductOptionsIdDetailEditRouteImport.update({
     id: '/edit',
     path: '/edit',
-    getParentRoute: () => AuthedSettingsRegionsIdDetailRouteRoute,
+    getParentRoute: () => AuthedShellProductOptionsIdDetailRouteRoute,
   } as any)
-const AuthedShellProductsIdVariantsCreateRoute =
-  AuthedShellProductsIdVariantsCreateRouteImport.update({
-    id: '/variants/create',
-    path: '/variants/create',
-    getParentRoute: () => AuthedShellProductsIdRouteRoute,
-  } as any)
-const AuthedShellProductsIdDetailOptionsRoute =
-  AuthedShellProductsIdDetailOptionsRouteImport.update({
-    id: '/options',
-    path: '/options',
-    getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
-  } as any)
-const AuthedShellProductsIdDetailMediaRoute =
-  AuthedShellProductsIdDetailMediaRouteImport.update({
-    id: '/media',
-    path: '/media',
+const AuthedShellProductsIdDetailIndexRoute =
+  AuthedShellProductsIdDetailIndexRouteImport.update({
+    id: '/',
+    path: '/',
     getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
   } as any)
 const AuthedShellProductsIdDetailEditRoute =
@@ -357,17 +333,65 @@ const AuthedShellProductsIdDetailEditRoute =
     path: '/edit',
     getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
   } as any)
-const AuthedShellProductOptionsIdDetailEditRoute =
-  AuthedShellProductOptionsIdDetailEditRouteImport.update({
-    id: '/edit',
-    path: '/edit',
-    getParentRoute: () => AuthedShellProductOptionsIdDetailRouteRoute,
+const AuthedShellProductsIdDetailMediaRoute =
+  AuthedShellProductsIdDetailMediaRouteImport.update({
+    id: '/media',
+    path: '/media',
+    getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
+  } as any)
+const AuthedShellProductsIdDetailOptionsRoute =
+  AuthedShellProductsIdDetailOptionsRouteImport.update({
+    id: '/options',
+    path: '/options',
+    getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
   } as any)
 const AuthedShellProductsIdVariantsVariantIdRouteRoute =
   AuthedShellProductsIdVariantsVariantIdRouteRouteImport.update({
     id: '/variants/$variantId',
     path: '/variants/$variantId',
     getParentRoute: () => AuthedShellProductsIdRouteRoute,
+  } as any)
+const AuthedShellProductsIdVariantsCreateRoute =
+  AuthedShellProductsIdVariantsCreateRouteImport.update({
+    id: '/variants/create',
+    path: '/variants/create',
+    getParentRoute: () => AuthedShellProductsIdRouteRoute,
+  } as any)
+const AuthedSettingsRegionsIdDetailIndexRoute =
+  AuthedSettingsRegionsIdDetailIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedSettingsRegionsIdDetailRouteRoute,
+  } as any)
+const AuthedSettingsRegionsIdDetailEditRoute =
+  AuthedSettingsRegionsIdDetailEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthedSettingsRegionsIdDetailRouteRoute,
+  } as any)
+const AuthedShellProductsIdVariantsVariantIdEditRoute =
+  AuthedShellProductsIdVariantsVariantIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
+  } as any)
+const AuthedShellProductsIdVariantsVariantIdMediaRoute =
+  AuthedShellProductsIdVariantsVariantIdMediaRouteImport.update({
+    id: '/media',
+    path: '/media',
+    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
+  } as any)
+const AuthedShellProductsIdVariantsVariantIdPricesRouteRoute =
+  AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport.update({
+    id: '/prices',
+    path: '/prices',
+    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
+  } as any)
+const AuthedShellProductsIdVariantsVariantIdStockRoute =
+  AuthedShellProductsIdVariantsVariantIdStockRouteImport.update({
+    id: '/stock',
+    path: '/stock',
+    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
   } as any)
 const AuthedSettingsRegionsIdDetailCountriesIndexRoute =
   AuthedSettingsRegionsIdDetailCountriesIndexRouteImport.update({
@@ -380,30 +404,6 @@ const AuthedSettingsRegionsIdDetailCountriesCodeRoute =
     id: '/countries/$code',
     path: '/countries/$code',
     getParentRoute: () => AuthedSettingsRegionsIdDetailRouteRoute,
-  } as any)
-const AuthedShellProductsIdVariantsVariantIdStockRoute =
-  AuthedShellProductsIdVariantsVariantIdStockRouteImport.update({
-    id: '/stock',
-    path: '/stock',
-    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
-  } as any)
-const AuthedShellProductsIdVariantsVariantIdMediaRoute =
-  AuthedShellProductsIdVariantsVariantIdMediaRouteImport.update({
-    id: '/media',
-    path: '/media',
-    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
-  } as any)
-const AuthedShellProductsIdVariantsVariantIdEditRoute =
-  AuthedShellProductsIdVariantsVariantIdEditRouteImport.update({
-    id: '/edit',
-    path: '/edit',
-    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
-  } as any)
-const AuthedShellProductsIdVariantsVariantIdPricesRouteRoute =
-  AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport.update({
-    id: '/prices',
-    path: '/prices',
-    getParentRoute: () => AuthedShellProductsIdVariantsVariantIdRouteRoute,
   } as any)
 const AuthedShellProductsIdDetailImagesImageIdVariantsRoute =
   AuthedShellProductsIdDetailImagesImageIdVariantsRouteImport.update({
@@ -743,13 +743,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_public': {
-      id: '/_public'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof PublicRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authed': {
       id: '/_authed'
       path: ''
@@ -757,19 +750,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public/login': {
-      id: '/_public/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof PublicLoginRouteImport
-      parentRoute: typeof PublicRouteRoute
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_public/invite': {
-      id: '/_public/invite'
-      path: '/invite'
-      fullPath: '/invite'
-      preLoaderRoute: typeof PublicInviteRouteImport
-      parentRoute: typeof PublicRouteRoute
+    '/_authed/_shell': {
+      id: '/_authed/_shell'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedShellRouteRouteImport
+      parentRoute: typeof AuthedRouteRoute
     }
     '/_authed/settings': {
       id: '/_authed/settings'
@@ -778,12 +771,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedSettingsRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
-    '/_authed/_shell': {
-      id: '/_authed/_shell'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthedShellRouteRouteImport
-      parentRoute: typeof AuthedRouteRoute
+    '/_public/invite': {
+      id: '/_public/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof PublicInviteRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/login': {
+      id: '/_public/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof PublicLoginRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/_authed/_shell/': {
       id: '/_authed/_shell/'
@@ -799,53 +799,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellCustomersRouteImport
       parentRoute: typeof AuthedShellRouteRoute
     }
-    '/_authed/settings/users': {
-      id: '/_authed/settings/users'
-      path: '/users'
-      fullPath: '/settings/users'
-      preLoaderRoute: typeof AuthedSettingsUsersRouteRouteImport
-      parentRoute: typeof AuthedSettingsRouteRoute
-    }
-    '/_authed/settings/store': {
-      id: '/_authed/settings/store'
-      path: '/store'
-      fullPath: '/settings/store'
-      preLoaderRoute: typeof AuthedSettingsStoreRouteRouteImport
-      parentRoute: typeof AuthedSettingsRouteRoute
-    }
-    '/_authed/settings/roles': {
-      id: '/_authed/settings/roles'
-      path: '/roles'
-      fullPath: '/settings/roles'
-      preLoaderRoute: typeof AuthedSettingsRolesRouteRouteImport
-      parentRoute: typeof AuthedSettingsRouteRoute
-    }
-    '/_authed/settings/regions': {
-      id: '/_authed/settings/regions'
-      path: '/regions'
-      fullPath: '/settings/regions'
-      preLoaderRoute: typeof AuthedSettingsRegionsRouteRouteImport
-      parentRoute: typeof AuthedSettingsRouteRoute
-    }
-    '/_authed/_shell/reservations': {
-      id: '/_authed/_shell/reservations'
-      path: '/reservations'
-      fullPath: '/reservations'
-      preLoaderRoute: typeof AuthedShellReservationsRouteRouteImport
-      parentRoute: typeof AuthedShellRouteRoute
-    }
-    '/_authed/_shell/products': {
-      id: '/_authed/_shell/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof AuthedShellProductsRouteRouteImport
-      parentRoute: typeof AuthedShellRouteRoute
-    }
-    '/_authed/_shell/product-options': {
-      id: '/_authed/_shell/product-options'
-      path: '/product-options'
-      fullPath: '/product-options'
-      preLoaderRoute: typeof AuthedShellProductOptionsRouteRouteImport
+    '/_authed/_shell/inventory': {
+      id: '/_authed/_shell/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof AuthedShellInventoryRouteRouteImport
       parentRoute: typeof AuthedShellRouteRoute
     }
     '/_authed/_shell/orders': {
@@ -855,61 +813,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellOrdersRouteRouteImport
       parentRoute: typeof AuthedShellRouteRoute
     }
-    '/_authed/_shell/inventory': {
-      id: '/_authed/_shell/inventory'
-      path: '/inventory'
-      fullPath: '/inventory'
-      preLoaderRoute: typeof AuthedShellInventoryRouteRouteImport
+    '/_authed/_shell/product-options': {
+      id: '/_authed/_shell/product-options'
+      path: '/product-options'
+      fullPath: '/product-options'
+      preLoaderRoute: typeof AuthedShellProductOptionsRouteRouteImport
       parentRoute: typeof AuthedShellRouteRoute
     }
-    '/_authed/settings/store/': {
-      id: '/_authed/settings/store/'
-      path: '/'
-      fullPath: '/settings/store/'
-      preLoaderRoute: typeof AuthedSettingsStoreIndexRouteImport
-      parentRoute: typeof AuthedSettingsStoreRouteRoute
+    '/_authed/_shell/products': {
+      id: '/_authed/_shell/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof AuthedShellProductsRouteRouteImport
+      parentRoute: typeof AuthedShellRouteRoute
     }
-    '/_authed/settings/roles/': {
-      id: '/_authed/settings/roles/'
-      path: '/'
-      fullPath: '/settings/roles/'
-      preLoaderRoute: typeof AuthedSettingsRolesIndexRouteImport
-      parentRoute: typeof AuthedSettingsRolesRouteRoute
+    '/_authed/_shell/reservations': {
+      id: '/_authed/_shell/reservations'
+      path: '/reservations'
+      fullPath: '/reservations'
+      preLoaderRoute: typeof AuthedShellReservationsRouteRouteImport
+      parentRoute: typeof AuthedShellRouteRoute
     }
-    '/_authed/settings/regions/': {
-      id: '/_authed/settings/regions/'
-      path: '/'
-      fullPath: '/settings/regions/'
-      preLoaderRoute: typeof AuthedSettingsRegionsIndexRouteImport
-      parentRoute: typeof AuthedSettingsRegionsRouteRoute
+    '/_authed/settings/regions': {
+      id: '/_authed/settings/regions'
+      path: '/regions'
+      fullPath: '/settings/regions'
+      preLoaderRoute: typeof AuthedSettingsRegionsRouteRouteImport
+      parentRoute: typeof AuthedSettingsRouteRoute
     }
-    '/_authed/_shell/reservations/': {
-      id: '/_authed/_shell/reservations/'
-      path: '/'
-      fullPath: '/reservations/'
-      preLoaderRoute: typeof AuthedShellReservationsIndexRouteImport
-      parentRoute: typeof AuthedShellReservationsRouteRoute
+    '/_authed/settings/roles': {
+      id: '/_authed/settings/roles'
+      path: '/roles'
+      fullPath: '/settings/roles'
+      preLoaderRoute: typeof AuthedSettingsRolesRouteRouteImport
+      parentRoute: typeof AuthedSettingsRouteRoute
     }
-    '/_authed/_shell/products/': {
-      id: '/_authed/_shell/products/'
-      path: '/'
-      fullPath: '/products/'
-      preLoaderRoute: typeof AuthedShellProductsIndexRouteImport
-      parentRoute: typeof AuthedShellProductsRouteRoute
+    '/_authed/settings/store': {
+      id: '/_authed/settings/store'
+      path: '/store'
+      fullPath: '/settings/store'
+      preLoaderRoute: typeof AuthedSettingsStoreRouteRouteImport
+      parentRoute: typeof AuthedSettingsRouteRoute
     }
-    '/_authed/_shell/product-options/': {
-      id: '/_authed/_shell/product-options/'
-      path: '/'
-      fullPath: '/product-options/'
-      preLoaderRoute: typeof AuthedShellProductOptionsIndexRouteImport
-      parentRoute: typeof AuthedShellProductOptionsRouteRoute
-    }
-    '/_authed/_shell/orders/': {
-      id: '/_authed/_shell/orders/'
-      path: '/'
-      fullPath: '/orders/'
-      preLoaderRoute: typeof AuthedShellOrdersIndexRouteImport
-      parentRoute: typeof AuthedShellOrdersRouteRoute
+    '/_authed/settings/users': {
+      id: '/_authed/settings/users'
+      path: '/users'
+      fullPath: '/settings/users'
+      preLoaderRoute: typeof AuthedSettingsUsersRouteRouteImport
+      parentRoute: typeof AuthedSettingsRouteRoute
     }
     '/_authed/_shell/inventory/': {
       id: '/_authed/_shell/inventory/'
@@ -918,25 +869,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellInventoryIndexRouteImport
       parentRoute: typeof AuthedShellInventoryRouteRoute
     }
-    '/_authed/settings/users/invite': {
-      id: '/_authed/settings/users/invite'
-      path: '/invite'
-      fullPath: '/settings/users/invite'
-      preLoaderRoute: typeof AuthedSettingsUsersInviteRouteImport
-      parentRoute: typeof AuthedSettingsUsersRouteRoute
+    '/_authed/_shell/orders/': {
+      id: '/_authed/_shell/orders/'
+      path: '/'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof AuthedShellOrdersIndexRouteImport
+      parentRoute: typeof AuthedShellOrdersRouteRoute
     }
-    '/_authed/settings/users/$id': {
-      id: '/_authed/settings/users/$id'
+    '/_authed/_shell/orders/$id': {
+      id: '/_authed/_shell/orders/$id'
       path: '/$id'
-      fullPath: '/settings/users/$id'
-      preLoaderRoute: typeof AuthedSettingsUsersIdRouteImport
-      parentRoute: typeof AuthedSettingsUsersRouteRoute
+      fullPath: '/orders/$id'
+      preLoaderRoute: typeof AuthedShellOrdersIdRouteRouteImport
+      parentRoute: typeof AuthedShellOrdersRouteRoute
     }
-    '/_authed/settings/store/edit': {
-      id: '/_authed/settings/store/edit'
-      path: '/edit'
-      fullPath: '/settings/store/edit'
-      preLoaderRoute: typeof AuthedSettingsStoreEditRouteImport
+    '/_authed/_shell/product-options/': {
+      id: '/_authed/_shell/product-options/'
+      path: '/'
+      fullPath: '/product-options/'
+      preLoaderRoute: typeof AuthedShellProductOptionsIndexRouteImport
+      parentRoute: typeof AuthedShellProductOptionsRouteRoute
+    }
+    '/_authed/_shell/product-options/$id': {
+      id: '/_authed/_shell/product-options/$id'
+      path: '/$id'
+      fullPath: '/product-options/$id'
+      preLoaderRoute: typeof AuthedShellProductOptionsIdRouteRouteImport
+      parentRoute: typeof AuthedShellProductOptionsRouteRoute
+    }
+    '/_authed/_shell/product-options/create': {
+      id: '/_authed/_shell/product-options/create'
+      path: '/create'
+      fullPath: '/product-options/create'
+      preLoaderRoute: typeof AuthedShellProductOptionsCreateRouteImport
+      parentRoute: typeof AuthedShellProductOptionsRouteRoute
+    }
+    '/_authed/_shell/products/': {
+      id: '/_authed/_shell/products/'
+      path: '/'
+      fullPath: '/products/'
+      preLoaderRoute: typeof AuthedShellProductsIndexRouteImport
+      parentRoute: typeof AuthedShellProductsRouteRoute
+    }
+    '/_authed/_shell/products/$id': {
+      id: '/_authed/_shell/products/$id'
+      path: '/$id'
+      fullPath: '/products/$id'
+      preLoaderRoute: typeof AuthedShellProductsIdRouteRouteImport
+      parentRoute: typeof AuthedShellProductsRouteRoute
+    }
+    '/_authed/_shell/products/create': {
+      id: '/_authed/_shell/products/create'
+      path: '/create'
+      fullPath: '/products/create'
+      preLoaderRoute: typeof AuthedShellProductsCreateRouteImport
+      parentRoute: typeof AuthedShellProductsRouteRoute
+    }
+    '/_authed/_shell/reservations/': {
+      id: '/_authed/_shell/reservations/'
+      path: '/'
+      fullPath: '/reservations/'
+      preLoaderRoute: typeof AuthedShellReservationsIndexRouteImport
+      parentRoute: typeof AuthedShellReservationsRouteRoute
+    }
+    '/_authed/settings/regions/': {
+      id: '/_authed/settings/regions/'
+      path: '/'
+      fullPath: '/settings/regions/'
+      preLoaderRoute: typeof AuthedSettingsRegionsIndexRouteImport
+      parentRoute: typeof AuthedSettingsRegionsRouteRoute
+    }
+    '/_authed/settings/regions/$id': {
+      id: '/_authed/settings/regions/$id'
+      path: '/$id'
+      fullPath: '/settings/regions/$id'
+      preLoaderRoute: typeof AuthedSettingsRegionsIdRouteRouteImport
+      parentRoute: typeof AuthedSettingsRegionsRouteRoute
+    }
+    '/_authed/settings/regions/create': {
+      id: '/_authed/settings/regions/create'
+      path: '/create'
+      fullPath: '/settings/regions/create'
+      preLoaderRoute: typeof AuthedSettingsRegionsCreateRouteImport
+      parentRoute: typeof AuthedSettingsRegionsRouteRoute
+    }
+    '/_authed/settings/roles/': {
+      id: '/_authed/settings/roles/'
+      path: '/'
+      fullPath: '/settings/roles/'
+      preLoaderRoute: typeof AuthedSettingsRolesIndexRouteImport
+      parentRoute: typeof AuthedSettingsRolesRouteRoute
+    }
+    '/_authed/settings/roles/$id': {
+      id: '/_authed/settings/roles/$id'
+      path: '/$id'
+      fullPath: '/settings/roles/$id'
+      preLoaderRoute: typeof AuthedSettingsRolesIdRouteRouteImport
+      parentRoute: typeof AuthedSettingsRolesRouteRoute
+    }
+    '/_authed/settings/roles/create': {
+      id: '/_authed/settings/roles/create'
+      path: '/create'
+      fullPath: '/settings/roles/create'
+      preLoaderRoute: typeof AuthedSettingsRolesCreateRouteImport
+      parentRoute: typeof AuthedSettingsRolesRouteRoute
+    }
+    '/_authed/settings/store/': {
+      id: '/_authed/settings/store/'
+      path: '/'
+      fullPath: '/settings/store/'
+      preLoaderRoute: typeof AuthedSettingsStoreIndexRouteImport
       parentRoute: typeof AuthedSettingsStoreRouteRoute
     }
     '/_authed/settings/store/currencies': {
@@ -946,89 +988,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedSettingsStoreCurrenciesRouteImport
       parentRoute: typeof AuthedSettingsStoreRouteRoute
     }
-    '/_authed/settings/roles/create': {
-      id: '/_authed/settings/roles/create'
-      path: '/create'
-      fullPath: '/settings/roles/create'
-      preLoaderRoute: typeof AuthedSettingsRolesCreateRouteImport
-      parentRoute: typeof AuthedSettingsRolesRouteRoute
+    '/_authed/settings/store/edit': {
+      id: '/_authed/settings/store/edit'
+      path: '/edit'
+      fullPath: '/settings/store/edit'
+      preLoaderRoute: typeof AuthedSettingsStoreEditRouteImport
+      parentRoute: typeof AuthedSettingsStoreRouteRoute
     }
-    '/_authed/settings/regions/create': {
-      id: '/_authed/settings/regions/create'
-      path: '/create'
-      fullPath: '/settings/regions/create'
-      preLoaderRoute: typeof AuthedSettingsRegionsCreateRouteImport
-      parentRoute: typeof AuthedSettingsRegionsRouteRoute
-    }
-    '/_authed/_shell/products/create': {
-      id: '/_authed/_shell/products/create'
-      path: '/create'
-      fullPath: '/products/create'
-      preLoaderRoute: typeof AuthedShellProductsCreateRouteImport
-      parentRoute: typeof AuthedShellProductsRouteRoute
-    }
-    '/_authed/_shell/product-options/create': {
-      id: '/_authed/_shell/product-options/create'
-      path: '/create'
-      fullPath: '/product-options/create'
-      preLoaderRoute: typeof AuthedShellProductOptionsCreateRouteImport
-      parentRoute: typeof AuthedShellProductOptionsRouteRoute
-    }
-    '/_authed/settings/roles/$id': {
-      id: '/_authed/settings/roles/$id'
+    '/_authed/settings/users/$id': {
+      id: '/_authed/settings/users/$id'
       path: '/$id'
-      fullPath: '/settings/roles/$id'
-      preLoaderRoute: typeof AuthedSettingsRolesIdRouteRouteImport
-      parentRoute: typeof AuthedSettingsRolesRouteRoute
+      fullPath: '/settings/users/$id'
+      preLoaderRoute: typeof AuthedSettingsUsersIdRouteImport
+      parentRoute: typeof AuthedSettingsUsersRouteRoute
     }
-    '/_authed/settings/regions/$id': {
-      id: '/_authed/settings/regions/$id'
-      path: '/$id'
-      fullPath: '/settings/regions/$id'
-      preLoaderRoute: typeof AuthedSettingsRegionsIdRouteRouteImport
-      parentRoute: typeof AuthedSettingsRegionsRouteRoute
-    }
-    '/_authed/_shell/products/$id': {
-      id: '/_authed/_shell/products/$id'
-      path: '/$id'
-      fullPath: '/products/$id'
-      preLoaderRoute: typeof AuthedShellProductsIdRouteRouteImport
-      parentRoute: typeof AuthedShellProductsRouteRoute
-    }
-    '/_authed/_shell/product-options/$id': {
-      id: '/_authed/_shell/product-options/$id'
-      path: '/$id'
-      fullPath: '/product-options/$id'
-      preLoaderRoute: typeof AuthedShellProductOptionsIdRouteRouteImport
-      parentRoute: typeof AuthedShellProductOptionsRouteRoute
-    }
-    '/_authed/_shell/orders/$id': {
-      id: '/_authed/_shell/orders/$id'
-      path: '/$id'
-      fullPath: '/orders/$id'
-      preLoaderRoute: typeof AuthedShellOrdersIdRouteRouteImport
-      parentRoute: typeof AuthedShellOrdersRouteRoute
-    }
-    '/_authed/settings/regions/$id/_detail': {
-      id: '/_authed/settings/regions/$id/_detail'
-      path: ''
-      fullPath: '/settings/regions/$id'
-      preLoaderRoute: typeof AuthedSettingsRegionsIdDetailRouteRouteImport
-      parentRoute: typeof AuthedSettingsRegionsIdRouteRoute
-    }
-    '/_authed/_shell/products/$id/_detail': {
-      id: '/_authed/_shell/products/$id/_detail'
-      path: ''
-      fullPath: '/products/$id'
-      preLoaderRoute: typeof AuthedShellProductsIdDetailRouteRouteImport
-      parentRoute: typeof AuthedShellProductsIdRouteRoute
-    }
-    '/_authed/_shell/product-options/$id/_detail': {
-      id: '/_authed/_shell/product-options/$id/_detail'
-      path: ''
-      fullPath: '/product-options/$id'
-      preLoaderRoute: typeof AuthedShellProductOptionsIdDetailRouteRouteImport
-      parentRoute: typeof AuthedShellProductOptionsIdRouteRoute
+    '/_authed/settings/users/invite': {
+      id: '/_authed/settings/users/invite'
+      path: '/invite'
+      fullPath: '/settings/users/invite'
+      preLoaderRoute: typeof AuthedSettingsUsersInviteRouteImport
+      parentRoute: typeof AuthedSettingsUsersRouteRoute
     }
     '/_authed/_shell/orders/$id/_detail': {
       id: '/_authed/_shell/orders/$id/_detail'
@@ -1037,26 +1016,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellOrdersIdDetailRouteRouteImport
       parentRoute: typeof AuthedShellOrdersIdRouteRoute
     }
-    '/_authed/settings/regions/$id/_detail/': {
-      id: '/_authed/settings/regions/$id/_detail/'
-      path: '/'
-      fullPath: '/settings/regions/$id/'
-      preLoaderRoute: typeof AuthedSettingsRegionsIdDetailIndexRouteImport
-      parentRoute: typeof AuthedSettingsRegionsIdDetailRouteRoute
+    '/_authed/_shell/product-options/$id/_detail': {
+      id: '/_authed/_shell/product-options/$id/_detail'
+      path: ''
+      fullPath: '/product-options/$id'
+      preLoaderRoute: typeof AuthedShellProductOptionsIdDetailRouteRouteImport
+      parentRoute: typeof AuthedShellProductOptionsIdRouteRoute
     }
-    '/_authed/_shell/products/$id/_detail/': {
-      id: '/_authed/_shell/products/$id/_detail/'
-      path: '/'
-      fullPath: '/products/$id/'
-      preLoaderRoute: typeof AuthedShellProductsIdDetailIndexRouteImport
-      parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
+    '/_authed/_shell/products/$id/_detail': {
+      id: '/_authed/_shell/products/$id/_detail'
+      path: ''
+      fullPath: '/products/$id'
+      preLoaderRoute: typeof AuthedShellProductsIdDetailRouteRouteImport
+      parentRoute: typeof AuthedShellProductsIdRouteRoute
     }
-    '/_authed/_shell/product-options/$id/_detail/': {
-      id: '/_authed/_shell/product-options/$id/_detail/'
-      path: '/'
-      fullPath: '/product-options/$id/'
-      preLoaderRoute: typeof AuthedShellProductOptionsIdDetailIndexRouteImport
-      parentRoute: typeof AuthedShellProductOptionsIdDetailRouteRoute
+    '/_authed/settings/regions/$id/_detail': {
+      id: '/_authed/settings/regions/$id/_detail'
+      path: ''
+      fullPath: '/settings/regions/$id'
+      preLoaderRoute: typeof AuthedSettingsRegionsIdDetailRouteRouteImport
+      parentRoute: typeof AuthedSettingsRegionsIdRouteRoute
     }
     '/_authed/_shell/orders/$id/_detail/': {
       id: '/_authed/_shell/orders/$id/_detail/'
@@ -1065,32 +1044,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellOrdersIdDetailIndexRouteImport
       parentRoute: typeof AuthedShellOrdersIdDetailRouteRoute
     }
-    '/_authed/settings/regions/$id/_detail/edit': {
-      id: '/_authed/settings/regions/$id/_detail/edit'
+    '/_authed/_shell/product-options/$id/_detail/': {
+      id: '/_authed/_shell/product-options/$id/_detail/'
+      path: '/'
+      fullPath: '/product-options/$id/'
+      preLoaderRoute: typeof AuthedShellProductOptionsIdDetailIndexRouteImport
+      parentRoute: typeof AuthedShellProductOptionsIdDetailRouteRoute
+    }
+    '/_authed/_shell/product-options/$id/_detail/edit': {
+      id: '/_authed/_shell/product-options/$id/_detail/edit'
       path: '/edit'
-      fullPath: '/settings/regions/$id/edit'
-      preLoaderRoute: typeof AuthedSettingsRegionsIdDetailEditRouteImport
-      parentRoute: typeof AuthedSettingsRegionsIdDetailRouteRoute
+      fullPath: '/product-options/$id/edit'
+      preLoaderRoute: typeof AuthedShellProductOptionsIdDetailEditRouteImport
+      parentRoute: typeof AuthedShellProductOptionsIdDetailRouteRoute
     }
-    '/_authed/_shell/products/$id/variants/create': {
-      id: '/_authed/_shell/products/$id/variants/create'
-      path: '/variants/create'
-      fullPath: '/products/$id/variants/create'
-      preLoaderRoute: typeof AuthedShellProductsIdVariantsCreateRouteImport
-      parentRoute: typeof AuthedShellProductsIdRouteRoute
-    }
-    '/_authed/_shell/products/$id/_detail/options': {
-      id: '/_authed/_shell/products/$id/_detail/options'
-      path: '/options'
-      fullPath: '/products/$id/options'
-      preLoaderRoute: typeof AuthedShellProductsIdDetailOptionsRouteImport
-      parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
-    }
-    '/_authed/_shell/products/$id/_detail/media': {
-      id: '/_authed/_shell/products/$id/_detail/media'
-      path: '/media'
-      fullPath: '/products/$id/media'
-      preLoaderRoute: typeof AuthedShellProductsIdDetailMediaRouteImport
+    '/_authed/_shell/products/$id/_detail/': {
+      id: '/_authed/_shell/products/$id/_detail/'
+      path: '/'
+      fullPath: '/products/$id/'
+      preLoaderRoute: typeof AuthedShellProductsIdDetailIndexRouteImport
       parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
     }
     '/_authed/_shell/products/$id/_detail/edit': {
@@ -1100,12 +1072,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellProductsIdDetailEditRouteImport
       parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
     }
-    '/_authed/_shell/product-options/$id/_detail/edit': {
-      id: '/_authed/_shell/product-options/$id/_detail/edit'
-      path: '/edit'
-      fullPath: '/product-options/$id/edit'
-      preLoaderRoute: typeof AuthedShellProductOptionsIdDetailEditRouteImport
-      parentRoute: typeof AuthedShellProductOptionsIdDetailRouteRoute
+    '/_authed/_shell/products/$id/_detail/media': {
+      id: '/_authed/_shell/products/$id/_detail/media'
+      path: '/media'
+      fullPath: '/products/$id/media'
+      preLoaderRoute: typeof AuthedShellProductsIdDetailMediaRouteImport
+      parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
+    }
+    '/_authed/_shell/products/$id/_detail/options': {
+      id: '/_authed/_shell/products/$id/_detail/options'
+      path: '/options'
+      fullPath: '/products/$id/options'
+      preLoaderRoute: typeof AuthedShellProductsIdDetailOptionsRouteImport
+      parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
     }
     '/_authed/_shell/products/$id/variants/$variantId': {
       id: '/_authed/_shell/products/$id/variants/$variantId'
@@ -1113,6 +1092,55 @@ declare module '@tanstack/react-router' {
       fullPath: '/products/$id/variants/$variantId'
       preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRouteImport
       parentRoute: typeof AuthedShellProductsIdRouteRoute
+    }
+    '/_authed/_shell/products/$id/variants/create': {
+      id: '/_authed/_shell/products/$id/variants/create'
+      path: '/variants/create'
+      fullPath: '/products/$id/variants/create'
+      preLoaderRoute: typeof AuthedShellProductsIdVariantsCreateRouteImport
+      parentRoute: typeof AuthedShellProductsIdRouteRoute
+    }
+    '/_authed/settings/regions/$id/_detail/': {
+      id: '/_authed/settings/regions/$id/_detail/'
+      path: '/'
+      fullPath: '/settings/regions/$id/'
+      preLoaderRoute: typeof AuthedSettingsRegionsIdDetailIndexRouteImport
+      parentRoute: typeof AuthedSettingsRegionsIdDetailRouteRoute
+    }
+    '/_authed/settings/regions/$id/_detail/edit': {
+      id: '/_authed/settings/regions/$id/_detail/edit'
+      path: '/edit'
+      fullPath: '/settings/regions/$id/edit'
+      preLoaderRoute: typeof AuthedSettingsRegionsIdDetailEditRouteImport
+      parentRoute: typeof AuthedSettingsRegionsIdDetailRouteRoute
+    }
+    '/_authed/_shell/products/$id/variants/$variantId/edit': {
+      id: '/_authed/_shell/products/$id/variants/$variantId/edit'
+      path: '/edit'
+      fullPath: '/products/$id/variants/$variantId/edit'
+      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdEditRouteImport
+      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
+    }
+    '/_authed/_shell/products/$id/variants/$variantId/media': {
+      id: '/_authed/_shell/products/$id/variants/$variantId/media'
+      path: '/media'
+      fullPath: '/products/$id/variants/$variantId/media'
+      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdMediaRouteImport
+      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
+    }
+    '/_authed/_shell/products/$id/variants/$variantId/prices': {
+      id: '/_authed/_shell/products/$id/variants/$variantId/prices'
+      path: '/prices'
+      fullPath: '/products/$id/variants/$variantId/prices'
+      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport
+      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
+    }
+    '/_authed/_shell/products/$id/variants/$variantId/stock': {
+      id: '/_authed/_shell/products/$id/variants/$variantId/stock'
+      path: '/stock'
+      fullPath: '/products/$id/variants/$variantId/stock'
+      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdStockRouteImport
+      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
     }
     '/_authed/settings/regions/$id/_detail/countries/': {
       id: '/_authed/settings/regions/$id/_detail/countries/'
@@ -1127,34 +1155,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/regions/$id/countries/$code'
       preLoaderRoute: typeof AuthedSettingsRegionsIdDetailCountriesCodeRouteImport
       parentRoute: typeof AuthedSettingsRegionsIdDetailRouteRoute
-    }
-    '/_authed/_shell/products/$id/variants/$variantId/stock': {
-      id: '/_authed/_shell/products/$id/variants/$variantId/stock'
-      path: '/stock'
-      fullPath: '/products/$id/variants/$variantId/stock'
-      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdStockRouteImport
-      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
-    }
-    '/_authed/_shell/products/$id/variants/$variantId/media': {
-      id: '/_authed/_shell/products/$id/variants/$variantId/media'
-      path: '/media'
-      fullPath: '/products/$id/variants/$variantId/media'
-      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdMediaRouteImport
-      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
-    }
-    '/_authed/_shell/products/$id/variants/$variantId/edit': {
-      id: '/_authed/_shell/products/$id/variants/$variantId/edit'
-      path: '/edit'
-      fullPath: '/products/$id/variants/$variantId/edit'
-      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdEditRouteImport
-      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
-    }
-    '/_authed/_shell/products/$id/variants/$variantId/prices': {
-      id: '/_authed/_shell/products/$id/variants/$variantId/prices'
-      path: '/prices'
-      fullPath: '/products/$id/variants/$variantId/prices'
-      preLoaderRoute: typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRouteImport
-      parentRoute: typeof AuthedShellProductsIdVariantsVariantIdRouteRoute
     }
     '/_authed/_shell/products/$id/_detail/images/$imageId/variants': {
       id: '/_authed/_shell/products/$id/_detail/images/$imageId/variants'

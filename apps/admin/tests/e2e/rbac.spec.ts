@@ -140,7 +140,7 @@ test('catalogue editor can create, edit, and delete a product', async ({ page, n
   if (productId) cleanup.add(() => factories.destroy.product(productId))
 
   // Edit
-  await navigate({ to: '/products/$id/edit', params: { id: productId! } })
+  await navigate({ to: '/products/$id/edit', params: { id: productId } })
   const editDrawer = page.locator('[role="dialog"]').last()
   const updatedTitle = `Updated ${title}`
   await editDrawer.locator('input[placeholder="Product title"]').fill(updatedTitle)

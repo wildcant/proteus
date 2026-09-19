@@ -1,6 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { PermissionGrant } from '@core/types/access-control/common.js'
-import type { UpdateRoleDTO } from '@core/types/access-control/dto.js'
 import type { IAccessControlModuleService } from '@core/types/access-control/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -8,6 +7,8 @@ import { AdminRoleDetailResponse, AdminUpdateRole, DeleteResponse, IdParams } fr
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminRoleDetailResponse
+// retrieveRole throws NOT_FOUND when the role does not exist
+// ast-grep-ignore: route-declares-unthrown-error
 export const GetThrows = [ErrorTypes.NOT_FOUND] as const
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
@@ -19,6 +20,8 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PatchInput = { params: IdParams, body: AdminUpdateRole }
 export const PatchOutput = AdminRoleDetailResponse
+// updateRole throws NOT_FOUND, NOT_ALLOWED (protected role), INVALID_DATA (validation)
+// ast-grep-ignore: route-declares-unthrown-error
 export const PatchThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.NOT_ALLOWED, ErrorTypes.INVALID_DATA] as const
 
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
@@ -34,6 +37,8 @@ export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpRe
 
 export const DeleteInput = { params: IdParams }
 export const DeleteOutput = DeleteResponse
+// deleteRole throws NOT_FOUND, NOT_ALLOWED (protected role), INVALID_DATA (role still has users)
+// ast-grep-ignore: route-declares-unthrown-error
 export const DeleteThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.NOT_ALLOWED, ErrorTypes.INVALID_DATA] as const
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {

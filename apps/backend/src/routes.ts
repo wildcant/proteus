@@ -108,6 +108,8 @@ function validatePermissionDeclarations(definitions: RouteDefinition[]): void {
     if (auth !== 'required') continue
     if (definition.permissions && definition.permissions.length > 0) continue
     if (definition.matcher === '/admin/users/me' && definition.method === 'GET') continue
+    // Auth routes handle their own authentication via PostMiddlewares (not namespace auth) and don't participate in RBAC
+    if (definition.matcher.startsWith('/auth/')) continue
 
     missing.push(`${definition.method} ${definition.matcher}`)
   }
