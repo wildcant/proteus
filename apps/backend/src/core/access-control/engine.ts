@@ -1,6 +1,6 @@
 import type { ModuleId, PermissionGrant, PermissionKey } from '@core/types/access-control/common.js'
+import { getAllPermissionKeys } from './features.js'
 import type { AuthorizationContext, AuthorizationDecision } from './types.js'
-import { getAllPermissionKeys, getPermissionKeysByModule } from './features.js'
 
 export function matchFeature(required: PermissionKey, granted: PermissionGrant): boolean {
   if (granted === '*') return true
@@ -58,9 +58,18 @@ export function resolveEffectiveFeatures(granted: PermissionGrant[]): Permission
 }
 
 export function filterGrantsByEnabledModules(grants: PermissionGrant[], enabledModules: ModuleId[]): PermissionGrant[] {
-  return grants.filter((grant) => {
-    if (grant === '*') return true
-    const moduleId = grant.split('.')[0] as ModuleId
-    return enabledModules.includes(moduleId)
-  })
+  const result: PermissionGrant[] = []
+  for (const grant of grants) {
+    if (grant === '*') {
+      for (const moduleId of enabledModules) {
+        result.push(`${moduleId}.*`)
+      }
+    } else {
+      const moduleId = grant.split('.')[0] as ModuleId
+      if (enabledModules.includes(moduleId)) {
+        result.push(grant)
+      }
+    }
+  }
+  return result
 }

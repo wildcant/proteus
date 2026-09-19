@@ -1,4 +1,5 @@
 import type { ErrorTypes } from '@core/errors/app-error.js'
+import type { PermissionKey } from '@core/types/access-control/common.js'
 import type { HttpRequest, HttpResult, MiddlewareFunction } from '@framework/http/ports.js'
 import type { z } from 'zod'
 

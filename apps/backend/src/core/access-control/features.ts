@@ -1,41 +1,28 @@
 import type { ModuleId, PermissionKey } from '@core/types/access-control/common.js'
+import { GENERATED_FEATURES, type GeneratedFeature } from './features.gen.js'
 
-export type FeatureDeclaration = {
-  id: PermissionKey
-  title: string
-  module: ModuleId
+export type FeatureDeclaration = GeneratedFeature
+
+const featureMap = new Map<PermissionKey, FeatureDeclaration>(GENERATED_FEATURES.map((f) => [f.id, f]))
+
+export function getRegisteredFeatures(): ReadonlyMap<PermissionKey, FeatureDeclaration> {
+  return featureMap
 }
 
-const registry = new Map<PermissionKey, FeatureDeclaration>()
+export function getAllPermissionKeys(): PermissionKey[] {
+  return [...featureMap.keys()]
+}
 
-export function registerFeature(feature: FeatureDeclaration): void {
-  const existing = registry.get(feature.id)
-  if (existing && existing.module !== feature.module) {
-    throw new Error(
-      `Duplicate feature "${feature.id}" registered by modules "${existing.module}" and "${feature.module}"`,
-    )
-  }
-  registry.set(feature.id, feature)
+export function getPermissionKeysByModule(moduleId: ModuleId): PermissionKey[] {
+  return [...featureMap.values()].filter((f) => f.module === moduleId).map((f) => f.id)
 }
 
 export function registerFeatures(features: FeatureDeclaration[]): void {
   for (const feature of features) {
-    registerFeature(feature)
+    featureMap.set(feature.id, feature)
   }
 }
 
-export function getRegisteredFeatures(): ReadonlyMap<PermissionKey, FeatureDeclaration> {
-  return registry
-}
-
-export function getAllPermissionKeys(): PermissionKey[] {
-  return [...registry.keys()]
-}
-
-export function getPermissionKeysByModule(moduleId: ModuleId): PermissionKey[] {
-  return [...registry.values()].filter((f) => f.module === moduleId).map((f) => f.id)
-}
-
 export function clearRegistry(): void {
-  registry.clear()
+  featureMap.clear()
 }
