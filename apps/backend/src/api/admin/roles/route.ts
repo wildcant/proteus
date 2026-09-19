@@ -9,7 +9,13 @@ export const GetOutput = AdminRoleListResponse
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
   const accessControl = req.scope.resolve<IAccessControlModuleService>(Modules.ACCESS_CONTROL)
   const roles = await accessControl.listRoles()
-  return { status: 200, json: { roles } }
+  const rolesWithCounts = await Promise.all(
+    roles.map(async (role) => ({
+      ...role,
+      userCount: await accessControl.countRoleAssignments(role.id),
+    })),
+  )
+  return { status: 200, json: { roles: rolesWithCounts } }
 }
 
 export const PostInput = { body: AdminCreateRole }

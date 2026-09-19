@@ -4,7 +4,9 @@ import { AdminRole } from './entities.js'
 export const AdminRoleResponse = z.object({ role: AdminRole }).openapi('AdminRoleResponse')
 export type AdminRoleResponse = z.input<typeof AdminRoleResponse>
 
-export const AdminRoleListResponse = z.object({ roles: z.array(AdminRole) }).openapi('AdminRoleListResponse')
+const AdminRoleWithCount = AdminRole.extend({ userCount: z.number() })
+
+export const AdminRoleListResponse = z.object({ roles: z.array(AdminRoleWithCount) }).openapi('AdminRoleListResponse')
 export type AdminRoleListResponse = z.input<typeof AdminRoleListResponse>
 
 export const AdminRoleDetailResponse = z

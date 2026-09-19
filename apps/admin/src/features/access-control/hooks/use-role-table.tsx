@@ -1,10 +1,10 @@
-import type { AdminRole } from '#/api/generated/model'
+import type { AdminRoleListResponseRolesItem } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useRoles } from '#/features/access-control/api/roles'
 import { RoleRowActions } from '#/features/access-control/components/role-row-actions'
 
 export const useRoleTable = () =>
-  useDefineTable<AdminRole>({
+  useDefineTable<AdminRoleListResponseRolesItem>({
     useData: () => {
       const { data, isPending, isFetching } = useRoles()
       return {
@@ -28,6 +28,10 @@ export const useRoleTable = () =>
             )}
           </span>
         ),
+      }),
+      col.display('userCount', {
+        header: 'Users',
+        cell: ({ row }) => row.userCount,
       }),
     ],
 

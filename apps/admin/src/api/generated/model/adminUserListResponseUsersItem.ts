@@ -6,8 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AdminUser } from './adminUser.ts';
-import type { AdminUserListResponseUsersItemRolesItem } from './adminUserListResponseUsersItemRolesItem.ts';
+import type { AdminUserRole } from './adminUserRole.ts';
 
 export type AdminUserListResponseUsersItem = AdminUser & {
-  roles: AdminUserListResponseUsersItemRolesItem[];
+  roles: AdminUserRole[];
 };

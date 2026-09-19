@@ -34,6 +34,7 @@ export type IAccessControlModuleService = {
     context?: Context,
   ): Promise<void>
   listActorRoles(actorType: string, actorId: string, context?: Context): Promise<RoleDTO[]>
+  listActorRolesBulk(actorType: string, actorIds: string[], context?: Context): Promise<Map<string, RoleDTO[]>>
   countRoleAssignments(roleId: string, context?: Context): Promise<number>
 
   assignRolesToUser(userId: string, roleIds: string[], context?: Context): Promise<void>

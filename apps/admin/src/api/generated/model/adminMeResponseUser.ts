@@ -5,9 +5,9 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
-import type { AdminMeResponseUserRolesItem } from './adminMeResponseUserRolesItem.ts';
 import type { AdminUser } from './adminUser.ts';
+import type { AdminUserRole } from './adminUserRole.ts';
 
 export type AdminMeResponseUser = AdminUser & {
-  roles: AdminMeResponseUserRolesItem[];
+  roles: AdminUserRole[];
 };
