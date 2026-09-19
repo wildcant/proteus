@@ -8,6 +8,11 @@ export type LoaderFunction<TOptions = Record<string, unknown>> = (input: {
   options?: TOptions
 }) => void | Promise<void>
 
+export type FeatureDeclaration = {
+  id: string
+  title: string
+}
+
 export type ModuleDefinition = {
   key: string
   service: Constructor
@@ -19,6 +24,8 @@ export type ModuleDefinition = {
    */
   models: Record<string, unknown>
   loaders?: LoaderFunction[]
+  postLoaders?: LoaderFunction[]
+  features?: FeatureDeclaration[]
 }
 
 export function Module<const Key extends string, const Service extends Constructor>(
@@ -28,6 +35,8 @@ export function Module<const Key extends string, const Service extends Construct
     repositories: Record<string, Constructor>
     models: Record<string, unknown>
     loaders?: LoaderFunction[]
+    postLoaders?: LoaderFunction[]
+    features?: FeatureDeclaration[]
   },
 ): ModuleDefinition {
   return { key, ...config }

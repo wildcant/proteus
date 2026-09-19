@@ -128,6 +128,7 @@ job_generated() {
   # since that list is also the desired state reconciliation deletes schedules against. See
   # scripts/generate-job-registry.ts.
   pnpm --silent --filter backend run check:job-registry || code=1
+  pnpm --silent --filter backend run check:feature-registry || code=1
   # The module half of the drizzle schema is one `export *` per model file, so a new model reaches
   # drizzle only once it is regenerated. See scripts/generate-schema.ts.
   pnpm --silent --filter backend run check:schema-registry || code=1

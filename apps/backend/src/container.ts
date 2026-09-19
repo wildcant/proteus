@@ -22,6 +22,7 @@ import { subscriberRegistry } from './framework/event-bus/registry.js'
 import { resolveWorkflowEngineName } from './framework/workflows/engine-selection.js'
 import { createSimpleWorkflowEngine } from './framework/workflows/simple-adapter.js'
 import { registerLinkService } from './link-modules/index.js'
+import accessControlModule from './modules/access-control/index.js'
 import authModule from './modules/auth/index.js'
 import { authProviderDeclarations } from './modules/auth/provider-declarations.js'
 import cartModule from './modules/cart/index.js'
@@ -106,6 +107,7 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   await bootstrapModule(container, stockLocationModule)
   await bootstrapModule(container, storeModule)
   await bootstrapModule(container, userModule)
+  await bootstrapModule(container, accessControlModule)
 
   registerLinkService(container)
   setWorkflowEngine(selectWorkflowEngine(deps, configModule.projectConfig.workflows.engine), container)

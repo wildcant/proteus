@@ -1,0 +1,150 @@
+import type { PermissionGrant, PermissionKey } from '@core/types/access-control/common.js'
+import { describe, expect, test } from 'vitest'
+import {
+  authorizeFeatures,
+  filterGrantsByEnabledModules,
+  hasAllFeatures,
+  hasFeature,
+  matchFeature,
+  resolveEffectiveFeatures,
+} from './engine.js'
+import { getAllPermissionKeys, getPermissionKeysByModule } from './features.js'
+import type { AuthorizationContext } from './types.js'
+
+describe('matchFeature', () => {
+  test('* matches any required permission', () => {
+    expect(matchFeature('product.read', '*')).toBe(true)
+    expect(matchFeature('order.read', '*')).toBe(true)
+    expect(matchFeature('user.invite.read', '*')).toBe(true)
+  })
+
+  test('product.* matches product.read and product.create but not order.read', () => {
+    expect(matchFeature('product.read', 'product.*')).toBe(true)
+    expect(matchFeature('product.create', 'product.*')).toBe(true)
+    expect(matchFeature('order.read', 'product.*')).toBe(false)
+  })
+
+  test('exact match: product.read matches product.read only', () => {
+    expect(matchFeature('product.read', 'product.read')).toBe(true)
+    expect(matchFeature('product.create', 'product.read')).toBe(false)
+    expect(matchFeature('order.read', 'product.read')).toBe(false)
+  })
+})
+
+describe('hasFeature', () => {
+  test('finds match in granted array', () => {
+    const granted: PermissionGrant[] = ['product.read', 'order.*']
+    expect(hasFeature(granted, 'product.read')).toBe(true)
+    expect(hasFeature(granted, 'order.complete')).toBe(true)
+    expect(hasFeature(granted, 'user.read')).toBe(false)
+  })
+})
+
+describe('hasAllFeatures', () => {
+  test('returns true when all required features are granted', () => {
+    const granted: PermissionGrant[] = ['product.*', 'order.read']
+    expect(hasAllFeatures(granted, ['product.read', 'product.create', 'order.read'])).toBe(true)
+  })
+
+  test('returns false when any required feature is missing', () => {
+    const granted: PermissionGrant[] = ['product.read']
+    expect(hasAllFeatures(granted, ['product.read', 'order.read'])).toBe(false)
+  })
+})
+
+describe('authorizeFeatures', () => {
+  test('short-circuits on unrestricted: true', () => {
+    const subject: AuthorizationContext = {
+      actor: { id: 'system', type: 'system' },
+      grants: [],
+      enabledModules: [],
+      unrestricted: true,
+    }
+    const result = authorizeFeatures(['product.read', 'order.read'], subject)
+    expect(result.allowed).toBe(true)
+    expect(result.missing).toEqual([])
+  })
+
+  test('returns false when required features come from disabled modules', () => {
+    const subject: AuthorizationContext = {
+      actor: { id: 'user-1', type: 'user' },
+      grants: ['product.*', 'order.*'],
+      enabledModules: ['product'],
+    }
+    const result = authorizeFeatures(['product.read', 'order.read'], subject)
+    expect(result.allowed).toBe(false)
+    expect(result.missing).toEqual(['order.read'])
+  })
+
+  test('allows when all required features are granted and modules enabled', () => {
+    const subject: AuthorizationContext = {
+      actor: { id: 'user-1', type: 'user' },
+      grants: ['product.*'],
+      enabledModules: ['product'],
+    }
+    const result = authorizeFeatures(['product.read', 'product.create'], subject)
+    expect(result.allowed).toBe(true)
+    expect(result.missing).toEqual([])
+  })
+
+  test('global * does not authorize disabled modules', () => {
+    const subject: AuthorizationContext = {
+      actor: { id: 'user-1', type: 'user' },
+      grants: ['*'],
+      enabledModules: ['product'],
+    }
+    const result = authorizeFeatures(['product.read', 'order.read'], subject)
+    expect(result.allowed).toBe(false)
+    expect(result.missing).toEqual(['order.read'])
+  })
+})
+
+describe('resolveEffectiveFeatures', () => {
+  test('expands * to all concrete keys', () => {
+    const allKeys = getAllPermissionKeys()
+    const result = resolveEffectiveFeatures(['*'])
+    expect(result).toHaveLength(allKeys.length)
+    for (const key of allKeys) {
+      expect(result).toContain(key)
+    }
+  })
+
+  test('expands product.* to all product keys', () => {
+    const result = resolveEffectiveFeatures(['product.*'])
+    const productKeys = getPermissionKeysByModule('product')
+    expect(result).toHaveLength(productKeys.length)
+    for (const key of productKeys) {
+      expect(result).toContain(key)
+    }
+  })
+
+  test('does not include wildcards in output', () => {
+    const result = resolveEffectiveFeatures(['product.*', '*'])
+    for (const key of result) {
+      expect(key).not.toContain('*')
+    }
+  })
+
+  test('includes exact grants directly', () => {
+    const result = resolveEffectiveFeatures(['product.read', 'order.read'])
+    expect(result).toContain('product.read')
+    expect(result).toContain('order.read')
+    expect(result).toHaveLength(2)
+  })
+})
+
+describe('filterGrantsByEnabledModules', () => {
+  test('expands * to enabled-module wildcards', () => {
+    const result = filterGrantsByEnabledModules(['*'], ['product', 'order'])
+    expect(result).toContain('product.*')
+    expect(result).toContain('order.*')
+    expect(result).not.toContain('*')
+    expect(result).not.toContain('user.*')
+  })
+
+  test('filters out grants from disabled modules', () => {
+    const grants: PermissionGrant[] = ['product.read', 'order.read', 'user.*']
+    const result = filterGrantsByEnabledModules(grants, ['product', 'user'])
+    expect(result).toEqual(['product.read', 'user.*'])
+  })
+})

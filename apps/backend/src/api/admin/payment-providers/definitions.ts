@@ -7,6 +7,7 @@ export default [
     method: 'GET',
     matcher: '/admin/payment-providers',
     handler: paymentProviderRoutes.GET,
+    permissions: ['payment.read'],
     operationId: 'listPaymentProviders',
     summary: 'List enabled payment providers',
     tags: [Tags.PAYMENT_PROVIDERS],
