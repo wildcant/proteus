@@ -1,7 +1,7 @@
-import { resolveEffectiveFeatures } from '../../../core/access-control/engine.js'
+import { hasFeature, parseGrant, resolveEffectiveFeatures } from '../../../core/access-control/engine.js'
 import { GENERATED_FEATURES } from '../../../core/access-control/features.gen.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
-import type { ModuleId, PermissionGrant, PermissionKey } from '../../../core/types/access-control/common.js'
+import type { PermissionGrant, PermissionKey } from '../../../core/types/access-control/common.js'
 import type { CreateRoleDTO, PermissionDTO, RoleDTO, UpdateRoleDTO } from '../../../core/types/access-control/dto.js'
 import type { IAccessControlModuleService } from '../../../core/types/access-control/service.js'
 import type { FindConfig } from '../../../core/types/common.js'
@@ -439,16 +439,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
 
   private async findRolesReferencingPermission(key: PermissionKey, context: Context): Promise<Role[]> {
     const allRoles = await this.roleRepository.find(undefined, undefined, context)
-    return allRoles.filter((role) => {
-      return role.featuresJson.some((grant) => {
-        if (grant === key) return true
-        if (grant === '*') return true
-        if (grant.endsWith('.*')) {
-          return key.startsWith(grant.slice(0, -1))
-        }
-        return false
-      })
-    })
+    return allRoles.filter((role) => hasFeature(role.featuresJson, key))
   }
 
   private validateFeatureIds(features: PermissionGrant[]): void {
@@ -467,16 +458,17 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     const moduleIds = new Set(GENERATED_FEATURES.map((f) => f.module))
 
     for (const grant of features) {
-      if (grant === '*') {
+      const parsed = parseGrant(grant)
+
+      if (parsed.kind === 'global') {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
           message: 'Global wildcard grant is reserved for the super admin role',
         })
       }
 
-      if (grant.endsWith('.*')) {
-        const module = grant.slice(0, -2)
-        if (!moduleIds.has(module as ModuleId)) {
+      if (parsed.kind === 'module') {
+        if (!moduleIds.has(parsed.moduleId)) {
           throw new AppError({
             type: ErrorTypes.INVALID_DATA,
             message: `Unknown module wildcard: ${grant}`,
@@ -485,7 +477,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         continue
       }
 
-      if (!registeredKeys.has(grant as PermissionKey)) {
+      if (!registeredKeys.has(parsed.key)) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
           message: `Unknown permission key: ${grant}`,

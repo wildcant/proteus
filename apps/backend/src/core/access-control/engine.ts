@@ -1,15 +1,22 @@
 import type { ModuleId, PermissionGrant, PermissionKey } from '@core/types/access-control/common.js'
 import { GENERATED_FEATURES } from './features.gen.js'
-import type { AuthorizationContext, AuthorizationDecision } from './types.js'
+
+export type ParsedGrant =
+  | { kind: 'global' }
+  | { kind: 'module'; moduleId: ModuleId }
+  | { kind: 'key'; key: PermissionKey }
+
+export function parseGrant(grant: PermissionGrant): ParsedGrant {
+  if (grant === '*') return { kind: 'global' }
+  if (grant.endsWith('.*')) return { kind: 'module', moduleId: grant.slice(0, -2) as ModuleId }
+  return { kind: 'key', key: grant as PermissionKey }
+}
 
 export function matchFeature(required: PermissionKey, granted: PermissionGrant): boolean {
-  if (granted === '*') return true
-  if (granted === required) return true
-  if (granted.endsWith('.*')) {
-    const prefix = granted.slice(0, -1)
-    return required.startsWith(prefix)
-  }
-  return false
+  const parsed = parseGrant(granted)
+  if (parsed.kind === 'global') return true
+  if (parsed.kind === 'module') return required.startsWith(`${parsed.moduleId}.`)
+  return parsed.key === required
 }
 
 export function hasFeature(granted: PermissionGrant[], required: PermissionKey): boolean {
@@ -20,56 +27,28 @@ export function hasAllFeatures(granted: PermissionGrant[], required: PermissionK
   return required.every((r) => hasFeature(granted, r))
 }
 
-export function authorizeFeatures(required: PermissionKey[], subject: AuthorizationContext): AuthorizationDecision {
-  if (subject.unrestricted) {
-    return { allowed: true, missing: [] }
-  }
-
-  const activeGrants = filterGrantsByEnabledModules(subject.grants, subject.enabledModules)
-  const missing = required.filter((r) => !hasFeature(activeGrants, r))
-
-  return {
-    allowed: missing.length === 0,
-    missing,
-  }
-}
-
 export function resolveEffectiveFeatures(granted: PermissionGrant[]): PermissionKey[] {
   const allKeys = GENERATED_FEATURES.map((f) => f.id)
   const result = new Set<PermissionKey>()
 
   for (const grant of granted) {
-    if (grant === '*') {
+    const parsed = parseGrant(grant)
+
+    if (parsed.kind === 'global') {
       return [...allKeys]
     }
-    if (grant.endsWith('.*')) {
-      const prefix = grant.slice(0, -1)
+
+    if (parsed.kind === 'module') {
       for (const key of allKeys) {
-        if (key.startsWith(prefix)) {
+        if (matchFeature(key, grant)) {
           result.add(key)
         }
       }
-    } else {
-      result.add(grant as PermissionKey)
+      continue
     }
+
+    result.add(parsed.key)
   }
 
   return [...result]
-}
-
-export function filterGrantsByEnabledModules(grants: PermissionGrant[], enabledModules: ModuleId[]): PermissionGrant[] {
-  const result: PermissionGrant[] = []
-  for (const grant of grants) {
-    if (grant === '*') {
-      for (const moduleId of enabledModules) {
-        result.push(`${moduleId}.*`)
-      }
-    } else {
-      const moduleId = grant.split('.')[0] as ModuleId
-      if (enabledModules.includes(moduleId)) {
-        result.push(grant)
-      }
-    }
-  }
-  return result
 }

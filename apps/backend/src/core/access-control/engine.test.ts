@@ -1,15 +1,7 @@
 import type { PermissionGrant } from '@core/types/access-control/common.js'
 import { describe, expect, test } from 'vitest'
-import {
-  authorizeFeatures,
-  filterGrantsByEnabledModules,
-  hasAllFeatures,
-  hasFeature,
-  matchFeature,
-  resolveEffectiveFeatures,
-} from './engine.js'
+import { hasAllFeatures, hasFeature, matchFeature, parseGrant, resolveEffectiveFeatures } from './engine.js'
 import { GENERATED_FEATURES } from './features.gen.js'
-import type { AuthorizationContext } from './types.js'
 
 describe('matchFeature', () => {
   test('* matches any required permission', () => {
@@ -52,50 +44,11 @@ describe('hasAllFeatures', () => {
   })
 })
 
-describe('authorizeFeatures', () => {
-  test('short-circuits on unrestricted: true', () => {
-    const subject: AuthorizationContext = {
-      actor: { id: 'system', type: 'system' },
-      grants: [],
-      enabledModules: [],
-      unrestricted: true,
-    }
-    const result = authorizeFeatures(['product.read', 'order.read'], subject)
-    expect(result.allowed).toBe(true)
-    expect(result.missing).toEqual([])
-  })
-
-  test('returns false when required features come from disabled modules', () => {
-    const subject: AuthorizationContext = {
-      actor: { id: 'user-1', type: 'user' },
-      grants: ['product.*', 'order.*'],
-      enabledModules: ['product'],
-    }
-    const result = authorizeFeatures(['product.read', 'order.read'], subject)
-    expect(result.allowed).toBe(false)
-    expect(result.missing).toEqual(['order.read'])
-  })
-
-  test('allows when all required features are granted and modules enabled', () => {
-    const subject: AuthorizationContext = {
-      actor: { id: 'user-1', type: 'user' },
-      grants: ['product.*'],
-      enabledModules: ['product'],
-    }
-    const result = authorizeFeatures(['product.read', 'product.create'], subject)
-    expect(result.allowed).toBe(true)
-    expect(result.missing).toEqual([])
-  })
-
-  test('global * does not authorize disabled modules', () => {
-    const subject: AuthorizationContext = {
-      actor: { id: 'user-1', type: 'user' },
-      grants: ['*'],
-      enabledModules: ['product'],
-    }
-    const result = authorizeFeatures(['product.read', 'order.read'], subject)
-    expect(result.allowed).toBe(false)
-    expect(result.missing).toEqual(['order.read'])
+describe('parseGrant', () => {
+  test('classifies global, module wildcard and exact key', () => {
+    expect(parseGrant('*')).toEqual({ kind: 'global' })
+    expect(parseGrant('product.*')).toEqual({ kind: 'module', moduleId: 'product' })
+    expect(parseGrant('user.invite.create')).toEqual({ kind: 'key', key: 'user.invite.create' })
   })
 })
 
@@ -130,21 +83,5 @@ describe('resolveEffectiveFeatures', () => {
     expect(result).toContain('product.read')
     expect(result).toContain('order.read')
     expect(result).toHaveLength(2)
-  })
-})
-
-describe('filterGrantsByEnabledModules', () => {
-  test('expands * to enabled-module wildcards', () => {
-    const result = filterGrantsByEnabledModules(['*'], ['product', 'order'])
-    expect(result).toContain('product.*')
-    expect(result).toContain('order.*')
-    expect(result).not.toContain('*')
-    expect(result).not.toContain('user.*')
-  })
-
-  test('filters out grants from disabled modules', () => {
-    const grants: PermissionGrant[] = ['product.read', 'order.read', 'user.*']
-    const result = filterGrantsByEnabledModules(grants, ['product', 'user'])
-    expect(result).toEqual(['product.read', 'user.*'])
   })
 })

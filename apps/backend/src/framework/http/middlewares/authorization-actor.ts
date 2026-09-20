@@ -22,7 +22,6 @@ export function resolveAuthorizationActor(): MiddlewareFunction {
       id: actorId,
       type: actorType,
       grantedFeatures: new Set(permissionKeys),
-      unrestricted: false,
     }
 
     return { ...req, authorizationActor }

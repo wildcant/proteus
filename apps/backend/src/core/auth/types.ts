@@ -17,5 +17,4 @@ export type AuthorizationActor = {
   id: string
   type: string
   grantedFeatures: ReadonlySet<string>
-  unrestricted: boolean
 }
