@@ -1,6 +1,7 @@
 import { buildEvent } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
 import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
+import type { UserDTO } from '@core/types/user/common.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { config } from '../alert-low-stock.js'
@@ -17,9 +18,16 @@ import { config } from '../alert-low-stock.js'
  */
 
 let container: TestContainer
+let operator: UserDTO
 
-test.beforeEach(async ({ createTestContainer }) => {
+/**
+ * The alert is addressed to whoever can open the feed and act on the shelf, so a container with no
+ * such user would let every "says nothing" spec below pass for the wrong reason. One qualifying
+ * operator exists throughout; the specs that care about *who* make their own.
+ */
+test.beforeEach(async ({ createTestContainer, service }) => {
   container = await createTestContainer()
+  operator = await service.create.operator(container, ['notification.read', 'inventory.read'])
 })
 
 /**
@@ -76,6 +84,7 @@ test.describe('the low-stock subscriber', () => {
 
     expect(await service.read.notifications(container)).toMatchObject([
       {
+        to: operator.email,
         channel: 'feed',
         template: 'low-stock',
         triggerType: 'inventory.available_decreased',
@@ -88,6 +97,34 @@ test.describe('the low-stock subscriber', () => {
         },
       },
     ])
+  })
+
+  /**
+   * Who the alert is for is a permission, not an address, and it is the *pair* — a user holding one
+   * half is someone the alert would be noise to, or someone who could not open the feed to read it.
+   *
+   * The two who qualify also prove the fan-out is real in two ways at once: one row each rather
+   * than one row total, and a per-recipient idempotency key, without which the unique index on that
+   * column would drop the second row.
+   */
+  test('writes one alert per operator holding both permissions, and none for a user holding one', async ({
+    factories,
+    service,
+    expect,
+  }) => {
+    await using _store = await storeWithThreshold(factories, 5)
+    // Reaches the same pair through module wildcards rather than exact keys.
+    const alsoQualifies = await service.create.operator(container, ['notification.*', 'inventory.*'])
+    await service.create.operator(container, ['inventory.read'])
+    await service.create.operator(container, ['notification.read'])
+    const { inventoryLevel } = await variantHolding(service, 3)
+
+    await deliver(inventoryLevel)
+
+    const notifications = await service.read.notifications(container)
+    expect(notifications.map((notification) => notification.to).sort()).toEqual(
+      [operator.email, alsoQualifies.email].sort(),
+    )
   })
 
   /**

@@ -1,5 +1,6 @@
 import { buildEvent, type PaymentCapturedAction } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
+import type { UserDTO } from '@core/types/user/common.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -21,9 +22,17 @@ import { config } from '../process-payment-captured.js'
  */
 
 let container: TestContainer
+let operator: UserDTO
 
-test.beforeEach(async ({ createTestContainer }) => {
+/**
+ * Both alerts this spec sees are addressed by permission — the checkout rollback's to `order.read`,
+ * this subscriber's own to `payment.read` — so one operator holds all three keys. Without them a
+ * container has no audience at all, and every "stays quiet" assertion below would hold for a reason
+ * that has nothing to do with the subscriber.
+ */
+test.beforeEach(async ({ createTestContainer, service }) => {
   container = await createTestContainer()
+  operator = await service.create.operator(container, ['notification.read', 'order.read', 'payment.read'])
 })
 
 /** One delivery, identical to what an adapter would hand the handler. */
@@ -164,6 +173,7 @@ test.describe('the payment.captured subscriber', () => {
     // as observed rather than promised — `authorize-payment`'s compensation refunds a re-run that
     // got that far, and this one failed before it, so the capture is still standing.
     expect(alerts.find((alert) => alert.template === 'payment-without-order')).toMatchObject({
+      to: operator.email,
       channel: 'feed',
       resourceType: 'cart',
       resourceId: cart.id,

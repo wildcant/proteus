@@ -4,8 +4,8 @@ import type { PaymentDTO } from '@core/types/payment/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
-import { env } from '@env'
 import { completeCartWorkflow } from '@workflows/cart/complete-cart.js'
+import { buildOperatorAlerts } from '@workflows/notification/utils/operator-alert.js'
 import type { AppContainer } from '../core/types/container.js'
 
 /**
@@ -208,22 +208,30 @@ async function alertPaymentWithoutOrder(deps: {
 
   const { title, money } = describeMoney(await paymentService.retrievePayment(paymentId))
 
-  await notificationService.createNotification({
-    // TODO(rbac): one configured address until there is a role to ask for.
-    to: env.ADMIN_NOTIFICATION_EMAIL,
-    channel: 'feed',
-    template: NotificationTemplates.PAYMENT_WITHOUT_ORDER,
-    data: {
-      title,
-      description: `The payment for cart "${cartId}" was accepted but the order could not be created. ${money}`,
-    },
-    triggerType: 'payment.captured.completion.failed',
-    resourceType: 'cart',
-    resourceId: cartId,
-    // Per cart, not per delivery: the bounded retry re-runs this whole subscriber, and an operator
-    // needs one alert about one shopper rather than one per attempt.
-    idempotencyKey: `payment-without-order:${cartId}`,
-  })
+  // Whoever can open the feed and act on the money that moved.
+  const accessControlService = container.resolve(Modules.ACCESS_CONTROL)
+  const userService = container.resolve(Modules.USER)
+  const operatorIds = await accessControlService.listActorIdsWithFeatures('user', ['notification.read', 'payment.read'])
+  const operators = await userService.listUsers({ id: operatorIds })
+
+  await notificationService.createNotifications(
+    buildOperatorAlerts(
+      operators.map((operator) => operator.email),
+      {
+        template: NotificationTemplates.PAYMENT_WITHOUT_ORDER,
+        data: {
+          title,
+          description: `The payment for cart "${cartId}" was accepted but the order could not be created. ${money}`,
+        },
+        triggerType: 'payment.captured.completion.failed',
+        resourceType: 'cart',
+        resourceId: cartId,
+        // Per cart, not per delivery: the bounded retry re-runs this whole subscriber, and an
+        // operator needs one alert about one shopper rather than one per attempt.
+        idempotencyKey: `payment-without-order:${cartId}`,
+      },
+    ),
+  )
 }
 
 export const config: SubscriberConfig<'payment.captured'> = {

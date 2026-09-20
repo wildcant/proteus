@@ -217,6 +217,45 @@ test.describe('resolveEffectiveFeatures expands wildcards', () => {
   })
 })
 
+test.describe('listActorIdsWithFeatures narrows to the actors holding every feature', () => {
+  test('requires all of them, and matches through both kinds of wildcard', async ({ expect }) => {
+    const both = await service.createRole({
+      name: 'Both',
+      features: ['product.read' as PermissionKey, 'order.read' as PermissionKey],
+    })
+    const productsOnly = await service.createRole({ name: 'Products', features: ['product.*'] })
+    const superAdmin = await roleRepository.create({
+      name: 'Super',
+      featuresJson: ['*'],
+      isSuperAdmin: true,
+      protected: true,
+    })
+
+    await service.assignRoles('user', 'usr_both', [both.id], { callerGrantsIncludeSuperAdmin: false })
+    await service.assignRoles('user', 'usr_products', [productsOnly.id], { callerGrantsIncludeSuperAdmin: false })
+    await service.assignRoles('user', 'usr_super', [superAdmin.id], { callerGrantsIncludeSuperAdmin: true })
+    await service.assignRoles('api-key', 'key_both', [both.id], { callerGrantsIncludeSuperAdmin: false })
+
+    // `usr_products` holds one of the pair, so an `every`-for-`some` slip would return them too.
+    const actorIds = await service.listActorIdsWithFeatures('user', [
+      'product.read' as PermissionKey,
+      'order.read' as PermissionKey,
+    ])
+    expect(actorIds.sort()).toEqual(['usr_both', 'usr_super'])
+
+    // The module wildcard answers for a key under it, so `usr_products` joins on the narrower ask.
+    const productReaders = await service.listActorIdsWithFeatures('user', ['product.read' as PermissionKey])
+    expect(productReaders.sort()).toEqual(['usr_both', 'usr_products', 'usr_super'])
+  })
+
+  test('returns nothing when no role carries the feature', async ({ expect }) => {
+    const role = await service.createRole({ name: 'Products', features: ['product.*'] })
+    await service.assignRoles('user', 'usr_1', [role.id], { callerGrantsIncludeSuperAdmin: false })
+
+    expect(await service.listActorIdsWithFeatures('user', ['order.fulfill' as PermissionKey])).toEqual([])
+  })
+})
+
 test.describe('Permission sync', () => {
   test('sync creates permission rows from registry', async ({ expect }) => {
     await service.syncPermissions()

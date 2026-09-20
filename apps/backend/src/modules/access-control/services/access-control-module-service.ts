@@ -288,6 +288,30 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     return result
   }
 
+  /**
+   * The actors holding *every* feature named — who to tell about something only someone with all of
+   * them can act on. The intersection is the point: an operator alert is addressed to a permission
+   * to see the feed *and* a permission over what the alert is about, and either one alone describes
+   * somebody the alert would be noise to.
+   *
+   * Matching goes through [hasFeature] rather than comparing strings, which is what lets a role
+   * granted `*` or `order.*` answer for `order.read` without this method learning the grant syntax.
+   */
+  async listActorIdsWithFeatures(actorType: string, features: PermissionKey[], context?: Context): Promise<string[]> {
+    const roles = await this.roleRepository.find(undefined, undefined, context)
+    const matchingRoleIds = roles
+      .filter((role) => features.every((feature) => hasFeature(role.featuresJson, feature)))
+      .map((role) => role.id)
+    if (matchingRoleIds.length === 0) return []
+
+    const assignments = await this.actorRoleAssignmentRepository.find(
+      { actorType, roleId: matchingRoleIds },
+      undefined,
+      context,
+    )
+    return [...new Set(assignments.map((assignment) => assignment.actorId))]
+  }
+
   // ── IAccessControlModuleService compat ───────────────────────────────
 
   async assignRolesToUser(userId: string, roleIds: string[], context?: Context): Promise<void> {

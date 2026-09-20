@@ -36,6 +36,7 @@ export type IAccessControlModuleService = {
   revokeRoles(actorType: string, actorId: string, roleIds: string[], context?: Context): Promise<void>
   listActorRoles(actorType: string, actorId: string, context?: Context): Promise<RoleDTO[]>
   listActorRolesBulk(actorType: string, actorIds: string[], context?: Context): Promise<Map<string, RoleDTO[]>>
+  listActorIdsWithFeatures(actorType: string, features: PermissionKey[], context?: Context): Promise<string[]>
   countRoleAssignments(roleId: string, context?: Context): Promise<number>
   resolvePermissions(actorType: string, actorId: string, context?: Context): Promise<PermissionGrant[]>
   resolveEffectiveFeatures(actorType: string, actorId: string, context?: Context): Promise<PermissionKey[]>

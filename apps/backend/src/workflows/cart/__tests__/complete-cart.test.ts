@@ -2,7 +2,6 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
-import { env } from '@env'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -422,6 +421,7 @@ test.describe('completeCartWorkflow', () => {
   })
 
   test('an unexpected failure mid-workflow leaves an operator a feed notification', async ({ service, expect }) => {
+    const operator = await service.create.operator(container, ['notification.read', 'order.read'])
     const { cart } = await service.create.checkoutReadyCart(container)
 
     vi.spyOn(container.resolve(Modules.PAYMENT), 'authorizePaymentSession').mockRejectedValueOnce(
@@ -434,7 +434,7 @@ test.describe('completeCartWorkflow', () => {
     // a checkout that unwinds is the one failure nobody used to hear about.
     expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
       {
-        to: env.ADMIN_NOTIFICATION_EMAIL,
+        to: operator.email,
         channel: 'feed',
         resourceType: 'cart',
         resourceId: cart.id,
@@ -490,6 +490,8 @@ test.describe('completeCartWorkflow', () => {
     expect,
   }) => {
     await using _store = await factories.create.store({ lowStockThreshold: 5 })
+    // The alert is addressed by permission, so somebody has to qualify for it to land anywhere.
+    const operator = await service.create.operator(container, ['notification.read', 'inventory.read'])
     const { cart, inventoryLevel } = await service.create.checkoutReadyCart(container, { variant: {} })
     const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit')
@@ -504,7 +506,7 @@ test.describe('completeCartWorkflow', () => {
       reservedQuantity: inventoryLevel?.stockedQuantity,
     })
     expect(await service.read.notifications(container, { channel: 'feed' })).toMatchObject([
-      { template: 'low-stock', resourceType: 'product_variant' },
+      { to: operator.email, template: 'low-stock', resourceType: 'product_variant' },
     ])
   })
 

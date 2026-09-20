@@ -12,7 +12,6 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
-import { env } from '@env'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
 import { missingInventoryItemMessage, prepareLineItemInventoryChecks } from './utils/variant-inventory.js'
 
@@ -304,23 +303,20 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
      *  in reverse registration order. Notifying last means the notification describes a rollback
      *  that has already finished rather than one still in progress. */
     await notifyOnFailureStep(ctx, {
-      notifications: [
-        {
-          // TODO(rbac): one configured address until there is a role to ask for.
-          to: env.ADMIN_NOTIFICATION_EMAIL,
-          channel: 'feed',
-          template: NotificationTemplates.CHECKOUT_FAILED,
-          data: {
-            title: 'Checkout failed',
-            description: `Cart "${input.cartId}" could not be completed. The order, its reservations and the cart lock were rolled back.`,
-          },
-          triggerType: 'cart.completion.failed',
-          resourceType: 'cart',
-          resourceId: input.cartId,
-          // A retried workflow must not stack up alerts for the same cart.
-          idempotencyKey: `checkout-failed:${input.cartId}`,
+      // Whoever can open the feed and act on the order the rollback removed.
+      features: ['notification.read', 'order.read'],
+      alert: {
+        template: NotificationTemplates.CHECKOUT_FAILED,
+        data: {
+          title: 'Checkout failed',
+          description: `Cart "${input.cartId}" could not be completed. The order, its reservations and the cart lock were rolled back.`,
         },
-      ],
+        triggerType: 'cart.completion.failed',
+        resourceType: 'cart',
+        resourceId: input.cartId,
+        // A retried workflow must not stack up alerts for the same cart.
+        idempotencyKey: `checkout-failed:${input.cartId}`,
+      },
     })
 
     /** Snapshot the cart into an immutable order record.
