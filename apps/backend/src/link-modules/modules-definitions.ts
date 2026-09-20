@@ -1,6 +1,7 @@
 // Re-export module tables referenced by link definitions.
 // This is the ONE place cross-module table imports are allowed —
 // consumers (repos, drizzle schema config) import from here, never from modules directly.
+export { roleTable } from '../modules/access-control/models/role.js'
 export { cartLineItemTable } from '../modules/cart/models/line-item.js'
 export { inventoryItemTable } from '../modules/inventory/models/inventory-item.js'
 export { inventoryLevelTable } from '../modules/inventory/models/inventory-level.js'
@@ -9,3 +10,4 @@ export { priceSetTable } from '../modules/pricing/models/price-set.js'
 export { productTable } from '../modules/product/models/product.js'
 export { productVariantTable } from '../modules/product/models/product-variant.js'
 export { regionTable } from '../modules/region/models/region.js'
+export { inviteTable } from '../modules/user/models/invite.js'

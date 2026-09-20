@@ -1,6 +1,4 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IAuthModuleService } from '@core/types/auth/service.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -18,7 +16,7 @@ export const POST = async (
   const authContext = req.authContext
   if (!authContext) throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
 
-  const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
+  const authService = req.scope.resolve(Modules.AUTH)
 
   const result = await authService.requestAuthVerification({
     authIdentityId: authContext.authIdentityId,
@@ -29,7 +27,7 @@ export const POST = async (
   })
 
   if (result.code && req.body.entityType === 'email') {
-    const notificationService = req.scope.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+    const notificationService = req.scope.resolve(Modules.NOTIFICATION)
     await sendVerificationEmail(notificationService, result.entityId, result.code)
   }
 

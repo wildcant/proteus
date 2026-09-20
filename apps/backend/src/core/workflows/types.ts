@@ -1,7 +1,7 @@
-import type { AwilixContainer } from 'awilix'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
+import type { AppContainer } from '../types/container.js'
 
-export type StepContext = { container: AwilixContainer }
+export type StepContext = { container: AppContainer }
 
 export type StepAction<T> = (context: StepContext) => Promise<T>
 
@@ -56,9 +56,9 @@ export interface WorkflowEngine {
 }
 
 let globalEngine: WorkflowEngine | null = null
-let globalContainer: AwilixContainer | null = null
+let globalContainer: AppContainer | null = null
 
-export function setWorkflowEngine(engine: WorkflowEngine, container: AwilixContainer): void {
+export function setWorkflowEngine(engine: WorkflowEngine, container: AppContainer): void {
   globalEngine = engine
   globalContainer = container
 }

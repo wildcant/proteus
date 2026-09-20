@@ -3,6 +3,8 @@ import type {
   CartPaymentCollectionDTO,
   ICartPaymentCollectionRepository,
   ICartProductRepository,
+  IInviteRoleRepository,
+  InviteRoleDTO,
   IOrderCartRepository,
   IOrderFulfillmentRepository,
   IOrderPaymentCollectionRepository,
@@ -17,7 +19,7 @@ import type {
   RegionPaymentProviderDTO,
 } from './common.js'
 
-export type ILinkRepositoryMap = {
+type ILinkRepositoryMap = {
   cartProduct: ICartProductRepository
 
   // Writable.
@@ -28,6 +30,7 @@ export type ILinkRepositoryMap = {
   orderPaymentCollection: IOrderPaymentCollectionRepository
   orderFulfillment: IOrderFulfillmentRepository
   regionPaymentProvider: IRegionPaymentProviderRepository
+  inviteRole: IInviteRoleRepository
 }
 
 export type LinkColumnRegistry = {
@@ -40,6 +43,8 @@ export type LinkColumnRegistry = {
   fulfillmentId: readonly ['orderFulfillment']
   regionId: readonly ['regionPaymentProvider']
   paymentProviderId: readonly ['regionPaymentProvider']
+  inviteId: readonly ['inviteRole']
+  roleId: readonly ['inviteRole']
 }
 
 export type WritableLinkRepoKey = LinkColumnRegistry[keyof LinkColumnRegistry][number]
@@ -54,6 +59,7 @@ type WritableLinkDTOMap = {
   orderPaymentCollection: OrderPaymentCollectionDTO
   orderFulfillment: OrderFulfillmentDTO
   regionPaymentProvider: RegionPaymentProviderDTO
+  inviteRole: InviteRoleDTO
 }
 
 export type DismissLinksResult<T extends DismissLinksInput = DismissLinksInput> = {

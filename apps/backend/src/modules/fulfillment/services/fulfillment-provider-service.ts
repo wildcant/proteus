@@ -1,6 +1,6 @@
-import type { AwilixContainer } from 'awilix'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
+import type { ModuleContainer } from '../../../core/types/container.js'
 import type { Context } from '../../../core/types/context.js'
 import type {
   FilterableFulfillmentProviderProps,
@@ -16,13 +16,13 @@ import type { Logger } from '../../../core/types/logger.js'
 import type { FulfillmentProviderRepository } from '../repositories/fulfillment-provider.js'
 
 type InjectedDependencies = {
-  container: AwilixContainer
+  container: ModuleContainer
   fulfillmentProviderRepository: FulfillmentProviderRepository
   logger: Logger
 }
 
 export class FulfillmentProviderService {
-  private container: AwilixContainer
+  private container: ModuleContainer
   private fulfillmentProviderRepository: FulfillmentProviderRepository
   private logger: Logger
 

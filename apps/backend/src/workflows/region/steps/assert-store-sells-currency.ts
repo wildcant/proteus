@@ -1,5 +1,4 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { IStoreModuleService } from '@core/types/store/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { type WorkflowContext, WorkflowTerminalError } from '@core/workflows/types.js'
 
@@ -20,7 +19,7 @@ export async function assertStoreSellsCurrencyStep(ctx: WorkflowContext, currenc
   await ctx.step('assert-store-sells-currency', async ({ container }) => {
     if (currencyCode === undefined) return
 
-    const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
+    const storeService = container.resolve(Modules.STORE)
     const store = await storeService.resolveStore()
     const currencies = store ? await storeService.listStoreCurrencies({ storeId: store.id }) : []
 

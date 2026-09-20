@@ -1,8 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { SubscriberArgs, SubscriberConfig } from '@core/event-bus/types.js'
-import type { Logger } from '@core/types/logger.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
-import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { env } from '@env'
@@ -40,9 +37,9 @@ import { buildOrderConfirmationNotification } from '@workflows/notification/util
  * confirmation that already sent finds the existing row and returns it unsent.
  */
 async function sendOrderConfirmation({ event, container }: SubscriberArgs<'order.placed'>) {
-  const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
-  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-  const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+  const notificationService = container.resolve(Modules.NOTIFICATION)
+  const orderService = container.resolve(Modules.ORDER)
+  const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const orderId = event.data.id
 
   // The event carries an id, never a DTO, so the confirmation is built from the order as it is now

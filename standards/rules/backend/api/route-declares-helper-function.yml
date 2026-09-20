@@ -7,17 +7,41 @@ files:
   - "**/src/api/**/route.ts"
 ignores:
   - "**/__tests__/**"
-# Handlers are `export const GET = async (req) => …`, never `function GET()`, so a
-# `function_declaration` in one of these files is always the helper and never the thing the file is
-# for. That is what lets this rule be a bare kind check rather than a name list: it does not have to
-# tell a helper from a handler, because handlers are not written this way.
+# Two shapes a helper takes in a route file:
 #
-# The arrow form of a helper — `const shape = (rows) => …` — is not matched, and deliberately.
-# Excluding the five handler names means matching every remaining arrow at file scope, which reaches
-# past helpers to the `Input`/`Output`/`Throws` constants the file is required to export. The
-# function form is where the helpers this rule was written for actually appeared.
+# 1. `function_declaration` — handlers are `export const GET = async (req) => …`, never
+#    `function GET()`, so every `function_declaration` in these files is a helper.
+#
+# 2. Non-exported `const` arrow — `const shape = (rows) => …`. Exported arrows are either
+#    handlers or the `Input`/`Output`/`Throws`/`Middlewares` constants the file must carry.
+#    Non-exported non-arrow consts (lookup tables like `const MAP: Record<…> = { … }`) are
+#    data, not helpers.
+#
+# Both are scoped to file-level: a lambda inside a handler (e.g. `rows.map((r) => r.id)`)
+# is not matched because it sits inside an `arrow_function`.
 rule:
-  kind: function_declaration
-  has:
-    field: name
-    pattern: $NAME
+  any:
+    - kind: function_declaration
+      has:
+        field: name
+        pattern: $NAME
+    - kind: variable_declarator
+      all:
+        - has:
+            field: name
+            pattern: $NAME
+        - has:
+            field: value
+            kind: arrow_function
+        - not:
+            inside:
+              kind: export_statement
+              stopBy: end
+        - not:
+            inside:
+              kind: arrow_function
+              stopBy: end
+        - not:
+            inside:
+              kind: function_declaration
+              stopBy: end

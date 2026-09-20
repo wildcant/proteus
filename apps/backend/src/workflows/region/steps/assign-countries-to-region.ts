@@ -1,7 +1,6 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CountryDTO } from '@core/types/region/common.js'
 import type { SetCountryMarketDTO } from '@core/types/region/mutations.js'
-import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { type WorkflowContext, WorkflowTerminalError } from '@core/workflows/types.js'
 
@@ -43,7 +42,7 @@ export async function assignCountriesToRegionStep(
   const { countries } = await ctx.step<StepOutput>(
     'assign-countries-to-region',
     async ({ container }) => {
-      const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+      const regionService = container.resolve(Modules.REGION)
       const existing = await Promise.all(input.countries.map((country) => regionService.retrieveCountry(country.id)))
 
       const taken = existing.find((country) => country.regionId !== null && country.regionId !== input.regionId)
@@ -72,7 +71,7 @@ export async function assignCountriesToRegionStep(
       }
     },
     async ({ before }, { container }) => {
-      const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+      const regionService = container.resolve(Modules.REGION)
       await regionService.setCountryMarkets(before)
     },
   )

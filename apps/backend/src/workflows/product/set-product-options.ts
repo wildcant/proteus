@@ -1,9 +1,5 @@
-import type { ICartModuleService } from '@core/types/cart/service.js'
-import type { ILinkService } from '@core/types/link/service.js'
-import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import type { AppliedProductOptionChangeDTO } from '@core/types/product/common.js'
 import type { SetProductOptionsDTO } from '@core/types/product/mutations.js'
-import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, type StepContext } from '@core/workflows/types.js'
@@ -30,7 +26,7 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
   async (ctx, input) => {
     // Step 1: remember what to put back, before anything moves
     const { previousOptions, previousCombinations } = await ctx.step('capture', async ({ container }) => {
-      const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+      const productService = container.resolve(Modules.PRODUCT)
 
       const scoped = await productService.listProductOptionsForProduct(input.productId)
       const variants = await productService.listProductVariants({ productId: input.productId })
@@ -54,11 +50,11 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
     const { plan, created } = await ctx.step(
       'apply-options',
       async ({ container }): Promise<AppliedProductOptionChangeDTO> => {
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         return productService.applyProductOptionChange(input.productId, input.data)
       },
       async (applied, { container }) => {
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         // Order matters: the options have to be back before a combination expressed in them can be.
         await productService.revertProductOptionChange(input.productId, previousOptions, previousCombinations)
         if (applied.created.length > 0) {
@@ -73,8 +69,8 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
       const sources = plan.create.map((entry) => entry.copyPricesFromVariantId)
       if (sources.every((source) => source === null)) return
 
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-      const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const pricingService = container.resolve(Modules.PRICING)
 
       const sourceIds = [...new Set(sources.filter((source): source is string => source !== null))]
       const sourceLinks = await linkService.repo('productVariantPriceSet').findByVariantIds(sourceIds)
@@ -107,18 +103,18 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
         if (plan.remove.length === 0) return
         const variantIds = plan.remove.map((entry) => entry.variantId)
 
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
         const dismissed = await linkService.dismissLinks({ variantId: variantIds })
 
         const dismissedPriceSetLinks = dismissed.productVariantPriceSet ?? []
         if (dismissedPriceSetLinks.length > 0) {
-          const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+          const pricingService = container.resolve(Modules.PRICING)
           await pricingService.softDeletePriceSets(dismissedPriceSetLinks.map((link) => link.priceSetId))
         }
 
         await evictFromActiveCarts(container, variantIds)
 
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         await productService.softDeleteProductVariants(variantIds)
       },
       // Nothing to put back: a compensation only runs when a *later* step fails, and this is last.
@@ -135,7 +131,7 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
  * separate table with their own copies, so history is unaffected either way.
  */
 async function evictFromActiveCarts(container: StepContext['container'], variantIds: string[]): Promise<void> {
-  const cartService = container.resolve<ICartModuleService>(Modules.CART)
+  const cartService = container.resolve(Modules.CART)
 
   const lineItems = await cartService.listLineItems({ variantId: variantIds })
   if (lineItems.length === 0) return

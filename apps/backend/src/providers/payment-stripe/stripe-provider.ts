@@ -13,10 +13,8 @@ import type {
   CreateAccountHolderOutput,
   DeleteAccountHolderInput,
   DeleteAccountHolderOutput,
-  DeletePaymentInput,
   DeletePaymentMethodInput,
   DeletePaymentMethodOutput,
-  DeletePaymentOutput,
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
   InitiatePaymentInput,
@@ -284,10 +282,6 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
       this.settledAt(id, 'canceled'),
     )
     return { data: { id } }
-  }
-
-  async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
-    return this.cancelPayment(input)
   }
 
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {

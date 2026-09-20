@@ -1,8 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { ICartModuleService } from '@core/types/cart/service.js'
-import type { ILinkService } from '@core/types/link/service.js'
 import type { PaymentSessionDTO } from '@core/types/payment/common.js'
-import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -24,9 +21,9 @@ export const repricePaymentSessionWorkflow = createWorkflow<RepricePaymentSessio
   { name: 'reprice-payment-session', throws: [ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND] },
   async (ctx, input) => {
     return ctx.step('reprice-payment-session', async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+      const cartService = container.resolve(Modules.CART)
+      const paymentService = container.resolve(Modules.PAYMENT)
+      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
 
       const collection = await paymentService.retrievePaymentCollection(input.paymentCollectionId)
       const session = collection.paymentSessions?.find((candidate) => candidate.id === input.sessionId)

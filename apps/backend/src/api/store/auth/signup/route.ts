@@ -1,5 +1,4 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IAuthModuleService } from '@core/types/auth/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AuthenticateResponse } from '@proteus/http-schemas/auth'
@@ -16,7 +15,7 @@ export const PostThrows = [
 ] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
+  const authService = req.scope.resolve(Modules.AUTH)
   const { email, password, firstName, lastName } = req.body
 
   const registerResult = await authService.register('emailpass', { body: { email, password } })

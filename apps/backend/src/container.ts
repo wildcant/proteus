@@ -4,12 +4,13 @@
  * so each entry point only bundles its own provider (tree-shaking friendly).
  */
 
-import { type AwilixContainer, asFunction, asValue, createContainer } from 'awilix'
+import { asFunction, asValue, createContainer } from 'awilix'
 import { appConfig } from './config.js'
 import type { DbProvider } from './core/db/ports.js'
 import { AppError, ErrorTypes } from './core/errors/app-error.js'
-import type { EventBus } from './core/event-bus/types.js'
+import type { EventBus } from './core/event-bus/ports.js'
 import type { InputConfig } from './core/types/config.js'
+import type { AppContainer } from './core/types/container.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/container.js'
 import { setWorkflowEngine, type WorkflowEngine } from './core/workflows/types.js'
@@ -22,6 +23,7 @@ import { subscriberRegistry } from './framework/event-bus/registry.js'
 import { resolveWorkflowEngineName } from './framework/workflows/engine-selection.js'
 import { createSimpleWorkflowEngine } from './framework/workflows/simple-adapter.js'
 import { registerLinkService } from './link-modules/index.js'
+import accessControlModule from './modules/access-control/index.js'
 import authModule from './modules/auth/index.js'
 import { authProviderDeclarations } from './modules/auth/provider-declarations.js'
 import cartModule from './modules/cart/index.js'
@@ -75,7 +77,7 @@ export type BootstrapContainerDeps = {
    * It takes the container because a subscriber is handed one, and it is not built until this
    * function has finished registering the modules a subscriber resolves from.
    */
-  createEventBusAdapter?: (container: AwilixContainer) => EventBus
+  createEventBusAdapter?: (container: AppContainer) => EventBus
 }
 
 export async function bootstrapContainer(deps: BootstrapContainerDeps) {
@@ -106,6 +108,7 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   await bootstrapModule(container, stockLocationModule)
   await bootstrapModule(container, storeModule)
   await bootstrapModule(container, userModule)
+  await bootstrapModule(container, accessControlModule)
 
   registerLinkService(container)
   setWorkflowEngine(selectWorkflowEngine(deps, configModule.projectConfig.workflows.engine), container)
@@ -156,7 +159,7 @@ function selectWorkflowEngine(
 function selectEventBus(
   deps: BootstrapContainerDeps,
   configured: ReturnType<typeof defineAppConfig>['projectConfig']['eventBus']['adapter'],
-  container: AwilixContainer,
+  container: AppContainer,
   logger: Logger,
 ): EventBus {
   const adapter = resolveEventBusAdapterName({ configured, runtime: env.RUNTIME })

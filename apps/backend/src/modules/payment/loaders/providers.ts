@@ -1,7 +1,8 @@
 import { env } from '@env'
-import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
+import type { ModuleContainer } from '../../../core/types/container.js'
 import type { AbstractPaymentProvider } from '../../../core/utils/abstract-payment-provider.js'
+import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import type { ModuleProviderExports } from '../../../core/utils/module-provider.js'
 import { SystemPaymentProvider } from '../providers/system.js'
 import { PaymentProviderService } from '../services/payment-provider-service.js'
@@ -55,7 +56,7 @@ export async function loadProviders({
   container,
   options,
 }: {
-  container: AwilixContainer
+  container: ModuleContainer
   options?: Record<string, unknown>
 }): Promise<void> {
   const opts = options as PaymentModuleOptions | undefined
@@ -84,7 +85,7 @@ export async function loadProviders({
   const providerService = new PaymentProviderService({
     container,
     paymentProviderRepository: container.resolve('paymentProviderRepository'),
-    logger: container.resolve('logger'),
+    logger: container.resolve(ContainerRegistrationKeys.LOGGER),
   })
   container.register({ paymentProviderService: asValue(providerService) })
 

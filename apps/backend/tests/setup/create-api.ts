@@ -10,11 +10,11 @@ import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'
 import { RoutesSorter } from '@framework/http/routes-sorter.js'
 import type { RouteDefinition } from '@framework/http/types.js'
-import type { AwilixContainer } from 'awilix'
 import type { Express } from 'express'
 import qs from 'qs'
 import request, { type Agent } from 'supertest'
 import type { ZodType } from 'zod'
+import type { AppContainer } from '../../src/core/types/container.js'
 import { createExpressApp } from '../../src/framework/runtime/express/app.js'
 import type { Database } from '../../src/schema.type.js'
 import { type CreateContainerOptions, createTestContainer } from './create-container.js'
@@ -61,7 +61,7 @@ type RequestVerb = <T = Record<string, unknown>>(
 ) => Promise<TestResponse<T>>
 
 export type TestApi = {
-  container: AwilixContainer
+  container: AppContainer
   /** JSON verbs over the listening server: sets `Content-Type`, sends `body`, unwraps the
    *  response. Callers pass `headers` for things like `{ authorization: 'Bearer …' }`. */
   get: RequestVerb

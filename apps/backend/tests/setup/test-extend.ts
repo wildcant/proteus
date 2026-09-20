@@ -99,6 +99,7 @@ import {
   generateUpdateProductVariantDTO,
   generateVariantImageInputDTO,
 } from '../factories/product-dto.js'
+import { createOperator } from '../factories/services/access-control.js'
 import {
   confirmAuthVerification,
   createAuthIdentity,
@@ -343,6 +344,7 @@ export type Fixtures = {
     create: {
       cart: typeof createCart
       cartAddresses: typeof addCartAddresses
+      operator: typeof createOperator
       customer: typeof createCustomer
       customerAddress: typeof createCustomerAddress
       lineItem: typeof addLineItem
@@ -563,6 +565,7 @@ export const test = testBase.extend<Fixtures>({
       create: {
         cart: createCart,
         cartAddresses: addCartAddresses,
+        operator: createOperator,
         customer: createCustomer,
         customerAddress: createCustomerAddress,
         lineItem: addLineItem,

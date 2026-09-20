@@ -120,7 +120,7 @@ export class AuthModuleService implements IAuthModuleService {
    * This keeps providers decoupled from repositories — they only see
    * retrieve/create/update, scoped to a single provider string.
    */
-  getAuthIdentityProviderService(provider: string, context?: Context): AuthIdentityProviderService {
+  private getAuthIdentityProviderService(provider: string, context?: Context): AuthIdentityProviderService {
     return {
       retrieve: async ({ entityId }) => {
         const results = await this.providerIdentityRepository.find({ entityId, provider }, { limit: 1 })
@@ -173,7 +173,7 @@ export class AuthModuleService implements IAuthModuleService {
     }
   }
 
-  getAuthVerificationService(context?: Context): AuthVerificationService {
+  private getAuthVerificationService(context?: Context): AuthVerificationService {
     return {
       list: (filters) => this.authVerificationRepository.find(filters, undefined, context),
       create: (data) => this.authVerificationRepository.create(data, context),

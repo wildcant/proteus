@@ -20,31 +20,25 @@ import {
   TooltipProvider,
 } from '@proteus/ui'
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
+import { SettingsIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Breadcrumbs } from './breadcrumbs'
-import { navItems, settingsItem } from './nav'
+import type { SidebarGroup as SidebarGroupType, SidebarIcon } from './nav'
+import { sidebarIcons } from './nav'
 import { ThemeToggle } from './theme-toggle'
 
-/**
- * The admin chrome: sidebar, topbar, and the outlet between them.
- *
- * The two slots exist because this file is shared-layer and the things that belong in them are
- * features — the notification bell reads the notifications API, the user menu reads auth. Shared
- * code may not reach up into a feature, so the route composes them instead. See
- * `routes/_authed/_shell/route.tsx`, and `packages/frontend-structure` for the rule.
- */
 type ShellProps = {
-  /** Rendered at the end of the topbar, after the theme toggle. */
+  sidebar: SidebarGroupType[]
+  settingsSidebar?: SidebarGroupType[]
   topbarActions?: ReactNode
-  /** Rendered in the sidebar footer. */
   sidebarFooter?: ReactNode
 }
 
-export function Shell({ topbarActions, sidebarFooter }: ShellProps) {
+export function Shell({ sidebar, settingsSidebar, topbarActions, sidebarFooter }: ShellProps) {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar footer={sidebarFooter} />
+        <AppSidebar sidebar={sidebar} settingsSidebar={settingsSidebar} footer={sidebarFooter} />
         <SidebarInset>
           <Topbar actions={topbarActions} />
           <div className="flex-1 overflow-auto">
@@ -72,8 +66,24 @@ function Topbar({ actions }: { actions?: ReactNode }) {
   )
 }
 
-function AppSidebar({ footer }: { footer?: ReactNode }) {
+function resolveIcon(icon?: string) {
+  if (!icon) return undefined
+  return sidebarIcons[icon as SidebarIcon]
+}
+
+function AppSidebar({
+  sidebar,
+  settingsSidebar,
+  footer,
+}: {
+  sidebar: SidebarGroupType[]
+  settingsSidebar?: SidebarGroupType[]
+  footer?: ReactNode
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const firstSettingsRoute = settingsSidebar?.[0]?.items?.[0]?.to
+
+  const navItems = sidebar.flatMap((g) => g.items)
 
   return (
     <Sidebar collapsible="icon">
@@ -96,13 +106,14 @@ function AppSidebar({ footer }: { footer?: ReactNode }) {
         <SidebarGroup>
           <SidebarMenu>
             {navItems.map((item) => {
+              const Icon = resolveIcon(item.icon)
               const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
 
               if (!item.children?.length) {
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
-                      {item.icon}
+                      {Icon && <Icon />}
                       <span>{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -116,7 +127,7 @@ function AppSidebar({ footer }: { footer?: ReactNode }) {
                 <Collapsible key={item.to} open={isGroupActive}>
                   <SidebarMenuItem>
                     <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
-                      {item.icon}
+                      {Icon && <Icon />}
                       <span>{item.label}</span>
                     </SidebarMenuButton>
                     <CollapsibleContent>
@@ -139,20 +150,22 @@ function AppSidebar({ footer }: { footer?: ReactNode }) {
             })}
           </SidebarMenu>
         </SidebarGroup>
-        <SidebarGroup className="mt-auto">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={pathname === settingsItem.to || pathname.startsWith(`${settingsItem.to}/`)}
-                tooltip={settingsItem.label}
-                render={<Link to={settingsItem.to} />}
-              >
-                {settingsItem.icon}
-                <span>{settingsItem.label}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+        {!!firstSettingsRoute && (
+          <SidebarGroup className="mt-auto">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={pathname.startsWith('/settings')}
+                  tooltip="Settings"
+                  render={<Link to={firstSettingsRoute} />}
+                >
+                  <SettingsIcon />
+                  <span>Settings</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>{footer}</SidebarFooter>
       <SidebarRail />

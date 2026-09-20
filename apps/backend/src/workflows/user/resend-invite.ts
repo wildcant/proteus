@@ -1,6 +1,4 @@
-import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { InviteDTO } from '@core/types/user/invite-common.js'
-import type { IUserModuleService } from '@core/types/user/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow } from '@core/workflows/types.js'
@@ -14,12 +12,12 @@ export const resendInviteWorkflow = createWorkflow<ResendInviteInput, InviteDTO>
   'resend-invite',
   async (ctx, input) => {
     const invite = await ctx.step<InviteDTO>('refresh-invite-token', async ({ container }) => {
-      const userService = container.resolve<IUserModuleService>(Modules.USER)
+      const userService = container.resolve(Modules.USER)
       return userService.refreshInviteToken(input.inviteId)
     })
 
     await ctx.step('send-invite-notification', async ({ container }) => {
-      const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+      const notificationService = container.resolve(Modules.NOTIFICATION)
       const inviteLink = `${env.ADMIN_URL}/invite?token=${invite.token}`
       await notificationService.createNotification({
         to: invite.email,

@@ -1,5 +1,5 @@
 import { ApplicationFailure } from '@temporalio/common'
-import type { AwilixContainer } from 'awilix'
+import type { AppContainer } from '../../../core/types/container.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { serializeError } from '../../temporal/failures.js'
@@ -18,7 +18,7 @@ import { type DispatchEventInput, SUBSCRIBER_FAILURE_TYPE, type SubscriberFailur
 export type EventActivities = Record<string, (input: DispatchEventInput) => Promise<void>>
 
 export function createEventActivities(deps: {
-  container: AwilixContainer
+  container: AppContainer
   registry: SubscriberRegistry
 }): EventActivities {
   const { container, registry } = deps
@@ -30,7 +30,7 @@ export function createEventActivities(deps: {
    */
   function log(): Logger | undefined {
     return container.hasRegistration(ContainerRegistrationKeys.LOGGER)
-      ? container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      ? container.resolve(ContainerRegistrationKeys.LOGGER)
       : undefined
   }
 

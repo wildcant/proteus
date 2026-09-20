@@ -1,0 +1,50 @@
+id: query-hook-in-component
+snapshots:
+  const { data } = useInfiniteQuery(rolesListQueryOptions()):
+    labels:
+    - source: useInfiniteQuery(rolesListQueryOptions())
+      style: primary
+      start: 17
+      end: 58
+  const { data } = useQuery(rolesListQueryOptions()):
+    labels:
+    - source: useQuery(rolesListQueryOptions())
+      style: primary
+      start: 17
+      end: 50
+  const { data } = useSuspenseQuery(rolesQueryOptions(id)):
+    labels:
+    - source: useSuspenseQuery(rolesQueryOptions(id))
+      style: primary
+      start: 17
+      end: 56
+  import type { UseQueryOptions } from '@tanstack/react-query':
+    labels:
+    - source: import type { UseQueryOptions } from '@tanstack/react-query'
+      style: primary
+      start: 0
+      end: 60
+  import { useInfiniteQuery } from '@tanstack/react-query':
+    labels:
+    - source: import { useInfiniteQuery } from '@tanstack/react-query'
+      style: primary
+      start: 0
+      end: 56
+  import { useQuery } from '@tanstack/react-query':
+    labels:
+    - source: import { useQuery } from '@tanstack/react-query'
+      style: primary
+      start: 0
+      end: 48
+  import { useQueryClient } from '@tanstack/react-query':
+    labels:
+    - source: import { useQueryClient } from '@tanstack/react-query'
+      style: primary
+      start: 0
+      end: 54
+  import { useSuspenseQuery } from '@tanstack/react-query':
+    labels:
+    - source: import { useSuspenseQuery } from '@tanstack/react-query'
+      style: primary
+      start: 0
+      end: 56

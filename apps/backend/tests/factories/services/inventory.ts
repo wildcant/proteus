@@ -1,11 +1,10 @@
-import type { AwilixContainer } from 'awilix'
+import type { AppContainer } from '../../../src/core/types/container.js'
 import type {
   CreateInventoryItemDTO,
   CreateInventoryLevelDTO,
   CreateReservationItemDTO,
 } from '../../../src/core/types/inventory/mutations.js'
 import type { IInventoryModuleService } from '../../../src/core/types/inventory/service.js'
-import type { ILinkService } from '../../../src/core/types/link/service.js'
 import { ContainerRegistrationKeys } from '../../../src/core/utils/container.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
@@ -31,12 +30,9 @@ export type StockVariantOptions = {
  * the level and would otherwise have to prove it came back. This is the one arrangement checkout
  * refuses as invalid data.
  */
-export async function trackVariantWithoutStock(
-  container: AwilixContainer,
-  options: Omit<StockVariantOptions, 'level'>,
-) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-  const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+export async function trackVariantWithoutStock(container: AppContainer, options: Omit<StockVariantOptions, 'level'>) {
+  const inventoryService = container.resolve(Modules.INVENTORY)
+  const linkService = container.resolve(ContainerRegistrationKeys.LINK)
 
   const [inventoryItem] = await inventoryService.createInventoryItems([generateCreateInventoryItemDTO(options.item)])
   if (!inventoryItem) throw new Error('createInventoryItems returned no rows')
@@ -58,7 +54,7 @@ export async function trackVariantWithoutStock(
  * The location is created rather than faked because `reserve-inventory` resolves the id before it
  * writes a reservation — a minted `sloc_...` string would fail there, not here.
  */
-export async function stockVariant(container: AwilixContainer, options: StockVariantOptions) {
+export async function stockVariant(container: AppContainer, options: StockVariantOptions) {
   const { inventoryItem } = await trackVariantWithoutStock(container, options)
   const inventoryLevel = await addInventoryLevel(container, inventoryItem.id, options.level)
 
@@ -70,11 +66,11 @@ export async function stockVariant(container: AwilixContainer, options: StockVar
  * level; coverage across several locations needs more, and they must share the item.
  */
 export async function addInventoryLevel(
-  container: AwilixContainer,
+  container: AppContainer,
   inventoryItemId: string,
   overrides?: Partial<Omit<CreateInventoryLevelDTO, 'inventoryItemId'>>,
 ) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const inventoryService = container.resolve(Modules.INVENTORY)
 
   const locationId = overrides?.locationId ?? (await createStockLocation(container)).id
 
@@ -91,10 +87,10 @@ export async function addInventoryLevel(
  * a level with units already spoken for reserves them; the create DTO cannot set the counter.
  */
 export async function reserveStock(
-  container: AwilixContainer,
+  container: AppContainer,
   overrides: Pick<CreateReservationItemDTO, 'inventoryItemId' | 'locationId'> & Partial<CreateReservationItemDTO>,
 ) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const inventoryService = container.resolve(Modules.INVENTORY)
 
   const [reservation] = await inventoryService.createReservationItems([generateCreateReservationItemDTO(overrides)])
   if (!reservation) throw new Error('createReservationItems returned no rows')
@@ -107,10 +103,10 @@ export async function reserveStock(
  * level a variant is born with holds zero — so a test that needs units in stock adds them here.
  */
 export async function adjustInventoryLevel(
-  container: AwilixContainer,
+  container: AppContainer,
   ...args: Parameters<IInventoryModuleService['adjustInventoryLevel']>
 ) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const inventoryService = container.resolve(Modules.INVENTORY)
 
   return inventoryService.adjustInventoryLevel(...args)
 }
@@ -120,29 +116,29 @@ export async function adjustInventoryLevel(
 /** The Inventory Items themselves — the only read that can tell an item that was never created
  *  from one that untracking hid, which takes `{ withDeleted: true }`. */
 export async function listInventoryItems(
-  container: AwilixContainer,
+  container: AppContainer,
   ...args: Parameters<IInventoryModuleService['listInventoryItems']>
 ) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const inventoryService = container.resolve(Modules.INVENTORY)
 
   return inventoryService.listInventoryItems(...args)
 }
 
 export async function listReservationItems(
-  container: AwilixContainer,
+  container: AppContainer,
   ...args: Parameters<IInventoryModuleService['listReservationItems']>
 ) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const inventoryService = container.resolve(Modules.INVENTORY)
 
   return inventoryService.listReservationItems(...args)
 }
 
 /** The level rows themselves, for the one number no other read exposes: `reservedQuantity`. */
 export async function listInventoryLevels(
-  container: AwilixContainer,
+  container: AppContainer,
   ...args: Parameters<IInventoryModuleService['listInventoryLevels']>
 ) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const inventoryService = container.resolve(Modules.INVENTORY)
 
   return inventoryService.listInventoryLevels(...args)
 }
@@ -150,10 +146,10 @@ export async function listInventoryLevels(
 /** Stocked minus reserved — what the storefront's `inStock` is derived from, and what an order
  *  in flight is supposed to take off the shelf. */
 export async function retrieveAvailableQuantity(
-  container: AwilixContainer,
+  container: AppContainer,
   ...args: Parameters<IInventoryModuleService['retrieveAvailableQuantity']>
 ) {
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const inventoryService = container.resolve(Modules.INVENTORY)
 
   return inventoryService.retrieveAvailableQuantity(...args)
 }

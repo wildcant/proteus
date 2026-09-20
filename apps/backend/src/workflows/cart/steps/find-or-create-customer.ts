@@ -88,7 +88,7 @@ export async function findOrCreateCustomerStep(
     async ({ container }) => {
       if (!input.customerId && !input.email) return NOT_FOUND
 
-      const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+      const customerService = container.resolve(Modules.CUSTOMER)
 
       const registered = await findRegisteredCustomer(customerService, input)
       if (registered) return { customer: registered, created: false, previousName: null }
@@ -99,7 +99,7 @@ export async function findOrCreateCustomerStep(
     },
     async (result, { container }) => {
       if (!result.customer) return
-      const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+      const customerService = container.resolve(Modules.CUSTOMER)
 
       if (result.created) {
         await customerService.softDeleteCustomers([result.customer.id])

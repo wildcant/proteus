@@ -29,7 +29,7 @@ export type PaymentAdapterContext = {
 }
 
 /** A stored card, projected to the same neutral shape whatever gateway holds it. */
-export type SavedMethod = {
+type SavedMethod = {
   id: string
   brand: string
   last4: string

@@ -1,7 +1,5 @@
-import type { AwilixContainer } from 'awilix'
-import type { ILinkService } from '../../../src/core/types/link/service.js'
+import type { AppContainer } from '../../../src/core/types/container.js'
 import type { CreatePriceSetDTO } from '../../../src/core/types/pricing/mutations.js'
-import type { IPricingModuleService } from '../../../src/core/types/pricing/service.js'
 import { ContainerRegistrationKeys } from '../../../src/core/utils/container.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
 import { generateCreatePriceSetDTO } from '../pricing-dto.js'
@@ -12,12 +10,12 @@ import { generateCreatePriceSetDTO } from '../pricing-dto.js'
  * see in a response needs one.
  */
 export async function priceVariants(
-  container: AwilixContainer,
+  container: AppContainer,
   variantIds: string[],
   overrides?: Partial<CreatePriceSetDTO>,
 ) {
-  const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
-  const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const pricingService = container.resolve(Modules.PRICING)
+  const linkService = container.resolve(ContainerRegistrationKeys.LINK)
 
   const priceSets = await pricingService.createPriceSets(variantIds.map(() => generateCreatePriceSetDTO(overrides)))
 
@@ -34,8 +32,8 @@ export async function priceVariants(
 
 // ---- Reads ----
 
-export async function listPrices(container: AwilixContainer, priceSetId: string) {
-  const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+export async function listPrices(container: AppContainer, priceSetId: string) {
+  const pricingService = container.resolve(Modules.PRICING)
 
   return pricingService.listPrices({ priceSetId })
 }

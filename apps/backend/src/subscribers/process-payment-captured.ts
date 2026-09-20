@@ -1,15 +1,12 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { SubscriberArgs, SubscriberConfig } from '@core/event-bus/types.js'
-import type { ILinkService } from '@core/types/link/service.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
 import type { PaymentDTO } from '@core/types/payment/common.js'
-import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
-import { env } from '@env'
 import { completeCartWorkflow } from '@workflows/cart/complete-cart.js'
-import type { AwilixContainer } from 'awilix'
+import { buildOperatorAlerts } from '@workflows/notification/utils/operator-alert.js'
+import type { AppContainer } from '../core/types/container.js'
 
 /**
  * What a payment provider's webhook actually means, done durably.
@@ -41,7 +38,7 @@ import type { AwilixContainer } from 'awilix'
  * path — a path of its own would need its own idempotency, and would be the thing that drifts.
  */
 async function processPaymentCaptured({ event, container }: SubscriberArgs<'payment.captured'>) {
-  const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+  const paymentService = container.resolve(Modules.PAYMENT)
   const { id: sessionId, action } = event.data
 
   const authorization = await paymentService.authorizePaymentSession(sessionId)
@@ -108,8 +105,8 @@ async function processPaymentCaptured({ event, container }: SubscriberArgs<'paym
  * confirmation email comes with it and needs no code of its own: the re-run publishes `order.placed`
  * from the same final step the synchronous path does.
  */
-async function completeCartBehind(payment: PaymentDTO, container: AwilixContainer): Promise<void> {
-  const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+async function completeCartBehind(payment: PaymentDTO, container: AppContainer): Promise<void> {
+  const linkService = container.resolve(ContainerRegistrationKeys.LINK)
 
   // A payment collection with no cart behind it is not a checkout, so there is no completion to
   // re-run. Nothing produces one today; this is what keeps that from being an exception.
@@ -201,32 +198,40 @@ function describeMoney(payment: PaymentDTO): { title: string; money: string } {
  * caller: the compensation that may have refunded or voided it runs between the two.
  */
 async function alertPaymentWithoutOrder(deps: {
-  container: AwilixContainer
+  container: AppContainer
   cartId: string
   paymentId: string
 }): Promise<void> {
   const { container, cartId, paymentId } = deps
-  const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
-  const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+  const paymentService = container.resolve(Modules.PAYMENT)
+  const notificationService = container.resolve(Modules.NOTIFICATION)
 
   const { title, money } = describeMoney(await paymentService.retrievePayment(paymentId))
 
-  await notificationService.createNotification({
-    // TODO(rbac): one configured address until there is a role to ask for.
-    to: env.ADMIN_NOTIFICATION_EMAIL,
-    channel: 'feed',
-    template: NotificationTemplates.PAYMENT_WITHOUT_ORDER,
-    data: {
-      title,
-      description: `The payment for cart "${cartId}" was accepted but the order could not be created. ${money}`,
-    },
-    triggerType: 'payment.captured.completion.failed',
-    resourceType: 'cart',
-    resourceId: cartId,
-    // Per cart, not per delivery: the bounded retry re-runs this whole subscriber, and an operator
-    // needs one alert about one shopper rather than one per attempt.
-    idempotencyKey: `payment-without-order:${cartId}`,
-  })
+  // Whoever can open the feed and act on the money that moved.
+  const accessControlService = container.resolve(Modules.ACCESS_CONTROL)
+  const userService = container.resolve(Modules.USER)
+  const operatorIds = await accessControlService.listActorIdsWithFeatures('user', ['notification.read', 'payment.read'])
+  const operators = await userService.listUsers({ id: operatorIds })
+
+  await notificationService.createNotifications(
+    buildOperatorAlerts(
+      operators.map((operator) => operator.email),
+      {
+        template: NotificationTemplates.PAYMENT_WITHOUT_ORDER,
+        data: {
+          title,
+          description: `The payment for cart "${cartId}" was accepted but the order could not be created. ${money}`,
+        },
+        triggerType: 'payment.captured.completion.failed',
+        resourceType: 'cart',
+        resourceId: cartId,
+        // Per cart, not per delivery: the bounded retry re-runs this whole subscriber, and an
+        // operator needs one alert about one shopper rather than one per attempt.
+        idempotencyKey: `payment-without-order:${cartId}`,
+      },
+    ),
+  )
 }
 
 export const config: SubscriberConfig<'payment.captured'> = {

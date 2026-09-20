@@ -3,7 +3,7 @@ import { opaqueToken, password, shortText } from '../../bounded.js'
 
 export const AdminCreateInvite = z.object({
   email: z.email(),
-  // TODO(RBAC): roles when RBAC is implemented
+  roleIds: z.array(z.string()).max(50),
 })
 export type AdminCreateInvite = z.infer<typeof AdminCreateInvite>
 

@@ -1,6 +1,6 @@
 import { Context } from '@temporalio/activity'
-import type { AwilixContainer } from 'awilix'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { AppContainer } from '../../../core/types/container.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { isTerminal, toStepApplicationFailure } from '../../temporal/failures.js'
@@ -30,7 +30,7 @@ export async function ping(name: string): Promise<string> {
   return `pong: ${name} (activity ${activityType}, attempt ${attempt})`
 }
 
-export type WorkflowActivities = {
+type WorkflowActivities = {
   advanceWorkflow(input: AdvanceWorkflowInput): Promise<AdvanceWorkflowResult>
   compensateWorkflow(input: CompensateWorkflowInput): Promise<CompensateWorkflowResult>
 }
@@ -54,6 +54,10 @@ export type Activities = WorkflowActivities & { ping: typeof ping }
  * instead of two: this spreads `STEP_ACTIVITY_NAMES`, and `advanceWorkflow` below reports a
  * lookahead only for a name in that same set. A name that is not registered is never reported, so
  * it is never scheduled, so it cannot fail as `ActivityNotFound`.
+ *
+ * @testSeam Production reaches it through `createWorkflowActivities` below; the export exists so
+ * the test Worker registers its activities through the same function the real one does, which is
+ * the whole claim `temporal-parity.ts` makes.
  */
 export function withStepActivities(activities: WorkflowActivities): RegisteredWorkflowActivities {
   const registered: RegisteredWorkflowActivities = { ...activities }
@@ -70,7 +74,7 @@ export function withStepActivities(activities: WorkflowActivities): RegisteredWo
  * open a database pool.
  */
 export function createWorkflowActivities(deps: {
-  container: AwilixContainer
+  container: AppContainer
   registry: WorkflowRegistry
 }): RegisteredWorkflowActivities {
   const { container, registry } = deps
@@ -94,7 +98,7 @@ export function createWorkflowActivities(deps: {
 
   function log(): Logger | undefined {
     return container.hasRegistration(ContainerRegistrationKeys.LOGGER)
-      ? container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      ? container.resolve(ContainerRegistrationKeys.LOGGER)
       : undefined
   }
 

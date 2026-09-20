@@ -6,7 +6,6 @@ export type InviteDTO = {
   accepted: boolean
   token: string
   expiresAt: Date
-  // TODO(RBAC): roles when RBAC is implemented
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null

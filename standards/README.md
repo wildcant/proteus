@@ -193,7 +193,10 @@ standards/
                       the error contract spans routes and workflows, so
                       `route-omits-workflow-errors` sits at `backend/` rather than
                       inside either one — as does `constructs-a-generic-error`,
-                      which spans every directory under `src/`
+                      which spans every directory under `src/`, and the two
+                      `resolves-an-unlisted-container-key`, which reads wherever the
+                      shared container is read, and `wraps-another-method`, which
+                      reads wherever a class has two names for one call
       subscribers/    no rules yet — the documents arrived first
         __docs__/     README.md → events.md, subscribers.md
     http-schemas/     the shared Zod schemas

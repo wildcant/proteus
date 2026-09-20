@@ -1,4 +1,3 @@
-import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 
@@ -24,13 +23,13 @@ export const batchImageVariantsWorkflow = createWorkflow<BatchImageVariantsInput
       async ({ container }) => {
         const toAdd = input.add ?? []
         if (toAdd.length === 0) return []
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         await productService.addImageToVariant(toAdd.map((variantId) => ({ imageId: input.imageId, variantId })))
         return toAdd
       },
       async (addedVariantIds, { container }) => {
         if (addedVariantIds.length === 0) return
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         await productService.removeImageFromVariant(
           addedVariantIds.map((variantId) => ({ imageId: input.imageId, variantId })),
         )
@@ -42,7 +41,7 @@ export const batchImageVariantsWorkflow = createWorkflow<BatchImageVariantsInput
       async ({ container }) => {
         const toRemove = input.remove ?? []
         if (toRemove.length === 0) return []
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         // Only report the variants that were actually linked, so compensation restores exactly what it removed.
         const linked = await productService.listProductVariantImages({
           imageId: input.imageId,
@@ -56,7 +55,7 @@ export const batchImageVariantsWorkflow = createWorkflow<BatchImageVariantsInput
       },
       async (removedVariantIds, { container }) => {
         if (removedVariantIds.length === 0) return
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         await productService.addImageToVariant(
           removedVariantIds.map((variantId) => ({ imageId: input.imageId, variantId })),
         )
@@ -68,7 +67,7 @@ export const batchImageVariantsWorkflow = createWorkflow<BatchImageVariantsInput
       'clear-variant-thumbnails',
       async ({ container }) => {
         if (removed.length === 0) return { variantIds: [], url: null }
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         const [image] = await productService.listProductImages({ id: input.imageId })
         if (!image) return { variantIds: [], url: null }
 
@@ -80,7 +79,7 @@ export const batchImageVariantsWorkflow = createWorkflow<BatchImageVariantsInput
       },
       async (cleared, { container }) => {
         if (cleared.variantIds.length === 0 || !cleared.url) return
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+        const productService = container.resolve(Modules.PRODUCT)
         await productService.updateProductVariants(cleared.variantIds, { thumbnail: cleared.url })
       },
     )

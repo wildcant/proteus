@@ -1,7 +1,8 @@
 import { env } from '@env'
-import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
+import type { ModuleContainer } from '../../../core/types/container.js'
 import type { AbstractFulfillmentProvider } from '../../../core/utils/abstract-fulfillment-provider.js'
+import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import type { ModuleProviderExports } from '../../../core/utils/module-provider.js'
 import { ManualFulfillmentProvider } from '../providers/manual.js'
 import { FulfillmentProviderService } from '../services/fulfillment-provider-service.js'
@@ -49,7 +50,7 @@ export async function loadProviders({
   container,
   options,
 }: {
-  container: AwilixContainer
+  container: ModuleContainer
   options?: Record<string, unknown>
 }): Promise<void> {
   const opts = options as FulfillmentModuleOptions | undefined
@@ -75,7 +76,7 @@ export async function loadProviders({
   const providerService = new FulfillmentProviderService({
     container,
     fulfillmentProviderRepository: container.resolve('fulfillmentProviderRepository'),
-    logger: container.resolve('logger'),
+    logger: container.resolve(ContainerRegistrationKeys.LOGGER),
   })
   container.register({ fulfillmentProviderService: asValue(providerService) })
 

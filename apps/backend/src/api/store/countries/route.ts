@@ -1,4 +1,3 @@
-import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { StoreCountryListParams, StoreCountryListResponse } from '@proteus/http-schemas/store'
 import type { HttpRequest, HttpResult } from '../../../framework/http/ports.js'
@@ -12,7 +11,7 @@ export const GetOutput = StoreCountryListResponse
  * caller renders — nothing here is nested for the client to flatten, filter or re-sort.
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
+  const regionService = req.scope.resolve(Modules.REGION)
   const { scope } = req.validatedQuery.filters
 
   const countries = await regionService.listCountryMarkets({ onlySellable: scope !== 'all' })

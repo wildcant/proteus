@@ -12,9 +12,10 @@ import { ActivityFailure, ApplicationFailure, RetryState, TimeoutFailure, Timeou
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { createTemporalDevServerEnvironment, TEMPORAL_BOOT_TIMEOUT } from '@tests/setup/temporal-test-env.js'
-import { type AwilixContainer, asValue, createContainer } from 'awilix'
+import { asValue, createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { noopLogger } from '../../../core/logger/noop-logger.js'
+import type { AppContainer } from '../../../core/types/container.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../temporal/config.js'
 import { createCronActivities } from '../temporal/activities.js'
 import { CRON_JOB_WORKFLOW_TYPE, CRON_WORKFLOWS_PATH, cronHeartbeatIntervalMs } from '../temporal/config.js'
@@ -80,13 +81,13 @@ let workerRun: Promise<void>
 /** Built alongside the one above, because bundling the driver is a hook-time cost, not a test one. */
 let doomedWorker: Worker
 let scheduler: TemporalCronScheduler
-let container: AwilixContainer
+let container: AppContainer
 
 /** Every job the Worker actually ran, in order. The whole of what these tests observe. */
 const ran: string[] = []
 
 /** What the handler was called with, so "the container-taking function" is checked, not assumed. */
-const handlerArgs: AwilixContainer[] = []
+const handlerArgs: AppContainer[] = []
 
 /**
  * Lets a blocked handler finish. Held in a mutable module binding read through functions rather

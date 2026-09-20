@@ -1,4 +1,3 @@
-import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -12,7 +11,7 @@ export const GetInput = { query: AdminCustomerListParams }
 export const GetOutput = AdminCustomerListResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+  const customerService = req.scope.resolve(Modules.CUSTOMER)
   const { pagination, filters } = req.validatedQuery
   const [customers, count] = await customerService.listAndCountCustomers(filters, pagination)
   const { offset, limit } = pagination
@@ -23,7 +22,7 @@ export const PostInput = { body: AdminCreateCustomers }
 export const PostOutput = AdminCreateCustomersResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+  const customerService = req.scope.resolve(Modules.CUSTOMER)
   const customers = await customerService.createCustomers(req.body)
   return { status: 201, json: { customers } }
 }

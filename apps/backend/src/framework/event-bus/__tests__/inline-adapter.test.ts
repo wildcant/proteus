@@ -3,6 +3,7 @@ import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { defineSubscriber, type SubscriberDefinition } from '../../../core/event-bus/types.js'
 import { noopLogger } from '../../../core/logger/noop-logger.js'
+import type { ModuleContainer } from '../../../core/types/container.js'
 import { createInlineEventBus } from '../inline-adapter.js'
 import { createSubscriberRegistry } from '../registry.js'
 
@@ -130,7 +131,7 @@ test.describe('the inline event bus', () => {
         name: 'reader',
         event: 'bus.probe',
         handler: async ({ event, container }) => {
-          seen.push(event.dispatchId, container.resolve('greeting') as string)
+          seen.push(event.dispatchId, (container as ModuleContainer).resolve<string>('greeting'))
         },
       }),
     ])

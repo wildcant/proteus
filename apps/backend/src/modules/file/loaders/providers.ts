@@ -1,5 +1,5 @@
-import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
+import type { AppContainer } from '../../../core/types/container.js'
 import type { AbstractFileProviderService } from '../../../core/utils/abstract-file-provider.js'
 import type { ModuleProviderExports } from '../../../core/utils/module-provider.js'
 import { FileProviderService } from '../services/file-provider-service.js'
@@ -23,7 +23,7 @@ export async function loadFileProviders({
   container,
   options,
 }: {
-  container: AwilixContainer
+  container: AppContainer
   options?: Record<string, unknown>
 }): Promise<void> {
   const opts = options as FileModuleOptions | undefined

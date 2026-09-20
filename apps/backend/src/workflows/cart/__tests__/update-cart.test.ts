@@ -1,6 +1,4 @@
 import { BigNumber } from '@core/bignumber.js'
-import type { ICartModuleService } from '@core/types/cart/service.js'
-import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -27,7 +25,7 @@ test.beforeEach(async ({ createTestContainer }) => {
 /** The workflow's last write. Failing it is what puts the earlier steps into rollback. */
 const breakTheFinalWrite = () =>
   vi
-    .spyOn(container.resolve<ICartModuleService>(Modules.CART), 'updateCartWithAddresses')
+    .spyOn(container.resolve(Modules.CART), 'updateCartWithAddresses')
     .mockRejectedValueOnce(new Error('Address update failed'))
 
 test.describe('updateCartWorkflow', () => {
@@ -219,10 +217,9 @@ test.describe('updateCartWorkflow — market switch rollback', () => {
     const scene = await cartReadyToSwitch({ factories, service })
     const before = await cartState(service, scene.cart.id)
     // The switch's last write. Failing it is what puts everything before it into rollback.
-    vi.spyOn(
-      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
-      'updatePaymentCollection',
-    ).mockRejectedValueOnce(new Error('Payment collection unavailable'))
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'updatePaymentCollection').mockRejectedValueOnce(
+      new Error('Payment collection unavailable'),
+    )
 
     await expect(updateCartWorkflow.run({ cartId: scene.cart.id, regionId: scene.colombia.region.id })).rejects.toThrow(
       'Payment collection unavailable',
@@ -242,7 +239,7 @@ test.describe('updateCartWorkflow — market switch rollback', () => {
     const before = await cartState(service, scene.cart.id)
     // Fails after the region and the prices have moved but before either was totalled, so the
     // rollback under test is the two writes that already landed rather than all of them.
-    vi.spyOn(container.resolve<ICartModuleService>(Modules.CART), 'softDeleteShippingMethods').mockRejectedValueOnce(
+    vi.spyOn(container.resolve(Modules.CART), 'softDeleteShippingMethods').mockRejectedValueOnce(
       new Error('Shipping method refresh failed'),
     )
 
@@ -258,10 +255,9 @@ test.describe('updateCartWorkflow — market switch rollback', () => {
 
   test('takes back the country the switch adopted', async ({ factories, service, expect }) => {
     const scene = await cartReadyToSwitch({ factories, service })
-    vi.spyOn(
-      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
-      'updatePaymentCollection',
-    ).mockRejectedValueOnce(new Error('Payment collection unavailable'))
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'updatePaymentCollection').mockRejectedValueOnce(
+      new Error('Payment collection unavailable'),
+    )
 
     await expect(updateCartWorkflow.run({ cartId: scene.cart.id, regionId: scene.colombia.region.id })).rejects.toThrow(
       'Payment collection unavailable',
@@ -300,7 +296,7 @@ test.describe('updateCartWorkflow — update rollback', () => {
   /** The switch's last write, and the furthest point the update's own rollback has to reach back from. */
   const failTheLastStep = () =>
     vi
-      .spyOn(container.resolve<IPaymentModuleService>(Modules.PAYMENT), 'updatePaymentCollection')
+      .spyOn(container.resolve(Modules.PAYMENT), 'updatePaymentCollection')
       .mockRejectedValueOnce(new Error('Payment collection unavailable'))
 
   /** An address the Colombian market will accept, so the switch is refused for nothing else. */

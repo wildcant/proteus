@@ -121,6 +121,7 @@ Future Infra TODOs
   - https://www.youtube.com/watch?v=5_DyX3PnKxg
 
 Future nice to have TODOs
+- resolve maps, sets and resolving logic everytime we have to fetch a link. would be nice to have a central place to fetch links like medusa does.
 - Data encryption for sensitive customer data.
 - per item fullfilment and shipment.
 - fix imports in backend to use alias — 408 occurrences of `../../../` or deeper under apps/backend/src.
@@ -148,3 +149,6 @@ Future nice to have TODOs
     sibling and nothing else; documents use the fixed section order.
   - Markdown structure is not expressible as an ast-grep rule or a dependency-cruiser rule, so this is a
     legitimate script — record that verdict in the "when a rule cannot express it" section when it lands.
+- SERVICE `.throws` CONTRACT: add `.throws` to service interface methods (same pattern as workflows). Route files
+  spread them into `Throws` instead of suppressing `route-declares-unthrown-error`. Remove all 4 suppress
+  instances: `roles/[id]/route.ts` (3), `users/[id]/roles/route.ts` (1).

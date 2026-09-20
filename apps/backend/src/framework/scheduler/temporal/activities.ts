@@ -1,6 +1,6 @@
 import { Context } from '@temporalio/activity'
 import { ApplicationFailure } from '@temporalio/common'
-import type { AwilixContainer } from 'awilix'
+import type { AppContainer } from '../../../core/types/container.js'
 import type { JobDefinition } from '../../../core/types/scheduler.js'
 import { serializeError } from '../../temporal/failures.js'
 import { cronHeartbeatIntervalMs } from './config.js'
@@ -18,7 +18,7 @@ import { CRON_JOB_FAILURE_TYPE, type CronActivities, type CronJobFailureDetail }
  * — only a process main may — and keeping the list an argument is also what lets the server test
  * drive this with jobs of its own.
  */
-export function createCronActivities(deps: { container: AwilixContainer; jobs: JobDefinition[] }): CronActivities {
+export function createCronActivities(deps: { container: AppContainer; jobs: JobDefinition[] }): CronActivities {
   const { container, jobs } = deps
 
   return {

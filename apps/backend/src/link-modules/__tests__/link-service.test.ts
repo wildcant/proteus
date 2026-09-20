@@ -2,6 +2,7 @@ import { test } from '@tests/setup/test-extend.js'
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../core/utils/with-transaction.js'
 import { cartPaymentCollectionTable } from '../definitions/cart-payment-collection.js'
+import { inviteRoleTable } from '../definitions/invite-role.js'
 import { orderCartTable } from '../definitions/order-cart.js'
 import { orderFulfillmentTable } from '../definitions/order-fulfillment.js'
 import { orderPaymentCollectionTable } from '../definitions/order-payment-collection.js'
@@ -10,6 +11,7 @@ import { productVariantPriceSetTable } from '../definitions/product-variant-pric
 import { regionPaymentProviderTable } from '../definitions/region-payment-provider.js'
 import { CartPaymentCollectionRepository } from '../repositories/cart-payment-collection.js'
 import { CartProductRepository } from '../repositories/cart-product.js'
+import { InviteRoleRepository } from '../repositories/invite-role.js'
 import { OrderCartRepository } from '../repositories/order-cart.js'
 import { OrderFulfillmentRepository } from '../repositories/order-fulfillment.js'
 import { OrderPaymentCollectionRepository } from '../repositories/order-payment-collection.js'
@@ -20,6 +22,7 @@ import { LinkService } from '../services/link-service.js'
 
 const cascadeGraph = buildCascadeGraph({
   cartPaymentCollectionTable,
+  inviteRoleTable,
   orderCartTable,
   orderFulfillmentTable,
   orderPaymentCollectionTable,
@@ -43,11 +46,14 @@ test.beforeEach(({ getDb }) => {
   const orderFulfillment = new OrderFulfillmentRepository({ getDb, cascadeGraph })
   const regionPaymentProvider = new RegionPaymentProviderRepository({ getDb, cascadeGraph })
 
+  const inviteRole = new InviteRoleRepository({ getDb, cascadeGraph })
+
   linkService = new LinkService({
     withTransaction: createWithTransaction(getDb),
     productVariantPriceSet,
     productVariantInventoryItem,
     cartPaymentCollection,
+    inviteRole,
     cartProduct,
     orderCart,
     orderPaymentCollection,

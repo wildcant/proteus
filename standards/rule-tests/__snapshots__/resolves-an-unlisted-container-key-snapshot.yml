@@ -1,0 +1,63 @@
+id: resolves-an-unlisted-container-key
+snapshots:
+  ? |
+    const ACCESS_CONTROL_MODULE_KEY = 'access-control'
+
+    export function read(req: Request) {
+      return req.scope.resolve<IAccessControlModuleService>(ACCESS_CONTROL_MODULE_KEY)
+    }
+  : labels:
+    - source: req.scope.resolve<IAccessControlModuleService>(ACCESS_CONTROL_MODULE_KEY)
+      style: primary
+      start: 98
+      end: 171
+    - source: resolve
+      style: secondary
+      start: 108
+      end: 115
+    - source: req.scope
+      style: secondary
+      start: 98
+      end: 107
+    - source: req.scope.resolve
+      style: secondary
+      start: 98
+      end: 115
+  ? |
+    const logger = container.resolve<Logger>(Keys.LOGGER)
+  : labels:
+    - source: container.resolve<Logger>(Keys.LOGGER)
+      style: primary
+      start: 15
+      end: 53
+    - source: resolve
+      style: secondary
+      start: 25
+      end: 32
+    - source: container
+      style: secondary
+      start: 15
+      end: 24
+    - source: container.resolve
+      style: secondary
+      start: 15
+      end: 32
+  ? |
+    const resolver = req.scope.resolve<IAccessControlModuleService>('access-control')
+  : labels:
+    - source: req.scope.resolve<IAccessControlModuleService>('access-control')
+      style: primary
+      start: 17
+      end: 81
+    - source: resolve
+      style: secondary
+      start: 27
+      end: 34
+    - source: req.scope
+      style: secondary
+      start: 17
+      end: 26
+    - source: req.scope.resolve
+      style: secondary
+      start: 17
+      end: 34

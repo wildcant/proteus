@@ -1,8 +1,4 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { EventBus } from '@core/event-bus/types.js'
-import type { IInventoryModuleService } from '@core/types/inventory/service.js'
-import type { ILinkService } from '@core/types/link/service.js'
-import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -13,9 +9,9 @@ export const PutOutput = AdminSetVariantStockResponse
 export const PutThrows = [ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND] as const
 
 export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult<typeof PutOutput>> => {
-  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
-  const inventoryService = req.scope.resolve<IInventoryModuleService>(Modules.INVENTORY)
-  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const productService = req.scope.resolve(Modules.PRODUCT)
+  const inventoryService = req.scope.resolve(Modules.INVENTORY)
+  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
   const variant = await productService.retrieveProductVariant(req.params.variantId)
   if (!variant.manageInventory) {
@@ -55,7 +51,7 @@ export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult
   // ones the row now holds; a count that went up or stayed put announces nothing, because
   // `alert-low-stock` has nothing to say about a shelf that just grew.
   if (updated.stockedQuantity < level.stockedQuantity) {
-    const bus = req.scope.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = req.scope.resolve(ContainerRegistrationKeys.EVENT_BUS)
     await bus.emit('inventory.available_decreased', {
       id: updated.id,
       version: updated.version,

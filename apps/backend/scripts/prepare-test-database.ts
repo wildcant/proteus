@@ -31,10 +31,23 @@ const name = new URL(target).pathname.slice(1)
 await createIfMissing()
 
 // `db:migrate` sets MIGRATING, which is what points `env.DATABASE_URL` at DIRECT_DATABASE_URL.
-execSync('pnpm run db:migrate', {
-  stdio: 'inherit',
-  env: { ...process.env, DIRECT_DATABASE_URL: target },
-})
+// Migration files are routinely rewritten in development (one 0000_ per module, schema changes
+// applied in-place rather than appended). A stale database whose recorded hash no longer matches
+// the file on disk causes drizzle-kit to exit 1 with no actionable message. When that happens,
+// drop and recreate so the next attempt starts from a blank slate.
+try {
+  execSync('pnpm run db:migrate', {
+    stdio: 'inherit',
+    env: { ...process.env, DIRECT_DATABASE_URL: target },
+  })
+} catch {
+  console.info(`[test-db] migration failed — dropping and recreating ${name}`)
+  await dropAndRecreate()
+  execSync('pnpm run db:migrate', {
+    stdio: 'inherit',
+    env: { ...process.env, DIRECT_DATABASE_URL: target },
+  })
+}
 
 // Providers first: each region is linked to the providers that exist when it is created, which is
 // the same order `globalSetup` re-seeds in. Both are idempotent, so a reused database pays only
@@ -46,6 +59,18 @@ for (const seed of ['db:seed:providers:test', 'db:seed:markets:test']) {
   })
 }
 
+function maintenanceConnection() {
+  const maintenanceUrl = new URL(target)
+  maintenanceUrl.pathname = '/postgres'
+  return postgres(maintenanceUrl.toString(), {
+    prepare: false,
+    max: 1,
+    onnotice: () => {
+      // noop
+    },
+  })
+}
+
 /**
  * `CREATE DATABASE` copies template1, and two at once fail with "source database is being accessed
  * by other users" — which is exactly what the store and admin suites do under `verify:full`. The
@@ -53,16 +78,7 @@ for (const seed of ['db:seed:providers:test', 'db:seed:markets:test']) {
  * never a target of these suites, so holding it blocks nothing but another copy of this script.
  */
 async function createIfMissing() {
-  const maintenanceUrl = new URL(target)
-  maintenanceUrl.pathname = '/postgres'
-
-  const admin = postgres(maintenanceUrl.toString(), {
-    prepare: false,
-    max: 1,
-    onnotice: () => {
-      // noop
-    },
-  })
+  const admin = maintenanceConnection()
 
   try {
     await admin`SELECT pg_advisory_lock(${CREATE_LOCK_KEY})`
@@ -72,7 +88,18 @@ async function createIfMissing() {
     console.info(`[test-db] creating ${name}`)
     await admin.unsafe(`CREATE DATABASE "${name}"`)
   } finally {
-    // Ends the session, which is what releases the lock.
+    await admin.end()
+  }
+}
+
+async function dropAndRecreate() {
+  const admin = maintenanceConnection()
+
+  try {
+    await admin`SELECT pg_advisory_lock(${CREATE_LOCK_KEY})`
+    await admin.unsafe(`DROP DATABASE IF EXISTS "${name}" WITH (FORCE)`)
+    await admin.unsafe(`CREATE DATABASE "${name}"`)
+  } finally {
     await admin.end()
   }
 }
