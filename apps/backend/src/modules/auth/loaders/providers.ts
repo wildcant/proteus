@@ -1,6 +1,6 @@
-import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
 import type { AuthModuleOptions } from '../../../core/types/auth/provider.js'
+import type { AppContainer } from '../../../core/types/container.js'
 import type { AbstractAuthModuleProvider } from '../../../core/utils/abstract-auth-module-provider.js'
 import type { AbstractAuthVerificationProvider } from '../../../core/utils/abstract-auth-verification-provider.js'
 import { AuthProviderService } from '../services/auth-provider-service.js'
@@ -20,7 +20,7 @@ export async function loadAuthProviders({
   container,
   options,
 }: {
-  container: AwilixContainer
+  container: AppContainer
   options?: Record<string, unknown>
 }): Promise<void> {
   // options is Record<string, unknown> at the module-framework boundary; narrow here

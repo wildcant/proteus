@@ -1,6 +1,5 @@
 import { MIMEType } from 'node:util'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IFileModuleService } from '@core/types/file/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminCreatePresignedUploadUrl, AdminPresignedUploadUrlResponse } from '@proteus/http-schemas/admin'
@@ -11,7 +10,7 @@ export const PostOutput = AdminPresignedUploadUrlResponse
 export const PostThrows = [ErrorTypes.INVALID_DATA, ErrorTypes.UNEXPECTED_STATE] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const fileService = req.scope.resolve<IFileModuleService>(Modules.FILE)
+  const fileService = req.scope.resolve(Modules.FILE)
 
   const { originalName, mimeType, size, access = 'public' } = req.body
 

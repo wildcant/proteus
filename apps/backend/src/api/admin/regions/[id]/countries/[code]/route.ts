@@ -1,5 +1,4 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -25,7 +24,7 @@ export const PostThrows = [ErrorTypes.NOT_FOUND] as const
  * not a resource at all, and answering otherwise would let one region's screen edit another's.
  */
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
+  const regionService = req.scope.resolve(Modules.REGION)
 
   const country = await regionService.retrieveCountry(req.params.code)
   if (country.regionId !== req.params.id) {
@@ -52,7 +51,7 @@ export const DeleteThrows = [ErrorTypes.NOT_FOUND] as const
  * market to everything that inspects it, the next assignment included.
  */
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
-  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
+  const regionService = req.scope.resolve(Modules.REGION)
 
   const country = await regionService.retrieveCountry(req.params.code)
   if (country.regionId !== req.params.id) {

@@ -1,5 +1,6 @@
-import { type AwilixContainer, asClass, asValue, createContainer } from 'awilix'
+import { asClass, asValue, createContainer } from 'awilix'
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
+import type { AppContainer } from '../../core/types/container.js'
 import type { Logger } from '../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../core/utils/container.js'
 import type { ModuleDefinition } from '../../core/utils/module.js'
@@ -7,7 +8,7 @@ import { createWithTransaction } from '../../core/utils/with-transaction.js'
 import type { Database } from '../../schema.type.js'
 
 export async function bootstrapModule<TOptions = Record<string, unknown>>(
-  sharedContainer: AwilixContainer,
+  sharedContainer: AppContainer,
   moduleDefinition: ModuleDefinition,
   options?: TOptions,
 ): Promise<void> {

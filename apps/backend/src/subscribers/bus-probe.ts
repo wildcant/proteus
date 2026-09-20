@@ -1,5 +1,4 @@
 import type { SubscriberArgs, SubscriberConfig } from '@core/event-bus/types.js'
-import type { Logger } from '@core/types/logger.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 
 /**
@@ -17,7 +16,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 type ProbeEvent = 'bus.probe' | 'bus.probe.repeatable'
 
 async function busProbe({ event, container }: SubscriberArgs<ProbeEvent>) {
-  const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+  const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   logger.info(`[bus-probe] ${event.dispatchId}`)
 }
 

@@ -1,7 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CartDTO } from '@core/types/cart/common.js'
-import type { ICartModuleService } from '@core/types/cart/service.js'
-import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 
@@ -12,8 +10,8 @@ export const transferCartCustomerWorkflow = createWorkflow<TransferCartCustomerI
   { name: 'transfer-cart-customer', throws: [ErrorTypes.NOT_FOUND] },
   async (ctx, input) => {
     return ctx.step<CartDTO>('transfer-cart', async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+      const cartService = container.resolve(Modules.CART)
+      const customerService = container.resolve(Modules.CUSTOMER)
 
       const [cart, customer] = await Promise.all([
         cartService.retrieveCart(input.cartId),

@@ -1,6 +1,5 @@
 import { generateJwtTokenForAuthIdentity, getAuthJwtConfig } from '@core/auth/utils/generate-jwt-token.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IAuthModuleService } from '@core/types/auth/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { validateScopeProviderAssociation } from '@framework/http/middlewares/validate-scope-provider-association.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -14,7 +13,7 @@ export const PostThrows = [ErrorTypes.INVALID_DATA] as const
 export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
 ): Promise<HttpResult<typeof PostOutput>> => {
-  const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
+  const authService = req.scope.resolve(Modules.AUTH)
   const { actorType, authProvider } = req.params
 
   const result = await authService.register(authProvider, { body: req.body })

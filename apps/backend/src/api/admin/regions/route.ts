@@ -1,6 +1,3 @@
-import type { ILinkService } from '@core/types/link/service.js'
-import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import type { IRegionModuleService } from '@core/types/region/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -25,9 +22,9 @@ export const GetOutput = AdminRegionListResponse
  * read that counts them is the same read the page comes out of.
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
-  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
-  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const regionService = req.scope.resolve(Modules.REGION)
+  const paymentService = req.scope.resolve(Modules.PAYMENT)
+  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
   const { pagination, filters } = req.validatedQuery
   const { offset, limit, order } = pagination
@@ -58,9 +55,9 @@ export const PostOutput = AdminRegionResponse
 export const PostThrows = [...createRegionWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
-  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
-  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const regionService = req.scope.resolve(Modules.REGION)
+  const paymentService = req.scope.resolve(Modules.PAYMENT)
+  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
   const region = await createRegionWorkflow.run(req.body)
 

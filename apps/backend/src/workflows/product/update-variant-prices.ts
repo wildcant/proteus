@@ -1,7 +1,4 @@
-import type { ILinkService } from '@core/types/link/service.js'
-import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import type { ProductVariantExtendedDTO } from '@core/types/product/common.js'
-import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
@@ -18,7 +15,7 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
   async (ctx, input) => {
     // Step 1: Retrieve variant (validates it exists)
     const variant = await ctx.step('retrieve-variant', async ({ container }) => {
-      const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+      const productService = container.resolve(Modules.PRODUCT)
       return productService.retrieveProductVariant(input.variantId)
     })
 
@@ -26,8 +23,8 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
     const variantAndPriceSetLink = await ctx.step(
       'resolve-pricing-link',
       async ({ container }) => {
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-        const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const pricingService = container.resolve(Modules.PRICING)
 
         const [existing] = await linkService.repo('productVariantPriceSet').findByVariantIds([variant.id])
         if (existing) return { record: existing, created: false }
@@ -40,8 +37,8 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
       },
       async (result, { container }) => {
         if (!result.created) return
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-        const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const pricingService = container.resolve(Modules.PRICING)
         await linkService.repo('productVariantPriceSet').softDelete([result.record.id])
         await pricingService.softDeletePriceSets([result.record.priceSetId])
       },
@@ -51,7 +48,7 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
     await ctx.step(
       'upsert-prices',
       async ({ container }) => {
-        const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+        const pricingService = container.resolve(Modules.PRICING)
         const prevPrices = await pricingService.listPrices({ priceSetId: variantAndPriceSetLink.record.priceSetId })
 
         await pricingService.upsertPriceSets([
@@ -67,7 +64,7 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
       // so replaying it puts the amounts back and drops whatever the edit added. An empty one is
       // not a no-op: it means the set had no prices, and the edit's must go.
       async ({ prevPrices }, { container }) => {
-        const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+        const pricingService = container.resolve(Modules.PRICING)
         await pricingService.upsertPriceSets([
           {
             id: variantAndPriceSetLink.record.priceSetId,
@@ -83,7 +80,7 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
 
     // Step 4: Enrich with prices
     const enriched = await ctx.step('enrich-with-prices', async ({ container }) => {
-      const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+      const pricingService = container.resolve(Modules.PRICING)
       const prices = await pricingService.listPrices({ priceSetId: variantAndPriceSetLink.record.priceSetId })
       return { ...variant, prices }
     })

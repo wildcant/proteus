@@ -1,5 +1,4 @@
 import type { RegionDTO } from '@core/types/region/common.js'
-import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { assertStoreSellsCurrencyStep, assertStoreSellsCurrencyThrows } from './steps/assert-store-sells-currency.js'
@@ -26,11 +25,11 @@ export const createRegionWorkflow = createWorkflow<CreateRegionInput, RegionDTO>
     const region = await ctx.step(
       'create-region',
       async ({ container }) => {
-        const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+        const regionService = container.resolve(Modules.REGION)
         return regionService.createRegion({ name: input.name, currencyCode: input.currencyCode })
       },
       async (created, { container }) => {
-        const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+        const regionService = container.resolve(Modules.REGION)
         await regionService.softDeleteRegions([created.id])
       },
     )

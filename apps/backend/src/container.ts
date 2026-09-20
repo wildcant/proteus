@@ -4,12 +4,13 @@
  * so each entry point only bundles its own provider (tree-shaking friendly).
  */
 
-import { type AwilixContainer, asFunction, asValue, createContainer } from 'awilix'
+import { asFunction, asValue, createContainer } from 'awilix'
 import { appConfig } from './config.js'
 import type { DbProvider } from './core/db/ports.js'
 import { AppError, ErrorTypes } from './core/errors/app-error.js'
-import type { EventBus } from './core/event-bus/types.js'
+import type { EventBus } from './core/event-bus/ports.js'
 import type { InputConfig } from './core/types/config.js'
+import type { AppContainer } from './core/types/container.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/container.js'
 import { setWorkflowEngine, type WorkflowEngine } from './core/workflows/types.js'
@@ -76,7 +77,7 @@ export type BootstrapContainerDeps = {
    * It takes the container because a subscriber is handed one, and it is not built until this
    * function has finished registering the modules a subscriber resolves from.
    */
-  createEventBusAdapter?: (container: AwilixContainer) => EventBus
+  createEventBusAdapter?: (container: AppContainer) => EventBus
 }
 
 export async function bootstrapContainer(deps: BootstrapContainerDeps) {
@@ -158,7 +159,7 @@ function selectWorkflowEngine(
 function selectEventBus(
   deps: BootstrapContainerDeps,
   configured: ReturnType<typeof defineAppConfig>['projectConfig']['eventBus']['adapter'],
-  container: AwilixContainer,
+  container: AppContainer,
   logger: Logger,
 ): EventBus {
   const adapter = resolveEventBusAdapterName({ configured, runtime: env.RUNTIME })

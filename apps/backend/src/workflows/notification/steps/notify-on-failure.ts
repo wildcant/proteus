@@ -1,5 +1,4 @@
 import type { CreateNotificationDTO } from '@core/types/notification/mutations.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
 
@@ -15,7 +14,7 @@ export async function notifyOnFailureStep(ctx: WorkflowContext, input: NotifyOnF
       return input
     },
     async ({ notifications }, { container }) => {
-      const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+      const notificationService = container.resolve(Modules.NOTIFICATION)
       await notificationService.createNotifications(notifications)
     },
   )

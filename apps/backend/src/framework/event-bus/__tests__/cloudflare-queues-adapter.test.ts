@@ -3,6 +3,7 @@ import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { defineSubscriber, type SubscriberDefinition } from '../../../core/event-bus/types.js'
 import { noopLogger } from '../../../core/logger/noop-logger.js'
+import type { ModuleContainer } from '../../../core/types/container.js'
 import {
   createCloudflareQueuesConsumer,
   createCloudflareQueuesEventBus,
@@ -323,7 +324,7 @@ test.describe('the Cloudflare Queues consumer', () => {
         name: 'reader',
         event: 'bus.probe',
         handler: async ({ event, container }) => {
-          seen.push(event.name, event.dispatchId, container.resolve('greeting') as string)
+          seen.push(event.name, event.dispatchId, (container as ModuleContainer).resolve<string>('greeting'))
         },
       }),
     ])

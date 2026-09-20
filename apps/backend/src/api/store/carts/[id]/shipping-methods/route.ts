@@ -1,7 +1,5 @@
 import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { ICartModuleService } from '@core/types/cart/service.js'
-import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AddCartShippingMethod, IdParams, StoreCreateCartShippingMethodResponse } from '@proteus/http-schemas/store'
@@ -11,8 +9,8 @@ export const PostOutput = StoreCreateCartShippingMethodResponse
 export const PostThrows = [ErrorTypes.NOT_ALLOWED] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
-  const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+  const cartService = req.scope.resolve(Modules.CART)
+  const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
 
   // The option carries the name and the amount the cart's method is written with — the shopper
   // sends an id, never a price.

@@ -1,5 +1,4 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { EventBus } from '@core/event-bus/types.js'
 import type { Logger } from '@core/types/logger.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -34,7 +33,7 @@ const testWithLog = test.extend<Pick<Fixtures, 'logger'>>({
 const publishInFinalStep = createWorkflow<{ id: string }, void>('publish-in-final-step', async (ctx, input) => {
   await ctx.step('do-the-work', async () => undefined)
   await ctx.step('publish', async ({ container }) => {
-    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     await bus.emit('bus.probe', { id: input.id })
   })
 })
@@ -44,7 +43,7 @@ const failBeforePublishing = createWorkflow<{ id: string }, void>('fail-before-p
     throw new WorkflowTerminalError({ type: ErrorTypes.CONFLICT, message: 'the work could not be done' })
   })
   await ctx.step('publish', async ({ container }) => {
-    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     await bus.emit('bus.probe', { id: input.id })
   })
 })

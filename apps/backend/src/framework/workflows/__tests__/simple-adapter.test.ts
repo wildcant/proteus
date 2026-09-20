@@ -2,6 +2,7 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { vi } from 'vitest'
+import type { ModuleContainer } from '../../../core/types/container.js'
 import { createWorkflow, WorkflowTerminalError } from '../../../core/workflows/types.js'
 import { createSimpleWorkflowEngine } from '../simple-adapter.js'
 
@@ -27,7 +28,7 @@ test.describe('simple workflow engine', () => {
   test('passes the container to step actions', async ({ expect }) => {
     const workflow = createWorkflow<void, string>('resolve-greeting', async (ctx) => {
       return ctx.step('greet', async ({ container }) => {
-        return container.resolve('greeting') as string
+        return (container as ModuleContainer).resolve<string>('greeting')
       })
     })
 

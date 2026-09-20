@@ -1,10 +1,4 @@
 import type { SubscriberArgs, SubscriberConfig } from '@core/event-bus/types.js'
-import type { IInventoryModuleService } from '@core/types/inventory/service.js'
-import type { ILinkService } from '@core/types/link/service.js'
-import type { Logger } from '@core/types/logger.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
-import type { IProductModuleService } from '@core/types/product/service.js'
-import type { IStoreModuleService } from '@core/types/store/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
@@ -33,9 +27,9 @@ import { env } from '@env'
  * to 3 again would have its second crossing swallowed as a repeat of the first.
  */
 async function alertLowStock({ event, container }: SubscriberArgs<'inventory.available_decreased'>) {
-  const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
-  const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-  const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+  const storeService = container.resolve(Modules.STORE)
+  const inventoryService = container.resolve(Modules.INVENTORY)
+  const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
 
   // Store-wide and nullable, and a deployment with no store row yet reads the same way an unset
   // threshold does: nothing is ever low, so nothing is ever sent.
@@ -52,7 +46,7 @@ async function alertLowStock({ event, container }: SubscriberArgs<'inventory.ava
   const available = level.stockedQuantity - level.reservedQuantity
   if (available > threshold) return
 
-  const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const linkService = container.resolve(ContainerRegistrationKeys.LINK)
   const [link] = await linkService.repo('productVariantInventoryItem').findByInventoryItemIds([level.inventoryItemId])
   if (!link) {
     logger.debug(
@@ -61,11 +55,11 @@ async function alertLowStock({ event, container }: SubscriberArgs<'inventory.ava
     return
   }
 
-  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+  const productService = container.resolve(Modules.PRODUCT)
   const variant = await productService.retrieveProductVariant(link.variantId)
   const product = await productService.retrieveProduct(variant.productId)
 
-  const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+  const notificationService = container.resolve(Modules.NOTIFICATION)
   await notificationService.createNotification({
     // TODO(rbac): one configured address until there is a role to ask for.
     to: env.ADMIN_NOTIFICATION_EMAIL,

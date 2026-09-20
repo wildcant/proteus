@@ -1,8 +1,6 @@
 import { createHmac } from 'node:crypto'
 import { BigNumber } from '@core/bignumber.js'
-import type { EventBus } from '@core/event-bus/types.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
-import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { env } from '@env'
@@ -50,7 +48,7 @@ test.beforeEach(async ({ createApi }) => {
   api = await createApi({ definitions: hookDefinitions })
 })
 
-const paymentModule = (target: TestApi = api) => target.container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+const paymentModule = (target: TestApi = api) => target.container.resolve(Modules.PAYMENT)
 
 /**
  * An order whose payment is authorized and not yet captured — where a manual-capture checkout
@@ -170,7 +168,7 @@ test.describe('POST /hooks/payment/:provider', () => {
    */
   test('publishes what the provider reported and does nothing else itself', async ({ service, expect }) => {
     const { session, intent } = await authorizedOrder(service)
-    const bus = api.container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = api.container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit').mockResolvedValue(undefined)
 
     const body = succeededEvent(intent)
@@ -196,7 +194,7 @@ test.describe('POST /hooks/payment/:provider', () => {
     expect,
   }) => {
     const { session, intent } = await authorizedOrder(service)
-    const bus = api.container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = api.container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit')
 
     const body = capturableEvent(intent)

@@ -1,6 +1,3 @@
-import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
-import type { ILinkService } from '@core/types/link/service.js'
-import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -11,9 +8,9 @@ export const PostInput = { params: IdParams }
 export const PostOutput = AdminOrderActionResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const orderService = req.scope.resolve<IOrderModuleService>(Modules.ORDER)
-  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-  const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+  const orderService = req.scope.resolve(Modules.ORDER)
+  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
+  const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
 
   const order = await orderService.completeOrder(req.params.id)
 

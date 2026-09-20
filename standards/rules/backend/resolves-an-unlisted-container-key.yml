@@ -1,0 +1,36 @@
+id: resolves-an-unlisted-container-key
+language: typescript
+severity: error
+message: This resolves a container key that is not a `Modules` or `ContainerRegistrationKeys` member. Name the key on one of the two.
+note: 'The shared container is keyed by `Modules` (`core/utils/modules-definition.ts`) and `ContainerRegistrationKeys` (`core/utils/container.ts`). A literal or a locally declared alias spells the same key a second time, so a rename reaches the registration and leaves the read, and the failure surfaces at runtime as `AwilixResolutionError` rather than at `pnpm run typecheck`. This matches the *argument* rather than the string, because the alias — `const ACCESS_CONTROL_MODULE_KEY = ''access-control''` then `resolve(ACCESS_CONTROL_MODULE_KEY)` — passes an identifier and a search for `resolve(''` sees none of them. docs/container-resolution.md'
+files:
+  - "apps/backend/src/**/*.ts"
+ignores:
+  # Tests register their own keys — `greeting`, a provider id — into throwaway containers.
+  - "**/__tests__/**"
+  # A provider service resolves the key it computed from a provider id, which no enum can list.
+  - "**/src/modules/*/services/*-provider-service.ts"
+  # A loader reads the repositories it is about to hand to a service out of the module's own
+  # private container, under keys that exist only inside that module.
+  - "**/src/modules/*/loaders/*.ts"
+rule:
+  kind: call_expression
+  all:
+    - has:
+        field: function
+        kind: member_expression
+        all:
+          - has:
+              field: property
+              regex: '^resolve$'
+          # `path.resolve` and `Promise.resolve` are not container reads.
+          - has:
+              field: object
+              regex: '(?i)(container|scope|cradle)$'
+    - not:
+        has:
+          field: arguments
+          has:
+            any:
+              - pattern: Modules.$MEMBER
+              - pattern: ContainerRegistrationKeys.$MEMBER

@@ -1,4 +1,3 @@
-import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -13,7 +12,7 @@ export const GetInput = { params: IdParams }
 export const GetOutput = AdminShippingOptionResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const service = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+  const service = req.scope.resolve(Modules.FULFILLMENT)
   const shippingOption = await service.retrieveShippingOption(req.params.id)
   return { status: 200, json: { shippingOption } }
 }
@@ -22,7 +21,7 @@ export const PostInput = { params: IdParams, body: AdminUpdateShippingOption }
 export const PostOutput = AdminUpdateShippingOptionResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const service = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+  const service = req.scope.resolve(Modules.FULFILLMENT)
   const shippingOption = await service.updateShippingOption(req.params.id, req.body)
   return { status: 200, json: { shippingOption } }
 }
@@ -31,7 +30,7 @@ export const DeleteInput = { params: IdParams }
 export const DeleteOutput = DeleteResponse
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
-  const service = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+  const service = req.scope.resolve(Modules.FULFILLMENT)
   await service.softDeleteShippingOptions([req.params.id])
   return { status: 200, json: { id: req.params.id, deleted: true } }
 }

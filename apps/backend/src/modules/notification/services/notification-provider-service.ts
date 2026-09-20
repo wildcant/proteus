@@ -1,5 +1,5 @@
-import type { AwilixContainer } from 'awilix'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { ModuleContainer } from '../../../core/types/container.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { NotificationChannel } from '../../../core/types/notification/common.js'
@@ -13,13 +13,13 @@ import type { NotificationProviderRepository } from '../repositories/notificatio
 const PROVIDER_REGISTRATION_PREFIX = 'np_'
 
 type InjectedDependencies = {
-  container: AwilixContainer
+  container: ModuleContainer
   notificationProviderRepository: NotificationProviderRepository
   logger: Logger
 }
 
 export class NotificationProviderService {
-  private container: AwilixContainer
+  private container: ModuleContainer
   private notificationProviderRepository: NotificationProviderRepository
   private logger: Logger
   // Providers are only registered at startup and never change at runtime,

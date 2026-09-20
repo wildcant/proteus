@@ -1,8 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
-import type { ILinkService } from '@core/types/link/service.js'
 import type { OrderDTO } from '@core/types/order/common.js'
-import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -24,9 +21,9 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
     // The order must be fulfilled before it can ship, and the fulfillment must actually
     // belong to this order (prevents shipping someone else's fulfillment).
     await ctx.step('validate-guards', async ({ container }) => {
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+      const orderService = container.resolve(Modules.ORDER)
+      const fulfillmentService = container.resolve(Modules.FULFILLMENT)
+      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
       const order = await orderService.retrieveOrder(input.orderId)
 
       if (order.status === 'canceled') {
@@ -62,7 +59,7 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
     await ctx.step(
       'mark-shipped',
       async ({ container }) => {
-        const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+        const fulfillmentService = container.resolve(Modules.FULFILLMENT)
         const trackingData =
           input.trackingNumber || input.trackingUrl || input.labelUrl
             ? { trackingNumber: input.trackingNumber, trackingUrl: input.trackingUrl, labelUrl: input.labelUrl }
@@ -74,13 +71,13 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
         })
       },
       async (_output, { container }) => {
-        const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+        const fulfillmentService = container.resolve(Modules.FULFILLMENT)
         await fulfillmentService.updateFulfillment(input.fulfillmentId, { shippedAt: null, data: null })
       },
     )
 
     return ctx.step('retrieve-order', async ({ container }) => {
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const orderService = container.resolve(Modules.ORDER)
       return orderService.retrieveOrder(input.orderId)
     })
   },

@@ -1,5 +1,4 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { MiddlewareFunction } from '@framework/http/types.js'
 
@@ -19,7 +18,7 @@ export function validateAddressOwnership(): MiddlewareFunction {
     const addressId = req.params.id as string | undefined
     if (!addressId) return req
 
-    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+    const customerService = req.scope.resolve(Modules.CUSTOMER)
     const [address] = await customerService.listCustomerAddresses({ id: addressId })
 
     if (!address || address.customerId !== req.authContext?.actorId) {

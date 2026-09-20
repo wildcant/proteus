@@ -3,7 +3,7 @@ import { createTemporalWorkflowEngine } from '@framework/workflows/temporal-adap
 import { Context } from '@temporalio/activity'
 import { Client, Connection } from '@temporalio/client'
 import { NativeConnection, Worker } from '@temporalio/worker'
-import type { AwilixContainer } from 'awilix'
+import type { AppContainer } from '../../src/core/types/container.js'
 import { env } from '../../src/env.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../src/framework/temporal/config.js'
 import {
@@ -52,7 +52,7 @@ const STEP_TIMEOUT = '120 seconds'
 
 /** A live container, and the Activities built for it. Keyed by the prefix on its workflow ids. */
 type Attached = {
-  container: AwilixContainer
+  container: AppContainer
   /** Names this container has run, so an Activity can find a handler the driver only names. */
   definitions: Map<string, WorkflowDefinition<unknown, unknown>>
   activities: RegisteredWorkflowActivities

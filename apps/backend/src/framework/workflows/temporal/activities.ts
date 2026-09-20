@@ -1,6 +1,6 @@
 import { Context } from '@temporalio/activity'
-import type { AwilixContainer } from 'awilix'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { AppContainer } from '../../../core/types/container.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { isTerminal, toStepApplicationFailure } from '../../temporal/failures.js'
@@ -70,7 +70,7 @@ export function withStepActivities(activities: WorkflowActivities): RegisteredWo
  * open a database pool.
  */
 export function createWorkflowActivities(deps: {
-  container: AwilixContainer
+  container: AppContainer
   registry: WorkflowRegistry
 }): RegisteredWorkflowActivities {
   const { container, registry } = deps
@@ -94,7 +94,7 @@ export function createWorkflowActivities(deps: {
 
   function log(): Logger | undefined {
     return container.hasRegistration(ContainerRegistrationKeys.LOGGER)
-      ? container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      ? container.resolve(ContainerRegistrationKeys.LOGGER)
       : undefined
   }
 

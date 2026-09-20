@@ -4,8 +4,9 @@ import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '@fram
 import { Context } from '@temporalio/activity'
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
-import { type AwilixContainer, createContainer } from 'awilix'
+import { createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import type { AppContainer } from '../../../../core/types/container.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 import { createWorkflowActivities, withStepActivities } from '../activities.js'
 import { DEFAULT_TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
@@ -40,7 +41,7 @@ let testEnv: TestWorkflowEnvironment
 let worker: Worker
 let workerRun: Promise<void>
 let engine: TemporalWorkflowEngine
-let container: AwilixContainer
+let container: AppContainer
 
 /** Every `advanceWorkflow` the driver asked for, so the test can see what did and did not reach one. */
 const advanced: AdvanceWorkflowInput[] = []

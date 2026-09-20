@@ -1,5 +1,4 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -17,7 +16,7 @@ export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
   }
 
-  const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+  const customerService = req.scope.resolve(Modules.CUSTOMER)
   const addresses = await customerService.listCustomerAddresses({ customerId }, { order: { createdAt: 'DESC' } })
 
   return { status: 200, json: { addresses } }
@@ -33,7 +32,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
   }
 
-  const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
+  const customerService = req.scope.resolve(Modules.CUSTOMER)
   const { isDefault, ...data } = req.body
 
   const address = await customerService.createCustomerAddress({ ...data, customerId }, { makeDefault: isDefault })

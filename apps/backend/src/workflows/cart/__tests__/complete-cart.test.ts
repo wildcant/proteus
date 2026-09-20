@@ -1,9 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { EventBus } from '@core/event-bus/types.js'
-import type { IInventoryModuleService } from '@core/types/inventory/service.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
-import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { env } from '@env'
@@ -129,10 +125,9 @@ test.describe('completeCartWorkflow', () => {
   test('a failure after the order exists unwinds every earlier step', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
 
-    vi.spyOn(
-      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
-      'authorizePaymentSession',
-    ).mockRejectedValueOnce(new Error('provider unavailable'))
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'authorizePaymentSession').mockRejectedValueOnce(
+      new Error('provider unavailable'),
+    )
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
 
@@ -301,10 +296,9 @@ test.describe('completeCartWorkflow', () => {
     })
     const availableBefore = await service.read.availableQuantity(container, inventoryItem.id)
 
-    vi.spyOn(
-      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
-      'authorizePaymentSession',
-    ).mockRejectedValueOnce(new Error('provider unavailable'))
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'authorizePaymentSession').mockRejectedValueOnce(
+      new Error('provider unavailable'),
+    )
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
 
@@ -326,7 +320,7 @@ test.describe('completeCartWorkflow', () => {
     const settling = await service.create.checkoutReadyCart(container)
     const declined = await service.create.checkoutReadyCart(container)
 
-    const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+    const paymentService = container.resolve(Modules.PAYMENT)
     const authorize = vi.spyOn(paymentService, 'authorizePaymentSession')
     authorize.mockResolvedValueOnce({ outcome: 'pending_authorization' })
     authorize.mockResolvedValueOnce({ outcome: 'not_authorized', sessionStatus: 'error' })
@@ -367,10 +361,10 @@ test.describe('completeCartWorkflow', () => {
   ] as const)('refuses a %s session with a conflict and its own code', async ([status, code], { service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
 
-    vi.spyOn(
-      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
-      'authorizePaymentSession',
-    ).mockResolvedValueOnce({ outcome: 'not_authorized', sessionStatus: status })
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'authorizePaymentSession').mockResolvedValueOnce({
+      outcome: 'not_authorized',
+      sessionStatus: status,
+    })
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toMatchObject({
       cause: { type: ErrorTypes.CONFLICT, code },
@@ -385,10 +379,9 @@ test.describe('completeCartWorkflow', () => {
       billingAddress: dto.generate.createCartAddress(),
     })
 
-    vi.spyOn(
-      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
-      'authorizePaymentSession',
-    ).mockRejectedValueOnce(new Error('provider unavailable'))
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'authorizePaymentSession').mockRejectedValueOnce(
+      new Error('provider unavailable'),
+    )
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
 
@@ -431,10 +424,9 @@ test.describe('completeCartWorkflow', () => {
   test('an unexpected failure mid-workflow leaves an operator a feed notification', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
 
-    vi.spyOn(
-      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
-      'authorizePaymentSession',
-    ).mockRejectedValueOnce(new Error('provider unavailable'))
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'authorizePaymentSession').mockRejectedValueOnce(
+      new Error('provider unavailable'),
+    )
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
 
@@ -466,7 +458,7 @@ test.describe('completeCartWorkflow', () => {
     expect,
   }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
-    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit')
 
     const order = await completeCartWorkflow.run({ cartId: cart.id })
@@ -499,7 +491,7 @@ test.describe('completeCartWorkflow', () => {
   }) => {
     await using _store = await factories.create.store({ lowStockThreshold: 5 })
     const { cart, inventoryLevel } = await service.create.checkoutReadyCart(container, { variant: {} })
-    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit')
 
     await completeCartWorkflow.run({ cartId: cart.id })
@@ -528,13 +520,13 @@ test.describe('completeCartWorkflow', () => {
    */
   test('emits nothing when the level read inside the publish step fails', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
-    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit')
 
     /** Only the publish step's read fails. `reserve-inventory` reads levels too, by
      *  `inventoryItemId`; failing that one would abort the workflow before the step under test
      *  ran at all. The publish step is the only caller that asks by level `id`. */
-    const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+    const inventoryService = container.resolve(Modules.INVENTORY)
     const listInventoryLevels = inventoryService.listInventoryLevels.bind(inventoryService)
     vi.spyOn(inventoryService, 'listInventoryLevels').mockImplementation(async (filters, config, context) => {
       if (filters && 'id' in filters) throw new Error('level read unavailable')
@@ -548,13 +540,12 @@ test.describe('completeCartWorkflow', () => {
 
   test('publishes nothing when the checkout compensates', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
-    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit')
 
-    vi.spyOn(
-      container.resolve<IPaymentModuleService>(Modules.PAYMENT),
-      'authorizePaymentSession',
-    ).mockRejectedValueOnce(new Error('provider unavailable'))
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'authorizePaymentSession').mockRejectedValueOnce(
+      new Error('provider unavailable'),
+    )
 
     await expect(completeCartWorkflow.run({ cartId: cart.id })).rejects.toThrow('provider unavailable')
 
@@ -579,10 +570,9 @@ test.describe('completeCartWorkflow', () => {
 
     // Under the pinned in-process adapter the subscriber is what runs beneath `emit`, so its
     // failure is the transport failure this call site has to survive.
-    vi.spyOn(
-      container.resolve<INotificationModuleService>(Modules.NOTIFICATION),
-      'createNotification',
-    ).mockRejectedValue(new Error('mail provider unavailable'))
+    vi.spyOn(container.resolve(Modules.NOTIFICATION), 'createNotification').mockRejectedValue(
+      new Error('mail provider unavailable'),
+    )
 
     const order = await completeCartWorkflow.run({ cartId: cart.id })
 
@@ -613,7 +603,7 @@ test.describe('completeCartWorkflow', () => {
     expect,
   }) => {
     const { cart } = await service.create.checkoutReadyCart(container)
-    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit')
 
     const order = await completeCartWorkflow.run({ cartId: cart.id })

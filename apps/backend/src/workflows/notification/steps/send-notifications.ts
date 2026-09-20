@@ -1,6 +1,5 @@
 import type { NotificationDTO } from '@core/types/notification/common.js'
 import type { CreateNotificationDTO } from '@core/types/notification/mutations.js'
-import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
 
@@ -13,7 +12,7 @@ export async function sendNotificationsStep(
   input: SendNotificationsInput,
 ): Promise<NotificationDTO[]> {
   return ctx.step<NotificationDTO[]>('send-notifications', async ({ container }) => {
-    const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
+    const notificationService = container.resolve(Modules.NOTIFICATION)
     return notificationService.createNotifications(input.notifications)
   })
 }

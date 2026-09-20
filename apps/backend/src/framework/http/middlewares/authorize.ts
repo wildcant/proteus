@@ -1,5 +1,4 @@
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
-import type { Logger } from '../../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import type { MiddlewareFunction, PermissionKey } from '../types.js'
 
@@ -32,7 +31,7 @@ export function authorize(permissions: PermissionKey[], matcher: string, method:
     }
 
     if (!hasAllFeatures(actor.grantedFeatures, permissions)) {
-      const logger = req.scope.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
       logger.warn(`Authorization denied: actor ${actor.id} missing permissions for ${method} ${matcher}`)
 
       throw new AppError({

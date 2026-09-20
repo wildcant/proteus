@@ -1,7 +1,5 @@
-import type { EventBus } from '@core/event-bus/types.js'
 import type { CreateLineItemDTO } from '@core/types/cart/mutations.js'
 import type { CreateFulfillmentDTO } from '@core/types/fulfillment/mutations.js'
-import type { IInventoryModuleService } from '@core/types/inventory/service.js'
 import type { OrderLineItemDTO } from '@core/types/order/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
@@ -135,7 +133,7 @@ test.describe('createOrderFulfillmentWorkflow', () => {
     const { orderId, inventoryItemId, lineItems } = await placedOrder(service, { quantity: 3, stockedQuantity: 10 })
     const [level] = await service.read.inventoryLevels(container, { inventoryItemId })
     assertDefined(level)
-    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
     const emit = vi.spyOn(bus, 'emit')
 
     await createOrderFulfillmentWorkflow.run({
@@ -299,10 +297,9 @@ test.describe('createOrderFulfillmentWorkflow', () => {
   }) => {
     const { orderId, inventoryItemId, lineItems } = await placedOrder(service, { quantity: 2, stockedQuantity: 5 })
 
-    vi.spyOn(
-      container.resolve<IInventoryModuleService>(Modules.INVENTORY),
-      'adjustInventoryLevel',
-    ).mockRejectedValueOnce(new Error('inventory unavailable'))
+    vi.spyOn(container.resolve(Modules.INVENTORY), 'adjustInventoryLevel').mockRejectedValueOnce(
+      new Error('inventory unavailable'),
+    )
 
     await expect(
       createOrderFulfillmentWorkflow.run({ orderId, fulfillmentData: { ...shipment, items: cover(lineItems) } }),

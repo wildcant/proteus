@@ -5,6 +5,7 @@
 // schema-aware instance.
 
 export * from './link-modules/definitions/cart-payment-collection.js'
+export * from './link-modules/definitions/invite-role.js'
 export * from './link-modules/definitions/order-cart.js'
 export * from './link-modules/definitions/order-fulfillment.js'
 export * from './link-modules/definitions/order-payment-collection.js'

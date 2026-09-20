@@ -1,24 +1,13 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { EventBus } from '@core/event-bus/types.js'
 import type { CartAddressDTO } from '@core/types/cart/common.js'
-import type { ICartModuleService } from '@core/types/cart/service.js'
-import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
-import type { IInventoryModuleService } from '@core/types/inventory/service.js'
-import type { ILinkService } from '@core/types/link/service.js'
-import type { Logger } from '@core/types/logger.js'
 import type { OrderDTO } from '@core/types/order/common.js'
 import type {
   CreateOrderAddressDTO,
   CreateOrderLineItemDTO,
   CreateOrderShippingMethodDTO,
 } from '@core/types/order/mutations.js'
-import type { IOrderModuleService } from '@core/types/order/service.js'
 import type { PaymentSessionStatus, UnauthorizedSessionStatus } from '@core/types/payment/common.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
-import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import type { IProductModuleService } from '@core/types/product/service.js'
-import type { IRegionModuleService } from '@core/types/region/service.js'
-import type { IStockLocationModuleService } from '@core/types/stock-location/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
@@ -81,11 +70,11 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     /** If this cart was already completed (e.g. retry or concurrent request), return the
      *  existing order instead of creating a duplicate. */
     const existingOrder = await ctx.step('check-idempotency', async ({ container }) => {
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
       const orderCartLink = await linkService.repo('orderCart').findByCartId(input.cartId)
       if (!orderCartLink) return null
 
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      const cartService = container.resolve(Modules.CART)
       const cart = await cartService.retrieveCart(input.cartId)
 
       /** A linked order without `completedAt` is the winner of a concurrent completion still
@@ -101,7 +90,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         })
       }
 
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const orderService = container.resolve(Modules.ORDER)
       return orderService.retrieveOrder(orderCartLink.orderId)
     })
 
@@ -110,7 +99,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     /** Reject carts with no items, missing variants, or zero/negative quantities early,
      *  before any side effects (order creation, payment) happen. */
     await ctx.step('validate-cart-items', async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      const cartService = container.resolve(Modules.CART)
       const lineItems = await cartService.listLineItems({ cartId: input.cartId })
 
       if (lineItems.length === 0) {
@@ -139,8 +128,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     /** Ensure a payment session exists and is in a processable state before proceeding.
      *  Returns the session/collection IDs needed by the authorize step later. */
     const paymentInfo = await ctx.step('validate-cart-payments', async ({ container }) => {
-      const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+      const paymentService = container.resolve(Modules.PAYMENT)
+      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
 
       const cartPaymentLink = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
       if (!cartPaymentLink) {
@@ -205,8 +194,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     /** Verify a shipping method is selected and its underlying option is still enabled.
      *  Options can be disabled between cart creation and checkout. */
     await ctx.step('validate-shipping', async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
-      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+      const cartService = container.resolve(Modules.CART)
+      const fulfillmentService = container.resolve(Modules.FULFILLMENT)
 
       const shippingMethods = await cartService.listShippingMethods({ cartId: input.cartId })
 
@@ -247,7 +236,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
      *  address and order steps own, and a cart whose region lists no country at all, where refusing
      *  would turn a half-configured market into a checkout outage. */
     await ctx.step('validate-delivery-region', async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      const cartService = container.resolve(Modules.CART)
       const cart = await cartService.retrieveCart(input.cartId)
       if (!cart.regionId) return
 
@@ -255,7 +244,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       const countryCode = shippingAddress?.countryCode?.toLowerCase()
       if (!countryCode) return
 
-      const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+      const regionService = container.resolve(Modules.REGION)
       const countries = await regionService.listCountries({ regionId: cart.regionId })
       if (countries.length === 0) return
       if (countries.some((country) => country.id === countryCode)) return
@@ -281,7 +270,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     /** Final guard against completing a cart that was already finalized. This catches the
      *  window between the idempotency check and order creation (no locking yet). */
     await ctx.step('check-cart-not-completed', async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      const cartService = container.resolve(Modules.CART)
       const cart = await cartService.retrieveCart(input.cartId)
       if (cart.completedAt) {
         throw new WorkflowTerminalError({
@@ -296,7 +285,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
      *  rather than re-read at `create-order`, so the order's non-null `email` is narrowed here
      *  instead of asserted there. */
     const email = await ctx.step('validate-cart-email', async ({ container }) => {
-      const cartService = container.resolve<ICartModuleService>(Modules.CART)
+      const cartService = container.resolve(Modules.CART)
       const cart = await cartService.retrieveCart(input.cartId)
       if (!cart.email) {
         throw new WorkflowTerminalError({
@@ -339,9 +328,9 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     const order = await ctx.step(
       'create-order',
       async ({ container }) => {
-        const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
-        const cartService = container.resolve<ICartModuleService>(Modules.CART)
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+        const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+        const cartService = container.resolve(Modules.CART)
+        const orderService = container.resolve(Modules.ORDER)
 
         const cart = await cartService.retrieveCart(input.cartId)
 
@@ -401,7 +390,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         return createdOrder
       },
       async (createdOrder, { container }) => {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+        const orderService = container.resolve(Modules.ORDER)
         await orderService.softDeleteOrders([createdOrder.id])
       },
     )
@@ -412,7 +401,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     await ctx.step(
       'link-order',
       async ({ container }) => {
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
         await linkService.createMany([
           // Most constrained first: `cartId` is unique, so a duplicate completion stops here.
           { link: 'orderCart', data: { orderId: order.id, cartId: input.cartId } },
@@ -423,7 +412,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         ])
       },
       async (_result, { container }) => {
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
         await linkService.dismissLinks({ orderId: [order.id] })
       },
     )
@@ -433,10 +422,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     const reserved = await ctx.step(
       'reserve-inventory',
       async ({ container }) => {
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
-        const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+        const orderService = container.resolve(Modules.ORDER)
+        const productService = container.resolve(Modules.PRODUCT)
+        const inventoryService = container.resolve(Modules.INVENTORY)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
 
         /** The order's line items, not the cart's — which is why this step runs after the order
          *  exists. A reservation is read back by the line item it was taken for, and cancelling
@@ -492,7 +481,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         // `locationId` crosses a module boundary, so it carries no foreign key (ADR-0004).
         // Resolving before the write is what stands in for one: an id naming no Stock Location
         // fails here rather than silently at fulfillment, when the units are already sold.
-        const stockLocationService = container.resolve<IStockLocationModuleService>(Modules.STOCK_LOCATION)
+        const stockLocationService = container.resolve(Modules.STOCK_LOCATION)
         await stockLocationService.resolveStockLocations(reservationInput.map((item) => item.locationId))
 
         const reservations = await inventoryService.createReservationItems(reservationInput)
@@ -516,7 +505,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       },
       async (result, { container }) => {
         if (!result || result.reservationIds.length === 0) return
-        const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+        const inventoryService = container.resolve(Modules.INVENTORY)
         await inventoryService.softDeleteReservationItems(result.reservationIds)
       },
     )
@@ -526,11 +515,11 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     await ctx.step(
       'mark-cart-completed',
       async ({ container }) => {
-        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const cartService = container.resolve(Modules.CART)
         await cartService.updateCart(input.cartId, { completedAt: new Date() })
       },
       async (_result, { container }) => {
-        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const cartService = container.resolve(Modules.CART)
         await cartService.updateCart(input.cartId, { completedAt: null })
       },
     )
@@ -542,8 +531,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
     const authorizedPayment = await ctx.step(
       'authorize-payment',
       async ({ container }) => {
-        const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
-        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+        const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+        const paymentService = container.resolve(Modules.PAYMENT)
 
         logger.debug(
           `[complete-cart] Authorizing payment session "${paymentInfo.sessionId}" for cart "${input.cartId}"`,
@@ -579,8 +568,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         return authorization.payment
       },
       async (payment, { container }) => {
-        const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
-        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+        const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+        const paymentService = container.resolve(Modules.PAYMENT)
 
         const hasCaptured = payment.captures && payment.captures.length > 0
         if (hasCaptured) {
@@ -605,7 +594,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       const captures = authorizedPayment.captures ?? []
       if (captures.length === 0) return
 
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const orderService = container.resolve(Modules.ORDER)
       await Promise.all(
         captures.map((capture) =>
           orderService.addOrderTransaction({
@@ -638,7 +627,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
      *  created inside this action would be new per attempt, and a second confirmation would go out
      *  with nothing to say it had. */
     await ctx.step('publish-order-placed', async ({ container }) => {
-      const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+      const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
 
       /** The reservation this checkout took is one of the three ways Available Quantity falls, and
        *  it is announced from here rather than from `reserve-inventory` for the reason that step
@@ -651,7 +640,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
        *
        *  The quantities are re-read rather than carried, so what is published is what the level
        *  holds now — including whatever else moved it between the reservation and here. */
-      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      const inventoryService = container.resolve(Modules.INVENTORY)
       const levels =
         reserved.levelIds.length > 0 ? await inventoryService.listInventoryLevels({ id: reserved.levelIds }) : []
 

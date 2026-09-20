@@ -4,8 +4,9 @@ import { createWorkflow, type WorkflowDefinition, WorkflowTerminalError } from '
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '@framework/workflows/temporal-adapter.js'
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
-import { type AwilixContainer, asValue, createContainer } from 'awilix'
+import { asValue, createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import type { AppContainer, ModuleContainer } from '../../../../core/types/container.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 import { createWorkflowActivities } from '../activities.js'
 import { DEFAULT_TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
@@ -28,7 +29,7 @@ let testEnv: TestWorkflowEnvironment
 let worker: Worker
 let workerRun: Promise<void>
 let engine: TemporalWorkflowEngine
-let container: AwilixContainer
+let container: AppContainer
 
 /**
  * Mutable on purpose. The registry is what the Activity resolves a workflow name through, so
@@ -116,7 +117,7 @@ describe('temporal workflow engine', () => {
           })
           const greeting = await ctx.step('greet', async ({ container: resolved }) => {
             actions.push('greet')
-            return resolved.resolve('greeting') as string
+            return (resolved as ModuleContainer).resolve<string>('greeting')
           })
           return `${greeting} ${doubled}`
         }),

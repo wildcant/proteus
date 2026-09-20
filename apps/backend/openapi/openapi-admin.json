@@ -923,6 +923,13 @@
             "type": "string",
             "format": "date-time"
           },
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -7007,10 +7014,18 @@
                   "email": {
                     "type": "string",
                     "format": "email"
+                  },
+                  "roleIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 50
                   }
                 },
                 "required": [
-                  "email"
+                  "email",
+                  "roleIds"
                 ]
               }
             }

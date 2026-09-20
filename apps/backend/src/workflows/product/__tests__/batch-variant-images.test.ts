@@ -1,4 +1,3 @@
-import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -70,9 +69,7 @@ test.describe('batchVariantImagesWorkflow', () => {
     const { variant, linked, spare } = await variantShowingOneImage(service)
 
     // `clear-variant-thumbnail` runs after both pivot writes have committed.
-    vi.spyOn(container.resolve<IProductModuleService>(Modules.PRODUCT), 'listProductImages').mockRejectedValueOnce(
-      new Error('boom'),
-    )
+    vi.spyOn(container.resolve(Modules.PRODUCT), 'listProductImages').mockRejectedValueOnce(new Error('boom'))
 
     await expect(
       batchVariantImagesWorkflow.run({ variantId: variant.id, add: [spare.id], remove: [linked.id] }),

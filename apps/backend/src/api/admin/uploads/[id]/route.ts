@@ -1,4 +1,3 @@
-import type { IFileModuleService } from '@core/types/file/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminFileResponse, DeleteResponse, IdParams } from '@proteus/http-schemas/admin'
@@ -8,7 +7,7 @@ export const GetInput = { params: IdParams }
 export const GetOutput = AdminFileResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const fileService = req.scope.resolve<IFileModuleService>(Modules.FILE)
+  const fileService = req.scope.resolve(Modules.FILE)
   const file = await fileService.retrieveFile(req.params.id)
   return { status: 200, json: { file } }
 }

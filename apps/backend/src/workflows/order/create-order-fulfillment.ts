@@ -1,12 +1,7 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { EventBus } from '@core/event-bus/types.js'
 import type { CreateFulfillmentDTO } from '@core/types/fulfillment/mutations.js'
-import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import type { ReservationItemDTO } from '@core/types/inventory/common.js'
-import type { IInventoryModuleService } from '@core/types/inventory/service.js'
-import type { ILinkService } from '@core/types/link/service.js'
 import type { OrderDTO } from '@core/types/order/common.js'
-import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -27,9 +22,9 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
     /** Gate on order lifecycle state — only pending, unfulfilled orders may enter
      *  the fulfillment flow. Prevents double-fulfillment and fulfilling canceled orders. */
     await ctx.step('validate-guards', async ({ container }) => {
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-      const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
-      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+      const orderService = container.resolve(Modules.ORDER)
+      const fulfillmentService = container.resolve(Modules.FULFILLMENT)
+      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
       const order = await orderService.retrieveOrder(input.orderId)
 
       if (order.status !== 'pending') {
@@ -63,7 +58,7 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
      *  Also rejects orders whose items have mixed shipping requirements (shippable and
      *  non-shippable in one fulfillment). */
     await ctx.step('validate-fulfillment-items', async ({ container }) => {
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const orderService = container.resolve(Modules.ORDER)
       const lineItems = await orderService.listOrderLineItems({ orderId: input.orderId })
       const lineItemIds = new Set(lineItems.map((item) => item.id))
 
@@ -115,8 +110,8 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
      *  through the shipping option's fulfillment set to a linked Stock Location; that link exists to
      *  decide *which* location ships, a question one location does not raise. */
     const locationId = await ctx.step('resolve-fulfillment-location', async ({ container }) => {
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      const orderService = container.resolve(Modules.ORDER)
+      const inventoryService = container.resolve(Modules.INVENTORY)
 
       const lineItems = await orderService.listOrderLineItems({ orderId: input.orderId })
       const reservations =
@@ -157,11 +152,11 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
     const fulfillment = await ctx.step(
       'create-fulfillment',
       async ({ container }) => {
-        const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+        const fulfillmentService = container.resolve(Modules.FULFILLMENT)
         return fulfillmentService.createFulfillment({ ...input.fulfillmentData, locationId, packedAt: new Date() })
       },
       async (created, { container }) => {
-        const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
+        const fulfillmentService = container.resolve(Modules.FULFILLMENT)
         await fulfillmentService.cancelFulfillment(created.id)
       },
     )
@@ -172,11 +167,11 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
     await ctx.step(
       'link-order-fulfillment',
       async ({ container }) => {
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
         await linkService.repo('orderFulfillment').create({ orderId: input.orderId, fulfillmentId: fulfillment.id })
       },
       async (_output, { container }) => {
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
         await linkService.dismissLinks({ fulfillmentId: [fulfillment.id] })
       },
     )
@@ -189,9 +184,9 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
     const adjusted = await ctx.step(
       'adjust-inventory',
       async ({ container }) => {
-        const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-        const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
-        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+        const inventoryService = container.resolve(Modules.INVENTORY)
+        const orderService = container.resolve(Modules.ORDER)
+        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
 
         const lineItems = await orderService.listOrderLineItems({ orderId: input.orderId })
         if (lineItems.length === 0) return { adjustments: [], reservationIdsToDelete: [] }
@@ -233,7 +228,7 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       async (result, { container }) => {
         if (!result || (result.adjustments.length === 0 && result.reservationIdsToDelete.length === 0)) return
 
-        const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+        const inventoryService = container.resolve(Modules.INVENTORY)
 
         // Reverse inventory adjustments (add back what was deducted)
         await Promise.all(
@@ -264,8 +259,8 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
     await ctx.step('publish-available-decreased', async ({ container }) => {
       if (adjusted.adjustments.length === 0) return
 
-      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
-      const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+      const inventoryService = container.resolve(Modules.INVENTORY)
+      const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
 
       const levels = await inventoryService.listInventoryLevels({
         inventoryItemId: adjusted.adjustments.map((adjustment) => adjustment.inventoryItemId),
@@ -290,7 +285,7 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
     })
 
     return ctx.step('retrieve-order', async ({ container }) => {
-      const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+      const orderService = container.resolve(Modules.ORDER)
       return orderService.retrieveOrder(input.orderId)
     })
   },

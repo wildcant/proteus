@@ -1,5 +1,4 @@
 import type { PermissionGrant } from '@core/types/access-control/common.js'
-import type { IAccessControlModuleService } from '@core/types/access-control/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
@@ -41,7 +40,7 @@ test.describe('GET /admin/payment-providers', () => {
 
   test('refuses a request carrying no credential', async ({ expect, createApi }) => {
     const authed = await createApi({ definitions: paymentProviderDefinitions, namespaceAuth: true })
-    const accessControl = authed.container.resolve<IAccessControlModuleService>(Modules.ACCESS_CONTROL)
+    const accessControl = authed.container.resolve(Modules.ACCESS_CONTROL)
     const role = await accessControl.createRole({ name: 'Staff', features: ['payment.read'] as PermissionGrant[] })
     await accessControl.assignRolesToUser('user_admin', [role.id])
 

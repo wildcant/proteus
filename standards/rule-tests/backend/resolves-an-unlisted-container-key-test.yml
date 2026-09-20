@@ -1,0 +1,26 @@
+id: resolves-an-unlisted-container-key
+valid:
+  # The two enums that key the shared container.
+  - |
+    const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+  - |
+    const bus = req.scope.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+  # Neither of these is a container read.
+  - |
+    const target = path.resolve(baseDir, fileKey)
+  - |
+    return images ? this.replaceProductImages(product.id, images, ctx) : Promise.resolve()
+invalid:
+  # The literal.
+  - |
+    const resolver = req.scope.resolve<IAccessControlModuleService>('access-control')
+  # And the alias a search for `resolve('` would miss.
+  - |
+    const ACCESS_CONTROL_MODULE_KEY = 'access-control'
+
+    export function read(req: Request) {
+      return req.scope.resolve<IAccessControlModuleService>(ACCESS_CONTROL_MODULE_KEY)
+    }
+  # A member of something that is neither enum reads no better than the literal.
+  - |
+    const logger = container.resolve<Logger>(Keys.LOGGER)

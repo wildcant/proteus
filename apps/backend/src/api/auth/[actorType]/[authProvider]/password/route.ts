@@ -1,5 +1,4 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { IAuthModuleService } from '@core/types/auth/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { validateScopeProviderAssociation } from '@framework/http/middlewares/validate-scope-provider-association.js'
 import { validateToken } from '@framework/http/middlewares/validate-token.js'
@@ -14,7 +13,7 @@ export const PostThrows = [ErrorTypes.INVALID_DATA] as const
 export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
 ): Promise<HttpResult<typeof PostOutput>> => {
-  const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
+  const authService = req.scope.resolve(Modules.AUTH)
   const { authProvider } = req.params
 
   const entityId = req.authContext.actorId

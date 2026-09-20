@@ -1,12 +1,7 @@
 import type { AuthorizationActor } from '../../../core/auth/types.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import { Modules } from '../../../core/utils/modules-definition.js'
 import type { MiddlewareFunction } from '../types.js'
-
-type PermissionResolver = {
-  listGrantedPermissionKeys(actorType: string, actorId: string): Promise<string[]>
-}
-
-const ACCESS_CONTROL_MODULE_KEY = 'access-control'
 
 export function resolveAuthorizationActor(): MiddlewareFunction {
   return async (req) => {
@@ -19,9 +14,9 @@ export function resolveAuthorizationActor(): MiddlewareFunction {
 
     const { actorId, actorType } = req.authContext
 
-    const resolver = req.scope.resolve<PermissionResolver>(ACCESS_CONTROL_MODULE_KEY)
+    const accessControlService = req.scope.resolve(Modules.ACCESS_CONTROL)
 
-    const permissionKeys = await resolver.listGrantedPermissionKeys(actorType, actorId)
+    const permissionKeys = await accessControlService.resolveEffectiveFeatures(actorType, actorId)
 
     const authorizationActor: AuthorizationActor = {
       id: actorId,

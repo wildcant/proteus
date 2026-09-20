@@ -2,7 +2,7 @@ import { ActivityExecutionAlreadyStartedError, type Client } from '@temporalio/c
 import type { Duration, Priority, RetryPolicy } from '@temporalio/common'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import { buildEvent, type EventName, type EventPayloads } from '../../core/event-bus/events.js'
-import type { EventBus } from '../../core/event-bus/types.js'
+import type { EventBus } from '../../core/event-bus/ports.js'
 import type { Logger } from '../../core/types/logger.js'
 import { createTemporalClient, type TemporalClientHandle } from '../temporal/client.js'
 import type { SubscriberRegistry } from './registry.js'

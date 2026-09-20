@@ -1,4 +1,3 @@
-import type { EventBus } from '@core/event-bus/types.js'
 import type { Logger } from '@core/types/logger.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import type { HttpRequest } from '@framework/http/ports.js'
@@ -48,7 +47,7 @@ const publishDefinitions: RouteDefinition[] = [
     operationId: 'publishProbeEvent',
     tags: [Tags.WEBHOOKS],
     handler: async (request: HttpRequest) => {
-      const bus = request.scope.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+      const bus = request.scope.resolve(ContainerRegistrationKeys.EVENT_BUS)
       const { id } = PublishBody.parse(request.body)
 
       await bus.emit('bus.probe', { id })
@@ -75,7 +74,7 @@ test.describe('publishing from a request', () => {
     async ({ createApi, expect }) => {
       logged.length = 0
       const api = await createApi()
-      const bus = api.container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+      const bus = api.container.resolve(ContainerRegistrationKeys.EVENT_BUS)
 
       await bus.emit('bus.probe.repeatable', { id: 'ord_arc', attempt: 1 })
       await bus.emit('bus.probe.repeatable', { id: 'ord_arc', attempt: 2 })

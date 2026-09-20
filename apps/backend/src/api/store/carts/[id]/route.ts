@@ -1,4 +1,3 @@
-import type { ICartModuleService } from '@core/types/cart/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreCartDetailResponse, StoreUpdateCartResponse, UpdateCart } from '@proteus/http-schemas/store'
@@ -8,7 +7,7 @@ export const GetInput = { params: IdParams }
 export const GetOutput = StoreCartDetailResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
+  const cartService = req.scope.resolve(Modules.CART)
 
   const [cart, lineItems, shippingMethods, addresses] = await Promise.all([
     cartService.retrieveCart(req.params.id),

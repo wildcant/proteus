@@ -1,6 +1,3 @@
-import type { ILinkService } from '@core/types/link/service.js'
-import type { IPaymentModuleService } from '@core/types/payment/service.js'
-import type { IRegionModuleService } from '@core/types/region/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -12,9 +9,9 @@ export const GetInput = { params: IdParams }
 export const GetOutput = AdminRegionResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
-  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
-  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const regionService = req.scope.resolve(Modules.REGION)
+  const paymentService = req.scope.resolve(Modules.PAYMENT)
+  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
   const region = await regionService.retrieveRegion(req.params.id)
 
@@ -38,9 +35,9 @@ export const PostThrows = [...updateRegionWorkflow.throws] as const
  * nothing in this feature makes removing one safe.
  */
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
-  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
-  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const regionService = req.scope.resolve(Modules.REGION)
+  const paymentService = req.scope.resolve(Modules.PAYMENT)
+  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
   const region = await updateRegionWorkflow.run({ regionId: req.params.id, ...req.body })
 
