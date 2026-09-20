@@ -13,13 +13,19 @@ type ModuleGroup = {
   permissions: AdminPermission[]
 }
 
+/** A key's first segment is its module — `user.invite.read` belongs to `user`. */
+function moduleOfKey(key: string): string {
+  return key.slice(0, key.indexOf('.'))
+}
+
 function groupByModule(permissions: AdminPermission[]): ModuleGroup[] {
   const map = new Map<string, AdminPermission[]>()
   for (const p of permissions) {
     if (!p.assignable) continue
-    const list = map.get(p.module) ?? []
+    const module = moduleOfKey(p.key)
+    const list = map.get(module) ?? []
     list.push(p)
-    map.set(p.module, list)
+    map.set(module, list)
   }
   return Array.from(map.entries())
     .map(([module, perms]) => ({ module, permissions: perms }))

@@ -6,9 +6,9 @@ import { FileModuleService } from './services/file-module-service.js'
 export default Module(Modules.FILE, {
   service: FileModuleService,
   features: [
-    { id: 'file.upload.read', title: 'View uploads' },
-    { id: 'file.upload.create', title: 'Upload files' },
-    { id: 'file.upload.delete', title: 'Delete uploads' },
+    { id: 'file.read', title: 'View uploads' },
+    { id: 'file.create', title: 'Upload files' },
+    { id: 'file.delete', title: 'Delete uploads' },
   ],
   models: {},
   repositories: {},

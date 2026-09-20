@@ -3,7 +3,7 @@ import type { PermissionGrant, PermissionKey } from '@core/types/access-control/
 import { test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'
 
-const mockState = vi.hoisted(() => ({ features: [] as Array<{ id: string; title: string; module: string }> }))
+const mockState = vi.hoisted(() => ({ features: [] as Array<{ id: string; title: string }> }))
 
 vi.mock('@core/access-control/features.gen.js', () => ({
   // biome-ignore lint/style/useNamingConvention: must match generated export name
@@ -23,13 +23,13 @@ import { AccessControlModuleService } from '../services/access-control-module-se
 const cascadeGraph = buildCascadeGraph(accessControlModule.models)
 
 const TEST_FEATURES: GeneratedFeature[] = [
-  { id: 'product.read' as PermissionKey, title: 'Read products', module: 'product' },
-  { id: 'product.create' as PermissionKey, title: 'Create products', module: 'product' },
-  { id: 'product.update' as PermissionKey, title: 'Update products', module: 'product' },
-  { id: 'product.delete' as PermissionKey, title: 'Delete products', module: 'product' },
-  { id: 'order.read' as PermissionKey, title: 'Read orders', module: 'order' },
-  { id: 'order.fulfill' as PermissionKey, title: 'Fulfill orders', module: 'order' },
-  { id: 'access-control.role.manage' as PermissionKey, title: 'Manage roles', module: 'access-control' },
+  { id: 'product.read' as PermissionKey, title: 'Read products' },
+  { id: 'product.create' as PermissionKey, title: 'Create products' },
+  { id: 'product.update' as PermissionKey, title: 'Update products' },
+  { id: 'product.delete' as PermissionKey, title: 'Delete products' },
+  { id: 'order.read' as PermissionKey, title: 'Read orders' },
+  { id: 'order.fulfill' as PermissionKey, title: 'Fulfill orders' },
+  { id: 'access-control.role.write' as PermissionKey, title: 'Manage roles' },
 ]
 
 let service: AccessControlModuleService

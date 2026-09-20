@@ -87,7 +87,7 @@ export default [
     matcher: '/admin/users/:id/roles',
     handler: userRoleRoutes.PUT,
     input: userRoleRoutes.PutInput,
-    permissions: ['access-control.assignment.manage'],
+    permissions: ['access-control.assignment.write'],
     operationId: 'replaceUserRoles',
     summary: "Replace a user's roles",
     tags: [Tags.USERS],

@@ -39,9 +39,9 @@ test.beforeEach(async ({ createApi, getDb }) => {
     name: 'Admin',
     features: grants(
       'access-control.role.read',
-      'access-control.role.manage',
+      'access-control.role.write',
       'access-control.assignment.read',
-      'access-control.assignment.manage',
+      'access-control.assignment.write',
     ),
   })
   await accessControl.assignRolesToUser(ADMIN_USER, [adminRole.id])
@@ -125,7 +125,7 @@ test.describe('GET /admin/permissions', () => {
     expect(status).toBe(200)
     expect(body.permissions.length).toBeGreaterThan(0)
     expect(body.permissions[0]).toHaveProperty('key')
-    expect(body.permissions[0]).toHaveProperty('module')
+    expect(body.permissions[0]).toHaveProperty('title')
   })
 })
 
@@ -246,7 +246,7 @@ test.describe('self-escalation prevention', () => {
 
     const manageRole = await accessControl.createRole({
       name: 'SA Manager',
-      features: grants('access-control.assignment.manage', 'access-control.assignment.read'),
+      features: grants('access-control.assignment.write', 'access-control.assignment.read'),
     })
     await accessControl.assignRolesToUser('user_sa', [role.id, manageRole.id])
     const headers = authHeader('user', 'user_sa')
@@ -266,7 +266,7 @@ test.describe('last super admin assignment protection via API', () => {
 
     const manageRole = await accessControl.createRole({
       name: 'SA Manager 2',
-      features: grants('access-control.assignment.manage', 'access-control.assignment.read'),
+      features: grants('access-control.assignment.write', 'access-control.assignment.read'),
     })
     await accessControl.assignRolesToUser('user_sole_sa', [role.id, manageRole.id])
     const headers = authHeader('user', 'user_sole_sa')

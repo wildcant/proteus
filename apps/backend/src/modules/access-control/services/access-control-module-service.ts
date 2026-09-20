@@ -1,4 +1,4 @@
-import { hasFeature, parseGrant, resolveEffectiveFeatures } from '../../../core/access-control/engine.js'
+import { hasFeature, moduleOfKey, parseGrant, resolveEffectiveFeatures } from '../../../core/access-control/engine.js'
 import { GENERATED_FEATURES } from '../../../core/access-control/features.gen.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { PermissionGrant, PermissionKey } from '../../../core/types/access-control/common.js'
@@ -329,7 +329,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       const existing = await this.permissionRepository.find(undefined, { withDeleted: true }, ctx)
       const byKey = new Map(existing.map((p) => [p.key, p]))
 
-      const toCreate: Array<{ key: PermissionKey; module: string; title: string; registeredAt: Date }> = []
+      const toCreate: Array<{ key: PermissionKey; title: string; registeredAt: Date }> = []
       const toUpdate: Array<{ id: string; title: string; registeredAt: Date }> = []
       const toRestore: string[] = []
       const registeredKeys = new Set<string>()
@@ -340,7 +340,6 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         if (!row) {
           toCreate.push({
             key: declaration.id,
-            module: declaration.module,
             title: declaration.title,
             registeredAt: now,
           })
@@ -348,7 +347,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
           if (row.deletedAt) {
             toRestore.push(row.id)
           }
-          if (row.title !== declaration.title || !row.registeredAt || row.module !== declaration.module) {
+          if (row.title !== declaration.title || !row.registeredAt) {
             toUpdate.push({ id: row.id, title: declaration.title, registeredAt: now })
           }
         }
@@ -455,7 +454,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     }
 
     const registeredKeys = new Set(GENERATED_FEATURES.map((f) => f.id))
-    const moduleIds = new Set(GENERATED_FEATURES.map((f) => f.module))
+    const moduleIds = new Set(GENERATED_FEATURES.map((f) => moduleOfKey(f.id)))
 
     for (const grant of features) {
       const parsed = parseGrant(grant)
@@ -491,6 +490,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     isImmutable: 'protected',
   }
 
+  // Callers pass DTO field names, but `select` and `order` reach the database as column names, so
+  // the renamed fields have to be translated back before the query is built.
   private toRoleFindConfig(config?: FindConfig<RoleDTO>): FindConfig<Role> | undefined {
     if (!config) return undefined
     const mapped: FindConfig<Role> = { ...config, select: undefined, order: undefined }

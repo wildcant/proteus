@@ -1,5 +1,5 @@
 {
-  "id": "fc5dc902-7758-4f68-a91e-99b2a0f57502",
+  "id": "560c0f62-17ec-4607-a489-2867b8fe52e8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -120,12 +120,6 @@
         },
         "key": {
           "name": "key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "module": {
-          "name": "module",
           "type": "text",
           "primaryKey": false,
           "notNull": true

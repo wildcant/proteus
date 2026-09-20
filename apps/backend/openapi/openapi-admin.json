@@ -292,9 +292,6 @@
           "key": {
             "type": "string"
           },
-          "module": {
-            "type": "string"
-          },
           "title": {
             "type": "string"
           },
@@ -333,7 +330,6 @@
         "required": [
           "id",
           "key",
-          "module",
           "title",
           "description",
           "assignable",

@@ -12,7 +12,6 @@ CREATE TABLE "actor_role_assignment" (
 CREATE TABLE "permission" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('perm_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"key" text NOT NULL,
-	"module" text NOT NULL,
 	"title" text NOT NULL,
 	"description" text,
 	"assignable" boolean DEFAULT true NOT NULL,

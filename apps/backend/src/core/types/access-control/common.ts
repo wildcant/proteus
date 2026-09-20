@@ -1,80 +1,31 @@
+import { Modules } from '../../utils/modules-definition.js'
+
 type CrudAction = 'read' | 'create' | 'update' | 'delete'
 
-type ProductModuleId = 'product'
-type ProductPermission = `${ProductModuleId}.${CrudAction}`
+/**
+ * Every permission the system knows, as one map from module id to the actions that module grants.
+ * `ModuleId` and `PermissionKey` both derive from it, and the keys come from `Modules`, so no
+ * permission can name a module that does not exist. Modules with no permissions are simply absent.
+ * A module that owns several resources nests them (`invite.read`); a module with one does not
+ * (`inventory.read`).
+ */
+type ModuleActions = {
+  [Modules.PRODUCT]: CrudAction
+  [Modules.ORDER]: 'read' | 'complete' | 'cancel' | 'archive' | 'fulfill' | 'ship' | 'deliver'
+  [Modules.CUSTOMER]: CrudAction
+  [Modules.PAYMENT]: 'read' | 'capture' | 'refund'
+  [Modules.FULFILLMENT]: CrudAction
+  [Modules.INVENTORY]: 'read'
+  [Modules.REGION]: 'read' | 'create' | 'update'
+  [Modules.STORE]: 'read' | 'update'
+  [Modules.USER]: CrudAction | `invite.${'read' | 'create' | 'delete' | 'resend'}`
+  [Modules.NOTIFICATION]: 'read'
+  [Modules.FILE]: 'read' | 'create' | 'delete'
+  [Modules.ACCESS_CONTROL]: `${'role' | 'assignment'}.${'read' | 'write'}`
+}
 
-type OrderAction = 'read' | 'complete' | 'cancel' | 'archive' | 'fulfill' | 'ship' | 'deliver'
-type OrderModuleId = 'order'
-type OrderPermission = `${OrderModuleId}.${OrderAction}`
+export type ModuleId = keyof ModuleActions
 
-type CustomerModuleId = 'customer'
-type CustomerPermission = `${CustomerModuleId}.${CrudAction}`
+export type PermissionKey = { [Module in ModuleId]: `${Module}.${ModuleActions[Module]}` }[ModuleId]
 
-type PaymentAction = 'read' | 'capture' | 'refund'
-type PaymentModuleId = 'payment'
-type PaymentPermission = `${PaymentModuleId}.${PaymentAction}`
-
-type FulfillmentModuleId = 'fulfillment'
-type FulfillmentPermission = `${FulfillmentModuleId}.${CrudAction}`
-
-type InventoryModuleId = 'inventory'
-type InventoryPermission = `${InventoryModuleId}.read`
-
-type RegionAction = 'read' | 'create' | 'update'
-type RegionModuleId = 'region'
-type RegionPermission = `${RegionModuleId}.${RegionAction}`
-
-type StoreAction = 'read' | 'update'
-type StoreModuleId = 'store'
-type StorePermission = `${StoreModuleId}.${StoreAction}`
-
-type UserAction = 'read' | 'create' | 'update' | 'delete'
-type UserSubModel = 'invite'
-type UserInviteAction = 'read' | 'create' | 'delete' | 'resend'
-type UserModuleId = 'user'
-type UserPermission = `${UserModuleId}.${UserAction}` | `${UserModuleId}.${UserSubModel}.${UserInviteAction}`
-
-type NotificationModuleId = 'notification'
-type NotificationPermission = `${NotificationModuleId}.read`
-
-type FileSubModel = 'upload'
-type FileUploadAction = 'read' | 'create' | 'delete'
-type FileModuleId = 'file'
-type FilePermission = `${FileModuleId}.${FileSubModel}.${FileUploadAction}`
-
-type AccessControlSubModel = 'role' | 'assignment'
-type AccessControlRoleAction = 'read' | 'manage'
-type AccessControlModuleId = 'access-control'
-type AccessControlPermission = `${AccessControlModuleId}.${AccessControlSubModel}.${AccessControlRoleAction}`
-
-export type PermissionKey =
-  | ProductPermission
-  | OrderPermission
-  | CustomerPermission
-  | PaymentPermission
-  | FulfillmentPermission
-  | InventoryPermission
-  | RegionPermission
-  | StorePermission
-  | UserPermission
-  | NotificationPermission
-  | FilePermission
-  | AccessControlPermission
-
-export type ModuleId =
-  | ProductModuleId
-  | OrderModuleId
-  | CustomerModuleId
-  | PaymentModuleId
-  | FulfillmentModuleId
-  | InventoryModuleId
-  | RegionModuleId
-  | StoreModuleId
-  | UserModuleId
-  | NotificationModuleId
-  | FileModuleId
-  | AccessControlModuleId
-
-type ModuleWildcard = `${ModuleId}.*`
-
-export type PermissionGrant = PermissionKey | ModuleWildcard | '*'
+export type PermissionGrant = PermissionKey | `${ModuleId}.*` | '*'

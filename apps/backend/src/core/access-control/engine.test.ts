@@ -53,7 +53,7 @@ describe('resolveEffectiveFeatures', () => {
 
   test('expands product.* to all product keys', () => {
     const result = resolveEffectiveFeatures(['product.*'])
-    const productKeys = GENERATED_FEATURES.filter((f) => f.module === 'product').map((f) => f.id)
+    const productKeys = GENERATED_FEATURES.map((f) => f.id).filter((key) => key.startsWith('product.'))
     expect(result).toHaveLength(productKeys.length)
     for (const key of productKeys) {
       expect(result).toContain(key)

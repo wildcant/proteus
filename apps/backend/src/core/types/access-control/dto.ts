@@ -3,7 +3,6 @@ import type { PermissionGrant, PermissionKey } from './common.js'
 export type PermissionDTO = {
   id: string
   key: PermissionKey
-  module: string
   title: string
   description: string | null
   assignable: boolean

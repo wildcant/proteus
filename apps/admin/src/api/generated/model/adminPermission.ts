@@ -9,7 +9,6 @@
 export interface AdminPermission {
   id: string;
   key: string;
-  module: string;
   title: string;
   /** @nullable */
   description: string | null;

@@ -9,7 +9,6 @@ export const permissionTable = pgTable(
   {
     id: text().primaryKey().default(sql`CONCAT('perm_', REPLACE(gen_random_uuid()::text, '-', ''))`),
     key: text().$type<PermissionKey>().notNull(),
-    module: text().notNull(),
     title: text().notNull(),
     description: text(),
     assignable: boolean().default(true).notNull(),

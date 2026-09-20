@@ -6,6 +6,11 @@ export type ParsedGrant =
   | { kind: 'module'; moduleId: ModuleId }
   | { kind: 'key'; key: PermissionKey }
 
+/** A key's first segment is its module — `user.invite.read` belongs to `user`. */
+export function moduleOfKey(key: PermissionKey): ModuleId {
+  return key.slice(0, key.indexOf('.')) as ModuleId
+}
+
 export function parseGrant(grant: PermissionGrant): ParsedGrant {
   if (grant === '*') return { kind: 'global' }
   if (grant.endsWith('.*')) return { kind: 'module', moduleId: grant.slice(0, -2) as ModuleId }

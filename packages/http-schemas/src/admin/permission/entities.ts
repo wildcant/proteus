@@ -5,7 +5,6 @@ export const AdminPermission = z
   .object({
     id: z.string(),
     key: z.string(),
-    module: z.string(),
     title: z.string(),
     description: z.string().nullable(),
     assignable: z.boolean(),
