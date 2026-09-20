@@ -39,6 +39,16 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
       }
 
       const fulfillment = await fulfillmentService.retrieveFulfillment(input.fulfillmentId)
+
+      // Checked before the status: a canceled fulfillment computes as "unfulfilled", which
+      // would report a state the admin never put it in.
+      if (fulfillment.canceledAt) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: `Cannot mark order ${input.orderId} as delivered: fulfillment is canceled`,
+        })
+      }
+
       const status = computeFulfillmentStatus([fulfillment])
 
       if (status !== 'shipped') {

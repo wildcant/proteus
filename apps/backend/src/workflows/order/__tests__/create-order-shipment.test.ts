@@ -52,13 +52,21 @@ test.describe('createOrderShipmentWorkflow', () => {
     })
   })
 
-  test('refuses to ship an order that was never fulfilled', async ({ service, expect }) => {
-    const { order } = await service.create.order(container, { inventory: null })
+  test('refuses to ship a fulfillment that has already shipped', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await fulfilledOrder(service)
 
-    // The status guard runs before the link lookup, so the fulfillment id never gets resolved.
-    await expect(
-      createOrderShipmentWorkflow.run({ orderId: order.id, fulfillmentId: 'ful_never_created' }),
-    ).rejects.toThrow('fulfillment status is "unfulfilled", expected "fulfilled"')
+    await createOrderShipmentWorkflow.run({ orderId, fulfillmentId })
+
+    await expect(createOrderShipmentWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow(
+      'fulfillment status is "shipped", expected "fulfilled"',
+    )
+  })
+
+  test('refuses to ship a canceled fulfillment', async ({ service, expect }) => {
+    const { orderId, fulfillmentId } = await fulfilledOrder(service)
+    await service.update.fulfillment(container, fulfillmentId, { canceledAt: new Date() })
+
+    await expect(createOrderShipmentWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow('fulfillment is canceled')
   })
 
   test('refuses a fulfillment belonging to another order', async ({ service, expect }) => {
