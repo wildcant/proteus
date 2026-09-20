@@ -1,46 +1,35 @@
 import type { PermissionGrant } from '@core/types/access-control/common.js'
 import { describe, expect, test } from 'vitest'
-import { hasAllFeatures, hasFeature, matchFeature, parseGrant, resolveEffectiveFeatures } from './engine.js'
+import { hasFeature, parseGrant, resolveEffectiveFeatures } from './engine.js'
 import { GENERATED_FEATURES } from './features.gen.js'
 
-describe('matchFeature', () => {
-  test('* matches any required permission', () => {
-    expect(matchFeature('product.read', '*')).toBe(true)
-    expect(matchFeature('order.read', '*')).toBe(true)
-    expect(matchFeature('user.invite.read', '*')).toBe(true)
-  })
-
-  test('product.* matches product.read and product.create but not order.read', () => {
-    expect(matchFeature('product.read', 'product.*')).toBe(true)
-    expect(matchFeature('product.create', 'product.*')).toBe(true)
-    expect(matchFeature('order.read', 'product.*')).toBe(false)
-  })
-
-  test('exact match: product.read matches product.read only', () => {
-    expect(matchFeature('product.read', 'product.read')).toBe(true)
-    expect(matchFeature('product.create', 'product.read')).toBe(false)
-    expect(matchFeature('order.read', 'product.read')).toBe(false)
-  })
-})
-
 describe('hasFeature', () => {
-  test('finds match in granted array', () => {
+  test('* grants every permission', () => {
+    const granted: PermissionGrant[] = ['*']
+    expect(hasFeature(granted, 'product.read')).toBe(true)
+    expect(hasFeature(granted, 'order.read')).toBe(true)
+    expect(hasFeature(granted, 'user.invite.read')).toBe(true)
+  })
+
+  test('a module wildcard grants that module and no other', () => {
+    const granted: PermissionGrant[] = ['product.*']
+    expect(hasFeature(granted, 'product.read')).toBe(true)
+    expect(hasFeature(granted, 'product.create')).toBe(true)
+    expect(hasFeature(granted, 'order.read')).toBe(false)
+  })
+
+  test('an exact grant grants that key and no other', () => {
+    const granted: PermissionGrant[] = ['product.read']
+    expect(hasFeature(granted, 'product.read')).toBe(true)
+    expect(hasFeature(granted, 'product.create')).toBe(false)
+    expect(hasFeature(granted, 'order.read')).toBe(false)
+  })
+
+  test('finds match anywhere in granted array', () => {
     const granted: PermissionGrant[] = ['product.read', 'order.*']
     expect(hasFeature(granted, 'product.read')).toBe(true)
     expect(hasFeature(granted, 'order.complete')).toBe(true)
     expect(hasFeature(granted, 'user.read')).toBe(false)
-  })
-})
-
-describe('hasAllFeatures', () => {
-  test('returns true when all required features are granted', () => {
-    const granted: PermissionGrant[] = ['product.*', 'order.read']
-    expect(hasAllFeatures(granted, ['product.read', 'product.create', 'order.read'])).toBe(true)
-  })
-
-  test('returns false when any required feature is missing', () => {
-    const granted: PermissionGrant[] = ['product.read']
-    expect(hasAllFeatures(granted, ['product.read', 'order.read'])).toBe(false)
   })
 })
 

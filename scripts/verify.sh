@@ -201,10 +201,16 @@ job_versions() { node scripts/checks/one-version.mts; }
 # `catalog` is the row one-version.mts structurally cannot see: it iterates packages that manifests
 # declare, so an entry left behind after the last declaration goes has no declaration site and is
 # never visited — and this gate is what creates them, since resolving its findings removes
-# declarations. `catalogReferences` sits behind an outright install error, and `cycles` is not in
-# knip's default report and stays dependency-cruiser's, per ADR-0020. Note that knip's
-# `duplicates` is duplicate *exports*, not duplicate versions — it reads like this gate's neighbour
-# and is not.
+# declarations. `catalogReferences` sits behind an outright install error, and `cycles` stays
+# dependency-cruiser's, per ADR-0020. Note that knip's `duplicates` is duplicate *exports*, not
+# duplicate versions — it reads like this gate's neighbour and is not.
+#
+# And the second claim, which the first pass structurally cannot make: nothing here is reached only
+# from tests. A test counts as a reference, so a workflow step no workflow composes reads as used
+# until the test files leave the graph. `scripts/checks/unused.sh` runs both passes and says why
+# neither subsumes the other; a finding there is answered by deleting the code, by dropping the
+# `export` and moving the test onto the public surface, or by an `@testSeam` tag naming the harness
+# that needs it.
 #
 # knip.jsonc carries the entry patterns and is where a judgment call goes: a package that is needed
 # but unreferenced belongs in `ignoreDependencies` with a comment saying why, the same discipline as
@@ -219,6 +225,7 @@ job_versions() { node scripts/checks/one-version.mts; }
 # references from `packages/utils`, 41 unreachable files from `apps/backend`. No config can fix
 # that, because the failure is that the config was not read.
 job_unused() { pnpm --silent run check:unused; }
+
 
 # The API tests plus the unit tests worth gating — the option-combination matrix, the Stripe
 # adapter's currency and status tables, which decide what a shopper is charged, the platform
@@ -291,7 +298,7 @@ label_of() {
     standards) echo "Code standards" ;;
     structure) echo "Import structure (backend, admin, store)" ;;
     versions) echo "One version per declared dependency" ;;
-    unused) echo "Nothing declared or exported is unreferenced" ;;
+    unused) echo "Nothing is unreferenced, and nothing is reached only from tests" ;;
     generated) echo "Generated files (registries, schema, Orval clients, route trees)" ;;
     openapi) echo "OpenAPI spec rules (Spectral)" ;;
     test) echo "Backend API tests" ;;

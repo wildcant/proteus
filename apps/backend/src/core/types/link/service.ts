@@ -19,7 +19,7 @@ import type {
   RegionPaymentProviderDTO,
 } from './common.js'
 
-export type ILinkRepositoryMap = {
+type ILinkRepositoryMap = {
   cartProduct: ICartProductRepository
 
   // Writable.

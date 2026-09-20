@@ -1,5 +1,5 @@
 import { test } from '@tests/setup/test-extend.js'
-import { buildEvent, dispatchIdentity } from '../events.js'
+import { buildEvent } from '../events.js'
 
 /**
  * The identity is derived, never supplied — that is the whole reason it exists in this shape. An
@@ -9,19 +9,19 @@ import { buildEvent, dispatchIdentity } from '../events.js'
  */
 test.describe('dispatch identity', () => {
   test('is the event name, the resource id and the subscriber name', async ({ expect }) => {
-    expect(dispatchIdentity('bus.probe', { id: 'ord_1' }, 'bus-probe')).toBe('bus.probe:ord_1:bus-probe')
+    expect(buildEvent('bus.probe', { id: 'ord_1' }, 'bus-probe').dispatchId).toBe('bus.probe:ord_1:bus-probe')
   })
 
   test('separates two subscribers on one event, because each is its own delivery', async ({ expect }) => {
-    const first = dispatchIdentity('bus.probe', { id: 'ord_1' }, 'bus-probe')
-    const second = dispatchIdentity('bus.probe', { id: 'ord_1' }, 'other-probe')
+    const first = buildEvent('bus.probe', { id: 'ord_1' }, 'bus-probe').dispatchId
+    const second = buildEvent('bus.probe', { id: 'ord_1' }, 'other-probe').dispatchId
 
     expect(first).not.toBe(second)
   })
 
   test('collapses a repeat of the same event for the same resource', async ({ expect }) => {
-    const first = dispatchIdentity('bus.probe', { id: 'ord_1' }, 'bus-probe')
-    const again = dispatchIdentity('bus.probe', { id: 'ord_1' }, 'bus-probe')
+    const first = buildEvent('bus.probe', { id: 'ord_1' }, 'bus-probe').dispatchId
+    const again = buildEvent('bus.probe', { id: 'ord_1' }, 'bus-probe').dispatchId
 
     expect(again).toBe(first)
   })
@@ -33,8 +33,8 @@ test.describe('dispatch identity', () => {
    * needs it does.
    */
   test('a custom key extractor keeps two firings for one resource apart', async ({ expect }) => {
-    const first = dispatchIdentity('bus.probe.repeatable', { id: 'ord_1', attempt: 1 }, 'bus-probe')
-    const second = dispatchIdentity('bus.probe.repeatable', { id: 'ord_1', attempt: 2 }, 'bus-probe')
+    const first = buildEvent('bus.probe.repeatable', { id: 'ord_1', attempt: 1 }, 'bus-probe').dispatchId
+    const second = buildEvent('bus.probe.repeatable', { id: 'ord_1', attempt: 2 }, 'bus-probe').dispatchId
 
     expect(first).toBe('bus.probe.repeatable:ord_1:1:bus-probe')
     expect(second).not.toBe(first)

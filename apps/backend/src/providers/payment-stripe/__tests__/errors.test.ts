@@ -1,7 +1,7 @@
 import Stripe from 'stripe'
 import { describe, expect, test } from 'vitest'
 import { ErrorTypes } from '../../../core/errors/app-error.js'
-import { classifyGatewayError, gatewayFailureLog, gatewayFailureOf, toAppError } from '../errors.js'
+import { classifyGatewayError, gatewayFailureLog, toAppError } from '../errors.js'
 
 /**
  * Built the way `stripe-node` builds one: the type Stripe sent goes in `raw.type`, and the
@@ -164,13 +164,13 @@ describe('gatewayFailureLog', () => {
   })
 })
 
-describe('gatewayFailureOf', () => {
-  test('reads the decline code Stripe sent, which the shopper is never told', () => {
-    expect(gatewayFailureOf(cardDeclined())).toMatchObject({
-      type: 'card_error',
-      code: 'card_declined',
-      declineCode: 'lost_card',
-      requestLogUrl: 'https://dashboard.stripe.com/test/logs/req_declined',
-    })
+describe('the decline code Stripe sent, which the shopper is never told', () => {
+  test('reaches the log line, alongside the request it came from', () => {
+    const line = gatewayFailureLog('initiatePayment', cardDeclined())
+
+    expect(line).toContain('type=card_error')
+    expect(line).toContain('code=card_declined')
+    expect(line).toContain('decline_code=lost_card')
+    expect(line).toContain('request_log_url=https://dashboard.stripe.com/test/logs/req_declined')
   })
 })

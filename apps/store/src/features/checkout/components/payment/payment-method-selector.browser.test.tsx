@@ -3,12 +3,7 @@ import { expect, test, vi } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import { PaymentControllerProvider, usePaymentController } from '#/features/checkout/hooks/use-payment-controller'
-import type {
-  ConfirmOutcome,
-  PaymentAdapterContext,
-  SavedMethod,
-  StorePaymentAdapter,
-} from '#/features/checkout/types/payment'
+import type { ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from '#/features/checkout/types/payment'
 import { PaymentMethodSelector } from './payment-method-selector'
 
 /**
@@ -22,6 +17,12 @@ import { PaymentMethodSelector } from './payment-method-selector'
  *
  * A real Chromium because a radio's checked state and a disabled control are what is being read.
  */
+
+/**
+ * A card as the selector receives it — read off the adapter's own wallet hook rather than named,
+ * so the shape stays the port's to change and this file has nothing to keep in step with it.
+ */
+type SavedMethod = ReturnType<NonNullable<StorePaymentAdapter['savedMethods']>['useWallet']>['methods'][number]
 
 /** Far enough out that the suite's own clock never makes these stale. */
 const usable = () => ({ expMonth: 12, expYear: new Date().getFullYear() + 3 })

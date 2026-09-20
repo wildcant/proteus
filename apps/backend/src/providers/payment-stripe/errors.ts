@@ -32,7 +32,7 @@ export type GatewayErrorBucket =
   | 'fatal'
 
 /** Everything a failure is worth keeping, and nothing that could be shown to a shopper. */
-export type GatewayFailure = {
+type GatewayFailure = {
   /** Stripe's error type, read from `rawType` — never from `type`, which is the class name. */
   type: string | undefined
   code: string | undefined
@@ -88,7 +88,7 @@ export function classifyGatewayError(error: unknown): GatewayErrorBucket {
   }
 }
 
-export function gatewayFailureOf(error: unknown): GatewayFailure {
+function gatewayFailureOf(error: unknown): GatewayFailure {
   if (!isStripeError(error)) {
     return { type: undefined, code: undefined, declineCode: undefined, requestId: undefined, requestLogUrl: undefined }
   }

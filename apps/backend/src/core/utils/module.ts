@@ -1,3 +1,4 @@
+import type { PermissionKey } from '../types/access-control/common.js'
 import type { AppContainer, ModuleServiceContracts } from '../types/container.js'
 
 // biome-ignore lint/suspicious/noExplicitAny: DI constructors accept varied dependency shapes
@@ -8,10 +9,30 @@ export type LoaderFunction<TOptions = Record<string, unknown>> = (input: {
   options?: TOptions
 }) => void | Promise<void>
 
-export type FeatureDeclaration = {
-  id: string
+/**
+ * A feature the module owns. The id has to be a `PermissionKey` under the module's own namespace,
+ * so a typo or a key belonging to another module is a type error at the declaration rather than a
+ * permission row nothing ever checks.
+ */
+export type FeatureDeclaration<Key extends string = string> = {
+  id: Extract<PermissionKey, `${Key}.${string}`>
   title: string
 }
+
+/** Feature ids that appear more than once in a declaration list. */
+type DuplicateFeatureIds<Features extends readonly FeatureDeclaration[], Seen = never> = Features extends readonly [
+  infer Head extends FeatureDeclaration,
+  ...infer Rest extends readonly FeatureDeclaration[],
+]
+  ? Head['id'] extends Seen
+    ? Head['id'] | DuplicateFeatureIds<Rest, Seen | Head['id']>
+    : DuplicateFeatureIds<Rest, Seen | Head['id']>
+  : never
+
+type NoDuplicateFeatureIds<Features extends readonly FeatureDeclaration[]> =
+  DuplicateFeatureIds<Features> extends never
+    ? unknown
+    : { 'this feature id is declared twice': DuplicateFeatureIds<Features> }
 
 export type ModuleDefinition = {
   key: string
@@ -25,7 +46,7 @@ export type ModuleDefinition = {
   models: Record<string, unknown>
   loaders?: LoaderFunction[]
   postLoaders?: LoaderFunction[]
-  features?: FeatureDeclaration[]
+  features?: readonly FeatureDeclaration[]
 }
 
 /** Public members the class has and the module's contract in `core/types/` does not. */
@@ -43,7 +64,11 @@ type ContractGap<TMethods> = { 'these public methods are missing from the module
  * reach a module through `resolve(Modules.FOO)`, which hands back the contract, so a method
  * missing from it is a method nobody outside the module can call.
  */
-export function Module<const Key extends keyof ModuleServiceContracts, const Service extends Constructor>(
+export function Module<
+  const Key extends keyof ModuleServiceContracts,
+  const Service extends Constructor,
+  const Features extends readonly FeatureDeclaration<Key>[] = [],
+>(
   key: Key,
   config: {
     service: Service
@@ -51,7 +76,7 @@ export function Module<const Key extends keyof ModuleServiceContracts, const Ser
     models: Record<string, unknown>
     loaders?: LoaderFunction[]
     postLoaders?: LoaderFunction[]
-    features?: FeatureDeclaration[]
+    features?: Features & NoDuplicateFeatureIds<Features>
   },
   ...contractGap: MethodsMissingFromContract<Service, Key> extends never
     ? []

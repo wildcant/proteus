@@ -12,7 +12,7 @@ export function parseGrant(grant: PermissionGrant): ParsedGrant {
   return { kind: 'key', key: grant as PermissionKey }
 }
 
-export function matchFeature(required: PermissionKey, granted: PermissionGrant): boolean {
+function matchFeature(required: PermissionKey, granted: PermissionGrant): boolean {
   const parsed = parseGrant(granted)
   if (parsed.kind === 'global') return true
   if (parsed.kind === 'module') return required.startsWith(`${parsed.moduleId}.`)
@@ -21,10 +21,6 @@ export function matchFeature(required: PermissionKey, granted: PermissionGrant):
 
 export function hasFeature(granted: PermissionGrant[], required: PermissionKey): boolean {
   return granted.some((g) => matchFeature(required, g))
-}
-
-export function hasAllFeatures(granted: PermissionGrant[], required: PermissionKey[]): boolean {
-  return required.every((r) => hasFeature(granted, r))
 }
 
 export function resolveEffectiveFeatures(granted: PermissionGrant[]): PermissionKey[] {

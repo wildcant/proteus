@@ -9,9 +9,9 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { AppContainer, ModuleContainer } from '../../../../core/types/container.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 import { createWorkflowActivities } from '../activities.js'
-import { DEFAULT_TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
+import { WORKFLOWS_PATH } from '../config.js'
 import type { WorkflowRegistry } from '../registry.js'
-import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT } from './temporal-test-env.js'
+import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT, TEST_TASK_QUEUE } from './temporal-test-env.js'
 
 /**
  * The adapter end to end: a real Temporal server, a real Worker, a real workflow sandbox, and the
@@ -72,7 +72,7 @@ describe('temporal workflow engine', () => {
 
     worker = await Worker.create({
       connection: testEnv.nativeConnection,
-      taskQueue: DEFAULT_TEMPORAL_TASK_QUEUE,
+      taskQueue: TEST_TASK_QUEUE,
       workflowsPath: WORKFLOWS_PATH,
       dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
       activities: createWorkflowActivities({ container, registry }),
@@ -85,7 +85,7 @@ describe('temporal workflow engine', () => {
       // Pinned to the Worker above rather than left to `env.TEMPORAL_TASK_QUEUE`: a queue set in
       // the environment would send these workflows somewhere nothing is polling, and the suite
       // would hang rather than fail.
-      taskQueue: DEFAULT_TEMPORAL_TASK_QUEUE,
+      taskQueue: TEST_TASK_QUEUE,
       // The test server's client, so the tests never reach `env.TEMPORAL_ADDRESS`.
       connect: async () => ({ client: testEnv.client, close: async () => undefined }),
       retry: {

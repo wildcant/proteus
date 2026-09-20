@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
-    "@tailwindcss/vite": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "^2.1.1",
     "lucide-react": "catalog:",
@@ -31,6 +30,7 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
