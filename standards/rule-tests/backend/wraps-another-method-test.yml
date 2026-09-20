@@ -1,0 +1,54 @@
+id: wraps-another-method
+valid:
+  # Binding an argument is the decision the method exists to make.
+  - |
+    class AccessControlModuleService {
+      async listUserRoles(userId: string, context?: Context): Promise<RoleDTO[]> {
+        return this.listActorRoles('user', userId, context)
+      }
+    }
+  # A second statement is behaviour of its own.
+  - |
+    class PaymentProviderService {
+      async cancelPayment(providerId: string, input: CancelPaymentInput): Promise<CancelPaymentOutput> {
+        const provider = this.retrieveProvider(providerId)
+        return provider.cancelPayment(input)
+      }
+    }
+  # Forwarding to something that is not a sibling method — a repository, a provider — is the
+  # service doing its job.
+  - |
+    class UserModuleService {
+      async listUsers(config?: FindConfig<UserDTO>, context?: Context): Promise<UserDTO[]> {
+        return this.userRepository.find({}, config, context)
+      }
+    }
+  # Reshaping the result is work.
+  - |
+    class OrderModuleService {
+      async listOrderIds(context?: Context): Promise<string[]> {
+        return (await this.listOrders(context)).map((order) => order.id)
+      }
+    }
+invalid:
+  # The second name for one method.
+  - |
+    class AccessControlModuleService {
+      async listGrantedPermissionKeys(actorType: string, actorId: string, context?: Context): Promise<PermissionKey[]> {
+        return this.resolveEffectiveFeatures(actorType, actorId, context)
+      }
+    }
+  # Including when the inner one is private: the public name is the only name it needs.
+  - |
+    class PaymentModuleService {
+      async retrievePayment(id: string, context?: Context): Promise<PaymentDTO> {
+        return this.retrievePaymentWithRelations_(id, context)
+      }
+    }
+  # And when it takes nothing at all.
+  - |
+    class StoreModuleService {
+      async retrieveStore(): Promise<StoreDTO> {
+        return this.retrieveDefaultStore()
+      }
+    }

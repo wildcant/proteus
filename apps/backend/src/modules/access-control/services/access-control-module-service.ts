@@ -1,15 +1,13 @@
-import { authorizeFeatures, resolveEffectiveFeatures } from '../../../core/access-control/engine.js'
+import { resolveEffectiveFeatures } from '../../../core/access-control/engine.js'
 import { GENERATED_FEATURES } from '../../../core/access-control/features.gen.js'
-import type { AuthorizationContext, AuthorizationDecision } from '../../../core/access-control/types.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
-import type { PermissionGrant, PermissionKey } from '../../../core/types/access-control/common.js'
+import type { ModuleId, PermissionGrant, PermissionKey } from '../../../core/types/access-control/common.js'
 import type { CreateRoleDTO, PermissionDTO, RoleDTO, UpdateRoleDTO } from '../../../core/types/access-control/dto.js'
 import type { IAccessControlModuleService } from '../../../core/types/access-control/service.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
-import type { Permission } from '../models/permission.js'
 import type { Role } from '../models/role.js'
 import type { ActorRoleAssignmentRepository } from '../repositories/actor-role-assignment.js'
 import type { PermissionRepository } from '../repositories/permission.js'
@@ -36,30 +34,6 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     this.actorRoleAssignmentRepository = dependencies.actorRoleAssignmentRepository
     this.withTransaction = dependencies.withTransaction
     this.logger = dependencies.logger
-  }
-
-  // ── Authorization ────────────────────────────────────────────────────
-
-  async authorize(required: PermissionKey[], subject: AuthorizationContext): Promise<AuthorizationDecision> {
-    return authorizeFeatures(required, subject)
-  }
-
-  async authorizeOrThrow(required: PermissionKey[], subject: AuthorizationContext): Promise<void> {
-    const decision = authorizeFeatures(required, subject)
-    if (!decision.allowed) {
-      throw new AppError({
-        type: ErrorTypes.FORBIDDEN,
-        message: `Missing permissions: ${decision.missing.join(', ')}`,
-      })
-    }
-  }
-
-  async scope(): Promise<undefined> {
-    return undefined
-  }
-
-  async fields(): Promise<{ readable: '*'; writable: '*'; filterable: '*'; sortable: '*' }> {
-    return { readable: '*', writable: '*', filterable: '*', sortable: '*' }
   }
 
   // ── Roles ────────────────────────────────────────────────────────────
@@ -151,7 +125,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
 
   async listPermissions(config?: FindConfig<PermissionDTO>, context?: Context): Promise<PermissionDTO[]> {
     const rows = await this.permissionRepository.find(undefined, config, context)
-    return rows.map((r) => this.toPermissionDTO(r))
+    return rows
   }
 
   async retrievePermission(
@@ -160,7 +134,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     context?: Context,
   ): Promise<PermissionDTO> {
     const row = await this.permissionRepository.findByIdOrFail(permissionId, config, context)
-    return this.toPermissionDTO(row)
+    return row
   }
 
   // ── Assignments ──────────────────────────────────────────────────────
@@ -328,10 +302,6 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     return this.listActorRoles('user', userId, context)
   }
 
-  async listGrantedPermissionKeys(actorType: string, actorId: string, context?: Context): Promise<string[]> {
-    return this.resolveEffectiveFeatures(actorType, actorId, context)
-  }
-
   // ── Resolution ───────────────────────────────────────────────────────
 
   async resolvePermissions(actorType: string, actorId: string, context?: Context): Promise<PermissionGrant[]> {
@@ -359,7 +329,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       const existing = await this.permissionRepository.find(undefined, { withDeleted: true }, ctx)
       const byKey = new Map(existing.map((p) => [p.key, p]))
 
-      const toCreate: Array<{ key: string; module: string; title: string; registeredAt: Date }> = []
+      const toCreate: Array<{ key: PermissionKey; module: string; title: string; registeredAt: Date }> = []
       const toUpdate: Array<{ id: string; title: string; registeredAt: Date }> = []
       const toRestore: string[] = []
       const registeredKeys = new Set<string>()
@@ -368,7 +338,12 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         registeredKeys.add(declaration.id)
         const row = byKey.get(declaration.id)
         if (!row) {
-          toCreate.push({ key: declaration.id, module: declaration.module, title: declaration.title, registeredAt: now })
+          toCreate.push({
+            key: declaration.id,
+            module: declaration.module,
+            title: declaration.title,
+            registeredAt: now,
+          })
         } else {
           if (row.deletedAt) {
             toRestore.push(row.id)
@@ -384,7 +359,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       const toSoftDelete: string[] = []
 
       for (const perm of unregistered) {
-        const assignments = await this.findRolesReferencingPermission(perm.key as PermissionKey, ctx)
+        const assignments = await this.findRolesReferencingPermission(perm.key, ctx)
         if (assignments.length > 0) {
           assignedUnregistered.push(perm.key)
         } else {
@@ -501,7 +476,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
 
       if (grant.endsWith('.*')) {
         const module = grant.slice(0, -2)
-        if (!moduleIds.has(module)) {
+        if (!moduleIds.has(module as ModuleId)) {
           throw new AppError({
             type: ErrorTypes.INVALID_DATA,
             message: `Unknown module wildcard: ${grant}`,
@@ -540,33 +515,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     return mapped
   }
 
-  private toRoleDTO(role: Role): RoleDTO {
-    return {
-      id: role.id,
-      name: role.name,
-      description: role.description,
-      features: role.featuresJson as PermissionGrant[],
-      isSuperAdmin: role.isSuperAdmin,
-      protected: role.protected,
-      isImmutable: role.protected || role.isSuperAdmin,
-      createdAt: role.createdAt,
-      updatedAt: role.updatedAt,
-      deletedAt: role.deletedAt,
-    }
-  }
-
-  private toPermissionDTO(permission: Permission): PermissionDTO {
-    return {
-      id: permission.id,
-      key: permission.key as PermissionKey,
-      module: permission.module,
-      title: permission.title,
-      description: permission.description,
-      assignable: permission.assignable,
-      registeredAt: permission.registeredAt,
-      createdAt: permission.createdAt,
-      updatedAt: permission.updatedAt,
-      deletedAt: permission.deletedAt,
-    }
+  private toRoleDTO({ featuresJson, ...role }: Role): RoleDTO {
+    return { ...role, features: featuresJson, isImmutable: role.protected || role.isSuperAdmin }
   }
 }
