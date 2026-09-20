@@ -1,5 +1,7 @@
 import { generateResetJwtToken, getAuthJwtConfig } from '@core/auth/utils/generate-jwt-token.js'
 import { AppError } from '@core/errors/app-error.js'
+import type { IAuthModuleService } from '@core/types/auth/service.js'
+import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow } from '@core/workflows/types.js'
@@ -15,7 +17,7 @@ export const requestPasswordResetWorkflow = createWorkflow<RequestPasswordResetI
   'request-password-reset',
   async (ctx, input) => {
     const resetToken = await ctx.step<string | null>('create-reset-token', async ({ container }) => {
-      const authService = container.resolve(Modules.AUTH)
+      const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
 
       try {
         const result = await authService.createPasswordResetToken({
@@ -45,7 +47,7 @@ export const requestPasswordResetWorkflow = createWorkflow<RequestPasswordResetI
     }
 
     await ctx.step('send-reset-email', async ({ container }) => {
-      const notificationService = container.resolve(Modules.NOTIFICATION)
+      const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
       const resetLink = `${env.STORE_URL}/reset-password?token=${resetToken}`
       await notificationService.createNotification({
         to: input.email,

@@ -1,3 +1,4 @@
+import type { ILinkService } from '@core/types/link/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
 
@@ -33,7 +34,7 @@ export async function setRegionPaymentProvidersStep(
   await ctx.step<StepOutput>(
     'set-region-payment-providers',
     async ({ container }) => {
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       const existing = await linkService.repo('regionPaymentProvider').findByRegionIds([input.regionId])
       const previousProviderIds = existing.map((link) => link.paymentProviderId)
 
@@ -60,7 +61,7 @@ export async function setRegionPaymentProvidersStep(
     async ({ previousProviderIds, changed }, { container }) => {
       if (!changed) return
 
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       await linkService.dismissLinks({ regionId: [input.regionId] })
       if (previousProviderIds.length === 0) return
       await linkService.createMany(

@@ -1,6 +1,7 @@
 import { RouteDrawer } from '@proteus/ui'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseProduct } from '#/features/products/api/products'
+import { productQueryOptions } from '#/features/products/api/products'
 import { EditProductForm } from '#/features/products/components/edit-product-form'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/_detail/edit')({
@@ -9,7 +10,7 @@ export const Route = createFileRoute('/_authed/_shell/products/$id/_detail/edit'
 
 function EditProductRoute() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseProduct(id)
+  const { data } = useSuspenseQuery(productQueryOptions(id))
 
   return (
     <RouteDrawer>

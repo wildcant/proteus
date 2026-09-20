@@ -1,102 +1,43 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  // `.scratch/` is notes, not code. Orval's output emits two unused `*Result` aliases per endpoint
-  // with no per-export knob — 161 of 326 findings. Cost of ignoring it: seven uncalled admin tag
-  // groups stay invisible, listed in .scratch/pnpm-migration/knip-triage.md.
+  // Two shapes, neither of them shipped code and neither of them a finding:
+  // - `.scratch/` is the working record — specs, tickets, and the odd proof-of-concept script.
+  // - Orval's output, in both frontends. Every endpoint gets two `*Result` type aliases emitted
+  //   whether or not anything names them, so the directory accounted for 161 of 326 findings and
+  //   there is no per-export knob — the only lever is Orval's tag list. Regenerating is the only
+  //   edit anyone makes here, which is what makes an unused export in it not a finding.
+  //   Note what this hides: seven admin tag groups nothing calls (fulfillment-providers,
+  //   fulfillment-sets, payment-collections, payments, refund-reasons, shipping-options,
+  //   shipping-profiles). That is admin feature coverage, not dependency debt, and it is written
+  //   down in .scratch/pnpm-migration/knip-triage.md so it does not go missing with the rows.
   "ignore": [".scratch/**", "**/src/api/generated/**"],
-  // `cloudflare:workers` is a workerd built-in; the prefix only looks like a package.
+  // `import { env } from 'cloudflare:workers'` — a workerd built-in module namespace whose prefix
+  // reads as a package name. There is nothing to install.
   "ignoreDependencies": ["cloudflare"],
-  // System tools, not npm packages: dropdb/createdb (postgresql-client), dot (graphviz).
+  // On the machine, not in a manifest: dropdb/createdb are postgresql-client (db:reset, db:test:up),
+  // dot is graphviz (db-diagram). Declaring them would mean shipping a Postgres install as an npm
+  // package.
   "ignoreBinaries": ["dropdb", "createdb", "dot"],
-  // `check:unused` runs twice: the default pass finds unreferenced code, the `--production` pass
-  // finds code reached only from tests. All issue types except `cycles`, which is
-  // dependency-cruiser's per ADR-0020. Trailing `!` marks a pattern production:
-  //   "src/index.ts!"  production entry — both runs
-  //   "scripts/**"     development entry — default run only
-  //   "!tests/**!"     negation — production run only
-  // Declaring `entry` or `project` replaces knip's defaults, so both must be restated when
-  // overridden: without the default production entry the backend reported 117 unused files, and
-  // dropping `css` from the project glob made `tailwindcss` and `tw-animate-css` unused, since
-  // `@import "tailwindcss"` is their only reference.
-  //
-  // Reported but not findings:
-  // - drizzle `relations()` and `pgEnum()` values are registered by sitting in the namespace
-  //   `schema.gen.ts` re-exports; nothing imports them by name, so `nsExports` flags every one.
-  // - `CronExpression` spells out the crontab grammar so jobs write `EVERY_6_HOURS`. Unscheduled
-  //   members are the point.
-  "ignoreIssues": {
-    "apps/backend/src/**/models/**": ["nsExports", "nsTypes"],
-    "apps/backend/src/link-modules/definitions/**": ["nsExports", "nsTypes"],
-    "apps/backend/src/core/types/cron-expression.ts": ["enumMembers"]
-  },
   "workspaces": {
     ".": {
-      // verify.sh runs these as `node scripts/checks/*.mts`; knip does not parse shell.
+      // verify.sh runs this as `node scripts/checks/one-version.mts`, and knip does not parse shell.
       "entry": ["scripts/**/*.mts"]
     },
     "apps/admin": {
-      // `src/types/router.ts` is a `declare module '@tanstack/react-router'` augmentation — route
-      // files need its `staticData.breadcrumb`, but there is no symbol to import.
-      // `src/api/fetcher.ts` is reached only from the ignored `src/api/generated/`; without it the
-      // production run reports the fetcher and `src/env.ts` behind it as unused.
-      // `structure/.dependency-cruiser.cjs` sits outside the path that plugin scans. No `!`: gate
-      // config, not shipped code.
-      "entry": ["src/types/router.ts!", "orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs"],
-      // The plugin derives the fetcher entry from orval.config.ts, then drops it in the production
-      // run and shadows the same path declared in `entry`. Off, with the config kept as an entry so
-      // the default run still reads it.
-      "orval": false,
-      // `tests/**` holds the fixtures the vitest plugin loads through `setupFiles`. Test code, so
-      // only the default run should ask whether anything reaches it.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!tests/**!"]
+      // A `declare module '@tanstack/react-router'` augmentation. Seventeen route files depend on
+      // the `staticData.breadcrumb` it adds to the router's types; nothing imports the file, because
+      // there is no symbol in it to import.
+      "entry": ["src/types/router.ts"]
     },
     "apps/backend": {
-      // The production pass reads only the `start` script and `dependencies`, so tsx reads as
-      // unlisted there. It stays a devDependency: deploys run `wrangler deploy` from
-      // src/index.workerd.ts, and `start` is the Node path for a machine with dev deps installed.
-      "ignoreBinaries": ["tsx"],
-      // Node server, Worker, three temporal worker processes started by their own scripts, and
-      // providers registered by string. The scripts and configs are production entries too: this
-      // run asks what is reached only from tests, and a seed script is not a test — omitting them
-      // would flag `seedProviders` and the three `sync-providers` modules. `ping.ts` needs naming
-      // because production mode reads only the `start` script, not `temporal:ping`.
-      "entry": [
-        "src/index.ts!",
-        "src/index.workerd.ts!",
-        "src/framework/workflows/temporal/worker.ts!",
-        "src/framework/event-bus/temporal/worker.ts!",
-        "src/framework/scheduler/temporal/worker.ts!",
-        "src/providers/*/index.ts!",
-        "src/framework/temporal/ping.ts!",
-        "src/**/database.config.ts!",
-        "scripts/**/*.{ts,mjs}!",
-        "src/framework/*/temporal/worker.dev.ts!",
-        "structure/.dependency-cruiser.cjs",
-        "vitest.temporal.config.ts",
-        "vitest.temporal-server.config.ts"
-      ],
-      // Factories, fixtures, vitest setup. Test code — production never reaches it by design.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!tests/**!", "!src/**/__tests__/**!"]
-    },
-    "apps/store": {
-      // Same two cases as the admin: the fetcher is reached only from the ignored Orval output, the
-      // dependency-cruiser config only from the structure gate.
-      "entry": ["orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs"],
-      // Same plugin problem as the admin.
-      "orval": false,
-      // Same as the admin, plus the browser-mode setup file at the workspace root.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!tests/**!", "!vitest.browser.setup.ts!"]
+      // Three shapes nothing reaches from a default entry point: providers are registered by
+      // string, the drizzle configs are invoked by drizzle-kit, and the scripts by package.json.
+      "entry": ["src/providers/*/index.ts", "src/**/database.config.ts", "scripts/**/*.{ts,mjs}"]
     },
     "packages/icons": {
-      // build:icons passes it as `--templateSrc=` and build-icons/cli.ts loads it with
-      // `await import(path.resolve(…))` — a runtime path, so there is no import to follow.
-      "entry": ["scripts/export-template.ts"],
-      // `src/build-icons/` generates the icon components at build time and ships nothing.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!src/build-icons/**!"]
-    },
-    "packages/ui": {
-      // `scripts/re-eject-shadcn.ts` re-runs the shadcn CLI. A tool, not a component.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!scripts/**!"]
+      // Passed as `--templateSrc=` by build:icons and loaded with `await import(path.resolve(…))`
+      // in build-icons/cli.ts — a path assembled at runtime, so there is no import to follow.
+      "entry": ["scripts/export-template.ts"]
     }
   }
 }

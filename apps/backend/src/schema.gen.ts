@@ -5,7 +5,6 @@
 // schema-aware instance.
 
 export * from './link-modules/definitions/cart-payment-collection.js'
-export * from './link-modules/definitions/invite-role.js'
 export * from './link-modules/definitions/order-cart.js'
 export * from './link-modules/definitions/order-fulfillment.js'
 export * from './link-modules/definitions/order-payment-collection.js'
@@ -13,9 +12,6 @@ export * from './link-modules/definitions/product-variant-inventory-item.js'
 export * from './link-modules/definitions/product-variant-price-set.js'
 export * from './link-modules/definitions/readonly/cart-product.js'
 export * from './link-modules/definitions/region-payment-provider.js'
-export * from './modules/access-control/models/actor-role-assignment.js'
-export * from './modules/access-control/models/permission.js'
-export * from './modules/access-control/models/role.js'
 export * from './modules/auth/models/auth-identity.js'
 export * from './modules/auth/models/auth-password-reset-token.js'
 export * from './modules/auth/models/auth-verification.js'

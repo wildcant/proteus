@@ -1,11 +1,11 @@
-import type { AppContainer } from './container.js'
+import type { AwilixContainer } from 'awilix'
 import type { CronExpression } from './cron-expression.js'
 
 /**
  * Not exported: `JobDefinition` is the whole surface, and the deleted queue adapter — which held
  * its own map of handlers — was the only thing that ever named this on its own.
  */
-type JobHandler = (container: AppContainer) => Promise<void> | void
+type JobHandler = (container: AwilixContainer) => Promise<void> | void
 
 export type JobDefinition = {
   name: string

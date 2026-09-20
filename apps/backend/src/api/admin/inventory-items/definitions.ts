@@ -8,7 +8,6 @@ export default [
     matcher: '/admin/inventory-items',
     handler: inventoryItemRoutes.GET,
     input: inventoryItemRoutes.GetInput,
-    permissions: ['inventory.read'],
     operationId: 'listInventoryItems',
     summary: 'List inventory items',
     tags: [Tags.INVENTORY],

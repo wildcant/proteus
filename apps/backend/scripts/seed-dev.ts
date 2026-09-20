@@ -21,7 +21,6 @@ import type { IUserModuleService } from '../src/core/types/user/service.js'
 import { ContainerRegistrationKeys } from '../src/core/utils/container.js'
 import { Modules } from '../src/core/utils/modules-definition.js'
 import { container } from '../src/framework/runtime/container.node.js'
-import type { AccessControlModuleService } from '../src/modules/access-control/services/access-control-module-service.js'
 import { config as alertLowStock } from '../src/subscribers/alert-low-stock.js'
 import { amountIn, MARKETS, seedMarkets } from './seed/markets.js'
 
@@ -40,7 +39,6 @@ const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
 const stockLocationService = container.resolve<IStockLocationModuleService>(Modules.STOCK_LOCATION)
 const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
-const accessControlService = container.resolve<AccessControlModuleService>(Modules.ACCESS_CONTROL)
 
 // --- Catalogue ---
 // One catalogue drives products, option values, variants, prices and images, so a colourway is
@@ -455,38 +453,6 @@ if (adminIdentity) {
   } else {
     console.info('Skipped admin user linking (already linked)')
   }
-}
-
-// --- RBAC: super admin role + catalogue editor role + assignment ---
-const existingRoles = await accessControlService.listRoles()
-if (existingRoles.length === 0) {
-  const superAdminRole = await accessControlService.createRole({
-    name: 'Super Admin',
-    features: [],
-  })
-
-  // createRole validates features (rejects '*' for non-super-admin roles) and updateRole
-  // blocks super-admin modifications, so we set all privileged fields via the repository.
-  type UpdatableRepo = { update(id: string, data: Record<string, unknown>): Promise<unknown> }
-  // biome-ignore lint/suspicious/noExplicitAny: seed-only cast to reach private repository
-  const roleRepo = (accessControlService as any).roleRepository as UpdatableRepo
-  await roleRepo.update(superAdminRole.id, { isSuperAdmin: true, protected: true, featuresJson: ['*'] })
-
-  const adminUsers = await userService.listUsers({ email: DEV_ADMIN_EMAIL })
-  const adminUser = adminUsers[0]
-  if (adminUser) {
-    await accessControlService.assignRolesToUser(adminUser.id, [superAdminRole.id])
-    console.info(`Assigned super admin role to ${DEV_ADMIN_EMAIL}`)
-  }
-
-  await accessControlService.createRole({
-    name: 'Catalogue Editor',
-    features: ['product.*'],
-  })
-
-  console.info('Seeded super admin + catalogue editor roles')
-} else {
-  console.info(`Skipped RBAC roles (${existingRoles.length} already exist)`)
 }
 
 // --- Dev customer (registered + email-verified, ready for store auth) ---

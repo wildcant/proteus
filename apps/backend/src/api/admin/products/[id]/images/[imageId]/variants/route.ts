@@ -1,3 +1,4 @@
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminImageVariantsResponse, ImageIdParams } from '@proteus/http-schemas/admin'
@@ -6,7 +7,7 @@ export const GetInput = { params: ImageIdParams }
 export const GetOutput = AdminImageVariantsResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const productService = req.scope.resolve(Modules.PRODUCT)
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const retrieved = await productService.listVariantsForImage(req.params.imageId)
   const variants = await productService.enrichVariants(retrieved)
   return { status: 200, json: { variants } }

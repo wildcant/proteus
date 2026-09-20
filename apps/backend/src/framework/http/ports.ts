@@ -1,5 +1,5 @@
-import type { AuthContext, AuthorizationActor } from '../../core/auth/types.js'
-import type { AppContainer } from '../../core/types/container.js'
+import type { AwilixContainer } from 'awilix'
+import type { AuthContext } from '../../core/auth/types.js'
 
 // ---- Route handler types (used by api/ route files) ----
 
@@ -36,10 +36,9 @@ type RequestFields<T> = {
    */
   rawBody?: Uint8Array
   files?: File[]
-  scope: AppContainer
+  scope: AwilixContainer
   headers: Record<string, string>
   authContext?: AuthContext
-  authorizationActor?: AuthorizationActor
 }
 
 /**

@@ -9,7 +9,6 @@ import type {
 import type { WithTransaction } from '../../core/utils/with-transaction.js'
 import type { CartPaymentCollectionRepository } from '../repositories/cart-payment-collection.js'
 import type { CartProductRepository } from '../repositories/cart-product.js'
-import type { InviteRoleRepository } from '../repositories/invite-role.js'
 import type { OrderCartRepository } from '../repositories/order-cart.js'
 import type { OrderFulfillmentRepository } from '../repositories/order-fulfillment.js'
 import type { OrderPaymentCollectionRepository } from '../repositories/order-payment-collection.js'
@@ -21,7 +20,6 @@ export type LinkRepositoryMap = {
   productVariantInventoryItem: ProductVariantInventoryItemRepository
   cartProduct: CartProductRepository
   cartPaymentCollection: CartPaymentCollectionRepository
-  inviteRole: InviteRoleRepository
   productVariantPriceSet: ProductVariantPriceSetRepository
   orderCart: OrderCartRepository
   orderPaymentCollection: OrderPaymentCollectionRepository
@@ -53,15 +51,12 @@ export class LinkService {
     fulfillmentId: ['orderFulfillment'],
     regionId: ['regionPaymentProvider'],
     paymentProviderId: ['regionPaymentProvider'],
-    inviteId: ['inviteRole'],
-    roleId: ['inviteRole'],
   } as const satisfies LinkColumnRegistry
 
   constructor({
     productVariantInventoryItem,
     cartProduct,
     cartPaymentCollection,
-    inviteRole,
     productVariantPriceSet,
     orderCart,
     orderPaymentCollection,
@@ -74,7 +69,6 @@ export class LinkService {
       productVariantInventoryItem,
       cartProduct,
       cartPaymentCollection,
-      inviteRole,
       productVariantPriceSet,
       orderCart,
       orderPaymentCollection,

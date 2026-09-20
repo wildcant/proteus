@@ -1,4 +1,5 @@
 import { BigNumber } from '@core/bignumber.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -59,7 +60,7 @@ test.describe('POST /admin/payment-collections/:id/mark-as-paid', () => {
     const collection = await unpaidCollection(service)
     const sessionsBefore = (await service.read.paymentCollection(api.container, collection.id)).paymentSessions?.length
 
-    const paymentService = api.container.resolve(Modules.PAYMENT)
+    const paymentService = api.container.resolve<IPaymentModuleService>(Modules.PAYMENT)
     vi.spyOn(paymentService, 'capturePayment').mockRejectedValue(new Error('gateway refused the capture'))
 
     const { status } = await api.post<ApiErrorBody>(`/admin/payment-collections/${collection.id}/mark-as-paid`)

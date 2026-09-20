@@ -1,13 +1,14 @@
 import { Badge, Card, CardAction, CardDescription, CardHeader, CardTitle } from '@proteus/ui'
 import { getCurrencyName } from '@proteus/utils'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { PencilIcon } from 'lucide-react'
 import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { SingleColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
-import { regionsListQueryOptions, useSuspenseRegions } from '#/features/regions/api/regions'
-import { storeQueryOptions, useSuspenseStore } from '#/features/store/api/store'
+import { regionsListQueryOptions } from '#/features/regions/api/regions'
+import { storeQueryOptions } from '#/features/store/api/store'
 import { StoreCurrenciesCard } from '#/features/store/components/store-currencies-card'
 import { defaultCurrency } from '#/features/store/utils/store-currencies'
 
@@ -35,9 +36,9 @@ export const Route = createFileRoute('/_authed/settings/store')({
  * neither a sales-channel module nor a stock-location one, so there is nothing behind either row.
  */
 function StoreLayout() {
-  const { data } = useSuspenseStore()
+  const { data } = useSuspenseQuery(storeQueryOptions())
   const { store } = data
-  const { data: regions } = useSuspenseRegions()
+  const { data: regions } = useSuspenseQuery(regionsListQueryOptions())
 
   const currency = defaultCurrency(store.currencies)
   const region = regions.regions.find((candidate) => candidate.id === store.defaultRegionId)

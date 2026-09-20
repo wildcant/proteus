@@ -1,13 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
-import {
-  keepPreviousData,
-  queryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
   AdminBatchImageVariant,
   AdminBatchImageVariantResponse,
@@ -51,7 +44,7 @@ export const combinationKeys = queryKeysFactory<
 // Keyed by product + image, since an image's variant links are scoped to both.
 const imageVariantKeys = queryKeysFactory<'image-variants'>('image-variants')
 
-const imageVariantsQueryOptions = (productId: string, imageId: string) =>
+export const imageVariantsQueryOptions = (productId: string, imageId: string) =>
   queryOptions({
     queryKey: imageVariantKeys.detail(`${productId}:${imageId}`),
     queryFn: () => listImageVariants(productId, imageId),
@@ -87,12 +80,6 @@ const optionCombinationsQueryOptions = (productId: string, params?: ListOptionCo
 
 export const useOptionCombinations = (productId: string, params?: ListOptionCombinationsParams) =>
   useQuery(optionCombinationsQueryOptions(productId, params))
-
-export const useSuspenseProductVariant = (productId: string, variantId: string) =>
-  useSuspenseQuery(productVariantQueryOptions(productId, variantId))
-
-export const useSuspenseImageVariants = (productId: string, imageId: string) =>
-  useSuspenseQuery(imageVariantsQueryOptions(productId, imageId))
 
 export const useProductVariants = (productId: string, params?: ListProductVariantsParams) =>
   useQuery(productVariantsListQueryOptions(productId, params))

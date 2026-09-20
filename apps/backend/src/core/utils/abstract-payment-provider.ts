@@ -9,8 +9,10 @@ import type {
   CreateAccountHolderOutput,
   DeleteAccountHolderInput,
   DeleteAccountHolderOutput,
+  DeletePaymentInput,
   DeletePaymentMethodInput,
   DeletePaymentMethodOutput,
+  DeletePaymentOutput,
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
   InitiatePaymentInput,
@@ -156,6 +158,7 @@ export abstract class AbstractPaymentProvider<TConfig = Record<string, unknown>>
    *
    * The input `data` comes from `PaymentSession.data` set by {@link initiatePayment}.
    */
+  abstract deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput>
 
   /**
    * Refund a previously captured payment (fully or partially).

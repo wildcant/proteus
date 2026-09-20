@@ -8,7 +8,6 @@ export default [
     matcher: '/admin/reservations',
     handler: reservationRoutes.GET,
     input: reservationRoutes.GetInput,
-    permissions: ['inventory.read'],
     operationId: 'listReservations',
     summary: 'List reservations',
     tags: [Tags.RESERVATIONS],

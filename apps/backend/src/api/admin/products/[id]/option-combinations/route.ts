@@ -1,3 +1,4 @@
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -17,7 +18,7 @@ export const GetOutput = AdminOptionCombinationListResponse
  * free ones, edit asks for those plus its own, and an unscoped read returns all of them.
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const productService = req.scope.resolve(Modules.PRODUCT)
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const { pagination, filters } = req.validatedQuery
   const { offset, limit } = pagination
   const page = await productService.listProductOptionCombinations(

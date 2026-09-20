@@ -21,11 +21,6 @@ import { PaymentModuleService } from './services/payment-module-service.js'
 
 export default Module(Modules.PAYMENT, {
   service: PaymentModuleService,
-  features: [
-    { id: 'payment.read', title: 'View payments' },
-    { id: 'payment.capture', title: 'Capture payments' },
-    { id: 'payment.refund', title: 'Refund payments' },
-  ],
   models: {
     accountHolderTable,
     captureTable,

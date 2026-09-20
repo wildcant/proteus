@@ -1,4 +1,7 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IOrderModuleService } from '@core/types/order/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -16,9 +19,9 @@ export const GetThrows = [ErrorTypes.NOT_FOUND] as const
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const customerId = req.authContext?.actorId
 
-  const orderService = req.scope.resolve(Modules.ORDER)
-  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
-  const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
+  const orderService = req.scope.resolve<IOrderModuleService>(Modules.ORDER)
+  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
   const order = await orderService.retrieveOrder(req.params.id)
 
   if (customerId && order.customerId !== customerId) {

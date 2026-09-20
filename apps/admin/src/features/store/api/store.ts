@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
-import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import type {
   AdminAddStoreCurrencies,
   AdminStoreResponse,
@@ -27,8 +27,6 @@ export const storeQueryOptions = () =>
 
 /** The store and the currencies it sells in. There is exactly one, so this takes no id. */
 export const useStore = () => useQuery(storeQueryOptions())
-
-export const useSuspenseStore = () => useSuspenseQuery(storeQueryOptions())
 
 /**
  * The currency codes every price form offers, in the order the API returns them — default first.

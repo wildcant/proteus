@@ -59,8 +59,6 @@
     "subscribers:generate": "tsx scripts/generate-subscriber-registry.ts",
     "check:job-registry": "tsx scripts/generate-job-registry.ts --check",
     "jobs:generate": "tsx scripts/generate-job-registry.ts",
-    "check:feature-registry": "tsx scripts/generate-feature-registry.ts --check",
-    "features:generate": "tsx scripts/generate-feature-registry.ts",
     "check:schema-registry": "tsx scripts/generate-schema.ts --check",
     "schema:generate": "tsx scripts/generate-schema.ts",
     "check:schema": "tsx scripts/checks/run.ts",

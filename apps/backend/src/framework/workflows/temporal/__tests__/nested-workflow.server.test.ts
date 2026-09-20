@@ -4,15 +4,14 @@ import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '@fram
 import { Context } from '@temporalio/activity'
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
-import { createContainer } from 'awilix'
+import { type AwilixContainer, createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import type { AppContainer } from '../../../../core/types/container.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 import { createWorkflowActivities, withStepActivities } from '../activities.js'
-import { WORKFLOWS_PATH } from '../config.js'
+import { DEFAULT_TEMPORAL_TASK_QUEUE, WORKFLOWS_PATH } from '../config.js'
 import type { WorkflowRegistry } from '../registry.js'
 import type { AdvanceWorkflowInput } from '../types.js'
-import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT, TEST_TASK_QUEUE } from './temporal-test-env.js'
+import { createTemporalTestEnvironment, TEMPORAL_BOOT_TIMEOUT } from './temporal-test-env.js'
 
 /**
  * The topology the production Worker actually deploys, which nothing else covers.
@@ -41,7 +40,7 @@ let testEnv: TestWorkflowEnvironment
 let worker: Worker
 let workerRun: Promise<void>
 let engine: TemporalWorkflowEngine
-let container: AppContainer
+let container: AwilixContainer
 
 /** Every `advanceWorkflow` the driver asked for, so the test can see what did and did not reach one. */
 const advanced: AdvanceWorkflowInput[] = []
@@ -70,7 +69,7 @@ describe('nested workflows on a Worker pinned to the simple engine', () => {
 
     worker = await Worker.create({
       connection: testEnv.nativeConnection,
-      taskQueue: TEST_TASK_QUEUE,
+      taskQueue: DEFAULT_TEMPORAL_TASK_QUEUE,
       workflowsPath: WORKFLOWS_PATH,
       dataConverter: { payloadConverterPath: PAYLOAD_CONVERTER_PATH },
       // The spy has to be applied *through* `withStepActivities`, not spread over its result: every
@@ -99,7 +98,7 @@ describe('nested workflows on a Worker pinned to the simple engine', () => {
       // Pinned to the Worker above rather than left to `env.TEMPORAL_TASK_QUEUE`: a queue set in
       // the environment would send these workflows somewhere nothing is polling, and the suite
       // would hang rather than fail.
-      taskQueue: TEST_TASK_QUEUE,
+      taskQueue: DEFAULT_TEMPORAL_TASK_QUEUE,
       connect: async () => ({ client: testEnv.client, close: async () => undefined }),
       startToCloseTimeout: '30 seconds',
     })

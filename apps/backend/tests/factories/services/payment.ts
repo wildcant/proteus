@@ -1,9 +1,12 @@
+import type { AwilixContainer } from 'awilix'
 import type { BigNumber } from '../../../src/core/bignumber.js'
-import type { AppContainer } from '../../../src/core/types/container.js'
+import type { ILinkService } from '../../../src/core/types/link/service.js'
+import type { IPaymentModuleService } from '../../../src/core/types/payment/service.js'
 import { ContainerRegistrationKeys } from '../../../src/core/utils/container.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
 import { MANUAL_PROVIDER_ID } from '../../../src/modules/payment/utils/provider-ids.js'
 import { type CreatePayment, paymentTable } from '../../../src/schema.gen.js'
+import type { Database } from '../../../src/schema.type.js'
 import { generateCreatePaymentCollectionDTO, generateCreatePaymentSessionDTO } from '../payment-dto.js'
 
 export type PaymentSessionForCartOptions = {
@@ -19,9 +22,9 @@ export type PaymentSessionForCartOptions = {
  * Gives a cart something to pay with: a payment collection, a session on it, and the
  * cart↔collection link `validate-cart-payments` looks the collection up through.
  */
-export async function createPaymentSessionForCart(container: AppContainer, options: PaymentSessionForCartOptions) {
-  const paymentService = container.resolve(Modules.PAYMENT)
-  const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+export async function createPaymentSessionForCart(container: AwilixContainer, options: PaymentSessionForCartOptions) {
+  const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+  const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
   const currencyCode = options.currencyCode ?? 'usd'
 
@@ -47,28 +50,28 @@ export async function createPaymentSessionForCart(container: AppContainer, optio
 }
 
 /** Takes the money for real, so the payment carries a capture the way a completed order's does. */
-export async function capturePayment(container: AppContainer, paymentId: string) {
-  const paymentService = container.resolve(Modules.PAYMENT)
+export async function capturePayment(container: AwilixContainer, paymentId: string) {
+  const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   return paymentService.capturePayment({ paymentId })
 }
 
-export async function cancelPayment(container: AppContainer, paymentId: string) {
-  const paymentService = container.resolve(Modules.PAYMENT)
+export async function cancelPayment(container: AwilixContainer, paymentId: string) {
+  const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   return paymentService.cancelPayment(paymentId)
 }
 
 // ---- Reads ----
 
-export async function retrievePaymentCollection(container: AppContainer, paymentCollectionId: string) {
-  const paymentService = container.resolve(Modules.PAYMENT)
+export async function retrievePaymentCollection(container: AwilixContainer, paymentCollectionId: string) {
+  const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   return paymentService.retrievePaymentCollection(paymentCollectionId)
 }
 
-export async function retrievePayment(container: AppContainer, paymentId: string) {
-  const paymentService = container.resolve(Modules.PAYMENT)
+export async function retrievePayment(container: AwilixContainer, paymentId: string) {
+  const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   return paymentService.retrievePayment(paymentId)
 }
@@ -81,8 +84,8 @@ export async function retrievePayment(container: AppContainer, paymentId: string
  * invariant under test, so setting the losing side up through the service is circular — this
  * takes the container's own database handle instead.
  */
-export async function createPaymentForSession(container: AppContainer, values: CreatePayment) {
-  const getDb = container.resolve(ContainerRegistrationKeys.GET_DB)
+export async function createPaymentForSession(container: AwilixContainer, values: CreatePayment) {
+  const getDb = container.resolve<() => Database>(ContainerRegistrationKeys.GET_DB)
 
   const rows = await getDb().insert(paymentTable).values(values).returning()
   const payment = rows[0]

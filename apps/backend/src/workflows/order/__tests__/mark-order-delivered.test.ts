@@ -1,3 +1,4 @@
+import type { IOrderModuleService } from '@core/types/order/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -68,7 +69,7 @@ test.describe('markOrderDeliveredWorkflow', () => {
   test('rollback un-stamps the fulfillment when a later step fails', async ({ service, expect }) => {
     const { orderId, fulfillmentId } = await shippedOrder(service)
 
-    const orderService = container.resolve(Modules.ORDER)
+    const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
     const original = orderService.retrieveOrder
     let calls = 0
     vi.spyOn(orderService, 'retrieveOrder').mockImplementation(async (...args) => {

@@ -1,5 +1,5 @@
 {
-  "id": "c608a2ee-62d9-4b95-97db-50fe247dc5d6",
+  "id": "7a3d8e18-4bdb-4f6a-9581-089c588f47f7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -66,113 +66,6 @@
             }
           ],
           "isUnique": true,
-          "where": "deleted_at IS NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.invite_role": {
-      "name": "invite_role",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "CONCAT('invrl_', REPLACE(gen_random_uuid()::text, '-', ''))"
-        },
-        "invite_id": {
-          "name": "invite_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "role_id": {
-          "name": "role_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "idx_invrl_invite_role": {
-          "name": "idx_invrl_invite_role",
-          "columns": [
-            {
-              "expression": "invite_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "role_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "deleted_at IS NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_invrl_invite_id": {
-          "name": "idx_invrl_invite_id",
-          "columns": [
-            {
-              "expression": "invite_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "deleted_at IS NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_invrl_role_id": {
-          "name": "idx_invrl_role_id",
-          "columns": [
-            {
-              "expression": "role_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
           "where": "deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",

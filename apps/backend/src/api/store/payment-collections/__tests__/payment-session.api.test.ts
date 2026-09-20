@@ -1,6 +1,7 @@
 import { BigNumber } from '@core/bignumber.js'
 import { noopLogger } from '@core/logger/noop-logger.js'
 import type { Logger } from '@core/types/logger.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { StoreCreatePaymentSessionResponse, StoreUpdatePaymentSessionResponse } from '@proteus/http-schemas/store'
 import { stripeTest } from '@tests/mocks/vitest/stripe.mock.js'
@@ -134,7 +135,7 @@ test.describe('POST /store/payment-collections/:id/payment-sessions (stripe)', (
     expect(stripeTest.mock.paymentIntents.create).toHaveBeenCalledTimes(2)
     expect(second.body.paymentSession.id).not.toBe(first.body.paymentSession.id)
 
-    const paymentService = api.container.resolve(Modules.PAYMENT)
+    const paymentService = api.container.resolve<IPaymentModuleService>(Modules.PAYMENT)
     const after = await paymentService.retrievePaymentCollection(collection.id)
     expect(after.paymentSessions?.map((session) => session.id)).toEqual([second.body.paymentSession.id])
   })

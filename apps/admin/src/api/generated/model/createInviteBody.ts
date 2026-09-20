@@ -8,6 +8,4 @@
 
 export type CreateInviteBody = {
   email: string;
-  /** @maxItems 50 */
-  roleIds: string[];
 };

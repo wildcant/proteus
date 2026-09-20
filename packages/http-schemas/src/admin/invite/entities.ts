@@ -8,7 +8,7 @@ export const AdminInvite = z
     accepted: z.boolean(),
     token: z.string(),
     expiresAt: dateToIso,
-    roleIds: z.array(z.string()).optional().default([]),
+    // TODO(RBAC): roles when RBAC is implemented
     ...timestamps.shape,
   })
   .openapi('AdminInvite')

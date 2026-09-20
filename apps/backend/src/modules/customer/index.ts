@@ -8,12 +8,6 @@ import { CustomerModuleService } from './services/customer-module-service.js'
 
 export default Module(Modules.CUSTOMER, {
   service: CustomerModuleService,
-  features: [
-    { id: 'customer.read', title: 'View customers' },
-    { id: 'customer.create', title: 'Create customers' },
-    { id: 'customer.update', title: 'Edit customers' },
-    { id: 'customer.delete', title: 'Delete customers' },
-  ],
   models: {
     customerAddressTable,
     customerTable,

@@ -9,8 +9,10 @@ import type {
   CreateAccountHolderOutput,
   DeleteAccountHolderInput,
   DeleteAccountHolderOutput,
+  DeletePaymentInput,
   DeletePaymentMethodInput,
   DeletePaymentMethodOutput,
+  DeletePaymentOutput,
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
   InitiatePaymentInput,
@@ -49,6 +51,7 @@ export interface IPaymentProvider {
   authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput>
   capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput>
   cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput>
+  deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput>
   refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput>
   retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput>
   updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput>

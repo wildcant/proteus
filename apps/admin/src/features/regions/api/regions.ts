@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
-import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import type {
   AdminCreateRegion,
   AdminRegionResponse,
@@ -31,10 +31,6 @@ export const regionQueryOptions = (id: string) =>
   })
 
 export const useRegions = (params?: ListRegionsParams) => useQuery(regionsListQueryOptions(params))
-
-export const useSuspenseRegion = (id: string) => useSuspenseQuery(regionQueryOptions(id))
-
-export const useSuspenseRegions = (params?: ListRegionsParams) => useSuspenseQuery(regionsListQueryOptions(params))
 
 export const useCreateRegion = (options?: UseMutationOptions<AdminRegionResponse, Error, AdminCreateRegion>) => {
   const { onSuccess, onError, ...rest } = options ?? {}

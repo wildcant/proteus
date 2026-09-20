@@ -1,4 +1,7 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -19,9 +22,9 @@ export const GetInput = { params: IdParams, query: AdminProductVariantListParams
 export const GetOutput = AdminProductVariantListResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const productService = req.scope.resolve(Modules.PRODUCT)
-  const inventoryService = req.scope.resolve(Modules.INVENTORY)
-  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
+  const inventoryService = req.scope.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
   const { pagination, filters } = req.validatedQuery
   const [variants, count] = await productService.listAndCountProductVariants(
     { ...filters, productId: req.params.id },
@@ -51,7 +54,7 @@ export const PostOutput = AdminCreateProductVariantResponse
 export const PostThrows = [ErrorTypes.UNEXPECTED_STATE, ...createProductVariantsWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const productService = req.scope.resolve(Modules.PRODUCT)
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const created = await createProductVariantsWorkflow.run({
     productId: req.params.id,
     variants: [req.body],

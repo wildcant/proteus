@@ -1,3 +1,4 @@
+import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminCountryListParams, AdminCountryListResponse } from '@proteus/http-schemas/admin'
@@ -18,7 +19,7 @@ export const GetOutput = AdminCountryListResponse
  * exposes `listCountries` and no counting counterpart, and this list is 249 rows by definition.
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const regionService = req.scope.resolve(Modules.REGION)
+  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
 
   const { pagination, filters } = req.validatedQuery
   const { offset, limit, order } = pagination

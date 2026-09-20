@@ -1,4 +1,5 @@
 import { Badge, Card, CardAction, CardHeader, CardTitle, usePrompt } from '@proteus/ui'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
 import { ActionMenu } from '#/components/common/action-menu'
@@ -6,7 +7,7 @@ import { SectionRow } from '#/components/common/section-row'
 import { SingleColumnPageSkeleton } from '#/components/common/skeleton'
 import { DataTable } from '#/components/data-table/data-table'
 import { PageLayout } from '#/components/layout/page-layout'
-import { useDeleteProductOption, useSuspenseProductOption } from '#/features/product-options/api/product-options'
+import { productOptionQueryOptions, useDeleteProductOption } from '#/features/product-options/api/product-options'
 import { useOptionProductsTable } from '#/features/product-options/hooks/use-option-products-table'
 import { useOptionValuesTable } from '#/features/product-options/hooks/use-option-values-table'
 
@@ -17,7 +18,7 @@ export const Route = createFileRoute('/_authed/_shell/product-options/$id/_detai
 
 function ProductOptionDetailLayout() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseProductOption(id)
+  const { data } = useSuspenseQuery(productOptionQueryOptions(id))
   const navigate = useNavigate()
   const { mutateAsync: deleteOption } = useDeleteProductOption(id)
   const prompt = usePrompt()

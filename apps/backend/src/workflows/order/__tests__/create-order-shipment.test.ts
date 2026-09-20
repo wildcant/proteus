@@ -1,3 +1,4 @@
+import type { IOrderModuleService } from '@core/types/order/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -52,21 +53,13 @@ test.describe('createOrderShipmentWorkflow', () => {
     })
   })
 
-  test('refuses to ship a fulfillment that has already shipped', async ({ service, expect }) => {
-    const { orderId, fulfillmentId } = await fulfilledOrder(service)
+  test('refuses to ship an order that was never fulfilled', async ({ service, expect }) => {
+    const { order } = await service.create.order(container, { inventory: null })
 
-    await createOrderShipmentWorkflow.run({ orderId, fulfillmentId })
-
-    await expect(createOrderShipmentWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow(
-      'fulfillment status is "shipped", expected "fulfilled"',
-    )
-  })
-
-  test('refuses to ship a canceled fulfillment', async ({ service, expect }) => {
-    const { orderId, fulfillmentId } = await fulfilledOrder(service)
-    await service.update.fulfillment(container, fulfillmentId, { canceledAt: new Date() })
-
-    await expect(createOrderShipmentWorkflow.run({ orderId, fulfillmentId })).rejects.toThrow('fulfillment is canceled')
+    // The status guard runs before the link lookup, so the fulfillment id never gets resolved.
+    await expect(
+      createOrderShipmentWorkflow.run({ orderId: order.id, fulfillmentId: 'ful_never_created' }),
+    ).rejects.toThrow('fulfillment status is "unfulfilled", expected "fulfilled"')
   })
 
   test('refuses a fulfillment belonging to another order', async ({ service, expect }) => {
@@ -81,7 +74,7 @@ test.describe('createOrderShipmentWorkflow', () => {
   test('rollback un-stamps the fulfillment when a later step fails', async ({ service, expect }) => {
     const { orderId, fulfillmentId } = await fulfilledOrder(service)
 
-    const orderService = container.resolve(Modules.ORDER)
+    const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
     const original = orderService.retrieveOrder
     let calls = 0
     vi.spyOn(orderService, 'retrieveOrder').mockImplementation(async (...args) => {

@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
-import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import type {
   AdminCreateProduct,
   AdminCreateProductResponse,
@@ -35,8 +35,6 @@ export const productQueryOptions = (id: string) =>
   })
 
 export const useProducts = (params?: ListProductsParams) => useQuery(productsListQueryOptions(params))
-
-export const useSuspenseProduct = (id: string) => useSuspenseQuery(productQueryOptions(id))
 
 export const useCreateProduct = (
   options?: UseMutationOptions<AdminCreateProductResponse, Error, AdminCreateProduct>,

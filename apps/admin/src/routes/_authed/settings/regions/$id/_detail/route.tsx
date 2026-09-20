@@ -1,12 +1,13 @@
 import { Badge, Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
 import { getCurrencyName } from '@proteus/utils'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { PencilIcon } from 'lucide-react'
 import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { SingleColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
-import { useSuspenseRegion } from '#/features/regions/api/regions'
+import { regionQueryOptions } from '#/features/regions/api/regions'
 import { RegionCountriesCard } from '#/features/regions/components/region-countries-card'
 import { paymentProviderLabel } from '#/features/regions/utils/payment-provider-label'
 
@@ -17,7 +18,7 @@ export const Route = createFileRoute('/_authed/settings/regions/$id/_detail')({
 
 function RegionDetailLayout() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseRegion(id)
+  const { data } = useSuspenseQuery(regionQueryOptions(id))
   const { region } = data
 
   return (

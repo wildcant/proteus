@@ -1,4 +1,5 @@
 import type { RegionDTO } from '@core/types/region/common.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { assertStoreSellsCurrencyStep, assertStoreSellsCurrencyThrows } from './steps/assert-store-sells-currency.js'
@@ -27,7 +28,7 @@ export const updateRegionWorkflow = createWorkflow<UpdateRegionInput, RegionDTO>
     const region = await ctx.step(
       'update-region',
       async ({ container }) => {
-        const regionService = container.resolve(Modules.REGION)
+        const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
         const before = await regionService.retrieveRegion(input.regionId)
 
         const changes = {
@@ -42,7 +43,7 @@ export const updateRegionWorkflow = createWorkflow<UpdateRegionInput, RegionDTO>
         return { before, updated: updated ?? before }
       },
       async ({ before }, { container }) => {
-        const regionService = container.resolve(Modules.REGION)
+        const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
         await regionService.updateRegions([before.id], { name: before.name, currencyCode: before.currencyCode })
       },
     )

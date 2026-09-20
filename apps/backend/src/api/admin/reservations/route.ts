@@ -1,3 +1,5 @@
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { IOrderModuleService } from '@core/types/order/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminReservationListParams, AdminReservationListResponse } from '@proteus/http-schemas/admin'
@@ -11,8 +13,8 @@ export const GetOutput = AdminReservationListResponse
  * reservation is written by checkout and released by cancelling or fulfilling, never by hand.
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const inventoryService = req.scope.resolve(Modules.INVENTORY)
-  const orderService = req.scope.resolve(Modules.ORDER)
+  const inventoryService = req.scope.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const orderService = req.scope.resolve<IOrderModuleService>(Modules.ORDER)
   const { pagination } = req.validatedQuery
   const { offset, limit } = pagination
 

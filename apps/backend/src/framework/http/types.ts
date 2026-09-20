@@ -1,9 +1,7 @@
 import type { ErrorTypes } from '@core/errors/app-error.js'
-import type { PermissionKey } from '@core/types/access-control/common.js'
 import type { HttpRequest, HttpResult, MiddlewareFunction } from '@framework/http/ports.js'
 import type { z } from 'zod'
 
-export type { PermissionKey } from '@core/types/access-control/common.js'
 export type { MiddlewareFunction } from '@framework/http/ports.js'
 
 type AuthPolicy = 'required' | 'optional' | 'unregistered' | 'public'
@@ -21,7 +19,6 @@ export const Tags = {
   FULFILLMENT_PROVIDERS: 'Fulfillment Providers',
   FULFILLMENT_SETS: 'Fulfillment Sets',
   PAYMENTS: 'Payments',
-  PERMISSIONS: 'Permissions',
   PAYMENT_COLLECTIONS: 'Payment Collections',
   PAYMENT_PROVIDERS: 'Payment Providers',
   PRODUCTS: 'Products',
@@ -29,7 +26,6 @@ export const Tags = {
   PRODUCT_VARIANTS: 'Product Variants',
   REFUND_REASONS: 'Refund Reasons',
   RESERVATIONS: 'Reservations',
-  ROLES: 'Roles',
   REGIONS: 'Regions',
   SHIPPING_OPTIONS: 'Shipping Options',
   SHIPPING_PROFILES: 'Shipping Profiles',
@@ -64,7 +60,6 @@ type RouteInput = {
 
 type BaseRoute = {
   auth?: AuthPolicy
-  permissions?: PermissionKey[]
   description?: string
   // The failure half of the contract, next to `output`, which is the success half. Every type
   // listed becomes a declared response via the same `typeToStatus` map the runtime answers with,

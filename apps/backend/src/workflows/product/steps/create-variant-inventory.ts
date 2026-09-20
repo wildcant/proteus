@@ -1,3 +1,7 @@
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { Logger } from '@core/types/logger.js'
+import type { IStockLocationModuleService } from '@core/types/stock-location/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
@@ -46,10 +50,10 @@ export async function createVariantInventoryStep(
       const tracked = input.variants.filter((variant) => variant.manageInventory)
       if (tracked.length === 0) return NOTHING_CREATED
 
-      const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
-      const inventoryService = container.resolve(Modules.INVENTORY)
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
-      const stockLocationService = container.resolve(Modules.STOCK_LOCATION)
+      const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+      const stockLocationService = container.resolve<IStockLocationModuleService>(Modules.STOCK_LOCATION)
 
       const items = await inventoryService.createInventoryItems(buildVariantInventoryItems(tracked))
 
@@ -84,8 +88,8 @@ export async function createVariantInventoryStep(
     async (created, { container }) => {
       if (created.inventoryItemIds.length === 0) return
 
-      const inventoryService = container.resolve(Modules.INVENTORY)
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
       await linkService.repo('productVariantInventoryItem').softDelete(created.linkIds)
       // The levels go with the item: they name it through a cascading foreign key, which is what

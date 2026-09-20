@@ -1,4 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
+import type { IStoreModuleService } from '@core/types/store/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminStoreResponse, AdminUpdateStore } from '@proteus/http-schemas/admin'
@@ -16,7 +18,7 @@ export const GetThrows = [ErrorTypes.NOT_FOUND] as const
  * describe, and inventing one would let a price form quote money the store does not sell in.
  */
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
-  const storeService = req.scope.resolve(Modules.STORE)
+  const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
 
   const store = await storeService.resolveStore()
   if (!store) {
@@ -47,8 +49,8 @@ export const PostThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.INVALID_DATA] as con
  * a region that was not.
  */
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const storeService = req.scope.resolve(Modules.STORE)
-  const regionService = req.scope.resolve(Modules.REGION)
+  const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
+  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
 
   const store = await storeService.resolveStore()
   if (!store) {

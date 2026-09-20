@@ -1,4 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { CustomerResponse } from '@proteus/http-schemas/store'
@@ -12,7 +13,7 @@ export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
   }
 
-  const customerService = req.scope.resolve(Modules.CUSTOMER)
+  const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
   const customer = await customerService.retrieveCustomer(customerId)
 
   return { status: 200, json: { customer } }

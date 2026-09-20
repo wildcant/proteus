@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
-import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { listAdminFulfillmentProviders } from '#/api/generated/fulfillment-providers/fulfillment-providers'
 import type {
   AdminCreateOrderFulfillment,
@@ -38,8 +38,6 @@ export const orderQueryOptions = (id: string) =>
   })
 
 export const useOrders = (params?: ListOrdersParams) => useQuery(ordersListQueryOptions(params))
-
-export const useSuspenseOrder = (id: string) => useSuspenseQuery(orderQueryOptions(id))
 
 export const fulfillmentProvidersQueryOptions = () =>
   queryOptions({

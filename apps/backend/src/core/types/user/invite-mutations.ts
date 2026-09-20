@@ -1,5 +1,6 @@
 export type CreateInviteDTO = {
   email: string
+  // TODO(RBAC): roles when RBAC is implemented
 }
 
 export type UpdateInviteDTO = {

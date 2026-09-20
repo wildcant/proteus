@@ -1,6 +1,4 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
-import type { PermissionGrant } from '@core/types/access-control/common.js'
-import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { authHeader } from '@tests/utils/auth-header.js'
@@ -85,10 +83,9 @@ test.describe('GET /admin/store', () => {
   })
 
   test('refuses a request carrying no credential', async ({ expect, createApi, factories }) => {
+    // `namespaceAuth` mounts the real `authenticate` middleware the server puts in front of every
+    // /admin route, which is the subject of this test.
     const authed = await createApi({ definitions: storeDefinitions, namespaceAuth: true })
-    const accessControl = authed.container.resolve(Modules.ACCESS_CONTROL)
-    const role = await accessControl.createRole({ name: 'Staff', features: ['store.read'] as PermissionGrant[] })
-    await accessControl.assignRolesToUser('user_admin', [role.id])
     await createStoreWithCurrencies(factories)
 
     const anonymous = await authed.get<ApiErrorBody>('/admin/store')

@@ -4,6 +4,8 @@ import {
   getAuthJwtConfig,
 } from '@core/auth/utils/generate-jwt-token.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IAuthModuleService } from '@core/types/auth/service.js'
+import type { ConfigModule } from '@core/types/config.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
@@ -22,7 +24,7 @@ export const POST = async (
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
   }
 
-  const authService = req.scope.resolve(Modules.AUTH)
+  const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
   const jwtConfig = getAuthJwtConfig()
 
   if (authContext.actorId) {
@@ -45,7 +47,7 @@ export const POST = async (
   }
 
   // Branch 2: Actorless token — re-validate and run verification checks
-  const config = req.scope.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
+  const config = req.scope.resolve<ConfigModule>(ContainerRegistrationKeys.CONFIG_MODULE)
   const { authIdentity } = await authService.validateAuthIdentity(authContext.authIdentityId, authContext.authProvider)
 
   const tokenResult = await generateJwtTokenWithChecks(

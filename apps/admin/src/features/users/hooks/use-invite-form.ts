@@ -10,7 +10,7 @@ export function useInviteForm(params?: InviteFormParams) {
   const createMutation = useCreateInvite()
 
   const form = useAppForm({
-    defaultValues: { email: '', roleIds: [] as string[] },
+    defaultValues: { email: '' },
     validators: { onSubmit: AdminCreateInvite },
     onSubmit: async ({ value }) => {
       try {

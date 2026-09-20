@@ -1,4 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { DeleteResponse, IdParams, StoreCustomerAddressResponse, StoreUpdateAddress } from '@proteus/http-schemas/store'
@@ -18,7 +19,7 @@ export const PATCH = async (
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
   }
 
-  const customerService = req.scope.resolve(Modules.CUSTOMER)
+  const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
   const { isDefault, ...fields } = req.body
 
   // Releasing the flags is a plain field change; only claiming them contends with the partial
@@ -36,7 +37,7 @@ export const DeleteOutput = DeleteResponse
 export const DELETE = async (
   req: HttpRequest<typeof DeleteInput, typeof DeleteMiddlewares>,
 ): Promise<HttpResult<typeof DeleteOutput>> => {
-  const customerService = req.scope.resolve(Modules.CUSTOMER)
+  const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
   await customerService.softDeleteCustomerAddresses([req.params.id])
 
   return { status: 200, json: { id: req.params.id, deleted: true } }

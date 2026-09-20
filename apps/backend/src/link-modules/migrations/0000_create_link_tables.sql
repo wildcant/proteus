@@ -7,15 +7,6 @@ CREATE TABLE "cart_payment_collection" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
-CREATE TABLE "invite_role" (
-	"id" text PRIMARY KEY DEFAULT CONCAT('invrl_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
-	"invite_id" text NOT NULL,
-	"role_id" text NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"deleted_at" timestamp with time zone
-);
---> statement-breakpoint
 CREATE TABLE "order_cart" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('ordcart_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"order_id" text NOT NULL,
@@ -72,9 +63,6 @@ CREATE TABLE "region_payment_provider" (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX "idx_cart_payment_collection" ON "cart_payment_collection" USING btree ("cart_id","payment_collection_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_invrl_invite_role" ON "invite_role" USING btree ("invite_id","role_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_invrl_invite_id" ON "invite_role" USING btree ("invite_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_invrl_role_id" ON "invite_role" USING btree ("role_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_order_cart" ON "order_cart" USING btree ("order_id","cart_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_order_cart_cart_id" ON "order_cart" USING btree ("cart_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_order_fulfillment" ON "order_fulfillment" USING btree ("order_id","fulfillment_id") WHERE deleted_at IS NULL;--> statement-breakpoint

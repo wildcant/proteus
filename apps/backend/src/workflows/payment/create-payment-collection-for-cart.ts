@@ -1,5 +1,9 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { Logger } from '@core/types/logger.js'
 import type { PaymentCollectionDTO } from '@core/types/payment/common.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -15,10 +19,10 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
     const paymentCollection = await ctx.step(
       'create-payment-collection',
       async ({ container }) => {
-        const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
-        const cartService = container.resolve(Modules.CART)
-        const paymentService = container.resolve(Modules.PAYMENT)
-        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
         // Validate cart exists and has no existing payment collection
         const cart = await cartService.retrieveCart(input.cartId)
@@ -66,7 +70,7 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
         return collection
       },
       async (collection, { container }) => {
-        const paymentService = container.resolve(Modules.PAYMENT)
+        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
         await paymentService.softDeletePaymentCollections([collection.id])
       },
     )

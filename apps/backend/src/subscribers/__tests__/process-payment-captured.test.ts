@@ -1,6 +1,7 @@
 import { buildEvent, type PaymentCapturedAction } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
-import type { UserDTO } from '@core/types/user/common.js'
+import type { IOrderModuleService } from '@core/types/order/service.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -22,17 +23,9 @@ import { config } from '../process-payment-captured.js'
  */
 
 let container: TestContainer
-let operator: UserDTO
 
-/**
- * Both alerts this spec sees are addressed by permission — the checkout rollback's to `order.read`,
- * this subscriber's own to `payment.read` — so one operator holds all three keys. Without them a
- * container has no audience at all, and every "stays quiet" assertion below would hold for a reason
- * that has nothing to do with the subscriber.
- */
-test.beforeEach(async ({ createTestContainer, service }) => {
+test.beforeEach(async ({ createTestContainer }) => {
   container = await createTestContainer()
-  operator = await service.create.operator(container, ['notification.read', 'order.read', 'payment.read'])
 })
 
 /** One delivery, identical to what an adapter would hand the handler. */
@@ -58,7 +51,7 @@ async function settledAfterRefusal(service: Fixtures['service']) {
   return { ...checkout, session }
 }
 
-const paymentModule = () => container.resolve(Modules.PAYMENT)
+const paymentModule = () => container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
 /**
  * Breaks the re-run at `create-order`, which is *before* `authorize-payment`.
@@ -68,7 +61,9 @@ const paymentModule = () => container.resolve(Modules.PAYMENT)
  * the payment in rather than anything the workflow did to it.
  */
 function failTheReRun() {
-  vi.spyOn(container.resolve(Modules.ORDER), 'createOrder').mockRejectedValueOnce(new Error('order module unavailable'))
+  vi.spyOn(container.resolve<IOrderModuleService>(Modules.ORDER), 'createOrder').mockRejectedValueOnce(
+    new Error('order module unavailable'),
+  )
 }
 
 test.describe('the payment.captured subscriber', () => {
@@ -173,7 +168,6 @@ test.describe('the payment.captured subscriber', () => {
     // as observed rather than promised — `authorize-payment`'s compensation refunds a re-run that
     // got that far, and this one failed before it, so the capture is still standing.
     expect(alerts.find((alert) => alert.template === 'payment-without-order')).toMatchObject({
-      to: operator.email,
       channel: 'feed',
       resourceType: 'cart',
       resourceId: cart.id,
@@ -224,7 +218,7 @@ test.describe('the payment.captured subscriber', () => {
 
     // The state a completion in flight leaves: its `orderCart` link written, `completedAt` not yet
     // stamped. `check-idempotency` reads exactly that and refuses a second run.
-    const orderService = container.resolve(Modules.ORDER)
+    const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
     const order = await orderService.createOrder({ email: cart.email ?? 'shopper@example.com', currencyCode: 'usd' })
     await service.read.linkRepo(container, 'orderCart').create({ orderId: order.id, cartId: cart.id })
 

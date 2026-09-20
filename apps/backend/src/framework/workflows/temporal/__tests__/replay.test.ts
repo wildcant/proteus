@@ -4,7 +4,6 @@ import { createSimpleWorkflowEngine } from '@framework/workflows/simple-adapter.
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { vi } from 'vitest'
-import type { ModuleContainer } from '../../../../core/types/container.js'
 import { chainStepFingerprint } from '../fingerprint.js'
 import {
   advanceWorkflow,
@@ -87,7 +86,7 @@ test.describe('replay', () => {
 
   test('passes the container to step actions', async ({ expect }) => {
     const workflow = createWorkflow<void, string>('resolve-greeting', async (ctx) =>
-      ctx.step('greet', async ({ container }) => (container as ModuleContainer).resolve<string>('greeting')),
+      ctx.step('greet', async ({ container }) => container.resolve('greeting') as string),
     )
 
     const { output } = await runToCompletion(workflow, undefined)

@@ -1,3 +1,4 @@
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { DeleteResponse, IdParams } from '@proteus/http-schemas/store'
@@ -21,7 +22,7 @@ export const DELETE = async (
   req: HttpRequest<typeof DeleteInput, typeof DeleteMiddlewares>,
 ): Promise<HttpResult<typeof DeleteOutput>> => {
   const customer = req.customer
-  const paymentService = req.scope.resolve(Modules.PAYMENT)
+  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   await paymentService.deleteSavedMethod(customer.id, req.params.id)
 

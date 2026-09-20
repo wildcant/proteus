@@ -1,3 +1,4 @@
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -18,7 +19,7 @@ export const PostOutput = AdminCreateProductVariantsBatchResponse
 export const PostThrows = [...createProductVariantsWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const productService = req.scope.resolve(Modules.PRODUCT)
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const created = await createProductVariantsWorkflow.run({
     productId: req.params.id,
     variants: req.body.variants,

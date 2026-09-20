@@ -146,7 +146,7 @@ function eventKey<N extends EventName>(name: N, data: EventPayloads[N]): string 
  * The subscriber name is part of it because dedup is per subscriber: two subscribers on
  * `order.placed` are two deliveries, and collapsing them would drop one.
  */
-function dispatchIdentity<N extends EventName>(name: N, data: EventPayloads[N], subscriber: string): string {
+export function dispatchIdentity<N extends EventName>(name: N, data: EventPayloads[N], subscriber: string): string {
   return `${name}:${eventKey(name, data)}:${subscriber}`
 }
 

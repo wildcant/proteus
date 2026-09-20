@@ -2,6 +2,11 @@ import type { BigNumber } from '@core/bignumber.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CartAddressDTO, CartAddressType, CartDTO } from '@core/types/cart/common.js'
 import type { CreateCartAddressDTO } from '@core/types/cart/mutations.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import type { RegionDTO } from '@core/types/region/common.js'
 import type { IRegionModuleService } from '@core/types/region/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
@@ -150,7 +155,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
      * an order and must not accept further updates.
      */
     const cart = await ctx.step('validate-cart', async ({ container }) => {
-      const cartService = container.resolve(Modules.CART)
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
       const cart = await cartService.retrieveCart(input.cartId)
 
       if (cart.completedAt) {
@@ -172,8 +177,8 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
      * same numbers and drop shipping methods that still apply, for nothing.
      */
     const regionChange = await ctx.step<RegionChange | null>('resolve-region-change', async ({ container }) => {
-      const regionService = container.resolve(Modules.REGION)
-      const cartService = container.resolve(Modules.CART)
+      const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
       const region = await resolveNamedRegion(regionService, input)
       if (!region || region.id === cart.regionId) return null
@@ -245,7 +250,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
     const cartUpdate = await ctx.step<AppliedCartUpdate>(
       'update-cart',
       async ({ container }) => {
-        const cartService = container.resolve(Modules.CART)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
         const addressTypesInRequest: CartAddressType[] = [
           ...(input.shippingAddress ? (['shipping'] as const) : []),
@@ -285,7 +290,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
         }
       },
       async (cartUpdate, { container }) => {
-        const cartService = container.resolve(Modules.CART)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
         await cartService.updateCart(input.cartId, {
           customerId: cartUpdate.previousCustomerId,
@@ -317,7 +322,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
     const applied = await ctx.step<AppliedRegionChange>(
       'apply-region-change',
       async ({ container }) => {
-        const cartService = container.resolve(Modules.CART)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
         const [existingShippingAddress] = await cartService.listCartAddresses({
           cartId: input.cartId,
@@ -358,7 +363,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
         }
       },
       async (applied, { container }) => {
-        const cartService = container.resolve(Modules.CART)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
         await cartService.updateCart(input.cartId, {
           regionId: applied.previousRegionId,
@@ -396,9 +401,9 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
     await ctx.step<PreviousLineItemPrice[]>(
       'reprice-line-items',
       async ({ container }) => {
-        const cartService = container.resolve(Modules.CART)
-        const pricingService = container.resolve(Modules.PRICING)
-        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
         const lineItems = await cartService.listLineItems({ cartId: input.cartId })
         if (lineItems.length === 0) return []
@@ -432,7 +437,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
       },
       async (previousPrices, { container }) => {
         if (previousPrices.length === 0) return
-        const cartService = container.resolve(Modules.CART)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
         await cartService.applyLineItemPlan(input.cartId, {
           create: [],
@@ -451,8 +456,8 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
     await ctx.step<string[]>(
       'refresh-shipping-methods',
       async ({ container }) => {
-        const cartService = container.resolve(Modules.CART)
-        const fulfillmentService = container.resolve(Modules.FULFILLMENT)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 
         const shippingMethods = await cartService.listShippingMethods({ cartId: input.cartId })
         if (shippingMethods.length === 0) return []
@@ -476,7 +481,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
       },
       async (staleIds, { container }) => {
         if (staleIds.length === 0) return
-        const cartService = container.resolve(Modules.CART)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
         await cartService.restoreShippingMethods(staleIds)
       },
     )
@@ -490,13 +495,13 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
     await ctx.step<PreviousPaymentCollection>(
       'refresh-payment-collection',
       async ({ container }) => {
-        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
         const link = await linkService.repo('cartPaymentCollection').findByCartId(input.cartId)
         if (!link) return null
 
-        const cartService = container.resolve(Modules.CART)
-        const paymentService = container.resolve(Modules.PAYMENT)
+        const cartService = container.resolve<ICartModuleService>(Modules.CART)
+        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
         const [collection, lineItems, shippingMethods] = await Promise.all([
           paymentService.retrievePaymentCollection(link.paymentCollectionId),
@@ -515,7 +520,7 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
       },
       async (previous, { container }) => {
         if (!previous) return
-        const paymentService = container.resolve(Modules.PAYMENT)
+        const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
         await paymentService.updatePaymentCollection(previous.id, {
           amount: previous.amount,

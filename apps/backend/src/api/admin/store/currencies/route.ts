@@ -1,4 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IStoreModuleService } from '@core/types/store/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminAddStoreCurrencies, AdminStoreResponse } from '@proteus/http-schemas/admin'
@@ -24,7 +25,7 @@ export const PostThrows = [ErrorTypes.NOT_FOUND] as const
  * the state both cards on the screen re-render from.
  */
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const storeService = req.scope.resolve(Modules.STORE)
+  const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
 
   const store = await storeService.resolveStore()
   if (!store) {

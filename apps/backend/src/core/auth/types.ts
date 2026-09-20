@@ -12,9 +12,3 @@ export type AuthContext = {
 }
 
 export type AuthTokenPayload = AuthContext & Partial<JwtPayload>
-
-export type AuthorizationActor = {
-  id: string
-  type: string
-  grantedFeatures: ReadonlySet<string>
-}

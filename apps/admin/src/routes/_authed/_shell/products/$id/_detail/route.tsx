@@ -1,8 +1,9 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { TwoColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
 import { ProductOptionSection } from '#/features/product-options/components/product-option-section'
-import { useSuspenseProduct } from '#/features/products/api/products'
+import { productQueryOptions } from '#/features/products/api/products'
 import { ProductMediaSection } from '#/features/products/components/media/product-media-section'
 import { ProductAttributeSection } from '#/features/products/components/product-attribute-section'
 import { ProductGeneralSection } from '#/features/products/components/product-general-section'
@@ -15,7 +16,7 @@ export const Route = createFileRoute('/_authed/_shell/products/$id/_detail')({
 
 function ProductDetailLayout() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseProduct(id)
+  const { data } = useSuspenseQuery(productQueryOptions(id))
 
   return (
     <PageLayout.TwoColumn>

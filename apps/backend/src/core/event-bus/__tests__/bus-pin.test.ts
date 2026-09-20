@@ -1,3 +1,4 @@
+import type { EventBus } from '@core/event-bus/types.js'
 import type { Logger } from '@core/types/logger.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { pinnedTestEventBusAdapter } from '@tests/setup/event-bus-adapter.js'
@@ -44,7 +45,7 @@ test.describe('the pinned event bus adapter', () => {
   testWithLog('is the one that actually runs the subscribers', async ({ createTestContainer, expect }) => {
     logged.length = 0
     const container = await createTestContainer()
-    const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)
+    const bus = container.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
 
     await bus.emit('bus.probe', { id: 'probe_1' })
 

@@ -3,12 +3,11 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { createTemporalDevServerEnvironment, TEMPORAL_BOOT_TIMEOUT } from '@tests/setup/temporal-test-env.js'
-import { asValue, createContainer } from 'awilix'
+import { type AwilixContainer, asValue, createContainer } from 'awilix'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { Event } from '../../../core/event-bus/events.js'
 import { defineSubscriber, type SubscriberDefinition } from '../../../core/event-bus/types.js'
 import { noopLogger } from '../../../core/logger/noop-logger.js'
-import type { AppContainer } from '../../../core/types/container.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../temporal/config.js'
 import { createSubscriberRegistry, type SubscriberRegistry } from '../registry.js'
 import { createEventActivities } from '../temporal/activities.js'
@@ -39,7 +38,7 @@ let testEnv: TestWorkflowEnvironment
 let worker: Worker
 let workerRun: Promise<void>
 let bus: TemporalEventBus
-let container: AppContainer
+let container: AwilixContainer
 
 /** Every delivery the Worker actually ran, in order. The whole of what these tests observe. */
 const delivered: Event[] = []

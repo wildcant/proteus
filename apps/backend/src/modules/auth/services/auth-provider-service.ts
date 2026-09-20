@@ -1,18 +1,18 @@
+import type { AwilixContainer } from 'awilix'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   AuthenticationInput,
   AuthenticationResponse,
   AuthIdentityProviderService,
 } from '../../../core/types/auth/provider.js'
-import type { ModuleContainer } from '../../../core/types/container.js'
 import type { AbstractAuthModuleProvider } from '../../../core/utils/abstract-auth-module-provider.js'
 
 type InjectedDependencies = {
-  container: ModuleContainer
+  container: AwilixContainer
 }
 
 export class AuthProviderService {
-  private container: ModuleContainer
+  private container: AwilixContainer
 
   constructor({ container }: InjectedDependencies) {
     this.container = container

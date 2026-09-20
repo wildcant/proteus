@@ -1,3 +1,4 @@
+import type { AwilixContainer } from 'awilix'
 import type {
   FilterableCartAddressProps,
   FilterableCartLineItemProps,
@@ -11,7 +12,7 @@ import type {
   UpdateCartDTO,
   UpdateCartWithAddressesDTO,
 } from '../../../src/core/types/cart/mutations.js'
-import type { AppContainer } from '../../../src/core/types/container.js'
+import type { ICartModuleService } from '../../../src/core/types/cart/service.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
   generateCreateCartDTO,
@@ -21,24 +22,24 @@ import {
   generateUpdateCartWithAddressesDTO,
 } from '../cart-dto.js'
 
-export async function createCart(container: AppContainer, overrides?: Partial<CreateCartDTO>) {
-  const cartService = container.resolve(Modules.CART)
+export async function createCart(container: AwilixContainer, overrides?: Partial<CreateCartDTO>) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.createCart(generateCreateCartDTO(overrides))
 }
 
-export async function addLineItem(container: AppContainer, cartId: string, overrides?: Partial<CreateLineItemDTO>) {
-  const cartService = container.resolve(Modules.CART)
+export async function addLineItem(container: AwilixContainer, cartId: string, overrides?: Partial<CreateLineItemDTO>) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.addLineItem(cartId, generateCreateLineItemDTO(overrides))
 }
 
 export async function addShippingMethod(
-  container: AppContainer,
+  container: AwilixContainer,
   cartId: string,
   overrides?: Partial<CreateShippingMethodDTO>,
 ) {
-  const cartService = container.resolve(Modules.CART)
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   const [shippingMethod] = await cartService.addShippingMethods(cartId, [generateCreateShippingMethodDTO(overrides)])
 
@@ -49,11 +50,11 @@ export async function addShippingMethod(
 /** Attaches addresses to a cart, the way `update-cart` does mid-checkout. Returns the rows the
  *  cart now owns — the cart itself no longer points at them. */
 export async function addCartAddresses(
-  container: AppContainer,
+  container: AwilixContainer,
   cartId: string,
   overrides?: Partial<UpdateCartWithAddressesDTO>,
 ) {
-  const cartService = container.resolve(Modules.CART)
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   await cartService.updateCartWithAddresses(cartId, generateUpdateCartWithAddressesDTO(overrides))
   return cartService.listCartAddresses({ cartId })
@@ -62,40 +63,40 @@ export async function addCartAddresses(
 // ---- Update ----
 
 /** Direct write, for cart states no store route produces on demand — a completed cart. */
-export async function updateCart(container: AppContainer, cartId: string, overrides?: Partial<UpdateCartDTO>) {
-  const cartService = container.resolve(Modules.CART)
+export async function updateCart(container: AwilixContainer, cartId: string, overrides?: Partial<UpdateCartDTO>) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.updateCart(cartId, generateUpdateCartDTO(overrides))
 }
 
 // ---- Reads ----
 
-export async function retrieveCart(container: AppContainer, cartId: string) {
-  const cartService = container.resolve(Modules.CART)
+export async function retrieveCart(container: AwilixContainer, cartId: string) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.retrieveCart(cartId)
 }
 
-export async function listCarts(container: AppContainer, filters?: FilterableCartProps) {
-  const cartService = container.resolve(Modules.CART)
+export async function listCarts(container: AwilixContainer, filters?: FilterableCartProps) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.listCarts(filters)
 }
 
-export async function listLineItems(container: AppContainer, filters?: FilterableCartLineItemProps) {
-  const cartService = container.resolve(Modules.CART)
+export async function listLineItems(container: AwilixContainer, filters?: FilterableCartLineItemProps) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.listLineItems(filters)
 }
 
-export async function listShippingMethods(container: AppContainer, filters?: FilterableCartShippingMethodProps) {
-  const cartService = container.resolve(Modules.CART)
+export async function listShippingMethods(container: AwilixContainer, filters?: FilterableCartShippingMethodProps) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.listShippingMethods(filters)
 }
 
-export async function listCartAddresses(container: AppContainer, filters?: FilterableCartAddressProps) {
-  const cartService = container.resolve(Modules.CART)
+export async function listCartAddresses(container: AwilixContainer, filters?: FilterableCartAddressProps) {
+  const cartService = container.resolve<ICartModuleService>(Modules.CART)
 
   return cartService.listCartAddresses(filters)
 }

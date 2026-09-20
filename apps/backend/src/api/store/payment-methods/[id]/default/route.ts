@@ -1,3 +1,4 @@
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreSavedMethodListResponse } from '@proteus/http-schemas/store'
@@ -22,7 +23,7 @@ export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
 ): Promise<HttpResult<typeof PostOutput>> => {
   const customer = req.customer
-  const paymentService = req.scope.resolve(Modules.PAYMENT)
+  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   await paymentService.setDefaultSavedMethod(customer.id, req.params.id)
   const paymentMethods = await paymentService.listSavedMethods(customer.id)

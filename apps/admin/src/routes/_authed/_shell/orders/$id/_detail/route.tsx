@@ -1,7 +1,8 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { TwoColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
-import { useSuspenseOrder } from '#/features/orders/api/orders'
+import { orderQueryOptions } from '#/features/orders/api/orders'
 import { OrderCustomerSection } from '#/features/orders/components/order-customer-section'
 import { OrderFulfillmentSection } from '#/features/orders/components/order-fulfillment-section'
 import { OrderGeneralSection } from '#/features/orders/components/order-general-section'
@@ -15,7 +16,7 @@ export const Route = createFileRoute('/_authed/_shell/orders/$id/_detail')({
 
 function OrderDetailLayout() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseOrder(id)
+  const { data } = useSuspenseQuery(orderQueryOptions(id))
 
   return (
     <PageLayout.TwoColumn>

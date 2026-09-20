@@ -1,13 +1,12 @@
 import { env } from '@env'
+import type { AwilixContainer } from 'awilix'
 import { asValue } from 'awilix'
-import type { ModuleContainer } from '../../../core/types/container.js'
 import type {
   NotificationChannel,
   NotificationModuleOptions,
   NotificationProviderConfig,
 } from '../../../core/types/notification/common.js'
 import type { AbstractNotificationProviderService } from '../../../core/utils/abstract-notification-provider.js'
-import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { NotificationProviderService } from '../services/notification-provider-service.js'
 
 // biome-ignore lint/suspicious/noExplicitAny: provider constructors accept varied dependency shapes
@@ -47,7 +46,7 @@ export async function loadProviders({
   container,
   options,
 }: {
-  container: ModuleContainer
+  container: AwilixContainer
   options?: Record<string, unknown>
 }): Promise<void> {
   const opts = options as NotificationModuleOptions | undefined
@@ -85,7 +84,7 @@ export async function loadProviders({
   const providerService = new NotificationProviderService({
     container,
     notificationProviderRepository: container.resolve('notificationProviderRepository'),
-    logger: container.resolve(ContainerRegistrationKeys.LOGGER),
+    logger: container.resolve('logger'),
   })
   container.register({ notificationProviderService: asValue(providerService) })
 

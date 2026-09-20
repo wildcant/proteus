@@ -146,7 +146,9 @@ export class PaymentModuleService implements IPaymentModuleService {
       this.paymentRepository.find({ paymentCollectionId: id }, undefined, context),
     ])
 
-    const paymentsWithRelations = await Promise.all(payments.map((p) => this.retrievePayment(p.id, context)))
+    const paymentsWithRelations = await Promise.all(
+      payments.map((p) => this.retrievePaymentWithRelations_(p.id, context)),
+    )
 
     return { ...collection, paymentSessions: sessions, payments: paymentsWithRelations }
   }
@@ -386,7 +388,7 @@ export class PaymentModuleService implements IPaymentModuleService {
     // Idempotent — safe to call multiple times
     const payment = await this.paymentRepository.findOne({ paymentSessionId: session.id }, undefined, context)
     if (payment && (payment.capturedAt || session.status === 'authorized')) {
-      return { outcome: 'authorized', payment: await this.retrievePayment(payment.id, context) }
+      return { outcome: 'authorized', payment: await this.retrievePaymentWithRelations_(payment.id, context) }
     }
 
     const provider = await this.paymentProviderService.authorizePayment(session.providerId, {
@@ -440,7 +442,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       await this.maybeUpdatePaymentCollection_(session.paymentCollectionId, context)
 
-      return { outcome: 'authorized', payment: await this.retrievePayment(payment.id, context) }
+      return { outcome: 'authorized', payment: await this.retrievePaymentWithRelations_(payment.id, context) }
     } catch (error) {
       // Except when the session's slot was already taken. The payment's session id is the only
       // unique index reachable in here, so a duplicate means a concurrent caller — checkout and
@@ -483,13 +485,8 @@ export class PaymentModuleService implements IPaymentModuleService {
   // Payment retrieval
   // ---------------------------------------------------------------------------
 
-  async retrievePayment(paymentId: string, context?: Context): Promise<PaymentDTO> {
-    const payment = await this.paymentRepository.findByIdOrFail(paymentId, undefined, context)
-    const [captures, refunds] = await Promise.all([
-      this.captureRepository.find({ paymentId: payment.id }, undefined, context),
-      this.refundRepository.find({ paymentId: payment.id }, undefined, context),
-    ])
-    return { ...payment, captures, refunds }
+  async retrievePayment(id: string, context?: Context): Promise<PaymentDTO> {
+    return this.retrievePaymentWithRelations_(id, context)
   }
 
   // ---------------------------------------------------------------------------
@@ -556,7 +553,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
 
-      return this.retrievePayment(payment.id, ctx)
+      return this.retrievePaymentWithRelations_(payment.id, ctx)
     })
   }
 
@@ -623,7 +620,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
 
-      return this.retrievePayment(payment.id, ctx)
+      return this.retrievePaymentWithRelations_(payment.id, ctx)
     })
   }
 
@@ -633,7 +630,7 @@ export class PaymentModuleService implements IPaymentModuleService {
       const payment = await this.paymentRepository.findByIdOrFail(paymentId, undefined, ctx)
 
       if (payment.canceledAt) {
-        return this.retrievePayment(payment.id, ctx)
+        return this.retrievePaymentWithRelations_(payment.id, ctx)
       }
 
       await this.paymentProviderService.cancelPayment(payment.providerId, {
@@ -645,7 +642,7 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
 
-      return this.retrievePayment(payment.id, ctx)
+      return this.retrievePaymentWithRelations_(payment.id, ctx)
     })
   }
 
@@ -971,6 +968,15 @@ export class PaymentModuleService implements IPaymentModuleService {
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  private async retrievePaymentWithRelations_(paymentId: string, context?: Context): Promise<PaymentDTO> {
+    const payment = await this.paymentRepository.findByIdOrFail(paymentId, undefined, context)
+    const [captures, refunds] = await Promise.all([
+      this.captureRepository.find({ paymentId: payment.id }, undefined, context),
+      this.refundRepository.find({ paymentId: payment.id }, undefined, context),
+    ])
+    return { ...payment, captures, refunds }
+  }
 
   private async maybeUpdatePaymentCollection_(collectionId: string, context?: Context): Promise<void> {
     const collection = await this.paymentCollectionRepository.findByIdOrFail(collectionId, undefined, context)

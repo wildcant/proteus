@@ -1,6 +1,5 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
-import * as userRoleRoutes from './[id]/roles/route.js'
 import * as userByIdRoutes from './[id]/route.js'
 import * as meRoutes from './me/route.js'
 import * as userRoutes from './route.js'
@@ -21,7 +20,6 @@ export default [
     matcher: '/admin/users',
     handler: userRoutes.GET,
     input: userRoutes.GetInput,
-    permissions: ['user.read'],
     operationId: 'listUsers',
     summary: 'List users',
     tags: [Tags.USERS],
@@ -32,7 +30,6 @@ export default [
     matcher: '/admin/users',
     handler: userRoutes.POST,
     input: userRoutes.PostInput,
-    permissions: ['user.create'],
     operationId: 'createUser',
     summary: 'Create a user',
     tags: [Tags.USERS],
@@ -43,7 +40,6 @@ export default [
     matcher: '/admin/users/:id',
     handler: userByIdRoutes.GET,
     input: userByIdRoutes.GetInput,
-    permissions: ['user.read'],
     operationId: 'getUser',
     summary: 'Retrieve a user',
     tags: [Tags.USERS],
@@ -54,7 +50,6 @@ export default [
     matcher: '/admin/users/:id',
     handler: userByIdRoutes.PATCH,
     input: userByIdRoutes.PatchInput,
-    permissions: ['user.update'],
     operationId: 'updateUser',
     summary: 'Update a user',
     tags: [Tags.USERS],
@@ -65,33 +60,9 @@ export default [
     matcher: '/admin/users/:id',
     handler: userByIdRoutes.DELETE,
     input: userByIdRoutes.DeleteInput,
-    permissions: ['user.delete'],
     operationId: 'deleteUser',
     summary: 'Delete a user',
     tags: [Tags.USERS],
     output: userByIdRoutes.DeleteOutput,
-  },
-  {
-    method: 'GET',
-    matcher: '/admin/users/:id/roles',
-    handler: userRoleRoutes.GET,
-    input: userRoleRoutes.GetInput,
-    permissions: ['access-control.assignment.read'],
-    operationId: 'listUserRoles',
-    summary: "List a user's roles",
-    tags: [Tags.USERS],
-    output: userRoleRoutes.GetOutput,
-  },
-  {
-    method: 'PUT',
-    matcher: '/admin/users/:id/roles',
-    handler: userRoleRoutes.PUT,
-    input: userRoleRoutes.PutInput,
-    permissions: ['access-control.assignment.write'],
-    operationId: 'replaceUserRoles',
-    summary: "Replace a user's roles",
-    tags: [Tags.USERS],
-    throws: userRoleRoutes.PutThrows,
-    output: userRoleRoutes.PutOutput,
   },
 ] satisfies RouteDefinition[]

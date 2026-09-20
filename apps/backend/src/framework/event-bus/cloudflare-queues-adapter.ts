@@ -1,8 +1,8 @@
+import type { AwilixContainer } from 'awilix'
 import type { DbProvider } from '../../core/db/ports.js'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import { buildEvent, type EventName, type EventPayloads } from '../../core/event-bus/events.js'
-import type { EventBus } from '../../core/event-bus/ports.js'
-import type { AppContainer } from '../../core/types/container.js'
+import type { EventBus } from '../../core/event-bus/types.js'
 import type { Logger } from '../../core/types/logger.js'
 import type { SubscriberRegistry } from './registry.js'
 
@@ -207,7 +207,7 @@ function assertSendable(messages: { body: QueuedEvent }[]): void {
  */
 export function createCloudflareQueuesConsumer(deps: {
   registry: SubscriberRegistry
-  container: AppContainer
+  container: AwilixContainer
   logger: Logger
   dbProvider: Pick<DbProvider, 'withConnection'>
 }): (batch: MessageBatch<QueuedEvent>) => Promise<void> {
@@ -236,7 +236,7 @@ export function createCloudflareQueuesConsumer(deps: {
 }
 
 /** Runs the one subscriber a message names, or throws so the message retries. */
-async function dispatch(body: QueuedEvent, deps: { registry: SubscriberRegistry; container: AppContainer }) {
+async function dispatch(body: QueuedEvent, deps: { registry: SubscriberRegistry; container: AwilixContainer }) {
   const { registry, container } = deps
   // Looked up through `forEvent` rather than by name alone, so a message still has to name a
   // subscriber that subscribes to the event it carries.

@@ -1,4 +1,5 @@
 import { BigNumber } from '@core/bignumber.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -140,7 +141,7 @@ test.describe('setProductOptionsWorkflow', () => {
   test('rollback puts the previous options and combinations back', async ({ service, expect }) => {
     const { product, size, titles, expanded } = await productSizedSAndM(service)
 
-    vi.spyOn(container.resolve(Modules.PRODUCT), 'createProductVariants').mockRejectedValueOnce(
+    vi.spyOn(container.resolve<IProductModuleService>(Modules.PRODUCT), 'createProductVariants').mockRejectedValueOnce(
       new Error('SKU collision'),
     )
 

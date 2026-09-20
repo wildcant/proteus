@@ -1,5 +1,5 @@
+import type { AwilixContainer } from 'awilix'
 import type { FindConfig } from '../../../src/core/types/common.js'
-import type { AppContainer } from '../../../src/core/types/container.js'
 import type {
   FilterableProductImageProps,
   FilterableProductProps,
@@ -16,6 +16,7 @@ import type {
   UpdateProductVariantDTO,
   VariantImageInput,
 } from '../../../src/core/types/product/mutations.js'
+import type { IProductModuleService } from '../../../src/core/types/product/service.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
   generateCreateProductDTO,
@@ -33,8 +34,8 @@ export type VariantOverrides = Omit<Partial<CreateProductVariantDTO>, 'productId
  * A product and the image rows it created, rank-ordered, so callers never list them back
  * just to learn the ids of images they asked for.
  */
-export async function createProduct(container: AppContainer, overrides?: Partial<CreateProductDTO>) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function createProduct(container: AwilixContainer, overrides?: Partial<CreateProductDTO>) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   const draft = generateCreateProductDTO(overrides)
   const product = await productService.createProduct(draft)
@@ -49,58 +50,62 @@ export async function createProduct(container: AppContainer, overrides?: Partial
  * Several products in one `createProducts` call, so every row lands in a single insert and
  * therefore shares one `now()` — which is what makes a `createdAt` tiebreaker testable.
  */
-export async function createProducts(container: AppContainer, overrides: Partial<CreateProductDTO>[] = [{}, {}]) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function createProducts(container: AwilixContainer, overrides: Partial<CreateProductDTO>[] = [{}, {}]) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.createProducts(overrides.map((product) => generateCreateProductDTO(product)))
 }
 
-export async function createProductOption(container: AppContainer, overrides?: Partial<CreateProductOptionDTO>) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function createProductOption(container: AwilixContainer, overrides?: Partial<CreateProductOptionDTO>) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.createProductOption(generateCreateProductOptionDTO(overrides))
 }
 
 export async function createProductVariants(
-  container: AppContainer,
+  container: AwilixContainer,
   productId: string,
   overrides: VariantOverrides[] = [{}],
 ) {
-  const productService = container.resolve(Modules.PRODUCT)
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.createProductVariants(
     overrides.map((variant) => generateCreateProductVariantDTO({ ...variant, productId })),
   )
 }
 
-export async function createProductVariant(container: AppContainer, productId: string, overrides?: VariantOverrides) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function createProductVariant(
+  container: AwilixContainer,
+  productId: string,
+  overrides?: VariantOverrides,
+) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.createProductVariant(generateCreateProductVariantDTO({ ...overrides, productId }))
 }
 
-export async function addImageToVariant(container: AppContainer, overrides: Partial<VariantImageInput>[] = [{}]) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function addImageToVariant(container: AwilixContainer, overrides: Partial<VariantImageInput>[] = [{}]) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.addImageToVariant(overrides.map((link) => generateVariantImageInputDTO(link)))
 }
 
 export async function setProductOptions(
-  container: AppContainer,
+  container: AwilixContainer,
   productId: string,
   overrides?: Partial<SetProductOptionsDTO>,
 ) {
-  const productService = container.resolve(Modules.PRODUCT)
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.setProductOptions(productId, generateSetProductOptionsDTO(overrides))
 }
 
 export async function updateProductVariant(
-  container: AppContainer,
+  container: AwilixContainer,
   variantId: string,
   overrides?: Partial<UpdateProductVariantDTO>,
 ) {
-  const productService = container.resolve(Modules.PRODUCT)
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.updateProductVariant(variantId, generateUpdateProductVariantDTO(overrides))
 }
@@ -108,45 +113,48 @@ export async function updateProductVariant(
 // ---- Reads ----
 
 export async function listProducts(
-  container: AppContainer,
+  container: AwilixContainer,
   filters?: FilterableProductProps,
   config?: FindConfig<ProductDTO>,
 ) {
-  const productService = container.resolve(Modules.PRODUCT)
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.listProducts(filters, config)
 }
 
-export async function listProductVariants(container: AppContainer, filters?: FilterableProductVariantProps) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function listProductVariants(container: AwilixContainer, filters?: FilterableProductVariantProps) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.listProductVariants(filters)
 }
 
-export async function retrieveProductVariant(container: AppContainer, variantId: string) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function retrieveProductVariant(container: AwilixContainer, variantId: string) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.retrieveProductVariant(variantId)
 }
 
 export async function listProductImages(
-  container: AppContainer,
+  container: AwilixContainer,
   filters?: FilterableProductImageProps,
   config?: FindConfig<ProductImageDTO>,
 ) {
-  const productService = container.resolve(Modules.PRODUCT)
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.listProductImages(filters, config)
 }
 
-export async function listProductVariantImages(container: AppContainer, filters?: FilterableProductVariantImageProps) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function listProductVariantImages(
+  container: AwilixContainer,
+  filters?: FilterableProductVariantImageProps,
+) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.listProductVariantImages(filters)
 }
 
-export async function listProductOptionsForProduct(container: AppContainer, productId: string) {
-  const productService = container.resolve(Modules.PRODUCT)
+export async function listProductOptionsForProduct(container: AwilixContainer, productId: string) {
+  const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
 
   return productService.listProductOptionsForProduct(productId)
 }

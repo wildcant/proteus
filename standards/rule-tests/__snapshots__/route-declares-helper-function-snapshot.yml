@@ -21,50 +21,6 @@ snapshots:
       start: 15
       end: 37
   ? |
-    const findRoleOrFail = async (accessControl: IAccessControlModuleService, id: string) => {
-      const role = await accessControl.findRole(id)
-      if (!role) throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Role not found' })
-      return role
-    }
-  : labels:
-    - source: |-
-        findRoleOrFail = async (accessControl: IAccessControlModuleService, id: string) => {
-          const role = await accessControl.findRole(id)
-          if (!role) throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Role not found' })
-          return role
-        }
-      style: primary
-      start: 6
-      end: 245
-    - source: findRoleOrFail
-      style: secondary
-      start: 6
-      end: 20
-    - source: |-
-        async (accessControl: IAccessControlModuleService, id: string) => {
-          const role = await accessControl.findRole(id)
-          if (!role) throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Role not found' })
-          return role
-        }
-      style: secondary
-      start: 23
-      end: 245
-  ? |
-    const toCents = (amount: number) => Math.round(amount * 100)
-  : labels:
-    - source: 'toCents = (amount: number) => Math.round(amount * 100)'
-      style: primary
-      start: 6
-      end: 60
-    - source: toCents
-      style: secondary
-      start: 6
-      end: 13
-    - source: '(amount: number) => Math.round(amount * 100)'
-      style: secondary
-      start: 16
-      end: 60
-  ? |
     function describeAccountHolder(customer: CustomerDTO): EnsureAccountHoldersDTO {
       return { customerId: customer.id, email: customer.email }
     }

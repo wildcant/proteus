@@ -1,3 +1,6 @@
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { IdParams, StorePaymentProviderListResponse } from '@proteus/http-schemas/store'
@@ -16,9 +19,9 @@ export const GetOutput = StorePaymentProviderListResponse
  * what makes an unknown one a 404 instead of a list of every provider in the deployment.
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const cartService = req.scope.resolve(Modules.CART)
-  const paymentService = req.scope.resolve(Modules.PAYMENT)
-  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
+  const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
+  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
+  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
   const cart = await cartService.retrieveCart(req.params.id)
 

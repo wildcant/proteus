@@ -18,13 +18,6 @@ import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
 export { TEMPORAL_BOOT_TIMEOUT }
 
 /**
- * The queue the server tests route on. They build a Worker and a client in one process, so the
- * value is arbitrary — what matters is that both read the same one. Production routes on
- * `env.TEMPORAL_TASK_QUEUE` and never reads this.
- */
-export const TEST_TASK_QUEUE = 'proteus'
-
-/**
  * A time-skipping test server whose client speaks the same tagged payload format as production —
  * without it a `BigNumber` step output would come back as its `{s,e,c}` internals and every
  * assertion about money would be testing the wrong thing.

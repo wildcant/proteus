@@ -1,3 +1,4 @@
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminOrderActionResponse, OrderFulfillmentIdParams } from '@proteus/http-schemas/admin'
@@ -9,7 +10,7 @@ export const PostOutput = AdminOrderActionResponse
 export const PostThrows = [...markOrderDeliveredWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
+  const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 
   const order = await markOrderDeliveredWorkflow.run({
     orderId: req.params.id,

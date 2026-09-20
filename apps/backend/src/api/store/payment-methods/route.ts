@@ -1,3 +1,4 @@
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { StoreSavedMethodListResponse } from '@proteus/http-schemas/store'
@@ -24,7 +25,7 @@ export const GetOutput = StoreSavedMethodListResponse
  */
 export const GET = async (req: HttpRequest<object, typeof GetMiddlewares>): Promise<HttpResult<typeof GetOutput>> => {
   const { customer } = req
-  const paymentService = req.scope.resolve(Modules.PAYMENT)
+  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
 
   // Reaching the wallet is "reaching the payment step" as far as a gateway is concerned: an
   // authenticated shopper with an empty wallet still needs somewhere for their first card to land.

@@ -1,3 +1,6 @@
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreShippingOptionListParams, StoreShippingOptionListResponse } from '@proteus/http-schemas/store'
@@ -26,7 +29,7 @@ export const GetOutput = StoreShippingOptionListResponse
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const { province, city, postalCode } = req.validatedQuery.filters
-  const cartService = req.scope.resolve(Modules.CART)
+  const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
 
   const [shippingAddress] = await cartService.listCartAddresses({ cartId: req.params.id, type: 'shipping' })
   let countryCode = shippingAddress?.countryCode?.toLowerCase() ?? null
@@ -37,7 +40,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     const cart = await cartService.retrieveCart(req.params.id)
 
     if (cart.regionId) {
-      const regionService = req.scope.resolve(Modules.REGION)
+      const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
       const [country] = await regionService.listCountries(
         { regionId: cart.regionId },
         { order: { id: 'ASC' }, limit: 1 },
@@ -48,7 +51,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
   if (!countryCode) return { status: 200, json: { shippingOptions: [] } }
 
-  const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
+  const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 
   const shippingOptions = await fulfillmentService.listShippingOptionsForContext({
     countryCode,

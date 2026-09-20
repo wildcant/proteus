@@ -1,4 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IAuthModuleService } from '@core/types/auth/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -17,7 +18,7 @@ export const POST = async (
     throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
   }
 
-  const authService = req.scope.resolve(Modules.AUTH)
+  const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
 
   const result = await authService.confirmAuthVerification({
     authIdentityId: authContext.authIdentityId,

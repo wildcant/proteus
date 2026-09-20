@@ -1,7 +1,6 @@
 import {
   Avatar,
   AvatarFallback,
-  Badge,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -30,8 +29,6 @@ export function UserMenu() {
 
   if (!user) return null
 
-  const roleNames = user.roles?.map((r) => r.name) ?? []
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -40,9 +37,6 @@ export function UserMenu() {
             <UserAvatar name={user.name} />
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">{user.name}</span>
-              {roleNames.length > 0 && (
-                <span className="truncate text-muted-foreground text-xs">{roleNames.join(', ')}</span>
-              )}
             </div>
             <EllipsisIcon className="ml-auto size-4" />
           </DropdownMenuTrigger>
@@ -61,15 +55,6 @@ export function UserMenu() {
                     <span className="truncate text-muted-foreground text-xs">{user.email}</span>
                   </div>
                 </div>
-                {roleNames.length > 0 && (
-                  <div className="flex flex-wrap gap-1 px-1 pb-1.5">
-                    {roleNames.map((name) => (
-                      <Badge key={name} variant="secondary" className="text-xs">
-                        {name}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

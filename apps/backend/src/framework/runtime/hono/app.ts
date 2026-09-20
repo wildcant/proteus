@@ -1,11 +1,11 @@
 import type { PreparedRoute } from '@framework/http/ports.js'
+import type { AwilixContainer } from 'awilix'
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import qs from 'qs'
 import type { DbProvider } from '../../../core/db/ports.js'
 import { errorHandler } from '../../../core/errors/error-handler.js'
-import type { AppContainer } from '../../../core/types/container.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { isMultipart } from '../../http/content-type.js'
@@ -28,7 +28,7 @@ function parseJsonBody(rawBody: Uint8Array): unknown {
 
 type CreateHonoAppOptions = {
   routes: PreparedRoute[]
-  container: AppContainer
+  container: AwilixContainer
   logger: Logger
   corsOrigins: string[]
 }

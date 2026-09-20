@@ -2,6 +2,7 @@ import type { MiddlewareFunction } from '@framework/http/types.js'
 import type { AuthContext } from '../../../core/auth/types.js'
 import { extractTokenPayload } from '../../../core/auth/utils/token.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import type { IAuthModuleService } from '../../../core/types/auth/service.js'
 import { Modules } from '../../../core/utils/modules-definition.js'
 
 /**
@@ -31,7 +32,7 @@ export function validateToken(): MiddlewareFunction<{ authContext: AuthContext }
       throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized: invalid token purpose' })
     }
 
-    const authService = req.scope.resolve(Modules.AUTH)
+    const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
 
     const consumed = await authService.consumePasswordResetToken({
       jti: payload.jti,

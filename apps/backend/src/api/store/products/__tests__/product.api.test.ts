@@ -1,3 +1,4 @@
+import type { IStoreModuleService } from '@core/types/store/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -19,7 +20,7 @@ let usRegionId: string
  * routes read back exactly what a spec sets here.
  */
 const setLowStockThreshold = async (threshold: number | null) => {
-  const storeService = api.container.resolve(Modules.STORE)
+  const storeService = api.container.resolve<IStoreModuleService>(Modules.STORE)
   const store = await storeService.resolveStore()
   if (!store) throw new Error('Expected the store this suite seeds to exist')
   await storeService.updateStores([store.id], { lowStockThreshold: threshold })

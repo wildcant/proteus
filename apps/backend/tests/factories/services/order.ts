@@ -1,11 +1,13 @@
+import type { AwilixContainer } from 'awilix'
 import type { FindConfig } from '../../../src/core/types/common.js'
-import type { AppContainer } from '../../../src/core/types/container.js'
+import type { ILinkService } from '../../../src/core/types/link/service.js'
 import type {
   FilterableOrderAddressProps,
   FilterableOrderProps,
   OrderAddressDTO,
 } from '../../../src/core/types/order/common.js'
 import type { UpdateOrderDTO } from '../../../src/core/types/order/mutations.js'
+import type { IOrderModuleService } from '../../../src/core/types/order/service.js'
 import { ContainerRegistrationKeys } from '../../../src/core/utils/container.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
 import { completeCartWorkflow } from '../../../src/workflows/cart/complete-cart.js'
@@ -22,15 +24,15 @@ import { type CreateCheckoutReadyCartOptions, createCheckoutReadyCart } from './
  *
  * Everything the checkout created is returned alongside the order; take what you need.
  */
-export async function createOrder(container: AppContainer, options?: CreateCheckoutReadyCartOptions) {
+export async function createOrder(container: AwilixContainer, options?: CreateCheckoutReadyCartOptions) {
   const checkout = await createCheckoutReadyCart(container, options)
   const order = await completeCartWorkflow.run({ cartId: checkout.cart.id })
 
   return { ...checkout, order }
 }
 
-export async function listOrders(container: AppContainer, filters?: FilterableOrderProps) {
-  const orderService = container.resolve(Modules.ORDER)
+export async function listOrders(container: AwilixContainer, filters?: FilterableOrderProps) {
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
   return orderService.listOrders(filters)
 }
@@ -48,9 +50,9 @@ export type FulfillOrderOptions = {
  * workflow created — the id every downstream workflow (`ship`, `deliver`) is keyed on, and
  * which the workflow itself does not hand back.
  */
-export async function fulfillOrder(container: AppContainer, orderId: string, options?: FulfillOrderOptions) {
-  const orderService = container.resolve(Modules.ORDER)
-  const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+export async function fulfillOrder(container: AwilixContainer, orderId: string, options?: FulfillOrderOptions) {
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
+  const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
   const lineItems = await orderService.listOrderLineItems({ orderId })
   const items =
@@ -73,7 +75,7 @@ export async function fulfillOrder(container: AppContainer, orderId: string, opt
 }
 
 /** An order driven all the way to `shipped`, for the workflows that start from there. */
-export async function shipOrder(container: AppContainer, orderId: string, options?: FulfillOrderOptions) {
+export async function shipOrder(container: AwilixContainer, orderId: string, options?: FulfillOrderOptions) {
   const { fulfillmentId } = await fulfillOrder(container, orderId, options)
   const order = await createOrderShipmentWorkflow.run({ orderId, fulfillmentId })
 
@@ -86,44 +88,44 @@ export async function shipOrder(container: AppContainer, orderId: string, option
  * A direct write to the order row, for arranging states no workflow will produce — a canceled
  * order that has already shipped, for instance, which `cancel-order` refuses to create.
  */
-export async function updateOrder(container: AppContainer, orderId: string, overrides?: Partial<UpdateOrderDTO>) {
-  const orderService = container.resolve(Modules.ORDER)
+export async function updateOrder(container: AwilixContainer, orderId: string, overrides?: Partial<UpdateOrderDTO>) {
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
   return orderService.updateOrder(orderId, generateUpdateOrderDTO(overrides))
 }
 
 // ---- Reads ----
 
-export async function listOrderLineItems(container: AppContainer, orderId: string) {
-  const orderService = container.resolve(Modules.ORDER)
+export async function listOrderLineItems(container: AwilixContainer, orderId: string) {
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
   return orderService.listOrderLineItems({ orderId })
 }
 
-export async function retrieveOrder(container: AppContainer, orderId: string) {
-  const orderService = container.resolve(Modules.ORDER)
+export async function retrieveOrder(container: AwilixContainer, orderId: string) {
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
   return orderService.retrieveOrder(orderId)
 }
 
-export async function listOrderTransactions(container: AppContainer, orderId: string) {
-  const orderService = container.resolve(Modules.ORDER)
+export async function listOrderTransactions(container: AwilixContainer, orderId: string) {
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
   return orderService.listOrderTransactions({ orderId })
 }
 
-export async function listOrderShippingMethods(container: AppContainer, orderId: string) {
-  const orderService = container.resolve(Modules.ORDER)
+export async function listOrderShippingMethods(container: AwilixContainer, orderId: string) {
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
   return orderService.listOrderShippingMethods({ orderId })
 }
 
 export async function listOrderAddresses(
-  container: AppContainer,
+  container: AwilixContainer,
   filters?: FilterableOrderAddressProps,
   config?: FindConfig<OrderAddressDTO>,
 ) {
-  const orderService = container.resolve(Modules.ORDER)
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
   return orderService.listOrderAddresses(filters, config)
 }

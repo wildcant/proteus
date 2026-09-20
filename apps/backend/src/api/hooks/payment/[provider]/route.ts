@@ -1,6 +1,9 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { PaymentCapturedAction } from '@core/event-bus/events.js'
+import type { EventBus } from '@core/event-bus/types.js'
+import type { Logger } from '@core/types/logger.js'
 import type { PaymentActions } from '@core/types/payment/common.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -66,9 +69,9 @@ export const PostThrows = [ErrorTypes.INVALID_DATA] as const
  * which is adapter internals rather than a change here.
  */
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
-  const paymentService = req.scope.resolve(Modules.PAYMENT)
-  const bus = req.scope.resolve(ContainerRegistrationKeys.EVENT_BUS)
+  const logger = req.scope.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
+  const bus = req.scope.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
 
   // The provider verifies a signature over these bytes. Without them there is nothing to verify
   // against, and passing a re-serialisation of the parsed body would only fake having them.

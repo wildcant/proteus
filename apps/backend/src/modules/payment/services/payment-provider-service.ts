@@ -1,6 +1,6 @@
+import type { AwilixContainer } from 'awilix'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
-import type { ModuleContainer } from '../../../core/types/container.js'
 import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
@@ -20,8 +20,10 @@ import type {
   CreatePaymentProviderDTO,
   DeleteAccountHolderInput,
   DeleteAccountHolderOutput,
+  DeletePaymentInput,
   DeletePaymentMethodInput,
   DeletePaymentMethodOutput,
+  DeletePaymentOutput,
   InitiatePaymentInput,
   InitiatePaymentOutput,
   ListPaymentMethodsInput,
@@ -42,13 +44,13 @@ import type { AbstractPaymentProvider } from '../../../core/utils/abstract-payme
 import type { PaymentProviderRepository } from '../repositories/payment-provider.js'
 
 type InjectedDependencies = {
-  container: ModuleContainer
+  container: AwilixContainer
   paymentProviderRepository: PaymentProviderRepository
   logger: Logger
 }
 
 export class PaymentProviderService {
-  private container: ModuleContainer
+  private container: AwilixContainer
   private paymentProviderRepository: PaymentProviderRepository
   private logger: Logger
 
@@ -117,10 +119,10 @@ export class PaymentProviderService {
     return provider.updatePayment(input)
   }
 
-  async deleteSession(providerId: string, input: CancelPaymentInput): Promise<CancelPaymentOutput> {
+  async deleteSession(providerId: string, input: DeletePaymentInput): Promise<DeletePaymentOutput> {
     this.logger.debug(`Deleting session via provider "${providerId}"`)
     const provider = this.retrieveProvider(providerId)
-    return provider.cancelPayment(input)
+    return provider.deletePayment(input)
   }
 
   async authorizePayment(providerId: string, input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {

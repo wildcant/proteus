@@ -1,4 +1,4 @@
-import { infiniteQueryOptions, useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
 import type { ListNotificationsParams } from '#/api/generated/model'
 import { listNotifications } from '#/api/generated/notifications/notifications'
 import { queryKeysFactory } from '#/lib/query-key-factory'
@@ -28,11 +28,6 @@ const notificationsInfiniteQueryOptions = (
     },
     ...options,
   })
-
-export const useInvalidateNotifications = () => {
-  const queryClient = useQueryClient()
-  return () => queryClient.invalidateQueries({ queryKey: notificationKeys.all })
-}
 
 export const useInfiniteNotifications = (
   params?: Omit<ListNotificationsParams, 'offset'>,

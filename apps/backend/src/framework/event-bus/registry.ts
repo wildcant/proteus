@@ -28,11 +28,6 @@ export type SubscriberRegistry = {
   names(): string[]
 }
 
-/**
- * @testSeam Production builds exactly one registry, from the generated list, on the last line of
- * this file. The export is for the adapter tests, which need a registry of their own to dispatch
- * through — including the duplicate-name refusal above, which the generated list cannot produce.
- */
 export function createSubscriberRegistry(definitions: SubscriberDefinition[]): SubscriberRegistry {
   const byEvent = new Map<EventName, SubscriberDefinition[]>()
   const seen = new Set<string>()

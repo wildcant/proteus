@@ -1,3 +1,4 @@
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -12,7 +13,7 @@ export const GetInput = { params: AdminZoneIdParams }
 export const GetOutput = AdminServiceZoneDetailResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const service = req.scope.resolve(Modules.FULFILLMENT)
+  const service = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 
   const [serviceZone, geoZones] = await Promise.all([
     service.retrieveServiceZone(req.params.zoneId),
@@ -26,7 +27,7 @@ export const PostInput = { params: AdminZoneIdParams, body: AdminUpdateServiceZo
 export const PostOutput = AdminUpdateServiceZoneResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const service = req.scope.resolve(Modules.FULFILLMENT)
+  const service = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
   const serviceZone = await service.updateServiceZone(req.params.zoneId, req.body)
   return { status: 200, json: { serviceZone } }
 }
@@ -35,7 +36,7 @@ export const DeleteInput = { params: AdminZoneIdParams }
 export const DeleteOutput = DeleteResponse
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
-  const service = req.scope.resolve(Modules.FULFILLMENT)
+  const service = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
   await service.softDeleteServiceZones([req.params.zoneId])
   return { status: 200, json: { id: req.params.zoneId, deleted: true } }
 }

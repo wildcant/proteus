@@ -12,7 +12,6 @@ export interface AdminInvite {
   accepted: boolean;
   token: string;
   expiresAt: string;
-  roleIds?: string[];
   createdAt: string;
   updatedAt: string;
   /** @nullable */

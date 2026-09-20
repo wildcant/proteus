@@ -8,10 +8,6 @@ import { StoreModuleService } from './services/store-module-service.js'
 
 export default Module(Modules.STORE, {
   service: StoreModuleService,
-  features: [
-    { id: 'store.read', title: 'View store settings' },
-    { id: 'store.update', title: 'Edit store settings' },
-  ],
   models: {
     storeCurrencyTable,
     storeTable,

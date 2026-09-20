@@ -1,3 +1,4 @@
+import type { AwilixContainer } from 'awilix'
 import { BigNumber } from '../../../src/core/bignumber.js'
 import type {
   CreateCartDTO,
@@ -5,7 +6,6 @@ import type {
   CreateShippingMethodDTO,
   UpdateCartWithAddressesDTO,
 } from '../../../src/core/types/cart/mutations.js'
-import type { AppContainer } from '../../../src/core/types/container.js'
 import type { CreatePriceDTO } from '../../../src/core/types/pricing/mutations.js'
 import type { CreateProductDTO } from '../../../src/core/types/product/mutations.js'
 import { generateCreateLineItemDTO } from '../cart-dto.js'
@@ -44,7 +44,10 @@ export type CreateCheckoutReadyCartOptions = {
  * that wants one thing wrong — sold out, unpayable, no email — changes one key instead of
  * rebuilding the graph. Every created entity is returned; take what you need.
  */
-export async function createCheckoutReadyCart(container: AppContainer, options: CreateCheckoutReadyCartOptions = {}) {
+export async function createCheckoutReadyCart(
+  container: AwilixContainer,
+  options: CreateCheckoutReadyCartOptions = {},
+) {
   const variant = options.variant
     ? await createProductVariant(
         container,
@@ -119,7 +122,7 @@ export type CreateSellableVariantOptions = {
  * The price is returned rather than left to be read back, because it is the number the workflow
  * is supposed to write onto the line item — the assertion every pricing test makes.
  */
-export async function createSellableVariant(container: AppContainer, options: CreateSellableVariantOptions = {}) {
+export async function createSellableVariant(container: AwilixContainer, options: CreateSellableVariantOptions = {}) {
   const { product } = await createProduct(container, { status: 'published', ...options.product })
   const variant = await createProductVariant(container, product.id, options.variant)
 

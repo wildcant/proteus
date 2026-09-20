@@ -1,4 +1,5 @@
 import type { CountryDTO } from '@core/types/region/common.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import { assignCountriesToRegionStep, assignCountriesToRegionThrows } from './steps/assign-countries-to-region.js'
@@ -24,7 +25,7 @@ export const assignRegionCountriesWorkflow = createWorkflow<AssignRegionCountrie
   { name: 'assign-region-countries', throws: [...assignCountriesToRegionThrows] },
   async (ctx, input) => {
     await ctx.step('assert-region-exists', async ({ container }) => {
-      const regionService = container.resolve(Modules.REGION)
+      const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
       await regionService.retrieveRegion(input.regionId)
     })
 

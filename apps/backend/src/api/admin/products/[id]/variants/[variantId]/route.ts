@@ -1,3 +1,7 @@
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -19,10 +23,10 @@ export const GetInput = { params: VariantIdParams }
 export const GetOutput = AdminProductVariantResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const productService = req.scope.resolve(Modules.PRODUCT)
-  const pricingService = req.scope.resolve(Modules.PRICING)
-  const inventoryService = req.scope.resolve(Modules.INVENTORY)
-  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
+  const pricingService = req.scope.resolve<IPricingModuleService>(Modules.PRICING)
+  const inventoryService = req.scope.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
   const [retrieved, images] = await Promise.all([
     productService.retrieveProductVariant(req.params.variantId),
@@ -68,7 +72,7 @@ export const PatchOutput = AdminUpdateProductVariantResponse
 export const PatchThrows = [...updateProductVariantWorkflow.throws] as const
 
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
-  const productService = req.scope.resolve(Modules.PRODUCT)
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
   const updated = await updateProductVariantWorkflow.run({ variantId: req.params.variantId, data: req.body })
   const variant = await productService.enrichVariant(updated)
 

@@ -4,7 +4,10 @@ import {
   getAuthJwtConfig,
 } from '@core/auth/utils/generate-jwt-token.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { IAuthModuleService } from '@core/types/auth/service.js'
+import type { ConfigModule } from '@core/types/config.js'
 import type { CreateCustomerDTO } from '@core/types/customer/mutations.js'
+import type { INotificationModuleService } from '@core/types/notification/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -33,8 +36,8 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
   },
   async (ctx, input) => {
     const verificationCheck = await ctx.step<VerificationCheckResult>('check-verification', async ({ container }) => {
-      const authService = container.resolve(Modules.AUTH)
-      const config = container.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
+      const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
+      const config = container.resolve<ConfigModule>(ContainerRegistrationKeys.CONFIG_MODULE)
       const jwtConfig = getAuthJwtConfig()
 
       const { authIdentity } = await authService.validateAuthIdentity(input.authIdentityId, input.authProvider)
@@ -88,7 +91,7 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
       // the step only ever writes an email.
       if (verificationCheck.verified) return
 
-      const notificationService = container.resolve(Modules.NOTIFICATION)
+      const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
       await sendVerificationEmail(notificationService, verificationCheck.email, verificationCheck.verificationCode)
     })
 
@@ -102,7 +105,7 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
       }
 
       // Create customer record (first login after verification, or signup without verification)
-      const authService = container.resolve(Modules.AUTH)
+      const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
       const jwtConfig = getAuthJwtConfig()
 
       // Determine customer data: from input (signup) or from appMetadata.pending (post-verification login)

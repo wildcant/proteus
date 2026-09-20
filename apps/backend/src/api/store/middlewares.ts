@@ -1,11 +1,15 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
 import type { CustomerDTO } from '@core/types/customer/common.js'
+import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import type { RegionDTO } from '@core/types/region/common.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
+import type { IStoreModuleService } from '@core/types/store/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { validateQuery } from '@core/utils/validate-query.js'
 import type { MiddlewareFunction } from '@framework/http/types.js'
 import { StorePricingContextParams } from '@proteus/http-schemas/store'
-import type { AppContainer } from '../../core/types/container.js'
+import type { AwilixContainer } from 'awilix'
 
 /**
  * Which region a request is being made from, in the order the signals are trusted.
@@ -17,8 +21,8 @@ import type { AppContainer } from '../../core/types/container.js'
  * without one has no answer to give: quoting some other currency would price a shopper's basket in
  * money nobody chose.
  */
-async function resolveRegion(scope: AppContainer, countryCode?: string, cartId?: string): Promise<RegionDTO> {
-  const regionService = scope.resolve(Modules.REGION)
+async function resolveRegion(scope: AwilixContainer, countryCode?: string, cartId?: string): Promise<RegionDTO> {
+  const regionService = scope.resolve<IRegionModuleService>(Modules.REGION)
 
   if (countryCode) {
     // One read for both failures: an unknown ISO code and a country outside every region are the
@@ -34,12 +38,12 @@ async function resolveRegion(scope: AppContainer, countryCode?: string, cartId?:
   }
 
   if (cartId) {
-    const cartService = scope.resolve(Modules.CART)
+    const cartService = scope.resolve<ICartModuleService>(Modules.CART)
     const [cart] = await cartService.listCarts({ id: cartId })
     if (cart?.regionId) return regionService.retrieveRegion(cart.regionId)
   }
 
-  const storeService = scope.resolve(Modules.STORE)
+  const storeService = scope.resolve<IStoreModuleService>(Modules.STORE)
   const store = await storeService.resolveStore()
   if (!store?.defaultRegionId) {
     // The request was well formed; the deployment has no market to fall back on. A 500 rather than
@@ -102,7 +106,7 @@ export function requireCustomer(): MiddlewareFunction<{ customer: CustomerDTO }>
       throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
     }
 
-    const customerService = req.scope.resolve(Modules.CUSTOMER)
+    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
     return { ...req, customer: await customerService.retrieveCustomer(customerId) }
   }
 }
@@ -119,7 +123,7 @@ export function attachCustomer(): MiddlewareFunction<{ customer?: CustomerDTO }>
     const customerId = req.authContext?.actorId
     if (!customerId) return req
 
-    const customerService = req.scope.resolve(Modules.CUSTOMER)
+    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
     return { ...req, customer: await customerService.retrieveCustomer(customerId) }
   }
 }

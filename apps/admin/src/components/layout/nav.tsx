@@ -1,31 +1,39 @@
-import type { LucideIcon } from 'lucide-react'
 import {
   BoxesIcon,
   ClipboardListIcon,
-  GlobeIcon,
   PackageIcon,
   SettingsIcon,
-  ShieldIcon,
   ShoppingCartIcon,
   SlidersHorizontalIcon,
-  StoreIcon,
-  UsersIcon,
 } from 'lucide-react'
-import type { AdminMeResponseSidebarItem, AdminMeResponseSidebarItemItemsItemIcon } from '#/api/generated/model'
+import type { ReactNode } from 'react'
 
-export type SidebarGroup = AdminMeResponseSidebarItem
+export type NavItem = {
+  label: string
+  to: string
+  icon: ReactNode
+  children?: NavItem[]
+}
 
-export type SidebarIcon = AdminMeResponseSidebarItemItemsItemIcon
+export const navItems: NavItem[] = [
+  { label: 'Orders', to: '/orders', icon: <ShoppingCartIcon /> },
+  {
+    label: 'Products',
+    to: '/products',
+    icon: <PackageIcon />,
+    children: [{ label: 'Options', to: '/product-options', icon: <SlidersHorizontalIcon /> }],
+  },
+  {
+    // Reservations are a lens on inventory rather than a peer of it, so they sit beneath it.
+    label: 'Inventory',
+    to: '/inventory',
+    icon: <BoxesIcon />,
+    children: [{ label: 'Reservations', to: '/reservations', icon: <ClipboardListIcon /> }],
+  },
+]
 
-export const sidebarIcons: Record<SidebarIcon, LucideIcon> = {
-  'shopping-cart': ShoppingCartIcon,
-  package: PackageIcon,
-  'sliders-horizontal': SlidersHorizontalIcon,
-  boxes: BoxesIcon,
-  'clipboard-list': ClipboardListIcon,
-  users: UsersIcon,
-  store: StoreIcon,
-  shield: ShieldIcon,
-  globe: GlobeIcon,
-  settings: SettingsIcon,
+export const settingsItem: NavItem = {
+  label: 'Settings',
+  to: '/settings/store',
+  icon: <SettingsIcon />,
 }

@@ -1,4 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IRegionModuleService } from '@core/types/region/service.js'
+import type { IStoreModuleService } from '@core/types/store/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { DeleteResponse, StoreCurrencyParams } from '@proteus/http-schemas/admin'
@@ -26,8 +28,8 @@ export const DeleteThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.NOT_ALLOWED] as co
  * Soft, so the code is free to be added again: the unique index only holds live rows.
  */
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
-  const storeService = req.scope.resolve(Modules.STORE)
-  const regionService = req.scope.resolve(Modules.REGION)
+  const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
+  const regionService = req.scope.resolve<IRegionModuleService>(Modules.REGION)
   const { code } = req.params
 
   const store = await storeService.resolveStore()

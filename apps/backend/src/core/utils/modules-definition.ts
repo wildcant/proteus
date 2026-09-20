@@ -13,7 +13,6 @@ export const Modules = {
   NOTIFICATION: 'notification',
   FILE: 'file',
   REGION: 'region',
-  STOCK_LOCATION: 'stock-location',
+  STOCK_LOCATION: 'stockLocation',
   STORE: 'store',
-  ACCESS_CONTROL: 'access-control',
 } as const

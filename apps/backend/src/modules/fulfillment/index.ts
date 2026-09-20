@@ -25,12 +25,6 @@ import { FulfillmentModuleService } from './services/fulfillment-module-service.
 
 export default Module(Modules.FULFILLMENT, {
   service: FulfillmentModuleService,
-  features: [
-    { id: 'fulfillment.read', title: 'View fulfillments' },
-    { id: 'fulfillment.create', title: 'Create fulfillments' },
-    { id: 'fulfillment.update', title: 'Edit fulfillments' },
-    { id: 'fulfillment.delete', title: 'Delete fulfillments' },
-  ],
   models: {
     fulfillmentAddressTable,
     fulfillmentItemTable,

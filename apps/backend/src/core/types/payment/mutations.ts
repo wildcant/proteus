@@ -178,6 +178,15 @@ export type CancelPaymentOutput = {
   data?: Record<string, unknown>
 }
 
+export type DeletePaymentInput = {
+  data?: Record<string, unknown>
+  context?: Record<string, unknown>
+}
+
+export type DeletePaymentOutput = {
+  data?: Record<string, unknown>
+}
+
 export type RefundPaymentInput = {
   amount: BigNumber
   /** The payment's currency. A provider counting in a smallest unit needs it to convert. */

@@ -1,5 +1,11 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CartLineItemDTO } from '@core/types/cart/common.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { Logger } from '@core/types/logger.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -52,7 +58,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
         })
       }
 
-      const cartService = container.resolve(Modules.CART)
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
       const cart = await cartService.retrieveCart(input.cartId)
 
       if (cart.completedAt) {
@@ -73,9 +79,9 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
      * reason, so one should never have been offered.
      */
     const lineItems = await ctx.step('prepare-line-items', async ({ container }) => {
-      const productService = container.resolve(Modules.PRODUCT)
-      const pricingService = container.resolve(Modules.PRICING)
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+      const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
       const variantIds = [...new Set(input.items.map((item) => item.variantId))]
       const variants = await productService.enrichVariants(await productService.listProductVariants({ id: variantIds }))
@@ -149,7 +155,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
 
     /** Which of the prepared items join a line the cart already holds, and which start one. */
     const plan = await ctx.step('plan-line-items', async ({ container }) => {
-      const cartService = container.resolve(Modules.CART)
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
       const existing = await cartService.listLineItems({ cartId: cart.id })
 
       return planLineItemActions(existing, lineItems)
@@ -161,10 +167,10 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
      * the shopper would be holding, not the four being added.
      */
     await ctx.step('confirm-inventory', async ({ container }) => {
-      const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
-      const productService = container.resolve(Modules.PRODUCT)
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
-      const inventoryService = container.resolve(Modules.INVENTORY)
+      const logger = container.resolve<Logger>(ContainerRegistrationKeys.LOGGER)
+      const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
 
       const demands = [
         ...plan.create.flatMap((item) =>
@@ -227,7 +233,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
      * database is what puts a failure back. A compensating write could fail on its own.
      */
     return ctx.step('write-line-items', async ({ container }) => {
-      const cartService = container.resolve(Modules.CART)
+      const cartService = container.resolve<ICartModuleService>(Modules.CART)
       return cartService.applyLineItemPlan(cart.id, plan)
     })
   },

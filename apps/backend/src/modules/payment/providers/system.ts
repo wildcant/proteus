@@ -6,6 +6,8 @@ import type {
   CancelPaymentOutput,
   CapturePaymentInput,
   CapturePaymentOutput,
+  DeletePaymentInput,
+  DeletePaymentOutput,
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
   InitiatePaymentInput,
@@ -43,6 +45,10 @@ export class SystemPaymentProvider extends AbstractPaymentProvider {
   }
 
   async cancelPayment(_input: CancelPaymentInput): Promise<CancelPaymentOutput> {
+    return { data: {} }
+  }
+
+  async deletePayment(_input: DeletePaymentInput): Promise<DeletePaymentOutput> {
     return { data: {} }
   }
 

@@ -55,7 +55,6 @@ grants all permissions and cannot be removed while it is the last holder.
     permission strings are caught at compile time.
 15. As a developer, I want to use the same `authorizeOrThrow` call for HTTP routes, workflows,
     subscribers, and background jobs so authorization is consistent across all entry points.
-    *(Phase 2: the method ships with the policy engine that gives it something to enforce.)*
 16. As a developer, I want authorization context to travel on the existing `Context` object so I do
     not need to plumb a new parameter through every service method.
 17. As a developer, I want startup to synchronize code-registered permissions to the database so the
@@ -293,6 +292,11 @@ modules are enabled; the filter is still applied for structural correctness.
 
 ```typescript
 type IAccessControlModuleService = {
+  authorize(request: AuthorizationRequest): Promise<AuthorizationDecision>
+  authorizeOrThrow(request: AuthorizationRequest): Promise<void>
+  scope(request: AuthorizationRequest): Promise<AuthorizationFilter>
+  fields(request: AuthorizationRequest): Promise<FieldAuthorization>
+
   // Role CRUD
   createRole(data: CreateRoleDTO): Promise<RoleDTO>
   updateRole(id: string, data: UpdateRoleDTO): Promise<RoleDTO>
@@ -319,14 +323,10 @@ type IAccessControlModuleService = {
 }
 ```
 
-Phase 1 ships none of the four authorization methods. Route authorization is decided by the
-`authorize` middleware against the actor's granted features, which it reads off
-`core/access-control/engine.ts` directly, so `authorize` and `authorizeOrThrow` on the service
-would have no caller. `scope` and `fields` have none either, and the passthrough signatures they
-would ship with — no request argument, `undefined` and `'*'` — are not the ones Phase 2 needs, so
-shipping them proves nothing about the contract and leaves two methods to keep in step. Phase 2
-adds all four with their real signatures, alongside the policies that give them something to
-return.
+Phase 1 ships all four authorization methods. `scope()` returns `undefined` (no filter applied;
+the caller's own filters are used unmodified). `fields()` returns
+`{ readable: '*', writable: '*', filterable: '*', sortable: '*' }`. Both serve as integration
+points for Phase 2 without requiring caller changes.
 
 ### Authorization request vocabulary
 
@@ -403,14 +403,12 @@ the database on every request to resolve the actor's granted features (single in
 `req.authorizationActor` before the permission check runs. No cache — one DB round trip per
 request.
 
-**Module-level (authoritative), Phase 2.** Service or workflow calls `authorizeOrThrow()`
-internally, covering every entry point: routes, workflows, subscribers, background jobs, internal
-callers. That is the security boundary, and it arrives with the method — Phase 1 enforces at the
-middleware only.
+**Module-level (authoritative).** Service or workflow calls `authorizeOrThrow()` internally. Covers
+all entry points: routes, workflows, subscribers, background jobs, internal callers. This is the
+security boundary.
 
-A route-only check is not sufficient as an end state. The authoritative check lives at the module
-service level; duplicate early and authoritative checks are acceptable, a missing authoritative
-check is not.
+A route-only check is never sufficient. The authoritative check lives at the module service level.
+Duplicate early and authoritative checks are acceptable — a missing authoritative check is not.
 
 Every admin route with `auth: 'required'` (the default) must declare a `permissions` array.
 Routes with `auth: 'public'` or `auth: 'unregistered'` are exempt from permission enforcement
@@ -900,10 +898,8 @@ satisfies criteria #1, #2, #3, #5, #6, #7, #8, #9, #10.
   applies to Phase 2 policy constraints. Phase 1 tests prove multi-role union semantics work
   correctly (union of grants, no deny rules).
 - **AC#12** ("future scope, claim, relationship, etc. can be added without changing call sites"):
-  deferred to Phase 2 along with the four authorization methods. Phase 1 has no call site to
-  protect, and a passthrough method carrying a signature Phase 2 replaces would not have
-  demonstrated the criterion. What Phase 1 does hold is the `AuthorizationRequest` vocabulary,
-  which accepts all the required inputs.
+  Phase 1 proves the contract by shipping all four methods (`authorize`, `authorizeOrThrow`,
+  `scope`, `fields`) with passthrough behavior. The vocabulary accepts all required inputs.
 
 ## Further Notes
 

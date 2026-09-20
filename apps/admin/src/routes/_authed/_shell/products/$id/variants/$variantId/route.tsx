@@ -1,7 +1,8 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { TwoColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
-import { productVariantQueryOptions, useSuspenseProductVariant } from '#/features/products/api/product-variants'
+import { productVariantQueryOptions } from '#/features/products/api/product-variants'
 import { VariantGeneralSection } from '#/features/products/components/variant/variant-general-section'
 import { VariantMediaSection } from '#/features/products/components/variant/variant-media-section'
 import { VariantPricesSection } from '#/features/products/components/variant/variant-prices-section'
@@ -18,7 +19,7 @@ export const Route = createFileRoute('/_authed/_shell/products/$id/variants/$var
 
 function VariantDetailLayout() {
   const { id, variantId } = Route.useParams()
-  const { data } = useSuspenseProductVariant(id, variantId)
+  const { data } = useSuspenseQuery(productVariantQueryOptions(id, variantId))
 
   return (
     <PageLayout.TwoColumn>

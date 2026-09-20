@@ -11,6 +11,7 @@ export const inviteTable = pgTable(
     accepted: boolean().notNull().default(false),
     token: text().notNull(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
+    // TODO(RBAC): roles when RBAC is implemented
     ...timestamps,
   },
   (table) => [liveUniqueIndex('idx_invite_email').on(table.email), liveIndex('idx_invite_token').on(table.token)],

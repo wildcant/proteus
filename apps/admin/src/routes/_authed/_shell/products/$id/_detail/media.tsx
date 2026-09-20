@@ -1,6 +1,7 @@
 import { RouteFocusModal } from '@proteus/ui'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseProduct } from '#/features/products/api/products'
+import { productQueryOptions } from '#/features/products/api/products'
 import { EditProductMediaForm } from '#/features/products/components/media/edit-product-media-form'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/_detail/media')({
@@ -9,7 +10,7 @@ export const Route = createFileRoute('/_authed/_shell/products/$id/_detail/media
 
 function EditProductMediaRoute() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseProduct(id)
+  const { data } = useSuspenseQuery(productQueryOptions(id))
 
   return (
     <RouteFocusModal>

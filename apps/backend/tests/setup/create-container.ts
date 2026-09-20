@@ -7,9 +7,9 @@
 import type { DbProvider } from '@core/db/ports.js'
 import type { InputConfig } from '@core/types/config.js'
 import type { Logger } from '@core/types/logger.js'
+import type { AwilixContainer } from 'awilix'
 import { appConfigInput } from '../../src/config.js'
 import { bootstrapContainer } from '../../src/container.js'
-import type { AppContainer } from '../../src/core/types/container.js'
 import type { Database } from '../../src/schema.type.js'
 import { pinnedTestEventBusAdapter } from './event-bus-adapter.js'
 import { pinnedTestWorkflowEngine } from './workflow-engine.js'
@@ -26,7 +26,7 @@ function attachToTemporal() {
 }
 
 /** What tests annotate with, so no test file imports awilix to name the thing it was handed. */
-export type TestContainer = AppContainer
+export type TestContainer = AwilixContainer
 
 export type CreateContainerOptions = {
   /** Config overrides, e.g. authVerificationsPerActor. */

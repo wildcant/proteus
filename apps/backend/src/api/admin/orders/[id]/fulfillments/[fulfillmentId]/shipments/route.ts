@@ -1,3 +1,4 @@
+import type { IFulfillmentModuleService } from '@core/types/fulfillment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -13,7 +14,7 @@ export const PostOutput = AdminOrderActionResponse
 export const PostThrows = [...createOrderShipmentWorkflow.throws] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
+  const fulfillmentService = req.scope.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 
   const order = await createOrderShipmentWorkflow.run({
     orderId: req.params.id,

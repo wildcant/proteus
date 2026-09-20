@@ -93,8 +93,6 @@ test.describe('PUT /admin/products/:id/variants/:variantId/stock', () => {
     service,
   }) => {
     await using _store = await factories.create.store({ lowStockThreshold: 5 })
-    // The alert is addressed by permission, so somebody has to qualify for it to land anywhere.
-    const operator = await service.create.operator(api.container, ['notification.read', 'inventory.read'])
     const { product, variant } = await createTrackedVariant(service)
 
     await api.put(`/admin/products/${product.id}/variants/${variant.id}/stock`, { stockedQuantity: 9 })
@@ -104,7 +102,6 @@ test.describe('PUT /admin/products/:id/variants/:variantId/stock', () => {
 
     expect(await service.read.notifications(api.container, { channel: 'feed' })).toMatchObject([
       {
-        to: operator.email,
         template: 'low-stock',
         resourceType: 'product_variant',
         resourceId: variant.id,

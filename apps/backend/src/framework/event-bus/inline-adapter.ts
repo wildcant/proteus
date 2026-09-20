@@ -1,6 +1,6 @@
+import type { AwilixContainer } from 'awilix'
 import { buildEvent, type Event } from '../../core/event-bus/events.js'
-import type { EventBus } from '../../core/event-bus/ports.js'
-import type { AppContainer } from '../../core/types/container.js'
+import type { EventBus } from '../../core/event-bus/types.js'
 import type { Logger } from '../../core/types/logger.js'
 import type { SubscriberRegistry } from './registry.js'
 
@@ -31,7 +31,7 @@ import type { SubscriberRegistry } from './registry.js'
  */
 export function createInlineEventBus(deps: {
   registry: SubscriberRegistry
-  container: AppContainer
+  container: AwilixContainer
   logger: Logger
 }): EventBus {
   const { registry, container, logger } = deps

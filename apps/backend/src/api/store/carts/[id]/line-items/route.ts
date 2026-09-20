@@ -1,4 +1,5 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { ICartModuleService } from '@core/types/cart/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AddLineItem, IdParams, StoreCreateCartLineItemResponse } from '@proteus/http-schemas/store'
@@ -17,6 +18,6 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   // 201 even when the addition merged into a line the cart already held: the request created
   // what it was asked to create, and a shopper adding the same variant twice has no way to know
   // which of the two it was.
-  const cartService = req.scope.resolve(Modules.CART)
+  const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
   return { status: 201, json: { lineItem: cartService.enrichLineItem(lineItem) } }
 }

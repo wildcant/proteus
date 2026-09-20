@@ -1,5 +1,6 @@
 import type { ProductDTO } from '@core/types/product/common.js'
 import type { CreateProductDTO } from '@core/types/product/mutations.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
 import type { AdminCreateProductVariantBody } from '@proteus/http-schemas/admin'
@@ -24,18 +25,18 @@ export const createProductWorkflow = createWorkflow<CreateProductInput, ProductD
     const product = await ctx.step(
       'create-product',
       async ({ container }) => {
-        const productService = container.resolve(Modules.PRODUCT)
+        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
         return productService.createProduct(input.product)
       },
       async (created, { container }) => {
-        const productService = container.resolve(Modules.PRODUCT)
+        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
         await productService.softDeleteProducts([created.id])
       },
     )
 
     await ctx.step('set-options', async ({ container }) => {
       if (!input.options?.length) return
-      const productService = container.resolve(Modules.PRODUCT)
+      const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
       // No reconciliation: a product created a moment ago has no variants to reconcile against.
       await productService.setProductOptions(product.id, { options: input.options })
     })

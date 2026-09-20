@@ -1,7 +1,8 @@
 import { RouteDrawer } from '@proteus/ui'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { regionsListQueryOptions } from '#/features/regions/api/regions'
-import { storeQueryOptions, useSuspenseStore } from '#/features/store/api/store'
+import { storeQueryOptions } from '#/features/store/api/store'
 import { EditStoreForm } from '#/features/store/components/edit-store-form'
 
 export const Route = createFileRoute('/_authed/settings/store/edit')({
@@ -15,7 +16,7 @@ export const Route = createFileRoute('/_authed/settings/store/edit')({
 })
 
 function EditStoreRoute() {
-  const { data } = useSuspenseStore()
+  const { data } = useSuspenseQuery(storeQueryOptions())
 
   return (
     <RouteDrawer>

@@ -1,5 +1,6 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { CreatePaymentSession, IdParams, StoreCreatePaymentSessionResponse } from '@proteus/http-schemas/store'
@@ -29,7 +30,7 @@ export const PostThrows = [ErrorTypes.CONFLICT] as const
  * gateway's own reference go into it.
  */
 export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutput>> => {
-  const paymentService = req.scope.resolve(Modules.PAYMENT)
+  const paymentService = req.scope.resolve<IPaymentModuleService>(Modules.PAYMENT)
   const collection = await paymentService.retrievePaymentCollection(req.params.id)
   const wallet = readWalletChoice(req.body.data)
 

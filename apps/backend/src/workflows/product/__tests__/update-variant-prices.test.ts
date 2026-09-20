@@ -1,4 +1,5 @@
 import { BigNumber } from '@core/bignumber.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -41,7 +42,7 @@ const dualPricedVariant = async (service: Services) => {
  * the previous prices has already run by the time the upsert lands.
  */
 const failAfterUpsert = () => {
-  const pricingService = container.resolve(Modules.PRICING)
+  const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
   const listPrices = pricingService.listPrices.bind(pricingService)
   const upsertPriceSets = pricingService.upsertPriceSets.bind(pricingService)
   let upserted = false

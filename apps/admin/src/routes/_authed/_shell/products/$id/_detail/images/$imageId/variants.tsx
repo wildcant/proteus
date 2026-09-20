@@ -1,7 +1,8 @@
 import { RouteDrawer } from '@proteus/ui'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseImageVariants } from '#/features/products/api/product-variants'
-import { useSuspenseProduct } from '#/features/products/api/products'
+import { imageVariantsQueryOptions } from '#/features/products/api/product-variants'
+import { productQueryOptions } from '#/features/products/api/products'
 import { ManageImageVariantsForm } from '#/features/products/components/media/manage-image-variants-form'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/_detail/images/$imageId/variants')({
@@ -12,8 +13,8 @@ function ManageImageVariantsRoute() {
   const { id, imageId } = Route.useParams()
   // Suspending keeps the form's default values final on its first render, so the save diff is
   // computed against the real association set rather than an empty one.
-  const { data: product } = useSuspenseProduct(id)
-  const { data: association } = useSuspenseImageVariants(id, imageId)
+  const { data: product } = useSuspenseQuery(productQueryOptions(id))
+  const { data: association } = useSuspenseQuery(imageVariantsQueryOptions(id, imageId))
 
   const image = product.product.images?.find((candidate) => candidate.id === imageId)
 

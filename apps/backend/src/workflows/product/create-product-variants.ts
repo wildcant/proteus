@@ -1,4 +1,7 @@
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
 import type { ProductVariantExtendedDTO } from '@core/types/product/common.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
@@ -17,13 +20,13 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
     const variants = await ctx.step(
       'create-variants',
       async ({ container }) => {
-        const productService = container.resolve(Modules.PRODUCT)
+        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
         return productService.createProductVariants(
           input.variants.map((variant) => ({ ...variant, productId: input.productId })),
         )
       },
       async (created, { container }) => {
-        const productService = container.resolve(Modules.PRODUCT)
+        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
         await productService.softDeleteProductVariants(created.map((variant) => variant.id))
       },
     )
@@ -36,7 +39,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
     const priceSets = await ctx.step(
       'create-price-sets',
       async ({ container }) => {
-        const pricingService = container.resolve(Modules.PRICING)
+        const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
         const variantsWithPrices = input.variants
           .map((variant, index) => ({ index, prices: variant.prices }))
           .filter((entry) => entry.prices && entry.prices.length > 0)
@@ -56,7 +59,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       },
       async (created, { container }) => {
         if (created.length === 0) return
-        const pricingService = container.resolve(Modules.PRICING)
+        const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
         await pricingService.softDeletePriceSets(created.map((link) => link.priceSetId))
       },
     )
@@ -66,7 +69,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       'link-variants-to-price-sets',
       async ({ container }) => {
         if (priceSets.length === 0) return
-        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
         await Promise.all(
           priceSets.map((priceSetLink) =>
             linkService
@@ -77,7 +80,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
       },
       async (_result, { container }) => {
         if (priceSets.length === 0) return
-        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
         const variantIds = priceSets.map((priceSetLink) => priceSetLink.variantId)
         const variantAndPriceSetLinks = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
         if (variantAndPriceSetLinks.length > 0) {
@@ -90,7 +93,7 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
     const enriched = await ctx.step('enrich-with-prices', async ({ container }) => {
       if (priceSets.length === 0) return variants as ProductVariantExtendedDTO[]
 
-      const pricingService = container.resolve(Modules.PRICING)
+      const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
       const priceSetByVariantId = new Map(
         priceSets.map((priceSetLink) => [priceSetLink.variantId, priceSetLink.priceSetId]),
       )

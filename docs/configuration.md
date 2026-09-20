@@ -85,7 +85,6 @@ satisfy a rule would be the rule writing the code.
   this from the other side.
 - **That `.env.example` lists what the schema requires.** Nothing compares the two. A deploy missing
   a variable fails at boot with the name in the message, which is the check that matters.
-- **That an optional variable's default is safe.** `TEMPORAL_TASK_QUEUE` defaults to `proteus` so a
-  fresh environment boots — and so two deployments that never set it share a queue, and one's Worker
-  executes the other's checkout. That trade is written in a comment at the declaration, which is
-  where the decision is.
+- **That an optional variable's default is safe.** `ADMIN_NOTIFICATION_EMAIL` defaults to the dev
+  seed's admin so a fresh environment boots — and so a deploy that never sets it alerts nobody. That
+  trade is written in a comment at the declaration, which is where the decision is.

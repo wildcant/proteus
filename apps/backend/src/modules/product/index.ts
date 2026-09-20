@@ -22,12 +22,6 @@ import { ProductModuleService } from './services/product-module-service.js'
 
 export default Module(Modules.PRODUCT, {
   service: ProductModuleService,
-  features: [
-    { id: 'product.read', title: 'View products' },
-    { id: 'product.create', title: 'Create products' },
-    { id: 'product.update', title: 'Edit products' },
-    { id: 'product.delete', title: 'Delete products' },
-  ],
   models: {
     productImageTable,
     productOptionTable,

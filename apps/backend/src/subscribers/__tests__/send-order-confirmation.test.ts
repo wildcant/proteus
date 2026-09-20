@@ -1,6 +1,8 @@
 import { buildEvent } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
 import type { NotificationDTO } from '@core/types/notification/common.js'
+import type { INotificationModuleService } from '@core/types/notification/service.js'
+import type { IOrderModuleService } from '@core/types/order/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -45,7 +47,7 @@ function deliver(orderId: string): Promise<void> {
  * every assertion here would be about a confirmation this test did not send.
  */
 async function orderAwaitingItsConfirmation(dto: Fixtures['dto']) {
-  const orderService = container.resolve(Modules.ORDER)
+  const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
 
   const order = await orderService.createOrder(
     dto.generate.createOrder({
@@ -98,7 +100,7 @@ test.describe('the order confirmation subscriber', () => {
    */
   test('throws when the provider refuses the send, so the transport retries it', async ({ dto, service, expect }) => {
     const order = await orderAwaitingItsConfirmation(dto)
-    const notificationService = container.resolve(Modules.NOTIFICATION)
+    const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
     const create = notificationService.createNotification.bind(notificationService)
     vi.spyOn(notificationService, 'createNotification').mockImplementationOnce(async (data, context) =>
       refusedByProvider(await create(data, context)),

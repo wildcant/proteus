@@ -1,15 +1,10 @@
-import { KeyboundForm, Label, RouteFocusModal, toast } from '@proteus/ui'
-import { useMemo } from 'react'
+import { KeyboundForm, RouteFocusModal, toast } from '@proteus/ui'
 import { DataTable } from '#/components/data-table/data-table'
-import { MultiSelectCombobox } from '#/components/multi-select-combobox'
-import { useRolesList } from '#/features/users/api/user-roles'
 import { useInviteForm } from '#/features/users/hooks/use-invite-form'
 import { useInviteTable } from '#/features/users/hooks/use-invite-table'
 
 export function InviteForm() {
   const invites = useInviteTable()
-  const { data: rolesData } = useRolesList()
-  const roleItems = useMemo(() => rolesData?.roles.map((r) => ({ id: r.id, label: r.name })) ?? [], [rolesData])
 
   const { form } = useInviteForm({
     onSuccess: () => toast.add({ type: 'success', title: 'Invite sent' }),
@@ -28,20 +23,6 @@ export function InviteForm() {
                   {(field) => <field.TextField label="Email" type="email" autoFocus placeholder="user@example.com" />}
                 </form.AppField>
                 <form.SubmitButton size="sm">Send Invite</form.SubmitButton>
-              </div>
-              <div className="mt-4">
-                <Label>Roles</Label>
-                <form.AppField name="roleIds">
-                  {(field) => (
-                    <MultiSelectCombobox
-                      items={roleItems}
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      placeholder="Search roles..."
-                      emptyMessage="No roles found."
-                    />
-                  )}
-                </form.AppField>
               </div>
               <div className="mt-8">
                 <DataTable use={invites} heading="Pending Invites" />

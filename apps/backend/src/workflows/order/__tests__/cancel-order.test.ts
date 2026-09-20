@@ -1,3 +1,5 @@
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { IPaymentModuleService } from '@core/types/payment/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -127,7 +129,7 @@ test.describe('cancelOrderWorkflow', () => {
   }) => {
     const { orderId, inventoryItemId, lineItem } = await placedOrder(service)
 
-    vi.spyOn(container.resolve(Modules.PAYMENT), 'cancelPayment').mockRejectedValueOnce(
+    vi.spyOn(container.resolve<IPaymentModuleService>(Modules.PAYMENT), 'cancelPayment').mockRejectedValueOnce(
       new Error('provider unavailable'),
     )
 
@@ -152,9 +154,10 @@ test.describe('cancelOrderWorkflow', () => {
     const { orderId, inventoryItemId, lineItem, paymentCollectionId } = await placedOrder(service)
     const payment = await authorizedPayment(service, paymentCollectionId)
 
-    vi.spyOn(container.resolve(Modules.INVENTORY), 'softDeleteReservationItems').mockRejectedValueOnce(
-      new Error('inventory unavailable'),
-    )
+    vi.spyOn(
+      container.resolve<IInventoryModuleService>(Modules.INVENTORY),
+      'softDeleteReservationItems',
+    ).mockRejectedValueOnce(new Error('inventory unavailable'))
 
     await expect(cancelOrderWorkflow.run({ orderId })).rejects.toThrow('inventory unavailable')
 

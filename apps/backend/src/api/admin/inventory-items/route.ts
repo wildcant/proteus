@@ -1,3 +1,5 @@
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IStoreModuleService } from '@core/types/store/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -11,8 +13,8 @@ export const GetOutput = AdminInventoryItemListResponse
  * product. Read-only by design: the number is set on the variant, next to its price.
  */
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
-  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
-  const storeService = req.scope.resolve(Modules.STORE)
+  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
+  const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
   const { pagination, filters } = req.validatedQuery
   const { offset, limit } = pagination
 

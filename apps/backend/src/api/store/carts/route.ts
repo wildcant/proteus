@@ -1,3 +1,5 @@
+import type { ICartModuleService } from '@core/types/cart/service.js'
+import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { CreateCart, StoreCreateCartResponse, StorePricingContextParams } from '@proteus/http-schemas/store'
@@ -14,14 +16,14 @@ export const POST = async (
 ): Promise<HttpResult<typeof PostOutput>> => {
   const { currencyCode, regionId } = req.pricingContext
 
-  const cartService = req.scope.resolve(Modules.CART)
+  const cartService = req.scope.resolve<ICartModuleService>(Modules.CART)
   const customerId = req.authContext?.actorId
 
   // TODO(guest): move to a createCartWorkflow with a findOrCreateCustomerStep
   // so guest emails also resolve to a customer record
   let email: string | undefined
   if (customerId) {
-    const customerService = req.scope.resolve(Modules.CUSTOMER)
+    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
     const customer = await customerService.retrieveCustomer(customerId)
     email = customer.email
   }

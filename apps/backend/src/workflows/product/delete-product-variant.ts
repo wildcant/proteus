@@ -1,3 +1,7 @@
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow } from '@core/workflows/types.js'
@@ -9,7 +13,7 @@ export const deleteProductVariantWorkflow = createWorkflow<DeleteProductVariantI
   async (ctx, input) => {
     // Step 1: Dismiss all links referencing this variant
     const dismissed = await ctx.step('dismiss-variant-links', async ({ container }) => {
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       return linkService.dismissLinks({ variantId: [input.variantId] })
     })
 
@@ -17,7 +21,7 @@ export const deleteProductVariantWorkflow = createWorkflow<DeleteProductVariantI
     await ctx.step('delete-pricing-entities', async ({ container }) => {
       const dismissedPriceSetLinks = dismissed.productVariantPriceSet ?? []
       if (dismissedPriceSetLinks.length === 0) return
-      const pricingService = container.resolve(Modules.PRICING)
+      const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
       await pricingService.softDeletePriceSets(dismissedPriceSetLinks.map((link) => link.priceSetId))
     })
 
@@ -28,7 +32,7 @@ export const deleteProductVariantWorkflow = createWorkflow<DeleteProductVariantI
       const dismissedInventoryLinks = dismissed.productVariantInventoryItem ?? []
       if (dismissedInventoryLinks.length === 0) return
 
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
       const inventoryItemIds = [...new Set(dismissedInventoryLinks.map((link) => link.inventoryItemId))]
 
       const surviving = await linkService
@@ -38,13 +42,13 @@ export const deleteProductVariantWorkflow = createWorkflow<DeleteProductVariantI
       const orphaned = inventoryItemIds.filter((itemId) => !stillLinked.has(itemId))
       if (orphaned.length === 0) return
 
-      const inventoryService = container.resolve(Modules.INVENTORY)
+      const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
       await inventoryService.softDeleteInventoryItems(orphaned)
     })
 
     // Step 4: Delete variant
     await ctx.step('delete-variant', async ({ container }) => {
-      const productService = container.resolve(Modules.PRODUCT)
+      const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
       await productService.softDeleteProductVariants([input.variantId])
     })
   },

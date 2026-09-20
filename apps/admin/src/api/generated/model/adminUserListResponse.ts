@@ -5,11 +5,11 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
-import type { AdminUserListResponseUsersItem } from './adminUserListResponseUsersItem.ts';
+import type { AdminUser } from './adminUser.ts';
 
 export interface AdminUserListResponse {
   count: number;
   offset: number;
   limit: number;
-  users: AdminUserListResponseUsersItem[];
+  users: AdminUser[];
 }

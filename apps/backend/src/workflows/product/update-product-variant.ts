@@ -1,5 +1,8 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
 import type { ProductVariantDTO } from '@core/types/product/common.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
@@ -35,7 +38,7 @@ export const updateProductVariantWorkflow = createWorkflow<UpdateProductVariantI
     const { variant, wasTracked } = await ctx.step(
       'update-variant',
       async ({ container }) => {
-        const productService = container.resolve(Modules.PRODUCT)
+        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
         const previous = await productService.retrieveProductVariant(input.variantId)
         const variant = await productService.updateProductVariant(input.variantId, input.data)
         return {
@@ -45,7 +48,7 @@ export const updateProductVariantWorkflow = createWorkflow<UpdateProductVariantI
         }
       },
       async ({ prevData }, { container }) => {
-        const productService = container.resolve(Modules.PRODUCT)
+        const productService = container.resolve<IProductModuleService>(Modules.PRODUCT)
         await productService.upsertProductVariants([prevData])
       },
     )
@@ -68,8 +71,8 @@ export const updateProductVariantWorkflow = createWorkflow<UpdateProductVariantI
       async ({ container }) => {
         if (variant.manageInventory === wasTracked) return NOTHING_MOVED
 
-        const inventoryService = container.resolve(Modules.INVENTORY)
-        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
         if (!variant.manageInventory) {
           const links = await linkService.repo('productVariantInventoryItem').findByVariantIds([variant.id])
@@ -107,8 +110,8 @@ export const updateProductVariantWorkflow = createWorkflow<UpdateProductVariantI
         return { ...NOTHING_MOVED, restored: { linkIds, inventoryItemIds } }
       },
       async (moved, { container }) => {
-        const inventoryService = container.resolve(Modules.INVENTORY)
-        const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+        const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVENTORY)
+        const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
         if (moved.untracked.inventoryItemIds.length > 0) {
           await inventoryService.restoreInventoryItems(moved.untracked.inventoryItemIds)

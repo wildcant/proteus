@@ -1,3 +1,8 @@
+import type { IInventoryModuleService } from '@core/types/inventory/service.js'
+import type { ILinkService } from '@core/types/link/service.js'
+import type { IPricingModuleService } from '@core/types/pricing/service.js'
+import type { IProductModuleService } from '@core/types/product/service.js'
+import type { IStoreModuleService } from '@core/types/store/service.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -22,11 +27,11 @@ export const GetOutput = StoreProductListResponse
 export const GET = async (
   req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,
 ): Promise<HttpResult<typeof GetOutput>> => {
-  const productService = req.scope.resolve(Modules.PRODUCT)
-  const pricingService = req.scope.resolve(Modules.PRICING)
-  const inventoryService = req.scope.resolve(Modules.INVENTORY)
-  const storeService = req.scope.resolve(Modules.STORE)
-  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
+  const productService = req.scope.resolve<IProductModuleService>(Modules.PRODUCT)
+  const pricingService = req.scope.resolve<IPricingModuleService>(Modules.PRICING)
+  const inventoryService = req.scope.resolve<IInventoryModuleService>(Modules.INVENTORY)
+  const storeService = req.scope.resolve<IStoreModuleService>(Modules.STORE)
+  const linkService = req.scope.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 
   const { pagination, filters } = req.validatedQuery
   const { offset, limit } = pagination
