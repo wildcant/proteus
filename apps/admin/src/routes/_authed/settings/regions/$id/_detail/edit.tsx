@@ -1,7 +1,6 @@
 import { RouteDrawer } from '@proteus/ui'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { regionQueryOptions } from '#/features/regions/api/regions'
+import { regionQueryOptions, useSuspenseRegion } from '#/features/regions/api/regions'
 import { EditRegionForm } from '#/features/regions/components/edit-region-form'
 
 export const Route = createFileRoute('/_authed/settings/regions/$id/_detail/edit')({
@@ -11,7 +10,7 @@ export const Route = createFileRoute('/_authed/settings/regions/$id/_detail/edit
 
 function EditRegionRoute() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseQuery(regionQueryOptions(id))
+  const { data } = useSuspenseRegion(id)
 
   return (
     <RouteDrawer>

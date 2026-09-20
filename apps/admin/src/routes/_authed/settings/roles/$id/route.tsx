@@ -1,8 +1,7 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { SingleColumnPageSkeleton } from '#/components/common/skeleton'
 import { permissionsListQueryOptions } from '#/features/access-control/api/permissions'
-import { roleQueryOptions } from '#/features/access-control/api/roles'
+import { roleQueryOptions, useSuspenseRole } from '#/features/access-control/api/roles'
 import { EditRoleForm } from '#/features/access-control/components/edit-role-form'
 
 export const Route = createFileRoute('/_authed/settings/roles/$id')({
@@ -17,7 +16,7 @@ export const Route = createFileRoute('/_authed/settings/roles/$id')({
 
 function RoleEditPage() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseQuery(roleQueryOptions(id))
+  const { data } = useSuspenseRole(id)
 
   return <EditRoleForm role={data.role} />
 }

@@ -110,9 +110,9 @@ Which one a surface wants follows from whether it owns the page:
 
 Both twins read one factory, so the two surfaces cannot disagree about what they are showing.
 
-The store runs this as its three-layer pattern (factory → `useSuspense*` → `use*`). The admin has no
-suspending hooks at all: its route components call `useSuspenseQuery(productQueryOptions(id))`
-directly, which is fine — a route file is outside `features/*/api/` and the rule does not reach it.
+Both apps run this as the three-layer pattern (factory → `useSuspense*` → `use*`). Route files call
+`useSuspenseProduct(id)` from `features/*/api/`, not `useSuspenseQuery(…)` directly — the
+`@tanstack/react-query` import is confined to `features/*/api/` and `src/lib/query-client.ts`.
 
 **A caveat the rules cannot check.** `useSuspenseQuery` ignores `enabled` — it always fetches. A
 factory that carries a gate (`enabled: isRegistered()`) and is read by both twins therefore protects
@@ -141,9 +141,10 @@ consumes it is beyond a single-file pattern match, so it stays a thing to know r
 | `query-options-loose-type` | `options?` cannot redefine `queryKey`/`queryFn`, and is not an ad-hoc `{ enabled?: boolean }` |
 | `query-raises-toast` | a query does not announce its own failure |
 | `suspense-hook-name-mismatch` | `useSuspense<Thing>` suspends; `use<Thing>` does not |
+| `query-hook-in-component` | `@tanstack/react-query` is not imported outside `features/*/api/` |
 
 `standards/README.md` covers how rules run, how their tests work, and how to suppress one. None of
-these seven has an exemption today.
+these eight has an exemption today.
 
 ## What is deliberately not enforced
 

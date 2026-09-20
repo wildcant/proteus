@@ -1,7 +1,6 @@
 import { RouteFocusModal } from '@proteus/ui'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { productVariantQueryOptions } from '#/features/products/api/product-variants'
+import { useSuspenseProductVariant } from '#/features/products/api/product-variants'
 import { VariantPriceEditForm } from '#/features/products/components/variant/variant-price-edit-form'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/variants/$variantId/prices')({
@@ -10,7 +9,7 @@ export const Route = createFileRoute('/_authed/_shell/products/$id/variants/$var
 
 function VariantPricesRoute() {
   const { id, variantId } = Route.useParams()
-  const { data } = useSuspenseQuery(productVariantQueryOptions(id, variantId))
+  const { data } = useSuspenseProductVariant(id, variantId)
 
   return (
     <RouteFocusModal>

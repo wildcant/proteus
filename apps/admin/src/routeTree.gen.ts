@@ -45,6 +45,7 @@ import { Route as AuthedSettingsRolesCreateRouteImport } from './routes/_authed/
 import { Route as AuthedSettingsStoreIndexRouteImport } from './routes/_authed/settings/store/index'
 import { Route as AuthedSettingsStoreCurrenciesRouteImport } from './routes/_authed/settings/store/currencies'
 import { Route as AuthedSettingsStoreEditRouteImport } from './routes/_authed/settings/store/edit'
+import { Route as AuthedSettingsUsersIndexRouteImport } from './routes/_authed/settings/users/index'
 import { Route as AuthedSettingsUsersIdRouteImport } from './routes/_authed/settings/users/$id'
 import { Route as AuthedSettingsUsersInviteRouteImport } from './routes/_authed/settings/users/invite'
 import { Route as AuthedShellOrdersIdDetailRouteRouteImport } from './routes/_authed/_shell/orders/$id/_detail/route'
@@ -272,6 +273,12 @@ const AuthedSettingsStoreEditRoute = AuthedSettingsStoreEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => AuthedSettingsStoreRouteRoute,
 } as any)
+const AuthedSettingsUsersIndexRoute =
+  AuthedSettingsUsersIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedSettingsUsersRouteRoute,
+  } as any)
 const AuthedSettingsUsersIdRoute = AuthedSettingsUsersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -448,6 +455,7 @@ export interface FileRoutesByFullPath {
   '/settings/regions/': typeof AuthedSettingsRegionsIndexRoute
   '/settings/roles/': typeof AuthedSettingsRolesIndexRoute
   '/settings/store/': typeof AuthedSettingsStoreIndexRoute
+  '/settings/users/': typeof AuthedSettingsUsersIndexRoute
   '/products/$id/variants/$variantId': typeof AuthedShellProductsIdVariantsVariantIdRouteRouteWithChildren
   '/product-options/$id/edit': typeof AuthedShellProductOptionsIdDetailEditRoute
   '/products/$id/edit': typeof AuthedShellProductsIdDetailEditRoute
@@ -472,7 +480,6 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthedSettingsRouteRouteWithChildren
   '/invite': typeof PublicInviteRoute
   '/login': typeof PublicLoginRoute
-  '/settings/users': typeof AuthedSettingsUsersRouteRouteWithChildren
   '/customers': typeof AuthedShellCustomersRoute
   '/orders/$id': typeof AuthedShellOrdersIdDetailIndexRoute
   '/product-options/$id': typeof AuthedShellProductOptionsIdDetailIndexRoute
@@ -495,6 +502,7 @@ export interface FileRoutesByTo {
   '/settings/regions': typeof AuthedSettingsRegionsIndexRoute
   '/settings/roles': typeof AuthedSettingsRolesIndexRoute
   '/settings/store': typeof AuthedSettingsStoreIndexRoute
+  '/settings/users': typeof AuthedSettingsUsersIndexRoute
   '/products/$id/variants/$variantId': typeof AuthedShellProductsIdVariantsVariantIdRouteRouteWithChildren
   '/product-options/$id/edit': typeof AuthedShellProductOptionsIdDetailEditRoute
   '/products/$id/edit': typeof AuthedShellProductsIdDetailEditRoute
@@ -550,6 +558,7 @@ export interface FileRoutesById {
   '/_authed/settings/regions/': typeof AuthedSettingsRegionsIndexRoute
   '/_authed/settings/roles/': typeof AuthedSettingsRolesIndexRoute
   '/_authed/settings/store/': typeof AuthedSettingsStoreIndexRoute
+  '/_authed/settings/users/': typeof AuthedSettingsUsersIndexRoute
   '/_authed/_shell/orders/$id/_detail': typeof AuthedShellOrdersIdDetailRouteRouteWithChildren
   '/_authed/_shell/product-options/$id/_detail': typeof AuthedShellProductOptionsIdDetailRouteRouteWithChildren
   '/_authed/_shell/products/$id/_detail': typeof AuthedShellProductsIdDetailRouteRouteWithChildren
@@ -611,6 +620,7 @@ export interface FileRouteTypes {
     | '/settings/regions/'
     | '/settings/roles/'
     | '/settings/store/'
+    | '/settings/users/'
     | '/products/$id/variants/$variantId'
     | '/product-options/$id/edit'
     | '/products/$id/edit'
@@ -635,7 +645,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/invite'
     | '/login'
-    | '/settings/users'
     | '/customers'
     | '/orders/$id'
     | '/product-options/$id'
@@ -658,6 +667,7 @@ export interface FileRouteTypes {
     | '/settings/regions'
     | '/settings/roles'
     | '/settings/store'
+    | '/settings/users'
     | '/products/$id/variants/$variantId'
     | '/product-options/$id/edit'
     | '/products/$id/edit'
@@ -712,6 +722,7 @@ export interface FileRouteTypes {
     | '/_authed/settings/regions/'
     | '/_authed/settings/roles/'
     | '/_authed/settings/store/'
+    | '/_authed/settings/users/'
     | '/_authed/_shell/orders/$id/_detail'
     | '/_authed/_shell/product-options/$id/_detail'
     | '/_authed/_shell/products/$id/_detail'
@@ -994,6 +1005,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/store/edit'
       preLoaderRoute: typeof AuthedSettingsStoreEditRouteImport
       parentRoute: typeof AuthedSettingsStoreRouteRoute
+    }
+    '/_authed/settings/users/': {
+      id: '/_authed/settings/users/'
+      path: '/'
+      fullPath: '/settings/users/'
+      preLoaderRoute: typeof AuthedSettingsUsersIndexRouteImport
+      parentRoute: typeof AuthedSettingsUsersRouteRoute
     }
     '/_authed/settings/users/$id': {
       id: '/_authed/settings/users/$id'
@@ -1503,12 +1521,14 @@ const AuthedSettingsStoreRouteRouteWithChildren =
 interface AuthedSettingsUsersRouteRouteChildren {
   AuthedSettingsUsersIdRoute: typeof AuthedSettingsUsersIdRoute
   AuthedSettingsUsersInviteRoute: typeof AuthedSettingsUsersInviteRoute
+  AuthedSettingsUsersIndexRoute: typeof AuthedSettingsUsersIndexRoute
 }
 
 const AuthedSettingsUsersRouteRouteChildren: AuthedSettingsUsersRouteRouteChildren =
   {
     AuthedSettingsUsersIdRoute: AuthedSettingsUsersIdRoute,
     AuthedSettingsUsersInviteRoute: AuthedSettingsUsersInviteRoute,
+    AuthedSettingsUsersIndexRoute: AuthedSettingsUsersIndexRoute,
   }
 
 const AuthedSettingsUsersRouteRouteWithChildren =

@@ -1,9 +1,8 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@proteus/ui'
-import { useQueryClient } from '@tanstack/react-query'
 import { BellIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useMe } from '#/features/auth/api/auth'
-import { useInfiniteNotifications } from '#/features/notifications/api/notifications'
+import { useInfiniteNotifications, useInvalidateNotifications } from '#/features/notifications/api/notifications'
 import { NotificationList } from './notification-list'
 
 const LAST_READ_KEY = 'notificationsLastReadAt'
@@ -12,7 +11,7 @@ const POLL_INTERVAL = 60_000
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const { user } = useMe()
-  const queryClient = useQueryClient()
+  const invalidateNotifications = useInvalidateNotifications()
 
   const { data: latestPage } = useInfiniteNotifications(
     user ? { channel: 'feed', to: [user.id, user.email], limit: 1, order: '-createdAt' } : undefined,
@@ -29,10 +28,10 @@ export function NotificationBell() {
   useEffect(() => {
     if (!user) return
     const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      invalidateNotifications()
     }, POLL_INTERVAL)
     return () => clearInterval(interval)
-  }, [user, queryClient])
+  }, [user, invalidateNotifications])
 
   // Keyboard shortcut
   useEffect(() => {
