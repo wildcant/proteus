@@ -6,10 +6,12 @@ import { vi } from 'vitest'
 const mockState = vi.hoisted(() => ({ features: [] as Array<{ id: string; title: string; module: string }> }))
 
 vi.mock('@core/access-control/features.gen.js', () => ({
+  // biome-ignore lint/style/useNamingConvention: must match generated export name
   get GENERATED_FEATURES() {
     return mockState.features
   },
 }))
+
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import accessControlModule from '../index.js'

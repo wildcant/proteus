@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 import { boolean, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveUniqueIndex } from '../../../core/db/indexes.js'
+import type { PermissionGrant } from '../../../core/types/access-control/common.js'
 
 export const roleTable = pgTable(
   'role',
@@ -11,7 +12,7 @@ export const roleTable = pgTable(
     description: text(),
     isSuperAdmin: boolean().default(false).notNull(),
     protected: boolean().default(false).notNull(),
-    featuresJson: jsonb().$type<string[]>().default(sql`'[]'`).notNull(),
+    featuresJson: jsonb().$type<PermissionGrant[]>().default(sql`'[]'`).notNull(),
     ...timestamps,
   },
   (table) => [liveUniqueIndex('idx_role_name').on(table.name)],

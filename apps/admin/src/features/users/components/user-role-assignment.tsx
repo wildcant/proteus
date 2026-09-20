@@ -1,12 +1,11 @@
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@proteus/ui'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { MultiSelectCombobox } from '#/components/multi-select-combobox'
-import { rolesListQueryOptions, useReplaceUserRoles, userRolesQueryOptions } from '#/features/users/api/user-roles'
+import { useReplaceUserRoles, useSuspenseRolesList, useSuspenseUserRoles } from '#/features/users/api/user-roles'
 
 export function UserRoleAssignment({ userId }: { userId: string }) {
-  const { data: rolesData } = useSuspenseQuery(rolesListQueryOptions())
-  const { data: userRolesData } = useSuspenseQuery(userRolesQueryOptions(userId))
+  const { data: rolesData } = useSuspenseRolesList()
+  const { data: userRolesData } = useSuspenseUserRoles(userId)
 
   const currentRoleIds = userRolesData.roles.map((r) => r.id)
   const serializedRoleIds = currentRoleIds.join(',')

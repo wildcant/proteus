@@ -182,3 +182,19 @@ export type IRegionPaymentProviderRepository = {
   createMany(data: Partial<RegionPaymentProviderDTO>[], context?: Context): Promise<RegionPaymentProviderDTO[]>
   softDelete(ids: string[], context?: Context): Promise<void>
 }
+
+export type InviteRoleDTO = {
+  id: string
+  inviteId: string
+  roleId: string
+  createdAt: Date
+  deletedAt: Date | null
+}
+
+export type IInviteRoleRepository = {
+  findByInviteId(inviteId: string, context?: Context): Promise<InviteRoleDTO[]>
+  findByInviteIds(inviteIds: string[], context?: Context): Promise<InviteRoleDTO[]>
+  create(data: Partial<InviteRoleDTO>, context?: Context): Promise<InviteRoleDTO>
+  createMany(data: Partial<InviteRoleDTO>[], context?: Context): Promise<InviteRoleDTO[]>
+  softDelete(ids: string[], context?: Context): Promise<void>
+}

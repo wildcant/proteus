@@ -33,7 +33,7 @@ test.beforeEach(async ({ createApi, getDb }) => {
       sql`UPDATE role SET is_super_admin = true, protected = true, features_json = '["*"]'::jsonb WHERE id = ${roleId}`,
     )
   api = await createApi({ definitions, namespaceAuth: true })
-  accessControl = api.container.resolve<IAccessControlModuleService>(Modules.ACCESS_CONTROL)
+  accessControl = api.container.resolve(Modules.ACCESS_CONTROL)
 
   const adminRole = await accessControl.createRole({
     name: 'Admin',

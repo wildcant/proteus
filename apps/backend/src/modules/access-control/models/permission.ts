@@ -2,12 +2,13 @@ import { sql } from 'drizzle-orm'
 import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveUniqueIndex } from '../../../core/db/indexes.js'
+import type { PermissionKey } from '../../../core/types/access-control/common.js'
 
 export const permissionTable = pgTable(
   'permission',
   {
     id: text().primaryKey().default(sql`CONCAT('perm_', REPLACE(gen_random_uuid()::text, '-', ''))`),
-    key: text().notNull(),
+    key: text().$type<PermissionKey>().notNull(),
     module: text().notNull(),
     title: text().notNull(),
     description: text(),

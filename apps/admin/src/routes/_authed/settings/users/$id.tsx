@@ -1,12 +1,10 @@
-import { Card, CardHeader, CardTitle } from '@proteus/ui'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { Card, CardHeader, CardTitle, RouteFocusModal } from '@proteus/ui'
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { SectionRow } from '#/components/common/section-row'
 import { SingleColumnPageSkeleton } from '#/components/common/skeleton'
-import { PageLayout } from '#/components/layout/page-layout'
 import { rolesListQueryOptions, userRolesQueryOptions } from '#/features/users/api/user-roles'
-import { userQueryOptions } from '#/features/users/api/users'
+import { userQueryOptions, useSuspenseUser } from '#/features/users/api/users'
 import { UserRoleAssignment } from '#/features/users/components/user-role-assignment'
 
 export const Route = createFileRoute('/_authed/settings/users/$id')({
@@ -20,25 +18,30 @@ export const Route = createFileRoute('/_authed/settings/users/$id')({
   },
   staticData: { breadcrumb: 'User' },
   pendingComponent: () => <SingleColumnPageSkeleton sections={2} />,
-  component: UserDetailPage,
+  component: UserDetailRoute,
 })
 
-function UserDetailPage() {
+function UserDetailRoute() {
   const { id } = Route.useParams()
-  const { data } = useSuspenseQuery(userQueryOptions(id))
+  const { data } = useSuspenseUser(id)
   const { user } = data
 
   return (
-    <PageLayout.SingleColumn>
-      <Card className="gap-0 divide-y py-0">
-        <CardHeader>
-          <CardTitle>{user.name}</CardTitle>
-        </CardHeader>
-        <SectionRow title="Email" value={user.email} />
-      </Card>
-      <Suspense fallback={<SingleColumnPageSkeleton sections={1} />}>
-        <UserRoleAssignment userId={id} />
-      </Suspense>
-    </PageLayout.SingleColumn>
+    <RouteFocusModal>
+      <RouteFocusModal.Header />
+      <RouteFocusModal.Body>
+        <div className="mx-auto w-full max-w-180 px-6 py-16">
+          <Card className="gap-0 divide-y py-0">
+            <CardHeader>
+              <CardTitle>{user.name}</CardTitle>
+            </CardHeader>
+            <SectionRow title="Email" value={user.email} />
+          </Card>
+          <Suspense fallback={<SingleColumnPageSkeleton sections={1} />}>
+            <UserRoleAssignment userId={id} />
+          </Suspense>
+        </div>
+      </RouteFocusModal.Body>
+    </RouteFocusModal>
   )
 }

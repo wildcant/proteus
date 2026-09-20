@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
-import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type {
   AdminCreateRole,
   AdminRoleDetailResponse,
@@ -27,6 +27,8 @@ export const roleQueryOptions = (id: string) =>
   })
 
 export const useRoles = () => useQuery(rolesListQueryOptions())
+
+export const useSuspenseRole = (id: string) => useSuspenseQuery(roleQueryOptions(id))
 
 export const useCreateRole = (options?: UseMutationOptions<AdminRoleResponse, Error, AdminCreateRole>) => {
   const { onSuccess, onError, ...rest } = options ?? {}

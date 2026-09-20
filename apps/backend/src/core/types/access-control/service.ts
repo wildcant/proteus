@@ -1,6 +1,6 @@
 import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
-import type { PermissionKey } from './common.js'
+import type { PermissionGrant, PermissionKey } from './common.js'
 import type { CreateRoleDTO, PermissionDTO, RoleDTO, UpdateRoleDTO } from './dto.js'
 
 export type IAccessControlModuleService = {
@@ -33,9 +33,11 @@ export type IAccessControlModuleService = {
     callerContext: { callerGrantsIncludeSuperAdmin: boolean },
     context?: Context,
   ): Promise<void>
+  revokeRoles(actorType: string, actorId: string, roleIds: string[], context?: Context): Promise<void>
   listActorRoles(actorType: string, actorId: string, context?: Context): Promise<RoleDTO[]>
   listActorRolesBulk(actorType: string, actorIds: string[], context?: Context): Promise<Map<string, RoleDTO[]>>
   countRoleAssignments(roleId: string, context?: Context): Promise<number>
+  resolvePermissions(actorType: string, actorId: string, context?: Context): Promise<PermissionGrant[]>
   resolveEffectiveFeatures(actorType: string, actorId: string, context?: Context): Promise<PermissionKey[]>
 
   assignRolesToUser(userId: string, roleIds: string[], context?: Context): Promise<void>

@@ -1,6 +1,6 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
-import { queryOptions, useMutation } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type { AdminUserRolesResponse } from '#/api/generated/model'
 import { listRoles } from '#/api/generated/roles/roles'
 import { listUserRoles, replaceUserRoles } from '#/api/generated/users/users'
@@ -22,6 +22,12 @@ export const rolesListQueryOptions = () =>
     queryKey: roleKeys.list(),
     queryFn: () => listRoles(),
   })
+
+export const useRolesList = () => useQuery(rolesListQueryOptions())
+
+export const useSuspenseRolesList = () => useSuspenseQuery(rolesListQueryOptions())
+
+export const useSuspenseUserRoles = (userId: string) => useSuspenseQuery(userRolesQueryOptions(userId))
 
 export const useReplaceUserRoles = (
   userId: string,
