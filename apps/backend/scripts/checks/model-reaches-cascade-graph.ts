@@ -10,8 +10,8 @@ import type { Check, Violation } from './types.js'
  * Nothing else in the codebase would notice — `tsc`, `check:structure` and the whole test suite
  * all pass with a table left out — which is why this is a check.
  *
- * Every list is checked, wherever it is written: a module's `Module()` definition, the three
- * `sync-providers.ts` that build their own outside the container, `link-modules/index.ts`, and any
+ * Every list is checked, wherever it is written: a module's `Module()` definition, the
+ * `sync-<registry>.ts` files that build their own outside the container, `link-modules/index.ts`, and any
  * test that reproduces one. A list is held to the modules it draws from — name one table of a
  * module and you have to name them all, because a partial graph under-cascades in exactly the way
  * a complete one does not. A list that draws from no module is the cascade graph's own fixtures,

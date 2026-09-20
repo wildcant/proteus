@@ -58,7 +58,7 @@
       // Node server, Worker, three temporal worker processes started by their own scripts, and
       // providers registered by string. The scripts and configs are production entries too: this
       // run asks what is reached only from tests, and a seed script is not a test — omitting them
-      // would flag `seedProviders` and the three `sync-providers` modules. `ping.ts` needs naming
+      // would flag `seedProviders` and the `sync-<registry>` modules. `ping.ts` needs naming
       // because production mode reads only the `start` script, not `temporal:ping`.
       "entry": [
         "src/index.ts!",

@@ -20,7 +20,7 @@ src/modules/<name>/
 ├── providers/               # optional — a provider that ships with the module
 ├── database.config.ts       # drizzle-kit config
 ├── provider-declarations.ts # optional — the configured providers
-├── sync-providers.ts        # optional — out-of-band provider upsert for workerd
+├── sync-<registry>.ts       # optional — out-of-band upsert for workerd
 └── index.ts                 # Module() definition
 ```
 
@@ -70,7 +70,7 @@ object of its definition, so tables with foreign keys between them must share a 
 | `index.ts` | The `Module()` definition — the module's whole public surface |
 | `database.config.ts` | drizzle-kit config, read by `db:generate` and `db:migrate` |
 | `provider-declarations.ts` | The configured providers, read by both DI and the seed |
-| `sync-providers.ts` | Out-of-band provider upsert for workerd, where loaders cannot write |
+| `sync-<registry>.ts` | Out-of-band upsert for workerd, where loaders cannot write (`sync-providers.ts`, `sync-permissions.ts`) |
 
 A ninth folder or a fifth root file is invisible to bootstrap and to drizzle-kit — both read
 `index.ts` and `database.config.ts` and nothing else — so it becomes a private convention only its

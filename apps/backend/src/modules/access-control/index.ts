@@ -1,6 +1,6 @@
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
-import { syncPermissions } from './loaders/sync-permissions.js'
+import { seedPermissions } from './loaders/permissions.js'
 import { actorRoleAssignmentTable } from './models/actor-role-assignment.js'
 import { permissionTable } from './models/permission.js'
 import { roleTable } from './models/role.js'
@@ -27,5 +27,5 @@ export default Module(Modules.ACCESS_CONTROL, {
     permissionRepository: PermissionRepository,
     roleRepository: RoleRepository,
   },
-  postLoaders: [syncPermissions],
+  postLoaders: [seedPermissions],
 })

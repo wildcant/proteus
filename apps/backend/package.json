@@ -46,6 +46,7 @@
     "db:migrate:dev": "dotenvx run -f ../../.env.local -- pnpm run db:migrate",
     "db:seed:dev": "dotenvx run -f ../../.env.local -- tsx scripts/seed-dev.ts",
     "db:seed:providers": "dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-providers.ts",
+    "db:seed:permissions": "dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-permissions.ts",
     "db:migrate:test": "dotenvx run -f ../../.env.test -- pnpm run db:migrate",
     "db:seed:providers:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-providers.ts",
     "db:seed:markets:test": "dotenvx run -f ../../.env.test -- tsx scripts/seed-markets.ts",

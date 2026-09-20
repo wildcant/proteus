@@ -412,8 +412,9 @@ module.exports = {
       comment: `
         A module is eight folders and four root files: models/, repositories/, services/,
         migrations/, __tests__/, loaders/, providers/, utils/, plus index.ts, database.config.ts,
-        provider-declarations.ts and sync-providers.ts. Bootstrap reads index.ts and drizzle-kit
-        reads database.config.ts, so a ninth folder or a fifth root file is invisible to both and
+        provider-declarations.ts and a sync-<registry>.ts — the out-of-band upsert for workerd,
+        where a loader cannot write (sync-providers.ts, sync-permissions.ts). Bootstrap reads
+        index.ts and drizzle-kit reads database.config.ts, so a ninth folder or a fifth root file is invisible to both and
         becomes a private convention only its module follows. Every kind of code already has a
         home: a Drizzle table in models/, data access in repositories/, business logic in the
         service (a collaborator class the service keeps private, like ProductOptionService, is
@@ -426,7 +427,7 @@ module.exports = {
       module: {
         path:
           '^src/modules/[^/]+/' +
-          '(?!(?:index|database\\.config|provider-declarations|sync-providers)\\.ts$)' +
+          '(?!(?:index|database\\.config|provider-declarations|sync-[a-z-]+)\\.ts$)' +
           '(?!(?:models|repositories|services|migrations|__tests__|loaders|providers|utils)/)',
       },
       to: { path: '(?!)' },

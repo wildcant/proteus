@@ -44,6 +44,9 @@ MIGRATING=true dotenvx run -f "$REPO_ROOT/.env" -- pnpm run db:migrate
 echo "==> Seeding providers..."
 MIGRATING=true dotenvx run -f "$REPO_ROOT/.env" -- tsx scripts/seed-providers.ts
 
+echo "==> Seeding permissions..."
+MIGRATING=true dotenvx run -f "$REPO_ROOT/.env" -- tsx scripts/seed-permissions.ts
+
 echo "==> Seeding dev data (uploading seed images to $(dotenvx get S3_BUCKET -f "$REPO_ROOT/.env"))..."
 MIGRATING=true FILE_PROVIDER=s3 dotenvx run -f "$REPO_ROOT/.env" -- tsx scripts/seed-dev.ts
 
