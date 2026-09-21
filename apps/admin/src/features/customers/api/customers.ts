@@ -1,10 +1,8 @@
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
-import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
-import { createCustomers, deleteCustomer, listCustomers, updateCustomer } from '#/api/generated/customers/customers'
+import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { deleteCustomer, getCustomer, listCustomers, updateCustomer } from '#/api/generated/customers/customers'
 import type {
-  AdminCreateCustomer,
-  AdminCreateCustomersResponse,
   AdminCustomerListResponse,
   AdminCustomerResponse,
   AdminUpdateCustomer,
@@ -31,33 +29,20 @@ export const customersListQueryOptions = (query?: ListCustomersParams, options?:
     ...options,
   })
 
+export const customerQueryOptions = (id: string) =>
+  queryOptions({
+    queryKey: customersQueryKeys.detail(id),
+    queryFn: () => getCustomer(id),
+  })
+
 // --- Query hooks ---
 
-export const useCustomers = (query?: ListCustomersParams, options?: CustomersListQueryOptions) => {
-  const { data, ...rest } = useQuery(customersListQueryOptions(query, options))
-  return { ...data, ...rest }
-}
+export const useCustomers = (query?: ListCustomersParams, options?: CustomersListQueryOptions) =>
+  useQuery(customersListQueryOptions(query, options))
+
+export const useSuspenseCustomer = (id: string) => useSuspenseQuery(customerQueryOptions(id))
 
 // --- Mutation hooks ---
-
-export const useCreateCustomer = (
-  options?: UseMutationOptions<AdminCreateCustomersResponse, Error, AdminCreateCustomer[]>,
-) => {
-  const { onSuccess, onError, ...rest } = options ?? {}
-  return useMutation({
-    ...rest,
-    mutationFn: (payload) => createCustomers(payload),
-    onSuccess: (...args) => {
-      queryClient.invalidateQueries({ queryKey: customersQueryKeys.lists() })
-      onSuccess?.(...args)
-    },
-    onError: (...args) => {
-      const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create customer', description: error.message })
-      onError?.(...args)
-    },
-  })
-}
 
 export const useUpdateCustomer = (
   options?: UseMutationOptions<AdminCustomerResponse, Error, { id: string; data?: AdminUpdateCustomer }>,

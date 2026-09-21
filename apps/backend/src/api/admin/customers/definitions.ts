@@ -1,5 +1,6 @@
 import type { RouteDefinition } from '@framework/http/types.js'
-import { Tags } from '@framework/http/types.js'
+import { searchable, Tags } from '@framework/http/types.js'
+import type { CustomerDTO } from '../../../core/types/customer/common.js'
 import * as customerByIdRoutes from './[id]/route.js'
 import * as customerRoutes from './route.js'
 
@@ -9,6 +10,7 @@ export default [
     matcher: '/admin/customers',
     handler: customerRoutes.GET,
     input: customerRoutes.GetInput,
+    searchableColumns: searchable<CustomerDTO>('email', 'firstName', 'lastName'),
     permissions: ['customer.read'],
     operationId: 'listCustomers',
     summary: 'List customers',
