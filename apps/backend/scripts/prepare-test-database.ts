@@ -36,27 +36,35 @@ await createIfMissing()
 // the file on disk causes drizzle-kit to exit 1 with no actionable message. When that happens,
 // drop and recreate so the next attempt starts from a blank slate.
 try {
-  execSync('pnpm run db:migrate', {
-    stdio: 'inherit',
-    env: { ...process.env, DIRECT_DATABASE_URL: target },
-  })
+  run('pnpm --silent run db:migrate', { DIRECT_DATABASE_URL: target })
 } catch {
   console.info(`[test-db] migration failed — dropping and recreating ${name}`)
   await dropAndRecreate()
-  execSync('pnpm run db:migrate', {
-    stdio: 'inherit',
-    env: { ...process.env, DIRECT_DATABASE_URL: target },
-  })
+  run('pnpm --silent run db:migrate', { DIRECT_DATABASE_URL: target })
 }
 
 // Providers first: each region is linked to the providers that exist when it is created, which is
 // the same order `globalSetup` re-seeds in. Both are idempotent, so a reused database pays only
 // for the checks.
 for (const seed of ['db:seed:providers:test', 'db:seed:markets:test']) {
-  execSync(`pnpm run ${seed}`, {
-    stdio: 'inherit',
-    env: { ...process.env, POOLER_DATABASE_URL: target, DIRECT_DATABASE_URL: target },
-  })
+  run(`pnpm --silent run ${seed}`, { POOLER_DATABASE_URL: target, DIRECT_DATABASE_URL: target })
+}
+
+/**
+ * Captured rather than inherited. Playwright pipes a `webServer`'s output into the run, and the
+ * migrate loop alone writes three lines per module — fifty lines of "applying migrations..." ahead
+ * of the first spec. Nothing here is worth reading when it works, and all of it is when it does
+ * not, so the output is held and replayed on failure.
+ */
+function run(command: string, env: Record<string, string>) {
+  try {
+    execSync(command, { stdio: 'pipe', env: { ...process.env, ...env } })
+  } catch (error) {
+    const { stdout, stderr } = error as { stdout?: Buffer; stderr?: Buffer }
+    process.stdout.write(stdout ?? '')
+    process.stderr.write(stderr ?? '')
+    throw error
+  }
 }
 
 function maintenanceConnection() {

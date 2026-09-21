@@ -6,7 +6,14 @@ const DATABASE_URL = process.env.POOLER_DATABASE_URL ?? DEFAULT_TEST_DATABASE_UR
 
 // The suite's own database, matching the backend process `defineE2eConfig` started for it. Outside
 // an e2e run `E2E_APP` is unset and this stays on the base database.
-const sql = postgres(withAppDatabase(DATABASE_URL), { prepare: false })
+const sql = postgres(withAppDatabase(DATABASE_URL), {
+  prepare: false,
+  // The truncate loop in `global-setup.ts` raises a NOTICE per cascaded table, and postgres-js
+  // prints the whole notice object by default — dozens of them ahead of the first spec.
+  onnotice: () => {
+    // noop
+  },
+})
 export const db = drizzle(sql, { casing: 'snake_case' })
 
 export async function shutdown() {

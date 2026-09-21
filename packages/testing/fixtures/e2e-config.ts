@@ -121,7 +121,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
         // override `.env.test` for this process without a second env file to keep in step.
         // `dev:test:e2e`, not `dev:test`: Playwright starts a web server before globalSetup, so the
         // suite's database has to be created and migrated by the server's own command.
-        command: 'pnpm --filter backend run dev:test:e2e',
+        command: 'pnpm --filter backend --silent run dev:test:e2e',
         url: `http://localhost:${backendPort}/health`,
         reuseExistingServer: true,
         env: {
@@ -136,7 +136,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
         // Where the checkout workflow actually runs. `reuseExistingServer` is off: a Worker left
         // over from a previous run holds this suite's queue but was started against whatever
         // database that run used, which is the exact failure the queue name exists to prevent.
-        command: 'pnpm --filter backend run worker:test',
+        command: 'pnpm --filter backend --silent run worker:test',
         url: `http://localhost:${workerHealthPort}`,
         reuseExistingServer: false,
         env: {
@@ -148,7 +148,7 @@ export function defineE2eConfig({ app, appPort, backendPort, workerHealthPort }:
         },
       },
       {
-        command: 'pnpm run dev:test',
+        command: 'pnpm --silent run dev:test',
         url: `http://localhost:${appPort}`,
         reuseExistingServer: true,
         // Vite's own env loading picks prefixed variables up from the process, which is how this
