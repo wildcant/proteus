@@ -18,7 +18,24 @@ offset?: number | null;
  */
 limit?: number;
 order?: string;
+q?: string;
 id?: string | string[];
 email?: string;
 hasAccount?: boolean;
+createdAt?: {
+  /** @nullable */
+  $eq?: string | null;
+  /** @nullable */
+  $ne?: string | null;
+  /** @nullable */
+  $gt?: string | null;
+  /** @nullable */
+  $gte?: string | null;
+  /** @nullable */
+  $lt?: string | null;
+  /** @nullable */
+  $lte?: string | null;
+  $in?: (string | null)[];
+  $nin?: (string | null)[];
+};
 };

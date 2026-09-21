@@ -46,7 +46,7 @@ RESET='\033[0m'
 # Commenting a gate out means dropping its name from here as well as its `job_*` function and
 # label — this string is what the loop iterates, and a name with no function behind it fails the
 # run with an empty label rather than being skipped.
-JOBS="typecheck lint standards structure versions unused generated openapi test schemas store packages"
+JOBS="typecheck lint standards structure versions unused generated openapi test schemas store packages workerd"
 
 job_typecheck() { pnpm run typecheck; }
 
@@ -255,6 +255,14 @@ job_test() { pnpm --filter backend run test:gate; }
 # one yet.
 job_store() { pnpm --filter store run test; }
 
+# That the Worker still boots on workerd and can serve a request that reads the database. The one
+# gate here that runs the deployed runtime rather than reasoning about it: `bootstrapContainer` runs
+# at module init on workerd, which is global scope, where the runtime forbids socket I/O and where
+# the per-request database store is empty — so code that boots cleanly under node can return 500 on
+# every route in production with every other gate green. ~2.5s, and it needs the local Postgres that
+# `.env.workerd` names, the same one `pnpm dev` uses. See scripts/checks/workerd-smoke.sh.
+job_workerd() { ./scripts/checks/workerd-smoke.sh; }
+
 # The shared formatters. They are the one place a change lands on both applications at once — the
 # storefront asks them for a market's punctuation, the admin asks them for none — so the claim they
 # carry is that omitting a locale still prints exactly what it printed before.
@@ -277,7 +285,8 @@ for arg in "$@"; do
       echo ""
       echo "  Formats the tree, then runs typecheck, lint, the code standards, the import"
       echo "  structure rules, version alignment, dependency usage, generated-file currency, the"
-      echo "  backend API tests and the store's unit and component tests in parallel."
+      echo "  workerd boot smoke test, the backend API tests and the store's unit and component"
+      echo "  tests in parallel."
       echo ""
       echo "  --ci   Fail on unformatted files instead of rewriting them."
       echo "         Implied when the CI environment variable is set."
@@ -306,6 +315,7 @@ label_of() {
     schemas) echo "Request-schema bound tests" ;;
     store) echo "Store unit + component tests" ;;
     packages) echo "Shared package unit tests (utils)" ;;
+    workerd) echo "The Worker boots and serves on workerd" ;;
   esac
 }
 
@@ -421,6 +431,13 @@ report() {
       echo -e "  ${BOLD}Hint:${RESET} another vitest run holds the test databases. The backend suite is not"
       echo -e "  safe to run twice concurrently — an editor watcher (vitest-vscode) is the usual culprit."
       echo -e "  Find it with ${BOLD}pgrep -fl vitest${RESET} and re-run once it is clear."
+    fi
+    # The workerd gate talks to the local Postgres that .env.workerd names, which a checkout with no
+    # dev stack running does not have.
+    if grep -q 'cannot serve a request that reads the database' "$LOG_DIR/$name.log"; then
+      echo ""
+      echo -e "  ${BOLD}Hint:${RESET} start the database this gate reads —"
+      echo -e "  ${BOLD}docker compose -f apps/backend/docker-compose.yml up -d --wait postgres${RESET}"
     fi
     # The component tests render in a real Chromium, which a fresh checkout has not downloaded.
     if grep -q "Executable doesn't exist" "$LOG_DIR/$name.log"; then

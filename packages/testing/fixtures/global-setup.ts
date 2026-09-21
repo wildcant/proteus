@@ -25,13 +25,21 @@ export default async function globalSetup() {
 
   await shutdown()
 
+  // The permission catalogue, truncated with everything else. The backend seeds it once at boot
+  // from its postLoader, and a server this run reused booted before the truncate — so without this
+  // the role forms offer no feature to grant and every permission list renders empty.
+  execSync('pnpm --filter backend --silent run db:seed:permissions:test', {
+    stdio: 'inherit',
+    env: { ...process.env, POOLER_DATABASE_URL: DATABASE_URL },
+  })
+
   // Re-seed providers after truncation. Needed because the backend server may be reused
   // across test runs (reuseExistingServer: true) and won't re-run its boot-time seeding.
   //
   // dotenvx leaves a variable alone when the environment already carries one, so passing the
   // suite's database here is what keeps the seed off the base one — this process still holds the
   // unsuffixed URL that `.env.test` supplied.
-  execSync('pnpm --filter backend run db:seed:providers:test', {
+  execSync('pnpm --filter backend --silent run db:seed:providers:test', {
     stdio: 'inherit',
     env: { ...process.env, POOLER_DATABASE_URL: DATABASE_URL },
   })
@@ -43,7 +51,7 @@ export default async function globalSetup() {
   // Same env override as the providers above, and for the same reason — without it this seeds the
   // *base* database while the suite runs against its own, and the storefront answers every request
   // with "the store does not sell in its default market".
-  execSync('pnpm --filter backend run db:seed:markets:test', {
+  execSync('pnpm --filter backend --silent run db:seed:markets:test', {
     stdio: 'inherit',
     env: { ...process.env, POOLER_DATABASE_URL: DATABASE_URL },
   })

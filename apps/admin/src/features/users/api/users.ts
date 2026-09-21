@@ -5,7 +5,7 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
 
 export const userKeys = queryKeysFactory<'users', ListUsersParams>('users')
 
-const usersListQueryOptions = (params?: ListUsersParams) =>
+export const usersListQueryOptions = (params?: ListUsersParams) =>
   queryOptions({
     queryKey: userKeys.list(params),
     queryFn: () => listUsers(params),

@@ -1,7 +1,7 @@
 import { createServer } from 'node:http'
 import { env } from '@env'
 import { createWorkerContainer } from '@framework/runtime/container.worker.js'
-import { NativeConnection, Worker } from '@temporalio/worker'
+import { DefaultLogger, NativeConnection, Runtime, Worker } from '@temporalio/worker'
 import { PAYLOAD_CONVERTER_PATH } from '../../temporal/config.js'
 import { createWorkflowActivities, ping } from './activities.js'
 import { WORKFLOWS_PATH } from './config.js'
@@ -35,6 +35,14 @@ if (env.MOCKS) {
  * to the events queue rather than running the subscriber inline while this Activity holds its slot.
  */
 const { container, shutdown } = await createWorkerContainer({ engine: 'simple', eventBus: 'temporal' })
+
+/**
+ * At the default INFO the SDK writes the whole webpack stats table for the workflow bundle, plus a
+ * state-change line and a Nexus notice, to stderr. Playwright pipes a `webServer`'s stderr into the
+ * run, so an e2e suite opens with ~20 lines about a bundle nobody asked about. Installed before the
+ * first connection, which is when the Runtime is otherwise created with its defaults.
+ */
+Runtime.install({ logger: new DefaultLogger(env.NODE_ENV === 'test' ? 'WARN' : 'INFO') })
 
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS })
 

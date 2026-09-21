@@ -85,10 +85,10 @@ job_packages() { pnpm --filter @proteus/utils run test; }
 # would receive a bare `--` as its first argument. pnpm passes everything after the script name
 # through already, which is why the separator has nothing left to separate.
 job_storeE2e() {
-  pnpm --filter store run test:e2e --reporter=line --workers="$E2E_WORKERS" --timeout="$E2E_TIMEOUT"
+  pnpm --filter store --silent run test:e2e --reporter=line --workers="$E2E_WORKERS" --timeout="$E2E_TIMEOUT"
 }
 job_adminE2e() {
-  pnpm --filter admin run test:e2e --reporter=line --workers="$E2E_WORKERS" --timeout="$E2E_TIMEOUT"
+  pnpm --filter admin --silent run test:e2e --reporter=line --workers="$E2E_WORKERS" --timeout="$E2E_TIMEOUT"
 }
 
 for arg in "$@"; do

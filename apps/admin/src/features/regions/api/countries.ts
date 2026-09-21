@@ -12,7 +12,7 @@ import type {
 } from '#/api/generated/model'
 import { assignRegionCountries, removeRegionCountry, updateRegionCountryLocale } from '#/api/generated/regions/regions'
 import { regionKeys } from '#/features/regions/api/regions'
-import { queryClient } from '#/lib/query-client'
+import { queryClient, REFERENCE_DATA_STALE_TIME } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const countryKeys = queryKeysFactory<'countries', ListCountriesParams>('countries')
@@ -26,6 +26,7 @@ const countriesListQueryOptions = (params?: ListCountriesParams) =>
     queryKey: countryKeys.list(params),
     queryFn: () => listCountries(params),
     placeholderData: keepPreviousData,
+    staleTime: REFERENCE_DATA_STALE_TIME,
   })
 
 export const useCountries = (params?: ListCountriesParams) => useQuery(countriesListQueryOptions(params))

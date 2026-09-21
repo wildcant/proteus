@@ -1,34 +1,49 @@
-import { Button } from '@proteus/ui'
-import { Form } from '#/components/form/form.tsx'
-import {
-  type UpdateCustomerFormParams,
-  useUpdateCustomerForm,
-} from '#/features/customers/hooks/use-update-customer-form.ts'
+import { Button, KeyboundForm, RouteFocusModal, useRouteModal } from '@proteus/ui'
+import type { AdminCustomer } from '#/api/generated/model'
+import { useUpdateCustomerForm } from '#/features/customers/hooks/use-update-customer-form.ts'
 
-type UpdateCustomerFormProps = UpdateCustomerFormParams
+export function UpdateCustomerForm({ customer }: { customer: AdminCustomer }) {
+  const { handleSuccess } = useRouteModal()
 
-export function UpdateCustomerForm(props: UpdateCustomerFormProps) {
-  const { form } = useUpdateCustomerForm(props)
+  const { form } = useUpdateCustomerForm({
+    id: customer.id,
+    defaultValues: {
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      email: customer.email,
+    },
+    onSuccess: () => handleSuccess(),
+  })
 
   return (
-    <Form onSubmit={form.handleSubmit} className="flex flex-1 flex-wrap items-center gap-3">
-      <form.AppForm>
-        <form.AppField name="firstName">
-          {(field) => <field.TextField label="First name" className="w-auto flex-1" />}
-        </form.AppField>
-        <form.AppField name="lastName">
-          {(field) => <field.TextField label="Last name" className="w-auto flex-1" />}
-        </form.AppField>
-        <form.AppField name="email">
-          {(field) => <field.TextField label="Email" className="w-auto flex-1" type="email" />}
-        </form.AppField>
-        <div className="flex gap-2 self-end">
-          <form.SubmitButton size="sm">Save</form.SubmitButton>
-          <Button type="button" variant="outline" size="sm" onClick={props.onSettled}>
-            Cancel
-          </Button>
-        </div>
-      </form.AppForm>
-    </Form>
+    <RouteFocusModal.Form form={form}>
+      <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
+        <form.AppForm>
+          <RouteFocusModal.Header />
+          <RouteFocusModal.Body>
+            <div className="mx-auto flex w-full max-w-lg flex-col gap-y-8 py-16">
+              <div>
+                <h1 className="font-semibold text-2xl">Edit Customer</h1>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <form.AppField name="firstName">
+                  {(field) => <field.TextField label="First name" autoFocus placeholder="e.g. Ada" />}
+                </form.AppField>
+                <form.AppField name="lastName">
+                  {(field) => <field.TextField label="Last name" placeholder="e.g. Lovelace" />}
+                </form.AppField>
+              </div>
+              <form.AppField name="email">
+                {(field) => <field.TextField label="Email" type="email" placeholder="e.g. ada@example.com" />}
+              </form.AppField>
+            </div>
+          </RouteFocusModal.Body>
+          <RouteFocusModal.Footer>
+            <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
+            <form.SubmitButton size="sm">Save</form.SubmitButton>
+          </RouteFocusModal.Footer>
+        </form.AppForm>
+      </KeyboundForm>
+    </RouteFocusModal.Form>
   )
 }

@@ -65,9 +65,9 @@ whole graph, and the cascade never has to consult another module's tables
 
 `logger/noop-logger.ts` is a null object, not an adapter: it satisfies the `Logger` port by doing
 nothing, and it needs no process to exist. It is here rather than beside the Winston and Console
-loggers because the code that reaches for it is module code — each module's `sync-providers.ts`
-constructs its repository and service by hand, outside the container, to upsert providers on
-workerd, and has to hand the constructor something.
+loggers because the code that reaches for it is module code — each module's `sync-<registry>.ts`
+constructs its repositories and service by hand, outside the container, to upsert providers or
+permissions on workerd, and has to hand the constructor something.
 
 That is not a detail: while `noopLogger` sat in `framework/logger/`, it was the single reason
 `modules/` imported `framework/` at all, and the rule that now forbids the business layers from

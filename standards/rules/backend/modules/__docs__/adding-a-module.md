@@ -108,7 +108,7 @@ Nothing re-exports them. `core/types/` has no barrels — a consumer imports
 
 The eight folders and four root files in [modules](./modules.md). Start with `models/`,
 `repositories/`, `services/`, `__tests__/`, `database.config.ts` and `index.ts`; add `utils/`,
-`loaders/`, `providers/`, `provider-declarations.ts` and `sync-providers.ts` only when something
+`loaders/`, `providers/`, `provider-declarations.ts` and a `sync-<registry>.ts` only when something
 needs them.
 
 ### 4. Define models
@@ -251,7 +251,7 @@ export default Module(Modules.INVENTORY, {
 The repository key must match what the service expects in `InjectedDependencies`. `models` must name
 every table the module owns — that is what the cascade graph is derived from, and
 `model-reaches-cascade-graph` checks it. Any other place that builds a graph from a literal — a
-`sync-providers.ts`, a test — is a separate list and is found and checked the same way.
+`sync-<registry>.ts`, a test — is a separate list and is found and checked the same way.
 
 ### 8. Register in the bootstrap
 

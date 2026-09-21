@@ -51,8 +51,8 @@ export type CascadeList = {
  * delete leaves its rows readable.
  *
  * Searching rather than enumerating is the point. A hardcoded list of call sites covers the ones
- * whoever wrote it remembered, and the sites are spread across module definitions, the three
- * `sync-providers.ts` that run out-of-band for workerd, `link-modules/index.ts` and the tests that
+ * whoever wrote it remembered, and the sites are spread across module definitions, the
+ * `sync-<registry>.ts` files that run out-of-band for workerd, `link-modules/index.ts` and the tests that
  * reproduce a module's graph. Each is a separate list that can be incomplete on its own.
  *
  * Read from the syntax rather than by importing the file: five module definitions pull in
