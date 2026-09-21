@@ -119,12 +119,18 @@ export type CleanupFunction = {
 const admin = definePersona('admin', {
   async createSession({ page }) {
     const user = await createUser()
+    // Every admin route declares a permission, so a user holding no role is denied the whole
+    // application. A `'*'` grant rather than the `isSuperAdmin` flag: `guardLastSuperAdmin` counts
+    // flagged roles, and a persona role standing beside the one an rbac spec creates would make
+    // "last super admin cannot remove their own role" pass without the guard firing.
+    const role = await createRole({ name: `e2e-admin-${user.id}`, featuresJson: ['*'] })
+    await createActorRoleAssignment({ actorType: 'user', actorId: user.id, roleId: role.id })
     await page.goto('/login')
     await page.getByLabel('Email').fill(user.email)
     await page.getByLabel('Password').fill(user.password)
     await page.getByRole('button', { name: /sign in/i }).click()
     await page.waitForURL('/')
-    return { userId: user.id, name: user.name }
+    return { userId: user.id, name: user.name, roleId: role.id }
   },
   async verifySession({ page, session }) {
     await gotoSettled(page, '/')
@@ -134,6 +140,8 @@ const admin = definePersona('admin', {
   },
   async destroySession({ session }) {
     await deleteUserById(session.userId)
+    // Deletes the assignment with it, so the grant never outlives the user it was minted for.
+    await deleteRoleById(session.roleId)
   },
 })
 

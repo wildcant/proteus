@@ -45,11 +45,9 @@ test('super admin creates a role, assigns it to a user, and verifies role edit p
   await page.getByLabel('Name').fill(roleName)
   await page.getByLabel('Description').fill('Can manage products')
 
-  const productGroup = page
-    .locator('div')
-    .filter({ has: page.locator('label', { hasText: /^product$/i }) })
-    .first()
-  await productGroup.getByRole('checkbox').first().click()
+  // The module's own box, which grants `product.*`. Named rather than reached through its row:
+  // every checkbox here carries the label it belongs to.
+  await page.getByRole('checkbox', { name: 'product — All' }).click()
 
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByRole('cell', { name: roleName })).toBeVisible({ timeout: 10000 })
@@ -80,7 +78,13 @@ test('restricted user sees filtered sidebar and gets 403 on unauthorized pages',
   page,
   navigate,
   factories,
+  consoleGuard,
 }) => {
+  // The 403 this test exists to produce is a route error, and the router prints the match it
+  // failed on. Excused here rather than globally: everywhere else that line is a defect.
+  consoleGuard.allow(/Error in route match: \/_authed\//)
+  consoleGuard.allow(/^error: %o$/)
+
   await using productRole = await factories.create.role({
     name: `Product Only ${Date.now()}`,
     featuresJson: ['product.*'],
@@ -107,7 +111,9 @@ test('restricted user sees filtered sidebar and gets 403 on unauthorized pages',
 
   // Can still access products
   await navigate({ to: '/products' })
-  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible()
+  // Exact: the list's empty state is a heading reading "No products yet", which a substring match
+  // picks up beside the page title whenever no other spec has left a product behind.
+  await expect(page.getByRole('heading', { name: 'Products', exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Create Product' })).toBeVisible()
 
   void assignment
@@ -152,7 +158,9 @@ test('catalogue editor can create, edit, and delete a product', async ({ page, n
   await generalSection.locator('[data-slot="dropdown-menu-trigger"]').click()
   await page.getByRole('menuitem', { name: 'Delete' }).click()
   await page.getByRole('button', { name: 'Delete' }).click()
-  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible()
+  // Exact: the list's own empty state is a heading reading "No products yet", which a substring
+  // match picks up alongside the page title the moment this deletion empties the table.
+  await expect(page.getByRole('heading', { name: 'Products', exact: true })).toBeVisible()
   await expect(page.getByRole('cell', { name: updatedTitle })).not.toBeVisible()
 
   void assignment

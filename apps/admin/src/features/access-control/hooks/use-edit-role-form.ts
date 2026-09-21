@@ -12,7 +12,7 @@ export function useEditRoleForm(role: AdminRoleDetailResponseRole, params?: Edit
   const form = useAppForm({
     defaultValues: {
       name: role.name,
-      description: role.description,
+      description: role.description ?? '',
       features: role.features,
     } satisfies AdminUpdateRoleBody as AdminUpdateRoleBody,
     validators: { onSubmit: AdminUpdateRole },

@@ -14,7 +14,7 @@ import {
   setDefaultStoreCurrency,
   updateStore,
 } from '#/api/generated/store/store'
-import { queryClient } from '#/lib/query-client'
+import { queryClient, REFERENCE_DATA_STALE_TIME } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 const storeKeys = queryKeysFactory<'store'>('store')
@@ -23,6 +23,7 @@ export const storeQueryOptions = () =>
   queryOptions({
     queryKey: storeKeys.all,
     queryFn: () => getStore(),
+    staleTime: REFERENCE_DATA_STALE_TIME,
   })
 
 /** The store and the currencies it sells in. There is exactly one, so this takes no id. */

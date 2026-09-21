@@ -8,7 +8,7 @@ import type {
   ListRegionsParams,
 } from '#/api/generated/model'
 import { createRegion, getRegion, listRegions, updateRegion } from '#/api/generated/regions/regions'
-import { queryClient } from '#/lib/query-client'
+import { queryClient, REFERENCE_DATA_STALE_TIME } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 /**
@@ -22,12 +22,14 @@ export const regionsListQueryOptions = (params?: ListRegionsParams) =>
     queryKey: regionKeys.list(params),
     queryFn: () => listRegions(params),
     placeholderData: keepPreviousData,
+    staleTime: REFERENCE_DATA_STALE_TIME,
   })
 
 export const regionQueryOptions = (id: string) =>
   queryOptions({
     queryKey: regionKeys.detail(id),
     queryFn: () => getRegion(id),
+    staleTime: REFERENCE_DATA_STALE_TIME,
   })
 
 export const useRegions = (params?: ListRegionsParams) => useQuery(regionsListQueryOptions(params))
