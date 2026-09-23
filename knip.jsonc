@@ -73,7 +73,12 @@
         "src/framework/*/temporal/worker.dev.ts!",
         "structure/.dependency-cruiser.cjs",
         "vitest.temporal.config.ts",
-        "vitest.temporal-server.config.ts"
+        "vitest.temporal-server.config.ts",
+        // Read by the `lingui` CLI, which knip does not follow from the i18n:* scripts.
+        "lingui.config.ts",
+        // The compiled message catalogs. Shipped code, loaded by the Translator adapter rather than
+        // by a static import from src/ — until that adapter lands, nothing else references them.
+        "locales/*.ts!"
       ],
       // Factories, fixtures, vitest setup. Test code — production never reaches it by design.
       "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!tests/**!", "!src/**/__tests__/**!"]

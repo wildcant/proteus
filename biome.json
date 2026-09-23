@@ -10,6 +10,7 @@
     "includes": [
       "**",
       "!**/*.gen.ts",
+      "!**/locales/*.ts",
       "!**/*.gen.css",
       "!**/src/api/generated",
       "!apps/backend/openapi/openapi-*.json",
