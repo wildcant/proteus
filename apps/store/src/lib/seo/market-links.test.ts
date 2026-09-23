@@ -6,7 +6,7 @@ const colombia: Market = { localeCode: 'es-CO', iso2: 'co', displayName: 'Colomb
 const markets: ReadonlyArray<Market> = [DEFAULT_MARKET, colombia]
 
 function context(current: Market, resolvedFromUrl = true): MarketContext {
-  return { current, markets, resolvedFromUrl }
+  return { current, markets, defaultMarket: DEFAULT_MARKET, resolvedFromUrl }
 }
 
 describe('marketHeadLinks', () => {
