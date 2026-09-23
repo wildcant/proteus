@@ -99,6 +99,10 @@
       // `src/build-icons/` generates the icon components at build time and ships nothing.
       "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!src/build-icons/**!"]
     },
+    "packages/http-schemas": {
+      // Read by the `lingui` CLI, which knip does not follow from the i18n:* scripts.
+      "entry": ["lingui.config.ts"]
+    },
     "packages/ui": {
       // `scripts/re-eject-shadcn.ts` re-runs the shadcn CLI. A tool, not a component.
       "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!scripts/**!"]

@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { z } from 'zod'
 import { countryCode, entityId, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
 
@@ -68,7 +69,7 @@ export type AdminUpdateRegionBody = z.infer<typeof AdminUpdateRegion>
  */
 const localeCode = machineCode
   .trim()
-  .min(1, 'A locale is required.')
+  .min(1, i18n.t('A locale is required.'))
   .refine((tag) => {
     try {
       Intl.getCanonicalLocales(tag)
@@ -76,7 +77,7 @@ const localeCode = machineCode
     } catch {
       return false
     }
-  }, 'Not a well-formed BCP 47 language tag')
+  }, i18n.t('Not a well-formed BCP 47 language tag'))
 
 /** ISO 3166-1 alpha-2, lowercased on the way in so `CO` and `co` name the same country row. */
 const countryIso2 = countryCode.min(2).transform((code) => code.toLowerCase())
@@ -98,7 +99,7 @@ export const AdminAssignRegionCountries = z
           localeCode,
         }),
       )
-      .min(1, 'Select at least one country.')
+      .min(1, i18n.t('Select at least one country.'))
       .max(MAX_ITEMS.batch),
   })
   .openapi('AdminAssignRegionCountries')

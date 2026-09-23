@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { z } from 'zod'
 import { entityId, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
 
@@ -16,7 +17,7 @@ import { entityId, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
 export const storeCurrencyCode = machineCode
   .min(3)
   .max(3)
-  .regex(/^[A-Za-z]{3}$/, 'Not an ISO 4217 currency code')
+  .regex(/^[A-Za-z]{3}$/, i18n.t('Not an ISO 4217 currency code'))
   .transform((code) => code.toLowerCase())
 
 /**
@@ -50,7 +51,7 @@ export type AdminUpdateStoreBody = z.infer<typeof AdminUpdateStore>
  */
 export const AdminAddStoreCurrencies = z
   .object({
-    currencyCodes: z.array(storeCurrencyCode).min(1, 'Select at least one currency.').max(MAX_ITEMS.batch),
+    currencyCodes: z.array(storeCurrencyCode).min(1, i18n.t('Select at least one currency.')).max(MAX_ITEMS.batch),
   })
   .openapi('AdminAddStoreCurrencies')
 export type AdminAddStoreCurrenciesBody = z.infer<typeof AdminAddStoreCurrencies>

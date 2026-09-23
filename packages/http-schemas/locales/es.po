@@ -1,0 +1,134 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-09-23 18:13-0500\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: es\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. js-lingui-explicit-id
+#: src/bounded.ts:63
+msgid "Use {maximum} characters or fewer"
+msgstr "Usa {maximum} caracteres o menos"
+
+#. js-lingui-explicit-id
+#: src/bounded.ts:108
+msgid "Invalid amount"
+msgstr "Monto no válido"
+
+#. js-lingui-explicit-id
+#: src/common.ts:34
+#: src/common.ts:39
+msgid "Invalid numeric value"
+msgstr "Valor numérico no válido"
+
+#. js-lingui-explicit-id
+#: src/store/user/payloads.ts:7
+#: src/store/user/payloads.ts:15
+msgid "Name is required"
+msgstr "Ingresa tu nombre"
+
+#. js-lingui-explicit-id
+#: src/auth/payloads.ts:33
+#: src/store/auth/payloads.ts:7
+#: src/store/auth/payloads.ts:19
+#: src/store/cart/payloads.ts:17
+#: src/store/cart/payloads.ts:53
+#: src/store/customer/payloads.ts:9
+#: src/store/customer/payloads.ts:21
+#: src/store/user/payloads.ts:8
+#: src/store/user/payloads.ts:16
+msgid "Enter a valid email address"
+msgstr "Ingresa un correo electrónico válido"
+
+#. js-lingui-explicit-id
+#: src/store/customer/payloads.ts:7
+#: src/store/customer/payloads.ts:19
+msgid "First name is required"
+msgstr "Ingresa tu nombre"
+
+#. js-lingui-explicit-id
+#: src/store/customer/payloads.ts:8
+#: src/store/customer/payloads.ts:20
+msgid "Last name is required"
+msgstr "Ingresa tu apellido"
+
+#. js-lingui-explicit-id
+#: src/store/cart/payloads.ts:25
+#: src/store/customer/payloads.ts:46
+#: src/store/customer/payloads.ts:59
+msgid "Address is required"
+msgstr "Ingresa tu dirección"
+
+#. js-lingui-explicit-id
+#: src/store/cart/payloads.ts:28
+#: src/store/customer/payloads.ts:47
+#: src/store/customer/payloads.ts:60
+msgid "City is required"
+msgstr "Ingresa tu ciudad"
+
+#. js-lingui-explicit-id
+#: src/store/cart/payloads.ts:29
+#: src/store/customer/payloads.ts:48
+#: src/store/customer/payloads.ts:61
+msgid "Country is required"
+msgstr "Selecciona tu país"
+
+#. js-lingui-explicit-id
+#: src/store/cart/payloads.ts:31
+#: src/store/customer/payloads.ts:49
+#: src/store/customer/payloads.ts:62
+msgid "Postal code is required"
+msgstr "Ingresa tu código postal"
+
+#. js-lingui-explicit-id
+#: src/store/auth/payloads.ts:10
+msgid "Enter a password"
+msgstr "Ingresa una contraseña"
+
+#. js-lingui-explicit-id
+#: src/store/auth/payloads.ts:20
+msgid "Enter your password"
+msgstr "Ingresa tu contraseña"
+
+#. js-lingui-explicit-id
+#: src/auth/payloads.ts:42
+msgid "Enter a new password"
+msgstr "Ingresa una contraseña nueva"
+
+#. js-lingui-explicit-id
+#: src/admin/upload/payloads.ts:16
+msgid "Invalid MIME type"
+msgstr "Tipo MIME no válido"
+
+#. js-lingui-explicit-id
+#: src/admin/store/payloads.ts:20
+msgid "Not an ISO 4217 currency code"
+msgstr "No es un código de moneda ISO 4217"
+
+#. js-lingui-explicit-id
+#: src/admin/store/payloads.ts:54
+msgid "Select at least one currency."
+msgstr "Selecciona al menos una moneda."
+
+#. js-lingui-explicit-id
+#: src/admin/region/payloads.ts:72
+msgid "A locale is required."
+msgstr "Ingresa una configuración regional."
+
+#. js-lingui-explicit-id
+#: src/admin/region/payloads.ts:80
+msgid "Not a well-formed BCP 47 language tag"
+msgstr "No es una etiqueta de idioma BCP 47 válida"
+
+#. js-lingui-explicit-id
+#: src/admin/region/payloads.ts:102
+msgid "Select at least one country."
+msgstr "Selecciona al menos un país."

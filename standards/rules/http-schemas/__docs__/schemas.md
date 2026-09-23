@@ -127,9 +127,21 @@ wrinkle when you do: the dump script writes expanded JSON arrays and Biome refor
 a regeneration shows thousands of churn lines until Biome has run over `apps/backend/openapi` — do
 that before reading the real diff.
 
+### Every message is marked with `i18n.t()`
+
+A message a schema sets is shown to a shopper in their market's language, so it goes through the
+catalog: `.min(1, i18n.t('Enter your password'))`, with `i18n` from `@proteus/utils`. The English
+sentence is the catalog id; a placeholder is ICU and is filled from the issue's own fields —
+`i18n.t('Use {maximum} characters or fewer')`. Schemas stay static English constants, and
+`translateIssue` in `src/i18n.ts` translates where the issue is shown. Any field a shopper fills in
+carries a message of its own: Zod's bundled Spanish reads badly and is only the fallback for fields no
+shopper sees. After marking one, run `pnpm --filter @proteus/http-schemas run i18n:extract`, translate
+the new `msgstr` in `locales/es.po`, then `i18n:compile`.
+
 ## Enforcement
 
-Only the timestamp contract has a rule; it is in [datetime fields](./datetimes.md). Everything above
+Two contracts have rules: timestamps, in [datetime fields](./datetimes.md), and marked messages,
+`schema-message-not-marked`. Everything else above
 is a convention, and `standards/README.md` explains what that means and when it changes.
 
 The `generated` gate is the backstop for several of them: `openapi:generate` is committed and checked

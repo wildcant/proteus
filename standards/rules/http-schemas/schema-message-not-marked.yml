@@ -1,0 +1,42 @@
+id: schema-message-not-marked
+language: typescript
+severity: error
+message: This validation message is a bare string. `lingui extract` only finds messages marked with `i18n.t('…')`, so this one never reaches a catalog and stays English in every market.
+note: "Wrap it: `.min(1, i18n.t('Enter your password'))`, with `i18n` from `@proteus/utils`. The English sentence is the catalog id; placeholders are ICU and filled from the issue's own fields at display — `i18n.t('Use {maximum} characters or fewer')`. Then run `pnpm --filter ./packages/http-schemas run i18n:extract`, translate the new `msgstr` in `locales/es.po` and run `i18n:compile`. Schemas stay static; `translateIssue` in `src/i18n.ts` translates where the issue is shown. standards/rules/http-schemas/__docs__/schemas.md"
+files:
+  - "packages/http-schemas/src/**/*.ts"
+ignores:
+  - "**/*.test.ts"
+utils:
+  # A check whose last argument is the issue message: `.min(1, '…')`, `.regex(re, '…')`,
+  # `.refine(fn, '…')`, or the same wrapped in its params object.
+  message-check-arguments:
+    kind: arguments
+    inside:
+      kind: call_expression
+      has:
+        field: function
+        kind: member_expression
+        has:
+          field: property
+          regex: '^(min|max|length|regex|refine|gt|gte|lt|lte|multipleOf)$'
+  literal:
+    any:
+      - kind: string
+      - kind: template_string
+rule:
+  matches: literal
+  any:
+    # `.min(1, 'Enter your password')`
+    - inside:
+        matches: message-check-arguments
+    # `.min(1, { error: 'Enter your password' })` / `{ message: '…' }`
+    - inside:
+        kind: pair
+        has:
+          field: key
+          regex: '^(error|message)$'
+        inside:
+          kind: object
+          inside:
+            matches: message-check-arguments
