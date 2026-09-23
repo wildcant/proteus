@@ -42,6 +42,7 @@ export * from './storeCartTotals.ts';
 export * from './storeCompleteCartResponse.ts';
 export * from './storeCountry.ts';
 export * from './storeCountryListResponse.ts';
+export * from './storeCountryListResponseDefaultMarket.ts';
 export * from './storeCreateAddress.ts';
 export * from './storeCreateCartLineItemResponse.ts';
 export * from './storeCreateCartResponse.ts';

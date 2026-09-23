@@ -17,7 +17,12 @@ import { ProductGrid } from './product-grid'
  */
 
 /** Enough of a market for `useFormatters` to pick a locale; no request is made for it. */
-const market: MarketContext = { current: DEFAULT_MARKET, markets: [DEFAULT_MARKET], resolvedFromUrl: true }
+const market: MarketContext = {
+  current: DEFAULT_MARKET,
+  markets: [DEFAULT_MARKET],
+  defaultMarket: DEFAULT_MARKET,
+  resolvedFromUrl: true,
+}
 
 /**
  * A memory router with the subject as its only route, the way `payment-methods-book-view` mounts

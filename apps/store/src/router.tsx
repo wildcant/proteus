@@ -3,16 +3,16 @@ import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { loadSellableMarkets } from '#/api/sellable-markets'
 import { NotFound } from '#/components/not-found'
-import { DEFAULT_MARKET, joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
+import { joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
 import { routeTree } from './routeTree.gen'
 
 export async function getRouter() {
   const queryClient = new QueryClient()
 
-  const markets = await loadSellableMarkets()
+  const { markets, defaultMarket } = await loadSellableMarkets()
   // One per router, and the server builds a router per request, so this is request state even
   // though the rewrite closes over it. `input` fills in the market; see below.
-  const market: MarketContext = { current: DEFAULT_MARKET, markets, resolvedFromUrl: false }
+  const market: MarketContext = { current: defaultMarket, markets, defaultMarket, resolvedFromUrl: false }
 
   const router = createTanStackRouter({
     routeTree,
