@@ -25,7 +25,9 @@ export const fetcher = async <T>({
   }
 
   const token = getToken()
-  const baseHeaders: Record<string, string> = {}
+  // The admin is English until admin translations land, so it names that Locale rather than
+  // letting the backend fall back to the default market's language.
+  const baseHeaders: Record<string, string> = { 'x-proteus-locale': 'en-US' }
   if (token) {
     baseHeaders.Authorization = `Bearer ${token}`
   }

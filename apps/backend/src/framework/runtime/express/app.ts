@@ -8,6 +8,8 @@ import type { Logger } from '../../../core/types/logger.js'
 import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
 import { extractFiles } from '../../http/multipart.js'
+import { createDefaultLanguage, loadDefaultMarketLocale } from '../../i18n/default-language.js'
+import { createLinguiTranslator, LOCALE_HEADER } from '../../i18n/lingui-translator.js'
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
 
@@ -79,6 +81,8 @@ export function createExpressApp({ routes, container, logger, corsOrigins }: Cre
 
   app.use('/static', express.static(path.join(process.cwd(), 'static')))
 
+  const defaultLanguage = createDefaultLanguage({ load: () => loadDefaultMarketLocale(container), logger })
+
   for (const route of routes) {
     const method = route.method.toLowerCase() as HttpMethod
     app[method](route.matcher, async (req, res) => {
@@ -102,7 +106,9 @@ export function createExpressApp({ routes, container, logger, corsOrigins }: Cre
         })
         res.status(result.status).json(result.json)
       } catch (error) {
-        const { status, json } = errorHandler(error, logger)
+        // Built here, per request, and never registered in the container: only the response translates.
+        const translator = createLinguiTranslator(req.get(LOCALE_HEADER), defaultLanguage.get())
+        const { status, json } = errorHandler(error, logger, translator)
         res.status(status).json(json)
       }
     })
