@@ -6,7 +6,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "pnpm run i18n:watch & dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
+    "dev": "dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
     "dev:workerd": "VITE_BACKEND_URL=http://localhost:8787 dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
     "dev:test": "dotenvx run --env-file=../../.env.test --quiet -- vite dev --port 3011 --mode test",
     "test:e2e": "dotenvx run --env-file=../../.env.test --quiet -- playwright test",
