@@ -9,6 +9,7 @@ import { SHOW_DEVTOOLS } from '#/env.ts'
 import { CartMarketSwitch } from '#/features/cart/components/cart-market-switch'
 import { MARKET_GLOBAL, type MarketContext } from '#/lib/market'
 import { modalSearchSchema } from '#/lib/modal-state'
+import { marketHeadLinksFor } from '#/lib/seo/market-links'
 import manropeFont from '../assets/fonts/Manrope-VariableFont_wght.woff2?url'
 import appCss from '../styles.css?url'
 
@@ -32,7 +33,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
   ssr: true,
   // Declared here so every route inherits it — see src/lib/modal-state.ts.
   validateSearch: modalSearchSchema,
-  head: () => ({
+  head: (context) => ({
     meta: [
       {
         charSet: 'utf-8',
@@ -61,6 +62,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
         rel: 'stylesheet',
         href: appCss,
       },
+      ...marketHeadLinksFor(context),
     ],
   }),
   component: RootComponent,

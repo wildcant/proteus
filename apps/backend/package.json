@@ -8,7 +8,7 @@
     "./test/fake-gateway": "./tests/mocks/msw/handlers/stripe-wallet.ts"
   },
   "scripts": {
-    "dev": "dotenvx run -f ../../.env.local -- tsx --watch src/index.ts",
+    "dev": "pnpm --silent run i18n:watch & dotenvx run -f ../../.env.local -- tsx --watch src/index.ts",
     "dev:slow": "./scripts/dev-slow-db.sh",
     "dev:test": "NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test --quiet -- tsx watch src/index.ts --port ${PORT:-3010}",
     "db:test:prepare": "dotenvx run --env-file=../../.env.test --quiet -- tsx scripts/prepare-test-database.ts",
@@ -16,11 +16,11 @@
     "dev:workerd": "wrangler dev --test-scheduled --config wrangler.jsonc --env-file .env.workerd",
     "worker": "dotenvx run -f ../../.env.local -- tsx src/framework/workflows/temporal/worker.ts",
     "worker:test": "pnpm --silent run workflows:generate && NODE_ENV=test MOCKS=true dotenvx run --env-file=../../.env.test --quiet -- tsx src/framework/workflows/temporal/worker.ts",
-    "worker:dev": "dotenvx run -f ../../.env.local -- tsx watch --include 'src/workflows/**/*.ts' --exclude 'src/framework/workflows/temporal/registry.gen.ts' src/framework/workflows/temporal/worker.dev.ts",
+    "worker:dev": "pnpm --silent run i18n:watch & dotenvx run -f ../../.env.local -- tsx watch --include 'src/workflows/**/*.ts' --exclude 'src/framework/workflows/temporal/registry.gen.ts' src/framework/workflows/temporal/worker.dev.ts",
     "worker:events": "dotenvx run -f ../../.env.local -- tsx src/framework/event-bus/temporal/worker.ts",
-    "worker:events:dev": "dotenvx run -f ../../.env.local -- tsx watch --include 'src/subscribers/**/*.ts' --exclude 'src/subscribers/registry.gen.ts' src/framework/event-bus/temporal/worker.dev.ts",
+    "worker:events:dev": "pnpm --silent run i18n:watch & dotenvx run -f ../../.env.local -- tsx watch --include 'src/subscribers/**/*.ts' --exclude 'src/subscribers/registry.gen.ts' src/framework/event-bus/temporal/worker.dev.ts",
     "worker:cron": "dotenvx run -f ../../.env.local -- tsx src/framework/scheduler/temporal/worker.ts",
-    "worker:cron:dev": "dotenvx run -f ../../.env.local -- tsx watch --include 'src/jobs/**/*.ts' --exclude 'src/jobs/registry.gen.ts' src/framework/scheduler/temporal/worker.dev.ts",
+    "worker:cron:dev": "pnpm --silent run i18n:watch & dotenvx run -f ../../.env.local -- tsx watch --include 'src/jobs/**/*.ts' --exclude 'src/jobs/registry.gen.ts' src/framework/scheduler/temporal/worker.dev.ts",
     "temporal:ping": "dotenvx run -f ../../.env.local -- tsx src/framework/temporal/ping.ts",
     "temporal:worker-ready": "dotenvx run -f ../../.env.local --quiet -- tsx scripts/temporal/worker-ready.ts",
     "measure:workflow-payload": "NODE_ENV=test dotenvx run -f ../../.env.test -- tsx scripts/temporal/measure-payload.ts",
@@ -67,13 +67,17 @@
     "schema:generate": "tsx scripts/generate-schema.ts",
     "check:schema": "tsx scripts/checks/run.ts",
     "check:structure": "depcruise src/ --config structure/.dependency-cruiser.cjs",
-    "check:structure:graph": "depcruise src/ --config structure/.dependency-cruiser.cjs --output-type archi --collapse 3 --exclude '(node_modules|__tests__|^tests/|^\\.\\./|^src/env\\.ts$|^src/schema\\.type\\.ts$|^cloudflare:|^[a-z_]+$|^fs/promises$)' | dot -T svg -o structure/dependency-graph.svg && open structure/dependency-graph.svg"
+    "check:structure:graph": "depcruise src/ --config structure/.dependency-cruiser.cjs --output-type archi --collapse 3 --exclude '(node_modules|__tests__|^tests/|^\\.\\./|^src/env\\.ts$|^src/schema\\.type\\.ts$|^cloudflare:|^[a-z_]+$|^fs/promises$)' | dot -T svg -o structure/dependency-graph.svg && open structure/dependency-graph.svg",
+    "i18n:extract": "lingui extract --clean",
+    "i18n:compile": "lingui compile --typescript --strict",
+    "i18n:watch": "lingui compile --typescript --watch"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "catalog:",
     "@aws-sdk/client-s3": "^3.1116.0",
     "@aws-sdk/s3-request-presigner": "^3.1116.0",
     "@dotenvx/dotenvx": "catalog:",
+    "@lingui/core": "6.7.0",
     "@proteus/http-schemas": "workspace:*",
     "@proteus/utils": "workspace:*",
     "@sendgrid/mail": "^8.1.6",
@@ -101,6 +105,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "catalog:",
+    "@lingui/cli": "6.7.0",
     "@playwright/test": "catalog:",
     "@stoplight/spectral-cli": "^6.16.3",
     "@temporalio/testing": "^1.23.0",
