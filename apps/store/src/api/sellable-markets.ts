@@ -80,9 +80,10 @@ async function fetchMarkets(): Promise<SellableMarkets> {
   }
 
   // The same object the set holds, so the router and the redirect compare one market, not two copies.
+  // Matched on `iso2`, the country key: two sellable countries can share a locale code.
   return {
     markets,
-    defaultMarket: markets.find((market) => market.localeCode === fetchedDefault.localeCode) ?? fetchedDefault,
+    defaultMarket: markets.find((market) => market.iso2 === fetchedDefault.iso2) ?? fetchedDefault,
   }
 }
 

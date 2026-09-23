@@ -42,6 +42,16 @@ describe('loadSellableMarkets on the server', () => {
     expect(sellable.markets.map((market) => market.localeCode)).toEqual(['es-CO'])
   })
 
+  test('keeps the configured default country when another sellable country shares its locale', async () => {
+    const ecuador = { iso2: 'ec', displayName: 'Ecuador', currencyCode: 'usd', localeCode: 'es-CO' }
+    listStoreCountries.mockResolvedValue({ countries: [ecuador, colombia], defaultMarket: colombia })
+
+    const sellable = await load()
+
+    expect(sellable.defaultMarket).toEqual(colombia)
+    expect(sellable.defaultMarket).toBe(sellable.markets[1])
+  })
+
   test('falls back to the compiled default when the backend is unreachable', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => undefined)
     listStoreCountries.mockRejectedValue(new TypeError('fetch failed'))
