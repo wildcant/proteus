@@ -86,7 +86,8 @@
     "apps/store": {
       // Same two cases as the admin: the fetcher is reached only from the ignored Orval output, the
       // dependency-cruiser config only from the structure gate.
-      "entry": ["orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs"],
+      // `lingui.config.ts` is read by the `lingui` CLI and the Vite plugin, not imported.
+      "entry": ["orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs", "lingui.config.ts"],
       // Same plugin problem as the admin.
       "orval": false,
       // Same as the admin, plus the browser-mode setup file at the workspace root.

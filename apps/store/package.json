@@ -6,7 +6,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
+    "dev": "pnpm run i18n:watch & dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
     "dev:workerd": "VITE_BACKEND_URL=http://localhost:8787 dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
     "dev:test": "dotenvx run --env-file=../../.env.test --quiet -- vite dev --port 3011 --mode test",
     "test:e2e": "dotenvx run --env-file=../../.env.test --quiet -- playwright test",
@@ -20,9 +20,13 @@
     "cf-typegen": "wrangler types",
     "typecheck": "tsc --noEmit",
     "openapi:client": "orval",
-    "check:structure": "depcruise src/ --config structure/.dependency-cruiser.cjs"
+    "check:structure": "depcruise src/ --config structure/.dependency-cruiser.cjs",
+    "i18n:extract": "lingui extract --clean",
+    "i18n:watch": "lingui extract --watch"
   },
   "dependencies": {
+    "@lingui/core": "6.7.0",
+    "@lingui/react": "6.7.0",
     "@proteus/http-schemas": "workspace:*",
     "@proteus/icons": "workspace:*",
     "@proteus/ui": "workspace:*",
@@ -47,12 +51,17 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
     "@cloudflare/vite-plugin": "^1.47.0",
     "@dotenvx/dotenvx": "catalog:",
     "@faker-js/faker": "catalog:",
+    "@lingui/babel-plugin-lingui-macro": "6.7.0",
+    "@lingui/cli": "6.7.0",
+    "@lingui/vite-plugin": "6.7.0",
     "@playwright/test": "catalog:",
     "@proteus/frontend-structure": "workspace:*",
     "@proteus/testing": "workspace:*",
+    "@rolldown/plugin-babel": "^0.2.4",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/devtools-vite": "catalog:",
     "@tanstack/router-cli": "catalog:",

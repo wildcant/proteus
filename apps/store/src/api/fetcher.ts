@@ -1,6 +1,7 @@
 import { apiErrorFor } from '#/api/api-error'
 import { env } from '#/env'
 import { clearToken, getToken } from '#/lib/auth-token'
+import { currentUrl, requestLocaleCodeFor } from '#/lib/i18n/resolve-market'
 
 export const fetcher = async <T>({
   url,
@@ -33,7 +34,8 @@ export const fetcher = async <T>({
   }
 
   const token = getToken()
-  const baseHeaders: Record<string, string> = {}
+  // The market's locale code, so API Messages come back in the page's language.
+  const baseHeaders: Record<string, string> = { 'x-proteus-locale': requestLocaleCodeFor(currentUrl().pathname) }
   if (token) {
     baseHeaders.Authorization = `Bearer ${token}`
   }

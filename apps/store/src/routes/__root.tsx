@@ -1,3 +1,4 @@
+import type { I18n } from '@lingui/core'
 import { Toaster } from '@proteus/ui'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { formDevtoolsPlugin } from '@tanstack/react-form-devtools'
@@ -29,7 +30,7 @@ function marketInitScript(market: MarketContext): string {
   return `window.${MARKET_GLOBAL}=${payload.replace(/</g, '\\u003c')};`
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient; market: MarketContext }>()({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; market: MarketContext; i18n: I18n }>()({
   ssr: true,
   // Declared here so every route inherits it — see src/lib/modal-state.ts.
   validateSearch: modalSearchSchema,
