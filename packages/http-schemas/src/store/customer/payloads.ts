@@ -1,11 +1,12 @@
+import { i18n } from '@proteus/utils'
 import { z } from 'zod'
 import { countryCode, phone, postalCode, shortText } from '../../bounded.js'
 
 export const CreateCustomer = z
   .object({
-    firstName: shortText.min(1),
-    lastName: shortText.min(1),
-    email: z.email(),
+    firstName: shortText.min(1, i18n.t('First name is required')),
+    lastName: shortText.min(1, i18n.t('Last name is required')),
+    email: z.email(i18n.t('Enter a valid email address')),
   })
   .openapi('CreateCustomer')
 export type CreateCustomerBody = z.infer<typeof CreateCustomer>
@@ -15,9 +16,9 @@ export type CreateCustomersBody = z.infer<typeof CreateCustomers>
 
 export const UpdateCustomer = z
   .object({
-    firstName: shortText.min(1).optional(),
-    lastName: shortText.min(1).optional(),
-    email: z.email().optional(),
+    firstName: shortText.min(1, i18n.t('First name is required')).optional(),
+    lastName: shortText.min(1, i18n.t('Last name is required')).optional(),
+    email: z.email(i18n.t('Enter a valid email address')).optional(),
   })
   .openapi('UpdateCustomer')
 export type UpdateCustomerBody = z.infer<typeof UpdateCustomer>
@@ -42,10 +43,10 @@ const addressFields = {
 export const StoreCreateAddress = z
   .object({
     ...addressFields,
-    address1: shortText.min(1),
-    city: shortText.min(1),
-    countryCode: countryCode.min(2),
-    postalCode: postalCode.min(1),
+    address1: shortText.min(1, i18n.t('Address is required')),
+    city: shortText.min(1, i18n.t('City is required')),
+    countryCode: countryCode.min(2, i18n.t('Country is required')),
+    postalCode: postalCode.min(1, i18n.t('Postal code is required')),
     // One checkbox in the UI; the endpoint sets both flags. See StoreCustomerAddress.
     isDefault: z.boolean().optional(),
   })
@@ -55,10 +56,10 @@ export type StoreCreateAddressBody = z.infer<typeof StoreCreateAddress>
 export const StoreUpdateAddress = z
   .object({
     ...addressFields,
-    address1: shortText.min(1).optional(),
-    city: shortText.min(1).optional(),
-    countryCode: countryCode.min(2).optional(),
-    postalCode: postalCode.min(1).optional(),
+    address1: shortText.min(1, i18n.t('Address is required')).optional(),
+    city: shortText.min(1, i18n.t('City is required')).optional(),
+    countryCode: countryCode.min(2, i18n.t('Country is required')).optional(),
+    postalCode: postalCode.min(1, i18n.t('Postal code is required')).optional(),
     isDefault: z.boolean().optional(),
   })
   .openapi('StoreUpdateAddress')

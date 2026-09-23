@@ -733,6 +733,12 @@ importers:
       '@asteasolutions/zod-to-openapi':
         specifier: 'catalog:'
         version: 8.5.0(zod@4.4.3)
+      '@lingui/core':
+        specifier: 6.7.0
+        version: 6.7.0(@babel/core@7.29.7(supports-color@10.2.2))(@babel/types@7.29.7)
+      '@proteus/utils':
+        specifier: workspace:*
+        version: link:../utils
       bignumber.js:
         specifier: 'catalog:'
         version: 11.1.5
@@ -740,6 +746,9 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
+      '@lingui/cli':
+        specifier: 6.7.0
+        version: 6.7.0(esbuild@0.28.1)(rolldown@1.1.5)(supports-color@10.2.2)
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1

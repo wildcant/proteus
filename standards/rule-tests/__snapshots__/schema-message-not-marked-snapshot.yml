@@ -1,0 +1,187 @@
+id: schema-message-not-marked
+snapshots:
+  ? |
+    const code = z.string().regex(/^[A-Za-z]{3}$/, 'Not an ISO 4217 currency code')
+  : labels:
+    - source: '''Not an ISO 4217 currency code'''
+      style: primary
+      start: 47
+      end: 78
+    - source: regex
+      style: secondary
+      start: 24
+      end: 29
+    - source: z.string().regex
+      style: secondary
+      start: 13
+      end: 29
+    - source: z.string().regex(/^[A-Za-z]{3}$/, 'Not an ISO 4217 currency code')
+      style: secondary
+      start: 13
+      end: 79
+    - source: (/^[A-Za-z]{3}$/, 'Not an ISO 4217 currency code')
+      style: secondary
+      start: 29
+      end: 79
+  ? |
+    const country = countryCode.length(2, `Country is required`)
+  : labels:
+    - source: '`Country is required`'
+      style: primary
+      start: 38
+      end: 59
+    - source: length
+      style: secondary
+      start: 28
+      end: 34
+    - source: countryCode.length
+      style: secondary
+      start: 16
+      end: 34
+    - source: countryCode.length(2, `Country is required`)
+      style: secondary
+      start: 16
+      end: 60
+    - source: (2, `Country is required`)
+      style: secondary
+      start: 34
+      end: 60
+  ? |
+    const name = shortText.min(1, { message: 'Name is required' })
+  : labels:
+    - source: '''Name is required'''
+      style: primary
+      start: 41
+      end: 59
+    - source: min
+      style: secondary
+      start: 23
+      end: 26
+    - source: shortText.min
+      style: secondary
+      start: 13
+      end: 26
+    - source: 'shortText.min(1, { message: ''Name is required'' })'
+      style: secondary
+      start: 13
+      end: 62
+    - source: '(1, { message: ''Name is required'' })'
+      style: secondary
+      start: 26
+      end: 62
+    - source: '{ message: ''Name is required'' }'
+      style: secondary
+      start: 30
+      end: 61
+    - source: message
+      style: secondary
+      start: 32
+      end: 39
+    - source: 'message: ''Name is required'''
+      style: secondary
+      start: 32
+      end: 59
+  ? |
+    const numeric = z.string().refine((s) => s.length > 0, 'Invalid numeric value')
+  : labels:
+    - source: '''Invalid numeric value'''
+      style: primary
+      start: 55
+      end: 78
+    - source: refine
+      style: secondary
+      start: 27
+      end: 33
+    - source: z.string().refine
+      style: secondary
+      start: 16
+      end: 33
+    - source: z.string().refine((s) => s.length > 0, 'Invalid numeric value')
+      style: secondary
+      start: 16
+      end: 79
+    - source: ((s) => s.length > 0, 'Invalid numeric value')
+      style: secondary
+      start: 33
+      end: 79
+  ? |
+    const numeric = z.string().refine((s) => s.length > 0, { error: 'Invalid numeric value' })
+  : labels:
+    - source: '''Invalid numeric value'''
+      style: primary
+      start: 64
+      end: 87
+    - source: refine
+      style: secondary
+      start: 27
+      end: 33
+    - source: z.string().refine
+      style: secondary
+      start: 16
+      end: 33
+    - source: 'z.string().refine((s) => s.length > 0, { error: ''Invalid numeric value'' })'
+      style: secondary
+      start: 16
+      end: 90
+    - source: '((s) => s.length > 0, { error: ''Invalid numeric value'' })'
+      style: secondary
+      start: 33
+      end: 90
+    - source: '{ error: ''Invalid numeric value'' }'
+      style: secondary
+      start: 55
+      end: 89
+    - source: error
+      style: secondary
+      start: 57
+      end: 62
+    - source: 'error: ''Invalid numeric value'''
+      style: secondary
+      start: 57
+      end: 87
+  ? |
+    const quantity = z.number().gte(1, 'Add at least one')
+  : labels:
+    - source: '''Add at least one'''
+      style: primary
+      start: 35
+      end: 53
+    - source: gte
+      style: secondary
+      start: 28
+      end: 31
+    - source: z.number().gte
+      style: secondary
+      start: 17
+      end: 31
+    - source: z.number().gte(1, 'Add at least one')
+      style: secondary
+      start: 17
+      end: 54
+    - source: (1, 'Add at least one')
+      style: secondary
+      start: 31
+      end: 54
+  ? |
+    export const StoreLoginBody = z.object({ password: password.min(1, 'Enter your password') })
+  : labels:
+    - source: '''Enter your password'''
+      style: primary
+      start: 67
+      end: 88
+    - source: min
+      style: secondary
+      start: 60
+      end: 63
+    - source: password.min
+      style: secondary
+      start: 51
+      end: 63
+    - source: password.min(1, 'Enter your password')
+      style: secondary
+      start: 51
+      end: 89
+    - source: (1, 'Enter your password')
+      style: secondary
+      start: 63
+      end: 89

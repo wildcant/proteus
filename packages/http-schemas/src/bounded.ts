@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { z } from 'zod'
 // This module is a public entrypoint (`@proteus/http-schemas/bounded`), so it cannot rely on a
 // namespace index having installed `.openapi()` first. The call is idempotent.
@@ -54,6 +55,13 @@ export const MAX_ITEMS = {
   bulk: 1_000,
 } as const
 
+/**
+ * The ceiling's message, on every primitive a shopper types into. Zod's own default names the
+ * type ("expected string to have <=255 characters"), and its bundled Spanish reads worse, so a
+ * field a person fills in carries this instead. `{maximum}` is filled from the issue at display.
+ */
+const tooLong = i18n.t('Use {maximum} characters or fewer')
+
 /** A prefixed id issued by this API, or a provider name that stands in for one. */
 export const entityId = z.string().max(MAX_LENGTH.id)
 
@@ -61,10 +69,10 @@ export const entityId = z.string().max(MAX_LENGTH.id)
 export const machineCode = z.string().max(MAX_LENGTH.code)
 
 /** One line of human text: a title, a name, an address line. */
-export const shortText = z.string().max(MAX_LENGTH.shortText)
+export const shortText = z.string().max(MAX_LENGTH.shortText, tooLong)
 
 /** Prose: a description, a note, a postal expression. */
-export const longText = z.string().max(MAX_LENGTH.longText)
+export const longText = z.string().max(MAX_LENGTH.longText, tooLong)
 
 /** A free-form blob the API stores verbatim. */
 export const textBlob = z.string().max(MAX_LENGTH.textBlob)
@@ -73,16 +81,16 @@ export const textBlob = z.string().max(MAX_LENGTH.textBlob)
 export const httpUrl = z.string().max(MAX_LENGTH.url)
 
 /** A plaintext password on its way to the hasher. */
-export const password = z.string().max(MAX_LENGTH.password)
+export const password = z.string().max(MAX_LENGTH.password, tooLong)
 
 /** An opaque credential: a verification code, a reset or invite token. */
 export const opaqueToken = z.string().max(MAX_LENGTH.token)
 
 /** A telephone number in any format the shopper typed it. */
-export const phone = z.string().max(MAX_LENGTH.phone)
+export const phone = z.string().max(MAX_LENGTH.phone, tooLong)
 
 /** A postal or ZIP code. */
-export const postalCode = z.string().max(MAX_LENGTH.postalCode)
+export const postalCode = z.string().max(MAX_LENGTH.postalCode, tooLong)
 
 /** An ISO 3166-1 alpha-2 country code. */
 export const countryCode = z.string().max(MAX_LENGTH.countryCode)
@@ -97,5 +105,5 @@ export const countryCode = z.string().max(MAX_LENGTH.countryCode)
  */
 export const decimalAmount = z
   .string()
-  .regex(/^-?\d{1,12}(\.\d{1,8})?$/, 'Invalid amount')
+  .regex(/^-?\d{1,12}(\.\d{1,8})?$/, i18n.t('Invalid amount'))
   .openapi({ format: 'decimal' })
