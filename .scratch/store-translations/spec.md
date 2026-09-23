@@ -10,10 +10,11 @@ The language-country segment shape this spec assumes is unchanged — markets ad
 
 ## Why
 
-`.scratch/store-i18n/` translates **Store Copy** — the text the storefront authors. It cannot touch
-**Merchant Text**: product titles, subtitles and descriptions; Product Option titles and values;
-Variant Titles; shipping option names; payment provider labels; and API error messages. Those come
-from the backend, in one language, and render as-is under every Locale.
+`.scratch/store-i18n/` translates **Store Copy**, the schema validation messages and every
+**API Message**, and adds `req.locale` from an `x-proteus-locale` header. It does not touch the rest
+of **Merchant Text**: product titles, subtitles and descriptions; Product Option titles and values;
+Variant Titles; shipping option names; payment provider labels. Those come from the backend, in one
+language, and render as-is under every Locale.
 
 The result after that feature is a Spanish page with English merchandise on it. This feature closes
 that.
@@ -31,8 +32,9 @@ default off (`packages/medusa/src/feature-flags/translation.ts`). `ConfigModule`
 `x-medusa-locale` header. **No `Accept-Language` fallback and no default** — send neither and
 `req.locale` is `undefined`, which yields untranslated values.
 
-Our seam is `apps/backend/src/api/store/middlewares.ts`, which already carries `setPricingContext()`
-setting `req.pricingContext`. `req.locale` follows the same pattern.
+`req.locale` already exists by the time this lands: `.scratch/store-i18n/` sets it from the
+`x-proteus-locale` header, falling back to the default market's language, to translate API
+Messages. This feature reuses it and decides only whether GETs also accept a query param (below).
 
 **Storage** — one row per `(reference_id, reference, locale_code)` holding a JSON blob of the
 translated fields (`packages/modules/translation/src/models/translation.ts`). Allowed locales are
@@ -59,7 +61,7 @@ is null unless the storefront set it, so the subscriber needs a store-level defa
 **camelCase, not snake_case.** `referenceId`, `localeCode`, `cart.locale`. Enforced by Biome's
 `useNamingConvention`; the repo has no snake_case anywhere.
 
-**Our own header name**, not `x-medusa-locale`.
+**Our own header name**, not `x-medusa-locale`: `x-proteus-locale`, set by `.scratch/store-i18n/`.
 
 **Query param over header for GETs.** Medusa accepts both. The store's product routes are ISR-cached
 by URL at the CDN, and React Query keys off the URL too — a header would need `Vary` and would make
@@ -85,5 +87,3 @@ longer the reason why.
 - Admin authoring UI, or seed and API only to start?
 - Which entities in the first pass — products alone, or options and shipping too?
 - Does `applyTranslations` fall back to the source language per field, or per row?
-- Do API error messages move to a code-based contract, or stay English? They are the one piece of
-  Merchant Text with no natural translation row.

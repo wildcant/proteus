@@ -126,21 +126,28 @@ readings of one catalogue at one price.
 _Avoid_: market, region, language (as a system concept), i18n
 
 **Message Catalog**:
-The Store Copy translations for one language, keyed by the language subtag alone — `es-US` and
-`es-MX` share one. Distinct from the product catalogue, which is merchandise; a Message Catalog
+One workspace's translations for one language — the storefront's Store Copy, the backend's API
+Messages, or the shared schemas' validation messages — keyed by the language subtag alone: `es-CO`
+and `es-MX` share one. Distinct from the product catalogue, which is merchandise; a Message Catalog
 holds no merchandise and the catalogue holds no translations.
 _Avoid_: catalog (unqualified), translations, locale file
 
 **Store Copy**:
-Text the storefront itself authors — labels, headings, button text, validation messages, its own
-toast titles. The only text a Locale can change.
+Text the storefront itself authors — labels, headings, button text, its own toast titles. Translated
+in the storefront's Message Catalog.
 _Avoid_: content, strings, UI text
 
 **Merchant Text**:
 Text that reaches the shopper from the backend — product titles and descriptions, Product Option
-titles and values, Variant Titles, shipping option names, payment provider labels, API error
-messages. The storefront cannot translate it; only the backend that owns it can.
+titles and values, Variant Titles, shipping option names, payment provider labels, API Messages.
+The storefront cannot translate it; only the backend that owns it can.
 _Avoid_: catalogue copy, dynamic content, server strings
+
+**API Message**:
+The message of an error the backend returns, including validation messages from shared schemas. The
+one kind of Merchant Text the backend translates from its own Message Catalog, by the request's
+Locale, rather than from translation rows.
+_Avoid_: error string, server error text
 
 ### Access control
 
