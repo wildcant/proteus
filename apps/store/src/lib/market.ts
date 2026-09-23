@@ -170,3 +170,42 @@ export function marketCookie(localeCode: string, secure: boolean): string {
   if (secure) attributes.push('Secure')
   return attributes.join('; ')
 }
+
+/**
+ * Which market a request with no market in its URL is sent to: the one the shopper chose last
+ * time, then the one for the country they are in, then the default.
+ *
+ * A remembered market is an explicit choice, so it outranks where the shopper happens to be. A
+ * cookie naming a market the store no longer sells in is stale, not a choice, so it gives way to
+ * the country rather than to the default. The country is matched against `iso2` whatever its case
+ * — Cloudflare reports it uppercase — and anything that names no sellable market (`XX` for
+ * unknown, `T1` for Tor, a country the store does not ship to, none at all) simply matches nothing.
+ */
+export function resolveMarketTarget({
+  cookie,
+  country,
+  markets,
+}: {
+  cookie: string | undefined
+  country: string | undefined
+  markets: ReadonlyArray<Market>
+}): string {
+  if (cookie && markets.some((market) => market.localeCode === cookie)) return cookie
+  const iso2 = country?.toLowerCase()
+  const local = iso2 ? markets.find((market) => market.iso2 === iso2) : undefined
+  return local?.localeCode ?? DEFAULT_MARKET.localeCode
+}
+
+/**
+ * The country Cloudflare's edge geo-IP placed the request in, or undefined off the edge.
+ *
+ * `cf.country` first because it is the Workers runtime's own answer. `CF-IPCountry` second because
+ * the request a framework middleware receives may be a copy that dropped `cf`; the header survives
+ * the copy, and Cloudflare sets it on every proxied request when IP Geolocation is on. Both are
+ * written by the edge, so a local server has neither and resolves exactly as it did before.
+ */
+export function readShopperCountry(request: Request & { cf?: { country?: unknown } }): string | undefined {
+  const fromCf = request.cf?.country
+  if (typeof fromCf === 'string' && fromCf) return fromCf
+  return request.headers.get('cf-ipcountry') ?? undefined
+}
