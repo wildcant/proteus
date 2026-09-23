@@ -1,4 +1,5 @@
 import { type Messages, setupI18n } from '@lingui/core'
+import { translateIssue, zodLocaleFor } from '@proteus/http-schemas/i18n'
 import { messages as schemasEn } from '@proteus/http-schemas/locales/en'
 import { messages as schemasEs } from '@proteus/http-schemas/locales/es'
 import { messages as backendEn } from '../../../locales/en.js'
@@ -44,5 +45,7 @@ function resolveLanguage(locale: string | undefined, fallbackLanguage: string): 
 export function createLinguiTranslator(locale: string | undefined, fallbackLanguage: string): Translator {
   const language = resolveLanguage(locale, fallbackLanguage)
   const i18n = setupI18n({ locale: language, messages: { [language]: catalogs[language] ?? {} } })
-  return { locale: language, translate: (message, values) => i18n._(message, values) }
+  const translate: Translator['translate'] = (message, values) => i18n._(message, values)
+  const zodLocale = zodLocaleFor(language)
+  return { locale: language, translate, translateIssue: (issue) => translateIssue(issue, translate, zodLocale) }
 }

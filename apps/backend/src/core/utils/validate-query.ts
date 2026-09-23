@@ -1,14 +1,16 @@
+import { i18n } from '@proteus/utils'
 import type { z } from 'zod'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
-import { formatZodIssues } from '../errors/format-zod-issues.js'
+import { toValidationIssues } from '../errors/format-zod-issues.js'
 
 export function validateQuery<T>(schema: z.ZodType<T>, query: Record<string, unknown>): T {
-  const result = schema.safeParse(query)
+  const result = schema.safeParse(query, { reportInput: true })
 
   if (!result.success) {
     throw new AppError({
       type: ErrorTypes.INVALID_DATA,
-      message: `Invalid query params: ${formatZodIssues(result.error.issues)}`,
+      message: i18n.t('Invalid query params'),
+      issues: toValidationIssues(result.error.issues),
     })
   }
 

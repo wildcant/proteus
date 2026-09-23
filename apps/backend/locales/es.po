@@ -14,6 +14,21 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/core/errors/error-handler.ts:50
+#: src/framework/http/apply-middleware.ts:19
+msgid "Invalid path params"
+msgstr "Parámetros de ruta no válidos"
+
+#. js-lingui-explicit-id
+#: src/core/utils/validate-body.ts:15
+msgid "Invalid request body"
+msgstr "Cuerpo de la solicitud no válido"
+
+#. js-lingui-explicit-id
+#: src/core/utils/validate-query.ts:12
+msgid "Invalid query params"
+msgstr "Parámetros de consulta no válidos"
+
+#. js-lingui-explicit-id
+#: src/core/errors/error-handler.ts:51
 msgid "An internal error occurred"
 msgstr "Ocurrió un error interno"
