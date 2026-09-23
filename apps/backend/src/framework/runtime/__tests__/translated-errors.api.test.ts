@@ -27,6 +27,17 @@ const definitions = [
       })
     },
   },
+  {
+    method: 'POST',
+    matcher: '/store/validated-body',
+    auth: 'public',
+    operationId: 'validatedBody',
+    tags: [Tags.COUNTRIES],
+    input: { body: z.object({ name: z.string().max(3, 'Use {maximum} characters or fewer'), quantity: z.number() }) },
+    output: z.object({}),
+    throws: [ErrorTypes.INVALID_DATA],
+    handler: async () => ({ status: 200, json: {} }),
+  },
 ] satisfies RouteDefinition[]
 
 let api: TestApi
@@ -68,6 +79,45 @@ test.describe('error responses', () => {
 
     await vi.waitFor(async () => {
       expect((await fail({ 'x-proteus-locale': 'fr-FR' })).body.message).toBe('Usa 80 caracteres o menos')
+    })
+  })
+})
+
+const invalidBody = (headers?: Record<string, string>) =>
+  api.post<ApiErrorBody>(
+    '/store/validated-body',
+    { name: 'Too long', quantity: 'two' },
+    headers ? { headers } : undefined,
+  )
+
+test.describe('request validation errors', () => {
+  test('translate each issue into the header language, placeholders filled', async ({ expect }) => {
+    const response = await invalidBody({ 'x-proteus-locale': 'es-CO' })
+
+    expect(response.status).toBe(400)
+    expect(response.body.message).toBe(
+      'Cuerpo de la solicitud no válido: name: Usa 3 caracteres o menos; quantity: Entrada inválida: se esperaba número, recibido texto',
+    )
+  })
+
+  test('keep the English message shape', async ({ expect }) => {
+    const response = await invalidBody({ 'x-proteus-locale': 'en-US' })
+
+    expect(response.body).toEqual({
+      code: 'invalid_request_error',
+      type: ErrorTypes.INVALID_DATA,
+      message:
+        'Invalid request body: name: Use 3 characters or fewer; quantity: Invalid input: expected number, received string',
+    })
+  })
+
+  test('answer in the default market language without a header', async ({ expect, factories }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'zz', displayName: 'Andes', regionId: region.id, localeCode: 'es-CO' })
+    await factories.create.store({ defaultRegionId: region.id })
+
+    await vi.waitFor(async () => {
+      expect((await invalidBody()).body.message).toMatch(/^Cuerpo de la solicitud no válido: name: Usa 3 caracteres/)
     })
   })
 })

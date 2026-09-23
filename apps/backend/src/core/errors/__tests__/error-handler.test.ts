@@ -1,7 +1,9 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import { toValidationIssues } from '@core/errors/format-zod-issues.js'
 import type { Translator } from '@core/i18n/types.js'
 import { noopLogger } from '@core/logger/noop-logger.js'
 import { describe, expect, it } from 'vitest'
+import { z } from 'zod'
 import { WorkflowTerminalError } from '../../workflows/types.js'
 import { errorHandler } from '../error-handler.js'
 
@@ -9,6 +11,7 @@ import { errorHandler } from '../error-handler.js'
 const shouting: Translator = {
   locale: 'xx',
   translate: (message, values) => `[xx] ${message} ${JSON.stringify(values ?? {})}`,
+  translateIssue: (issue) => `[xx] ${issue.code}`,
 }
 
 describe('AppError', () => {
@@ -39,6 +42,27 @@ describe('errorHandler', () => {
 
     expect(status).toBe(404)
     expect(json).toEqual({ code: 'not_found', type: ErrorTypes.NOT_FOUND, message: '[xx] Missing {id} {"id":"p_1"}' })
+  })
+
+  it('translates each validation issue after the message, keeping the path', () => {
+    const result = z.object({ name: z.string(), tags: z.array(z.string()) }).safeParse({ tags: [1] })
+    const error = new AppError({
+      type: ErrorTypes.INVALID_DATA,
+      message: 'Invalid request body',
+      issues: toValidationIssues(result.error?.issues ?? []),
+    })
+
+    const { status, json } = errorHandler(error, noopLogger, shouting)
+
+    expect(status).toBe(400)
+    expect(json).toEqual({
+      code: 'invalid_request_error',
+      type: ErrorTypes.INVALID_DATA,
+      message: '[xx] Invalid request body {}: name: [xx] invalid_type; tags.0: [xx] invalid_type',
+    })
+    expect(error.message).toBe(
+      'Invalid request body: name: Invalid input: expected string, received undefined; tags.0: Invalid input: expected string, received number',
+    )
   })
 
   it('translates the AppError a WorkflowTerminalError wraps', () => {

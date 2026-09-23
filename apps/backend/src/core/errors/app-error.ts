@@ -1,5 +1,6 @@
 import type { Msgid } from '@proteus/utils'
 import { fillValues } from '../i18n/fill-values.js'
+import { formatZodIssues, type ValidationIssue } from './format-zod-issues.js'
 
 export enum ErrorTypes {
   NOT_FOUND = 'not_found',
@@ -36,15 +37,28 @@ export class AppError extends Error {
   msgid: Msgid
   /** Fills the message's `{name}` placeholders, in English here and in the response's language. */
   values?: Record<string, unknown> | undefined
+  /**
+   * A request validation error's raw Zod issues, listed after the message. Raw, not formatted, so
+   * the response translates each one in the request's language; `Error.message` lists them in English.
+   */
+  issues?: ValidationIssue[] | undefined
   date: Date
 
-  constructor(opts: { type: ErrorTypes; message: string; code?: string; values?: Record<string, unknown> }) {
-    super(fillValues(opts.message, opts.values))
+  constructor(opts: {
+    type: ErrorTypes
+    message: string
+    code?: string
+    values?: Record<string, unknown>
+    issues?: ValidationIssue[]
+  }) {
+    const english = fillValues(opts.message, opts.values)
+    super(opts.issues?.length ? `${english}: ${formatZodIssues(opts.issues, (issue) => issue.message)}` : english)
     this.type = opts.type
     this.code = opts.code
     // Cast until ILLO-204 flips `message` to `Msgid`; a message not in a catalog translates to itself.
     this.msgid = opts.message as Msgid
     this.values = opts.values
+    this.issues = opts.issues
     this.date = new Date()
   }
 

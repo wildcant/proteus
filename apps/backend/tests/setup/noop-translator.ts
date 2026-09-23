@@ -9,4 +9,5 @@ import type { Translator } from '@core/i18n/types.js'
 export const noopTranslator: Translator = {
   locale: 'en',
   translate: (message, values) => fillValues(message, values),
+  translateIssue: (issue) => issue.message,
 }
