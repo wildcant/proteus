@@ -1,3 +1,6 @@
+import type { Msgid } from '@proteus/utils'
+import { fillValues } from '../i18n/fill-values.js'
+
 export enum ErrorTypes {
   NOT_FOUND = 'not_found',
   INVALID_DATA = 'invalid_data',
@@ -25,12 +28,23 @@ export class AppError extends Error {
    * here to widen every time one does.
    */
   code?: string | undefined
+  /**
+   * The message as the catalog knows it, placeholders unfilled — what the response translates.
+   * `Error.message` is the same sentence in English with `values` filled in, so logs, Temporal
+   * workers and tests keep reading English.
+   */
+  msgid: Msgid
+  /** Fills the message's `{name}` placeholders, in English here and in the response's language. */
+  values?: Record<string, unknown> | undefined
   date: Date
 
-  constructor(opts: { type: ErrorTypes; message: string; code?: string }) {
-    super(opts.message)
+  constructor(opts: { type: ErrorTypes; message: string; code?: string; values?: Record<string, unknown> }) {
+    super(fillValues(opts.message, opts.values))
     this.type = opts.type
     this.code = opts.code
+    // Cast until ILLO-204 flips `message` to `Msgid`; a message not in a catalog translates to itself.
+    this.msgid = opts.message as Msgid
+    this.values = opts.values
     this.date = new Date()
   }
 

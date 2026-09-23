@@ -12,3 +12,8 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 "Plural-Forms: \n"
+
+#. js-lingui-explicit-id
+#: src/core/errors/error-handler.ts:50
+msgid "An internal error occurred"
+msgstr "Ocurrió un error interno"

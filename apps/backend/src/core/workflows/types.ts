@@ -37,7 +37,7 @@ export interface Workflow<TInput, TOutput> extends WorkflowDefinition<TInput, TO
   run(input: TInput): Promise<TOutput>
 }
 
-type TerminalErrorOptions = { type: ErrorTypes; message: string; code?: string }
+type TerminalErrorOptions = { type: ErrorTypes; message: string; code?: string; values?: Record<string, unknown> }
 
 export class WorkflowTerminalError extends Error {
   constructor(optionsOrError: TerminalErrorOptions | AppError) {

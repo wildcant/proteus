@@ -1,1 +1,1 @@
-/*eslint-disable*/import type{Messages}from"@lingui/core";export const messages=JSON.parse("{}")as Messages;
+/*eslint-disable*/import type{Messages}from"@lingui/core";export const messages=JSON.parse("{\"An internal error occurred\":[\"An internal error occurred\"]}")as Messages;
