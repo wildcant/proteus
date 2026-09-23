@@ -11,10 +11,11 @@ const RETRY_TTL_MS = 30 * 1000
 
 export type DefaultLanguage = {
   /**
-   * The cached language, synchronously, so `errorHandler` stays synchronous. A stale or missing
-   * entry starts a refresh and is answered from what is held meanwhile — English on a cold instance.
+   * The default market's language. A cold instance waits for its first read, so the first request
+   * is answered in the default market's language too; after that a stale entry starts a refresh and
+   * is answered from what is held meanwhile. A failed first read answers English.
    */
-  get(): string
+  get(): Promise<string>
 }
 
 /**
@@ -36,6 +37,7 @@ export function createDefaultLanguage({
   let language: string | undefined
   let expiresAt = 0
   let inFlight: Promise<void> | undefined
+  let settled = false
 
   const refresh = () => {
     inFlight ??= load()
@@ -49,14 +51,18 @@ export function createDefaultLanguage({
         expiresAt = now() + RETRY_TTL_MS
       })
       .finally(() => {
+        settled = true
         inFlight = undefined
       })
     return inFlight
   }
 
   return {
-    get() {
-      if (now() >= expiresAt) void refresh()
+    async get() {
+      if (now() >= expiresAt) {
+        const pending = refresh()
+        if (!settled) await pending
+      }
       return language ?? SOURCE_LANGUAGE
     },
     refresh,

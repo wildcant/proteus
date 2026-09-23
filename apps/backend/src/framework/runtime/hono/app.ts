@@ -101,7 +101,7 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
         return c.json(result.json, result.status as ContentfulStatusCode)
       } catch (error) {
         // Built here, per request, and never registered in the container: only the response translates.
-        const translator = createLinguiTranslator(c.req.header(LOCALE_HEADER), defaultLanguage.get())
+        const translator = createLinguiTranslator(c.req.header(LOCALE_HEADER), await defaultLanguage.get())
         const { status, json } = errorHandler(error, logger, translator)
         return c.json(json, status as ContentfulStatusCode)
       }

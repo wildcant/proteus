@@ -107,7 +107,7 @@ export function createExpressApp({ routes, container, logger, corsOrigins }: Cre
         res.status(result.status).json(result.json)
       } catch (error) {
         // Built here, per request, and never registered in the container: only the response translates.
-        const translator = createLinguiTranslator(req.get(LOCALE_HEADER), defaultLanguage.get())
+        const translator = createLinguiTranslator(req.get(LOCALE_HEADER), await defaultLanguage.get())
         const { status, json } = errorHandler(error, logger, translator)
         res.status(status).json(json)
       }
