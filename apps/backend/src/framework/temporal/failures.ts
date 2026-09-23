@@ -37,11 +37,21 @@ export function serializeError(error: unknown): SerializedError {
       message: error.message,
       type: cause?.type,
       code: cause?.code,
+      msgid: cause?.msgid,
+      values: cause?.values,
     }
   }
 
   if (AppError.isError(error)) {
-    return { kind: 'app', name: error.name, message: error.message, type: error.type, code: error.code }
+    return {
+      kind: 'app',
+      name: error.name,
+      message: error.message,
+      type: error.type,
+      code: error.code,
+      msgid: error.msgid,
+      values: error.values,
+    }
   }
 
   if (error instanceof Error) {
@@ -53,8 +63,8 @@ export function serializeError(error: unknown): SerializedError {
 
 /**
  * Rebuilds the error a caller would have caught from the simple adapter. Not the same object —
- * the stack is the client's, not the Worker's — but the same class, message, `type` and `code`,
- * which is everything `errorHandler` and the existing tests read.
+ * the stack is the client's, not the Worker's — but the same class, message, `type`, `code`,
+ * `msgid` and `values`, which is everything `errorHandler` and the existing tests read.
  */
 export function deserializeError(serialized: SerializedError): Error {
   const type = serialized.type && ERROR_TYPES.has(serialized.type) ? (serialized.type as ErrorTypes) : undefined
@@ -63,7 +73,7 @@ export function deserializeError(serialized: SerializedError): Error {
     return new WorkflowTerminalError(
       new AppError({
         type: type ?? ErrorTypes.UNEXPECTED_STATE,
-        message: serialized.message,
+        ...translatable(serialized),
         ...(serialized.code ? { code: serialized.code } : {}),
       }),
     )
@@ -72,7 +82,7 @@ export function deserializeError(serialized: SerializedError): Error {
   if (serialized.kind === 'app') {
     return new AppError({
       type: type ?? ErrorTypes.UNEXPECTED_STATE,
-      message: serialized.message,
+      ...translatable(serialized),
       ...(serialized.code ? { code: serialized.code } : {}),
     })
   }
@@ -84,6 +94,18 @@ export function deserializeError(serialized: SerializedError): Error {
   const rebuilt = new Error(serialized.message)
   rebuilt.name = serialized.name
   return rebuilt
+}
+
+/**
+ * The unfilled catalog id and its values, so `AppError` rebuilds the same English `message` and the
+ * route can still translate the id. `Error.message` alone is already filled in, and no catalog knows
+ * it.
+ */
+function translatable(serialized: SerializedError): { message: string; values?: Record<string, unknown> } {
+  return {
+    message: serialized.msgid ?? serialized.message,
+    ...(serialized.values ? { values: serialized.values } : {}),
+  }
 }
 
 /**
