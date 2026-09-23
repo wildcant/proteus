@@ -44,6 +44,44 @@ test.describe('Markets', () => {
     }
   })
 
+  test('each market renders its own language on the server, and the client keeps it', async ({ page, goto }) => {
+    const hydrationErrors: Array<string> = []
+    page.on('console', (message) => {
+      if (message.type() === 'error' && /hydrat/i.test(message.text())) hydrationErrors.push(message.text())
+    })
+    const backendUrl = process.env.VITE_BACKEND_URL
+    expect(
+      backendUrl,
+      'VITE_BACKEND_URL is unset — run the suite through `pnpm --filter store run test:e2e`',
+    ).toBeTruthy()
+    const apiLocales: Array<string | undefined> = []
+    page.on('request', (request) => {
+      if (backendUrl && request.url().startsWith(backendUrl) && request.method() !== 'OPTIONS') {
+        apiLocales.push(request.headers()['x-proteus-locale'])
+      }
+    })
+
+    const year = new Date().getFullYear()
+    const copyrights = [
+      [SECOND_MARKET, `© ${year} Proteus. Todos los derechos reservados.`],
+      [DEFAULT_MARKET, `© ${year} Proteus. All rights reserved.`],
+    ] as const
+
+    for (const [localeCode, copyright] of copyrights) {
+      apiLocales.length = 0
+      const response = await goto(`/${localeCode}`)
+
+      // In the server's HTML, not only after hydration: a crawler reads the document as sent.
+      expect(await response?.text()).toContain(copyright)
+      await expect(page.locator('footer').getByText(copyright)).toBeVisible()
+      // Every request the page makes to the API names the market's locale, so API Messages match.
+      await expect.poll(() => apiLocales.length).toBeGreaterThan(0)
+      expect(new Set(apiLocales)).toEqual(new Set([localeCode]))
+    }
+
+    expect(hydrationErrors).toEqual([])
+  })
+
   test('the root is a router: it redirects to the default market and renders nothing itself', async ({
     page,
     goto,

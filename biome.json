@@ -272,6 +272,26 @@
           }
         }
       }
+    },
+    {
+      "includes": ["apps/store/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@lingui/core/macro": {
+                    "importNames": ["t"],
+                    "message": "Bare `t` compiles to Lingui's global instance, shared by every request. Use `useLingui()` from @lingui/react/macro, or `msg` translated at the use site."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "assist": {

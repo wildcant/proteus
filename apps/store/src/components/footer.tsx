@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
@@ -133,7 +134,9 @@ export function Footer() {
             the store's other standing facts, and because it is the one place that renders at every
             width without competing for the header's three columns. */}
         <div className="mt-10 flex flex-col items-center gap-4 border-line border-t pt-6 lg:flex-row lg:justify-between">
-          <p className="m-0 text-center text-ink-muted lg:text-left">&copy; {year} Proteus. All rights reserved.</p>
+          <p className="m-0 text-center text-ink-muted lg:text-left">
+            <Trans>&copy; {year} Proteus. All rights reserved.</Trans>
+          </p>
           <MarketSelect />
         </div>
       </div>
