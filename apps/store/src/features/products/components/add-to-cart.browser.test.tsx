@@ -110,7 +110,12 @@ function Harness() {
  */
 function renderHarness() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  const market: MarketContext = { current: DEFAULT_MARKET, markets: [DEFAULT_MARKET], resolvedFromUrl: true }
+  const market: MarketContext = {
+    current: DEFAULT_MARKET,
+    markets: [DEFAULT_MARKET],
+    defaultMarket: DEFAULT_MARKET,
+    resolvedFromUrl: true,
+  }
   const router = createRouter({
     routeTree: createRootRoute({ component: Harness }),
     history: createMemoryHistory({ initialEntries: ['/'] }),

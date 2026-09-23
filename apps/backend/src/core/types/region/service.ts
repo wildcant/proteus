@@ -18,6 +18,8 @@ import type {
 export type ListCountryMarketsFilters = {
   /** Drops countries with no owning region. Defaults to true — the sellable listing. */
   onlySellable?: boolean
+  /** Narrows to the countries one region sells to. */
+  regionId?: string
 }
 
 export type IRegionModuleService = {
@@ -50,4 +52,10 @@ export type IRegionModuleService = {
    * accented names correctly with a plain string compare.
    */
   listCountryMarkets(filters?: ListCountryMarketsFilters, context?: Context): Promise<CountryMarketDTO[]>
+  /**
+   * The one market a region stands for: its first sellable country by display name. A region can
+   * sell to several countries and a storefront URL names exactly one, so the tie is broken the same
+   * way every listing is sorted. Null when the region sells to no country.
+   */
+  retrieveRegionMarket(regionId: string, context?: Context): Promise<CountryMarketDTO | null>
 }

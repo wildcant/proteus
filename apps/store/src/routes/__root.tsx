@@ -24,7 +24,7 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
  * a precaution against a shape that might grow and become the thing keeping the document valid.
  */
 function marketInitScript(market: MarketContext): string {
-  const payload = JSON.stringify({ markets: market.markets })
+  const payload = JSON.stringify({ markets: market.markets, defaultMarket: market.defaultMarket })
   return `window.${MARKET_GLOBAL}=${payload.replace(/</g, '\\u003c')};`
 }
 

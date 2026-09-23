@@ -39,7 +39,7 @@ const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ r
   // under the page that issued them.
   if (handlerType !== 'router') return next()
 
-  const markets = await loadSellableMarkets()
+  const { markets, defaultMarket } = await loadSellableMarkets()
   const url = new URL(request.url)
   const fromUrl = splitMarketSegment(url.pathname, markets)
 
@@ -62,6 +62,7 @@ const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ r
     cookie: readMarketCookie(request.headers.get('cookie')),
     country: readShopperCountry(request),
     markets,
+    defaultMarket,
   })
 
   url.pathname = joinMarketSegment(target, url.pathname)
