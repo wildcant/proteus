@@ -103,10 +103,14 @@ catalog:
 #
 # Dependabot cannot see this block at all — it rewrites an `overrides` field in a package.json,
 # but the only pnpm-workspace-aware parsing it has is for catalogs. So it will keep bumping the
-# declarations above and leave these two pins stale and silently in force.
+# declarations above and leave these pins stale and silently in force.
 # `scripts/checks/one-version.mts` is the only thing that will notice.
 # ---------------------------------------------------------------------------
 overrides:
+  # `@rolldown/plugin-babel` peers on `@babel/core` 7 or 8; left alone it resolves 8 under the
+  # admin's `@vitejs/plugin-react` and 7 under the store's Lingui macros. One version: 7, the one
+  # `@lingui/cli` and the macro plugin already run on.
+  "@babel/core": 7.29.7
   "@tanstack/form-core": 1.33.2
   "@tanstack/history": 1.162.2
 

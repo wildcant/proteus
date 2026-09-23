@@ -1,4 +1,6 @@
 import { cloudflare } from '@cloudflare/vite-plugin'
+import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin'
+import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
@@ -28,5 +30,9 @@ export default defineConfig(({ command }) => ({
     }),
     tanstackStart(),
     viteReact(),
+    // `.po` imports compile to message modules; `@vitejs/plugin-react` 6 runs no Babel, so the Lingui
+    // macros get their own pass.
+    lingui({ cwd: import.meta.dirname }),
+    babel({ presets: [linguiTransformerBabelPreset({}, { cwd: import.meta.dirname })] }),
   ],
 }))
