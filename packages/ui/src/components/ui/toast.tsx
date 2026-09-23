@@ -147,7 +147,7 @@ function ToastIcon({ type }: { type: string | undefined }) {
   )
 }
 
-function ToastList() {
+function ToastList({ closeLabel }: { closeLabel: string }) {
   const { toasts } = ToastPrimitive.useToastManager()
 
   return toasts.map((toastItem) => (
@@ -159,7 +159,7 @@ function ToastList() {
           <ToastDescription />
         </div>
         <ToastAction />
-        <ToastClose />
+        <ToastClose aria-label={closeLabel} />
       </ToastContent>
     </Toast>
   ))
@@ -171,15 +171,23 @@ type ToasterProps = ToastPrimitive.Provider.Props & {
    * a bottom-pinned control — the storefront's PDP action bar — needs the toasts to clear it.
    */
   viewportClassName?: string
+  /** Accessible label for each toast's close button. */
+  closeLabel?: string
 }
 
-function Toaster({ children, toastManager = toast, viewportClassName, ...props }: ToasterProps) {
+function Toaster({
+  children,
+  toastManager = toast,
+  viewportClassName,
+  closeLabel = 'Close toast',
+  ...props
+}: ToasterProps) {
   return (
     <ToastProvider toastManager={toastManager} {...props}>
       {children}
       <ToastPortal>
         <ToastViewport className={viewportClassName}>
-          <ToastList />
+          <ToastList closeLabel={closeLabel} />
         </ToastViewport>
       </ToastPortal>
     </ToastProvider>
