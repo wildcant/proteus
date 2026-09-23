@@ -1,11 +1,12 @@
 import { createMiddleware, createStart } from '@tanstack/react-start'
 import { loadSellableMarkets } from '#/api/sellable-markets'
 import {
-  DEFAULT_MARKET,
   joinMarketSegment,
   looksLikeMarketSegment,
   marketCookie,
   readMarketCookie,
+  readShopperCountry,
+  resolveMarketTarget,
   splitMarketSegment,
 } from '#/lib/market'
 
@@ -22,7 +23,7 @@ function withCookieVary<T extends { response: Response }>(result: T): T {
 
 /**
  * Resolves the market for every document request: URL first, then the persisted cookie, then the
- * store default.
+ * country Cloudflare places the shopper in, then the store default.
  *
  * It sits in front of the router rather than in a route's `beforeLoad` because the two answers it
  * gives are HTTP answers — a redirect to the market a returning shopper chose, and the `Set-Cookie`
@@ -55,11 +56,13 @@ const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ r
   // unchanged and returns not-found at the address they typed.
   if (looksLikeMarketSegment(url.pathname)) return withCookieVary(await next())
 
-  const remembered = readMarketCookie(request.headers.get('cookie'))
-  // A cookie naming a market the store no longer sells in is stale, not fatal — drop back to the
-  // default rather than showing a shopper a not-found for a link that used to work.
-  const isSellable = markets.some((market) => market.localeCode === remembered)
-  const target = remembered && isSellable ? remembered : DEFAULT_MARKET.localeCode
+  // A first visit lands on the shopper's own market rather than the default. The redirect points
+  // at a segment URL, and the segment request is what persists it, so geo is consulted once.
+  const target = resolveMarketTarget({
+    cookie: readMarketCookie(request.headers.get('cookie')),
+    country: readShopperCountry(request),
+    markets,
+  })
 
   url.pathname = joinMarketSegment(target, url.pathname)
   // `vary` for the same reason as above, and `no-store` because where this redirect points is one

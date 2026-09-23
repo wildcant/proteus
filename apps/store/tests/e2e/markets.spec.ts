@@ -56,6 +56,19 @@ test.describe('Markets', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', DEFAULT_MARKET)
   })
 
+  test('off the edge, a first visit with no geo-IP country still lands on the default market', async ({
+    page,
+    goto,
+  }) => {
+    // Cloudflare's country is the only thing that sends a first visit elsewhere, and a local server
+    // has neither `cf` nor `CF-IPCountry`. No cookie either, so nothing is left but the default.
+    await page.context().clearCookies()
+    const response = await goto('/')
+
+    expect(response?.request().redirectedFrom()?.url(), 'the root answers by redirect').toMatch(/\/$/)
+    await expect(page).toHaveURL(`/${DEFAULT_MARKET}`)
+  })
+
   test('a path with no market keeps its route and gains the prefix', async ({ page, goto }) => {
     await goto('/login')
 
