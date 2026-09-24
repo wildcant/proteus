@@ -4,6 +4,7 @@ export type UserDTO = {
   id: string
   email: string
   name: string
+  locale: string
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null

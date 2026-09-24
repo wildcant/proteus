@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { ButtonLink, cn } from '@proteus/ui'
 import {
   getCoreRowModel,
@@ -37,6 +38,7 @@ type DataTableProps<T> = {
 }
 
 export function DataTable<T>({ use, heading, description, actions, className }: DataTableProps<T>) {
+  const { t } = useLingui()
   const { config, columns, filterDefs, rowSelection } = use
 
   const urlState = useUrlState({
@@ -77,8 +79,8 @@ export function DataTable<T>({ use, heading, description, actions, className }: 
   // Determine empty state
   const hasActiveFilters = Object.keys(urlState.filters).length > 0 || !!urlState.q
   const emptyState = hasActiveFilters
-    ? (config.filtered ?? { heading: 'No results found', description: 'Try changing your filters or search term.' })
-    : (config.empty ?? { heading: 'No data' })
+    ? (config.filtered ?? { heading: t`No results found`, description: t`Try changing your filters or search term.` })
+    : (config.empty ?? { heading: t`No data` })
 
   const containerRef = useRef<HTMLDivElement>(null)
   const handleRowClick = useRowNavigation()

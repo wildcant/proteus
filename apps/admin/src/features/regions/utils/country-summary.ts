@@ -1,3 +1,6 @@
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
+
 /** How many countries a cell names before it starts counting the rest. */
 const NAMED = 2
 
@@ -9,11 +12,11 @@ const NAMED = 2
  * nowhere reads as an em dash rather than an empty cell, because "none yet" is a state a merchant
  * has to be able to see.
  */
-export function summariseCountries(displayNames: string[]): string {
+export function summariseCountries(displayNames: string[], i18n: I18n): string {
   if (displayNames.length === 0) return '—'
 
   const named = displayNames.slice(0, NAMED).join(', ')
   const remaining = displayNames.length - NAMED
 
-  return remaining > 0 ? `${named} + ${remaining} more` : named
+  return remaining > 0 ? i18n._(msg`${named} + ${remaining} more`) : named
 }

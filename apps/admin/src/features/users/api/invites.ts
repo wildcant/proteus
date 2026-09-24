@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
@@ -25,6 +26,7 @@ const invitesListQueryOptions = (params?: ListInvitesParams) =>
 export const useInvites = (params?: ListInvitesParams) => useQuery(invitesListQueryOptions(params))
 
 export const useCreateInvite = (options?: UseMutationOptions<AdminInviteResponse, Error, CreateInviteBody>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -35,13 +37,14 @@ export const useCreateInvite = (options?: UseMutationOptions<AdminInviteResponse
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to send invite', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to send invite`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useDeleteInvite = (id: string, options?: UseMutationOptions<DeleteResponse, Error, void>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -52,13 +55,14 @@ export const useDeleteInvite = (id: string, options?: UseMutationOptions<DeleteR
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to delete invite', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to delete invite`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useResendInvite = (id: string, options?: UseMutationOptions<AdminInviteResponse, Error, void>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -69,20 +73,21 @@ export const useResendInvite = (id: string, options?: UseMutationOptions<AdminIn
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to resend invite', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to resend invite`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useAcceptInvite = (options?: UseMutationOptions<AdminAcceptInviteResponse, Error, AcceptInviteBody>) => {
+  const { t } = useLingui()
   const { onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: (data: AcceptInviteBody) => acceptInvite(data),
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to accept invite', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to accept invite`, description: error.message })
       onError?.(...args)
     },
   })

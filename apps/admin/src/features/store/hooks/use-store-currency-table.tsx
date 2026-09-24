@@ -1,9 +1,11 @@
+import { useLingui } from '@lingui/react/macro'
 import { getCurrencyName } from '@proteus/utils'
 import type { AdminStoreCurrency } from '#/api/generated/model'
 import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useStore } from '#/features/store/api/store'
 import { StoreCurrencyRowActions } from '#/features/store/components/store-currency-row-actions'
+import { activeLocale } from '#/lib/i18n/locale'
 
 /**
  * The currencies the store sells in.
@@ -17,8 +19,11 @@ import { StoreCurrencyRowActions } from '#/features/store/components/store-curre
  * `Name` is derived rather than stored. `Intl` already ships every ISO 4217 name, so a column of
  * them in the database would only be a copy going stale.
  */
-export const useStoreCurrencyTable = (selectedCodes: string[], onSelectedCodesChange: (codes: string[]) => void) =>
-  useDefineTable<AdminStoreCurrency>({
+export const useStoreCurrencyTable = (selectedCodes: string[], onSelectedCodesChange: (codes: string[]) => void) => {
+  const { t } = useLingui()
+  const locale = activeLocale()
+
+  return useDefineTable<AdminStoreCurrency>({
     useData: ({ offset, limit, q }) => {
       const { data, isPending, isFetching } = useStore()
 
@@ -28,7 +33,7 @@ export const useStoreCurrencyTable = (selectedCodes: string[], onSelectedCodesCh
         ? currencies.filter(
             (currency) =>
               currency.currencyCode.includes(term) ||
-              getCurrencyName(currency.currencyCode).toLowerCase().includes(term),
+              getCurrencyName(currency.currencyCode, locale).toLowerCase().includes(term),
           )
         : currencies
 
@@ -41,11 +46,11 @@ export const useStoreCurrencyTable = (selectedCodes: string[], onSelectedCodesCh
     },
 
     columns: (col) => [
-      col.accessor('currencyCode', { header: 'Code', cell: ({ value }) => value.toUpperCase() }),
-      col.display('name', { header: 'Name', cell: ({ row }) => getCurrencyName(row.currencyCode) }),
+      col.accessor('currencyCode', { header: t`Code`, cell: ({ value }) => value.toUpperCase() }),
+      col.display('name', { header: t`Name`, cell: ({ row }) => getCurrencyName(row.currencyCode, locale) }),
       col.accessor('isDefault', {
-        header: 'Default',
-        cell: ({ value }) => <StatusCell color={value ? 'green' : 'grey'}>{value ? 'Default' : '—'}</StatusCell>,
+        header: t`Default`,
+        cell: ({ value }) => <StatusCell color={value ? 'green' : 'grey'}>{value ? t`Default` : '—'}</StatusCell>,
       }),
     ],
 
@@ -60,11 +65,12 @@ export const useStoreCurrencyTable = (selectedCodes: string[], onSelectedCodesCh
     rowActions: (row) => <StoreCurrencyRowActions currency={row} />,
 
     empty: {
-      heading: 'No currencies',
-      description: 'Add a currency to start pricing products in it.',
+      heading: t`No currencies`,
+      description: t`Add a currency to start pricing products in it.`,
     },
     filtered: {
-      heading: 'No currencies found',
-      description: 'Try changing your search term.',
+      heading: t`No currencies found`,
+      description: t`Try changing your search term.`,
     },
   })
+}

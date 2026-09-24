@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminProductVariant } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProductVariants } from '#/features/products/api/product-variants'
@@ -13,8 +14,10 @@ export const useImageVariantsTable = (
   imageUrl: string,
   selectedIds: string[],
   onSelectedIdsChange: (ids: string[]) => void,
-) =>
-  useDefineTable<AdminProductVariant>({
+) => {
+  const { t } = useLingui()
+
+  return useDefineTable<AdminProductVariant>({
     useData: (params) => {
       const { data, isPending, isFetching } = useProductVariants(productId, params)
       return {
@@ -26,11 +29,11 @@ export const useImageVariantsTable = (
     },
 
     columns: (col) => [
-      col.accessor('title', { header: 'Title', sortable: true }),
-      col.accessor('sku', { header: 'SKU' }),
+      col.accessor('title', { header: t`Title`, sortable: true }),
+      col.accessor('sku', { header: t`SKU` }),
       col.accessor('thumbnail', {
-        header: 'Thumbnail',
-        cell: ({ value }) => (value === imageUrl ? 'True' : 'False'),
+        header: t`Thumbnail`,
+        cell: ({ value }) => (value === imageUrl ? t`True` : t`False`),
       }),
     ],
 
@@ -43,6 +46,7 @@ export const useImageVariantsTable = (
       onChange: (next) => onSelectedIdsChange(Object.keys(next).filter((id) => next[id])),
     }),
 
-    empty: { heading: 'No variants yet' },
-    filtered: { heading: 'No variants found', description: 'Try changing your search term.' },
+    empty: { heading: t`No variants yet` },
+    filtered: { heading: t`No variants found`, description: t`Try changing your search term.` },
   })
+}

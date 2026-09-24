@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Checkbox, Input, Label } from '@proteus/ui'
 import { useState } from 'react'
 
@@ -9,6 +10,7 @@ type MultiselectFilterProps = {
 }
 
 export function MultiselectFilter({ options, value = [], onChange, searchable }: MultiselectFilterProps) {
+  const { t } = useLingui()
   const [search, setSearch] = useState('')
 
   const filtered =
@@ -24,7 +26,7 @@ export function MultiselectFilter({ options, value = [], onChange, searchable }:
       {!!searchable && (
         <Input
           type="search"
-          placeholder="Search..."
+          placeholder={t`Search...`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="h-7 text-xs"

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { AdminProductOptionListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
@@ -12,6 +13,7 @@ export const Route = createFileRoute('/_authed/_shell/product-options/')({
 })
 
 function ProductOptionsPage() {
+  const { t } = useLingui()
   const productOptions = useProductOptionTable()
 
   return (
@@ -19,8 +21,8 @@ function ProductOptionsPage() {
       <DataTable
         use={productOptions}
         className="flex-1"
-        heading="Options"
-        actions={[{ label: 'Create', to: 'create' }]}
+        heading={t`Options`}
+        actions={[{ label: t`Create`, to: 'create' }]}
       />
     </PageLayout.SingleColumn>
   )

@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { z } from 'zod'
 import type { AuthenticateResponse } from '#/api/generated/model'
 import { useLogin } from '#/features/auth/api/auth'
@@ -8,7 +9,7 @@ import { errorMessage, type SubmitFormParams } from '#/types/form'
 // `AuthBody`, a `z.record(string, string)` too loose to drive a form.
 const LoginSchema = z.object({
   email: z.email(),
-  password: z.string().min(1, { error: 'Password is required' }),
+  password: z.string().min(1, { error: msg`Password is required`.id }),
 })
 
 export type LoginFormParams = SubmitFormParams<AuthenticateResponse>

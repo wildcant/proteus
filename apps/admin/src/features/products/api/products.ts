@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -41,6 +42,7 @@ export const useSuspenseProduct = (id: string) => useSuspenseQuery(productQueryO
 export const useCreateProduct = (
   options?: UseMutationOptions<AdminCreateProductResponse, Error, AdminCreateProduct>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -51,7 +53,7 @@ export const useCreateProduct = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create product', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to create product`, description: error.message })
       onError?.(...args)
     },
   })
@@ -61,6 +63,7 @@ export const useUpdateProduct = (
   id: string,
   options?: UseMutationOptions<AdminUpdateProductResponse, Error, AdminUpdateProduct>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -72,13 +75,14 @@ export const useUpdateProduct = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update product', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update product`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useDeleteProduct = (id: string, options?: UseMutationOptions<DeleteResponse, Error, void>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -89,7 +93,7 @@ export const useDeleteProduct = (id: string, options?: UseMutationOptions<Delete
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to delete product', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to delete product`, description: error.message })
       onError?.(...args)
     },
   })

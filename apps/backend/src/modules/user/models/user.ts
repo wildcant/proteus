@@ -9,6 +9,8 @@ export const userTable = pgTable(
     id: text().primaryKey().default(sql`CONCAT('usr_', REPLACE(gen_random_uuid()::text, '-', ''))`),
     email: text().notNull(),
     name: text().notNull(),
+    // The Locale the admin renders in for this staff member. Only they set it, from the account menu.
+    locale: text().notNull().default('en-US'),
     ...timestamps,
   },
   // An inline `.unique()` becomes a table constraint, which cannot carry a predicate — so a

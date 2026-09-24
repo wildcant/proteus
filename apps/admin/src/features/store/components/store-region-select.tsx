@@ -1,12 +1,14 @@
-import { Field, FieldDescription, FieldError, FieldLabel } from '@proteus/ui'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { Field, FieldDescription, FieldLabel } from '@proteus/ui'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { SingleSelectCombobox } from '#/components/single-select-combobox'
 import { useRegions } from '#/features/regions/api/regions'
 
 type StoreRegionSelectProps = {
   value: string | null
   onChange: (regionId: string | null) => void
-  errors?: Array<{ message?: string } | undefined>
+  errors?: readonly unknown[]
 }
 
 /**
@@ -20,6 +22,7 @@ type StoreRegionSelectProps = {
  * cannot express — the API reads a cleared value as `null` and an untouched one as unchanged.
  */
 export function StoreRegionSelect({ value, onChange, errors }: StoreRegionSelectProps) {
+  const { t } = useLingui()
   const { data, isPending } = useRegions()
   const id = useId()
   const isInvalid = !!errors?.length
@@ -28,20 +31,24 @@ export function StoreRegionSelect({ value, onChange, errors }: StoreRegionSelect
 
   return (
     <Field data-invalid={isInvalid}>
-      <FieldLabel htmlFor={id}>Default region</FieldLabel>
+      <FieldLabel htmlFor={id}>
+        <Trans>Default region</Trans>
+      </FieldLabel>
       <SingleSelectCombobox
         id={id}
         items={items}
         value={value}
         onValueChange={onChange}
         disabled={isPending}
-        placeholder="Select a region"
-        emptyMessage="No regions found."
+        placeholder={t`Select a region`}
+        emptyMessage={t`No regions found.`}
         aria-invalid={isInvalid}
       />
-      {!!isInvalid && <FieldError errors={errors} />}
+      {!!isInvalid && <TranslatedFieldError errors={errors} />}
       {!isPending && items.length === 0 && (
-        <FieldDescription>Create a region before choosing the one shoppers are served from.</FieldDescription>
+        <FieldDescription>
+          <Trans>Create a region before choosing the one shoppers are served from.</Trans>
+        </FieldDescription>
       )}
     </Field>
   )

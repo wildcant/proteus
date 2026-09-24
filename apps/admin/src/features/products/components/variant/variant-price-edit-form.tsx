@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteFocusModal, useRouteModal } from '@proteus/ui'
 import { useCallback, useMemo, useState } from 'react'
 import type { AdminProductVariant, AdminUpdateVariantPricesPricesItem } from '#/api/generated/model'
@@ -5,6 +6,7 @@ import { DataGrid } from '#/components/data-grid/data-grid'
 import { useUpdateVariantPrices } from '#/features/products/api/product-variants'
 import { buildPriceColumns, type CurrencyAmounts } from '#/features/products/utils/price-columns'
 import { useStoreCurrencies } from '#/features/store/api/store'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 /**
  * The edit as a payload, or `undefined` when nothing changed.
@@ -36,11 +38,13 @@ function buildPricePayload(
 }
 
 export function VariantPriceEditForm({ productId, variant }: { productId: string; variant: AdminProductVariant }) {
+  const { i18n } = useLingui()
+  const { closeLabel } = useUiCopy()
   const { handleSuccess, setCloseOnEscape } = useRouteModal()
   const updatePrices = useUpdateVariantPrices(productId, variant.id)
   const { currencyCodes, isPending } = useStoreCurrencies()
 
-  const columns = useMemo(() => buildPriceColumns(currencyCodes), [currencyCodes])
+  const columns = useMemo(() => buildPriceColumns(currencyCodes, i18n), [currencyCodes, i18n])
 
   const priceIdByCurrency = useMemo(
     () => new Map((variant.prices ?? []).map((price) => [price.currencyCode, price.id])),
@@ -78,7 +82,7 @@ export function VariantPriceEditForm({ productId, variant }: { productId: string
 
   return (
     <KeyboundForm onSubmit={handleSubmit} className="flex flex-1 flex-col">
-      <RouteFocusModal.Header />
+      <RouteFocusModal.Header closeLabel={closeLabel} />
       <RouteFocusModal.Body>
         <DataGrid
           data={[row]}
@@ -89,11 +93,13 @@ export function VariantPriceEditForm({ productId, variant }: { productId: string
         />
       </RouteFocusModal.Body>
       <RouteFocusModal.Footer>
-        <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
+        <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>
+          <Trans>Cancel</Trans>
+        </RouteFocusModal.Close>
         {/* No `useAppForm` behind this one — the grid is `useState`, so there is no form context
             for `form.SubmitButton` to read. Exempted in the rule; see submit-button-not-from-form-hook. */}
         <Button type="submit" size="sm" disabled={updatePrices.isPending}>
-          Save
+          <Trans>Save</Trans>
         </Button>
       </RouteFocusModal.Footer>
     </KeyboundForm>

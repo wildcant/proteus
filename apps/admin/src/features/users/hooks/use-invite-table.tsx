@@ -1,11 +1,13 @@
+import { useLingui } from '@lingui/react/macro'
 import { Badge } from '@proteus/ui'
 import type { AdminInvite } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useInvites } from '#/features/users/api/invites'
 import { InviteRowActions } from '#/features/users/components/invite-row-actions'
 
-export const useInviteTable = () =>
-  useDefineTable<AdminInvite>({
+export const useInviteTable = () => {
+  const { t } = useLingui()
+  return useDefineTable<AdminInvite>({
     useData: (params) => {
       const { data, isPending, isFetching } = useInvites(params)
       return {
@@ -17,25 +19,26 @@ export const useInviteTable = () =>
     },
 
     columns: (col) => [
-      col.accessor('email', { header: 'Email' }),
+      col.accessor('email', { header: t`Email` }),
       col.display('status', {
-        header: 'Status',
+        header: t`Status`,
         cell: ({ row: invite }) => {
-          if (invite.accepted) return <Badge variant="default">Accepted</Badge>
-          if (new Date(invite.expiresAt) < new Date()) return <Badge variant="destructive">Expired</Badge>
-          return <Badge variant="secondary">Pending</Badge>
+          if (invite.accepted) return <Badge variant="default">{t`Accepted`}</Badge>
+          if (new Date(invite.expiresAt) < new Date()) return <Badge variant="destructive">{t`Expired`}</Badge>
+          return <Badge variant="secondary">{t`Pending`}</Badge>
         },
       }),
-      col.accessor('expiresAt', { header: 'Expires', render: 'datetime' }),
+      col.accessor('expiresAt', { header: t`Expires`, render: 'datetime' }),
     ],
 
     getRowId: (row) => row.id,
     rowActions: (row) => <InviteRowActions invite={row} />,
 
     empty: {
-      heading: 'No pending invites',
+      heading: t`No pending invites`,
     },
     filtered: {
-      heading: 'No invites found',
+      heading: t`No invites found`,
     },
   })
+}

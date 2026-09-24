@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Button,
   DropdownMenu,
@@ -11,23 +12,28 @@ import { useNavigate } from '@tanstack/react-router'
 import { EllipsisIcon } from 'lucide-react'
 import type { AdminProductOption } from '#/api/generated/model'
 import { useDeleteProductOption } from '#/features/product-options/api/product-options'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function OptionRowActions({ option }: { option: AdminProductOption }) {
   const { mutate: remove } = useDeleteProductOption(option.id)
   const navigate = useNavigate()
   const prompt = usePrompt()
+  const { t } = useLingui()
+  const { cancel } = useUiCopy()
+  const title = option.title
 
   const handleDelete = async () => {
     const confirmed = await prompt({
-      title: 'Delete option',
-      description: `Are you sure you want to delete the option "${option.title}"?`,
-      confirmText: 'Delete',
+      title: t`Delete option`,
+      description: t`Are you sure you want to delete the option "${title}"?`,
+      confirmText: t`Delete`,
+      cancelText: cancel,
       variant: 'danger',
     })
 
     if (confirmed) {
       remove(undefined, {
-        onSuccess: () => toast.add({ type: 'success', title: `Option "${option.title}" deleted` }),
+        onSuccess: () => toast.add({ type: 'success', title: t`Option "${title}" deleted` }),
       })
     }
   }
@@ -38,9 +44,11 @@ export function OptionRowActions({ option }: { option: AdminProductOption }) {
         <EllipsisIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => navigate({ to: `/product-options/${option.id}/edit` })}>Edit</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate({ to: `/product-options/${option.id}/edit` })}>
+          <Trans>Edit</Trans>
+        </DropdownMenuItem>
         <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-          Delete
+          <Trans>Delete</Trans>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

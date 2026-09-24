@@ -10,6 +10,7 @@ export interface AdminUser {
   id: string;
   name: string;
   email: string;
+  locale: string;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

@@ -82,12 +82,20 @@ function RouteFocusModalContent({ children }: PropsWithChildren) {
   )
 }
 
-RouteFocusModal.Header = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+RouteFocusModal.Header = ({
+  className,
+  children,
+  closeLabel = 'Close',
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  /** Screen-reader label for the close button. */
+  closeLabel?: string
+}) => (
   <div className={cn('flex shrink-0 items-center justify-between gap-x-4 border-b px-4 py-2', className)} {...props}>
     <div className="flex items-center gap-x-2">
       <DrawerClose render={<Button variant="ghost" size="icon-sm" />}>
         <XIcon className="size-4" />
-        <span className="sr-only">Close</span>
+        <span className="sr-only">{closeLabel}</span>
       </DrawerClose>
       <kbd className="inline-flex h-5 items-center rounded border px-1 font-mono text-[11px] text-muted-foreground">
         esc

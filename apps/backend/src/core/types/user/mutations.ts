@@ -7,4 +7,5 @@ export type CreateUserDTO = {
 export type UpdateUserDTO = {
   email?: string | undefined
   name?: string | undefined
+  locale?: string | undefined
 }

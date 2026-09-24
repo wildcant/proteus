@@ -1,10 +1,12 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminProductOption } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProductOptions } from '#/features/product-options/api/product-options'
 import { OptionRowActions } from '#/features/product-options/components/option-row-actions'
 
-export const useProductOptionTable = () =>
-  useDefineTable<AdminProductOption>({
+export const useProductOptionTable = () => {
+  const { t } = useLingui()
+  return useDefineTable<AdminProductOption>({
     useData: (params) => {
       const { data, isPending, isFetching } = useProductOptions(params)
       return {
@@ -16,10 +18,13 @@ export const useProductOptionTable = () =>
     },
 
     columns: (col) => [
-      col.accessor('title', { header: 'Title', sortable: true }),
+      col.accessor('title', { header: t`Title`, sortable: true }),
       col.display('values', {
-        header: 'Values',
-        cell: ({ row }) => `${row.values.length} values`,
+        header: t`Values`,
+        cell: ({ row }) => {
+          const count = row.values.length
+          return t`${count} values`
+        },
       }),
     ],
 
@@ -28,11 +33,12 @@ export const useProductOptionTable = () =>
     rowActions: (row) => <OptionRowActions option={row} />,
 
     empty: {
-      heading: 'No options yet',
-      description: 'Create your first option (e.g. Color, Size) to get started.',
+      heading: t`No options yet`,
+      description: t`Create your first option (e.g. Color, Size) to get started.`,
     },
     filtered: {
-      heading: 'No options found',
-      description: 'Try changing your search term.',
+      heading: t`No options found`,
+      description: t`Try changing your search term.`,
     },
   })
+}

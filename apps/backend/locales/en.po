@@ -976,8 +976,8 @@ msgid "Unauthorized: registration required"
 msgstr "Unauthorized: registration required"
 
 #. js-lingui-explicit-id
-#: src/framework/http/middlewares/authorize.ts:26
-#: src/framework/http/middlewares/authorize.ts:36
+#: src/framework/http/middlewares/authorize.ts:27
+#: src/framework/http/middlewares/authorize.ts:37
 msgid "Insufficient permissions"
 msgstr "Insufficient permissions"
 
@@ -1249,9 +1249,15 @@ msgid "Password update failed"
 msgstr "Password update failed"
 
 #. js-lingui-explicit-id
-#: src/api/admin/users/me/route.ts:15
+#: src/api/admin/users/me/route.ts:16
+#: src/api/admin/users/me/route.ts:51
 msgid "User ID not found"
 msgstr "User ID not found"
+
+#. js-lingui-explicit-id
+#: src/api/admin/users/me/route.ts:59
+msgid "{locale} is not a language the admin offers"
+msgstr "{locale} is not a language the admin offers"
 
 #. js-lingui-explicit-id
 #: src/api/admin/uploads/presigned-urls/route.ts:27

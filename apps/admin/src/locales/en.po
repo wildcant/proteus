@@ -1,0 +1,2212 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-09-23 23:23-0500\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/features/regions/components/region-countries-card.tsx:30
+msgid "{count, plural, one {# country will stop being sold to, and their storefronts will no longer resolve.} other {# countries will stop being sold to, and their storefronts will no longer resolve.}}"
+msgstr "{count, plural, one {# country will stop being sold to, and their storefronts will no longer resolve.} other {# countries will stop being sold to, and their storefronts will no longer resolve.}}"
+
+#: src/features/products/components/media/manage-image-variants-form.tsx:65
+msgid "{count, plural, one {# selected} other {# selected}}"
+msgstr "{count, plural, one {# selected} other {# selected}}"
+
+#: src/features/store/components/store-currencies-card.tsx:32
+msgid "{count, plural, one {Products will no longer carry a price in # currency, and no region will be able to settle in it.} other {Products will no longer carry a price in # currencies, and no region will be able to settle in them.}}"
+msgstr "{count, plural, one {Products will no longer carry a price in # currency, and no region will be able to settle in it.} other {Products will no longer carry a price in # currencies, and no region will be able to settle in them.}}"
+
+#: src/features/product-options/hooks/use-product-option-table.tsx:26
+msgid "{count} values"
+msgstr "{count} values"
+
+#: src/components/form/file-upload-field.tsx:45
+msgid "{fileName} is not a supported file type. Supported file types are: {extensions}."
+msgstr "{fileName} is not a supported file type. Supported file types are: {extensions}."
+
+#: src/features/access-control/components/permission-grid.tsx:108
+msgid "{module} — All"
+msgstr "{module} — All"
+
+#: src/features/regions/components/region-country-row-actions.tsx:38
+msgid "{name} will stop being sold to, and its storefront will no longer resolve."
+msgstr "{name} will stop being sold to, and its storefront will no longer resolve."
+
+#: src/features/regions/utils/country-summary.ts:21
+msgid "{named} + {remaining} more"
+msgstr "{named} + {remaining} more"
+
+#: src/components/data-table/data-table-ui/pagination.tsx:39
+msgid "{page} of {totalPages} pages"
+msgstr "{page} of {totalPages} pages"
+
+#: src/components/data-table/data-table-ui/pagination.tsx:36
+msgid "{rangeStart} — {rangeEnd} of {count} results"
+msgstr "{rangeStart} — {rangeEnd} of {count} results"
+
+#: src/features/products/components/media/product-media-grid.tsx:129
+#: src/features/products/components/media/product-media-section.tsx:155
+#: src/features/products/components/variant/edit-variant-media-form.tsx:125
+msgid "{selectedCount, plural, one {# selected} other {# selected}}"
+msgstr "{selectedCount, plural, one {# selected} other {# selected}}"
+
+#: src/features/regions/components/region-countries-card.tsx:53
+#: src/features/store/components/store-currencies-card.tsx:55
+msgid "{selectedCount} selected"
+msgstr "{selectedCount} selected"
+
+#: src/features/products/components/media/product-media-section.tsx:133
+#: src/features/products/components/variant/variant-media-section.tsx:50
+msgid "{title} media"
+msgstr "{title} media"
+
+#: src/routes/_authed/settings/regions/index.tsx:25
+msgid "A region is an area that you sell products in. It can cover multiple countries, and has different providers and currency."
+msgstr "A region is an area that you sell products in. It can cover multiple countries, and has different providers and currency."
+
+#: src/features/regions/components/create-region-form.tsx:29
+msgid "A region is an area that you sell products in. It can cover multiple countries, and has its own currency and payment providers."
+msgstr "A region is an area that you sell products in. It can cover multiple countries, and has its own currency and payment providers."
+
+#: src/features/products/components/variant/create-variant-form.tsx:67
+msgid "A variant is one combination of this product's option values. Combinations it already has are left out."
+msgstr "A variant is one combination of this product's option values. Combinations it already has are left out."
+
+#: src/features/users/hooks/use-invite-table.tsx:26
+msgid "Accepted"
+msgstr "Accepted"
+
+#: src/components/error/forbidden-page.tsx:11
+msgid "Access Denied"
+msgstr "Access Denied"
+
+#: src/features/customers/hooks/use-customer-table.tsx:28
+msgid "Account"
+msgstr "Account"
+
+#: src/features/regions/components/region-countries-card.tsx:49
+#: src/features/store/components/store-currencies-card.tsx:51
+msgid "Add"
+msgstr "Add"
+
+#: src/features/regions/hooks/use-region-country-table.tsx:54
+msgid "Add a country to start selling in this region."
+msgstr "Add a country to start selling in this region."
+
+#: src/features/store/hooks/use-store-currency-table.tsx:69
+msgid "Add a currency to start pricing products in it."
+msgstr "Add a currency to start pricing products in it."
+
+#: src/features/regions/components/add-countries-form.tsx:24
+msgid "Add Countries"
+msgstr "Add Countries"
+
+#: src/features/store/components/add-currencies-form.tsx:24
+msgid "Add Currencies"
+msgstr "Add Currencies"
+
+#: src/components/data-table/data-table-ui/filter-menu.tsx:19
+msgid "Add filter"
+msgstr "Add filter"
+
+#: src/features/products/components/variant/edit-variant-media-form.tsx:214
+msgid "Add image to variant"
+msgstr "Add image to variant"
+
+#: src/features/products/components/media/product-media-section.tsx:150
+msgid "Add media"
+msgstr "Add media"
+
+#: src/features/products/components/media/product-media-section.tsx:146
+msgid "Add media to showcase this product in your storefront."
+msgstr "Add media to showcase this product in your storefront."
+
+#: src/features/products/components/media/upload-media-form-item.tsx:17
+msgid "Add media to the product to showcase it in your storefront."
+msgstr "Add media to the product to showcase it in your storefront."
+
+#: src/features/products/components/variant/edit-variant-media-form.tsx:108
+msgid "Add product images to the variant. To add new images, add them to the product first."
+msgstr "Add product images to the variant. To add new images, add them to the product first."
+
+#: src/features/regions/components/country-locale-select.tsx:49
+msgid "Add the countries included in this region."
+msgstr "Add the countries included in this region."
+
+#: src/features/product-options/hooks/use-option-values-table.tsx:29
+msgid "Add values to this option using the edit form."
+msgstr "Add values to this option using the edit form."
+
+#: src/features/regions/components/region-provider-select.tsx:26
+msgid "Add which payment providers are available in this region."
+msgstr "Add which payment providers are available in this region."
+
+#: src/features/store/components/currency-select.tsx:41
+msgid "Adding a currency is what gives every product a price column in it. Only currencies the store does not already sell in are offered."
+msgstr "Adding a currency is what gives every product a price column in it. Only currencies the store does not already sell in are offered."
+
+#: src/components/layout/shell.tsx:105
+msgid "Admin"
+msgstr "Admin"
+
+#: src/components/data-table/utils/format.ts:33
+msgid "After {date}"
+msgstr "After {date}"
+
+#: src/features/products/hooks/use-variant-table.tsx:46
+msgid "Allow Backorder"
+msgstr "Allow Backorder"
+
+#: src/features/products/components/variant/edit-variant-form.tsx:93
+msgid "Allow backorders"
+msgstr "Allow backorders"
+
+#: src/features/orders/components/order-general-section.tsx:54
+#: src/features/orders/components/order-general-section.tsx:67
+msgid "Archive"
+msgstr "Archive"
+
+#: src/features/orders/components/order-general-section.tsx:52
+msgid "Archive order"
+msgstr "Archive order"
+
+#: src/features/orders/utils/order-status.ts:26
+msgid "archived"
+msgstr "archived"
+
+#: src/features/orders/hooks/use-order-table.tsx:59
+msgid "Archived"
+msgstr "Archived"
+
+#: src/features/orders/components/order-general-section.tsx:53
+msgid "Are you sure you want to archive this order?"
+msgstr "Are you sure you want to archive this order?"
+
+#: src/features/orders/components/order-general-section.tsx:40
+msgid "Are you sure you want to cancel this order? This will release all inventory reservations."
+msgstr "Are you sure you want to cancel this order? This will release all inventory reservations."
+
+#: src/features/access-control/components/role-row-actions.tsx:35
+msgid "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+msgstr "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+
+#: src/features/products/components/product-general-section.tsx:23
+msgid "Are you sure you want to delete \"{title}\"?"
+msgstr "Are you sure you want to delete \"{title}\"?"
+
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:36
+msgid "Are you sure you want to delete \"{title}\"? This will remove it from all products."
+msgstr "Are you sure you want to delete \"{title}\"? This will remove it from all products."
+
+#: src/features/products/components/media/product-media-section.tsx:60
+msgid "Are you sure you want to delete {selectedCount} image(s)?"
+msgstr "Are you sure you want to delete {selectedCount} image(s)?"
+
+#: src/features/products/components/media/product-media-section.tsx:59
+msgid "Are you sure you want to delete {selectedCount} image(s)? This includes the product thumbnail."
+msgstr "Are you sure you want to delete {selectedCount} image(s)? This includes the product thumbnail."
+
+#: src/features/users/components/invite-row-actions.tsx:39
+msgid "Are you sure you want to delete the invite for {email}?"
+msgstr "Are you sure you want to delete the invite for {email}?"
+
+#: src/features/product-options/components/option-row-actions.tsx:28
+msgid "Are you sure you want to delete the option \"{title}\"?"
+msgstr "Are you sure you want to delete the option \"{title}\"?"
+
+#: src/hooks/use-ui-copy.ts:15
+msgid "Are you sure you want to leave? Your unsaved changes will be lost."
+msgstr "Are you sure you want to leave? Your unsaved changes will be lost."
+
+#: src/features/orders/components/order-general-section.tsx:28
+msgid "Are you sure you want to mark this order as completed?"
+msgstr "Are you sure you want to mark this order as completed?"
+
+#: src/features/product-options/components/value-row-actions.tsx:27
+msgid "Are you sure you want to remove \"{valueName}\" from \"{optionTitle}\"?"
+msgstr "Are you sure you want to remove \"{valueName}\" from \"{optionTitle}\"?"
+
+#: src/components/data-table/data-table-ui/sorting-menu.tsx:46
+msgid "Ascending"
+msgstr "Ascending"
+
+#: src/features/products/components/variant/variant-media-section.tsx:62
+msgid "Assign product images to this variant."
+msgstr "Assign product images to this variant."
+
+#: src/features/regions/components/add-countries-form.tsx:27
+msgid "Assigning a country to this region is what makes it sellable. Only countries no region covers yet are offered."
+msgstr "Assigning a country to this region is what makes it sellable. Only countries no region covers yet are offered."
+
+#: src/routes/_authed/settings/store/route.tsx:94
+msgid "At or below this many units available, a variant counts as running low. Leave it empty and nothing is ever low."
+msgstr "At or below this many units available, a variant counts as running low. Leave it empty and nothing is ever low."
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:47
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:21
+#: src/features/products/components/product-attribute-section.tsx:15
+msgid "Attributes"
+msgstr "Attributes"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:39
+msgid "Available"
+msgstr "Available"
+
+#: src/features/products/components/variant/variant-stock-section.tsx:45
+msgid "Available quantity"
+msgstr "Available quantity"
+
+#: src/features/access-control/components/edit-role-form.tsx:75
+msgid "Back"
+msgstr "Back"
+
+#: src/features/users/components/create-account-form.tsx:58
+#: src/routes/_public/invite.tsx:46
+#: src/routes/_public/invite.tsx:67
+msgid "Back to login"
+msgstr "Back to login"
+
+#: src/features/products/components/variant/edit-variant-form.tsx:80
+msgid "Barcode"
+msgstr "Barcode"
+
+#: src/components/data-table/utils/format.ts:37
+msgid "Before {date}"
+msgstr "Before {date}"
+
+#: src/lib/format-file-size.ts:5
+#: src/lib/format-file-size.ts:14
+msgid "Bytes"
+msgstr "Bytes"
+
+#: src/features/access-control/components/create-role-form.tsx:52
+#: src/features/access-control/components/edit-role-form.tsx:75
+#: src/features/customers/components/update-customer-form.tsx:49
+#: src/features/orders/components/order-general-section.tsx:66
+#: src/features/product-options/components/edit-product-option-form.tsx:46
+#: src/features/product-options/components/manage-product-options-form.tsx:64
+#: src/features/products/components/create-product-form/create-product-form.tsx:73
+#: src/features/products/components/edit-product-form.tsx:32
+#: src/features/products/components/media/edit-product-media-form.tsx:40
+#: src/features/products/components/media/manage-image-variants-form.tsx:71
+#: src/features/products/components/variant/create-variant-form.tsx:119
+#: src/features/products/components/variant/edit-variant-form.tsx:103
+#: src/features/products/components/variant/edit-variant-media-form.tsx:143
+#: src/features/products/components/variant/variant-price-edit-form.tsx:97
+#: src/features/products/components/variant/variant-stock-edit-form.tsx:46
+#: src/features/regions/components/add-countries-form.tsx:38
+#: src/features/regions/components/create-region-form.tsx:57
+#: src/features/regions/components/edit-country-locale-form.tsx:54
+#: src/features/regions/components/edit-region-form.tsx:47
+#: src/features/store/components/add-currencies-form.tsx:46
+#: src/features/store/components/edit-store-form.tsx:47
+#: src/hooks/use-ui-copy.ts:12
+#: src/hooks/use-ui-copy.ts:16
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/features/orders/components/order-general-section.tsx:39
+#: src/features/orders/components/order-general-section.tsx:41
+msgid "Cancel order"
+msgstr "Cancel order"
+
+#: src/features/orders/utils/order-status.ts:25
+msgid "canceled"
+msgstr "canceled"
+
+#: src/features/orders/hooks/use-order-table.tsx:58
+msgid "Canceled"
+msgstr "Canceled"
+
+#: src/components/data-table/data-table-ui/filter-bar.tsx:55
+msgid "Clear all"
+msgstr "Clear all"
+
+#: src/hooks/use-ui-copy.ts:11
+msgid "Close"
+msgstr "Close"
+
+#: src/routes/__root.tsx:25
+msgid "Close toast"
+msgstr "Close toast"
+
+#: src/features/regions/hooks/use-region-country-table.tsx:35
+#: src/features/store/hooks/use-store-currency-table.tsx:49
+msgid "Code"
+msgstr "Code"
+
+#: src/features/products/components/variant/create-variant-form.tsx:79
+#: src/features/products/components/variant/edit-variant-form.tsx:61
+msgid "Combination"
+msgstr "Combination"
+
+#: src/features/orders/components/order-general-section.tsx:29
+#: src/features/orders/components/order-general-section.tsx:65
+msgid "Complete"
+msgstr "Complete"
+
+#: src/features/orders/components/order-general-section.tsx:27
+msgid "Complete order"
+msgstr "Complete order"
+
+#: src/features/orders/utils/order-status.ts:24
+msgid "completed"
+msgstr "completed"
+
+#: src/features/orders/hooks/use-order-table.tsx:57
+msgid "Completed"
+msgstr "Completed"
+
+#: src/features/users/components/create-account-form.tsx:47
+msgid "Confirm password"
+msgstr "Confirm password"
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:91
+#: src/hooks/use-ui-copy.ts:17
+msgid "Continue"
+msgstr "Continue"
+
+#: src/features/users/components/invite-row-actions.tsx:64
+msgid "Copy invite link"
+msgstr "Copy invite link"
+
+#: src/features/regions/components/country-locale-select.tsx:46
+#: src/features/regions/components/region-countries-card.tsx:48
+#: src/features/regions/hooks/use-region-table.tsx:26
+msgid "Countries"
+msgstr "Countries"
+
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:29
+#: src/features/products/components/product-attribute-section.tsx:33
+msgid "Country of Origin"
+msgstr "Country of Origin"
+
+#: src/features/products/components/product-variant-section.tsx:12
+#: src/features/products/components/variant/create-variant-form.tsx:122
+#: src/routes/_authed/_shell/product-options/index.tsx:25
+#: src/routes/_authed/settings/regions/index.tsx:26
+#: src/routes/_authed/settings/roles/index.tsx:24
+msgid "Create"
+msgstr "Create"
+
+#: src/features/product-options/components/create-product-option-form.tsx:27
+msgid "Create a new product option with values."
+msgstr "Create a new product option with values."
+
+#: src/features/store/components/store-region-select.tsx:50
+msgid "Create a region before choosing the one shoppers are served from."
+msgstr "Create a region before choosing the one shoppers are served from."
+
+#: src/features/regions/hooks/use-region-table.tsx:48
+msgid "Create a region to start selling in a market."
+msgstr "Create a region to start selling in a market."
+
+#: src/features/access-control/hooks/use-role-table.tsx:46
+msgid "Create a role to manage permissions."
+msgstr "Create a role to manage permissions."
+
+#: src/features/users/components/create-account-form.tsx:51
+msgid "Create account"
+msgstr "Create account"
+
+#: src/features/product-options/components/create-product-option-form.tsx:24
+msgid "Create Option"
+msgstr "Create Option"
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:37
+#: src/routes/_authed/_shell/products/index.tsx:25
+msgid "Create Product"
+msgstr "Create Product"
+
+#: src/features/regions/components/create-region-form.tsx:26
+msgid "Create Region"
+msgstr "Create Region"
+
+#: src/features/access-control/components/create-role-form.tsx:25
+msgid "Create Role"
+msgstr "Create Role"
+
+#: src/features/users/components/create-account-form.tsx:25
+msgid "Create your account"
+msgstr "Create your account"
+
+#: src/features/customers/hooks/use-customer-table.tsx:52
+msgid "Create your first customer to get started."
+msgstr "Create your first customer to get started."
+
+#: src/features/product-options/hooks/use-product-option-table.tsx:37
+msgid "Create your first option (e.g. Color, Size) to get started."
+msgstr "Create your first option (e.g. Color, Size) to get started."
+
+#: src/features/products/hooks/use-product-table.tsx:68
+msgid "Create your first product to get started."
+msgstr "Create your first product to get started."
+
+#: src/features/products/hooks/use-variant-table.tsx:70
+msgid "Create your first variant to get started."
+msgstr "Create your first variant to get started."
+
+#: src/features/customers/hooks/use-customer-table.tsx:31
+#: src/features/customers/hooks/use-customer-table.tsx:37
+#: src/features/products/hooks/use-product-table.tsx:52
+msgid "Created"
+msgstr "Created"
+
+#: src/features/users/components/create-account-form.tsx:51
+msgid "Creating account..."
+msgstr "Creating account..."
+
+#: src/features/store/components/currency-select.tsx:38
+#: src/features/store/components/store-currencies-card.tsx:50
+msgid "Currencies"
+msgstr "Currencies"
+
+#: src/features/orders/components/order-customer-section.tsx:17
+#: src/features/regions/components/region-currency-select.tsx:39
+#: src/routes/_authed/settings/regions/$id/_detail/route.tsx:37
+msgid "Currency"
+msgstr "Currency"
+
+#: src/features/orders/components/order-customer-section.tsx:12
+#: src/features/orders/hooks/use-order-table.tsx:33
+msgid "Customer"
+msgstr "Customer"
+
+#: src/features/orders/components/order-customer-section.tsx:16
+msgid "Customer ID"
+msgstr "Customer ID"
+
+#: src/components/layout/use-sidebar-label.ts:15
+#: src/routes/_authed/_shell/customers/index.tsx:21
+#: src/routes/_authed/_shell/customers/route.tsx:5
+msgid "Customers"
+msgstr "Customers"
+
+#: src/components/layout/theme-toggle.tsx:12
+msgid "Dark"
+msgstr "Dark"
+
+#: src/routes/_authed/_shell/index.tsx:10
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: src/features/inventory/hooks/use-reservation-table.tsx:33
+#: src/features/orders/hooks/use-order-table.tsx:48
+#: src/features/orders/hooks/use-order-table.tsx:64
+msgid "Date"
+msgstr "Date"
+
+#: src/features/store/hooks/use-store-currency-table.tsx:52
+#: src/features/store/hooks/use-store-currency-table.tsx:53
+msgid "Default"
+msgstr "Default"
+
+#: src/routes/_authed/settings/store/route.tsx:72
+msgid "Default currency"
+msgstr "Default currency"
+
+#: src/features/store/components/store-region-select.tsx:35
+#: src/routes/_authed/settings/store/route.tsx:86
+msgid "Default region"
+msgstr "Default region"
+
+#: src/features/access-control/components/role-row-actions.tsx:36
+#: src/features/access-control/components/role-row-actions.tsx:56
+#: src/features/customers/components/customer-row-actions.tsx:22
+#: src/features/product-options/components/option-row-actions.tsx:29
+#: src/features/product-options/components/option-row-actions.tsx:51
+#: src/features/product-options/components/value-row-actions.tsx:49
+#: src/features/products/components/media/product-media-grid.tsx:137
+#: src/features/products/components/media/product-media-section.tsx:61
+#: src/features/products/components/media/product-media-section.tsx:172
+#: src/features/products/components/media/staged-media-list.tsx:168
+#: src/features/products/components/product-general-section.tsx:24
+#: src/features/products/components/product-general-section.tsx:45
+#: src/features/products/components/product-row-actions.tsx:24
+#: src/features/products/components/variant/variant-general-section.tsx:37
+#: src/features/products/components/variant/variant-row-actions.tsx:26
+#: src/features/users/components/invite-row-actions.tsx:40
+#: src/features/users/components/invite-row-actions.tsx:70
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:37
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:58
+msgid "Delete"
+msgstr "Delete"
+
+#: src/features/users/components/invite-row-actions.tsx:38
+msgid "Delete invite"
+msgstr "Delete invite"
+
+#: src/features/products/components/media/product-media-section.tsx:57
+msgid "Delete media"
+msgstr "Delete media"
+
+#: src/features/product-options/components/option-row-actions.tsx:27
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:35
+msgid "Delete option"
+msgstr "Delete option"
+
+#: src/features/products/components/product-general-section.tsx:22
+msgid "Delete product"
+msgstr "Delete product"
+
+#: src/features/access-control/components/role-row-actions.tsx:34
+msgid "Delete role"
+msgstr "Delete role"
+
+#: src/features/orders/utils/order-status.ts:33
+msgid "delivered"
+msgstr "delivered"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:167
+msgid "Delivered"
+msgstr "Delivered"
+
+#: src/components/data-table/data-table-ui/sorting-menu.tsx:47
+msgid "Descending"
+msgstr "Descending"
+
+#: src/features/access-control/components/create-role-form.tsx:36
+#: src/features/access-control/components/edit-role-form.tsx:46
+#: src/features/products/components/create-product-form/product-create-details-form.tsx:36
+#: src/features/products/components/product-general-section.tsx:50
+msgid "Description"
+msgstr "Description"
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:41
+msgid "Details"
+msgstr "Details"
+
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:27
+#: src/features/products/components/product-general-section.tsx:54
+msgid "Discountable"
+msgstr "Discountable"
+
+#: src/features/notifications/components/notification-item.tsx:36
+msgid "Download file"
+msgstr "Download file"
+
+#: src/features/products/utils/product-status.ts:17
+msgid "draft"
+msgstr "draft"
+
+#: src/features/products/hooks/use-product-table.tsx:44
+msgid "Draft"
+msgstr "Draft"
+
+#: src/features/products/components/media/upload-media-form-item.tsx:19
+msgid "Drag and drop images here or click to upload."
+msgstr "Drag and drop images here or click to upload."
+
+#: src/features/store/components/edit-store-form.tsx:42
+msgid "e.g. 5"
+msgstr "e.g. 5"
+
+#: src/features/customers/components/update-customer-form.tsx:36
+msgid "e.g. Ada"
+msgstr "e.g. Ada"
+
+#: src/features/customers/components/update-customer-form.tsx:43
+msgid "e.g. ada@example.com"
+msgstr "e.g. ada@example.com"
+
+#: src/features/product-options/components/create-product-option-form.tsx:31
+#: src/features/product-options/components/edit-product-option-form.tsx:27
+msgid "e.g. Color, Size"
+msgstr "e.g. Color, Size"
+
+#: src/features/regions/components/country-locale-select.tsx:115
+#: src/features/regions/components/edit-country-locale-form.tsx:43
+msgid "e.g. es-CO"
+msgstr "e.g. es-CO"
+
+#: src/features/regions/components/create-region-form.tsx:37
+#: src/features/regions/components/edit-region-form.tsx:29
+msgid "e.g. Europe"
+msgstr "e.g. Europe"
+
+#: src/features/customers/components/update-customer-form.tsx:39
+msgid "e.g. Lovelace"
+msgstr "e.g. Lovelace"
+
+#: src/features/store/components/edit-store-form.tsx:28
+msgid "e.g. Proteus"
+msgstr "e.g. Proteus"
+
+#: src/features/access-control/components/create-role-form.tsx:33
+msgid "e.g. Store Manager"
+msgstr "e.g. Store Manager"
+
+#: src/features/regions/components/country-locale-select.tsx:68
+msgid "Each country's locale is its storefront's URL segment, and the tag its prices and dates are formatted with. The suggestion is the most common one — change it where it is wrong."
+msgstr "Each country's locale is its storefront's URL segment, and the tag its prices and dates are formatted with. The suggestion is the most common one — change it where it is wrong."
+
+#: src/features/access-control/components/role-row-actions.tsx:52
+#: src/features/customers/components/customer-row-actions.tsx:19
+#: src/features/product-options/components/option-row-actions.tsx:48
+#: src/features/products/components/product-attribute-section.tsx:21
+#: src/features/products/components/product-general-section.tsx:44
+#: src/features/products/components/product-row-actions.tsx:21
+#: src/features/products/components/variant/variant-general-section.tsx:36
+#: src/features/products/components/variant/variant-row-actions.tsx:23
+#: src/features/regions/components/region-row-actions.tsx:23
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:57
+#: src/routes/_authed/settings/regions/$id/_detail/route.tsx:33
+#: src/routes/_authed/settings/store/route.tsx:63
+msgid "Edit"
+msgstr "Edit"
+
+#: src/features/customers/components/update-customer-form.tsx:31
+msgid "Edit Customer"
+msgstr "Edit Customer"
+
+#: src/features/regions/components/region-country-row-actions.tsx:55
+msgid "Edit locale"
+msgstr "Edit locale"
+
+#: src/features/regions/components/edit-country-locale-form.tsx:37
+msgid "Edit Locale"
+msgstr "Edit Locale"
+
+#: src/features/products/components/media/product-media-section.tsx:88
+#: src/features/products/components/variant/variant-media-section.tsx:19
+msgid "Edit Media"
+msgstr "Edit Media"
+
+#: src/features/products/components/variant/variant-prices-section.tsx:23
+msgid "Edit prices"
+msgstr "Edit prices"
+
+#: src/features/products/components/edit-product-form.tsx:22
+msgid "Edit Product"
+msgstr "Edit Product"
+
+#: src/features/product-options/components/edit-product-option-form.tsx:22
+msgid "Edit Product Option"
+msgstr "Edit Product Option"
+
+#: src/features/regions/components/edit-region-form.tsx:24
+msgid "Edit Region"
+msgstr "Edit Region"
+
+#: src/features/products/components/variant/variant-stock-edit-form.tsx:33
+#: src/features/products/components/variant/variant-stock-section.tsx:40
+msgid "Edit stock"
+msgstr "Edit stock"
+
+#: src/features/store/components/edit-store-form.tsx:23
+msgid "Edit Store"
+msgstr "Edit Store"
+
+#: src/features/products/components/variant/variant-stock-section.tsx:20
+msgid "Edit variant"
+msgstr "Edit variant"
+
+#: src/features/products/components/variant/edit-variant-form.tsx:38
+msgid "Edit Variant"
+msgstr "Edit Variant"
+
+#: src/features/products/components/variant/edit-variant-media-form.tsx:51
+msgid "Edit Variant Media"
+msgstr "Edit Variant Media"
+
+#: src/components/data-grid/data-grid.tsx:59
+msgid "Editable data grid"
+msgstr "Editable data grid"
+
+#: src/features/auth/components/login-form.tsx:14
+#: src/features/customers/components/update-customer-form.tsx:43
+#: src/features/customers/hooks/use-customer-table.tsx:26
+#: src/features/orders/components/order-customer-section.tsx:15
+#: src/features/users/components/create-account-form.tsx:36
+#: src/features/users/components/invite-form.tsx:33
+#: src/features/users/hooks/use-invite-table.tsx:22
+#: src/features/users/hooks/use-user-table.tsx:21
+#: src/routes/_authed/settings/users/$id.tsx:43
+msgid "Email"
+msgstr "Email"
+
+#: src/features/products/components/variant/create-variant-form.tsx:114
+msgid "Every combination of this product's options already has a variant."
+msgstr "Every combination of this product's options already has a variant."
+
+#: src/features/users/hooks/use-invite-table.tsx:27
+msgid "Expired"
+msgstr "Expired"
+
+#: src/features/users/hooks/use-invite-table.tsx:31
+msgid "Expires"
+msgstr "Expires"
+
+#: src/features/users/api/invites.ts:90
+msgid "Failed to accept invite"
+msgstr "Failed to accept invite"
+
+#: src/features/regions/api/countries.ts:85
+msgid "Failed to add countries"
+msgstr "Failed to add countries"
+
+#: src/features/store/api/store.ts:89
+msgid "Failed to add currencies"
+msgstr "Failed to add currencies"
+
+#: src/features/orders/api/orders.ts:104
+msgid "Failed to archive order"
+msgstr "Failed to archive order"
+
+#: src/features/orders/api/orders.ts:85
+msgid "Failed to cancel order"
+msgstr "Failed to cancel order"
+
+#: src/features/store/api/store.ts:107
+msgid "Failed to change the default currency"
+msgstr "Failed to change the default currency"
+
+#: src/features/auth/api/auth.ts:57
+msgid "Failed to change the language"
+msgstr "Failed to change the language"
+
+#: src/features/orders/api/orders.ts:66
+msgid "Failed to complete order"
+msgstr "Failed to complete order"
+
+#: src/features/orders/api/orders.ts:126
+msgid "Failed to create fulfillment"
+msgstr "Failed to create fulfillment"
+
+#: src/features/product-options/api/product-options.ts:64
+msgid "Failed to create option"
+msgstr "Failed to create option"
+
+#: src/features/products/api/products.ts:56
+msgid "Failed to create product"
+msgstr "Failed to create product"
+
+#: src/features/regions/api/regions.ts:54
+msgid "Failed to create region"
+msgstr "Failed to create region"
+
+#: src/features/access-control/api/roles.ts:46
+msgid "Failed to create role"
+msgstr "Failed to create role"
+
+#: src/features/orders/api/orders.ts:149
+msgid "Failed to create shipment"
+msgstr "Failed to create shipment"
+
+#: src/features/products/api/product-variants.ts:119
+msgid "Failed to create variant"
+msgstr "Failed to create variant"
+
+#: src/features/customers/api/customers.ts:84
+msgid "Failed to delete customer"
+msgstr "Failed to delete customer"
+
+#: src/features/users/api/invites.ts:58
+msgid "Failed to delete invite"
+msgstr "Failed to delete invite"
+
+#: src/features/product-options/api/product-options.ts:109
+msgid "Failed to delete option"
+msgstr "Failed to delete option"
+
+#: src/features/products/api/products.ts:96
+msgid "Failed to delete product"
+msgstr "Failed to delete product"
+
+#: src/features/access-control/api/roles.ts:86
+msgid "Failed to delete role"
+msgstr "Failed to delete role"
+
+#: src/features/products/api/product-variants.ts:170
+msgid "Failed to delete variant"
+msgstr "Failed to delete variant"
+
+#: src/features/orders/api/orders.ts:172
+msgid "Failed to mark as delivered"
+msgstr "Failed to mark as delivered"
+
+#: src/features/regions/api/countries.ts:136
+msgid "Failed to remove countries"
+msgstr "Failed to remove countries"
+
+#: src/features/store/api/store.ts:136
+msgid "Failed to remove currencies"
+msgstr "Failed to remove currencies"
+
+#: src/features/users/api/invites.ts:76
+msgid "Failed to resend invite"
+msgstr "Failed to resend invite"
+
+#: src/features/users/api/invites.ts:40
+msgid "Failed to send invite"
+msgstr "Failed to send invite"
+
+#: src/features/product-options/api/product-options.ts:172
+msgid "Failed to set product options"
+msgstr "Failed to set product options"
+
+#: src/features/customers/api/customers.ts:64
+msgid "Failed to update customer"
+msgstr "Failed to update customer"
+
+#: src/features/products/api/product-variants.ts:272
+msgid "Failed to update image variants"
+msgstr "Failed to update image variants"
+
+#: src/features/regions/api/countries.ts:107
+msgid "Failed to update locale"
+msgstr "Failed to update locale"
+
+#: src/features/product-options/api/product-options.ts:91
+msgid "Failed to update option"
+msgstr "Failed to update option"
+
+#: src/features/products/api/products.ts:78
+msgid "Failed to update product"
+msgstr "Failed to update product"
+
+#: src/features/regions/api/regions.ts:76
+msgid "Failed to update region"
+msgstr "Failed to update region"
+
+#: src/features/access-control/api/roles.ts:68
+msgid "Failed to update role"
+msgstr "Failed to update role"
+
+#: src/features/users/api/user-roles.ts:49
+msgid "Failed to update roles"
+msgstr "Failed to update roles"
+
+#: src/features/store/api/store.ts:69
+msgid "Failed to update store"
+msgstr "Failed to update store"
+
+#: src/features/products/api/product-variants.ts:145
+msgid "Failed to update variant"
+msgstr "Failed to update variant"
+
+#: src/features/products/api/product-variants.ts:242
+msgid "Failed to update variant images"
+msgstr "Failed to update variant images"
+
+#: src/features/products/api/product-variants.ts:194
+msgid "Failed to update variant prices"
+msgstr "Failed to update variant prices"
+
+#: src/features/products/api/product-variants.ts:218
+msgid "Failed to update variant stock"
+msgstr "Failed to update variant stock"
+
+#: src/features/uploads/api/uploads.ts:18
+msgid "Failed to upload files"
+msgstr "Failed to upload files"
+
+#: src/features/products/components/product-general-section.tsx:54
+#: src/features/products/hooks/use-image-variants-table.tsx:36
+msgid "False"
+msgstr "False"
+
+#: src/features/users/components/create-account-form.tsx:28
+msgid "Fill in your details to accept the invitation."
+msgstr "Fill in your details to accept the invitation."
+
+#: src/features/customers/components/update-customer-form.tsx:36
+msgid "First name"
+msgstr "First name"
+
+#: src/components/data-table/filters/date-filter.tsx:45
+msgid "From"
+msgstr "From"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:79
+#: src/features/orders/components/order-fulfillment-section.tsx:115
+msgid "Fulfill"
+msgstr "Fulfill"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:77
+msgid "Fulfill order"
+msgstr "Fulfill order"
+
+#: src/features/orders/utils/order-status.ts:31
+msgid "fulfilled"
+msgstr "fulfilled"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:26
+#: src/features/orders/hooks/use-order-table.tsx:42
+msgid "Fulfillment"
+msgstr "Fulfillment"
+
+#: src/lib/format-file-size.ts:5
+msgid "GB"
+msgstr "GB"
+
+#: src/components/layout/use-sidebar-label.ts:18
+#: src/features/products/components/create-product-form/product-create-details-form.tsx:23
+msgid "General"
+msgstr "General"
+
+#: src/routes/_public/invite.tsx:37
+msgid "Get started with the admin right away."
+msgstr "Get started with the admin right away."
+
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:67
+msgid "Global"
+msgstr "Global"
+
+#: src/components/error/forbidden-page.tsx:17
+msgid "Go to Home"
+msgstr "Go to Home"
+
+#: src/routes/_public/invite.tsx:42
+msgid "Go to login"
+msgstr "Go to login"
+
+#: src/features/product-options/components/product-option-section.tsx:41
+msgid "Go to product option"
+msgstr "Go to product option"
+
+#: src/features/customers/hooks/use-customer-table.tsx:29
+msgid "Guest"
+msgstr "Guest"
+
+#: src/features/products/components/create-product-form/product-create-details-form.tsx:33
+#: src/features/products/components/product-general-section.tsx:52
+#: src/features/products/hooks/use-product-table.tsx:29
+msgid "Handle"
+msgstr "Handle"
+
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:50
+#: src/features/products/components/product-attribute-section.tsx:27
+msgid "Height"
+msgstr "Height"
+
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:34
+#: src/features/products/components/product-attribute-section.tsx:32
+msgid "HS Code"
+msgstr "HS Code"
+
+#: src/routes/_authed/_shell/products/$id/_detail/images/$imageId/variants.tsx:37
+msgid "Image not found"
+msgstr "Image not found"
+
+#: src/features/products/components/media/manage-image-variants-form.tsx:27
+msgid "Image variants updated successfully"
+msgstr "Image variants updated successfully"
+
+#: src/components/layout/use-sidebar-label.ts:16
+#: src/routes/_authed/_shell/inventory/index.tsx:21
+#: src/routes/_authed/_shell/inventory/route.tsx:5
+msgid "Inventory"
+msgstr "Inventory"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:67
+msgid "Inventory appears here once a product has a variant the shop tracks."
+msgstr "Inventory appears here once a product has a variant the shop tracks."
+
+#: src/features/products/components/variant/variant-stock-section.tsx:24
+msgid "Inventory is not managed for this variant. Turn on ‘Manage Inventory’ to track the variant's inventory."
+msgstr "Inventory is not managed for this variant. Turn on ‘Manage Inventory’ to track the variant's inventory."
+
+#: src/features/users/components/invite-row-actions.tsx:32
+msgid "Invite link copied to clipboard"
+msgstr "Invite link copied to clipboard"
+
+#: src/features/users/components/invite-form.tsx:19
+msgid "Invite sent"
+msgstr "Invite sent"
+
+#: src/features/users/hooks/use-user-table.tsx:34
+msgid "Invite someone to get started."
+msgstr "Invite someone to get started."
+
+#: src/routes/_authed/settings/users/index.tsx:22
+msgid "Invite Users"
+msgstr "Invite Users"
+
+#: src/components/data-table/data-table-ui/filter-pill.tsx:80
+msgid "is"
+msgstr "is"
+
+#: src/features/orders/components/order-summary-section.tsx:59
+msgid "Item Subtotal"
+msgstr "Item Subtotal"
+
+#: src/features/users/hooks/use-user-table.tsx:26
+msgid "Joined"
+msgstr "Joined"
+
+#: src/lib/format-file-size.ts:5
+msgid "KB"
+msgstr "KB"
+
+#: src/features/auth/components/user-menu.tsx:48
+msgid "Language"
+msgstr "Language"
+
+#: src/features/customers/hooks/use-customer-table.tsx:42
+#: src/features/orders/hooks/use-order-table.tsx:69
+#: src/features/products/hooks/use-product-table.tsx:57
+msgid "Last 12 months"
+msgstr "Last 12 months"
+
+#: src/features/customers/hooks/use-customer-table.tsx:41
+#: src/features/orders/hooks/use-order-table.tsx:68
+#: src/features/products/hooks/use-product-table.tsx:56
+msgid "Last 30 days"
+msgstr "Last 30 days"
+
+#: src/features/customers/hooks/use-customer-table.tsx:40
+#: src/features/orders/hooks/use-order-table.tsx:67
+#: src/features/products/hooks/use-product-table.tsx:55
+msgid "Last 7 days"
+msgstr "Last 7 days"
+
+#: src/features/customers/components/update-customer-form.tsx:39
+msgid "Last name"
+msgstr "Last name"
+
+#: src/routes/_authed/settings/store/route.tsx:73
+msgid "Leads the currency columns when you price a product. It is not what shoppers are quoted."
+msgstr "Leads the currency columns when you price a product. It is not what shoppers are quoted."
+
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:45
+#: src/features/products/components/product-attribute-section.tsx:29
+msgid "Length"
+msgstr "Length"
+
+#: src/components/layout/theme-toggle.tsx:12
+msgid "Light"
+msgstr "Light"
+
+#: src/features/regions/components/country-locale-select.tsx:56
+msgid "Loading countries…"
+msgstr "Loading countries…"
+
+#: src/features/store/components/currency-select.tsx:51
+msgid "Loading currencies…"
+msgstr "Loading currencies…"
+
+#: src/components/data-grid/data-grid-skeleton.tsx:16
+msgid "Loading data grid"
+msgstr "Loading data grid"
+
+#: src/features/regions/components/edit-country-locale-form.tsx:43
+#: src/features/regions/hooks/use-region-country-table.tsx:39
+msgid "Locale"
+msgstr "Locale"
+
+#: src/features/regions/components/country-locale-select.tsx:65
+msgid "Locales"
+msgstr "Locales"
+
+#: src/features/auth/components/user-menu.tsx:122
+msgid "Log out"
+msgstr "Log out"
+
+#: src/features/auth/api/auth.ts:78
+msgid "Login failed"
+msgstr "Login failed"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:54
+msgid "Low stock ({threshold} or fewer)"
+msgstr "Low stock ({threshold} or fewer)"
+
+#: src/features/store/components/edit-store-form.tsx:42
+#: src/routes/_authed/settings/store/route.tsx:93
+msgid "Low stock threshold"
+msgstr "Low stock threshold"
+
+#: src/features/store/components/store-currency-row-actions.tsx:59
+msgid "Make default"
+msgstr "Make default"
+
+#: src/features/products/components/media/product-media-grid.tsx:133
+#: src/features/products/components/media/staged-media-list.tsx:167
+#: src/features/products/components/variant/edit-variant-media-form.tsx:130
+msgid "Make thumbnail"
+msgstr "Make thumbnail"
+
+#: src/features/product-options/components/product-option-section.tsx:19
+msgid "Manage"
+msgstr "Manage"
+
+#: src/features/products/components/media/product-media-section.tsx:166
+msgid "Manage associated variants"
+msgstr "Manage associated variants"
+
+#: src/features/products/components/media/manage-image-variants-form.tsx:44
+msgid "Manage associated variants for the image"
+msgstr "Manage associated variants for the image"
+
+#: src/features/products/components/variant/edit-variant-form.tsx:85
+msgid "Manage inventory"
+msgstr "Manage inventory"
+
+#: src/features/products/hooks/use-variant-table.tsx:54
+msgid "Manage Inventory"
+msgstr "Manage Inventory"
+
+#: src/features/product-options/components/manage-product-options-form.tsx:46
+msgid "Manage Product Options"
+msgstr "Manage Product Options"
+
+#: src/features/products/components/media/manage-image-variants-form.tsx:41
+msgid "Manage variants"
+msgstr "Manage variants"
+
+#: src/routes/_authed/settings/store/route.tsx:57
+msgid "Manage your store's details"
+msgstr "Manage your store's details"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:78
+msgid "Mark all {count} item(s) as fulfilled? This will adjust inventory."
+msgstr "Mark all {count} item(s) as fulfilled? This will adjust inventory."
+
+#: src/features/orders/components/order-fulfillment-section.tsx:154
+#: src/features/orders/components/order-fulfillment-section.tsx:156
+msgid "Mark as delivered"
+msgstr "Mark as delivered"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:128
+#: src/features/orders/components/order-fulfillment-section.tsx:130
+msgid "Mark as shipped"
+msgstr "Mark as shipped"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:155
+msgid "Mark this fulfillment as delivered?"
+msgstr "Mark this fulfillment as delivered?"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:129
+msgid "Mark this fulfillment as shipped?"
+msgstr "Mark this fulfillment as shipped?"
+
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:26
+#: src/features/products/components/product-general-section.tsx:53
+#: src/features/products/components/variant/edit-variant-form.tsx:54
+msgid "Material"
+msgstr "Material"
+
+#: src/lib/format-file-size.ts:5
+msgid "MB"
+msgstr "MB"
+
+#: src/features/products/components/create-product-form/product-create-details-media-section.tsx:13
+#: src/features/products/components/media/product-media-section.tsx:85
+#: src/features/products/components/media/upload-media-form-item.tsx:16
+#: src/features/products/components/variant/variant-media-section.tsx:16
+msgid "Media"
+msgstr "Media"
+
+#: src/features/products/components/media/edit-product-media-form.tsx:16
+msgid "Media updated successfully"
+msgstr "Media updated successfully"
+
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:37
+#: src/features/products/components/product-attribute-section.tsx:31
+msgid "MID Code"
+msgstr "MID Code"
+
+#: src/features/access-control/components/create-role-form.tsx:33
+#: src/features/access-control/components/edit-role-form.tsx:41
+#: src/features/access-control/hooks/use-role-table.tsx:22
+#: src/features/customers/hooks/use-customer-table.tsx:25
+#: src/features/regions/components/create-region-form.tsx:37
+#: src/features/regions/components/edit-region-form.tsx:29
+#: src/features/regions/hooks/use-region-country-table.tsx:34
+#: src/features/regions/hooks/use-region-table.tsx:24
+#: src/features/store/components/edit-store-form.tsx:28
+#: src/features/store/hooks/use-store-currency-table.tsx:50
+#: src/features/users/components/create-account-form.tsx:41
+#: src/features/users/hooks/use-user-table.tsx:20
+#: src/routes/_authed/settings/store/route.tsx:67
+msgid "Name"
+msgstr "Name"
+
+#: src/components/data-table/data-table-ui/pagination.tsx:50
+msgid "Next"
+msgstr "Next"
+
+#: src/components/data-table/config.tsx:19
+#: src/features/products/hooks/use-variant-table.tsx:49
+#: src/features/products/hooks/use-variant-table.tsx:57
+msgid "No"
+msgstr "No"
+
+#: src/features/products/components/variant/create-variant-form.tsx:84
+#: src/features/products/components/variant/edit-variant-form.tsx:65
+msgid "No combinations left."
+msgstr "No combinations left."
+
+#: src/features/regions/hooks/use-region-country-table.tsx:53
+msgid "No countries"
+msgstr "No countries"
+
+#: src/features/regions/hooks/use-region-country-table.tsx:57
+msgid "No countries found"
+msgstr "No countries found"
+
+#: src/features/regions/components/country-locale-select.tsx:56
+msgid "No countries left to add."
+msgstr "No countries left to add."
+
+#: src/features/store/hooks/use-store-currency-table.tsx:68
+msgid "No currencies"
+msgstr "No currencies"
+
+#: src/features/store/hooks/use-store-currency-table.tsx:72
+msgid "No currencies found"
+msgstr "No currencies found"
+
+#: src/features/regions/components/region-currency-select.tsx:48
+msgid "No currencies found."
+msgstr "No currencies found."
+
+#: src/features/store/components/currency-select.tsx:51
+msgid "No currencies left to add."
+msgstr "No currencies left to add."
+
+#: src/features/customers/hooks/use-customer-table.tsx:55
+msgid "No customers found"
+msgstr "No customers found"
+
+#: src/features/customers/hooks/use-customer-table.tsx:51
+msgid "No customers yet"
+msgstr "No customers yet"
+
+#: src/components/data-table/data-table.tsx:83
+msgid "No data"
+msgstr "No data"
+
+#: src/features/products/components/variant/edit-variant-media-form.tsx:97
+msgid "No images assigned to this variant yet."
+msgstr "No images assigned to this variant yet."
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:70
+msgid "No inventory found"
+msgstr "No inventory found"
+
+#: src/features/users/hooks/use-invite-table.tsx:41
+msgid "No invites found"
+msgstr "No invites found"
+
+#: src/features/products/components/media/product-media-section.tsx:143
+#: src/features/products/components/variant/variant-media-section.tsx:59
+msgid "No media"
+msgstr "No media"
+
+#: src/features/notifications/components/notification-list.tsx:51
+msgid "No notifications yet"
+msgstr "No notifications yet"
+
+#: src/features/product-options/hooks/use-product-option-table.tsx:40
+msgid "No options found"
+msgstr "No options found"
+
+#: src/features/product-options/components/option-value-selector.tsx:82
+msgid "No options found."
+msgstr "No options found."
+
+#: src/features/product-options/components/product-option-section.tsx:24
+msgid "No options linked to this product."
+msgstr "No options linked to this product."
+
+#: src/features/product-options/hooks/use-product-option-table.tsx:36
+msgid "No options yet"
+msgstr "No options yet"
+
+#: src/features/orders/hooks/use-order-table.tsx:82
+msgid "No orders found"
+msgstr "No orders found"
+
+#: src/features/orders/hooks/use-order-table.tsx:78
+msgid "No orders yet"
+msgstr "No orders yet"
+
+#: src/features/regions/components/region-provider-select.tsx:33
+msgid "No payment providers found."
+msgstr "No payment providers found."
+
+#: src/features/users/hooks/use-invite-table.tsx:38
+msgid "No pending invites"
+msgstr "No pending invites"
+
+#: src/features/access-control/components/permission-grid.tsx:90
+msgid "No permissions registered."
+msgstr "No permissions registered."
+
+#: src/features/product-options/components/option-value-selector.tsx:63
+msgid "No product options available. Create one first."
+msgstr "No product options available. Create one first."
+
+#: src/features/product-options/hooks/use-option-products-table.tsx:38
+msgid "No products"
+msgstr "No products"
+
+#: src/features/product-options/hooks/use-option-products-table.tsx:39
+msgid "No products are using this option yet."
+msgstr "No products are using this option yet."
+
+#: src/features/product-options/hooks/use-option-products-table.tsx:42
+#: src/features/products/hooks/use-product-table.tsx:71
+msgid "No products found"
+msgstr "No products found"
+
+#: src/features/products/hooks/use-product-table.tsx:67
+msgid "No products yet"
+msgstr "No products yet"
+
+#: src/features/regions/hooks/use-region-table.tsx:47
+msgid "No regions"
+msgstr "No regions"
+
+#: src/features/regions/hooks/use-region-table.tsx:51
+msgid "No regions found"
+msgstr "No regions found"
+
+#: src/features/store/components/store-region-select.tsx:44
+msgid "No regions found."
+msgstr "No regions found."
+
+#: src/features/inventory/hooks/use-reservation-table.tsx:44
+msgid "No reservations"
+msgstr "No reservations"
+
+#: src/features/inventory/hooks/use-reservation-table.tsx:48
+msgid "No reservations found"
+msgstr "No reservations found"
+
+#: src/components/data-table/data-table.tsx:82
+msgid "No results found"
+msgstr "No results found"
+
+#: src/features/access-control/hooks/use-role-table.tsx:45
+msgid "No roles"
+msgstr "No roles"
+
+#: src/features/access-control/hooks/use-role-table.tsx:49
+msgid "No roles found"
+msgstr "No roles found"
+
+#: src/features/users/components/invite-form.tsx:51
+#: src/features/users/components/user-role-assignment.tsx:52
+msgid "No roles found."
+msgstr "No roles found."
+
+#: src/features/users/hooks/use-user-table.tsx:37
+msgid "No users found"
+msgstr "No users found"
+
+#: src/features/users/hooks/use-user-table.tsx:33
+msgid "No users yet"
+msgstr "No users yet"
+
+#: src/features/product-options/hooks/use-option-values-table.tsx:28
+msgid "No values"
+msgstr "No values"
+
+#: src/features/product-options/hooks/use-option-values-table.tsx:32
+msgid "No values found"
+msgstr "No values found"
+
+#: src/features/product-options/components/option-value-selector.tsx:103
+msgid "No values found."
+msgstr "No values found."
+
+#: src/features/products/hooks/use-image-variants-table.tsx:50
+#: src/features/products/hooks/use-variant-table.tsx:73
+msgid "No variants found"
+msgstr "No variants found"
+
+#: src/features/products/hooks/use-image-variants-table.tsx:49
+#: src/features/products/hooks/use-variant-table.tsx:69
+msgid "No variants yet"
+msgstr "No variants yet"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:66
+msgid "Nothing tracked yet"
+msgstr "Nothing tracked yet"
+
+#: src/features/notifications/components/notification-item.tsx:11
+msgid "Notification"
+msgstr "Notification"
+
+#: src/features/notifications/components/notification-bell.tsx:73
+msgid "Notifications"
+msgstr "Notifications"
+
+#: src/components/form/file-upload-field.tsx:60
+msgid "One or more files exceed the maximum file size of {maxSize}:{fileList}"
+msgstr "One or more files exceed the maximum file size of {maxSize}:{fileList}"
+
+#: src/features/product-options/components/option-row-actions.tsx:36
+msgid "Option \"{title}\" deleted"
+msgstr "Option \"{title}\" deleted"
+
+#: src/features/products/components/variant/create-variant-form.tsx:103
+#: src/features/products/components/variant/edit-variant-form.tsx:54
+#: src/features/products/components/variant/edit-variant-form.tsx:77
+#: src/features/products/components/variant/edit-variant-form.tsx:80
+msgid "Optional"
+msgstr "Optional"
+
+#: src/features/access-control/components/create-role-form.tsx:36
+#: src/features/access-control/components/edit-role-form.tsx:47
+msgid "Optional description"
+msgstr "Optional description"
+
+#: src/components/layout/use-sidebar-label.ts:14
+#: src/features/product-options/components/product-option-section.tsx:16
+#: src/routes/_authed/_shell/product-options/index.tsx:24
+#: src/routes/_authed/_shell/product-options/route.tsx:5
+msgid "Options"
+msgstr "Options"
+
+#: src/features/inventory/hooks/use-reservation-table.tsx:26
+#: src/features/orders/hooks/use-order-table.tsx:30
+msgid "Order"
+msgstr "Order"
+
+#: src/features/orders/components/order-summary-section.tsx:64
+msgid "Order Total"
+msgstr "Order Total"
+
+#: src/components/layout/use-sidebar-label.ts:12
+#: src/routes/_authed/_shell/orders/index.tsx:21
+#: src/routes/_authed/_shell/orders/route.tsx:5
+msgid "Orders"
+msgstr "Orders"
+
+#: src/features/orders/hooks/use-order-table.tsx:79
+msgid "Orders will appear here once customers complete checkout."
+msgstr "Orders will appear here once customers complete checkout."
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:44
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:21
+msgid "Organize"
+msgstr "Organize"
+
+#: src/features/orders/components/order-summary-section.tsx:70
+msgid "Outstanding amount"
+msgstr "Outstanding amount"
+
+#: src/features/orders/components/order-payment-section.tsx:37
+#: src/features/orders/components/order-summary-section.tsx:68
+msgid "Paid Total"
+msgstr "Paid Total"
+
+#: src/features/auth/components/login-form.tsx:17
+#: src/features/users/components/create-account-form.tsx:44
+msgid "Password"
+msgstr "Password"
+
+#: src/features/auth/hooks/use-login-form.ts:12
+msgid "Password is required"
+msgstr "Password is required"
+
+#: src/features/users/hooks/use-create-account-form.ts:11
+msgid "Passwords do not match"
+msgstr "Passwords do not match"
+
+#: src/features/regions/hooks/use-region-table.tsx:34
+#: src/routes/_authed/settings/regions/$id/_detail/route.tsx:46
+msgid "Payment Providers"
+msgstr "Payment Providers"
+
+#: src/features/orders/utils/order-status.ts:23
+msgid "pending"
+msgstr "pending"
+
+#: src/features/orders/hooks/use-order-table.tsx:56
+#: src/features/users/hooks/use-invite-table.tsx:28
+msgid "Pending"
+msgstr "Pending"
+
+#: src/features/users/components/invite-form.tsx:57
+msgid "Pending Invites"
+msgstr "Pending Invites"
+
+#: src/features/access-control/components/create-role-form.tsx:42
+#: src/features/access-control/components/edit-role-form.tsx:61
+msgid "Permissions"
+msgstr "Permissions"
+
+#: src/features/products/components/variant/create-variant-form.tsx:97
+msgid "Pick a combination to see the title."
+msgstr "Pick a combination to see the title."
+
+#: src/features/products/hooks/use-create-variant-form.ts:23
+msgid "Pick a combination."
+msgstr "Pick a combination."
+
+#: src/features/products/components/create-product-form/product-create-variants-form.tsx:59
+msgid "Pick options and values on the Details step to generate the variants."
+msgstr "Pick options and values on the Details step to generate the variants."
+
+#: src/features/inventory/hooks/use-reservation-table.tsx:45
+msgid "Placing an order holds its stock, and the hold shows up here."
+msgstr "Placing an order holds its stock, and the hold shows up here."
+
+#: src/components/data-table/data-table-ui/pagination.tsx:47
+msgid "Prev"
+msgstr "Prev"
+
+#: src/features/products/utils/price-columns.ts:17
+msgid "Price {code}"
+msgstr "Price {code}"
+
+#: src/features/products/components/variant/variant-prices-section.tsx:20
+msgid "Prices"
+msgstr "Prices"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:33
+#: src/features/inventory/hooks/use-reservation-table.tsx:29
+#: src/features/product-options/hooks/use-option-products-table.tsx:22
+msgid "Product"
+msgstr "Product"
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:19
+msgid "Product created successfully"
+msgstr "Product created successfully"
+
+#: src/features/product-options/components/option-value-selector.tsx:72
+msgid "Product Options"
+msgstr "Product Options"
+
+#: src/features/products/components/edit-product-form.tsx:27
+msgid "Product title"
+msgstr "Product title"
+
+#: src/features/products/components/variant/variant-general-section.tsx:31
+msgid "Product Variant"
+msgstr "Product Variant"
+
+#: src/features/products/components/create-product-form/product-create-variants-section.tsx:65
+msgid "Product variants"
+msgstr "Product variants"
+
+#: src/components/layout/use-sidebar-label.ts:13
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:76
+#: src/routes/_authed/_shell/products/index.tsx:24
+#: src/routes/_authed/_shell/products/route.tsx:5
+msgid "Products"
+msgstr "Products"
+
+#: src/features/store/components/store-currency-row-actions.tsx:41
+msgid "Products will no longer carry a {currencyName} price, and no region will be able to settle in it."
+msgstr "Products will no longer carry a {currencyName} price, and no region will be able to settle in it."
+
+#: src/features/products/utils/product-status.ts:18
+msgid "proposed"
+msgstr "proposed"
+
+#: src/features/products/hooks/use-product-table.tsx:46
+msgid "Proposed"
+msgstr "Proposed"
+
+#: src/features/access-control/components/edit-role-form.tsx:34
+msgid "Protected"
+msgstr "Protected"
+
+#: src/features/access-control/hooks/use-role-table.tsx:27
+msgid "Protected role"
+msgstr "Protected role"
+
+#: src/features/regions/components/region-provider-select.tsx:23
+msgid "Providers"
+msgstr "Providers"
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:87
+msgid "Publish"
+msgstr "Publish"
+
+#: src/features/products/utils/product-status.ts:16
+msgid "published"
+msgstr "published"
+
+#: src/features/products/hooks/use-product-table.tsx:45
+msgid "Published"
+msgstr "Published"
+
+#: src/components/layout/use-sidebar-label.ts:21
+#: src/routes/_authed/settings/regions/index.tsx:24
+#: src/routes/_authed/settings/regions/route.tsx:5
+msgid "Regions"
+msgstr "Regions"
+
+#: src/features/customers/hooks/use-customer-table.tsx:29
+msgid "Registered"
+msgstr "Registered"
+
+#: src/features/products/utils/product-status.ts:19
+msgid "rejected"
+msgstr "rejected"
+
+#: src/features/products/hooks/use-product-table.tsx:47
+msgid "Rejected"
+msgstr "Rejected"
+
+#: src/features/product-options/components/value-row-actions.tsx:28
+#: src/features/regions/components/region-countries-card.tsx:34
+#: src/features/regions/components/region-countries-card.tsx:56
+#: src/features/regions/components/region-country-row-actions.tsx:39
+#: src/features/regions/components/region-country-row-actions.tsx:59
+#: src/features/store/components/store-currencies-card.tsx:36
+#: src/features/store/components/store-currencies-card.tsx:58
+#: src/features/store/components/store-currency-row-actions.tsx:42
+#: src/features/store/components/store-currency-row-actions.tsx:65
+msgid "Remove"
+msgstr "Remove"
+
+#: src/features/regions/components/region-countries-card.tsx:29
+msgid "Remove countries"
+msgstr "Remove countries"
+
+#: src/features/regions/components/region-country-row-actions.tsx:37
+msgid "Remove country"
+msgstr "Remove country"
+
+#: src/features/store/components/store-currencies-card.tsx:31
+msgid "Remove currencies"
+msgstr "Remove currencies"
+
+#: src/features/store/components/store-currency-row-actions.tsx:40
+msgid "Remove currency"
+msgstr "Remove currency"
+
+#: src/features/products/components/variant/edit-variant-media-form.tsx:134
+msgid "Remove Selected"
+msgstr "Remove Selected"
+
+#: src/features/product-options/components/value-row-actions.tsx:26
+msgid "Remove value"
+msgstr "Remove value"
+
+#: src/features/product-options/components/manage-product-options-form.tsx:87
+msgid "Removing <0>{label}</0> deletes {variantCount, plural, one {# variant} other {# variants}}."
+msgstr "Removing <0>{label}</0> deletes {variantCount, plural, one {# variant} other {# variants}}."
+
+#: src/features/product-options/components/manage-product-options-form.tsx:95
+msgid "Removing <0>{title}</0> merges variants that differ only by it. Those left standing for the same combination are deleted."
+msgstr "Removing <0>{title}</0> merges variants that differ only by it. Those left standing for the same combination are deleted."
+
+#: src/components/common/sortable-list/sortable-list.tsx:154
+#: src/features/products/components/media/staged-media-list.tsx:127
+msgid "Reorder"
+msgstr "Reorder"
+
+#: src/features/users/components/invite-row-actions.tsx:60
+msgid "Resend invite"
+msgstr "Resend invite"
+
+#: src/components/layout/use-sidebar-label.ts:17
+#: src/routes/_authed/_shell/reservations/index.tsx:21
+#: src/routes/_authed/_shell/reservations/route.tsx:5
+msgid "Reservations"
+msgstr "Reservations"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:37
+#: src/features/inventory/hooks/use-reservation-table.tsx:32
+msgid "Reserved"
+msgstr "Reserved"
+
+#: src/features/products/components/variant/variant-stock-section.tsx:44
+msgid "Reserved quantity"
+msgstr "Reserved quantity"
+
+#: src/features/access-control/components/role-row-actions.tsx:25
+msgid "Role \"{name}\" deleted"
+msgstr "Role \"{name}\" deleted"
+
+#: src/components/layout/use-sidebar-label.ts:20
+#: src/features/users/components/invite-form.tsx:42
+#: src/features/users/components/user-role-assignment.tsx:43
+#: src/features/users/hooks/use-user-table.tsx:23
+#: src/routes/_authed/settings/roles/index.tsx:22
+#: src/routes/_authed/settings/roles/route.tsx:5
+msgid "Roles"
+msgstr "Roles"
+
+#: src/routes/_authed/settings/roles/index.tsx:23
+msgid "Roles define what actions users can perform. Assign permissions to control access across your store."
+msgstr "Roles define what actions users can perform. Assign permissions to control access across your store."
+
+#: src/features/access-control/components/create-role-form.tsx:28
+msgid "Roles define what actions users can perform. Assign permissions to control access."
+msgstr "Roles define what actions users can perform. Assign permissions to control access."
+
+#: src/features/access-control/components/create-role-form.tsx:55
+#: src/features/access-control/components/edit-role-form.tsx:79
+#: src/features/customers/components/update-customer-form.tsx:52
+#: src/features/product-options/components/create-product-option-form.tsx:51
+#: src/features/product-options/components/edit-product-option-form.tsx:49
+#: src/features/product-options/components/manage-product-options-form.tsx:67
+#: src/features/products/components/edit-product-form.tsx:35
+#: src/features/products/components/media/edit-product-media-form.tsx:43
+#: src/features/products/components/media/manage-image-variants-form.tsx:74
+#: src/features/products/components/variant/edit-variant-form.tsx:106
+#: src/features/products/components/variant/edit-variant-media-form.tsx:146
+#: src/features/products/components/variant/variant-price-edit-form.tsx:102
+#: src/features/products/components/variant/variant-stock-edit-form.tsx:49
+#: src/features/regions/components/add-countries-form.tsx:41
+#: src/features/regions/components/create-region-form.tsx:60
+#: src/features/regions/components/edit-country-locale-form.tsx:57
+#: src/features/regions/components/edit-region-form.tsx:50
+#: src/features/store/components/add-currencies-form.tsx:49
+#: src/features/store/components/edit-store-form.tsx:50
+msgid "Save"
+msgstr "Save"
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:83
+msgid "Save as Draft"
+msgstr "Save as Draft"
+
+#: src/features/users/components/user-role-assignment.tsx:56
+msgid "Save roles"
+msgstr "Save roles"
+
+#: src/features/product-options/components/manage-product-options-form.tsx:82
+msgid "Saving will delete variants"
+msgstr "Saving will delete variants"
+
+#: src/features/users/components/user-role-assignment.tsx:56
+msgid "Saving..."
+msgstr "Saving..."
+
+#: src/features/products/components/variant/create-variant-form.tsx:83
+#: src/features/products/components/variant/edit-variant-form.tsx:64
+msgid "Search combinations..."
+msgstr "Search combinations..."
+
+#: src/features/regions/components/country-locale-select.tsx:55
+msgid "Search countries..."
+msgstr "Search countries..."
+
+#: src/features/store/components/currency-select.tsx:50
+msgid "Search currencies..."
+msgstr "Search currencies..."
+
+#: src/features/product-options/components/option-value-selector.tsx:81
+msgid "Search options..."
+msgstr "Search options..."
+
+#: src/features/regions/components/region-provider-select.tsx:32
+msgid "Search payment providers..."
+msgstr "Search payment providers..."
+
+#: src/features/users/components/invite-form.tsx:50
+#: src/features/users/components/user-role-assignment.tsx:51
+msgid "Search roles..."
+msgstr "Search roles..."
+
+#: src/features/product-options/components/option-value-selector.tsx:102
+msgid "Search values..."
+msgstr "Search values..."
+
+#: src/components/data-table/data-table-ui/search.tsx:22
+#: src/components/data-table/filters/multiselect-filter.tsx:29
+msgid "Search..."
+msgstr "Search..."
+
+#: src/features/regions/components/region-currency-select.tsx:47
+msgid "Select a currency"
+msgstr "Select a currency"
+
+#: src/features/store/components/store-region-select.tsx:43
+msgid "Select a region"
+msgstr "Select a region"
+
+#: src/components/data-table/hooks/use-columns.tsx:56
+msgid "Select all rows on this page"
+msgstr "Select all rows on this page"
+
+#: src/features/products/components/media/product-media-grid.tsx:221
+#: src/features/products/components/media/product-media-section.tsx:108
+#: src/features/products/components/variant/edit-variant-media-form.tsx:191
+msgid "Select image"
+msgstr "Select image"
+
+#: src/features/products/components/variant/edit-variant-media-form.tsx:105
+msgid "Select images"
+msgstr "Select images"
+
+#: src/components/data-table/hooks/use-columns.tsx:63
+msgid "Select row"
+msgstr "Select row"
+
+#: src/features/product-options/components/option-value-selector.tsx:75
+msgid "Select which options should be associated to this product."
+msgstr "Select which options should be associated to this product."
+
+#: src/features/product-options/components/option-value-selector.tsx:92
+msgid "Select which values to use for each option."
+msgstr "Select which values to use for each option."
+
+#: src/components/data-table/data-table-ui/filter-pill.tsx:89
+msgid "select..."
+msgstr "select..."
+
+#: src/features/users/components/invite-form.tsx:37
+msgid "Send Invite"
+msgstr "Send Invite"
+
+#: src/features/products/components/variant/variant-stock-edit-form.tsx:36
+msgid "Set the absolute Stocked Quantity. Units reserved by open orders cannot be removed."
+msgstr "Set the absolute Stocked Quantity. Units reserved by open orders cannot be removed."
+
+#: src/components/layout/settings-layout.tsx:82
+#: src/components/layout/shell.tsx:174
+#: src/components/layout/shell.tsx:179
+#: src/routes/_authed/settings/route.tsx:6
+msgid "Settings"
+msgstr "Settings"
+
+#: src/features/orders/components/order-fulfillment-section.tsx:141
+msgid "Ship"
+msgstr "Ship"
+
+#: src/features/orders/utils/order-status.ts:32
+msgid "shipped"
+msgstr "shipped"
+
+#: src/features/orders/components/order-summary-section.tsx:61
+msgid "Shipping Subtotal"
+msgstr "Shipping Subtotal"
+
+#: src/features/auth/components/login-form.tsx:20
+msgid "Sign in"
+msgstr "Sign in"
+
+#: src/routes/_public/login.tsx:20
+msgid "Sign in to access the account area"
+msgstr "Sign in to access the account area"
+
+#: src/features/auth/components/login-form.tsx:20
+msgid "Signing in..."
+msgstr "Signing in..."
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:35
+#: src/features/inventory/hooks/use-reservation-table.tsx:31
+#: src/features/products/components/create-product-form/product-create-variants-form.tsx:27
+#: src/features/products/components/variant/create-variant-form.tsx:103
+#: src/features/products/components/variant/edit-variant-form.tsx:77
+#: src/features/products/components/variant/variant-general-section.tsx:42
+#: src/features/products/hooks/use-image-variants-table.tsx:33
+#: src/features/products/hooks/use-variant-table.tsx:28
+msgid "SKU"
+msgstr "SKU"
+
+#: src/features/orders/hooks/use-order-table.tsx:35
+#: src/features/orders/hooks/use-order-table.tsx:54
+#: src/features/product-options/hooks/use-option-products-table.tsx:24
+#: src/features/products/hooks/use-product-table.tsx:31
+#: src/features/products/hooks/use-product-table.tsx:42
+#: src/features/users/hooks/use-invite-table.tsx:24
+msgid "Status"
+msgstr "Status"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:53
+#: src/features/products/components/variant/variant-stock-section.tsx:17
+#: src/features/products/components/variant/variant-stock-section.tsx:37
+#: src/features/products/hooks/use-variant-table.tsx:29
+msgid "Stock"
+msgstr "Stock"
+
+#: src/features/products/components/variant/edit-variant-form.tsx:73
+msgid "Stock & Inventory"
+msgstr "Stock & Inventory"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:36
+msgid "Stocked"
+msgstr "Stocked"
+
+#: src/features/products/components/variant/variant-stock-edit-form.tsx:40
+#: src/features/products/components/variant/variant-stock-section.tsx:43
+msgid "Stocked quantity"
+msgstr "Stocked quantity"
+
+#: src/components/layout/use-sidebar-label.ts:11
+#: src/routes/_authed/settings/store/route.tsx:18
+#: src/routes/_authed/settings/store/route.tsx:54
+msgid "Store"
+msgstr "Store"
+
+#: src/features/products/components/create-product-form/product-create-details-form.tsx:31
+#: src/features/products/components/product-general-section.tsx:51
+msgid "Subtitle"
+msgstr "Subtitle"
+
+#: src/features/orders/components/order-summary-section.tsx:16
+msgid "Summary"
+msgstr "Summary"
+
+#: src/features/access-control/components/edit-role-form.tsx:29
+msgid "Super Admin"
+msgstr "Super Admin"
+
+#: src/components/layout/theme-toggle.tsx:12
+msgid "System"
+msgstr "System"
+
+#: src/lib/format-file-size.ts:5
+msgid "TB"
+msgstr "TB"
+
+#: src/features/store/components/add-currencies-form.tsx:27
+msgid "The currencies the store sells in are the prices a product can carry, and the money a region may settle in."
+msgstr "The currencies the store sells in are the prices a product can carry, and the money a region may settle in."
+
+#: src/routes/_authed/settings/store/route.tsx:87
+msgid "The market — and so the currency — a shopper is priced in before they pick one."
+msgstr "The market — and so the currency — a shopper is priced in before they pick one."
+
+#: src/features/regions/components/region-currency-select.tsx:54
+msgid "The store sells in no currencies yet, so a region has none to settle in."
+msgstr "The store sells in no currencies yet, so a region has none to settle in."
+
+#: src/components/layout/theme-toggle.tsx:42
+msgid "Theme: {current}. Switch to {next}."
+msgstr "Theme: {current}. Switch to {next}."
+
+#: src/features/regions/components/edit-country-locale-form.tsx:46
+msgid "This changes the live storefront URLs for {countryName}. Links to the current ones stop resolving — nothing redirects them."
+msgstr "This changes the live storefront URLs for {countryName}. Links to the current ones stop resolving — nothing redirects them."
+
+#: src/features/store/utils/store-currencies.ts:53
+msgid "This is the store's default currency. Make another currency the default first."
+msgstr "This is the store's default currency. Make another currency the default first."
+
+#: src/routes/_authed/_shell/products/$id/_detail/images/$imageId/variants.tsx:40
+msgid "This product has no image with that id."
+msgstr "This product has no image with that id."
+
+#: src/features/products/components/variant/create-variant-form.tsx:36
+msgid "This product has no options yet. A variant is one combination of a product's option values, so <0>add some options</0> first."
+msgstr "This product has no options yet. A variant is one combination of a product's option values, so <0>add some options</0> first."
+
+#: src/features/products/components/create-product-form/product-create-variants-form.tsx:51
+msgid "This product is not sold in variations. A single variant will be created for it."
+msgstr "This product is not sold in variations. A single variant will be created for it."
+
+#: src/features/products/components/create-product-form/product-create-variants-section.tsx:68
+msgid "This ranking will affect the variants' order in your storefront."
+msgstr "This ranking will affect the variants' order in your storefront."
+
+#: src/features/products/components/media/product-media-grid.tsx:202
+#: src/features/products/components/media/product-media-grid.tsx:206
+#: src/features/products/components/media/product-media-section.tsx:124
+#: src/features/products/components/media/product-media-section.tsx:128
+#: src/features/products/components/variant/edit-variant-media-form.tsx:172
+#: src/features/products/components/variant/edit-variant-media-form.tsx:177
+#: src/features/products/components/variant/variant-media-section.tsx:42
+#: src/features/products/components/variant/variant-media-section.tsx:46
+#: src/features/products/hooks/use-image-variants-table.tsx:35
+msgid "Thumbnail"
+msgstr "Thumbnail"
+
+#: src/features/product-options/components/create-product-option-form.tsx:31
+#: src/features/product-options/components/edit-product-option-form.tsx:27
+#: src/features/product-options/hooks/use-product-option-table.tsx:21
+#: src/features/products/components/create-product-form/product-create-details-form.tsx:28
+#: src/features/products/components/edit-product-form.tsx:27
+#: src/features/products/components/variant/create-variant-form.tsx:95
+#: src/features/products/components/variant/edit-variant-form.tsx:47
+#: src/features/products/hooks/use-image-variants-table.tsx:32
+#: src/features/products/hooks/use-product-table.tsx:28
+#: src/features/products/hooks/use-variant-table.tsx:27
+msgid "Title"
+msgstr "Title"
+
+#: src/components/data-table/filters/date-filter.tsx:54
+msgid "To"
+msgstr "To"
+
+#: src/features/customers/hooks/use-customer-table.tsx:39
+#: src/features/orders/hooks/use-order-table.tsx:66
+#: src/features/products/hooks/use-product-table.tsx:54
+msgid "Today"
+msgstr "Today"
+
+#: src/components/layout/settings-layout.tsx:63
+#: src/components/layout/shell.tsx:61
+#: src/components/layout/shell.tsx:188
+msgid "Toggle Sidebar"
+msgstr "Toggle Sidebar"
+
+#: src/features/orders/components/order-payment-section.tsx:14
+msgid "Transactions"
+msgstr "Transactions"
+
+#: src/features/products/components/product-general-section.tsx:54
+#: src/features/products/hooks/use-image-variants-table.tsx:36
+msgid "True"
+msgstr "True"
+
+#: src/components/data-table/data-table.tsx:82
+#: src/features/customers/hooks/use-customer-table.tsx:56
+#: src/features/orders/hooks/use-order-table.tsx:83
+#: src/features/products/hooks/use-product-table.tsx:72
+#: src/features/products/hooks/use-variant-table.tsx:74
+msgid "Try changing your filters or search term."
+msgstr "Try changing your filters or search term."
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:71
+#: src/features/inventory/hooks/use-reservation-table.tsx:49
+msgid "Try changing your filters."
+msgstr "Try changing your filters."
+
+#: src/features/access-control/hooks/use-role-table.tsx:50
+#: src/features/product-options/hooks/use-option-products-table.tsx:43
+#: src/features/product-options/hooks/use-option-values-table.tsx:33
+#: src/features/product-options/hooks/use-product-option-table.tsx:41
+#: src/features/products/hooks/use-image-variants-table.tsx:50
+#: src/features/regions/hooks/use-region-country-table.tsx:58
+#: src/features/regions/hooks/use-region-table.tsx:52
+#: src/features/store/hooks/use-store-currency-table.tsx:73
+msgid "Try changing your search term."
+msgstr "Try changing your search term."
+
+#: src/routes/_public/invite.tsx:63
+msgid "Try requesting a new invite link."
+msgstr "Try requesting a new invite link."
+
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:64
+msgid "Type"
+msgstr "Type"
+
+#: src/features/product-options/components/create-product-option-form.tsx:42
+#: src/features/product-options/components/edit-product-option-form.tsx:38
+msgid "Type a value and press Enter"
+msgstr "Type a value and press Enter"
+
+#: src/features/orders/utils/order-status.ts:30
+msgid "unfulfilled"
+msgstr "unfulfilled"
+
+#: src/lib/format-file-size.ts:10
+msgid "unlimited"
+msgstr "unlimited"
+
+#: src/features/products/components/media/upload-media-form-item.tsx:18
+msgid "Upload images"
+msgstr "Upload images"
+
+#: src/features/products/components/media/product-media-grid.tsx:99
+msgid "Uploaded media will appear here."
+msgstr "Uploaded media will appear here."
+
+#: src/routes/_authed/settings/users/$id.tsx:22
+msgid "User"
+msgstr "User"
+
+#: src/components/layout/use-sidebar-label.ts:19
+#: src/features/access-control/hooks/use-role-table.tsx:35
+#: src/routes/_authed/settings/users/index.tsx:22
+#: src/routes/_authed/settings/users/route.tsx:5
+msgid "Users"
+msgstr "Users"
+
+#: src/features/product-options/components/value-row-actions.tsx:37
+msgid "Value \"{valueName}\" removed"
+msgstr "Value \"{valueName}\" removed"
+
+#: src/features/product-options/components/create-product-option-form.tsx:35
+#: src/features/product-options/components/edit-product-option-form.tsx:31
+#: src/features/product-options/components/option-value-selector.tsx:89
+#: src/features/product-options/hooks/use-option-values-table.tsx:20
+#: src/features/product-options/hooks/use-product-option-table.tsx:23
+#: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:73
+msgid "Values"
+msgstr "Values"
+
+#: src/features/inventory/hooks/use-inventory-table.tsx:34
+#: src/features/inventory/hooks/use-reservation-table.tsx:30
+#: src/features/products/components/create-product-form/product-create-variants-form.tsx:26
+msgid "Variant"
+msgstr "Variant"
+
+#: src/features/products/components/variant/create-variant-form.tsx:24
+msgid "Variant created successfully"
+msgstr "Variant created successfully"
+
+#: src/features/products/components/variant/create-variant-form.tsx:64
+msgid "Variant details"
+msgstr "Variant details"
+
+#: src/features/products/components/variant/variant-stock-edit-form.tsx:19
+msgid "Variant stock updated successfully"
+msgstr "Variant stock updated successfully"
+
+#: src/features/products/components/create-product-form/create-product-form.tsx:50
+#: src/features/products/components/create-product-form/product-create-variants-section.tsx:29
+#: src/features/products/components/product-variant-section.tsx:12
+msgid "Variants"
+msgstr "Variants"
+
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:42
+#: src/features/products/components/product-attribute-section.tsx:30
+msgid "Weight"
+msgstr "Weight"
+
+#: src/routes/_public/login.tsx:17
+msgid "Welcome to Proteus"
+msgstr "Welcome to Proteus"
+
+#: src/routes/_authed/_shell/index.tsx:13
+msgid "Welcome to Proteus Admin."
+msgstr "Welcome to Proteus Admin."
+
+#: src/features/products/components/variant/edit-variant-form.tsx:86
+msgid "When enabled, stock is tracked and adjusted on orders and returns."
+msgstr "When enabled, stock is tracked and adjusted on orders and returns."
+
+#: src/features/products/components/variant/edit-variant-form.tsx:94
+msgid "When enabled, the variant can be purchased even when out of stock."
+msgstr "When enabled, the variant can be purchased even when out of stock."
+
+#: src/features/products/components/create-product-form/product-create-variants-section.tsx:39
+msgid "When off, a single variant is created, named after the product."
+msgstr "When off, a single variant is created, named after the product."
+
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:28
+msgid "When unchecked, discounts will not apply to this product."
+msgstr "When unchecked, discounts will not apply to this product."
+
+#: src/features/products/components/create-product-form/product-create-attributes-form.tsx:53
+#: src/features/products/components/product-attribute-section.tsx:28
+msgid "Width"
+msgstr "Width"
+
+#: src/components/data-table/config.tsx:19
+#: src/features/products/hooks/use-variant-table.tsx:48
+#: src/features/products/hooks/use-variant-table.tsx:56
+msgid "Yes"
+msgstr "Yes"
+
+#: src/features/products/components/create-product-form/product-create-variants-section.tsx:38
+msgid "Yes, this is a product with variants"
+msgstr "Yes, this is a product with variants"
+
+#: src/components/error/forbidden-page.tsx:14
+msgid "You don't have permission to access this page."
+msgstr "You don't have permission to access this page."
+
+#: src/hooks/use-ui-copy.ts:14
+msgid "You have unsaved changes"
+msgstr "You have unsaved changes"
+
+#: src/routes/_public/invite.tsx:34
+msgid "Your account has been registered"
+msgstr "Your account has been registered"
+
+#: src/routes/_public/invite.tsx:60
+msgid "Your invite token is invalid"
+msgstr "Your invite token is invalid"

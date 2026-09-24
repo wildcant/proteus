@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@proteus/ui'
 import type { DataGridColumn } from './types'
 
@@ -7,11 +8,12 @@ type DataGridSkeletonProps<T> = {
 }
 
 export function DataGridSkeleton<T>({ columns, rows: rowCount = 10 }: DataGridSkeletonProps<T>) {
+  const { t } = useLingui()
   const rows = Array.from({ length: rowCount }, (_, i) => i)
 
   return (
     <div className="size-full overflow-auto bg-muted">
-      <Table className="table-fixed" aria-label="Loading data grid">
+      <Table className="table-fixed" aria-label={t`Loading data grid`}>
         <TableHeader className="txt-compact-small-plus sticky top-0 z-10 bg-muted">
           <TableRow className="hover:bg-transparent">
             {columns.map((column) => (

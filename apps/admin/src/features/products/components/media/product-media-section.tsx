@@ -1,3 +1,5 @@
+import { plural } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   ButtonLink,
   Card,
@@ -22,8 +24,11 @@ import type { AdminProductResponseProduct } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { useUpdateProduct } from '#/features/products/api/products'
 import { getProductMedia } from '#/features/products/utils/media'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function ProductMediaSection({ product }: { product: AdminProductResponseProduct }) {
+  const { t } = useLingui()
+  const { cancel } = useUiCopy()
   const navigate = useNavigate()
   const prompt = usePrompt()
   const [selection, setSelection] = useState<Record<string, boolean>>({})
@@ -31,6 +36,8 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
 
   const media = getProductMedia(product)
   const selectedKeys = Object.keys(selection)
+  const selectedCount = selectedKeys.length
+  const title = product.title
 
   // A thumbnail that is not part of the images collection has no image row to link variants to,
   // so it carries no `id` and the command stays hidden for it.
@@ -47,11 +54,12 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
     const removingThumbnail = selectedKeys.some((key) => media.find((item) => item.key === key)?.isThumbnail)
 
     const confirmed = await prompt({
-      title: 'Delete media',
+      title: t`Delete media`,
       description: removingThumbnail
-        ? `Are you sure you want to delete ${selectedKeys.length} image(s)? This includes the product thumbnail.`
-        : `Are you sure you want to delete ${selectedKeys.length} image(s)?`,
-      confirmText: 'Delete',
+        ? t`Are you sure you want to delete ${selectedCount} image(s)? This includes the product thumbnail.`
+        : t`Are you sure you want to delete ${selectedCount} image(s)?`,
+      confirmText: t`Delete`,
+      cancelText: cancel,
     })
 
     if (!confirmed) {
@@ -73,9 +81,11 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
   return (
     <Card className="gap-0 divide-y py-0">
       <CardHeader>
-        <CardTitle>Media</CardTitle>
+        <CardTitle>
+          <Trans>Media</Trans>
+        </CardTitle>
         <CardAction>
-          <ActionMenu groups={[{ actions: [{ label: 'Edit Media', to: './media', icon: <PencilIcon /> }] }]} />
+          <ActionMenu groups={[{ actions: [{ label: t`Edit Media`, to: './media', icon: <PencilIcon /> }] }]} />
         </CardAction>
       </CardHeader>
       {media.length > 0 ? (
@@ -95,7 +105,7 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
                 <Checkbox
                   checked={selection[item.key] ?? false}
                   onCheckedChange={() => toggleSelected(item.key)}
-                  aria-label="Select image"
+                  aria-label={t`Select image`}
                   className="bg-background"
                 />
               </div>
@@ -110,13 +120,17 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
                     }
                   >
                     <StarIcon className="size-3.5 fill-current" />
-                    <span className="sr-only">Thumbnail</span>
+                    <span className="sr-only">
+                      <Trans>Thumbnail</Trans>
+                    </span>
                   </TooltipTrigger>
-                  <TooltipContent>Thumbnail</TooltipContent>
+                  <TooltipContent>
+                    <Trans>Thumbnail</Trans>
+                  </TooltipContent>
                 </Tooltip>
               )}
               <Link to="/products/$id/media" params={{ id: product.id }} className="block size-full">
-                <img src={item.url} alt={`${product.title} media`} className="size-full object-cover" />
+                <img src={item.url} alt={t`${title} media`} className="size-full object-cover" />
               </Link>
             </div>
           ))}
@@ -125,16 +139,20 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
         <div className="flex flex-col items-center gap-y-4 px-6 pt-6 pb-8">
           <ImageIcon className="size-6 text-muted-foreground" />
           <div className="flex flex-col items-center gap-y-1 text-sm">
-            <span className="font-medium">No media</span>
-            <span className="text-muted-foreground">Add media to showcase this product in your storefront.</span>
+            <span className="font-medium">
+              <Trans>No media</Trans>
+            </span>
+            <span className="text-muted-foreground">
+              <Trans>Add media to showcase this product in your storefront.</Trans>
+            </span>
           </div>
           <ButtonLink size="sm" variant="outline" to="/products/$id/media" params={{ id: product.id }}>
-            Add media
+            <Trans>Add media</Trans>
           </ButtonLink>
         </div>
       )}
       <CommandBar open={selectedKeys.length > 0}>
-        <CommandBarValue>{selectedKeys.length} selected</CommandBarValue>
+        <CommandBarValue>{t`${plural(selectedCount, { one: '# selected', other: '# selected' })}`}</CommandBarValue>
         <CommandBarSeparator />
         {!!selectedImageId && (
           <>
@@ -145,13 +163,13 @@ export function ProductMediaSection({ product }: { product: AdminProductResponse
                   params: { id: product.id, imageId: selectedImageId },
                 })
               }
-              label="Manage associated variants"
+              label={t`Manage associated variants`}
               shortcut="m"
             />
             <CommandBarSeparator />
           </>
         )}
-        <CommandBarCommand action={handleDelete} label="Delete" shortcut="d" />
+        <CommandBarCommand action={handleDelete} label={t`Delete`} shortcut="d" />
       </CommandBar>
     </Card>
   )

@@ -11,6 +11,7 @@ import type { AdminMeResponseUser } from './adminMeResponseUser.ts';
 
 export interface AdminMeResponse {
   user: AdminMeResponseUser;
+  locales: string[];
   allowedActions: string[];
   sidebar: AdminMeResponseSidebarItem[];
   settingsSidebar: AdminMeResponseSettingsSidebarItem[];

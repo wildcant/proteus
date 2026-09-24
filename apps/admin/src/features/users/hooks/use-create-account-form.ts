@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { AdminAcceptInvite } from '@proteus/http-schemas/admin'
 import z from 'zod'
 import { useAcceptInvite } from '#/features/users/api/invites'
@@ -7,7 +8,7 @@ import { errorMessage, type SubmitFormParams } from '#/types/form'
 const CreateAccountSchema = AdminAcceptInvite.extend({
   confirmPassword: z.string().min(1),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
+  message: msg`Passwords do not match`.id,
   path: ['confirmPassword'],
 })
 

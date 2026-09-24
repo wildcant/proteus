@@ -23,7 +23,7 @@ pnpm --filter backend run worker:events:dev # Temporal Worker (subscribers)
 pnpm --filter backend run worker:cron:dev   # Temporal Worker (jobs/cron)
 pnpm --filter store run dev                 # Storefront :3001
 pnpm --filter admin run dev                 # Admin :3002
-pnpm run dev:translations                   # Lingui watcher (backend compile, store extract)
+pnpm run dev:translations                   # Lingui watcher (backend compile, store + admin extract)
 
 # Database
 pnpm --filter backend run db:migrate:dev

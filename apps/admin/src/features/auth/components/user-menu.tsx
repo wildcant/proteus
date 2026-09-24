@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import {
   Avatar,
   AvatarFallback,
@@ -7,14 +8,20 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@proteus/ui'
-import { EllipsisIcon, LogOutIcon } from 'lucide-react'
-import { useLogout, useMe } from '#/features/auth/api/auth'
+import { EllipsisIcon, LanguagesIcon, LogOutIcon } from 'lucide-react'
+import { useLogout, useMe, useUpdateLocale } from '#/features/auth/api/auth'
+import { activeLocale } from '#/lib/i18n/locale'
 
 function UserAvatar({ name }: { name: string }) {
   return (
@@ -24,8 +31,43 @@ function UserAvatar({ name }: { name: string }) {
   )
 }
 
+/**
+ * The staff member's own Locale, one per sellable market plus `en-US`. Each is named in the language
+ * the admin renders in now — `español (Colombia)` for an English reader, `inglés (Estados Unidos)`
+ * for a Spanish one — so the list reads as one sentence would.
+ */
+function LanguageMenu({ locale, locales }: { locale: string; locales: ReadonlyArray<string> }) {
+  const { t } = useLingui()
+  const updateLocale = useUpdateLocale()
+  const names = new Intl.DisplayNames([activeLocale()], { type: 'language' })
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <LanguagesIcon />
+        {t`Language`}
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        <DropdownMenuRadioGroup
+          value={locale}
+          onValueChange={(value: string) => {
+            if (value !== locale) updateLocale.mutate(value)
+          }}
+        >
+          {locales.map((code) => (
+            <DropdownMenuRadioItem key={code} value={code} disabled={updateLocale.isPending}>
+              {names.of(code) ?? code}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  )
+}
+
 export function UserMenu() {
-  const { user } = useMe()
+  const { t } = useLingui()
+  const { user, locales } = useMe()
   const logout = useLogout()
 
   if (!user) return null
@@ -73,9 +115,11 @@ export function UserMenu() {
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <LanguageMenu locale={user.locale} locales={locales ?? [user.locale]} />
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
               <LogOutIcon />
-              Log out
+              {t`Log out`}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

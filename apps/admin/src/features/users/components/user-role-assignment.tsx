@@ -1,9 +1,11 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@proteus/ui'
 import { useEffect, useState } from 'react'
 import { MultiSelectCombobox } from '#/components/multi-select-combobox'
 import { useReplaceUserRoles, useSuspenseRolesList, useSuspenseUserRoles } from '#/features/users/api/user-roles'
 
 export function UserRoleAssignment({ userId }: { userId: string }) {
+  const { t } = useLingui()
   const { data: rolesData } = useSuspenseRolesList()
   const { data: userRolesData } = useSuspenseUserRoles(userId)
 
@@ -37,19 +39,21 @@ export function UserRoleAssignment({ userId }: { userId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Roles</CardTitle>
+        <CardTitle>
+          <Trans>Roles</Trans>
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <MultiSelectCombobox
           items={items}
           value={selectedRoleIds}
           onValueChange={handleChange}
-          placeholder="Search roles..."
-          emptyMessage="No roles found."
+          placeholder={t`Search roles...`}
+          emptyMessage={t`No roles found.`}
         />
         <div className="flex justify-end">
           <Button onClick={handleSave} disabled={!dirty || replaceRoles.isPending} size="sm">
-            {replaceRoles.isPending ? 'Saving...' : 'Save roles'}
+            {replaceRoles.isPending ? t`Saving...` : t`Save roles`}
           </Button>
         </div>
       </CardContent>

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -39,6 +40,7 @@ export const useSuspenseRegion = (id: string) => useSuspenseQuery(regionQueryOpt
 export const useSuspenseRegions = (params?: ListRegionsParams) => useSuspenseQuery(regionsListQueryOptions(params))
 
 export const useCreateRegion = (options?: UseMutationOptions<AdminRegionResponse, Error, AdminCreateRegion>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -49,7 +51,7 @@ export const useCreateRegion = (options?: UseMutationOptions<AdminRegionResponse
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create region', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to create region`, description: error.message })
       onError?.(...args)
     },
   })
@@ -59,6 +61,7 @@ export const useUpdateRegion = (
   id: string,
   options?: UseMutationOptions<AdminRegionResponse, Error, AdminUpdateRegion>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -70,7 +73,7 @@ export const useUpdateRegion = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update region', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update region`, description: error.message })
       onError?.(...args)
     },
   })

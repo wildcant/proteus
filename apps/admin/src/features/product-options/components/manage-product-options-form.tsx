@@ -1,3 +1,4 @@
+import { Plural, Trans } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteDrawer, useRouteModal } from '@proteus/ui'
 import { useMemo } from 'react'
 import type { AdminProductScopedOption } from '#/api/generated/model'
@@ -8,6 +9,7 @@ import {
   describeOptionChange,
   type OptionChangeConsequences,
 } from '#/features/product-options/utils/option-change-consequences'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 function buildDefaultValues(currentOptions: AdminProductScopedOption[]) {
   return {
@@ -19,6 +21,7 @@ function buildDefaultValues(currentOptions: AdminProductScopedOption[]) {
 }
 
 export function ManageProductOptionsForm({ productId }: { productId: string }) {
+  const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
   const { data: currentData } = useProductOptionsForProduct(productId)
   const { data: allData } = useProductOptions()
@@ -35,11 +38,13 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
   })
 
   return (
-    <RouteDrawer.Form form={form}>
+    <RouteDrawer.Form form={form} copy={unsavedChanges}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
         <form.AppForm>
-          <RouteDrawer.Header>
-            <RouteDrawer.Title>Manage Product Options</RouteDrawer.Title>
+          <RouteDrawer.Header closeLabel={closeLabel}>
+            <RouteDrawer.Title>
+              <Trans>Manage Product Options</Trans>
+            </RouteDrawer.Title>
           </RouteDrawer.Header>
           <RouteDrawer.Body className="space-y-6 p-6">
             <form.Field name="options">
@@ -55,8 +60,12 @@ export function ManageProductOptionsForm({ productId }: { productId: string }) {
             </form.Subscribe>
           </RouteDrawer.Body>
           <RouteDrawer.Footer>
-            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-            <form.SubmitButton size="sm">Save</form.SubmitButton>
+            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>
+              <Trans>Cancel</Trans>
+            </RouteDrawer.Close>
+            <form.SubmitButton size="sm">
+              <Trans>Save</Trans>
+            </form.SubmitButton>
           </RouteDrawer.Footer>
         </form.AppForm>
       </KeyboundForm>
@@ -69,18 +78,24 @@ function ConsequenceNotice({ consequences }: { consequences: OptionChangeConsequ
 
   return (
     <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3">
-      <h3 className="font-medium text-destructive text-sm">Saving will delete variants</h3>
+      <h3 className="font-medium text-destructive text-sm">
+        <Trans>Saving will delete variants</Trans>
+      </h3>
       <ul className="mt-1.5 list-disc space-y-1 pl-4 text-muted-foreground text-sm">
-        {consequences.droppedValues.map((dropped) => (
-          <li key={dropped.label}>
-            Removing <span className="font-medium">{dropped.label}</span> deletes {dropped.variantCount}{' '}
-            {dropped.variantCount === 1 ? 'variant' : 'variants'}.
+        {consequences.droppedValues.map(({ label, variantCount }) => (
+          <li key={label}>
+            <Trans>
+              Removing <span className="font-medium">{label}</span> deletes{' '}
+              <Plural value={variantCount} one="# variant" other="# variants" />.
+            </Trans>
           </li>
         ))}
         {consequences.droppedOptions.map((title) => (
           <li key={title}>
-            Removing <span className="font-medium">{title}</span> merges variants that differ only by it. Those left
-            standing for the same combination are deleted.
+            <Trans>
+              Removing <span className="font-medium">{title}</span> merges variants that differ only by it. Those left
+              standing for the same combination are deleted.
+            </Trans>
           </li>
         ))}
       </ul>

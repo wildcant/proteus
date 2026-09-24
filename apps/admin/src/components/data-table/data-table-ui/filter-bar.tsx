@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@proteus/ui'
 import type { FilterDef, FilterValue } from '../types'
 import { FilterMenu } from './filter-menu'
@@ -51,7 +52,7 @@ export function FilterBar({
       )}
       {!!hasFilters && (
         <Button variant="ghost" size="xs" onClick={onClearAll}>
-          Clear all
+          <Trans>Clear all</Trans>
         </Button>
       )}
     </div>

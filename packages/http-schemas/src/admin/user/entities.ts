@@ -6,6 +6,7 @@ export const AdminUser = z
     id: z.string(),
     name: z.string(),
     email: z.string(),
+    locale: z.string(),
     ...timestamps.shape,
   })
   .openapi('AdminUser')

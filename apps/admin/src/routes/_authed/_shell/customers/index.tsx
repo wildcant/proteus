@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { AdminCustomerListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
@@ -12,11 +13,12 @@ export const Route = createFileRoute('/_authed/_shell/customers/')({
 })
 
 function CustomersPage() {
+  const { t } = useLingui()
   const customers = useCustomerTable()
 
   return (
     <PageLayout.SingleColumn>
-      <DataTable use={customers} className="flex-1" heading="Customers" />
+      <DataTable use={customers} className="flex-1" heading={t`Customers`} />
     </PageLayout.SingleColumn>
   )
 }

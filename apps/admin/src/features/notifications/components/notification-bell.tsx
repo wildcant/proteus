@@ -1,14 +1,17 @@
+import { Trans } from '@lingui/react/macro'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@proteus/ui'
 import { BellIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useMe } from '#/features/auth/api/auth'
 import { useInfiniteNotifications, useInvalidateNotifications } from '#/features/notifications/api/notifications'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 import { NotificationList } from './notification-list'
 
 const LAST_READ_KEY = 'notificationsLastReadAt'
 const POLL_INTERVAL = 60_000
 
 export function NotificationBell() {
+  const { closeLabel } = useUiCopy()
   const [open, setOpen] = useState(false)
   const { user } = useMe()
   const invalidateNotifications = useInvalidateNotifications()
@@ -64,9 +67,11 @@ export function NotificationBell() {
         <BellIcon className="size-4" />
         {hasUnread ? <span className="absolute top-0.5 right-0.5 size-2 rounded-full bg-primary" /> : null}
       </button>
-      <SheetContent side="right" className="flex flex-col p-0 sm:max-w-md">
+      <SheetContent side="right" className="flex flex-col p-0 sm:max-w-md" closeLabel={closeLabel}>
         <SheetHeader className="border-b px-4 py-3">
-          <SheetTitle>Notifications</SheetTitle>
+          <SheetTitle>
+            <Trans>Notifications</Trans>
+          </SheetTitle>
         </SheetHeader>
         <NotificationList userId={user.id} userEmail={user.email} />
       </SheetContent>
