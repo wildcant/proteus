@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,11 +12,15 @@ import { Fragment } from 'react'
 
 export function Breadcrumbs() {
   const matches = useMatches()
+  const { i18n } = useLingui()
 
   const crumbs = matches
     .filter((m) => m.staticData?.breadcrumb || (m.context as Record<string, unknown>)?.breadcrumb)
     .map((m) => ({
-      label: ((m.context as Record<string, unknown>)?.breadcrumb as string) ?? m.staticData?.breadcrumb ?? '',
+      // A context crumb is a record's own name, shown as stored; a static one is admin copy.
+      label:
+        ((m.context as Record<string, unknown>)?.breadcrumb as string) ??
+        (m.staticData?.breadcrumb ? i18n._(m.staticData.breadcrumb) : ''),
       path: m.pathname,
     }))
     // Context propagates from parent to child — deduplicate consecutive crumbs

@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { Badge, Card, CardAction, CardDescription, CardHeader, CardTitle } from '@proteus/ui'
 import { getCurrencyName } from '@proteus/utils'
 import { createFileRoute } from '@tanstack/react-router'
@@ -12,7 +13,7 @@ import { StoreCurrenciesCard } from '#/features/store/components/store-currencie
 import { defaultCurrency } from '#/features/store/utils/store-currencies'
 
 export const Route = createFileRoute('/_authed/settings/store')({
-  staticData: { breadcrumb: 'Store' },
+  staticData: { breadcrumb: msg`Store` },
   // The regions come along because the Default region row shows a name, not an id — and the
   // Edit drawer's selector reads the same cached list.
   loader: ({ context }) =>

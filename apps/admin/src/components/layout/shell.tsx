@@ -26,6 +26,7 @@ import { Breadcrumbs } from './breadcrumbs'
 import type { SidebarGroup as SidebarGroupType, SidebarIcon } from './nav'
 import { sidebarIcons } from './nav'
 import { ThemeToggle } from './theme-toggle'
+import { useSidebarLabel } from './use-sidebar-label'
 
 type ShellProps = {
   sidebar: SidebarGroupType[]
@@ -81,6 +82,7 @@ function AppSidebar({
   footer?: ReactNode
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const sidebarLabel = useSidebarLabel()
   const firstSettingsRoute = settingsSidebar?.[0]?.items?.[0]?.to
 
   const navItems = sidebar.flatMap((g) => g.items)
@@ -112,9 +114,13 @@ function AppSidebar({
               if (!item.children?.length) {
                 return (
                   <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      tooltip={sidebarLabel(item.label)}
+                      render={<Link to={item.to} />}
+                    >
                       {Icon && <Icon />}
-                      <span>{item.label}</span>
+                      <span>{sidebarLabel(item.label)}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -126,9 +132,13 @@ function AppSidebar({
               return (
                 <Collapsible key={item.to} open={isGroupActive}>
                   <SidebarMenuItem>
-                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      tooltip={sidebarLabel(item.label)}
+                      render={<Link to={item.to} />}
+                    >
                       {Icon && <Icon />}
-                      <span>{item.label}</span>
+                      <span>{sidebarLabel(item.label)}</span>
                     </SidebarMenuButton>
                     <CollapsibleContent>
                       <SidebarMenuSub>
@@ -137,7 +147,7 @@ function AppSidebar({
                           return (
                             <SidebarMenuSubItem key={child.to}>
                               <SidebarMenuSubButton isActive={isChildActive} render={<Link to={child.to} />}>
-                                <span>{child.label}</span>
+                                <span>{sidebarLabel(child.label)}</span>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           )

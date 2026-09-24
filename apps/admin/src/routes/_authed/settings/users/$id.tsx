@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { Card, CardHeader, CardTitle, RouteFocusModal } from '@proteus/ui'
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
@@ -16,7 +17,7 @@ export const Route = createFileRoute('/_authed/settings/users/$id')({
     ])
     return { breadcrumb: userData.user.name }
   },
-  staticData: { breadcrumb: 'User' },
+  staticData: { breadcrumb: msg`User` },
   pendingComponent: () => <SingleColumnPageSkeleton sections={2} />,
   component: UserDetailRoute,
 })

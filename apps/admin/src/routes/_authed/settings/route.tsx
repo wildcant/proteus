@@ -1,8 +1,9 @@
+import { msg } from '@lingui/core/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { SettingsLayout } from '#/components/layout/settings-layout'
 
 export const Route = createFileRoute('/_authed/settings')({
-  staticData: { breadcrumb: 'Settings' },
+  staticData: { breadcrumb: msg`Settings` },
   component: SettingsRoute,
 })
 
