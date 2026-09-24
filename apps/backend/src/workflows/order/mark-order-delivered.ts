@@ -3,6 +3,7 @@ import type { OrderDTO } from '@core/types/order/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 
 type MarkOrderDeliveredInput = {
@@ -25,7 +26,8 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
       if (order.status === 'canceled') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot mark order ${input.orderId} as delivered: order is canceled`,
+          message: i18n.t('Cannot mark order {orderId} as delivered: order is canceled'),
+          values: { orderId: input.orderId },
         })
       }
 
@@ -34,7 +36,8 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
       if (!link || link.orderId !== input.orderId) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Fulfillment ${input.fulfillmentId} is not linked to order ${input.orderId}`,
+          message: i18n.t('Fulfillment {fulfillmentId} is not linked to order {orderId}'),
+          values: { fulfillmentId: input.fulfillmentId, orderId: input.orderId },
         })
       }
 
@@ -45,7 +48,8 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
       if (fulfillment.canceledAt) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot mark order ${input.orderId} as delivered: fulfillment is canceled`,
+          message: i18n.t('Cannot mark order {orderId} as delivered: fulfillment is canceled'),
+          values: { orderId: input.orderId },
         })
       }
 
@@ -54,7 +58,10 @@ export const markOrderDeliveredWorkflow = createWorkflow<MarkOrderDeliveredInput
       if (status !== 'shipped') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot mark order ${input.orderId} as delivered: fulfillment status is "${status}", expected "shipped"`,
+          message: i18n.t(
+            'Cannot mark order {orderId} as delivered: fulfillment status is "{status}", expected "shipped"',
+          ),
+          values: { orderId: input.orderId, status },
         })
       }
     })

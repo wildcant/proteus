@@ -1,5 +1,6 @@
 import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
 import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
+import { i18n, type Msgid } from '@proteus/utils'
 
 /** One inventory item standing behind a variant, and where its stock can be drawn from. */
 type VariantInventoryBacking = {
@@ -125,14 +126,22 @@ function variantBackings(
 export function missingInventoryItemMessage(
   variants: VariantStockFlags[],
   mappings: ProductVariantInventoryItemDTO[],
-): string | null {
+): { message: Msgid; values: Record<string, unknown> } | null {
   const backed = new Set(mappings.map((mapping) => mapping.variantId))
   const unbacked = variants.filter((variant) => variant.manageInventory && !backed.has(variant.id))
-  if (unbacked.length === 0) return null
+  const [first] = unbacked
+  if (!first) return null
+  if (unbacked.length === 1) {
+    return {
+      message: i18n.t('Variant "{variantId}" is tracked, but no inventory item is linked to it'),
+      values: { variantId: first.id },
+    }
+  }
 
-  return unbacked
-    .map((variant) => `Variant "${variant.id}" is tracked, but no inventory item is linked to it`)
-    .join('; ')
+  return {
+    message: i18n.t('Variants {variantIds} are tracked, but no inventory item is linked to them'),
+    values: { variantIds: unbacked.map((variant) => `"${variant.id}"`).join(', ') },
+  }
 }
 
 /**

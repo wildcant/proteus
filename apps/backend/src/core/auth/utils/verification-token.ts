@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../errors/app-error.js'
 
 export const generateVerificationToken = (): string => {
@@ -13,7 +14,7 @@ export const getVerificationTokenTtlMs = (ttlSeconds = 900): number => {
   if (!Number.isInteger(ttlSeconds) || ttlSeconds < 1) {
     throw new AppError({
       type: ErrorTypes.INVALID_ARGUMENT,
-      message: 'Verification token TTL must be a positive integer',
+      message: i18n.t('Verification token TTL must be a positive integer'),
     })
   }
 

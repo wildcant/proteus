@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
 import type { AppContainer } from '../types/container.js'
 
@@ -77,7 +78,7 @@ export function createWorkflow<TInput, TOutput>(
       if (!globalEngine || !globalContainer) {
         throw new AppError({
           type: ErrorTypes.UNEXPECTED_STATE,
-          message: 'No workflow engine configured. Call setWorkflowEngine() first.',
+          message: i18n.t('No workflow engine configured. Call setWorkflowEngine() first.'),
         })
       }
       return globalEngine.run(this, input, { container: globalContainer })

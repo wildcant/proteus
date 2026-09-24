@@ -2,6 +2,7 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CartDTO } from '@core/types/cart/common.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 
 type TransferCartCustomerInput = { cartId: string; customerId: string }
 
@@ -18,7 +19,8 @@ export const transferCartCustomerWorkflow = createWorkflow<TransferCartCustomerI
         customerService.retrieveCustomer(input.customerId).catch(() => {
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_FOUND,
-            message: `Customer with id "${input.customerId}" not found`,
+            message: i18n.t('Customer with id "{customerId}" not found'),
+            values: { customerId: input.customerId },
           })
         }),
       ])

@@ -4,6 +4,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import type { AdminUpdateProductVariantBody } from '@proteus/http-schemas/admin'
+import { i18n, type Msgid } from '@proteus/utils'
 import { createVariantInventoryStep, type VariantNeedingInventory } from './steps/create-variant-inventory.js'
 
 type UpdateProductVariantInput = {
@@ -80,7 +81,7 @@ export const updateProductVariantWorkflow = createWorkflow<UpdateProductVariantI
           if (held.length > 0) {
             throw new WorkflowTerminalError({
               type: ErrorTypes.NOT_ALLOWED,
-              message: untrackRefusal(variant.id, held),
+              ...untrackRefusal(variant.id, held),
             })
           }
 
@@ -132,10 +133,15 @@ export const updateProductVariantWorkflow = createWorkflow<UpdateProductVariantI
 function untrackRefusal(
   variantId: string,
   held: { id: string; quantity: number; lineItemId: string | null }[],
-): string {
+): { message: Msgid; values: Record<string, unknown> } {
   const reservations = held
     .map((reservation) => `"${reservation.id}" (${reservation.quantity} for line item "${reservation.lineItemId}")`)
     .join(', ')
 
-  return `Variant "${variantId}" cannot stop being tracked while orders hold its stock: reservation(s) ${reservations}. Fulfil or cancel them first.`
+  return {
+    message: i18n.t(
+      'Variant "{variantId}" cannot stop being tracked while orders hold its stock: reservation(s) {reservations}. Fulfil or cancel them first.',
+    ),
+    values: { variantId, reservations },
+  }
 }

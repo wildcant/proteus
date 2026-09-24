@@ -1,6 +1,7 @@
 import { createReadStream } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import type {
   ProviderDeleteFileDTO,
@@ -49,7 +50,8 @@ export class LocalFileProvider extends AbstractFileProviderService<LocalFileProv
     if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: `Rejected path traversal attempt: "${fileKey}"`,
+        message: i18n.t('Rejected path traversal attempt: "{fileKey}"'),
+        values: { fileKey },
       })
     }
 
@@ -116,7 +118,8 @@ export class LocalFileProvider extends AbstractFileProviderService<LocalFileProv
     } catch {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `File with key ${fileData.fileKey} not found`,
+        message: i18n.t('File with key {fileKey} not found'),
+        values: { fileKey: fileData.fileKey },
       })
     }
 
@@ -132,7 +135,8 @@ export class LocalFileProvider extends AbstractFileProviderService<LocalFileProv
     } catch {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `File with key ${fileData.fileKey} not found`,
+        message: i18n.t('File with key {fileKey} not found'),
+        values: { fileKey: fileData.fileKey },
       })
     }
 
@@ -148,7 +152,7 @@ export class LocalFileProvider extends AbstractFileProviderService<LocalFileProv
   async getUploadStream(_data: ProviderUploadStreamDTO): Promise<ProviderUploadStreamResult> {
     throw new AppError({
       type: ErrorTypes.NOT_ALLOWED,
-      message: 'getUploadStream not supported by local filesystem provider.',
+      message: i18n.t('getUploadStream not supported by local filesystem provider.'),
     })
   }
 

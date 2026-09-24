@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { DrizzleQueryError } from 'drizzle-orm'
 import { AppError, ErrorTypes } from './app-error.js'
 
@@ -80,12 +81,17 @@ export function dbErrorMapper(err: unknown): never {
     // unique_violation
     case '23505': {
       const info = getConstraintInfo(driverError)
-      const message = info
-        ? `${info.table}: ${info.keys.map((k, i) => `${k} "${info.values[i] ?? ''}"`).join(', ')} already exists`
-        : 'Already exists'
       throw new AppError({
         type: ErrorTypes.DUPLICATE_ERROR,
-        message,
+        ...(info
+          ? {
+              message: i18n.t('{table}: {fields} already exists'),
+              values: {
+                table: info.table,
+                fields: info.keys.map((k, i) => `${k} "${info.values[i] ?? ''}"`).join(', '),
+              },
+            }
+          : { message: i18n.t('Already exists') }),
       })
     }
     // not_null_violation
@@ -93,7 +99,8 @@ export function dbErrorMapper(err: unknown): never {
       const column = driverError.column || 'unknown'
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: `Cannot be null: ${column}`,
+        message: i18n.t('Cannot be null: {column}'),
+        values: { column },
       })
     }
     // foreign_key_violation. One code, two opposite meanings, told apart by the detail: an insert
@@ -106,19 +113,20 @@ export function dbErrorMapper(err: unknown): never {
           // The walker's restrict check raises this same shape, so a caller sees one contract
           // whether the refusal came from the database or from the application.
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot delete: still referenced from table "${blocking}"`,
+          message: i18n.t('Cannot delete: still referenced from table "{blocking}"'),
+          values: { blocking },
         })
       }
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: 'Referenced entity does not exist',
+        message: i18n.t('Referenced entity does not exist'),
       })
     }
     // undefined_column
     case '42703': {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: 'Invalid field referenced',
+        message: i18n.t('Invalid field referenced'),
       })
     }
     default:
@@ -143,10 +151,18 @@ export function restoreErrorMapper(err: unknown): never {
   const driverError = unwrapDriverError(err)
   if (isPgError(driverError) && driverError.code === '23505') {
     const info = getConstraintInfo(driverError)
-    const slot = info ? `${info.keys.map((k, i) => `${k} "${info.values[i] ?? ''}"`).join(', ')}` : 'a unique value'
     throw new AppError({
       type: ErrorTypes.DUPLICATE_ERROR,
-      message: `Cannot restore ${info?.table ?? 'the record'}: ${slot} was taken by another record while it was deleted`,
+      ...(info
+        ? {
+            message: i18n.t('Cannot restore {table}: {fields} was taken by another record while it was deleted'),
+            values: { table: info.table, fields: info.keys.map((k, i) => `${k} "${info.values[i] ?? ''}"`).join(', ') },
+          }
+        : {
+            message: i18n.t(
+              'Cannot restore the record: a unique value was taken by another record while it was deleted',
+            ),
+          }),
     })
   }
 
