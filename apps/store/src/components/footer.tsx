@@ -1,4 +1,5 @@
-import { Trans } from '@lingui/react/macro'
+import { msg } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
@@ -14,17 +15,17 @@ import { MarketSelect } from '#/components/market-select'
  */
 const footerColumns = [
   {
-    title: 'Shop',
+    title: msg`Shop`,
     links: [
-      { label: 'Home', to: '/' as const },
-      { label: 'All products', to: '/' as const },
+      { label: msg`Home`, to: '/' as const },
+      { label: msg`All products`, to: '/' as const },
     ],
   },
   {
-    title: 'Account',
+    title: msg`Account`,
     links: [
-      { label: 'Sign in', to: '/login' as const },
-      { label: 'Create account', to: '/signup' as const },
+      { label: msg`Sign in`, to: '/login' as const },
+      { label: msg`Create account`, to: '/signup' as const },
     ],
   },
 ]
@@ -55,6 +56,7 @@ const paymentMarks: { label: string; mark: Icon }[] = [
 const socialLinks: { label: string; href: string; mark: Icon }[] = []
 
 export function Footer() {
+  const { t } = useLingui()
   const year = new Date().getFullYear()
 
   return (
@@ -69,12 +71,12 @@ export function Footer() {
         <Accordion className="sm:hidden">
           {footerColumns.map((column) => (
             <AccordionItem
-              key={column.title}
-              value={column.title}
+              key={column.title.id}
+              value={column.title.id}
               className="border-line border-t not-last:border-b-0 last:border-b"
             >
               <AccordionTrigger className="items-center py-5 text-ink **:data-[slot=accordion-trigger-icon]:size-5 **:data-[slot=accordion-trigger-icon]:text-ink">
-                <span className="type-heading">{column.title}</span>
+                <span className="type-heading">{t(column.title)}</span>
               </AccordionTrigger>
               <AccordionContent className="pb-5 [&_a]:no-underline">
                 <FooterLinks column={column} />
@@ -85,8 +87,8 @@ export function Footer() {
 
         <div className="hidden gap-8 sm:grid sm:grid-cols-2 lg:grid-cols-4">
           {footerColumns.map((column) => (
-            <div key={column.title}>
-              <h3 className="type-heading m-0 mb-4 text-ink">{column.title}</h3>
+            <div key={column.title.id}>
+              <h3 className="type-heading m-0 mb-4 text-ink">{t(column.title)}</h3>
               <FooterLinks column={column} />
             </div>
           ))}
@@ -145,12 +147,13 @@ export function Footer() {
 }
 
 function FooterLinks({ column }: { column: (typeof footerColumns)[number] }) {
+  const { t } = useLingui()
   return (
     <ul className="m-0 flex list-none flex-col p-0">
       {column.links.map((link) => (
-        <li key={link.label}>
+        <li key={link.label.id}>
           <Link to={link.to} className="block py-1.5 text-ink-muted no-underline hover:text-ink">
-            {link.label}
+            {t(link.label)}
           </Link>
         </li>
       ))}

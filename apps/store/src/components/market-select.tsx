@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
 import { ChevronDownIcon } from 'lucide-react'
 import { useMarket } from '#/hooks/use-market'
@@ -19,14 +20,16 @@ const REGIONAL_INDICATOR_A = 0x1f1e6
  * is the phone's bottom sheet, which is why the rows are 44px and the trigger is one too.
  */
 export function MarketSelect() {
+  const { t } = useLingui()
   const { current, markets } = useMarket()
+  const marketName = current.displayName
 
   return (
     <DropdownMenu>
       {/* The name is on the trigger rather than beside it: the flag is decorative, so without it
           the button announces a country with no indication of what choosing one would do. */}
       <DropdownMenuTrigger
-        aria-label={`Market: ${current.displayName}`}
+        aria-label={t`Market: ${marketName}`}
         className="flex h-11 cursor-pointer items-center gap-2 font-semibold text-ink text-sm uppercase tracking-wide outline-none"
       >
         <MarketFlag iso2={current.iso2} />
