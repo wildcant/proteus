@@ -246,8 +246,8 @@ pnpm --filter backend run db:seed:dev
 In VS Code, press **`Cmd+Shift+B`**. That is the whole dev session.
 
 It runs the `dev` task from `.vscode/tasks.json`, which brings up Postgres, Temporal and the Temporal
-UI in Docker, then opens six panes across two terminals — API and the three Workers in one, store and
-admin in the other — and opens the store, admin and Temporal UI in your browser once each one
+UI in Docker, then opens seven panes across two terminals — API and the three Workers in one, store,
+admin and the catalog watcher in the other — and opens the store, admin and Temporal UI in your browser once each one
 actually answers. From the Command Palette the same task is `Tasks: Run Task` → `dev`.
 
 | | URL | Pane |
@@ -258,6 +258,7 @@ actually answers. From the Command Palette the same task is `Tasks: Run Task` �
 | Cron Worker | — polls the `proteus-cron` task queue | `pnpm --filter backend run worker:cron` |
 | Store | http://localhost:3001 | `pnpm --filter store run dev` |
 | Admin | http://localhost:3002 | `pnpm --filter admin run dev` |
+| Catalog watcher | — recompiles the backend catalog, re-extracts the store's | `pnpm run dev:catalogs` |
 | Temporal UI | http://localhost:8088 | Docker |
 
 The API, the store and the admin reload themselves, and so does the workflow Worker: it runs under
@@ -266,7 +267,7 @@ five seconds — and because `worker.ts` drains on SIGTERM, a restart mid-execut
 in-flight step instead of losing it. The events and cron Workers run their entrypoints directly, so
 editing a subscriber or a job means restarting that pane by hand.
 
-`Tasks: Terminate Task` → `All Running Tasks` stops the six panes and leaves Docker up, which is
+`Tasks: Terminate Task` → `All Running Tasks` stops the seven panes and leaves Docker up, which is
 what you usually want between sessions. `pnpm --filter backend run db:stop` takes the containers
 down too.
 

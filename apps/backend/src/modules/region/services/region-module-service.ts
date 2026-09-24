@@ -102,6 +102,14 @@ export class RegionModuleService implements IRegionModuleService {
   }
 
   async listCountryMarkets(filters?: ListCountryMarketsFilters, context?: Context): Promise<CountryMarketDTO[]> {
-    return this.countryRepository.findMarkets(filters?.onlySellable ?? true, context)
+    return this.countryRepository.findMarkets(
+      { onlySellable: filters?.onlySellable ?? true, regionId: filters?.regionId },
+      context,
+    )
+  }
+
+  async retrieveRegionMarket(regionId: string, context?: Context): Promise<CountryMarketDTO | null> {
+    const [market] = await this.listCountryMarkets({ regionId }, context)
+    return market ?? null
   }
 }

@@ -1,9 +1,12 @@
+import { i18n } from '@proteus/utils'
+import type { Translator } from '../i18n/types.js'
 import type { Logger } from '../types/logger.js'
 // Relative, not `@workflows/`: this module is reachable through the `backend/test` package export,
 // which Node resolves on its own without reading tsconfig paths. Type-only imports survive an alias
 // there because they are erased; this one is a value import and would fail at runtime.
 import { WorkflowTerminalError } from '../workflows/types.js'
 import { AppError, ErrorTypes } from './app-error.js'
+import { formatZodIssues } from './format-zod-issues.js'
 
 /** Exported because the OpenAPI generator declares responses from it, so a route's documented
  *  statuses and the ones it actually answers with cannot drift apart. */
@@ -45,9 +48,22 @@ const typeToApiCode: Record<ErrorTypes, ApiCode> = {
 
 const serverErrorTypes = new Set<ErrorTypes>([ErrorTypes.DB_ERROR])
 
+const INTERNAL_ERROR = i18n.t('An internal error occurred')
+
+function translateAppError(err: AppError, translator: Translator): string {
+  const message = translator.translate(err.msgid, err.values)
+  if (!err.issues?.length) return message
+  return `${message}: ${formatZodIssues(err.issues, (issue) => translator.translateIssue(issue))}`
+}
+
+/**
+ * The one place an API Message is translated: `translator` carries the request's language, built by
+ * the runtime from `x-proteus-locale`. Logs stay in English.
+ */
 export function errorHandler(
   err: unknown,
   logger: Logger,
+  translator: Translator,
 ): {
   status: number
   /** The error's own `code` when it carries one, and the type's coarse code otherwise. */
@@ -73,7 +89,7 @@ export function errorHandler(
       json: {
         code: err.code ?? typeToApiCode[err.type] ?? 'unknown_error',
         type: err.type,
-        message: isServer ? 'An internal error occurred' : err.message,
+        message: isServer ? translator.translate(INTERNAL_ERROR) : translateAppError(err, translator),
       },
     }
   }
@@ -88,7 +104,7 @@ export function errorHandler(
     json: {
       code: 'unknown_error',
       type: 'unknown_error',
-      message: 'An internal error occurred',
+      message: translator.translate(INTERNAL_ERROR),
     },
   }
 }

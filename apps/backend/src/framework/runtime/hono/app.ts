@@ -11,6 +11,8 @@ import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
 import { extractFiles } from '../../http/multipart.js'
+import { createDefaultLanguage, loadDefaultMarketLocale } from '../../i18n/default-language.js'
+import { createLinguiTranslator, LOCALE_HEADER } from '../../i18n/lingui-translator.js'
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
 
@@ -62,6 +64,8 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
 
   app.use('/static/*', serveStatic({}))
 
+  const defaultLanguage = createDefaultLanguage({ load: () => loadDefaultMarketLocale(container), logger })
+
   for (const route of routes) {
     const method = route.method.toLowerCase() as HttpMethod
     app[method](route.matcher, async (c) => {
@@ -96,7 +100,9 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
         })
         return c.json(result.json, result.status as ContentfulStatusCode)
       } catch (error) {
-        const { status, json } = errorHandler(error, logger)
+        // Built here, per request, and never registered in the container: only the response translates.
+        const translator = await createLinguiTranslator(c.req.header(LOCALE_HEADER), defaultLanguage.get)
+        const { status, json } = errorHandler(error, logger, translator)
         return c.json(json, status as ContentfulStatusCode)
       }
     })

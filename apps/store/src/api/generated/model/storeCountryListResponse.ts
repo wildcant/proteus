@@ -6,7 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreCountry } from './storeCountry.ts';
+import type { StoreCountryListResponseDefaultMarket } from './storeCountryListResponseDefaultMarket.ts';
 
 export interface StoreCountryListResponse {
   countries: StoreCountry[];
+  defaultMarket: StoreCountryListResponseDefaultMarket;
 }

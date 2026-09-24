@@ -67,13 +67,17 @@
     "schema:generate": "tsx scripts/generate-schema.ts",
     "check:schema": "tsx scripts/checks/run.ts",
     "check:structure": "depcruise src/ --config structure/.dependency-cruiser.cjs",
-    "check:structure:graph": "depcruise src/ --config structure/.dependency-cruiser.cjs --output-type archi --collapse 3 --exclude '(node_modules|__tests__|^tests/|^\\.\\./|^src/env\\.ts$|^src/schema\\.type\\.ts$|^cloudflare:|^[a-z_]+$|^fs/promises$)' | dot -T svg -o structure/dependency-graph.svg && open structure/dependency-graph.svg"
+    "check:structure:graph": "depcruise src/ --config structure/.dependency-cruiser.cjs --output-type archi --collapse 3 --exclude '(node_modules|__tests__|^tests/|^\\.\\./|^src/env\\.ts$|^src/schema\\.type\\.ts$|^cloudflare:|^[a-z_]+$|^fs/promises$)' | dot -T svg -o structure/dependency-graph.svg && open structure/dependency-graph.svg",
+    "i18n:extract": "lingui extract --clean",
+    "i18n:compile": "lingui compile --typescript --strict",
+    "i18n:watch": "lingui compile --typescript --watch"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "catalog:",
     "@aws-sdk/client-s3": "^3.1116.0",
     "@aws-sdk/s3-request-presigner": "^3.1116.0",
     "@dotenvx/dotenvx": "catalog:",
+    "@lingui/core": "catalog:",
     "@proteus/http-schemas": "workspace:*",
     "@proteus/utils": "workspace:*",
     "@sendgrid/mail": "^8.1.6",
@@ -101,6 +105,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "catalog:",
+    "@lingui/cli": "catalog:",
     "@playwright/test": "catalog:",
     "@stoplight/spectral-cli": "^6.16.3",
     "@temporalio/testing": "^1.23.0",

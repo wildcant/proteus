@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import BigNumber from 'bignumber.js'
 import { z } from 'zod'
 import { decimalAmount } from './bounded.js'
@@ -30,12 +31,12 @@ export const bigNumberToString = z
  */
 export const stringToBigNumber = z
   .string()
-  .refine((s) => !new BigNumber(s).isNaN(), 'Invalid numeric value')
+  .refine((s) => !new BigNumber(s).isNaN(), i18n.t('Invalid numeric value'))
   .transform((s) => new BigNumber(s))
 
 /** A money amount in a request body — the same parse, over `decimalAmount`'s bounded shape. */
 export const amountToBigNumber = decimalAmount
-  .refine((s) => !new BigNumber(s).isNaN(), 'Invalid numeric value')
+  .refine((s) => !new BigNumber(s).isNaN(), i18n.t('Invalid numeric value'))
   .transform((s) => new BigNumber(s))
 
 /** Free-form key/value bag stored as jsonb. Modules still on `text()` keep their own schema. */

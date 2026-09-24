@@ -3,20 +3,31 @@ import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { loadSellableMarkets } from '#/api/sellable-markets'
 import { NotFound } from '#/components/not-found'
-import { DEFAULT_MARKET, joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
+import { createI18n } from '#/lib/i18n/catalogs'
+import { I18nRouterProvider } from '#/lib/i18n/i18n-provider'
+import { catalogLanguageFor, currentUrl, resolveMarket } from '#/lib/i18n/resolve-market'
+import { joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
 import { routeTree } from './routeTree.gen'
 
 export async function getRouter() {
   const queryClient = new QueryClient()
 
-  const markets = await loadSellableMarkets()
+  const sellable = await loadSellableMarkets()
+  const { markets, defaultMarket } = sellable
+  // The rewrite's `input` discovers the market only once Start has attached the request's history,
+  // after this function returns — too late to pick a catalog. So the market is read here first, from
+  // the same URL with the same parser, and `input` below arrives at the same answer.
+  const early = resolveMarket(currentUrl().pathname, sellable)
   // One per router, and the server builds a router per request, so this is request state even
-  // though the rewrite closes over it. `input` fills in the market; see below.
-  const market: MarketContext = { current: DEFAULT_MARKET, markets, resolvedFromUrl: false }
+  // though the rewrite closes over it. `input` confirms the market; see below.
+  const market: MarketContext = { current: early, markets, defaultMarket, resolvedFromUrl: false }
+  // One language's catalog, and one instance per router: see src/lib/i18n/catalogs.ts.
+  const i18n = await createI18n(catalogLanguageFor(early, defaultMarket))
 
   const router = createTanStackRouter({
     routeTree,
-    context: { queryClient, market },
+    context: { queryClient, market, i18n },
+    InnerWrap: I18nRouterProvider,
     scrollRestoration: true,
     // Every unmatched URL, in one place: not-founds are raised at `__root__` here — an unroutable
     // first segment is left alone by the rewrite below — so no route owns one to answer.

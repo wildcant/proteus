@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { z } from 'zod'
 import { entityId, MAX_LENGTH, machineCode, opaqueToken, password } from '../bounded.js'
 
@@ -29,7 +30,7 @@ export type VerificationConfirmBody = z.infer<typeof VerificationConfirmBody>
 
 export const ResetPasswordBody = z
   .object({
-    email: z.email(),
+    email: z.email(i18n.t('Enter a valid email address')),
   })
   .openapi('ResetPasswordBody')
 export type ResetPasswordBody = z.infer<typeof ResetPasswordBody>
@@ -38,7 +39,7 @@ export const UpdatePasswordBody = z
   .object({
     // Message set explicitly, as on StoreSignupBody: this schema also validates the
     // storefront's reset form, and Zod's default reads "Too small: expected string...".
-    password: password.min(1, 'Enter a new password'),
+    password: password.min(1, i18n.t('Enter a new password')),
   })
   .openapi('UpdatePasswordBody')
 export type UpdatePasswordBody = z.infer<typeof UpdatePasswordBody>

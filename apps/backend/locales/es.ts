@@ -1,0 +1,1 @@
+/*eslint-disable*/import type{Messages}from"@lingui/core";export const messages=JSON.parse("{\"An internal error occurred\":[\"Ocurrió un error interno\"],\"Invalid path params\":[\"Parámetros de ruta no válidos\"],\"Invalid query params\":[\"Parámetros de consulta no válidos\"],\"Invalid request body\":[\"Cuerpo de la solicitud no válido\"]}")as Messages;

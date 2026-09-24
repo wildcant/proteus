@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { z } from 'zod'
 import { MAX_ITEMS, shortText } from '../../bounded.js'
 
@@ -12,7 +13,7 @@ export const AdminCreatePresignedUploadUrl = z
     // `maxLength` in the spec — a `pattern` alone does not satisfy the ruleset.
     mimeType: shortText.regex(
       /^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}\/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}$/,
-      'Invalid MIME type',
+      i18n.t('Invalid MIME type'),
     ),
     size: z.number().int().positive(),
     access: z.enum(['public', 'private']).optional(),

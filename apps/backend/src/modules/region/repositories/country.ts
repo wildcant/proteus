@@ -15,11 +15,15 @@ export class CountryRepository extends BaseRepository(countryTable) {
    * region has been soft-deleted drops out of the sellable listing instead of appearing in it
    * with no currency.
    */
-  async findMarkets(onlySellable: boolean, context?: Context): Promise<CountryMarketDTO[]> {
+  async findMarkets(
+    { onlySellable, regionId }: { onlySellable: boolean; regionId?: string },
+    context?: Context,
+  ): Promise<CountryMarketDTO[]> {
     const client = this.getClient(context)
 
     const conditions = [isNull(this.table.deletedAt)]
     if (onlySellable) conditions.push(isNotNull(regionTable.id))
+    if (regionId) conditions.push(eq(regionTable.id, regionId))
 
     return client
       .select({

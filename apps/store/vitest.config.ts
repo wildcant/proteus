@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
@@ -35,6 +36,16 @@ export default defineConfig({
         // React and Tailwind only for the project that renders them; the unit project stays a
         // plain node run.
         plugins: [react(), tailwindcss()],
+        // Start's plugin gives the client bundle the client half of Start; this project has no
+        // Start plugin, so the stub stands in for it. Exact matches, so nothing else under the scope moves.
+        resolve: {
+          alias: [
+            {
+              find: /^@tanstack\/react-start(\/server)?$/,
+              replacement: fileURLToPath(new URL('./vitest.start-client.stub.ts', import.meta.url)),
+            },
+          ],
+        },
         // A component that owns a mutation — the PDP's action bar is one — imports its way to the
         // generated client, and `src/env.ts` refuses to load without a backend address. Defined
         // here rather than pulled from `.env`: nothing in this project sends a request, so the

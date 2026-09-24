@@ -1,3 +1,4 @@
+import type { I18n } from '@lingui/core'
 import { Toaster } from '@proteus/ui'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { formDevtoolsPlugin } from '@tanstack/react-form-devtools'
@@ -9,6 +10,7 @@ import { SHOW_DEVTOOLS } from '#/env.ts'
 import { CartMarketSwitch } from '#/features/cart/components/cart-market-switch'
 import { MARKET_GLOBAL, type MarketContext } from '#/lib/market'
 import { modalSearchSchema } from '#/lib/modal-state'
+import { marketHeadLinksFor } from '#/lib/seo/market-links'
 import manropeFont from '../assets/fonts/Manrope-VariableFont_wght.woff2?url'
 import appCss from '../styles.css?url'
 
@@ -24,15 +26,15 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
  * a precaution against a shape that might grow and become the thing keeping the document valid.
  */
 function marketInitScript(market: MarketContext): string {
-  const payload = JSON.stringify({ markets: market.markets })
+  const payload = JSON.stringify({ markets: market.markets, defaultMarket: market.defaultMarket })
   return `window.${MARKET_GLOBAL}=${payload.replace(/</g, '\\u003c')};`
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient; market: MarketContext }>()({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; market: MarketContext; i18n: I18n }>()({
   ssr: true,
   // Declared here so every route inherits it — see src/lib/modal-state.ts.
   validateSearch: modalSearchSchema,
-  head: () => ({
+  head: (context) => ({
     meta: [
       {
         charSet: 'utf-8',
@@ -61,6 +63,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
         rel: 'stylesheet',
         href: appCss,
       },
+      ...marketHeadLinksFor(context),
     ],
   }),
   component: RootComponent,

@@ -84,7 +84,15 @@ export function RouteDrawer({ prev = '..', size = 'default', className, style, c
   )
 }
 
-RouteDrawer.Header = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+RouteDrawer.Header = ({
+  className,
+  children,
+  closeLabel = 'Close',
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  /** Screen-reader label for the close button. */
+  closeLabel?: string
+}) => (
   <DrawerHeader
     className={cn('flex shrink-0 flex-row items-start justify-between gap-x-4 border-b px-6 py-4', className)}
     {...props}
@@ -96,7 +104,7 @@ RouteDrawer.Header = ({ className, children, ...props }: React.HTMLAttributes<HT
       </kbd>
       <DrawerClose render={<Button variant="ghost" size="icon-sm" />}>
         <XIcon className="size-4" />
-        <span className="sr-only">Close</span>
+        <span className="sr-only">{closeLabel}</span>
       </DrawerClose>
     </div>
   </DrawerHeader>

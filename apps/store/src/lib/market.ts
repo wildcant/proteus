@@ -28,17 +28,25 @@ export type Market = {
 }
 
 /**
- * The market served when the store has nothing else to go on, and the one every fallback lands on.
+ * The market served when the backend cannot be reached, and the one every such fallback lands on.
  *
- * Compiled in rather than fetched because it is the answer when the fetch itself fails: a default
- * that can only be learned from the country endpoint is no default at all. The backend owns which
- * markets exist; this owns only which one a storefront with no other information shows.
+ * Compiled in because it is the answer when the fetch itself fails. When the backend answers, the
+ * default is the country behind `store.defaultRegionId` instead — see `SellableMarkets`.
  */
 export const DEFAULT_MARKET: Market = {
   localeCode: 'en-US',
   iso2: 'us',
   displayName: 'United States',
   currencyCode: 'usd',
+}
+
+/**
+ * The country endpoint's answer as the store holds it: every routable market, and the one a
+ * shopper with no market of their own is sent to. The default is one of `markets`.
+ */
+export type SellableMarkets = {
+  markets: Array<Market>
+  defaultMarket: Market
 }
 
 /** Where the resolved locale code is persisted, so a later visit to `/` lands on the same market. */
@@ -59,6 +67,8 @@ export type MarketContext = {
   current: Market
   /** Every market the store sells in: the routable URL segments, and the control's options. */
   markets: ReadonlyArray<Market>
+  /** The market `current` stands at until the URL names one. From the backend, not compiled in. */
+  defaultMarket: Market
   /**
    * Whether `current` came from the URL or is still the default standing in for one.
    *
@@ -81,7 +91,7 @@ export const MARKET_GLOBAL = '__PROTEUS_MARKET__'
 declare global {
   // biome-ignore lint/style/useConsistentTypeDefinitions: augmenting a global needs an interface
   interface Window {
-    [MARKET_GLOBAL]?: { markets: Array<Market> }
+    [MARKET_GLOBAL]?: SellableMarkets
   }
 }
 
@@ -173,7 +183,7 @@ export function marketCookie(localeCode: string, secure: boolean): string {
 
 /**
  * Which market a request with no market in its URL is sent to: the one the shopper chose last
- * time, then the one for the country they are in, then the default.
+ * time, then the one for the country they are in, then the store's default market.
  *
  * A remembered market is an explicit choice, so it outranks where the shopper happens to be. A
  * cookie naming a market the store no longer sells in is stale, not a choice, so it gives way to
@@ -185,15 +195,17 @@ export function resolveMarketTarget({
   cookie,
   country,
   markets,
+  defaultMarket,
 }: {
   cookie: string | undefined
   country: string | undefined
   markets: ReadonlyArray<Market>
+  defaultMarket: Market
 }): string {
   if (cookie && markets.some((market) => market.localeCode === cookie)) return cookie
   const iso2 = country?.toLowerCase()
   const local = iso2 ? markets.find((market) => market.iso2 === iso2) : undefined
-  return local?.localeCode ?? DEFAULT_MARKET.localeCode
+  return local?.localeCode ?? defaultMarket.localeCode
 }
 
 /**

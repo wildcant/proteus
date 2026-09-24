@@ -5,6 +5,7 @@ import { PRODUCT_SORT_NAMES, productsListQueryOptions, productsPageQuery } from 
 import { ProductList } from '#/features/products/components/product-list'
 import { ProductListHeader } from '#/features/products/components/product-list-header'
 import { ProductListSkeleton } from '#/features/products/components/product-list-skeleton'
+import { marketHeadLinksFor } from '#/lib/seo/market-links'
 
 /**
  * Everything that describes what the shopper is looking at: the term, the order and the page.
@@ -22,6 +23,7 @@ const productsSearchSchema = z.object({
 
 export const Route = createFileRoute('/_main/')({
   ssr: true,
+  head: (context) => ({ links: marketHeadLinksFor(context) }),
   validateSearch: productsSearchSchema,
   component: ProductsPage,
   // All three, because a param the loader does not see is a param the server renders the wrong

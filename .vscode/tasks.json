@@ -2,7 +2,7 @@
   // Two dev sessions live in here.
   //
   //   `dev`          — Node runtime. Two terminals: backend (API, workflow Worker, events
-  //                    Worker, cron Worker) and frontend (store, admin).
+  //                    Worker, cron Worker) and frontend (store, admin, catalog watcher).
   //   `dev: workerd` — workerd runtime. One terminal, three panes: API under `wrangler dev`, store,
   //                    admin.
   //
@@ -17,8 +17,8 @@
   // `presentation.group` is the whole trick: every task sharing a group name opens as a split pane
   // inside one terminal rather than as its own, so a group name is a terminal and its members are
   // that terminal's panes. `dev` uses two — `dev-backend` and `dev-frontend` — which is why it comes
-  // up as two entries in the terminal list, split four ways and two ways, instead of one terminal
-  // split six ways where every pane is too narrow to read a stack trace.
+  // up as two entries in the terminal list, split four ways and three ways, instead of one terminal
+  // split seven ways where every pane is too narrow to read a stack trace.
   //
   // `panel: "dedicated"` keeps each pane bound to its own task across reruns, so a restarted store
   // reuses the store pane instead of stacking a new one beside it. Every session uses group names of
@@ -35,15 +35,24 @@
       "problemMatcher": []
     },
     {
-      // Split out from `dev` only so the six below start in parallel while still sitting behind
+      // Split out from `dev` only so the seven below start in parallel while still sitting behind
       // the infra step — `dependsOrder` applies per task, so one list cannot mix the two orders.
       "label": "dev: apps",
-      "dependsOn": ["dev: api", "dev: worker", "dev: events", "dev: cron", "dev: store", "dev: admin", "dev: open"],
+      "dependsOn": [
+        "dev: api",
+        "dev: worker",
+        "dev: events",
+        "dev: cron",
+        "dev: store",
+        "dev: admin",
+        "dev: catalogs",
+        "dev: open"
+      ],
       "dependsOrder": "parallel",
       "problemMatcher": []
     },
     {
-      // Runs alongside the six rather than after them, because it waits on the ports itself —
+      // Runs alongside the seven rather than after them, because it waits on the ports itself —
       // sequencing it would mean nothing starts until the browser is open. Deliberately in neither
       // presentation group: a member that exits after a few seconds would leave a dead pane wedged
       // into a terminal the others are still using. Delete it from `dev: apps` to stop opening tabs.
@@ -190,6 +199,26 @@
       "label": "dev: admin",
       "type": "shell",
       "command": "pnpm --filter admin run dev",
+      "isBackground": true,
+      "presentation": {
+        "group": "dev-frontend",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "echo": false,
+        "showReuseMessage": false
+      },
+      "runOptions": { "instanceLimit": 1 },
+      "problemMatcher": []
+    },
+    {
+      // The one Lingui watcher of the session: backend compiles `locales/*.ts`, store extracts its
+      // `.po`. Its own pane because the four backend panes share one compiled catalog, which must
+      // have exactly one writer. `scripts/dev-catalogs.sh` signals each watcher's whole process group
+      // on exit, so terminating the task stops them.
+      "label": "dev: catalogs",
+      "type": "shell",
+      "command": "pnpm run dev:catalogs",
       "isBackground": true,
       "presentation": {
         "group": "dev-frontend",

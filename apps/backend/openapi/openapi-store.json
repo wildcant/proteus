@@ -879,10 +879,25 @@
             "items": {
               "$ref": "#/components/schemas/StoreCountry"
             }
+          },
+          "defaultMarket": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StoreCountry"
+              },
+              {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "description": "The first country, by display name, of the store's default region — where a shopper with no country of their own lands. Null when the store has no default region or it sells nowhere."
+              }
+            ]
           }
         },
         "required": [
-          "countries"
+          "countries",
+          "defaultMarket"
         ]
       },
       "StoreCountry": {
