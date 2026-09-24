@@ -770,6 +770,10 @@ msgstr "Failed to cancel order"
 msgid "Failed to change the default currency"
 msgstr "Failed to change the default currency"
 
+#: src/features/auth/api/auth.ts:57
+msgid "Failed to change the language"
+msgstr "Failed to change the language"
+
 #: src/features/orders/api/orders.ts:66
 msgid "Failed to complete order"
 msgstr "Failed to complete order"
@@ -1108,7 +1112,7 @@ msgstr "Locales"
 msgid "Log out"
 msgstr "Log out"
 
-#: src/features/auth/api/auth.ts:67
+#: src/features/auth/api/auth.ts:78
 msgid "Login failed"
 msgstr "Login failed"
 

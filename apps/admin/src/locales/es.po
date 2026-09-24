@@ -770,6 +770,10 @@ msgstr "No se pudo cancelar el pedido"
 msgid "Failed to change the default currency"
 msgstr "No se pudo cambiar la moneda predeterminada"
 
+#: src/features/auth/api/auth.ts:57
+msgid "Failed to change the language"
+msgstr "No se pudo cambiar el idioma"
+
 #: src/features/orders/api/orders.ts:66
 msgid "Failed to complete order"
 msgstr "No se pudo completar el pedido"
@@ -1108,7 +1112,7 @@ msgstr "Configuraciones regionales"
 msgid "Log out"
 msgstr "Cerrar sesión"
 
-#: src/features/auth/api/auth.ts:67
+#: src/features/auth/api/auth.ts:78
 msgid "Login failed"
 msgstr "No se pudo iniciar sesión"
 

@@ -6,7 +6,7 @@ const CATALOG_LANGUAGES = ['en', 'es'] as const
 export type CatalogLanguage = (typeof CATALOG_LANGUAGES)[number]
 
 /** The Locale a staff member starts in, and the one the picker always offers. */
-export const SOURCE_LOCALE = 'en-US'
+const SOURCE_LOCALE = 'en-US'
 
 const LOCALE_KEY = 'proteus_admin_locale'
 
@@ -24,16 +24,12 @@ export function catalogLanguageFor(locale: string): CatalogLanguage {
 }
 
 /**
- * The Locale the admin renders in: the signed-in staff member's own, remembered from their last
- * `/admin/users/me`; before sign-in, the browser's language; `en-US` when the browser names none.
+ * The Locale this page load renders in and sends as `x-proteus-locale`: the signed-in staff
+ * member's own, remembered from their last `/admin/users/me`; before sign-in, the browser's
+ * language; `en-US` when the browser names none.
  */
-export function resolveLocale({ saved, browser }: { saved: string | null; browser: ReadonlyArray<string> }): string {
-  return saved ?? browser[0] ?? SOURCE_LOCALE
-}
-
-/** The Locale this page load renders in and sends as `x-proteus-locale`. */
 export function activeLocale(): string {
-  return resolveLocale({ saved: localStorage.getItem(LOCALE_KEY), browser: navigator.languages })
+  return localStorage.getItem(LOCALE_KEY) ?? navigator.languages[0] ?? SOURCE_LOCALE
 }
 
 /**

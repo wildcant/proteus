@@ -42,7 +42,13 @@
       // `structure/.dependency-cruiser.cjs` sits outside the path that plugin scans. No `!`: gate
       // config, not shipped code.
       // `lingui.config.ts` is read by the `lingui` CLI and the Vite plugin, not imported.
-      "entry": ["src/types/router.ts!", "orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs", "lingui.config.ts"],
+      "entry": [
+        "src/types/router.ts!",
+        "orval.config.ts",
+        "src/api/fetcher.ts!",
+        "structure/.dependency-cruiser.cjs",
+        "lingui.config.ts"
+      ],
       // The plugin derives the fetcher entry from orval.config.ts, then drops it in the production
       // run and shadows the same path declared in `entry`. Off, with the config kept as an entry so
       // the default run still reads it.
