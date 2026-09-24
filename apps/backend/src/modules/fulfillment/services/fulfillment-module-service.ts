@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -240,7 +241,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
         if (!gz.serviceZoneId) {
           throw new AppError({
             type: ErrorTypes.INVALID_DATA,
-            message: 'serviceZoneId is required when creating geo zones directly',
+            message: i18n.t('serviceZoneId is required when creating geo zones directly'),
           })
         }
         return { ...gz, serviceZoneId: gz.serviceZoneId }
@@ -267,7 +268,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     if (!data.serviceZoneId) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: 'serviceZoneId is required when creating geo zones directly',
+        message: i18n.t('serviceZoneId is required when creating geo zones directly'),
       })
     }
     return this.geoZoneRepository.create({ ...data, serviceZoneId: data.serviceZoneId }, context) as Promise<GeoZoneDTO>
@@ -545,14 +546,16 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
       if (fulfillment.shippedAt) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Fulfillment "${id}" has already been shipped and cannot be canceled`,
+          message: i18n.t('Fulfillment "{id}" has already been shipped and cannot be canceled'),
+          values: { id },
         })
       }
 
       if (fulfillment.deliveredAt) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Fulfillment "${id}" has already been delivered and cannot be canceled`,
+          message: i18n.t('Fulfillment "{id}" has already been delivered and cannot be canceled'),
+          values: { id },
         })
       }
 

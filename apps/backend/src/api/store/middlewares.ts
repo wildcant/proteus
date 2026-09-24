@@ -5,6 +5,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import { validateQuery } from '@core/utils/validate-query.js'
 import type { MiddlewareFunction } from '@framework/http/types.js'
 import { StorePricingContextParams } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import type { AppContainer } from '../../core/types/container.js'
 
 /**
@@ -27,7 +28,8 @@ async function resolveRegion(scope: AppContainer, countryCode?: string, cartId?:
     if (!country?.regionId) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: `No region sells to country "${countryCode}"`,
+        message: i18n.t('No region sells to country "{countryCode}"'),
+        values: { countryCode },
       })
     }
     return regionService.retrieveRegion(country.regionId)
@@ -46,7 +48,7 @@ async function resolveRegion(scope: AppContainer, countryCode?: string, cartId?:
     // a 400, because nothing the caller could send would fix it.
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: 'Cannot price this request: no countryCode was given and the store has no default region',
+      message: i18n.t('Cannot price this request: no countryCode was given and the store has no default region'),
     })
   }
 
@@ -99,7 +101,7 @@ export function requireCustomer(): MiddlewareFunction<{ customer: CustomerDTO }>
   return async (req) => {
     const customerId = req.authContext?.actorId
     if (!customerId) {
-      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
+      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Not authenticated') })
     }
 
     const customerService = req.scope.resolve(Modules.CUSTOMER)

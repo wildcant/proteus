@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { FileDTO, FilterableFileProps, UploadFileUrlDTO } from '../../../core/types/file/common.js'
@@ -32,7 +33,8 @@ export class FileModuleService implements IFileModuleService {
         if (size > maxFileSize) {
           throw new AppError({
             type: ErrorTypes.INVALID_DATA,
-            message: `File "${file.filename}" exceeds maximum size of ${maxFileSize} bytes (got ${size} bytes).`,
+            message: i18n.t('File "{filename}" exceeds maximum size of {maxFileSize} bytes (got {size} bytes).'),
+            values: { filename: file.filename, maxFileSize, size },
           })
         }
 
@@ -61,7 +63,7 @@ export class FileModuleService implements IFileModuleService {
     if (!filters?.id) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: 'File listing requires an "id" filter.',
+        message: i18n.t('File listing requires an "id" filter.'),
       })
     }
 
@@ -83,7 +85,7 @@ export class FileModuleService implements IFileModuleService {
     if (!filters?.id) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: 'File listing requires an "id" filter.',
+        message: i18n.t('File listing requires an "id" filter.'),
       })
     }
 
@@ -108,7 +110,7 @@ export class FileModuleService implements IFileModuleService {
         if (!input.filename) {
           throw new AppError({
             type: ErrorTypes.INVALID_DATA,
-            message: 'Filename is required for presigned upload URL generation.',
+            message: i18n.t('Filename is required for presigned upload URL generation.'),
           })
         }
 

@@ -14,6 +14,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/container.ts:140
+msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
+msgstr "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
+
+#. js-lingui-explicit-id
+#: src/container.ts:172
+msgid "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
+msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
+
+#. js-lingui-explicit-id
+#: src/routes.ts:121
+msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
+"  {routes}"
+msgstr "Routes with auth: 'required' must declare permissions. Missing on:\n"
+"  {routes}"
+
+#. js-lingui-explicit-id
 #: src/workflows/user/accept-invite.ts:41
 msgid "Failed to register auth identity"
 msgstr "Failed to register auth identity"
@@ -300,6 +317,7 @@ msgid "Customer with id \"{customerId}\" not found"
 msgstr "Customer with id \"{customerId}\" not found"
 
 #. js-lingui-explicit-id
+#: src/api/store/middlewares.ts:31
 #: src/workflows/cart/update-cart.ts:139
 msgid "No region sells to country \"{countryCode}\""
 msgstr "No region sells to country \"{countryCode}\""
@@ -346,6 +364,8 @@ msgid "The payment gateway is temporarily unavailable. Please try again."
 msgstr "The payment gateway is temporarily unavailable. Please try again."
 
 #. js-lingui-explicit-id
+#: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
+#: src/modules/payment/services/payment-module-service.ts:928
 #: src/providers/payment-stripe/errors.ts:145
 msgid "That payment method is no longer available."
 msgstr "That payment method is no longer available."
@@ -356,6 +376,7 @@ msgid "The card could not be charged."
 msgstr "The card could not be charged."
 
 #. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:253
 #: src/providers/payment-stripe/errors.ts:157
 msgid "The payment could not be processed."
 msgstr "The payment could not be processed."
@@ -594,6 +615,71 @@ msgid "Cannot remove option value(s) that are currently used by products. Remove
 msgstr "Cannot remove option value(s) that are currently used by products. Remove them from all products first."
 
 #. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:515
+msgid "Payment \"{id}\" has been canceled and cannot be captured."
+msgstr "Payment \"{id}\" has been canceled and cannot be captured."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:532
+msgid "Payment \"{id}\" has already been fully captured."
+msgstr "Payment \"{id}\" has already been fully captured."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:584
+msgid "Payment \"{id}\" has no refundable amount remaining."
+msgstr "Payment \"{id}\" has no refundable amount remaining."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:592
+msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
+msgstr "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-provider-service.ts:68
+msgid "Payment provider \"{providerId}\" is not registered."
+msgstr "Payment provider \"{providerId}\" is not registered."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/providers/system.ts:63
+msgid "Method not implemented."
+msgstr "Method not implemented."
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:301
+msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
+msgstr "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:317
+msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
+msgstr "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:333
+msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
+msgstr "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:68
+msgid "Failed to create notification"
+msgstr "Failed to create notification"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:152
+msgid "Missing retried notification record"
+msgstr "Missing retried notification record"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:163
+msgid "Missing created notification record"
+msgstr "Missing created notification record"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-provider-service.ts:56
+msgid "Notification provider \"{providerId}\" is not registered."
+msgstr "Notification provider \"{providerId}\" is not registered."
+
+#. js-lingui-explicit-id
 #: src/modules/inventory/services/inventory-module-service.ts:177
 #: src/modules/inventory/services/inventory-module-service.ts:205
 #: src/modules/inventory/services/inventory-module-service.ts:325
@@ -619,6 +705,101 @@ msgstr "Not enough stock to reserve {quantity} of item {inventoryItemId} at loca
 #: src/modules/inventory/repositories/inventory-level.ts:44
 msgid "Inventory level with id \"{id}\" not found"
 msgstr "Inventory level with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:244
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:271
+msgid "serviceZoneId is required when creating geo zones directly"
+msgstr "serviceZoneId is required when creating geo zones directly"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:549
+msgid "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
+msgstr "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:557
+msgid "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
+msgstr "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-provider-service.ts:42
+msgid "Fulfillment provider \"{providerId}\" is not registered."
+msgstr "Fulfillment provider \"{providerId}\" is not registered."
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/providers/manual.ts:44
+msgid "Manual provider does not support calculated prices"
+msgstr "Manual provider does not support calculated prices"
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:36
+msgid "File \"{filename}\" exceeds maximum size of {maxFileSize} bytes (got {size} bytes)."
+msgstr "File \"{filename}\" exceeds maximum size of {maxFileSize} bytes (got {size} bytes)."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:66
+#: src/modules/file/services/file-module-service.ts:88
+msgid "File listing requires an \"id\" filter."
+msgstr "File listing requires an \"id\" filter."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:113
+msgid "Filename is required for presigned upload URL generation."
+msgstr "Filename is required for presigned upload URL generation."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:34
+msgid "File module must be initialized with exactly one provider."
+msgstr "File module must be initialized with exactly one provider."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:43
+msgid "File provider could not be resolved."
+msgstr "File provider could not be resolved."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:69
+msgid "The configured file provider does not support presigned upload URLs."
+msgstr "The configured file provider does not support presigned upload URLs."
+
+#. js-lingui-explicit-id
+#: src/modules/cart/services/cart-module-service.ts:294
+msgid "Shipping method not returned after create"
+msgstr "Shipping method not returned after create"
+
+#. js-lingui-explicit-id
+#: src/modules/cart/services/cart-module-service.ts:374
+msgid "Cart {id} is already completed"
+msgstr "Cart {id} is already completed"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:113
+#: src/modules/auth/services/auth-module-service.ts:151
+msgid "Provider identity not found"
+msgstr "Provider identity not found"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:227
+msgid "Provider identity with entityId \"{entityId}\" and provider \"{provider}\" not found"
+msgstr "Provider identity with entityId \"{entityId}\" and provider \"{provider}\" not found"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:261
+#: src/modules/auth/services/auth-module-service.ts:267
+#: src/modules/auth/services/auth-module-service.ts:273
+msgid "Invalid or expired reset token"
+msgstr "Invalid or expired reset token"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-provider-service.ts:29
+msgid "Auth provider \"{providerId}\" is not registered"
+msgstr "Auth provider \"{providerId}\" is not registered"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/verification-provider-service.ts:31
+msgid "Verification provider \"{providerId}\" is not registered"
+msgstr "Verification provider \"{providerId}\" is not registered"
 
 #. js-lingui-explicit-id
 #: src/modules/access-control/services/access-control-module-service.ts:58
@@ -683,9 +864,153 @@ msgid "Unknown permission key: {grant}"
 msgstr "Unknown permission key: {grant}"
 
 #. js-lingui-explicit-id
+#: src/framework/workflows/temporal-adapter.ts:180
+msgid "createTemporalWorkflowEngine: {where} needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a step that retries forever is exactly what the default of 1 exists to prevent."
+msgstr "createTemporalWorkflowEngine: {where} needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a step that retries forever is exactly what the default of 1 exists to prevent."
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/activities.ts:93
+msgid "No workflow is registered as \"{name}\" on this Worker"
+msgstr "No workflow is registered as \"{name}\" on this Worker"
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/registry.ts:43
+msgid "[temporal] Two workflows are registered as \"{name}\""
+msgstr "[temporal] Two workflows are registered as \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/replay.ts:252
+msgid "Workflow \"{name}\" ended its replay without producing an outcome"
+msgstr "Workflow \"{name}\" ended its replay without producing an outcome"
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/replay.ts:288
+msgid "Workflow \"{name}\" reached step \"{step}\" without executing it"
+msgstr "Workflow \"{name}\" reached step \"{step}\" without executing it"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/payload-converter.ts:232
+msgid "step output at {path}: {detail}"
+msgstr "step output at {path}: {detail}"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/payload-converter.ts:240
+msgid "step payload at {path}: {detail}"
+msgstr "step payload at {path}: {detail}"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/preflight.ts:81
+msgid "[api] Temporal is unreachable at {address}, so the API is refusing to start. Every checkout dispatches a workflow through that address and every boot reconciles the cron Schedules through it, so starting anyway would bind the port, answer /health with 200, and then fail inside a shopper's checkout. Start the server (`docker compose -f apps/backend/docker-compose.yml up -d --wait temporal`) or point TEMPORAL_ADDRESS at a reachable frontend, then start the API again. The connection attempt said: \"{failure}\"."
+msgstr "[api] Temporal is unreachable at {address}, so the API is refusing to start. Every checkout dispatches a workflow through that address and every boot reconciles the cron Schedules through it, so starting anyway would bind the port, answer /health with 200, and then fail inside a shopper's checkout. Start the server (`docker compose -f apps/backend/docker-compose.yml up -d --wait temporal`) or point TEMPORAL_ADDRESS at a reachable frontend, then start the API again. The connection attempt said: \"{failure}\"."
+
+#. js-lingui-explicit-id
+#: src/framework/scheduler/temporal/temporal-cron-scheduler.ts:283
+msgid "[CronScheduler] {failed} of {total} schedule(s) could not be reconciled — {failures}"
+msgstr "[CronScheduler] {failed} of {total} schedule(s) could not be reconciled — {failures}"
+
+#. js-lingui-explicit-id
 #: src/framework/http/apply-middleware.ts:19
 msgid "Invalid path params"
 msgstr "Invalid path params"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:30
+msgid "Unauthorized: invalid actor type"
+msgstr "Unauthorized: invalid actor type"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:65
+#: src/framework/http/middlewares/validate-token.ts:24
+msgid "Unauthorized: invalid token"
+msgstr "Unauthorized: invalid token"
+
+#. js-lingui-explicit-id
+#: src/api/admin/users/[id]/roles/route.ts:26
+#: src/api/auth/token/refresh/route.ts:23
+#: src/api/auth/verification/confirm/route.ts:18
+#: src/api/auth/verification/request/route.ts:18
+#: src/framework/http/middlewares/authenticate.ts:76
+#: src/framework/http/middlewares/authorization-actor.ts:12
+#: src/framework/http/middlewares/validate-token.ts:28
+#: src/framework/http/middlewares/validate-token.ts:49
+msgid "Unauthorized"
+msgstr "Unauthorized"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:85
+msgid "Unauthorized: registration required"
+msgstr "Unauthorized: registration required"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authorize.ts:26
+#: src/framework/http/middlewares/authorize.ts:36
+msgid "Insufficient permissions"
+msgstr "Insufficient permissions"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-scope-provider-association.ts:23
+msgid "Unknown actor type \"{actorType}\""
+msgstr "Unknown actor type \"{actorType}\""
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-scope-provider-association.ts:31
+msgid "Provider \"{authProvider}\" is not allowed for actor type \"{actorType}\""
+msgstr "Provider \"{authProvider}\" is not allowed for actor type \"{actorType}\""
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-token.ts:32
+msgid "Unauthorized: invalid token purpose"
+msgstr "Unauthorized: invalid token purpose"
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:137
+msgid "[event-bus] The \"EVENTS\" queue binding is missing. Declare it under `queues.producers` in this Worker's wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that does not need one."
+msgstr "[event-bus] The \"EVENTS\" queue binding is missing. Declare it under `queues.producers` in this Worker's wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that does not need one."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:170
+msgid "[event-bus] The payload for \"{name}\" is {bytes} bytes for subscriber \"{subscriber}\", over the {maxBytes} byte queue message limit. Publish an id and let the subscriber read the rest."
+msgstr "[event-bus] The payload for \"{name}\" is {bytes} bytes for subscriber \"{subscriber}\", over the {maxBytes} byte queue message limit. Publish an id and let the subscriber read the rest."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:182
+msgid "[event-bus] \"{name}\" fans out to {count} subscribers and {bytes} bytes, over the {maxMessages} message / {maxBytes} byte queue batch limit."
+msgstr "[event-bus] \"{name}\" fans out to {count} subscribers and {bytes} bytes, over the {maxMessages} message / {maxBytes} byte queue batch limit."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:255
+msgid "[event-bus] No subscriber named \"{subscriber}\" is registered for \"{name}\""
+msgstr "[event-bus] No subscriber named \"{subscriber}\" is registered for \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/registry.ts:47
+msgid "[event-bus] Two subscribers are registered as \"{name}\""
+msgstr "[event-bus] Two subscribers are registered as \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:238
+msgid "[event-bus] The dispatch identity for \"{name}\" is {length} characters, over the {maxIdLength} Temporal allows for an activityId, so this event cannot be delivered. Give the event a shorter key through EVENT_KEYS in events.ts — truncating it here would defeat dedup silently. Identity: \"{dispatchId}\""
+msgstr "[event-bus] The dispatch identity for \"{name}\" is {length} characters, over the {maxIdLength} Temporal allows for an activityId, so this event cannot be delivered. Give the event a shorter key through EVENT_KEYS in events.ts — truncating it here would defeat dedup silently. Identity: \"{dispatchId}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:248
+msgid "[event-bus] The event name \"{name}\" is {bytes} bytes, over the {maxBytes} Temporal allows for a fairness key. Rename the event in events.ts."
+msgstr "[event-bus] The event name \"{name}\" is {bytes} bytes, over the {maxBytes} Temporal allows for a fairness key. Rename the event in events.ts."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:274
+msgid "createTemporalEventBus: retry needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a subscriber that sends email retrying forever is a mail loop."
+msgstr "createTemporalEventBus: retry needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a subscriber that sends email retrying forever is a mail loop."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:291
+msgid "createTemporalEventBus: priority[\"{event}\"] must be an integer of 1 or more — 1 is the highest priority and the server's default lowest is 5. Got {key}."
+msgstr "createTemporalEventBus: priority[\"{event}\"] must be an integer of 1 or more — 1 is the highest priority and the server's default lowest is 5. Got {key}."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal/preflight.ts:82
+msgid "[events-worker] Temporal namespace \"{namespace}\" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) and restart this Worker. The server answered: \"{answer}\"."
+msgstr "[events-worker] Temporal namespace \"{namespace}\" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) and restart this Worker. The server answered: \"{answer}\"."
 
 #. js-lingui-explicit-id
 #: src/core/workflows/types.ts:81
@@ -794,19 +1119,90 @@ msgid "Verification token TTL must be a positive integer"
 msgstr "Verification token TTL must be a positive integer"
 
 #. js-lingui-explicit-id
+#: src/api/store/middlewares.ts:51
+msgid "Cannot price this request: no countryCode was given and the store has no default region"
+msgstr "Cannot price this request: no countryCode was given and the store has no default region"
+
+#. js-lingui-explicit-id
+#: src/api/store/customers/me/addresses/[id]/route.ts:19
+#: src/api/store/customers/me/addresses/route.ts:17
+#: src/api/store/customers/me/addresses/route.ts:33
+#: src/api/store/customers/me/route.ts:13
+#: src/api/store/middlewares.ts:104
+#: src/api/store/orders/route.ts:16
+msgid "Not authenticated"
+msgstr "Not authenticated"
+
+#. js-lingui-explicit-id
+#: src/api/store/products/[id]/route.ts:102
+msgid "Product with id \"{id}\" has no price in {currencyCode}"
+msgstr "Product with id \"{id}\" has no price in {currencyCode}"
+
+#. js-lingui-explicit-id
+#: src/api/store/orders/[id]/route.ts:28
+msgid "Order with id \"{id}\" not found"
+msgstr "Order with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/api/store/customers/middlewares.ts:28
+msgid "Address with id \"{id}\" not found"
+msgstr "Address with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/shipping-methods/route.ts:23
+msgid "Shipping option \"{shippingOptionId}\" is not available"
+msgstr "Shipping option \"{shippingOptionId}\" is not available"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/line-items/route.ts:15
+msgid "Line item not returned after add"
+msgstr "Line item not returned after add"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/customer/route.ts:14
+msgid "Authentication required"
+msgstr "Authentication required"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/register/route.ts:22
+#: src/api/store/auth/signup/route.ts:27
+msgid "Registration failed"
+msgstr "Registration failed"
+
+#. js-lingui-explicit-id
+#: src/api/store/auth/signup/route.ts:35
+msgid "Authentication failed after registration"
+msgstr "Authentication failed after registration"
+
+#. js-lingui-explicit-id
+#: src/api/store/auth/login/route.ts:21
+msgid "Invalid email or password"
+msgstr "Invalid email or password"
+
+#. js-lingui-explicit-id
 #: src/api/hooks/payment/[provider]/route.ts:77
 msgid "Webhook request carried no body"
 msgstr "Webhook request carried no body"
 
 #. js-lingui-explicit-id
+#: src/api/auth/verification/confirm/route.ts:33
+msgid "Expected verifiedAt to be set after confirmation"
+msgstr "Expected verifiedAt to be set after confirmation"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/route.ts:25
+msgid "Authentication failed"
+msgstr "Authentication failed"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/password/route.ts:25
+msgid "Password update failed"
+msgstr "Password update failed"
+
+#. js-lingui-explicit-id
 #: src/api/admin/users/me/route.ts:15
 msgid "User ID not found"
 msgstr "User ID not found"
-
-#. js-lingui-explicit-id
-#: src/api/admin/users/[id]/roles/route.ts:26
-msgid "Unauthorized"
-msgstr "Unauthorized"
 
 #. js-lingui-explicit-id
 #: src/api/admin/uploads/presigned-urls/route.ts:27

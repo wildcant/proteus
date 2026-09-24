@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   AuthenticationInput,
@@ -23,7 +24,11 @@ export class AuthProviderService {
     try {
       return this.container.resolve<AbstractAuthModuleProvider>(key)
     } catch {
-      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Auth provider "${providerId}" is not registered` })
+      throw new AppError({
+        type: ErrorTypes.NOT_FOUND,
+        message: i18n.t('Auth provider "{providerId}" is not registered'),
+        values: { providerId },
+      })
     }
   }
 

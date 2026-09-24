@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import type { AuthorizationActor } from '../../../core/auth/types.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import { Modules } from '../../../core/utils/modules-definition.js'
@@ -8,7 +9,7 @@ export function resolveAuthorizationActor(): MiddlewareFunction {
     if (!req.authContext) {
       throw new AppError({
         type: ErrorTypes.UNAUTHORIZED,
-        message: 'Unauthorized',
+        message: i18n.t('Unauthorized'),
       })
     }
 

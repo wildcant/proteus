@@ -4,6 +4,7 @@ import { validateScopeProviderAssociation } from '@framework/http/middlewares/va
 import { validateToken } from '@framework/http/middlewares/validate-token.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AuthParams, UpdatePasswordBody, UpdatePasswordResponse } from '@proteus/http-schemas/auth'
+import { i18n } from '@proteus/utils'
 
 export const PostInput = { body: UpdatePasswordBody, params: AuthParams }
 export const PostMiddlewares = [validateScopeProviderAssociation(), validateToken()] as const
@@ -21,7 +22,7 @@ export const POST = async (
   const result = await authService.updateProvider(authProvider, { email: entityId, password: req.body.password })
 
   if (!result.success) {
-    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: result.error ?? 'Password update failed' })
+    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: result.error ?? i18n.t('Password update failed') })
   }
 
   return { status: 200, json: { success: true } }

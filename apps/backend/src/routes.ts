@@ -2,6 +2,7 @@ import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import { applyMiddleware } from '@framework/http/apply-middleware.js'
 import { applyNamespaceAuth } from '@framework/http/namespace-auth.js'
 import type { RouteDefinition } from '@framework/http/types.js'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from './core/errors/app-error.js'
 import type { Logger } from './core/types/logger.js'
 import { registerOpenApiRoute } from './framework/http/openapi/register-route.js'
@@ -117,7 +118,8 @@ function validatePermissionDeclarations(definitions: RouteDefinition[]): void {
   if (missing.length > 0) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: `Routes with auth: 'required' must declare permissions. Missing on:\n  ${missing.join('\n  ')}`,
+      message: i18n.t("Routes with auth: 'required' must declare permissions. Missing on:\n  {routes}"),
+      values: { routes: missing.join('\n  ') },
     })
   }
 }

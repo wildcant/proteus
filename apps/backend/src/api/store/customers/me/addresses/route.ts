@@ -6,6 +6,7 @@ import {
   StoreCustomerAddressListResponse,
   StoreCustomerAddressResponse,
 } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 
 export const GetOutput = StoreCustomerAddressListResponse
 export const GetThrows = [ErrorTypes.UNAUTHORIZED] as const
@@ -13,7 +14,7 @@ export const GetThrows = [ErrorTypes.UNAUTHORIZED] as const
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
   const customerId = req.authContext?.actorId
   if (!customerId) {
-    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
+    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Not authenticated') })
   }
 
   const customerService = req.scope.resolve(Modules.CUSTOMER)
@@ -29,7 +30,7 @@ export const PostThrows = [ErrorTypes.UNAUTHORIZED] as const
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const customerId = req.authContext?.actorId
   if (!customerId) {
-    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
+    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Not authenticated') })
   }
 
   const customerService = req.scope.resolve(Modules.CUSTOMER)

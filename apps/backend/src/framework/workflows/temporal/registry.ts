@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { WorkflowDefinition } from '../../../core/workflows/types.js'
 import { GENERATED_WORKFLOWS } from './registry.gen.js'
@@ -39,7 +40,8 @@ function createWorkflowRegistry(definitions: WorkflowDefinition<never, unknown>[
     if (byName.has(definition.name)) {
       throw new AppError({
         type: ErrorTypes.UNEXPECTED_STATE,
-        message: `[temporal] Two workflows are registered as "${definition.name}"`,
+        message: i18n.t('[temporal] Two workflows are registered as "{name}"'),
+        values: { name: definition.name },
       })
     }
     byName.set(definition.name, definition as WorkflowDefinition<unknown, unknown>)
