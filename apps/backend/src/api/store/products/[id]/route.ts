@@ -3,6 +3,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StorePricingContextParams, StoreProductResponse } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
 import {
@@ -98,7 +99,8 @@ export const GET = async (
   if (variants.length > 0 && variantsForResponse.length === 0) {
     throw new AppError({
       type: ErrorTypes.NOT_FOUND,
-      message: `Product with id "${req.params.id}" has no price in ${req.pricingContext.currencyCode}`,
+      message: i18n.t('Product with id "{id}" has no price in {currencyCode}'),
+      values: { id: req.params.id, currencyCode: req.pricingContext.currencyCode },
     })
   }
 

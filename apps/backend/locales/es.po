@@ -32,3 +32,96 @@ msgstr "Parámetros de consulta no válidos"
 #: src/core/errors/error-handler.ts:51
 msgid "An internal error occurred"
 msgstr "Ocurrió un error interno"
+
+#. js-lingui-explicit-id
+#: src/api/store/middlewares.ts:31
+msgid "No region sells to country \"{countryCode}\""
+msgstr "Ninguna región vende al país \"{countryCode}\""
+
+#. js-lingui-explicit-id
+#: src/api/store/middlewares.ts:51
+msgid "Cannot price this request: no countryCode was given and the store has no default region"
+msgstr "No se puede calcular el precio: no se indicó countryCode y la tienda no tiene región predeterminada"
+
+#. js-lingui-explicit-id
+#: src/api/store/customers/me/addresses/[id]/route.ts:19
+#: src/api/store/customers/me/addresses/route.ts:17
+#: src/api/store/customers/me/addresses/route.ts:33
+#: src/api/store/customers/me/route.ts:13
+#: src/api/store/middlewares.ts:104
+#: src/api/store/orders/route.ts:16
+msgid "Not authenticated"
+msgstr "No has iniciado sesión"
+
+#. js-lingui-explicit-id
+#: src/api/store/products/[id]/route.ts:102
+msgid "Product with id \"{id}\" has no price in {currencyCode}"
+msgstr "El producto con id \"{id}\" no tiene precio en {currencyCode}"
+
+#. js-lingui-explicit-id
+#: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
+msgid "That payment method is no longer available."
+msgstr "Ese método de pago ya no está disponible."
+
+#. js-lingui-explicit-id
+#: src/api/store/orders/[id]/route.ts:28
+msgid "Order with id \"{id}\" not found"
+msgstr "No se encontró el pedido con id \"{id}\""
+
+#. js-lingui-explicit-id
+#: src/api/store/customers/middlewares.ts:28
+msgid "Address with id \"{id}\" not found"
+msgstr "No se encontró la dirección con id \"{id}\""
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/shipping-methods/route.ts:23
+msgid "Shipping option \"{shippingOptionId}\" is not available"
+msgstr "La opción de envío \"{shippingOptionId}\" no está disponible"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/line-items/route.ts:15
+msgid "Line item not returned after add"
+msgstr "No se devolvió el artículo después de agregarlo"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/customer/route.ts:14
+msgid "Authentication required"
+msgstr "Inicia sesión para continuar"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/register/route.ts:22
+#: src/api/store/auth/signup/route.ts:27
+msgid "Registration failed"
+msgstr "No se pudo completar el registro"
+
+#. js-lingui-explicit-id
+#: src/api/store/auth/signup/route.ts:35
+msgid "Authentication failed after registration"
+msgstr "No se pudo iniciar sesión después del registro"
+
+#. js-lingui-explicit-id
+#: src/api/store/auth/login/route.ts:21
+msgid "Invalid email or password"
+msgstr "Correo o contraseña incorrectos"
+
+#. js-lingui-explicit-id
+#: src/api/auth/token/refresh/route.ts:23
+#: src/api/auth/verification/confirm/route.ts:18
+#: src/api/auth/verification/request/route.ts:18
+msgid "Unauthorized"
+msgstr "No autorizado"
+
+#. js-lingui-explicit-id
+#: src/api/auth/verification/confirm/route.ts:33
+msgid "Expected verifiedAt to be set after confirmation"
+msgstr "Se esperaba que verifiedAt estuviera definido después de la confirmación"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/route.ts:25
+msgid "Authentication failed"
+msgstr "No se pudo iniciar sesión"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/password/route.ts:25
+msgid "Password update failed"
+msgstr "No se pudo actualizar la contraseña"
