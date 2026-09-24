@@ -2,6 +2,7 @@ import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { AuthorizePaymentSessionResult, PaymentDTO } from '@core/types/payment/common.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
+import type { Msgid } from '@proteus/utils'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -437,7 +438,7 @@ test.describe('PaymentModuleService', () => {
       // exists, the money was never taken, and the authorization is this caller's to release.
       mockProvider.authorizePayment.mockResolvedValueOnce({ status: 'captured', data: session.data })
       mockProvider.capturePayment.mockRejectedValueOnce(
-        new AppError({ type: ErrorTypes.SERVICE_UNAVAILABLE, message: 'Gateway timed out' }),
+        new AppError({ type: ErrorTypes.SERVICE_UNAVAILABLE, message: 'Gateway timed out' as Msgid }),
       )
 
       await expect(service.authorizePaymentSession(session.id)).rejects.toMatchObject({
@@ -773,7 +774,7 @@ test.describe('PaymentModuleService', () => {
         new AppError({
           type: ErrorTypes.CONFLICT,
           code: 'payment_method_unavailable',
-          message: 'That payment method is no longer available.',
+          message: 'That payment method is no longer available.' as Msgid,
         }),
       )
 

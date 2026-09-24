@@ -1,8 +1,9 @@
 import type { StoreCurrencyDTO, StoreDTO } from '@core/types/store/common.js'
 import type { AdminStore } from '@proteus/http-schemas/admin'
+import { i18n } from '@proteus/utils'
 
 /** What every admin store route answers with when a deployment has no store to describe. */
-export const NO_STORE_CONFIGURED = 'No store is configured'
+export const NO_STORE_CONFIGURED = i18n.t('No store is configured')
 
 /**
  * The default currency leads, then the rest alphabetically.

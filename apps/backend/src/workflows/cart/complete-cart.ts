@@ -12,7 +12,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
-import { i18n } from '@proteus/utils'
+import { i18n, type Msgid } from '@proteus/utils'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
 import { missingInventoryItemMessage, prepareLineItemInventoryChecks } from './utils/variant-inventory.js'
 
@@ -42,7 +42,7 @@ const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
  * can be built on. None of them is the server being broken, which is what a 500 would claim — and
  * claiming it pages an operator every time a card bounces.
  */
-const REFUSAL_BY_STATUS: Record<UnauthorizedSessionStatus, { code: PaymentErrorCodes; message: string }> = {
+const REFUSAL_BY_STATUS: Record<UnauthorizedSessionStatus, { code: PaymentErrorCodes; message: Msgid }> = {
   error: {
     code: PaymentErrorCodes.DECLINED,
     message: i18n.t('The payment was declined. Please try another payment method.'),

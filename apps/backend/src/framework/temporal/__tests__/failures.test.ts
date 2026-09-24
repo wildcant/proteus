@@ -3,6 +3,7 @@ import { errorHandler } from '@core/errors/error-handler.js'
 import type { Translator } from '@core/i18n/types.js'
 import { noopLogger } from '@core/logger/noop-logger.js'
 import { WorkflowTerminalError } from '@core/workflows/types.js'
+import type { Msgid } from '@proteus/utils'
 import { describe, expect, it } from 'vitest'
 import { readStepFailureDetail, type StepFailureDetail } from '../failure-details.js'
 import { deserializeError, toStepApplicationFailure } from '../failures.js'
@@ -25,7 +26,11 @@ const spanish: Translator = {
 }
 
 const tooLong = () =>
-  new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Use {maximum} characters or fewer', values: { maximum: 80 } })
+  new AppError({
+    type: ErrorTypes.INVALID_DATA,
+    message: 'Use {maximum} characters or fewer' as Msgid,
+    values: { maximum: 80 },
+  })
 
 function acrossTheBoundary(error: unknown): Error {
   const failure = toStepApplicationFailure({ error, step: 'validate-cart', nonRetryable: true })

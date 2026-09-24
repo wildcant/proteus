@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import type {
   AuthenticationInput,
   AuthenticationResponse,
@@ -38,27 +39,27 @@ export abstract class AbstractAuthModuleProvider<TConfig = Record<string, unknow
     _data: AuthenticationInput,
     _authIdentityService: AuthIdentityProviderService,
   ): Promise<AuthenticationResponse> {
-    return { success: false, error: `${this.getIdentifier()} does not support register` }
+    return { success: false, error: i18n.t('This authentication provider does not support register') }
   }
 
   async authenticate(
     _data: AuthenticationInput,
     _authIdentityService: AuthIdentityProviderService,
   ): Promise<AuthenticationResponse> {
-    return { success: false, error: `${this.getIdentifier()} does not support authenticate` }
+    return { success: false, error: i18n.t('This authentication provider does not support authenticate') }
   }
 
   async update(
     _data: Record<string, unknown>,
     _authIdentityService: AuthIdentityProviderService,
   ): Promise<AuthenticationResponse> {
-    return { success: false, error: `${this.getIdentifier()} does not support update` }
+    return { success: false, error: i18n.t('This authentication provider does not support update') }
   }
 
   async validateCallback(
     _data: AuthenticationInput,
     _authIdentityService: AuthIdentityProviderService,
   ): Promise<AuthenticationResponse> {
-    return { success: false, error: `${this.getIdentifier()} does not support validateCallback` }
+    return { success: false, error: i18n.t('This authentication provider does not support validateCallback') }
   }
 }

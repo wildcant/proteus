@@ -1,3 +1,4 @@
+import type { Msgid } from '@proteus/utils'
 import type { AuthIdentityDTO, ProviderIdentityDTO } from './common.js'
 
 export type AuthenticationInput = {
@@ -9,7 +10,7 @@ export type AuthenticationResponse = {
   authIdentity?: AuthIdentityDTO & {
     providerIdentities?: ProviderIdentityDTO[]
   }
-  error?: string
+  error?: Msgid
 }
 
 export type AuthIdentityProviderService = {

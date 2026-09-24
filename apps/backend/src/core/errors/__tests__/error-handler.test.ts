@@ -2,6 +2,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { toValidationIssues } from '@core/errors/format-zod-issues.js'
 import type { Translator } from '@core/i18n/types.js'
 import { noopLogger } from '@core/logger/noop-logger.js'
+import type { Msgid } from '@proteus/utils'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { WorkflowTerminalError } from '../../workflows/types.js'
@@ -18,7 +19,7 @@ describe('AppError', () => {
   it('reads English with the values filled in, and keeps the message id and values', () => {
     const error = new AppError({
       type: ErrorTypes.INVALID_DATA,
-      message: 'Use {maximum} characters or fewer',
+      message: 'Use {maximum} characters or fewer' as Msgid,
       values: { maximum: 80 },
     })
 
@@ -28,7 +29,7 @@ describe('AppError', () => {
   })
 
   it('leaves a placeholder with no value as written', () => {
-    const error = new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Hello {name}' })
+    const error = new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Hello {name}' as Msgid })
 
     expect(error.message).toBe('Hello {name}')
   })
@@ -36,7 +37,7 @@ describe('AppError', () => {
 
 describe('errorHandler', () => {
   it('translates an AppError message id with its values', () => {
-    const error = new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Missing {id}', values: { id: 'p_1' } })
+    const error = new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Missing {id}' as Msgid, values: { id: 'p_1' } })
 
     const { status, json } = errorHandler(error, noopLogger, shouting)
 
@@ -48,7 +49,7 @@ describe('errorHandler', () => {
     const result = z.object({ name: z.string(), tags: z.array(z.string()) }).safeParse({ tags: [1] })
     const error = new AppError({
       type: ErrorTypes.INVALID_DATA,
-      message: 'Invalid request body',
+      message: 'Invalid request body' as Msgid,
       issues: toValidationIssues(result.error?.issues ?? []),
     })
 
@@ -66,7 +67,7 @@ describe('errorHandler', () => {
   })
 
   it('translates the AppError a WorkflowTerminalError wraps', () => {
-    const cause = new AppError({ type: ErrorTypes.CONFLICT, message: 'Taken' })
+    const cause = new AppError({ type: ErrorTypes.CONFLICT, message: 'Taken' as Msgid })
 
     const { json } = errorHandler(new WorkflowTerminalError(cause), noopLogger, shouting)
 
@@ -74,7 +75,11 @@ describe('errorHandler', () => {
   })
 
   it('translates the generic message for server errors and unknown throws', () => {
-    const db = errorHandler(new AppError({ type: ErrorTypes.DB_ERROR, message: 'secret' }), noopLogger, shouting)
+    const db = errorHandler(
+      new AppError({ type: ErrorTypes.DB_ERROR, message: 'secret' as Msgid }),
+      noopLogger,
+      shouting,
+    )
     const plain = errorHandler(new Error('boom'), noopLogger, shouting)
 
     expect(db.json.message).toBe('[xx] An internal error occurred {}')
