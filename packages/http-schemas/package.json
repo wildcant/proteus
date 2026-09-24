@@ -20,13 +20,13 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "catalog:",
-    "@lingui/core": "6.7.0",
+    "@lingui/core": "catalog:",
     "@proteus/utils": "workspace:*",
     "bignumber.js": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@lingui/cli": "6.7.0",
+    "@lingui/cli": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

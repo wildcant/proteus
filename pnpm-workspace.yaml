@@ -35,6 +35,12 @@ catalog:
   "@biomejs/biome": 2.5.4
   "@dotenvx/dotenvx": ^2.17.1
   "@faker-js/faker": ^10.5.0
+  # One Lingui version across every package: the macro, the compiler and the runtime read one catalog format.
+  "@lingui/babel-plugin-lingui-macro": 6.7.0
+  "@lingui/cli": 6.7.0
+  "@lingui/core": 6.7.0
+  "@lingui/react": 6.7.0
+  "@lingui/vite-plugin": 6.7.0
   "@playwright/test": ^1.62.1
   "@tailwindcss/vite": ^4.3.3
   "@tanstack/devtools-vite": ^0.8.5 # was: latest

@@ -13,26 +13,30 @@ const clock = () => {
 }
 
 describe('createDefaultLanguage', () => {
-  it('answers English on a cold instance, then the default market language once read', async () => {
+  it('answers the first request on a cold instance in the default market language', async () => {
     const load = vi.fn(async () => 'es-CO')
     const defaultLanguage = createDefaultLanguage({ load, logger: noopLogger })
 
-    expect(defaultLanguage.get()).toBe('en')
-    await defaultLanguage.refresh()
-
-    expect(defaultLanguage.get()).toBe('es')
+    expect(await defaultLanguage.get()).toBe('es')
+    expect(await defaultLanguage.get()).toBe('es')
     expect(load).toHaveBeenCalledTimes(1)
   })
 
-  it('collapses concurrent cold reads into one load', async () => {
+  it('collapses concurrent cold reads into one load, all answered in the default market language', async () => {
     const load = vi.fn(async () => 'es-CO')
     const defaultLanguage = createDefaultLanguage({ load, logger: noopLogger })
 
-    defaultLanguage.get()
-    defaultLanguage.get()
-    await defaultLanguage.refresh()
-
+    expect(await Promise.all([defaultLanguage.get(), defaultLanguage.get()])).toEqual(['es', 'es'])
     expect(load).toHaveBeenCalledTimes(1)
+  })
+
+  it('answers English when the first read fails', async () => {
+    const load = vi.fn(async () => {
+      throw new Error('db down')
+    })
+    const defaultLanguage = createDefaultLanguage({ load, logger: noopLogger })
+
+    expect(await defaultLanguage.get()).toBe('en')
   })
 
   it('serves the held language while a stale entry refreshes', async () => {
@@ -42,10 +46,10 @@ describe('createDefaultLanguage', () => {
     await defaultLanguage.refresh()
 
     advance(5 * 60 * 1000)
-    expect(defaultLanguage.get()).toBe('es')
+    expect(await defaultLanguage.get()).toBe('es')
     await defaultLanguage.refresh()
 
-    expect(defaultLanguage.get()).toBe('en')
+    expect(await defaultLanguage.get()).toBe('en')
   })
 
   it('keeps the held language when a read fails, and English when the store names no market', async () => {
@@ -60,10 +64,10 @@ describe('createDefaultLanguage', () => {
 
     advance(5 * 60 * 1000)
     await defaultLanguage.refresh()
-    expect(defaultLanguage.get()).toBe('es')
+    expect(await defaultLanguage.get()).toBe('es')
 
     advance(30 * 1000)
     await defaultLanguage.refresh()
-    expect(defaultLanguage.get()).toBe('en')
+    expect(await defaultLanguage.get()).toBe('en')
   })
 })

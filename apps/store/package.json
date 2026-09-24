@@ -6,7 +6,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "pnpm run i18n:watch & dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
+    "dev": "dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
     "dev:workerd": "VITE_BACKEND_URL=http://localhost:8787 dotenvx run --env-file=../../.env.local -- vite dev --port 3001",
     "dev:test": "dotenvx run --env-file=../../.env.test --quiet -- vite dev --port 3011 --mode test",
     "test:e2e": "dotenvx run --env-file=../../.env.test --quiet -- playwright test",
@@ -25,8 +25,8 @@
     "i18n:watch": "lingui extract --watch"
   },
   "dependencies": {
-    "@lingui/core": "6.7.0",
-    "@lingui/react": "6.7.0",
+    "@lingui/core": "catalog:",
+    "@lingui/react": "catalog:",
     "@proteus/http-schemas": "workspace:*",
     "@proteus/icons": "workspace:*",
     "@proteus/ui": "workspace:*",
@@ -55,9 +55,9 @@
     "@cloudflare/vite-plugin": "^1.47.0",
     "@dotenvx/dotenvx": "catalog:",
     "@faker-js/faker": "catalog:",
-    "@lingui/babel-plugin-lingui-macro": "6.7.0",
-    "@lingui/cli": "6.7.0",
-    "@lingui/vite-plugin": "6.7.0",
+    "@lingui/babel-plugin-lingui-macro": "catalog:",
+    "@lingui/cli": "catalog:",
+    "@lingui/vite-plugin": "catalog:",
     "@playwright/test": "catalog:",
     "@proteus/frontend-structure": "workspace:*",
     "@proteus/testing": "workspace:*",

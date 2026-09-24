@@ -3,7 +3,6 @@ import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
-import { vi } from 'vitest'
 import { z } from 'zod'
 
 /**
@@ -70,16 +69,26 @@ test.describe('error responses', () => {
     ])
   })
 
-  test('answer in English on a cold instance, then in the default market language', async ({ expect, factories }) => {
+  test('answer the first headerless request on a cold instance in the default market language', async ({
+    expect,
+    factories,
+  }) => {
     const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
     await factories.create.country({ id: 'zz', displayName: 'Andes', regionId: region.id, localeCode: 'es-CO' })
     await factories.create.store({ defaultRegionId: region.id })
 
-    expect((await fail()).body.message).toBe('Use 80 characters or fewer')
+    expect((await fail()).body.message).toBe('Usa 80 caracteres o menos')
+  })
 
-    await vi.waitFor(async () => {
-      expect((await fail({ 'x-proteus-locale': 'fr-FR' })).body.message).toBe('Usa 80 caracteres o menos')
-    })
+  test('answer an unsupported locale on a cold instance in the default market language', async ({
+    expect,
+    factories,
+  }) => {
+    const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'zz', displayName: 'Andes', regionId: region.id, localeCode: 'es-CO' })
+    await factories.create.store({ defaultRegionId: region.id })
+
+    expect((await fail({ 'x-proteus-locale': 'fr-FR' })).body.message).toBe('Usa 80 caracteres o menos')
   })
 })
 
@@ -116,8 +125,6 @@ test.describe('request validation errors', () => {
     await factories.create.country({ id: 'zz', displayName: 'Andes', regionId: region.id, localeCode: 'es-CO' })
     await factories.create.store({ defaultRegionId: region.id })
 
-    await vi.waitFor(async () => {
-      expect((await invalidBody()).body.message).toMatch(/^Cuerpo de la solicitud no válido: name: Usa 3 caracteres/)
-    })
+    expect((await invalidBody()).body.message).toMatch(/^Cuerpo de la solicitud no válido: name: Usa 3 caracteres/)
   })
 })

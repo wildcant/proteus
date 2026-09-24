@@ -1,8 +1,8 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { errorHandler } from '@core/errors/error-handler.js'
+import type { Translator } from '@core/i18n/types.js'
 import { noopLogger } from '@core/logger/noop-logger.js'
 import { WorkflowTerminalError } from '@core/workflows/types.js'
-import { createLinguiTranslator } from '@framework/i18n/lingui-translator.js'
 import { describe, expect, it } from 'vitest'
 import { readStepFailureDetail, type StepFailureDetail } from '../failure-details.js'
 import { deserializeError, toStepApplicationFailure } from '../failures.js'
@@ -13,7 +13,17 @@ import { payloadConverter } from '../payload-converter.js'
  * the error and the route translates it. This walks that path without a server: the failure the
  * Activity raises, its details through the payload converter, and `errorHandler` on the rebuilt
  * error. A plain string, not `i18n.t()`: the extractor scans tests too, and the id is catalogued.
+ *
+ * The translator is a stand-in keyed on the msgid, because this folder may not reach the Lingui
+ * adapter; `temporal-adapter.server.test.ts` runs the same failure through the real one over HTTP.
  */
+const spanish: Translator = {
+  locale: 'es',
+  translate: (message, values) =>
+    message === 'Use {maximum} characters or fewer' ? `Usa ${values?.maximum} caracteres o menos` : message,
+  translateIssue: (issue) => issue.message,
+}
+
 const tooLong = () =>
   new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Use {maximum} characters or fewer', values: { maximum: 80 } })
 
@@ -31,7 +41,7 @@ describe('step failures across the Temporal boundary', () => {
     expect(rebuilt).toMatchObject({ msgid: 'Use {maximum} characters or fewer', values: { maximum: 80 } })
     expect(rebuilt.message).toBe('Use 80 characters or fewer')
 
-    const { status, json } = errorHandler(rebuilt, noopLogger, createLinguiTranslator('es-CO', 'en'))
+    const { status, json } = errorHandler(rebuilt, noopLogger, spanish)
     expect(status).toBe(400)
     expect(json.message).toBe('Usa 80 caracteres o menos')
   })
@@ -40,7 +50,7 @@ describe('step failures across the Temporal boundary', () => {
     const rebuilt = acrossTheBoundary(new WorkflowTerminalError(tooLong()))
 
     expect(rebuilt).toBeInstanceOf(WorkflowTerminalError)
-    const { json } = errorHandler(rebuilt, noopLogger, createLinguiTranslator('es-CO', 'en'))
+    const { json } = errorHandler(rebuilt, noopLogger, spanish)
     expect(json.message).toBe('Usa 80 caracteres o menos')
   })
 })

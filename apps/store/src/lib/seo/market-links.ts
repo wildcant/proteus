@@ -18,7 +18,7 @@ export type HeadLink = { rel: 'canonical'; href: string } | { rel: 'alternate'; 
  * A page no market was resolved for is one the router answers with a not-found, and a not-found
  * has no address worth declaring, so it gets nothing.
  */
-export function marketHeadLinks(market: MarketContext, pathname: string): Array<HeadLink> {
+function marketHeadLinks(market: MarketContext, pathname: string): Array<HeadLink> {
   if (!market.resolvedFromUrl) return []
   return [
     { rel: 'canonical', href: joinMarketSegment(market.current.localeCode, pathname) },
