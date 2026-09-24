@@ -13,6 +13,16 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: formatPrice(item.unitPrice, order.currencyCode)
+#: src/features/orders/components/order-items.tsx:58
+msgid "{0} each"
+msgstr "{0} c/u"
+
+#. placeholder {0}: savedMethodName(method)
+#: src/features/account/components/payment-methods-book-view.tsx:81
+msgid "{0}, your default card"
+msgstr "{0}, tu tarjeta predeterminada"
+
 #: src/features/products/components/product-gallery.tsx:99
 msgid "{alt} — view {position} of {count}"
 msgstr "{alt} — vista {position} de {count}"
@@ -33,9 +43,33 @@ msgstr "{label} se eliminará de tu libreta de direcciones. Esta acción no se p
 msgid "{remaining, plural, one {Only # left} other {Only # left}}"
 msgstr "{remaining, plural, one {Solo queda #} other {Solo quedan #}}"
 
+#: src/features/orders/components/payment-details.tsx:57
+msgid "{total} due"
+msgstr "{total} pendiente"
+
+#: src/features/orders/components/payment-details.tsx:47
+msgid "{total} on {paidAt}"
+msgstr "{total} el {paidAt}"
+
+#: src/features/orders/components/payment-details.tsx:54
+msgid "{total} reserved by your bank, charged when your order ships"
+msgstr "{total} reservado por tu banco; se cobra cuando se envíe tu pedido"
+
+#: src/features/orders/components/payment-details.tsx:50
+msgid "{total} was not charged"
+msgstr "No se cobraron {total}"
+
 #: src/components/footer.tsx:138
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
+
+#: src/features/account/components/saved-card-row.tsx:134
+msgid "<0>Couldn't remove that card.</0> Try again."
+msgstr "<0>No pudimos eliminar esa tarjeta.</0> Inténtalo de nuevo."
+
+#: src/features/account/components/saved-card-row.tsx:120
+msgid "<0>Expired</0> — add this card again to use it"
+msgstr "<0>Vencida</0>: agrégala de nuevo para usarla"
 
 #: src/features/cart/components/cart-drawer.tsx:68
 msgid "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
@@ -44,6 +78,11 @@ msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu com
 #: src/features/products/api/products.ts:46
 msgid "A–Z"
 msgstr "A–Z"
+
+#: src/features/account/components/account-detail.tsx:21
+#: src/features/orders/components/order-content.tsx:28
+msgid "Account"
+msgstr "Cuenta"
 
 #: src/features/address/components/address-book.tsx:88
 msgid "Add addresses to your address book and you'll be able to checkout faster"
@@ -67,6 +106,10 @@ msgstr "Dirección"
 msgid "Address book"
 msgstr "Libreta de direcciones"
 
+#: src/features/account/components/account-detail.tsx:31
+msgid "Address Book"
+msgstr "Direcciones"
+
 #: src/features/address/components/address-book.tsx:85
 msgid "Address book is empty"
 msgstr "Tu libreta de direcciones está vacía"
@@ -83,6 +126,10 @@ msgstr "¿Ya tienes una cuenta?"
 msgid "Apartment, suite, etc."
 msgstr "Apartamento, oficina, etc."
 
+#: src/features/orders/components/payment-details.tsx:57
+msgid "Awaiting payment"
+msgstr "Pago pendiente"
+
 #: src/features/products/components/search-drawer.tsx:46
 msgid "Back"
 msgstr "Atrás"
@@ -92,6 +139,7 @@ msgstr "Atrás"
 msgid "Back to {0}"
 msgstr "Volver a {0}"
 
+#: src/features/account/components/payment-methods-book-view.tsx:44
 #: src/features/address/components/address-book.tsx:20
 #: src/routes/_main/_authed/account/orders/$orderId.tsx:30
 msgid "Back to account"
@@ -126,6 +174,14 @@ msgstr "Se calcula al finalizar la compra"
 #: src/features/address/components/address-form.tsx:82
 msgid "Cancel"
 msgstr "Cancelar"
+
+#: src/features/orders/utils/order-progress.ts:48
+msgid "Canceled"
+msgstr "Cancelado"
+
+#: src/features/account/components/payment-methods-book-view.tsx:108
+msgid "Cards are saved at checkout — choose \"Save this card for next time\" when you pay and it will be here for your next order."
+msgstr "Las tarjetas se guardan al pagar: elige \"Guardar esta tarjeta para la próxima vez\" y aparecerá aquí en tu próximo pedido."
 
 #: src/features/cart/components/cart-trigger.tsx:23
 msgid "Cart"
@@ -164,6 +220,10 @@ msgstr "Cerrar búsqueda"
 msgid "Company"
 msgstr "Empresa"
 
+#: src/features/orders/components/delivery-details.tsx:59
+msgid "Confirmation sent to"
+msgstr "Confirmación enviada a"
+
 #: src/routes/_auth/route.tsx:20
 #: src/routes/_main/order/$orderId/confirmed.tsx:35
 msgid "Continue shopping"
@@ -185,9 +245,25 @@ msgstr "Creando cuenta..."
 msgid "Decrease quantity for {label}"
 msgstr "Disminuir cantidad de {label}"
 
+#: src/features/account/components/saved-card-row.tsx:115
+msgid "Default"
+msgstr "Predeterminada"
+
 #: src/features/address/components/address-card.tsx:80
 msgid "Delete"
 msgstr "Eliminar"
+
+#: src/features/orders/utils/fulfillment-labels.ts:10
+msgid "Delivered"
+msgstr "Entregado"
+
+#: src/features/orders/components/delivery-details.tsx:26
+msgid "Delivery"
+msgstr "Entrega"
+
+#: src/features/account/components/details-panel.tsx:20
+msgid "Details"
+msgstr "Datos"
 
 #: src/routes/_auth/login.tsx:50
 msgid "Don't have an account?"
@@ -201,6 +277,7 @@ msgstr "Editar"
 msgid "Edit address"
 msgstr "Editar dirección"
 
+#: src/features/account/components/details-panel.tsx:31
 #: src/features/auth/components/forgot-password-form.tsx:15
 #: src/features/auth/components/login-form.tsx:16
 #: src/features/auth/components/register-form.tsx:21
@@ -210,6 +287,14 @@ msgstr "Correo electrónico"
 #: src/routes/_auth/verify.tsx:60
 msgid "Email verified"
 msgstr "Correo verificado"
+
+#: src/features/account/components/payment-methods-book-view.tsx:90
+msgid "Every card here has expired. Pay with a new card at checkout to save a usable one."
+msgstr "Todas tus tarjetas vencieron. Paga con una tarjeta nueva al finalizar la compra para guardar una que funcione."
+
+#: src/features/account/components/saved-card-row.tsx:128
+msgid "Expires this month"
+msgstr "Vence este mes"
 
 #: src/features/address/api/addresses.ts:62
 msgid "Failed to add address"
@@ -234,6 +319,10 @@ msgstr "No pudimos solicitar el cambio de contraseña"
 #: src/features/address/api/addresses.ts:86
 msgid "Failed to save address"
 msgstr "No se pudo guardar la dirección"
+
+#: src/features/account/api/payment-methods.ts:159
+msgid "Failed to set default card"
+msgstr "No pudimos cambiar tu tarjeta predeterminada"
 
 #: src/features/cart/api/cart.ts:206
 msgid "Failed to transfer cart"
@@ -264,6 +353,14 @@ msgstr "¿Olvidaste tu contraseña?"
 msgid "From {startingPrice}"
 msgstr "Desde {startingPrice}"
 
+#: src/features/account/components/account-detail.tsx:23
+msgid "Hello"
+msgstr "Hola"
+
+#: src/features/account/components/account-detail.tsx:23
+msgid "Hello, {firstName}"
+msgstr "Hola, {firstName}"
+
 #: src/routes/_auth/verify.tsx:33
 msgid "Hold on while we confirm your email."
 msgstr "Espera mientras confirmamos tu correo."
@@ -289,6 +386,10 @@ msgstr "Sus precios siguen en {0}"
 msgid "It may not be one we sell here."
 msgstr "Puede que no lo vendamos aquí."
 
+#: src/features/account/components/saved-card-row.tsx:75
+msgid "Keep"
+msgstr "Conservar"
+
 #: src/features/address/components/address-form.tsx:31
 msgid "Label (e.g. Home)"
 msgstr "Nombre (p. ej., Casa)"
@@ -311,6 +412,11 @@ msgstr "Hecho en"
 msgid "Main address"
 msgstr "Dirección principal"
 
+#. placeholder {0}: savedMethodName(method)
+#: src/features/account/components/payment-methods-book-view.tsx:82
+msgid "Make {0} the default"
+msgstr "Usar {0} como predeterminada"
+
 #: src/features/address/components/address-card.tsx:47
 msgid "Make this my main"
 msgstr "Usar como principal"
@@ -323,6 +429,10 @@ msgstr "Usar como mi dirección principal"
 msgid "Material"
 msgstr "Material"
 
+#: src/features/account/components/details-panel.tsx:25
+msgid "Name"
+msgstr "Nombre"
+
 #: src/features/auth/components/reset-password-form.tsx:16
 msgid "New password"
 msgstr "Nueva contraseña"
@@ -331,11 +441,19 @@ msgstr "Nueva contraseña"
 msgid "Newest"
 msgstr "Más recientes"
 
+#: src/features/orders/components/delivery-details.tsx:39
+msgid "No address provided"
+msgstr "Sin dirección"
+
 #: src/features/cart/api/cart.ts:82
 #: src/features/cart/api/cart.ts:149
 #: src/features/cart/api/cart.ts:173
 msgid "No cart exists"
 msgstr "No existe ningún carrito"
+
+#: src/features/orders/components/payment-details.tsx:50
+msgid "No payment taken"
+msgstr "No se realizó ningún cobro"
 
 #: src/routes/_auth/forgot-password.tsx:33
 msgid "No problem. Enter your account email address and we'll send you instructions so you can reset your password."
@@ -353,14 +471,32 @@ msgstr "Ningún producto coincide con “{q}”."
 msgid "No products yet."
 msgstr "Aún no hay productos."
 
+#: src/features/account/components/payment-methods-book-view.tsx:105
+msgid "No saved cards"
+msgstr "No tienes tarjetas guardadas"
+
 #: src/routes/_auth/verify.tsx:75
 msgid "Open this link in the same browser you signed up with."
 msgstr "Abre este enlace en el mismo navegador con el que te registraste."
+
+#: src/features/orders/components/order-confirmed-content.tsx:39
+#: src/features/orders/components/order-content.tsx:35
+msgid "Order #{displayId}"
+msgstr "Pedido #{displayId}"
+
+#: src/features/orders/components/order-progress-track.tsx:34
+msgid "Order progress"
+msgstr "Progreso del pedido"
 
 #: src/features/cart/components/cart-drawer.tsx:90
 msgid "Order summary"
 msgstr "Resumen del pedido"
 
+#: src/features/account/components/orders-panel.tsx:21
+msgid "Orders"
+msgstr "Pedidos"
+
+#: src/features/account/components/password-panel.tsx:16
 #: src/features/auth/components/login-form.tsx:19
 #: src/features/auth/components/register-form.tsx:24
 msgid "Password"
@@ -370,18 +506,51 @@ msgstr "Contraseña"
 msgid "Password updated"
 msgstr "Contraseña actualizada"
 
+#: src/features/orders/components/payment-details.tsx:19
+msgid "Payment"
+msgstr "Pago"
+
+#: src/features/orders/components/payment-details.tsx:53
+msgid "Payment authorized"
+msgstr "Pago autorizado"
+
+#: src/features/account/components/payment-methods-book-view.tsx:47
+msgid "Payment methods"
+msgstr "Métodos de pago"
+
+#: src/features/account/components/account-detail.tsx:32
+msgid "Payment Methods"
+msgstr "Métodos de pago"
+
+#: src/features/orders/components/payment-details.tsx:47
+msgid "Payment received"
+msgstr "Pago recibido"
+
 #: src/features/address/components/address-form.tsx:70
 msgid "Phone"
 msgstr "Teléfono"
+
+#: src/features/orders/components/order-confirmed-content.tsx:42
+#: src/features/orders/components/order-content.tsx:38
+msgid "Placed {placedAt}"
+msgstr "Realizado el {placedAt}"
 
 #: src/features/address/components/address-form.tsx:65
 msgid "Postal code"
 msgstr "Código postal"
 
+#: src/features/orders/utils/fulfillment-labels.ts:7
+msgid "Preparing"
+msgstr "En preparación"
+
 #: src/features/products/components/product-detail.tsx:42
 #: src/features/products/components/search-results.tsx:52
 msgid "Products"
 msgstr "Productos"
+
+#: src/features/orders/utils/fulfillment-labels.ts:8
+msgid "Ready to ship"
+msgstr "Listo para enviar"
 
 #: src/features/products/components/product-specs.tsx:17
 msgid "Ref."
@@ -391,6 +560,7 @@ msgstr "Ref."
 msgid "Registration failed"
 msgstr "No pudimos crear tu cuenta"
 
+#: src/features/account/components/saved-card-row.tsx:83
 #: src/features/address/components/address-card.tsx:69
 msgid "Remove"
 msgstr "Eliminar"
@@ -399,9 +569,25 @@ msgstr "Eliminar"
 msgid "Remove {label}"
 msgstr "Eliminar {label}"
 
+#: src/features/account/components/saved-card-row.tsx:144
+msgid "Remove {name}"
+msgstr "Eliminar {name}"
+
+#: src/features/account/components/saved-card-row.tsx:68
+msgid "Remove {name}?"
+msgstr "¿Eliminar {name}?"
+
 #: src/features/address/components/address-card.tsx:67
 msgid "Remove this address?"
 msgstr "¿Eliminar esta dirección?"
+
+#: src/features/account/components/saved-card-row.tsx:83
+msgid "Removing…"
+msgstr "Eliminando…"
+
+#: src/features/account/components/password-panel.tsx:19
+msgid "Reset link sent to <0>{email}</0>. Check your inbox."
+msgstr "Enviamos el enlace a <0>{email}</0>. Revisa tu bandeja de entrada."
 
 #: src/features/cart/components/cart-mismatch-banner.tsx:29
 msgid "Run transfer again"
@@ -416,10 +602,15 @@ msgstr "Guardar"
 msgid "Search"
 msgstr "Búsqueda"
 
+#: src/features/account/components/password-panel.tsx:30
+msgid "Send a reset link"
+msgstr "Enviar enlace para restablecer"
+
 #: src/features/auth/components/forgot-password-form.tsx:21
 msgid "Send reset link"
 msgstr "Enviar enlace"
 
+#: src/features/account/components/password-panel.tsx:30
 #: src/features/auth/components/forgot-password-form.tsx:21
 msgid "Sending..."
 msgstr "Enviando..."
@@ -432,13 +623,22 @@ msgstr "Crea una nueva contraseña"
 msgid "Set new password"
 msgstr "Guardar contraseña"
 
+#: src/features/orders/utils/fulfillment-labels.ts:9
+msgid "Shipped"
+msgstr "Enviado"
+
 #: src/features/cart/components/cart-drawer.tsx:98
+#: src/features/orders/components/order-summary.tsx:30
 msgid "Shipping"
 msgstr "Envío"
 
 #: src/features/products/components/product-list-header.tsx:25
 msgid "Shop"
 msgstr "Tienda"
+
+#: src/features/account/components/orders-panel.tsx:111
+msgid "Shop all products"
+msgstr "Ver todos los productos"
 
 #: src/features/products/components/gallery-dots.tsx:37
 msgid "Show image {position}"
@@ -451,6 +651,10 @@ msgstr "Mostrar imagen {position}"
 #: src/routes/_auth/verify.tsx:64
 msgid "Sign in"
 msgstr "Inicia sesión"
+
+#: src/features/account/components/account-detail.tsx:43
+msgid "Sign out"
+msgstr "Cerrar sesión"
 
 #: src/routes/_auth/login.tsx:52
 #: src/routes/_auth/signup.tsx:30
@@ -467,6 +671,10 @@ msgstr "Iniciando sesión..."
 msgid "Sold out"
 msgstr "Agotado"
 
+#: src/features/orders/components/order-error.tsx:21
+msgid "Something went wrong loading order <0>{orderId}</0>. Try again in a moment — if it keeps happening, quote that number to us."
+msgstr "Algo salió mal al cargar el pedido <0>{orderId}</0>. Inténtalo de nuevo en un momento; si sigue pasando, compártenos ese número."
+
 #: src/features/cart/components/cart-mismatch-banner.tsx:25
 msgid "Something went wrong when we tried to transfer your cart"
 msgstr "Algo salió mal al intentar transferir tu carrito"
@@ -475,9 +683,25 @@ msgstr "Algo salió mal al intentar transferir tu carrito"
 msgid "Sort by"
 msgstr "Ordenar por"
 
+#: src/features/account/components/payment-methods-book-view.tsx:114
+msgid "Start shopping"
+msgstr "Empieza a comprar"
+
 #: src/features/address/components/address-form.tsx:62
 msgid "State / Province"
 msgstr "Departamento / Estado"
+
+#: src/features/orders/components/order-summary.tsx:22
+msgid "Subtotal"
+msgstr "Subtotal"
+
+#: src/features/orders/components/order-summary.tsx:12
+msgid "Summary"
+msgstr "Resumen"
+
+#: src/features/orders/components/order-confirmed-content.tsx:27
+msgid "Thank you!"
+msgstr "¡Gracias!"
 
 #: src/features/cart/components/cart-empty.tsx:17
 msgid "There are no products in your bag"
@@ -486,6 +710,10 @@ msgstr "No hay productos en tu carrito"
 #: src/features/address/components/address-card.tsx:63
 msgid "this address"
 msgstr "esta dirección"
+
+#: src/features/orders/utils/order-progress.ts:52
+msgid "This order was canceled and will not be fulfilled."
+msgstr "Este pedido se canceló y no se enviará."
 
 #: src/features/products/components/add-to-cart.tsx:43
 msgid "This product isn't available to order yet."
@@ -496,6 +724,7 @@ msgid "This verification link is invalid or has expired. Request a new one from 
 msgstr "Este enlace de verificación no es válido o ya venció. Solicita uno nuevo desde tu cuenta."
 
 #: src/features/cart/components/cart-drawer.tsx:106
+#: src/features/orders/components/order-summary.tsx:38
 msgid "Total"
 msgstr "Total"
 
@@ -506,6 +735,10 @@ msgstr "Sigue tus pedidos, guarda tus datos y paga más rápido."
 #: src/features/cart/components/cart-mismatch-banner.tsx:29
 msgid "Transferring…"
 msgstr "Transfiriendo…"
+
+#: src/features/account/components/payment-methods-book-view.tsx:134
+msgid "Try again"
+msgstr "Intentar de nuevo"
 
 #: src/features/auth/components/reset-password-form.tsx:23
 msgid "Updating..."
@@ -537,9 +770,25 @@ msgstr "Ver todo “{debouncedTerm}”"
 msgid "We could not move your bag to {0}"
 msgstr "No pudimos mover tu carrito a {0}"
 
+#: src/features/orders/components/order-error.tsx:18
+msgid "We couldn't load this order"
+msgstr "No pudimos cargar este pedido"
+
+#: src/features/account/components/payment-methods-book-view.tsx:131
+msgid "We couldn't load your saved cards."
+msgstr "No pudimos cargar tus tarjetas guardadas."
+
 #: src/features/products/components/product-error.tsx:21
 msgid "We couldn't show this product"
 msgstr "No pudimos mostrar este producto"
+
+#: src/features/account/components/password-panel.tsx:16
+msgid "We email you a link rather than asking for your current password."
+msgstr "Te enviamos un enlace por correo en lugar de pedirte tu contraseña actual."
+
+#: src/features/orders/components/order-confirmed-content.tsx:33
+msgid "We have sent the order confirmation details to <0>{email}</0>."
+msgstr "Enviamos los detalles de confirmación del pedido a <0>{email}</0>."
 
 #: src/features/auth/components/verify-pending.tsx:11
 msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
@@ -548,6 +797,14 @@ msgstr "Te enviamos un enlace de verificación a tu correo. Haz clic en él para
 #: src/features/products/components/product-specs.tsx:19
 msgid "Weight"
 msgstr "Peso"
+
+#: src/features/account/components/orders-panel.tsx:107
+msgid "You haven't made any orders yet. When you make an order it'll show up here."
+msgstr "Aún no has hecho pedidos. Cuando hagas uno, aparecerá aquí."
+
+#: src/features/account/components/saved-card-row.tsx:70
+msgid "You'll need to enter it again next time."
+msgstr "Tendrás que ingresarla de nuevo la próxima vez."
 
 #: src/features/address/components/address-book.tsx:59
 msgid "Your addresses"
@@ -561,9 +818,21 @@ msgstr "Tu carrito"
 msgid "Your bag is empty"
 msgstr "Tu carrito está vacío"
 
+#: src/features/account/components/payment-methods-book-view.tsx:60
+msgid "Your cards"
+msgstr "Tus tarjetas"
+
+#: src/features/account/components/payment-methods-book-view.tsx:63
+msgid "Your default card is the one your next checkout starts on. Cards are saved by paying with them."
+msgstr "Tu tarjeta predeterminada es la que aparece primero en tu próxima compra. Las tarjetas se guardan al pagar con ellas."
+
 #: src/routes/_auth/verify.tsx:61
 msgid "Your email is confirmed. Sign in to pick up where you left off."
 msgstr "Tu correo está confirmado. Inicia sesión para continuar donde lo dejaste."
+
+#: src/features/orders/components/order-confirmed-content.tsx:30
+msgid "Your order was placed successfully."
+msgstr "Tu pedido se realizó con éxito."
 
 #: src/routes/_auth/reset-password.tsx:28
 msgid "Your password has been reset. Sign in with your new password to pick up where you left off."

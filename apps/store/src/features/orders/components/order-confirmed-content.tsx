@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSuspenseOrder } from '#/features/orders/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
@@ -17,17 +18,29 @@ export function OrderConfirmedContent() {
   const { orderId } = route.useParams()
   const { order } = useSuspenseOrder(orderId)
   const { formatDate } = useFormatters()
+  const { displayId, email } = order
+  const placedAt = formatDate(order.createdAt)
 
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-12 pb-16 sm:px-6 lg:px-8">
-      <h1 className="type-display text-ink">Thank you!</h1>
-      <p className="mt-4 text-ink text-sm">Your order was placed successfully.</p>
+      <h1 className="type-display text-ink">
+        <Trans>Thank you!</Trans>
+      </h1>
+      <p className="mt-4 text-ink text-sm">
+        <Trans>Your order was placed successfully.</Trans>
+      </p>
       <p className="mt-1 text-ink-muted text-sm">
-        We have sent the order confirmation details to <span className="text-ink">{order.email}</span>.
+        <Trans>
+          We have sent the order confirmation details to <span className="text-ink">{email}</span>.
+        </Trans>
       </p>
 
-      <h2 className="type-title mt-8 text-ink">Order #{order.displayId}</h2>
-      <p className="mt-2 text-ink-muted text-sm">Placed {formatDate(order.createdAt)}</p>
+      <h2 className="type-title mt-8 text-ink">
+        <Trans>Order #{displayId}</Trans>
+      </h2>
+      <p className="mt-2 text-ink-muted text-sm">
+        <Trans>Placed {placedAt}</Trans>
+      </p>
 
       <OrderProgressTrack order={order} className="mt-6" />
 
