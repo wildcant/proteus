@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { and, eq, isNull, sql } from 'drizzle-orm'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import { dbErrorMapper } from '../../../core/errors/db-error-mapper.js'
@@ -38,7 +39,11 @@ export class InventoryLevelRepository extends BaseRepository(inventoryLevelTable
 
     const row = rows[0] as InventoryLevel | undefined
     if (!row) {
-      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Inventory level with id "${id}" not found` })
+      throw new AppError({
+        type: ErrorTypes.NOT_FOUND,
+        message: i18n.t('Inventory level with id "{id}" not found'),
+        values: { id },
+      })
     }
     return row
   }
