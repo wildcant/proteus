@@ -8,6 +8,7 @@ import type { CreateCustomerDTO } from '@core/types/customer/mutations.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 import { sendVerificationEmail } from '../auth/send-verification-email.js'
 import { createCustomerAccountWorkflow } from './create-customer-account.js'
 
@@ -60,7 +61,8 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
         if (!providerIdentity) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.UNEXPECTED_STATE,
-            message: `Provider identity for "${input.authProvider}" not found on auth identity "${authIdentity.id}"`,
+            message: i18n.t('Provider identity for "{authProvider}" not found on auth identity "{authIdentityId}"'),
+            values: { authProvider: input.authProvider, authIdentityId: authIdentity.id },
           })
         }
 
@@ -113,9 +115,10 @@ export const completeCustomerAuthWorkflow = createWorkflow<CompleteCustomerAuthI
       if (!customerData) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message:
-            `No customer data available for auth identity "${input.authIdentityId}". ` +
-            'Expected either input.customerData or appMetadata.pending.',
+          message: i18n.t(
+            'No customer data available for auth identity "{authIdentityId}". Expected either input.customerData or appMetadata.pending.',
+          ),
+          values: { authIdentityId: input.authIdentityId },
         })
       }
 

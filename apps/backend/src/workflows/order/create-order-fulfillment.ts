@@ -5,6 +5,7 @@ import type { OrderDTO } from '@core/types/order/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 import { computeInventoryAdjustments } from './utils/compute-inventory-adjustments.js'
 
@@ -30,7 +31,8 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       if (order.status !== 'pending') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot fulfill order ${input.orderId}: status is "${order.status}", expected "pending"`,
+          message: i18n.t('Cannot fulfill order {orderId}: status is "{status}", expected "pending"'),
+          values: { orderId: input.orderId, status: order.status },
         })
       }
 
@@ -41,7 +43,8 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       if (status !== 'unfulfilled') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot fulfill order ${input.orderId}: fulfillment status is "${status}", expected "unfulfilled"`,
+          message: i18n.t('Cannot fulfill order {orderId}: fulfillment status is "{status}", expected "unfulfilled"'),
+          values: { orderId: input.orderId, status },
         })
       }
     })
@@ -67,14 +70,18 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
         if (item.lineItemId == null) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_ALLOWED,
-            message: `Fulfillment item "${item.title}" names no line item of order ${input.orderId}`,
+            message: i18n.t('Fulfillment item "{title}" names no line item of order {orderId}'),
+            values: { title: item.title, orderId: input.orderId },
           })
         }
 
         if (!lineItemIds.has(item.lineItemId)) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_ALLOWED,
-            message: `Fulfillment item references line item "${item.lineItemId}" which does not exist in order ${input.orderId}`,
+            message: i18n.t(
+              'Fulfillment item references line item "{lineItemId}" which does not exist in order {orderId}',
+            ),
+            values: { lineItemId: item.lineItemId, orderId: input.orderId },
           })
         }
 
@@ -85,9 +92,13 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       if (uncovered.length > 0) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Fulfillment for order ${input.orderId} must cover every line item at its full quantity: ${uncovered
-            .map((item) => `"${item.id}" asked for ${requested.get(item.id) ?? 0} of ${item.quantity}`)
-            .join('; ')}`,
+          message: i18n.t('Fulfillment for order {orderId} must cover every line item at its full quantity: {items}'),
+          values: {
+            orderId: input.orderId,
+            items: uncovered
+              .map((item) => `"${item.id}" asked for ${requested.get(item.id) ?? 0} of ${item.quantity}`)
+              .join('; '),
+          },
         })
       }
 
@@ -95,7 +106,8 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       if (shippingRequirements.size > 1) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Order ${input.orderId} contains items with mixed shipping requirements`,
+          message: i18n.t('Order {orderId} contains items with mixed shipping requirements'),
+          values: { orderId: input.orderId },
         })
       }
     })
@@ -127,7 +139,10 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
         if (held.length > 1) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_ALLOWED,
-            message: `Order ${input.orderId} reserves stock at more than one location (${held.join(', ')}), so the fulfillment has to name the one it ships from`,
+            message: i18n.t(
+              'Order {orderId} reserves stock at more than one location ({held}), so the fulfillment has to name the one it ships from',
+            ),
+            values: { orderId: input.orderId, held: held.join(', ') },
           })
         }
 
@@ -138,9 +153,14 @@ export const createOrderFulfillmentWorkflow = createWorkflow<CreateOrderFulfillm
       if (elsewhere.length > 0) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot fulfill order ${input.orderId} from location "${requested}": its stock is reserved at ${elsewhere
-            .map((location) => `"${location}"`)
-            .join(', ')}`,
+          message: i18n.t(
+            'Cannot fulfill order {orderId} from location "{requested}": its stock is reserved at {locations}',
+          ),
+          values: {
+            orderId: input.orderId,
+            requested,
+            locations: elsewhere.map((location) => `"${location}"`).join(', '),
+          },
         })
       }
 

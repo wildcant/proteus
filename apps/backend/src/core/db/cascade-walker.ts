@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import type { ExtractTablesWithRelations, SQL } from 'drizzle-orm'
 import { and, inArray, isNull, sql } from 'drizzle-orm'
 import type { PgColumn, PgTable, PgTransaction } from 'drizzle-orm/pg-core'
@@ -138,7 +139,8 @@ async function assertNothingBlocks(client: Transaction, graph: CascadeGraph, pla
 
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `Cannot delete from ${tableName(table)}: still referenced from ${edge.relationship}`,
+        message: i18n.t('Cannot delete from {table}: still referenced from {relationship}'),
+        values: { table: tableName(table), relationship: edge.relationship },
       })
     }
   }
@@ -188,7 +190,7 @@ async function readStamp(client: Transaction): Promise<DeletionStamp> {
   if (!row) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: 'The database returned no timestamp to identify this deletion',
+      message: i18n.t('The database returned no timestamp to identify this deletion'),
     })
   }
   return row.stamp
@@ -334,7 +336,8 @@ function idColumn(table: PgTable): PgColumn {
   if (!id) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: `${config.name} has no single-column primary key, so the cascade cannot address its rows`,
+      message: i18n.t('{name} has no single-column primary key, so the cascade cannot address its rows'),
+      values: { name: config.name },
     })
   }
   return id
@@ -346,7 +349,8 @@ function softDeleteColumn(table: PgTable): PgColumn {
   if (!column) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: `${config.name} has no ${SOFT_DELETE_COLUMN} column`,
+      message: i18n.t('{name} has no {column} column'),
+      values: { name: config.name, column: SOFT_DELETE_COLUMN },
     })
   }
   return column

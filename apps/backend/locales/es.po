@@ -31,6 +31,454 @@ msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
 "  {routes}"
 
 #. js-lingui-explicit-id
+#: src/workflows/user/accept-invite.ts:41
+msgid "Failed to register auth identity"
+msgstr "No se pudo registrar la identidad de autenticación"
+
+#. js-lingui-explicit-id
+#: src/workflows/user/accept-invite.ts:77
+msgid "Auth identity \"{authIdentityId}\" already has \"userId\" set"
+msgstr "La identidad de autenticación \"{authIdentityId}\" ya tiene \"userId\" asignado"
+
+#. js-lingui-explicit-id
+#: src/workflows/region/steps/assert-store-sells-currency.ts:33
+msgid "The store does not sell in \"{currencyCode}\". Its currencies are: {sold}."
+msgstr "La tienda no vende en \"{currencyCode}\". Sus monedas son: {sold}."
+
+#. js-lingui-explicit-id
+#: src/workflows/region/steps/assert-store-sells-currency.ts:34
+msgid "The store does not sell in \"{currencyCode}\". It has no currencies configured."
+msgstr "La tienda no vende en \"{currencyCode}\". No tiene monedas configuradas."
+
+#. js-lingui-explicit-id
+#: src/workflows/region/steps/assign-countries-to-region.ts:53
+msgid "\"{displayName}\" is already sold to by region \"{regionId}\". Remove it from that region first."
+msgstr "\"{displayName}\" ya está asignado a la región \"{regionId}\". Primero quítalo de esa región."
+
+#. js-lingui-explicit-id
+#: src/workflows/product/update-product-variant.ts:142
+msgid "Variant \"{variantId}\" cannot stop being tracked while orders hold its stock: reservation(s) {reservations}. Fulfil or cancel them first."
+msgstr "La variante \"{variantId}\" no puede dejar de controlar inventario mientras haya pedidos que reservan su stock: reserva(s) {reservations}. Primero complétalas o cancélalas."
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-to-cart.ts:62
+#: src/workflows/cart/complete-cart.ts:296
+#: src/workflows/cart/update-cart.ts:161
+#: src/workflows/payment/create-payment-collection-for-cart.ts:30
+#: src/workflows/payment/reprice-payment-session.ts:57
+msgid "Cart \"{cartId}\" is already completed"
+msgstr "El carrito \"{cartId}\" ya está completado"
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/create-payment-collection-for-cart.ts:50
+msgid "Cart \"{cartId}\" has no items or zero total"
+msgstr "El carrito \"{cartId}\" no tiene productos o su total es cero"
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/reprice-payment-session.ts:37
+msgid "Payment session \"{sessionId}\" is not part of payment collection \"{collectionId}\""
+msgstr "La sesión de pago \"{sessionId}\" no forma parte de la colección de pagos \"{collectionId}\""
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/reprice-payment-session.ts:46
+msgid "Payment collection \"{collectionId}\" is not linked to a cart, so it has no total to re-price against"
+msgstr "La colección de pagos \"{collectionId}\" no está vinculada a un carrito, así que no tiene un total contra el cual recalcular el precio"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/cancel-order.ts:26
+msgid "Cannot cancel order {orderId}: fulfillment status is \"{status}\", expected \"unfulfilled\""
+msgstr "No se puede cancelar el pedido {orderId}: el estado de preparación es \"{status}\", se esperaba \"unfulfilled\""
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-fulfillment.ts:34
+msgid "Cannot fulfill order {orderId}: status is \"{status}\", expected \"pending\""
+msgstr "No se puede preparar el pedido {orderId}: el estado es \"{status}\", se esperaba \"pending\""
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-fulfillment.ts:46
+msgid "Cannot fulfill order {orderId}: fulfillment status is \"{status}\", expected \"unfulfilled\""
+msgstr "No se puede preparar el pedido {orderId}: el estado de preparación es \"{status}\", se esperaba \"unfulfilled\""
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-fulfillment.ts:73
+msgid "Fulfillment item \"{title}\" names no line item of order {orderId}"
+msgstr "El artículo de preparación \"{title}\" no corresponde a ninguna línea del pedido {orderId}"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-fulfillment.ts:81
+msgid "Fulfillment item references line item \"{lineItemId}\" which does not exist in order {orderId}"
+msgstr "El artículo de preparación hace referencia a la línea \"{lineItemId}\", que no existe en el pedido {orderId}"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-fulfillment.ts:95
+msgid "Fulfillment for order {orderId} must cover every line item at its full quantity: {items}"
+msgstr "La preparación del pedido {orderId} debe cubrir cada línea con su cantidad completa: {items}"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-fulfillment.ts:109
+msgid "Order {orderId} contains items with mixed shipping requirements"
+msgstr "El pedido {orderId} tiene artículos con requisitos de envío distintos"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-fulfillment.ts:142
+msgid "Order {orderId} reserves stock at more than one location ({held}), so the fulfillment has to name the one it ships from"
+msgstr "El pedido {orderId} reserva stock en más de una ubicación ({held}), así que la preparación debe indicar desde cuál se envía"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-fulfillment.ts:156
+msgid "Cannot fulfill order {orderId} from location \"{requested}\": its stock is reserved at {locations}"
+msgstr "No se puede preparar el pedido {orderId} desde la ubicación \"{requested}\": su stock está reservado en {locations}"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-shipment.ts:33
+msgid "Cannot ship order {orderId}: order is canceled"
+msgstr "No se puede enviar el pedido {orderId}: el pedido está cancelado"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-shipment.ts:43
+#: src/workflows/order/mark-order-delivered.ts:39
+msgid "Fulfillment {fulfillmentId} is not linked to order {orderId}"
+msgstr "La preparación {fulfillmentId} no está vinculada al pedido {orderId}"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-shipment.ts:55
+msgid "Cannot ship order {orderId}: fulfillment is canceled"
+msgstr "No se puede enviar el pedido {orderId}: la preparación está cancelada"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/create-order-shipment.ts:65
+msgid "Cannot ship order {orderId}: fulfillment status is \"{status}\", expected \"fulfilled\""
+msgstr "No se puede enviar el pedido {orderId}: el estado de preparación es \"{status}\", se esperaba \"fulfilled\""
+
+#. js-lingui-explicit-id
+#: src/workflows/order/mark-order-delivered.ts:29
+msgid "Cannot mark order {orderId} as delivered: order is canceled"
+msgstr "No se puede marcar el pedido {orderId} como entregado: el pedido está cancelado"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/mark-order-delivered.ts:51
+msgid "Cannot mark order {orderId} as delivered: fulfillment is canceled"
+msgstr "No se puede marcar el pedido {orderId} como entregado: la preparación está cancelada"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/mark-order-delivered.ts:61
+msgid "Cannot mark order {orderId} as delivered: fulfillment status is \"{status}\", expected \"shipped\""
+msgstr "No se puede marcar el pedido {orderId} como entregado: el estado de preparación es \"{status}\", se esperaba \"shipped\""
+
+#. js-lingui-explicit-id
+#: src/workflows/order/utils/compute-inventory-adjustments.ts:36
+msgid "No reservation found for managed-inventory item {lineItemId}"
+msgstr "No se encontró una reserva para el artículo con inventario controlado {lineItemId}"
+
+#. js-lingui-explicit-id
+#: src/workflows/order/utils/compute-inventory-adjustments.ts:45
+msgid "Reservation quantity ({quantity}) is insufficient for item {lineItemId}: requires {required}"
+msgstr "La cantidad reservada ({quantity}) no alcanza para el artículo {lineItemId}: requiere {required}"
+
+#. js-lingui-explicit-id
+#: src/core/auth/utils/validate-verification.ts:42
+#: src/workflows/customer/complete-customer-auth.ts:64
+msgid "Provider identity for \"{authProvider}\" not found on auth identity \"{authIdentityId}\""
+msgstr "No se encontró la identidad del proveedor \"{authProvider}\" en la identidad de autenticación \"{authIdentityId}\""
+
+#. js-lingui-explicit-id
+#: src/workflows/customer/complete-customer-auth.ts:118
+msgid "No customer data available for auth identity \"{authIdentityId}\". Expected either input.customerData or appMetadata.pending."
+msgstr "No hay datos de cliente para la identidad de autenticación \"{authIdentityId}\". Se esperaba input.customerData o appMetadata.pending."
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-to-cart.ts:52
+msgid "No items to add to the cart"
+msgstr "No hay productos para agregar al carrito"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-to-cart.ts:90
+msgid "Variant(s) not found: {missing}"
+msgstr "Variante(s) no encontrada(s): {missing}"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-to-cart.ts:122
+msgid "Variant \"{variantId}\" has no product"
+msgstr "La variante \"{variantId}\" no tiene producto"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-to-cart.ts:132
+msgid "Product \"{productId}\" is not available for sale"
+msgstr "El producto \"{productId}\" no está disponible para la venta"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-to-cart.ts:141
+msgid "Variant \"{variantId}\" has no price in {currencyCode}"
+msgstr "La variante \"{variantId}\" no tiene precio en {currencyCode}"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-to-cart.ts:225
+msgid "Not enough stock to add the requested quantity"
+msgstr "No hay stock suficiente para agregar la cantidad que pediste"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:48
+msgid "The payment was declined. Please try another payment method."
+msgstr "Tu pago fue rechazado. Prueba con otro método de pago."
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:52
+msgid "The payment has not been confirmed yet."
+msgstr "Tu pago aún no se ha confirmado."
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:57
+msgid "The payment needs to be confirmed with your bank before the order can be placed."
+msgstr "Necesitas confirmar el pago con tu banco antes de hacer el pedido."
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:61
+msgid "The payment was cancelled. Please start the payment again."
+msgstr "El pago se canceló. Vuelve a iniciar el pago."
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:89
+msgid "Cart \"{cartId}\" is already being completed"
+msgstr "El carrito \"{cartId}\" ya se está completando"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:109
+msgid "Cart \"{cartId}\" has no items"
+msgstr "El carrito \"{cartId}\" no tiene productos"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:118
+msgid "Cart item \"{itemId}\" has no variant"
+msgstr "El artículo del carrito \"{itemId}\" no tiene variante"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:125
+msgid "Cart item \"{itemId}\" has invalid quantity: {quantity}"
+msgstr "El artículo del carrito \"{itemId}\" tiene una cantidad no válida: {quantity}"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:142
+msgid "Cart \"{cartId}\" has no payment collection"
+msgstr "El carrito \"{cartId}\" no tiene colección de pagos"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:158
+msgid "Payment collection \"{collectionId}\" has no payment session — call POST /store/payment-collections/:id/payment-sessions first"
+msgstr "La colección de pagos \"{collectionId}\" no tiene sesión de pago — primero llama a POST /store/payment-collections/:id/payment-sessions"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:170
+msgid "Payment session \"{newestId}\" is not processable (status: {status})"
+msgstr "La sesión de pago \"{newestId}\" no se puede procesar (estado: {status})"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:189
+msgid "Payment session \"{sessionId}\" was opened for {sessionAmount} {sessionCurrency} but this cart is now {cartAmount} {cartCurrency} — reopen the payment session to pay what the cart now says"
+msgstr "La sesión de pago \"{sessionId}\" se abrió por {sessionAmount} {sessionCurrency}, pero ahora este carrito suma {cartAmount} {cartCurrency} — vuelve a abrir la sesión de pago para pagar lo que indica el carrito"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:220
+msgid "Cart \"{cartId}\" has no shipping method — call POST /store/carts/:id/shipping-methods first"
+msgstr "El carrito \"{cartId}\" no tiene método de envío — primero llama a POST /store/carts/:id/shipping-methods"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:232
+msgid "Shipping option \"{shippingOptionId}\" is no longer available"
+msgstr "La opción de envío \"{shippingOptionId}\" ya no está disponible"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:281
+msgid "This cart is priced for \"{regionName}\", which does not ship to \"{countryCode}\" — switch back to that market, or take out what this one cannot sell so the cart can move here"
+msgstr "Este carrito tiene precios de \"{regionName}\", que no envía a \"{countryCode}\" — vuelve a ese mercado o quita lo que este no puede vender para poder mover el carrito aquí"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:312
+msgid "Cart \"{cartId}\" has no email — an email is required to complete checkout"
+msgstr "El carrito \"{cartId}\" no tiene correo — necesitas un correo para finalizar la compra"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:481
+msgid "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
+msgstr "La variante \"{variantId}\" controla inventario, pero su artículo de inventario \"{inventoryItemId}\" no tiene stock en ninguna ubicación"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:575
+msgid "Payment for session \"{sessionId}\" has not been authorized yet"
+msgstr "El pago de la sesión \"{sessionId}\" aún no se ha autorizado"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/confirm-inventory-workflow.ts:78
+msgid "Some variant does not have the required inventory"
+msgstr "Alguna variante no tiene el inventario necesario"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/transfer-cart-customer.ts:22
+msgid "Customer with id \"{customerId}\" not found"
+msgstr "No se encontró el cliente con id \"{customerId}\""
+
+#. js-lingui-explicit-id
+#: src/api/store/middlewares.ts:31
+#: src/workflows/cart/update-cart.ts:139
+msgid "No region sells to country \"{countryCode}\""
+msgstr "Ninguna región vende al país \"{countryCode}\""
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/update-cart.ts:211
+msgid "\"{name}\" does not ship to \"{enteredCountry}\""
+msgstr "\"{name}\" no envía a \"{enteredCountry}\""
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/update-cart.ts:423
+msgid "\"{title}\" is not sold in {currencyCode}"
+msgstr "\"{title}\" no se vende en {currencyCode}"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/utils/variant-inventory.ts:136
+msgid "Variant \"{variantId}\" is tracked, but no inventory item is linked to it"
+msgstr "La variante \"{variantId}\" controla inventario, pero no tiene un artículo de inventario vinculado"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/utils/variant-inventory.ts:142
+msgid "Variants {variantIds} are tracked, but no inventory item is linked to them"
+msgstr "Las variantes {variantIds} controlan inventario, pero no tienen un artículo de inventario vinculado"
+
+#. js-lingui-explicit-id
+#: src/workflows/auth/steps/set-auth-app-metadata.ts:34
+msgid "Auth identity \"{authIdentityId}\" already has \"{key}\" set"
+msgstr "La identidad de autenticación \"{authIdentityId}\" ya tiene \"{key}\" asignado"
+
+#. js-lingui-explicit-id
+#: src/subscribers/process-payment-captured.ts:69
+msgid "Payment session \"{sessionId}\" is still settling, so the \"{action}\" the provider reported cannot be recorded yet"
+msgstr "La sesión de pago \"{sessionId}\" aún se está liquidando, así que todavía no se puede registrar el \"{action}\" que informó el proveedor"
+
+#. js-lingui-explicit-id
+#: src/subscribers/send-order-confirmation.ts:73
+msgid "The order confirmation for order \"{orderId}\" was not sent — provider \"{providerId}\" refused it"
+msgstr "La confirmación del pedido \"{orderId}\" no se envió — el proveedor \"{providerId}\" la rechazó"
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/errors.ts:135
+#: src/providers/payment-stripe/errors.ts:140
+msgid "The payment gateway is temporarily unavailable. Please try again."
+msgstr "La pasarela de pago no está disponible por el momento. Vuelve a intentarlo."
+
+#. js-lingui-explicit-id
+#: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
+#: src/modules/payment/services/payment-module-service.ts:928
+#: src/providers/payment-stripe/errors.ts:145
+msgid "That payment method is no longer available."
+msgstr "Ese método de pago ya no está disponible."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/errors.ts:152
+msgid "The card could not be charged."
+msgstr "No se pudo hacer el cargo a la tarjeta."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:253
+#: src/providers/payment-stripe/errors.ts:157
+msgid "The payment could not be processed."
+msgstr "No pudimos procesar el pago."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/options.ts:53
+msgid "Payment provider \"{providerId}\" cannot start: option \"{name}\" is missing."
+msgstr "El proveedor de pago \"{providerId}\" no puede iniciar: falta la opción \"{name}\"."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/options.ts:54
+msgid "Payment provider \"{providerId}\" cannot start: option \"{name}\" is not a non-empty string."
+msgstr "El proveedor de pago \"{providerId}\" no puede iniciar: la opción \"{name}\" no es un texto no vacío."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/options.ts:65
+msgid "Payment provider \"{providerId}\" cannot start: option \"{name}\" does not look like a Stripe {name} — it must begin with \"{prefix}\"."
+msgstr "El proveedor de pago \"{providerId}\" no puede iniciar: la opción \"{name}\" no parece un {name} de Stripe — debe empezar con \"{prefix}\"."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/stripe-provider.ts:94
+msgid "A saved-method operation reached the Stripe adapter with no account holder."
+msgstr "Una operación de método guardado llegó al adaptador de Stripe sin titular de cuenta."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/stripe-provider.ts:107
+msgid "A saved-method operation reached the Stripe adapter with no payment method id."
+msgstr "Una operación de método guardado llegó al adaptador de Stripe sin id de método de pago."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/stripe-provider.ts:317
+msgid "updatePayment was given an amount with no currency code."
+msgstr "updatePayment recibió un monto sin código de moneda."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/stripe-provider.ts:346
+msgid "Missing stripe-signature header"
+msgstr "Falta el encabezado stripe-signature"
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/stripe-provider.ts:404
+msgid "deleteAccountHolder was given no gateway customer id."
+msgstr "deleteAccountHolder no recibió un id de cliente de la pasarela."
+
+#. js-lingui-explicit-id
+#: src/providers/payment-stripe/stripe-provider.ts:615
+msgid "Webhook signature verification failed"
+msgstr "Falló la verificación de la firma del webhook"
+
+#. js-lingui-explicit-id
+#: src/providers/notification-email-resend/resend-provider.ts:59
+msgid "Resend send failed: {reason}"
+msgstr "Falló el envío con Resend: {reason}"
+
+#. js-lingui-explicit-id
+#: src/providers/file-s3/s3-file-provider.ts:86
+msgid "S3 file provider requires \"{key}\" in its configuration."
+msgstr "El proveedor de archivos S3 requiere \"{key}\" en su configuración."
+
+#. js-lingui-explicit-id
+#: src/providers/file-s3/s3-file-provider.ts:117
+msgid "Invalid filename: \"{filename}\""
+msgstr "Nombre de archivo no válido: \"{filename}\""
+
+#. js-lingui-explicit-id
+#: src/providers/file-localfs/local-file-provider.ts:121
+#: src/providers/file-localfs/local-file-provider.ts:138
+#: src/providers/file-s3/s3-file-provider.ts:176
+msgid "File with key {fileKey} not found"
+msgstr "No se encontró el archivo con clave {fileKey}"
+
+#. js-lingui-explicit-id
+#: src/providers/file-localfs/local-file-provider.ts:53
+msgid "Rejected path traversal attempt: \"{fileKey}\""
+msgstr "Se rechazó un intento de path traversal: \"{fileKey}\""
+
+#. js-lingui-explicit-id
+#: src/providers/file-localfs/local-file-provider.ts:155
+msgid "getUploadStream not supported by local filesystem provider."
+msgstr "El proveedor de sistema de archivos local no admite getUploadStream."
+
+#. js-lingui-explicit-id
+#: src/providers/auth-verification-token/token-verification.ts:87
+msgid "Verification code is required"
+msgstr "Ingresa el código de verificación"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-verification-token/token-verification.ts:98
+msgid "Verification code is invalid or already used"
+msgstr "El código de verificación no es válido o ya se usó"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-verification-token/token-verification.ts:105
+msgid "Verification code does not belong to provider \"{codeProvider}\""
+msgstr "El código de verificación no pertenece al proveedor \"{codeProvider}\""
+
+#. js-lingui-explicit-id
+#: src/providers/auth-verification-token/token-verification.ts:113
+msgid "Verification code has expired"
+msgstr "El código de verificación expiró"
+
+#. js-lingui-explicit-id
 #: src/modules/user/services/user-module-service.ts:111
 msgid "Users already exist for: {taken}"
 msgstr "Ya existen usuarios para: {taken}"
@@ -167,11 +615,6 @@ msgid "Cannot remove option value(s) that are currently used by products. Remove
 msgstr "No puedes eliminar valores de opción que usan los productos. Quítalos primero de todos los productos."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:253
-msgid "The payment could not be processed."
-msgstr "No pudimos procesar el pago."
-
-#. js-lingui-explicit-id
 #: src/modules/payment/services/payment-module-service.ts:515
 msgid "Payment \"{id}\" has been canceled and cannot be captured."
 msgstr "El pago \"{id}\" fue cancelado y no se puede capturar."
@@ -190,12 +633,6 @@ msgstr "El pago \"{id}\" no tiene saldo reembolsable."
 #: src/modules/payment/services/payment-module-service.ts:592
 msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
 msgstr "El monto del reembolso {refundAmount} supera el monto reembolsable {refundableAmount}."
-
-#. js-lingui-explicit-id
-#: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
-#: src/modules/payment/services/payment-module-service.ts:928
-msgid "That payment method is no longer available."
-msgstr "Ese método de pago ya no está disponible."
 
 #. js-lingui-explicit-id
 #: src/modules/payment/services/payment-provider-service.ts:68
@@ -576,6 +1013,22 @@ msgid "[events-worker] Temporal namespace \"{namespace}\" has standalone activit
 msgstr "[events-worker] El namespace de Temporal \"{namespace}\" tiene desactivadas las actividades independientes, así que cada evento que publique este despliegue se descartaría con solo una línea de log — incluida la confirmación de pedido que espera un comprador. Define `activity.enableStandalone: true` en la configuración dinámica del servidor (temporal/dynamicconfig/development-sql.yaml es la copia de este repo) y reinicia este Worker. El servidor respondió: \"{answer}\"."
 
 #. js-lingui-explicit-id
+#: src/core/workflows/types.ts:81
+msgid "No workflow engine configured. Call setWorkflowEngine() first."
+msgstr "No hay un motor de flujos configurado. Primero llama a setWorkflowEngine()."
+
+#. js-lingui-explicit-id
+#: src/core/utils/base-repository.ts:128
+#: src/core/utils/base-repository.ts:195
+msgid "Entity with id \"{id}\" not found"
+msgstr "No se encontró la entidad con id \"{id}\""
+
+#. js-lingui-explicit-id
+#: src/core/utils/base-repository.ts:168
+msgid "Expected row to be created"
+msgstr "Se esperaba que se creara la fila"
+
+#. js-lingui-explicit-id
 #: src/core/utils/validate-body.ts:15
 msgid "Invalid request body"
 msgstr "Cuerpo de la solicitud no válido"
@@ -586,14 +1039,84 @@ msgid "Invalid query params"
 msgstr "Parámetros de consulta no válidos"
 
 #. js-lingui-explicit-id
+#: src/core/errors/db-error-mapper.ts:88
+msgid "{table}: {fields} already exists"
+msgstr "{table}: {fields} ya existe"
+
+#. js-lingui-explicit-id
+#: src/core/errors/db-error-mapper.ts:94
+msgid "Already exists"
+msgstr "Ya existe"
+
+#. js-lingui-explicit-id
+#: src/core/errors/db-error-mapper.ts:102
+msgid "Cannot be null: {column}"
+msgstr "No puede ser nulo: {column}"
+
+#. js-lingui-explicit-id
+#: src/core/errors/db-error-mapper.ts:116
+msgid "Cannot delete: still referenced from table \"{blocking}\""
+msgstr "No se puede eliminar: todavía se hace referencia desde la tabla \"{blocking}\""
+
+#. js-lingui-explicit-id
+#: src/core/errors/db-error-mapper.ts:122
+msgid "Referenced entity does not exist"
+msgstr "La entidad referenciada no existe"
+
+#. js-lingui-explicit-id
+#: src/core/errors/db-error-mapper.ts:129
+msgid "Invalid field referenced"
+msgstr "Se hizo referencia a un campo no válido"
+
+#. js-lingui-explicit-id
+#: src/core/errors/db-error-mapper.ts:158
+msgid "Cannot restore {table}: {fields} was taken by another record while it was deleted"
+msgstr "No se puede restaurar {table}: otro registro tomó {fields} mientras estaba eliminado"
+
+#. js-lingui-explicit-id
+#: src/core/errors/db-error-mapper.ts:162
+msgid "Cannot restore the record: a unique value was taken by another record while it was deleted"
+msgstr "No se puede restaurar el registro: otro registro tomó un valor único mientras estaba eliminado"
+
+#. js-lingui-explicit-id
 #: src/core/errors/error-handler.ts:51
 msgid "An internal error occurred"
 msgstr "Ocurrió un error interno"
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:31
-msgid "No region sells to country \"{countryCode}\""
-msgstr "Ninguna región vende al país \"{countryCode}\""
+#: src/core/db/cascade-walker.ts:142
+msgid "Cannot delete from {table}: still referenced from {relationship}"
+msgstr "No se puede eliminar de {table}: todavía se hace referencia desde {relationship}"
+
+#. js-lingui-explicit-id
+#: src/core/db/cascade-walker.ts:193
+msgid "The database returned no timestamp to identify this deletion"
+msgstr "La base de datos no devolvió una marca de tiempo para identificar esta eliminación"
+
+#. js-lingui-explicit-id
+#: src/core/db/cascade-walker.ts:339
+msgid "{name} has no single-column primary key, so the cascade cannot address its rows"
+msgstr "{name} no tiene una clave primaria de una sola columna, así que la cascada no puede ubicar sus filas"
+
+#. js-lingui-explicit-id
+#: src/core/db/cascade-walker.ts:352
+msgid "{name} has no {column} column"
+msgstr "{name} no tiene la columna {column}"
+
+#. js-lingui-explicit-id
+#: src/core/auth/utils/token.ts:52
+msgid "JWT secret is required to generate a token"
+msgstr "Se requiere el secreto JWT para generar un token"
+
+#. js-lingui-explicit-id
+#: src/core/auth/utils/token.ts:58
+msgid "JWT expiresIn is required to generate a token"
+msgstr "Se requiere expiresIn de JWT para generar un token"
+
+#. js-lingui-explicit-id
+#: src/core/auth/utils/verification-token.ts:17
+msgid "Verification token TTL must be a positive integer"
+msgstr "El TTL del token de verificación debe ser un entero positivo"
 
 #. js-lingui-explicit-id
 #: src/api/store/middlewares.ts:51

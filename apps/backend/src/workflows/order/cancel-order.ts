@@ -3,6 +3,7 @@ import type { OrderDTO } from '@core/types/order/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 
 type CancelOrderInput = { orderId: string }
@@ -22,7 +23,8 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
       if (status !== 'unfulfilled') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot cancel order ${input.orderId}: fulfillment status is "${status}", expected "unfulfilled"`,
+          message: i18n.t('Cannot cancel order {orderId}: fulfillment status is "{status}", expected "unfulfilled"'),
+          values: { orderId: input.orderId, status },
         })
       }
     })

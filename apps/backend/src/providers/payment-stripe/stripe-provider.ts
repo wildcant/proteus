@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import Stripe from 'stripe'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import type { Logger } from '../../core/types/logger.js'
@@ -90,7 +91,7 @@ function accountHolderIdOf(context: Record<string, unknown> | undefined): string
   if (typeof id !== 'string' || id === '') {
     throw new AppError({
       type: ErrorTypes.INVALID_ARGUMENT,
-      message: 'A saved-method operation reached the Stripe adapter with no account holder.',
+      message: i18n.t('A saved-method operation reached the Stripe adapter with no account holder.'),
     })
   }
 
@@ -103,7 +104,7 @@ function methodIdOf(data: Record<string, unknown> | undefined): string {
   if (typeof id !== 'string' || id === '') {
     throw new AppError({
       type: ErrorTypes.INVALID_ARGUMENT,
-      message: 'A saved-method operation reached the Stripe adapter with no payment method id.',
+      message: i18n.t('A saved-method operation reached the Stripe adapter with no payment method id.'),
     })
   }
 
@@ -313,7 +314,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     if (input.amount !== undefined && input.currencyCode === undefined) {
       throw new AppError({
         type: ErrorTypes.INVALID_ARGUMENT,
-        message: 'updatePayment was given an amount with no currency code.',
+        message: i18n.t('updatePayment was given an amount with no currency code.'),
       })
     }
 
@@ -341,7 +342,8 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
 
   async getWebhookActionAndData(payload: ProviderWebhookPayload['payload']): Promise<WebhookActionResult> {
     const signature = payload.headers['stripe-signature']
-    if (!signature) throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Missing stripe-signature header' })
+    if (!signature)
+      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: i18n.t('Missing stripe-signature header') })
 
     const event = await this.verifyEvent(payload.rawData, signature)
 
@@ -399,7 +401,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
     if (typeof id !== 'string' || id === '') {
       throw new AppError({
         type: ErrorTypes.INVALID_ARGUMENT,
-        message: 'deleteAccountHolder was given no gateway customer id.',
+        message: i18n.t('deleteAccountHolder was given no gateway customer id.'),
       })
     }
 
@@ -610,7 +612,7 @@ export class StripeProviderService extends AbstractPaymentProvider<StripeOptions
       return await this.stripe.webhooks.constructEventAsync(rawData, signature, this.config.webhookSecret)
     } catch (error) {
       if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
-        throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Webhook signature verification failed' })
+        throw new AppError({ type: ErrorTypes.INVALID_DATA, message: i18n.t('Webhook signature verification failed') })
       }
       throw error
     }

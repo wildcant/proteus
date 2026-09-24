@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import type { Column, InferInsertModel, InferSelectModel, SQL } from 'drizzle-orm'
 import { and, asc, count, desc, eq, getTableColumns, inArray, isNull } from 'drizzle-orm'
 import type { PgTable } from 'drizzle-orm/pg-core'
@@ -124,7 +125,8 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
       if (!entity) {
         throw new AppError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Entity with id "${id}" not found`,
+          message: i18n.t('Entity with id "{id}" not found'),
+          values: { id },
         })
       }
       return entity
@@ -163,7 +165,7 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
       const rows = await client.insert(this.table).values(data).returning()
       const row = rows[0] as Select | undefined
       if (!row) {
-        throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Expected row to be created' })
+        throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: i18n.t('Expected row to be created') })
       }
       return row
     }
@@ -188,7 +190,11 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
         .returning()
       const row = rows[0] as Select | undefined
       if (!row) {
-        throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Entity with id "${id}" not found` })
+        throw new AppError({
+          type: ErrorTypes.NOT_FOUND,
+          message: i18n.t('Entity with id "{id}" not found'),
+          values: { id },
+        })
       }
       return row
     }

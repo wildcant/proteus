@@ -3,6 +3,7 @@ import type { UserDTO } from '@core/types/user/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n, type Msgid } from '@proteus/utils'
 
 export type AcceptInviteInput = {
   inviteToken: string
@@ -36,7 +37,8 @@ export const acceptInviteWorkflow = createWorkflow<AcceptInviteInput, UserDTO>(
         if (!result.success || !result.authIdentity) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.INVALID_DATA,
-            message: result.error ?? 'Failed to register auth identity',
+            // The provider's own reason is not in any catalog, so it answers in English.
+            message: (result.error as Msgid | undefined) ?? i18n.t('Failed to register auth identity'),
           })
         }
 
@@ -72,7 +74,8 @@ export const acceptInviteWorkflow = createWorkflow<AcceptInviteInput, UserDTO>(
         if (currentValue != null) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.CONFLICT,
-            message: `Auth identity "${authIdentity.id}" already has "userId" set`,
+            message: i18n.t('Auth identity "{authIdentityId}" already has "userId" set'),
+            values: { authIdentityId: authIdentity.id },
           })
         }
 

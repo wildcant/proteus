@@ -3,6 +3,7 @@ import type { CartLineItemDTO } from '@core/types/cart/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
 import { planLineItemActions } from './utils/plan-line-item-actions.js'
 import { prepareLineItemData } from './utils/prepare-line-item-data.js'
@@ -48,7 +49,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       if (input.items.length === 0) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: 'No items to add to the cart',
+          message: i18n.t('No items to add to the cart'),
         })
       }
 
@@ -58,7 +59,8 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       if (cart.completedAt) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart "${input.cartId}" is already completed`,
+          message: i18n.t('Cart "{cartId}" is already completed'),
+          values: { cartId: input.cartId },
         })
       }
 
@@ -85,7 +87,8 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       if (missing.length) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Variant(s) not found: ${missing.join(', ')}`,
+          message: i18n.t('Variant(s) not found: {missing}'),
+          values: { missing: missing.join(', ') },
         })
       }
 
@@ -116,7 +119,8 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
         if (!variant || !product) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_FOUND,
-            message: `Variant "${item.variantId}" has no product`,
+            message: i18n.t('Variant "{variantId}" has no product'),
+            values: { variantId: item.variantId },
           })
         }
 
@@ -125,7 +129,8 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
         if (product.status !== 'published') {
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_ALLOWED,
-            message: `Product "${product.id}" is not available for sale`,
+            message: i18n.t('Product "{productId}" is not available for sale'),
+            values: { productId: product.id },
           })
         }
 
@@ -133,7 +138,8 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
         if (!price) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.INVALID_DATA,
-            message: `Variant "${variant.id}" has no price in ${cart.currencyCode}`,
+            message: i18n.t('Variant "{variantId}" has no price in {currencyCode}'),
+            values: { variantId: variant.id, currencyCode: cart.currencyCode },
           })
         }
 
@@ -184,7 +190,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
 
       const missingInventoryItem = missingInventoryItemMessage(variants, mappings)
       if (missingInventoryItem) {
-        throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: missingInventoryItem })
+        throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, ...missingInventoryItem })
       }
 
       const inventoryItemIds = [...new Set(mappings.map((mapping) => mapping.inventoryItemId))]
@@ -216,7 +222,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       if (covered.some((hasCoverage) => !hasCoverage)) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.CONFLICT,
-          message: 'Not enough stock to add the requested quantity',
+          message: i18n.t('Not enough stock to add the requested quantity'),
         })
       }
     })

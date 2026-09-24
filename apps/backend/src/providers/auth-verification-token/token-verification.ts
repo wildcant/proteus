@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import {
   generateVerificationToken,
   getVerificationTokenTtlMs,
@@ -83,7 +84,7 @@ export class TokenVerificationProvider extends AbstractAuthVerificationProvider<
     authVerificationService: AuthVerificationService,
   ): Promise<ConfirmAuthVerificationResult> {
     if (!data.code) {
-      throw new AppError({ type: AppError.Types.INVALID_DATA, message: 'Verification code is required' })
+      throw new AppError({ type: AppError.Types.INVALID_DATA, message: i18n.t('Verification code is required') })
     }
 
     const verifications = await authVerificationService.list({
@@ -92,20 +93,24 @@ export class TokenVerificationProvider extends AbstractAuthVerificationProvider<
     const verification = verifications[0]
 
     if (!verification || verification.verifiedAt) {
-      throw new AppError({ type: AppError.Types.NOT_ALLOWED, message: 'Verification code is invalid or already used' })
+      throw new AppError({
+        type: AppError.Types.NOT_ALLOWED,
+        message: i18n.t('Verification code is invalid or already used'),
+      })
     }
 
     if (data.codeProvider && data.codeProvider !== verification.codeProvider) {
       throw new AppError({
         type: AppError.Types.NOT_ALLOWED,
-        message: `Verification code does not belong to provider "${data.codeProvider}"`,
+        message: i18n.t('Verification code does not belong to provider "{codeProvider}"'),
+        values: { codeProvider: data.codeProvider },
       })
     }
 
     const expiresAt = new Date(verification.requestedAt).getTime() + this.getTokenTtlMs()
 
     if (expiresAt <= Date.now()) {
-      throw new AppError({ type: AppError.Types.NOT_ALLOWED, message: 'Verification code has expired' })
+      throw new AppError({ type: AppError.Types.NOT_ALLOWED, message: i18n.t('Verification code has expired') })
     }
 
     return authVerificationService.update(verification.id, { verifiedAt: new Date(Date.now()) })
