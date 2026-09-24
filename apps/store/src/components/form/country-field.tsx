@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Field } from '@proteus/ui'
 import { useId } from 'react'
 import { useCountryName } from '#/api/countries'
@@ -20,6 +21,7 @@ import { useFieldContext } from '#/lib/form-context.ts'
  * market's would be claiming a row says something it does not, one Save away from making it true.
  */
 export function CountryField({ className }: { className?: string }) {
+  const { t } = useLingui()
   const field = useFieldContext<string>()
   const { current } = useMarket()
   const countryName = useCountryName()
@@ -32,7 +34,7 @@ export function CountryField({ className }: { className?: string }) {
 
   return (
     <Field className={className}>
-      <FloatingLabelInput id={id} label="Country" name={field.name} value={name ?? ''} readOnly />
+      <FloatingLabelInput id={id} label={t`Country`} name={field.name} value={name ?? ''} readOnly />
     </Field>
   )
 }
