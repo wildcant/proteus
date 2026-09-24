@@ -4,6 +4,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import { validateScopeProviderAssociation } from '@framework/http/middlewares/validate-scope-provider-association.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AuthBody, AuthParams, AuthTokenResponse } from '@proteus/http-schemas/auth'
+import { i18n } from '@proteus/utils'
 
 export const PostInput = { body: AuthBody, params: AuthParams }
 export const PostMiddlewares = [validateScopeProviderAssociation()] as const
@@ -18,7 +19,7 @@ export const POST = async (
 
   const result = await authService.register(authProvider, { body: req.body })
   if (!result.success || !result.authIdentity) {
-    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: result.error ?? 'Registration failed' })
+    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: result.error ?? i18n.t('Registration failed') })
   }
 
   const token = generateJwtTokenForAuthIdentity(

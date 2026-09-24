@@ -3,6 +3,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AuthenticateResponse } from '@proteus/http-schemas/auth'
 import { StoreSignupBody } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import { completeCustomerAuthWorkflow } from '@workflows/customer/complete-customer-auth.js'
 
 export const PostInput = { body: StoreSignupBody }
@@ -23,7 +24,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     const isDuplicate = registerResult.error?.includes('already exists')
     throw new AppError({
       type: isDuplicate ? ErrorTypes.CONFLICT : ErrorTypes.INVALID_DATA,
-      message: registerResult.error ?? 'Registration failed',
+      message: registerResult.error ?? i18n.t('Registration failed'),
     })
   }
 
@@ -31,7 +32,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   if (!authenticateResult.success || !authenticateResult.authIdentity) {
     throw new AppError({
       type: ErrorTypes.UNAUTHORIZED,
-      message: authenticateResult.error ?? 'Authentication failed after registration',
+      message: authenticateResult.error ?? i18n.t('Authentication failed after registration'),
     })
   }
 
