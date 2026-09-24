@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { ChevronDownIcon } from 'lucide-react'
 import {
   PRODUCT_SORT_LABELS,
@@ -19,10 +20,12 @@ type ProductSortProps = {
  * shape on the primitive if this ever wants to follow.
  */
 export function ProductSort({ value, onChange }: ProductSortProps) {
+  const { t } = useLingui()
+
   return (
     <div className="relative">
       <label className="sr-only" htmlFor="product-sort">
-        Sort by
+        <Trans>Sort by</Trans>
       </label>
       <select
         id="product-sort"
@@ -33,7 +36,7 @@ export function ProductSort({ value, onChange }: ProductSortProps) {
       >
         {PRODUCT_SORT_NAMES.map((name) => (
           <option key={name} value={name}>
-            {PRODUCT_SORT_LABELS[name]}
+            {t(PRODUCT_SORT_LABELS[name])}
           </option>
         ))}
       </select>

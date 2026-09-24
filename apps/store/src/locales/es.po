@@ -13,13 +13,45 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/products/components/product-gallery.tsx:99
+msgid "{alt} — view {position} of {count}"
+msgstr "{alt} — vista {position} de {count}"
+
+#: src/features/products/components/product-gallery.tsx:74
+msgid "{alt} images"
+msgstr "Imágenes de {alt}"
+
+#: src/features/products/components/product-list-header.tsx:63
+msgid "{count, plural, one {# Product} other {# Products}}"
+msgstr "{count, plural, one {# producto} other {# productos}}"
+
+#: src/features/products/components/variant-stock.tsx:34
+msgid "{remaining, plural, one {Only # left} other {Only # left}}"
+msgstr "{remaining, plural, one {Solo queda #} other {Solo quedan #}}"
+
 #: src/components/footer.tsx:138
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
 
+#: src/features/products/api/products.ts:46
+msgid "A–Z"
+msgstr "A–Z"
+
+#: src/features/products/components/add-to-cart.tsx:77
+msgid "Add to cart"
+msgstr "Agregar al carrito"
+
+#: src/features/products/components/product-list-header.tsx:28
+msgid "All products"
+msgstr "Todos los productos"
+
 #: src/routes/_auth/signup.tsx:37
 msgid "Already have an account?"
 msgstr "¿Ya tienes una cuenta?"
+
+#: src/features/products/components/search-drawer.tsx:46
+msgid "Back"
+msgstr "Atrás"
 
 #: src/routes/_main/_authed/account/orders/$orderId.tsx:30
 msgid "Back to account"
@@ -34,6 +66,14 @@ msgstr "Volver a tu cuenta"
 msgid "Back to sign in"
 msgstr "Volver a iniciar sesión"
 
+#: src/features/products/components/search-best-sellers.tsx:30
+msgid "Best sellers"
+msgstr "Más vendidos"
+
+#: src/features/products/components/product-error.tsx:27
+msgid "Browse products"
+msgstr "Explorar productos"
+
 #: src/features/auth/components/register-form.tsx:28
 msgid "By creating an account, you agree to our Privacy Policy and Terms of Use."
 msgstr "Al crear una cuenta, aceptas nuestra Política de privacidad y nuestros Términos de uso."
@@ -46,6 +86,14 @@ msgstr "Revisa tu correo"
 #: src/routes/_auth/reset-password.tsx:40
 msgid "Choose a new password for your account."
 msgstr "Elige una nueva contraseña para tu cuenta."
+
+#: src/features/products/components/product-empty.tsx:23
+msgid "Clear search"
+msgstr "Borrar búsqueda"
+
+#: src/features/products/components/search-drawer.tsx:62
+msgid "Close search"
+msgstr "Cerrar búsqueda"
 
 #: src/routes/_auth/route.tsx:20
 #: src/routes/_main/order/$orderId/confirmed.tsx:35
@@ -98,6 +146,10 @@ msgstr "¿Olvidaste tu contraseña?"
 msgid "Forgot your password?"
 msgstr "¿Olvidaste tu contraseña?"
 
+#: src/features/products/components/product-card.tsx:47
+msgid "From {startingPrice}"
+msgstr "Desde {startingPrice}"
+
 #: src/routes/_auth/verify.tsx:33
 msgid "Hold on while we confirm your email."
 msgstr "Espera mientras confirmamos tu correo."
@@ -110,6 +162,10 @@ msgstr "Si existe una cuenta con ese correo, te enviamos un enlace para restable
 msgid "Invalid link"
 msgstr "Enlace no válido"
 
+#: src/features/products/components/product-error.tsx:24
+msgid "It may not be one we sell here."
+msgstr "Puede que no lo vendamos aquí."
+
 #: src/features/auth/components/register-form.tsx:18
 msgid "Last name"
 msgstr "Apellido"
@@ -118,13 +174,37 @@ msgstr "Apellido"
 msgid "Login failed"
 msgstr "No pudimos iniciar tu sesión"
 
+#: src/features/products/components/product-specs.tsx:20
+msgid "Made in"
+msgstr "Hecho en"
+
+#: src/features/products/components/product-specs.tsx:18
+msgid "Material"
+msgstr "Material"
+
 #: src/features/auth/components/reset-password-form.tsx:16
 msgid "New password"
 msgstr "Nueva contraseña"
 
+#: src/features/products/api/products.ts:45
+msgid "Newest"
+msgstr "Más recientes"
+
 #: src/routes/_auth/forgot-password.tsx:33
 msgid "No problem. Enter your account email address and we'll send you instructions so you can reset your password."
 msgstr "No hay problema. Ingresa el correo de tu cuenta y te enviaremos instrucciones para restablecer tu contraseña."
+
+#: src/features/products/components/search-results.tsx:44
+msgid "No products match “{debouncedTerm}”."
+msgstr "Ningún producto coincide con “{debouncedTerm}”."
+
+#: src/features/products/components/product-empty.tsx:20
+msgid "No products match “{q}”."
+msgstr "Ningún producto coincide con “{q}”."
+
+#: src/features/products/components/product-empty.tsx:28
+msgid "No products yet."
+msgstr "Aún no hay productos."
 
 #: src/routes/_auth/verify.tsx:75
 msgid "Open this link in the same browser you signed up with."
@@ -139,9 +219,23 @@ msgstr "Contraseña"
 msgid "Password updated"
 msgstr "Contraseña actualizada"
 
+#: src/features/products/components/product-detail.tsx:42
+#: src/features/products/components/search-results.tsx:52
+msgid "Products"
+msgstr "Productos"
+
+#: src/features/products/components/product-specs.tsx:17
+msgid "Ref."
+msgstr "Ref."
+
 #: src/features/auth/api/auth.ts:55
 msgid "Registration failed"
 msgstr "No pudimos crear tu cuenta"
+
+#: src/features/products/components/product-list-header.tsx:25
+#: src/features/products/components/search-drawer.tsx:39
+msgid "Search"
+msgstr "Búsqueda"
 
 #: src/features/auth/components/forgot-password-form.tsx:21
 msgid "Send reset link"
@@ -158,6 +252,14 @@ msgstr "Crea una nueva contraseña"
 #: src/features/auth/components/reset-password-form.tsx:23
 msgid "Set new password"
 msgstr "Guardar contraseña"
+
+#: src/features/products/components/product-list-header.tsx:25
+msgid "Shop"
+msgstr "Tienda"
+
+#: src/features/products/components/gallery-dots.tsx:37
+msgid "Show image {position}"
+msgstr "Mostrar imagen {position}"
 
 #: src/features/auth/components/login-form.tsx:28
 #: src/routes/_auth/login.tsx:43
@@ -176,6 +278,20 @@ msgstr "Regístrate"
 msgid "Signing in..."
 msgstr "Iniciando sesión..."
 
+#: src/features/products/components/add-to-cart.tsx:77
+#: src/features/products/components/product-card.tsx:69
+#: src/features/products/components/variant-stock.tsx:24
+msgid "Sold out"
+msgstr "Agotado"
+
+#: src/features/products/components/product-sort.tsx:28
+msgid "Sort by"
+msgstr "Ordenar por"
+
+#: src/features/products/components/add-to-cart.tsx:43
+msgid "This product isn't available to order yet."
+msgstr "Este producto aún no está disponible para pedir."
+
 #: src/routes/_auth/verify.tsx:44
 msgid "This verification link is invalid or has expired. Request a new one from your account."
 msgstr "Este enlace de verificación no es válido o ya venció. Solicita uno nuevo desde tu cuenta."
@@ -188,6 +304,10 @@ msgstr "Sigue tus pedidos, guarda tus datos y paga más rápido."
 msgid "Updating..."
 msgstr "Actualizando..."
 
+#: src/features/products/components/variant-picker.tsx:206
+msgid "Variant"
+msgstr "Variante"
+
 #: src/routes/_auth/verify.tsx:72
 #: src/routes/_auth/verify.tsx:72
 msgid "Verification failed"
@@ -197,9 +317,25 @@ msgstr "No pudimos verificar tu correo"
 msgid "Verifying"
 msgstr "Verificando"
 
+#: src/features/products/components/search-best-sellers.tsx:33
+msgid "View all"
+msgstr "Ver todo"
+
+#: src/features/products/components/search-results.tsx:60
+msgid "View all “{debouncedTerm}”"
+msgstr "Ver todo “{debouncedTerm}”"
+
+#: src/features/products/components/product-error.tsx:21
+msgid "We couldn't show this product"
+msgstr "No pudimos mostrar este producto"
+
 #: src/features/auth/components/verify-pending.tsx:11
 msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
 msgstr "Te enviamos un enlace de verificación a tu correo. Haz clic en él para confirmar tu cuenta y luego vuelve a iniciar sesión."
+
+#: src/features/products/components/product-specs.tsx:19
+msgid "Weight"
+msgstr "Peso"
 
 #: src/routes/_auth/verify.tsx:61
 msgid "Your email is confirmed. Sign in to pick up where you left off."
@@ -208,3 +344,7 @@ msgstr "Tu correo está confirmado. Inicia sesión para continuar donde lo dejas
 #: src/routes/_auth/reset-password.tsx:28
 msgid "Your password has been reset. Sign in with your new password to pick up where you left off."
 msgstr "Restableciste tu contraseña. Inicia sesión con tu nueva contraseña para continuar donde lo dejaste."
+
+#: src/features/products/api/products.ts:47
+msgid "Z–A"
+msgstr "Z–A"

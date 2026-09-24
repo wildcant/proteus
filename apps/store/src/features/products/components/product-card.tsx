@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import { PackageIcon } from 'lucide-react'
 import type { StoreProductListItem } from '#/api/generated/model'
@@ -5,6 +6,9 @@ import { useFormatters } from '#/hooks/use-formatters'
 
 export function ProductCard({ product, priority }: { product: StoreProductListItem; priority?: boolean }) {
   const { formatPrice } = useFormatters()
+  const startingPrice = product.startingPrice
+    ? formatPrice(product.startingPrice.calculatedAmount, product.startingPrice.currencyCode)
+    : null
 
   return (
     <Link to="/products/$productId" params={{ productId: product.id }} className="group block no-underline">
@@ -36,11 +40,11 @@ export function ProductCard({ product, priority }: { product: StoreProductListIt
         {/* The fit line — the same string the PDP puts under its heading, so the card and the
             product page say the same thing about the same garment. */}
         {!!product.subtitle && <p className="mt-1 text-ink-muted text-sm">{product.subtitle}</p>}
-        {!!product.startingPrice && (
+        {!!startingPrice && (
           <p className="mt-4 font-bold text-ink text-sm">
             {/* `startingPrice` is the cheapest variant's, so a product whose sizes run $46 to $60
                 would otherwise show a price no shopper can buy at without knowing which one. */}
-            From {formatPrice(product.startingPrice.calculatedAmount, product.startingPrice.currencyCode)}
+            <Trans>From {startingPrice}</Trans>
           </p>
         )}
       </div>
@@ -62,7 +66,7 @@ export function ProductCard({ product, priority }: { product: StoreProductListIt
 function SoldOutBadge() {
   return (
     <span className="absolute bottom-2 left-2 rounded-full bg-surface px-2.5 py-1 font-medium text-ink text-xs">
-      Sold out
+      <Trans>Sold out</Trans>
     </span>
   )
 }

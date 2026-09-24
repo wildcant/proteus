@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui'
 import { PackageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -22,6 +23,7 @@ type ProductGalleryProps = {
  * once and leaves the dots nothing to indicate.
  */
 export function ProductGallery({ images, thumbnail, alt, variantId }: ProductGalleryProps) {
+  const { t } = useLingui()
   const scroller = useRef<HTMLUListElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const isMosaic = useIsMosaic()
@@ -69,7 +71,7 @@ export function ProductGallery({ images, thumbnail, alt, variantId }: ProductGal
         // and arrow-key scrolling is the only way through the strip without a pointer. The mosaic
         // scrolls nothing, so up there the same stop would land focus on a grid with nowhere to go.
         tabIndex={isMosaic ? undefined : 0}
-        aria-label={`${alt} images`}
+        aria-label={t`${alt} images`}
         onScroll={(event) => {
           const { scrollLeft, clientWidth } = event.currentTarget
           if (clientWidth === 0) return
@@ -77,29 +79,33 @@ export function ProductGallery({ images, thumbnail, alt, variantId }: ProductGal
         }}
         className="scrollbar-none flex snap-x snap-mandatory overflow-x-auto -outline-offset-2 focus-visible:outline focus-visible:outline-ink lg:grid lg:grid-cols-2 lg:gap-1 lg:overflow-visible"
       >
-        {slides.map((image, index) => (
-          <li
-            key={image.id}
-            className={cn(
-              'w-full shrink-0 snap-start bg-surface-subtle lg:w-auto',
-              // The mosaic's rhythm: every third image spans both columns, and so does a trailing
-              // image that would otherwise sit alone in the left one. No count leaves an orphan.
-              (index % 3 === 2 || (index === slides.length - 1 && index % 3 === 0)) && 'lg:col-span-2',
-            )}
-          >
-            <img
-              src={image.url}
-              // No alt column on the image, so the honest fallback is positional. Every slide is
-              // content here, unlike the thumbnails it replaces, which were navigation.
-              alt={`${alt} — view ${index + 1} of ${slides.length}`}
-              className="aspect-4/5 w-full object-cover"
-              fetchPriority={index === 0 ? 'high' : undefined}
-              loading={index === 0 ? undefined : 'lazy'}
-              width={720}
-              height={900}
-            />
-          </li>
-        ))}
+        {slides.map((image, index) => {
+          const position = index + 1
+          const count = slides.length
+          return (
+            <li
+              key={image.id}
+              className={cn(
+                'w-full shrink-0 snap-start bg-surface-subtle lg:w-auto',
+                // The mosaic's rhythm: every third image spans both columns, and so does a trailing
+                // image that would otherwise sit alone in the left one. No count leaves an orphan.
+                (index % 3 === 2 || (index === slides.length - 1 && index % 3 === 0)) && 'lg:col-span-2',
+              )}
+            >
+              <img
+                src={image.url}
+                // No alt column on the image, so the honest fallback is positional. Every slide is
+                // content here, unlike the thumbnails it replaces, which were navigation.
+                alt={t`${alt} — view ${position} of ${count}`}
+                className="aspect-4/5 w-full object-cover"
+                fetchPriority={index === 0 ? 'high' : undefined}
+                loading={index === 0 ? undefined : 'lazy'}
+                width={720}
+                height={900}
+              />
+            </li>
+          )
+        })}
       </ul>
 
       <GalleryDots count={slides.length} activeIndex={activeIndex} onSelect={showSlide} />
