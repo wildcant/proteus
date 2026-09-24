@@ -6,13 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
+export interface AdminUpdateMe {
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
   locale: string;
-  createdAt: string;
-  updatedAt: string;
-  /** @nullable */
-  deletedAt: string | null;
 }

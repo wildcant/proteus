@@ -17,6 +17,17 @@ export default [
     output: meRoutes.GetOutput,
   },
   {
+    method: 'PATCH',
+    matcher: '/admin/users/me',
+    handler: meRoutes.PATCH,
+    input: meRoutes.PatchInput,
+    throws: meRoutes.PatchThrows,
+    operationId: 'updateMe',
+    summary: 'Update the authenticated user',
+    tags: [Tags.USERS],
+    output: meRoutes.PatchOutput,
+  },
+  {
     method: 'GET',
     matcher: '/admin/users',
     handler: userRoutes.GET,

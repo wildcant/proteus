@@ -47,6 +47,8 @@ export type AdminUserRole = z.input<typeof AdminUserRole>
 export const AdminMeResponse = z
   .object({
     user: AdminUser.extend({ roles: z.array(AdminUserRole) }),
+    // The Locales the language picker offers: every sellable market's, and `en-US` always.
+    locales: z.array(z.string()),
     allowedActions: z.array(z.string()),
     sidebar: z.array(SidebarGroup),
     settingsSidebar: z.array(SidebarGroup),

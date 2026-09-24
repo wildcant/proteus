@@ -19,6 +19,8 @@ export const resendInviteWorkflow = createWorkflow<ResendInviteInput, InviteDTO>
     await ctx.step('send-invite-notification', async ({ container }) => {
       const notificationService = container.resolve(Modules.NOTIFICATION)
       const inviteLink = `${env.ADMIN_URL}/invite?token=${invite.token}`
+      // TODO(i18n): the email goes out in English whatever the recipient's `user.locale`. Localize it
+      // in a follow-up; the admin language picker does not change emails.
       await notificationService.createNotification({
         to: invite.email,
         channel: 'email',

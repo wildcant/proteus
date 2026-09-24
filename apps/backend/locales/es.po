@@ -14,6 +14,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/api/admin/users/me/route.ts:74
+msgid "{locale} is not a language the admin offers"
+msgstr "{locale} no es un idioma que ofrezca el panel"
+
+#. js-lingui-explicit-id
 #: src/container.ts:140
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "Se seleccionó el motor de flujos de trabajo temporal, pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createTemporalWorkflowEngine`, o fijar `projectConfig.workflows.engine` en \"simple\"."
@@ -976,8 +981,8 @@ msgid "Unauthorized: registration required"
 msgstr "No autorizado: se requiere registro"
 
 #. js-lingui-explicit-id
-#: src/framework/http/middlewares/authorize.ts:26
-#: src/framework/http/middlewares/authorize.ts:36
+#: src/framework/http/middlewares/authorize.ts:27
+#: src/framework/http/middlewares/authorize.ts:37
 msgid "Insufficient permissions"
 msgstr "No tienes permisos suficientes"
 
@@ -1249,7 +1254,7 @@ msgid "Password update failed"
 msgstr "No se pudo actualizar la contraseña"
 
 #. js-lingui-explicit-id
-#: src/api/admin/users/me/route.ts:15
+#: src/api/admin/users/me/route.ts:27
 msgid "User ID not found"
 msgstr "No se encontró el ID de usuario"
 
