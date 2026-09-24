@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui'
 import { useCountryName } from '#/api/countries'
 import type { StoreOrderAddress, StoreOrderResponseOrder } from '#/api/generated/model'
@@ -12,6 +13,7 @@ import { useFormatters } from '#/hooks/use-formatters'
  * it used to have were never going to be three columns.
  */
 export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
+  const { t } = useLingui()
   const { formatPrice } = useFormatters()
   // Through the full ISO listing, not the markets the store sells in today: an order is a record
   // of where a parcel went, and the store closing a market later does not turn that country back
@@ -21,7 +23,7 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
   const shippingMethod = order.shippingMethods[0]
 
   return (
-    <Panel title="Delivery">
+    <Panel title={t`Delivery`}>
       {address ? (
         <div className="mt-6 flex flex-col gap-0.5 text-ink-muted text-sm">
           {addressLines(address, countryName).map(({ field, value }) => (
@@ -33,7 +35,9 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
       ) : (
         // Seeded and hand-placed orders always have one, which is what makes this the branch
         // most likely to be dropped. `shippingAddress` is nullable on the response.
-        <p className="mt-6 text-ink-muted text-sm">No address provided</p>
+        <p className="mt-6 text-ink-muted text-sm">
+          <Trans>No address provided</Trans>
+        </p>
       )}
 
       {/* The hairline separates the address from what was done with it. A digital-only order has
@@ -52,7 +56,7 @@ export function DeliveryDetails({ order }: { order: StoreOrderResponseOrder }) {
             part of it — a third line of the delivery option rather than the address the
             confirmation went to. */}
         <p className={cn('text-ink-subtle text-xs uppercase tracking-widest', shippingMethod && 'mt-4')}>
-          Confirmation sent to
+          <Trans>Confirmation sent to</Trans>
         </p>
         <p className="wrap-break-word m-0 mt-1 text-ink-muted text-sm">{order.email}</p>
       </div>

@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Skeleton } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, PackageIcon } from 'lucide-react'
@@ -15,8 +16,9 @@ import { useFormatters } from '#/hooks/use-formatters'
  * the heading — and, on first load, the greeting does not wait on the orders request.
  */
 export function OrdersPanel({ className }: { className?: string }) {
+  const { t } = useLingui()
   return (
-    <Panel title="Orders" className={className}>
+    <Panel title={t`Orders`} className={className}>
       <Suspense fallback={<OrdersFallback />}>
         <OrderList />
       </Suspense>
@@ -45,6 +47,7 @@ function OrderList() {
 }
 
 function OrderRow({ order }: { order: StoreOrderListResponseOrdersItem }) {
+  const { t } = useLingui()
   const { formatPrice, formatDate } = useFormatters()
 
   return (
@@ -63,7 +66,7 @@ function OrderRow({ order }: { order: StoreOrderListResponseOrdersItem }) {
           <span className="text-ink-muted text-xs">{formatDate(order.createdAt)}</span>
         </div>
         <div className="flex items-baseline gap-2 lg:flex-col lg:items-end lg:gap-0.5">
-          <span className="text-ink-muted text-xs">{fulfillmentLabels[order.fulfillmentStatus]}</span>
+          <span className="text-ink-muted text-xs">{t(fulfillmentLabels[order.fulfillmentStatus])}</span>
           <span className="font-semibold text-ink">{formatPrice(order.total, order.currencyCode)}</span>
         </div>
       </div>
@@ -101,11 +104,11 @@ function OrdersEmpty() {
     <div className="flex flex-1 flex-col items-center justify-center py-12 text-center">
       <PackageIcon className="size-8 text-ink-subtle" strokeWidth={1.5} />
       <p className="mt-6 max-w-70 text-ink-muted text-sm">
-        You haven't made any orders yet. When you make an order it'll show up here.
+        <Trans>You haven't made any orders yet. When you make an order it'll show up here.</Trans>
       </p>
       {/* One link, not the reference's gendered pair: there is no category taxonomy behind it. */}
       <ButtonLink to="/" className="mt-8">
-        Shop all products
+        <Trans>Shop all products</Trans>
       </ButtonLink>
     </div>
   )

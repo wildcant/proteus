@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -140,6 +141,7 @@ export function useWallet() {
 export const useSetDefaultPaymentMethod = (
   options?: UseMutationOptions<StoreSavedMethodListResponse, Error, string>,
 ) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -154,7 +156,7 @@ export const useSetDefaultPaymentMethod = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to set default card', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to set default card`, description: error.message })
       onError?.(...args)
     },
   })

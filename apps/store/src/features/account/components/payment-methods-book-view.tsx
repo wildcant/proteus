@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { RadioGroup } from '@proteus/ui'
 import { ChevronLeftIcon } from 'lucide-react'
 import type { StoreSavedMethod } from '#/api/generated/model'
@@ -33,15 +34,18 @@ export function PaymentMethodsBookView({
   onSetDefault,
   onRemove,
 }: PaymentMethodsBookViewProps) {
+  const { t } = useLingui()
   const defaultMethod = methods.find((method) => method.isDefault)
 
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
       <ButtonLink variant="link" to="/account" className="gap-1 text-ink-muted">
         <ChevronLeftIcon className="size-4" />
-        Back to account
+        <Trans>Back to account</Trans>
       </ButtonLink>
-      <h1 className="type-display mt-4 text-ink">Payment methods</h1>
+      <h1 className="type-display mt-4 text-ink">
+        <Trans>Payment methods</Trans>
+      </h1>
 
       <div className="mt-10 max-w-160">
         {isLoading ? (
@@ -52,9 +56,13 @@ export function PaymentMethodsBookView({
           <WalletEmpty />
         ) : (
           <>
-            <h2 className="type-heading text-ink">Your cards</h2>
+            <h2 className="type-heading text-ink">
+              <Trans>Your cards</Trans>
+            </h2>
             <p className="mt-3 text-ink-muted text-sm">
-              Your default card is the one your next checkout starts on. Cards are saved by paying with them.
+              <Trans>
+                Your default card is the one your next checkout starts on. Cards are saved by paying with them.
+              </Trans>
             </p>
             {/* One group for the whole list: exactly one card can be the default, and the route
                 answers with the reordered wallet in the same round trip. */}
@@ -70,8 +78,8 @@ export function PaymentMethodsBookView({
                   checked={method.id === defaultMethod?.id}
                   chooseLabel={
                     method.isDefault
-                      ? `${savedMethodName(method)}, your default card`
-                      : `Make ${savedMethodName(method)} the default`
+                      ? t`${savedMethodName(method)}, your default card`
+                      : t`Make ${savedMethodName(method)} the default`
                   }
                   onRemove={() => onRemove(method.id)}
                 />
@@ -79,7 +87,7 @@ export function PaymentMethodsBookView({
             </RadioGroup>
             {methods.every((method) => !isUsable(method)) && (
               <p className="mt-4 text-ink-muted text-sm">
-                Every card here has expired. Pay with a new card at checkout to save a usable one.
+                <Trans>Every card here has expired. Pay with a new card at checkout to save a usable one.</Trans>
               </p>
             )}
           </>
@@ -93,13 +101,17 @@ export function PaymentMethodsBookView({
 function WalletEmpty() {
   return (
     <div>
-      <h2 className="type-heading text-ink">No saved cards</h2>
+      <h2 className="type-heading text-ink">
+        <Trans>No saved cards</Trans>
+      </h2>
       <p className="mt-3 max-w-90 text-ink-muted text-sm">
-        Cards are saved at checkout — choose "Save this card for next time" when you pay and it will be here for your
-        next order.
+        <Trans>
+          Cards are saved at checkout — choose "Save this card for next time" when you pay and it will be here for your
+          next order.
+        </Trans>
       </p>
       <ButtonLink to="/" className="mt-6">
-        Start shopping
+        <Trans>Start shopping</Trans>
       </ButtonLink>
     </div>
   )
@@ -115,9 +127,11 @@ function WalletEmpty() {
 function WalletUnavailable({ onRetry }: { onRetry: () => void }) {
   return (
     <div role="alert" className="border border-line border-l-2 border-l-ink bg-surface-subtle p-4">
-      <p className="m-0 text-ink text-sm">We couldn't load your saved cards.</p>
+      <p className="m-0 text-ink text-sm">
+        <Trans>We couldn't load your saved cards.</Trans>
+      </p>
       <Button variant="link" className="mt-2" onClick={onRetry}>
-        Try again
+        <Trans>Try again</Trans>
       </Button>
     </div>
   )
