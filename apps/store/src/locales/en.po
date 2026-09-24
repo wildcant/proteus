@@ -21,6 +21,10 @@ msgstr "© {year} Proteus. All rights reserved."
 msgid "Already have an account?"
 msgstr "Already have an account?"
 
+#: src/routes/_main/_authed/account/orders/$orderId.tsx:30
+msgid "Back to account"
+msgstr "Back to account"
+
 #: src/features/auth/components/verify-pending.tsx:16
 #: src/routes/_auth/forgot-password.tsx:24
 #: src/routes/_auth/forgot-password.tsx:44
@@ -44,6 +48,7 @@ msgid "Choose a new password for your account."
 msgstr "Choose a new password for your account."
 
 #: src/routes/_auth/route.tsx:20
+#: src/routes/_main/order/$orderId/confirmed.tsx:35
 msgid "Continue shopping"
 msgstr "Continue shopping"
 
