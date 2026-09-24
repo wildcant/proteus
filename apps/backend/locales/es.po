@@ -167,6 +167,82 @@ msgid "Cannot remove option value(s) that are currently used by products. Remove
 msgstr "No puedes eliminar valores de opción que usan los productos. Quítalos primero de todos los productos."
 
 #. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:253
+msgid "The payment could not be processed."
+msgstr "No pudimos procesar el pago."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:515
+msgid "Payment \"{id}\" has been canceled and cannot be captured."
+msgstr "El pago \"{id}\" fue cancelado y no se puede capturar."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:532
+msgid "Payment \"{id}\" has already been fully captured."
+msgstr "El pago \"{id}\" ya se capturó por completo."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:584
+msgid "Payment \"{id}\" has no refundable amount remaining."
+msgstr "El pago \"{id}\" no tiene saldo reembolsable."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:592
+msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
+msgstr "El monto del reembolso {refundAmount} supera el monto reembolsable {refundableAmount}."
+
+#. js-lingui-explicit-id
+#: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
+#: src/modules/payment/services/payment-module-service.ts:928
+msgid "That payment method is no longer available."
+msgstr "Ese método de pago ya no está disponible."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-provider-service.ts:68
+msgid "Payment provider \"{providerId}\" is not registered."
+msgstr "El proveedor de pagos \"{providerId}\" no está registrado."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/providers/system.ts:63
+msgid "Method not implemented."
+msgstr "Método no implementado."
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:301
+msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
+msgstr "No se puede completar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:317
+msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
+msgstr "No se puede cancelar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:333
+msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
+msgstr "No se puede archivar el pedido {id}: el estado es \"{status}\", se esperaba \"completed\""
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:68
+msgid "Failed to create notification"
+msgstr "No se pudo crear la notificación"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:152
+msgid "Missing retried notification record"
+msgstr "Falta el registro de la notificación reintentada"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:163
+msgid "Missing created notification record"
+msgstr "Falta el registro de la notificación creada"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-provider-service.ts:56
+msgid "Notification provider \"{providerId}\" is not registered."
+msgstr "El proveedor de notificaciones \"{providerId}\" no está registrado."
+
+#. js-lingui-explicit-id
 #: src/modules/inventory/services/inventory-module-service.ts:177
 #: src/modules/inventory/services/inventory-module-service.ts:205
 #: src/modules/inventory/services/inventory-module-service.ts:325
@@ -192,6 +268,101 @@ msgstr "No hay stock suficiente para reservar {quantity} del artículo {inventor
 #: src/modules/inventory/repositories/inventory-level.ts:44
 msgid "Inventory level with id \"{id}\" not found"
 msgstr "No se encontró el nivel de inventario con ID \"{id}\""
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:244
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:271
+msgid "serviceZoneId is required when creating geo zones directly"
+msgstr "serviceZoneId es obligatorio al crear zonas geográficas directamente"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:549
+msgid "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
+msgstr "El despacho \"{id}\" ya se envió y no se puede cancelar"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:557
+msgid "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
+msgstr "El despacho \"{id}\" ya se entregó y no se puede cancelar"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-provider-service.ts:42
+msgid "Fulfillment provider \"{providerId}\" is not registered."
+msgstr "El proveedor de despachos \"{providerId}\" no está registrado."
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/providers/manual.ts:44
+msgid "Manual provider does not support calculated prices"
+msgstr "El proveedor manual no admite precios calculados"
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:36
+msgid "File \"{filename}\" exceeds maximum size of {maxFileSize} bytes (got {size} bytes)."
+msgstr "El archivo \"{filename}\" supera el tamaño máximo de {maxFileSize} bytes (tiene {size} bytes)."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:66
+#: src/modules/file/services/file-module-service.ts:88
+msgid "File listing requires an \"id\" filter."
+msgstr "Para listar archivos se requiere un filtro \"id\"."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:113
+msgid "Filename is required for presigned upload URL generation."
+msgstr "El nombre del archivo es obligatorio para generar la URL de carga prefirmada."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:34
+msgid "File module must be initialized with exactly one provider."
+msgstr "El módulo de archivos debe inicializarse con exactamente un proveedor."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:43
+msgid "File provider could not be resolved."
+msgstr "No se pudo resolver el proveedor de archivos."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:69
+msgid "The configured file provider does not support presigned upload URLs."
+msgstr "El proveedor de archivos configurado no admite URL de carga prefirmadas."
+
+#. js-lingui-explicit-id
+#: src/modules/cart/services/cart-module-service.ts:294
+msgid "Shipping method not returned after create"
+msgstr "No se devolvió el método de envío después de crearlo"
+
+#. js-lingui-explicit-id
+#: src/modules/cart/services/cart-module-service.ts:374
+msgid "Cart {id} is already completed"
+msgstr "El carrito {id} ya está completado"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:113
+#: src/modules/auth/services/auth-module-service.ts:151
+msgid "Provider identity not found"
+msgstr "No se encontró la identidad del proveedor"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:227
+msgid "Provider identity with entityId \"{entityId}\" and provider \"{provider}\" not found"
+msgstr "No se encontró la identidad con entityId \"{entityId}\" y proveedor \"{provider}\""
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:261
+#: src/modules/auth/services/auth-module-service.ts:267
+#: src/modules/auth/services/auth-module-service.ts:273
+msgid "Invalid or expired reset token"
+msgstr "El token de restablecimiento no es válido o ya venció"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-provider-service.ts:29
+msgid "Auth provider \"{providerId}\" is not registered"
+msgstr "El proveedor de autenticación \"{providerId}\" no está registrado"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/verification-provider-service.ts:31
+msgid "Verification provider \"{providerId}\" is not registered"
+msgstr "El proveedor de verificación \"{providerId}\" no está registrado"
 
 #. js-lingui-explicit-id
 #: src/modules/access-control/services/access-control-module-service.ts:58
@@ -443,11 +614,6 @@ msgstr "No has iniciado sesión"
 #: src/api/store/products/[id]/route.ts:102
 msgid "Product with id \"{id}\" has no price in {currencyCode}"
 msgstr "El producto con id \"{id}\" no tiene precio en {currencyCode}"
-
-#. js-lingui-explicit-id
-#: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
-msgid "That payment method is no longer available."
-msgstr "Ese método de pago ya no está disponible."
 
 #. js-lingui-explicit-id
 #: src/api/store/orders/[id]/route.ts:28

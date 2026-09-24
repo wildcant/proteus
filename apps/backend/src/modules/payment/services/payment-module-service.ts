@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { BigNumber } from '../../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
@@ -249,7 +250,7 @@ export class PaymentModuleService implements IPaymentModuleService {
       throw new AppError({
         type: ErrorTypes.CONFLICT,
         code: PaymentErrorCodes.ATTEMPT_IN_FLIGHT,
-        message: 'The payment could not be processed.',
+        message: i18n.t('The payment could not be processed.'),
       })
     }
 
@@ -511,7 +512,8 @@ export class PaymentModuleService implements IPaymentModuleService {
       if (payment.canceledAt) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Payment "${payment.id}" has been canceled and cannot be captured.`,
+          message: i18n.t('Payment "{id}" has been canceled and cannot be captured.'),
+          values: { id: payment.id },
         })
       }
 
@@ -527,7 +529,8 @@ export class PaymentModuleService implements IPaymentModuleService {
       if (captureAmount.isLessThanOrEqualTo(0)) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Payment "${payment.id}" has already been fully captured.`,
+          message: i18n.t('Payment "{id}" has already been fully captured.'),
+          values: { id: payment.id },
         })
       }
 
@@ -578,14 +581,16 @@ export class PaymentModuleService implements IPaymentModuleService {
       if (refundAmount.isLessThanOrEqualTo(0)) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Payment "${payment.id}" has no refundable amount remaining.`,
+          message: i18n.t('Payment "{id}" has no refundable amount remaining.'),
+          values: { id: payment.id },
         })
       }
 
       if (refundAmount.isGreaterThan(refundableAmount)) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Refund amount ${refundAmount.toFixed()} exceeds refundable amount ${refundableAmount.toFixed()}.`,
+          message: i18n.t('Refund amount {refundAmount} exceeds refundable amount {refundableAmount}.'),
+          values: { refundAmount: refundAmount.toFixed(), refundableAmount: refundableAmount.toFixed() },
         })
       }
 
@@ -920,7 +925,7 @@ export class PaymentModuleService implements IPaymentModuleService {
     throw new AppError({
       type: ErrorTypes.CONFLICT,
       code: PaymentErrorCodes.METHOD_UNAVAILABLE,
-      message: 'That payment method is no longer available.',
+      message: i18n.t('That payment method is no longer available.'),
     })
   }
 

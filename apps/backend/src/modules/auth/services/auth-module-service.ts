@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   AuthIdentityDTO,
@@ -109,7 +110,7 @@ export class AuthModuleService implements IAuthModuleService {
     const providerIdentities = await this.providerIdentityRepository.find({ authIdentityId: authIdentity.id, provider })
 
     if (providerIdentities.length === 0) {
-      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Provider identity not found' })
+      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: i18n.t('Provider identity not found') })
     }
 
     return { authIdentity: { ...authIdentity, providerIdentities } }
@@ -147,7 +148,7 @@ export class AuthModuleService implements IAuthModuleService {
           const results = await this.providerIdentityRepository.find({ entityId, provider }, { limit: 1 }, ctx)
           const existing = results[0]
           if (!existing) {
-            throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Provider identity not found' })
+            throw new AppError({ type: ErrorTypes.NOT_FOUND, message: i18n.t('Provider identity not found') })
           }
 
           const providerIdentity = await this.providerIdentityRepository.update(
@@ -223,7 +224,8 @@ export class AuthModuleService implements IAuthModuleService {
     if (!providerIdentity) {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `Provider identity with entityId "${entityId}" and provider "${provider}" not found`,
+        message: i18n.t('Provider identity with entityId "{entityId}" and provider "{provider}" not found'),
+        values: { entityId, provider },
       })
     }
 
@@ -256,19 +258,19 @@ export class AuthModuleService implements IAuthModuleService {
 
     const record = await this.authPasswordResetTokenRepository.findByTokenHash(tokenHash)
     if (!record) {
-      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Invalid or expired reset token' })
+      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Invalid or expired reset token') })
     }
 
     if (record.expiresAt < new Date()) {
       // Clean up expired token before rejecting
       await this.authPasswordResetTokenRepository.delete([record.id])
-      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Invalid or expired reset token' })
+      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Invalid or expired reset token') })
     }
 
     // Cross-check provider + entity_id against the DB record
     const providerIdentity = await this.providerIdentityRepository.findByIdOrFail(record.providerIdentityId)
     if (providerIdentity.provider !== provider || providerIdentity.entityId !== entityId) {
-      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Invalid or expired reset token' })
+      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Invalid or expired reset token') })
     }
 
     // Single-use: hard-delete the token atomically
