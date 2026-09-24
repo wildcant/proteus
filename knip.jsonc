@@ -90,8 +90,13 @@
       "entry": ["orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs", "lingui.config.ts"],
       // Same plugin problem as the admin.
       "orval": false,
-      // Same as the admin, plus the browser-mode setup file at the workspace root.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!tests/**!", "!vitest.browser.setup.ts!"]
+      // Same as the admin, plus the browser-mode setup file and Start stub at the workspace root.
+      "project": [
+        "**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!",
+        "!tests/**!",
+        "!vitest.browser.setup.ts!",
+        "!vitest.start-client.stub.ts!"
+      ]
     },
     "packages/icons": {
       // build:icons passes it as `--templateSrc=` and build-icons/cli.ts loads it with
