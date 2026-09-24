@@ -21,6 +21,17 @@ describe('activeLocale', () => {
     expect(activeLocale()).toBe('es-419')
   })
 
+  test('a browser in a language the admin has no catalog for renders en-US', () => {
+    browserSpeaking('fr-FR', 'es-CO')
+    expect(activeLocale()).toBe('en-US')
+    expect(dateLocale()).toBeUndefined()
+  })
+
+  test('a remembered Locale in a language the admin has no catalog for renders en-US', () => {
+    rememberLocale('fr-FR')
+    expect(activeLocale()).toBe('en-US')
+  })
+
   test('a browser that names no language renders en-US', () => {
     browserSpeaking()
     expect(activeLocale()).toBe('en-US')
@@ -42,6 +53,12 @@ describe('rememberLocale', () => {
   test('asks for a reload only when the Locale differs from the one this page rendered in', () => {
     expect(rememberLocale('es-CO')).toBe(true)
     expect(rememberLocale('es-CO')).toBe(false)
+  })
+
+  test('a Locale with no catalog is remembered as en-US, so it cannot reload in a loop', () => {
+    expect(rememberLocale('fr-FR')).toBe(true)
+    expect(rememberLocale('fr-FR')).toBe(false)
+    expect(activeLocale()).toBe('en-US')
   })
 })
 

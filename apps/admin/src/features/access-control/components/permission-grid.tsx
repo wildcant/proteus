@@ -3,6 +3,7 @@ import { Checkbox, Label } from '@proteus/ui'
 import { useMemo } from 'react'
 import type { AdminPermission } from '#/api/generated/model'
 import { usePermissions } from '#/features/access-control/api/permissions'
+import { usePermissionTitle } from '#/features/access-control/hooks/use-permission-title'
 
 type PermissionGridProps = {
   value: string[]
@@ -43,6 +44,7 @@ function modulePermissionKeys(permissions: AdminPermission[]): string[] {
 
 export function PermissionGrid({ value, onChange }: PermissionGridProps) {
   const { data } = usePermissions()
+  const permissionTitle = usePermissionTitle()
   const groups = useMemo(() => groupByModule(data?.permissions ?? []), [data?.permissions])
 
   const handleAllToggle = (module: string, permissions: AdminPermission[]) => {
@@ -118,7 +120,7 @@ export function PermissionGrid({ value, onChange }: PermissionGridProps) {
                   />
                   <div className="flex flex-col">
                     <Label htmlFor={`perm-${permission.id}`} className="text-sm">
-                      {permission.title}
+                      {permissionTitle(permission)}
                     </Label>
                     <span className="text-muted-foreground text-xs">{permission.key}</span>
                   </div>
