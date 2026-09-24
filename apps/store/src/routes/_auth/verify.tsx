@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { ButtonLink } from '#/components/button'
@@ -25,21 +26,25 @@ export const Route = createFileRoute('/_auth/verify')({
 })
 
 function VerifyPending() {
+  const { t } = useLingui()
   return (
     <main className="mt-10 flex w-full max-w-md flex-col items-center">
-      <AuthHeading title="Verifying">Hold on while we confirm your email.</AuthHeading>
+      <AuthHeading title={t`Verifying`}>
+        <Trans>Hold on while we confirm your email.</Trans>
+      </AuthHeading>
     </main>
   )
 }
 
 function VerifyError() {
+  const { t } = useLingui()
   return (
     <main className="mt-10 flex w-full max-w-md flex-col items-center">
-      <AuthHeading title="Invalid link">
-        This verification link is invalid or has expired. Request a new one from your account.
+      <AuthHeading title={t`Invalid link`}>
+        <Trans>This verification link is invalid or has expired. Request a new one from your account.</Trans>
       </AuthHeading>
       <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
-        Back to sign in
+        <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>
   )
@@ -47,15 +52,16 @@ function VerifyError() {
 
 function VerifyPage() {
   const result = Route.useLoaderData()
+  const { t } = useLingui()
 
   if (result.verified) {
     return (
       <main className="mt-10 flex w-full max-w-md flex-col items-center">
-        <AuthHeading title="Email verified">
-          Your email is confirmed. Sign in to pick up where you left off.
+        <AuthHeading title={t`Email verified`}>
+          <Trans>Your email is confirmed. Sign in to pick up where you left off.</Trans>
         </AuthHeading>
         <ButtonLink to="/login" className="mt-10 h-14 w-full font-semibold text-base">
-          Sign in
+          <Trans>Sign in</Trans>
         </ButtonLink>
       </main>
     )
@@ -63,14 +69,14 @@ function VerifyPage() {
 
   return (
     <main className="mt-10 flex w-full max-w-md flex-col items-center">
-      <AuthHeading title="Verification failed">{result.message}</AuthHeading>
+      <AuthHeading title={t`Verification failed`}>{result.message ?? t`Verification failed`}</AuthHeading>
       {!getToken() && (
         <p className="mt-3 text-center text-ink-muted text-xs">
-          Open this link in the same browser you signed up with.
+          <Trans>Open this link in the same browser you signed up with.</Trans>
         </p>
       )}
       <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
-        Back to sign in
+        <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>
   )
