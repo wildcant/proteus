@@ -1085,6 +1085,10 @@ msgstr "Ver todo"
 msgid "View all “{debouncedTerm}”"
 msgstr "Ver todo “{debouncedTerm}”"
 
+#: src/features/checkout/utils/payment/adapters/stripe/errors.ts:38
+msgid "We could not authenticate your card with your bank. Please try again or use a different card."
+msgstr "No pudimos autenticar tu tarjeta con tu banco. Inténtalo de nuevo o usa otra tarjeta."
+
 #: src/features/checkout/components/payment/checkout-return.tsx:87
 msgid "We could not complete your order. Please try again."
 msgstr "No pudimos completar tu pedido. Inténtalo de nuevo."
@@ -1097,6 +1101,10 @@ msgstr "No pudimos mover tu carrito a {0}"
 #: src/features/checkout/components/payment/checkout-return.tsx:42
 msgid "We could not pick your order back up after your payment. If you were charged, nothing has been taken twice — contact us and we will finish it."
 msgstr "No pudimos retomar tu pedido después del pago. Si se te cobró, no se hizo ningún cobro doble: contáctanos y lo terminamos."
+
+#: src/features/checkout/utils/payment/adapters/stripe/errors.ts:33
+msgid "We could not process your payment. Please try again or use a different card."
+msgstr "No pudimos procesar tu pago. Inténtalo de nuevo o usa otra tarjeta."
 
 #: src/components/not-found.tsx:27
 msgid "We couldn’t find that page"
@@ -1161,6 +1169,10 @@ msgstr "Tu carrito"
 #: src/features/cart/components/cart-empty.tsx:14
 msgid "Your bag is empty"
 msgstr "Tu carrito está vacío"
+
+#: src/features/checkout/utils/payment/adapters/stripe/errors.ts:36
+msgid "Your card was declined. Please try another card or contact your bank."
+msgstr "Tu tarjeta fue rechazada. Prueba con otra tarjeta o comunícate con tu banco."
 
 #: src/features/account/components/payment-methods-book-view.tsx:60
 msgid "Your cards"
