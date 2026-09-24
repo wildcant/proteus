@@ -1,4 +1,6 @@
 import { fileURLToPath } from 'node:url'
+import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin'
+import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
@@ -33,9 +35,15 @@ export default defineConfig({
       },
       {
         extends: true,
-        // React and Tailwind only for the project that renders them; the unit project stays a
-        // plain node run.
-        plugins: [react(), tailwindcss()],
+        // React, Tailwind and the Lingui macro pass only for the project that renders them; the unit
+        // project stays a plain node run. The macro pass is `vite.config.ts`'s: without it a component
+        // that imports `@lingui/react/macro` throws on import.
+        plugins: [
+          react(),
+          tailwindcss(),
+          lingui({ cwd: import.meta.dirname }),
+          babel({ presets: [linguiTransformerBabelPreset({}, { cwd: import.meta.dirname })] }),
+        ],
         // Start's plugin gives the client bundle the client half of Start; this project has no
         // Start plugin, so the stub stands in for it. Exact matches, so nothing else under the scope moves.
         resolve: {

@@ -13,6 +13,146 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/products/components/product-gallery.tsx:99
+msgid "{alt} — view {position} of {count}"
+msgstr "{alt} — view {position} of {count}"
+
+#: src/features/products/components/product-gallery.tsx:74
+msgid "{alt} images"
+msgstr "{alt} images"
+
+#: src/features/products/components/product-list-header.tsx:63
+msgid "{count, plural, one {# Product} other {# Products}}"
+msgstr "{count, plural, one {# Product} other {# Products}}"
+
+#: src/features/products/components/variant-stock.tsx:34
+msgid "{remaining, plural, one {Only # left} other {Only # left}}"
+msgstr "{remaining, plural, one {Only # left} other {Only # left}}"
+
 #: src/components/footer.tsx:138
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. All rights reserved."
+
+#: src/features/products/api/products.ts:46
+msgid "A–Z"
+msgstr "A–Z"
+
+#: src/features/products/components/add-to-cart.tsx:77
+msgid "Add to cart"
+msgstr "Add to cart"
+
+#: src/features/products/components/product-list-header.tsx:28
+msgid "All products"
+msgstr "All products"
+
+#: src/features/products/components/search-drawer.tsx:46
+msgid "Back"
+msgstr "Back"
+
+#: src/features/products/components/search-best-sellers.tsx:30
+msgid "Best sellers"
+msgstr "Best sellers"
+
+#: src/features/products/components/product-error.tsx:27
+msgid "Browse products"
+msgstr "Browse products"
+
+#: src/features/products/components/product-empty.tsx:23
+msgid "Clear search"
+msgstr "Clear search"
+
+#: src/features/products/components/search-drawer.tsx:62
+msgid "Close search"
+msgstr "Close search"
+
+#: src/features/products/components/product-card.tsx:47
+msgid "From {startingPrice}"
+msgstr "From {startingPrice}"
+
+#: src/features/products/components/product-error.tsx:24
+msgid "It may not be one we sell here."
+msgstr "It may not be one we sell here."
+
+#: src/features/products/components/product-specs.tsx:20
+msgid "Made in"
+msgstr "Made in"
+
+#: src/features/products/components/product-specs.tsx:18
+msgid "Material"
+msgstr "Material"
+
+#: src/features/products/api/products.ts:45
+msgid "Newest"
+msgstr "Newest"
+
+#: src/features/products/components/search-results.tsx:44
+msgid "No products match “{debouncedTerm}”."
+msgstr "No products match “{debouncedTerm}”."
+
+#: src/features/products/components/product-empty.tsx:20
+msgid "No products match “{q}”."
+msgstr "No products match “{q}”."
+
+#: src/features/products/components/product-empty.tsx:28
+msgid "No products yet."
+msgstr "No products yet."
+
+#: src/features/products/components/product-detail.tsx:42
+#: src/features/products/components/search-results.tsx:52
+msgid "Products"
+msgstr "Products"
+
+#: src/features/products/components/product-specs.tsx:17
+msgid "Ref."
+msgstr "Ref."
+
+#: src/features/products/components/product-list-header.tsx:25
+#: src/features/products/components/search-drawer.tsx:39
+msgid "Search"
+msgstr "Search"
+
+#: src/features/products/components/product-list-header.tsx:25
+msgid "Shop"
+msgstr "Shop"
+
+#: src/features/products/components/gallery-dots.tsx:37
+msgid "Show image {position}"
+msgstr "Show image {position}"
+
+#: src/features/products/components/add-to-cart.tsx:77
+#: src/features/products/components/product-card.tsx:69
+#: src/features/products/components/variant-stock.tsx:24
+msgid "Sold out"
+msgstr "Sold out"
+
+#: src/features/products/components/product-sort.tsx:28
+msgid "Sort by"
+msgstr "Sort by"
+
+#: src/features/products/components/add-to-cart.tsx:43
+msgid "This product isn't available to order yet."
+msgstr "This product isn't available to order yet."
+
+#: src/features/products/components/variant-picker.tsx:206
+msgid "Variant"
+msgstr "Variant"
+
+#: src/features/products/components/search-best-sellers.tsx:33
+msgid "View all"
+msgstr "View all"
+
+#: src/features/products/components/search-results.tsx:60
+msgid "View all “{debouncedTerm}”"
+msgstr "View all “{debouncedTerm}”"
+
+#: src/features/products/components/product-error.tsx:21
+msgid "We couldn't show this product"
+msgstr "We couldn't show this product"
+
+#: src/features/products/components/product-specs.tsx:19
+msgid "Weight"
+msgstr "Weight"
+
+#: src/features/products/api/products.ts:47
+msgid "Z–A"
+msgstr "Z–A"

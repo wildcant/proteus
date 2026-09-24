@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '@proteus/ui'
 import { ChevronLeftIcon, XIcon } from 'lucide-react'
 import { type CSSProperties, useEffect, useState } from 'react'
@@ -18,6 +19,7 @@ import { useModal } from '#/lib/modal-state'
  * URL state, so there is nothing for a parent to own. See `docs/adr/0019-modals-are-url-state.md`.
  */
 export function SearchDrawer() {
+  const { t } = useLingui()
   const { isOpen, setOpen } = useModal('search')
   const [term, setTerm] = useState('')
 
@@ -33,13 +35,15 @@ export function SearchDrawer() {
         className="border-line border-b bg-surface [--drawer-height:100dvh] data-[swipe-direction=up]:rounded-none lg:[--drawer-height:auto]"
         style={{ '--drawer-content-max-height': '100dvh' } as CSSProperties}
       >
-        <DrawerTitle className="sr-only">Search</DrawerTitle>
+        <DrawerTitle className="sr-only">
+          <Trans>Search</Trans>
+        </DrawerTitle>
 
         <div className="relative flex shrink-0 items-center gap-2 px-4 pt-6 pb-3 sm:px-6 lg:px-8">
           {/* Mobile dismisses with a back chevron rather than an X: the panel fills the screen
               there, so it reads as a place you navigated to, not a layer over the page. */}
           <DrawerClose
-            render={<Button variant="ghost" size="icon" aria-label="Back" className="-ml-2 shrink-0 lg:hidden" />}
+            render={<Button variant="ghost" size="icon" aria-label={t`Back`} className="-ml-2 shrink-0 lg:hidden" />}
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </DrawerClose>
@@ -55,7 +59,7 @@ export function SearchDrawer() {
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label="Close search"
+                aria-label={t`Close search`}
                 className="absolute right-4 hidden shrink-0 sm:right-6 lg:right-8 lg:inline-flex"
               />
             }
