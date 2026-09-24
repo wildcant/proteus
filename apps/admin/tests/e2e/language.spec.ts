@@ -32,6 +32,7 @@ test('a Spanish-language staff member works in Spanish and switches back to Engl
   // Permission titles come from the backend in English; the admin names them by key. The key stays.
   await navigate({ to: '/settings/roles/create' })
   await expect(page.getByLabel('Ver pedidos')).toBeVisible()
+  await expect(page.getByLabel('Reenviar invitaciones')).toBeVisible()
   await expect(page.getByText('order.read', { exact: true })).toBeVisible()
 
   // Named in the language the admin renders in now: Spanish names English "inglés".
