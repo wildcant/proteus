@@ -58,6 +58,52 @@ Variant Reconciliation Plan derives it. A variant's identity — its SKU, price,
 history — survives a reassignment; only which combination it stands for changes.
 _Avoid_: move, remap, re-link
 
+### Product grouping
+
+**Category**:
+A node in the merchant's tree that says what a product is and who it is for — `Women › Bracelets`.
+Shoppers browse by it, and it changes rarely. A product can sit in several Categories, such as a
+unisex hoodie under both Men and Women.
+_Avoid_: department, section, menu item, taxonomy (reserve that for an external standard tree)
+
+**Visible Category**:
+A Category a shopper can see: active, not internal, and every ancestor visible too. A hidden
+Category hides its whole subtree.
+_Avoid_: public category, published category
+
+**Collection**:
+A flat, hand-picked group of products around a season, campaign or story, with its own landing
+page — `Summer 2026`, `Gifts under $200`. Says nothing about what the product is, so Collections
+overlap: a product can sit in several. Its membership is stored and chosen by a person; a list
+derived from data is a Computed List, never a Collection.
+_Avoid_: category, curated shop, edit, lookbook, range, assortment
+
+**Computed List**:
+A product list whose membership and order are derived from data each time it is read, never stored
+or hand-picked — New Arrivals (newest first), Best Sellers (most units sold), Trending Now (most
+units sold recently). It can be narrowed to a Category, Collection or Tag — Women's New Arrivals —
+but no product is ever added to or removed from it by hand; changing what it shows means changing
+its rule.
+_Avoid_: collection, smart collection, automated collection, featured category, sort (for the list
+itself)
+
+**Tag**:
+A free, flat keyword on a product — `organic-cotton`, `gold` — used for filtering, search and rule
+matching. Many per product, no hierarchy, no page of its own.
+_Avoid_: label, keyword, attribute, facet
+
+**Product Type**:
+The one optional label that names what a product is — `T-shirt`, `Hoodie`, `Sneakers`. Admin-facing,
+used for grouping and as a key in tax and promotion rules. Defines neither attributes nor behaviour:
+whether a product ships or is a gift card is not its Product Type.
+_Avoid_: kind, category, template, attribute set, physical/digital
+
+**Navigation Menu**:
+The storefront's header and side menu: links to Categories, Collections, Tag-filtered lists and
+Computed Lists, under headings that are Store Copy — "Featured" is a heading over Computed Lists,
+not a Category. Not itself a grouping of products.
+_Avoid_: category tree, mega menu (for the data)
+
 ### Inventory
 
 **Stock Location**:
