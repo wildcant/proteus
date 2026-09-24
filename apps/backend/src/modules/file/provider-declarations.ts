@@ -15,6 +15,7 @@ const s3FileProvider: FileProviderConfig = {
     secretAccessKey: env.S3_SECRET_ACCESS_KEY,
     ...(env.S3_PREFIX ? { prefix: env.S3_PREFIX } : {}),
     ...(env.S3_ENDPOINT ? { endpoint: env.S3_ENDPOINT } : {}),
+    ...(env.S3_FORCE_PATH_STYLE ? { forcePathStyle: true } : {}),
   },
 }
 
@@ -28,9 +29,10 @@ const localFileProvider: FileProviderConfig = {
  * Single source of truth for which file provider is configured.
  * Used by container.ts (DI registration). The module accepts exactly one.
  *
- * Production stores uploads in S3 or R2; development and test write to the local filesystem so
- * the app runs without cloud credentials. `FILE_PROVIDER` overrides that default, which is how
- * the staging restore seeds images into object storage without pretending to be production.
+ * Production stores uploads in S3 or R2; test writes to the local filesystem so it runs without
+ * object storage. `FILE_PROVIDER` overrides that default: `.env.local` sets it to point development
+ * at the compose MinIO, which workerd needs because it cannot touch the host disk, and the staging
+ * restore uses it to seed images into object storage without pretending to be production.
  */
 const useS3 = env.FILE_PROVIDER ? env.FILE_PROVIDER === 's3' : env.NODE_ENV === 'production'
 

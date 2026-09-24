@@ -1,6 +1,5 @@
 import type { PreparedRoute } from '@framework/http/ports.js'
 import { Hono } from 'hono'
-import { serveStatic } from 'hono/cloudflare-workers'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import qs from 'qs'
 import type { DbProvider } from '../../../core/db/ports.js'
@@ -61,8 +60,6 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
     }
     await next()
   })
-
-  app.use('/static/*', serveStatic({}))
 
   const defaultLanguage = createDefaultLanguage({ load: () => loadDefaultMarketLocale(container), logger })
 

@@ -437,19 +437,19 @@ msgid "Resend send failed: {reason}"
 msgstr "Falló el envío con Resend: {reason}"
 
 #. js-lingui-explicit-id
-#: src/providers/file-s3/s3-file-provider.ts:86
+#: src/providers/file-s3/s3-file-provider.ts:91
 msgid "S3 file provider requires \"{key}\" in its configuration."
 msgstr "El proveedor de archivos S3 requiere \"{key}\" en su configuración."
 
 #. js-lingui-explicit-id
-#: src/providers/file-s3/s3-file-provider.ts:117
+#: src/providers/file-s3/s3-file-provider.ts:123
 msgid "Invalid filename: \"{filename}\""
 msgstr "Nombre de archivo no válido: \"{filename}\""
 
 #. js-lingui-explicit-id
 #: src/providers/file-localfs/local-file-provider.ts:121
 #: src/providers/file-localfs/local-file-provider.ts:138
-#: src/providers/file-s3/s3-file-provider.ts:176
+#: src/providers/file-s3/s3-file-provider.ts:182
 msgid "File with key {fileKey} not found"
 msgstr "No se encontró el archivo con clave {fileKey}"
 

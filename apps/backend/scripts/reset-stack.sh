@@ -13,19 +13,20 @@
 # Reach for it when Temporal's own databases are the problem — a half-applied schema, a server that
 # will not come up, or a version change like the auto-setup → server + admin-tools move.
 #
-# Postgres comes up alone first, ahead of the rest of the stack, because the `worker` service
-# connects to `proteus` at boot and exits if the tables are not there yet. On an empty volume they
-# are not: migrations are this script's third step, not Docker's. Everything else — Temporal's
-# schema and the `default` namespace included — is created by the compose stack itself.
+# Postgres comes up first, with MinIO for the seed's images, ahead of the rest of the stack,
+# because the `worker` service connects to `proteus` at boot and exits if the tables are not there
+# yet. On an empty volume they are not: migrations are this script's third step, not Docker's.
+# Everything else — Temporal's schema and the `default` namespace included — is created by the
+# compose stack itself.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-echo "==> Destroying the compose stack and its volume (proteus, temporal, temporal_visibility)"
+echo "==> Destroying the compose stack and its volumes (proteus, temporal, temporal_visibility, MinIO)"
 docker compose down -v
 
-echo "==> Starting Postgres on an empty volume"
-docker compose up -d --wait postgres
+echo "==> Starting Postgres and MinIO on empty volumes; the seed uploads its images to MinIO"
+docker compose up -d --wait postgres minio
 
 echo "==> Migrating proteus"
 pnpm run db:migrate:dev

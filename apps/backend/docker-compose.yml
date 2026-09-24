@@ -31,6 +31,37 @@ services:
       postgres:
         condition: service_healthy
 
+  # Object storage for development, on both runtimes. workerd cannot read or write the host disk,
+  # so the localfs provider has nowhere to put an upload there; MinIO speaks the S3 API, so the
+  # `s3` provider that talks to R2 in production talks to this too. `.env.local` points at it.
+  # Docker Hub no longer carries MinIO images, hence quay.io. Console on http://localhost:9001.
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    # Bootstraps its own bucket rather than leaving that to a one-shot `mc` service: `up --wait`
+    # fails on a named service that exits, even with 0, and the infra tasks name what they start.
+    # The bucket is anonymously readable because the storefront loads product images by plain URL.
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - (until mc alias set local http://localhost:9000 minioadmin minioadmin >/dev/null 2>&1; do sleep 1; done
+        && mc mb --ignore-existing local/proteus
+        && mc anonymous set download local/proteus) &
+        exec minio server /data --console-address :9001
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - proteus-dev-minio:/data
+    healthcheck:
+      # Healthy means the bucket is ready to serve, not merely that the server answers. `case`
+      # rather than `grep`, which the image does not ship.
+      test: ['CMD-SHELL', 'case "$(mc anonymous get local/proteus)" in *download*) exit 0 ;; esac; exit 1']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
   # Temporal shares the postgres service above rather than bringing its own: one database server,
   # three databases (`proteus`, `temporal`, `temporal_visibility`). Its two are created and migrated
   # by `temporal-schema` below — `temporalio/server` does none of that itself, which is the whole
@@ -166,6 +197,9 @@ services:
       POOLER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
       DIRECT_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
       TEMPORAL_ADDRESS: temporal:7233
+      # Where the Worker reaches MinIO. `S3_FILE_URL` stays `localhost`, because the browser is
+      # what loads the URLs it builds.
+      S3_ENDPOINT: http://minio:9000
     volumes:
       # The Worker resolves the same secrets the API does, and reads them the same way — `pnpm
       # setup` (specifically `pull-keys`) has to have produced `.env.keys`, exactly as it must for
@@ -176,9 +210,6 @@ services:
       # addon and the host's build is for the host's platform.
       - ./src:/app/apps/backend/src:ro
       - ../../packages:/app/packages:ro
-      # `upload-files` writes through the localfs provider in dev, and the API serves what it wrote.
-      # Without this the two disagree about where the file went.
-      - ./static:/app/apps/backend/static
     healthcheck:
       # Asks Temporal whether the queue has a poller, rather than whether a process exists — a
       # Worker that booted and failed to connect is exactly the case the second one misses.
@@ -216,12 +247,14 @@ services:
       POOLER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
       DIRECT_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
       TEMPORAL_ADDRESS: temporal:7233
+      # Where the Worker reaches MinIO. `S3_FILE_URL` stays `localhost`, because the browser is
+      # what loads the URLs it builds.
+      S3_ENDPOINT: http://minio:9000
     volumes:
       - ../../.env.local:/app/.env.local:ro
       - ../../.env.keys:/app/.env.keys:ro
       - ./src:/app/apps/backend/src:ro
       - ../../packages:/app/packages:ro
-      - ./static:/app/apps/backend/static
 
   # The cron Worker. Same image again, a third entrypoint and a third queue: this one polls
   # `proteus-cron` and runs the jobs in `src/jobs/`. A third service rather than a third queue on one
@@ -250,12 +283,14 @@ services:
       POOLER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
       DIRECT_DATABASE_URL: postgres://postgres:postgres@postgres:5432/proteus
       TEMPORAL_ADDRESS: temporal:7233
+      # Where the Worker reaches MinIO. `S3_FILE_URL` stays `localhost`, because the browser is
+      # what loads the URLs it builds.
+      S3_ENDPOINT: http://minio:9000
     volumes:
       - ../../.env.local:/app/.env.local:ro
       - ../../.env.keys:/app/.env.keys:ro
       - ./src:/app/apps/backend/src:ro
       - ../../packages:/app/packages:ro
-      - ./static:/app/apps/backend/static
     healthcheck:
       # `cron` is the Worker to ask about, not the queue to ask for: the argument resolves to
       # `CRON_TASK_QUEUE` inside the script, so the queue string stays in
@@ -270,3 +305,4 @@ services:
 
 volumes:
   proteus-dev-data:
+  proteus-dev-minio:

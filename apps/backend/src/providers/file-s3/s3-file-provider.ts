@@ -38,6 +38,11 @@ export type S3FileProviderConfig = {
   /** Required for S3-compatible services such as R2; omit for AWS. */
   endpoint?: string
   /**
+   * Puts the bucket in the path instead of the hostname. MinIO needs it: `proteus.localhost` does
+   * not resolve, `localhost/proteus` does.
+   */
+  forcePathStyle?: boolean
+  /**
    * Canned ACL for uploaded objects, or `false` to omit the ACL header entirely. Defaults to
    * deriving it from the file's `access`.
    */
@@ -101,6 +106,7 @@ export class S3FileProvider extends AbstractFileProviderService<S3FileProviderCo
         secretAccessKey: config.secretAccessKey,
       },
       ...(config.endpoint ? { endpoint: config.endpoint } : {}),
+      ...(config.forcePathStyle ? { forcePathStyle: true } : {}),
     })
   }
 

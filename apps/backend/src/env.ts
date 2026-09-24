@@ -35,7 +35,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string(),
   RESEND_FROM: z.string(),
 
-  // S3-compatible file storage (production only — dev and test use the local filesystem provider).
+  // S3-compatible file storage. Production points at R2; `.env.local` points at the compose MinIO.
   S3_FILE_URL: z.string().default(''),
   S3_REGION: z.string().default(''),
   S3_BUCKET: z.string().default(''),
@@ -44,6 +44,8 @@ const envSchema = z.object({
   S3_PREFIX: z.string().default(''),
   /** Required for Cloudflare R2 and other S3-compatible services; empty for AWS. */
   S3_ENDPOINT: z.string().default(''),
+  /** MinIO addresses buckets by path rather than by subdomain. */
+  S3_FORCE_PATH_STYLE: z.stringbool().default(false),
 
   /**
    * Temporal connection settings only. Which engine runs a workflow is not configured here:

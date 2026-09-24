@@ -6,13 +6,13 @@
   //   `dev: workerd` — workerd runtime. One terminal, three panes: API under `wrangler dev`, store,
   //                    admin.
   //
-  // Both run from Cmd+Shift+P → "Tasks: Run Task". `dev` additionally answers to Cmd+Shift+B, not
-  // through a keybinding but by being the default build task below — and VS Code allows exactly one
-  // of those, so `dev: workerd` cannot have it too. Workspaces cannot ship keybindings either
-  // (keybindings.json is user-level only), so a shortcut for the workerd session is something each
-  // person adds to their own keybindings.json:
+  // Both run from Cmd+Shift+P → "Tasks: Run Task". `dev: workerd` additionally answers to
+  // Cmd+Shift+B, not through a keybinding but by being the default build task below — and VS Code
+  // allows exactly one of those, so `dev` cannot have it too. Workspaces cannot ship keybindings
+  // either (keybindings.json is user-level only), so a shortcut for the Node session is something
+  // each person adds to their own keybindings.json:
   //
-  //   { "key": "...", "command": "workbench.action.tasks.runTask", "args": "dev: workerd" }
+  //   { "key": "...", "command": "workbench.action.tasks.runTask", "args": "dev" }
   //
   // `presentation.group` is the whole trick: every task sharing a group name opens as a split pane
   // inside one terminal rather than as its own, so a group name is a terminal and its members are
@@ -31,7 +31,7 @@
       "label": "dev",
       "dependsOn": ["dev: infra", "dev: apps"],
       "dependsOrder": "sequence",
-      "group": { "kind": "build", "isDefault": true },
+      "group": "build",
       "problemMatcher": []
     },
     {
@@ -70,7 +70,7 @@
       // `--wait` blocks on the healthchecks, which is what makes the sequence above worth having.
       "label": "dev: infra",
       "type": "shell",
-      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui && docker compose -f apps/backend/docker-compose.yml stop worker events-worker cron-worker",
+      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres minio temporal temporal-ui && docker compose -f apps/backend/docker-compose.yml stop worker events-worker cron-worker",
       "presentation": { "reveal": "silent", "panel": "shared", "close": true },
       "problemMatcher": []
     },
@@ -243,6 +243,7 @@
       "label": "dev: workerd",
       "dependsOn": ["dev: workerd infra", "dev: workerd apps"],
       "dependsOrder": "sequence",
+      "group": { "kind": "build", "isDefault": true },
       "problemMatcher": []
     },
     {
@@ -253,8 +254,8 @@
       "problemMatcher": []
     },
     {
-      // Postgres only. Temporal and its UI are dead weight for this session, and the compose Worker
-      // needs no stopping because nothing here enqueues onto `proteus` for it to claim.
+      // Postgres and MinIO only. Temporal and its UI are dead weight for this session, and the
+      // compose Worker needs no stopping because nothing here enqueues onto `proteus` for it to claim.
       //
       // `wrangler dev` reads `.env.workerd`, which is gitignored and generated from `.env.local`, so
       // a fresh clone has no such file and starts with an undefined DATABASE_URL. The guard covers
@@ -263,7 +264,7 @@
       // editing `.env.local`, rerun `pnpm run gen:workerd-env` yourself.
       "label": "dev: workerd infra",
       "type": "shell",
-      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres && { [ -s apps/backend/.env.workerd ] || pnpm run gen:workerd-env; }",
+      "command": "docker compose -f apps/backend/docker-compose.yml up -d --wait postgres minio && { [ -s apps/backend/.env.workerd ] || pnpm run gen:workerd-env; }",
       "presentation": { "reveal": "silent", "panel": "shared", "close": true },
       "problemMatcher": []
     },
