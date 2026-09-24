@@ -30,11 +30,14 @@ export function languageOf(locale: string): string {
 /**
  * The catalog language a request is answered in: the header's, when there is a catalog for it;
  * otherwise `fallbackLanguage` (the default market's); otherwise English.
+ *
+ * `fallbackLanguage` is only read when the header names no catalog: on a cold instance it waits on
+ * the default market lookup, and a request that names its own language must not wait on that.
  */
-function resolveLanguage(locale: string | undefined, fallbackLanguage: string): string {
+async function resolveLanguage(locale: string | undefined, fallbackLanguage: () => Promise<string>): Promise<string> {
   const requested = locale ? languageOf(locale) : ''
   if (Object.hasOwn(catalogs, requested)) return requested
-  const fallback = languageOf(fallbackLanguage)
+  const fallback = languageOf(await fallbackLanguage())
   return Object.hasOwn(catalogs, fallback) ? fallback : SOURCE_LANGUAGE
 }
 
@@ -42,8 +45,11 @@ function resolveLanguage(locale: string | undefined, fallbackLanguage: string): 
  * A fresh Lingui instance per call, never a shared global one: requests interleave on one server
  * instance, and a global `i18n.activate()` would bleed one request's language into another's.
  */
-export function createLinguiTranslator(locale: string | undefined, fallbackLanguage: string): Translator {
-  const language = resolveLanguage(locale, fallbackLanguage)
+export async function createLinguiTranslator(
+  locale: string | undefined,
+  fallbackLanguage: () => Promise<string>,
+): Promise<Translator> {
+  const language = await resolveLanguage(locale, fallbackLanguage)
   const i18n = setupI18n({ locale: language, messages: { [language]: catalogs[language] ?? {} } })
   const translate: Translator['translate'] = (message, values) => i18n._(message, values)
   const zodLocale = zodLocaleFor(language)
