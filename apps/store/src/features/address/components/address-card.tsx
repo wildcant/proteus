@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Field, FieldLabel, RadioGroupItem, usePrompt } from '@proteus/ui'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
@@ -17,6 +18,7 @@ type AddressCardProps = {
  * address can be the main one, which is a property of the list, not of a row.
  */
 export function AddressCard({ address, isDefault }: AddressCardProps) {
+  const { t } = useLingui()
   const recipient = [address.firstName, address.lastName].filter(Boolean).join(' ')
 
   return (
@@ -24,7 +26,7 @@ export function AddressCard({ address, isDefault }: AddressCardProps) {
       <div className="min-w-0 flex-1">
         {/* addressName is optional, and four addresses in one city are unreadable without a
             label — so the recipient carries the heading when the shopper did not set one. */}
-        <h3 className="type-heading text-ink">{address.addressName || recipient || 'Address'}</h3>
+        <h3 className="type-heading text-ink">{address.addressName || recipient || t`Address`}</h3>
         <div className="mt-3">
           <AddressLines address={address} />
         </div>
@@ -35,14 +37,14 @@ export function AddressCard({ address, isDefault }: AddressCardProps) {
       <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 lg:flex-col lg:items-end">
         <ButtonLink variant="link" to="/account/addresses/$addressId/edit" params={{ addressId: address.id }}>
           <PencilIcon />
-          Edit
+          <Trans>Edit</Trans>
         </ButtonLink>
         <DeleteAddressButton address={address} />
 
         <Field orientation="horizontal" className="w-auto cursor-pointer items-center">
           <RadioGroupItem id={`default-${address.id}`} value={address.id} />
           <FieldLabel htmlFor={`default-${address.id}`} className="cursor-pointer text-ink-muted">
-            {isDefault ? 'Main address' : 'Make this my main'}
+            {isDefault ? <Trans>Main address</Trans> : <Trans>Make this my main</Trans>}
           </FieldLabel>
         </Field>
       </div>
@@ -55,15 +57,16 @@ export function AddressCard({ address, isDefault }: AddressCardProps) {
  * on a phone is a mis-tap waiting to happen.
  */
 function DeleteAddressButton({ address }: { address: StoreCustomerAddress }) {
+  const { t } = useLingui()
   const prompt = usePrompt()
   const deleteAddress = useDeleteAddress()
-  const label = address.addressName || address.address1 || 'this address'
+  const label = address.addressName || address.address1 || t`this address`
 
   const confirmAndDelete = async () => {
     const confirmed = await prompt({
-      title: 'Remove this address?',
-      description: `${label} will be removed from your address book. This cannot be undone.`,
-      confirmText: 'Remove',
+      title: t`Remove this address?`,
+      description: t`${label} will be removed from your address book. This cannot be undone.`,
+      confirmText: t`Remove`,
     })
 
     if (!confirmed) return
@@ -74,7 +77,7 @@ function DeleteAddressButton({ address }: { address: StoreCustomerAddress }) {
   return (
     <Button variant="link" className="text-sale" onClick={confirmAndDelete} disabled={deleteAddress.isPending}>
       <Trash2Icon />
-      Delete
+      <Trans>Delete</Trans>
     </Button>
   )
 }

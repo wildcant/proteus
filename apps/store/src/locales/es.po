@@ -13,14 +13,247 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/address/components/address-card.tsx:68
+msgid "{label} will be removed from your address book. This cannot be undone."
+msgstr "{label} se eliminará de tu libreta de direcciones. Esta acción no se puede deshacer."
+
 #: src/components/footer.tsx:138
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
 
+#: src/features/cart/components/cart-drawer.tsx:68
+msgid "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
+msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu compra pronto para no quedarte sin ellos."
+
+#: src/features/address/components/address-book.tsx:88
+msgid "Add addresses to your address book and you'll be able to checkout faster"
+msgstr "Agrega direcciones a tu libreta y podrás finalizar tus compras más rápido"
+
+#: src/features/address/components/address-book.tsx:35
+#: src/features/address/components/create-address-form.tsx:11
+msgid "Add an address"
+msgstr "Agregar una dirección"
+
+#: src/features/address/components/address-card.tsx:29
+#: src/features/address/components/address-form.tsx:47
+msgid "Address"
+msgstr "Dirección"
+
+#: src/features/address/components/address-book.tsx:23
+msgid "Address book"
+msgstr "Libreta de direcciones"
+
+#: src/features/address/components/address-book.tsx:85
+msgid "Address book is empty"
+msgstr "Tu libreta de direcciones está vacía"
+
+#: src/features/address/components/address-form.tsx:50
+msgid "Apartment, suite, etc."
+msgstr "Apartamento, oficina, etc."
+
+#. placeholder {0}: previous.displayName
+#: src/features/cart/components/cart-market-switch.tsx:92
+msgid "Back to {0}"
+msgstr "Volver a {0}"
+
+#: src/features/address/components/address-book.tsx:20
 #: src/routes/_main/_authed/account/orders/$orderId.tsx:30
 msgid "Back to account"
 msgstr "Volver a tu cuenta"
 
+#: src/features/cart/components/cart-empty.tsx:20
+msgid "Browse products"
+msgstr "Ver productos"
+
+#: src/features/cart/components/cart-drawer.tsx:101
+msgid "Calculated at checkout"
+msgstr "Se calcula al finalizar la compra"
+
+#: src/features/address/components/address-form.tsx:82
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: src/features/cart/components/cart-trigger.tsx:23
+msgid "Cart"
+msgstr "Carrito"
+
+#: src/features/cart/components/cart-drawer.tsx:124
+msgid "Checkout"
+msgstr "Finalizar compra"
+
+#: src/features/address/components/address-form.tsx:55
+msgid "City"
+msgstr "Ciudad"
+
+#: src/features/cart/components/cart-drawer.tsx:49
+msgid "Close cart"
+msgstr "Cerrar carrito"
+
+#: src/features/address/components/address-form.tsx:44
+msgid "Company"
+msgstr "Empresa"
+
 #: src/routes/_main/order/$orderId/confirmed.tsx:35
 msgid "Continue shopping"
 msgstr "Seguir comprando"
+
+#: src/features/cart/components/quantity-stepper.tsx:89
+msgid "Decrease quantity for {label}"
+msgstr "Disminuir cantidad de {label}"
+
+#: src/features/address/components/address-card.tsx:80
+msgid "Delete"
+msgstr "Eliminar"
+
+#: src/features/address/components/address-card.tsx:40
+msgid "Edit"
+msgstr "Editar"
+
+#: src/features/address/components/update-address-form.tsx:12
+msgid "Edit address"
+msgstr "Editar dirección"
+
+#: src/features/address/api/addresses.ts:62
+msgid "Failed to add address"
+msgstr "No se pudo agregar la dirección"
+
+#: src/features/cart/api/cart.ts:128
+msgid "Failed to add item to cart"
+msgstr "No se pudo agregar el producto al carrito"
+
+#: src/features/address/api/addresses.ts:106
+msgid "Failed to remove address"
+msgstr "No se pudo eliminar la dirección"
+
+#: src/features/cart/api/cart.ts:182
+msgid "Failed to remove cart item"
+msgstr "No se pudo eliminar el producto del carrito"
+
+#: src/features/address/api/addresses.ts:86
+msgid "Failed to save address"
+msgstr "No se pudo guardar la dirección"
+
+#: src/features/cart/api/cart.ts:206
+msgid "Failed to transfer cart"
+msgstr "No se pudo transferir el carrito"
+
+#: src/features/cart/api/cart.ts:158
+msgid "Failed to update cart item"
+msgstr "No se pudo actualizar el producto del carrito"
+
+#: src/features/address/components/address-form.tsx:36
+msgid "First name"
+msgstr "Nombre"
+
+#: src/features/cart/components/quantity-stepper.tsx:103
+msgid "Increase quantity for {label}"
+msgstr "Aumentar cantidad de {label}"
+
+#. placeholder {0}: stale.currencyCode.toUpperCase()
+#: src/features/cart/components/cart-market-switch.tsx:81
+msgid "It is still priced in {0}"
+msgstr "Sus precios siguen en {0}"
+
+#: src/features/address/components/address-form.tsx:31
+msgid "Label (e.g. Home)"
+msgstr "Nombre (p. ej., Casa)"
+
+#: src/features/address/components/address-form.tsx:39
+msgid "Last name"
+msgstr "Apellido"
+
+#: src/features/address/components/address-card.tsx:47
+#: src/features/address/components/main-address-panel.tsx:20
+msgid "Main address"
+msgstr "Dirección principal"
+
+#: src/features/address/components/address-card.tsx:47
+msgid "Make this my main"
+msgstr "Usar como principal"
+
+#: src/features/address/components/address-form.tsx:76
+msgid "Make this my main address"
+msgstr "Usar como mi dirección principal"
+
+#: src/features/cart/api/cart.ts:82
+#: src/features/cart/api/cart.ts:149
+#: src/features/cart/api/cart.ts:173
+msgid "No cart exists"
+msgstr "No existe ningún carrito"
+
+#: src/features/cart/components/cart-drawer.tsx:90
+msgid "Order summary"
+msgstr "Resumen del pedido"
+
+#: src/features/address/components/address-form.tsx:70
+msgid "Phone"
+msgstr "Teléfono"
+
+#: src/features/address/components/address-form.tsx:65
+msgid "Postal code"
+msgstr "Código postal"
+
+#: src/features/address/components/address-card.tsx:69
+msgid "Remove"
+msgstr "Eliminar"
+
+#: src/features/cart/components/quantity-stepper.tsx:89
+msgid "Remove {label}"
+msgstr "Eliminar {label}"
+
+#: src/features/address/components/address-card.tsx:67
+msgid "Remove this address?"
+msgstr "¿Eliminar esta dirección?"
+
+#: src/features/cart/components/cart-mismatch-banner.tsx:29
+msgid "Run transfer again"
+msgstr "Volver a transferir"
+
+#: src/features/address/components/address-form.tsx:85
+msgid "Save"
+msgstr "Guardar"
+
+#: src/features/cart/components/cart-drawer.tsx:98
+msgid "Shipping"
+msgstr "Envío"
+
+#: src/features/cart/components/cart-mismatch-banner.tsx:25
+msgid "Something went wrong when we tried to transfer your cart"
+msgstr "Algo salió mal al intentar transferir tu carrito"
+
+#: src/features/address/components/address-form.tsx:62
+msgid "State / Province"
+msgstr "Departamento / Estado"
+
+#: src/features/cart/components/cart-empty.tsx:17
+msgid "There are no products in your bag"
+msgstr "No hay productos en tu carrito"
+
+#: src/features/address/components/address-card.tsx:63
+msgid "this address"
+msgstr "esta dirección"
+
+#: src/features/cart/components/cart-drawer.tsx:106
+msgid "Total"
+msgstr "Total"
+
+#: src/features/cart/components/cart-mismatch-banner.tsx:29
+msgid "Transferring…"
+msgstr "Transfiriendo…"
+
+#. placeholder {0}: current.displayName
+#: src/features/cart/components/cart-market-switch.tsx:77
+msgid "We could not move your bag to {0}"
+msgstr "No pudimos mover tu carrito a {0}"
+
+#: src/features/address/components/address-book.tsx:59
+msgid "Your addresses"
+msgstr "Tus direcciones"
+
+#: src/features/cart/components/cart-drawer.tsx:45
+msgid "Your Bag"
+msgstr "Tu carrito"
+
+#: src/features/cart/components/cart-empty.tsx:14
+msgid "Your bag is empty"
+msgstr "Tu carrito está vacío"
