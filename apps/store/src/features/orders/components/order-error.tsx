@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import type { ReactNode } from 'react'
 
 /**
@@ -13,10 +14,14 @@ import type { ReactNode } from 'react'
 export function OrderError({ orderId, children }: { orderId: string; children: ReactNode }) {
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-12 pb-16 sm:px-6 lg:px-8">
-      <h1 className="type-title text-ink">We couldn't load this order</h1>
+      <h1 className="type-title text-ink">
+        <Trans>We couldn't load this order</Trans>
+      </h1>
       <p className="mt-4 max-w-140 text-ink-muted text-sm">
-        Something went wrong loading order <span className="text-ink">{orderId}</span>. Try again in a moment — if it
-        keeps happening, quote that number to us.
+        <Trans>
+          Something went wrong loading order <span className="text-ink">{orderId}</span>. Try again in a moment — if it
+          keeps happening, quote that number to us.
+        </Trans>
       </p>
       <div className="mt-10">{children}</div>
     </main>

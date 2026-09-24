@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import type { StoreOrderFulfillmentStatus, StoreOrderResponseOrder } from '#/api/generated/model'
 import { fulfillmentLabels } from './fulfillment-labels'
 
@@ -14,7 +16,7 @@ const fulfillmentSequence = [
 ] as const satisfies readonly StoreOrderFulfillmentStatus[]
 
 export type ProgressStep = {
-  label: string
+  label: MessageDescriptor
   /** `current` is the furthest step reached, not the next one pending. */
   state: 'done' | 'current' | 'upcoming'
 }
@@ -23,9 +25,9 @@ export type ProgressStep = {
  * A terminal state that ends the sequence — nothing further will happen, so rendering the
  * remaining steps would be promising a delivery that is not coming.
  */
-type StoppedProgress = { kind: 'stopped'; label: string; detail: string }
+type StoppedProgress = { kind: 'stopped'; label: MessageDescriptor; detail: MessageDescriptor }
 
-type RunningProgress = { kind: 'inProgress'; label: string; steps: ProgressStep[] }
+type RunningProgress = { kind: 'inProgress'; label: MessageDescriptor; steps: ProgressStep[] }
 
 export type OrderProgress = StoppedProgress | RunningProgress
 
@@ -43,11 +45,11 @@ export function orderProgress(order: StoreOrderResponseOrder): OrderProgress {
   if (order.status === 'canceled') {
     return {
       kind: 'stopped',
-      label: 'Canceled',
+      label: msg`Canceled`,
       // Deliberately says nothing about the money: what happens to an authorization on
       // cancellation is the payment provider's behaviour, and the panel below is where the
       // response actually has something to say about it.
-      detail: 'This order was canceled and will not be fulfilled.',
+      detail: msg`This order was canceled and will not be fulfilled.`,
     }
   }
 
