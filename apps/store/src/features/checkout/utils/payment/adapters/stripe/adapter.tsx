@@ -1,12 +1,16 @@
+import type { I18n } from '@lingui/core'
+import { useLingui } from '@lingui/react'
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe, type PaymentIntent, type Stripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { useCallback, useMemo } from 'react'
 import { useWallet } from '#/features/account/api/payment-methods'
+import { useMarket } from '#/hooks/use-market'
 import type { Confirm, ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from '../../../../types/payment'
 import { logPaymentFailure } from '../../log'
 import { isStaleMethodError } from '../../session-errors'
 import { appearanceFor, useThemeTokens } from './appearance'
 import { customerMessageForStripeError, GENERIC_FAILURE_MESSAGE, logFieldsForStripeError } from './errors'
+import { stripeLocaleFor } from './locale'
 import { toSmallestUnit } from './smallest-unit'
 
 /**
@@ -54,7 +58,7 @@ function publishableKeyOf(publicConfig: Record<string, unknown>): string {
  * event to a shopper and to on-call, and logging at each call site left the redirect leg — the
  * one no local card can reach — writing nothing at all.
  */
-function outcomeForIntent(intent: PaymentIntent, source: string): ConfirmOutcome {
+function outcomeForIntent(intent: PaymentIntent, source: string, i18n: I18n): ConfirmOutcome {
   if (intent.status === 'requires_capture' || intent.status === 'succeeded') {
     return { kind: 'succeeded', reference: intent.id }
   }
@@ -64,13 +68,14 @@ function outcomeForIntent(intent: PaymentIntent, source: string): ConfirmOutcome
   // pay, and `last_payment_error` is the only thing that can say why in their own terms.
   const failure = intent.last_payment_error
   logPaymentFailure(source, { ...logFieldsForStripeError(failure), intentStatus: intent.status, intent: intent.id })
-  return { kind: 'failed', customerMessage: customerMessageForStripeError(failure) }
+  return { kind: 'failed', customerMessage: customerMessageForStripeError(failure, i18n) }
 }
 
 function StripeRoot({ context, children }: { context: PaymentAdapterContext; children: React.ReactNode }) {
   const publishableKey = publishableKeyOf(context.publicConfig)
   const stripe = useMemo(() => stripeFor(publishableKey), [publishableKey])
   const tokens = useThemeTokens()
+  const { localeCode } = useMarket().current
 
   /**
    * Deferred mode: `mode: 'payment'` with an amount and a currency, and **no client secret**.
@@ -89,8 +94,9 @@ function StripeRoot({ context, children }: { context: PaymentAdapterContext; chi
       currency: context.currencyCode.toLowerCase(),
       captureMethod: 'manual',
       appearance: tokens ? appearanceFor(tokens) : undefined,
+      locale: stripeLocaleFor(localeCode),
     }),
-    [context.amount, context.currencyCode, tokens],
+    [context.amount, context.currencyCode, tokens, localeCode],
   )
 
   // Nothing renders until the tokens are read: mounting with the default appearance and restyling
@@ -147,17 +153,18 @@ function StripeNewMethodForm(_props: { canSaveMethod: boolean }) {
 function useStripeConfirm(): Confirm {
   const stripe = useStripe()
   const elements = useElements()
+  const { i18n } = useLingui()
 
   return useCallback(
     async ({ chosenMethodId, saveMethod, createSession, returnUrl, contact }) => {
-      if (!stripe || !elements) return { kind: 'failed', customerMessage: GENERIC_FAILURE_MESSAGE }
+      if (!stripe || !elements) return { kind: 'failed', customerMessage: i18n._(GENERIC_FAILURE_MESSAGE) }
 
       // Step one, and before anything of ours: a card the shopper mistyped is caught here and no
       // request leaves the browser, so an abandoned checkout leaves nothing behind at all. A saved
       // card skips it — the Element is unmounted, and there is nothing to validate.
       if (!chosenMethodId) {
         const { error: submitError } = await elements.submit()
-        if (submitError) return { kind: 'failed', customerMessage: customerMessageForStripeError(submitError) }
+        if (submitError) return { kind: 'failed', customerMessage: customerMessageForStripeError(submitError, i18n) }
       }
 
       // Step two: the session is opened now — this is the press that creates the PaymentIntent.
@@ -194,16 +201,16 @@ function useStripeConfirm(): Confirm {
         // Everything the shopper is not told. `lost_card` and `generic_decline` read identically
         // on screen and are distinguishable here, which is the whole point of the split.
         logPaymentFailure('Stripe confirmation failed', logFieldsForStripeError(error))
-        return { kind: 'failed', customerMessage: customerMessageForStripeError(error) }
+        return { kind: 'failed', customerMessage: customerMessageForStripeError(error, i18n) }
       }
 
       // Unreachable on a redirect: the tab has already left. Answered anyway, because a Stripe.js
       // that resolves without either an error or an intent must not read as success.
       if (!paymentIntent) return { kind: 'redirecting' }
 
-      return outcomeForIntent(paymentIntent, 'Stripe confirmation left the payment unpaid')
+      return outcomeForIntent(paymentIntent, 'Stripe confirmation left the payment unpaid', i18n)
     },
-    [stripe, elements],
+    [stripe, elements, i18n],
   )
 }
 
@@ -282,21 +289,22 @@ const stripeSavedMethods: NonNullable<StorePaymentAdapter['savedMethods']> = { u
  */
 function useStripeResumeRedirect() {
   const stripe = useStripe()
+  const { i18n } = useLingui()
 
   const resume = useCallback(
     async (query: URLSearchParams): Promise<ConfirmOutcome> => {
       const clientSecret = query.get('payment_intent_client_secret')
-      if (!stripe || !clientSecret) return { kind: 'failed', customerMessage: GENERIC_FAILURE_MESSAGE }
+      if (!stripe || !clientSecret) return { kind: 'failed', customerMessage: i18n._(GENERIC_FAILURE_MESSAGE) }
 
       const { paymentIntent, error } = await stripe.retrievePaymentIntent(clientSecret)
       if (error || !paymentIntent) {
         logPaymentFailure('Stripe return could not be resolved', logFieldsForStripeError(error))
-        return { kind: 'failed', customerMessage: customerMessageForStripeError(error) }
+        return { kind: 'failed', customerMessage: customerMessageForStripeError(error, i18n) }
       }
 
-      return outcomeForIntent(paymentIntent, 'Stripe returned from a redirect unpaid')
+      return outcomeForIntent(paymentIntent, 'Stripe returned from a redirect unpaid', i18n)
     },
-    [stripe],
+    [stripe, i18n],
   )
 
   // `null` until Stripe.js has loaded. The return route mounts and runs immediately, and answering
