@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { cn, Input } from '@proteus/ui'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { type ComponentProps, useState } from 'react'
@@ -44,6 +45,7 @@ export function FloatingLabelInput({
   required,
   ...props
 }: FloatingLabelInputProps) {
+  const { t } = useLingui()
   const [isRevealed, setIsRevealed] = useState(false)
   const isPassword = type === 'password'
   const trailingCount = (isPassword ? 1 : 0) + (help ? 1 : 0)
@@ -78,7 +80,7 @@ export function FloatingLabelInput({
             <button
               type="button"
               onClick={() => setIsRevealed((revealed) => !revealed)}
-              aria-label={isRevealed ? 'Hide password' : 'Show password'}
+              aria-label={isRevealed ? t`Hide password` : t`Show password`}
               className={TRAILING_CONTROL}
             >
               {isRevealed ? <EyeOffIcon className="size-5" /> : <EyeIcon className="size-5" />}

@@ -309,6 +309,7 @@ msgstr "Contact"
 msgid "Continue shopping"
 msgstr "Continue shopping"
 
+#: src/components/form/country-field.tsx:37
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:92
 msgid "Country"
 msgstr "Country"
@@ -503,6 +504,10 @@ msgstr "Hello"
 #: src/features/account/components/account-detail.tsx:23
 msgid "Hello, {firstName}"
 msgstr "Hello, {firstName}"
+
+#: src/components/form/input.tsx:83
+msgid "Hide password"
+msgstr "Hide password"
 
 #: src/routes/_auth/verify.tsx:33
 msgid "Hold on while we confirm your email."
@@ -902,6 +907,10 @@ msgstr "Shop all products"
 #: src/features/products/components/gallery-dots.tsx:37
 msgid "Show image {position}"
 msgstr "Show image {position}"
+
+#: src/components/form/input.tsx:83
+msgid "Show password"
+msgstr "Show password"
 
 #: src/components/footer.tsx:27
 #: src/features/auth/components/login-form.tsx:28
