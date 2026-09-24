@@ -33,7 +33,7 @@ msgstr "{count} values"
 msgid "{fileName} is not a supported file type. Supported file types are: {extensions}."
 msgstr "{fileName} is not a supported file type. Supported file types are: {extensions}."
 
-#: src/features/access-control/components/permission-grid.tsx:108
+#: src/features/access-control/components/permission-grid.tsx:110
 msgid "{module} — All"
 msgstr "{module} — All"
 
@@ -179,6 +179,10 @@ msgstr "Archive"
 msgid "Archive order"
 msgstr "Archive order"
 
+#: src/features/access-control/hooks/use-permission-title.ts:32
+msgid "Archive orders"
+msgstr "Archive orders"
+
 #: src/features/orders/utils/order-status.ts:26
 msgid "archived"
 msgstr "archived"
@@ -319,6 +323,10 @@ msgstr "Cancel"
 msgid "Cancel order"
 msgstr "Cancel order"
 
+#: src/features/access-control/hooks/use-permission-title.ts:31
+msgid "Cancel orders"
+msgstr "Cancel orders"
+
 #: src/features/orders/utils/order-status.ts:25
 msgid "canceled"
 msgstr "canceled"
@@ -326,6 +334,10 @@ msgstr "canceled"
 #: src/features/orders/hooks/use-order-table.tsx:58
 msgid "Canceled"
 msgstr "Canceled"
+
+#: src/features/access-control/hooks/use-permission-title.ts:37
+msgid "Capture payments"
+msgstr "Capture payments"
 
 #: src/components/data-table/data-table-ui/filter-bar.tsx:55
 msgid "Clear all"
@@ -357,6 +369,10 @@ msgstr "Complete"
 #: src/features/orders/components/order-general-section.tsx:27
 msgid "Complete order"
 msgstr "Complete order"
+
+#: src/features/access-control/hooks/use-permission-title.ts:30
+msgid "Complete orders"
+msgstr "Complete orders"
 
 #: src/features/orders/utils/order-status.ts:24
 msgid "completed"
@@ -418,6 +434,18 @@ msgstr "Create a role to manage permissions."
 msgid "Create account"
 msgstr "Create account"
 
+#: src/features/access-control/hooks/use-permission-title.ts:17
+msgid "Create customers"
+msgstr "Create customers"
+
+#: src/features/access-control/hooks/use-permission-title.ts:24
+msgid "Create fulfillments"
+msgstr "Create fulfillments"
+
+#: src/features/access-control/hooks/use-permission-title.ts:53
+msgid "Create invites"
+msgstr "Create invites"
+
 #: src/features/product-options/components/create-product-option-form.tsx:24
 msgid "Create Option"
 msgstr "Create Option"
@@ -427,13 +455,25 @@ msgstr "Create Option"
 msgid "Create Product"
 msgstr "Create Product"
 
+#: src/features/access-control/hooks/use-permission-title.ts:40
+msgid "Create products"
+msgstr "Create products"
+
 #: src/features/regions/components/create-region-form.tsx:26
 msgid "Create Region"
 msgstr "Create Region"
 
+#: src/features/access-control/hooks/use-permission-title.ts:44
+msgid "Create regions"
+msgstr "Create regions"
+
 #: src/features/access-control/components/create-role-form.tsx:25
 msgid "Create Role"
 msgstr "Create Role"
+
+#: src/features/access-control/hooks/use-permission-title.ts:49
+msgid "Create users"
+msgstr "Create users"
 
 #: src/features/users/components/create-account-form.tsx:25
 msgid "Create your account"
@@ -541,9 +581,21 @@ msgstr "Default region"
 msgid "Delete"
 msgstr "Delete"
 
+#: src/features/access-control/hooks/use-permission-title.ts:19
+msgid "Delete customers"
+msgstr "Delete customers"
+
+#: src/features/access-control/hooks/use-permission-title.ts:26
+msgid "Delete fulfillments"
+msgstr "Delete fulfillments"
+
 #: src/features/users/components/invite-row-actions.tsx:38
 msgid "Delete invite"
 msgstr "Delete invite"
+
+#: src/features/access-control/hooks/use-permission-title.ts:54
+msgid "Delete invites"
+msgstr "Delete invites"
 
 #: src/features/products/components/media/product-media-section.tsx:57
 msgid "Delete media"
@@ -558,9 +610,25 @@ msgstr "Delete option"
 msgid "Delete product"
 msgstr "Delete product"
 
+#: src/features/access-control/hooks/use-permission-title.ts:42
+msgid "Delete products"
+msgstr "Delete products"
+
 #: src/features/access-control/components/role-row-actions.tsx:34
 msgid "Delete role"
 msgstr "Delete role"
+
+#: src/features/access-control/hooks/use-permission-title.ts:22
+msgid "Delete uploads"
+msgstr "Delete uploads"
+
+#: src/features/access-control/hooks/use-permission-title.ts:51
+msgid "Delete users"
+msgstr "Delete users"
+
+#: src/features/access-control/hooks/use-permission-title.ts:35
+msgid "Deliver orders"
+msgstr "Deliver orders"
 
 #: src/features/orders/utils/order-status.ts:33
 msgid "delivered"
@@ -668,6 +736,14 @@ msgstr "Edit"
 msgid "Edit Customer"
 msgstr "Edit Customer"
 
+#: src/features/access-control/hooks/use-permission-title.ts:18
+msgid "Edit customers"
+msgstr "Edit customers"
+
+#: src/features/access-control/hooks/use-permission-title.ts:25
+msgid "Edit fulfillments"
+msgstr "Edit fulfillments"
+
 #: src/features/regions/components/region-country-row-actions.tsx:55
 msgid "Edit locale"
 msgstr "Edit locale"
@@ -693,9 +769,17 @@ msgstr "Edit Product"
 msgid "Edit Product Option"
 msgstr "Edit Product Option"
 
+#: src/features/access-control/hooks/use-permission-title.ts:41
+msgid "Edit products"
+msgstr "Edit products"
+
 #: src/features/regions/components/edit-region-form.tsx:24
 msgid "Edit Region"
 msgstr "Edit Region"
+
+#: src/features/access-control/hooks/use-permission-title.ts:45
+msgid "Edit regions"
+msgstr "Edit regions"
 
 #: src/features/products/components/variant/variant-stock-edit-form.tsx:33
 #: src/features/products/components/variant/variant-stock-section.tsx:40
@@ -705,6 +789,14 @@ msgstr "Edit stock"
 #: src/features/store/components/edit-store-form.tsx:23
 msgid "Edit Store"
 msgstr "Edit Store"
+
+#: src/features/access-control/hooks/use-permission-title.ts:47
+msgid "Edit store settings"
+msgstr "Edit store settings"
+
+#: src/features/access-control/hooks/use-permission-title.ts:50
+msgid "Edit users"
+msgstr "Edit users"
 
 #: src/features/products/components/variant/variant-stock-section.tsx:20
 msgid "Edit variant"
@@ -770,7 +862,7 @@ msgstr "Failed to cancel order"
 msgid "Failed to change the default currency"
 msgstr "Failed to change the default currency"
 
-#: src/features/auth/api/auth.ts:57
+#: src/features/auth/api/auth.ts:54
 msgid "Failed to change the language"
 msgstr "Failed to change the language"
 
@@ -935,6 +1027,10 @@ msgstr "Fulfill"
 #: src/features/orders/components/order-fulfillment-section.tsx:77
 msgid "Fulfill order"
 msgstr "Fulfill order"
+
+#: src/features/access-control/hooks/use-permission-title.ts:33
+msgid "Fulfill orders"
+msgstr "Fulfill orders"
 
 #: src/features/orders/utils/order-status.ts:31
 msgid "fulfilled"
@@ -1112,7 +1208,7 @@ msgstr "Locales"
 msgid "Log out"
 msgstr "Log out"
 
-#: src/features/auth/api/auth.ts:78
+#: src/features/auth/api/auth.ts:75
 msgid "Login failed"
 msgstr "Login failed"
 
@@ -1158,6 +1254,14 @@ msgstr "Manage Inventory"
 #: src/features/product-options/components/manage-product-options-form.tsx:46
 msgid "Manage Product Options"
 msgstr "Manage Product Options"
+
+#: src/features/access-control/hooks/use-permission-title.ts:15
+msgid "Manage role assignments"
+msgstr "Manage role assignments"
+
+#: src/features/access-control/hooks/use-permission-title.ts:13
+msgid "Manage roles"
+msgstr "Manage roles"
 
 #: src/features/products/components/media/manage-image-variants-form.tsx:41
 msgid "Manage variants"
@@ -1339,7 +1443,7 @@ msgstr "No payment providers found."
 msgid "No pending invites"
 msgstr "No pending invites"
 
-#: src/features/access-control/components/permission-grid.tsx:90
+#: src/features/access-control/components/permission-grid.tsx:92
 msgid "No permissions registered."
 msgstr "No permissions registered."
 
@@ -1636,6 +1740,10 @@ msgstr "published"
 msgid "Published"
 msgstr "Published"
 
+#: src/features/access-control/hooks/use-permission-title.ts:38
+msgid "Refund payments"
+msgstr "Refund payments"
+
 #: src/components/layout/use-sidebar-label.ts:21
 #: src/routes/_authed/settings/regions/index.tsx:24
 #: src/routes/_authed/settings/regions/route.tsx:5
@@ -1873,6 +1981,10 @@ msgstr "Settings"
 msgid "Ship"
 msgstr "Ship"
 
+#: src/features/access-control/hooks/use-permission-title.ts:34
+msgid "Ship orders"
+msgstr "Ship orders"
+
 #: src/features/orders/utils/order-status.ts:32
 msgid "shipped"
 msgstr "shipped"
@@ -2095,6 +2207,10 @@ msgstr "unfulfilled"
 msgid "unlimited"
 msgstr "unlimited"
 
+#: src/features/access-control/hooks/use-permission-title.ts:21
+msgid "Upload files"
+msgstr "Upload files"
+
 #: src/features/products/components/media/upload-media-form-item.tsx:18
 msgid "Upload images"
 msgstr "Upload images"
@@ -2150,6 +2266,62 @@ msgstr "Variant stock updated successfully"
 #: src/features/products/components/product-variant-section.tsx:12
 msgid "Variants"
 msgstr "Variants"
+
+#: src/features/access-control/hooks/use-permission-title.ts:16
+msgid "View customers"
+msgstr "View customers"
+
+#: src/features/access-control/hooks/use-permission-title.ts:23
+msgid "View fulfillments"
+msgstr "View fulfillments"
+
+#: src/features/access-control/hooks/use-permission-title.ts:27
+msgid "View inventory"
+msgstr "View inventory"
+
+#: src/features/access-control/hooks/use-permission-title.ts:52
+msgid "View invites"
+msgstr "View invites"
+
+#: src/features/access-control/hooks/use-permission-title.ts:28
+msgid "View notifications"
+msgstr "View notifications"
+
+#: src/features/access-control/hooks/use-permission-title.ts:29
+msgid "View orders"
+msgstr "View orders"
+
+#: src/features/access-control/hooks/use-permission-title.ts:36
+msgid "View payments"
+msgstr "View payments"
+
+#: src/features/access-control/hooks/use-permission-title.ts:39
+msgid "View products"
+msgstr "View products"
+
+#: src/features/access-control/hooks/use-permission-title.ts:43
+msgid "View regions"
+msgstr "View regions"
+
+#: src/features/access-control/hooks/use-permission-title.ts:14
+msgid "View role assignments"
+msgstr "View role assignments"
+
+#: src/features/access-control/hooks/use-permission-title.ts:12
+msgid "View roles"
+msgstr "View roles"
+
+#: src/features/access-control/hooks/use-permission-title.ts:46
+msgid "View store settings"
+msgstr "View store settings"
+
+#: src/features/access-control/hooks/use-permission-title.ts:20
+msgid "View uploads"
+msgstr "View uploads"
+
+#: src/features/access-control/hooks/use-permission-title.ts:48
+msgid "View users"
+msgstr "View users"
 
 #: src/features/products/components/create-product-form/product-create-attributes-form.tsx:42
 #: src/features/products/components/product-attribute-section.tsx:30

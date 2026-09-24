@@ -24,12 +24,21 @@ export function catalogLanguageFor(locale: string): CatalogLanguage {
 }
 
 /**
+ * `locale` when the admin has a catalog for its language, else `en-US`. A `fr-FR` page would
+ * render English while declaring `lang="fr-FR"` and formatting French dates.
+ */
+function supportedLocale(locale: string): string {
+  const language = locale.split('-')[0]?.toLowerCase() ?? ''
+  return isCatalogLanguage(language) ? locale : SOURCE_LOCALE
+}
+
+/**
  * The Locale this page load renders in and sends as `x-proteus-locale`: the signed-in staff
  * member's own, remembered from their last `/admin/users/me`; before sign-in, the browser's
- * language; `en-US` when the browser names none.
+ * language; `en-US` when the browser names none, or one the admin has no catalog for.
  */
 export function activeLocale(): string {
-  return localStorage.getItem(LOCALE_KEY) ?? navigator.languages[0] ?? SOURCE_LOCALE
+  return supportedLocale(localStorage.getItem(LOCALE_KEY) ?? navigator.languages[0] ?? SOURCE_LOCALE)
 }
 
 /**
@@ -38,8 +47,9 @@ export function activeLocale(): string {
  * reload.
  */
 export function rememberLocale(locale: string): boolean {
-  const changed = activeLocale() !== locale
-  localStorage.setItem(LOCALE_KEY, locale)
+  const supported = supportedLocale(locale)
+  const changed = activeLocale() !== supported
+  localStorage.setItem(LOCALE_KEY, supported)
   return changed
 }
 
