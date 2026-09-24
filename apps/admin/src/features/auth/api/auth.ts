@@ -2,13 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
 import { authAuthenticate } from '#/api/generated/auth/auth'
 import type { AdminMeResponse, AuthenticateResponse } from '#/api/generated/model'
 import { getMe, updateMe } from '#/api/generated/users/users'
-import { clearToken, setToken } from '#/lib/auth-token'
-import { forgetLocale, rememberLocale } from '#/lib/i18n/locale'
+import { setToken } from '#/lib/auth-token'
+import { rememberLocale } from '#/lib/i18n/locale'
 import { queryKeysFactory } from '#/lib/query-key-factory'
+import { signOut } from '#/lib/sign-out'
 
 const AUTH_QUERY_KEY = 'auth' as const
 const authQueryKeys = queryKeysFactory(AUTH_QUERY_KEY)
@@ -26,13 +26,10 @@ export const useMe = () => {
 
 export const useLogout = () => {
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
 
   return () => {
-    clearToken()
-    forgetLocale()
     queryClient.clear()
-    navigate({ to: '/login' })
+    signOut()
   }
 }
 

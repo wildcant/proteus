@@ -1,8 +1,9 @@
 import qs from 'qs'
 import { env } from '#/env'
-import { clearToken, getToken } from '#/lib/auth-token'
+import { getToken } from '#/lib/auth-token'
 import { ForbiddenError } from '#/lib/errors'
 import { activeLocale } from '#/lib/i18n/locale'
+import { signOut } from '#/lib/sign-out'
 
 export const fetcher = async <T>({
   url,
@@ -52,8 +53,7 @@ export const fetcher = async <T>({
 
   if (!response.ok) {
     if (response.status === 401 && !url.startsWith('/auth/')) {
-      clearToken()
-      window.location.href = '/login'
+      signOut()
     }
 
     const body = await response.json().catch(() => null)
