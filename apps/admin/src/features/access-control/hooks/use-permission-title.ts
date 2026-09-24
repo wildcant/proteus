@@ -8,7 +8,7 @@ import type { AdminPermission } from '#/api/generated/model'
  * names each feature in English; the admin owns the language, so it translates them here. The key
  * itself stays technical and untranslated. A key missing from this map renders its title as sent.
  */
-const PERMISSION_TITLES: Record<string, MessageDescriptor> = {
+export const PERMISSION_TITLES: Record<string, MessageDescriptor> = {
   'access-control.role.read': msg`View roles`,
   'access-control.role.write': msg`Manage roles`,
   'access-control.assignment.read': msg`View role assignments`,
@@ -52,6 +52,7 @@ const PERMISSION_TITLES: Record<string, MessageDescriptor> = {
   'user.invite.read': msg`View invites`,
   'user.invite.create': msg`Create invites`,
   'user.invite.delete': msg`Delete invites`,
+  'user.invite.resend': msg`Resend invites`,
 }
 
 export function usePermissionTitle(): (permission: Pick<AdminPermission, 'key' | 'title'>) => string {

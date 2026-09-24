@@ -1815,6 +1815,10 @@ msgstr "Reorder"
 msgid "Resend invite"
 msgstr "Resend invite"
 
+#: src/features/access-control/hooks/use-permission-title.ts:55
+msgid "Resend invites"
+msgstr "Resend invites"
+
 #: src/components/layout/use-sidebar-label.ts:17
 #: src/routes/_authed/_shell/reservations/index.tsx:21
 #: src/routes/_authed/_shell/reservations/route.tsx:5
