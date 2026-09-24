@@ -14,6 +14,26 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/framework/http/apply-middleware.ts:19
+msgid "Invalid path params"
+msgstr "Parámetros de ruta no válidos"
+
+#. js-lingui-explicit-id
+#: src/core/utils/validate-body.ts:15
+msgid "Invalid request body"
+msgstr "Cuerpo de la solicitud no válido"
+
+#. js-lingui-explicit-id
+#: src/core/utils/validate-query.ts:12
+msgid "Invalid query params"
+msgstr "Parámetros de consulta no válidos"
+
+#. js-lingui-explicit-id
+#: src/core/errors/error-handler.ts:51
+msgid "An internal error occurred"
+msgstr "Ocurrió un error interno"
+
+#. js-lingui-explicit-id
 #: src/api/store/middlewares.ts:31
 msgid "No region sells to country \"{countryCode}\""
 msgstr "Ninguna región vende al país \"{countryCode}\""
@@ -85,6 +105,19 @@ msgid "Invalid email or password"
 msgstr "Correo o contraseña incorrectos"
 
 #. js-lingui-explicit-id
+#: src/api/hooks/payment/[provider]/route.ts:77
+msgid "Webhook request carried no body"
+msgstr "La solicitud del webhook llegó sin cuerpo"
+
+#. js-lingui-explicit-id
+#: src/api/admin/users/[id]/roles/route.ts:26
+#: src/api/auth/token/refresh/route.ts:23
+#: src/api/auth/verification/confirm/route.ts:18
+#: src/api/auth/verification/request/route.ts:18
+msgid "Unauthorized"
+msgstr "No autorizado"
+
+#. js-lingui-explicit-id
 #: src/api/auth/verification/confirm/route.ts:33
 msgid "Expected verifiedAt to be set after confirmation"
 msgstr "Se esperaba que verifiedAt estuviera definido después de la confirmación"
@@ -98,39 +131,6 @@ msgstr "No se pudo iniciar sesión"
 #: src/api/auth/[actorType]/[authProvider]/password/route.ts:25
 msgid "Password update failed"
 msgstr "No se pudo actualizar la contraseña"
-
-#. js-lingui-explicit-id
-#: src/framework/http/apply-middleware.ts:19
-msgid "Invalid path params"
-msgstr "Parámetros de ruta no válidos"
-
-#. js-lingui-explicit-id
-#: src/core/utils/validate-body.ts:15
-msgid "Invalid request body"
-msgstr "Cuerpo de la solicitud no válido"
-
-#. js-lingui-explicit-id
-#: src/core/utils/validate-query.ts:12
-msgid "Invalid query params"
-msgstr "Parámetros de consulta no válidos"
-
-#. js-lingui-explicit-id
-#: src/core/errors/error-handler.ts:51
-msgid "An internal error occurred"
-msgstr "Ocurrió un error interno"
-
-#. js-lingui-explicit-id
-#: src/api/hooks/payment/[provider]/route.ts:77
-msgid "Webhook request carried no body"
-msgstr "La solicitud del webhook llegó sin cuerpo"
-
-#. js-lingui-explicit-id
-#: src/api/admin/users/[id]/roles/route.ts:26
-#: src/api/auth/token/refresh/route.ts:23
-#: src/api/auth/verification/confirm/route.ts:18
-#: src/api/auth/verification/request/route.ts:18
-msgid "Unauthorized"
-msgstr "No autorizado"
 
 #. js-lingui-explicit-id
 #: src/api/admin/users/me/route.ts:15
