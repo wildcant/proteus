@@ -77,11 +77,21 @@ Fixes and improvements
   - Rejected: moving styles into a template `<style>` block only raises the ceiling (and many clients strip it);
     `itemRow1..N` slots cap the item count.
 
-- ADMIN FILTERS FOR COMPUTED PROPERTIES: fulfillmentStatus filter was dropped from admin order list because the
-  column no longer exists. Filtering by computed properties (fulfillmentStatus, paymentStatus, allowedActions)
-  requires a different approach — options include: a subquery joining through the link table to fulfillment
-  timestamps, a materialized view, or computing in the application layer and filtering post-query (only viable
-  for small result sets). This will recur for any property that moves from stored to computed.
+- FILTER, SORT AND PAGINATE BY COMPUTED PROPERTIES IN THE DATABASE: some list endpoints need to filter or sort by a
+  property no table stores — it is derived from another module's data — and the only way they do it today is to
+  fetch whole tables, compute in the JS runtime, then filter, sort and paginate there. That does not scale and
+  must not become the pattern. Filtering, sorting and pagination belong in SQL. Known cases:
+  - Admin order list: the fulfillmentStatus filter was dropped because the column no longer exists (ADR 0030);
+    paymentStatus and allowedActions are computed the same way.
+  - Store product list (`api/store/products/route.ts`): sellability in the shopper's market is decided by reading
+    every variant, every variant→price-set link and a calculated price for each (`listProductVariants()` with no
+    limit) before the product page is queried.
+  - Sales-ranked Computed Lists (Best Sellers: units sold all time; Trending Now: units sold in the last 7 days),
+    deferred from `.scratch/product-discovery/spec.md`: sorting products by units sold aggregated from
+    `order_line_item` in the order module.
+  - Options to weigh, per case or as one mechanism: a denormalised rollup the owning module can join, refreshed by
+    a subscriber or a cron schedule (ADR 0029); a subquery through a link table; a materialized view (cross-module
+    joins break module isolation, ADR 0001). This will recur for any property that moves from stored to computed.
 
 Future features TODOs
 - INVENTORY MODULE: `incoming_quantity` is read by the availability projection and never written. There is no
