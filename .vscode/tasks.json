@@ -2,7 +2,7 @@
   // Two dev sessions live in here.
   //
   //   `dev`          — Node runtime. Two terminals: backend (API, workflow Worker, events
-  //                    Worker, cron Worker) and frontend (store, admin, catalog watcher).
+  //                    Worker, cron Worker) and frontend (store, admin, translation watcher).
   //   `dev: workerd` — workerd runtime. One terminal, three panes: API under `wrangler dev`, store,
   //                    admin.
   //
@@ -45,7 +45,7 @@
         "dev: cron",
         "dev: store",
         "dev: admin",
-        "dev: catalogs",
+        "dev: translations",
         "dev: open"
       ],
       "dependsOrder": "parallel",
@@ -214,11 +214,11 @@
     {
       // The one Lingui watcher of the session: backend compiles `locales/*.ts`, store extracts its
       // `.po`. Its own pane because the four backend panes share one compiled catalog, which must
-      // have exactly one writer. `scripts/dev-catalogs.sh` signals each watcher's whole process group
+      // have exactly one writer. `scripts/dev-translations.sh` signals each watcher's whole process group
       // on exit, so terminating the task stops them.
-      "label": "dev: catalogs",
+      "label": "dev: translations",
       "type": "shell",
-      "command": "pnpm run dev:catalogs",
+      "command": "pnpm run dev:translations",
       "isBackground": true,
       "presentation": {
         "group": "dev-frontend",
