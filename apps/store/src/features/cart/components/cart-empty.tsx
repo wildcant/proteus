@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { ShoppingBagIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/button'
 
@@ -9,10 +10,14 @@ export function CartEmpty() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center lg:px-6">
       <ShoppingBagIcon className="mb-4 h-10 w-10 text-ink-subtle" />
-      <h2 className="type-heading m-0 text-ink">Your bag is empty</h2>
-      <p className="m-0 mt-2 mb-6 text-ink-muted text-sm">There are no products in your bag</p>
+      <h2 className="type-heading m-0 text-ink">
+        <Trans>Your bag is empty</Trans>
+      </h2>
+      <p className="m-0 mt-2 mb-6 text-ink-muted text-sm">
+        <Trans>There are no products in your bag</Trans>
+      </p>
       <ButtonLink to="/" className="w-full">
-        Browse products
+        <Trans>Browse products</Trans>
       </ButtonLink>
     </div>
   )

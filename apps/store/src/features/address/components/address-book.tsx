@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { RadioGroup, Skeleton } from '@proteus/ui'
 import { ChevronLeftIcon, PlusIcon } from 'lucide-react'
 import { Suspense } from 'react'
@@ -16,9 +17,11 @@ export function AddressBook() {
     <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
       <ButtonLink variant="link" to="/account" className="gap-1 text-ink-muted">
         <ChevronLeftIcon className="size-4" />
-        Back to account
+        <Trans>Back to account</Trans>
       </ButtonLink>
-      <h1 className="type-display mt-4 text-ink">Address book</h1>
+      <h1 className="type-display mt-4 text-ink">
+        <Trans>Address book</Trans>
+      </h1>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-10">
         {/* Its own boundary so the add button paints immediately rather than waiting on a panel
@@ -29,7 +32,7 @@ export function AddressBook() {
           </Suspense>
           <ButtonLink to="/account/addresses/new" className="w-full">
             <PlusIcon />
-            Add an address
+            <Trans>Add an address</Trans>
           </ButtonLink>
         </div>
 
@@ -52,7 +55,9 @@ function AddressList() {
 
   return (
     <>
-      <h2 className="type-heading text-ink">Your addresses</h2>
+      <h2 className="type-heading text-ink">
+        <Trans>Your addresses</Trans>
+      </h2>
       {/* One group for the whole list: exactly one address can be the main one, and the endpoint
           releases the previous holder in the same transaction. */}
       <RadioGroup
@@ -76,9 +81,11 @@ function AddressList() {
 function AddressBookEmpty() {
   return (
     <div>
-      <h2 className="type-heading text-ink">Address book is empty</h2>
+      <h2 className="type-heading text-ink">
+        <Trans>Address book is empty</Trans>
+      </h2>
       <p className="mt-3 max-w-90 text-ink-muted text-sm">
-        Add addresses to your address book and you'll be able to checkout faster
+        <Trans>Add addresses to your address book and you'll be able to checkout faster</Trans>
       </p>
     </div>
   )

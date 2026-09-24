@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
@@ -69,6 +70,7 @@ export const useCart = (options?: CartQueryOptions) => {
  * bag priced in another one. `CartMarketSwitch` renders that state and keeps rendering it.
  */
 export const useSwitchCartMarket = (options?: UseMutationOptions<StoreUpdateCartResponse, Error, void>) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { current } = useMarket()
   const { onSuccess, onError, ...rest } = options ?? {}
@@ -77,7 +79,7 @@ export const useSwitchCartMarket = (options?: UseMutationOptions<StoreUpdateCart
     ...rest,
     mutationFn: () => {
       const cartId = getCartId()
-      if (!cartId) throw new Error('No cart exists')
+      if (!cartId) throw new Error(t`No cart exists`)
       return updateStoreCart(cartId, { countryCode: current.iso2 })
     },
     onSuccess: (...args) => {
@@ -100,6 +102,7 @@ export const useSwitchCartMarket = (options?: UseMutationOptions<StoreUpdateCart
 export const useAddLineItem = (
   options?: UseMutationOptions<StoreCreateCartLineItemResponse, Error, AddStoreCartLineItemBody>,
 ) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { current } = useMarket()
   const { onSuccess, onError, ...rest } = options ?? {}
@@ -122,7 +125,7 @@ export const useAddLineItem = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to add item to cart', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to add item to cart`, description: error.message })
       onError?.(...args)
     },
   })
@@ -135,6 +138,7 @@ export const useUpdateLineItem = (
     UpdateStoreCartLineItemBody & { lineId: string }
   >,
 ) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -142,7 +146,7 @@ export const useUpdateLineItem = (
     ...rest,
     mutationFn: ({ lineId, ...body }: UpdateStoreCartLineItemBody & { lineId: string }) => {
       const cartId = getCartId()
-      if (!cartId) throw new Error('No cart exists')
+      if (!cartId) throw new Error(t`No cart exists`)
       return updateStoreCartLineItem(cartId, lineId, body)
     },
     onSuccess: (...args) => {
@@ -151,13 +155,14 @@ export const useUpdateLineItem = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update cart item', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update cart item`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useRemoveLineItem = (options?: UseMutationOptions<DeleteResponse, Error, string>) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -165,7 +170,7 @@ export const useRemoveLineItem = (options?: UseMutationOptions<DeleteResponse, E
     ...rest,
     mutationFn: (lineId: string) => {
       const cartId = getCartId()
-      if (!cartId) throw new Error('No cart exists')
+      if (!cartId) throw new Error(t`No cart exists`)
       return deleteStoreCartLineItem(cartId, lineId)
     },
     onSuccess: (...args) => {
@@ -174,13 +179,14 @@ export const useRemoveLineItem = (options?: UseMutationOptions<DeleteResponse, E
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to remove cart item', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to remove cart item`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useTransferCart = (options?: UseMutationOptions<StoreCartResponse | null, Error, void>) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -197,7 +203,7 @@ export const useTransferCart = (options?: UseMutationOptions<StoreCartResponse |
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to transfer cart', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to transfer cart`, description: error.message })
       onError?.(...args)
     },
   })
