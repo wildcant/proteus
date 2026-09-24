@@ -1,6 +1,7 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { Logger } from '@core/types/logger.js'
 import type { CronScheduler, JobDefinition } from '@core/types/scheduler.js'
+import { i18n } from '@proteus/utils'
 import {
   type Client,
   ScheduleAlreadyRunning,
@@ -279,9 +280,8 @@ export class TemporalCronScheduler implements CronScheduler {
     if (failures.length > 0) {
       throw new AppError({
         type: ErrorTypes.UNEXPECTED_STATE,
-        message:
-          `[CronScheduler] ${failures.length} of ${jobs.length} schedule(s) could not be reconciled — ` +
-          `${failures.join('; ')}`,
+        message: i18n.t('[CronScheduler] {failed} of {total} schedule(s) could not be reconciled — {failures}'),
+        values: { failed: failures.length, total: jobs.length, failures: failures.join('; ') },
       })
     }
   }

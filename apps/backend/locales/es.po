@@ -14,169 +14,21 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:253
-msgid "The payment could not be processed."
-msgstr "No pudimos procesar el pago."
+#: src/container.ts:140
+msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
+msgstr "Se seleccionó el motor de flujos de trabajo temporal, pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createTemporalWorkflowEngine`, o fijar `projectConfig.workflows.engine` en \"simple\"."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:515
-msgid "Payment \"{id}\" has been canceled and cannot be captured."
-msgstr "El pago \"{id}\" fue cancelado y no se puede capturar."
+#: src/container.ts:172
+msgid "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
+msgstr "Se seleccionó el adaptador de bus de eventos \"{adapter}\", pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createEventBusAdapter`, o fijar `projectConfig.eventBus.adapter` en \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:532
-msgid "Payment \"{id}\" has already been fully captured."
-msgstr "El pago \"{id}\" ya se capturó por completo."
-
-#. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:584
-msgid "Payment \"{id}\" has no refundable amount remaining."
-msgstr "El pago \"{id}\" no tiene saldo reembolsable."
-
-#. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:592
-msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
-msgstr "El monto del reembolso {refundAmount} supera el monto reembolsable {refundableAmount}."
-
-#. js-lingui-explicit-id
-#: src/modules/payment/services/payment-provider-service.ts:68
-msgid "Payment provider \"{providerId}\" is not registered."
-msgstr "El proveedor de pagos \"{providerId}\" no está registrado."
-
-#. js-lingui-explicit-id
-#: src/modules/payment/providers/system.ts:63
-msgid "Method not implemented."
-msgstr "Método no implementado."
-
-#. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:301
-msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
-msgstr "No se puede completar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
-
-#. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:317
-msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
-msgstr "No se puede cancelar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
-
-#. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:333
-msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
-msgstr "No se puede archivar el pedido {id}: el estado es \"{status}\", se esperaba \"completed\""
-
-#. js-lingui-explicit-id
-#: src/modules/notification/services/notification-module-service.ts:68
-msgid "Failed to create notification"
-msgstr "No se pudo crear la notificación"
-
-#. js-lingui-explicit-id
-#: src/modules/notification/services/notification-module-service.ts:152
-msgid "Missing retried notification record"
-msgstr "Falta el registro de la notificación reintentada"
-
-#. js-lingui-explicit-id
-#: src/modules/notification/services/notification-module-service.ts:163
-msgid "Missing created notification record"
-msgstr "Falta el registro de la notificación creada"
-
-#. js-lingui-explicit-id
-#: src/modules/notification/services/notification-provider-service.ts:56
-msgid "Notification provider \"{providerId}\" is not registered."
-msgstr "El proveedor de notificaciones \"{providerId}\" no está registrado."
-
-#. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:244
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:271
-msgid "serviceZoneId is required when creating geo zones directly"
-msgstr "serviceZoneId es obligatorio al crear zonas geográficas directamente"
-
-#. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:549
-msgid "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
-msgstr "El despacho \"{id}\" ya se envió y no se puede cancelar"
-
-#. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:557
-msgid "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
-msgstr "El despacho \"{id}\" ya se entregó y no se puede cancelar"
-
-#. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-provider-service.ts:42
-msgid "Fulfillment provider \"{providerId}\" is not registered."
-msgstr "El proveedor de despachos \"{providerId}\" no está registrado."
-
-#. js-lingui-explicit-id
-#: src/modules/fulfillment/providers/manual.ts:44
-msgid "Manual provider does not support calculated prices"
-msgstr "El proveedor manual no admite precios calculados"
-
-#. js-lingui-explicit-id
-#: src/modules/file/services/file-module-service.ts:36
-msgid "File \"{filename}\" exceeds maximum size of {maxFileSize} bytes (got {size} bytes)."
-msgstr "El archivo \"{filename}\" supera el tamaño máximo de {maxFileSize} bytes (tiene {size} bytes)."
-
-#. js-lingui-explicit-id
-#: src/modules/file/services/file-module-service.ts:66
-#: src/modules/file/services/file-module-service.ts:88
-msgid "File listing requires an \"id\" filter."
-msgstr "Para listar archivos se requiere un filtro \"id\"."
-
-#. js-lingui-explicit-id
-#: src/modules/file/services/file-module-service.ts:113
-msgid "Filename is required for presigned upload URL generation."
-msgstr "El nombre del archivo es obligatorio para generar la URL de carga prefirmada."
-
-#. js-lingui-explicit-id
-#: src/modules/file/services/file-provider-service.ts:34
-msgid "File module must be initialized with exactly one provider."
-msgstr "El módulo de archivos debe inicializarse con exactamente un proveedor."
-
-#. js-lingui-explicit-id
-#: src/modules/file/services/file-provider-service.ts:43
-msgid "File provider could not be resolved."
-msgstr "No se pudo resolver el proveedor de archivos."
-
-#. js-lingui-explicit-id
-#: src/modules/file/services/file-provider-service.ts:69
-msgid "The configured file provider does not support presigned upload URLs."
-msgstr "El proveedor de archivos configurado no admite URL de carga prefirmadas."
-
-#. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:294
-msgid "Shipping method not returned after create"
-msgstr "No se devolvió el método de envío después de crearlo"
-
-#. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:374
-msgid "Cart {id} is already completed"
-msgstr "El carrito {id} ya está completado"
-
-#. js-lingui-explicit-id
-#: src/modules/auth/services/auth-module-service.ts:113
-#: src/modules/auth/services/auth-module-service.ts:151
-msgid "Provider identity not found"
-msgstr "No se encontró la identidad del proveedor"
-
-#. js-lingui-explicit-id
-#: src/modules/auth/services/auth-module-service.ts:227
-msgid "Provider identity with entityId \"{entityId}\" and provider \"{provider}\" not found"
-msgstr "No se encontró la identidad con entityId \"{entityId}\" y proveedor \"{provider}\""
-
-#. js-lingui-explicit-id
-#: src/modules/auth/services/auth-module-service.ts:261
-#: src/modules/auth/services/auth-module-service.ts:267
-#: src/modules/auth/services/auth-module-service.ts:273
-msgid "Invalid or expired reset token"
-msgstr "El token de restablecimiento no es válido o ya venció"
-
-#. js-lingui-explicit-id
-#: src/modules/auth/services/auth-provider-service.ts:29
-msgid "Auth provider \"{providerId}\" is not registered"
-msgstr "El proveedor de autenticación \"{providerId}\" no está registrado"
-
-#. js-lingui-explicit-id
-#: src/modules/auth/services/verification-provider-service.ts:31
-msgid "Verification provider \"{providerId}\" is not registered"
-msgstr "El proveedor de verificación \"{providerId}\" no está registrado"
+#: src/routes.ts:121
+msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
+"  {routes}"
+msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
+"  {routes}"
 
 #. js-lingui-explicit-id
 #: src/modules/user/services/user-module-service.ts:111
@@ -315,10 +167,80 @@ msgid "Cannot remove option value(s) that are currently used by products. Remove
 msgstr "No puedes eliminar valores de opción que usan los productos. Quítalos primero de todos los productos."
 
 #. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:253
+msgid "The payment could not be processed."
+msgstr "No pudimos procesar el pago."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:515
+msgid "Payment \"{id}\" has been canceled and cannot be captured."
+msgstr "El pago \"{id}\" fue cancelado y no se puede capturar."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:532
+msgid "Payment \"{id}\" has already been fully captured."
+msgstr "El pago \"{id}\" ya se capturó por completo."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:584
+msgid "Payment \"{id}\" has no refundable amount remaining."
+msgstr "El pago \"{id}\" no tiene saldo reembolsable."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:592
+msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
+msgstr "El monto del reembolso {refundAmount} supera el monto reembolsable {refundableAmount}."
+
+#. js-lingui-explicit-id
 #: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
 #: src/modules/payment/services/payment-module-service.ts:928
 msgid "That payment method is no longer available."
 msgstr "Ese método de pago ya no está disponible."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-provider-service.ts:68
+msgid "Payment provider \"{providerId}\" is not registered."
+msgstr "El proveedor de pagos \"{providerId}\" no está registrado."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/providers/system.ts:63
+msgid "Method not implemented."
+msgstr "Método no implementado."
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:301
+msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
+msgstr "No se puede completar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:317
+msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
+msgstr "No se puede cancelar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:333
+msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
+msgstr "No se puede archivar el pedido {id}: el estado es \"{status}\", se esperaba \"completed\""
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:68
+msgid "Failed to create notification"
+msgstr "No se pudo crear la notificación"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:152
+msgid "Missing retried notification record"
+msgstr "Falta el registro de la notificación reintentada"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-module-service.ts:163
+msgid "Missing created notification record"
+msgstr "Falta el registro de la notificación creada"
+
+#. js-lingui-explicit-id
+#: src/modules/notification/services/notification-provider-service.ts:56
+msgid "Notification provider \"{providerId}\" is not registered."
+msgstr "El proveedor de notificaciones \"{providerId}\" no está registrado."
 
 #. js-lingui-explicit-id
 #: src/modules/inventory/services/inventory-module-service.ts:177
@@ -346,6 +268,101 @@ msgstr "No hay stock suficiente para reservar {quantity} del artículo {inventor
 #: src/modules/inventory/repositories/inventory-level.ts:44
 msgid "Inventory level with id \"{id}\" not found"
 msgstr "No se encontró el nivel de inventario con ID \"{id}\""
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:244
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:271
+msgid "serviceZoneId is required when creating geo zones directly"
+msgstr "serviceZoneId es obligatorio al crear zonas geográficas directamente"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:549
+msgid "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
+msgstr "El despacho \"{id}\" ya se envió y no se puede cancelar"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:557
+msgid "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
+msgstr "El despacho \"{id}\" ya se entregó y no se puede cancelar"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-provider-service.ts:42
+msgid "Fulfillment provider \"{providerId}\" is not registered."
+msgstr "El proveedor de despachos \"{providerId}\" no está registrado."
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/providers/manual.ts:44
+msgid "Manual provider does not support calculated prices"
+msgstr "El proveedor manual no admite precios calculados"
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:36
+msgid "File \"{filename}\" exceeds maximum size of {maxFileSize} bytes (got {size} bytes)."
+msgstr "El archivo \"{filename}\" supera el tamaño máximo de {maxFileSize} bytes (tiene {size} bytes)."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:66
+#: src/modules/file/services/file-module-service.ts:88
+msgid "File listing requires an \"id\" filter."
+msgstr "Para listar archivos se requiere un filtro \"id\"."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-module-service.ts:113
+msgid "Filename is required for presigned upload URL generation."
+msgstr "El nombre del archivo es obligatorio para generar la URL de carga prefirmada."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:34
+msgid "File module must be initialized with exactly one provider."
+msgstr "El módulo de archivos debe inicializarse con exactamente un proveedor."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:43
+msgid "File provider could not be resolved."
+msgstr "No se pudo resolver el proveedor de archivos."
+
+#. js-lingui-explicit-id
+#: src/modules/file/services/file-provider-service.ts:69
+msgid "The configured file provider does not support presigned upload URLs."
+msgstr "El proveedor de archivos configurado no admite URL de carga prefirmadas."
+
+#. js-lingui-explicit-id
+#: src/modules/cart/services/cart-module-service.ts:294
+msgid "Shipping method not returned after create"
+msgstr "No se devolvió el método de envío después de crearlo"
+
+#. js-lingui-explicit-id
+#: src/modules/cart/services/cart-module-service.ts:374
+msgid "Cart {id} is already completed"
+msgstr "El carrito {id} ya está completado"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:113
+#: src/modules/auth/services/auth-module-service.ts:151
+msgid "Provider identity not found"
+msgstr "No se encontró la identidad del proveedor"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:227
+msgid "Provider identity with entityId \"{entityId}\" and provider \"{provider}\" not found"
+msgstr "No se encontró la identidad con entityId \"{entityId}\" y proveedor \"{provider}\""
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-module-service.ts:261
+#: src/modules/auth/services/auth-module-service.ts:267
+#: src/modules/auth/services/auth-module-service.ts:273
+msgid "Invalid or expired reset token"
+msgstr "El token de restablecimiento no es válido o ya venció"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/auth-provider-service.ts:29
+msgid "Auth provider \"{providerId}\" is not registered"
+msgstr "El proveedor de autenticación \"{providerId}\" no está registrado"
+
+#. js-lingui-explicit-id
+#: src/modules/auth/services/verification-provider-service.ts:31
+msgid "Verification provider \"{providerId}\" is not registered"
+msgstr "El proveedor de verificación \"{providerId}\" no está registrado"
 
 #. js-lingui-explicit-id
 #: src/modules/access-control/services/access-control-module-service.ts:58
@@ -410,9 +427,153 @@ msgid "Unknown permission key: {grant}"
 msgstr "Clave de permiso desconocida: {grant}"
 
 #. js-lingui-explicit-id
+#: src/framework/workflows/temporal-adapter.ts:180
+msgid "createTemporalWorkflowEngine: {where} needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a step that retries forever is exactly what the default of 1 exists to prevent."
+msgstr "createTemporalWorkflowEngine: {where} necesita un maximumAttempts explícito de 1 o más. Temporal interpreta {attempts} como ilimitado, y un paso que se reintenta para siempre es justo lo que el valor predeterminado de 1 busca evitar."
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/activities.ts:93
+msgid "No workflow is registered as \"{name}\" on this Worker"
+msgstr "No hay ningún flujo de trabajo registrado como \"{name}\" en este Worker"
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/registry.ts:43
+msgid "[temporal] Two workflows are registered as \"{name}\""
+msgstr "[temporal] Hay dos flujos de trabajo registrados como \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/replay.ts:252
+msgid "Workflow \"{name}\" ended its replay without producing an outcome"
+msgstr "El flujo de trabajo \"{name}\" terminó su reproducción sin producir un resultado"
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/replay.ts:288
+msgid "Workflow \"{name}\" reached step \"{step}\" without executing it"
+msgstr "El flujo de trabajo \"{name}\" llegó al paso \"{step}\" sin ejecutarlo"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/payload-converter.ts:232
+msgid "step output at {path}: {detail}"
+msgstr "salida del paso en {path}: {detail}"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/payload-converter.ts:240
+msgid "step payload at {path}: {detail}"
+msgstr "carga del paso en {path}: {detail}"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/preflight.ts:81
+msgid "[api] Temporal is unreachable at {address}, so the API is refusing to start. Every checkout dispatches a workflow through that address and every boot reconciles the cron Schedules through it, so starting anyway would bind the port, answer /health with 200, and then fail inside a shopper's checkout. Start the server (`docker compose -f apps/backend/docker-compose.yml up -d --wait temporal`) or point TEMPORAL_ADDRESS at a reachable frontend, then start the API again. The connection attempt said: \"{failure}\"."
+msgstr "[api] No se puede conectar con Temporal en {address}, así que la API se niega a iniciar. Cada checkout despacha un flujo de trabajo por esa dirección y cada arranque reconcilia los Schedules de cron por ella, así que iniciar de todos modos ocuparía el puerto, respondería /health con 200 y luego fallaría en pleno checkout de un comprador. Inicia el servidor (`docker compose -f apps/backend/docker-compose.yml up -d --wait temporal`) o apunta TEMPORAL_ADDRESS a un frontend accesible, y vuelve a iniciar la API. El intento de conexión respondió: \"{failure}\"."
+
+#. js-lingui-explicit-id
+#: src/framework/scheduler/temporal/temporal-cron-scheduler.ts:283
+msgid "[CronScheduler] {failed} of {total} schedule(s) could not be reconciled — {failures}"
+msgstr "[CronScheduler] No se pudieron reconciliar {failed} de {total} programación(es) — {failures}"
+
+#. js-lingui-explicit-id
 #: src/framework/http/apply-middleware.ts:19
 msgid "Invalid path params"
 msgstr "Parámetros de ruta no válidos"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:30
+msgid "Unauthorized: invalid actor type"
+msgstr "No autorizado: tipo de actor no válido"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:65
+#: src/framework/http/middlewares/validate-token.ts:24
+msgid "Unauthorized: invalid token"
+msgstr "No autorizado: token no válido"
+
+#. js-lingui-explicit-id
+#: src/api/admin/users/[id]/roles/route.ts:26
+#: src/api/auth/token/refresh/route.ts:23
+#: src/api/auth/verification/confirm/route.ts:18
+#: src/api/auth/verification/request/route.ts:18
+#: src/framework/http/middlewares/authenticate.ts:76
+#: src/framework/http/middlewares/authorization-actor.ts:12
+#: src/framework/http/middlewares/validate-token.ts:28
+#: src/framework/http/middlewares/validate-token.ts:49
+msgid "Unauthorized"
+msgstr "No autorizado"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:85
+msgid "Unauthorized: registration required"
+msgstr "No autorizado: se requiere registro"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authorize.ts:26
+#: src/framework/http/middlewares/authorize.ts:36
+msgid "Insufficient permissions"
+msgstr "No tienes permisos suficientes"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-scope-provider-association.ts:23
+msgid "Unknown actor type \"{actorType}\""
+msgstr "Tipo de actor desconocido \"{actorType}\""
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-scope-provider-association.ts:31
+msgid "Provider \"{authProvider}\" is not allowed for actor type \"{actorType}\""
+msgstr "El proveedor \"{authProvider}\" no está permitido para el tipo de actor \"{actorType}\""
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-token.ts:32
+msgid "Unauthorized: invalid token purpose"
+msgstr "No autorizado: propósito del token no válido"
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:137
+msgid "[event-bus] The \"EVENTS\" queue binding is missing. Declare it under `queues.producers` in this Worker's wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that does not need one."
+msgstr "[event-bus] Falta el binding de cola \"EVENTS\". Decláralo en `queues.producers` en el wrangler.jsonc de este Worker, o fija `projectConfig.eventBus.adapter` en un adaptador que no lo necesite."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:170
+msgid "[event-bus] The payload for \"{name}\" is {bytes} bytes for subscriber \"{subscriber}\", over the {maxBytes} byte queue message limit. Publish an id and let the subscriber read the rest."
+msgstr "[event-bus] La carga de \"{name}\" pesa {bytes} bytes para el suscriptor \"{subscriber}\", por encima del límite de {maxBytes} bytes por mensaje de la cola. Publica un id y deja que el suscriptor lea el resto."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:182
+msgid "[event-bus] \"{name}\" fans out to {count} subscribers and {bytes} bytes, over the {maxMessages} message / {maxBytes} byte queue batch limit."
+msgstr "[event-bus] \"{name}\" se reparte a {count} suscriptores y {bytes} bytes, por encima del límite de lote de la cola de {maxMessages} mensajes / {maxBytes} bytes."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:255
+msgid "[event-bus] No subscriber named \"{subscriber}\" is registered for \"{name}\""
+msgstr "[event-bus] No hay ningún suscriptor llamado \"{subscriber}\" registrado para \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/registry.ts:47
+msgid "[event-bus] Two subscribers are registered as \"{name}\""
+msgstr "[event-bus] Hay dos suscriptores registrados como \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:238
+msgid "[event-bus] The dispatch identity for \"{name}\" is {length} characters, over the {maxIdLength} Temporal allows for an activityId, so this event cannot be delivered. Give the event a shorter key through EVENT_KEYS in events.ts — truncating it here would defeat dedup silently. Identity: \"{dispatchId}\""
+msgstr "[event-bus] La identidad de despacho de \"{name}\" tiene {length} caracteres, por encima de los {maxIdLength} que Temporal permite para un activityId, así que este evento no se puede entregar. Dale al evento una clave más corta con EVENT_KEYS en events.ts — truncarla aquí anularía la deduplicación sin avisar. Identidad: \"{dispatchId}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:248
+msgid "[event-bus] The event name \"{name}\" is {bytes} bytes, over the {maxBytes} Temporal allows for a fairness key. Rename the event in events.ts."
+msgstr "[event-bus] El nombre del evento \"{name}\" pesa {bytes} bytes, por encima de los {maxBytes} que Temporal permite para una clave de equidad. Cambia el nombre del evento en events.ts."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:274
+msgid "createTemporalEventBus: retry needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a subscriber that sends email retrying forever is a mail loop."
+msgstr "createTemporalEventBus: retry necesita un maximumAttempts explícito de 1 o más. Temporal interpreta {attempts} como ilimitado, y un suscriptor que envía correos y se reintenta para siempre es un bucle de correo."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:291
+msgid "createTemporalEventBus: priority[\"{event}\"] must be an integer of 1 or more — 1 is the highest priority and the server's default lowest is 5. Got {key}."
+msgstr "createTemporalEventBus: priority[\"{event}\"] debe ser un entero de 1 o más — 1 es la prioridad más alta y la más baja predeterminada del servidor es 5. Se recibió {key}."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal/preflight.ts:82
+msgid "[events-worker] Temporal namespace \"{namespace}\" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) and restart this Worker. The server answered: \"{answer}\"."
+msgstr "[events-worker] El namespace de Temporal \"{namespace}\" tiene desactivadas las actividades independientes, así que cada evento que publique este despliegue se descartaría con solo una línea de log — incluida la confirmación de pedido que espera un comprador. Define `activity.enableStandalone: true` en la configuración dinámica del servidor (temporal/dynamicconfig/development-sql.yaml es la copia de este repo) y reinicia este Worker. El servidor respondió: \"{answer}\"."
 
 #. js-lingui-explicit-id
 #: src/core/utils/validate-body.ts:15
@@ -499,14 +660,6 @@ msgstr "Correo o contraseña incorrectos"
 #: src/api/hooks/payment/[provider]/route.ts:77
 msgid "Webhook request carried no body"
 msgstr "La solicitud del webhook llegó sin cuerpo"
-
-#. js-lingui-explicit-id
-#: src/api/admin/users/[id]/roles/route.ts:26
-#: src/api/auth/token/refresh/route.ts:23
-#: src/api/auth/verification/confirm/route.ts:18
-#: src/api/auth/verification/request/route.ts:18
-msgid "Unauthorized"
-msgstr "No autorizado"
 
 #. js-lingui-explicit-id
 #: src/api/auth/verification/confirm/route.ts:33

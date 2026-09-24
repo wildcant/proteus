@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 
 /**
@@ -78,13 +79,10 @@ export async function assertStandaloneActivitiesEnabled(deps: {
 
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message:
-        `[events-worker] Temporal namespace "${deps.namespace}" has standalone activities disabled, so ` +
-        'every event this deployment publishes would be dropped with only a log line — including the ' +
-        'order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the ' +
-        "server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) " +
-        'and restart this Worker. The server answered: ' +
-        `"${describeGrpcError(error)}".`,
+      message: i18n.t(
+        '[events-worker] Temporal namespace "{namespace}" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server\'s dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo\'s own copy) and restart this Worker. The server answered: "{answer}".',
+      ),
+      values: { namespace: deps.namespace, answer: describeGrpcError(error) },
     })
   }
 }
