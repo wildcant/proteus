@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -86,6 +87,7 @@ const paymentProvidersQueryOptions = (cartId: string) =>
 export const usePaymentProviders = (cartId: string) => useQuery(paymentProvidersQueryOptions(cartId))
 
 export const useUpdateCart = (options?: UseMutationOptions<StoreUpdateCartResponse, Error, UpdateStoreCartBody>) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -93,7 +95,7 @@ export const useUpdateCart = (options?: UseMutationOptions<StoreUpdateCartRespon
     ...rest,
     mutationFn: (payload: UpdateStoreCartBody) => {
       const cartId = getCartId()
-      if (!cartId) throw new Error('No cart exists')
+      if (!cartId) throw new Error(t`No cart exists`)
       return updateStoreCart(cartId, payload)
     },
     onSuccess: (...args) => {
@@ -102,7 +104,7 @@ export const useUpdateCart = (options?: UseMutationOptions<StoreUpdateCartRespon
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update cart', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update cart`, description: error.message })
       onError?.(...args)
     },
   })
@@ -111,6 +113,7 @@ export const useUpdateCart = (options?: UseMutationOptions<StoreUpdateCartRespon
 export const useSelectShippingMethod = (
   options?: UseMutationOptions<StoreCreateCartShippingMethodResponse, Error, AddStoreCartShippingMethodBody>,
 ) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -118,7 +121,7 @@ export const useSelectShippingMethod = (
     ...rest,
     mutationFn: (payload: AddStoreCartShippingMethodBody) => {
       const cartId = getCartId()
-      if (!cartId) throw new Error('No cart exists')
+      if (!cartId) throw new Error(t`No cart exists`)
       return addStoreCartShippingMethod(cartId, payload)
     },
     onSuccess: (...args) => {
@@ -127,7 +130,7 @@ export const useSelectShippingMethod = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to select shipping method', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to select shipping method`, description: error.message })
       onError?.(...args)
     },
   })
@@ -136,13 +139,14 @@ export const useSelectShippingMethod = (
 export const useCreatePaymentCollection = (
   options?: UseMutationOptions<StoreCreatePaymentCollectionResponse, Error, CreateStorePaymentCollectionBody>,
 ) => {
+  const { t } = useLingui()
   const { onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: (payload: CreateStorePaymentCollectionBody) => createStorePaymentCollection(payload),
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create payment collection', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to create payment collection`, description: error.message })
       onError?.(...args)
     },
   })
@@ -155,6 +159,7 @@ export const useCreatePaymentSession = (
     CreateStorePaymentSessionBody & { collectionId: string }
   >,
 ) => {
+  const { t } = useLingui()
   const { onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -168,7 +173,7 @@ export const useCreatePaymentSession = (
       // refetches and the selection resets to the new-method form, with a message beside the
       // button that says so. A toast on top of that is the same news told twice.
       if (!isStaleMethodError(error)) {
-        toast.add({ type: 'error', title: 'Failed to create payment session', description: error.message })
+        toast.add({ type: 'error', title: t`Failed to create payment session`, description: error.message })
       }
       onError?.(...args)
     },
@@ -184,6 +189,7 @@ export const useCreatePaymentSession = (
 export const useRepricePaymentSession = (
   options?: UseMutationOptions<StoreUpdatePaymentSessionResponse, Error, { collectionId: string; sessionId: string }>,
 ) => {
+  const { t } = useLingui()
   const { onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -191,20 +197,21 @@ export const useRepricePaymentSession = (
       updateStorePaymentSession(collectionId, sessionId),
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to price the payment', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to price the payment`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useCompleteCart = (options?: UseMutationOptions<StoreCompleteCartResponse, Error, void>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
 
   return useMutation({
     ...rest,
     mutationFn: () => {
       const cartId = getCartId()
-      if (!cartId) throw new Error('No cart exists')
+      if (!cartId) throw new Error(t`No cart exists`)
       return completeStoreCart(cartId)
     },
     onSuccess: (...args) => {
@@ -213,7 +220,7 @@ export const useCompleteCart = (options?: UseMutationOptions<StoreCompleteCartRe
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to complete order', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to complete order`, description: error.message })
       onError?.(...args)
     },
   })

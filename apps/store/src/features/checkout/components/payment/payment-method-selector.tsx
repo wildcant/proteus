@@ -1,3 +1,5 @@
+import { msg } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { cn, FieldLabel, RadioGroup, RadioGroupItem } from '@proteus/ui'
 import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { AcceptedNetworks } from '#/components/payment-network'
@@ -62,6 +64,7 @@ type WalletProps = {
 function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
   const { methods, isLoading, failed, refetch, remove } = savedMethods.useWallet()
   const { registerWallet } = usePaymentControllerContext()
+  const { t } = useLingui()
 
   /** `null` is the new-method form, which is where every shopper starts before auto-selection. */
   const [chosen, setChosen] = useState<string | null>(null)
@@ -160,8 +163,10 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
   if (visible.length === 0) {
     return (
       <>
-        {!!failed && <SelectorNotice>We couldn't load your saved cards. Enter a card below to pay.</SelectorNotice>}
-        {!!staleNotice && <SelectorNotice>{STALE_METHOD_NOTICE}</SelectorNotice>}
+        {!!failed && (
+          <SelectorNotice>{t`We couldn't load your saved cards. Enter a card below to pay.`}</SelectorNotice>
+        )}
+        {!!staleNotice && <SelectorNotice>{t(STALE_METHOD_NOTICE)}</SelectorNotice>}
         <NewMethodPanel adapter={adapter} canSaveMethod={canSaveMethod} continuesSelection={false}>
           {consent}
         </NewMethodPanel>
@@ -173,9 +178,9 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
 
   return (
     <>
-      {!!staleNotice && <SelectorNotice>{STALE_METHOD_NOTICE}</SelectorNotice>}
+      {!!staleNotice && <SelectorNotice>{t(STALE_METHOD_NOTICE)}</SelectorNotice>}
       <RadioGroup
-        aria-label="Payment method"
+        aria-label={t`Payment method`}
         className="gap-0"
         value={chosen ?? NEW_METHOD_VALUE}
         onValueChange={(value) => {
@@ -188,7 +193,7 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
             key={method.id}
             method={method}
             checked={method.id === chosen}
-            chooseLabel={`Pay with ${savedMethodName(method)}`}
+            chooseLabel={t`Pay with ${savedMethodName(method)}`}
             onRemove={() => remove(method.id).then(() => dropRow(method.id))}
           />
         ))}
@@ -208,7 +213,7 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
 /** The value the group carries for "not one of the saved cards". */
 const NEW_METHOD_VALUE = 'new-method'
 
-const STALE_METHOD_NOTICE = 'That saved card is no longer available. Pick another, or enter a new card below.'
+const STALE_METHOD_NOTICE = msg`That saved card is no longer available. Pick another, or enter a new card below.`
 
 /**
  * Row 2: the same row as a saved card, standing for the ones that are not saved yet.
@@ -218,6 +223,7 @@ const STALE_METHOD_NOTICE = 'That saved card is no longer available. Pick anothe
  */
 function NewMethodRow({ selected }: { selected: boolean }) {
   const radioId = useId()
+  const { t } = useLingui()
 
   return (
     // The same envelope-plus-label structure a saved card row uses, rather than the row classes on
@@ -225,8 +231,10 @@ function NewMethodRow({ selected }: { selected: boolean }) {
     // and the network strip lands short of where every other row's right edge is.
     <PaymentRow state={selected ? 'selected' : 'default'} data-testid="new-method-row">
       <FieldLabel htmlFor={radioId} className={paymentRowLabelVariants()}>
-        <RadioGroupItem id={radioId} value={NEW_METHOD_VALUE} aria-label="Use a different card" />
-        <span className="min-w-0 flex-1 font-medium text-ink text-sm">Use a different card</span>
+        <RadioGroupItem id={radioId} value={NEW_METHOD_VALUE} aria-label={t`Use a different card`} />
+        <span className="min-w-0 flex-1 font-medium text-ink text-sm">
+          <Trans>Use a different card</Trans>
+        </span>
         <AcceptedNetworks />
       </FieldLabel>
     </PaymentRow>

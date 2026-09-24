@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import type { StorePaymentProvider } from '@proteus/http-schemas/store'
 import { FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { Fragment } from 'react'
@@ -45,7 +46,11 @@ export const PaymentForm = withForm({
 
     const providers = data?.paymentProviders ?? []
     if (providers.length === 0) {
-      return <p className="m-0 text-ink-muted text-sm">No payment providers available.</p>
+      return (
+        <p className="m-0 text-ink-muted text-sm">
+          <Trans>No payment providers available.</Trans>
+        </p>
+      )
     }
 
     return (

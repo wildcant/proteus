@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { MoreVerticalIcon } from 'lucide-react'
 import { Button } from '#/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/popover'
@@ -19,6 +20,8 @@ type CheckoutAccountProps = {
  * they might be here to change: that it is the wrong account.
  */
 export function CheckoutAccount({ email, onSignOut }: CheckoutAccountProps) {
+  const { t } = useLingui()
+
   // Both paths that create a cart for a signed-in shopper set the email, so this is unreachable in
   // practice; if it ever is reached the order cannot be completed anyway — `validate-cart-email`
   // rejects it — and that message belongs in the Place order slot, not in a half-drawn header.
@@ -40,7 +43,7 @@ export function CheckoutAccount({ email, onSignOut }: CheckoutAccountProps) {
 
       <Popover>
         <PopoverTrigger
-          render={<Button variant="ghost" size="icon" aria-label="Account options" className="-mr-2 size-11" />}
+          render={<Button variant="ghost" size="icon" aria-label={t`Account options`} className="-mr-2 size-11" />}
         >
           <MoreVerticalIcon className="size-5" />
         </PopoverTrigger>
@@ -50,7 +53,7 @@ export function CheckoutAccount({ email, onSignOut }: CheckoutAccountProps) {
             onClick={onSignOut}
             className="h-10 w-full justify-start px-3 hover:bg-transparent dark:hover:bg-transparent"
           >
-            Sign out
+            <Trans>Sign out</Trans>
           </Button>
         </PopoverContent>
       </Popover>

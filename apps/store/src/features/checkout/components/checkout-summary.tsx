@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { ShoppingBagIcon } from '@proteus/icons'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@proteus/ui'
 import { ChevronDownIcon } from 'lucide-react'
@@ -36,7 +37,9 @@ function CheckoutSummaryPanel({ cart }: CheckoutSummaryProps) {
     <aside className="hidden h-full px-10 lg:block">
       {/* Left-aligned in the right pane, so the column hugs the centre line the split sits on. */}
       <div className="sticky top-10 flex max-h-[calc(100dvh-5rem)] w-full max-w-100 flex-col py-10">
-        <h2 className="type-heading m-0 mb-6 shrink-0 text-ink">Order summary</h2>
+        <h2 className="type-heading m-0 mb-6 shrink-0 text-ink">
+          <Trans>Order summary</Trans>
+        </h2>
         <CheckoutSummaryBody cart={cart} />
       </div>
     </aside>
@@ -54,7 +57,7 @@ function CheckoutSummaryDisclosure({ cart }: CheckoutSummaryProps) {
     <Collapsible className="lg:hidden">
       <CollapsibleTrigger className="group flex h-16 w-full cursor-pointer items-center justify-between gap-4 border-line border-b bg-surface-subtle px-4 text-ink">
         <span className="flex items-center gap-2 text-sm">
-          Order summary
+          <Trans>Order summary</Trans>
           <ChevronDownIcon className="size-4 transition-transform group-aria-expanded:rotate-180" />
         </span>
         <span className="font-bold text-sm tabular-nums">{formatPrice(cart.totals.cartTotal, cart.currencyCode)}</span>
@@ -114,21 +117,29 @@ function CheckoutSummaryBody({ cart }: CheckoutSummaryProps) {
 
       <dl className="m-0 mt-6 flex shrink-0 flex-col gap-3 border-line border-t pt-6">
         <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-ink-muted text-sm">Subtotal</dt>
+          <dt className="text-ink-muted text-sm">
+            <Trans>Subtotal</Trans>
+          </dt>
           <dd className="m-0 font-medium text-ink text-sm tabular-nums">
             {formatPrice(cart.totals.itemsTotal, cart.currencyCode)}
           </dd>
         </div>
         <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-ink-muted text-sm">Shipping</dt>
+          <dt className="text-ink-muted text-sm">
+            <Trans>Shipping</Trans>
+          </dt>
           <dd className="m-0 font-medium text-ink text-sm tabular-nums">
-            {cart.shippingMethods.length > 0
-              ? formatPrice(cart.totals.shippingTotal, cart.currencyCode)
-              : 'Enter shipping address'}
+            {cart.shippingMethods.length > 0 ? (
+              formatPrice(cart.totals.shippingTotal, cart.currencyCode)
+            ) : (
+              <Trans>Enter shipping address</Trans>
+            )}
           </dd>
         </div>
         <div className="mt-2 flex items-baseline justify-between gap-4">
-          <dt className="font-bold text-base text-ink">Total</dt>
+          <dt className="font-bold text-base text-ink">
+            <Trans>Total</Trans>
+          </dt>
           <dd className="m-0 font-bold text-base text-ink tabular-nums">
             {formatPrice(cart.totals.cartTotal, cart.currencyCode)}
           </dd>
