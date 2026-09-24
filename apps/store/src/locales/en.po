@@ -13,9 +13,25 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/products/components/product-gallery.tsx:99
+msgid "{alt} — view {position} of {count}"
+msgstr "{alt} — view {position} of {count}"
+
+#: src/features/products/components/product-gallery.tsx:74
+msgid "{alt} images"
+msgstr "{alt} images"
+
+#: src/features/products/components/product-list-header.tsx:63
+msgid "{count, plural, one {# Product} other {# Products}}"
+msgstr "{count, plural, one {# Product} other {# Products}}"
+
 #: src/features/address/components/address-card.tsx:68
 msgid "{label} will be removed from your address book. This cannot be undone."
 msgstr "{label} will be removed from your address book. This cannot be undone."
+
+#: src/features/products/components/variant-stock.tsx:34
+msgid "{remaining, plural, one {Only # left} other {Only # left}}"
+msgstr "{remaining, plural, one {Only # left} other {Only # left}}"
 
 #: src/components/footer.tsx:138
 msgid "© {year} Proteus. All rights reserved."
@@ -25,6 +41,10 @@ msgstr "© {year} Proteus. All rights reserved."
 msgid "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
 msgstr "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
 
+#: src/features/products/api/products.ts:46
+msgid "A–Z"
+msgstr "A–Z"
+
 #: src/features/address/components/address-book.tsx:88
 msgid "Add addresses to your address book and you'll be able to checkout faster"
 msgstr "Add addresses to your address book and you'll be able to checkout faster"
@@ -33,6 +53,10 @@ msgstr "Add addresses to your address book and you'll be able to checkout faster
 #: src/features/address/components/create-address-form.tsx:11
 msgid "Add an address"
 msgstr "Add an address"
+
+#: src/features/products/components/add-to-cart.tsx:77
+msgid "Add to cart"
+msgstr "Add to cart"
 
 #: src/features/address/components/address-card.tsx:29
 #: src/features/address/components/address-form.tsx:47
@@ -47,9 +71,21 @@ msgstr "Address book"
 msgid "Address book is empty"
 msgstr "Address book is empty"
 
+#: src/features/products/components/product-list-header.tsx:28
+msgid "All products"
+msgstr "All products"
+
+#: src/routes/_auth/signup.tsx:37
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
 #: src/features/address/components/address-form.tsx:50
 msgid "Apartment, suite, etc."
 msgstr "Apartment, suite, etc."
+
+#: src/features/products/components/search-drawer.tsx:46
+msgid "Back"
+msgstr "Back"
 
 #. placeholder {0}: previous.displayName
 #: src/features/cart/components/cart-market-switch.tsx:92
@@ -61,9 +97,27 @@ msgstr "Back to {0}"
 msgid "Back to account"
 msgstr "Back to account"
 
+#: src/features/auth/components/verify-pending.tsx:16
+#: src/routes/_auth/forgot-password.tsx:24
+#: src/routes/_auth/forgot-password.tsx:44
+#: src/routes/_auth/reset-password.tsx:50
+#: src/routes/_auth/verify.tsx:47
+#: src/routes/_auth/verify.tsx:79
+msgid "Back to sign in"
+msgstr "Back to sign in"
+
+#: src/features/products/components/search-best-sellers.tsx:30
+msgid "Best sellers"
+msgstr "Best sellers"
+
 #: src/features/cart/components/cart-empty.tsx:20
+#: src/features/products/components/product-error.tsx:27
 msgid "Browse products"
 msgstr "Browse products"
+
+#: src/features/auth/components/register-form.tsx:28
+msgid "By creating an account, you agree to our Privacy Policy and Terms of Use."
+msgstr "By creating an account, you agree to our Privacy Policy and Terms of Use."
 
 #: src/features/cart/components/cart-drawer.tsx:101
 msgid "Calculated at checkout"
@@ -77,25 +131,55 @@ msgstr "Cancel"
 msgid "Cart"
 msgstr "Cart"
 
+#: src/features/auth/components/verify-pending.tsx:10
+#: src/routes/_auth/forgot-password.tsx:20
+msgid "Check your email"
+msgstr "Check your email"
+
 #: src/features/cart/components/cart-drawer.tsx:124
 msgid "Checkout"
 msgstr "Checkout"
+
+#: src/routes/_auth/reset-password.tsx:40
+msgid "Choose a new password for your account."
+msgstr "Choose a new password for your account."
 
 #: src/features/address/components/address-form.tsx:55
 msgid "City"
 msgstr "City"
 
+#: src/features/products/components/product-empty.tsx:23
+msgid "Clear search"
+msgstr "Clear search"
+
 #: src/features/cart/components/cart-drawer.tsx:49
 msgid "Close cart"
 msgstr "Close cart"
+
+#: src/features/products/components/search-drawer.tsx:62
+msgid "Close search"
+msgstr "Close search"
 
 #: src/features/address/components/address-form.tsx:44
 msgid "Company"
 msgstr "Company"
 
+#: src/routes/_auth/route.tsx:20
 #: src/routes/_main/order/$orderId/confirmed.tsx:35
 msgid "Continue shopping"
 msgstr "Continue shopping"
+
+#: src/features/auth/components/register-form.tsx:33
+msgid "Create account"
+msgstr "Create account"
+
+#: src/routes/_auth/signup.tsx:31
+msgid "Create an account to track your orders, save your details, and check out faster."
+msgstr "Create an account to track your orders, save your details, and check out faster."
+
+#: src/features/auth/components/register-form.tsx:33
+msgid "Creating account..."
+msgstr "Creating account..."
 
 #: src/features/cart/components/quantity-stepper.tsx:89
 msgid "Decrease quantity for {label}"
@@ -105,6 +189,10 @@ msgstr "Decrease quantity for {label}"
 msgid "Delete"
 msgstr "Delete"
 
+#: src/routes/_auth/login.tsx:50
+msgid "Don't have an account?"
+msgstr "Don't have an account?"
+
 #: src/features/address/components/address-card.tsx:40
 msgid "Edit"
 msgstr "Edit"
@@ -112,6 +200,16 @@ msgstr "Edit"
 #: src/features/address/components/update-address-form.tsx:12
 msgid "Edit address"
 msgstr "Edit address"
+
+#: src/features/auth/components/forgot-password-form.tsx:15
+#: src/features/auth/components/login-form.tsx:16
+#: src/features/auth/components/register-form.tsx:21
+msgid "Email"
+msgstr "Email"
+
+#: src/routes/_auth/verify.tsx:60
+msgid "Email verified"
+msgstr "Email verified"
 
 #: src/features/address/api/addresses.ts:62
 msgid "Failed to add address"
@@ -129,6 +227,10 @@ msgstr "Failed to remove address"
 msgid "Failed to remove cart item"
 msgstr "Failed to remove cart item"
 
+#: src/features/auth/api/auth.ts:71
+msgid "Failed to request password reset"
+msgstr "Failed to request password reset"
+
 #: src/features/address/api/addresses.ts:86
 msgid "Failed to save address"
 msgstr "Failed to save address"
@@ -141,26 +243,68 @@ msgstr "Failed to transfer cart"
 msgid "Failed to update cart item"
 msgstr "Failed to update cart item"
 
+#: src/features/auth/api/auth.ts:90
+msgid "Failed to update password"
+msgstr "Failed to update password"
+
 #: src/features/address/components/address-form.tsx:36
+#: src/features/auth/components/register-form.tsx:15
 msgid "First name"
 msgstr "First name"
+
+#: src/features/auth/components/login-form.tsx:23
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
+#: src/routes/_auth/forgot-password.tsx:32
+msgid "Forgot your password?"
+msgstr "Forgot your password?"
+
+#: src/features/products/components/product-card.tsx:47
+msgid "From {startingPrice}"
+msgstr "From {startingPrice}"
+
+#: src/routes/_auth/verify.tsx:33
+msgid "Hold on while we confirm your email."
+msgstr "Hold on while we confirm your email."
+
+#: src/routes/_auth/forgot-password.tsx:21
+msgid "If an account exists with that email, we've sent a link to reset your password."
+msgstr "If an account exists with that email, we've sent a link to reset your password."
 
 #: src/features/cart/components/quantity-stepper.tsx:103
 msgid "Increase quantity for {label}"
 msgstr "Increase quantity for {label}"
+
+#: src/routes/_auth/verify.tsx:43
+msgid "Invalid link"
+msgstr "Invalid link"
 
 #. placeholder {0}: stale.currencyCode.toUpperCase()
 #: src/features/cart/components/cart-market-switch.tsx:81
 msgid "It is still priced in {0}"
 msgstr "It is still priced in {0}"
 
+#: src/features/products/components/product-error.tsx:24
+msgid "It may not be one we sell here."
+msgstr "It may not be one we sell here."
+
 #: src/features/address/components/address-form.tsx:31
 msgid "Label (e.g. Home)"
 msgstr "Label (e.g. Home)"
 
 #: src/features/address/components/address-form.tsx:39
+#: src/features/auth/components/register-form.tsx:18
 msgid "Last name"
 msgstr "Last name"
+
+#: src/features/auth/api/auth.ts:36
+msgid "Login failed"
+msgstr "Login failed"
+
+#: src/features/products/components/product-specs.tsx:20
+msgid "Made in"
+msgstr "Made in"
 
 #: src/features/address/components/address-card.tsx:47
 #: src/features/address/components/main-address-panel.tsx:20
@@ -175,15 +319,56 @@ msgstr "Make this my main"
 msgid "Make this my main address"
 msgstr "Make this my main address"
 
+#: src/features/products/components/product-specs.tsx:18
+msgid "Material"
+msgstr "Material"
+
+#: src/features/auth/components/reset-password-form.tsx:16
+msgid "New password"
+msgstr "New password"
+
+#: src/features/products/api/products.ts:45
+msgid "Newest"
+msgstr "Newest"
+
 #: src/features/cart/api/cart.ts:82
 #: src/features/cart/api/cart.ts:149
 #: src/features/cart/api/cart.ts:173
 msgid "No cart exists"
 msgstr "No cart exists"
 
+#: src/routes/_auth/forgot-password.tsx:33
+msgid "No problem. Enter your account email address and we'll send you instructions so you can reset your password."
+msgstr "No problem. Enter your account email address and we'll send you instructions so you can reset your password."
+
+#: src/features/products/components/search-results.tsx:44
+msgid "No products match “{debouncedTerm}”."
+msgstr "No products match “{debouncedTerm}”."
+
+#: src/features/products/components/product-empty.tsx:20
+msgid "No products match “{q}”."
+msgstr "No products match “{q}”."
+
+#: src/features/products/components/product-empty.tsx:28
+msgid "No products yet."
+msgstr "No products yet."
+
+#: src/routes/_auth/verify.tsx:75
+msgid "Open this link in the same browser you signed up with."
+msgstr "Open this link in the same browser you signed up with."
+
 #: src/features/cart/components/cart-drawer.tsx:90
 msgid "Order summary"
 msgstr "Order summary"
+
+#: src/features/auth/components/login-form.tsx:19
+#: src/features/auth/components/register-form.tsx:24
+msgid "Password"
+msgstr "Password"
+
+#: src/routes/_auth/reset-password.tsx:27
+msgid "Password updated"
+msgstr "Password updated"
 
 #: src/features/address/components/address-form.tsx:70
 msgid "Phone"
@@ -192,6 +377,19 @@ msgstr "Phone"
 #: src/features/address/components/address-form.tsx:65
 msgid "Postal code"
 msgstr "Postal code"
+
+#: src/features/products/components/product-detail.tsx:42
+#: src/features/products/components/search-results.tsx:52
+msgid "Products"
+msgstr "Products"
+
+#: src/features/products/components/product-specs.tsx:17
+msgid "Ref."
+msgstr "Ref."
+
+#: src/features/auth/api/auth.ts:55
+msgid "Registration failed"
+msgstr "Registration failed"
 
 #: src/features/address/components/address-card.tsx:69
 msgid "Remove"
@@ -213,13 +411,69 @@ msgstr "Run transfer again"
 msgid "Save"
 msgstr "Save"
 
+#: src/features/products/components/product-list-header.tsx:25
+#: src/features/products/components/search-drawer.tsx:39
+msgid "Search"
+msgstr "Search"
+
+#: src/features/auth/components/forgot-password-form.tsx:21
+msgid "Send reset link"
+msgstr "Send reset link"
+
+#: src/features/auth/components/forgot-password-form.tsx:21
+msgid "Sending..."
+msgstr "Sending..."
+
+#: src/routes/_auth/reset-password.tsx:39
+msgid "Set a new password"
+msgstr "Set a new password"
+
+#: src/features/auth/components/reset-password-form.tsx:23
+msgid "Set new password"
+msgstr "Set new password"
+
 #: src/features/cart/components/cart-drawer.tsx:98
 msgid "Shipping"
 msgstr "Shipping"
 
+#: src/features/products/components/product-list-header.tsx:25
+msgid "Shop"
+msgstr "Shop"
+
+#: src/features/products/components/gallery-dots.tsx:37
+msgid "Show image {position}"
+msgstr "Show image {position}"
+
+#: src/features/auth/components/login-form.tsx:28
+#: src/routes/_auth/login.tsx:43
+#: src/routes/_auth/reset-password.tsx:31
+#: src/routes/_auth/signup.tsx:39
+#: src/routes/_auth/verify.tsx:64
+msgid "Sign in"
+msgstr "Sign in"
+
+#: src/routes/_auth/login.tsx:52
+#: src/routes/_auth/signup.tsx:30
+msgid "Sign up"
+msgstr "Sign up"
+
+#: src/features/auth/components/login-form.tsx:28
+msgid "Signing in..."
+msgstr "Signing in..."
+
+#: src/features/products/components/add-to-cart.tsx:77
+#: src/features/products/components/product-card.tsx:69
+#: src/features/products/components/variant-stock.tsx:24
+msgid "Sold out"
+msgstr "Sold out"
+
 #: src/features/cart/components/cart-mismatch-banner.tsx:25
 msgid "Something went wrong when we tried to transfer your cart"
 msgstr "Something went wrong when we tried to transfer your cart"
+
+#: src/features/products/components/product-sort.tsx:28
+msgid "Sort by"
+msgstr "Sort by"
 
 #: src/features/address/components/address-form.tsx:62
 msgid "State / Province"
@@ -233,18 +487,67 @@ msgstr "There are no products in your bag"
 msgid "this address"
 msgstr "this address"
 
+#: src/features/products/components/add-to-cart.tsx:43
+msgid "This product isn't available to order yet."
+msgstr "This product isn't available to order yet."
+
+#: src/routes/_auth/verify.tsx:44
+msgid "This verification link is invalid or has expired. Request a new one from your account."
+msgstr "This verification link is invalid or has expired. Request a new one from your account."
+
 #: src/features/cart/components/cart-drawer.tsx:106
 msgid "Total"
 msgstr "Total"
+
+#: src/routes/_auth/login.tsx:44
+msgid "Track your orders, save your details, and check out faster."
+msgstr "Track your orders, save your details, and check out faster."
 
 #: src/features/cart/components/cart-mismatch-banner.tsx:29
 msgid "Transferring…"
 msgstr "Transferring…"
 
+#: src/features/auth/components/reset-password-form.tsx:23
+msgid "Updating..."
+msgstr "Updating..."
+
+#: src/features/products/components/variant-picker.tsx:206
+msgid "Variant"
+msgstr "Variant"
+
+#: src/routes/_auth/verify.tsx:72
+#: src/routes/_auth/verify.tsx:72
+msgid "Verification failed"
+msgstr "Verification failed"
+
+#: src/routes/_auth/verify.tsx:32
+msgid "Verifying"
+msgstr "Verifying"
+
+#: src/features/products/components/search-best-sellers.tsx:33
+msgid "View all"
+msgstr "View all"
+
+#: src/features/products/components/search-results.tsx:60
+msgid "View all “{debouncedTerm}”"
+msgstr "View all “{debouncedTerm}”"
+
 #. placeholder {0}: current.displayName
 #: src/features/cart/components/cart-market-switch.tsx:77
 msgid "We could not move your bag to {0}"
 msgstr "We could not move your bag to {0}"
+
+#: src/features/products/components/product-error.tsx:21
+msgid "We couldn't show this product"
+msgstr "We couldn't show this product"
+
+#: src/features/auth/components/verify-pending.tsx:11
+msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
+msgstr "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
+
+#: src/features/products/components/product-specs.tsx:19
+msgid "Weight"
+msgstr "Weight"
 
 #: src/features/address/components/address-book.tsx:59
 msgid "Your addresses"
@@ -257,3 +560,15 @@ msgstr "Your Bag"
 #: src/features/cart/components/cart-empty.tsx:14
 msgid "Your bag is empty"
 msgstr "Your bag is empty"
+
+#: src/routes/_auth/verify.tsx:61
+msgid "Your email is confirmed. Sign in to pick up where you left off."
+msgstr "Your email is confirmed. Sign in to pick up where you left off."
+
+#: src/routes/_auth/reset-password.tsx:28
+msgid "Your password has been reset. Sign in with your new password to pick up where you left off."
+msgstr "Your password has been reset. Sign in with your new password to pick up where you left off."
+
+#: src/features/products/api/products.ts:47
+msgid "Z–A"
+msgstr "Z–A"

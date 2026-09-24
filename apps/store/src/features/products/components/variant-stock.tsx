@@ -1,3 +1,4 @@
+import { Plural, Trans } from '@lingui/react/macro'
 import type { StoreVariantStock } from '#/api/generated/model'
 
 /**
@@ -17,10 +18,20 @@ export function VariantStock({ stock }: { stock: StoreVariantStock }) {
   // Sold out is stated here as well as on the button, and they are not the same message twice:
   // below `lg` the button is pinned to the viewport while this sits with the price, so a shopper
   // reading the garment finds out here and a shopper reaching for the button finds out there.
-  if (stock.state === 'soldOut') return <p className="mt-2 text-ink-muted">Sold out</p>
+  if (stock.state === 'soldOut')
+    return (
+      <p className="mt-2 text-ink-muted">
+        <Trans>Sold out</Trans>
+      </p>
+    )
 
   // `text-sale` rather than the muted treatment above: this one is an invitation to decide now,
   // not a refusal, and it is the same red the account's expiring-card label uses for the other
   // thing a shopper is running out of time on.
-  return <p className="mt-2 text-sale">Only {stock.remaining} left</p>
+  const { remaining } = stock
+  return (
+    <p className="mt-2 text-sale">
+      <Plural value={remaining} one="Only # left" other="Only # left" />
+    </p>
+  )
 }

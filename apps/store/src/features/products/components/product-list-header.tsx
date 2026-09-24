@@ -1,3 +1,4 @@
+import { Plural, useLingui } from '@lingui/react/macro'
 import { getRouteApi } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { PRODUCT_SORT_DEFAULT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
@@ -15,15 +16,16 @@ const route = getRouteApi('/_main/')
  * The result count is the one thing here that does need the query, so it suspends on its own.
  */
 export function ProductListHeader() {
+  const { t } = useLingui()
   const { q, sort } = route.useSearch()
   const navigate = route.useNavigate()
 
   return (
     <div>
-      <p className="text-ink-muted text-sm">{q ? 'Search' : 'Shop'}</p>
+      <p className="text-ink-muted text-sm">{q ? t`Search` : t`Shop`}</p>
       {/* Written inline rather than extracted: `account-detail.tsx` is the only other callsite,
           and the third is what would make a `PageHeading` worth having. */}
-      <h1 className="type-display mt-2 text-ink">{q ?? 'All products'}</h1>
+      <h1 className="type-display mt-2 text-ink">{q ?? t`All products`}</h1>
 
       {/* Sticky at every width, not just on a phone: the reference only needs a rail above `lg`
           because it has ten filter groups to put there. `top-14`/`lg:top-20` is the header's own
@@ -58,7 +60,7 @@ function ResultCount() {
 
   return (
     <p className="text-ink-muted text-sm">
-      {count} {count === 1 ? 'Product' : 'Products'}
+      <Plural value={count} one="# Product" other="# Products" />
     </p>
   )
 }
