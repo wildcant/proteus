@@ -39,11 +39,6 @@ msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}
 msgstr "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:928
-msgid "That payment method is no longer available."
-msgstr "That payment method is no longer available."
-
-#. js-lingui-explicit-id
 #: src/modules/payment/services/payment-provider-service.ts:68
 msgid "Payment provider \"{providerId}\" is not registered."
 msgstr "Payment provider \"{providerId}\" is not registered."
@@ -184,6 +179,237 @@ msgid "Verification provider \"{providerId}\" is not registered"
 msgstr "Verification provider \"{providerId}\" is not registered"
 
 #. js-lingui-explicit-id
+#: src/modules/user/services/user-module-service.ts:111
+msgid "Users already exist for: {taken}"
+msgstr "Users already exist for: {taken}"
+
+#. js-lingui-explicit-id
+#: src/modules/user/services/user-module-service.ts:160
+msgid "User already exists for: {email}"
+msgstr "User already exists for: {email}"
+
+#. js-lingui-explicit-id
+#: src/modules/user/services/user-module-service.ts:195
+msgid "Invalid or expired invite token"
+msgstr "Invalid or expired invite token"
+
+#. js-lingui-explicit-id
+#: src/modules/user/services/user-module-service.ts:199
+msgid "Invalid invite token"
+msgstr "Invalid invite token"
+
+#. js-lingui-explicit-id
+#: src/modules/user/services/user-module-service.ts:204
+msgid "Invite not found"
+msgstr "Invite not found"
+
+#. js-lingui-explicit-id
+#: src/modules/user/services/user-module-service.ts:209
+msgid "Invite token has been superseded"
+msgstr "Invite token has been superseded"
+
+#. js-lingui-explicit-id
+#: src/modules/user/services/user-module-service.ts:213
+msgid "Invite token has expired"
+msgstr "Invite token has expired"
+
+#. js-lingui-explicit-id
+#: src/modules/user/services/user-module-service.ts:217
+msgid "Invite has already been accepted"
+msgstr "Invite has already been accepted"
+
+#. js-lingui-explicit-id
+#: src/modules/store/services/store-module-service.ts:126
+msgid "The store does not trade in \"{currencyCode}\""
+msgstr "The store does not trade in \"{currencyCode}\""
+
+#. js-lingui-explicit-id
+#: src/modules/stock-location/services/stock-location-module-service.ts:73
+msgid "Unknown stock location id: {ids}"
+msgstr "Unknown stock location id: {ids}"
+
+#. js-lingui-explicit-id
+#: src/modules/stock-location/services/stock-location-module-service.ts:74
+msgid "Unknown stock location ids: {ids}"
+msgstr "Unknown stock location ids: {ids}"
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-module-service.ts:245
+msgid "Variant creation returned no rows"
+msgstr "Variant creation returned no rows"
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-module-service.ts:324
+msgid "Variant \"{variantId}\" not found"
+msgstr "Variant \"{variantId}\" not found"
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-module-service.ts:823
+msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
+msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:216
+msgid "Cannot delete option(s) that are currently linked to products. Remove them from all products first."
+msgstr "Cannot delete option(s) that are currently linked to products. Remove them from all products first."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:494
+msgid "Variant \"{variantId}\" was given option value \"{optionValueId}\", which its product does not offer."
+msgstr "Variant \"{variantId}\" was given option value \"{optionValueId}\", which its product does not offer."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:564
+msgid "This product's options produce {totalCombinations} combinations, above the limit of {limit}. Reduce the options or the values they offer."
+msgstr "This product's options produce {totalCombinations} combinations, above the limit of {limit}. Reduce the options or the values they offer."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:648
+#: src/modules/product/services/product-option-service.ts:706
+msgid "Variant ({label}) with the provided options already exists."
+msgstr "Variant ({label}) with the provided options already exists."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:657
+msgid "Variant \"{variant}\" has the same combination of option values as \"{clash}\"."
+msgstr "Variant \"{variant}\" has the same combination of option values as \"{clash}\"."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:686
+msgid "A combination belongs to a single variant, so it cannot be assigned to several at once."
+msgstr "A combination belongs to a single variant, so it cannot be assigned to several at once."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:755
+msgid "These options would leave the product with {total} variants, above the limit of {limit}. Reduce the options or the values they offer."
+msgstr "These options would leave the product with {total} variants, above the limit of {limit}. Reduce the options or the values they offer."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:835
+msgid "Product has {optionCount} option(s) but {valueCount} option value(s) were provided for the variant: {variant}."
+msgstr "Product has {optionCount} option(s) but {valueCount} option value(s) were provided for the variant: {variant}."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:847
+msgid "Option \"{optionId}\" is not available on this product."
+msgstr "Option \"{optionId}\" is not available on this product."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:854
+msgid "Option value \"{optionValueId}\" does not exist for option {optionTitle}."
+msgstr "Option value \"{optionValueId}\" does not exist for option {optionTitle}."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:862
+msgid "The provided options are not a valid combination for the variant: {variant}."
+msgstr "The provided options are not a valid combination for the variant: {variant}."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:952
+msgid "Option(s) {optionIds} were sent with no values. An option a product offers must offer at least one; drop the option instead."
+msgstr "Option(s) {optionIds} were sent with no values. An option a product offers must offer at least one; drop the option instead."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-option-service.ts:1054
+msgid "Cannot remove option value(s) that are currently used by products. Remove them from all products first."
+msgstr "Cannot remove option value(s) that are currently used by products. Remove them from all products first."
+
+#. js-lingui-explicit-id
+#: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
+#: src/modules/payment/services/payment-module-service.ts:928
+msgid "That payment method is no longer available."
+msgstr "That payment method is no longer available."
+
+#. js-lingui-explicit-id
+#: src/modules/inventory/services/inventory-module-service.ts:177
+#: src/modules/inventory/services/inventory-module-service.ts:205
+#: src/modules/inventory/services/inventory-module-service.ts:325
+msgid "Inventory level not found for item {inventoryItemId} at location {locationId}"
+msgstr "Inventory level not found for item {inventoryItemId} at location {locationId}"
+
+#. js-lingui-explicit-id
+#: src/modules/inventory/services/inventory-module-service.ts:212
+msgid "Stocked Quantity cannot be set to {stockedQuantity}: {reservedQuantity} unit(s) are reserved. Set it to at least {reservedQuantity}."
+msgstr "Stocked Quantity cannot be set to {stockedQuantity}: {reservedQuantity} unit(s) are reserved. Set it to at least {reservedQuantity}."
+
+#. js-lingui-explicit-id
+#: src/modules/inventory/services/inventory-module-service.ts:331
+msgid "Inventory levels not found: {levels}"
+msgstr "Inventory levels not found: {levels}"
+
+#. js-lingui-explicit-id
+#: src/modules/inventory/services/inventory-module-service.ts:357
+msgid "Not enough stock to reserve {quantity} of item {inventoryItemId} at location {locationId}: {available} available"
+msgstr "Not enough stock to reserve {quantity} of item {inventoryItemId} at location {locationId}: {available} available"
+
+#. js-lingui-explicit-id
+#: src/modules/inventory/repositories/inventory-level.ts:44
+msgid "Inventory level with id \"{id}\" not found"
+msgstr "Inventory level with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:58
+msgid "Super admin role cannot be modified"
+msgstr "Super admin role cannot be modified"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:66
+msgid "Protected role cannot be renamed"
+msgstr "Protected role cannot be renamed"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:94
+msgid "Protected role cannot be deleted"
+msgstr "Protected role cannot be deleted"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:102
+msgid "Role is assigned to {count} user(s). Remove assignments before deleting."
+msgstr "Role is assigned to {count} user(s). Remove assignments before deleting."
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:160
+#: src/modules/access-control/services/access-control-module-service.ts:217
+msgid "Roles not found: {missing}"
+msgstr "Roles not found: {missing}"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:169
+#: src/modules/access-control/services/access-control-module-service.ts:226
+msgid "Assigning super admin role requires caller to hold super admin"
+msgstr "Assigning super admin role requires caller to hold super admin"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:400
+msgid "Cannot remove permissions still assigned to roles: {keys}"
+msgstr "Cannot remove permissions still assigned to roles: {keys}"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:451
+msgid "Cannot revoke the last super admin assignment"
+msgstr "Cannot revoke the last super admin assignment"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:479
+msgid "Duplicate feature id: {feature}"
+msgstr "Duplicate feature id: {feature}"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:495
+msgid "Global wildcard grant is reserved for the super admin role"
+msgstr "Global wildcard grant is reserved for the super admin role"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:503
+msgid "Unknown module wildcard: {grant}"
+msgstr "Unknown module wildcard: {grant}"
+
+#. js-lingui-explicit-id
+#: src/modules/access-control/services/access-control-module-service.ts:513
+msgid "Unknown permission key: {grant}"
+msgstr "Unknown permission key: {grant}"
+
+#. js-lingui-explicit-id
 #: src/framework/http/apply-middleware.ts:19
 msgid "Invalid path params"
 msgstr "Invalid path params"
@@ -204,19 +430,103 @@ msgid "An internal error occurred"
 msgstr "An internal error occurred"
 
 #. js-lingui-explicit-id
+#: src/api/store/middlewares.ts:31
+msgid "No region sells to country \"{countryCode}\""
+msgstr "No region sells to country \"{countryCode}\""
+
+#. js-lingui-explicit-id
+#: src/api/store/middlewares.ts:51
+msgid "Cannot price this request: no countryCode was given and the store has no default region"
+msgstr "Cannot price this request: no countryCode was given and the store has no default region"
+
+#. js-lingui-explicit-id
+#: src/api/store/customers/me/addresses/[id]/route.ts:19
+#: src/api/store/customers/me/addresses/route.ts:17
+#: src/api/store/customers/me/addresses/route.ts:33
+#: src/api/store/customers/me/route.ts:13
+#: src/api/store/middlewares.ts:104
+#: src/api/store/orders/route.ts:16
+msgid "Not authenticated"
+msgstr "Not authenticated"
+
+#. js-lingui-explicit-id
+#: src/api/store/products/[id]/route.ts:102
+msgid "Product with id \"{id}\" has no price in {currencyCode}"
+msgstr "Product with id \"{id}\" has no price in {currencyCode}"
+
+#. js-lingui-explicit-id
+#: src/api/store/orders/[id]/route.ts:28
+msgid "Order with id \"{id}\" not found"
+msgstr "Order with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/api/store/customers/middlewares.ts:28
+msgid "Address with id \"{id}\" not found"
+msgstr "Address with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/shipping-methods/route.ts:23
+msgid "Shipping option \"{shippingOptionId}\" is not available"
+msgstr "Shipping option \"{shippingOptionId}\" is not available"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/line-items/route.ts:15
+msgid "Line item not returned after add"
+msgstr "Line item not returned after add"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/customer/route.ts:14
+msgid "Authentication required"
+msgstr "Authentication required"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/register/route.ts:22
+#: src/api/store/auth/signup/route.ts:27
+msgid "Registration failed"
+msgstr "Registration failed"
+
+#. js-lingui-explicit-id
+#: src/api/store/auth/signup/route.ts:35
+msgid "Authentication failed after registration"
+msgstr "Authentication failed after registration"
+
+#. js-lingui-explicit-id
+#: src/api/store/auth/login/route.ts:21
+msgid "Invalid email or password"
+msgstr "Invalid email or password"
+
+#. js-lingui-explicit-id
 #: src/api/hooks/payment/[provider]/route.ts:77
 msgid "Webhook request carried no body"
 msgstr "Webhook request carried no body"
 
 #. js-lingui-explicit-id
+#: src/api/admin/users/[id]/roles/route.ts:26
+#: src/api/auth/token/refresh/route.ts:23
+#: src/api/auth/verification/confirm/route.ts:18
+#: src/api/auth/verification/request/route.ts:18
+msgid "Unauthorized"
+msgstr "Unauthorized"
+
+#. js-lingui-explicit-id
+#: src/api/auth/verification/confirm/route.ts:33
+msgid "Expected verifiedAt to be set after confirmation"
+msgstr "Expected verifiedAt to be set after confirmation"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/route.ts:25
+msgid "Authentication failed"
+msgstr "Authentication failed"
+
+#. js-lingui-explicit-id
+#: src/api/auth/[actorType]/[authProvider]/password/route.ts:25
+msgid "Password update failed"
+msgstr "Password update failed"
+
+#. js-lingui-explicit-id
 #: src/api/admin/users/me/route.ts:15
 msgid "User ID not found"
 msgstr "User ID not found"
-
-#. js-lingui-explicit-id
-#: src/api/admin/users/[id]/roles/route.ts:26
-msgid "Unauthorized"
-msgstr "Unauthorized"
 
 #. js-lingui-explicit-id
 #: src/api/admin/uploads/presigned-urls/route.ts:27

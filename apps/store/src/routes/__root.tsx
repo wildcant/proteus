@@ -1,4 +1,6 @@
 import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
 import { Toaster } from '@proteus/ui'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { formDevtoolsPlugin } from '@tanstack/react-form-devtools'
@@ -48,7 +50,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
       },
       {
         name: 'description',
-        content: 'Proteus — modern storefront powered by TanStack Start',
+        content: context.match.context.i18n._(msg`Proteus — modern storefront powered by TanStack Start`),
       },
     ],
     links: [
@@ -88,11 +90,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   // no match to read from here. The market is fixed for the life of a router — switching one is a
   // document navigation — so a plain read is correct and needs no subscription.
   const { market } = useRouter().options.context
+  const { t } = useLingui()
 
   return (
-    // The locale code is the language tag. Until catalogues land, es-CO serves English under a
-    // Spanish tag: a known trade-off, taken because it becomes correct the day the catalogues
-    // exist, where hardcoding English would be a flag someone has to remember to flip.
+    // The locale code is the language tag; its language subtag picks the catalog.
     <html lang={market.current.localeCode} suppressHydrationWarning>
       <head>
         {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Tanstack start default */}
@@ -107,7 +108,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {children}
         {/* The PDP's action bar owns the bottom-4 lane on the phone, and a failed add-to-cart
             toast would land on top of the button you press to retry it. */}
-        <Toaster viewportClassName="bottom-20 lg:bottom-4" />
+        <Toaster viewportClassName="bottom-20 lg:bottom-4" closeLabel={t`Close toast`} />
         {!!SHOW_DEVTOOLS && (
           <TanStackDevtools
             config={{

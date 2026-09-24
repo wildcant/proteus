@@ -1,4 +1,5 @@
 import { env } from '@env'
+import { i18n } from '@proteus/utils'
 import jwt from 'jsonwebtoken'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
@@ -107,7 +108,8 @@ export class UserModuleService implements IUserModuleService {
       const taken = existingUsers.map((u) => u.email).join(', ')
       throw new AppError({
         type: ErrorTypes.CONFLICT,
-        message: `Users already exist for: ${taken}`,
+        message: i18n.t('Users already exist for: {taken}'),
+        values: { taken },
       })
     }
 
@@ -155,7 +157,8 @@ export class UserModuleService implements IUserModuleService {
     if (existingUsers.length > 0) {
       throw new AppError({
         type: ErrorTypes.CONFLICT,
-        message: `User already exists for: ${data.email}`,
+        message: i18n.t('User already exists for: {email}'),
+        values: { email: data.email },
       })
     }
 
@@ -189,29 +192,29 @@ export class UserModuleService implements IUserModuleService {
     try {
       decoded = jwt.verify(token, env.JWT_SECRET) as InviteTokenPayload
     } catch {
-      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Invalid or expired invite token' })
+      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: i18n.t('Invalid or expired invite token') })
     }
 
     if (decoded.purpose !== 'invite') {
-      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Invalid invite token' })
+      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: i18n.t('Invalid invite token') })
     }
 
     const [invite] = await this.inviteRepository.find({ email: decoded.email })
     if (!invite) {
-      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Invite not found' })
+      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: i18n.t('Invite not found') })
     }
 
     // Rotation guard: only the latest token is valid
     if (invite.token !== token) {
-      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Invite token has been superseded' })
+      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: i18n.t('Invite token has been superseded') })
     }
 
     if (invite.expiresAt < new Date()) {
-      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Invite token has expired' })
+      throw new AppError({ type: ErrorTypes.INVALID_DATA, message: i18n.t('Invite token has expired') })
     }
 
     if (invite.accepted) {
-      throw new AppError({ type: ErrorTypes.CONFLICT, message: 'Invite has already been accepted' })
+      throw new AppError({ type: ErrorTypes.CONFLICT, message: i18n.t('Invite has already been accepted') })
     }
 
     return invite

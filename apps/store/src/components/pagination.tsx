@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui'
 
 type PaginationProps = {
@@ -16,11 +17,12 @@ type PaginationProps = {
  * Renders nothing when everything fits on one page — a pager that can never move is chrome.
  */
 export function Pagination({ offset, limit, count, onOffsetChange, className }: PaginationProps) {
+  const { t } = useLingui()
   if (count <= limit) return null
 
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={t`Pagination`}
       className={cn('flex items-center justify-center gap-6 text-ink-muted text-sm', className)}
     >
       <button
@@ -30,7 +32,7 @@ export function Pagination({ offset, limit, count, onOffsetChange, className }: 
         disabled={offset === 0}
         onClick={() => onOffsetChange(Math.max(0, offset - limit))}
       >
-        Previous
+        <Trans>Previous</Trans>
       </button>
       <span>
         {Math.floor(offset / limit) + 1} / {Math.ceil(count / limit)}
@@ -41,7 +43,7 @@ export function Pagination({ offset, limit, count, onOffsetChange, className }: 
         disabled={offset + limit >= count}
         onClick={() => onOffsetChange(offset + limit)}
       >
-        Next
+        <Trans>Next</Trans>
       </button>
     </nav>
   )
