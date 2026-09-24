@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import type { UseQueryOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { ApiError } from '#/api/api-error'
@@ -39,10 +41,10 @@ const PRODUCT_SORTS: Record<ProductSort, string> = {
   za: '-title,id',
 }
 
-export const PRODUCT_SORT_LABELS: Record<ProductSort, string> = {
-  newest: 'Newest',
-  az: 'A–Z',
-  za: 'Z–A',
+export const PRODUCT_SORT_LABELS: Record<ProductSort, MessageDescriptor> = {
+  newest: msg`Newest`,
+  az: msg`A–Z`,
+  za: msg`Z–A`,
 }
 
 /**

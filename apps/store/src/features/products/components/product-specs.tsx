@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import type { StoreProductResponseProduct, StoreProductVariant } from '#/api/generated/model'
 
 type ProductSpecsProps = {
@@ -10,12 +11,13 @@ type ProductSpecsProps = {
  * differ in fabric or weight — and rows with nothing behind them are left out entirely.
  */
 export function ProductSpecs({ product, variant }: ProductSpecsProps) {
+  const { t } = useLingui()
   const weight = variant?.weight ?? product.weight
   const specs = [
-    { label: 'Ref.', value: variant?.sku },
-    { label: 'Material', value: variant?.material ?? product.material },
-    { label: 'Weight', value: weight === null || weight === undefined ? null : `${weight} g` },
-    { label: 'Made in', value: product.originCountry },
+    { label: t`Ref.`, value: variant?.sku },
+    { label: t`Material`, value: variant?.material ?? product.material },
+    { label: t`Weight`, value: weight === null || weight === undefined ? null : `${weight} g` },
+    { label: t`Made in`, value: product.originCountry },
   ].filter((spec) => !!spec.value)
 
   if (specs.length === 0) return null

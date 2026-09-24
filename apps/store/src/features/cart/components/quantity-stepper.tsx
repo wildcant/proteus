@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui'
 import { Loader2Icon, MinusIcon, PlusIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -78,13 +79,14 @@ export function QuantityStepper({
   size = 'sm',
   variant = 'boxed',
 }: QuantityStepperProps) {
+  const { t } = useLingui()
   const removesAtMin = onRemove !== undefined && value <= min
 
   return (
     <div className={cn('flex items-stretch', variant === 'boxed' && 'border border-line')}>
       <StepperButton
         // Announced as destructive because it is: at the minimum the decrement empties the row.
-        label={removesAtMin ? `Remove ${label}` : `Decrease quantity for ${label}`}
+        label={removesAtMin ? t`Remove ${label}` : t`Decrease quantity for ${label}`}
         disabled={disabled || (!removesAtMin && value <= min)}
         onClick={() => (removesAtMin ? onRemove() : onChange(value - 1))}
         size={size}
@@ -98,7 +100,7 @@ export function QuantityStepper({
       </output>
 
       <StepperButton
-        label={`Increase quantity for ${label}`}
+        label={t`Increase quantity for ${label}`}
         disabled={disabled || value >= max}
         onClick={() => onChange(value + 1)}
         size={size}

@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import { SEARCH_RESULTS_LIMIT } from '#/components/header/constants'
 import { useProducts } from '#/features/products/api/products'
@@ -25,9 +26,11 @@ export function SearchBestSellers() {
       {/* The link sits beside the heading here, not below the grid the way the search results
           put theirs — this row is a shortcut into the catalogue, not the tail of a result set. */}
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="type-heading m-0 text-ink">Best sellers</h2>
+        <h2 className="type-heading m-0 text-ink">
+          <Trans>Best sellers</Trans>
+        </h2>
         <Link to="/" className="shrink-0 font-medium text-ink text-sm underline">
-          View all
+          <Trans>View all</Trans>
         </Link>
       </div>
 

@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { cn, NativeSelect, NativeSelectOption } from '@proteus/ui'
 import type { StoreProductScopedOption, StoreProductVariant } from '#/api/generated/model'
 
@@ -202,7 +203,7 @@ function VariantSelect({ variants, selectedVariant, onVariantChange }: VariantSe
   return (
     <div>
       <label htmlFor="variant-select" className="mb-2 block text-ink-muted text-xs">
-        Variant
+        <Trans>Variant</Trans>
       </label>
       <NativeSelect
         id="variant-select"

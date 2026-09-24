@@ -3,6 +3,7 @@ import type { PermissionKey } from '@core/types/access-control/common.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminMeResponse } from '@proteus/http-schemas/admin'
+import { i18n } from '@proteus/utils'
 import { buildSettingsSidebar, buildSidebar } from '@workflows/admin/utils/build-sidebar.js'
 
 export const GetOutput = AdminMeResponse
@@ -11,7 +12,7 @@ export const GetThrows = [ErrorTypes.NOT_FOUND] as const
 export const GET = async (req: HttpRequest): Promise<HttpResult<typeof GetOutput>> => {
   const actorId = req.authContext?.actorId
   if (!actorId) {
-    throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'User ID not found' })
+    throw new AppError({ type: ErrorTypes.NOT_FOUND, message: i18n.t('User ID not found') })
   }
 
   const userService = req.scope.resolve(Modules.USER)

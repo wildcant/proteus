@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Loader2Icon } from 'lucide-react'
 import { useState } from 'react'
 import type { StoreProductResponseProduct, StoreProductVariant } from '#/api/generated/model'
@@ -37,7 +38,11 @@ export function AddToCart({ product, selectedVariant }: AddToCartProps) {
   }
 
   if (product.variants.length === 0) {
-    return <p className="text-ink-muted text-sm">This product isn't available to order yet.</p>
+    return (
+      <p className="text-ink-muted text-sm">
+        <Trans>This product isn't available to order yet.</Trans>
+      </p>
+    )
   }
 
   // A render of `soldOut`, not a field beside it. The backend already collapsed untracked,
@@ -69,7 +74,7 @@ export function AddToCart({ product, selectedVariant }: AddToCartProps) {
         onClick={handleAddToCart}
       >
         {addLineItem.isPending ? <Loader2Icon className="mr-2 size-4 animate-spin" /> : null}
-        {isSoldOut ? 'Sold out' : 'Add to cart'}
+        {isSoldOut ? <Trans>Sold out</Trans> : <Trans>Add to cart</Trans>}
       </Button>
     </div>
   )

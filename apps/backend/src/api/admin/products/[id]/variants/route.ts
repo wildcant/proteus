@@ -9,6 +9,7 @@ import {
   AdminProductVariantListResponse,
   IdParams,
 } from '@proteus/http-schemas/admin'
+import { i18n } from '@proteus/utils'
 import { createProductVariantsWorkflow } from '@workflows/product/create-product-variants.js'
 import {
   buildAvailableQuantities,
@@ -59,7 +60,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
 
   const [createdVariant] = created
   if (!createdVariant) {
-    throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Variant creation returned no results' })
+    throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: i18n.t('Variant creation returned no results') })
   }
 
   const variant = await productService.enrichVariant(createdVariant)

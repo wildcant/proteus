@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui'
 
 type GalleryDotsProps = {
@@ -17,30 +18,35 @@ type GalleryDotsProps = {
  * and not its target.
  */
 export function GalleryDots({ count, activeIndex, onSelect }: GalleryDotsProps) {
+  const { t } = useLingui()
+
   if (count < 2) return null
 
   return (
     <ul className="flex items-center justify-center lg:hidden">
-      {Array.from({ length: count }, (_, index) => (
-        // Index is the identity here: the dots are positions, not images.
-        // biome-ignore lint/suspicious/noArrayIndexKey: a dot is its position
-        <li key={index}>
-          <button
-            type="button"
-            onClick={() => onSelect(index)}
-            aria-current={index === activeIndex}
-            aria-label={`Show image ${index + 1}`}
-            className="flex size-11 items-center justify-center -outline-offset-2 focus-visible:outline focus-visible:outline-ink"
-          >
-            <span
-              className={cn(
-                'size-2 rounded-full transition-colors',
-                index === activeIndex ? 'bg-ink' : 'bg-ink-disabled',
-              )}
-            />
-          </button>
-        </li>
-      ))}
+      {Array.from({ length: count }, (_, index) => {
+        const position = index + 1
+        return (
+          // Index is the identity here: the dots are positions, not images.
+          // biome-ignore lint/suspicious/noArrayIndexKey: a dot is its position
+          <li key={index}>
+            <button
+              type="button"
+              onClick={() => onSelect(index)}
+              aria-current={index === activeIndex}
+              aria-label={t`Show image ${position}`}
+              className="flex size-11 items-center justify-center -outline-offset-2 focus-visible:outline focus-visible:outline-ink"
+            >
+              <span
+                className={cn(
+                  'size-2 rounded-full transition-colors',
+                  index === activeIndex ? 'bg-ink' : 'bg-ink-disabled',
+                )}
+              />
+            </button>
+          </li>
+        )
+      })}
     </ul>
   )
 }
