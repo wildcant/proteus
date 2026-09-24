@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   ProviderDeleteFileDTO,
@@ -30,7 +31,7 @@ export class FileProviderService {
     if (providerKeys.length !== 1) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: 'File module must be initialized with exactly one provider.',
+        message: i18n.t('File module must be initialized with exactly one provider.'),
       })
     }
 
@@ -39,7 +40,7 @@ export class FileProviderService {
     if (!provider) {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: 'File provider could not be resolved.',
+        message: i18n.t('File provider could not be resolved.'),
       })
     }
     this.provider = provider
@@ -65,7 +66,7 @@ export class FileProviderService {
     if (!this.provider.getPresignedUploadUrl) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: 'The configured file provider does not support presigned upload URLs.',
+        message: i18n.t('The configured file provider does not support presigned upload URLs.'),
       })
     }
 
