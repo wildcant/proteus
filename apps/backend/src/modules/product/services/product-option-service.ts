@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -212,8 +213,9 @@ export class ProductOptionService {
       if (activeLinks.length > 0) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message:
+          message: i18n.t(
             'Cannot delete option(s) that are currently linked to products. Remove them from all products first.',
+          ),
         })
       }
 
@@ -489,7 +491,10 @@ export class ProductOptionService {
         if (!productProductOptionValueId) {
           throw new AppError({
             type: ErrorTypes.UNEXPECTED_STATE,
-            message: `Variant "${variant.id}" was given option value "${optionValueId}", which its product does not offer.`,
+            message: i18n.t(
+              'Variant "{variantId}" was given option value "{optionValueId}", which its product does not offer.',
+            ),
+            values: { variantId: variant.id, optionValueId },
           })
         }
 
@@ -556,7 +561,10 @@ export class ProductOptionService {
     if (totalCombinations > MAX_OPTION_COMBINATIONS) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `This product's options produce ${totalCombinations} combinations, above the limit of ${MAX_OPTION_COMBINATIONS}. Reduce the options or the values they offer.`,
+        message: i18n.t(
+          "This product's options produce {totalCombinations} combinations, above the limit of {limit}. Reduce the options or the values they offer.",
+        ),
+        values: { totalCombinations, limit: MAX_OPTION_COMBINATIONS },
       })
     }
     if (totalCombinations === 0) {
@@ -637,7 +645,8 @@ export class ProductOptionService {
       if (combination.variantId) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Variant (${combination.label}) with the provided options already exists.`,
+          message: i18n.t('Variant ({label}) with the provided options already exists.'),
+          values: { label: combination.label },
         })
       }
 
@@ -645,7 +654,8 @@ export class ProductOptionService {
       if (clash !== undefined) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Variant "${describe}" has the same combination of option values as "${clash}".`,
+          message: i18n.t('Variant "{variant}" has the same combination of option values as "{clash}".'),
+          values: { variant: describe, clash },
         })
       }
       claimedBy.set(`${productId}:${combination.key}`, describe)
@@ -673,7 +683,7 @@ export class ProductOptionService {
     if (variants.length > 1) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: 'A combination belongs to a single variant, so it cannot be assigned to several at once.',
+        message: i18n.t('A combination belongs to a single variant, so it cannot be assigned to several at once.'),
       })
     }
 
@@ -693,7 +703,8 @@ export class ProductOptionService {
       if (combination.variantId && combination.variantId !== variant.id) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Variant (${combination.label}) with the provided options already exists.`,
+          message: i18n.t('Variant ({label}) with the provided options already exists.'),
+          values: { label: combination.label },
         })
       }
 
@@ -741,7 +752,10 @@ export class ProductOptionService {
     if (total > MAX_VARIANTS_PER_PRODUCT) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `These options would leave the product with ${total} variants, above the limit of ${MAX_VARIANTS_PER_PRODUCT}. Reduce the options or the values they offer.`,
+        message: i18n.t(
+          'These options would leave the product with {total} variants, above the limit of {limit}. Reduce the options or the values they offer.',
+        ),
+        values: { total, limit: MAX_VARIANTS_PER_PRODUCT },
       })
     }
 
@@ -818,7 +832,10 @@ export class ProductOptionService {
     if (entries.length !== options.length) {
       return new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: `Product has ${options.length} option(s) but ${entries.length} option value(s) were provided for the variant: ${describe}.`,
+        message: i18n.t(
+          'Product has {optionCount} option(s) but {valueCount} option value(s) were provided for the variant: {variant}.',
+        ),
+        values: { optionCount: options.length, valueCount: entries.length, variant: describe },
       })
     }
 
@@ -827,20 +844,23 @@ export class ProductOptionService {
       if (!option) {
         return new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Option "${optionId}" is not available on this product.`,
+          message: i18n.t('Option "{optionId}" is not available on this product.'),
+          values: { optionId },
         })
       }
       if (!option.values.some((value) => value.id === optionValueId)) {
         return new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Option value "${optionValueId}" does not exist for option ${option.title}.`,
+          message: i18n.t('Option value "{optionValueId}" does not exist for option {optionTitle}.'),
+          values: { optionValueId, optionTitle: option.title },
         })
       }
     }
 
     return new AppError({
       type: ErrorTypes.INVALID_DATA,
-      message: `The provided options are not a valid combination for the variant: ${describe}.`,
+      message: i18n.t('The provided options are not a valid combination for the variant: {variant}.'),
+      values: { variant: describe },
     })
   }
 
@@ -929,7 +949,10 @@ export class ProductOptionService {
 
     throw new AppError({
       type: ErrorTypes.INVALID_DATA,
-      message: `Option(s) ${empty.map((option) => option.optionId).join(', ')} were sent with no values. An option a product offers must offer at least one; drop the option instead.`,
+      message: i18n.t(
+        'Option(s) {optionIds} were sent with no values. An option a product offers must offer at least one; drop the option instead.',
+      ),
+      values: { optionIds: empty.map((option) => option.optionId).join(', ') },
     })
   }
 
@@ -1028,8 +1051,9 @@ export class ProductOptionService {
       if (activeValueLinks.length > 0) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message:
+          message: i18n.t(
             'Cannot remove option value(s) that are currently used by products. Remove them from all products first.',
+          ),
         })
       }
       await this.productOptionValueRepository.softDelete(removedIds, context)
