@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ButtonLink } from '#/components/button'
@@ -31,7 +32,7 @@ function OrderConfirmedError() {
     // Continue shopping, not "back to account": a guest who just checked out has no account.
     <OrderError orderId={orderId}>
       <ButtonLink variant="outline" to="/">
-        Continue shopping
+        <Trans>Continue shopping</Trans>
       </ButtonLink>
     </OrderError>
   )

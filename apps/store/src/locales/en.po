@@ -16,3 +16,11 @@ msgstr ""
 #: src/components/footer.tsx:138
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. All rights reserved."
+
+#: src/routes/_main/_authed/account/orders/$orderId.tsx:30
+msgid "Back to account"
+msgstr "Back to account"
+
+#: src/routes/_main/order/$orderId/confirmed.tsx:35
+msgid "Continue shopping"
+msgstr "Continue shopping"

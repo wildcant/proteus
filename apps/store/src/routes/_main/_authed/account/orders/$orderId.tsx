@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ButtonLink } from '#/components/button'
@@ -26,7 +27,7 @@ function OrderDetailError() {
   return (
     <OrderError orderId={orderId}>
       <ButtonLink variant="outline" to="/account">
-        Back to account
+        <Trans>Back to account</Trans>
       </ButtonLink>
     </OrderError>
   )
