@@ -7,6 +7,7 @@ import {
   DeleteResponse,
   RegionCountryParams,
 } from '@proteus/http-schemas/admin'
+import { i18n } from '@proteus/utils'
 
 export const PostInput = { params: RegionCountryParams, body: AdminUpdateCountryLocale }
 export const PostOutput = AdminCountryResponse
@@ -30,7 +31,8 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   if (country.regionId !== req.params.id) {
     throw new AppError({
       type: ErrorTypes.NOT_FOUND,
-      message: `Country "${req.params.code}" is not assigned to region "${req.params.id}"`,
+      message: i18n.t('Country "{code}" is not assigned to region "{id}"'),
+      values: { code: req.params.code, id: req.params.id },
     })
   }
 
@@ -57,7 +59,8 @@ export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<Http
   if (country.regionId !== req.params.id) {
     throw new AppError({
       type: ErrorTypes.NOT_FOUND,
-      message: `Country "${req.params.code}" is not assigned to region "${req.params.id}"`,
+      message: i18n.t('Country "{code}" is not assigned to region "{id}"'),
+      values: { code: req.params.code, id: req.params.id },
     })
   }
 

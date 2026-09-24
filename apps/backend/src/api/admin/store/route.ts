@@ -2,6 +2,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminStoreResponse, AdminUpdateStore } from '@proteus/http-schemas/admin'
+import { i18n } from '@proteus/utils'
 import { NO_STORE_CONFIGURED, storeWithCurrencies } from '@workflows/store/utils/store-with-currencies.js'
 
 export const GetOutput = AdminStoreResponse
@@ -62,7 +63,8 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     if (!region) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: `No region "${defaultRegionId}" exists, so the store cannot default to it`,
+        message: i18n.t('No region "{defaultRegionId}" exists, so the store cannot default to it'),
+        values: { defaultRegionId },
       })
     }
   }
