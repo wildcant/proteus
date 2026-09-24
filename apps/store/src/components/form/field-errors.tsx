@@ -19,6 +19,9 @@ export function translateFieldErrors(errors: readonly unknown[], i18n: I18n, val
   const zodLocale = zodLocaleFor(i18n.locale)
   return errors.map((error) => {
     if (isZodIssue(error)) {
+      // A store-local schema marks its message with `msg`, so the issue carries a store catalog id
+      // that the shared schemas' catalog check in `translateIssue` does not know.
+      if (Object.hasOwn(i18n.messages, error.message)) return { message: i18n._(error.message, { ...error }) }
       return { message: translateIssue(error, (id, params) => i18n._(id, params), zodLocale, values) }
     }
     // Anything else (a plain `{ message }` or a string) was worded by whoever set it.

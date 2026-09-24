@@ -21,6 +21,15 @@ describe('translateFieldErrors', () => {
     ])
   })
 
+  it("translates a store schema message through the store's own catalog", () => {
+    // A store-local schema marks its message with `msg`, so the issue carries the catalog id.
+    const store = setupI18n({ locale: 'es', messages: { es: { ...esMessages, storeId: 'Mensaje de la tienda' } } })
+    const value = ''
+    expect(translateFieldErrors(issues(z.string().min(1, 'storeId'), value), store, value)).toEqual([
+      { message: 'Mensaje de la tienda' },
+    ])
+  })
+
   it("re-renders Zod's own default in the page language", () => {
     const [message] = translateFieldErrors(issues(z.string().min(3), 'a'), es, 'a')
     expect(message?.message).not.toBe(issues(z.string().min(3), 'a')[0]?.message)

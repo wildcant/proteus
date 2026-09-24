@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { ButtonLink } from '#/components/button'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
@@ -13,6 +14,7 @@ type ContactSectionProps = Pick<CheckoutData, 'isGuestCheckout'> & {
 }
 export function ContactSection(props: ContactSectionProps) {
   const { isGuestCheckout, cart, form, onSignOut } = props
+  const { t } = useLingui()
 
   if (!isGuestCheckout) {
     return <CheckoutAccount email={cart.email} onSignOut={onSignOut} />
@@ -20,10 +22,10 @@ export function ContactSection(props: ContactSectionProps) {
 
   return (
     <CheckoutSection
-      title="Contact"
+      title={t`Contact`}
       action={
         <ButtonLink variant="link" to="/login" search={{ redirect: '/checkout' }} className="text-sm">
-          Sign in
+          <Trans>Sign in</Trans>
         </ButtonLink>
       }
     >

@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import type { StorePaymentProvider } from '@proteus/http-schemas/store'
 import { InfoIcon } from 'lucide-react'
 import { useEffect } from 'react'
@@ -11,7 +12,7 @@ export function TestOnlyNotice() {
   return (
     <span className="flex w-full items-start gap-2 bg-surface-subtle px-3 py-1.5 text-ink-muted text-xs">
       <InfoIcon className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-      For testing purposes only. No payment is taken.
+      <Trans>For testing purposes only. No payment is taken.</Trans>
     </span>
   )
 }

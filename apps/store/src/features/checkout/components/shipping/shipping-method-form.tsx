@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { CartAddressInput } from '@proteus/http-schemas/store'
 import { Field, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { useSelector } from '@tanstack/react-form'
@@ -39,7 +40,7 @@ export const ShippingMethodForm = withForm({
     if (!isValidShippingAddress) {
       return (
         <p className="m-0 bg-surface-subtle p-4 text-center text-ink-muted text-sm">
-          Enter your shipping address to view available shipping methods.
+          <Trans>Enter your shipping address to view available shipping methods.</Trans>
         </p>
       )
     }
@@ -55,7 +56,11 @@ export const ShippingMethodForm = withForm({
 
     const hasShippingOptions = !data || data?.shippingOptions.length === 0
     if (hasShippingOptions) {
-      return <p className="m-0 text-ink-muted text-sm">No shipping options available for your address.</p>
+      return (
+        <p className="m-0 text-ink-muted text-sm">
+          <Trans>No shipping options available for your address.</Trans>
+        </p>
+      )
     }
 
     return (
@@ -82,7 +87,11 @@ export const ShippingMethodForm = withForm({
                           <span className="font-medium text-ink text-sm">{option.name}</span>
                         </span>
                         <span className="font-medium text-ink text-sm tabular-nums">
-                          {option.amount != null ? formatPrice(String(option.amount), cart.currencyCode) : 'Calculated'}
+                          {option.amount != null ? (
+                            formatPrice(String(option.amount), cart.currencyCode)
+                          ) : (
+                            <Trans>Calculated</Trans>
+                          )}
                         </span>
                       </FieldLabel>
                     </Field>

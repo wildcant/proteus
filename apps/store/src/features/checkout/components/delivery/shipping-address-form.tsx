@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { NativeSelectOption } from '@proteus/ui'
 import { useId } from 'react'
 import { CountryOptions } from '#/components/form/country-options'
@@ -18,6 +19,7 @@ import { checkoutFormOpts } from '../../hooks/use-checkout-form'
 export const ShippingAddressForm = withForm({
   ...checkoutFormOpts,
   render: function ShippingAddressForm({ form }) {
+    const { t } = useLingui()
     const billingHeadingId = useId()
 
     return (
@@ -27,45 +29,49 @@ export const ShippingAddressForm = withForm({
             {(field) => <field.CountryField className="sm:col-span-2" />}
           </form.AppField>
           <form.AppField name="shippingAddress.firstName">
-            {(field) => <field.TextField label="First name" autoComplete="given-name" />}
+            {(field) => <field.TextField label={t`First name`} autoComplete="given-name" />}
           </form.AppField>
           <form.AppField name="shippingAddress.lastName">
-            {(field) => <field.TextField label="Last name" autoComplete="family-name" />}
+            {(field) => <field.TextField label={t`Last name`} autoComplete="family-name" />}
           </form.AppField>
           <form.AppField name="shippingAddress.address1">
-            {(field) => <field.TextField label="Address" autoComplete="address-line1" className="sm:col-span-2" />}
+            {(field) => <field.TextField label={t`Address`} autoComplete="address-line1" className="sm:col-span-2" />}
           </form.AppField>
           {/* Never rendered before this ticket, though it has always been in the schema and in the
             defaults — so an apartment number could be saved in the address book and not at
             checkout. Same label the address book uses. */}
           <form.AppField name="shippingAddress.address2">
             {(field) => (
-              <field.TextField label="Apartment, suite, etc." autoComplete="address-line2" className="sm:col-span-2" />
+              <field.TextField
+                label={t`Apartment, suite, etc.`}
+                autoComplete="address-line2"
+                className="sm:col-span-2"
+              />
             )}
           </form.AppField>
           <form.AppField name="shippingAddress.company">
-            {(field) => <field.TextField label="Company" autoComplete="organization" className="sm:col-span-2" />}
+            {(field) => <field.TextField label={t`Company`} autoComplete="organization" className="sm:col-span-2" />}
           </form.AppField>
           <form.AppField name="shippingAddress.city">
-            {(field) => <field.TextField label="City" autoComplete="address-level2" />}
+            {(field) => <field.TextField label={t`City`} autoComplete="address-level2" />}
           </form.AppField>
           <form.AppField name="shippingAddress.postalCode">
-            {(field) => <field.TextField label="Postal code" autoComplete="postal-code" />}
+            {(field) => <field.TextField label={t`Postal code`} autoComplete="postal-code" />}
           </form.AppField>
           {/* Free text, not a select: there is no subdivision data for any country in the system. */}
           <form.AppField name="shippingAddress.province">
             {(field) => (
-              <field.TextField label="State / Province" autoComplete="address-level1" className="sm:col-span-2" />
+              <field.TextField label={t`State / Province`} autoComplete="address-level1" className="sm:col-span-2" />
             )}
           </form.AppField>
           <form.AppField name="shippingAddress.phone">
-            {(field) => <field.TextField label="Phone" type="tel" autoComplete="tel" className="sm:col-span-2" />}
+            {(field) => <field.TextField label={t`Phone`} type="tel" autoComplete="tel" className="sm:col-span-2" />}
           </form.AppField>
         </div>
 
         <div className="mt-4">
           <form.AppField name="billingSameAsShipping">
-            {(field) => <field.CheckboxField label="Billing address same as shipping" />}
+            {(field) => <field.CheckboxField label={t`Billing address same as shipping`} />}
           </form.AppField>
         </div>
 
@@ -78,32 +84,36 @@ export const ShippingAddressForm = withForm({
               // trying to reach the second of each.
               <section aria-labelledby={billingHeadingId} className="mt-6">
                 <h3 id={billingHeadingId} className="type-heading m-0 mb-4 text-ink">
-                  Billing address
+                  <Trans>Billing address</Trans>
                 </h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <form.AppField name="billingAddress.countryCode">
                     {(field) => (
-                      <field.SelectField label="Country" className="sm:col-span-2">
-                        <NativeSelectOption value="">Select country</NativeSelectOption>
+                      <field.SelectField label={t`Country`} className="sm:col-span-2">
+                        <NativeSelectOption value="">{t`Select country`}</NativeSelectOption>
                         <CountryOptions />
                       </field.SelectField>
                     )}
                   </form.AppField>
                   <form.AppField name="billingAddress.firstName">
-                    {(field) => <field.TextField label="First name" autoComplete="billing given-name" />}
+                    {(field) => <field.TextField label={t`First name`} autoComplete="billing given-name" />}
                   </form.AppField>
                   <form.AppField name="billingAddress.lastName">
-                    {(field) => <field.TextField label="Last name" autoComplete="billing family-name" />}
+                    {(field) => <field.TextField label={t`Last name`} autoComplete="billing family-name" />}
                   </form.AppField>
                   <form.AppField name="billingAddress.address1">
                     {(field) => (
-                      <field.TextField label="Address" autoComplete="billing address-line1" className="sm:col-span-2" />
+                      <field.TextField
+                        label={t`Address`}
+                        autoComplete="billing address-line1"
+                        className="sm:col-span-2"
+                      />
                     )}
                   </form.AppField>
                   <form.AppField name="billingAddress.address2">
                     {(field) => (
                       <field.TextField
-                        label="Apartment, suite, etc."
+                        label={t`Apartment, suite, etc.`}
                         autoComplete="billing address-line2"
                         className="sm:col-span-2"
                       />
@@ -111,19 +121,23 @@ export const ShippingAddressForm = withForm({
                   </form.AppField>
                   <form.AppField name="billingAddress.company">
                     {(field) => (
-                      <field.TextField label="Company" autoComplete="billing organization" className="sm:col-span-2" />
+                      <field.TextField
+                        label={t`Company`}
+                        autoComplete="billing organization"
+                        className="sm:col-span-2"
+                      />
                     )}
                   </form.AppField>
                   <form.AppField name="billingAddress.city">
-                    {(field) => <field.TextField label="City" autoComplete="billing address-level2" />}
+                    {(field) => <field.TextField label={t`City`} autoComplete="billing address-level2" />}
                   </form.AppField>
                   <form.AppField name="billingAddress.postalCode">
-                    {(field) => <field.TextField label="Postal code" autoComplete="billing postal-code" />}
+                    {(field) => <field.TextField label={t`Postal code`} autoComplete="billing postal-code" />}
                   </form.AppField>
                   <form.AppField name="billingAddress.province">
                     {(field) => (
                       <field.TextField
-                        label="State / Province"
+                        label={t`State / Province`}
                         autoComplete="billing address-level1"
                         className="sm:col-span-2"
                       />

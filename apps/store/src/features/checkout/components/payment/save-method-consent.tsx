@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Checkbox, FieldLabel } from '@proteus/ui'
 import { useId } from 'react'
 
@@ -26,13 +27,15 @@ export function SaveMethodConsent({
       <div className="flex items-center gap-3">
         <Checkbox id={id} checked={checked} onCheckedChange={onCheckedChange} />
         <FieldLabel htmlFor={id} className="cursor-pointer font-medium text-ink text-sm">
-          Save this card for next time
+          <Trans>Save this card for next time</Trans>
         </FieldLabel>
       </div>
       <p className="m-0 pl-7 text-ink-muted text-xs">
-        {checked
-          ? 'Stored with your account so your next checkout is one tap. Remove it whenever you like.'
-          : "We'll charge it once and won't store the details."}
+        {checked ? (
+          <Trans>Stored with your account so your next checkout is one tap. Remove it whenever you like.</Trans>
+        ) : (
+          <Trans>We'll charge it once and won't store the details.</Trans>
+        )}
       </p>
     </div>
   )
