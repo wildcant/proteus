@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { ButtonLink } from '#/components/button'
@@ -18,6 +19,7 @@ export const Route = createFileRoute('/_auth/signup')({
 
 function SignupPage() {
   const { isVerifyPending, handleSuccess } = useAuthSuccess()
+  const { t } = useLingui()
 
   return (
     <main className="mt-10 flex w-full max-w-md flex-col items-center">
@@ -25,16 +27,16 @@ function SignupPage() {
         <VerifyPending />
       ) : (
         <>
-          <AuthHeading title="Sign up">
-            Create an account to track your orders, save your details, and check out faster.
+          <AuthHeading title={t`Sign up`}>
+            <Trans>Create an account to track your orders, save your details, and check out faster.</Trans>
           </AuthHeading>
           <div className="mt-10 w-full">
             <RegisterForm onSuccess={handleSuccess} onError={(error) => toast.add({ type: 'error', title: error })} />
           </div>
           <p className="mt-6 text-center text-ink-muted text-sm">
-            Already have an account?{' '}
+            <Trans>Already have an account?</Trans>{' '}
             <ButtonLink variant="link" to="/login" className="align-baseline text-sm">
-              Sign in
+              <Trans>Sign in</Trans>
             </ButtonLink>
           </p>
         </>

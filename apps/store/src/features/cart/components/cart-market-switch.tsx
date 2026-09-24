@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { useRouterState } from '@tanstack/react-router'
 import { CircleAlertIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
@@ -73,11 +74,11 @@ export function CartMarketSwitch() {
     >
       <span className="flex items-center gap-2 font-medium sm:gap-3">
         <CircleAlertIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
-        We could not move your bag to {current.displayName}
+        <Trans>We could not move your bag to {current.displayName}</Trans>
       </span>
       <span>{switchMarket.error.message}</span>
       <span>
-        It is still priced in {stale.currencyCode.toUpperCase()}
+        <Trans>It is still priced in {stale.currencyCode.toUpperCase()}</Trans>
         {!!previous && (
           <>
             {' · '}
@@ -88,7 +89,7 @@ export function CartMarketSwitch() {
               className="font-bold underline underline-offset-4"
               href={marketHref(previous.localeCode, location, markets)}
             >
-              Back to {previous.displayName}
+              <Trans>Back to {previous.displayName}</Trans>
             </a>
           </>
         )}

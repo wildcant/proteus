@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import type { AuthIdentityDTO, ProviderIdentityDTO } from '../../core/types/auth/common.js'
 import type {
   AuthenticationInput,
@@ -31,7 +32,7 @@ export class EmailpassProvider extends AbstractAuthModuleProvider<EmailpassConfi
   ): Promise<AuthenticationResponse> {
     const { email, password } = data.body
     if (!email || !password) {
-      return { success: false, error: 'Email and password are required' }
+      return { success: false, error: i18n.t('Email and password are required') }
     }
 
     const existing = await authIdentityService.retrieve({ entityId: email })
@@ -44,7 +45,7 @@ export class EmailpassProvider extends AbstractAuthModuleProvider<EmailpassConfi
       const isClaimable = appMeta === null || (typeof appMeta === 'object' && Object.keys(appMeta).length === 0)
 
       if (!isClaimable) {
-        return { success: false, error: 'Identity with the same email already exists' }
+        return { success: false, error: i18n.t('Identity with the same email already exists') }
       }
 
       // Claim the identity — update password and mark as non-claimable
@@ -85,23 +86,23 @@ export class EmailpassProvider extends AbstractAuthModuleProvider<EmailpassConfi
   ): Promise<AuthenticationResponse> {
     const { email, password } = data.body
     if (!email || !password) {
-      return { success: false, error: 'Email and password are required' }
+      return { success: false, error: i18n.t('Email and password are required') }
     }
 
     // All failure paths return the same generic message to prevent email enumeration.
     const existing = await authIdentityService.retrieve({ entityId: email })
     if (!existing) {
-      return { success: false, error: 'Invalid email or password' }
+      return { success: false, error: i18n.t('Invalid email or password') }
     }
 
     const storedHash = existing.providerIdentity.providerMetadata?.password
     if (typeof storedHash !== 'string') {
-      return { success: false, error: 'Invalid email or password' }
+      return { success: false, error: i18n.t('Invalid email or password') }
     }
 
     const isValid = await verifyPassword(password, storedHash)
     if (!isValid) {
-      return { success: false, error: 'Invalid email or password' }
+      return { success: false, error: i18n.t('Invalid email or password') }
     }
 
     return {
@@ -119,12 +120,12 @@ export class EmailpassProvider extends AbstractAuthModuleProvider<EmailpassConfi
   ): Promise<AuthenticationResponse> {
     const { email, password } = data
     if (typeof email !== 'string' || !email) {
-      return { success: false, error: 'Email is required' }
+      return { success: false, error: i18n.t('Email is required') }
     }
 
     const existing = await authIdentityService.retrieve({ entityId: email })
     if (!existing) {
-      return { success: false, error: 'Identity not found' }
+      return { success: false, error: i18n.t('Identity not found') }
     }
 
     const metadata: Record<string, unknown> = { ...(existing.providerIdentity.providerMetadata ?? {}) }

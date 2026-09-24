@@ -1,6 +1,7 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
+import type { Msgid } from '@proteus/utils'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import { z } from 'zod'
@@ -21,7 +22,7 @@ const definitions = [
     handler: async () => {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: 'Use {maximum} characters or fewer',
+        message: 'Use {maximum} characters or fewer' as Msgid,
         values: { maximum: 80 },
       })
     },

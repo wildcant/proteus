@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { ModuleContainer } from '../../../core/types/container.js'
@@ -62,7 +63,11 @@ export class PaymentProviderService {
     try {
       return this.container.resolve<IPaymentProvider>(providerId)
     } catch {
-      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Payment provider "${providerId}" is not registered.` })
+      throw new AppError({
+        type: ErrorTypes.NOT_FOUND,
+        message: i18n.t('Payment provider "{providerId}" is not registered.'),
+        values: { providerId },
+      })
     }
   }
 

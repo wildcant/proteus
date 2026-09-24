@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { ArrowLeftIcon } from 'lucide-react'
 
@@ -16,7 +17,7 @@ function AuthLayout() {
           other way back and shoppers do not reliably read it as a link. */}
       <Link to="/" className="absolute top-6 left-4 inline-flex items-center gap-1.5 text-sm sm:left-6">
         <ArrowLeftIcon className="size-4" />
-        Continue shopping
+        <Trans>Continue shopping</Trans>
       </Link>
       {/* my-auto rather than justify-center: auto margins collapse when the content is
           taller than the viewport, so the register view never clips off the top. */}

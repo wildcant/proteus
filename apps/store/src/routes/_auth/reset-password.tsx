@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -18,15 +19,16 @@ export const Route = createFileRoute('/_auth/reset-password')({
 function ResetPasswordPage() {
   const { token } = Route.useSearch()
   const [success, setSuccess] = useState(false)
+  const { t } = useLingui()
 
   if (success) {
     return (
       <main className="mt-10 flex w-full max-w-md flex-col items-center">
-        <AuthHeading title="Password updated">
-          Your password has been reset. Sign in with your new password to pick up where you left off.
+        <AuthHeading title={t`Password updated`}>
+          <Trans>Your password has been reset. Sign in with your new password to pick up where you left off.</Trans>
         </AuthHeading>
         <ButtonLink to="/login" className="mt-10 h-14 w-full font-semibold text-base">
-          Sign in
+          <Trans>Sign in</Trans>
         </ButtonLink>
       </main>
     )
@@ -34,7 +36,9 @@ function ResetPasswordPage() {
 
   return (
     <main className="mt-10 flex w-full max-w-md flex-col items-center">
-      <AuthHeading title="Set a new password">Choose a new password for your account.</AuthHeading>
+      <AuthHeading title={t`Set a new password`}>
+        <Trans>Choose a new password for your account.</Trans>
+      </AuthHeading>
       <div className="mt-10 w-full">
         <ResetPasswordForm
           token={token}
@@ -43,7 +47,7 @@ function ResetPasswordPage() {
         />
       </div>
       <ButtonLink variant="link" to="/login" className="mt-6 text-sm">
-        Back to sign in
+        <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>
   )

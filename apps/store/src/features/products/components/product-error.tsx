@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { PackageIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/button'
 
@@ -16,10 +17,14 @@ export function ProductError() {
   return (
     <main className="mx-auto flex w-full max-w-350 flex-col items-center px-4 py-24 text-center sm:px-6 lg:px-8">
       <PackageIcon className="size-8 text-ink-subtle" strokeWidth={1.5} />
-      <h1 className="type-title mt-6 text-ink">We couldn't show this product</h1>
-      <p className="mt-4 max-w-70 text-ink-muted text-sm">It may not be one we sell here.</p>
+      <h1 className="type-title mt-6 text-ink">
+        <Trans>We couldn't show this product</Trans>
+      </h1>
+      <p className="mt-4 max-w-70 text-ink-muted text-sm">
+        <Trans>It may not be one we sell here.</Trans>
+      </p>
       <ButtonLink to="/" className="mt-8">
-        Browse products
+        <Trans>Browse products</Trans>
       </ButtonLink>
     </main>
   )

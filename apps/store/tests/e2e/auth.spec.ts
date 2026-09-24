@@ -17,7 +17,7 @@ test.describe('Auth', () => {
 
     // Submitting empty surfaces field errors and stays put.
     await page.getByRole('button', { name: /create account/i }).click()
-    await expect(page.getByText(/invalid email address/i)).toBeVisible()
+    await expect(page.getByText(/enter a valid email address/i)).toBeVisible()
     await expect(page.getByText(/enter a password/i)).toBeVisible()
     await expect(page).toHaveURL(/\/signup/)
 
@@ -107,7 +107,7 @@ test.describe('Auth', () => {
     await expect(page).toHaveURL('/en-US/forgot-password')
 
     await page.getByRole('button', { name: /send reset link/i }).click()
-    await expect(page.getByText(/invalid email address/i)).toBeVisible()
+    await expect(page.getByText(/enter a valid email address/i)).toBeVisible()
     await expect(page).toHaveURL('/en-US/forgot-password')
 
     await page.getByRole('textbox', { name: 'Email' }).fill(customer.email)

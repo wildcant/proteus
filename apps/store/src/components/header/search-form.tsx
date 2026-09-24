@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useNavigate } from '@tanstack/react-router'
 import { XIcon } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
@@ -22,6 +23,7 @@ type SearchFormProps = {
  * label into the box. It still needs a real associated label, so one is rendered sr-only.
  */
 export function SearchForm({ className, focusOnMount, value, onChange }: SearchFormProps) {
+  const { t } = useLingui()
   const navigate = useNavigate()
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -49,7 +51,7 @@ export function SearchForm({ className, focusOnMount, value, onChange }: SearchF
       }
     >
       <label htmlFor={inputId} className="sr-only">
-        Search products
+        <Trans>Search products</Trans>
       </label>
       <input
         ref={inputRef}
@@ -58,7 +60,7 @@ export function SearchForm({ className, focusOnMount, value, onChange }: SearchF
         name="q"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={SEARCH_PLACEHOLDER}
+        placeholder={t(SEARCH_PLACEHOLDER)}
         // 16px on small screens so iOS does not zoom the page on focus. The ring lives on
         // the control, via focus-within, so the input itself carries none.
         //
@@ -69,7 +71,7 @@ export function SearchForm({ className, focusOnMount, value, onChange }: SearchF
       {!!value && (
         <button
           type="button"
-          aria-label="Clear search"
+          aria-label={t`Clear search`}
           // Focus goes back to the field: clearing is something you do mid-search, not the
           // end of one.
           onClick={() => {

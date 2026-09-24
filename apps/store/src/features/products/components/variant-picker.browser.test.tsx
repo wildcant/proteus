@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { StoreProductScopedOption, StoreProductVariant } from '#/api/generated/model'
+import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { VariantPicker } from './variant-picker'
 
 /**
@@ -56,6 +57,7 @@ test('a combination that cannot be bought is struck through, not merely dimmed',
       selectedVariant={medium}
       onVariantChange={() => undefined}
     />,
+    { wrapper: I18nTestProvider },
   )
 
   const unreachable = page.getByRole('radio', { name: 'S' })

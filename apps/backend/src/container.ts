@@ -4,6 +4,7 @@
  * so each entry point only bundles its own provider (tree-shaking friendly).
  */
 
+import { i18n } from '@proteus/utils'
 import { asFunction, asValue, createContainer } from 'awilix'
 import { appConfig } from './config.js'
 import type { DbProvider } from './core/db/ports.js'
@@ -136,10 +137,9 @@ function selectWorkflowEngine(
   if (!createEngine) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message:
-        'The temporal workflow engine was selected but no factory was injected. The entry point ' +
-        'building this container must pass `createTemporalWorkflowEngine`, or pin ' +
-        '`projectConfig.workflows.engine` to "simple".',
+      message: i18n.t(
+        'The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to "simple".',
+      ),
     })
   }
 
@@ -169,10 +169,10 @@ function selectEventBus(
   if (!createAdapter) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message:
-        `The "${adapter}" event bus adapter was selected but no factory was injected. The entry ` +
-        'point building this container must pass `createEventBusAdapter`, or pin ' +
-        '`projectConfig.eventBus.adapter` to "inline".',
+      message: i18n.t(
+        'The "{adapter}" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to "inline".',
+      ),
+      values: { adapter },
     })
   }
 

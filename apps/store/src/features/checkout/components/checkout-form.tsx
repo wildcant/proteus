@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { Form } from '#/components/form/form'
 import { useCheckoutData } from '#/features/checkout/hooks/use-checkout-data'
@@ -34,7 +35,9 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
                 and `/cookies` are not routes, and a link that quietly lands on the home page is a
                 bug the shopper walks into rather than a placeholder they can read. */}
             <p className="m-0 text-ink-muted text-xs">
-              By placing your order you agree to our Terms and Conditions, Privacy Notice and Cookie Policy.
+              <Trans>
+                By placing your order you agree to our Terms and Conditions, Privacy Notice and Cookie Policy.
+              </Trans>
             </p>
 
             {/* Beneath the button, not under a field: a decline is not something the shopper
@@ -48,7 +51,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
             <form.Subscribe selector={(state) => state.isSubmitting}>
               {(isSubmitting) => (
                 <form.SubmitButton className="w-full">
-                  {isSubmitting ? 'Placing order...' : 'Place order'}
+                  {isSubmitting ? <Trans>Placing order...</Trans> : <Trans>Place order</Trans>}
                 </form.SubmitButton>
               )}
             </form.Subscribe>

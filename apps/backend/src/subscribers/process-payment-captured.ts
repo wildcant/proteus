@@ -4,6 +4,7 @@ import type { PaymentDTO } from '@core/types/payment/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
+import { i18n } from '@proteus/utils'
 import { completeCartWorkflow } from '@workflows/cart/complete-cart.js'
 import { buildOperatorAlerts } from '@workflows/notification/utils/operator-alert.js'
 import type { AppContainer } from '../core/types/container.js'
@@ -65,7 +66,10 @@ async function processPaymentCaptured({ event, container }: SubscriberArgs<'paym
     case 'pending_authorization':
       throw new AppError({
         type: ErrorTypes.CONFLICT,
-        message: `Payment session "${sessionId}" is still settling, so the "${action}" the provider reported cannot be recorded yet`,
+        message: i18n.t(
+          'Payment session "{sessionId}" is still settling, so the "{action}" the provider reported cannot be recorded yet',
+        ),
+        values: { sessionId, action },
       })
 
     case 'authorized': {

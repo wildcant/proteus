@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { Context } from '@temporalio/activity'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { AppContainer } from '../../../core/types/container.js'
@@ -89,7 +90,8 @@ export function createWorkflowActivities(deps: {
     throw toStepApplicationFailure({
       error: new AppError({
         type: ErrorTypes.UNEXPECTED_STATE,
-        message: `No workflow is registered as "${name}" on this Worker`,
+        message: i18n.t('No workflow is registered as "{name}" on this Worker'),
+        values: { name },
       }),
       step: null,
       nonRetryable: true,

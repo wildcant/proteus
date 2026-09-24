@@ -1,4 +1,5 @@
 import type { ActorType } from '@proteus/http-schemas/auth'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../errors/app-error.js'
 import type { AuthIdentityDTO, ProviderIdentityDTO } from '../../types/auth/common.js'
 import type { IAuthModuleService } from '../../types/auth/service.js'
@@ -38,7 +39,8 @@ export async function validateVerification(
   if (!providerIdentity) {
     throw new AppError({
       type: ErrorTypes.INVALID_DATA,
-      message: `Provider identity for "${authProvider}" not found on auth identity "${authIdentity.id}"`,
+      message: i18n.t('Provider identity for "{authProvider}" not found on auth identity "{authIdentityId}"'),
+      values: { authProvider, authIdentityId: authIdentity.id },
     })
   }
 

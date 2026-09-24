@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 
 export type StripeOptions = {
@@ -48,8 +49,10 @@ export function validateStripeOptions(providerId: string, options: Record<string
       throw new AppError({
         type: ErrorTypes.INVALID_ARGUMENT,
         message:
-          `Payment provider "${providerId}" cannot start: option "${name}" is ` +
-          `${value === undefined ? 'missing' : 'not a non-empty string'}.`,
+          value === undefined
+            ? i18n.t('Payment provider "{providerId}" cannot start: option "{name}" is missing.')
+            : i18n.t('Payment provider "{providerId}" cannot start: option "{name}" is not a non-empty string.'),
+        values: { providerId, name },
       })
     }
 
@@ -59,9 +62,10 @@ export function validateStripeOptions(providerId: string, options: Record<string
       // a secret, and a deploy log is not where it should be printed.
       throw new AppError({
         type: ErrorTypes.INVALID_ARGUMENT,
-        message:
-          `Payment provider "${providerId}" cannot start: option "${name}" does not look like a ` +
-          `Stripe ${name} — it must begin with "${prefix}".`,
+        message: i18n.t(
+          'Payment provider "{providerId}" cannot start: option "{name}" does not look like a Stripe {name} — it must begin with "{prefix}".',
+        ),
+        values: { providerId, name, prefix },
       })
     }
   }

@@ -1,4 +1,5 @@
 import { env } from '@env'
+import { i18n } from '@proteus/utils'
 import type { Client } from '@temporalio/client'
 import type { Duration, RetryPolicy } from '@temporalio/common'
 import { ulid } from 'ulid'
@@ -176,10 +177,10 @@ function assertBoundedRetryPolicy(policy: RetryPolicy | undefined, where: string
 
   throw new AppError({
     type: ErrorTypes.INVALID_DATA,
-    message:
-      `createTemporalWorkflowEngine: ${where} needs an explicit maximumAttempts of 1 or more. ` +
-      `Temporal reads ${attempts === undefined ? 'an absent maximumAttempts' : String(attempts)} as ` +
-      'unlimited, and a step that retries forever is exactly what the default of 1 exists to prevent.',
+    message: i18n.t(
+      'createTemporalWorkflowEngine: {where} needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a step that retries forever is exactly what the default of 1 exists to prevent.',
+    ),
+    values: { where, attempts: attempts === undefined ? 'an absent maximumAttempts' : String(attempts) },
   })
 }
 

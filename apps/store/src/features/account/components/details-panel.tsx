@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Panel } from '#/components/panel'
 
 type DetailsPanelProps = {
@@ -12,18 +13,23 @@ type DetailsPanelProps = {
  * affordance here would have nothing to post to.
  */
 export function DetailsPanel({ firstName, lastName, email }: DetailsPanelProps) {
+  const { t } = useLingui()
   const name = [firstName, lastName].filter(Boolean).join(' ')
 
   return (
-    <Panel title="Details">
+    <Panel title={t`Details`}>
       <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
         {name ? (
           <>
-            <dt className="text-ink-muted">Name</dt>
+            <dt className="text-ink-muted">
+              <Trans>Name</Trans>
+            </dt>
             <dd className="text-ink">{name}</dd>
           </>
         ) : null}
-        <dt className="text-ink-muted">Email</dt>
+        <dt className="text-ink-muted">
+          <Trans>Email</Trans>
+        </dt>
         <dd className="truncate text-ink">{email}</dd>
       </dl>
     </Panel>

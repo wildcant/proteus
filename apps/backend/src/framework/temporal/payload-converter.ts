@@ -1,4 +1,5 @@
 import { stringToBigNumber } from '@proteus/http-schemas/common'
+import { i18n } from '@proteus/utils'
 import {
   BinaryPayloadConverter,
   CompositePayloadConverter,
@@ -226,9 +227,17 @@ function describeType(value: unknown): string {
 }
 
 function encodeError(path: string, detail: string): AppError {
-  return new AppError({ type: ErrorTypes.INVALID_DATA, message: `step output at ${path || ROOT_PATH}: ${detail}` })
+  return new AppError({
+    type: ErrorTypes.INVALID_DATA,
+    message: i18n.t('step output at {path}: {detail}'),
+    values: { path: path || ROOT_PATH, detail },
+  })
 }
 
 function decodeError(path: string, detail: string): AppError {
-  return new AppError({ type: ErrorTypes.INVALID_DATA, message: `step payload at ${path || ROOT_PATH}: ${detail}` })
+  return new AppError({
+    type: ErrorTypes.INVALID_DATA,
+    message: i18n.t('step payload at {path}: {detail}'),
+    values: { path: path || ROOT_PATH, detail },
+  })
 }

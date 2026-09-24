@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { SEARCH_DEBOUNCE_MS, SEARCH_RESULTS_LIMIT } from '#/components/header/constants'
@@ -39,20 +40,24 @@ export function SearchResults({ term }: SearchResultsProps) {
 
   if (products.length === 0) {
     return (
-      <p className="m-0 py-10 text-center text-ink-muted text-sm">No products match &ldquo;{debouncedTerm}&rdquo;.</p>
+      <p className="m-0 py-10 text-center text-ink-muted text-sm">
+        <Trans>No products match &ldquo;{debouncedTerm}&rdquo;.</Trans>
+      </p>
     )
   }
 
   return (
     <section>
-      <h2 className="type-heading m-0 text-ink">Products</h2>
+      <h2 className="type-heading m-0 text-ink">
+        <Trans>Products</Trans>
+      </h2>
 
       <ProductGrid products={products} className="mt-6" />
 
       {/* The panel is a preview; the PLP is where the full result set lives. */}
       <div className="mt-8 flex justify-end border-line border-t pt-6">
         <Link to="/" search={{ q: debouncedTerm }} className="font-medium text-ink text-sm underline">
-          View all &ldquo;{debouncedTerm}&rdquo;
+          <Trans>View all &ldquo;{debouncedTerm}&rdquo;</Trans>
         </Link>
       </div>
     </section>

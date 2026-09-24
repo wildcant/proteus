@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
 import type { CheckoutForm } from '../../hooks/use-checkout-form'
 import { CheckoutSection } from '../checkout-section'
@@ -7,8 +8,9 @@ type ShippingMethodSectionProps = Pick<CheckoutData, 'cart' | 'isAddressesLoadin
   form: CheckoutForm
 }
 export function ShippingMethodSection(props: ShippingMethodSectionProps) {
+  const { t } = useLingui()
   return (
-    <CheckoutSection title="Shipping method">
+    <CheckoutSection title={t`Shipping method`}>
       <ShippingMethodForm {...props} />
     </CheckoutSection>
   )

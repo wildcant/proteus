@@ -3,6 +3,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { StoreOrderListParams, StoreOrderListResponse } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
 
 export const GetInput = { query: StoreOrderListParams }
@@ -12,7 +13,7 @@ export const GetThrows = [ErrorTypes.UNAUTHORIZED] as const
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const customerId = req.authContext?.actorId
   if (!customerId) {
-    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
+    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Not authenticated') })
   }
 
   const orderService = req.scope.resolve(Modules.ORDER)

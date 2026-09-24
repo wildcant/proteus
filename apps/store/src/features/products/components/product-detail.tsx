@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { useSuspenseProduct } from '#/features/products/api/products'
 import { AddToCart } from '#/features/products/components/add-to-cart'
@@ -38,7 +39,7 @@ export function ProductDetail() {
           our only listing, so this is the only way back from a PDP reached by search or by link. */}
       <nav className="mb-6 text-ink-muted text-xs">
         <Link to="/" className="hover:text-ink">
-          Products
+          <Trans>Products</Trans>
         </Link>
         <span className="mx-2">/</span>
         <span className="text-ink">{product.title}</span>

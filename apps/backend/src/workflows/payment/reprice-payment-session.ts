@@ -3,6 +3,7 @@ import type { PaymentSessionDTO } from '@core/types/payment/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 
 type RepricePaymentSessionInput = { paymentCollectionId: string; sessionId: string }
 
@@ -33,7 +34,8 @@ export const repricePaymentSessionWorkflow = createWorkflow<RepricePaymentSessio
       if (!session) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Payment session "${input.sessionId}" is not part of payment collection "${collection.id}"`,
+          message: i18n.t('Payment session "{sessionId}" is not part of payment collection "{collectionId}"'),
+          values: { sessionId: input.sessionId, collectionId: collection.id },
         })
       }
 
@@ -41,7 +43,10 @@ export const repricePaymentSessionWorkflow = createWorkflow<RepricePaymentSessio
       if (!link) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Payment collection "${collection.id}" is not linked to a cart, so it has no total to re-price against`,
+          message: i18n.t(
+            'Payment collection "{collectionId}" is not linked to a cart, so it has no total to re-price against',
+          ),
+          values: { collectionId: collection.id },
         })
       }
 
@@ -49,7 +54,8 @@ export const repricePaymentSessionWorkflow = createWorkflow<RepricePaymentSessio
       if (cart.completedAt) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart "${link.cartId}" is already completed`,
+          message: i18n.t('Cart "{cartId}" is already completed'),
+          values: { cartId: link.cartId },
         })
       }
 

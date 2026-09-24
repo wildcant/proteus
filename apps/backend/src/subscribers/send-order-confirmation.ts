@@ -3,6 +3,7 @@ import type { SubscriberArgs, SubscriberConfig } from '@core/event-bus/types.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { env } from '@env'
+import { i18n } from '@proteus/utils'
 import { buildOrderConfirmationNotification } from '@workflows/notification/utils/order-confirmation.js'
 
 /**
@@ -69,7 +70,8 @@ async function sendOrderConfirmation({ event, container }: SubscriberArgs<'order
   if (notification.status === 'failure' && notification.providerId) {
     throw new AppError({
       type: ErrorTypes.SERVICE_UNAVAILABLE,
-      message: `The order confirmation for order "${orderId}" was not sent — provider "${notification.providerId}" refused it`,
+      message: i18n.t('The order confirmation for order "{orderId}" was not sent — provider "{providerId}" refused it'),
+      values: { orderId, providerId: notification.providerId },
     })
   }
 

@@ -2,6 +2,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { ReservationItemDTO } from '@core/types/inventory/common.js'
 import type { ProductVariantInventoryItemDTO } from '@core/types/link/common.js'
 import type { OrderLineItemDTO } from '@core/types/order/common.js'
+import { i18n } from '@proteus/utils'
 
 export type InventoryAdjustment = { inventoryItemId: string; locationId: string; quantity: number }
 
@@ -32,7 +33,8 @@ export function computeInventoryAdjustments(
     if (!reservation) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `No reservation found for managed-inventory item ${lineItem.id}`,
+        message: i18n.t('No reservation found for managed-inventory item {lineItemId}'),
+        values: { lineItemId: lineItem.id },
       })
     }
 
@@ -40,7 +42,8 @@ export function computeInventoryAdjustments(
     if (requiredDeduction > reservation.quantity) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `Reservation quantity (${reservation.quantity}) is insufficient for item ${lineItem.id}: requires ${requiredDeduction}`,
+        message: i18n.t('Reservation quantity ({quantity}) is insufficient for item {lineItemId}: requires {required}'),
+        values: { quantity: reservation.quantity, lineItemId: lineItem.id, required: requiredDeduction },
       })
     }
 

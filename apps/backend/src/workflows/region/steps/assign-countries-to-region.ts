@@ -3,6 +3,7 @@ import type { CountryDTO } from '@core/types/region/common.js'
 import type { SetCountryMarketDTO } from '@core/types/region/mutations.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { type WorkflowContext, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 
 /** A step in its own file still owns its failure contract; the workflow calling it spreads this. */
 export const assignCountriesToRegionThrows = [ErrorTypes.CONFLICT] as const
@@ -49,7 +50,10 @@ export async function assignCountriesToRegionStep(
       if (taken) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.CONFLICT,
-          message: `"${taken.displayName}" is already sold to by region "${taken.regionId}". Remove it from that region first.`,
+          message: i18n.t(
+            '"{displayName}" is already sold to by region "{regionId}". Remove it from that region first.',
+          ),
+          values: { displayName: taken.displayName, regionId: taken.regionId },
         })
       }
 

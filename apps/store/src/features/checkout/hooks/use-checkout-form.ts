@@ -1,3 +1,6 @@
+import type { MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
 import type { CartAddressInputBody, StoreCompleteCartResponse } from '@proteus/http-schemas/store'
 import { formOptions } from '@tanstack/react-form'
 import { useState } from 'react'
@@ -13,7 +16,7 @@ import { useCompleteOrder } from './use-complete-order'
 import { usePlaceOrder } from './use-place-order'
 
 const checkoutSchema = z.object({
-  email: z.email('Email is required'),
+  email: z.email(msg`Email is required`.id),
   /**
    * The address is raised a second time as one issue at its own path. Every issue the schema
    * produces belongs to a single line — `shippingAddress.city` and friends — which is what the
@@ -22,14 +25,14 @@ const checkoutSchema = z.object({
    */
   shippingAddress: CheckoutAddress.check((ctx) => {
     if (ctx.issues.length === 0) return
-    ctx.issues.push({ code: 'custom', message: 'Select a shipping address', input: ctx.value })
+    ctx.issues.push({ code: 'custom', message: msg`Select a shipping address`.id, input: ctx.value })
   }),
   billingAddress: CheckoutAddress,
   billingSameAsShipping: z.boolean(),
   // The selection is held as an id, not the option itself: nothing downstream reads more than the
   // id, and a radio group that compares strings cannot go stale when a refetch rebuilds the list.
-  shippingOptionId: z.string().min(1, 'Select a shipping method'),
-  paymentProviderId: z.string().min(1, 'Select a payment method'),
+  shippingOptionId: z.string().min(1, msg`Select a shipping method`.id),
+  paymentProviderId: z.string().min(1, msg`Select a payment method`.id),
 })
 
 const EMPTY_ADDRESS: CartAddressInputBody = {
@@ -76,6 +79,7 @@ type CheckoutFormParams = SubmitFormParams<StoreCompleteCartResponse> & {
 }
 
 export function useCheckoutForm(params: CheckoutFormParams) {
+  const { t } = useLingui()
   const { completeOrder } = useCompleteOrder()
   const { controller, confirmPayment } = usePlaceOrder(params.data.cart.id)
   /**
@@ -119,7 +123,7 @@ export function useCheckoutForm(params: CheckoutFormParams) {
         // `processing` is a method that settles later. The order is created now and the webhook
         // reconciles the money, which is the deferred-authorization path the backend already has.
         if (outcome.kind !== 'succeeded' && outcome.kind !== 'processing') {
-          setPaymentError(paymentFailureMessage(outcome))
+          setPaymentError(paymentFailureMessage(outcome, t))
           return
         }
 
@@ -167,11 +171,16 @@ export function useCheckoutForm(params: CheckoutFormParams) {
  * `customerMessage` arrives already sanitised by the adapter that knows the gateway's error
  * vocabulary, so nothing here has to decide what is safe to print.
  */
-function paymentFailureMessage(outcome: { kind: 'failed'; customerMessage: string } | { kind: 'staleMethod' }): string {
+function paymentFailureMessage(
+  outcome: { kind: 'failed'; customerMessage: string } | { kind: 'staleMethod' },
+  translate: (descriptor: MessageDescriptor) => string,
+): string {
   if (outcome.kind === 'failed') return outcome.customerMessage
   // The selector has already refetched the wallet and dropped the selection back to the new-method
   // form by the time this renders — see `usePlaceOrder`. This is the half that says why.
-  return 'That saved card is no longer available. Please choose another card or enter a new one.'
+  return translate(STALE_METHOD_MESSAGE)
 }
+
+const STALE_METHOD_MESSAGE = msg`That saved card is no longer available. Please choose another card or enter a new one.`
 
 export type CheckoutForm = ReturnType<typeof useCheckoutForm>['form']

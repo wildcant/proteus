@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { SearchIcon } from 'lucide-react'
 import { Button } from '#/components/button'
 import { SEARCH_PLACEHOLDER } from '#/components/header/constants'
@@ -19,15 +20,16 @@ type SearchBarTriggerProps = {
 }
 
 export function SearchBarTrigger({ className }: SearchBarTriggerProps) {
+  const { t } = useLingui()
   const { setOpen } = useModal('search')
 
   return (
     <SearchControl
       className={className}
-      aria-label="Search products"
+      aria-label={t`Search products`}
       render={<button type="button" onClick={() => setOpen(true)} />}
     >
-      <span className="text-ink-muted">{SEARCH_PLACEHOLDER}</span>
+      <span className="text-ink-muted">{t(SEARCH_PLACEHOLDER)}</span>
     </SearchControl>
   )
 }
@@ -38,10 +40,11 @@ type SearchIconTriggerProps = {
 }
 
 export function SearchIconTrigger({ className }: SearchIconTriggerProps) {
+  const { t } = useLingui()
   const { setOpen } = useModal('search')
 
   return (
-    <Button variant="ghost" size="icon" aria-label="Search" className={className} onClick={() => setOpen(true)}>
+    <Button variant="ghost" size="icon" aria-label={t`Search`} className={className} onClick={() => setOpen(true)}>
       <SearchIcon className="h-5 w-5" />
     </Button>
   )

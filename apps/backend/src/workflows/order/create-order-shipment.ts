@@ -3,6 +3,7 @@ import type { OrderDTO } from '@core/types/order/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 
 type CreateOrderShipmentInput = {
@@ -29,7 +30,8 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
       if (order.status === 'canceled') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot ship order ${input.orderId}: order is canceled`,
+          message: i18n.t('Cannot ship order {orderId}: order is canceled'),
+          values: { orderId: input.orderId },
         })
       }
 
@@ -38,7 +40,8 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
       if (!link || link.orderId !== input.orderId) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Fulfillment ${input.fulfillmentId} is not linked to order ${input.orderId}`,
+          message: i18n.t('Fulfillment {fulfillmentId} is not linked to order {orderId}'),
+          values: { fulfillmentId: input.fulfillmentId, orderId: input.orderId },
         })
       }
 
@@ -49,7 +52,8 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
       if (fulfillment.canceledAt) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot ship order ${input.orderId}: fulfillment is canceled`,
+          message: i18n.t('Cannot ship order {orderId}: fulfillment is canceled'),
+          values: { orderId: input.orderId },
         })
       }
 
@@ -58,7 +62,8 @@ export const createOrderShipmentWorkflow = createWorkflow<CreateOrderShipmentInp
       if (status !== 'fulfilled') {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot ship order ${input.orderId}: fulfillment status is "${status}", expected "fulfilled"`,
+          message: i18n.t('Cannot ship order {orderId}: fulfillment status is "{status}", expected "fulfilled"'),
+          values: { orderId: input.orderId, status },
         })
       }
     })

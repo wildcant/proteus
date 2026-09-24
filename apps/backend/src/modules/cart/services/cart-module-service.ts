@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { BigNumber } from '../../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
@@ -290,7 +291,7 @@ export class CartModuleService implements ICartModuleService {
       if (!added) {
         throw new AppError({
           type: ErrorTypes.UNEXPECTED_STATE,
-          message: 'Shipping method not returned after create',
+          message: i18n.t('Shipping method not returned after create'),
         })
       }
 
@@ -370,7 +371,8 @@ export class CartModuleService implements ICartModuleService {
 
     throw new AppError({
       type: ErrorTypes.NOT_ALLOWED,
-      message: `Cart ${cart.id} is already completed`,
+      message: i18n.t('Cart {id} is already completed'),
+      values: { id: cart.id },
     })
   }
 }

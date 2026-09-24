@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import type { MiddlewareFunction, PermissionKey } from '../types.js'
@@ -22,7 +23,7 @@ export function authorize(permissions: PermissionKey[], matcher: string, method:
     if (!actor) {
       throw new AppError({
         type: ErrorTypes.FORBIDDEN,
-        message: 'Insufficient permissions',
+        message: i18n.t('Insufficient permissions'),
       })
     }
 
@@ -32,7 +33,7 @@ export function authorize(permissions: PermissionKey[], matcher: string, method:
 
       throw new AppError({
         type: ErrorTypes.FORBIDDEN,
-        message: 'Insufficient permissions',
+        message: i18n.t('Insufficient permissions'),
       })
     }
 

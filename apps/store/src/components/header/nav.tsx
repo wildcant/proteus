@@ -1,3 +1,5 @@
+import { msg } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 
@@ -6,7 +8,7 @@ import { Link } from '@tanstack/react-router'
  * destination that exists. It is laid out to take N entries, which is what lets a later
  * categories ticket fill it without touching this file.
  */
-const railLinks = [{ to: '/' as const, label: 'Shop all' }]
+const railLinks = [{ to: '/' as const, label: msg`Shop all` }]
 
 /**
  * The storefront's primary navigation, and the only part of the header that is navigation
@@ -21,13 +23,14 @@ type NavProps = {
 }
 
 export function Nav({ className }: NavProps) {
+  const { t } = useLingui()
   return (
     <nav className={cn('hidden lg:block', className)}>
       <ul className="m-0 flex list-none items-center gap-8 p-0">
         {railLinks.map(({ to, label }) => (
           <li key={to}>
             <Link to={to} className="font-medium text-ink text-sm no-underline hover:text-ink-muted">
-              {label}
+              {t(label)}
             </Link>
           </li>
         ))}

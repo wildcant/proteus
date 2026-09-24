@@ -2,6 +2,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { DeleteResponse, IdParams, StoreCustomerAddressResponse, StoreUpdateAddress } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import { validateAddressOwnership } from '../../../middlewares.js'
 
 export const PatchInput = { params: IdParams, body: StoreUpdateAddress }
@@ -15,7 +16,7 @@ export const PATCH = async (
   // `validateAddressOwnership()` has already refused an address belonging to someone else; this
   // is the caller with no session at all, which it has nothing to compare against.
   if (!req.authContext?.actorId) {
-    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Not authenticated' })
+    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Not authenticated') })
   }
 
   const customerService = req.scope.resolve(Modules.CUSTOMER)

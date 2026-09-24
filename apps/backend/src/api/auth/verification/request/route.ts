@@ -3,6 +3,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { VerificationRequestBody, VerificationRequestResponse } from '@proteus/http-schemas/auth'
+import { i18n } from '@proteus/utils'
 import { sendVerificationEmail } from '@workflows/auth/send-verification-email.js'
 
 export const PostInput = { body: VerificationRequestBody }
@@ -14,7 +15,7 @@ export const POST = async (
   req: HttpRequest<typeof PostInput, typeof PostMiddlewares>,
 ): Promise<HttpResult<typeof PostOutput>> => {
   const authContext = req.authContext
-  if (!authContext) throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
+  if (!authContext) throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Unauthorized') })
 
   const authService = req.scope.resolve(Modules.AUTH)
 

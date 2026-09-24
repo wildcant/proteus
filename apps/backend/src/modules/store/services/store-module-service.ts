@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -122,7 +123,8 @@ export class StoreModuleService implements IStoreModuleService {
       if (!target) {
         throw new AppError({
           type: ErrorTypes.NOT_FOUND,
-          message: `The store does not trade in "${currencyCode}"`,
+          message: i18n.t('The store does not trade in "{currencyCode}"'),
+          values: { currencyCode },
         })
       }
 

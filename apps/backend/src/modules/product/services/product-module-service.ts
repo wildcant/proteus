@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -241,7 +242,7 @@ export class ProductModuleService implements IProductModuleService {
     return this.withTransaction(context, async (ctx) => {
       const [variant] = await this.createProductVariants([data], ctx)
       if (!variant)
-        throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Variant creation returned no rows' })
+        throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: i18n.t('Variant creation returned no rows') })
       return variant
     })
   }
@@ -317,7 +318,12 @@ export class ProductModuleService implements IProductModuleService {
   ): Promise<ProductVariantDTO> {
     return this.withTransaction(context, async (ctx) => {
       const [variant] = await this.updateProductVariants([variantId], data, ctx)
-      if (!variant) throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Variant "${variantId}" not found` })
+      if (!variant)
+        throw new AppError({
+          type: ErrorTypes.NOT_FOUND,
+          message: i18n.t('Variant "{variantId}" not found'),
+          values: { variantId },
+        })
       return variant
     })
   }
@@ -814,7 +820,10 @@ export class ProductModuleService implements IProductModuleService {
 
     return new AppError({
       type: ErrorTypes.NOT_ALLOWED,
-      message: `These options do not fit the product's variants: ${reasons.join('; ')}. Remove those variants first, or make the change from the admin, which moves them for you.`,
+      message: i18n.t(
+        "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you.",
+      ),
+      values: { reasons: reasons.join('; ') },
     })
   }
 

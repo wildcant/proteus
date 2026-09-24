@@ -1,6 +1,8 @@
+import { Trans } from '@lingui/react/macro'
 import type { StorePaymentProvider } from '@proteus/http-schemas/store'
-import { FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
+import { FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { Fragment } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { PaymentRow } from '#/components/payment-row'
 import { usePaymentProviders } from '#/features/checkout/api/checkout'
 import { withForm } from '#/lib/form-hook'
@@ -44,7 +46,11 @@ export const PaymentForm = withForm({
 
     const providers = data?.paymentProviders ?? []
     if (providers.length === 0) {
-      return <p className="m-0 text-ink-muted text-sm">No payment providers available.</p>
+      return (
+        <p className="m-0 text-ink-muted text-sm">
+          <Trans>No payment providers available.</Trans>
+        </p>
+      )
     }
 
     return (
@@ -93,7 +99,9 @@ export const PaymentForm = withForm({
                   </RadioGroup>
                 )}
 
-                {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+                {!!isInvalid && (
+                  <TranslatedFieldError errors={field.state.meta.errors} values={field.form.state.values} />
+                )}
                 {/* Only for the sole-provider render, which draws no row to open beneath. */}
                 {!!selected && !!soleProvider && (
                   <ActiveProviderPanel provider={selected} cart={cart} customer={customer} />

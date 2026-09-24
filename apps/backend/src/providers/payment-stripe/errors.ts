@@ -1,3 +1,4 @@
+import { i18n, type Msgid } from '@proteus/utils'
 import Stripe from 'stripe'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import { PaymentErrorCodes } from '../../core/types/payment/errors.js'
@@ -127,33 +128,33 @@ export function gatewayFailureLog(operation: string, error: unknown): string {
  * shopper's state — calling either one a server error pages an operator for something no operator
  * can fix.
  */
-const ANSWER_BY_BUCKET: Record<GatewayErrorBucket, { type: ErrorTypes; code: PaymentErrorCodes; message: string }> = {
+const ANSWER_BY_BUCKET: Record<GatewayErrorBucket, { type: ErrorTypes; code: PaymentErrorCodes; message: Msgid }> = {
   retry: {
     type: ErrorTypes.SERVICE_UNAVAILABLE,
     code: PaymentErrorCodes.GATEWAY_UNAVAILABLE,
-    message: 'The payment gateway is temporarily unavailable. Please try again.',
+    message: i18n.t('The payment gateway is temporarily unavailable. Please try again.'),
   },
   indeterminate: {
     type: ErrorTypes.SERVICE_UNAVAILABLE,
     code: PaymentErrorCodes.GATEWAY_UNAVAILABLE,
-    message: 'The payment gateway is temporarily unavailable. Please try again.',
+    message: i18n.t('The payment gateway is temporarily unavailable. Please try again.'),
   },
   paymentMethod: {
     type: ErrorTypes.CONFLICT,
     code: PaymentErrorCodes.METHOD_UNAVAILABLE,
-    message: 'That payment method is no longer available.',
+    message: i18n.t('That payment method is no longer available.'),
   },
   /** The same code cart completion answers a refused session with: one decline code whatever the
    *  reason, so a response body cannot separate a lost card from a generic refusal. */
   card: {
     type: ErrorTypes.CONFLICT,
     code: PaymentErrorCodes.DECLINED,
-    message: 'The card could not be charged.',
+    message: i18n.t('The card could not be charged.'),
   },
   fatal: {
     type: ErrorTypes.UNEXPECTED_STATE,
     code: PaymentErrorCodes.GATEWAY_ERROR,
-    message: 'The payment could not be processed.',
+    message: i18n.t('The payment could not be processed.'),
   },
 }
 

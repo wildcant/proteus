@@ -3,6 +3,7 @@ import { expect, test, vi } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { StoreSavedMethod } from '#/api/generated/model'
+import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { SavedCardRow } from './saved-card-row'
 
 /**
@@ -64,6 +65,7 @@ function renderRow(method: StoreSavedMethod, onRemove: () => Promise<void> = noo
         onRemove={onRemove}
       />
     </RadioGroup>,
+    { wrapper: I18nTestProvider },
   )
 }
 

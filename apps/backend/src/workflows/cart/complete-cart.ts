@@ -12,6 +12,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n, type Msgid } from '@proteus/utils'
 import { notifyOnFailureStep } from '../notification/steps/notify-on-failure.js'
 import { missingInventoryItemMessage, prepareLineItemInventoryChecks } from './utils/variant-inventory.js'
 
@@ -41,23 +42,23 @@ const PROCESSABLE_STATUSES: PaymentSessionStatus[] = [
  * can be built on. None of them is the server being broken, which is what a 500 would claim — and
  * claiming it pages an operator every time a card bounces.
  */
-const REFUSAL_BY_STATUS: Record<UnauthorizedSessionStatus, { code: PaymentErrorCodes; message: string }> = {
+const REFUSAL_BY_STATUS: Record<UnauthorizedSessionStatus, { code: PaymentErrorCodes; message: Msgid }> = {
   error: {
     code: PaymentErrorCodes.DECLINED,
-    message: 'The payment was declined. Please try another payment method.',
+    message: i18n.t('The payment was declined. Please try another payment method.'),
   },
   pending: {
     code: PaymentErrorCodes.NOT_CONFIRMED,
-    message: 'The payment has not been confirmed yet.',
+    message: i18n.t('The payment has not been confirmed yet.'),
   },
   // biome-ignore lint/style/useNamingConvention: mirrors the PaymentSessionStatus union member
   requires_more: {
     code: PaymentErrorCodes.REQUIRES_ACTION,
-    message: 'The payment needs to be confirmed with your bank before the order can be placed.',
+    message: i18n.t('The payment needs to be confirmed with your bank before the order can be placed.'),
   },
   canceled: {
     code: PaymentErrorCodes.SESSION_CANCELED,
-    message: 'The payment was cancelled. Please start the payment again.',
+    message: i18n.t('The payment was cancelled. Please start the payment again.'),
   },
 }
 
@@ -85,7 +86,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (!cart.completedAt) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.CONFLICT,
-          message: `Cart "${input.cartId}" is already being completed`,
+          message: i18n.t('Cart "{cartId}" is already being completed'),
+          values: { cartId: input.cartId },
         })
       }
 
@@ -104,7 +106,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (lineItems.length === 0) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Cart "${input.cartId}" has no items`,
+          message: i18n.t('Cart "{cartId}" has no items'),
+          values: { cartId: input.cartId },
         })
       }
 
@@ -112,13 +115,15 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         if (!item.variantId) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.INVALID_DATA,
-            message: `Cart item "${item.id}" has no variant`,
+            message: i18n.t('Cart item "{itemId}" has no variant'),
+            values: { itemId: item.id },
           })
         }
         if (item.quantity <= 0) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.INVALID_DATA,
-            message: `Cart item "${item.id}" has invalid quantity: ${item.quantity}`,
+            message: i18n.t('Cart item "{itemId}" has invalid quantity: {quantity}'),
+            values: { itemId: item.id, quantity: item.quantity },
           })
         }
       }
@@ -134,7 +139,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (!cartPaymentLink) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Cart "${input.cartId}" has no payment collection`,
+          message: i18n.t('Cart "{cartId}" has no payment collection'),
+          values: { cartId: input.cartId },
         })
       }
 
@@ -149,7 +155,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (!newest) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Payment collection "${collection.id}" has no payment session — call POST /store/payment-collections/:id/payment-sessions first`,
+          message: i18n.t(
+            'Payment collection "{collectionId}" has no payment session — call POST /store/payment-collections/:id/payment-sessions first',
+          ),
+          values: { collectionId: collection.id },
         })
       }
 
@@ -158,7 +167,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (!newestProcessable) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Payment session "${newest.id}" is not processable (status: ${newest.status})`,
+          message: i18n.t('Payment session "{newestId}" is not processable (status: {status})'),
+          values: { newestId: newest.id, status: newest.status },
         })
       }
 
@@ -176,10 +186,16 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (!authorizable) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message:
-            `Payment session "${newestProcessable.id}" was opened for ${newestProcessable.amount} ` +
-            `${newestProcessable.currencyCode.toUpperCase()} but this cart is now ${collection.amount} ` +
-            `${collection.currencyCode.toUpperCase()} — reopen the payment session to pay what the cart now says`,
+          message: i18n.t(
+            'Payment session "{sessionId}" was opened for {sessionAmount} {sessionCurrency} but this cart is now {cartAmount} {cartCurrency} — reopen the payment session to pay what the cart now says',
+          ),
+          values: {
+            sessionId: newestProcessable.id,
+            sessionAmount: newestProcessable.amount,
+            sessionCurrency: newestProcessable.currencyCode.toUpperCase(),
+            cartAmount: collection.amount,
+            cartCurrency: collection.currencyCode.toUpperCase(),
+          },
         })
       }
 
@@ -201,7 +217,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (shippingMethods.length === 0) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Cart "${input.cartId}" has no shipping method — call POST /store/carts/:id/shipping-methods first`,
+          message: i18n.t('Cart "{cartId}" has no shipping method — call POST /store/carts/:id/shipping-methods first'),
+          values: { cartId: input.cartId },
         })
       }
 
@@ -212,7 +229,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
           if (!option.isEnabled) {
             throw new WorkflowTerminalError({
               type: ErrorTypes.INVALID_DATA,
-              message: `Shipping option "${sm.shippingOptionId}" is no longer available`,
+              message: i18n.t('Shipping option "{shippingOptionId}" is no longer available'),
+              values: { shippingOptionId: sm.shippingOptionId },
             })
           }
         }),
@@ -260,9 +278,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       // them wants that step to collect its failures instead of throwing on the first.
       throw new WorkflowTerminalError({
         type: ErrorTypes.INVALID_DATA,
-        message:
-          `This cart is priced for "${region.name}", which does not ship to "${countryCode}" — ` +
-          'switch back to that market, or take out what this one cannot sell so the cart can move here',
+        message: i18n.t(
+          'This cart is priced for "{regionName}", which does not ship to "{countryCode}" — switch back to that market, or take out what this one cannot sell so the cart can move here',
+        ),
+        values: { regionName: region.name, countryCode },
       })
     })
 
@@ -274,7 +293,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (cart.completedAt) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart "${input.cartId}" is already completed`,
+          message: i18n.t('Cart "{cartId}" is already completed'),
+          values: { cartId: input.cartId },
         })
       }
     })
@@ -289,7 +309,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       if (!cart.email) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Cart "${input.cartId}" has no email — an email is required to complete checkout`,
+          message: i18n.t('Cart "{cartId}" has no email — an email is required to complete checkout'),
+          values: { cartId: input.cartId },
         })
       }
       return cart.email
@@ -439,7 +460,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
 
         const missingInventoryItem = missingInventoryItemMessage(variants, mappings)
         if (missingInventoryItem) {
-          throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: missingInventoryItem })
+          throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, ...missingInventoryItem })
         }
 
         const inventoryItemIds = [...new Set(mappings.map((mapping) => mapping.inventoryItemId))]
@@ -457,7 +478,10 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
           if (!locationId) {
             throw new WorkflowTerminalError({
               type: ErrorTypes.INVALID_DATA,
-              message: `Variant "${item.variantId}" is tracked, but its inventory item "${item.inventoryItemId}" is stocked at no location`,
+              message: i18n.t(
+                'Variant "{variantId}" is tracked, but its inventory item "{inventoryItemId}" is stocked at no location',
+              ),
+              values: { variantId: item.variantId, inventoryItemId: item.inventoryItemId },
             })
           }
 
@@ -548,7 +572,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
           throw new WorkflowTerminalError({
             type: ErrorTypes.CONFLICT,
             code: PaymentErrorCodes.AWAITING_AUTHORIZATION,
-            message: `Payment for session "${paymentInfo.sessionId}" has not been authorized yet`,
+            message: i18n.t('Payment for session "{sessionId}" has not been authorized yet'),
+            values: { sessionId: paymentInfo.sessionId },
           })
         }
 

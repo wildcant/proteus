@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import type { DbProvider } from '../../core/db/ports.js'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import { buildEvent, type EventName, type EventPayloads } from '../../core/event-bus/events.js'
@@ -133,10 +134,9 @@ function requireQueueBinding(queue: EventQueueBinding | undefined): EventQueueBi
   if (!queue || typeof queue.sendBatch !== 'function') {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message:
-        '[event-bus] The "EVENTS" queue binding is missing. Declare it under `queues.producers` in ' +
-        "this Worker's wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that " +
-        'does not need one.',
+      message: i18n.t(
+        '[event-bus] The "EVENTS" queue binding is missing. Declare it under `queues.producers` in this Worker\'s wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that does not need one.',
+      ),
     })
   }
 
@@ -167,10 +167,10 @@ function assertSendable(messages: { body: QueuedEvent }[]): void {
     if (bytes > MAX_MESSAGE_BYTES) {
       throw new AppError({
         type: ErrorTypes.INVALID_ARGUMENT,
-        message:
-          `[event-bus] The payload for "${message.body.name}" is ${bytes} bytes for subscriber ` +
-          `"${message.body.subscriber}", over the ${MAX_MESSAGE_BYTES} byte queue message limit. ` +
-          'Publish an id and let the subscriber read the rest.',
+        message: i18n.t(
+          '[event-bus] The payload for "{name}" is {bytes} bytes for subscriber "{subscriber}", over the {maxBytes} byte queue message limit. Publish an id and let the subscriber read the rest.',
+        ),
+        values: { name: message.body.name, bytes, subscriber: message.body.subscriber, maxBytes: MAX_MESSAGE_BYTES },
       })
     }
   }
@@ -179,9 +179,16 @@ function assertSendable(messages: { body: QueuedEvent }[]): void {
     const name = messages[0]?.body.name
     throw new AppError({
       type: ErrorTypes.INVALID_ARGUMENT,
-      message:
-        `[event-bus] "${name}" fans out to ${messages.length} subscribers and ${total} bytes, over ` +
-        `the ${MAX_BATCH_MESSAGES} message / ${MAX_BATCH_BYTES} byte queue batch limit.`,
+      message: i18n.t(
+        '[event-bus] "{name}" fans out to {count} subscribers and {bytes} bytes, over the {maxMessages} message / {maxBytes} byte queue batch limit.',
+      ),
+      values: {
+        name,
+        count: messages.length,
+        bytes: total,
+        maxMessages: MAX_BATCH_MESSAGES,
+        maxBytes: MAX_BATCH_BYTES,
+      },
     })
   }
 }
@@ -245,7 +252,8 @@ async function dispatch(body: QueuedEvent, deps: { registry: SubscriberRegistry;
   if (!subscriber) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: `[event-bus] No subscriber named "${body.subscriber}" is registered for "${body.name}"`,
+      message: i18n.t('[event-bus] No subscriber named "{subscriber}" is registered for "{name}"'),
+      values: { subscriber: body.subscriber, name: body.name },
     })
   }
 

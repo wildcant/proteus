@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { ShoppingBagIcon } from '@proteus/icons'
 import { Button } from '#/components/button'
 import { useCart } from '#/features/cart/api/cart'
@@ -12,13 +13,14 @@ import { useModal } from '#/lib/modal-state'
  * the footer, but the bag itself is now a place to act, not a page to visit.
  */
 export function CartTrigger() {
+  const { t } = useLingui()
   const { cart } = useCart()
   const { setOpen } = useModal('cart')
 
   const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0
 
   return (
-    <Button variant="ghost" size="icon" aria-label="Cart" onClick={() => setOpen(true)}>
+    <Button variant="ghost" size="icon" aria-label={t`Cart`} onClick={() => setOpen(true)}>
       {/* The badge hangs off the *glyph's* corner, so it anchors to this wrapper rather than to
           the button. `size="icon"` is 32px around a 20px bag, and offsets measured from the
           button's own corner land six pixels inside the bag, burying it under the counter. */}

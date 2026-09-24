@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { PackageIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/button'
 
@@ -15,13 +16,17 @@ export function ProductEmpty({ q }: { q?: string }) {
       {q ? (
         <>
           {/* The header search panel's own phrasing, so the same miss reads the same either way. */}
-          <p className="mt-6 max-w-70 text-ink-muted text-sm">No products match &ldquo;{q}&rdquo;.</p>
+          <p className="mt-6 max-w-70 text-ink-muted text-sm">
+            <Trans>No products match &ldquo;{q}&rdquo;.</Trans>
+          </p>
           <ButtonLink to="/" className="mt-8">
-            Clear search
+            <Trans>Clear search</Trans>
           </ButtonLink>
         </>
       ) : (
-        <p className="mt-6 max-w-70 text-ink-muted text-sm">No products yet.</p>
+        <p className="mt-6 max-w-70 text-ink-muted text-sm">
+          <Trans>No products yet.</Trans>
+        </p>
       )}
     </div>
   )
