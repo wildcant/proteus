@@ -20,6 +20,8 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { plural } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Checkbox,
   CommandBar,
@@ -46,6 +48,7 @@ type ProductMediaGridProps = {
 
 /** Reorderable image grid with a selection command bar for deleting and picking the thumbnail. */
 export function ProductMediaGrid({ media, onChange }: ProductMediaGridProps) {
+  const { t } = useLingui()
   const [selection, setSelection] = useState<Record<string, boolean>>({})
   const [draggingKey, setDraggingKey] = useState<UniqueIdentifier | null>(null)
 
@@ -55,6 +58,7 @@ export function ProductMediaGrid({ media, onChange }: ProductMediaGridProps) {
   )
 
   const selectedKeys = Object.keys(selection)
+  const selectedCount = selectedKeys.length
   const draggingMedia = media.find((item) => item.key === draggingKey)
 
   const toggleSelected = (key: string) => {
@@ -91,7 +95,9 @@ export function ProductMediaGrid({ media, onChange }: ProductMediaGridProps) {
     return (
       <div className="flex size-full flex-col items-center justify-center gap-y-2 p-6">
         <ImageIcon className="size-6 text-muted-foreground" />
-        <p className="text-muted-foreground text-sm">Uploaded media will appear here.</p>
+        <p className="text-muted-foreground text-sm">
+          <Trans>Uploaded media will appear here.</Trans>
+        </p>
       </div>
     )
   }
@@ -120,15 +126,15 @@ export function ProductMediaGrid({ media, onChange }: ProductMediaGridProps) {
         </DragOverlay>
       </div>
       <CommandBar open={selectedKeys.length > 0}>
-        <CommandBarValue>{selectedKeys.length} selected</CommandBarValue>
+        <CommandBarValue>{t`${plural(selectedCount, { one: '# selected', other: '# selected' })}`}</CommandBarValue>
         <CommandBarSeparator />
         {selectedKeys.length === 1 && (
           <>
-            <CommandBarCommand action={handleMakeThumbnail} label="Make thumbnail" shortcut="t" />
+            <CommandBarCommand action={handleMakeThumbnail} label={t`Make thumbnail`} shortcut="t" />
             <CommandBarSeparator />
           </>
         )}
-        <CommandBarCommand action={handleDelete} label="Delete" shortcut="d" />
+        <CommandBarCommand action={handleDelete} label={t`Delete`} shortcut="d" />
       </CommandBar>
     </DndContext>
   )
@@ -172,6 +178,8 @@ type MediaTileProps = MediaItemProps & {
 }
 
 function MediaItem({ ref, style, media, checked, onCheckedChange, activator }: MediaTileProps) {
+  const { t } = useLingui()
+
   return (
     <div
       ref={ref}
@@ -190,9 +198,13 @@ function MediaItem({ ref, style, media, checked, onCheckedChange, activator }: M
             }
           >
             <StarIcon className="size-3.5 fill-current" />
-            <span className="sr-only">Thumbnail</span>
+            <span className="sr-only">
+              <Trans>Thumbnail</Trans>
+            </span>
           </TooltipTrigger>
-          <TooltipContent>Thumbnail</TooltipContent>
+          <TooltipContent>
+            <Trans>Thumbnail</Trans>
+          </TooltipContent>
         </Tooltip>
       )}
       <img src={media.url} alt="" className="size-full object-cover object-center" />
@@ -206,7 +218,7 @@ function MediaItem({ ref, style, media, checked, onCheckedChange, activator }: M
         <Checkbox
           checked={checked}
           onCheckedChange={onCheckedChange}
-          aria-label="Select image"
+          aria-label={t`Select image`}
           className="bg-background"
         />
       </div>

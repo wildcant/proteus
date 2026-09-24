@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { AdminOrderListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
@@ -12,11 +13,12 @@ export const Route = createFileRoute('/_authed/_shell/orders/')({
 })
 
 function OrdersPage() {
+  const { t } = useLingui()
   const orders = useOrderTable()
 
   return (
     <PageLayout.SingleColumn>
-      <DataTable use={orders} className="flex-1" heading="Orders" />
+      <DataTable use={orders} className="flex-1" heading={t`Orders`} />
     </PageLayout.SingleColumn>
   )
 }

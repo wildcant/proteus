@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Popover, PopoverContent, PopoverTrigger } from '@proteus/ui'
 import { XIcon } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -54,6 +55,7 @@ const isEmptyValue = (value: FilterValue | null) =>
   value === null || value === '' || (Array.isArray(value) && value.length === 0)
 
 export function FilterPill({ def, value, isNew = false, onChange, onRemove }: FilterPillProps) {
+  const { i18n } = useLingui()
   const [open, setOpen] = useState(isNew)
   const hasValue = !isEmptyValue(value)
 
@@ -74,15 +76,17 @@ export function FilterPill({ def, value, isNew = false, onChange, onRemove }: Fi
         <span className="px-2 py-1 text-muted-foreground">{def.label}</span>
         {!!hasValue && (
           <>
-            <span className="border-border border-x px-2 py-1 text-muted-foreground">is</span>
+            <span className="border-border border-x px-2 py-1 text-muted-foreground">
+              <Trans>is</Trans>
+            </span>
             <PopoverTrigger className="cursor-pointer border-border border-r px-2 py-1 font-medium transition-colors hover:bg-muted">
-              {formatDisplayValue(value, def)}
+              {formatDisplayValue(value, def, i18n)}
             </PopoverTrigger>
           </>
         )}
         {!hasValue && (
           <PopoverTrigger className="cursor-pointer px-2 py-1 text-muted-foreground transition-colors hover:bg-muted">
-            select...
+            <Trans>select...</Trans>
           </PopoverTrigger>
         )}
         {!!hasValue && (

@@ -2,6 +2,7 @@ import qs from 'qs'
 import { env } from '#/env'
 import { clearToken, getToken } from '#/lib/auth-token'
 import { ForbiddenError } from '#/lib/errors'
+import { activeLocale } from '#/lib/i18n/locale'
 
 export const fetcher = async <T>({
   url,
@@ -25,9 +26,9 @@ export const fetcher = async <T>({
   }
 
   const token = getToken()
-  // The admin is English until admin translations land, so it names that Locale rather than
-  // letting the backend fall back to the default market's language.
-  const baseHeaders: Record<string, string> = { 'x-proteus-locale': 'en-US' }
+  // The staff member's own Locale, so API Messages and validation messages come back in the language
+  // the admin renders in rather than the default market's.
+  const baseHeaders: Record<string, string> = { 'x-proteus-locale': activeLocale() }
   if (token) {
     baseHeaders.Authorization = `Bearer ${token}`
   }

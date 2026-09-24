@@ -1,5 +1,7 @@
-import { Field, FieldError, FieldLabel, Input } from '@proteus/ui'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { Field, FieldLabel, Input } from '@proteus/ui'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { MultiSelectCombobox } from '#/components/multi-select-combobox'
 import { useSelectableCountries } from '#/features/regions/api/countries'
 import { addCountriesFormOpts } from '#/features/regions/hooks/use-add-countries-form'
@@ -22,6 +24,7 @@ import { withForm } from '#/lib/form-hook.ts'
 export const CountryLocaleSelect = withForm({
   ...addCountriesFormOpts,
   render: function CountryLocaleSelect({ form }) {
+    const { t } = useLingui()
     const { data, isPending } = useSelectableCountries()
     const available = selectableCountries(data?.countries ?? [])
 
@@ -39,25 +42,33 @@ export const CountryLocaleSelect = withForm({
           return (
             <div className="flex flex-col gap-y-6">
               <Field data-invalid={isInvalid}>
-                <h2 className="font-medium text-sm">Countries</h2>
-                <p className="mb-3 text-muted-foreground text-sm">Add the countries included in this region.</p>
+                <h2 className="font-medium text-sm">
+                  <Trans>Countries</Trans>
+                </h2>
+                <p className="mb-3 text-muted-foreground text-sm">
+                  <Trans>Add the countries included in this region.</Trans>
+                </p>
                 <MultiSelectCombobox
                   items={items}
                   value={field.state.value.map((country) => country.id)}
                   onValueChange={(ids) => field.handleChange(reconcileAssignments(field.state.value, ids))}
-                  placeholder="Search countries..."
-                  emptyMessage={isPending ? 'Loading countries…' : 'No countries left to add.'}
+                  placeholder={t`Search countries...`}
+                  emptyMessage={isPending ? t`Loading countries…` : t`No countries left to add.`}
                 />
-                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                {isInvalid && <TranslatedFieldError errors={field.state.meta.errors} />}
               </Field>
 
               {field.state.value.length > 0 && (
                 <div className="flex flex-col gap-y-4">
                   <div>
-                    <h2 className="font-medium text-sm">Locales</h2>
+                    <h2 className="font-medium text-sm">
+                      <Trans>Locales</Trans>
+                    </h2>
                     <p className="text-muted-foreground text-sm">
-                      Each country's locale is its storefront's URL segment, and the tag its prices and dates are
-                      formatted with. The suggestion is the most common one — change it where it is wrong.
+                      <Trans>
+                        Each country's locale is its storefront's URL segment, and the tag its prices and dates are
+                        formatted with. The suggestion is the most common one — change it where it is wrong.
+                      </Trans>
                     </p>
                   </div>
                   {field.state.value.map((assignment, index) => (
@@ -86,10 +97,11 @@ type CountryLocaleInputProps = {
   label: string
   localeCode: string
   onLocaleChange: (localeCode: string) => void
-  errors?: Array<{ message?: string } | undefined>
+  errors?: readonly unknown[]
 }
 
 function CountryLocaleInput({ label, localeCode, onLocaleChange, errors }: CountryLocaleInputProps) {
+  const { t } = useLingui()
   const id = useId()
   const isInvalid = !!errors?.length
 
@@ -100,10 +112,10 @@ function CountryLocaleInput({ label, localeCode, onLocaleChange, errors }: Count
         id={id}
         value={localeCode}
         onChange={(event) => onLocaleChange(event.target.value)}
-        placeholder="e.g. es-CO"
+        placeholder={t`e.g. es-CO`}
         aria-invalid={isInvalid}
       />
-      {isInvalid && <FieldError errors={errors} />}
+      {isInvalid && <TranslatedFieldError errors={errors} />}
     </Field>
   )
 }

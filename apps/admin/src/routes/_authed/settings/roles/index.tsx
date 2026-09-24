@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
 import { PageLayout } from '#/components/layout/page-layout'
@@ -10,6 +11,7 @@ export const Route = createFileRoute('/_authed/settings/roles/')({
 })
 
 function RolesPage() {
+  const { t } = useLingui()
   const roles = useRoleTable()
 
   return (
@@ -17,9 +19,9 @@ function RolesPage() {
       <DataTable
         use={roles}
         className="flex-1"
-        heading="Roles"
-        description="Roles define what actions users can perform. Assign permissions to control access across your store."
-        actions={[{ label: 'Create', to: 'create' }]}
+        heading={t`Roles`}
+        description={t`Roles define what actions users can perform. Assign permissions to control access across your store.`}
+        actions={[{ label: t`Create`, to: 'create' }]}
       />
     </PageLayout.SingleColumn>
   )

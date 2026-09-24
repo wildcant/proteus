@@ -1,5 +1,6 @@
-import { cn, Field, FieldDescription, FieldError, FieldLabel } from '@proteus/ui'
+import { cn, Field, FieldDescription, FieldLabel } from '@proteus/ui'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { SingleSelectCombobox } from '#/components/single-select-combobox'
 import { useFieldContext } from '#/lib/form-context.ts'
 
@@ -60,7 +61,7 @@ export function SingleComboboxField<TItem extends ComboboxOption>({
         emptyMessage={emptyMessage}
         aria-invalid={isInvalid}
       />
-      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <TranslatedFieldError errors={field.state.meta.errors} />}
       {!!description && <FieldDescription>{description}</FieldDescription>}
     </Field>
   )

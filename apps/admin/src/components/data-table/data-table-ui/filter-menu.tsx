@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
 import type { FilterDef } from '../types'
 
@@ -14,7 +15,9 @@ export function FilterMenu({ filterDefs, activeFilterIds, onAdd, isPending }: Fi
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>Add filter</DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
+        <Trans>Add filter</Trans>
+      </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         {available.map((def) => (
           <DropdownMenuItem key={def.id} onClick={() => onAdd(def.id)}>

@@ -67,7 +67,7 @@ export type AdminUpdateRegionBody = z.infer<typeof AdminUpdateRegion>
  * further. It is also the one function every runtime this schema loads in already ships, so the
  * form refuses the typo in the browser with the field named, and the route refuses it again.
  */
-const localeCode = machineCode
+export const localeCode = machineCode
   .trim()
   .min(1, i18n.t('A locale is required.'))
   .refine((tag) => {

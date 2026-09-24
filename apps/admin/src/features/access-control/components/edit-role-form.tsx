@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, KeyboundForm, Separator } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import type { AdminRoleDetailResponseRole } from '#/api/generated/model'
@@ -6,6 +7,7 @@ import { PermissionGrid } from '#/features/access-control/components/permission-
 import { useEditRoleForm } from '#/features/access-control/hooks/use-edit-role-form'
 
 export function EditRoleForm({ role }: { role: AdminRoleDetailResponseRole }) {
+  const { t } = useLingui()
   const navigate = useNavigate()
   const isImmutable = role.isSuperAdmin
   const isNameDisabled = role.isSuperAdmin || role.protected
@@ -22,17 +24,29 @@ export function EditRoleForm({ role }: { role: AdminRoleDetailResponseRole }) {
             <CardHeader>
               <CardTitle className="flex items-center gap-x-2">
                 {role.name}
-                {!!role.isSuperAdmin && <Badge variant="outline">Super Admin</Badge>}
-                {!!role.protected && !role.isSuperAdmin && <Badge variant="outline">Protected</Badge>}
+                {!!role.isSuperAdmin && (
+                  <Badge variant="outline">
+                    <Trans>Super Admin</Trans>
+                  </Badge>
+                )}
+                {!!role.protected && !role.isSuperAdmin && (
+                  <Badge variant="outline">
+                    <Trans>Protected</Trans>
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-y-4">
               <form.AppField name="name">
-                {(field) => <field.TextField label="Name" disabled={isNameDisabled} />}
+                {(field) => <field.TextField label={t`Name`} disabled={isNameDisabled} />}
               </form.AppField>
               <form.AppField name="description">
                 {(field) => (
-                  <field.TextareaField label="Description" placeholder="Optional description" disabled={isImmutable} />
+                  <field.TextareaField
+                    label={t`Description`}
+                    placeholder={t`Optional description`}
+                    disabled={isImmutable}
+                  />
                 )}
               </form.AppField>
             </CardContent>
@@ -43,7 +57,9 @@ export function EditRoleForm({ role }: { role: AdminRoleDetailResponseRole }) {
               <Separator />
               <Card>
                 <CardHeader>
-                  <CardTitle>Permissions</CardTitle>
+                  <CardTitle>
+                    <Trans>Permissions</Trans>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form.Field name="features">
@@ -56,9 +72,13 @@ export function EditRoleForm({ role }: { role: AdminRoleDetailResponseRole }) {
 
           <div className="flex justify-end gap-x-2">
             <Button variant="secondary" size="sm" onClick={() => navigate({ to: '/settings/roles' })}>
-              {isImmutable ? 'Back' : 'Cancel'}
+              {isImmutable ? t`Back` : t`Cancel`}
             </Button>
-            {!isImmutable && <form.SubmitButton size="sm">Save</form.SubmitButton>}
+            {!isImmutable && (
+              <form.SubmitButton size="sm">
+                <Trans>Save</Trans>
+              </form.SubmitButton>
+            )}
           </div>
         </form.AppForm>
       </KeyboundForm>

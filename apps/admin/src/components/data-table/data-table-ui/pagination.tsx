@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '@proteus/ui'
 import { PaginationSkeleton } from './skeleton'
 
@@ -26,14 +27,16 @@ export function Pagination({
   limit,
   count,
 }: PaginationProps) {
+  const { t } = useLingui()
   if (isPending) return <PaginationSkeleton />
 
   const rangeStart = offset + 1
   const rangeEnd = count != null ? Math.min(offset + limit, count) : offset + limit
   const resultInfo =
-    count != null ? `${rangeStart} \u2014 ${rangeEnd} of ${count} results` : `${rangeStart} \u2014 ${rangeEnd}`
+    count != null ? t`${rangeStart} \u2014 ${rangeEnd} of ${count} results` : `${rangeStart} \u2014 ${rangeEnd}`
 
-  const pageInfo = totalPages != null ? `${currentPage + 1} of ${totalPages} pages` : `${currentPage + 1}`
+  const page = currentPage + 1
+  const pageInfo = totalPages != null ? t`${page} of ${totalPages} pages` : `${page}`
 
   return (
     <div className="flex items-center justify-between border-t px-6 py-3">
@@ -41,10 +44,10 @@ export function Pagination({
       <div className="flex items-center gap-x-2">
         <span className="text-muted-foreground text-sm">{pageInfo}</span>
         <Button variant="outline" size="sm" disabled={!canPrev} onClick={goPrev}>
-          Prev
+          <Trans>Prev</Trans>
         </Button>
         <Button variant="outline" size="sm" disabled={!canNext} onClick={goNext}>
-          Next
+          <Trans>Next</Trans>
         </Button>
       </div>
     </div>

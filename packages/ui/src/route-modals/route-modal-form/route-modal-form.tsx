@@ -13,9 +13,25 @@ import {
   AlertDialogTitle,
 } from '#/components/ui/alert-dialog.tsx'
 
+/** The unsaved-changes prompt's copy. English by default; a translated app passes its own. */
+export type UnsavedChangesCopy = {
+  title: string
+  description: string
+  cancel: string
+  confirm: string
+}
+
+const ENGLISH_UNSAVED_CHANGES: UnsavedChangesCopy = {
+  title: 'You have unsaved changes',
+  description: 'Are you sure you want to leave? Your unsaved changes will be lost.',
+  cancel: 'Cancel',
+  confirm: 'Continue',
+}
+
 type RouteModalFormProps = PropsWithChildren<{
   form: AnyFormApi
   blockSearchParams?: boolean
+  copy?: UnsavedChangesCopy
 }>
 
 /**
@@ -32,7 +48,12 @@ type RouteModalFormProps = PropsWithChildren<{
  *
  * Used as `RouteFocusModal.Form` / `RouteDrawer.Form` in the compound API.
  */
-export const RouteModalForm = ({ form, blockSearchParams: blockSearch = false, children }: RouteModalFormProps) => {
+export const RouteModalForm = ({
+  form,
+  blockSearchParams: blockSearch = false,
+  copy = ENGLISH_UNSAVED_CHANGES,
+  children,
+}: RouteModalFormProps) => {
   const isDirty = useSelector(form.store, (s) => s.isDirty)
 
   const blocker = useBlocker({
@@ -63,14 +84,12 @@ export const RouteModalForm = ({ form, blockSearchParams: blockSearch = false, c
         <AlertDialog open>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>You have unsaved changes</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to leave? Your unsaved changes will be lost.
-              </AlertDialogDescription>
+              <AlertDialogTitle>{copy.title}</AlertDialogTitle>
+              <AlertDialogDescription>{copy.description}</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => blocker.reset()}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => blocker.proceed()}>Continue</AlertDialogAction>
+              <AlertDialogCancel onClick={() => blocker.reset()}>{copy.cancel}</AlertDialogCancel>
+              <AlertDialogAction onClick={() => blocker.proceed()}>{copy.confirm}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

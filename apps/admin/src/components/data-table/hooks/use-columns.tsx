@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Checkbox } from '@proteus/ui'
 import type { ColumnDef as TanStackColumnDef } from '@tanstack/react-table'
 import { type ReactNode, useMemo } from 'react'
@@ -12,6 +13,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 export function useColumns<T>(columns: ColumnDef<T>[], rowActions?: (row: T) => ReactNode, selectable = false) {
+  const { t } = useLingui()
   return useMemo<TanStackColumnDef<T>[]>(() => {
     const cols: TanStackColumnDef<T>[] = columns.map(({ accessorKey, ...col }) => ({
       id: col.id,
@@ -51,14 +53,14 @@ export function useColumns<T>(columns: ColumnDef<T>[], rowActions?: (row: T) => 
             checked={table.getIsAllPageRowsSelected()}
             indeterminate={table.getIsSomePageRowsSelected()}
             onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
-            aria-label="Select all rows on this page"
+            aria-label={t`Select all rows on this page`}
           />
         ),
         cell: (info) => (
           <Checkbox
             checked={info.row.getIsSelected()}
             onCheckedChange={(checked) => info.row.toggleSelected(checked)}
-            aria-label="Select row"
+            aria-label={t`Select row`}
           />
         ),
       })
@@ -78,5 +80,5 @@ export function useColumns<T>(columns: ColumnDef<T>[], rowActions?: (row: T) => 
     }
 
     return cols
-  }, [columns, rowActions, selectable])
+  }, [columns, rowActions, selectable, t])
 }

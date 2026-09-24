@@ -1,5 +1,6 @@
-import { cn, Field, FieldError, FieldLabel, Input } from '@proteus/ui'
+import { cn, Field, FieldLabel, Input } from '@proteus/ui'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { useFieldContext } from '#/lib/form-context.ts'
 
 type TextFieldProps = Pick<
@@ -30,7 +31,7 @@ export function TextField({ label, className, hideLabel, placeholder, ...inputPr
         placeholder={hideLabel ? label : placeholder}
         {...inputProps}
       />
-      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <TranslatedFieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

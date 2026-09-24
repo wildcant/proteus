@@ -47,6 +47,8 @@ export const requestPasswordResetWorkflow = createWorkflow<RequestPasswordResetI
     await ctx.step('send-reset-email', async ({ container }) => {
       const notificationService = container.resolve(Modules.NOTIFICATION)
       const resetLink = `${env.STORE_URL}/reset-password?token=${resetToken}`
+      // TODO(i18n): the email goes out in English whatever the recipient's `user.locale`. Localize it
+      // in a follow-up; the admin language picker does not change emails.
       await notificationService.createNotification({
         to: input.email,
         channel: 'email',

@@ -1,9 +1,11 @@
-import { Field, FieldDescription, FieldError, FieldLabel } from '@proteus/ui'
+import { useLingui } from '@lingui/react/macro'
+import { Field, FieldDescription, FieldLabel } from '@proteus/ui'
 import { useId } from 'react'
 import type { AcceptedFormat } from '#/components/common/file-upload/constants'
 import { DEFAULT_MAX_FILE_SIZE } from '#/components/common/file-upload/constants'
 import type { FileType, RejectedFile } from '#/components/common/file-upload/file-upload'
 import { FileUpload } from '#/components/common/file-upload/file-upload'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { useFieldContext } from '#/lib/form-context.ts'
 import { formatFileSize } from '#/lib/format-file-size.ts'
 
@@ -28,6 +30,7 @@ export function FileUploadField<TValue>({
   toValue,
 }: FileUploadFieldProps<TValue>) {
   const field = useFieldContext<TValue[]>()
+  const { t, i18n } = useLingui()
   const id = useId()
 
   // Unlike the text fields, rejections are set imperatively on drop rather than by a
@@ -38,7 +41,8 @@ export function FileUploadField<TValue>({
     const invalidFile = files.find((f) => !formats.some((format) => format.mimeType === f.file.type))
     if (invalidFile) {
       const extensions = formats.map((format) => format.extension).join(', ')
-      return `'${invalidFile.file.name}' is not a supported file type. Supported file types are: ${extensions}.`
+      const fileName = `'${invalidFile.file.name}'`
+      return t`${fileName} is not a supported file type. Supported file types are: ${extensions}.`
     }
 
     const oversizedFiles = rejectedFiles.filter((f) => f.reason === 'size')
@@ -50,8 +54,10 @@ export function FileUploadField<TValue>({
       .slice(0, 5)
       .map((f) => f.file.name)
       .join('\n')
+    const fileList = `\n${names}`
 
-    return `One or more files exceed the maximum file size of ${formatFileSize(maxFileSize)}:\n${names}`
+    const maxSize = formatFileSize(maxFileSize, i18n)
+    return t`One or more files exceed the maximum file size of ${maxSize}:${fileList}`
   }
 
   const handleUploaded = (files: FileType[], rejectedFiles: RejectedFile[]) => {
@@ -83,7 +89,7 @@ export function FileUploadField<TValue>({
         maxFileSize={maxFileSize}
         onUploaded={handleUploaded}
       />
-      {!!isInvalid && <FieldError className="whitespace-pre-line" errors={field.state.meta.errors} />}
+      {!!isInvalid && <TranslatedFieldError className="whitespace-pre-line" errors={field.state.meta.errors} />}
     </Field>
   )
 }

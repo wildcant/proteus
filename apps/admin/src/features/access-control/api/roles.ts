@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -31,6 +32,7 @@ export const useRoles = () => useQuery(rolesListQueryOptions())
 export const useSuspenseRole = (id: string) => useSuspenseQuery(roleQueryOptions(id))
 
 export const useCreateRole = (options?: UseMutationOptions<AdminRoleResponse, Error, AdminCreateRole>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -41,7 +43,7 @@ export const useCreateRole = (options?: UseMutationOptions<AdminRoleResponse, Er
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create role', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to create role`, description: error.message })
       onError?.(...args)
     },
   })
@@ -51,6 +53,7 @@ export const useUpdateRole = (
   id: string,
   options?: UseMutationOptions<AdminRoleDetailResponse, Error, AdminUpdateRole>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -62,13 +65,14 @@ export const useUpdateRole = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update role', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update role`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useDeleteRole = (options?: UseMutationOptions<DeleteResponse, Error, string>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -79,7 +83,7 @@ export const useDeleteRole = (options?: UseMutationOptions<DeleteResponse, Error
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to delete role', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to delete role`, description: error.message })
       onError?.(...args)
     },
   })

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Badge, Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
 import { getCurrencyName } from '@proteus/utils'
 import { createFileRoute } from '@tanstack/react-router'
@@ -9,6 +10,7 @@ import { PageLayout } from '#/components/layout/page-layout'
 import { useSuspenseRegion } from '#/features/regions/api/regions'
 import { RegionCountriesCard } from '#/features/regions/components/region-countries-card'
 import { paymentProviderLabel } from '#/features/regions/utils/payment-provider-label'
+import { activeLocale } from '#/lib/i18n/locale'
 
 export const Route = createFileRoute('/_authed/settings/regions/$id/_detail')({
   pendingComponent: () => <SingleColumnPageSkeleton sections={1} />,
@@ -16,6 +18,7 @@ export const Route = createFileRoute('/_authed/settings/regions/$id/_detail')({
 })
 
 function RegionDetailLayout() {
+  const { t } = useLingui()
   const { id } = Route.useParams()
   const { data } = useSuspenseRegion(id)
   const { region } = data
@@ -27,20 +30,20 @@ function RegionDetailLayout() {
           <CardTitle>{region.name}</CardTitle>
           <CardAction className="flex items-center gap-x-3">
             {/* Edit only. A region owns live carts, orders and prices, so there is no Delete. */}
-            <ActionMenu groups={[{ actions: [{ label: 'Edit', to: './edit', icon: <PencilIcon /> }] }]} />
+            <ActionMenu groups={[{ actions: [{ label: t`Edit`, to: './edit', icon: <PencilIcon /> }] }]} />
           </CardAction>
         </CardHeader>
         <SectionRow
-          title="Currency"
+          title={t`Currency`}
           value={
             <span className="flex items-center gap-x-2">
               <Badge>{region.currencyCode.toUpperCase()}</Badge>
-              {getCurrencyName(region.currencyCode)}
+              {getCurrencyName(region.currencyCode, activeLocale())}
             </span>
           }
         />
         <SectionRow
-          title="Payment Providers"
+          title={t`Payment Providers`}
           value={
             region.paymentProviders.length > 0
               ? region.paymentProviders.map((provider) => (

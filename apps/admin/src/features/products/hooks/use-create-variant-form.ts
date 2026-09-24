@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { AdminCreateProductVariant } from '@proteus/http-schemas/admin'
 import { z } from 'zod'
 import type { AdminCreateProductVariantResponse } from '#/api/generated/model'
@@ -19,7 +20,7 @@ const createVariantSchema = AdminCreateProductVariant.pick({ sku: true }).extend
   combination: z
     .custom<CombinationOption>()
     .nullable()
-    .refine((combination) => combination !== null, { message: 'Pick a combination.' }),
+    .refine((combination) => combination !== null, { message: msg`Pick a combination.`.id }),
 })
 
 type UseCreateVariantFormArgs = {

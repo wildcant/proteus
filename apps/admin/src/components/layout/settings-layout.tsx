@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,6 +22,7 @@ import {
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { ArrowLeftIcon, ChevronDownIcon } from 'lucide-react'
 import { Breadcrumbs } from './breadcrumbs'
+import { useSidebarLabel } from './use-sidebar-label'
 
 type SettingsNavItem = {
   label: string
@@ -55,9 +57,10 @@ export function SettingsLayout({ groups }: SettingsLayoutProps) {
 }
 
 function Topbar() {
+  const { t } = useLingui()
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-      <SidebarTrigger className="-ml-1" />
+      <SidebarTrigger className="-ml-1" label={t`Toggle Sidebar`} />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumbs />
     </header>
@@ -66,6 +69,7 @@ function Topbar() {
 
 function SettingsSidebar({ groups }: { groups: SettingsNavGroup[] }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const sidebarLabel = useSidebarLabel()
 
   return (
     <Sidebar>
@@ -74,7 +78,9 @@ function SettingsSidebar({ groups }: { groups: SettingsNavGroup[] }) {
           <SidebarMenuItem>
             <SidebarMenuButton render={<Link to="/" />}>
               <ArrowLeftIcon />
-              <span>Settings</span>
+              <span>
+                <Trans>Settings</Trans>
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -92,7 +98,7 @@ function SettingsSidebar({ groups }: { groups: SettingsNavGroup[] }) {
                   className="group/collapsible flex w-full items-center"
                   render={<SidebarGroupLabel render={<button type="button" />} />}
                 >
-                  {group.label}
+                  {sidebarLabel(group.label)}
                   <ChevronDownIcon className="ml-auto transition-transform group-data-panel-open/collapsible:rotate-180" />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -103,7 +109,7 @@ function SettingsSidebar({ groups }: { groups: SettingsNavGroup[] }) {
                         return (
                           <SidebarMenuItem key={item.to}>
                             <SidebarMenuButton isActive={isActive} render={<Link to={item.to} />}>
-                              <span>{item.label}</span>
+                              <span>{sidebarLabel(item.label)}</span>
                             </SidebarMenuButton>
                           </SidebarMenuItem>
                         )

@@ -23,6 +23,7 @@ export function generateUserDTO(overrides?: Partial<UserDTO>): UserDTO {
     id: `usr_${faker.string.alphanumeric(32)}`,
     email: faker.internet.email(),
     name: faker.person.fullName(),
+    locale: 'en-US',
     createdAt: faker.date.recent(),
     updatedAt: faker.date.recent(),
     deletedAt: null,

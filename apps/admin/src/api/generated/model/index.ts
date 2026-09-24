@@ -210,6 +210,7 @@ export * from './adminUpdateCustomer.ts';
 export * from './adminUpdateCustomerResponse.ts';
 export * from './adminUpdateFulfillmentSet.ts';
 export * from './adminUpdateFulfillmentSetResponse.ts';
+export * from './adminUpdateMe.ts';
 export * from './adminUpdateProduct.ts';
 export * from './adminUpdateProductImagesItem.ts';
 export * from './adminUpdateProductOption.ts';

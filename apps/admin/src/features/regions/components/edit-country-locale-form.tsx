@@ -1,6 +1,8 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteDrawer, useRouteModal } from '@proteus/ui'
 import type { AdminCountry } from '#/api/generated/model'
 import { useEditCountryLocaleForm } from '#/features/regions/hooks/use-edit-country-locale-form'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 type EditCountryLocaleFormProps = {
   regionId: string
@@ -16,32 +18,44 @@ type EditCountryLocaleFormProps = {
  * rewrites the links already pointing at them.
  */
 export function EditCountryLocaleForm({ regionId, country }: EditCountryLocaleFormProps) {
+  const { t } = useLingui()
+  const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
+
+  const countryName = country.displayName
 
   const { form } = useEditCountryLocaleForm(regionId, country, {
     onSuccess: () => handleSuccess(),
   })
 
   return (
-    <RouteDrawer.Form form={form}>
+    <RouteDrawer.Form form={form} copy={unsavedChanges}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
         <form.AppForm>
-          <RouteDrawer.Header>
-            <RouteDrawer.Title>Edit Locale</RouteDrawer.Title>
+          <RouteDrawer.Header closeLabel={closeLabel}>
+            <RouteDrawer.Title>
+              <Trans>Edit Locale</Trans>
+            </RouteDrawer.Title>
             <RouteDrawer.Description>{country.displayName}</RouteDrawer.Description>
           </RouteDrawer.Header>
           <RouteDrawer.Body className="flex flex-col gap-y-6">
             <form.AppField name="localeCode">
-              {(field) => <field.TextField label="Locale" autoFocus placeholder="e.g. es-CO" />}
+              {(field) => <field.TextField label={t`Locale`} autoFocus placeholder={t`e.g. es-CO`} />}
             </form.AppField>
             <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-muted-foreground text-sm">
-              This changes the live storefront URLs for {country.displayName}. Links to the current ones stop resolving
-              — nothing redirects them.
+              <Trans>
+                This changes the live storefront URLs for {countryName}. Links to the current ones stop resolving —
+                nothing redirects them.
+              </Trans>
             </p>
           </RouteDrawer.Body>
           <RouteDrawer.Footer>
-            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-            <form.SubmitButton size="sm">Save</form.SubmitButton>
+            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>
+              <Trans>Cancel</Trans>
+            </RouteDrawer.Close>
+            <form.SubmitButton size="sm">
+              <Trans>Save</Trans>
+            </form.SubmitButton>
           </RouteDrawer.Footer>
         </form.AppForm>
       </KeyboundForm>

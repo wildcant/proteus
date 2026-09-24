@@ -1,3 +1,5 @@
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import type { DataGridColumn } from '#/components/data-grid/types'
 
 /**
@@ -10,8 +12,9 @@ import type { DataGridColumn } from '#/components/data-grid/types'
 export type CurrencyAmounts = Record<string, string>
 
 /** `Price USD`, `Price COP` — the currency named in the header, since the cell shows only a symbol. */
-function priceColumnHeader(currencyCode: string): string {
-  return `Price ${currencyCode.toUpperCase()}`
+function priceColumnHeader(currencyCode: string, i18n: I18n): string {
+  const code = currencyCode.toUpperCase()
+  return i18n._(msg`Price ${code}`)
 }
 
 /**
@@ -20,9 +23,9 @@ function priceColumnHeader(currencyCode: string): string {
  * Built from the currency list rather than written out, which is what lets a merchant price a
  * variant in every market the store sells to instead of only the one the form was written for.
  */
-export function buildPriceColumns(currencyCodes: string[]): DataGridColumn<CurrencyAmounts>[] {
+export function buildPriceColumns(currencyCodes: string[], i18n: I18n): DataGridColumn<CurrencyAmounts>[] {
   return currencyCodes.map((currencyCode) => ({
-    header: priceColumnHeader(currencyCode),
+    header: priceColumnHeader(currencyCode, i18n),
     accessorKey: currencyCode,
     type: 'currency',
     currencyCode,

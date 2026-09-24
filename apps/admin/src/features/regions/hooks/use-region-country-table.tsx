@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminCountry } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useCountries } from '#/features/regions/api/countries'
@@ -15,8 +16,10 @@ export const useRegionCountryTable = (
   regionId: string,
   selectedCodes: string[],
   onSelectedCodesChange: (codes: string[]) => void,
-) =>
-  useDefineTable<AdminCountry>({
+) => {
+  const { t } = useLingui()
+
+  return useDefineTable<AdminCountry>({
     useData: (params) => {
       const { data, isPending, isFetching } = useCountries({ ...params, regionId })
       return {
@@ -28,12 +31,12 @@ export const useRegionCountryTable = (
     },
 
     columns: (col) => [
-      col.accessor('displayName', { header: 'Name', sortable: true }),
-      col.accessor('id', { header: 'Code', cell: ({ value }) => value.toUpperCase() }),
+      col.accessor('displayName', { header: t`Name`, sortable: true }),
+      col.accessor('id', { header: t`Code`, cell: ({ value }) => value.toUpperCase() }),
       // The em dash is the state this column exists to make visible: a country sellable with no
       // locale is a storefront with no URL segment. The API refuses to create one — this is what
       // would show it if anything else ever did.
-      col.accessor('localeCode', { header: 'Locale', cell: ({ value }) => value ?? '—' }),
+      col.accessor('localeCode', { header: t`Locale`, cell: ({ value }) => value ?? '—' }),
     ],
 
     // Must differ from the region list's, which stays mounted on the regions page.
@@ -47,11 +50,12 @@ export const useRegionCountryTable = (
     rowActions: (row) => <RegionCountryRowActions regionId={regionId} country={row} />,
 
     empty: {
-      heading: 'No countries',
-      description: 'Add a country to start selling in this region.',
+      heading: t`No countries`,
+      description: t`Add a country to start selling in this region.`,
     },
     filtered: {
-      heading: 'No countries found',
-      description: 'Try changing your search term.',
+      heading: t`No countries found`,
+      description: t`Try changing your search term.`,
     },
   })
+}

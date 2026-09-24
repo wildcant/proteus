@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Collapsible,
   CollapsibleContent,
@@ -26,6 +27,7 @@ import { Breadcrumbs } from './breadcrumbs'
 import type { SidebarGroup as SidebarGroupType, SidebarIcon } from './nav'
 import { sidebarIcons } from './nav'
 import { ThemeToggle } from './theme-toggle'
+import { useSidebarLabel } from './use-sidebar-label'
 
 type ShellProps = {
   sidebar: SidebarGroupType[]
@@ -53,9 +55,10 @@ export function Shell({ sidebar, settingsSidebar, topbarActions, sidebarFooter }
 }
 
 function Topbar({ actions }: { actions?: ReactNode }) {
+  const { t } = useLingui()
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-      <SidebarTrigger className="-ml-1" />
+      <SidebarTrigger className="-ml-1" label={t`Toggle Sidebar`} />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumbs />
       <div className="ml-auto flex items-center gap-1">
@@ -81,6 +84,8 @@ function AppSidebar({
   footer?: ReactNode
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const sidebarLabel = useSidebarLabel()
+  const { t } = useLingui()
   const firstSettingsRoute = settingsSidebar?.[0]?.items?.[0]?.to
 
   const navItems = sidebar.flatMap((g) => g.items)
@@ -96,7 +101,9 @@ function AppSidebar({
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">Proteus</span>
-                <span className="truncate text-muted-foreground text-xs">Admin</span>
+                <span className="truncate text-muted-foreground text-xs">
+                  <Trans>Admin</Trans>
+                </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -112,9 +119,13 @@ function AppSidebar({
               if (!item.children?.length) {
                 return (
                   <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      tooltip={sidebarLabel(item.label)}
+                      render={<Link to={item.to} />}
+                    >
                       {Icon && <Icon />}
-                      <span>{item.label}</span>
+                      <span>{sidebarLabel(item.label)}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -126,9 +137,13 @@ function AppSidebar({
               return (
                 <Collapsible key={item.to} open={isGroupActive}>
                   <SidebarMenuItem>
-                    <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link to={item.to} />}>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      tooltip={sidebarLabel(item.label)}
+                      render={<Link to={item.to} />}
+                    >
                       {Icon && <Icon />}
-                      <span>{item.label}</span>
+                      <span>{sidebarLabel(item.label)}</span>
                     </SidebarMenuButton>
                     <CollapsibleContent>
                       <SidebarMenuSub>
@@ -137,7 +152,7 @@ function AppSidebar({
                           return (
                             <SidebarMenuSubItem key={child.to}>
                               <SidebarMenuSubButton isActive={isChildActive} render={<Link to={child.to} />}>
-                                <span>{child.label}</span>
+                                <span>{sidebarLabel(child.label)}</span>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           )
@@ -156,11 +171,13 @@ function AppSidebar({
               <SidebarMenuItem>
                 <SidebarMenuButton
                   isActive={pathname.startsWith('/settings')}
-                  tooltip="Settings"
+                  tooltip={t`Settings`}
                   render={<Link to={firstSettingsRoute} />}
                 >
                   <SettingsIcon />
-                  <span>Settings</span>
+                  <span>
+                    <Trans>Settings</Trans>
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -168,7 +185,7 @@ function AppSidebar({
         )}
       </SidebarContent>
       <SidebarFooter>{footer}</SidebarFooter>
-      <SidebarRail />
+      <SidebarRail label={t`Toggle Sidebar`} />
     </Sidebar>
   )
 }

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { AdminInventoryItemListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
@@ -12,11 +13,12 @@ export const Route = createFileRoute('/_authed/_shell/inventory/')({
 })
 
 function InventoryPage() {
+  const { t } = useLingui()
   const inventory = useInventoryTable()
 
   return (
     <PageLayout.SingleColumn>
-      <DataTable use={inventory} className="flex-1" heading="Inventory" />
+      <DataTable use={inventory} className="flex-1" heading={t`Inventory`} />
     </PageLayout.SingleColumn>
   )
 }

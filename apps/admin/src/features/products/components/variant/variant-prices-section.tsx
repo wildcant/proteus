@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Card, CardAction, CardHeader, CardTitle } from '@proteus/ui'
 import { formatPrice } from '@proteus/utils'
 import { PencilIcon } from 'lucide-react'
@@ -5,17 +6,21 @@ import type { AdminProductVariant } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import { useStoreCurrencies } from '#/features/store/api/store'
+import { activeLocale } from '#/lib/i18n/locale'
 
 export function VariantPricesSection({ variant }: { variant: AdminProductVariant }) {
+  const { t } = useLingui()
   const { currencyCodes } = useStoreCurrencies()
   const priceByCurrency = new Map((variant.prices ?? []).map((price) => [price.currencyCode, price]))
 
   return (
     <Card className="gap-0 divide-y py-0">
       <CardHeader>
-        <CardTitle>Prices</CardTitle>
+        <CardTitle>
+          <Trans>Prices</Trans>
+        </CardTitle>
         <CardAction>
-          <ActionMenu groups={[{ actions: [{ label: 'Edit prices', to: './prices', icon: <PencilIcon /> }] }]} />
+          <ActionMenu groups={[{ actions: [{ label: t`Edit prices`, to: './prices', icon: <PencilIcon /> }] }]} />
         </CardAction>
       </CardHeader>
       {/* One row per store currency, priced or not — a market this variant cannot be sold in is
@@ -26,7 +31,7 @@ export function VariantPricesSection({ variant }: { variant: AdminProductVariant
           <SectionRow
             key={currencyCode}
             title={currencyCode.toUpperCase()}
-            value={price ? formatPrice(price.amount, price.currencyCode) : undefined}
+            value={price ? formatPrice(price.amount, price.currencyCode, activeLocale()) : undefined}
           />
         )
       })}
