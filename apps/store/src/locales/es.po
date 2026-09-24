@@ -49,6 +49,10 @@ msgstr "Todos los productos"
 msgid "Back"
 msgstr "Atrás"
 
+#: src/routes/_main/_authed/account/orders/$orderId.tsx:30
+msgid "Back to account"
+msgstr "Volver a tu cuenta"
+
 #: src/features/products/components/search-best-sellers.tsx:30
 msgid "Best sellers"
 msgstr "Más vendidos"
@@ -64,6 +68,10 @@ msgstr "Borrar búsqueda"
 #: src/features/products/components/search-drawer.tsx:62
 msgid "Close search"
 msgstr "Cerrar búsqueda"
+
+#: src/routes/_main/order/$orderId/confirmed.tsx:35
+msgid "Continue shopping"
+msgstr "Seguir comprando"
 
 #: src/features/products/components/product-card.tsx:47
 msgid "From {startingPrice}"

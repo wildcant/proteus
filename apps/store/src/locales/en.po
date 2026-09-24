@@ -49,6 +49,10 @@ msgstr "All products"
 msgid "Back"
 msgstr "Back"
 
+#: src/routes/_main/_authed/account/orders/$orderId.tsx:30
+msgid "Back to account"
+msgstr "Back to account"
+
 #: src/features/products/components/search-best-sellers.tsx:30
 msgid "Best sellers"
 msgstr "Best sellers"
@@ -64,6 +68,10 @@ msgstr "Clear search"
 #: src/features/products/components/search-drawer.tsx:62
 msgid "Close search"
 msgstr "Close search"
+
+#: src/routes/_main/order/$orderId/confirmed.tsx:35
+msgid "Continue shopping"
+msgstr "Continue shopping"
 
 #: src/features/products/components/product-card.tsx:47
 msgid "From {startingPrice}"
