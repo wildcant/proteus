@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { BigNumber } from '../../../core/bignumber.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
@@ -297,7 +298,8 @@ export class OrderModuleService implements IOrderModuleService {
       if (order.status !== 'pending') {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot complete order ${id}: status is "${order.status}", expected "pending"`,
+          message: i18n.t('Cannot complete order {id}: status is "{status}", expected "pending"'),
+          values: { id, status: order.status },
         })
       }
 
@@ -312,7 +314,8 @@ export class OrderModuleService implements IOrderModuleService {
       if (order.status !== 'pending') {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot cancel order ${id}: status is "${order.status}", expected "pending"`,
+          message: i18n.t('Cannot cancel order {id}: status is "{status}", expected "pending"'),
+          values: { id, status: order.status },
         })
       }
 
@@ -327,7 +330,8 @@ export class OrderModuleService implements IOrderModuleService {
       if (order.status !== 'completed') {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cannot archive order ${id}: status is "${order.status}", expected "completed"`,
+          message: i18n.t('Cannot archive order {id}: status is "{status}", expected "completed"'),
+          values: { id, status: order.status },
         })
       }
 
