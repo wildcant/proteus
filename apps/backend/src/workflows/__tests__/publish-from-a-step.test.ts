@@ -2,6 +2,7 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import type { Logger } from '@core/types/logger.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import type { Msgid } from '@proteus/utils'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { noopLogger } from '../../core/logger/noop-logger.js'
 
@@ -40,7 +41,7 @@ const publishInFinalStep = createWorkflow<{ id: string }, void>('publish-in-fina
 
 const failBeforePublishing = createWorkflow<{ id: string }, void>('fail-before-publishing', async (ctx, input) => {
   await ctx.step('do-the-work', async () => {
-    throw new WorkflowTerminalError({ type: ErrorTypes.CONFLICT, message: 'the work could not be done' })
+    throw new WorkflowTerminalError({ type: ErrorTypes.CONFLICT, message: 'the work could not be done' as Msgid })
   })
   await ctx.step('publish', async ({ container }) => {
     const bus = container.resolve(ContainerRegistrationKeys.EVENT_BUS)

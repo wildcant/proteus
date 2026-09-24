@@ -41,6 +41,11 @@ msgid "Auth identity \"{authIdentityId}\" already has \"userId\" set"
 msgstr "La identidad de autenticación \"{authIdentityId}\" ya tiene \"userId\" asignado"
 
 #. js-lingui-explicit-id
+#: src/workflows/store/utils/store-with-currencies.ts:6
+msgid "No store is configured"
+msgstr "No hay ninguna tienda configurada"
+
+#. js-lingui-explicit-id
 #: src/workflows/region/steps/assert-store-sells-currency.ts:33
 msgid "The store does not sell in \"{currencyCode}\". Its currencies are: {sold}."
 msgstr "La tienda no vende en \"{currencyCode}\". Sus monedas son: {sold}."
@@ -477,6 +482,35 @@ msgstr "El código de verificación no pertenece al proveedor \"{codeProvider}\"
 #: src/providers/auth-verification-token/token-verification.ts:113
 msgid "Verification code has expired"
 msgstr "El código de verificación expiró"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-emailpass/emailpass.ts:35
+#: src/providers/auth-emailpass/emailpass.ts:89
+msgid "Email and password are required"
+msgstr "El correo y la contraseña son obligatorios"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-emailpass/emailpass.ts:48
+msgid "Identity with the same email already exists"
+msgstr "Ya existe una cuenta con este correo"
+
+#. js-lingui-explicit-id
+#: src/api/store/auth/login/route.ts:21
+#: src/providers/auth-emailpass/emailpass.ts:95
+#: src/providers/auth-emailpass/emailpass.ts:100
+#: src/providers/auth-emailpass/emailpass.ts:105
+msgid "Invalid email or password"
+msgstr "Correo o contraseña incorrectos"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-emailpass/emailpass.ts:123
+msgid "Email is required"
+msgstr "El correo es obligatorio"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-emailpass/emailpass.ts:128
+msgid "Identity not found"
+msgstr "No se encontró la cuenta"
 
 #. js-lingui-explicit-id
 #: src/modules/user/services/user-module-service.ts:111
@@ -1018,6 +1052,26 @@ msgid "No workflow engine configured. Call setWorkflowEngine() first."
 msgstr "No hay un motor de flujos configurado. Primero llama a setWorkflowEngine()."
 
 #. js-lingui-explicit-id
+#: src/core/utils/abstract-auth-module-provider.ts:42
+msgid "This authentication provider does not support register"
+msgstr "Este método de acceso no permite registrarse"
+
+#. js-lingui-explicit-id
+#: src/core/utils/abstract-auth-module-provider.ts:49
+msgid "This authentication provider does not support authenticate"
+msgstr "Este método de acceso no permite iniciar sesión"
+
+#. js-lingui-explicit-id
+#: src/core/utils/abstract-auth-module-provider.ts:56
+msgid "This authentication provider does not support update"
+msgstr "Este método de acceso no permite actualizar la cuenta"
+
+#. js-lingui-explicit-id
+#: src/core/utils/abstract-auth-module-provider.ts:63
+msgid "This authentication provider does not support validateCallback"
+msgstr "Este método de acceso no permite validar la respuesta del proveedor"
+
+#. js-lingui-explicit-id
 #: src/core/utils/base-repository.ts:128
 #: src/core/utils/base-repository.ts:195
 msgid "Entity with id \"{id}\" not found"
@@ -1173,11 +1227,6 @@ msgstr "No se pudo completar el registro"
 #: src/api/store/auth/signup/route.ts:35
 msgid "Authentication failed after registration"
 msgstr "No se pudo iniciar sesión después del registro"
-
-#. js-lingui-explicit-id
-#: src/api/store/auth/login/route.ts:21
-msgid "Invalid email or password"
-msgstr "Correo o contraseña incorrectos"
 
 #. js-lingui-explicit-id
 #: src/api/hooks/payment/[provider]/route.ts:77

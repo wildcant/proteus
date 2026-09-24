@@ -41,6 +41,11 @@ msgid "Auth identity \"{authIdentityId}\" already has \"userId\" set"
 msgstr "Auth identity \"{authIdentityId}\" already has \"userId\" set"
 
 #. js-lingui-explicit-id
+#: src/workflows/store/utils/store-with-currencies.ts:6
+msgid "No store is configured"
+msgstr "No store is configured"
+
+#. js-lingui-explicit-id
 #: src/workflows/region/steps/assert-store-sells-currency.ts:33
 msgid "The store does not sell in \"{currencyCode}\". Its currencies are: {sold}."
 msgstr "The store does not sell in \"{currencyCode}\". Its currencies are: {sold}."
@@ -477,6 +482,35 @@ msgstr "Verification code does not belong to provider \"{codeProvider}\""
 #: src/providers/auth-verification-token/token-verification.ts:113
 msgid "Verification code has expired"
 msgstr "Verification code has expired"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-emailpass/emailpass.ts:35
+#: src/providers/auth-emailpass/emailpass.ts:89
+msgid "Email and password are required"
+msgstr "Email and password are required"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-emailpass/emailpass.ts:48
+msgid "Identity with the same email already exists"
+msgstr "Identity with the same email already exists"
+
+#. js-lingui-explicit-id
+#: src/api/store/auth/login/route.ts:21
+#: src/providers/auth-emailpass/emailpass.ts:95
+#: src/providers/auth-emailpass/emailpass.ts:100
+#: src/providers/auth-emailpass/emailpass.ts:105
+msgid "Invalid email or password"
+msgstr "Invalid email or password"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-emailpass/emailpass.ts:123
+msgid "Email is required"
+msgstr "Email is required"
+
+#. js-lingui-explicit-id
+#: src/providers/auth-emailpass/emailpass.ts:128
+msgid "Identity not found"
+msgstr "Identity not found"
 
 #. js-lingui-explicit-id
 #: src/modules/user/services/user-module-service.ts:111
@@ -1018,6 +1052,26 @@ msgid "No workflow engine configured. Call setWorkflowEngine() first."
 msgstr "No workflow engine configured. Call setWorkflowEngine() first."
 
 #. js-lingui-explicit-id
+#: src/core/utils/abstract-auth-module-provider.ts:42
+msgid "This authentication provider does not support register"
+msgstr "This authentication provider does not support register"
+
+#. js-lingui-explicit-id
+#: src/core/utils/abstract-auth-module-provider.ts:49
+msgid "This authentication provider does not support authenticate"
+msgstr "This authentication provider does not support authenticate"
+
+#. js-lingui-explicit-id
+#: src/core/utils/abstract-auth-module-provider.ts:56
+msgid "This authentication provider does not support update"
+msgstr "This authentication provider does not support update"
+
+#. js-lingui-explicit-id
+#: src/core/utils/abstract-auth-module-provider.ts:63
+msgid "This authentication provider does not support validateCallback"
+msgstr "This authentication provider does not support validateCallback"
+
+#. js-lingui-explicit-id
 #: src/core/utils/base-repository.ts:128
 #: src/core/utils/base-repository.ts:195
 msgid "Entity with id \"{id}\" not found"
@@ -1173,11 +1227,6 @@ msgstr "Registration failed"
 #: src/api/store/auth/signup/route.ts:35
 msgid "Authentication failed after registration"
 msgstr "Authentication failed after registration"
-
-#. js-lingui-explicit-id
-#: src/api/store/auth/login/route.ts:21
-msgid "Invalid email or password"
-msgstr "Invalid email or password"
 
 #. js-lingui-explicit-id
 #: src/api/hooks/payment/[provider]/route.ts:77

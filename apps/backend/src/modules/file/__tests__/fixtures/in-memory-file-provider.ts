@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream'
+import type { Msgid } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../../core/errors/app-error.js'
 import type {
   ProviderDeleteFileDTO,
@@ -50,7 +51,7 @@ export class InMemoryFileProvider extends AbstractFileProviderService {
     if (!stored) {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `File "${fileData.fileKey}" not found.`,
+        message: `File "${fileData.fileKey}" not found.` as Msgid,
       })
     }
     return stored.url
@@ -61,7 +62,7 @@ export class InMemoryFileProvider extends AbstractFileProviderService {
     if (!stored) {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `File "${fileData.fileKey}" not found.`,
+        message: `File "${fileData.fileKey}" not found.` as Msgid,
       })
     }
     return Readable.from(Buffer.from(stored.content, 'base64'))
@@ -72,7 +73,7 @@ export class InMemoryFileProvider extends AbstractFileProviderService {
     if (!stored) {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `File "${fileData.fileKey}" not found.`,
+        message: `File "${fileData.fileKey}" not found.` as Msgid,
       })
     }
     return Buffer.from(stored.content, 'base64')

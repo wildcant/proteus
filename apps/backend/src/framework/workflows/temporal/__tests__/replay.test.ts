@@ -1,6 +1,7 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { createWorkflow, type WorkflowDefinition, WorkflowTerminalError } from '@core/workflows/types.js'
 import { createSimpleWorkflowEngine } from '@framework/workflows/simple-adapter.js'
+import type { Msgid } from '@proteus/utils'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { vi } from 'vitest'
@@ -218,7 +219,10 @@ test.describe('replay', () => {
   test('reports the failing step and rethrows the original error', async ({ expect }) => {
     const workflow = createWorkflow<void, void>('failing', async (ctx) => {
       await ctx.step('boom', async () => {
-        throw new WorkflowTerminalError({ type: ErrorTypes.CONFLICT, message: 'Cart is already being completed' })
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.CONFLICT,
+          message: 'Cart is already being completed' as Msgid,
+        })
       })
     })
 

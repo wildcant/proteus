@@ -4,6 +4,7 @@ import { noopLogger } from '@core/logger/noop-logger.js'
 import { createWorkflow, type WorkflowDefinition, WorkflowTerminalError } from '@core/workflows/types.js'
 import { createExpressApp } from '@framework/runtime/express/app.js'
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '@framework/workflows/temporal-adapter.js'
+import type { Msgid } from '@proteus/utils'
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { asValue, createContainer } from 'awilix'
@@ -240,7 +241,7 @@ describe('temporal workflow engine', () => {
       const action = vi.fn(async () => {
         throw new WorkflowTerminalError({
           type: ErrorTypes.CONFLICT,
-          message: 'Cart "cart_01" is already being completed',
+          message: 'Cart "cart_01" is already being completed' as Msgid,
         })
       })
 
@@ -333,7 +334,7 @@ describe('temporal workflow engine', () => {
         createWorkflow<void, string>('retryable-step-terminal', async (ctx) =>
           ctx.step('flaky', async () => {
             attempts += 1
-            throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: 'Cart has no items' })
+            throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: 'Cart has no items' as Msgid })
           }),
         ),
       )
@@ -422,7 +423,7 @@ describe('temporal workflow engine', () => {
           await ctx.step('lookup', async () => {
             // Not a WorkflowTerminalError: services throw bare AppErrors, and `errorHandler` reads
             // `type` off either one to choose a status.
-            throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Variant "var_01" not found' })
+            throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Variant "var_01" not found' as Msgid })
           })
         }),
       )
@@ -445,7 +446,7 @@ describe('temporal workflow engine', () => {
           await ctx.step('validate-name', async () => {
             throw new AppError({
               type: ErrorTypes.INVALID_DATA,
-              message: 'Use {maximum} characters or fewer',
+              message: 'Use {maximum} characters or fewer' as Msgid,
               values: { maximum: 80 },
             })
           })

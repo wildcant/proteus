@@ -46,7 +46,7 @@ export class AppError extends Error {
 
   constructor(opts: {
     type: ErrorTypes
-    message: string
+    message: Msgid
     code?: string
     values?: Record<string, unknown>
     issues?: ValidationIssue[]
@@ -55,8 +55,7 @@ export class AppError extends Error {
     super(opts.issues?.length ? `${english}: ${formatZodIssues(opts.issues, (issue) => issue.message)}` : english)
     this.type = opts.type
     this.code = opts.code
-    // Cast until ILLO-204 flips `message` to `Msgid`; a message not in a catalog translates to itself.
-    this.msgid = opts.message as Msgid
+    this.msgid = opts.message
     this.values = opts.values
     this.issues = opts.issues
     this.date = new Date()

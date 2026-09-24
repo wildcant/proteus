@@ -1,3 +1,4 @@
+import type { Msgid } from '@proteus/utils'
 import { ApplicationFailure } from '@temporalio/common'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import { WorkflowTerminalError } from '../../core/workflows/types.js'
@@ -101,9 +102,10 @@ export function deserializeError(serialized: SerializedError): Error {
  * route can still translate the id. `Error.message` alone is already filled in, and no catalog knows
  * it.
  */
-function translatable(serialized: SerializedError): { message: string; values?: Record<string, unknown> } {
+function translatable(serialized: SerializedError): { message: Msgid; values?: Record<string, unknown> } {
   return {
-    message: serialized.msgid ?? serialized.message,
+    // No msgid means an error serialized before `msgid` was carried; its filled English translates to itself.
+    message: serialized.msgid ?? (serialized.message as Msgid),
     ...(serialized.values ? { values: serialized.values } : {}),
   }
 }
