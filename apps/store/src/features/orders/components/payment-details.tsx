@@ -1,3 +1,6 @@
+import type { MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
 import { Panel } from '#/components/panel'
 import { useFormatters } from '#/hooks/use-formatters'
@@ -8,13 +11,14 @@ import { useFormatters } from '#/hooks/use-formatters'
  * over a status was a lie of placement.
  */
 export function PaymentDetails({ order }: { order: StoreOrderResponseOrder }) {
+  const { t } = useLingui()
   const formatters = useFormatters()
   const { headline, detail } = paymentLines(order, formatters)
 
   return (
-    <Panel title="Payment">
-      <p className="mt-6 text-ink text-sm">{headline}</p>
-      <p className="mt-1 text-ink-muted text-sm">{detail}</p>
+    <Panel title={t`Payment`}>
+      <p className="mt-6 text-ink text-sm">{t(headline)}</p>
+      <p className="mt-1 text-ink-muted text-sm">{t(detail)}</p>
     </Panel>
   )
 }
@@ -37,14 +41,18 @@ export function PaymentDetails({ order }: { order: StoreOrderResponseOrder }) {
 function paymentLines(
   order: StoreOrderResponseOrder,
   { formatPrice, formatDatetime }: ReturnType<typeof useFormatters>,
-): { headline: string; detail: string } {
+): { headline: MessageDescriptor; detail: MessageDescriptor } {
   const total = formatPrice(order.totals.orderTotal, order.currencyCode)
-  const captured = { headline: 'Payment received', detail: `${total} on ${formatDatetime(order.createdAt)}` }
+  const paidAt = formatDatetime(order.createdAt)
+  const captured = { headline: msg`Payment received`, detail: msg`${total} on ${paidAt}` }
 
   if (order.paymentStatus === 'captured') return captured
-  if (order.status === 'canceled') return { headline: 'No payment taken', detail: `${total} was not charged` }
+  if (order.status === 'canceled') return { headline: msg`No payment taken`, detail: msg`${total} was not charged` }
   if (order.paymentStatus === 'authorized') {
-    return { headline: 'Payment authorized', detail: `${total} reserved by your bank, charged when your order ships` }
+    return {
+      headline: msg`Payment authorized`,
+      detail: msg`${total} reserved by your bank, charged when your order ships`,
+    }
   }
-  return { headline: 'Awaiting payment', detail: `${total} due` }
+  return { headline: msg`Awaiting payment`, detail: msg`${total} due` }
 }

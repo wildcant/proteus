@@ -13,14 +13,62 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: formatPrice(item.unitPrice, order.currencyCode)
+#: src/features/orders/components/order-items.tsx:58
+msgid "{0} each"
+msgstr "{0} c/u"
+
+#. placeholder {0}: savedMethodName(method)
+#: src/features/account/components/payment-methods-book-view.tsx:81
+msgid "{0}, your default card"
+msgstr "{0}, tu tarjeta predeterminada"
+
+#: src/features/orders/components/payment-details.tsx:57
+msgid "{total} due"
+msgstr "{total} pendiente"
+
+#: src/features/orders/components/payment-details.tsx:47
+msgid "{total} on {paidAt}"
+msgstr "{total} el {paidAt}"
+
+#: src/features/orders/components/payment-details.tsx:54
+msgid "{total} reserved by your bank, charged when your order ships"
+msgstr "{total} reservado por tu banco; se cobra cuando se envíe tu pedido"
+
+#: src/features/orders/components/payment-details.tsx:50
+msgid "{total} was not charged"
+msgstr "No se cobraron {total}"
+
 #: src/components/footer.tsx:138
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
+
+#: src/features/account/components/saved-card-row.tsx:134
+msgid "<0>Couldn't remove that card.</0> Try again."
+msgstr "<0>No pudimos eliminar esa tarjeta.</0> Inténtalo de nuevo."
+
+#: src/features/account/components/saved-card-row.tsx:120
+msgid "<0>Expired</0> — add this card again to use it"
+msgstr "<0>Vencida</0>: agrégala de nuevo para usarla"
+
+#: src/features/account/components/account-detail.tsx:21
+#: src/features/orders/components/order-content.tsx:28
+msgid "Account"
+msgstr "Cuenta"
+
+#: src/features/account/components/account-detail.tsx:31
+msgid "Address Book"
+msgstr "Direcciones"
 
 #: src/routes/_auth/signup.tsx:37
 msgid "Already have an account?"
 msgstr "¿Ya tienes una cuenta?"
 
+#: src/features/orders/components/payment-details.tsx:57
+msgid "Awaiting payment"
+msgstr "Pago pendiente"
+
+#: src/features/account/components/payment-methods-book-view.tsx:44
 #: src/routes/_main/_authed/account/orders/$orderId.tsx:30
 msgid "Back to account"
 msgstr "Volver a tu cuenta"
@@ -38,6 +86,14 @@ msgstr "Volver a iniciar sesión"
 msgid "By creating an account, you agree to our Privacy Policy and Terms of Use."
 msgstr "Al crear una cuenta, aceptas nuestra Política de privacidad y nuestros Términos de uso."
 
+#: src/features/orders/utils/order-progress.ts:48
+msgid "Canceled"
+msgstr "Cancelado"
+
+#: src/features/account/components/payment-methods-book-view.tsx:108
+msgid "Cards are saved at checkout — choose \"Save this card for next time\" when you pay and it will be here for your next order."
+msgstr "Las tarjetas se guardan al pagar: elige \"Guardar esta tarjeta para la próxima vez\" y aparecerá aquí en tu próximo pedido."
+
 #: src/features/auth/components/verify-pending.tsx:10
 #: src/routes/_auth/forgot-password.tsx:20
 msgid "Check your email"
@@ -46,6 +102,10 @@ msgstr "Revisa tu correo"
 #: src/routes/_auth/reset-password.tsx:40
 msgid "Choose a new password for your account."
 msgstr "Elige una nueva contraseña para tu cuenta."
+
+#: src/features/orders/components/delivery-details.tsx:59
+msgid "Confirmation sent to"
+msgstr "Confirmación enviada a"
 
 #: src/routes/_auth/route.tsx:20
 #: src/routes/_main/order/$orderId/confirmed.tsx:35
@@ -64,10 +124,27 @@ msgstr "Crea una cuenta para seguir tus pedidos, guardar tus datos y pagar más 
 msgid "Creating account..."
 msgstr "Creando cuenta..."
 
+#: src/features/account/components/saved-card-row.tsx:115
+msgid "Default"
+msgstr "Predeterminada"
+
+#: src/features/orders/utils/fulfillment-labels.ts:10
+msgid "Delivered"
+msgstr "Entregado"
+
+#: src/features/orders/components/delivery-details.tsx:26
+msgid "Delivery"
+msgstr "Entrega"
+
+#: src/features/account/components/details-panel.tsx:20
+msgid "Details"
+msgstr "Datos"
+
 #: src/routes/_auth/login.tsx:50
 msgid "Don't have an account?"
 msgstr "¿No tienes una cuenta?"
 
+#: src/features/account/components/details-panel.tsx:31
 #: src/features/auth/components/forgot-password-form.tsx:15
 #: src/features/auth/components/login-form.tsx:16
 #: src/features/auth/components/register-form.tsx:21
@@ -78,9 +155,21 @@ msgstr "Correo electrónico"
 msgid "Email verified"
 msgstr "Correo verificado"
 
+#: src/features/account/components/payment-methods-book-view.tsx:90
+msgid "Every card here has expired. Pay with a new card at checkout to save a usable one."
+msgstr "Todas tus tarjetas vencieron. Paga con una tarjeta nueva al finalizar la compra para guardar una que funcione."
+
+#: src/features/account/components/saved-card-row.tsx:128
+msgid "Expires this month"
+msgstr "Vence este mes"
+
 #: src/features/auth/api/auth.ts:71
 msgid "Failed to request password reset"
 msgstr "No pudimos solicitar el cambio de contraseña"
+
+#: src/features/account/api/payment-methods.ts:159
+msgid "Failed to set default card"
+msgstr "No pudimos cambiar tu tarjeta predeterminada"
 
 #: src/features/auth/api/auth.ts:90
 msgid "Failed to update password"
@@ -98,6 +187,14 @@ msgstr "¿Olvidaste tu contraseña?"
 msgid "Forgot your password?"
 msgstr "¿Olvidaste tu contraseña?"
 
+#: src/features/account/components/account-detail.tsx:23
+msgid "Hello"
+msgstr "Hola"
+
+#: src/features/account/components/account-detail.tsx:23
+msgid "Hello, {firstName}"
+msgstr "Hola, {firstName}"
+
 #: src/routes/_auth/verify.tsx:33
 msgid "Hold on while we confirm your email."
 msgstr "Espera mientras confirmamos tu correo."
@@ -110,6 +207,10 @@ msgstr "Si existe una cuenta con ese correo, te enviamos un enlace para restable
 msgid "Invalid link"
 msgstr "Enlace no válido"
 
+#: src/features/account/components/saved-card-row.tsx:75
+msgid "Keep"
+msgstr "Conservar"
+
 #: src/features/auth/components/register-form.tsx:18
 msgid "Last name"
 msgstr "Apellido"
@@ -118,18 +219,53 @@ msgstr "Apellido"
 msgid "Login failed"
 msgstr "No pudimos iniciar tu sesión"
 
+#. placeholder {0}: savedMethodName(method)
+#: src/features/account/components/payment-methods-book-view.tsx:82
+msgid "Make {0} the default"
+msgstr "Usar {0} como predeterminada"
+
+#: src/features/account/components/details-panel.tsx:25
+msgid "Name"
+msgstr "Nombre"
+
 #: src/features/auth/components/reset-password-form.tsx:16
 msgid "New password"
 msgstr "Nueva contraseña"
+
+#: src/features/orders/components/delivery-details.tsx:39
+msgid "No address provided"
+msgstr "Sin dirección"
+
+#: src/features/orders/components/payment-details.tsx:50
+msgid "No payment taken"
+msgstr "No se realizó ningún cobro"
 
 #: src/routes/_auth/forgot-password.tsx:33
 msgid "No problem. Enter your account email address and we'll send you instructions so you can reset your password."
 msgstr "No hay problema. Ingresa el correo de tu cuenta y te enviaremos instrucciones para restablecer tu contraseña."
 
+#: src/features/account/components/payment-methods-book-view.tsx:105
+msgid "No saved cards"
+msgstr "No tienes tarjetas guardadas"
+
 #: src/routes/_auth/verify.tsx:75
 msgid "Open this link in the same browser you signed up with."
 msgstr "Abre este enlace en el mismo navegador con el que te registraste."
 
+#: src/features/orders/components/order-confirmed-content.tsx:39
+#: src/features/orders/components/order-content.tsx:35
+msgid "Order #{displayId}"
+msgstr "Pedido #{displayId}"
+
+#: src/features/orders/components/order-progress-track.tsx:34
+msgid "Order progress"
+msgstr "Progreso del pedido"
+
+#: src/features/account/components/orders-panel.tsx:21
+msgid "Orders"
+msgstr "Pedidos"
+
+#: src/features/account/components/password-panel.tsx:16
 #: src/features/auth/components/login-form.tsx:19
 #: src/features/auth/components/register-form.tsx:24
 msgid "Password"
@@ -139,14 +275,72 @@ msgstr "Contraseña"
 msgid "Password updated"
 msgstr "Contraseña actualizada"
 
+#: src/features/orders/components/payment-details.tsx:19
+msgid "Payment"
+msgstr "Pago"
+
+#: src/features/orders/components/payment-details.tsx:53
+msgid "Payment authorized"
+msgstr "Pago autorizado"
+
+#: src/features/account/components/payment-methods-book-view.tsx:47
+msgid "Payment methods"
+msgstr "Métodos de pago"
+
+#: src/features/account/components/account-detail.tsx:32
+msgid "Payment Methods"
+msgstr "Métodos de pago"
+
+#: src/features/orders/components/payment-details.tsx:47
+msgid "Payment received"
+msgstr "Pago recibido"
+
+#: src/features/orders/components/order-confirmed-content.tsx:42
+#: src/features/orders/components/order-content.tsx:38
+msgid "Placed {placedAt}"
+msgstr "Realizado el {placedAt}"
+
+#: src/features/orders/utils/fulfillment-labels.ts:7
+msgid "Preparing"
+msgstr "En preparación"
+
+#: src/features/orders/utils/fulfillment-labels.ts:8
+msgid "Ready to ship"
+msgstr "Listo para enviar"
+
 #: src/features/auth/api/auth.ts:55
 msgid "Registration failed"
 msgstr "No pudimos crear tu cuenta"
+
+#: src/features/account/components/saved-card-row.tsx:83
+msgid "Remove"
+msgstr "Eliminar"
+
+#: src/features/account/components/saved-card-row.tsx:144
+msgid "Remove {name}"
+msgstr "Eliminar {name}"
+
+#: src/features/account/components/saved-card-row.tsx:68
+msgid "Remove {name}?"
+msgstr "¿Eliminar {name}?"
+
+#: src/features/account/components/saved-card-row.tsx:83
+msgid "Removing…"
+msgstr "Eliminando…"
+
+#: src/features/account/components/password-panel.tsx:19
+msgid "Reset link sent to <0>{email}</0>. Check your inbox."
+msgstr "Enviamos el enlace a <0>{email}</0>. Revisa tu bandeja de entrada."
+
+#: src/features/account/components/password-panel.tsx:30
+msgid "Send a reset link"
+msgstr "Enviar enlace para restablecer"
 
 #: src/features/auth/components/forgot-password-form.tsx:21
 msgid "Send reset link"
 msgstr "Enviar enlace"
 
+#: src/features/account/components/password-panel.tsx:30
 #: src/features/auth/components/forgot-password-form.tsx:21
 msgid "Sending..."
 msgstr "Enviando..."
@@ -159,6 +353,18 @@ msgstr "Crea una nueva contraseña"
 msgid "Set new password"
 msgstr "Guardar contraseña"
 
+#: src/features/orders/utils/fulfillment-labels.ts:9
+msgid "Shipped"
+msgstr "Enviado"
+
+#: src/features/orders/components/order-summary.tsx:30
+msgid "Shipping"
+msgstr "Envío"
+
+#: src/features/account/components/orders-panel.tsx:111
+msgid "Shop all products"
+msgstr "Ver todos los productos"
+
 #: src/features/auth/components/login-form.tsx:28
 #: src/routes/_auth/login.tsx:43
 #: src/routes/_auth/reset-password.tsx:31
@@ -166,6 +372,10 @@ msgstr "Guardar contraseña"
 #: src/routes/_auth/verify.tsx:64
 msgid "Sign in"
 msgstr "Inicia sesión"
+
+#: src/features/account/components/account-detail.tsx:43
+msgid "Sign out"
+msgstr "Cerrar sesión"
 
 #: src/routes/_auth/login.tsx:52
 #: src/routes/_auth/signup.tsx:30
@@ -176,13 +386,45 @@ msgstr "Regístrate"
 msgid "Signing in..."
 msgstr "Iniciando sesión..."
 
+#: src/features/orders/components/order-error.tsx:21
+msgid "Something went wrong loading order <0>{orderId}</0>. Try again in a moment — if it keeps happening, quote that number to us."
+msgstr "Algo salió mal al cargar el pedido <0>{orderId}</0>. Inténtalo de nuevo en un momento; si sigue pasando, compártenos ese número."
+
+#: src/features/account/components/payment-methods-book-view.tsx:114
+msgid "Start shopping"
+msgstr "Empieza a comprar"
+
+#: src/features/orders/components/order-summary.tsx:22
+msgid "Subtotal"
+msgstr "Subtotal"
+
+#: src/features/orders/components/order-summary.tsx:12
+msgid "Summary"
+msgstr "Resumen"
+
+#: src/features/orders/components/order-confirmed-content.tsx:27
+msgid "Thank you!"
+msgstr "¡Gracias!"
+
+#: src/features/orders/utils/order-progress.ts:52
+msgid "This order was canceled and will not be fulfilled."
+msgstr "Este pedido se canceló y no se enviará."
+
 #: src/routes/_auth/verify.tsx:44
 msgid "This verification link is invalid or has expired. Request a new one from your account."
 msgstr "Este enlace de verificación no es válido o ya venció. Solicita uno nuevo desde tu cuenta."
 
+#: src/features/orders/components/order-summary.tsx:38
+msgid "Total"
+msgstr "Total"
+
 #: src/routes/_auth/login.tsx:44
 msgid "Track your orders, save your details, and check out faster."
 msgstr "Sigue tus pedidos, guarda tus datos y paga más rápido."
+
+#: src/features/account/components/payment-methods-book-view.tsx:134
+msgid "Try again"
+msgstr "Intentar de nuevo"
 
 #: src/features/auth/components/reset-password-form.tsx:23
 msgid "Updating..."
@@ -197,13 +439,49 @@ msgstr "No pudimos verificar tu correo"
 msgid "Verifying"
 msgstr "Verificando"
 
+#: src/features/orders/components/order-error.tsx:18
+msgid "We couldn't load this order"
+msgstr "No pudimos cargar este pedido"
+
+#: src/features/account/components/payment-methods-book-view.tsx:131
+msgid "We couldn't load your saved cards."
+msgstr "No pudimos cargar tus tarjetas guardadas."
+
+#: src/features/account/components/password-panel.tsx:16
+msgid "We email you a link rather than asking for your current password."
+msgstr "Te enviamos un enlace por correo en lugar de pedirte tu contraseña actual."
+
+#: src/features/orders/components/order-confirmed-content.tsx:33
+msgid "We have sent the order confirmation details to <0>{email}</0>."
+msgstr "Enviamos los detalles de confirmación del pedido a <0>{email}</0>."
+
 #: src/features/auth/components/verify-pending.tsx:11
 msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
 msgstr "Te enviamos un enlace de verificación a tu correo. Haz clic en él para confirmar tu cuenta y luego vuelve a iniciar sesión."
 
+#: src/features/account/components/orders-panel.tsx:107
+msgid "You haven't made any orders yet. When you make an order it'll show up here."
+msgstr "Aún no has hecho pedidos. Cuando hagas uno, aparecerá aquí."
+
+#: src/features/account/components/saved-card-row.tsx:70
+msgid "You'll need to enter it again next time."
+msgstr "Tendrás que ingresarla de nuevo la próxima vez."
+
+#: src/features/account/components/payment-methods-book-view.tsx:60
+msgid "Your cards"
+msgstr "Tus tarjetas"
+
+#: src/features/account/components/payment-methods-book-view.tsx:63
+msgid "Your default card is the one your next checkout starts on. Cards are saved by paying with them."
+msgstr "Tu tarjeta predeterminada es la que aparece primero en tu próxima compra. Las tarjetas se guardan al pagar con ellas."
+
 #: src/routes/_auth/verify.tsx:61
 msgid "Your email is confirmed. Sign in to pick up where you left off."
 msgstr "Tu correo está confirmado. Inicia sesión para continuar donde lo dejaste."
+
+#: src/features/orders/components/order-confirmed-content.tsx:30
+msgid "Your order was placed successfully."
+msgstr "Tu pedido se realizó con éxito."
 
 #: src/routes/_auth/reset-password.tsx:28
 msgid "Your password has been reset. Sign in with your new password to pick up where you left off."
