@@ -1,13 +1,16 @@
-import { Field, FieldDescription, FieldError, FieldLabel } from '@proteus/ui'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { Field, FieldDescription, FieldLabel } from '@proteus/ui'
 import { getCurrencyName } from '@proteus/utils'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { SingleSelectCombobox } from '#/components/single-select-combobox'
 import { useStoreCurrencies } from '#/features/store/api/store'
+import { activeLocale } from '#/lib/i18n/locale'
 
 type RegionCurrencySelectProps = {
   value: string
   onChange: (currencyCode: string) => void
-  errors?: Array<{ message?: string } | undefined>
+  errors?: readonly unknown[]
 }
 
 /**
@@ -19,31 +22,37 @@ type RegionCurrencySelectProps = {
  * cannot act on.
  */
 export function RegionCurrencySelect({ value, onChange, errors }: RegionCurrencySelectProps) {
+  const { t } = useLingui()
   const { currencyCodes, isPending } = useStoreCurrencies()
+  const locale = activeLocale()
   const id = useId()
   const isInvalid = !!errors?.length
 
   const items = currencyCodes.map((currencyCode) => ({
     id: currencyCode,
-    label: `${currencyCode.toUpperCase()} — ${getCurrencyName(currencyCode)}`,
+    label: `${currencyCode.toUpperCase()} — ${getCurrencyName(currencyCode, locale)}`,
   }))
 
   return (
     <Field data-invalid={isInvalid}>
-      <FieldLabel htmlFor={id}>Currency</FieldLabel>
+      <FieldLabel htmlFor={id}>
+        <Trans>Currency</Trans>
+      </FieldLabel>
       <SingleSelectCombobox
         id={id}
         items={items}
         value={value || null}
         onValueChange={(currencyCode) => onChange(currencyCode ?? '')}
         disabled={isPending}
-        placeholder="Select a currency"
-        emptyMessage="No currencies found."
+        placeholder={t`Select a currency`}
+        emptyMessage={t`No currencies found.`}
         aria-invalid={isInvalid}
       />
-      {!!isInvalid && <FieldError errors={errors} />}
+      {!!isInvalid && <TranslatedFieldError errors={errors} />}
       {!isPending && items.length === 0 && (
-        <FieldDescription>The store sells in no currencies yet, so a region has none to settle in.</FieldDescription>
+        <FieldDescription>
+          <Trans>The store sells in no currencies yet, so a region has none to settle in.</Trans>
+        </FieldDescription>
       )}
     </Field>
   )

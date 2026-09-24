@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { type GroupRefs, Tab } from './constants'
@@ -8,41 +9,49 @@ export const ProductCreateAttributesForm = withForm({
   ...productCreateFormOpts,
   props: { groupRefs: {} as GroupRefs },
   render: function ProductCreateAttributesForm({ form, groupRefs }) {
+    const { t } = useLingui()
+
     return (
       <form.FormGroup name="attributes" validators={{ onSubmit: attributesSchema }}>
         {(formGroup) => (
           <>
             <RegisterCreateProductFormStep groupRefs={groupRefs} tab={Tab.ATTRIBUTES} formGroup={formGroup} />
             <div className="flex flex-col gap-y-8">
-              <h2 className="font-semibold text-xl">Attributes</h2>
+              <h2 className="font-semibold text-xl">
+                <Trans>Attributes</Trans>
+              </h2>
               <div className="flex flex-col gap-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <form.AppField name="attributes.material">
-                    {(form) => <form.TextField label="Material" />}
+                    {(form) => <form.TextField label={t`Material`} />}
                   </form.AppField>
                   <form.AppField name="attributes.originCountry">
-                    {(form) => <form.TextField label="Country of Origin" />}
+                    {(form) => <form.TextField label={t`Country of Origin`} />}
                   </form.AppField>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <form.AppField name="attributes.hsCode">{(form) => <form.TextField label="HS Code" />}</form.AppField>
+                  <form.AppField name="attributes.hsCode">
+                    {(form) => <form.TextField label={t`HS Code`} />}
+                  </form.AppField>
                   <form.AppField name="attributes.midCode">
-                    {(form) => <form.TextField label="MID Code" />}
+                    {(form) => <form.TextField label={t`MID Code`} />}
                   </form.AppField>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <form.AppField name="attributes.weight">
-                    {(form) => <form.NumberField label="Weight" />}
+                    {(form) => <form.NumberField label={t`Weight`} />}
                   </form.AppField>
                   <form.AppField name="attributes.length">
-                    {(form) => <form.NumberField label="Length" />}
+                    {(form) => <form.NumberField label={t`Length`} />}
                   </form.AppField>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <form.AppField name="attributes.height">
-                    {(form) => <form.NumberField label="Height" />}
+                    {(form) => <form.NumberField label={t`Height`} />}
                   </form.AppField>
-                  <form.AppField name="attributes.width">{(form) => <form.NumberField label="Width" />}</form.AppField>
+                  <form.AppField name="attributes.width">
+                    {(form) => <form.NumberField label={t`Width`} />}
+                  </form.AppField>
                 </div>
               </div>
             </div>

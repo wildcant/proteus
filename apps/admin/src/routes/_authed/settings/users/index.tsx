@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
 import { PageLayout } from '#/components/layout/page-layout'
@@ -13,11 +14,12 @@ export const Route = createFileRoute('/_authed/settings/users/')({
 })
 
 function UsersPage() {
+  const { t } = useLingui()
   const users = useUserTable()
 
   return (
     <PageLayout.SingleColumn>
-      <DataTable use={users} heading="Users" actions={[{ label: 'Invite Users', to: 'invite' }]} />
+      <DataTable use={users} heading={t`Users`} actions={[{ label: t`Invite Users`, to: 'invite' }]} />
     </PageLayout.SingleColumn>
   )
 }

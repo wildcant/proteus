@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Collapsible,
   CollapsibleContent,
@@ -56,9 +57,10 @@ export function SettingsLayout({ groups }: SettingsLayoutProps) {
 }
 
 function Topbar() {
+  const { t } = useLingui()
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-      <SidebarTrigger className="-ml-1" />
+      <SidebarTrigger className="-ml-1" label={t`Toggle Sidebar`} />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumbs />
     </header>
@@ -76,7 +78,9 @@ function SettingsSidebar({ groups }: { groups: SettingsNavGroup[] }) {
           <SidebarMenuItem>
             <SidebarMenuButton render={<Link to="/" />}>
               <ArrowLeftIcon />
-              <span>Settings</span>
+              <span>
+                <Trans>Settings</Trans>
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

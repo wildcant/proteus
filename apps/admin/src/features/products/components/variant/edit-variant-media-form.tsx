@@ -1,3 +1,5 @@
+import { plural } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Button,
   Checkbox,
@@ -14,6 +16,7 @@ import { ImageIcon, PlusIcon, StarIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { AdminProductImage, AdminProductVariantResponseVariant } from '#/api/generated/model'
 import { useEditVariantMediaForm } from '#/features/products/hooks/use-edit-variant-media-form'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 type EditVariantMediaFormProps = {
   productId: string
@@ -23,6 +26,8 @@ type EditVariantMediaFormProps = {
 }
 
 export function EditVariantMediaForm({ productId, variant, productImages }: EditVariantMediaFormProps) {
+  const { t } = useLingui()
+  const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
   const [selection, setSelection] = useState<Record<string, boolean>>({})
 
@@ -38,11 +43,13 @@ export function EditVariantMediaForm({ productId, variant, productImages }: Edit
   }
 
   return (
-    <RouteFocusModal.Form form={form}>
+    <RouteFocusModal.Form form={form} copy={unsavedChanges}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <form.AppForm>
-          <RouteFocusModal.Header>
-            <RouteFocusModal.Title className="sr-only">Edit Variant Media</RouteFocusModal.Title>
+          <RouteFocusModal.Header closeLabel={closeLabel}>
+            <RouteFocusModal.Title className="sr-only">
+              <Trans>Edit Variant Media</Trans>
+            </RouteFocusModal.Title>
           </RouteFocusModal.Header>
           <RouteFocusModal.Body className="flex flex-col overflow-hidden">
             <form.Field name="imageIds">
@@ -50,6 +57,7 @@ export function EditVariantMediaForm({ productId, variant, productImages }: Edit
                 const assigned = productImages.filter((image) => field.state.value.includes(image.id))
                 const available = productImages.filter((image) => !field.state.value.includes(image.id))
                 const selectedIds = Object.keys(selection)
+                const selectedCount = selectedIds.length
 
                 const removeSelected = () => {
                   field.handleChange(field.state.value.filter((id) => !selection[id]))
@@ -85,15 +93,21 @@ export function EditVariantMediaForm({ productId, variant, productImages }: Edit
                       ) : (
                         <div className="flex size-full flex-col items-center justify-center gap-y-2 p-6">
                           <ImageIcon className="size-6 text-muted-foreground" />
-                          <p className="text-muted-foreground text-sm">No images assigned to this variant yet.</p>
+                          <p className="text-muted-foreground text-sm">
+                            <Trans>No images assigned to this variant yet.</Trans>
+                          </p>
                         </div>
                       )}
                     </div>
                     <div className="overflow-auto border-b lg:border-b-0 lg:border-l">
                       <div className="border-b px-6 py-4">
-                        <h2 className="font-medium text-sm">Select images</h2>
+                        <h2 className="font-medium text-sm">
+                          <Trans>Select images</Trans>
+                        </h2>
                         <p className="mt-1 text-muted-foreground text-sm">
-                          Add product images to the variant. To add new images, add them to the product first.
+                          <Trans>
+                            Add product images to the variant. To add new images, add them to the product first.
+                          </Trans>
                         </p>
                       </div>
                       <div className="grid grid-cols-2 gap-4 p-4">
@@ -107,15 +121,17 @@ export function EditVariantMediaForm({ productId, variant, productImages }: Edit
                       </div>
                     </div>
                     <CommandBar open={selectedIds.length > 0}>
-                      <CommandBarValue>{selectedIds.length} selected</CommandBarValue>
+                      <CommandBarValue>
+                        {t`${plural(selectedCount, { one: '# selected', other: '# selected' })}`}
+                      </CommandBarValue>
                       <CommandBarSeparator />
                       {selectedIds.length === 1 && (
                         <>
-                          <CommandBarCommand action={makeThumbnail} label="Make thumbnail" shortcut="t" />
+                          <CommandBarCommand action={makeThumbnail} label={t`Make thumbnail`} shortcut="t" />
                           <CommandBarSeparator />
                         </>
                       )}
-                      <CommandBarCommand action={removeSelected} label="Remove Selected" shortcut="r" />
+                      <CommandBarCommand action={removeSelected} label={t`Remove Selected`} shortcut="r" />
                     </CommandBar>
                   </div>
                 )
@@ -123,8 +139,12 @@ export function EditVariantMediaForm({ productId, variant, productImages }: Edit
             </form.Field>
           </RouteFocusModal.Body>
           <RouteFocusModal.Footer>
-            <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-            <form.SubmitButton size="sm">Save</form.SubmitButton>
+            <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>
+              <Trans>Cancel</Trans>
+            </RouteFocusModal.Close>
+            <form.SubmitButton size="sm">
+              <Trans>Save</Trans>
+            </form.SubmitButton>
           </RouteFocusModal.Footer>
         </form.AppForm>
       </KeyboundForm>
@@ -140,6 +160,8 @@ type AssignedImageProps = {
 }
 
 function AssignedImage({ image, checked, isThumbnail, onCheckedChange }: AssignedImageProps) {
+  const { t } = useLingui()
+
   return (
     <div
       data-slot="media-tile"
@@ -147,11 +169,13 @@ function AssignedImage({ image, checked, isThumbnail, onCheckedChange }: Assigne
     >
       {!!isThumbnail && (
         <span
-          title="Thumbnail"
+          title={t`Thumbnail`}
           className="absolute top-2 left-2 z-10 rounded-full bg-background p-1 text-foreground shadow-sm"
         >
           <StarIcon className="size-3.5 fill-current" />
-          <span className="sr-only">Thumbnail</span>
+          <span className="sr-only">
+            <Trans>Thumbnail</Trans>
+          </span>
         </span>
       )}
       <img src={image.url} alt="" className="size-full object-cover object-center" />
@@ -164,7 +188,7 @@ function AssignedImage({ image, checked, isThumbnail, onCheckedChange }: Assigne
         <Checkbox
           checked={checked}
           onCheckedChange={onCheckedChange}
-          aria-label="Select image"
+          aria-label={t`Select image`}
           className="bg-background"
         />
       </div>
@@ -186,7 +210,9 @@ function AvailableImage({ image, onAdd }: { image: AdminProductImage; onAdd: () 
           <PlusIcon className="size-4" />
         </span>
       </span>
-      <span className="sr-only">Add image to variant</span>
+      <span className="sr-only">
+        <Trans>Add image to variant</Trans>
+      </span>
     </button>
   )
 }

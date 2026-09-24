@@ -1,12 +1,20 @@
+import { useLingui } from '@lingui/react/macro'
 import { daysAgoIso, todayIso } from '@proteus/utils'
 import type { AdminOrder } from '#/api/generated/model'
 import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useOrders } from '#/features/orders/api/orders'
-import { fulfillmentStatusColors, orderStatusColors } from '#/features/orders/utils/order-status'
+import {
+  fulfillmentStatusColors,
+  fulfillmentStatusLabels,
+  orderStatusColors,
+  orderStatusLabels,
+} from '#/features/orders/utils/order-status'
 
-export const useOrderTable = () =>
-  useDefineTable<AdminOrder>({
+export const useOrderTable = () => {
+  const { t, i18n } = useLingui()
+
+  return useDefineTable<AdminOrder>({
     useData: (params) => {
       const { data, isPending, isFetching } = useOrders(params)
       return {
@@ -19,42 +27,46 @@ export const useOrderTable = () =>
 
     columns: (col) => [
       col.accessor('displayId', {
-        header: 'Order',
+        header: t`Order`,
         cell: ({ value }) => `#${value}`,
       }),
-      col.accessor('email', { header: 'Customer' }),
+      col.accessor('email', { header: t`Customer` }),
       col.accessor('status', {
-        header: 'Status',
+        header: t`Status`,
         truncateTooltip: false,
-        cell: ({ value }) => <StatusCell color={orderStatusColors[value]}>{value}</StatusCell>,
+        cell: ({ value }) => (
+          <StatusCell color={orderStatusColors[value]}>{i18n._(orderStatusLabels[value])}</StatusCell>
+        ),
       }),
       col.accessor('fulfillmentStatus', {
-        header: 'Fulfillment',
+        header: t`Fulfillment`,
         truncateTooltip: false,
-        cell: ({ value }) => <StatusCell color={fulfillmentStatusColors[value]}>{value}</StatusCell>,
+        cell: ({ value }) => (
+          <StatusCell color={fulfillmentStatusColors[value]}>{i18n._(fulfillmentStatusLabels[value])}</StatusCell>
+        ),
       }),
-      col.accessor('createdAt', { header: 'Date', render: 'datetime', sortable: true }),
+      col.accessor('createdAt', { header: t`Date`, render: 'datetime', sortable: true }),
     ],
 
     filters: (filter) => [
       filter.accessor('status', {
         type: 'select',
-        label: 'Status',
+        label: t`Status`,
         options: [
-          { label: 'Pending', value: 'pending' },
-          { label: 'Completed', value: 'completed' },
-          { label: 'Canceled', value: 'canceled' },
-          { label: 'Archived', value: 'archived' },
+          { label: t`Pending`, value: 'pending' },
+          { label: t`Completed`, value: 'completed' },
+          { label: t`Canceled`, value: 'canceled' },
+          { label: t`Archived`, value: 'archived' },
         ],
       }),
       filter.accessor('createdAt', {
         type: 'date',
-        label: 'Date',
+        label: t`Date`,
         presets: [
-          { label: 'Today', value: { $gte: todayIso() } },
-          { label: 'Last 7 days', value: { $gte: daysAgoIso(7) } },
-          { label: 'Last 30 days', value: { $gte: daysAgoIso(30) } },
-          { label: 'Last 12 months', value: { $gte: daysAgoIso(365) } },
+          { label: t`Today`, value: { $gte: todayIso() } },
+          { label: t`Last 7 days`, value: { $gte: daysAgoIso(7) } },
+          { label: t`Last 30 days`, value: { $gte: daysAgoIso(30) } },
+          { label: t`Last 12 months`, value: { $gte: daysAgoIso(365) } },
         ],
       }),
     ],
@@ -63,11 +75,12 @@ export const useOrderTable = () =>
     rowHref: (row) => `/orders/${row.id}`,
 
     empty: {
-      heading: 'No orders yet',
-      description: 'Orders will appear here once customers complete checkout.',
+      heading: t`No orders yet`,
+      description: t`Orders will appear here once customers complete checkout.`,
     },
     filtered: {
-      heading: 'No orders found',
-      description: 'Try changing your filters or search term.',
+      heading: t`No orders found`,
+      description: t`Try changing your filters or search term.`,
     },
   })
+}

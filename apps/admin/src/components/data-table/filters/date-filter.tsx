@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Button, Input, Label } from '@proteus/ui'
 
 type DateValue = { $gte?: string; $lte?: string }
@@ -41,7 +42,7 @@ export function DateFilter({ value, onChange, presets }: DateFilterProps) {
       )}
       <div className="flex flex-col gap-3">
         <Label className="flex flex-col gap-1 text-muted-foreground text-xs">
-          From
+          <Trans>From</Trans>
           <Input
             type="date"
             value={toDateInput(value?.$gte)}
@@ -50,7 +51,7 @@ export function DateFilter({ value, onChange, presets }: DateFilterProps) {
           />
         </Label>
         <Label className="flex flex-col gap-1 text-muted-foreground text-xs">
-          To
+          <Trans>To</Trans>
           <Input
             type="date"
             value={toDateInput(value?.$lte)}

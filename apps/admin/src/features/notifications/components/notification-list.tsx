@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Skeleton } from '@proteus/ui'
 import { useCallback, useEffect, useRef } from 'react'
 import { useInfiniteNotifications } from '#/features/notifications/api/notifications'
@@ -46,7 +47,9 @@ export function NotificationList({ userId, userEmail }: { userId: string; userEm
 
   if (notifications.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center text-muted-foreground text-sm">No notifications yet</div>
+      <div className="flex flex-1 items-center justify-center text-muted-foreground text-sm">
+        <Trans>No notifications yet</Trans>
+      </div>
     )
   }
 

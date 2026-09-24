@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Button,
   DropdownMenu,
@@ -10,16 +11,22 @@ import {
 import { EllipsisIcon } from 'lucide-react'
 import type { AdminProductOption, AdminProductOptionValue } from '#/api/generated/model'
 import { useUpdateProductOption } from '#/features/product-options/api/product-options'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function ValueRowActions({ option, value }: { option: AdminProductOption; value: AdminProductOptionValue }) {
   const { mutate: update } = useUpdateProductOption(option.id)
   const prompt = usePrompt()
+  const { t } = useLingui()
+  const { cancel } = useUiCopy()
+  const valueName = value.value
+  const optionTitle = option.title
 
   const handleDelete = async () => {
     const confirmed = await prompt({
-      title: 'Remove value',
-      description: `Are you sure you want to remove "${value.value}" from "${option.title}"?`,
-      confirmText: 'Remove',
+      title: t`Remove value`,
+      description: t`Are you sure you want to remove "${valueName}" from "${optionTitle}"?`,
+      confirmText: t`Remove`,
+      cancelText: cancel,
       variant: 'danger',
     })
 
@@ -27,7 +34,7 @@ export function ValueRowActions({ option, value }: { option: AdminProductOption;
       const remainingValues = option.values.filter((v) => v.id !== value.id).map((v) => ({ value: v.value }))
       update(
         { values: remainingValues },
-        { onSuccess: () => toast.add({ type: 'success', title: `Value "${value.value}" removed` }) },
+        { onSuccess: () => toast.add({ type: 'success', title: t`Value "${valueName}" removed` }) },
       )
     }
   }
@@ -39,7 +46,7 @@ export function ValueRowActions({ option, value }: { option: AdminProductOption;
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-          Delete
+          <Trans>Delete</Trans>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

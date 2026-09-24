@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { daysAgoIso, todayIso } from '@proteus/utils'
 import type { AdminCustomer } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
@@ -5,8 +6,10 @@ import { useCustomers } from '#/features/customers/api/customers'
 import { CustomerRowActions } from '#/features/customers/components/customer-row-actions'
 import { customerName } from '#/features/customers/utils/customer-name'
 
-export const useCustomerTable = () =>
-  useDefineTable<AdminCustomer>({
+export const useCustomerTable = () => {
+  const { t } = useLingui()
+
+  return useDefineTable<AdminCustomer>({
     useData: (params) => {
       const { data, isPending, isFetching } = useCustomers(params)
       return {
@@ -19,24 +22,24 @@ export const useCustomerTable = () =>
 
     columns: (col) => [
       // AdminCustomer holds the two halves separately, so there is no accessor to sort on here.
-      col.display('name', { header: 'Name', cell: ({ row }) => customerName(row) || '—' }),
-      col.accessor('email', { header: 'Email', sortable: true }),
+      col.display('name', { header: t`Name`, cell: ({ row }) => customerName(row) || '—' }),
+      col.accessor('email', { header: t`Email`, sortable: true }),
       col.accessor('hasAccount', {
-        header: 'Account',
-        cell: ({ value }) => (value ? 'Registered' : 'Guest'),
+        header: t`Account`,
+        cell: ({ value }) => (value ? t`Registered` : t`Guest`),
       }),
-      col.accessor('createdAt', { header: 'Created', render: 'datetime', sortable: true }),
+      col.accessor('createdAt', { header: t`Created`, render: 'datetime', sortable: true }),
     ],
 
     filters: (filter) => [
       filter.accessor('createdAt', {
         type: 'date',
-        label: 'Created',
+        label: t`Created`,
         presets: [
-          { label: 'Today', value: { $gte: todayIso() } },
-          { label: 'Last 7 days', value: { $gte: daysAgoIso(7) } },
-          { label: 'Last 30 days', value: { $gte: daysAgoIso(30) } },
-          { label: 'Last 12 months', value: { $gte: daysAgoIso(365) } },
+          { label: t`Today`, value: { $gte: todayIso() } },
+          { label: t`Last 7 days`, value: { $gte: daysAgoIso(7) } },
+          { label: t`Last 30 days`, value: { $gte: daysAgoIso(30) } },
+          { label: t`Last 12 months`, value: { $gte: daysAgoIso(365) } },
         ],
       }),
     ],
@@ -45,11 +48,12 @@ export const useCustomerTable = () =>
     rowActions: (row) => <CustomerRowActions customer={row} />,
 
     empty: {
-      heading: 'No customers yet',
-      description: 'Create your first customer to get started.',
+      heading: t`No customers yet`,
+      description: t`Create your first customer to get started.`,
     },
     filtered: {
-      heading: 'No customers found',
-      description: 'Try changing your filters or search term.',
+      heading: t`No customers found`,
+      description: t`Try changing your filters or search term.`,
     },
   })
+}

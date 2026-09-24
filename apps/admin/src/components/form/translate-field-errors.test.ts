@@ -1,6 +1,6 @@
 import { setupI18n } from '@lingui/core'
-import { messages as esMessages } from '@proteus/http-schemas/locales/es'
 import { AdminUpdateMe } from '@proteus/http-schemas/admin'
+import { messages as esMessages } from '@proteus/http-schemas/locales/es'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { translateFieldErrors } from './translate-field-errors'

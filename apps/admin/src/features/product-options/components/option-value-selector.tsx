@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useCallback, useMemo } from 'react'
 import type { AdminProductOption } from '#/api/generated/model'
 import { MultiSelectCombobox } from '#/components/multi-select-combobox'
@@ -19,6 +20,7 @@ type OptionValueSelectorProps = {
  * product being created has none and a product already selling does.
  */
 export function OptionValueSelector({ allOptions, value, onChange }: OptionValueSelectorProps) {
+  const { t } = useLingui()
   const optionById = useMemo(() => new Map(allOptions.map((option) => [option.id, option])), [allOptions])
   const selectedOptionIds = useMemo(() => value.map((entry) => entry.optionId), [value])
   const optionItems = useMemo(() => allOptions.map((option) => ({ id: option.id, label: option.title })), [allOptions])
@@ -56,27 +58,39 @@ export function OptionValueSelector({ allOptions, value, onChange }: OptionValue
     .filter((option): option is AdminProductOption => option !== undefined)
 
   if (allOptions.length === 0) {
-    return <p className="text-muted-foreground text-sm">No product options available. Create one first.</p>
+    return (
+      <p className="text-muted-foreground text-sm">
+        <Trans>No product options available. Create one first.</Trans>
+      </p>
+    )
   }
 
   return (
     <>
       <div>
-        <h2 className="font-medium text-sm">Product Options</h2>
-        <p className="mb-3 text-muted-foreground text-sm">Select which options should be associated to this product.</p>
+        <h2 className="font-medium text-sm">
+          <Trans>Product Options</Trans>
+        </h2>
+        <p className="mb-3 text-muted-foreground text-sm">
+          <Trans>Select which options should be associated to this product.</Trans>
+        </p>
         <MultiSelectCombobox
           items={optionItems}
           value={selectedOptionIds}
           onValueChange={handleOptionsChange}
-          placeholder="Search options..."
-          emptyMessage="No options found."
+          placeholder={t`Search options...`}
+          emptyMessage={t`No options found.`}
         />
       </div>
 
       {selectedOptions.length > 0 && (
         <div>
-          <h2 className="font-medium text-sm">Values</h2>
-          <p className="mb-3 text-muted-foreground text-sm">Select which values to use for each option.</p>
+          <h2 className="font-medium text-sm">
+            <Trans>Values</Trans>
+          </h2>
+          <p className="mb-3 text-muted-foreground text-sm">
+            <Trans>Select which values to use for each option.</Trans>
+          </p>
           <div className="space-y-4">
             {selectedOptions.map((option) => (
               <div key={option.id}>
@@ -85,8 +99,8 @@ export function OptionValueSelector({ allOptions, value, onChange }: OptionValue
                   items={option.values.map((optionValue) => ({ id: optionValue.id, label: optionValue.value }))}
                   value={value.find((entry) => entry.optionId === option.id)?.valueIds ?? []}
                   onValueChange={(valueIds) => handleValuesChange(option.id, valueIds)}
-                  placeholder="Search values..."
-                  emptyMessage="No values found."
+                  placeholder={t`Search values...`}
+                  emptyMessage={t`No values found.`}
                 />
               </div>
             ))}

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -47,6 +48,7 @@ export const useSuspenseCustomer = (id: string) => useSuspenseQuery(customerQuer
 export const useUpdateCustomer = (
   options?: UseMutationOptions<AdminCustomerResponse, Error, { id: string; data?: AdminUpdateCustomer }>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -59,13 +61,14 @@ export const useUpdateCustomer = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update customer', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update customer`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useDeleteCustomer = (options?: UseMutationOptions<DeleteResponse, Error, { id: string }>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -78,7 +81,7 @@ export const useDeleteCustomer = (options?: UseMutationOptions<DeleteResponse, E
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to delete customer', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to delete customer`, description: error.message })
       onError?.(...args)
     },
   })

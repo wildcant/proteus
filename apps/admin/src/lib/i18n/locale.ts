@@ -51,3 +51,13 @@ export function rememberLocale(locale: string): boolean {
 export function forgetLocale(): void {
   localStorage.removeItem(LOCALE_KEY)
 }
+
+/**
+ * The Locale dates are formatted in, or `undefined` for the English admin, where `@proteus/utils`
+ * keeps its fixed `MMM d, yyyy` pattern. `Intl` would render English dates differently, and English
+ * must render as it always has.
+ */
+export function dateLocale(): string | undefined {
+  const locale = activeLocale()
+  return catalogLanguageFor(locale) === 'en' ? undefined : locale
+}

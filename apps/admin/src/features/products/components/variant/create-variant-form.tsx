@@ -1,10 +1,14 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteFocusModal, toast, useRouteModal } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { InfoIcon } from 'lucide-react'
 import { useCreateVariantForm } from '#/features/products/hooks/use-create-variant-form'
 import { useOptionCombinationSearch } from '#/features/products/hooks/use-option-combination-search'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function CreateVariantForm({ productId }: { productId: string }) {
+  const { t } = useLingui()
+  const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
 
   // The combobox is this component's concern, so the search lives here rather than being proxied
@@ -17,7 +21,7 @@ export function CreateVariantForm({ productId }: { productId: string }) {
     productId,
     params: {
       onSuccess: (data) => {
-        toast.add({ type: 'success', title: 'Variant created successfully' })
+        toast.add({ type: 'success', title: t`Variant created successfully` })
         handleSuccess(`/products/${productId}/variants/${data.variant.id}`)
       },
     },
@@ -26,14 +30,16 @@ export function CreateVariantForm({ productId }: { productId: string }) {
   if (hasNoOptions) {
     return (
       <>
-        <RouteFocusModal.Header />
+        <RouteFocusModal.Header closeLabel={closeLabel} />
         <RouteFocusModal.Body>
           <p className="mx-auto w-full max-w-180 px-6 py-16 text-muted-foreground text-sm">
-            This product has no options yet. A variant is one combination of a product's option values, so{' '}
-            <Link to="/products/$id/options" params={{ id: productId }} className="underline">
-              add some options
-            </Link>{' '}
-            first.
+            <Trans>
+              This product has no options yet. A variant is one combination of a product's option values, so{' '}
+              <Link to="/products/$id/options" params={{ id: productId }} className="underline">
+                add some options
+              </Link>{' '}
+              first.
+            </Trans>
           </p>
         </RouteFocusModal.Body>
       </>
@@ -41,7 +47,7 @@ export function CreateVariantForm({ productId }: { productId: string }) {
   }
 
   return (
-    <RouteFocusModal.Form form={form}>
+    <RouteFocusModal.Form form={form} copy={unsavedChanges}>
       {/* No handler when there is nothing left to create: ⌘+Enter would otherwise run the
           validator and answer "Pick a combination" to a merchant who has none to pick. */}
       <KeyboundForm
@@ -49,15 +55,19 @@ export function CreateVariantForm({ productId }: { productId: string }) {
         className="flex flex-1 flex-col overflow-hidden"
       >
         <form.AppForm>
-          <RouteFocusModal.Header />
+          <RouteFocusModal.Header closeLabel={closeLabel} />
 
           <RouteFocusModal.Body>
             <div className="mx-auto w-full max-w-180 space-y-6 px-6 py-10">
               <div>
-                <h1 className="font-medium text-xl">Variant details</h1>
+                <h1 className="font-medium text-xl">
+                  <Trans>Variant details</Trans>
+                </h1>
                 <p className="text-muted-foreground text-sm">
-                  A variant is one combination of this product's option values. Combinations it already has are left
-                  out.
+                  <Trans>
+                    A variant is one combination of this product's option values. Combinations it already has are left
+                    out.
+                  </Trans>
                 </p>
               </div>
 
@@ -66,12 +76,12 @@ export function CreateVariantForm({ productId }: { productId: string }) {
               <form.AppField name="combination">
                 {(field) => (
                   <field.SingleComboboxField
-                    label="Combination"
+                    label={t`Combination`}
                     items={combinations}
                     onInputValueChange={onSearchChange}
                     disabled={isExhausted}
-                    placeholder="Search combinations..."
-                    emptyMessage="No combinations left."
+                    placeholder={t`Search combinations...`}
+                    emptyMessage={t`No combinations left.`}
                   />
                 )}
               </form.AppField>
@@ -81,14 +91,16 @@ export function CreateVariantForm({ productId }: { productId: string }) {
               <form.Subscribe selector={(state) => state.values.combination?.label}>
                 {(label) => (
                   <div>
-                    <span className="mb-1.5 block font-medium text-sm">Title</span>
-                    <p className="text-muted-foreground text-sm">{label || 'Pick a combination to see the title.'}</p>
+                    <span className="mb-1.5 block font-medium text-sm">
+                      <Trans>Title</Trans>
+                    </span>
+                    <p className="text-muted-foreground text-sm">{label || t`Pick a combination to see the title.`}</p>
                   </div>
                 )}
               </form.Subscribe>
 
               <form.AppField name="sku">
-                {(field) => <field.TextField label="SKU" placeholder="Optional" />}
+                {(field) => <field.TextField label={t`SKU`} placeholder={t`Optional`} />}
               </form.AppField>
             </div>
           </RouteFocusModal.Body>
@@ -99,12 +111,16 @@ export function CreateVariantForm({ productId }: { productId: string }) {
             {isExhausted ? (
               <p className="flex items-center gap-x-2 text-blue-500 text-sm dark:text-blue-400">
                 <InfoIcon className="size-4 shrink-0" aria-hidden="true" />
-                Every combination of this product's options already has a variant.
+                <Trans>Every combination of this product's options already has a variant.</Trans>
               </p>
             ) : (
               <>
-                <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-                <form.SubmitButton size="sm">Create</form.SubmitButton>
+                <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>
+                  <Trans>Cancel</Trans>
+                </RouteFocusModal.Close>
+                <form.SubmitButton size="sm">
+                  <Trans>Create</Trans>
+                </form.SubmitButton>
               </>
             )}
           </RouteFocusModal.Footer>

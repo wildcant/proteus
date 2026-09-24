@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Badge } from '@proteus/ui'
 import type { AdminProductVariantWithStock } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
@@ -6,6 +7,7 @@ import { useProductVariants } from '#/features/products/api/product-variants'
 import { VariantRowActions } from '#/features/products/components/variant/variant-row-actions'
 
 export const useVariantTable = (productId: string) => {
+  const { t } = useLingui()
   // The product's options decide the columns; each variant's own resolved values fill the cells.
   const { data: optionsData } = useProductOptionsForProduct(productId)
   const options = optionsData?.productOptions ?? []
@@ -22,9 +24,9 @@ export const useVariantTable = (productId: string) => {
     },
 
     columns: (col) => [
-      col.accessor('title', { header: 'Title', sortable: true }),
-      col.accessor('sku', { header: 'SKU' }),
-      col.accessor('availableQuantity', { header: 'Stock', cell: ({ value }) => value ?? '—' }),
+      col.accessor('title', { header: t`Title`, sortable: true }),
+      col.accessor('sku', { header: t`SKU` }),
+      col.accessor('availableQuantity', { header: t`Stock`, cell: ({ value }) => value ?? '—' }),
       // One column per option, so the table reads as the matrix it is. The API already resolved
       // and ordered each variant's values, so this only has to find the matching one.
       ...options.map((option) =>
@@ -41,18 +43,18 @@ export const useVariantTable = (productId: string) => {
     filters: (filter) => [
       filter.accessor('allowBackorder', {
         type: 'radio',
-        label: 'Allow Backorder',
+        label: t`Allow Backorder`,
         options: [
-          { label: 'Yes', value: 'true' },
-          { label: 'No', value: 'false' },
+          { label: t`Yes`, value: 'true' },
+          { label: t`No`, value: 'false' },
         ],
       }),
       filter.accessor('manageInventory', {
         type: 'radio',
-        label: 'Manage Inventory',
+        label: t`Manage Inventory`,
         options: [
-          { label: 'Yes', value: 'true' },
-          { label: 'No', value: 'false' },
+          { label: t`Yes`, value: 'true' },
+          { label: t`No`, value: 'false' },
         ],
       }),
     ],
@@ -64,12 +66,12 @@ export const useVariantTable = (productId: string) => {
     rowActions: (row) => <VariantRowActions productId={productId} variant={row} />,
 
     empty: {
-      heading: 'No variants yet',
-      description: 'Create your first variant to get started.',
+      heading: t`No variants yet`,
+      description: t`Create your first variant to get started.`,
     },
     filtered: {
-      heading: 'No variants found',
-      description: 'Try changing your filters or search term.',
+      heading: t`No variants found`,
+      description: t`Try changing your filters or search term.`,
     },
   })
 }

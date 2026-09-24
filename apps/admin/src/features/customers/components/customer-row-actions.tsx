@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { EllipsisIcon } from 'lucide-react'
@@ -14,9 +15,11 @@ export function CustomerRowActions({ customer }: { customer: AdminCustomer }) {
         <EllipsisIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => navigate({ to: `/customers/${customer.id}/edit` })}>Edit</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate({ to: `/customers/${customer.id}/edit` })}>
+          <Trans>Edit</Trans>
+        </DropdownMenuItem>
         <DropdownMenuItem variant="destructive" onClick={() => deleteCustomer({ id: customer.id })}>
-          Delete
+          <Trans>Delete</Trans>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

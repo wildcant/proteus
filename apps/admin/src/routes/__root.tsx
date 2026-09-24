@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Toaster } from '@proteus/ui'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { QueryClient } from '@tanstack/react-query'
@@ -15,12 +16,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 })
 
 function RootComponent() {
+  const { t } = useLingui()
   const { queryClient } = Route.useRouteContext()
 
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
-      <Toaster />
+      <Toaster closeLabel={t`Close toast`} />
       {!!SHOW_DEVTOOLS && (
         <TanStackDevtools
           config={{ position: 'bottom-right' }}

@@ -19,6 +19,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, cn } from '@proteus/ui'
 import { GripVerticalIcon, StarIcon, TrashIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -122,7 +123,9 @@ function SortableMediaRow({ media, onDelete, onMakeThumbnail }: MediaRowProps) {
           {...listeners}
         >
           <GripVerticalIcon className="text-muted-foreground" />
-          <span className="sr-only">Reorder</span>
+          <span className="sr-only">
+            <Trans>Reorder</Trans>
+          </span>
         </Button>
       }
     />
@@ -136,6 +139,8 @@ type MediaRowTileProps = MediaRowProps & {
 }
 
 function MediaRow({ ref, style, media, onDelete, onMakeThumbnail, handle }: MediaRowTileProps) {
+  const { t, i18n } = useLingui()
+
   return (
     <li
       ref={ref}
@@ -152,15 +157,15 @@ function MediaRow({ ref, style, media, onDelete, onMakeThumbnail, handle }: Medi
           <span className="line-clamp-1">{media.file?.name}</span>
           <span className="flex items-center gap-x-1 text-muted-foreground text-xs">
             {!!media.isThumbnail && <StarIcon className="size-3 fill-current" />}
-            {formatFileSize(media.file?.size ?? 0)}
+            {formatFileSize(media.file?.size ?? 0, i18n)}
           </span>
         </div>
       </div>
       {!!onDelete && !!onMakeThumbnail && (
         <ActionMenu
           groups={[
-            { actions: [{ label: 'Make thumbnail', onClick: onMakeThumbnail, icon: <StarIcon /> }] },
-            { actions: [{ label: 'Delete', onClick: onDelete, icon: <TrashIcon /> }] },
+            { actions: [{ label: t`Make thumbnail`, onClick: onMakeThumbnail, icon: <StarIcon /> }] },
+            { actions: [{ label: t`Delete`, onClick: onDelete, icon: <TrashIcon /> }] },
           ]}
         />
       )}

@@ -1,15 +1,20 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Card, CardHeader, CardTitle } from '@proteus/ui'
 import { formatPrice } from '@proteus/utils'
 import { Link } from '@tanstack/react-router'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
+import { activeLocale } from '#/lib/i18n/locale'
 
 export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder }) {
+  const { t } = useLingui()
   const currency = order.currencyCode
 
   return (
     <Card className="gap-0 divide-y py-0">
       <CardHeader>
-        <CardTitle>Summary</CardTitle>
+        <CardTitle>
+          <Trans>Summary</Trans>
+        </CardTitle>
       </CardHeader>
 
       {order.lineItems.map((item) => (
@@ -40,21 +45,32 @@ export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder 
               </span>
             )}
           </div>
-          <span className="shrink-0 text-muted-foreground text-sm">{formatPrice(item.unitPrice, currency)}</span>
+          <span className="shrink-0 text-muted-foreground text-sm">
+            {formatPrice(item.unitPrice, currency, activeLocale())}
+          </span>
           <span className="shrink-0 text-muted-foreground text-sm">\u00d7{item.quantity}</span>
-          <span className="shrink-0 font-medium text-sm tabular-nums">{formatPrice(item.lineTotal, currency)}</span>
+          <span className="shrink-0 font-medium text-sm tabular-nums">
+            {formatPrice(item.lineTotal, currency, activeLocale())}
+          </span>
         </div>
       ))}
 
       <div className="space-y-1 px-6 py-4 text-sm">
-        <TotalRow label="Item Subtotal" value={formatPrice(order.totals.itemsTotal, currency)} />
-        <TotalRow label="Shipping Subtotal" value={formatPrice(order.totals.shippingTotal, currency)} />
-        <TotalRow label="Order Total" value={formatPrice(order.totals.orderTotal, currency)} bold />
+        <TotalRow label={t`Item Subtotal`} value={formatPrice(order.totals.itemsTotal, currency, activeLocale())} />
+        <TotalRow
+          label={t`Shipping Subtotal`}
+          value={formatPrice(order.totals.shippingTotal, currency, activeLocale())}
+        />
+        <TotalRow label={t`Order Total`} value={formatPrice(order.totals.orderTotal, currency, activeLocale())} bold />
       </div>
 
       <div className="space-y-1 px-6 py-4 text-sm">
-        <TotalRow label="Paid Total" value={formatPrice(order.totals.paidTotal, currency)} />
-        <TotalRow label="Outstanding amount" value={formatPrice(order.totals.outstandingTotal, currency)} bold />
+        <TotalRow label={t`Paid Total`} value={formatPrice(order.totals.paidTotal, currency, activeLocale())} />
+        <TotalRow
+          label={t`Outstanding amount`}
+          value={formatPrice(order.totals.outstandingTotal, currency, activeLocale())}
+          bold
+        />
       </div>
     </Card>
   )

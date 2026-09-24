@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -54,6 +55,7 @@ const invalidateStore = () => {
 }
 
 export const useUpdateStore = (options?: UseMutationOptions<AdminStoreResponse, Error, AdminUpdateStore>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -64,7 +66,7 @@ export const useUpdateStore = (options?: UseMutationOptions<AdminStoreResponse, 
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update store', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update store`, description: error.message })
       onError?.(...args)
     },
   })
@@ -73,6 +75,7 @@ export const useUpdateStore = (options?: UseMutationOptions<AdminStoreResponse, 
 export const useAddStoreCurrencies = (
   options?: UseMutationOptions<AdminStoreResponse, Error, AdminAddStoreCurrencies>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -83,13 +86,14 @@ export const useAddStoreCurrencies = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to add currencies', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to add currencies`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useSetDefaultStoreCurrency = (options?: UseMutationOptions<AdminStoreResponse, Error, string>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -100,7 +104,7 @@ export const useSetDefaultStoreCurrency = (options?: UseMutationOptions<AdminSto
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to change the default currency', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to change the default currency`, description: error.message })
       onError?.(...args)
     },
   })
@@ -115,6 +119,7 @@ export const useSetDefaultStoreCurrency = (options?: UseMutationOptions<AdminSto
  * names the region, which is the only thing that says what to do about it.
  */
 export const useRemoveStoreCurrencies = (options?: UseMutationOptions<DeleteResponse[], Error, string[]>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -128,7 +133,7 @@ export const useRemoveStoreCurrencies = (options?: UseMutationOptions<DeleteResp
       // Invalidated on failure too: a bulk removal can land in part, and the table has to show
       // which part rather than the selection the merchant started from.
       invalidateStore()
-      toast.add({ type: 'error', title: 'Failed to remove currencies', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to remove currencies`, description: error.message })
       onError?.(...args)
     },
   })

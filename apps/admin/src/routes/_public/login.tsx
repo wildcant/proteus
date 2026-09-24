@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { LoginForm } from '#/features/auth/components/login-form'
 
@@ -12,8 +13,12 @@ function LoginPage() {
     <div className="flex min-h-dvh w-dvw items-center justify-center">
       <div className="m-4 flex w-full max-w-70 flex-col items-center">
         <div className="mb-4 flex flex-col items-center">
-          <h1 className="text-2xl">Welcome to Proteus</h1>
-          <p className="text-center text-sm text-ui-fg-subtle">Sign in to access the account area</p>
+          <h1 className="text-2xl">
+            <Trans>Welcome to Proteus</Trans>
+          </h1>
+          <p className="text-center text-sm text-ui-fg-subtle">
+            <Trans>Sign in to access the account area</Trans>
+          </p>
         </div>
         <div className="flex w-full flex-col gap-y-3">
           <LoginForm onSuccess={() => navigate({ to: '/' })} />

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery } from '@tanstack/react-query'
@@ -70,6 +71,7 @@ export const useAssignRegionCountries = (
   regionId: string,
   options?: UseMutationOptions<AdminRegionCountriesResponse, Error, AdminAssignRegionCountries>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -80,7 +82,7 @@ export const useAssignRegionCountries = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to add countries', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to add countries`, description: error.message })
       onError?.(...args)
     },
   })
@@ -91,6 +93,7 @@ export const useUpdateCountryLocale = (
   code: string,
   options?: UseMutationOptions<AdminCountryResponse, Error, AdminUpdateCountryLocale>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -101,7 +104,7 @@ export const useUpdateCountryLocale = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update locale', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update locale`, description: error.message })
       onError?.(...args)
     },
   })
@@ -119,6 +122,7 @@ export const useRemoveRegionCountries = (
   regionId: string,
   options?: UseMutationOptions<DeleteResponse[], Error, string[]>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -129,7 +133,7 @@ export const useRemoveRegionCountries = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to remove countries', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to remove countries`, description: error.message })
       onError?.(...args)
     },
   })

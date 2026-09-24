@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Button,
   DropdownMenu,
@@ -10,6 +11,7 @@ import {
 import { EllipsisIcon, LinkIcon, RefreshCwIcon, TrashIcon } from 'lucide-react'
 import type { AdminInvite } from '#/api/generated/model'
 import { useDeleteInvite, useResendInvite } from '#/features/users/api/invites'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 type InviteRowActionsProps = {
   invite: AdminInvite
@@ -19,20 +21,24 @@ export function InviteRowActions({ invite }: InviteRowActionsProps) {
   const { mutate: resend } = useResendInvite(invite.id)
   const { mutate: remove } = useDeleteInvite(invite.id)
   const prompt = usePrompt()
+  const { t } = useLingui()
+  const { cancel } = useUiCopy()
 
   // Uses navigator.clipboard which requires a secure context (HTTPS) and page focus.
   // Sufficient for admin apps served over HTTPS or localhost.
   const handleCopyInviteLink = () => {
     const link = `${window.location.origin}/invite?token=${invite.token}`
     navigator.clipboard.writeText(link)
-    toast.add({ type: 'success', title: 'Invite link copied to clipboard' })
+    toast.add({ type: 'success', title: t`Invite link copied to clipboard` })
   }
 
   const handleDelete = async () => {
+    const email = invite.email
     const confirmed = await prompt({
-      title: 'Delete invite',
-      description: `Are you sure you want to delete the invite for ${invite.email}?`,
-      confirmText: 'Delete',
+      title: t`Delete invite`,
+      description: t`Are you sure you want to delete the invite for ${email}?`,
+      confirmText: t`Delete`,
+      cancelText: cancel,
       variant: 'danger',
     })
 
@@ -51,17 +57,17 @@ export function InviteRowActions({ invite }: InviteRowActionsProps) {
           <>
             <DropdownMenuItem onClick={() => resend()}>
               <RefreshCwIcon />
-              Resend invite
+              <Trans>Resend invite</Trans>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleCopyInviteLink}>
               <LinkIcon />
-              Copy invite link
+              <Trans>Copy invite link</Trans>
             </DropdownMenuItem>
           </>
         )}
         <DropdownMenuItem variant="destructive" onClick={handleDelete}>
           <TrashIcon />
-          Delete
+          <Trans>Delete</Trans>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

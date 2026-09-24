@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminRegion } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useRegions } from '#/features/regions/api/regions'
@@ -5,8 +6,10 @@ import { RegionRowActions } from '#/features/regions/components/region-row-actio
 import { summariseCountries } from '#/features/regions/utils/country-summary'
 import { paymentProviderLabel } from '#/features/regions/utils/payment-provider-label'
 
-export const useRegionTable = () =>
-  useDefineTable<AdminRegion>({
+export const useRegionTable = () => {
+  const { t, i18n } = useLingui()
+
+  return useDefineTable<AdminRegion>({
     useData: (params) => {
       const { data, isPending, isFetching } = useRegions(params)
       return {
@@ -18,13 +21,17 @@ export const useRegionTable = () =>
     },
 
     columns: (col) => [
-      col.accessor('name', { header: 'Name', sortable: true }),
+      col.accessor('name', { header: t`Name`, sortable: true }),
       col.display('countries', {
-        header: 'Countries',
-        cell: ({ row }) => summariseCountries(row.countries.map((country) => country.displayName)),
+        header: t`Countries`,
+        cell: ({ row }) =>
+          summariseCountries(
+            row.countries.map((country) => country.displayName),
+            i18n,
+          ),
       }),
       col.display('paymentProviders', {
-        header: 'Payment Providers',
+        header: t`Payment Providers`,
         cell: ({ row }) =>
           row.paymentProviders.length === 0
             ? '—'
@@ -37,11 +44,12 @@ export const useRegionTable = () =>
     rowActions: (row) => <RegionRowActions region={row} />,
 
     empty: {
-      heading: 'No regions',
-      description: 'Create a region to start selling in a market.',
+      heading: t`No regions`,
+      description: t`Create a region to start selling in a market.`,
     },
     filtered: {
-      heading: 'No regions found',
-      description: 'Try changing your search term.',
+      heading: t`No regions found`,
+      description: t`Try changing your search term.`,
     },
   })
+}

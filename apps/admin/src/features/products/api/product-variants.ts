@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import {
@@ -102,6 +103,7 @@ export const useCreateProductVariant = (
   options?: UseMutationOptions<AdminCreateProductVariantResponse, Error, AdminCreateProductVariant>,
 ) => {
   const queryClient = useQueryClient()
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -114,7 +116,7 @@ export const useCreateProductVariant = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create variant', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to create variant`, description: error.message })
       onError?.(...args)
     },
   })
@@ -126,6 +128,7 @@ export const useUpdateProductVariant = (
   options?: UseMutationOptions<AdminUpdateProductVariantResponse, Error, AdminUpdateProductVariant>,
 ) => {
   const queryClient = useQueryClient()
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -139,7 +142,7 @@ export const useUpdateProductVariant = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update variant', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update variant`, description: error.message })
       onError?.(...args)
     },
   })
@@ -151,6 +154,7 @@ export const useDeleteProductVariant = (
   options?: UseMutationOptions<DeleteResponse, Error, void>,
 ) => {
   const queryClient = useQueryClient()
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -163,7 +167,7 @@ export const useDeleteProductVariant = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to delete variant', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to delete variant`, description: error.message })
       onError?.(...args)
     },
   })
@@ -175,6 +179,7 @@ export const useUpdateVariantPrices = (
   options?: UseMutationOptions<AdminUpdateVariantPricesResponse, Error, AdminUpdateVariantPrices>,
 ) => {
   const queryClient = useQueryClient()
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -186,7 +191,7 @@ export const useUpdateVariantPrices = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update variant prices', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update variant prices`, description: error.message })
       onError?.(...args)
     },
   })
@@ -198,6 +203,7 @@ export const useSetVariantStock = (
   options?: UseMutationOptions<AdminSetVariantStockResponse, Error, AdminSetVariantStock>,
 ) => {
   const queryClient = useQueryClient()
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -209,7 +215,7 @@ export const useSetVariantStock = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update variant stock', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update variant stock`, description: error.message })
       onError?.(...args)
     },
   })
@@ -222,6 +228,7 @@ export const useBatchVariantImages = (
   options?: UseMutationOptions<AdminBatchVariantImagesResponse, Error, AdminBatchVariantImages>,
 ) => {
   const queryClient = useQueryClient()
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -232,7 +239,7 @@ export const useBatchVariantImages = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update variant images', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update variant images`, description: error.message })
       onError?.(...args)
     },
   })
@@ -250,6 +257,7 @@ export const useBatchImageVariants = (
   options?: UseMutationOptions<AdminBatchImageVariantResponse, Error, AdminBatchImageVariant>,
 ) => {
   const queryClient = useQueryClient()
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -261,7 +269,7 @@ export const useBatchImageVariants = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update image variants', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update image variants`, description: error.message })
       onError?.(...args)
     },
   })

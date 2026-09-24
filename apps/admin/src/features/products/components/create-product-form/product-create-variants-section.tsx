@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { SortableList } from '#/components/common/sortable-list'
 import { useProductOptions } from '#/features/product-options/api/product-options'
 import { OptionValueSelector } from '#/features/product-options/components/option-value-selector'
@@ -15,6 +16,7 @@ import { enumerateVariantRows } from './variant-rows'
 export const ProductCreateVariantsSection = withForm({
   ...productCreateFormOpts,
   render: function ProductCreateVariantsSection({ form }) {
+    const { t } = useLingui()
     const { data } = useProductOptions()
     const allOptions = data?.productOptions ?? []
     const { currencyCodes } = useStoreCurrencies()
@@ -23,7 +25,9 @@ export const ProductCreateVariantsSection = withForm({
       <form.Subscribe selector={(state) => state.values.variants}>
         {(variants) => (
           <div className="flex flex-col gap-y-6">
-            <h2 className="font-semibold text-xl">Variants</h2>
+            <h2 className="font-semibold text-xl">
+              <Trans>Variants</Trans>
+            </h2>
 
             {/* The matrix is left alone when this goes off rather than cleared: `resolveVariantsPayload`
                 already ignores it, so keeping it means flipping back on restores the shopkeeper's work. */}
@@ -31,8 +35,8 @@ export const ProductCreateVariantsSection = withForm({
               <form.AppField name="variants.hasVariants">
                 {(field) => (
                   <field.SwitchField
-                    label="Yes, this is a product with variants"
-                    description="When off, a single variant is created, named after the product."
+                    label={t`Yes, this is a product with variants`}
+                    description={t`When off, a single variant is created, named after the product.`}
                   />
                 )}
               </form.AppField>
@@ -57,9 +61,11 @@ export const ProductCreateVariantsSection = withForm({
 
                 {variants.rows.length > 0 ? (
                   <div>
-                    <h3 className="font-medium text-sm">Product variants</h3>
+                    <h3 className="font-medium text-sm">
+                      <Trans>Product variants</Trans>
+                    </h3>
                     <p className="mb-3 text-muted-foreground text-sm">
-                      This ranking will affect the variants' order in your storefront.
+                      <Trans>This ranking will affect the variants' order in your storefront.</Trans>
                     </p>
                     <div className="rounded-md border">
                       <SortableList

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminInventoryItem } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useInventoryItems } from '#/features/inventory/api/inventory'
@@ -13,7 +14,9 @@ import { useStore } from '#/features/store/api/store'
  */
 export const useInventoryTable = () => {
   const { data: store } = useStore()
-  const hasThreshold = store?.store.lowStockThreshold !== null && store?.store.lowStockThreshold !== undefined
+  const { t } = useLingui()
+  const threshold = store?.store.lowStockThreshold
+  const hasThreshold = threshold !== null && threshold !== undefined
 
   return useDefineTable<AdminInventoryItem>({
     useData: (params) => {
@@ -27,13 +30,13 @@ export const useInventoryTable = () => {
     },
 
     columns: (col) => [
-      col.accessor('productTitle', { header: 'Product', sortable: true }),
-      col.accessor('variantTitle', { header: 'Variant', sortable: true }),
-      col.accessor('sku', { header: 'SKU', sortable: true, cell: ({ value }) => value ?? '—' }),
-      col.accessor('stockedQuantity', { header: 'Stocked', sortable: true, align: 'right' }),
-      col.accessor('reservedQuantity', { header: 'Reserved', sortable: true, align: 'right' }),
+      col.accessor('productTitle', { header: t`Product`, sortable: true }),
+      col.accessor('variantTitle', { header: t`Variant`, sortable: true }),
+      col.accessor('sku', { header: t`SKU`, sortable: true, cell: ({ value }) => value ?? '—' }),
+      col.accessor('stockedQuantity', { header: t`Stocked`, sortable: true, align: 'right' }),
+      col.accessor('reservedQuantity', { header: t`Reserved`, sortable: true, align: 'right' }),
       col.accessor('availableQuantity', {
-        header: 'Available',
+        header: t`Available`,
         sortable: true,
         align: 'right',
         cell: ({ value, row }) => (
@@ -47,8 +50,8 @@ export const useInventoryTable = () => {
         ? [
             filter.accessor('lowStock', {
               type: 'radio',
-              label: 'Stock',
-              options: [{ label: `Low stock (${store?.store.lowStockThreshold} or fewer)`, value: 'true' }],
+              label: t`Stock`,
+              options: [{ label: t`Low stock (${threshold} or fewer)`, value: 'true' }],
             }),
           ]
         : [],
@@ -60,12 +63,12 @@ export const useInventoryTable = () => {
     rowHref: (row) => `/products/${row.productId}/variants/${row.variantId}`,
 
     empty: {
-      heading: 'Nothing tracked yet',
-      description: 'Inventory appears here once a product has a variant the shop tracks.',
+      heading: t`Nothing tracked yet`,
+      description: t`Inventory appears here once a product has a variant the shop tracks.`,
     },
     filtered: {
-      heading: 'No inventory found',
-      description: 'Try changing your filters.',
+      heading: t`No inventory found`,
+      description: t`Try changing your filters.`,
     },
   })
 }

@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@proteus/ui'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -29,16 +30,20 @@ function InvitePage() {
     return (
       <div className="flex w-full max-w-sm flex-col items-center gap-6 px-4">
         <div className="flex flex-col items-center gap-1">
-          <h1 className="font-semibold text-xl">Your account has been registered</h1>
-          <p className="text-muted-foreground text-sm">Get started with the admin right away.</p>
+          <h1 className="font-semibold text-xl">
+            <Trans>Your account has been registered</Trans>
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            <Trans>Get started with the admin right away.</Trans>
+          </p>
         </div>
         <Link to="/login" className="w-full">
           <Button variant="outline" className="w-full">
-            Go to login
+            <Trans>Go to login</Trans>
           </Button>
         </Link>
         <Link to="/login" className="text-muted-foreground text-sm hover:text-foreground">
-          Back to login
+          <Trans>Back to login</Trans>
         </Link>
       </div>
     )
@@ -51,11 +56,15 @@ function InvalidInviteError() {
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-6 px-4">
       <div className="flex flex-col items-center gap-1">
-        <h1 className="font-semibold text-xl">Your invite token is invalid</h1>
-        <p className="text-muted-foreground text-sm">Try requesting a new invite link.</p>
+        <h1 className="font-semibold text-xl">
+          <Trans>Your invite token is invalid</Trans>
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          <Trans>Try requesting a new invite link.</Trans>
+        </p>
       </div>
       <Link to="/login" className="text-muted-foreground text-sm hover:text-foreground">
-        Back to login
+        <Trans>Back to login</Trans>
       </Link>
     </div>
   )

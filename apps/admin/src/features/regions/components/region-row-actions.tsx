@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { EllipsisIcon } from 'lucide-react'
@@ -19,7 +20,7 @@ export function RegionRowActions({ region }: { region: AdminRegion }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => navigate({ to: `/settings/regions/${region.id}/edit` })}>
-          Edit
+          <Trans>Edit</Trans>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

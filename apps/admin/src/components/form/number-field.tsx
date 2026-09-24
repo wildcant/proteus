@@ -1,5 +1,6 @@
-import { Field, FieldError, FieldLabel, Input } from '@proteus/ui'
+import { Field, FieldLabel, Input } from '@proteus/ui'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { useFieldContext } from '#/lib/form-context.ts'
 
 type NumberFieldProps = Pick<React.ComponentProps<'input'>, 'placeholder' | 'disabled' | 'autoFocus' | 'className'> & {
@@ -27,7 +28,7 @@ export function NumberField({ label, className, ...inputProps }: NumberFieldProp
         aria-invalid={isInvalid}
         {...inputProps}
       />
-      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <TranslatedFieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

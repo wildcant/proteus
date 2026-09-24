@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -51,6 +52,7 @@ export const useUpdateLocale = () =>
 type LoginPayload = { email: string; password: string }
 
 export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Error, LoginPayload>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -62,7 +64,7 @@ export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Erro
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Login failed', description: error.message })
+      toast.add({ type: 'error', title: t`Login failed`, description: error.message })
       onError?.(...args)
     },
   })

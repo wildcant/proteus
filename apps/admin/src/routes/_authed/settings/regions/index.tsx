@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { AdminRegionListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
@@ -12,6 +13,7 @@ export const Route = createFileRoute('/_authed/settings/regions/')({
 })
 
 function RegionsPage() {
+  const { t } = useLingui()
   const regions = useRegionTable()
 
   return (
@@ -19,9 +21,9 @@ function RegionsPage() {
       <DataTable
         use={regions}
         className="flex-1"
-        heading="Regions"
-        description="A region is an area that you sell products in. It can cover multiple countries, and has different providers and currency."
-        actions={[{ label: 'Create', to: 'create' }]}
+        heading={t`Regions`}
+        description={t`A region is an area that you sell products in. It can cover multiple countries, and has different providers and currency.`}
+        actions={[{ label: t`Create`, to: 'create' }]}
       />
     </PageLayout.SingleColumn>
   )

@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Badge, Card, CardAction, CardDescription, CardHeader, CardTitle } from '@proteus/ui'
 import { getCurrencyName } from '@proteus/utils'
 import { createFileRoute } from '@tanstack/react-router'
@@ -11,6 +12,7 @@ import { regionsListQueryOptions, useSuspenseRegions } from '#/features/regions/
 import { storeQueryOptions, useSuspenseStore } from '#/features/store/api/store'
 import { StoreCurrenciesCard } from '#/features/store/components/store-currencies-card'
 import { defaultCurrency } from '#/features/store/utils/store-currencies'
+import { activeLocale } from '#/lib/i18n/locale'
 
 export const Route = createFileRoute('/_authed/settings/store')({
   staticData: { breadcrumb: msg`Store` },
@@ -36,6 +38,7 @@ export const Route = createFileRoute('/_authed/settings/store')({
  * neither a sales-channel module nor a stock-location one, so there is nothing behind either row.
  */
 function StoreLayout() {
+  const { t } = useLingui()
   const { data } = useSuspenseStore()
   const { store } = data
   const { data: regions } = useSuspenseRegions()
@@ -47,26 +50,32 @@ function StoreLayout() {
     <PageLayout.SingleColumn>
       <Card className="gap-0 divide-y py-0">
         <CardHeader>
-          <CardTitle>Store</CardTitle>
-          <CardDescription>Manage your store's details</CardDescription>
+          <CardTitle>
+            <Trans>Store</Trans>
+          </CardTitle>
+          <CardDescription>
+            <Trans>Manage your store's details</Trans>
+          </CardDescription>
           <CardAction className="flex items-center gap-x-3">
             {/* Absolute, like the Currencies card's Add: there is one store, so these paths are
                 fixed, and a relative link would resolve against whichever child is open. */}
-            <ActionMenu groups={[{ actions: [{ label: 'Edit', to: '/settings/store/edit', icon: <PencilIcon /> }] }]} />
+            <ActionMenu
+              groups={[{ actions: [{ label: t`Edit`, to: '/settings/store/edit', icon: <PencilIcon /> }] }]}
+            />
           </CardAction>
         </CardHeader>
-        <SectionRow title="Name" value={store.name} />
+        <SectionRow title={t`Name`} value={store.name} />
         {/* Both defaults carry a description because they sit adjacent and read as one setting:
             a merchant seeing a default currency the default region does not settle in would
             otherwise conclude the store quotes it. Only the region decides that. */}
         <SectionRow
-          title="Default currency"
-          description="Leads the currency columns when you price a product. It is not what shoppers are quoted."
+          title={t`Default currency`}
+          description={t`Leads the currency columns when you price a product. It is not what shoppers are quoted.`}
           value={
             currency ? (
               <span className="flex items-center gap-x-2">
                 <Badge>{currency.currencyCode.toUpperCase()}</Badge>
-                {getCurrencyName(currency.currencyCode)}
+                {getCurrencyName(currency.currencyCode, activeLocale())}
               </span>
             ) : null
           }
@@ -74,15 +83,15 @@ function StoreLayout() {
         {/* `-` is what `SectionRow` renders for an absent value, and an unset default region is a
             state the store can legitimately be in — every shopper picks their own market. */}
         <SectionRow
-          title="Default region"
-          description="The market — and so the currency — a shopper is priced in before they pick one."
+          title={t`Default region`}
+          description={t`The market — and so the currency — a shopper is priced in before they pick one.`}
           value={region?.name ?? null}
         />
         {/* Stringified so an empty threshold takes `SectionRow`'s `-`, the same way an unset
             default region does: a store without one is not a store with none left. */}
         <SectionRow
-          title="Low stock threshold"
-          description="At or below this many units available, a variant counts as running low. Leave it empty and nothing is ever low."
+          title={t`Low stock threshold`}
+          description={t`At or below this many units available, a variant counts as running low. Leave it empty and nothing is ever low.`}
           value={store.lowStockThreshold?.toString() ?? null}
         />
       </Card>
