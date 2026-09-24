@@ -1,5 +1,6 @@
-import { Field, FieldError } from '@proteus/ui'
+import { Field } from '@proteus/ui'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors.tsx'
 import { FloatingLabelInput } from '#/components/form/input.tsx'
 import { useFieldContext } from '#/lib/form-context.ts'
 import { isFieldRequired } from '#/lib/schema-required.ts'
@@ -33,7 +34,7 @@ export function TextField({ label, help, className, ...inputProps }: TextFieldPr
         aria-invalid={isInvalid}
         {...inputProps}
       />
-      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <TranslatedFieldError errors={field.state.meta.errors} values={field.form.state.values} />}
     </Field>
   )
 }

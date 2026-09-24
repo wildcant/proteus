@@ -45,6 +45,10 @@ msgstr "Add to cart"
 msgid "All products"
 msgstr "All products"
 
+#: src/routes/_auth/signup.tsx:37
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
 #: src/features/products/components/search-drawer.tsx:46
 msgid "Back"
 msgstr "Back"
@@ -52,6 +56,15 @@ msgstr "Back"
 #: src/routes/_main/_authed/account/orders/$orderId.tsx:30
 msgid "Back to account"
 msgstr "Back to account"
+
+#: src/features/auth/components/verify-pending.tsx:16
+#: src/routes/_auth/forgot-password.tsx:24
+#: src/routes/_auth/forgot-password.tsx:44
+#: src/routes/_auth/reset-password.tsx:50
+#: src/routes/_auth/verify.tsx:47
+#: src/routes/_auth/verify.tsx:79
+msgid "Back to sign in"
+msgstr "Back to sign in"
 
 #: src/features/products/components/search-best-sellers.tsx:30
 msgid "Best sellers"
@@ -61,6 +74,19 @@ msgstr "Best sellers"
 msgid "Browse products"
 msgstr "Browse products"
 
+#: src/features/auth/components/register-form.tsx:28
+msgid "By creating an account, you agree to our Privacy Policy and Terms of Use."
+msgstr "By creating an account, you agree to our Privacy Policy and Terms of Use."
+
+#: src/features/auth/components/verify-pending.tsx:10
+#: src/routes/_auth/forgot-password.tsx:20
+msgid "Check your email"
+msgstr "Check your email"
+
+#: src/routes/_auth/reset-password.tsx:40
+msgid "Choose a new password for your account."
+msgstr "Choose a new password for your account."
+
 #: src/features/products/components/product-empty.tsx:23
 msgid "Clear search"
 msgstr "Clear search"
@@ -69,17 +95,84 @@ msgstr "Clear search"
 msgid "Close search"
 msgstr "Close search"
 
+#: src/routes/_auth/route.tsx:20
 #: src/routes/_main/order/$orderId/confirmed.tsx:35
 msgid "Continue shopping"
 msgstr "Continue shopping"
+
+#: src/features/auth/components/register-form.tsx:33
+msgid "Create account"
+msgstr "Create account"
+
+#: src/routes/_auth/signup.tsx:31
+msgid "Create an account to track your orders, save your details, and check out faster."
+msgstr "Create an account to track your orders, save your details, and check out faster."
+
+#: src/features/auth/components/register-form.tsx:33
+msgid "Creating account..."
+msgstr "Creating account..."
+
+#: src/routes/_auth/login.tsx:50
+msgid "Don't have an account?"
+msgstr "Don't have an account?"
+
+#: src/features/auth/components/forgot-password-form.tsx:15
+#: src/features/auth/components/login-form.tsx:16
+#: src/features/auth/components/register-form.tsx:21
+msgid "Email"
+msgstr "Email"
+
+#: src/routes/_auth/verify.tsx:60
+msgid "Email verified"
+msgstr "Email verified"
+
+#: src/features/auth/api/auth.ts:71
+msgid "Failed to request password reset"
+msgstr "Failed to request password reset"
+
+#: src/features/auth/api/auth.ts:90
+msgid "Failed to update password"
+msgstr "Failed to update password"
+
+#: src/features/auth/components/register-form.tsx:15
+msgid "First name"
+msgstr "First name"
+
+#: src/features/auth/components/login-form.tsx:23
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
+#: src/routes/_auth/forgot-password.tsx:32
+msgid "Forgot your password?"
+msgstr "Forgot your password?"
 
 #: src/features/products/components/product-card.tsx:47
 msgid "From {startingPrice}"
 msgstr "From {startingPrice}"
 
+#: src/routes/_auth/verify.tsx:33
+msgid "Hold on while we confirm your email."
+msgstr "Hold on while we confirm your email."
+
+#: src/routes/_auth/forgot-password.tsx:21
+msgid "If an account exists with that email, we've sent a link to reset your password."
+msgstr "If an account exists with that email, we've sent a link to reset your password."
+
+#: src/routes/_auth/verify.tsx:43
+msgid "Invalid link"
+msgstr "Invalid link"
+
 #: src/features/products/components/product-error.tsx:24
 msgid "It may not be one we sell here."
 msgstr "It may not be one we sell here."
+
+#: src/features/auth/components/register-form.tsx:18
+msgid "Last name"
+msgstr "Last name"
+
+#: src/features/auth/api/auth.ts:36
+msgid "Login failed"
+msgstr "Login failed"
 
 #: src/features/products/components/product-specs.tsx:20
 msgid "Made in"
@@ -89,9 +182,17 @@ msgstr "Made in"
 msgid "Material"
 msgstr "Material"
 
+#: src/features/auth/components/reset-password-form.tsx:16
+msgid "New password"
+msgstr "New password"
+
 #: src/features/products/api/products.ts:45
 msgid "Newest"
 msgstr "Newest"
+
+#: src/routes/_auth/forgot-password.tsx:33
+msgid "No problem. Enter your account email address and we'll send you instructions so you can reset your password."
+msgstr "No problem. Enter your account email address and we'll send you instructions so you can reset your password."
 
 #: src/features/products/components/search-results.tsx:44
 msgid "No products match “{debouncedTerm}”."
@@ -105,6 +206,19 @@ msgstr "No products match “{q}”."
 msgid "No products yet."
 msgstr "No products yet."
 
+#: src/routes/_auth/verify.tsx:75
+msgid "Open this link in the same browser you signed up with."
+msgstr "Open this link in the same browser you signed up with."
+
+#: src/features/auth/components/login-form.tsx:19
+#: src/features/auth/components/register-form.tsx:24
+msgid "Password"
+msgstr "Password"
+
+#: src/routes/_auth/reset-password.tsx:27
+msgid "Password updated"
+msgstr "Password updated"
+
 #: src/features/products/components/product-detail.tsx:42
 #: src/features/products/components/search-results.tsx:52
 msgid "Products"
@@ -114,10 +228,30 @@ msgstr "Products"
 msgid "Ref."
 msgstr "Ref."
 
+#: src/features/auth/api/auth.ts:55
+msgid "Registration failed"
+msgstr "Registration failed"
+
 #: src/features/products/components/product-list-header.tsx:25
 #: src/features/products/components/search-drawer.tsx:39
 msgid "Search"
 msgstr "Search"
+
+#: src/features/auth/components/forgot-password-form.tsx:21
+msgid "Send reset link"
+msgstr "Send reset link"
+
+#: src/features/auth/components/forgot-password-form.tsx:21
+msgid "Sending..."
+msgstr "Sending..."
+
+#: src/routes/_auth/reset-password.tsx:39
+msgid "Set a new password"
+msgstr "Set a new password"
+
+#: src/features/auth/components/reset-password-form.tsx:23
+msgid "Set new password"
+msgstr "Set new password"
 
 #: src/features/products/components/product-list-header.tsx:25
 msgid "Shop"
@@ -126,6 +260,23 @@ msgstr "Shop"
 #: src/features/products/components/gallery-dots.tsx:37
 msgid "Show image {position}"
 msgstr "Show image {position}"
+
+#: src/features/auth/components/login-form.tsx:28
+#: src/routes/_auth/login.tsx:43
+#: src/routes/_auth/reset-password.tsx:31
+#: src/routes/_auth/signup.tsx:39
+#: src/routes/_auth/verify.tsx:64
+msgid "Sign in"
+msgstr "Sign in"
+
+#: src/routes/_auth/login.tsx:52
+#: src/routes/_auth/signup.tsx:30
+msgid "Sign up"
+msgstr "Sign up"
+
+#: src/features/auth/components/login-form.tsx:28
+msgid "Signing in..."
+msgstr "Signing in..."
 
 #: src/features/products/components/add-to-cart.tsx:77
 #: src/features/products/components/product-card.tsx:69
@@ -141,9 +292,30 @@ msgstr "Sort by"
 msgid "This product isn't available to order yet."
 msgstr "This product isn't available to order yet."
 
+#: src/routes/_auth/verify.tsx:44
+msgid "This verification link is invalid or has expired. Request a new one from your account."
+msgstr "This verification link is invalid or has expired. Request a new one from your account."
+
+#: src/routes/_auth/login.tsx:44
+msgid "Track your orders, save your details, and check out faster."
+msgstr "Track your orders, save your details, and check out faster."
+
+#: src/features/auth/components/reset-password-form.tsx:23
+msgid "Updating..."
+msgstr "Updating..."
+
 #: src/features/products/components/variant-picker.tsx:206
 msgid "Variant"
 msgstr "Variant"
+
+#: src/routes/_auth/verify.tsx:72
+#: src/routes/_auth/verify.tsx:72
+msgid "Verification failed"
+msgstr "Verification failed"
+
+#: src/routes/_auth/verify.tsx:32
+msgid "Verifying"
+msgstr "Verifying"
 
 #: src/features/products/components/search-best-sellers.tsx:33
 msgid "View all"
@@ -157,9 +329,21 @@ msgstr "View all “{debouncedTerm}”"
 msgid "We couldn't show this product"
 msgstr "We couldn't show this product"
 
+#: src/features/auth/components/verify-pending.tsx:11
+msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
+msgstr "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
+
 #: src/features/products/components/product-specs.tsx:19
 msgid "Weight"
 msgstr "Weight"
+
+#: src/routes/_auth/verify.tsx:61
+msgid "Your email is confirmed. Sign in to pick up where you left off."
+msgstr "Your email is confirmed. Sign in to pick up where you left off."
+
+#: src/routes/_auth/reset-password.tsx:28
+msgid "Your password has been reset. Sign in with your new password to pick up where you left off."
+msgstr "Your password has been reset. Sign in with your new password to pick up where you left off."
 
 #: src/features/products/api/products.ts:47
 msgid "Z–A"
