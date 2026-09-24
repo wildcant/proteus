@@ -25,6 +25,10 @@ msgstr "Imágenes de {alt}"
 msgid "{count, plural, one {# Product} other {# Products}}"
 msgstr "{count, plural, one {# producto} other {# productos}}"
 
+#: src/components/payment-network.tsx:60
+msgid "{count} card networks accepted"
+msgstr "{count} redes de tarjeta aceptadas"
+
 #: src/features/address/components/address-card.tsx:68
 msgid "{label} will be removed from your address book. This cannot be undone."
 msgstr "{label} se eliminará de tu libreta de direcciones. Esta acción no se puede deshacer."
@@ -33,7 +37,7 @@ msgstr "{label} se eliminará de tu libreta de direcciones. Esta acción no se p
 msgid "{remaining, plural, one {Only # left} other {Only # left}}"
 msgstr "{remaining, plural, one {Solo queda #} other {Solo quedan #}}"
 
-#: src/components/footer.tsx:138
+#: src/components/footer.tsx:140
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
 
@@ -44,6 +48,12 @@ msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu com
 #: src/features/products/api/products.ts:46
 msgid "A–Z"
 msgstr "A–Z"
+
+#: src/components/footer.tsx:25
+#: src/components/header/header.tsx:56
+#: src/components/header/side-menu.tsx:20
+msgid "Account"
+msgstr "Cuenta"
 
 #: src/features/address/components/address-book.tsx:88
 msgid "Add addresses to your address book and you'll be able to checkout faster"
@@ -71,6 +81,7 @@ msgstr "Libreta de direcciones"
 msgid "Address book is empty"
 msgstr "Tu libreta de direcciones está vacía"
 
+#: src/components/footer.tsx:21
 #: src/features/products/components/product-list-header.tsx:28
 msgid "All products"
 msgstr "Todos los productos"
@@ -82,6 +93,10 @@ msgstr "¿Ya tienes una cuenta?"
 #: src/features/address/components/address-form.tsx:50
 msgid "Apartment, suite, etc."
 msgstr "Apartamento, oficina, etc."
+
+#: src/components/theme-toggle.tsx:81
+msgid "Auto"
+msgstr "Automático"
 
 #: src/features/products/components/search-drawer.tsx:46
 msgid "Back"
@@ -96,6 +111,10 @@ msgstr "Volver a {0}"
 #: src/routes/_main/_authed/account/orders/$orderId.tsx:30
 msgid "Back to account"
 msgstr "Volver a tu cuenta"
+
+#: src/components/not-found.tsx:33
+msgid "Back to home"
+msgstr "Volver al inicio"
 
 #: src/features/auth/components/verify-pending.tsx:16
 #: src/routes/_auth/forgot-password.tsx:24
@@ -127,6 +146,10 @@ msgstr "Se calcula al finalizar la compra"
 msgid "Cancel"
 msgstr "Cancelar"
 
+#: src/components/payment-network.tsx:42
+msgid "Card"
+msgstr "Tarjeta"
+
 #: src/features/cart/components/cart-trigger.tsx:23
 msgid "Cart"
 msgstr "Carrito"
@@ -148,6 +171,7 @@ msgstr "Elige una nueva contraseña para tu cuenta."
 msgid "City"
 msgstr "Ciudad"
 
+#: src/components/header/search-form.tsx:74
 #: src/features/products/components/product-empty.tsx:23
 msgid "Clear search"
 msgstr "Borrar búsqueda"
@@ -156,9 +180,17 @@ msgstr "Borrar búsqueda"
 msgid "Close cart"
 msgstr "Cerrar carrito"
 
+#: src/components/header/side-menu.tsx:52
+msgid "Close menu"
+msgstr "Cerrar menú"
+
 #: src/features/products/components/search-drawer.tsx:62
 msgid "Close search"
 msgstr "Cerrar búsqueda"
+
+#: src/routes/__root.tsx:111
+msgid "Close toast"
+msgstr "Cerrar notificación"
 
 #: src/features/address/components/address-form.tsx:44
 msgid "Company"
@@ -169,6 +201,7 @@ msgstr "Empresa"
 msgid "Continue shopping"
 msgstr "Seguir comprando"
 
+#: src/components/footer.tsx:28
 #: src/features/auth/components/register-form.tsx:33
 msgid "Create account"
 msgstr "Crear cuenta"
@@ -180,6 +213,10 @@ msgstr "Crea una cuenta para seguir tus pedidos, guardar tus datos y pagar más 
 #: src/features/auth/components/register-form.tsx:33
 msgid "Creating account..."
 msgstr "Creando cuenta..."
+
+#: src/components/theme-toggle.tsx:81
+msgid "Dark"
+msgstr "Oscuro"
 
 #: src/features/cart/components/quantity-stepper.tsx:89
 msgid "Decrease quantity for {label}"
@@ -268,6 +305,11 @@ msgstr "Desde {startingPrice}"
 msgid "Hold on while we confirm your email."
 msgstr "Espera mientras confirmamos tu correo."
 
+#: src/components/footer.tsx:20
+#: src/components/header/side-menu.tsx:18
+msgid "Home"
+msgstr "Inicio"
+
 #: src/routes/_auth/forgot-password.tsx:21
 msgid "If an account exists with that email, we've sent a link to reset your password."
 msgstr "Si existe una cuenta con ese correo, te enviamos un enlace para restablecer tu contraseña."
@@ -298,6 +340,10 @@ msgstr "Nombre (p. ej., Casa)"
 msgid "Last name"
 msgstr "Apellido"
 
+#: src/components/theme-toggle.tsx:81
+msgid "Light"
+msgstr "Claro"
+
 #: src/features/auth/api/auth.ts:36
 msgid "Login failed"
 msgstr "No pudimos iniciar tu sesión"
@@ -319,9 +365,17 @@ msgstr "Usar como principal"
 msgid "Make this my main address"
 msgstr "Usar como mi dirección principal"
 
+#: src/components/market-select.tsx:32
+msgid "Market: {marketName}"
+msgstr "Mercado: {marketName}"
+
 #: src/features/products/components/product-specs.tsx:18
 msgid "Material"
 msgstr "Material"
+
+#: src/components/header/side-menu.tsx:46
+msgid "Menu"
+msgstr "Menú"
 
 #: src/features/auth/components/reset-password-form.tsx:16
 msgid "New password"
@@ -330,6 +384,10 @@ msgstr "Nueva contraseña"
 #: src/features/products/api/products.ts:45
 msgid "Newest"
 msgstr "Más recientes"
+
+#: src/components/pagination.tsx:46
+msgid "Next"
+msgstr "Siguiente"
 
 #: src/features/cart/api/cart.ts:82
 #: src/features/cart/api/cart.ts:149
@@ -353,6 +411,10 @@ msgstr "Ningún producto coincide con “{q}”."
 msgid "No products yet."
 msgstr "Aún no hay productos."
 
+#: src/components/header/header.tsx:36
+msgid "Open menu"
+msgstr "Abrir menú"
+
 #: src/routes/_auth/verify.tsx:75
 msgid "Open this link in the same browser you signed up with."
 msgstr "Abre este enlace en el mismo navegador con el que te registraste."
@@ -360,6 +422,10 @@ msgstr "Abre este enlace en el mismo navegador con el que te registraste."
 #: src/features/cart/components/cart-drawer.tsx:90
 msgid "Order summary"
 msgstr "Resumen del pedido"
+
+#: src/components/pagination.tsx:25
+msgid "Pagination"
+msgstr "Paginación"
 
 #: src/features/auth/components/login-form.tsx:19
 #: src/features/auth/components/register-form.tsx:24
@@ -378,10 +444,19 @@ msgstr "Teléfono"
 msgid "Postal code"
 msgstr "Código postal"
 
+#: src/components/pagination.tsx:35
+msgid "Previous"
+msgstr "Anterior"
+
+#: src/components/header/side-menu.tsx:19
 #: src/features/products/components/product-detail.tsx:42
 #: src/features/products/components/search-results.tsx:52
 msgid "Products"
 msgstr "Productos"
+
+#: src/routes/__root.tsx:53
+msgid "Proteus — modern storefront powered by TanStack Start"
+msgstr "Proteus — tienda moderna impulsada por TanStack Start"
 
 #: src/features/products/components/product-specs.tsx:17
 msgid "Ref."
@@ -411,10 +486,16 @@ msgstr "Volver a transferir"
 msgid "Save"
 msgstr "Guardar"
 
+#: src/components/header/search-triggers.tsx:47
 #: src/features/products/components/product-list-header.tsx:25
 #: src/features/products/components/search-drawer.tsx:39
 msgid "Search"
 msgstr "Búsqueda"
+
+#: src/components/header/search-form.tsx:54
+#: src/components/header/search-triggers.tsx:29
+msgid "Search products"
+msgstr "Buscar productos"
 
 #: src/features/auth/components/forgot-password-form.tsx:21
 msgid "Send reset link"
@@ -436,14 +517,20 @@ msgstr "Guardar contraseña"
 msgid "Shipping"
 msgstr "Envío"
 
+#: src/components/footer.tsx:18
 #: src/features/products/components/product-list-header.tsx:25
 msgid "Shop"
 msgstr "Tienda"
+
+#: src/components/header/nav.tsx:11
+msgid "Shop all"
+msgstr "Ver todo"
 
 #: src/features/products/components/gallery-dots.tsx:37
 msgid "Show image {position}"
 msgstr "Mostrar imagen {position}"
 
+#: src/components/footer.tsx:27
 #: src/features/auth/components/login-form.tsx:28
 #: src/routes/_auth/login.tsx:43
 #: src/routes/_auth/reset-password.tsx:31
@@ -478,6 +565,22 @@ msgstr "Ordenar por"
 #: src/features/address/components/address-form.tsx:62
 msgid "State / Province"
 msgstr "Departamento / Estado"
+
+#: src/components/not-found.tsx:30
+msgid "The link may be old, or the address slightly off."
+msgstr "Puede que el enlace sea antiguo o que la dirección tenga un error."
+
+#: src/components/theme-toggle.tsx:68
+msgid "Theme mode: auto (system). Click to switch to light mode."
+msgstr "Tema: automático (sistema). Haz clic para cambiar al modo claro."
+
+#: src/components/theme-toggle.tsx:70
+msgid "Theme mode: dark. Click to switch mode."
+msgstr "Tema: oscuro. Haz clic para cambiar de modo."
+
+#: src/components/theme-toggle.tsx:71
+msgid "Theme mode: light. Click to switch mode."
+msgstr "Tema: claro. Haz clic para cambiar de modo."
 
 #: src/features/cart/components/cart-empty.tsx:17
 msgid "There are no products in your bag"
@@ -537,6 +640,10 @@ msgstr "Ver todo “{debouncedTerm}”"
 msgid "We could not move your bag to {0}"
 msgstr "No pudimos mover tu carrito a {0}"
 
+#: src/components/not-found.tsx:27
+msgid "We couldn’t find that page"
+msgstr "No encontramos esa página"
+
 #: src/features/products/components/product-error.tsx:21
 msgid "We couldn't show this product"
 msgstr "No pudimos mostrar este producto"
@@ -548,6 +655,10 @@ msgstr "Te enviamos un enlace de verificación a tu correo. Haz clic en él para
 #: src/features/products/components/product-specs.tsx:19
 msgid "Weight"
 msgstr "Peso"
+
+#: src/components/header/constants.ts:8
+msgid "What are you looking for today?"
+msgstr "¿Qué buscas hoy?"
 
 #: src/features/address/components/address-book.tsx:59
 msgid "Your addresses"

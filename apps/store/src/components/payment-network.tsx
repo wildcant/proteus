@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
 import { cn } from '@proteus/ui'
 import { ACCEPTED_CARD_NETWORKS, networkName } from '#/lib/card-networks'
@@ -30,6 +31,7 @@ const MARKS_SHOWN = 3
  * README. Adding more colour badges of unknown origin would widen a gate that is already open.
  */
 export function NetworkMark({ brand, className }: { brand: string; className?: string }) {
+  const { t } = useLingui()
   const Mark = NETWORK_MARKS[brand]
   const label = networkName(brand)
 
@@ -37,7 +39,7 @@ export function NetworkMark({ brand, className }: { brand: string; className?: s
     return <Mark size={40} title={label} className={cn('h-6 w-10 shrink-0', className)} />
   }
 
-  return <NetworkChip className={className}>{brand === 'unknown' ? 'Card' : label.slice(0, 6)}</NetworkChip>
+  return <NetworkChip className={className}>{brand === 'unknown' ? t`Card` : label.slice(0, 6)}</NetworkChip>
 }
 
 /**
@@ -49,15 +51,13 @@ export function NetworkMark({ brand, className }: { brand: string; className?: s
  * middle of a payment choice is noise rather than information.
  */
 export function AcceptedNetworks({ brands = ACCEPTED_CARD_NETWORKS }: { brands?: readonly string[] }) {
+  const { t } = useLingui()
   const shown = brands.slice(0, MARKS_SHOWN)
+  const count = brands.length
   const overflow = brands.length - shown.length
 
   return (
-    <span
-      role="img"
-      aria-label={`${brands.length} card networks accepted`}
-      className="flex shrink-0 items-center gap-1"
-    >
+    <span role="img" aria-label={t`${count} card networks accepted`} className="flex shrink-0 items-center gap-1">
       {shown.map((brand) => (
         <NetworkMark key={brand} brand={brand} />
       ))}

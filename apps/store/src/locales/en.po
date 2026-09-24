@@ -25,6 +25,10 @@ msgstr "{alt} images"
 msgid "{count, plural, one {# Product} other {# Products}}"
 msgstr "{count, plural, one {# Product} other {# Products}}"
 
+#: src/components/payment-network.tsx:60
+msgid "{count} card networks accepted"
+msgstr "{count} card networks accepted"
+
 #: src/features/address/components/address-card.tsx:68
 msgid "{label} will be removed from your address book. This cannot be undone."
 msgstr "{label} will be removed from your address book. This cannot be undone."
@@ -33,7 +37,7 @@ msgstr "{label} will be removed from your address book. This cannot be undone."
 msgid "{remaining, plural, one {Only # left} other {Only # left}}"
 msgstr "{remaining, plural, one {Only # left} other {Only # left}}"
 
-#: src/components/footer.tsx:138
+#: src/components/footer.tsx:140
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. All rights reserved."
 
@@ -44,6 +48,12 @@ msgstr "<0>Items in your cart aren't reserved.</0> Check out soon to make sure y
 #: src/features/products/api/products.ts:46
 msgid "A–Z"
 msgstr "A–Z"
+
+#: src/components/footer.tsx:25
+#: src/components/header/header.tsx:56
+#: src/components/header/side-menu.tsx:20
+msgid "Account"
+msgstr "Account"
 
 #: src/features/address/components/address-book.tsx:88
 msgid "Add addresses to your address book and you'll be able to checkout faster"
@@ -71,6 +81,7 @@ msgstr "Address book"
 msgid "Address book is empty"
 msgstr "Address book is empty"
 
+#: src/components/footer.tsx:21
 #: src/features/products/components/product-list-header.tsx:28
 msgid "All products"
 msgstr "All products"
@@ -82,6 +93,10 @@ msgstr "Already have an account?"
 #: src/features/address/components/address-form.tsx:50
 msgid "Apartment, suite, etc."
 msgstr "Apartment, suite, etc."
+
+#: src/components/theme-toggle.tsx:81
+msgid "Auto"
+msgstr "Auto"
 
 #: src/features/products/components/search-drawer.tsx:46
 msgid "Back"
@@ -96,6 +111,10 @@ msgstr "Back to {0}"
 #: src/routes/_main/_authed/account/orders/$orderId.tsx:30
 msgid "Back to account"
 msgstr "Back to account"
+
+#: src/components/not-found.tsx:33
+msgid "Back to home"
+msgstr "Back to home"
 
 #: src/features/auth/components/verify-pending.tsx:16
 #: src/routes/_auth/forgot-password.tsx:24
@@ -127,6 +146,10 @@ msgstr "Calculated at checkout"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: src/components/payment-network.tsx:42
+msgid "Card"
+msgstr "Card"
+
 #: src/features/cart/components/cart-trigger.tsx:23
 msgid "Cart"
 msgstr "Cart"
@@ -148,6 +171,7 @@ msgstr "Choose a new password for your account."
 msgid "City"
 msgstr "City"
 
+#: src/components/header/search-form.tsx:74
 #: src/features/products/components/product-empty.tsx:23
 msgid "Clear search"
 msgstr "Clear search"
@@ -156,9 +180,17 @@ msgstr "Clear search"
 msgid "Close cart"
 msgstr "Close cart"
 
+#: src/components/header/side-menu.tsx:52
+msgid "Close menu"
+msgstr "Close menu"
+
 #: src/features/products/components/search-drawer.tsx:62
 msgid "Close search"
 msgstr "Close search"
+
+#: src/routes/__root.tsx:111
+msgid "Close toast"
+msgstr "Close toast"
 
 #: src/features/address/components/address-form.tsx:44
 msgid "Company"
@@ -169,6 +201,7 @@ msgstr "Company"
 msgid "Continue shopping"
 msgstr "Continue shopping"
 
+#: src/components/footer.tsx:28
 #: src/features/auth/components/register-form.tsx:33
 msgid "Create account"
 msgstr "Create account"
@@ -180,6 +213,10 @@ msgstr "Create an account to track your orders, save your details, and check out
 #: src/features/auth/components/register-form.tsx:33
 msgid "Creating account..."
 msgstr "Creating account..."
+
+#: src/components/theme-toggle.tsx:81
+msgid "Dark"
+msgstr "Dark"
 
 #: src/features/cart/components/quantity-stepper.tsx:89
 msgid "Decrease quantity for {label}"
@@ -268,6 +305,11 @@ msgstr "From {startingPrice}"
 msgid "Hold on while we confirm your email."
 msgstr "Hold on while we confirm your email."
 
+#: src/components/footer.tsx:20
+#: src/components/header/side-menu.tsx:18
+msgid "Home"
+msgstr "Home"
+
 #: src/routes/_auth/forgot-password.tsx:21
 msgid "If an account exists with that email, we've sent a link to reset your password."
 msgstr "If an account exists with that email, we've sent a link to reset your password."
@@ -298,6 +340,10 @@ msgstr "Label (e.g. Home)"
 msgid "Last name"
 msgstr "Last name"
 
+#: src/components/theme-toggle.tsx:81
+msgid "Light"
+msgstr "Light"
+
 #: src/features/auth/api/auth.ts:36
 msgid "Login failed"
 msgstr "Login failed"
@@ -319,9 +365,17 @@ msgstr "Make this my main"
 msgid "Make this my main address"
 msgstr "Make this my main address"
 
+#: src/components/market-select.tsx:32
+msgid "Market: {marketName}"
+msgstr "Market: {marketName}"
+
 #: src/features/products/components/product-specs.tsx:18
 msgid "Material"
 msgstr "Material"
+
+#: src/components/header/side-menu.tsx:46
+msgid "Menu"
+msgstr "Menu"
 
 #: src/features/auth/components/reset-password-form.tsx:16
 msgid "New password"
@@ -330,6 +384,10 @@ msgstr "New password"
 #: src/features/products/api/products.ts:45
 msgid "Newest"
 msgstr "Newest"
+
+#: src/components/pagination.tsx:46
+msgid "Next"
+msgstr "Next"
 
 #: src/features/cart/api/cart.ts:82
 #: src/features/cart/api/cart.ts:149
@@ -353,6 +411,10 @@ msgstr "No products match “{q}”."
 msgid "No products yet."
 msgstr "No products yet."
 
+#: src/components/header/header.tsx:36
+msgid "Open menu"
+msgstr "Open menu"
+
 #: src/routes/_auth/verify.tsx:75
 msgid "Open this link in the same browser you signed up with."
 msgstr "Open this link in the same browser you signed up with."
@@ -360,6 +422,10 @@ msgstr "Open this link in the same browser you signed up with."
 #: src/features/cart/components/cart-drawer.tsx:90
 msgid "Order summary"
 msgstr "Order summary"
+
+#: src/components/pagination.tsx:25
+msgid "Pagination"
+msgstr "Pagination"
 
 #: src/features/auth/components/login-form.tsx:19
 #: src/features/auth/components/register-form.tsx:24
@@ -378,10 +444,19 @@ msgstr "Phone"
 msgid "Postal code"
 msgstr "Postal code"
 
+#: src/components/pagination.tsx:35
+msgid "Previous"
+msgstr "Previous"
+
+#: src/components/header/side-menu.tsx:19
 #: src/features/products/components/product-detail.tsx:42
 #: src/features/products/components/search-results.tsx:52
 msgid "Products"
 msgstr "Products"
+
+#: src/routes/__root.tsx:53
+msgid "Proteus — modern storefront powered by TanStack Start"
+msgstr "Proteus — modern storefront powered by TanStack Start"
 
 #: src/features/products/components/product-specs.tsx:17
 msgid "Ref."
@@ -411,10 +486,16 @@ msgstr "Run transfer again"
 msgid "Save"
 msgstr "Save"
 
+#: src/components/header/search-triggers.tsx:47
 #: src/features/products/components/product-list-header.tsx:25
 #: src/features/products/components/search-drawer.tsx:39
 msgid "Search"
 msgstr "Search"
+
+#: src/components/header/search-form.tsx:54
+#: src/components/header/search-triggers.tsx:29
+msgid "Search products"
+msgstr "Search products"
 
 #: src/features/auth/components/forgot-password-form.tsx:21
 msgid "Send reset link"
@@ -436,14 +517,20 @@ msgstr "Set new password"
 msgid "Shipping"
 msgstr "Shipping"
 
+#: src/components/footer.tsx:18
 #: src/features/products/components/product-list-header.tsx:25
 msgid "Shop"
 msgstr "Shop"
+
+#: src/components/header/nav.tsx:11
+msgid "Shop all"
+msgstr "Shop all"
 
 #: src/features/products/components/gallery-dots.tsx:37
 msgid "Show image {position}"
 msgstr "Show image {position}"
 
+#: src/components/footer.tsx:27
 #: src/features/auth/components/login-form.tsx:28
 #: src/routes/_auth/login.tsx:43
 #: src/routes/_auth/reset-password.tsx:31
@@ -478,6 +565,22 @@ msgstr "Sort by"
 #: src/features/address/components/address-form.tsx:62
 msgid "State / Province"
 msgstr "State / Province"
+
+#: src/components/not-found.tsx:30
+msgid "The link may be old, or the address slightly off."
+msgstr "The link may be old, or the address slightly off."
+
+#: src/components/theme-toggle.tsx:68
+msgid "Theme mode: auto (system). Click to switch to light mode."
+msgstr "Theme mode: auto (system). Click to switch to light mode."
+
+#: src/components/theme-toggle.tsx:70
+msgid "Theme mode: dark. Click to switch mode."
+msgstr "Theme mode: dark. Click to switch mode."
+
+#: src/components/theme-toggle.tsx:71
+msgid "Theme mode: light. Click to switch mode."
+msgstr "Theme mode: light. Click to switch mode."
 
 #: src/features/cart/components/cart-empty.tsx:17
 msgid "There are no products in your bag"
@@ -537,6 +640,10 @@ msgstr "View all “{debouncedTerm}”"
 msgid "We could not move your bag to {0}"
 msgstr "We could not move your bag to {0}"
 
+#: src/components/not-found.tsx:27
+msgid "We couldn’t find that page"
+msgstr "We couldn’t find that page"
+
 #: src/features/products/components/product-error.tsx:21
 msgid "We couldn't show this product"
 msgstr "We couldn't show this product"
@@ -548,6 +655,10 @@ msgstr "We sent a verification link to your email. Click it to confirm your acco
 #: src/features/products/components/product-specs.tsx:19
 msgid "Weight"
 msgstr "Weight"
+
+#: src/components/header/constants.ts:8
+msgid "What are you looking for today?"
+msgstr "What are you looking for today?"
 
 #: src/features/address/components/address-book.tsx:59
 msgid "Your addresses"

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { UserIcon } from '@proteus/icons'
 import { Link } from '@tanstack/react-router'
 import { MenuIcon } from 'lucide-react'
@@ -18,6 +19,7 @@ import { SideMenu } from './side-menu'
  * rather than props threaded through the bar. See `packages/frontend-structure` for the rule.
  */
 export function Header({ actions }: { actions?: ReactNode }) {
+  const { t } = useLingui()
   const { setOpen: setMenuOpen } = useModal('menu')
 
   return (
@@ -31,7 +33,7 @@ export function Header({ actions }: { actions?: ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Open menu"
+            aria-label={t`Open menu`}
             className="-ml-2 lg:hidden"
             onClick={() => setMenuOpen(true)}
           >
@@ -51,7 +53,7 @@ export function Header({ actions }: { actions?: ReactNode }) {
           {/* Account before bag, as the reference has it — the bag is the last thing on the
               bar because it is the one the shopper reaches for mid-task. */}
           <Link to="/account">
-            <Button variant="ghost" size="icon" aria-label="Account">
+            <Button variant="ghost" size="icon" aria-label={t`Account`}>
               <UserIcon className="h-5 w-5" />
             </Button>
           </Link>
