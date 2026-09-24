@@ -3,7 +3,7 @@ import { messages as esMessages } from '@proteus/http-schemas/locales/es'
 import { StoreLoginBody } from '@proteus/http-schemas/store'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { translateFieldErrors } from './field-errors'
+import { translateFieldErrors } from './translate-field-errors'
 
 const es = setupI18n({ locale: 'es', messages: { es: esMessages } })
 

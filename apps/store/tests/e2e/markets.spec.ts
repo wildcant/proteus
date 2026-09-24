@@ -75,7 +75,16 @@ test.describe('Markets', () => {
       expect(await response?.text()).toContain(copyright)
       await expect(page.locator('footer').getByText(copyright)).toBeVisible()
       // Every request the page makes to the API names the market's locale, so API Messages match.
-      await expect.poll(() => apiLocales.length).toBeGreaterThan(0)
+      // The server hands its data to the client, so the page may not fetch on its own; re-sorting
+      // the catalogue makes the hydrated client ask. Its answer is awaited so no request from this
+      // page is still in flight when the next market's page starts counting.
+      const catalogue = `${backendUrl}/store/products`
+      const resorted = page.waitForResponse(
+        (r) => r.url().startsWith(catalogue) && !r.url().includes('order=-createdAt'),
+      )
+      await page.locator('main').getByRole('combobox').selectOption({ index: 1 })
+      await resorted
+      expect(apiLocales.length).toBeGreaterThan(0)
       expect(new Set(apiLocales)).toEqual(new Set([localeCode]))
     }
 
@@ -140,7 +149,7 @@ test.describe('Markets', () => {
     // And the market survives a client-side navigation rather than being dropped on the first
     // one. This is the assertion the whole slice rests on: the rewrite has to hold after
     // hydration, where the router — not the server — is writing the URL.
-    await page.locator('header').getByLabel('Search products').click()
+    await page.locator('header').getByLabel('Buscar productos').click()
     await expect(page).toHaveURL(`/${SECOND_MARKET}?modal=search`)
     await expect(page.locator('[data-slot="drawer-popup"]')).toBeVisible()
   })
@@ -280,7 +289,7 @@ test.describe('Market control', () => {
     //
     // The badge first, and not only because it is the claim: it is the cart request resolving,
     // which means the page has hydrated and the button below is a button rather than markup.
-    const bag = page.locator('header').getByLabel('Cart')
+    const bag = page.locator('header').getByLabel('Carrito')
     await expect(bag).toContainText('1')
 
     await bag.click()
@@ -377,7 +386,7 @@ test.describe('Cart across markets', () => {
     await switchMarket(page, SECOND_MARKET_NAME)
     await expect(page.locator('html')).toHaveAttribute('lang', SECOND_MARKET)
 
-    const bag = page.locator('header').getByLabel('Cart')
+    const bag = page.locator('header').getByLabel('Carrito')
     await expect(bag).toContainText('1', { timeout: BACKEND_TIMEOUT })
     await bag.click()
 
@@ -412,7 +421,7 @@ test.describe('Cart across markets', () => {
     // the control, carrying the same cart in their browser's storage.
     await goto(`/${SECOND_MARKET}`)
 
-    const bag = page.locator('header').getByLabel('Cart')
+    const bag = page.locator('header').getByLabel('Carrito')
     await expect(bag).toContainText('1', { timeout: BACKEND_TIMEOUT })
     await bag.click()
     await expect(page.locator('[data-slot="drawer-popup"]')).toContainText('100.000', { timeout: BACKEND_TIMEOUT })
@@ -455,7 +464,7 @@ test.describe('Cart across markets', () => {
     )
 
     // And nothing was silently dropped on the way: the bag is exactly as they left it.
-    await page.locator('header').getByLabel('Cart').click()
+    await page.locator('header').getByLabel('Carrito').click()
     await expect(page.locator('[data-slot="drawer-popup"]')).toContainText(product.title)
   })
 
@@ -492,11 +501,98 @@ test.describe('Cart across markets', () => {
     // own way through it, and the storefront has to notice: the bag it asked about has changed, so
     // the same switch is worth asking for again without them touching the control a second time.
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
-    await page.locator('header').getByLabel('Cart').click()
-    await cartPanel.getByRole('button', { name: `Remove ${blocked.title}` }).click()
+    await page.locator('header').getByLabel('Carrito').click()
+    await cartPanel.getByRole('button', { name: `Eliminar ${blocked.title}` }).click()
 
     await expect(page.getByRole('alert')).toBeHidden({ timeout: BACKEND_TIMEOUT })
     await expect(cartPanel).toContainText('160.000', { timeout: BACKEND_TIMEOUT })
     await expect(cartPanel).not.toContainText('40.00')
+  })
+})
+
+/**
+ * The second market read end to end in its own language.
+ *
+ * Every assertion names the Spanish text, never a test id: a string left out of the catalog renders
+ * its English source, and only reading the words tells the two apart. The English specs cover the
+ * same surfaces under `/en-US`, so together they prove both catalogs load. Each surface carries
+ * its own copy — the store's catalog for the chrome and pages, the shared schemas' catalog for a
+ * validation message, the backend's for an API Message.
+ */
+test.describe('Spanish market', () => {
+  test.describe.configure({ timeout: 60_000 })
+
+  test('a shopper reads the chrome, a product, the cart and checkout in Spanish', async ({
+    page,
+    goto,
+    factories,
+    cleanup,
+  }) => {
+    await using product = await factories.create.productWithPricing({
+      prices: [
+        { amount: '25.00', currencyCode: 'usd' },
+        { amount: '100000', currencyCode: 'cop' },
+      ],
+    })
+    disposeCartAfterTest(page, factories, cleanup)
+    // Every page below is server-rendered in Spanish first; a string the client renders differently
+    // is a hydration mismatch, not only a wrong word.
+    const hydrationErrors: Array<string> = []
+    page.on('console', (message) => {
+      if (message.type() === 'error' && /hydrat/i.test(message.text())) hydrationErrors.push(message.text())
+    })
+
+    // Chrome: the header and footer every page carries.
+    await goto(`/${SECOND_MARKET}`)
+    await expect(page.locator('header').getByLabel('Carrito', { exact: true })).toBeVisible()
+    await expect(page.locator('footer').getByRole('button', { name: `Mercado: ${SECOND_MARKET_NAME}` })).toBeVisible()
+
+    // Products: the page's own action, not the merchant's title, which is out of scope.
+    await goto(`/${SECOND_MARKET}/products/${product.id}`)
+    const addToCart = page.getByRole('button', { name: 'Agregar al carrito' })
+    await expect(addToCart).toBeVisible()
+    await addToCart.click()
+
+    // Cart: the panel adding opens.
+    const cartPanel = page.locator('[data-slot="drawer-popup"]')
+    await expect(cartPanel.getByText(product.title)).toBeVisible({ timeout: BACKEND_TIMEOUT })
+    await expect(cartPanel.getByLabel('Cerrar carrito')).toBeVisible()
+    await cartPanel.getByRole('link', { name: 'Finalizar compra' }).click()
+
+    // Checkout: a guest sees every section at once.
+    await expect(page).toHaveURL(`/${SECOND_MARKET}/checkout`)
+    await expect(page.getByRole('heading', { name: 'Contacto' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Entrega' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Contact', exact: true })).toHaveCount(0)
+    expect(hydrationErrors).toEqual([])
+  })
+
+  test('a customer reads their account and orders in Spanish', async ({ page, authenticate, goto }) => {
+    await authenticate({ as: 'customer' })
+
+    await goto(`/${SECOND_MARKET}/account`)
+    await expect(page.getByRole('heading', { name: /^Hola/ })).toBeVisible()
+    await expect(page.getByText('Aún no has hecho pedidos. Cuando hagas uno, aparecerá aquí.')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Ver todos los productos' })).toBeVisible()
+  })
+
+  test('sign-in speaks Spanish, down to its validation and the API’s answer', async ({ page, goto, factories }) => {
+    const credentials = factories.generate.loginForm()
+
+    await goto(`/${SECOND_MARKET}/login`)
+    const signIn = page.getByRole('button', { name: 'Inicia sesión' })
+
+    // A validation message: the shared schema's catalog, rendered by the store.
+    await signIn.click()
+    await expect(page.getByText('Ingresa un correo electrónico válido')).toBeVisible()
+    await expect(page.getByText('Ingresa tu contraseña')).toBeVisible()
+    await expect(page).toHaveURL(`/${SECOND_MARKET}/login`)
+
+    // An API Message: the backend translates it before it leaves, from the request's locale.
+    await page.getByRole('textbox', { name: 'Correo electrónico' }).fill(credentials.email)
+    await page.getByRole('textbox', { name: 'Contraseña' }).fill(credentials.password)
+    await signIn.click()
+    await expect(page.getByText('Correo o contraseña incorrectos').first()).toBeVisible({ timeout: BACKEND_TIMEOUT })
+    await expect(page.getByText(/invalid email or password/i)).toHaveCount(0)
   })
 })
