@@ -3,6 +3,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AuthenticateResponse } from '@proteus/http-schemas/auth'
 import { StoreLoginBody } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import { completeCustomerAuthWorkflow } from '@workflows/customer/complete-customer-auth.js'
 
 export const PostInput = { body: StoreLoginBody }
@@ -17,7 +18,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   if (!authenticateResult.success || !authenticateResult.authIdentity) {
     throw new AppError({
       type: ErrorTypes.UNAUTHORIZED,
-      message: authenticateResult.error ?? 'Invalid email or password',
+      message: authenticateResult.error ?? i18n.t('Invalid email or password'),
     })
   }
 

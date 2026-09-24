@@ -3,6 +3,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreOrderResponse } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
 import { computePaymentStatus } from '@workflows/order/utils/compute-payment-status.js'
 
@@ -22,7 +23,11 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const order = await orderService.retrieveOrder(req.params.id)
 
   if (customerId && order.customerId !== customerId) {
-    throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Order with id "${req.params.id}" not found` })
+    throw new AppError({
+      type: ErrorTypes.NOT_FOUND,
+      message: i18n.t('Order with id "{id}" not found'),
+      values: { id: req.params.id },
+    })
   }
 
   const [lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([

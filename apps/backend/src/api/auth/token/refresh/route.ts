@@ -9,6 +9,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import { authenticate } from '@framework/http/middlewares/authenticate.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AuthenticateResponse } from '@proteus/http-schemas/auth'
+import { i18n } from '@proteus/utils'
 
 export const PostMiddlewares = [authenticate('*', { allowUnregistered: true })] as const
 export const PostOutput = AuthenticateResponse
@@ -19,7 +20,7 @@ export const POST = async (
 ): Promise<HttpResult<typeof PostOutput>> => {
   const authContext = req.authContext
   if (!authContext) {
-    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
+    throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Unauthorized') })
   }
 
   const authService = req.scope.resolve(Modules.AUTH)

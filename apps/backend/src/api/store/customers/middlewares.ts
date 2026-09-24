@@ -1,6 +1,7 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { MiddlewareFunction } from '@framework/http/types.js'
+import { i18n } from '@proteus/utils'
 
 /**
  * Refuses an address the authenticated customer does not own.
@@ -22,7 +23,11 @@ export function validateAddressOwnership(): MiddlewareFunction {
     const [address] = await customerService.listCustomerAddresses({ id: addressId })
 
     if (!address || address.customerId !== req.authContext?.actorId) {
-      throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `Address with id "${addressId}" not found` })
+      throw new AppError({
+        type: ErrorTypes.NOT_FOUND,
+        message: i18n.t('Address with id "{id}" not found'),
+        values: { id: addressId },
+      })
     }
 
     return req
