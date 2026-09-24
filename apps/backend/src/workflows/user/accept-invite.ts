@@ -4,6 +4,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n, type Msgid } from '@proteus/utils'
+import { SOURCE_LOCALE } from '@workflows/admin/utils/admin-locales.js'
 
 export type AcceptInviteInput = {
   inviteToken: string
@@ -54,7 +55,7 @@ export const acceptInviteWorkflow = createWorkflow<AcceptInviteInput, UserDTO>(
       'create-user',
       async ({ container }) => {
         const userService = container.resolve(Modules.USER)
-        return userService.createUser({ email: invite.email, name: input.name })
+        return userService.createUser({ email: invite.email, name: input.name, locale: SOURCE_LOCALE })
       },
       async (createdUser, { container }) => {
         const userService = container.resolve(Modules.USER)

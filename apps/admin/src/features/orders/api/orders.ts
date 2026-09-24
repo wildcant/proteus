@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -50,6 +51,7 @@ export const fulfillmentProvidersQueryOptions = () =>
 export const useFulfillmentProviders = () => useQuery(fulfillmentProvidersQueryOptions())
 
 export const useCompleteOrder = (id: string, options?: UseMutationOptions<AdminOrderActionResponse, Error, void>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -61,13 +63,14 @@ export const useCompleteOrder = (id: string, options?: UseMutationOptions<AdminO
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to complete order', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to complete order`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useCancelOrder = (id: string, options?: UseMutationOptions<AdminOrderActionResponse, Error, void>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -79,13 +82,14 @@ export const useCancelOrder = (id: string, options?: UseMutationOptions<AdminOrd
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to cancel order', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to cancel order`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useArchiveOrder = (id: string, options?: UseMutationOptions<AdminOrderActionResponse, Error, void>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -97,7 +101,7 @@ export const useArchiveOrder = (id: string, options?: UseMutationOptions<AdminOr
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to archive order', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to archive order`, description: error.message })
       onError?.(...args)
     },
   })
@@ -107,6 +111,7 @@ export const useCreateFulfillment = (
   id: string,
   options?: UseMutationOptions<AdminOrderActionResponse, Error, AdminCreateOrderFulfillment>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -118,7 +123,7 @@ export const useCreateFulfillment = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create fulfillment', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to create fulfillment`, description: error.message })
       onError?.(...args)
     },
   })
@@ -129,6 +134,7 @@ export const useCreateShipment = (
   fulfillmentId: string,
   options?: UseMutationOptions<AdminOrderActionResponse, Error, AdminCreateOrderShipment>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -140,7 +146,7 @@ export const useCreateShipment = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create shipment', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to create shipment`, description: error.message })
       onError?.(...args)
     },
   })
@@ -151,6 +157,7 @@ export const useMarkAsDelivered = (
   fulfillmentId: string,
   options?: UseMutationOptions<AdminOrderActionResponse, Error, void>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -162,7 +169,7 @@ export const useMarkAsDelivered = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to mark as delivered', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to mark as delivered`, description: error.message })
       onError?.(...args)
     },
   })

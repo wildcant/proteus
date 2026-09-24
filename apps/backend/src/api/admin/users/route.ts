@@ -6,6 +6,7 @@ import {
   AdminUserListResponse,
   AdminUserResponse,
 } from '@proteus/http-schemas/admin'
+import { SOURCE_LOCALE } from '@workflows/admin/utils/admin-locales.js'
 
 export const GetInput = { query: AdminUserListParams }
 export const GetOutput = AdminUserListResponse
@@ -34,6 +35,6 @@ export const PostOutput = AdminUserResponse
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const userService = req.scope.resolve(Modules.USER)
-  const user = await userService.createUser(req.body)
+  const user = await userService.createUser({ ...req.body, locale: SOURCE_LOCALE })
   return { status: 201, json: { user } }
 }

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { cn, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@proteus/ui'
 import { useCallback, useRef } from 'react'
 import { CheckboxCell } from './cells/checkbox-cell'
@@ -18,6 +19,7 @@ type DataGridProps<T> = {
 }
 
 export function DataGrid<T>({ data, columns, onChange, onEditingChange, isLoading, className }: DataGridProps<T>) {
+  const { t } = useLingui()
   const {
     focused,
     editing,
@@ -54,7 +56,7 @@ export function DataGrid<T>({ data, columns, onChange, onEditingChange, isLoadin
 
   return (
     <div className={cn('size-full overflow-auto bg-muted', className)}>
-      <Table className="w-auto table-fixed" role="grid" aria-label="Editable data grid" onKeyDown={handleKeyDown}>
+      <Table className="w-auto table-fixed" role="grid" aria-label={t`Editable data grid`} onKeyDown={handleKeyDown}>
         <TableHeader className="txt-compact-small-plus sticky top-0 z-10 bg-muted">
           <TableRow className="hover:bg-transparent">
             {columns.map((column) => (

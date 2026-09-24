@@ -1,5 +1,6 @@
-import { Field, FieldError, Label, Switch } from '@proteus/ui'
+import { Field, Label, Switch } from '@proteus/ui'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { useFieldContext } from '#/lib/form-context.ts'
 
 type SwitchFieldProps = {
@@ -29,7 +30,7 @@ export function SwitchField({ label, description, className }: SwitchFieldProps)
         <Label htmlFor={id}>{label}</Label>
       </div>
       {!!description && <p className="text-muted-foreground text-sm">{description}</p>}
-      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <TranslatedFieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

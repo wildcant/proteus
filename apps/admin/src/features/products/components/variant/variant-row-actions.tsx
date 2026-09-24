@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { EllipsisIcon } from 'lucide-react'
@@ -19,10 +20,10 @@ export function VariantRowActions({ productId, variant }: { productId: string; v
             navigate({ to: '/products/$id/variants/$variantId', params: { id: productId, variantId: variant.id } })
           }
         >
-          Edit
+          <Trans>Edit</Trans>
         </DropdownMenuItem>
         <DropdownMenuItem variant="destructive" onClick={() => deleteVariant()}>
-          Delete
+          <Trans>Delete</Trans>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

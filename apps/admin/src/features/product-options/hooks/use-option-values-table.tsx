@@ -1,10 +1,12 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminProductOption, AdminProductOptionValue } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useValuesForOption } from '#/features/product-options/api/product-options'
 import { ValueRowActions } from '#/features/product-options/components/value-row-actions'
 
-export const useOptionValuesTable = (option: AdminProductOption) =>
-  useDefineTable<AdminProductOptionValue>({
+export const useOptionValuesTable = (option: AdminProductOption) => {
+  const { t } = useLingui()
+  return useDefineTable<AdminProductOptionValue>({
     useData: (params) => {
       const { data, isPending, isFetching } = useValuesForOption(option.id, params)
       return {
@@ -15,7 +17,7 @@ export const useOptionValuesTable = (option: AdminProductOption) =>
       }
     },
 
-    columns: (col) => [col.accessor('value', { header: 'Values' })],
+    columns: (col) => [col.accessor('value', { header: t`Values` })],
 
     prefix: 'ov',
     pageSize: 20,
@@ -23,11 +25,12 @@ export const useOptionValuesTable = (option: AdminProductOption) =>
     rowActions: (row) => <ValueRowActions option={option} value={row} />,
 
     empty: {
-      heading: 'No values',
-      description: 'Add values to this option using the edit form.',
+      heading: t`No values`,
+      description: t`Add values to this option using the edit form.`,
     },
     filtered: {
-      heading: 'No values found',
-      description: 'Try changing your search term.',
+      heading: t`No values found`,
+      description: t`Try changing your search term.`,
     },
   })
+}

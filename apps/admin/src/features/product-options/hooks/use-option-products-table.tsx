@@ -1,11 +1,13 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminProduct } from '#/api/generated/model'
 import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useProductsForOption } from '#/features/product-options/api/product-options'
-import { productStatusColors } from '#/features/products/utils/product-status'
+import { productStatusColors, productStatusLabels } from '#/features/products/utils/product-status'
 
-export const useOptionProductsTable = (optionId: string) =>
-  useDefineTable<AdminProduct>({
+export const useOptionProductsTable = (optionId: string) => {
+  const { t, i18n } = useLingui()
+  return useDefineTable<AdminProduct>({
     useData: (params) => {
       const { data, isPending, isFetching } = useProductsForOption(optionId, params)
       return {
@@ -17,11 +19,13 @@ export const useOptionProductsTable = (optionId: string) =>
     },
 
     columns: (col) => [
-      col.accessor('title', { header: 'Product', sortable: true }),
+      col.accessor('title', { header: t`Product`, sortable: true }),
       col.accessor('status', {
-        header: 'Status',
+        header: t`Status`,
         truncateTooltip: false,
-        cell: ({ value }) => <StatusCell color={productStatusColors[value]}>{value}</StatusCell>,
+        cell: ({ value }) => (
+          <StatusCell color={productStatusColors[value]}>{i18n._(productStatusLabels[value])}</StatusCell>
+        ),
       }),
     ],
 
@@ -31,11 +35,12 @@ export const useOptionProductsTable = (optionId: string) =>
     rowHref: (row) => `/products/${row.id}`,
 
     empty: {
-      heading: 'No products',
-      description: 'No products are using this option yet.',
+      heading: t`No products`,
+      description: t`No products are using this option yet.`,
     },
     filtered: {
-      heading: 'No products found',
-      description: 'Try changing your search term.',
+      heading: t`No products found`,
+      description: t`Try changing your search term.`,
     },
   })
+}

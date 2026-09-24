@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Button,
   DropdownMenu,
@@ -10,6 +11,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { EllipsisIcon, PencilIcon, TrashIcon } from 'lucide-react'
 import type { AdminCountry } from '#/api/generated/model'
 import { useRemoveRegionCountries } from '#/features/regions/api/countries'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 type RegionCountryRowActionsProps = {
   regionId: string
@@ -23,15 +25,19 @@ type RegionCountryRowActionsProps = {
  * is one shoppers may be on. Nothing here deletes the country — the ISO list ships whole.
  */
 export function RegionCountryRowActions({ regionId, country }: RegionCountryRowActionsProps) {
+  const { t } = useLingui()
+  const { cancel } = useUiCopy()
   const navigate = useNavigate()
   const { mutate: remove } = useRemoveRegionCountries(regionId)
   const prompt = usePrompt()
 
   const handleRemove = async () => {
+    const name = country.displayName
     const confirmed = await prompt({
-      title: 'Remove country',
-      description: `${country.displayName} will stop being sold to, and its storefront will no longer resolve.`,
-      confirmText: 'Remove',
+      title: t`Remove country`,
+      description: t`${name} will stop being sold to, and its storefront will no longer resolve.`,
+      confirmText: t`Remove`,
+      cancelText: cancel,
       variant: 'danger',
     })
 
@@ -46,11 +52,11 @@ export function RegionCountryRowActions({ regionId, country }: RegionCountryRowA
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => navigate({ to: `/settings/regions/${regionId}/countries/${country.id}` })}>
           <PencilIcon />
-          Edit locale
+          <Trans>Edit locale</Trans>
         </DropdownMenuItem>
         <DropdownMenuItem variant="destructive" onClick={handleRemove}>
           <TrashIcon />
-          Remove
+          <Trans>Remove</Trans>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

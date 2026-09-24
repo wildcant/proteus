@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -33,6 +34,7 @@ export const useReplaceUserRoles = (
   userId: string,
   options?: UseMutationOptions<AdminUserRolesResponse, Error, string[]>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -44,7 +46,7 @@ export const useReplaceUserRoles = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update roles', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update roles`, description: error.message })
       onError?.(...args)
     },
   })

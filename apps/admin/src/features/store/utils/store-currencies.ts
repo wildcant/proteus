@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import type { AdminStoreCurrency } from '#/api/generated/model'
 
 /**
@@ -28,7 +30,7 @@ export type StoreCurrencyRowActions = {
   canMakeDefault: boolean
   canRemove: boolean
   /** Why Remove is withheld, in words a merchant can act on. `null` when it is offered. */
-  removeBlockedReason: string | null
+  removeBlockedReason: MessageDescriptor | null
 }
 
 /**
@@ -48,7 +50,7 @@ export function storeCurrencyActions(currency: AdminStoreCurrency): StoreCurrenc
     return {
       canMakeDefault: false,
       canRemove: false,
-      removeBlockedReason: "This is the store's default currency. Make another currency the default first.",
+      removeBlockedReason: msg`This is the store's default currency. Make another currency the default first.`,
     }
   }
 

@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Button,
   DropdownMenu,
@@ -11,6 +12,8 @@ import { EllipsisIcon, StarIcon, TrashIcon } from 'lucide-react'
 import type { AdminStoreCurrency } from '#/api/generated/model'
 import { useRemoveStoreCurrencies, useSetDefaultStoreCurrency } from '#/features/store/api/store'
 import { storeCurrencyActions } from '#/features/store/utils/store-currencies'
+import { useUiCopy } from '#/hooks/use-ui-copy'
+import { activeLocale } from '#/lib/i18n/locale'
 
 /**
  * Make this currency the default, or stop selling in it.
@@ -22,6 +25,8 @@ import { storeCurrencyActions } from '#/features/store/utils/store-currencies'
  * prices themselves stay behind in a currency nothing reads.
  */
 export function StoreCurrencyRowActions({ currency }: { currency: AdminStoreCurrency }) {
+  const { t } = useLingui()
+  const { cancel } = useUiCopy()
   const { mutate: makeDefault } = useSetDefaultStoreCurrency()
   const { mutate: remove } = useRemoveStoreCurrencies()
   const prompt = usePrompt()
@@ -30,10 +35,12 @@ export function StoreCurrencyRowActions({ currency }: { currency: AdminStoreCurr
   if (!canMakeDefault && !canRemove) return null
 
   const handleRemove = async () => {
+    const currencyName = getCurrencyName(currency.currencyCode, activeLocale())
     const confirmed = await prompt({
-      title: 'Remove currency',
-      description: `Products will no longer carry a ${getCurrencyName(currency.currencyCode)} price, and no region will be able to settle in it.`,
-      confirmText: 'Remove',
+      title: t`Remove currency`,
+      description: t`Products will no longer carry a ${currencyName} price, and no region will be able to settle in it.`,
+      confirmText: t`Remove`,
+      cancelText: cancel,
       variant: 'danger',
     })
 
@@ -49,13 +56,13 @@ export function StoreCurrencyRowActions({ currency }: { currency: AdminStoreCurr
         {canMakeDefault ? (
           <DropdownMenuItem onClick={() => makeDefault(currency.currencyCode)}>
             <StarIcon />
-            Make default
+            <Trans>Make default</Trans>
           </DropdownMenuItem>
         ) : null}
         {canRemove ? (
           <DropdownMenuItem variant="destructive" onClick={handleRemove}>
             <TrashIcon />
-            Remove
+            <Trans>Remove</Trans>
           </DropdownMenuItem>
         ) : null}
       </DropdownMenuContent>

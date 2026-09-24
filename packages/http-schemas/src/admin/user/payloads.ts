@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { shortText } from '../../bounded.js'
+import { localeCode } from '../region/payloads.js'
 
 export const AdminCreateUser = z
   .object({
@@ -16,3 +17,14 @@ export const AdminUpdateUser = z
   })
   .openapi('AdminUpdateUser')
 export type AdminUpdateUserBody = z.infer<typeof AdminUpdateUser>
+
+/**
+ * What a staff member changes about themselves. Separate from `AdminUpdateUser` because only the
+ * signed-in user sets their own Locale; nobody sets it for them from the users page.
+ */
+export const AdminUpdateMe = z
+  .object({
+    locale: localeCode,
+  })
+  .openapi('AdminUpdateMe')
+export type AdminUpdateMeBody = z.infer<typeof AdminUpdateMe>

@@ -3,8 +3,9 @@ import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import type { MiddlewareFunction, PermissionKey } from '../types.js'
 
+// A staff member reads their own profile and sets their own Locale whatever their roles grant.
 function isSelfReadBypass(matcher: string, method: string): boolean {
-  return method === 'GET' && matcher === '/admin/users/me'
+  return (method === 'GET' || method === 'PATCH') && matcher === '/admin/users/me'
 }
 
 function coversAllFeatures(granted: ReadonlySet<string>, required: PermissionKey[]): boolean {

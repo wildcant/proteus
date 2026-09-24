@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import {
   Button,
   DropdownMenu,
@@ -19,6 +20,7 @@ type SortingMenuProps<T> = {
 }
 
 export function SortingMenu<T>({ sortableColumns, current, setField, setDirection, isPending }: SortingMenuProps<T>) {
+  const { t } = useLingui()
   if (isPending || sortableColumns.length === 0) return null
 
   const currentCol = current ? sortableColumns.find((c) => c.id === current.field) : null
@@ -41,8 +43,8 @@ export function SortingMenu<T>({ sortableColumns, current, setField, setDirectio
           <>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={String(current.desc)} onValueChange={(v) => setDirection(v === 'true')}>
-              <DropdownMenuRadioItem value="false">{currentCol?.sortAscLabel ?? 'Ascending'}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="true">{currentCol?.sortDescLabel ?? 'Descending'}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="false">{currentCol?.sortAscLabel ?? t`Ascending`}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="true">{currentCol?.sortDescLabel ?? t`Descending`}</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </>
         )}

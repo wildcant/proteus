@@ -1,10 +1,12 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminRoleListResponseRolesItem } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useRoles } from '#/features/access-control/api/roles'
 import { RoleRowActions } from '#/features/access-control/components/role-row-actions'
 
-export const useRoleTable = () =>
-  useDefineTable<AdminRoleListResponseRolesItem>({
+export const useRoleTable = () => {
+  const { t } = useLingui()
+  return useDefineTable<AdminRoleListResponseRolesItem>({
     useData: () => {
       const { data, isPending, isFetching } = useRoles()
       return {
@@ -17,12 +19,12 @@ export const useRoleTable = () =>
 
     columns: (col) => [
       col.display('name', {
-        header: 'Name',
+        header: t`Name`,
         cell: ({ row }) => (
           <span className="flex items-center gap-x-2">
             {row.name}
             {!!row.protected && (
-              <span className="text-muted-foreground" title="Protected role">
+              <span className="text-muted-foreground" title={t`Protected role`}>
                 🔒
               </span>
             )}
@@ -30,7 +32,7 @@ export const useRoleTable = () =>
         ),
       }),
       col.display('userCount', {
-        header: 'Users',
+        header: t`Users`,
         cell: ({ row }) => row.userCount,
       }),
     ],
@@ -40,11 +42,12 @@ export const useRoleTable = () =>
     rowActions: (row) => <RoleRowActions role={row} />,
 
     empty: {
-      heading: 'No roles',
-      description: 'Create a role to manage permissions.',
+      heading: t`No roles`,
+      description: t`Create a role to manage permissions.`,
     },
     filtered: {
-      heading: 'No roles found',
-      description: 'Try changing your search term.',
+      heading: t`No roles found`,
+      description: t`Try changing your search term.`,
     },
   })
+}

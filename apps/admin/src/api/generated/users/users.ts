@@ -9,6 +9,7 @@ import type {
   AdminCreateUser,
   AdminMeResponse,
   AdminReplaceUserRoles,
+  AdminUpdateMe,
   AdminUpdateUser,
   AdminUserListResponse,
   AdminUserResponse,
@@ -30,6 +31,19 @@ export const getMe = (
  ) => {
       return fetcher<AdminMeResponse>(
       {url: `/admin/users/me`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * @summary Update the authenticated user
+ */
+export const updateMe = (
+    adminUpdateMe?: BodyType<AdminUpdateMe>,
+ ) => {
+      return fetcher<AdminMeResponse>(
+      {url: `/admin/users/me`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: adminUpdateMe
     },
       );
     }
@@ -120,6 +134,7 @@ export const replaceUserRoles = (
       );
     }
   export type GetMeResult = NonNullable<Awaited<ReturnType<typeof getMe>>>
+export type UpdateMeResult = NonNullable<Awaited<ReturnType<typeof updateMe>>>
 export type ListUsersResult = NonNullable<Awaited<ReturnType<typeof listUsers>>>
 export type CreateUserResult = NonNullable<Awaited<ReturnType<typeof createUser>>>
 export type GetUserResult = NonNullable<Awaited<ReturnType<typeof getUser>>>

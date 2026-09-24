@@ -23,6 +23,7 @@ import { Modules } from '../src/core/utils/modules-definition.js'
 import { container } from '../src/framework/runtime/container.node.js'
 import type { AccessControlModuleService } from '../src/modules/access-control/services/access-control-module-service.js'
 import { config as alertLowStock } from '../src/subscribers/alert-low-stock.js'
+import { SOURCE_LOCALE } from '../src/workflows/admin/utils/admin-locales.js'
 import { amountIn, MARKETS, seedMarkets } from './seed/markets.js'
 
 const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
@@ -396,6 +397,7 @@ if (existingUsers.length === 0) {
   const users = Array.from({ length: 10 }, (_, i) => ({
     name: `User ${i + 1}`,
     email: `user${i + 1}@example.com`,
+    locale: SOURCE_LOCALE,
   }))
   const createdUsers = await userService.createUsers(users)
   console.info(`Seeded ${createdUsers.length} users`)
@@ -444,7 +446,9 @@ if (adminIdentity) {
     if (existingAdminUsers.length > 0 && existingAdminUsers[0]) {
       userId = existingAdminUsers[0].id
     } else {
-      const [created] = await userService.createUsers([{ id: DEV_ADMIN_ID, name: 'Dev Admin', email: DEV_ADMIN_EMAIL }])
+      const [created] = await userService.createUsers([
+        { id: DEV_ADMIN_ID, name: 'Dev Admin', email: DEV_ADMIN_EMAIL, locale: SOURCE_LOCALE },
+      ])
       if (!created) throw new Error('Failed to create dev admin user entity')
       userId = created.id
     }

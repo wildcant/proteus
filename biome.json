@@ -274,7 +274,7 @@
       }
     },
     {
-      "includes": ["apps/store/**"],
+      "includes": ["apps/store/**", "apps/admin/**"],
       "linter": {
         "rules": {
           "style": {

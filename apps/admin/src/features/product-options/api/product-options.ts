@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -49,6 +50,7 @@ export const useSuspenseProductOption = (id: string) => useSuspenseQuery(product
 export const useCreateProductOption = (
   options?: UseMutationOptions<AdminProductOptionResponse, Error, AdminCreateProductOption>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -59,7 +61,7 @@ export const useCreateProductOption = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to create option', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to create option`, description: error.message })
       onError?.(...args)
     },
   })
@@ -69,6 +71,7 @@ export const useUpdateProductOption = (
   id: string,
   options?: UseMutationOptions<AdminProductOptionResponse, Error, AdminUpdateProductOption>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -85,13 +88,14 @@ export const useUpdateProductOption = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update option', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update option`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useDeleteProductOption = (id: string, options?: UseMutationOptions<DeleteResponse, Error, void>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -102,7 +106,7 @@ export const useDeleteProductOption = (id: string, options?: UseMutationOptions<
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to delete option', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to delete option`, description: error.message })
       onError?.(...args)
     },
   })
@@ -151,6 +155,7 @@ export const useSetProductOptions = (
   productId: string,
   options?: UseMutationOptions<AdminSetProductOptionsResponse, Error, AdminSetProductOptions>,
 ) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -164,7 +169,7 @@ export const useSetProductOptions = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to set product options', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to set product options`, description: error.message })
       onError?.(...args)
     },
   })

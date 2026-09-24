@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
 import { EllipsisIcon } from 'lucide-react'
 import type { AdminProduct } from '#/api/generated/model'
@@ -17,10 +18,10 @@ export function ProductRowActions({ product }: { product: AdminProduct }) {
             /* TODO: navigate to edit */
           }}
         >
-          Edit
+          <Trans>Edit</Trans>
         </DropdownMenuItem>
         <DropdownMenuItem variant="destructive" onClick={() => deleteProduct()}>
-          Delete
+          <Trans>Delete</Trans>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

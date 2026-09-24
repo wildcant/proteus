@@ -1,9 +1,11 @@
+import { useLingui } from '@lingui/react/macro'
 import type { AdminUserListResponseUsersItem } from '#/api/generated/model'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useUsers } from '#/features/users/api/users'
 
-export const useUserTable = () =>
-  useDefineTable<AdminUserListResponseUsersItem>({
+export const useUserTable = () => {
+  const { t } = useLingui()
+  return useDefineTable<AdminUserListResponseUsersItem>({
     useData: (params) => {
       const { data, isPending, isFetching } = useUsers(params)
       return {
@@ -15,23 +17,24 @@ export const useUserTable = () =>
     },
 
     columns: (col) => [
-      col.accessor('name', { header: 'Name', sortable: true }),
-      col.accessor('email', { header: 'Email' }),
+      col.accessor('name', { header: t`Name`, sortable: true }),
+      col.accessor('email', { header: t`Email` }),
       col.display('roles', {
-        header: 'Roles',
+        header: t`Roles`,
         cell: ({ row }) => (row.roles?.length ? row.roles.map((r) => r.name).join(', ') : '—'),
       }),
-      col.accessor('createdAt', { header: 'Joined', render: 'datetime' }),
+      col.accessor('createdAt', { header: t`Joined`, render: 'datetime' }),
     ],
 
     getRowId: (row) => row.id,
     rowHref: (row) => `/settings/users/${row.id}`,
 
     empty: {
-      heading: 'No users yet',
-      description: 'Invite someone to get started.',
+      heading: t`No users yet`,
+      description: t`Invite someone to get started.`,
     },
     filtered: {
-      heading: 'No users found',
+      heading: t`No users found`,
     },
   })
+}

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { AdminReservationListParams } from '@proteus/http-schemas/admin'
 import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
@@ -12,11 +13,12 @@ export const Route = createFileRoute('/_authed/_shell/reservations/')({
 })
 
 function ReservationsPage() {
+  const { t } = useLingui()
   const reservations = useReservationTable()
 
   return (
     <PageLayout.SingleColumn>
-      <DataTable use={reservations} className="flex-1" heading="Reservations" />
+      <DataTable use={reservations} className="flex-1" heading={t`Reservations`} />
     </PageLayout.SingleColumn>
   )
 }

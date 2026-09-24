@@ -1,5 +1,6 @@
-import { Field, FieldError, FieldLabel, Textarea } from '@proteus/ui'
+import { Field, FieldLabel, Textarea } from '@proteus/ui'
 import { useId } from 'react'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { useFieldContext } from '#/lib/form-context.ts'
 
 type TextareaFieldProps = Pick<
@@ -26,7 +27,7 @@ export function TextareaField({ label, className, ...textareaProps }: TextareaFi
         aria-invalid={isInvalid}
         {...textareaProps}
       />
-      {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {!!isInvalid && <TranslatedFieldError errors={field.state.meta.errors} />}
     </Field>
   )
 }

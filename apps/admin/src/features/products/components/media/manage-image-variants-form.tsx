@@ -1,8 +1,11 @@
+import { plural } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteDrawer, toast, useRouteModal } from '@proteus/ui'
 import type { AdminProductImage } from '#/api/generated/model'
 import { DataTable } from '#/components/data-table/data-table'
 import { useImageVariantsTable } from '#/features/products/hooks/use-image-variants-table'
 import { useManageImageVariantsForm } from '#/features/products/hooks/use-manage-image-variants-form'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 type ManageImageVariantsFormProps = {
   productId: string
@@ -12,6 +15,8 @@ type ManageImageVariantsFormProps = {
 }
 
 export function ManageImageVariantsForm({ productId, image, variantIds }: ManageImageVariantsFormProps) {
+  const { t } = useLingui()
+  const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
 
   const { form } = useManageImageVariantsForm({
@@ -19,21 +24,25 @@ export function ManageImageVariantsForm({ productId, image, variantIds }: Manage
     imageId: image.id,
     variantIds,
     onSuccess: () => {
-      toast.add({ type: 'success', title: 'Image variants updated successfully' })
+      toast.add({ type: 'success', title: t`Image variants updated successfully` })
       handleSuccess()
     },
   })
 
   return (
-    <RouteDrawer.Form form={form}>
+    <RouteDrawer.Form form={form} copy={unsavedChanges}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <form.AppForm>
-          <RouteDrawer.Header>
+          <RouteDrawer.Header closeLabel={closeLabel}>
             <div className="flex items-center gap-x-3">
               <img src={image.url} alt="" className="size-10 shrink-0 rounded-md border object-cover" />
               <div className="flex flex-col gap-y-1">
-                <RouteDrawer.Title>Manage variants</RouteDrawer.Title>
-                <RouteDrawer.Description>Manage associated variants for the image</RouteDrawer.Description>
+                <RouteDrawer.Title>
+                  <Trans>Manage variants</Trans>
+                </RouteDrawer.Title>
+                <RouteDrawer.Description>
+                  <Trans>Manage associated variants for the image</Trans>
+                </RouteDrawer.Description>
               </div>
             </div>
           </RouteDrawer.Header>
@@ -51,11 +60,19 @@ export function ManageImageVariantsForm({ productId, image, variantIds }: Manage
           </RouteDrawer.Body>
           <RouteDrawer.Footer className="justify-between">
             <form.Subscribe selector={(state) => state.values.variantIds.length}>
-              {(count) => <span className="text-muted-foreground text-sm">{count} selected</span>}
+              {(count) => (
+                <span className="text-muted-foreground text-sm">
+                  {t`${plural(count, { one: '# selected', other: '# selected' })}`}
+                </span>
+              )}
             </form.Subscribe>
             <div className="flex items-center gap-x-2">
-              <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteDrawer.Close>
-              <form.SubmitButton size="sm">Save</form.SubmitButton>
+              <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>
+                <Trans>Cancel</Trans>
+              </RouteDrawer.Close>
+              <form.SubmitButton size="sm">
+                <Trans>Save</Trans>
+              </form.SubmitButton>
             </div>
           </RouteDrawer.Footer>
         </form.AppForm>

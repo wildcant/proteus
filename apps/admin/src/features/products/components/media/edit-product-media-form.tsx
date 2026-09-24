@@ -1,24 +1,28 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteFocusModal, toast, useRouteModal } from '@proteus/ui'
 import type { AdminProductResponseProduct } from '#/api/generated/model'
 import { ProductMediaGrid } from '#/features/products/components/media/product-media-grid'
 import { UploadMediaFormItem } from '#/features/products/components/media/upload-media-form-item'
 import { useEditProductMediaForm } from '#/features/products/hooks/use-edit-product-media-form'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function EditProductMediaForm({ product }: { product: AdminProductResponseProduct }) {
+  const { t } = useLingui()
+  const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
 
   const { form } = useEditProductMediaForm(product, {
     onSuccess: () => {
-      toast.add({ type: 'success', title: 'Media updated successfully' })
+      toast.add({ type: 'success', title: t`Media updated successfully` })
       handleSuccess()
     },
   })
 
   return (
-    <RouteFocusModal.Form form={form}>
+    <RouteFocusModal.Form form={form} copy={unsavedChanges}>
       <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <form.AppForm>
-          <RouteFocusModal.Header></RouteFocusModal.Header>
+          <RouteFocusModal.Header closeLabel={closeLabel}></RouteFocusModal.Header>
           <RouteFocusModal.Body className="flex flex-col overflow-hidden">
             <div className="flex size-full flex-col-reverse lg:grid lg:grid-cols-[1fr_440px]">
               <div className="size-full overflow-auto bg-muted/40">
@@ -32,8 +36,12 @@ export function EditProductMediaForm({ product }: { product: AdminProductRespons
             </div>
           </RouteFocusModal.Body>
           <RouteFocusModal.Footer>
-            <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>Cancel</RouteFocusModal.Close>
-            <form.SubmitButton size="sm">Save</form.SubmitButton>
+            <RouteFocusModal.Close render={<Button variant="secondary" size="sm" />}>
+              <Trans>Cancel</Trans>
+            </RouteFocusModal.Close>
+            <form.SubmitButton size="sm">
+              <Trans>Save</Trans>
+            </form.SubmitButton>
           </RouteFocusModal.Footer>
         </form.AppForm>
       </KeyboundForm>

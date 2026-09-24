@@ -1,17 +1,22 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Card, CardAction, CardHeader, CardTitle, Tooltip, TooltipContent, TooltipTrigger } from '@proteus/ui'
 import { ImageIcon, PencilIcon, StarIcon } from 'lucide-react'
 import type { AdminProductVariantResponseVariant } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 
 export function VariantMediaSection({ variant }: { variant: AdminProductVariantResponseVariant }) {
+  const { t } = useLingui()
   const media = variant.images ?? []
+  const title = variant.title
 
   return (
     <Card className="gap-0 divide-y py-0">
       <CardHeader>
-        <CardTitle>Media</CardTitle>
+        <CardTitle>
+          <Trans>Media</Trans>
+        </CardTitle>
         <CardAction>
-          <ActionMenu groups={[{ actions: [{ label: 'Edit Media', to: './media', icon: <PencilIcon /> }] }]} />
+          <ActionMenu groups={[{ actions: [{ label: t`Edit Media`, to: './media', icon: <PencilIcon /> }] }]} />
         </CardAction>
       </CardHeader>
       {media.length > 0 ? (
@@ -33,12 +38,16 @@ export function VariantMediaSection({ variant }: { variant: AdminProductVariantR
                     }
                   >
                     <StarIcon className="size-3.5 fill-current" />
-                    <span className="sr-only">Thumbnail</span>
+                    <span className="sr-only">
+                      <Trans>Thumbnail</Trans>
+                    </span>
                   </TooltipTrigger>
-                  <TooltipContent>Thumbnail</TooltipContent>
+                  <TooltipContent>
+                    <Trans>Thumbnail</Trans>
+                  </TooltipContent>
                 </Tooltip>
               )}
-              <img src={image.url} alt={`${variant.title} media`} className="size-full object-cover" />
+              <img src={image.url} alt={t`${title} media`} className="size-full object-cover" />
             </div>
           ))}
         </div>
@@ -46,8 +55,12 @@ export function VariantMediaSection({ variant }: { variant: AdminProductVariantR
         <div className="flex flex-col items-center gap-y-4 px-6 pt-6 pb-8">
           <ImageIcon className="size-6 text-muted-foreground" />
           <div className="flex flex-col items-center gap-y-1 text-sm">
-            <span className="font-medium">No media</span>
-            <span className="text-muted-foreground">Assign product images to this variant.</span>
+            <span className="font-medium">
+              <Trans>No media</Trans>
+            </span>
+            <span className="text-muted-foreground">
+              <Trans>Assign product images to this variant.</Trans>
+            </span>
           </div>
         </div>
       )}

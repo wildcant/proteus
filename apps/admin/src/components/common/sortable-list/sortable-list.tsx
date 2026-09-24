@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useLingui } from '@lingui/react/macro'
 import { Button, cn } from '@proteus/ui'
 import { GripVertical } from 'lucide-react'
 import {
@@ -139,6 +140,7 @@ export function SortableListItem({
 }
 
 export function SortableListDragHandle() {
+  const { t } = useLingui()
   const { attributes, listeners, ref } = useSortableItemContext()
 
   return (
@@ -149,7 +151,7 @@ export function SortableListDragHandle() {
       {...listeners}
       ref={ref}
       className="cursor-grab touch-none active:cursor-grabbing"
-      aria-label="Reorder"
+      aria-label={t`Reorder`}
     >
       <GripVertical className="size-4 text-muted-foreground" />
     </Button>

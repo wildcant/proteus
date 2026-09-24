@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Badge, Card, CardAction, CardDescription, CardHeader, CardTitle } from '@proteus/ui'
 import { useNavigate } from '@tanstack/react-router'
 import { PencilIcon, TrashIcon } from 'lucide-react'
@@ -12,6 +13,7 @@ type VariantGeneralSectionProps = {
 }
 
 export function VariantGeneralSection({ productId, variant }: VariantGeneralSectionProps) {
+  const { t } = useLingui()
   const navigate = useNavigate()
   const { mutateAsync: deleteVariant } = useDeleteProductVariant(productId, variant.id)
 
@@ -25,17 +27,19 @@ export function VariantGeneralSection({ productId, variant }: VariantGeneralSect
     <Card data-slot="variant-general-section" className="gap-0 divide-y py-0">
       <CardHeader>
         <CardTitle>{variant.title}</CardTitle>
-        <CardDescription>Product Variant</CardDescription>
+        <CardDescription>
+          <Trans>Product Variant</Trans>
+        </CardDescription>
         <CardAction>
           <ActionMenu
             groups={[
-              { actions: [{ label: 'Edit', to: './edit', icon: <PencilIcon /> }] },
-              { actions: [{ label: 'Delete', onClick: handleDelete, icon: <TrashIcon /> }] },
+              { actions: [{ label: t`Edit`, to: './edit', icon: <PencilIcon /> }] },
+              { actions: [{ label: t`Delete`, onClick: handleDelete, icon: <TrashIcon /> }] },
             ]}
           />
         </CardAction>
       </CardHeader>
-      <SectionRow title="SKU" value={variant.sku} />
+      <SectionRow title={t`SKU`} value={variant.sku} />
       {/* The Option Combination sits with the variant's own identifiers — it is what the variant
        *is*. Already resolved and ordered by the API, so there is nothing to look up here. */}
       {variant.optionValues.map((optionValue) => (

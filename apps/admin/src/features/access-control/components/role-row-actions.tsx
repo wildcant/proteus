@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Button,
   DropdownMenu,
@@ -11,13 +12,17 @@ import { useNavigate } from '@tanstack/react-router'
 import { EllipsisIcon } from 'lucide-react'
 import type { AdminRole } from '#/api/generated/model'
 import { useDeleteRole } from '#/features/access-control/api/roles'
+import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function RoleRowActions({ role }: { role: AdminRole }) {
   const navigate = useNavigate()
   const prompt = usePrompt()
+  const { t } = useLingui()
+  const { cancel } = useUiCopy()
+  const name = role.name
   const deleteMutation = useDeleteRole({
     onSuccess: () => {
-      toast.add({ type: 'success', title: `Role "${role.name}" deleted` })
+      toast.add({ type: 'success', title: t`Role "${name}" deleted` })
     },
   })
 
@@ -26,9 +31,10 @@ export function RoleRowActions({ role }: { role: AdminRole }) {
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
     const confirmed = await prompt({
-      title: 'Delete role',
-      description: `Are you sure you want to delete "${role.name}"? This action cannot be undone.`,
-      confirmText: 'Delete',
+      title: t`Delete role`,
+      description: t`Are you sure you want to delete "${name}"? This action cannot be undone.`,
+      confirmText: t`Delete`,
+      cancelText: cancel,
       variant: 'danger',
     })
     if (confirmed) {
@@ -42,8 +48,14 @@ export function RoleRowActions({ role }: { role: AdminRole }) {
         <EllipsisIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => navigate({ to: `/settings/roles/${role.id}` })}>Edit</DropdownMenuItem>
-        {!!canDelete && <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>}
+        <DropdownMenuItem onClick={() => navigate({ to: `/settings/roles/${role.id}` })}>
+          <Trans>Edit</Trans>
+        </DropdownMenuItem>
+        {!!canDelete && (
+          <DropdownMenuItem onClick={handleDelete}>
+            <Trans>Delete</Trans>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

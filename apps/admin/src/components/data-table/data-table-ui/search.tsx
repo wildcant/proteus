@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { cn, Input } from '@proteus/ui'
 import { LoaderIcon, SearchIcon } from 'lucide-react'
 
@@ -8,6 +9,7 @@ type SearchProps = {
 }
 
 export function Search({ value, onChange, isPending }: SearchProps) {
+  const { t } = useLingui()
   return (
     <div className="relative">
       {isPending ? (
@@ -17,7 +19,7 @@ export function Search({ value, onChange, isPending }: SearchProps) {
       )}
       <Input
         type="search"
-        placeholder="Search..."
+        placeholder={t`Search...`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn('h-7 w-40 pl-7 text-xs', isPending && 'opacity-70')}

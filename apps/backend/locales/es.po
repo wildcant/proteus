@@ -31,12 +31,12 @@ msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
 "  {routes}"
 
 #. js-lingui-explicit-id
-#: src/workflows/user/accept-invite.ts:41
+#: src/workflows/user/accept-invite.ts:42
 msgid "Failed to register auth identity"
 msgstr "No se pudo registrar la identidad de autenticación"
 
 #. js-lingui-explicit-id
-#: src/workflows/user/accept-invite.ts:77
+#: src/workflows/user/accept-invite.ts:78
 msgid "Auth identity \"{authIdentityId}\" already has \"userId\" set"
 msgstr "La identidad de autenticación \"{authIdentityId}\" ya tiene \"userId\" asignado"
 
@@ -976,8 +976,8 @@ msgid "Unauthorized: registration required"
 msgstr "No autorizado: se requiere registro"
 
 #. js-lingui-explicit-id
-#: src/framework/http/middlewares/authorize.ts:26
-#: src/framework/http/middlewares/authorize.ts:36
+#: src/framework/http/middlewares/authorize.ts:27
+#: src/framework/http/middlewares/authorize.ts:37
 msgid "Insufficient permissions"
 msgstr "No tienes permisos suficientes"
 
@@ -1249,9 +1249,15 @@ msgid "Password update failed"
 msgstr "No se pudo actualizar la contraseña"
 
 #. js-lingui-explicit-id
-#: src/api/admin/users/me/route.ts:15
+#: src/api/admin/users/me/route.ts:16
+#: src/api/admin/users/me/route.ts:51
 msgid "User ID not found"
 msgstr "No se encontró el ID de usuario"
+
+#. js-lingui-explicit-id
+#: src/api/admin/users/me/route.ts:59
+msgid "{locale} is not a language the admin offers"
+msgstr "{locale} no es un idioma que ofrezca el panel"
 
 #. js-lingui-explicit-id
 #: src/api/admin/uploads/presigned-urls/route.ts:27
