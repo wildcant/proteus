@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, test } from 'vitest'
 import { createI18n } from '#/lib/i18n/catalogs'
-import { PERMISSION_TITLES } from './use-permission-title'
+import { PERMISSION_TITLES } from './permission-titles'
 
 /**
  * Every permission key the backend registers, read from its generated registry. The admin has no

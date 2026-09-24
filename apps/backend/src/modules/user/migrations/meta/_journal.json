@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1787541496503,
+      "when": 1790231767152,
       "tag": "0000_create_user_and_invite_tables",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1790223507292,
-      "tag": "0001_add_user_locale",
       "breakpoints": true
     }
   ]

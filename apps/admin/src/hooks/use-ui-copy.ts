@@ -2,8 +2,8 @@ import { useLingui } from '@lingui/react/macro'
 import type { UnsavedChangesCopy } from '@proteus/ui'
 
 /**
- * The copy `@proteus/ui` components take as props, in the admin's language. The components default
- * to English so the package never depends on Lingui; every admin call site passes these instead.
+ * The copy `@proteus/ui` components take as props, in the admin's language. The package never
+ * depends on Lingui, so every admin call site passes these.
  */
 export function useUiCopy(): { closeLabel: string; cancel: string; unsavedChanges: UnsavedChangesCopy } {
   const { t } = useLingui()

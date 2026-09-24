@@ -110,7 +110,7 @@ msgid "Add to cart"
 msgstr "Add to cart"
 
 #: src/features/address/components/address-card.tsx:29
-#: src/features/address/components/address-form.tsx:47
+#: src/features/address/components/address-form.tsx:55
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:38
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:107
 msgid "Address"
@@ -141,11 +141,15 @@ msgstr "All products"
 msgid "Already have an account?"
 msgstr "Already have an account?"
 
-#: src/features/address/components/address-form.tsx:50
+#: src/features/address/components/address-form.tsx:58
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:46
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:116
 msgid "Apartment, suite, etc."
 msgstr "Apartment, suite, etc."
+
+#: src/features/address/components/address-form.tsx:26
+msgid "Are you sure you want to leave? Your unsaved changes will be lost."
+msgstr "Are you sure you want to leave? Your unsaved changes will be lost."
 
 #: src/components/theme-toggle.tsx:81
 msgid "Auto"
@@ -224,7 +228,8 @@ msgstr "Calculated"
 msgid "Calculated at checkout"
 msgstr "Calculated at checkout"
 
-#: src/features/address/components/address-form.tsx:82
+#: src/features/address/components/address-form.tsx:27
+#: src/features/address/components/address-form.tsx:90
 #: src/features/checkout/components/delivery/address-actions.tsx:28
 msgid "Cancel"
 msgstr "Cancel"
@@ -258,7 +263,7 @@ msgstr "Checkout"
 msgid "Choose a new password for your account."
 msgstr "Choose a new password for your account."
 
-#: src/features/address/components/address-form.tsx:55
+#: src/features/address/components/address-form.tsx:63
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:56
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:132
 msgid "City"
@@ -285,7 +290,7 @@ msgstr "Close search"
 msgid "Close toast"
 msgstr "Close toast"
 
-#: src/features/address/components/address-form.tsx:44
+#: src/features/address/components/address-form.tsx:52
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:53
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:125
 msgid "Company"
@@ -303,6 +308,10 @@ msgstr "Confirmation sent to"
 #: src/features/checkout/components/contact/contact-section.tsx:25
 msgid "Contact"
 msgstr "Contact"
+
+#: src/features/address/components/address-form.tsx:28
+msgid "Continue"
+msgstr "Continue"
 
 #: src/routes/_auth/route.tsx:20
 #: src/routes/_main/order/$orderId/confirmed.tsx:35
@@ -474,7 +483,7 @@ msgstr "Failed to update cart item"
 msgid "Failed to update password"
 msgstr "Failed to update password"
 
-#: src/features/address/components/address-form.tsx:36
+#: src/features/address/components/address-form.tsx:44
 #: src/features/auth/components/register-form.tsx:15
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:32
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:99
@@ -543,11 +552,11 @@ msgstr "It may not be one we sell here."
 msgid "Keep"
 msgstr "Keep"
 
-#: src/features/address/components/address-form.tsx:31
+#: src/features/address/components/address-form.tsx:39
 msgid "Label (e.g. Home)"
 msgstr "Label (e.g. Home)"
 
-#: src/features/address/components/address-form.tsx:39
+#: src/features/address/components/address-form.tsx:47
 #: src/features/auth/components/register-form.tsx:18
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:35
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:102
@@ -580,7 +589,7 @@ msgstr "Make {0} the default"
 msgid "Make this my main"
 msgstr "Make this my main"
 
-#: src/features/address/components/address-form.tsx:76
+#: src/features/address/components/address-form.tsx:84
 msgid "Make this my main address"
 msgstr "Make this my main address"
 
@@ -728,7 +737,7 @@ msgstr "Payment Methods"
 msgid "Payment received"
 msgstr "Payment received"
 
-#: src/features/address/components/address-form.tsx:70
+#: src/features/address/components/address-form.tsx:78
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:68
 msgid "Phone"
 msgstr "Phone"
@@ -746,7 +755,7 @@ msgstr "Placed {placedAt}"
 msgid "Placing order..."
 msgstr "Placing order..."
 
-#: src/features/address/components/address-form.tsx:65
+#: src/features/address/components/address-form.tsx:73
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:59
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:135
 msgid "Postal code"
@@ -817,7 +826,7 @@ msgstr "Reset link sent to <0>{email}</0>. Check your inbox."
 msgid "Run transfer again"
 msgstr "Run transfer again"
 
-#: src/features/address/components/address-form.tsx:85
+#: src/features/address/components/address-form.tsx:93
 msgid "Save"
 msgstr "Save"
 
@@ -958,7 +967,7 @@ msgstr "Sort by"
 msgid "Start shopping"
 msgstr "Start shopping"
 
-#: src/features/address/components/address-form.tsx:62
+#: src/features/address/components/address-form.tsx:70
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:64
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:140
 msgid "State / Province"
@@ -1158,6 +1167,10 @@ msgstr "Weight"
 #: src/components/header/constants.ts:8
 msgid "What are you looking for today?"
 msgstr "What are you looking for today?"
+
+#: src/features/address/components/address-form.tsx:25
+msgid "You have unsaved changes"
+msgstr "You have unsaved changes"
 
 #: src/features/account/components/orders-panel.tsx:107
 msgid "You haven't made any orders yet. When you make an order it'll show up here."

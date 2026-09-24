@@ -15,7 +15,9 @@ let userId: string
 
 test.beforeEach(async ({ createApi }) => {
   api = await createApi({ definitions: adminUserDefinitions, namespaceAuth: true })
-  const user = await api.container.resolve(Modules.USER).createUser({ email: 'staff@example.com', name: 'Staff' })
+  const user = await api.container
+    .resolve(Modules.USER)
+    .createUser({ email: 'staff@example.com', name: 'Staff', locale: 'en-US' })
   userId = user.id
 })
 

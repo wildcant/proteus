@@ -19,7 +19,15 @@ export const AddressForm = withForm({
   render: function AddressForm({ form, title }) {
     const { t } = useLingui()
     return (
-      <RouteDrawer.Form form={form}>
+      <RouteDrawer.Form
+        form={form}
+        copy={{
+          title: t`You have unsaved changes`,
+          description: t`Are you sure you want to leave? Your unsaved changes will be lost.`,
+          cancel: t`Cancel`,
+          confirm: t`Continue`,
+        }}
+      >
         <Form onSubmit={form.handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <form.AppForm>
             <RouteDrawer.Header>

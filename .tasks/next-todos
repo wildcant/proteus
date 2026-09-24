@@ -63,6 +63,20 @@ Fixes and improvements
   - Worth an ADR when it lands: restoring the guard is a named departure from Medusa, and soft-deleting the
     addresses is a second one (Medusa's transfer leaves addresses and shipping methods untouched).
 
+- ORDER CONFIRMATION FAILS FOR MULTI-ITEM ORDERS: Resend rejects the send with "The `template, variables, value`
+  field has a 2,000 character limit per value." prepare-order-confirmation-data.ts pre-renders every line item into
+  one `itemRows` HTML string (Resend template variables are scalar only), at roughly 900 chars of inline-styled
+  markup per row plus the thumbnail URL. Two items, or one with a long MinIO URL, exceed the cap. The subscriber
+  rethrows, so every retry fails the same way until the message lands in `proteus-events-dlq`.
+  - Fix: render the full email in the backend and send via the provider's `subject` + `html` path
+    (resend-provider.ts), dropping the Resend-hosted template. `html` replaces the whole template, so the backend
+    owns subject, shell, header, items, totals, address and footer. Port the current Resend template markup by hand.
+  - buildOrderConfirmationNotification sets `template: NotificationTemplates.ORDER_CONFIRMATION`, which makes the
+    provider take the template branch. Drop `template` and put `subject` + `html` in `data`, or change how the
+    provider picks a branch.
+  - Rejected: moving styles into a template `<style>` block only raises the ceiling (and many clients strip it);
+    `itemRow1..N` slots cap the item count.
+
 - ADMIN FILTERS FOR COMPUTED PROPERTIES: fulfillmentStatus filter was dropped from admin order list because the
   column no longer exists. Filtering by computed properties (fulfillmentStatus, paymentStatus, allowedActions)
   requires a different approach — options include: a subquery joining through the link table to fulfillment

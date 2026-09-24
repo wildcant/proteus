@@ -184,7 +184,8 @@ function apiLayerRules() {
         'a new endpoint. Where an app gives its refusals a class, that class belongs in its own ' +
         'module, so recognising an error never requires importing the transport that raised it.',
       severity: 'error',
-      from: { pathNot: GENERATED_PATH },
+      // The fetcher's own test exercises the transport directly; it calls no endpoint.
+      from: { pathNot: [GENERATED_PATH, '^src/api/fetcher\\.test\\.ts$'] },
       to: { path: FETCHER_PATH },
     },
   ]

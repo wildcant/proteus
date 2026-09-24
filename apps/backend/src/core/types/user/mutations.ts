@@ -2,6 +2,7 @@ export type CreateUserDTO = {
   id?: string
   email: string
   name: string
+  locale: string
 }
 
 export type UpdateUserDTO = {

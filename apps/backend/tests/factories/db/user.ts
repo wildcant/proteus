@@ -9,6 +9,7 @@ export function generateUser(overrides?: Partial<CreateUser>): CreateUser {
     id: `usr_${faker.string.alphanumeric(32)}`,
     email: faker.internet.email(),
     name: faker.person.fullName(),
+    locale: 'en-US',
     createdAt: faker.date.recent(),
     updatedAt: faker.date.recent(),
     deletedAt: null,

@@ -1,7 +1,7 @@
 import type { CountryMarketDTO } from '@core/types/region/common.js'
 
-/** Offered even when no market sells in it: the admin's source language is always available. */
-const SOURCE_LOCALE = 'en-US'
+/** Offered even when no market sells in it: the admin's source language is always available. New staff start in it. */
+export const SOURCE_LOCALE = 'en-US'
 
 /**
  * The languages the admin ships a Message Catalog for. Mirrors `locales` in

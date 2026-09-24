@@ -6,6 +6,7 @@ export function generateCreateUserDTO(overrides?: Partial<CreateUserDTO>): Creat
   return {
     email: faker.internet.email(),
     name: faker.person.fullName(),
+    locale: 'en-US',
     ...overrides,
   }
 }

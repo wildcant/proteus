@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from '#/components/ui/alert-dialog.tsx'
 
-/** The unsaved-changes prompt's copy. English by default; a translated app passes its own. */
+/** The unsaved-changes prompt's copy. The app passes it translated. */
 export type UnsavedChangesCopy = {
   title: string
   description: string
@@ -21,17 +21,10 @@ export type UnsavedChangesCopy = {
   confirm: string
 }
 
-const ENGLISH_UNSAVED_CHANGES: UnsavedChangesCopy = {
-  title: 'You have unsaved changes',
-  description: 'Are you sure you want to leave? Your unsaved changes will be lost.',
-  cancel: 'Cancel',
-  confirm: 'Continue',
-}
-
 type RouteModalFormProps = PropsWithChildren<{
   form: AnyFormApi
   blockSearchParams?: boolean
-  copy?: UnsavedChangesCopy
+  copy: UnsavedChangesCopy
 }>
 
 /**
@@ -51,7 +44,7 @@ type RouteModalFormProps = PropsWithChildren<{
 export const RouteModalForm = ({
   form,
   blockSearchParams: blockSearch = false,
-  copy = ENGLISH_UNSAVED_CHANGES,
+  copy,
   children,
 }: RouteModalFormProps) => {
   const isDirty = useSelector(form.store, (s) => s.isDirty)

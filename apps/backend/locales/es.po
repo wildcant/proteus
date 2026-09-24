@@ -31,12 +31,12 @@ msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
 "  {routes}"
 
 #. js-lingui-explicit-id
-#: src/workflows/user/accept-invite.ts:41
+#: src/workflows/user/accept-invite.ts:42
 msgid "Failed to register auth identity"
 msgstr "No se pudo registrar la identidad de autenticación"
 
 #. js-lingui-explicit-id
-#: src/workflows/user/accept-invite.ts:77
+#: src/workflows/user/accept-invite.ts:78
 msgid "Auth identity \"{authIdentityId}\" already has \"userId\" set"
 msgstr "La identidad de autenticación \"{authIdentityId}\" ya tiene \"userId\" asignado"
 

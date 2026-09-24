@@ -10,7 +10,7 @@ export const userTable = pgTable(
     email: text().notNull(),
     name: text().notNull(),
     // The Locale the admin renders in for this staff member. Only they set it, from the account menu.
-    locale: text().notNull().default('en-US'),
+    locale: text().notNull(),
     ...timestamps,
   },
   // An inline `.unique()` becomes a table constraint, which cannot carry a predicate — so a
