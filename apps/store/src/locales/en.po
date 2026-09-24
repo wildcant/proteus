@@ -1085,6 +1085,10 @@ msgstr "View all"
 msgid "View all “{debouncedTerm}”"
 msgstr "View all “{debouncedTerm}”"
 
+#: src/features/checkout/utils/payment/adapters/stripe/errors.ts:38
+msgid "We could not authenticate your card with your bank. Please try again or use a different card."
+msgstr "We could not authenticate your card with your bank. Please try again or use a different card."
+
 #: src/features/checkout/components/payment/checkout-return.tsx:87
 msgid "We could not complete your order. Please try again."
 msgstr "We could not complete your order. Please try again."
@@ -1097,6 +1101,10 @@ msgstr "We could not move your bag to {0}"
 #: src/features/checkout/components/payment/checkout-return.tsx:42
 msgid "We could not pick your order back up after your payment. If you were charged, nothing has been taken twice — contact us and we will finish it."
 msgstr "We could not pick your order back up after your payment. If you were charged, nothing has been taken twice — contact us and we will finish it."
+
+#: src/features/checkout/utils/payment/adapters/stripe/errors.ts:33
+msgid "We could not process your payment. Please try again or use a different card."
+msgstr "We could not process your payment. Please try again or use a different card."
 
 #: src/components/not-found.tsx:27
 msgid "We couldn’t find that page"
@@ -1161,6 +1169,10 @@ msgstr "Your Bag"
 #: src/features/cart/components/cart-empty.tsx:14
 msgid "Your bag is empty"
 msgstr "Your bag is empty"
+
+#: src/features/checkout/utils/payment/adapters/stripe/errors.ts:36
+msgid "Your card was declined. Please try another card or contact your bank."
+msgstr "Your card was declined. Please try another card or contact your bank."
 
 #: src/features/account/components/payment-methods-book-view.tsx:60
 msgid "Your cards"
