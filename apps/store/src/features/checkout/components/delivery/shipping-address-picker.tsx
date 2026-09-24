@@ -1,7 +1,8 @@
-import { Field, FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem } from '@proteus/ui'
+import { Field, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem } from '@proteus/ui'
 import { PlusIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { ButtonLink } from '#/components/button'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { AddressLines } from '#/features/address/components/address-lines'
 import { useMarket } from '#/hooks/use-market'
 import { withForm } from '#/lib/form-hook'
@@ -85,7 +86,9 @@ export const ShppingAddressPicker = withForm({
                   </ButtonLink>
                 </div>
 
-                {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+                {!!isInvalid && (
+                  <TranslatedFieldError errors={field.state.meta.errors} values={field.form.state.values} />
+                )}
               </FieldSet>
             )
           }}

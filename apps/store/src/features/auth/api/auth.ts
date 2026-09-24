@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -20,6 +21,7 @@ import type {
 import { clearToken, setToken } from '#/lib/auth-token'
 
 export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Error, StoreLoginBody>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -31,13 +33,14 @@ export const useLogin = (options?: UseMutationOptions<AuthenticateResponse, Erro
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Login failed', description: error.message })
+      toast.add({ type: 'error', title: t`Login failed`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useRegister = (options?: UseMutationOptions<AuthenticateResponse, Error, StoreSignupBody>) => {
+  const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -49,7 +52,7 @@ export const useRegister = (options?: UseMutationOptions<AuthenticateResponse, E
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Registration failed', description: error.message })
+      toast.add({ type: 'error', title: t`Registration failed`, description: error.message })
       onError?.(...args)
     },
   })
@@ -58,13 +61,14 @@ export const useRegister = (options?: UseMutationOptions<AuthenticateResponse, E
 export const useRequestPasswordReset = (
   options?: UseMutationOptions<ResetPasswordResponse, Error, ResetPasswordBody>,
 ) => {
+  const { t } = useLingui()
   const { onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
     mutationFn: (payload: ResetPasswordBody) => authResetPassword('customer', 'emailpass', payload),
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to request password reset', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to request password reset`, description: error.message })
       onError?.(...args)
     },
   })
@@ -73,6 +77,7 @@ export const useRequestPasswordReset = (
 export const useUpdatePassword = (
   options?: UseMutationOptions<UpdatePasswordResponse, Error, { password: string; token: string }>,
 ) => {
+  const { t } = useLingui()
   const { onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
@@ -82,14 +87,14 @@ export const useUpdatePassword = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to update password', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to update password`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 /** What confirming a code can turn out to be. Both arms render; neither is a fault. */
-export type VerificationOutcome = { verified: true } | { verified: false; message: string }
+export type VerificationOutcome = { verified: true } | { verified: false; message?: string }
 
 /**
  * Confirms an emailed verification code, answering with the outcome rather than raising.
@@ -109,7 +114,7 @@ export const confirmVerification = async (code: string): Promise<VerificationOut
     await authVerificationConfirm({ code })
     return { verified: true }
   } catch (error) {
-    return { verified: false, message: error instanceof Error ? error.message : 'Verification failed' }
+    return { verified: false, message: error instanceof Error ? error.message : undefined }
   }
 }
 
