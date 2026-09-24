@@ -14,6 +14,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/container.ts:140
+msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
+msgstr "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
+
+#. js-lingui-explicit-id
+#: src/container.ts:172
+msgid "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
+msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
+
+#. js-lingui-explicit-id
+#: src/routes.ts:121
+msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
+"  {routes}"
+msgstr "Routes with auth: 'required' must declare permissions. Missing on:\n"
+"  {routes}"
+
+#. js-lingui-explicit-id
 #: src/modules/user/services/user-module-service.ts:111
 msgid "Users already exist for: {taken}"
 msgstr "Users already exist for: {taken}"
@@ -239,9 +256,150 @@ msgid "Unknown permission key: {grant}"
 msgstr "Unknown permission key: {grant}"
 
 #. js-lingui-explicit-id
+#: src/framework/workflows/temporal-adapter.ts:180
+msgid "createTemporalWorkflowEngine: {where} needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a step that retries forever is exactly what the default of 1 exists to prevent."
+msgstr "createTemporalWorkflowEngine: {where} needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a step that retries forever is exactly what the default of 1 exists to prevent."
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/activities.ts:93
+msgid "No workflow is registered as \"{name}\" on this Worker"
+msgstr "No workflow is registered as \"{name}\" on this Worker"
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/registry.ts:43
+msgid "[temporal] Two workflows are registered as \"{name}\""
+msgstr "[temporal] Two workflows are registered as \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/replay.ts:252
+msgid "Workflow \"{name}\" ended its replay without producing an outcome"
+msgstr "Workflow \"{name}\" ended its replay without producing an outcome"
+
+#. js-lingui-explicit-id
+#: src/framework/workflows/temporal/replay.ts:288
+msgid "Workflow \"{name}\" reached step \"{step}\" without executing it"
+msgstr "Workflow \"{name}\" reached step \"{step}\" without executing it"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/payload-converter.ts:232
+msgid "step output at {path}: {detail}"
+msgstr "step output at {path}: {detail}"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/payload-converter.ts:240
+msgid "step payload at {path}: {detail}"
+msgstr "step payload at {path}: {detail}"
+
+#. js-lingui-explicit-id
+#: src/framework/temporal/preflight.ts:81
+msgid "[api] Temporal is unreachable at {address}, so the API is refusing to start. Every checkout dispatches a workflow through that address and every boot reconciles the cron Schedules through it, so starting anyway would bind the port, answer /health with 200, and then fail inside a shopper's checkout. Start the server (`docker compose -f apps/backend/docker-compose.yml up -d --wait temporal`) or point TEMPORAL_ADDRESS at a reachable frontend, then start the API again. The connection attempt said: \"{failure}\"."
+msgstr "[api] Temporal is unreachable at {address}, so the API is refusing to start. Every checkout dispatches a workflow through that address and every boot reconciles the cron Schedules through it, so starting anyway would bind the port, answer /health with 200, and then fail inside a shopper's checkout. Start the server (`docker compose -f apps/backend/docker-compose.yml up -d --wait temporal`) or point TEMPORAL_ADDRESS at a reachable frontend, then start the API again. The connection attempt said: \"{failure}\"."
+
+#. js-lingui-explicit-id
+#: src/framework/scheduler/temporal/temporal-cron-scheduler.ts:283
+msgid "[CronScheduler] {failed} of {total} schedule(s) could not be reconciled — {failures}"
+msgstr "[CronScheduler] {failed} of {total} schedule(s) could not be reconciled — {failures}"
+
+#. js-lingui-explicit-id
 #: src/framework/http/apply-middleware.ts:19
 msgid "Invalid path params"
 msgstr "Invalid path params"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:30
+msgid "Unauthorized: invalid actor type"
+msgstr "Unauthorized: invalid actor type"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:65
+#: src/framework/http/middlewares/validate-token.ts:24
+msgid "Unauthorized: invalid token"
+msgstr "Unauthorized: invalid token"
+
+#. js-lingui-explicit-id
+#: src/api/admin/users/[id]/roles/route.ts:26
+#: src/framework/http/middlewares/authenticate.ts:76
+#: src/framework/http/middlewares/authorization-actor.ts:12
+#: src/framework/http/middlewares/validate-token.ts:28
+#: src/framework/http/middlewares/validate-token.ts:49
+msgid "Unauthorized"
+msgstr "Unauthorized"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authenticate.ts:85
+msgid "Unauthorized: registration required"
+msgstr "Unauthorized: registration required"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/authorize.ts:26
+#: src/framework/http/middlewares/authorize.ts:36
+msgid "Insufficient permissions"
+msgstr "Insufficient permissions"
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-scope-provider-association.ts:23
+msgid "Unknown actor type \"{actorType}\""
+msgstr "Unknown actor type \"{actorType}\""
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-scope-provider-association.ts:31
+msgid "Provider \"{authProvider}\" is not allowed for actor type \"{actorType}\""
+msgstr "Provider \"{authProvider}\" is not allowed for actor type \"{actorType}\""
+
+#. js-lingui-explicit-id
+#: src/framework/http/middlewares/validate-token.ts:32
+msgid "Unauthorized: invalid token purpose"
+msgstr "Unauthorized: invalid token purpose"
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:137
+msgid "[event-bus] The \"EVENTS\" queue binding is missing. Declare it under `queues.producers` in this Worker's wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that does not need one."
+msgstr "[event-bus] The \"EVENTS\" queue binding is missing. Declare it under `queues.producers` in this Worker's wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that does not need one."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:170
+msgid "[event-bus] The payload for \"{name}\" is {bytes} bytes for subscriber \"{subscriber}\", over the {maxBytes} byte queue message limit. Publish an id and let the subscriber read the rest."
+msgstr "[event-bus] The payload for \"{name}\" is {bytes} bytes for subscriber \"{subscriber}\", over the {maxBytes} byte queue message limit. Publish an id and let the subscriber read the rest."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:182
+msgid "[event-bus] \"{name}\" fans out to {count} subscribers and {bytes} bytes, over the {maxMessages} message / {maxBytes} byte queue batch limit."
+msgstr "[event-bus] \"{name}\" fans out to {count} subscribers and {bytes} bytes, over the {maxMessages} message / {maxBytes} byte queue batch limit."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:255
+msgid "[event-bus] No subscriber named \"{subscriber}\" is registered for \"{name}\""
+msgstr "[event-bus] No subscriber named \"{subscriber}\" is registered for \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/registry.ts:47
+msgid "[event-bus] Two subscribers are registered as \"{name}\""
+msgstr "[event-bus] Two subscribers are registered as \"{name}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:238
+msgid "[event-bus] The dispatch identity for \"{name}\" is {length} characters, over the {maxIdLength} Temporal allows for an activityId, so this event cannot be delivered. Give the event a shorter key through EVENT_KEYS in events.ts — truncating it here would defeat dedup silently. Identity: \"{dispatchId}\""
+msgstr "[event-bus] The dispatch identity for \"{name}\" is {length} characters, over the {maxIdLength} Temporal allows for an activityId, so this event cannot be delivered. Give the event a shorter key through EVENT_KEYS in events.ts — truncating it here would defeat dedup silently. Identity: \"{dispatchId}\""
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:248
+msgid "[event-bus] The event name \"{name}\" is {bytes} bytes, over the {maxBytes} Temporal allows for a fairness key. Rename the event in events.ts."
+msgstr "[event-bus] The event name \"{name}\" is {bytes} bytes, over the {maxBytes} Temporal allows for a fairness key. Rename the event in events.ts."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:274
+msgid "createTemporalEventBus: retry needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a subscriber that sends email retrying forever is a mail loop."
+msgstr "createTemporalEventBus: retry needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a subscriber that sends email retrying forever is a mail loop."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal-adapter.ts:291
+msgid "createTemporalEventBus: priority[\"{event}\"] must be an integer of 1 or more — 1 is the highest priority and the server's default lowest is 5. Got {key}."
+msgstr "createTemporalEventBus: priority[\"{event}\"] must be an integer of 1 or more — 1 is the highest priority and the server's default lowest is 5. Got {key}."
+
+#. js-lingui-explicit-id
+#: src/framework/event-bus/temporal/preflight.ts:82
+msgid "[events-worker] Temporal namespace \"{namespace}\" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) and restart this Worker. The server answered: \"{answer}\"."
+msgstr "[events-worker] Temporal namespace \"{namespace}\" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) and restart this Worker. The server answered: \"{answer}\"."
 
 #. js-lingui-explicit-id
 #: src/core/utils/validate-body.ts:15
@@ -267,11 +425,6 @@ msgstr "Webhook request carried no body"
 #: src/api/admin/users/me/route.ts:15
 msgid "User ID not found"
 msgstr "User ID not found"
-
-#. js-lingui-explicit-id
-#: src/api/admin/users/[id]/roles/route.ts:26
-msgid "Unauthorized"
-msgstr "Unauthorized"
 
 #. js-lingui-explicit-id
 #: src/api/admin/uploads/presigned-urls/route.ts:27

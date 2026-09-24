@@ -1,4 +1,5 @@
 import type { MiddlewareFunction } from '@framework/http/types.js'
+import { i18n } from '@proteus/utils'
 import type { AuthContext } from '../../../core/auth/types.js'
 import { extractTokenPayload } from '../../../core/auth/utils/token.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
@@ -20,15 +21,15 @@ export function validateToken(): MiddlewareFunction<{ authContext: AuthContext }
       payload = extractTokenPayload(req.headers.authorization)
     } catch (err) {
       if (AppError.isError(err)) throw err
-      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized: invalid token' })
+      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Unauthorized: invalid token') })
     }
 
     if (!payload) {
-      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
+      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Unauthorized') })
     }
 
     if (payload.purpose !== 'reset' || !payload.jti) {
-      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized: invalid token purpose' })
+      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Unauthorized: invalid token purpose') })
     }
 
     const authService = req.scope.resolve(Modules.AUTH)
@@ -45,7 +46,7 @@ export function validateToken(): MiddlewareFunction<{ authContext: AuthContext }
     )
 
     if (!providerIdentity) {
-      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: 'Unauthorized' })
+      throw new AppError({ type: ErrorTypes.UNAUTHORIZED, message: i18n.t('Unauthorized') })
     }
 
     return {

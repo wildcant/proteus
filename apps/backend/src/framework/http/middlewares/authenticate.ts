@@ -1,4 +1,5 @@
 import type { ActorType } from '@proteus/http-schemas/auth'
+import { i18n } from '@proteus/utils'
 import type { AuthContext } from '../../../core/auth/types.js'
 import { extractTokenPayload } from '../../../core/auth/utils/token.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
@@ -26,7 +27,7 @@ function getAuthContextFromJwtToken(
   if (!payload.actorType || (!isWildcard && !actorTypes.includes(payload.actorType))) {
     throw new AppError({
       type: ErrorTypes.UNAUTHORIZED,
-      message: 'Unauthorized: invalid actor type',
+      message: i18n.t('Unauthorized: invalid actor type'),
     })
   }
 
@@ -61,7 +62,7 @@ export function authenticate(actorType: ActorType | '*', options?: AuthenticateO
       // jwt.verify errors (expired, malformed, etc.) -> 401
       throw new AppError({
         type: ErrorTypes.UNAUTHORIZED,
-        message: 'Unauthorized: invalid token',
+        message: i18n.t('Unauthorized: invalid token'),
       })
     }
 
@@ -72,7 +73,7 @@ export function authenticate(actorType: ActorType | '*', options?: AuthenticateO
       }
       throw new AppError({
         type: ErrorTypes.UNAUTHORIZED,
-        message: 'Unauthorized',
+        message: i18n.t('Unauthorized'),
       })
     }
 
@@ -81,7 +82,7 @@ export function authenticate(actorType: ActorType | '*', options?: AuthenticateO
       if (!allowUnregistered) {
         throw new AppError({
           type: ErrorTypes.UNAUTHORIZED,
-          message: 'Unauthorized: registration required',
+          message: i18n.t('Unauthorized: registration required'),
         })
       }
     }
