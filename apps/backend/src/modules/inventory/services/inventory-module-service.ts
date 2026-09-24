@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -173,7 +174,8 @@ export class InventoryModuleService implements IInventoryModuleService {
       if (!level) {
         throw new AppError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Inventory level not found for item ${inventoryItemId} at location ${locationId}`,
+          message: i18n.t('Inventory level not found for item {inventoryItemId} at location {locationId}'),
+          values: { inventoryItemId, locationId },
         })
       }
       return this.inventoryLevelRepository.updateBumpingVersion(
@@ -200,13 +202,17 @@ export class InventoryModuleService implements IInventoryModuleService {
       if (!level) {
         throw new AppError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Inventory level not found for item ${inventoryItemId} at location ${locationId}`,
+          message: i18n.t('Inventory level not found for item {inventoryItemId} at location {locationId}'),
+          values: { inventoryItemId, locationId },
         })
       }
       if (stockedQuantity < level.reservedQuantity) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Stocked Quantity cannot be set to ${stockedQuantity}: ${level.reservedQuantity} unit(s) are reserved. Set it to at least ${level.reservedQuantity}.`,
+          message: i18n.t(
+            'Stocked Quantity cannot be set to {stockedQuantity}: {reservedQuantity} unit(s) are reserved. Set it to at least {reservedQuantity}.',
+          ),
+          values: { stockedQuantity, reservedQuantity: level.reservedQuantity },
         })
       }
 
@@ -312,11 +318,18 @@ export class InventoryModuleService implements IInventoryModuleService {
     )
     if (missing.length === 0) return
 
+    const [only] = missing
+    if (missing.length === 1 && only) {
+      throw new AppError({
+        type: ErrorTypes.NOT_FOUND,
+        message: i18n.t('Inventory level not found for item {inventoryItemId} at location {locationId}'),
+        values: { inventoryItemId: only.inventoryItemId, locationId: only.locationId },
+      })
+    }
     throw new AppError({
       type: ErrorTypes.NOT_FOUND,
-      message: missing
-        .map((row) => `Inventory level not found for item ${row.inventoryItemId} at location ${row.locationId}`)
-        .join('; '),
+      message: i18n.t('Inventory levels not found: {levels}'),
+      values: { levels: missing.map((row) => `item ${row.inventoryItemId} at location ${row.locationId}`).join('; ') },
     })
   }
 
@@ -341,7 +354,10 @@ export class InventoryModuleService implements IInventoryModuleService {
 
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `Not enough stock to reserve ${quantity} of item ${level.inventoryItemId} at location ${level.locationId}: ${available} available`,
+        message: i18n.t(
+          'Not enough stock to reserve {quantity} of item {inventoryItemId} at location {locationId}: {available} available',
+        ),
+        values: { quantity, inventoryItemId: level.inventoryItemId, locationId: level.locationId, available },
       })
     }
   }
