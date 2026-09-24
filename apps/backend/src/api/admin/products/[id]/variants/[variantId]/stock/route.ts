@@ -3,6 +3,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminSetVariantStock, AdminSetVariantStockResponse, VariantIdParams } from '@proteus/http-schemas/admin'
+import { i18n } from '@proteus/utils'
 
 export const PutInput = { params: VariantIdParams, body: AdminSetVariantStock }
 export const PutOutput = AdminSetVariantStockResponse
@@ -17,7 +18,8 @@ export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult
   if (!variant.manageInventory) {
     throw new AppError({
       type: ErrorTypes.NOT_ALLOWED,
-      message: `Stock cannot be set for untracked variant "${variant.id}". Turn inventory tracking on first.`,
+      message: i18n.t('Stock cannot be set for untracked variant "{id}". Turn inventory tracking on first.'),
+      values: { id: variant.id },
     })
   }
 
@@ -25,7 +27,8 @@ export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult
   if (!link) {
     throw new AppError({
       type: ErrorTypes.INVALID_DATA,
-      message: `Variant "${variant.id}" is tracked, but no inventory item is linked to it`,
+      message: i18n.t('Variant "{id}" is tracked, but no inventory item is linked to it'),
+      values: { id: variant.id },
     })
   }
 
@@ -36,7 +39,8 @@ export const PUT = async (req: HttpRequest<typeof PutInput>): Promise<HttpResult
   if (!level) {
     throw new AppError({
       type: ErrorTypes.NOT_FOUND,
-      message: `Inventory level not found for item ${link.inventoryItemId}`,
+      message: i18n.t('Inventory level not found for item {inventoryItemId}'),
+      values: { inventoryItemId: link.inventoryItemId },
     })
   }
 

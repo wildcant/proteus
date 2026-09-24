@@ -95,7 +95,9 @@
         "**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!",
         "!tests/**!",
         "!vitest.browser.setup.ts!",
-        "!vitest.start-client.stub.ts!"
+        "!vitest.start-client.stub.ts!",
+        // The component tests' Lingui provider; only `*.browser.test.tsx` renders through it.
+        "!src/lib/i18n/test-i18n.tsx!"
       ]
     },
     "packages/icons": {

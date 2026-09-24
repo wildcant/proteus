@@ -14,26 +14,6 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/framework/http/apply-middleware.ts:19
-msgid "Invalid path params"
-msgstr "Parámetros de ruta no válidos"
-
-#. js-lingui-explicit-id
-#: src/core/utils/validate-body.ts:15
-msgid "Invalid request body"
-msgstr "Cuerpo de la solicitud no válido"
-
-#. js-lingui-explicit-id
-#: src/core/utils/validate-query.ts:12
-msgid "Invalid query params"
-msgstr "Parámetros de consulta no válidos"
-
-#. js-lingui-explicit-id
-#: src/core/errors/error-handler.ts:51
-msgid "An internal error occurred"
-msgstr "Ocurrió un error interno"
-
-#. js-lingui-explicit-id
 #: src/api/store/middlewares.ts:31
 msgid "No region sells to country \"{countryCode}\""
 msgstr "Ninguna región vende al país \"{countryCode}\""
@@ -105,13 +85,6 @@ msgid "Invalid email or password"
 msgstr "Correo o contraseña incorrectos"
 
 #. js-lingui-explicit-id
-#: src/api/auth/token/refresh/route.ts:23
-#: src/api/auth/verification/confirm/route.ts:18
-#: src/api/auth/verification/request/route.ts:18
-msgid "Unauthorized"
-msgstr "No autorizado"
-
-#. js-lingui-explicit-id
 #: src/api/auth/verification/confirm/route.ts:33
 msgid "Expected verifiedAt to be set after confirmation"
 msgstr "Se esperaba que verifiedAt estuviera definido después de la confirmación"
@@ -125,3 +98,102 @@ msgstr "No se pudo iniciar sesión"
 #: src/api/auth/[actorType]/[authProvider]/password/route.ts:25
 msgid "Password update failed"
 msgstr "No se pudo actualizar la contraseña"
+
+#. js-lingui-explicit-id
+#: src/framework/http/apply-middleware.ts:19
+msgid "Invalid path params"
+msgstr "Parámetros de ruta no válidos"
+
+#. js-lingui-explicit-id
+#: src/core/utils/validate-body.ts:15
+msgid "Invalid request body"
+msgstr "Cuerpo de la solicitud no válido"
+
+#. js-lingui-explicit-id
+#: src/core/utils/validate-query.ts:12
+msgid "Invalid query params"
+msgstr "Parámetros de consulta no válidos"
+
+#. js-lingui-explicit-id
+#: src/core/errors/error-handler.ts:51
+msgid "An internal error occurred"
+msgstr "Ocurrió un error interno"
+
+#. js-lingui-explicit-id
+#: src/api/hooks/payment/[provider]/route.ts:77
+msgid "Webhook request carried no body"
+msgstr "La solicitud del webhook llegó sin cuerpo"
+
+#. js-lingui-explicit-id
+#: src/api/admin/users/[id]/roles/route.ts:26
+#: src/api/auth/token/refresh/route.ts:23
+#: src/api/auth/verification/confirm/route.ts:18
+#: src/api/auth/verification/request/route.ts:18
+msgid "Unauthorized"
+msgstr "No autorizado"
+
+#. js-lingui-explicit-id
+#: src/api/admin/users/me/route.ts:15
+msgid "User ID not found"
+msgstr "No se encontró el ID de usuario"
+
+#. js-lingui-explicit-id
+#: src/api/admin/uploads/presigned-urls/route.ts:27
+msgid "Invalid MIME type: \"{mimeType}\""
+msgstr "Tipo MIME no válido: \"{mimeType}\""
+
+#. js-lingui-explicit-id
+#: src/api/admin/uploads/presigned-urls/route.ts:37
+msgid "Failed to generate presigned upload URL"
+msgstr "No se pudo generar la URL prefirmada de carga"
+
+#. js-lingui-explicit-id
+#: src/api/admin/store/route.ts:66
+msgid "No region \"{defaultRegionId}\" exists, so the store cannot default to it"
+msgstr "No existe la región \"{defaultRegionId}\", así que la tienda no puede usarla como predeterminada"
+
+#. js-lingui-explicit-id
+#: src/api/admin/store/currencies/[code]/route.ts:43
+msgid "The store does not trade in \"{code}\""
+msgstr "La tienda no vende en \"{code}\""
+
+#. js-lingui-explicit-id
+#: src/api/admin/store/currencies/[code]/route.ts:51
+msgid "\"{code}\" is the store's default currency. Make another currency the default before removing it."
+msgstr "\"{code}\" es la moneda predeterminada de la tienda. Haz que otra moneda sea la predeterminada antes de quitarla."
+
+#. js-lingui-explicit-id
+#: src/api/admin/store/currencies/[code]/route.ts:66
+msgid "\"{code}\" is the currency {names} settles in. Change that currency on the region before removing it."
+msgstr "\"{code}\" es la moneda en la que opera {names}. Cambia esa moneda en la región antes de quitarla."
+
+#. js-lingui-explicit-id
+#: src/api/admin/store/currencies/[code]/route.ts:69
+msgid "\"{code}\" is the currency {names} settle in. Change that currency on the region before removing it."
+msgstr "\"{code}\" es la moneda en la que operan {names}. Cambia esa moneda en las regiones antes de quitarla."
+
+#. js-lingui-explicit-id
+#: src/api/admin/regions/[id]/countries/[code]/route.ts:34
+#: src/api/admin/regions/[id]/countries/[code]/route.ts:62
+msgid "Country \"{code}\" is not assigned to region \"{id}\""
+msgstr "El país \"{code}\" no está asignado a la región \"{id}\""
+
+#. js-lingui-explicit-id
+#: src/api/admin/products/[id]/variants/route.ts:63
+msgid "Variant creation returned no results"
+msgstr "La creación de la variante no devolvió resultados"
+
+#. js-lingui-explicit-id
+#: src/api/admin/products/[id]/variants/[variantId]/stock/route.ts:21
+msgid "Stock cannot be set for untracked variant \"{id}\". Turn inventory tracking on first."
+msgstr "No se puede definir el stock de la variante \"{id}\" porque no tiene seguimiento de inventario. Activa el seguimiento de inventario primero."
+
+#. js-lingui-explicit-id
+#: src/api/admin/products/[id]/variants/[variantId]/stock/route.ts:30
+msgid "Variant \"{id}\" is tracked, but no inventory item is linked to it"
+msgstr "La variante \"{id}\" tiene seguimiento de inventario, pero no tiene ningún artículo de inventario vinculado"
+
+#. js-lingui-explicit-id
+#: src/api/admin/products/[id]/variants/[variantId]/stock/route.ts:42
+msgid "Inventory level not found for item {inventoryItemId}"
+msgstr "No se encontró el nivel de inventario del artículo {inventoryItemId}"

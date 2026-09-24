@@ -3,6 +3,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminCreatePresignedUploadUrl, AdminPresignedUploadUrlResponse } from '@proteus/http-schemas/admin'
+import { i18n } from '@proteus/utils'
 import { ulid } from 'ulid'
 
 export const PostInput = { body: AdminCreatePresignedUploadUrl }
@@ -21,13 +22,20 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   try {
     extension = new MIMEType(mimeType).subtype
   } catch {
-    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: `Invalid MIME type: "${mimeType}"` })
+    throw new AppError({
+      type: ErrorTypes.INVALID_DATA,
+      message: i18n.t('Invalid MIME type: "{mimeType}"'),
+      values: { mimeType },
+    })
   }
   const filename = `${ulid()}.${extension}`
 
   const [uploadUrl] = await fileService.getUploadFileUrls([{ filename, access }])
   if (!uploadUrl) {
-    throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Failed to generate presigned upload URL' })
+    throw new AppError({
+      type: ErrorTypes.UNEXPECTED_STATE,
+      message: i18n.t('Failed to generate presigned upload URL'),
+    })
   }
 
   return {

@@ -4,6 +4,7 @@ import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import { PaymentControllerProvider, usePaymentController } from '#/features/checkout/hooks/use-payment-controller'
 import type { ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from '#/features/checkout/types/payment'
+import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { PaymentMethodSelector } from './payment-method-selector'
 
 /**
@@ -88,6 +89,7 @@ test('a wallet that will not load falls back to the card form with a notice', as
     <Harness
       adapter={fakeAdapter(() => ({ methods: [], isLoading: false, failed: true, refetch, remove: removeNothing }))}
     />,
+    { wrapper: I18nTestProvider },
   )
 
   // A failed read is not fatal — a shopper who cannot see their saved cards can still pay — so the
@@ -114,6 +116,7 @@ test('auto-selection lands on the default, and a refetch does not move a selecti
         remove: removeNothing,
       }))}
     />,
+    { wrapper: I18nTestProvider },
   )
 
   // The default first, so a returning shopper lands on the card they nominated rather than on
@@ -147,6 +150,7 @@ test('an expired default is passed over for the first card the shopper can actua
         remove: removeNothing,
       }))}
     />,
+    { wrapper: I18nTestProvider },
   )
 
   // A shopper whose default has expired still has a default, and it is not the answer: selecting

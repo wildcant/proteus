@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { getRouteApi } from '@tanstack/react-router'
 import { ChevronLeftIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/button'
@@ -17,19 +18,25 @@ export function OrderContent() {
   const { orderId } = route.useParams()
   const { order } = useSuspenseOrder(orderId)
   const { formatDate } = useFormatters()
+  const { displayId } = order
+  const placedAt = formatDate(order.createdAt)
 
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
       <ButtonLink variant="link" to="/account" className="font-medium text-ink-muted no-underline">
         <ChevronLeftIcon />
-        Account
+        <Trans>Account</Trans>
       </ButtonLink>
 
       {/* The word that was an eyebrow above the number is inside the heading now. A screen
           reader announced the old pair as "heading level one, number one", because the eyebrow
           was a separate paragraph and the number alone is not a name for anything. */}
-      <h1 className="type-title mt-6 text-ink">Order #{order.displayId}</h1>
-      <p className="mt-2 text-ink-muted text-sm">Placed {formatDate(order.createdAt)}</p>
+      <h1 className="type-title mt-6 text-ink">
+        <Trans>Order #{displayId}</Trans>
+      </h1>
+      <p className="mt-2 text-ink-muted text-sm">
+        <Trans>Placed {placedAt}</Trans>
+      </p>
 
       {/* The status was the second half of the line above. It is the question this page is
           opened to answer, so it gets its own row and shows how far along it is. */}

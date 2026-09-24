@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '#/components/button'
 import { Panel } from '#/components/panel'
 import { useRequestPasswordReset } from '#/features/auth/api/auth'
@@ -8,13 +9,16 @@ import { useRequestPasswordReset } from '#/features/auth/api/auth'
  * update-password-while-signed-in endpoint, and the emailed link is the flow Shopify uses too.
  */
 export function PasswordPanel({ email }: { email: string }) {
+  const { t } = useLingui()
   const requestReset = useRequestPasswordReset()
 
   return (
-    <Panel title="Password" description="We email you a link rather than asking for your current password.">
+    <Panel title={t`Password`} description={t`We email you a link rather than asking for your current password.`}>
       {requestReset.isSuccess ? (
         <p className="mt-6 text-ink text-sm">
-          Reset link sent to <span className="font-semibold">{email}</span>. Check your inbox.
+          <Trans>
+            Reset link sent to <span className="font-semibold">{email}</span>. Check your inbox.
+          </Trans>
         </p>
       ) : (
         <Button
@@ -23,7 +27,7 @@ export function PasswordPanel({ email }: { email: string }) {
           disabled={requestReset.isPending}
           onClick={() => requestReset.mutate({ email })}
         >
-          {requestReset.isPending ? 'Sending...' : 'Send a reset link'}
+          {requestReset.isPending ? t`Sending...` : t`Send a reset link`}
         </Button>
       )}
     </Panel>
