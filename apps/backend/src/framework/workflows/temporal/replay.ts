@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   StepAction,
@@ -248,7 +249,8 @@ async function replay(options: ReplayOptions): Promise<ReplayResult> {
     // so the type narrows without a non-null assertion.
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: `Workflow "${definition.name}" ended its replay without producing an outcome`,
+      message: i18n.t('Workflow "{name}" ended its replay without producing an outcome'),
+      values: { name: definition.name },
     })
   }
 
@@ -283,7 +285,8 @@ export async function advanceWorkflow(
   if (!executed) {
     throw new AppError({
       type: ErrorTypes.UNEXPECTED_STATE,
-      message: `Workflow "${definition.name}" reached step "${result.outcome.step}" without executing it`,
+      message: i18n.t('Workflow "{name}" reached step "{step}" without executing it'),
+      values: { name: definition.name, step: result.outcome.step },
     })
   }
 

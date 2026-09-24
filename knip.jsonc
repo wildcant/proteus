@@ -73,7 +73,12 @@
         "src/framework/*/temporal/worker.dev.ts!",
         "structure/.dependency-cruiser.cjs",
         "vitest.temporal.config.ts",
-        "vitest.temporal-server.config.ts"
+        "vitest.temporal-server.config.ts",
+        // Read by the `lingui` CLI, which knip does not follow from the i18n:* scripts.
+        "lingui.config.ts",
+        // The compiled message catalogs. Shipped code, loaded by the Translator adapter rather than
+        // by a static import from src/ — until that adapter lands, nothing else references them.
+        "locales/*.ts!"
       ],
       // Factories, fixtures, vitest setup. Test code — production never reaches it by design.
       "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!tests/**!", "!src/**/__tests__/**!"]
@@ -81,11 +86,19 @@
     "apps/store": {
       // Same two cases as the admin: the fetcher is reached only from the ignored Orval output, the
       // dependency-cruiser config only from the structure gate.
-      "entry": ["orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs"],
+      // `lingui.config.ts` is read by the `lingui` CLI and the Vite plugin, not imported.
+      "entry": ["orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs", "lingui.config.ts"],
       // Same plugin problem as the admin.
       "orval": false,
-      // Same as the admin, plus the browser-mode setup file at the workspace root.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!tests/**!", "!vitest.browser.setup.ts!"]
+      // Same as the admin, plus the browser-mode setup file and Start stub at the workspace root.
+      "project": [
+        "**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!",
+        "!tests/**!",
+        "!vitest.browser.setup.ts!",
+        "!vitest.start-client.stub.ts!",
+        // The component tests' Lingui provider; only `*.browser.test.tsx` renders through it.
+        "!src/lib/i18n/test-i18n.tsx!"
+      ]
     },
     "packages/icons": {
       // build:icons passes it as `--templateSrc=` and build-icons/cli.ts loads it with
@@ -93,6 +106,10 @@
       "entry": ["scripts/export-template.ts"],
       // `src/build-icons/` generates the icon components at build time and ships nothing.
       "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!src/build-icons/**!"]
+    },
+    "packages/http-schemas": {
+      // Read by the `lingui` CLI, which knip does not follow from the i18n:* scripts.
+      "entry": ["lingui.config.ts"]
     },
     "packages/ui": {
       // `scripts/re-eject-shadcn.ts` re-runs the shadcn CLI. A tool, not a component.

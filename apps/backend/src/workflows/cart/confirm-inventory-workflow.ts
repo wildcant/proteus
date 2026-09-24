@@ -2,6 +2,7 @@ import { ErrorTypes } from '@core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 import { type ConfirmInventoryResult, prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
 import { missingInventoryItemMessage } from './utils/variant-inventory.js'
 
@@ -31,7 +32,7 @@ export const confirmInventoryWorkflow = createWorkflow<ConfirmInventoryInput, Co
 
       const missingInventoryItem = missingInventoryItemMessage(variants, mappings)
       if (missingInventoryItem) {
-        throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: missingInventoryItem })
+        throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, ...missingInventoryItem })
       }
 
       const inventoryItemIds = [...new Set(mappings.map((m) => m.inventoryItemId))]
@@ -74,7 +75,7 @@ export const confirmInventoryWorkflow = createWorkflow<ConfirmInventoryInput, Co
       if (results.some((hasCoverage) => !hasCoverage)) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.CONFLICT,
-          message: 'Some variant does not have the required inventory',
+          message: i18n.t('Some variant does not have the required inventory'),
         })
       }
 

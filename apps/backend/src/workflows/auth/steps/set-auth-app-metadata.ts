@@ -1,6 +1,7 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { type WorkflowContext, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 
 /** A step in its own file still owns its failure contract; the workflow calling it spreads this. */
 export const setAuthAppMetadataThrows = [ErrorTypes.CONFLICT] as const
@@ -30,7 +31,8 @@ export async function setAuthAppMetadataStep(ctx: WorkflowContext, input: SetAut
       if (currentValue != null && input.actorId !== null) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.CONFLICT,
-          message: `Auth identity "${input.authIdentityId}" already has "${key}" set`,
+          message: i18n.t('Auth identity "{authIdentityId}" already has "{key}" set'),
+          values: { authIdentityId: input.authIdentityId, key },
         })
       }
 

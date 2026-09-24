@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import type { EventName } from '../../core/event-bus/events.js'
 import type { SubscriberDefinition } from '../../core/event-bus/types.js'
@@ -43,7 +44,8 @@ export function createSubscriberRegistry(definitions: SubscriberDefinition[]): S
     if (seen.has(definition.name)) {
       throw new AppError({
         type: ErrorTypes.UNEXPECTED_STATE,
-        message: `[event-bus] Two subscribers are registered as "${definition.name}"`,
+        message: i18n.t('[event-bus] Two subscribers are registered as "{name}"'),
+        values: { name: definition.name },
       })
     }
     seen.add(definition.name)

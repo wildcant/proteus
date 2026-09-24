@@ -1,3 +1,4 @@
+import { i18n, type Msgid } from '@proteus/utils'
 import { ActivityExecutionAlreadyStartedError, type Client } from '@temporalio/client'
 import type { Duration, Priority, RetryPolicy } from '@temporalio/common'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
@@ -148,7 +149,7 @@ export function createTemporalEventBus(options: TemporalEventBusOptions): Tempor
     // Checked here rather than left to the server, which answers `Failed to start activity` with
     // the real reason a gRPC layer down. Skipping is not a repair — the event is dropped, loudly —
     // but it names the identity that is too long, which is the thing a reader needs.
-    if (rejected) throw new AppError({ type: ErrorTypes.INVALID_DATA, message: rejected })
+    if (rejected) throw new AppError({ type: ErrorTypes.INVALID_DATA, ...rejected })
 
     const input: DispatchEventInput = { subscriber, event }
     const connected = await client()
@@ -227,22 +228,28 @@ function priorityFor(name: EventName, configured: TemporalEventBusOptions['prior
  * payload, either as `data.id` or through an `EVENT_KEYS` extractor. A ULID leaves ~200 characters
  * spare; an event whose key is a URL would not.
  */
-function describeIdentityProblem(dispatchId: string, name: EventName, maxIdLength: number): string | undefined {
+function describeIdentityProblem(
+  dispatchId: string,
+  name: EventName,
+  maxIdLength: number,
+): { message: Msgid; values: Record<string, unknown> } | undefined {
   if (dispatchId.length > maxIdLength) {
-    return (
-      `[event-bus] The dispatch identity for "${name}" is ${dispatchId.length} characters, over the ` +
-      `${maxIdLength} Temporal allows for an activityId, so this event cannot be delivered. ` +
-      'Give the event a shorter key through EVENT_KEYS in events.ts — truncating it here would ' +
-      `defeat dedup silently. Identity: "${dispatchId}"`
-    )
+    return {
+      message: i18n.t(
+        '[event-bus] The dispatch identity for "{name}" is {length} characters, over the {maxIdLength} Temporal allows for an activityId, so this event cannot be delivered. Give the event a shorter key through EVENT_KEYS in events.ts — truncating it here would defeat dedup silently. Identity: "{dispatchId}"',
+      ),
+      values: { name, length: dispatchId.length, maxIdLength, dispatchId },
+    }
   }
 
   const fairnessKeyBytes = new TextEncoder().encode(name).length
   if (fairnessKeyBytes > MAX_FAIRNESS_KEY_BYTES) {
-    return (
-      `[event-bus] The event name "${name}" is ${fairnessKeyBytes} bytes, over the ` +
-      `${MAX_FAIRNESS_KEY_BYTES} Temporal allows for a fairness key. Rename the event in events.ts.`
-    )
+    return {
+      message: i18n.t(
+        '[event-bus] The event name "{name}" is {bytes} bytes, over the {maxBytes} Temporal allows for a fairness key. Rename the event in events.ts.',
+      ),
+      values: { name, bytes: fairnessKeyBytes, maxBytes: MAX_FAIRNESS_KEY_BYTES },
+    }
   }
 
   return undefined
@@ -264,10 +271,10 @@ function assertBoundedRetryPolicy(policy: RetryPolicy | undefined): void {
 
   throw new AppError({
     type: ErrorTypes.INVALID_DATA,
-    message:
-      'createTemporalEventBus: retry needs an explicit maximumAttempts of 1 or more. Temporal reads ' +
-      `${attempts === undefined ? 'an absent maximumAttempts' : String(attempts)} as unlimited, and ` +
-      'a subscriber that sends email retrying forever is a mail loop.',
+    message: i18n.t(
+      'createTemporalEventBus: retry needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a subscriber that sends email retrying forever is a mail loop.',
+    ),
+    values: { attempts: attempts === undefined ? 'an absent maximumAttempts' : String(attempts) },
   })
 }
 
@@ -281,9 +288,10 @@ function assertPriorityKeys(priority: TemporalEventBusOptions['priority']): void
 
     throw new AppError({
       type: ErrorTypes.INVALID_DATA,
-      message:
-        `createTemporalEventBus: priority["${event}"] must be an integer of 1 or more — 1 is the ` +
-        `highest priority and the server's default lowest is 5. Got ${String(key)}.`,
+      message: i18n.t(
+        'createTemporalEventBus: priority["{event}"] must be an integer of 1 or more — 1 is the highest priority and the server\'s default lowest is 5. Got {key}.',
+      ),
+      values: { event, key: String(key) },
     })
   }
 }

@@ -5,6 +5,7 @@ import { expect, test } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { StoreProductResponseProduct, StoreProductScopedOption, StoreProductVariant } from '#/api/generated/model'
+import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { DEFAULT_MARKET, type MarketContext } from '#/lib/market'
 import { AddToCart } from './add-to-cart'
 import { VariantPicker } from './variant-picker'
@@ -110,7 +111,12 @@ function Harness() {
  */
 function renderHarness() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  const market: MarketContext = { current: DEFAULT_MARKET, markets: [DEFAULT_MARKET], resolvedFromUrl: true }
+  const market: MarketContext = {
+    current: DEFAULT_MARKET,
+    markets: [DEFAULT_MARKET],
+    defaultMarket: DEFAULT_MARKET,
+    resolvedFromUrl: true,
+  }
   const router = createRouter({
     routeTree: createRootRoute({ component: Harness }),
     history: createMemoryHistory({ initialEntries: ['/'] }),
@@ -122,6 +128,7 @@ function renderHarness() {
       {/* The app's own router type is registered globally; this stub is deliberately not it. */}
       <RouterProvider router={router as never} />
     </QueryClientProvider>,
+    { wrapper: I18nTestProvider },
   )
 }
 

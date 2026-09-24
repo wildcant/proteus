@@ -9,6 +9,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import type {
   ProviderDeleteFileDTO,
@@ -82,7 +83,8 @@ export class S3FileProvider extends AbstractFileProviderService<S3FileProviderCo
       if (!config[key]) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `S3 file provider requires "${key}" in its configuration.`,
+          message: i18n.t('S3 file provider requires "{key}" in its configuration.'),
+          values: { key },
         })
       }
     }
@@ -112,7 +114,8 @@ export class S3FileProvider extends AbstractFileProviderService<S3FileProviderCo
     if (!sanitized) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: `Invalid filename: "${filename}"`,
+        message: i18n.t('Invalid filename: "{filename}"'),
+        values: { filename },
       })
     }
 
@@ -170,7 +173,8 @@ export class S3FileProvider extends AbstractFileProviderService<S3FileProviderCo
     if (!response.Body) {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `File with key ${fileKey} not found`,
+        message: i18n.t('File with key {fileKey} not found'),
+        values: { fileKey },
       })
     }
 

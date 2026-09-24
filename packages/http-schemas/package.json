@@ -4,21 +4,29 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "i18n:extract": "lingui extract --clean",
+    "i18n:compile": "lingui compile --typescript --strict",
+    "i18n:watch": "lingui compile --typescript --watch"
   },
   "exports": {
     "./admin": "./src/admin/index.ts",
     "./bounded": "./src/bounded.ts",
     "./common": "./src/common.ts",
     "./auth": "./src/auth/index.ts",
-    "./store": "./src/store/index.ts"
+    "./store": "./src/store/index.ts",
+    "./i18n": "./src/i18n.ts",
+    "./locales/*": "./locales/*.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "catalog:",
+    "@lingui/core": "catalog:",
+    "@proteus/utils": "workspace:*",
     "bignumber.js": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@lingui/cli": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

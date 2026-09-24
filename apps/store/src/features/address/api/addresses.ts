@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
 import type { UseMutationOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
@@ -45,6 +46,7 @@ export const useAddresses = () => {
 export const useCreateAddress = (
   options?: UseMutationOptions<StoreCustomerAddressResponse, Error, StoreCreateAddress>,
 ) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -57,7 +59,7 @@ export const useCreateAddress = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to add address', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to add address`, description: error.message })
       onError?.(...args)
     },
   })
@@ -68,6 +70,7 @@ type UpdateAddressVariables = { addressId: string; payload: StoreUpdateAddress }
 export const useUpdateAddress = (
   options?: UseMutationOptions<StoreCustomerAddressResponse, Error, UpdateAddressVariables>,
 ) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -80,13 +83,14 @@ export const useUpdateAddress = (
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to save address', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to save address`, description: error.message })
       onError?.(...args)
     },
   })
 }
 
 export const useDeleteAddress = (options?: UseMutationOptions<DeleteResponse, Error, string>) => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const { onSuccess, onError, ...rest } = options ?? {}
 
@@ -99,7 +103,7 @@ export const useDeleteAddress = (options?: UseMutationOptions<DeleteResponse, Er
     },
     onError: (...args) => {
       const [error] = args
-      toast.add({ type: 'error', title: 'Failed to remove address', description: error.message })
+      toast.add({ type: 'error', title: t`Failed to remove address`, description: error.message })
       onError?.(...args)
     },
   })

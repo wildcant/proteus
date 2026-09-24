@@ -4,6 +4,7 @@
   "packageManager": "pnpm@12.4.1",
   "scripts": {
     "setup": "pnpm install && pnpm run pull-keys && pnpm run gen:workerd-env",
+    "dev:translations": "./scripts/dev-translations.sh",
     "gen:workerd-env": "dotenvx get -f .env.local --format eval 2>/dev/null > apps/backend/.env.workerd",
     "lint": "biome lint .",
     "format": "biome format --write .",

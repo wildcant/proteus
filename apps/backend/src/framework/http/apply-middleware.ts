@@ -1,6 +1,7 @@
 import type { RouteHandler } from '@framework/http/ports.js'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
-import { formatZodIssues } from '../../core/errors/format-zod-issues.js'
+import { toValidationIssues } from '../../core/errors/format-zod-issues.js'
 import { buildSearchFilter } from '../../core/utils/build-search-filter.js'
 import { validateBody } from '../../core/utils/validate-body.js'
 import { parseOrder, validateQuery } from '../../core/utils/validate-query.js'
@@ -11,11 +12,12 @@ export function applyMiddleware(definition: RouteDefinition): RouteHandler {
   return (async (req) => {
     if (definition.middlewares) req = await runMiddlewares(definition.middlewares, req)
     if (definition.input?.params) {
-      const result = definition.input.params.safeParse(req.params)
+      const result = definition.input.params.safeParse(req.params, { reportInput: true })
       if (!result.success) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Invalid path params: ${formatZodIssues(result.error.issues)}`,
+          message: i18n.t('Invalid path params'),
+          issues: toValidationIssues(result.error.issues),
         })
       }
       req = { ...req, params: result.data as typeof req.params }

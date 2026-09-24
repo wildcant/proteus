@@ -20,9 +20,13 @@
     "cf-typegen": "wrangler types",
     "typecheck": "tsc --noEmit",
     "openapi:client": "orval",
-    "check:structure": "depcruise src/ --config structure/.dependency-cruiser.cjs"
+    "check:structure": "depcruise src/ --config structure/.dependency-cruiser.cjs",
+    "i18n:extract": "lingui extract --clean",
+    "i18n:watch": "lingui extract --watch"
   },
   "dependencies": {
+    "@lingui/core": "catalog:",
+    "@lingui/react": "catalog:",
     "@proteus/http-schemas": "workspace:*",
     "@proteus/icons": "workspace:*",
     "@proteus/ui": "workspace:*",
@@ -47,12 +51,17 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
     "@cloudflare/vite-plugin": "^1.47.0",
     "@dotenvx/dotenvx": "catalog:",
     "@faker-js/faker": "catalog:",
+    "@lingui/babel-plugin-lingui-macro": "catalog:",
+    "@lingui/cli": "catalog:",
+    "@lingui/vite-plugin": "catalog:",
     "@playwright/test": "catalog:",
     "@proteus/frontend-structure": "workspace:*",
     "@proteus/testing": "workspace:*",
+    "@rolldown/plugin-babel": "^0.2.4",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/devtools-vite": "catalog:",
     "@tanstack/router-cli": "catalog:",

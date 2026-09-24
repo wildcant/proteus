@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Skeleton } from '@proteus/ui'
 import { ShppingAddressPicker } from '#/features/checkout/components/delivery/shipping-address-picker'
 import type { CheckoutData } from '#/features/checkout/hooks/use-checkout-data'
@@ -19,8 +20,9 @@ function Delivery({ cart, addresses, isAddressesLoading, form, cartAddresses }: 
 }
 
 export function DeliverySection(props: DeliverySectionProps) {
+  const { t } = useLingui()
   return (
-    <CheckoutSection title="Delivery">
+    <CheckoutSection title={t`Delivery`}>
       <Delivery {...props} />
     </CheckoutSection>
   )

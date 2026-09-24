@@ -2,6 +2,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { DeleteResponse, StoreCurrencyParams } from '@proteus/http-schemas/admin'
+import { i18n } from '@proteus/utils'
 import { NO_STORE_CONFIGURED } from '@workflows/store/utils/store-with-currencies.js'
 
 export const DeleteInput = { params: StoreCurrencyParams }
@@ -37,23 +38,38 @@ export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<Http
 
   const [currency] = await storeService.listStoreCurrencies({ storeId: store.id, currencyCode: code })
   if (!currency) {
-    throw new AppError({ type: ErrorTypes.NOT_FOUND, message: `The store does not trade in "${code}"` })
+    throw new AppError({
+      type: ErrorTypes.NOT_FOUND,
+      message: i18n.t('The store does not trade in "{code}"'),
+      values: { code },
+    })
   }
 
   if (currency.isDefault) {
     throw new AppError({
       type: ErrorTypes.NOT_ALLOWED,
-      message: `"${code}" is the store's default currency. Make another currency the default before removing it.`,
+      message: i18n.t(
+        '"{code}" is the store\'s default currency. Make another currency the default before removing it.',
+      ),
+      values: { code },
     })
   }
 
   const settling = await regionService.listRegions({ currencyCode: code })
   if (settling.length > 0) {
     const names = settling.map((region) => region.name).join(', ')
-    const verb = settling.length === 1 ? 'settles' : 'settle'
     throw new AppError({
       type: ErrorTypes.NOT_ALLOWED,
-      message: `"${code}" is the currency ${names} ${verb} in. Change that currency on the region before removing it.`,
+      // Two sentences, not a plural form: the English source is filled by `fillValues`, which has none.
+      message:
+        settling.length === 1
+          ? i18n.t(
+              '"{code}" is the currency {names} settles in. Change that currency on the region before removing it.',
+            )
+          : i18n.t(
+              '"{code}" is the currency {names} settle in. Change that currency on the region before removing it.',
+            ),
+      values: { code, names },
     })
   }
 

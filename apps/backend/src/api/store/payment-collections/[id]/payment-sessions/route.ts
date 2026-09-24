@@ -3,6 +3,7 @@ import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { CreatePaymentSession, IdParams, StoreCreatePaymentSessionResponse } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import { describeAccountHolder } from '@workflows/payment/utils/describe-account-holder.js'
 import { readWalletChoice } from '@workflows/payment/utils/read-wallet-choice.js'
 import { attachCustomer } from '../../../middlewares.js'
@@ -58,7 +59,7 @@ export const POST = async (req: PostRequest): Promise<HttpResult<typeof PostOutp
     throw new AppError({
       type: ErrorTypes.CONFLICT,
       code: PaymentErrorCodes.METHOD_UNAVAILABLE,
-      message: 'That payment method is no longer available.',
+      message: i18n.t('That payment method is no longer available.'),
     })
   }
 

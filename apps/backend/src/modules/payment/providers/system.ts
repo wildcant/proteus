@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   AuthorizePaymentInput,
@@ -59,7 +60,7 @@ export class SystemPaymentProvider extends AbstractPaymentProvider {
   }
 
   async getPaymentStatus(_input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
-    throw new AppError({ type: ErrorTypes.NOT_ALLOWED, message: 'Method not implemented.' })
+    throw new AppError({ type: ErrorTypes.NOT_ALLOWED, message: i18n.t('Method not implemented.') })
   }
 
   async getWebhookActionAndData(_data: ProviderWebhookPayload['payload']): Promise<WebhookActionResult> {

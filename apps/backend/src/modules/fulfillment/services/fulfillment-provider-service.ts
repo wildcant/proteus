@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { ModuleContainer } from '../../../core/types/container.js'
@@ -38,7 +39,8 @@ export class FulfillmentProviderService {
     } catch {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `Fulfillment provider "${providerId}" is not registered.`,
+        message: i18n.t('Fulfillment provider "{providerId}" is not registered.'),
+        values: { providerId },
       })
     }
   }

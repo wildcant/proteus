@@ -5,6 +5,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { ProviderParams, WebhookReceivedResponse } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 
 /**
  * What this route does with each action a provider can report. Total over `PaymentActions`, so
@@ -73,7 +74,7 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   // The provider verifies a signature over these bytes. Without them there is nothing to verify
   // against, and passing a re-serialisation of the parsed body would only fake having them.
   if (!req.rawBody) {
-    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: 'Webhook request carried no body' })
+    throw new AppError({ type: ErrorTypes.INVALID_DATA, message: i18n.t('Webhook request carried no body') })
   }
 
   const { action, data } = await paymentService.getWebhookActionAndData({

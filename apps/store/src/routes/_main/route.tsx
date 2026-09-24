@@ -6,9 +6,11 @@ import { CartDrawer } from '#/features/cart/components/cart-drawer'
 import { CartMismatchBanner } from '#/features/cart/components/cart-mismatch-banner'
 import { CartTrigger } from '#/features/cart/components/cart-trigger'
 import { SearchDrawer } from '#/features/products/components/search-drawer'
+import { marketHeadLinksFor } from '#/lib/seo/market-links'
 
 export const Route = createFileRoute('/_main')({
   ssr: true,
+  head: (context) => ({ links: marketHeadLinksFor(context) }),
   component: MainLayout,
 })
 

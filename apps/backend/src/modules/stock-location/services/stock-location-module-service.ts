@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -67,9 +68,11 @@ export class StockLocationModuleService implements IStockLocationModuleService {
     if (unknown.length) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: `Unknown stock location ${unknown.length === 1 ? 'id' : 'ids'}: ${unknown
-          .map((id) => `"${id}"`)
-          .join(', ')}`,
+        message:
+          unknown.length === 1
+            ? i18n.t('Unknown stock location id: {ids}')
+            : i18n.t('Unknown stock location ids: {ids}'),
+        values: { ids: unknown.map((id) => `"${id}"`).join(', ') },
       })
     }
 

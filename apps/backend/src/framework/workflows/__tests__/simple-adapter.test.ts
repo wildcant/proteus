@@ -1,4 +1,5 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
+import type { Msgid } from '@proteus/utils'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { vi } from 'vitest'
@@ -67,7 +68,7 @@ test.describe('simple workflow engine', () => {
         order.push('action-3-fail')
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: 'Insufficient stock for SKU-001',
+          message: 'Insufficient stock for SKU-001' as Msgid,
         })
       })
     })
@@ -107,7 +108,7 @@ test.describe('simple workflow engine', () => {
           events.push('action')
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_FOUND,
-            message: 'Cart not found',
+            message: 'Cart not found' as Msgid,
           })
         },
         async () => {
@@ -159,7 +160,7 @@ test.describe('simple workflow engine', () => {
       await ctx.step('fail', async () => {
         throw new WorkflowTerminalError({
           type: ErrorTypes.UNEXPECTED_STATE,
-          message: 'Card expired',
+          message: 'Card expired' as Msgid,
         })
       })
     })

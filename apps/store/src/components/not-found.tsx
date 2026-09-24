@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { ButtonLink } from '#/components/button'
 import { Wordmark } from '#/components/header/wordmark'
 
@@ -22,12 +23,14 @@ export function NotFound() {
         {/* Not the heading: "404" read on its own announces a number, so the sentence below it is
             what carries the page in a screen reader's heading list. */}
         <p className="type-display m-0 text-ink">404</p>
-        <h1 className="mt-6 text-base text-ink">We couldn&rsquo;t find that page</h1>
+        <h1 className="mt-6 text-base text-ink">
+          <Trans>We couldn&rsquo;t find that page</Trans>
+        </h1>
         <p className="m-0 mt-2 max-w-100 text-balance text-ink-muted text-sm">
-          The link may be old, or the address slightly off.
+          <Trans>The link may be old, or the address slightly off.</Trans>
         </p>
         <ButtonLink to="/" className="mt-8 w-full max-w-70 sm:w-auto sm:px-10">
-          Back to home
+          <Trans>Back to home</Trans>
         </ButtonLink>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { type WorkflowContext, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 
 /** A step in its own file still owns its failure contract; the workflow calling it spreads this. */
 export const assertStoreSellsCurrencyThrows = [ErrorTypes.INVALID_DATA] as const
@@ -29,8 +30,9 @@ export async function assertStoreSellsCurrencyStep(ctx: WorkflowContext, currenc
     throw new WorkflowTerminalError({
       type: ErrorTypes.INVALID_DATA,
       message: sold
-        ? `The store does not sell in "${currencyCode}". Its currencies are: ${sold}.`
-        : `The store does not sell in "${currencyCode}". It has no currencies configured.`,
+        ? i18n.t('The store does not sell in "{currencyCode}". Its currencies are: {sold}.')
+        : i18n.t('The store does not sell in "{currencyCode}". It has no currencies configured.'),
+      values: { currencyCode, sold },
     })
   })
 }

@@ -1,7 +1,9 @@
-import { Field, FieldError, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem } from '@proteus/ui'
+import { Trans } from '@lingui/react/macro'
+import { Field, FieldGroup, FieldLabel, FieldSet, RadioGroup, RadioGroupItem } from '@proteus/ui'
 import { PlusIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { ButtonLink } from '#/components/button'
+import { TranslatedFieldError } from '#/components/form/field-errors'
 import { AddressLines } from '#/features/address/components/address-lines'
 import { useMarket } from '#/hooks/use-market'
 import { withForm } from '#/lib/form-hook'
@@ -43,7 +45,9 @@ export const ShppingAddressPicker = withForm({
             return (
               <FieldSet>
                 <div className="border border-line p-4">
-                  <p className="m-0 text-ink-muted text-sm">Ship to</p>
+                  <p className="m-0 text-ink-muted text-sm">
+                    <Trans>Ship to</Trans>
+                  </p>
 
                   <RadioGroup
                     name={field.name}
@@ -67,7 +71,7 @@ export const ShppingAddressPicker = withForm({
                               <AddressLines address={address} />
                               {!!isDefault && (
                                 <span className="mt-3 inline-flex bg-ink px-2 py-0.5 text-surface text-xs">
-                                  Default
+                                  <Trans>Default</Trans>
                                 </span>
                               )}
                             </div>
@@ -81,11 +85,13 @@ export const ShppingAddressPicker = withForm({
 
                   <ButtonLink variant="link" to="/checkout/addresses/new" className="mt-4 gap-2 text-sm">
                     <PlusIcon className="size-4" />
-                    Use a different address
+                    <Trans>Use a different address</Trans>
                   </ButtonLink>
                 </div>
 
-                {!!isInvalid && <FieldError errors={field.state.meta.errors} />}
+                {!!isInvalid && (
+                  <TranslatedFieldError errors={field.state.meta.errors} values={field.form.state.values} />
+                )}
               </FieldSet>
             )
           }}

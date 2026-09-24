@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { Resend } from 'resend'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
 import type { Logger } from '../../core/types/logger.js'
@@ -53,7 +54,11 @@ export class ResendNotificationProvider extends AbstractNotificationProviderServ
         })
 
     if (error) {
-      throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: `Resend send failed: ${error.message}` })
+      throw new AppError({
+        type: ErrorTypes.UNEXPECTED_STATE,
+        message: i18n.t('Resend send failed: {reason}'),
+        values: { reason: error.message },
+      })
     }
 
     return {

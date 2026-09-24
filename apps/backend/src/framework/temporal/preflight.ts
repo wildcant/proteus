@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { Connection } from '@temporalio/client'
 import type { Duration } from '@temporalio/common'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
@@ -77,14 +78,10 @@ export async function assertTemporalFrontendReachable(deps: { address: string; p
   } catch (error) {
     throw new AppError({
       type: ErrorTypes.SERVICE_UNAVAILABLE,
-      message:
-        `[api] Temporal is unreachable at ${deps.address}, so the API is refusing to start. ` +
-        'Every checkout dispatches a workflow through that address and every boot reconciles the ' +
-        'cron Schedules through it, so starting anyway would bind the port, answer /health with ' +
-        "200, and then fail inside a shopper's checkout. Start the server " +
-        '(`docker compose -f apps/backend/docker-compose.yml up -d --wait temporal`) or point ' +
-        `TEMPORAL_ADDRESS at a reachable frontend, then start the API again. The connection ` +
-        `attempt said: "${describeConnectFailure(error)}".`,
+      message: i18n.t(
+        '[api] Temporal is unreachable at {address}, so the API is refusing to start. Every checkout dispatches a workflow through that address and every boot reconciles the cron Schedules through it, so starting anyway would bind the port, answer /health with 200, and then fail inside a shopper\'s checkout. Start the server (`docker compose -f apps/backend/docker-compose.yml up -d --wait temporal`) or point TEMPORAL_ADDRESS at a reachable frontend, then start the API again. The connection attempt said: "{failure}".',
+      ),
+      values: { address: deps.address, failure: describeConnectFailure(error) },
     })
   }
 }

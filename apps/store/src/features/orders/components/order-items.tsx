@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { PackageIcon } from 'lucide-react'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
 import { useFormatters } from '#/hooks/use-formatters'
@@ -54,7 +55,7 @@ export function OrderItems({ order }: { order: StoreOrderResponseOrder }) {
                   six months later cannot. At one, it is noise. */}
               {item.quantity > 1 && (
                 <p className="m-0 mt-0.5 whitespace-nowrap text-ink-muted text-xs tabular-nums">
-                  {formatPrice(item.unitPrice, order.currencyCode)} each
+                  <Trans>{formatPrice(item.unitPrice, order.currencyCode)} each</Trans>
                 </p>
               )}
             </div>

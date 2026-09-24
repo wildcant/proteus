@@ -82,6 +82,31 @@ test.describe('GET /store/countries', () => {
     })
   })
 
+  test('names the first country of the store default region as the default market', async ({ expect, factories }) => {
+    const { region } = await createMarkets(factories)
+    await factories.create.store({ defaultRegionId: region.id })
+
+    const response = await api.get<typeof countryRoutes.GetOutput>('/store/countries')
+
+    expect(response.status).toBe(200)
+    expect(response.body.defaultMarket).toEqual({
+      iso2: 'zz',
+      displayName: 'Andes',
+      currencyCode: 'cop',
+      localeCode: 'es-CO',
+    })
+  })
+
+  test('returns a null default market when the store has no default region', async ({ expect, factories }) => {
+    await createMarkets(factories)
+    await factories.create.store({ defaultRegionId: null })
+
+    const response = await api.get<typeof countryRoutes.GetOutput>('/store/countries')
+
+    expect(response.status).toBe(200)
+    expect(response.body.defaultMarket).toBeNull()
+  })
+
   test('rejects an unknown scope', async ({ expect }) => {
     const response = await api.get('/store/countries', undefined, { query: { scope: 'sellable-ish' } })
 

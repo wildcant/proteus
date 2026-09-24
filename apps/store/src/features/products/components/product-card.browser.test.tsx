@@ -4,6 +4,7 @@ import { expect, test } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { StoreProductListItem } from '#/api/generated/model'
+import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { DEFAULT_MARKET, type MarketContext } from '#/lib/market'
 import { ProductCard } from './product-card'
 import { ProductGrid } from './product-grid'
@@ -17,7 +18,12 @@ import { ProductGrid } from './product-grid'
  */
 
 /** Enough of a market for `useFormatters` to pick a locale; no request is made for it. */
-const market: MarketContext = { current: DEFAULT_MARKET, markets: [DEFAULT_MARKET], resolvedFromUrl: true }
+const market: MarketContext = {
+  current: DEFAULT_MARKET,
+  markets: [DEFAULT_MARKET],
+  defaultMarket: DEFAULT_MARKET,
+  resolvedFromUrl: true,
+}
 
 /**
  * A memory router with the subject as its only route, the way `payment-methods-book-view` mounts
@@ -31,7 +37,7 @@ function renderInRouter(ui: ReactNode) {
     context: { market },
   })
   // The app's own router type is registered globally; this stub is deliberately not it.
-  return render(<RouterProvider router={router as never} />)
+  return render(<RouterProvider router={router as never} />, { wrapper: I18nTestProvider })
 }
 
 function product(overrides: Partial<StoreProductListItem> & Pick<StoreProductListItem, 'id' | 'title'>) {

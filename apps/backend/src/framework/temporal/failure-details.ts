@@ -1,3 +1,5 @@
+import type { Msgid } from '@proteus/utils'
+
 /**
  * Shared by the driver Workflow, the Activities and the client-side adapter, so it is written
  * against plain object shapes rather than `instanceof ApplicationFailure`: the driver half runs
@@ -17,6 +19,10 @@ export type SerializedError = {
   /** `ErrorTypes` value, for the two `AppError`-shaped kinds. */
   type?: string
   code?: string
+  /** `AppError.msgid` — the catalog id, placeholders unfilled — so the route can translate it. */
+  msgid?: Msgid
+  /** `AppError.values`, which fill `msgid`'s placeholders in the response's language. */
+  values?: Record<string, unknown>
 }
 
 /** The payload every step failure carries in its `ApplicationFailure.details`. */

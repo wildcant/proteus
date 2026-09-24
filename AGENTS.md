@@ -15,7 +15,7 @@ Before edit file, read nested `AGENTS.md` along directory path (or `AGENTS.overr
 pnpm install
 pnpm run setup
 
-# Dev (six processes + Docker)
+# Dev (seven processes + Docker)
 docker compose -f apps/backend/docker-compose.yml up -d --wait postgres temporal temporal-ui
 pnpm --filter backend run dev               # API :3000
 pnpm --filter backend run worker:dev        # Temporal Worker (workflows)
@@ -23,6 +23,7 @@ pnpm --filter backend run worker:events:dev # Temporal Worker (subscribers)
 pnpm --filter backend run worker:cron:dev   # Temporal Worker (jobs/cron)
 pnpm --filter store run dev                 # Storefront :3001
 pnpm --filter admin run dev                 # Admin :3002
+pnpm run dev:translations                   # Lingui watcher (backend compile, store extract)
 
 # Database
 pnpm --filter backend run db:migrate:dev

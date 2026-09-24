@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type {
   AuthVerificationService,
@@ -27,7 +28,8 @@ export class VerificationProviderService {
     } catch {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `Verification provider "${providerId}" is not registered`,
+        message: i18n.t('Verification provider "{providerId}" is not registered'),
+        values: { providerId },
       })
     }
   }

@@ -1,5 +1,6 @@
 import type { MiddlewareFunction } from '@framework/http/types.js'
 import type { ActorType } from '@proteus/http-schemas/auth'
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 
@@ -19,14 +20,16 @@ export function validateScopeProviderAssociation(): MiddlewareFunction {
     if (!allowedProviders) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `Unknown actor type "${actorType}"`,
+        message: i18n.t('Unknown actor type "{actorType}"'),
+        values: { actorType },
       })
     }
 
     if (!allowedProviders.includes(authProvider)) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: `Provider "${authProvider}" is not allowed for actor type "${actorType}"`,
+        message: i18n.t('Provider "{authProvider}" is not allowed for actor type "{actorType}"'),
+        values: { authProvider, actorType },
       })
     }
 

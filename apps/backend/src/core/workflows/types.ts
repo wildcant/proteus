@@ -1,3 +1,4 @@
+import { i18n, type Msgid } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../errors/app-error.js'
 import type { AppContainer } from '../types/container.js'
 
@@ -37,7 +38,7 @@ export interface Workflow<TInput, TOutput> extends WorkflowDefinition<TInput, TO
   run(input: TInput): Promise<TOutput>
 }
 
-type TerminalErrorOptions = { type: ErrorTypes; message: string; code?: string }
+type TerminalErrorOptions = { type: ErrorTypes; message: Msgid; code?: string; values?: Record<string, unknown> }
 
 export class WorkflowTerminalError extends Error {
   constructor(optionsOrError: TerminalErrorOptions | AppError) {
@@ -77,7 +78,7 @@ export function createWorkflow<TInput, TOutput>(
       if (!globalEngine || !globalContainer) {
         throw new AppError({
           type: ErrorTypes.UNEXPECTED_STATE,
-          message: 'No workflow engine configured. Call setWorkflowEngine() first.',
+          message: i18n.t('No workflow engine configured. Call setWorkflowEngine() first.'),
         })
       }
       return globalEngine.run(this, input, { container: globalContainer })

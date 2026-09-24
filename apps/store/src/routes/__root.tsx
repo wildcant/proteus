@@ -1,3 +1,6 @@
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
 import { Toaster } from '@proteus/ui'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { formDevtoolsPlugin } from '@tanstack/react-form-devtools'
@@ -9,6 +12,7 @@ import { SHOW_DEVTOOLS } from '#/env.ts'
 import { CartMarketSwitch } from '#/features/cart/components/cart-market-switch'
 import { MARKET_GLOBAL, type MarketContext } from '#/lib/market'
 import { modalSearchSchema } from '#/lib/modal-state'
+import { marketHeadLinksFor } from '#/lib/seo/market-links'
 import manropeFont from '../assets/fonts/Manrope-VariableFont_wght.woff2?url'
 import appCss from '../styles.css?url'
 
@@ -24,15 +28,15 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
  * a precaution against a shape that might grow and become the thing keeping the document valid.
  */
 function marketInitScript(market: MarketContext): string {
-  const payload = JSON.stringify({ markets: market.markets })
+  const payload = JSON.stringify({ markets: market.markets, defaultMarket: market.defaultMarket })
   return `window.${MARKET_GLOBAL}=${payload.replace(/</g, '\\u003c')};`
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient; market: MarketContext }>()({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; market: MarketContext; i18n: I18n }>()({
   ssr: true,
   // Declared here so every route inherits it — see src/lib/modal-state.ts.
   validateSearch: modalSearchSchema,
-  head: () => ({
+  head: (context) => ({
     meta: [
       {
         charSet: 'utf-8',
@@ -46,7 +50,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
       },
       {
         name: 'description',
-        content: 'Proteus — modern storefront powered by TanStack Start',
+        content: context.match.context.i18n._(msg`Proteus — modern storefront powered by TanStack Start`),
       },
     ],
     links: [
@@ -61,6 +65,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
         rel: 'stylesheet',
         href: appCss,
       },
+      ...marketHeadLinksFor(context),
     ],
   }),
   component: RootComponent,
@@ -85,11 +90,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   // no match to read from here. The market is fixed for the life of a router — switching one is a
   // document navigation — so a plain read is correct and needs no subscription.
   const { market } = useRouter().options.context
+  const { t } = useLingui()
 
   return (
-    // The locale code is the language tag. Until catalogues land, es-CO serves English under a
-    // Spanish tag: a known trade-off, taken because it becomes correct the day the catalogues
-    // exist, where hardcoding English would be a flag someone has to remember to flip.
+    // The locale code is the language tag; its language subtag picks the catalog.
     <html lang={market.current.localeCode} suppressHydrationWarning>
       <head>
         {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Tanstack start default */}
@@ -104,7 +108,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {children}
         {/* The PDP's action bar owns the bottom-4 lane on the phone, and a failed add-to-cart
             toast would land on top of the button you press to retry it. */}
-        <Toaster viewportClassName="bottom-20 lg:bottom-4" />
+        <Toaster viewportClassName="bottom-20 lg:bottom-4" closeLabel={t`Close toast`} />
         {!!SHOW_DEVTOOLS && (
           <TanStackDevtools
             config={{

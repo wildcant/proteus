@@ -1,10 +1,14 @@
 import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import { noopLogger } from '@core/logger/noop-logger.js'
 import { createWorkflow, type WorkflowDefinition, WorkflowTerminalError } from '@core/workflows/types.js'
+import { createExpressApp } from '@framework/runtime/express/app.js'
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '@framework/workflows/temporal-adapter.js'
+import type { Msgid } from '@proteus/utils'
 import type { TestWorkflowEnvironment } from '@temporalio/testing'
 import { Worker } from '@temporalio/worker'
 import { asValue, createContainer } from 'awilix'
+import request from 'supertest'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { AppContainer, ModuleContainer } from '../../../../core/types/container.js'
 import { PAYLOAD_CONVERTER_PATH } from '../../../temporal/config.js'
@@ -237,7 +241,7 @@ describe('temporal workflow engine', () => {
       const action = vi.fn(async () => {
         throw new WorkflowTerminalError({
           type: ErrorTypes.CONFLICT,
-          message: 'Cart "cart_01" is already being completed',
+          message: 'Cart "cart_01" is already being completed' as Msgid,
         })
       })
 
@@ -330,7 +334,7 @@ describe('temporal workflow engine', () => {
         createWorkflow<void, string>('retryable-step-terminal', async (ctx) =>
           ctx.step('flaky', async () => {
             attempts += 1
-            throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: 'Cart has no items' })
+            throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, message: 'Cart has no items' as Msgid })
           }),
         ),
       )
@@ -419,7 +423,7 @@ describe('temporal workflow engine', () => {
           await ctx.step('lookup', async () => {
             // Not a WorkflowTerminalError: services throw bare AppErrors, and `errorHandler` reads
             // `type` off either one to choose a status.
-            throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Variant "var_01" not found' })
+            throw new AppError({ type: ErrorTypes.NOT_FOUND, message: 'Variant "var_01" not found' as Msgid })
           })
         }),
       )
@@ -429,6 +433,45 @@ describe('temporal workflow engine', () => {
       expect(AppError.isError(failure)).toBe(true)
       expect(failure).toMatchObject({ type: ErrorTypes.NOT_FOUND, message: 'Variant "var_01" not found' })
       expect(failure).not.toBeInstanceOf(WorkflowTerminalError)
+    },
+    TEST_TIMEOUT,
+  )
+
+  it(
+    'answers an AppError thrown inside a step over HTTP in the language the request names',
+    async () => {
+      // A plain string, not `i18n.t()`: the extractor scans tests too, and the id is catalogued.
+      const workflow = register(
+        createWorkflow<void, void>('translated-step-failure', async (ctx) => {
+          await ctx.step('validate-name', async () => {
+            throw new AppError({
+              type: ErrorTypes.INVALID_DATA,
+              message: 'Use {maximum} characters or fewer' as Msgid,
+              values: { maximum: 80 },
+            })
+          })
+        }),
+      )
+      const app = createExpressApp({
+        routes: [
+          {
+            method: 'POST',
+            matcher: '/store/names',
+            handler: async () => {
+              await run(workflow, undefined)
+              throw new Error('translated-step-failure completed; its step always throws')
+            },
+          },
+        ],
+        container,
+        logger: noopLogger,
+        corsOrigins: [],
+      })
+
+      const response = await request(app).post('/store/names').set('x-proteus-locale', 'es-CO').send({})
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toBe('Usa 80 caracteres o menos')
     },
     TEST_TIMEOUT,
   )

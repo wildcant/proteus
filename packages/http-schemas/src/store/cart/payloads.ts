@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { z } from 'zod'
 import { countryCode, entityId, MAX_ITEMS, phone, postalCode, shortText } from '../../bounded.js'
 
@@ -13,7 +14,7 @@ export const AddLineItem = z.object({
 export type AddLineItemBody = z.infer<typeof AddLineItem>
 
 export const CreateCart = z.object({
-  email: z.email().optional(),
+  email: z.email(i18n.t('Enter a valid email address')).optional(),
   items: z.array(AddLineItem).max(MAX_ITEMS.batch).optional(),
 })
 export type CreateCartBody = z.infer<typeof CreateCart>
@@ -21,13 +22,13 @@ export type CreateCartBody = z.infer<typeof CreateCart>
 export const CartAddressInput = z.object({
   firstName: shortText.nullable(),
   lastName: shortText.nullable(),
-  address1: shortText.min(1, 'Address is required'),
+  address1: shortText.min(1, i18n.t('Address is required')),
   address2: shortText.optional().nullable(),
   company: shortText.optional().nullable(),
-  city: shortText.min(1, 'City is required'),
-  countryCode: countryCode.length(2, 'Country is required'),
+  city: shortText.min(1, i18n.t('City is required')),
+  countryCode: countryCode.length(2, i18n.t('Country is required')),
   province: shortText.optional().nullable(),
-  postalCode: postalCode.min(1, 'Postal code is required'),
+  postalCode: postalCode.min(1, i18n.t('Postal code is required')),
   phone: phone.optional().nullable(),
 })
 export type CartAddressInputBody = z.infer<typeof CartAddressInput>
@@ -49,7 +50,7 @@ export const UpdateCart = z.object({
    * name its own would be naming the money the shopper is charged in.
    */
   regionId: entityId.min(1).optional(),
-  email: z.email().optional(),
+  email: z.email(i18n.t('Enter a valid email address')).optional(),
   firstName: shortText.optional(),
   lastName: shortText.optional(),
   shippingAddress: CartAddressInput.optional(),

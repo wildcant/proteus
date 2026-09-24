@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import type { CartAddressInputBody } from '@proteus/http-schemas/store'
 import { useCallback } from 'react'
 import { useUpdateCart } from '../api/checkout'
@@ -39,6 +40,7 @@ export type PlaceOrderArgs = {
 }
 
 export function usePlaceOrder(cartId: string) {
+  const { t } = useLingui()
   const controller = usePaymentController()
   const updateCart = useUpdateCart()
   const { open } = useOpenPaymentSession(cartId)
@@ -75,7 +77,7 @@ export function usePlaceOrder(cartId: string) {
       if (!confirm) {
         // The adapter's form has not mounted, so there is nothing to charge. Refusing beats
         // opening a session that no confirmation will ever follow.
-        return { kind: 'failed', customerMessage: 'The payment form is still loading. Please try again.' }
+        return { kind: 'failed', customerMessage: t`The payment form is still loading. Please try again.` }
       }
 
       // What the shopper decided in the selector, read at the press rather than held in the form:
@@ -98,7 +100,7 @@ export function usePlaceOrder(cartId: string) {
 
       return outcome
     },
-    [controller, open, updateCart],
+    [controller, open, updateCart, t],
   )
 
   return { controller, confirmPayment }

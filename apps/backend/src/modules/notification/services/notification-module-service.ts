@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
@@ -64,7 +65,7 @@ export class NotificationModuleService implements INotificationModuleService {
   async createNotification(data: CreateNotificationDTO, context?: Context): Promise<NotificationDTO> {
     const [notification] = await this.createNotifications([data], context)
     if (!notification) {
-      throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Failed to create notification' })
+      throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: i18n.t('Failed to create notification') })
     }
     return notification
   }
@@ -146,7 +147,10 @@ export class NotificationModuleService implements INotificationModuleService {
           case 'retry': {
             const record = retriedRecords[retryIndex++]
             if (!record)
-              throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Missing retried notification record' })
+              throw new AppError({
+                type: ErrorTypes.UNEXPECTED_STATE,
+                message: i18n.t('Missing retried notification record'),
+              })
             notifications.push(record)
             dispatchTargets.push({ index, providerId: item.providerId })
             break
@@ -154,7 +158,10 @@ export class NotificationModuleService implements INotificationModuleService {
           case 'new': {
             const record = createdRecords[createIndex++]
             if (!record)
-              throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: 'Missing created notification record' })
+              throw new AppError({
+                type: ErrorTypes.UNEXPECTED_STATE,
+                message: i18n.t('Missing created notification record'),
+              })
             notifications.push(record)
             if (item.providerId) {
               dispatchTargets.push({ index, providerId: item.providerId })

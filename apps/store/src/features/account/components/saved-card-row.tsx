@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { cn, FieldLabel, RadioGroupItem, Skeleton } from '@proteus/ui'
 import { Trash2Icon } from 'lucide-react'
 import { useId, useState } from 'react'
@@ -33,6 +34,7 @@ export type SavedCardRowProps = {
 }
 
 export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCardRowProps) {
+  const { t } = useLingui()
   const radioId = useId()
   const [confirming, setConfirming] = useState(false)
   const [removing, setRemoving] = useState(false)
@@ -63,12 +65,14 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
       <PaymentRow state="muted" data-testid="saved-card-confirm-remove" data-method-id={method.id}>
         <NetworkMark brand={method.brand} />
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="font-medium text-ink text-sm">{`Remove ${name}?`}</span>
-          <span className="text-ink-muted text-xs">You'll need to enter it again next time.</span>
+          <span className="font-medium text-ink text-sm">{t`Remove ${name}?`}</span>
+          <span className="text-ink-muted text-xs">
+            <Trans>You'll need to enter it again next time.</Trans>
+          </span>
         </span>
         <span className="flex shrink-0 items-center gap-1">
           <button type="button" className={TEXT_BUTTON_CLASS} onClick={() => setConfirming(false)} disabled={removing}>
-            Keep
+            <Trans>Keep</Trans>
           </button>
           <button
             type="button"
@@ -76,7 +80,7 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
             onClick={confirmRemove}
             disabled={removing}
           >
-            {removing ? 'Removing…' : 'Remove'}
+            {removing ? t`Removing…` : t`Remove`}
           </button>
         </span>
       </PaymentRow>
@@ -106,20 +110,30 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
           >
             {`•••• ${method.last4}`}
           </span>
-          {!!method.isDefault && <span className="text-ink-muted text-xs">Default</span>}
+          {!!method.isDefault && (
+            <span className="text-ink-muted text-xs">
+              <Trans>Default</Trans>
+            </span>
+          )}
           {!!expired && (
             <span className="text-ink-muted text-xs">
-              <strong className="font-semibold">Expired</strong> — add this card again to use it
+              <Trans>
+                <strong className="font-semibold">Expired</strong> — add this card again to use it
+              </Trans>
             </span>
           )}
           {status === 'expiring' && (
             <span className="text-ink-muted text-xs">
-              <strong className="font-semibold text-ink">Expires this month</strong>
+              <strong className="font-semibold text-ink">
+                <Trans>Expires this month</Trans>
+              </strong>
             </span>
           )}
           {!!failed && (
             <span className="text-sale text-xs">
-              <strong className="font-semibold">Couldn't remove that card.</strong> Try again.
+              <Trans>
+                <strong className="font-semibold">Couldn't remove that card.</strong> Try again.
+              </Trans>
             </span>
           )}
         </span>
@@ -127,7 +141,7 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
       </FieldLabel>
       <button
         type="button"
-        aria-label={`Remove ${name}`}
+        aria-label={t`Remove ${name}`}
         onClick={() => setConfirming(true)}
         className="-mr-2 flex size-8 shrink-0 items-center justify-center text-ink-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
       >

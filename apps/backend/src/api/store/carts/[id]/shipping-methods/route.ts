@@ -3,6 +3,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AddCartShippingMethod, IdParams, StoreCreateCartShippingMethodResponse } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 
 export const PostInput = { params: IdParams, body: AddCartShippingMethod }
 export const PostOutput = StoreCreateCartShippingMethodResponse
@@ -19,7 +20,8 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   if (!shippingOption.isEnabled) {
     throw new AppError({
       type: ErrorTypes.NOT_ALLOWED,
-      message: `Shipping option "${req.body.shippingOptionId}" is not available`,
+      message: i18n.t('Shipping option "{shippingOptionId}" is not available'),
+      values: { shippingOptionId: req.body.shippingOptionId },
     })
   }
 

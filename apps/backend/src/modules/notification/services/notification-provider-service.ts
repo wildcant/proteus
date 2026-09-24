@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { ModuleContainer } from '../../../core/types/container.js'
 import type { Context } from '../../../core/types/context.js'
@@ -52,7 +53,8 @@ export class NotificationProviderService {
     } catch {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
-        message: `Notification provider "${providerId}" is not registered.`,
+        message: i18n.t('Notification provider "{providerId}" is not registered.'),
+        values: { providerId },
       })
     }
   }

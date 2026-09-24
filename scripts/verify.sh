@@ -46,7 +46,7 @@ RESET='\033[0m'
 # Commenting a gate out means dropping its name from here as well as its `job_*` function and
 # label — this string is what the loop iterates, and a name with no function behind it fails the
 # run with an empty label rather than being skipped.
-JOBS="typecheck lint standards structure versions unused generated openapi test schemas store packages workerd"
+JOBS="typecheck lint standards structure versions unused generated translations openapi test schemas store packages workerd"
 
 job_typecheck() { pnpm run typecheck; }
 
@@ -268,6 +268,16 @@ job_workerd() { ./scripts/checks/workerd-smoke.sh; }
 # carry is that omitting a locale still prints exactly what it printed before.
 job_packages() { pnpm --filter @proteus/utils run test; }
 
+# The translations, one catalog per workspace that has a lingui.config.ts. Decided during the
+# prologue, for the same reason as REGEN_DRIFT: establishing it runs `lingui extract` and `lingui
+# compile`, which rewrite the catalogs this job's neighbours read. See scripts/checks/translations.sh.
+job_translations() {
+  if [ -n "$TRANSLATION_DRIFT" ]; then
+    printf '%s\n' "$TRANSLATION_DRIFT"
+    return 1
+  fi
+}
+
 # CI mode: report formatting instead of applying it. Triggered by --ci or by the CI env
 # var that every CI provider sets, so the workflow file needs no extra wiring.
 ci_mode=false
@@ -315,6 +325,7 @@ label_of() {
     schemas) echo "Request-schema bound tests" ;;
     store) echo "Store unit + component tests" ;;
     packages) echo "Shared package unit tests (utils)" ;;
+    translations) echo "Translations (extracted, compiled, translated)" ;;
     workerd) echo "The Worker boots and serves on workerd" ;;
   esac
 }
@@ -387,6 +398,11 @@ regenerate_check() {
 echo -e "${BOLD}Regenerating${RESET} ${DIM}(writes in place, so it must finish before the checks read the files)${RESET}"
 regenerate_check "The Orval clients" "pnpm run openapi:generate" \
   apps/admin/src/api/generated apps/store/src/api/generated
+
+# Writes the catalogs in place, so it runs here, alone, for the same reason as regenerate_check. The
+# three mistakes it looks for are listed in scripts/checks/translations.sh.
+echo -e "${BOLD}Checking translations${RESET} ${DIM}(writes in place, so it must also finish first)${RESET}"
+TRANSLATION_DRIFT="$(./scripts/checks/translations.sh)"
 
 
 LOG_DIR="$(mktemp -d)"

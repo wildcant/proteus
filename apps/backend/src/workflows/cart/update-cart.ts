@@ -8,6 +8,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import type { UpdateCartBody } from '@proteus/http-schemas/store'
+import { i18n } from '@proteus/utils'
 import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
 import { findOrCreateCustomerStep } from './steps/find-or-create-customer.js'
 import { isShopperEnteredAddress } from './utils/shipping-address-country.js'
@@ -135,7 +136,8 @@ async function resolveNamedRegion(
   if (!country?.regionId) {
     throw new WorkflowTerminalError({
       type: ErrorTypes.INVALID_DATA,
-      message: `No region sells to country "${countryCode}"`,
+      message: i18n.t('No region sells to country "{countryCode}"'),
+      values: { countryCode },
     })
   }
 
@@ -156,7 +158,8 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
       if (cart.completedAt) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: `Cart "${input.cartId}" is already completed`,
+          message: i18n.t('Cart "{cartId}" is already completed'),
+          values: { cartId: input.cartId },
         })
       }
 
@@ -205,7 +208,8 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
       if (enteredCountry && !countryCodes.includes(enteredCountry)) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,
-          message: `"${region.name}" does not ship to "${enteredCountry}"`,
+          message: i18n.t('"{name}" does not ship to "{enteredCountry}"'),
+          values: { name: region.name, enteredCountry },
         })
       }
 
@@ -416,7 +420,8 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
           if (!price) {
             throw new WorkflowTerminalError({
               type: ErrorTypes.INVALID_DATA,
-              message: `"${item.title}" is not sold in ${regionChange.currencyCode.toUpperCase()}`,
+              message: i18n.t('"{title}" is not sold in {currencyCode}'),
+              values: { title: item.title, currencyCode: regionChange.currencyCode.toUpperCase() },
             })
           }
 

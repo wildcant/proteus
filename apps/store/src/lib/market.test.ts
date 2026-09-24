@@ -14,7 +14,9 @@ const markets: ReadonlyArray<Market> = [DEFAULT_MARKET, colombia]
 
 describe('resolveMarketTarget', () => {
   test('a first visit from a country the store sells in lands on that market', () => {
-    expect(resolveMarketTarget({ cookie: undefined, country: 'CO', markets })).toBe('es-CO')
+    expect(resolveMarketTarget({ cookie: undefined, country: 'CO', markets, defaultMarket: DEFAULT_MARKET })).toBe(
+      'es-CO',
+    )
   })
 
   test.each([
@@ -24,23 +26,37 @@ describe('resolveMarketTarget', () => {
     { label: 'no country at all', country: undefined },
     { label: 'an empty country', country: '' },
   ])('a first visit from $label lands on the default market', ({ country }) => {
-    expect(resolveMarketTarget({ cookie: undefined, country, markets })).toBe(DEFAULT_MARKET.localeCode)
+    expect(resolveMarketTarget({ cookie: undefined, country, markets, defaultMarket: DEFAULT_MARKET })).toBe(
+      DEFAULT_MARKET.localeCode,
+    )
   })
 
   test('matches the country whatever its case', () => {
-    expect(resolveMarketTarget({ cookie: undefined, country: 'co', markets })).toBe('es-CO')
+    expect(resolveMarketTarget({ cookie: undefined, country: 'co', markets, defaultMarket: DEFAULT_MARKET })).toBe(
+      'es-CO',
+    )
+  })
+
+  test('a shopper with no cookie and no sellable country lands on the store default market', () => {
+    expect(resolveMarketTarget({ cookie: undefined, country: 'XX', markets, defaultMarket: colombia })).toBe('es-CO')
   })
 
   test('a remembered market wins over the country the shopper is in', () => {
-    expect(resolveMarketTarget({ cookie: 'en-US', country: 'CO', markets })).toBe('en-US')
+    expect(resolveMarketTarget({ cookie: 'en-US', country: 'CO', markets, defaultMarket: DEFAULT_MARKET })).toBe(
+      'en-US',
+    )
   })
 
   test('a remembered market the store no longer sells in gives way to the country', () => {
-    expect(resolveMarketTarget({ cookie: 'fr-FR', country: 'CO', markets })).toBe('es-CO')
+    expect(resolveMarketTarget({ cookie: 'fr-FR', country: 'CO', markets, defaultMarket: DEFAULT_MARKET })).toBe(
+      'es-CO',
+    )
   })
 
   test('a stale cookie and no usable country lands on the default market', () => {
-    expect(resolveMarketTarget({ cookie: 'fr-FR', country: 'XX', markets })).toBe(DEFAULT_MARKET.localeCode)
+    expect(resolveMarketTarget({ cookie: 'fr-FR', country: 'XX', markets, defaultMarket: DEFAULT_MARKET })).toBe(
+      DEFAULT_MARKET.localeCode,
+    )
   })
 })
 

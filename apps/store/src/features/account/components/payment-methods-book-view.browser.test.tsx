@@ -4,6 +4,7 @@ import { expect, test, vi } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { StoreSavedMethod } from '#/api/generated/model'
+import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { PaymentMethodsBookView } from './payment-methods-book-view'
 
 /**
@@ -44,7 +45,7 @@ function renderInRouter(ui: ReactNode) {
     history: createMemoryHistory({ initialEntries: ['/'] }),
   })
   // The app's own router type is registered globally; this stub is deliberately not it.
-  return render(<RouterProvider router={router as never} />)
+  return render(<RouterProvider router={router as never} />, { wrapper: I18nTestProvider })
 }
 
 test('a wallet that will not load is told apart from an empty one, and offers a retry', async () => {

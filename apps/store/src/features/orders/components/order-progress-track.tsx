@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
 import { orderProgress, type ProgressStep } from '#/features/orders/utils/order-progress'
@@ -17,21 +18,22 @@ import { orderProgress, type ProgressStep } from '#/features/orders/utils/order-
  * the rules between the dots, and the rule is the part that carries no information.
  */
 export function OrderProgressTrack({ order, className }: { order: StoreOrderResponseOrder; className?: string }) {
+  const { t } = useLingui()
   const progress = orderProgress(order)
 
   if (progress.kind === 'stopped') {
     return (
       <div className={cn('max-w-140', className)}>
-        <p className="font-medium text-ink text-sm">{progress.label}</p>
-        <p className="mt-1 text-ink-muted text-sm">{progress.detail}</p>
+        <p className="font-medium text-ink text-sm">{t(progress.label)}</p>
+        <p className="mt-1 text-ink-muted text-sm">{t(progress.detail)}</p>
       </div>
     )
   }
 
   return (
-    <ol className={cn('m-0 flex max-w-200 list-none gap-2 p-0', className)} aria-label="Order progress">
+    <ol className={cn('m-0 flex max-w-200 list-none gap-2 p-0', className)} aria-label={t`Order progress`}>
       {progress.steps.map((step) => (
-        <Step key={step.label} step={step} />
+        <Step key={step.label.id} step={step} />
       ))}
     </ol>
   )
@@ -43,6 +45,7 @@ export function OrderProgressTrack({ order, className }: { order: StoreOrderResp
  * step keeps its label at every width, so the phone still says where the order is in words.
  */
 function Step({ step }: { step: ProgressStep }) {
+  const { t } = useLingui()
   const reached = step.state !== 'upcoming'
 
   return (
@@ -56,7 +59,7 @@ function Step({ step }: { step: ProgressStep }) {
           step.state === 'upcoming' && 'text-ink-subtle',
         )}
       >
-        {step.label}
+        {t(step.label)}
       </span>
     </li>
   )

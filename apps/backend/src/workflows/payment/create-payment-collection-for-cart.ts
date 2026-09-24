@@ -3,6 +3,7 @@ import type { PaymentCollectionDTO } from '@core/types/payment/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
+import { i18n } from '@proteus/utils'
 
 type CreatePaymentCollectionForCartInput = { cartId: string }
 
@@ -26,7 +27,8 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
         if (cart.completedAt) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.NOT_ALLOWED,
-            message: `Cart "${input.cartId}" is already completed`,
+            message: i18n.t('Cart "{cartId}" is already completed'),
+            values: { cartId: input.cartId },
           })
         }
 
@@ -45,7 +47,8 @@ export const createPaymentCollectionForCartWorkflow = createWorkflow<
         if (amount.isLessThanOrEqualTo(0)) {
           throw new WorkflowTerminalError({
             type: ErrorTypes.INVALID_DATA,
-            message: `Cart "${input.cartId}" has no items or zero total`,
+            message: i18n.t('Cart "{cartId}" has no items or zero total'),
+            values: { cartId: input.cartId },
           })
         }
 

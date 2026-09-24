@@ -1,3 +1,4 @@
+import { i18n } from '@proteus/utils'
 import { hasFeature, moduleOfKey, parseGrant, resolveEffectiveFeatures } from '../../../core/access-control/engine.js'
 import { GENERATED_FEATURES } from '../../../core/access-control/features.gen.js'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
@@ -54,7 +55,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (existing.isSuperAdmin) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: 'Super admin role cannot be modified',
+          message: i18n.t('Super admin role cannot be modified'),
         })
       }
 
@@ -62,7 +63,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         if (data.name !== undefined && data.name !== existing.name) {
           throw new AppError({
             type: ErrorTypes.NOT_ALLOWED,
-            message: 'Protected role cannot be renamed',
+            message: i18n.t('Protected role cannot be renamed'),
           })
         }
       }
@@ -90,7 +91,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (role.isSuperAdmin || role.protected) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: 'Protected role cannot be deleted',
+          message: i18n.t('Protected role cannot be deleted'),
         })
       }
 
@@ -98,7 +99,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (assignments.length > 0) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Role is assigned to ${assignments.length} user(s). Remove assignments before deleting.`,
+          message: i18n.t('Role is assigned to {count} user(s). Remove assignments before deleting.'),
+          values: { count: assignments.length },
         })
       }
 
@@ -155,7 +157,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         const missing = roleIds.filter((id) => !found.has(id))
         throw new AppError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Roles not found: ${missing.join(', ')}`,
+          message: i18n.t('Roles not found: {missing}'),
+          values: { missing: missing.join(', ') },
         })
       }
 
@@ -163,7 +166,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (hasSuperAdminRole && !callerContext.callerGrantsIncludeSuperAdmin) {
         throw new AppError({
           type: ErrorTypes.FORBIDDEN,
-          message: 'Assigning super admin role requires caller to hold super admin',
+          message: i18n.t('Assigning super admin role requires caller to hold super admin'),
         })
       }
 
@@ -211,7 +214,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         const missing = roleIds.filter((id) => !found.has(id))
         throw new AppError({
           type: ErrorTypes.NOT_FOUND,
-          message: `Roles not found: ${missing.join(', ')}`,
+          message: i18n.t('Roles not found: {missing}'),
+          values: { missing: missing.join(', ') },
         })
       }
 
@@ -219,7 +223,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (hasSuperAdminRole && !callerContext.callerGrantsIncludeSuperAdmin) {
         throw new AppError({
           type: ErrorTypes.FORBIDDEN,
-          message: 'Assigning super admin role requires caller to hold super admin',
+          message: i18n.t('Assigning super admin role requires caller to hold super admin'),
         })
       }
 
@@ -393,7 +397,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (assignedUnregistered.length > 0) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Cannot remove permissions still assigned to roles: ${assignedUnregistered.join(', ')}`,
+          message: i18n.t('Cannot remove permissions still assigned to roles: {keys}'),
+          values: { keys: assignedUnregistered.join(', ') },
         })
       }
 
@@ -443,7 +448,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
     if (remainingAfterRemoval.length === 0) {
       throw new AppError({
         type: ErrorTypes.NOT_ALLOWED,
-        message: 'Cannot revoke the last super admin assignment',
+        message: i18n.t('Cannot revoke the last super admin assignment'),
       })
     }
   }
@@ -471,7 +476,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (seen.has(feature)) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Duplicate feature id: ${feature}`,
+          message: i18n.t('Duplicate feature id: {feature}'),
+          values: { feature },
         })
       }
       seen.add(feature)
@@ -486,7 +492,7 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (parsed.kind === 'global') {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: 'Global wildcard grant is reserved for the super admin role',
+          message: i18n.t('Global wildcard grant is reserved for the super admin role'),
         })
       }
 
@@ -494,7 +500,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
         if (!moduleIds.has(parsed.moduleId)) {
           throw new AppError({
             type: ErrorTypes.INVALID_DATA,
-            message: `Unknown module wildcard: ${grant}`,
+            message: i18n.t('Unknown module wildcard: {grant}'),
+            values: { grant },
           })
         }
         continue
@@ -503,7 +510,8 @@ export class AccessControlModuleService implements IAccessControlModuleService {
       if (!registeredKeys.has(parsed.key)) {
         throw new AppError({
           type: ErrorTypes.INVALID_DATA,
-          message: `Unknown permission key: ${grant}`,
+          message: i18n.t('Unknown permission key: {grant}'),
+          values: { grant },
         })
       }
     }
