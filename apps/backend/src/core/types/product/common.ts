@@ -298,3 +298,22 @@ export interface FilterableProductVariantImageProps extends BaseFilterable<Filte
   variantId?: string | string[]
   imageId?: string | string[]
 }
+
+export type ProductCategoryDTO = {
+  id: string
+  name: string
+  description: string
+  handle: string
+  parentId: string | null
+  rank: number
+  isActive: boolean
+  isInternal: boolean
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+/** A Category with its children nested, siblings in rank order. */
+export type ProductCategoryTreeNodeDTO = ProductCategoryDTO & {
+  children: ProductCategoryTreeNodeDTO[]
+}

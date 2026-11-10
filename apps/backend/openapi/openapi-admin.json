@@ -56,6 +56,9 @@
       "name": "Permissions"
     },
     {
+      "name": "Product Categories"
+    },
+    {
       "name": "Product Options"
     },
     {
@@ -2802,6 +2805,207 @@
           }
         }
       },
+      "AdminProductCategoryTreeResponse": {
+        "type": "object",
+        "properties": {
+          "productCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductCategoryTreeNode"
+            }
+          }
+        },
+        "required": [
+          "productCategories"
+        ]
+      },
+      "AdminProductCategoryTreeNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rank": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isInternal": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductCategoryTreeNode"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "handle",
+          "parentId",
+          "rank",
+          "isActive",
+          "isInternal",
+          "createdAt",
+          "updatedAt",
+          "children"
+        ]
+      },
+      "AdminProductCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "productCategory": {
+            "$ref": "#/components/schemas/AdminProductCategory"
+          }
+        },
+        "required": [
+          "productCategory"
+        ]
+      },
+      "AdminProductCategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rank": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isInternal": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "handle",
+          "parentId",
+          "rank",
+          "isActive",
+          "isInternal",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AdminCreateProductCategory": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "handle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isInternal": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AdminUpdateProductCategory": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "handle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isInternal": {
+            "type": "boolean"
+          }
+        }
+      },
       "AdminProductOptionListResponse": {
         "type": "object",
         "properties": {
@@ -5492,6 +5696,7 @@
                           "shopping-cart",
                           "package",
                           "sliders-horizontal",
+                          "folder-tree",
                           "boxes",
                           "clipboard-list",
                           "users",
@@ -5518,6 +5723,7 @@
                                 "shopping-cart",
                                 "package",
                                 "sliders-horizontal",
+                                "folder-tree",
                                 "boxes",
                                 "clipboard-list",
                                 "users",
@@ -5573,6 +5779,7 @@
                           "shopping-cart",
                           "package",
                           "sliders-horizontal",
+                          "folder-tree",
                           "boxes",
                           "clipboard-list",
                           "users",
@@ -5599,6 +5806,7 @@
                                 "shopping-cart",
                                 "package",
                                 "sliders-horizontal",
+                                "folder-tree",
                                 "boxes",
                                 "clipboard-list",
                                 "users",
@@ -8964,6 +9172,229 @@
           },
           "401": {
             "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/admin/product-categories": {
+      "get": {
+        "operationId": "listProductCategoryTree",
+        "summary": "List the Category tree",
+        "tags": [
+          "Product Categories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCategoryTreeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createProductCategory",
+        "summary": "Create a Category",
+        "tags": [
+          "Product Categories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateProductCategory"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Unprocessable entity"
+          }
+        }
+      }
+    },
+    "/admin/product-categories/{id}": {
+      "get": {
+        "operationId": "getProductCategory",
+        "summary": "Retrieve a Category",
+        "tags": [
+          "Product Categories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateProductCategory",
+        "summary": "Update a Category",
+        "tags": [
+          "Product Categories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateProductCategory"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Unprocessable entity"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteProductCategory",
+        "summary": "Delete a Category",
+        "tags": [
+          "Product Categories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
           }
         }
       }

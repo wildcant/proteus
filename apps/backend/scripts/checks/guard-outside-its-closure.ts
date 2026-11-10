@@ -9,7 +9,11 @@ import type { Check, Violation } from './types.js'
  * The shape stays visible in one place, stated once, rather than being silently tolerated wherever it
  * happens to occur — the same reason a standards exemption is an `ast-grep-ignore` naming its rule.
  */
-const ALLOWED: Record<string, string> = {}
+const ALLOWED: Record<string, string> = {
+  'product_category.parent_id':
+    'A Category with live children must not be deleted: the refusal is the rule, so a subtree goes leaf-first. ' +
+    'The guard and the guarded table are the same self-referencing table, so no schema split can remove the overlap.',
+}
 
 /**
  * A **guard** is a table whose `on delete restrict` reference refuses another table's deletion; the

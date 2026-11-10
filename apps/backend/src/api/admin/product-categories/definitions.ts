@@ -1,0 +1,65 @@
+import type { RouteDefinition } from '@framework/http/types.js'
+import { Tags } from '@framework/http/types.js'
+import * as categoryByIdRoutes from './[id]/route.js'
+import * as categoryRoutes from './route.js'
+
+export default [
+  {
+    method: 'GET',
+    matcher: '/admin/product-categories',
+    handler: categoryRoutes.GET,
+    permissions: ['product.read'],
+    operationId: 'listProductCategoryTree',
+    summary: 'List the Category tree',
+    tags: [Tags.PRODUCT_CATEGORIES],
+    output: categoryRoutes.GetOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/product-categories',
+    handler: categoryRoutes.POST,
+    input: categoryRoutes.PostInput,
+    permissions: ['product.create'],
+    operationId: 'createProductCategory',
+    summary: 'Create a Category',
+    tags: [Tags.PRODUCT_CATEGORIES],
+    output: categoryRoutes.PostOutput,
+    throws: categoryRoutes.PostThrows,
+  },
+  {
+    method: 'GET',
+    matcher: '/admin/product-categories/:id',
+    handler: categoryByIdRoutes.GET,
+    input: categoryByIdRoutes.GetInput,
+    permissions: ['product.read'],
+    operationId: 'getProductCategory',
+    summary: 'Retrieve a Category',
+    tags: [Tags.PRODUCT_CATEGORIES],
+    output: categoryByIdRoutes.GetOutput,
+    throws: categoryByIdRoutes.GetThrows,
+  },
+  {
+    method: 'PATCH',
+    matcher: '/admin/product-categories/:id',
+    handler: categoryByIdRoutes.PATCH,
+    input: categoryByIdRoutes.PatchInput,
+    permissions: ['product.update'],
+    operationId: 'updateProductCategory',
+    summary: 'Update a Category',
+    tags: [Tags.PRODUCT_CATEGORIES],
+    output: categoryByIdRoutes.PatchOutput,
+    throws: categoryByIdRoutes.PatchThrows,
+  },
+  {
+    method: 'DELETE',
+    matcher: '/admin/product-categories/:id',
+    handler: categoryByIdRoutes.DELETE,
+    input: categoryByIdRoutes.DeleteInput,
+    permissions: ['product.delete'],
+    operationId: 'deleteProductCategory',
+    summary: 'Delete a Category',
+    tags: [Tags.PRODUCT_CATEGORIES],
+    output: categoryByIdRoutes.DeleteOutput,
+    throws: categoryByIdRoutes.DeleteThrows,
+  },
+] satisfies RouteDefinition[]

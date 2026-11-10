@@ -12,6 +12,8 @@ import type {
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
   PickerVariantDTO,
+  ProductCategoryDTO,
+  ProductCategoryTreeNodeDTO,
   ProductDTO,
   ProductImageDTO,
   ProductOptionCombinationDTO,
@@ -27,12 +29,14 @@ import type {
   VariantReconciliationPlanDTO,
 } from './common.js'
 import type {
+  CreateProductCategoryDTO,
   CreateProductDTO,
   CreateProductImageDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductVariantDTO,
   SetProductOptionsDTO,
+  UpdateProductCategoryDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
   UpdateProductVariantDTO,
@@ -164,6 +168,16 @@ export type IProductModuleService = {
     config?: FindConfig<ProductDTO>,
     context?: Context,
   ): Promise<[ProductDTO[], number]>
+
+  // Categories
+  /** Every live Category, nested under its parent, siblings in rank order. */
+  listCategoryTree(context?: Context): Promise<ProductCategoryTreeNodeDTO[]>
+  retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO>
+  /** Places the new Category among its siblings and renumbers the set 0..n-1. */
+  createCategory(data: CreateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO>
+  updateCategory(categoryId: string, data: UpdateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO>
+  /** Refused with `NOT_ALLOWED` while a Category still has live children. */
+  softDeleteCategories(categoryIds: string[], context?: Context): Promise<void>
 
   // Images
   listProductImages(

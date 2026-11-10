@@ -1,6 +1,7 @@
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
 import { productTable } from './models/product.js'
+import { productCategoryTable } from './models/product-category.js'
 import { productImageTable } from './models/product-image.js'
 import { productOptionTable } from './models/product-option.js'
 import { productOptionValueTable } from './models/product-option-value.js'
@@ -10,6 +11,7 @@ import { productVariantTable } from './models/product-variant.js'
 import { productVariantImageTable } from './models/product-variant-image.js'
 import { productVariantOptionTable } from './models/product-variant-option.js'
 import { ProductRepository } from './repositories/product.js'
+import { ProductCategoryRepository } from './repositories/product-category.js'
 import { ProductImageRepository } from './repositories/product-image.js'
 import { ProductOptionRepository } from './repositories/product-option.js'
 import { ProductOptionValueRepository } from './repositories/product-option-value.js'
@@ -29,6 +31,7 @@ export default Module(Modules.PRODUCT, {
     { id: 'product.delete', title: 'Delete products' },
   ],
   models: {
+    productCategoryTable,
     productImageTable,
     productOptionTable,
     productOptionValueTable,
@@ -49,5 +52,6 @@ export default Module(Modules.PRODUCT, {
     productImageRepository: ProductImageRepository,
     productVariantImageRepository: ProductVariantImageRepository,
     productVariantOptionRepository: ProductVariantOptionRepository,
+    productCategoryRepository: ProductCategoryRepository,
   },
 })
