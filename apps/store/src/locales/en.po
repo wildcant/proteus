@@ -286,7 +286,7 @@ msgstr "Close menu"
 msgid "Close search"
 msgstr "Close search"
 
-#: src/routes/__root.tsx:111
+#: src/routes/__root.tsx:133
 msgid "Close toast"
 msgstr "Close toast"
 
@@ -775,7 +775,7 @@ msgstr "Previous"
 msgid "Products"
 msgstr "Products"
 
-#: src/routes/__root.tsx:53
+#: src/routes/__root.tsx:64
 msgid "Proteus — modern storefront powered by TanStack Start"
 msgstr "Proteus — modern storefront powered by TanStack Start"
 

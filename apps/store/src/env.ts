@@ -8,6 +8,11 @@ export const PREFILL_FORMS = import.meta.env.DEV && import.meta.env.MODE !== 'te
 // dialog's portal, so it intercepts clicks on Save and no e2e spec can reach the button.
 export const SHOW_DEVTOOLS = import.meta.env.DEV && import.meta.env.MODE !== 'test'
 
+// Production inlines the stylesheet into the document so the first paint needs no second request;
+// dev links the file instead, so Tailwind's hot updates reach the page. A build-time literal, so
+// the branch not taken folds away.
+export const INLINE_STYLESHEET = !import.meta.env.DEV
+
 // Overridable because which address receives mail depends on the email provider.
 // Signup plus-tags it: that address must not already exist.
 export const DEV_EMAIL = import.meta.env.DEV ? (import.meta.env.VITE_DEV_EMAIL ?? 'delivered@resend.dev') : ''

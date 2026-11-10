@@ -164,21 +164,21 @@ export function readMarketCookie(cookieHeader: string | null): string | undefine
 }
 
 /**
- * The `Set-Cookie` value that persists a market.
+ * The statement that persists a market, run by the page in that market as it is parsed.
  *
- * `HttpOnly` because nothing in the browser reads it — the market a page is showing is in its own
- * URL. `Secure` only over https, or the cookie is dropped on a plain-http development origin.
+ * Written by the document rather than sent as a `Set-Cookie`: the Worker's cache never keeps a
+ * response that sets a cookie, so a page that set one would be rendered afresh for every shopper.
+ * Not `HttpOnly` as a result, which costs nothing — the cookie holds a preference, not a secret.
+ * `Secure` only over https, or the cookie is dropped on a plain-http development origin.
  */
-export function marketCookie(localeCode: string, secure: boolean): string {
-  const attributes = [
+export function marketCookieScript(localeCode: string): string {
+  const cookie = [
     `${MARKET_COOKIE}=${encodeURIComponent(localeCode)}`,
     'Path=/',
     `Max-Age=${MARKET_COOKIE_MAX_AGE}`,
     'SameSite=Lax',
-    'HttpOnly',
-  ]
-  if (secure) attributes.push('Secure')
-  return attributes.join('; ')
+  ].join('; ')
+  return `document.cookie=${JSON.stringify(cookie)}+(location.protocol==='https:'?'; Secure':'');`
 }
 
 /**
