@@ -20,7 +20,14 @@ import {
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
-const productKeys = queryKeysFactory<'products', ListProductsParams>('products')
+/** Exported so a write elsewhere that changes what a product embeds can invalidate it. */
+export const productKeys = queryKeysFactory<'products', ListProductsParams>('products')
+
+/** Who is directly in each Category, by id. Its own factory: the cached value is an id list, not a page. */
+export const categoryMemberKeys = queryKeysFactory<'categoryMembers'>('categoryMembers')
+
+/** The list endpoint's ceiling, which is also the page the member-id walk reads at a time. */
+const MAX_PAGE_SIZE = 100
 
 export const productsListQueryOptions = (params?: ListProductsParams) =>
   queryOptions({
@@ -35,7 +42,27 @@ export const productQueryOptions = (id: string) =>
     queryFn: () => getProduct(id),
   })
 
+/**
+ * Every direct member of a Category, as ids, walked page by page — what the product picker
+ * pre-checks. A Category holds tens of products, so this is a request or two.
+ */
+export const productIdsInCategoryQueryOptions = (categoryId: string) =>
+  queryOptions({
+    queryKey: categoryMemberKeys.detail(categoryId),
+    queryFn: async () => {
+      const ids: string[] = []
+      for (let offset = 0; ; offset += MAX_PAGE_SIZE) {
+        const page = await listProducts({ categoryId, offset, limit: MAX_PAGE_SIZE })
+        ids.push(...page.products.map((product) => product.id))
+        if (offset + MAX_PAGE_SIZE >= page.count) return ids
+      }
+    },
+  })
+
 export const useProducts = (params?: ListProductsParams) => useQuery(productsListQueryOptions(params))
+
+export const useSuspenseProductIdsInCategory = (categoryId: string) =>
+  useSuspenseQuery(productIdsInCategoryQueryOptions(categoryId))
 
 export const useSuspenseProduct = (id: string) => useSuspenseQuery(productQueryOptions(id))
 
@@ -71,6 +98,8 @@ export const useUpdateProduct = (
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+      // `categoryIds` may have moved the product between Categories.
+      queryClient.invalidateQueries({ queryKey: categoryMemberKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {

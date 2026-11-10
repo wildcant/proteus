@@ -5,6 +5,7 @@ import { queryOptions, useMutation, useSuspenseQuery } from '@tanstack/react-que
 import type {
   AdminCreateProductCategory,
   AdminProductCategoryResponse,
+  AdminSetCategoryProducts,
   AdminUpdateProductCategory,
   DeleteResponse,
 } from '#/api/generated/model'
@@ -13,8 +14,10 @@ import {
   deleteProductCategory,
   getProductCategory,
   listProductCategoryTree,
+  setProductCategoryProducts,
   updateProductCategory,
 } from '#/api/generated/product-categories/product-categories'
+import { categoryMemberKeys, productKeys } from '#/features/products/api/products'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -87,11 +90,36 @@ export const useDeleteCategory = (id: string, options?: UseMutationOptions<Delet
     mutationFn: () => deleteProductCategory(id),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
+      // Its memberships go with it, so every product embedding it is stale.
+      queryClient.invalidateQueries({ queryKey: productKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: t`Failed to delete category`, description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+/** Adds then removes direct members. Every product read is refreshed: lists, detail embeds and member ids. */
+export const useSetCategoryProducts = (
+  id: string,
+  options?: UseMutationOptions<AdminProductCategoryResponse, Error, AdminSetCategoryProducts>,
+) => {
+  const { t } = useLingui()
+  const { onSuccess, onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
+    mutationFn: (data: AdminSetCategoryProducts) => setProductCategoryProducts(id, data),
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: productKeys.all })
+      queryClient.invalidateQueries({ queryKey: categoryMemberKeys.detail(id) })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: t`Failed to update the category's products`, description: error.message })
       onError?.(...args)
     },
   })
