@@ -11,6 +11,7 @@ export * from './payment-collections/payment-collections.ts';
 export * from './payment-providers/payment-providers.ts';
 export * from './payments/payments.ts';
 export * from './permissions/permissions.ts';
+export * from './product-categories/product-categories.ts';
 export * from './product-options/product-options.ts';
 export * from './product-variants/product-variants.ts';
 export * from './products/products.ts';

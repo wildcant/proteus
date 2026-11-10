@@ -93,6 +93,13 @@ msgstr "Acceso denegado"
 msgid "Account"
 msgstr "Cuenta"
 
+#: src/features/categories/components/category-tree-list.tsx:48
+#: src/features/categories/components/create-category-form.tsx:60
+#: src/features/categories/components/edit-category-form.tsx:32
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
+msgid "Active"
+msgstr "Activa"
+
 #: src/features/regions/components/region-countries-card.tsx:49
 #: src/features/store/components/store-currencies-card.tsx:51
 msgid "Add"
@@ -247,6 +254,12 @@ msgstr "Ascendente"
 msgid "Assign product images to this variant."
 msgstr "Asigna imágenes del producto a esta variante."
 
+#: src/features/categories/components/create-category-form.tsx:66
+#: src/features/categories/components/edit-category-form.tsx:38
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:76
+msgid "Assignable to products here, never shown on the store."
+msgstr "Se puede asignar a productos aquí, nunca se muestra en la tienda."
+
 #: src/features/regions/components/add-countries-form.tsx:27
 msgid "Assigning a country to this region is what makes it sellable. Only countries no region covers yet are offered."
 msgstr "Asignar un país a esta región es lo que permite vender en él. Solo se ofrecen los países que aún no cubre ninguna región."
@@ -294,6 +307,7 @@ msgstr "bytes"
 
 #: src/features/access-control/components/create-role-form.tsx:52
 #: src/features/access-control/components/edit-role-form.tsx:75
+#: src/features/categories/components/edit-category-form.tsx:45
 #: src/features/customers/components/update-customer-form.tsx:49
 #: src/features/orders/components/order-general-section.tsx:66
 #: src/features/product-options/components/edit-product-option-form.tsx:46
@@ -338,6 +352,12 @@ msgstr "Cancelado"
 #: src/features/access-control/utils/permission-titles.ts:35
 msgid "Capture payments"
 msgstr "Capturar pagos"
+
+#: src/components/layout/use-sidebar-label.ts:14
+#: src/features/categories/components/category-tree-list.tsx:19
+#: src/routes/_authed/_shell/categories/route.tsx:5
+msgid "Categories"
+msgstr "Categorías"
 
 #: src/components/data-table/data-table-ui/filter-bar.tsx:55
 msgid "Clear all"
@@ -406,6 +426,7 @@ msgstr "Países"
 msgid "Country of Origin"
 msgstr "País de origen"
 
+#: src/features/categories/components/category-tree-list.tsx:23
 #: src/features/products/components/product-variant-section.tsx:12
 #: src/features/products/components/variant/create-variant-form.tsx:122
 #: src/routes/_authed/_shell/product-options/index.tsx:25
@@ -433,6 +454,10 @@ msgstr "Crea un rol para gestionar permisos."
 #: src/features/users/components/create-account-form.tsx:51
 msgid "Create account"
 msgstr "Crear cuenta"
+
+#: src/features/categories/components/create-category-form.tsx:33
+msgid "Create Category"
+msgstr "Crear categoría"
 
 #: src/features/access-control/utils/permission-titles.ts:15
 msgid "Create customers"
@@ -525,7 +550,7 @@ msgstr "Cliente"
 msgid "Customer ID"
 msgstr "ID de cliente"
 
-#: src/components/layout/use-sidebar-label.ts:15
+#: src/components/layout/use-sidebar-label.ts:16
 #: src/routes/_authed/_shell/customers/index.tsx:21
 #: src/routes/_authed/_shell/customers/route.tsx:5
 msgid "Customers"
@@ -576,10 +601,16 @@ msgstr "Región predeterminada"
 #: src/features/products/components/variant/variant-row-actions.tsx:26
 #: src/features/users/components/invite-row-actions.tsx:40
 #: src/features/users/components/invite-row-actions.tsx:70
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:45
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:65
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:37
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:58
 msgid "Delete"
 msgstr "Eliminar"
+
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:43
+msgid "Delete category"
+msgstr "Eliminar categoría"
 
 #: src/features/access-control/utils/permission-titles.ts:17
 msgid "Delete customers"
@@ -644,8 +675,11 @@ msgstr "Descendente"
 
 #: src/features/access-control/components/create-role-form.tsx:36
 #: src/features/access-control/components/edit-role-form.tsx:46
+#: src/features/categories/components/create-category-form.tsx:46
+#: src/features/categories/components/edit-category-form.tsx:29
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:36
 #: src/features/products/components/product-general-section.tsx:50
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:71
 msgid "Description"
 msgstr "Descripción"
 
@@ -713,6 +747,10 @@ msgstr "p. ej., Proteus"
 msgid "e.g. Store Manager"
 msgstr "p. ej., Gerente de tienda"
 
+#: src/features/categories/components/create-category-form.tsx:40
+msgid "e.g. Tops"
+msgstr "p. ej. Camisetas"
+
 #: src/features/regions/components/country-locale-select.tsx:68
 msgid "Each country's locale is its storefront's URL segment, and the tag its prices and dates are formatted with. The suggestion is the most common one — change it where it is wrong."
 msgstr "La configuración regional de cada país es el segmento de URL de su tienda y la etiqueta con la que se formatean sus precios y fechas. La sugerencia es la más común; cámbiala donde no sea correcta."
@@ -726,11 +764,16 @@ msgstr "La configuración regional de cada país es el segmento de URL de su tie
 #: src/features/products/components/variant/variant-general-section.tsx:36
 #: src/features/products/components/variant/variant-row-actions.tsx:23
 #: src/features/regions/components/region-row-actions.tsx:23
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:64
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:57
 #: src/routes/_authed/settings/regions/$id/_detail/route.tsx:33
 #: src/routes/_authed/settings/store/route.tsx:63
 msgid "Edit"
 msgstr "Editar"
+
+#: src/features/categories/components/edit-category-form.tsx:22
+msgid "Edit Category"
+msgstr "Editar categoría"
 
 #: src/features/customers/components/update-customer-form.tsx:31
 msgid "Edit Customer"
@@ -870,6 +913,10 @@ msgstr "No se pudo cambiar el idioma"
 msgid "Failed to complete order"
 msgstr "No se pudo completar el pedido"
 
+#: src/features/categories/api/categories.ts:54
+msgid "Failed to create category"
+msgstr "No se pudo crear la categoría"
+
 #: src/features/orders/api/orders.ts:126
 msgid "Failed to create fulfillment"
 msgstr "No se pudo crear la preparación"
@@ -897,6 +944,10 @@ msgstr "No se pudo crear el envío"
 #: src/features/products/api/product-variants.ts:119
 msgid "Failed to create variant"
 msgstr "No se pudo crear la variante"
+
+#: src/features/categories/api/categories.ts:94
+msgid "Failed to delete category"
+msgstr "No se pudo eliminar la categoría"
 
 #: src/features/customers/api/customers.ts:84
 msgid "Failed to delete customer"
@@ -945,6 +996,10 @@ msgstr "No se pudo enviar la invitación"
 #: src/features/product-options/api/product-options.ts:172
 msgid "Failed to set product options"
 msgstr "No se pudieron configurar las opciones del producto"
+
+#: src/features/categories/api/categories.ts:76
+msgid "Failed to update category"
+msgstr "No se pudo actualizar la categoría"
 
 #: src/features/customers/api/customers.ts:64
 msgid "Failed to update customer"
@@ -1015,6 +1070,10 @@ msgstr "Completa tus datos para aceptar la invitación."
 msgid "First name"
 msgstr "Nombre"
 
+#: src/features/categories/components/create-category-form.tsx:55
+msgid "Fixed once the category is created."
+msgstr "No se puede cambiar una vez creada la categoría."
+
 #: src/components/data-table/filters/date-filter.tsx:45
 msgid "From"
 msgstr "Desde"
@@ -1045,10 +1104,14 @@ msgstr "Preparación"
 msgid "GB"
 msgstr "GB"
 
-#: src/components/layout/use-sidebar-label.ts:18
+#: src/components/layout/use-sidebar-label.ts:19
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:23
 msgid "General"
 msgstr "General"
+
+#: src/features/categories/components/create-category-form.tsx:43
+msgid "Generated from the name when blank"
+msgstr "Se genera a partir del nombre si se deja en blanco"
 
 #: src/routes/_public/invite.tsx:37
 msgid "Get started with the admin right away."
@@ -1070,13 +1133,20 @@ msgstr "Ir al inicio de sesión"
 msgid "Go to product option"
 msgstr "Ir a la opción de producto"
 
+#: src/features/categories/components/create-category-form.tsx:36
+msgid "Group products into a tree that shoppers browse."
+msgstr "Agrupa los productos en un árbol que los compradores recorren."
+
 #: src/features/customers/hooks/use-customer-table.tsx:29
 msgid "Guest"
 msgstr "Invitado"
 
+#: src/features/categories/components/create-category-form.tsx:43
+#: src/features/categories/components/edit-category-form.tsx:27
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:33
 #: src/features/products/components/product-general-section.tsx:52
 #: src/features/products/hooks/use-product-table.tsx:29
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:70
 msgid "Handle"
 msgstr "Identificador"
 
@@ -1098,7 +1168,18 @@ msgstr "Imagen no encontrada"
 msgid "Image variants updated successfully"
 msgstr "Variantes de la imagen actualizadas correctamente"
 
-#: src/components/layout/use-sidebar-label.ts:16
+#: src/features/categories/components/category-tree-list.tsx:52
+msgid "Inactive"
+msgstr "Inactiva"
+
+#: src/features/categories/components/category-tree-list.tsx:57
+#: src/features/categories/components/create-category-form.tsx:65
+#: src/features/categories/components/edit-category-form.tsx:37
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:75
+msgid "Internal"
+msgstr "Interna"
+
+#: src/components/layout/use-sidebar-label.ts:17
 #: src/routes/_authed/_shell/inventory/index.tsx:21
 #: src/routes/_authed/_shell/inventory/route.tsx:5
 msgid "Inventory"
@@ -1322,6 +1403,8 @@ msgstr "Código MID"
 #: src/features/access-control/components/create-role-form.tsx:33
 #: src/features/access-control/components/edit-role-form.tsx:41
 #: src/features/access-control/hooks/use-role-table.tsx:22
+#: src/features/categories/components/create-category-form.tsx:40
+#: src/features/categories/components/edit-category-form.tsx:26
 #: src/features/customers/hooks/use-customer-table.tsx:25
 #: src/features/regions/components/create-region-form.tsx:37
 #: src/features/regions/components/edit-region-form.tsx:29
@@ -1342,8 +1425,18 @@ msgstr "Siguiente"
 #: src/components/data-table/config.tsx:19
 #: src/features/products/hooks/use-variant-table.tsx:49
 #: src/features/products/hooks/use-variant-table.tsx:57
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:77
 msgid "No"
 msgstr "No"
+
+#: src/features/categories/components/create-category-form.tsx:54
+msgid "No categories yet."
+msgstr "Aún no hay categorías."
+
+#: src/features/categories/components/category-tree-list.tsx:29
+msgid "No categories yet. Create one to start the tree."
+msgstr "Aún no hay categorías. Crea una para empezar el árbol."
 
 #: src/features/products/components/variant/create-variant-form.tsx:84
 #: src/features/products/components/variant/edit-variant-form.tsx:65
@@ -1535,6 +1628,14 @@ msgstr "No se encontraron variantes"
 msgid "No variants yet"
 msgstr "Aún no hay variantes"
 
+#: src/features/categories/components/create-category-form.tsx:53
+msgid "None — a top-level category"
+msgstr "Ninguna — una categoría de nivel superior"
+
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:38
+msgid "None — top-level"
+msgstr "Ninguna — nivel superior"
+
 #: src/features/inventory/hooks/use-inventory-table.tsx:66
 msgid "Nothing tracked yet"
 msgstr "Aún no hay nada con seguimiento"
@@ -1567,7 +1668,7 @@ msgstr "Opcional"
 msgid "Optional description"
 msgstr "Descripción opcional"
 
-#: src/components/layout/use-sidebar-label.ts:14
+#: src/components/layout/use-sidebar-label.ts:15
 #: src/features/product-options/components/product-option-section.tsx:16
 #: src/routes/_authed/_shell/product-options/index.tsx:24
 #: src/routes/_authed/_shell/product-options/route.tsx:5
@@ -1606,6 +1707,11 @@ msgstr "Monto pendiente"
 #: src/features/orders/components/order-summary-section.tsx:68
 msgid "Paid Total"
 msgstr "Total pagado"
+
+#: src/features/categories/components/create-category-form.tsx:51
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:72
+msgid "Parent"
+msgstr "Categoría superior"
 
 #: src/features/auth/components/login-form.tsx:17
 #: src/features/users/components/create-account-form.tsx:44
@@ -1744,7 +1850,7 @@ msgstr "Publicado"
 msgid "Refund payments"
 msgstr "Reembolsar pagos"
 
-#: src/components/layout/use-sidebar-label.ts:21
+#: src/components/layout/use-sidebar-label.ts:22
 #: src/routes/_authed/settings/regions/index.tsx:24
 #: src/routes/_authed/settings/regions/route.tsx:5
 msgid "Regions"
@@ -1819,7 +1925,7 @@ msgstr "Reenviar invitación"
 msgid "Resend invites"
 msgstr "Reenviar invitaciones"
 
-#: src/components/layout/use-sidebar-label.ts:17
+#: src/components/layout/use-sidebar-label.ts:18
 #: src/routes/_authed/_shell/reservations/index.tsx:21
 #: src/routes/_authed/_shell/reservations/route.tsx:5
 msgid "Reservations"
@@ -1838,7 +1944,7 @@ msgstr "Cantidad reservada"
 msgid "Role \"{name}\" deleted"
 msgstr "Rol \"{name}\" eliminado"
 
-#: src/components/layout/use-sidebar-label.ts:20
+#: src/components/layout/use-sidebar-label.ts:21
 #: src/features/users/components/invite-form.tsx:42
 #: src/features/users/components/user-role-assignment.tsx:43
 #: src/features/users/hooks/use-user-table.tsx:23
@@ -1857,6 +1963,8 @@ msgstr "Los roles definen qué acciones pueden realizar los usuarios. Asigna per
 
 #: src/features/access-control/components/create-role-form.tsx:55
 #: src/features/access-control/components/edit-role-form.tsx:79
+#: src/features/categories/components/create-category-form.tsx:74
+#: src/features/categories/components/edit-category-form.tsx:48
 #: src/features/customers/components/update-customer-form.tsx:52
 #: src/features/product-options/components/create-product-option-form.tsx:51
 #: src/features/product-options/components/edit-product-option-form.tsx:49
@@ -1996,6 +2104,12 @@ msgstr "enviado"
 #: src/features/orders/components/order-summary-section.tsx:61
 msgid "Shipping Subtotal"
 msgstr "Subtotal de envío"
+
+#: src/features/categories/components/create-category-form.tsx:60
+#: src/features/categories/components/edit-category-form.tsx:32
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
+msgid "Shown on the store."
+msgstr "Se muestra en la tienda."
 
 #: src/features/auth/components/login-form.tsx:20
 msgid "Sign in"
@@ -2227,7 +2341,7 @@ msgstr "Las imágenes subidas aparecerán aquí."
 msgid "User"
 msgstr "Usuario"
 
-#: src/components/layout/use-sidebar-label.ts:19
+#: src/components/layout/use-sidebar-label.ts:20
 #: src/features/access-control/hooks/use-role-table.tsx:35
 #: src/routes/_authed/settings/users/index.tsx:22
 #: src/routes/_authed/settings/users/route.tsx:5
@@ -2364,12 +2478,18 @@ msgstr "Ancho"
 #: src/components/data-table/config.tsx:19
 #: src/features/products/hooks/use-variant-table.tsx:48
 #: src/features/products/hooks/use-variant-table.tsx:56
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:77
 msgid "Yes"
 msgstr "Sí"
 
 #: src/features/products/components/create-product-form/product-create-variants-section.tsx:38
 msgid "Yes, this is a product with variants"
 msgstr "Sí, este producto tiene variantes"
+
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:44
+msgid "You are about to delete the category {name}."
+msgstr "Vas a eliminar la categoría {name}."
 
 #: src/components/error/forbidden-page.tsx:14
 msgid "You don't have permission to access this page."

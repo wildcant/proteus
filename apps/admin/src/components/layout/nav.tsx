@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   BoxesIcon,
   ClipboardListIcon,
+  FolderTreeIcon,
   GlobeIcon,
   PackageIcon,
   SettingsIcon,
@@ -21,6 +22,7 @@ export const sidebarIcons: Record<SidebarIcon, LucideIcon> = {
   'shopping-cart': ShoppingCartIcon,
   package: PackageIcon,
   'sliders-horizontal': SlidersHorizontalIcon,
+  'folder-tree': FolderTreeIcon,
   boxes: BoxesIcon,
   'clipboard-list': ClipboardListIcon,
   users: UsersIcon,
