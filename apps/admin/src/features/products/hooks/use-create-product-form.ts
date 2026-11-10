@@ -13,7 +13,7 @@ import { resolveVariantsPayload } from '../components/create-product-form/varian
 export const productCreateFormOpts = formOptions({
   defaultValues: {
     details: { title: '', subtitle: '', handle: '', description: '' },
-    organize: { discountable: true, categoryIds: [], collectionIds: [] },
+    organize: { discountable: true, type: null, categoryIds: [], collectionIds: [] },
     attributes: {
       material: '',
       originCountry: '',
@@ -50,10 +50,12 @@ export function useCreateProductForm(params?: CreateProductFormParams) {
         // Parsing rather than casting also drops the image ids, which only updates accept. The
         // variant half is spread after: it is enumerated rather than typed, so it has no stray
         // keys to strip, and the schema's price pipeline would turn its amounts into BigNumbers.
+        const { type, ...organize } = value.organize
         const payload = {
           ...AdminCreateProduct.omit({ options: true, variants: true }).parse({
             ...value.details,
-            ...value.organize,
+            ...organize,
+            typeId: type?.id,
             ...value.attributes,
             ...resolveMediaPayload(media),
             status,

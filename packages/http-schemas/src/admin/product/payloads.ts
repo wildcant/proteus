@@ -30,6 +30,8 @@ export const AdminCreateProduct = z
     subtitle: shortText.optional(),
     thumbnail: httpUrl.nullable().optional(),
     title: shortText.min(1),
+    /** The product's Product Type. An unknown id answers `NOT_FOUND`. */
+    typeId: entityId.nullable().optional(),
     /**
      * The variants to create alongside the product. Each must name a combination the `options`
      * above can produce; omit for a product that is not sold in variations yet.
@@ -50,6 +52,8 @@ export const AdminUpdateProduct = z
     images: z.array(AdminUpsertProductImage).max(MAX_ITEMS.batch).optional(),
     thumbnail: httpUrl.nullable().optional(),
     title: shortText.min(1).optional(),
+    /** `null` clears the Product Type. An unknown id answers `NOT_FOUND`. */
+    typeId: entityId.nullable().optional(),
   })
   .openapi('AdminUpdateProduct')
 export type AdminUpdateProductBody = z.infer<typeof AdminUpdateProduct>

@@ -17,6 +17,11 @@ type SingleComboboxFieldProps<TItem extends ComboboxOption> = {
   disabled?: boolean
   /** Set when the list is searched server-side, so the query follows what was typed. */
   onInputValueChange?: (query: string) => void
+  /**
+   * Makes the list creatable: "Add <value>" calls this, and the item it resolves to becomes the
+   * choice. Resolve `null` when creating failed and the caller has already said so.
+   */
+  onCreate?: (value: string) => Promise<TItem | null>
   className?: string
   hideLabel?: boolean
 }
@@ -36,6 +41,7 @@ export function SingleComboboxField<TItem extends ComboboxOption>({
   description,
   disabled,
   onInputValueChange,
+  onCreate,
   className,
   hideLabel,
 }: SingleComboboxFieldProps<TItem>) {
@@ -44,6 +50,14 @@ export function SingleComboboxField<TItem extends ComboboxOption>({
   // Not gated on `isTouched`: a required choice is only checked on submit, so someone who never
   // opened the list is exactly who needs to see the message.
   const isInvalid = !field.state.meta.isValid
+  const selected = field.state.value
+  // A just-created item is chosen before the list refetches; offering it keeps its label showing.
+  const options = selected && !items.some((item) => item.id === selected.id) ? [...items, selected] : items
+
+  const handleCreate = async (value: string) => {
+    const created = await onCreate?.(value)
+    if (created) field.handleChange(created)
+  }
 
   return (
     <Field data-invalid={isInvalid} className={className}>
@@ -52,10 +66,11 @@ export function SingleComboboxField<TItem extends ComboboxOption>({
       </FieldLabel>
       <SingleSelectCombobox
         id={id}
-        items={items}
-        value={field.state.value?.id ?? null}
-        onValueChange={(selectedId) => field.handleChange(items.find((item) => item.id === selectedId) ?? null)}
+        items={options}
+        value={selected?.id ?? null}
+        onValueChange={(selectedId) => field.handleChange(options.find((item) => item.id === selectedId) ?? null)}
         onInputValueChange={onInputValueChange}
+        onCreate={onCreate ? handleCreate : undefined}
         disabled={disabled}
         placeholder={placeholder}
         emptyMessage={emptyMessage}

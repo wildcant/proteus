@@ -30,4 +30,9 @@ export interface AdminUpdateProduct {
      * @maxLength 255
      */
   title?: string;
+  /**
+     * @maxLength 64
+     * @nullable
+     */
+  typeId?: string | null;
 }

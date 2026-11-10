@@ -39,7 +39,7 @@ describe('sidebar response contract', () => {
     expect(groups).toHaveLength(1)
     expect(groups.at(0)?.items).toHaveLength(1)
     expect(groups.at(0)?.items.at(0)?.label).toBe('Products')
-    // Categories, Collections and Options sit under Products for anyone who can read products.
+    // Categories, Collections, Types and Options sit under Products for anyone who can read products.
     expect(
       groups
         .at(0)
@@ -48,6 +48,7 @@ describe('sidebar response contract', () => {
     ).toEqual([
       ['/categories', 'folder-tree'],
       ['/collections', 'layers'],
+      ['/product-types', 'shapes'],
       ['/product-options', 'sliders-horizontal'],
     ])
   })

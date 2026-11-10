@@ -3,11 +3,14 @@ import { PaginatedResponse } from '../../common.js'
 import { AdminProductCategory } from '../product-category/entities.js'
 import { AdminProductCollection } from '../product-collection/entities.js'
 import { AdminProductScopedOption } from '../product-option/entities.js'
+import { AdminProductType } from '../product-type/entities.js'
 import { AdminProductVariant } from '../product-variant/entities.js'
 import { AdminProduct, AdminProductImage } from './entities.js'
 
 /** A product with what it is grouped under — every single-product response embeds these. */
 const AdminGroupedProduct = AdminProduct.extend({
+  /** `null` when the product has none, or its Type was deleted. */
+  type: AdminProductType.nullable(),
   categories: z.array(AdminProductCategory),
   collections: z.array(AdminProductCollection),
 }).openapi('AdminGroupedProduct')

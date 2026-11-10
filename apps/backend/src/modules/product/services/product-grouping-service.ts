@@ -1,19 +1,28 @@
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
-import type { FilterableProductCollectionProps, ProductCollectionDTO } from '../../../core/types/product/common.js'
+import type {
+  FilterableProductCollectionProps,
+  FilterableProductTypeProps,
+  ProductCollectionDTO,
+  ProductTypeDTO,
+} from '../../../core/types/product/common.js'
 import type {
   CreateProductCollectionDTO,
+  CreateProductTypeDTO,
   SetCollectionProductsDTO,
   UpdateProductCollectionDTO,
+  UpdateProductTypeDTO,
 } from '../../../core/types/product/mutations.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductCollectionRepository } from '../repositories/product-collection.js'
 import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
+import type { ProductTypeRepository } from '../repositories/product-type.js'
 
 type InjectedDependencies = {
   productCollectionRepository: ProductCollectionRepository
   productProductCollectionRepository: ProductProductCollectionRepository
+  productTypeRepository: ProductTypeRepository
   withTransaction: WithTransaction
 }
 
@@ -25,20 +34,24 @@ type InjectedDependencies = {
  * holds it privately, so the module's public surface stays `IProductModuleService`.
  *
  * Deleting needs no code here: the pivot cascades from the Collection, so the derived soft-delete
- * cascade hides its memberships and leaves the products alone.
+ * cascade hides its memberships and leaves the products alone. A Product Type sits outside the
+ * cascade (`product.type_id` is `set null`), so its products keep the id and read no Type.
  */
 export class ProductGroupingService {
   private productCollectionRepository: ProductCollectionRepository
   private productProductCollectionRepository: ProductProductCollectionRepository
+  private productTypeRepository: ProductTypeRepository
   private withTransaction: WithTransaction
 
   constructor({
     productCollectionRepository,
     productProductCollectionRepository,
+    productTypeRepository,
     withTransaction,
   }: InjectedDependencies) {
     this.productCollectionRepository = productCollectionRepository
     this.productProductCollectionRepository = productProductCollectionRepository
+    this.productTypeRepository = productTypeRepository
     this.withTransaction = withTransaction
   }
 
@@ -152,5 +165,40 @@ export class ProductGroupingService {
     const byProduct = new Map<string, ProductCollectionDTO[]>(productIds.map((productId) => [productId, []]))
     for (const { productId, collection } of rows) byProduct.get(productId)?.push(collection)
     return byProduct
+  }
+
+  // ── Product Types ──────────────────────────────────────────────────────
+
+  async listAndCountTypes(
+    filters?: FilterableProductTypeProps,
+    config?: FindConfig<ProductTypeDTO>,
+    context?: Context,
+  ): Promise<[ProductTypeDTO[], number]> {
+    return this.productTypeRepository.findAndCount(filters, config, context)
+  }
+
+  async retrieveType(typeId: string, context?: Context): Promise<ProductTypeDTO> {
+    return this.productTypeRepository.findByIdOrFail(typeId, undefined, context)
+  }
+
+  async createType(data: CreateProductTypeDTO, context?: Context): Promise<ProductTypeDTO> {
+    return this.withTransaction(context, async (ctx) => this.productTypeRepository.create(data, ctx))
+  }
+
+  async updateType(typeId: string, data: UpdateProductTypeDTO, context?: Context): Promise<ProductTypeDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      if (data.value === undefined) return this.productTypeRepository.findByIdOrFail(typeId, undefined, ctx)
+      return this.productTypeRepository.update(typeId, data, ctx)
+    })
+  }
+
+  async softDeleteTypes(typeIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => this.productTypeRepository.softDelete(typeIds, ctx))
+  }
+
+  /** Every product's live Type in one query. A product with none, or with a deleted one, is absent. */
+  async listTypesOfProducts(productIds: string[], context?: Context): Promise<Map<string, ProductTypeDTO>> {
+    const rows = await this.productTypeRepository.findTypesOfProducts(productIds, context)
+    return new Map(rows.map(({ productId, type }) => [productId, type]))
   }
 }

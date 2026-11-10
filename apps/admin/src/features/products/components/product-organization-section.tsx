@@ -20,6 +20,7 @@ export function ProductOrganizationSection({ product }: { product: AdminGroupedP
           <ActionMenu groups={[{ actions: [{ label: t`Edit`, to: './organization', icon: <PencilIcon /> }] }]} />
         </CardAction>
       </CardHeader>
+      <SectionRow title={t`Type`} value={product.type?.value ?? '-'} />
       <SectionRow title={t`Categories`} value={categories || '-'} />
       <SectionRow title={t`Collections`} value={collections || '-'} />
     </Card>

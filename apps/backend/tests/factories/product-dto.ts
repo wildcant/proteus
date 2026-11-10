@@ -3,6 +3,7 @@ import type {
   CreateProductDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetProductOptionsDTO,
   UpdateProductDTO,
@@ -138,6 +139,14 @@ export function generateUpdateProductVariantDTO(overrides?: Partial<UpdateProduc
     width: faker.number.float({ min: 1, max: 200, fractionDigits: 2 }),
     variantRank: faker.number.int({ min: 0, max: 100 }),
     metadata: metadata(),
+    ...overrides,
+  }
+}
+
+export function generateCreateProductTypeDTO(overrides?: Partial<CreateProductTypeDTO>): CreateProductTypeDTO {
+  return {
+    // Unique among live Types, so two generated values in one test cannot collide.
+    value: `${faker.commerce.product()} ${faker.string.alphanumeric(6)}`,
     ...overrides,
   }
 }

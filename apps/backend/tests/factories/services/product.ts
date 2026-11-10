@@ -11,8 +11,10 @@ import type {
 import type {
   CreateProductDTO,
   CreateProductOptionDTO,
+  CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetProductOptionsDTO,
+  UpdateProductTypeDTO,
   UpdateProductVariantDTO,
   VariantImageInput,
 } from '../../../src/core/types/product/mutations.js'
@@ -20,6 +22,7 @@ import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
   generateCreateProductDTO,
   generateCreateProductOptionDTO,
+  generateCreateProductTypeDTO,
   generateCreateProductVariantDTO,
   generateSetProductOptionsDTO,
   generateUpdateProductVariantDTO,
@@ -59,6 +62,25 @@ export async function createProductOption(container: AppContainer, overrides?: P
   const productService = container.resolve(Modules.PRODUCT)
 
   return productService.createProductOption(generateCreateProductOptionDTO(overrides))
+}
+
+export async function createProductType(container: AppContainer, overrides?: Partial<CreateProductTypeDTO>) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.createType(generateCreateProductTypeDTO(overrides))
+}
+
+export async function updateProductType(container: AppContainer, typeId: string, data: UpdateProductTypeDTO) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.updateType(typeId, data)
+}
+
+/** A soft delete: products keep the id, and read no Type. */
+export async function deleteProductType(container: AppContainer, typeId: string) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  await productService.softDeleteTypes([typeId])
 }
 
 export async function createProductVariants(

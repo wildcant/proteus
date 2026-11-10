@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "Se seleccionó el adaptador de bus de eventos \"{adapter}\", pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createEventBusAdapter`, o fijar `projectConfig.eventBus.adapter` en \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:129
+#: src/routes.ts:131
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
@@ -202,22 +202,22 @@ msgid "Variant(s) not found: {missing}"
 msgstr "Variante(s) no encontrada(s): {missing}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:122
+#: src/workflows/cart/add-to-cart.ts:126
 msgid "Variant \"{variantId}\" has no product"
 msgstr "La variante \"{variantId}\" no tiene producto"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:132
+#: src/workflows/cart/add-to-cart.ts:136
 msgid "Product \"{productId}\" is not available for sale"
 msgstr "El producto \"{productId}\" no está disponible para la venta"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:141
+#: src/workflows/cart/add-to-cart.ts:145
 msgid "Variant \"{variantId}\" has no price in {currencyCode}"
 msgstr "La variante \"{variantId}\" no tiene precio en {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:225
+#: src/workflows/cart/add-to-cart.ts:230
 msgid "Not enough stock to add the requested quantity"
 msgstr "No hay stock suficiente para agregar la cantidad que pediste"
 
@@ -573,17 +573,17 @@ msgid "A category cannot be moved under itself or one of its subcategories"
 msgstr "Una categoría no puede moverse dentro de sí misma ni de una de sus subcategorías"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:303
+#: src/modules/product/services/product-module-service.ts:309
 msgid "Variant creation returned no rows"
 msgstr "La creación de la variante no devolvió filas"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:382
+#: src/modules/product/services/product-module-service.ts:388
 msgid "Variant \"{variantId}\" not found"
 msgstr "No se encontró la variante \"{variantId}\""
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:973
+#: src/modules/product/services/product-module-service.ts:1010
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "Estas opciones no encajan con las variantes del producto: {reasons}. Elimina primero esas variantes o haz el cambio desde el admin, que las mueve por ti."
 

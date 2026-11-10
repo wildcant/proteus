@@ -4,6 +4,7 @@ import { useId } from 'react'
 import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
 import { CategoryPicker } from '#/features/categories/components/category-picker'
 import { useSuspenseAllCollections } from '#/features/collections/api/collections'
+import { useProductTypeOptions } from '#/features/product-types/hooks/use-product-type-options'
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { type GroupRefs, Tab } from './constants'
@@ -17,6 +18,7 @@ export const ProductCreateOrganizeForm = withForm({
     const { t } = useLingui()
     const { data: tree } = useSuspenseCategoryTree()
     const { data: collections } = useSuspenseAllCollections()
+    const { options: typeOptions, createOption: createTypeOption } = useProductTypeOptions()
     const categoriesId = useId()
 
     return (
@@ -34,6 +36,18 @@ export const ProductCreateOrganizeForm = withForm({
                     <f.CheckboxField
                       label={t`Discountable`}
                       description={t`When unchecked, discounts will not apply to this product.`}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="organize.type">
+                  {(field) => (
+                    <field.SingleComboboxField
+                      label={t`Type`}
+                      items={typeOptions}
+                      onCreate={createTypeOption}
+                      placeholder={t`Search or add a type`}
+                      emptyMessage={t`Type to add one.`}
+                      description={t`What the product is, such as T-shirt or Sneakers.`}
                     />
                   )}
                 </form.AppField>
