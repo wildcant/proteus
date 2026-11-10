@@ -18,6 +18,7 @@ import type {
   ProductCategoryDTO,
   ProductCategoryTreeNodeDTO,
   ProductDTO,
+  ProductGroupingsDTO,
   ProductImageDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
@@ -37,6 +38,7 @@ import type {
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductVariantDTO,
+  SetCategoryProductsDTO,
   SetProductOptionsDTO,
   UpdateProductCategoryDTO,
   UpdateProductDTO,
@@ -54,6 +56,7 @@ import type { ProductCategoryRepository } from '../repositories/product-category
 import type { ProductImageRepository } from '../repositories/product-image.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import type { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
 import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import type { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
@@ -79,6 +82,7 @@ type InjectedDependencies = {
   productVariantImageRepository: ProductVariantImageRepository
   productVariantOptionRepository: ProductVariantOptionRepository
   productCategoryRepository: ProductCategoryRepository
+  productProductCategoryRepository: ProductProductCategoryRepository
   withTransaction: WithTransaction
   logger: Logger
 }
@@ -142,7 +146,7 @@ export class ProductModuleService implements IProductModuleService {
     this.logger.debug(`Creating ${data.length} product(s)`)
     return this.withTransaction(context, async (ctx) => {
       const products = await this.productRepository.createMany(
-        data.map(({ images, ...product }) => ({
+        data.map(({ images, categoryIds: _categoryIds, ...product }) => ({
           ...product,
           handle: product.handle ?? toHandle(product.title),
           thumbnail: this.resolveThumbnail(product, images),
@@ -151,9 +155,14 @@ export class ProductModuleService implements IProductModuleService {
       )
 
       await Promise.all(
-        products.map((product, index) => {
-          const images = data[index]?.images
-          return images ? this.replaceProductImages(product.id, images, ctx) : Promise.resolve()
+        products.flatMap((product, index) => {
+          const { images, categoryIds } = data[index] ?? {}
+          return [
+            images ? this.replaceProductImages(product.id, images, ctx) : undefined,
+            categoryIds
+              ? this.productCategoryService.replaceProductCategories(product.id, categoryIds, ctx)
+              : undefined,
+          ]
         }),
       )
 
@@ -162,7 +171,7 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   async updateProducts(productIds: string[], data: UpdateProductDTO, context?: Context): Promise<ProductDTO[]> {
-    const { images, ...productData } = data
+    const { images, categoryIds, ...productData } = data
     return this.withTransaction(context, async (ctx) => {
       const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
       const products = Object.values(changes).some((value) => value !== undefined)
@@ -172,6 +181,13 @@ export class ProductModuleService implements IProductModuleService {
       if (images) {
         await Promise.all(productIds.map((productId) => this.replaceProductImages(productId, images, ctx)))
       }
+      if (categoryIds) {
+        await Promise.all(
+          productIds.map((productId) =>
+            this.productCategoryService.replaceProductCategories(productId, categoryIds, ctx),
+          ),
+        )
+      }
 
       return products
     })
@@ -179,7 +195,7 @@ export class ProductModuleService implements IProductModuleService {
 
   async createProduct(data: CreateProductDTO, context?: Context): Promise<ProductDTO> {
     return this.withTransaction(context, async (ctx) => {
-      const { images, ...product } = data
+      const { images, categoryIds, ...product } = data
       const created = await this.productRepository.create(
         {
           ...product,
@@ -189,12 +205,13 @@ export class ProductModuleService implements IProductModuleService {
         ctx,
       )
       if (images) await this.replaceProductImages(created.id, images, ctx)
+      if (categoryIds) await this.productCategoryService.replaceProductCategories(created.id, categoryIds, ctx)
       return created
     })
   }
 
   async updateProduct(productId: string, data: UpdateProductDTO, context?: Context): Promise<ProductDTO> {
-    const { images, ...productData } = data
+    const { images, categoryIds, ...productData } = data
     return this.withTransaction(context, async (ctx) => {
       const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
       const product = Object.values(changes).some((value) => value !== undefined)
@@ -202,6 +219,7 @@ export class ProductModuleService implements IProductModuleService {
         : await this.productRepository.findByIdOrFail(productId, undefined, ctx)
 
       if (images) await this.replaceProductImages(productId, images, ctx)
+      if (categoryIds) await this.productCategoryService.replaceProductCategories(productId, categoryIds, ctx)
 
       return product
     })
@@ -708,6 +726,26 @@ export class ProductModuleService implements IProductModuleService {
 
   async softDeleteCategories(categoryIds: string[], context?: Context): Promise<void> {
     return this.productCategoryService.softDeleteCategories(categoryIds, context)
+  }
+
+  async setCategoryProducts(
+    categoryId: string,
+    data: SetCategoryProductsDTO,
+    context?: Context,
+  ): Promise<ProductCategoryDTO> {
+    return this.productCategoryService.setCategoryProducts(categoryId, data, context)
+  }
+
+  // ── Groupings ─────────────────────────────────────────────────────────
+
+  /**
+   * The repository joins no relations, so every embed of a product's groupings goes through here:
+   * one query per relation over the whole id list, never one per product.
+   */
+  async listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>> {
+    const unique = [...new Set(productIds)]
+    const categories = await this.productCategoryService.listCategoriesOfProducts(unique, context)
+    return Object.fromEntries(unique.map((productId) => [productId, { categories: categories.get(productId) ?? [] }]))
   }
 
   // ── Variant options ───────────────────────────────────────────────────

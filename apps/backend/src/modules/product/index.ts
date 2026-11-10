@@ -5,6 +5,7 @@ import { productCategoryTable } from './models/product-category.js'
 import { productImageTable } from './models/product-image.js'
 import { productOptionTable } from './models/product-option.js'
 import { productOptionValueTable } from './models/product-option-value.js'
+import { productProductCategoryTable } from './models/product-product-category.js'
 import { productProductOptionTable } from './models/product-product-option.js'
 import { productProductOptionValueTable } from './models/product-product-option-value.js'
 import { productVariantTable } from './models/product-variant.js'
@@ -15,6 +16,7 @@ import { ProductCategoryRepository } from './repositories/product-category.js'
 import { ProductImageRepository } from './repositories/product-image.js'
 import { ProductOptionRepository } from './repositories/product-option.js'
 import { ProductOptionValueRepository } from './repositories/product-option-value.js'
+import { ProductProductCategoryRepository } from './repositories/product-product-category.js'
 import { ProductProductOptionRepository } from './repositories/product-product-option.js'
 import { ProductProductOptionValueRepository } from './repositories/product-product-option-value.js'
 import { ProductVariantRepository } from './repositories/product-variant.js'
@@ -35,6 +37,7 @@ export default Module(Modules.PRODUCT, {
     productImageTable,
     productOptionTable,
     productOptionValueTable,
+    productProductCategoryTable,
     productProductOptionTable,
     productProductOptionValueTable,
     productTable,
@@ -53,5 +56,6 @@ export default Module(Modules.PRODUCT, {
     productVariantImageRepository: ProductVariantImageRepository,
     productVariantOptionRepository: ProductVariantOptionRepository,
     productCategoryRepository: ProductCategoryRepository,
+    productProductCategoryRepository: ProductProductCategoryRepository,
   },
 })

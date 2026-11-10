@@ -104,7 +104,7 @@ msgstr "Account"
 #: src/features/categories/components/category-tree-list.tsx:51
 #: src/features/categories/components/create-category-form.tsx:60
 #: src/features/categories/components/edit-category-form.tsx:32
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
 msgid "Active"
 msgstr "Active"
 
@@ -152,6 +152,10 @@ msgstr "Add media to the product to showcase it in your storefront."
 #: src/features/products/components/variant/edit-variant-media-form.tsx:108
 msgid "Add product images to the variant. To add new images, add them to the product first."
 msgstr "Add product images to the variant. To add new images, add them to the product first."
+
+#: src/features/categories/hooks/use-category-products-table.tsx:37
+msgid "Add products to list them in this category."
+msgstr "Add products to list them in this category."
 
 #: src/features/regions/components/country-locale-select.tsx:49
 msgid "Add the countries included in this region."
@@ -264,7 +268,7 @@ msgstr "Assign product images to this variant."
 
 #: src/features/categories/components/create-category-form.tsx:66
 #: src/features/categories/components/edit-category-form.tsx:38
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:76
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:77
 msgid "Assignable to products here, never shown on the store."
 msgstr "Assignable to products here, never shown on the store."
 
@@ -316,12 +320,14 @@ msgstr "Bytes"
 #: src/features/access-control/components/create-role-form.tsx:52
 #: src/features/access-control/components/edit-role-form.tsx:75
 #: src/features/categories/components/edit-category-form.tsx:45
+#: src/features/categories/components/edit-category-products-form.tsx:43
 #: src/features/customers/components/update-customer-form.tsx:49
 #: src/features/orders/components/order-general-section.tsx:66
 #: src/features/product-options/components/edit-product-option-form.tsx:46
 #: src/features/product-options/components/manage-product-options-form.tsx:64
 #: src/features/products/components/create-product-form/create-product-form.tsx:73
 #: src/features/products/components/edit-product-form.tsx:32
+#: src/features/products/components/edit-product-organization-form.tsx:48
 #: src/features/products/components/media/edit-product-media-form.tsx:40
 #: src/features/products/components/media/manage-image-variants-form.tsx:71
 #: src/features/products/components/variant/create-variant-form.tsx:119
@@ -363,9 +369,20 @@ msgstr "Capture payments"
 
 #: src/components/layout/use-sidebar-label.ts:14
 #: src/features/categories/components/category-tree-list.tsx:19
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:42
+#: src/features/products/components/edit-product-organization-form.tsx:34
+#: src/features/products/components/product-organization-section.tsx:22
 #: src/routes/_authed/_shell/categories/route.tsx:5
 msgid "Categories"
 msgstr "Categories"
+
+#: src/features/categories/components/edit-category-products-form.tsx:33
+msgid "Check a product to add it, uncheck one to remove it."
+msgstr "Check a product to add it, uncheck one to remove it."
+
+#: src/features/categories/components/category-picker.tsx:79
+msgid "Choose categories"
+msgstr "Choose categories"
 
 #: src/components/data-table/data-table-ui/filter-bar.tsx:55
 msgid "Clear all"
@@ -446,6 +463,10 @@ msgstr "Create"
 #: src/features/product-options/components/create-product-option-form.tsx:27
 msgid "Create a new product option with values."
 msgstr "Create a new product option with values."
+
+#: src/features/products/hooks/use-product-picker-table.tsx:43
+msgid "Create a product to add it here."
+msgstr "Create a product to add it here."
 
 #: src/features/store/components/store-region-select.tsx:50
 msgid "Create a region before choosing the one shoppers are served from."
@@ -609,14 +630,14 @@ msgstr "Default region"
 #: src/features/products/components/variant/variant-row-actions.tsx:26
 #: src/features/users/components/invite-row-actions.tsx:40
 #: src/features/users/components/invite-row-actions.tsx:70
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:45
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:65
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:46
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:66
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:37
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:58
 msgid "Delete"
 msgstr "Delete"
 
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:43
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:44
 msgid "Delete category"
 msgstr "Delete category"
 
@@ -687,7 +708,7 @@ msgstr "Descending"
 #: src/features/categories/components/edit-category-form.tsx:29
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:36
 #: src/features/products/components/product-general-section.tsx:50
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:71
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:72
 msgid "Description"
 msgstr "Description"
 
@@ -695,10 +716,14 @@ msgstr "Description"
 msgid "Details"
 msgstr "Details"
 
-#: src/features/products/components/create-product-form/product-create-organize-form.tsx:27
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:33
 #: src/features/products/components/product-general-section.tsx:54
 msgid "Discountable"
 msgstr "Discountable"
+
+#: src/features/categories/components/edit-category-products-form.tsx:46
+msgid "Done"
+msgstr "Done"
 
 #: src/features/notifications/components/notification-item.tsx:36
 msgid "Download file"
@@ -772,11 +797,12 @@ msgstr "Each country's locale is its storefront's URL segment, and the tag its p
 #: src/features/product-options/components/option-row-actions.tsx:48
 #: src/features/products/components/product-attribute-section.tsx:21
 #: src/features/products/components/product-general-section.tsx:44
+#: src/features/products/components/product-organization-section.tsx:19
 #: src/features/products/components/product-row-actions.tsx:21
 #: src/features/products/components/variant/variant-general-section.tsx:36
 #: src/features/products/components/variant/variant-row-actions.tsx:23
 #: src/features/regions/components/region-row-actions.tsx:23
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:64
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:65
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:57
 #: src/routes/_authed/settings/regions/$id/_detail/route.tsx:33
 #: src/routes/_authed/settings/store/route.tsx:63
@@ -812,6 +838,10 @@ msgstr "Edit Locale"
 msgid "Edit Media"
 msgstr "Edit Media"
 
+#: src/features/products/components/edit-product-organization-form.tsx:26
+msgid "Edit Organization"
+msgstr "Edit Organization"
+
 #: src/features/products/components/variant/variant-prices-section.tsx:23
 msgid "Edit prices"
 msgstr "Edit prices"
@@ -825,6 +855,7 @@ msgid "Edit Product Option"
 msgstr "Edit Product Option"
 
 #: src/features/access-control/utils/permission-titles.ts:39
+#: src/features/categories/components/category-products-section.tsx:13
 msgid "Edit products"
 msgstr "Edit products"
 
@@ -925,7 +956,7 @@ msgstr "Failed to change the language"
 msgid "Failed to complete order"
 msgstr "Failed to complete order"
 
-#: src/features/categories/api/categories.ts:56
+#: src/features/categories/api/categories.ts:59
 msgid "Failed to create category"
 msgstr "Failed to create category"
 
@@ -937,7 +968,7 @@ msgstr "Failed to create fulfillment"
 msgid "Failed to create option"
 msgstr "Failed to create option"
 
-#: src/features/products/api/products.ts:56
+#: src/features/products/api/products.ts:83
 msgid "Failed to create product"
 msgstr "Failed to create product"
 
@@ -957,7 +988,7 @@ msgstr "Failed to create shipment"
 msgid "Failed to create variant"
 msgstr "Failed to create variant"
 
-#: src/features/categories/api/categories.ts:137
+#: src/features/categories/api/categories.ts:142
 msgid "Failed to delete category"
 msgstr "Failed to delete category"
 
@@ -973,7 +1004,7 @@ msgstr "Failed to delete invite"
 msgid "Failed to delete option"
 msgstr "Failed to delete option"
 
-#: src/features/products/api/products.ts:96
+#: src/features/products/api/products.ts:125
 msgid "Failed to delete product"
 msgstr "Failed to delete product"
 
@@ -989,7 +1020,7 @@ msgstr "Failed to delete variant"
 msgid "Failed to mark as delivered"
 msgstr "Failed to mark as delivered"
 
-#: src/features/categories/api/categories.ts:119
+#: src/features/categories/api/categories.ts:122
 msgid "Failed to move category"
 msgstr "Failed to move category"
 
@@ -1013,7 +1044,7 @@ msgstr "Failed to send invite"
 msgid "Failed to set product options"
 msgstr "Failed to set product options"
 
-#: src/features/categories/api/categories.ts:78
+#: src/features/categories/api/categories.ts:81
 msgid "Failed to update category"
 msgstr "Failed to update category"
 
@@ -1033,7 +1064,7 @@ msgstr "Failed to update locale"
 msgid "Failed to update option"
 msgstr "Failed to update option"
 
-#: src/features/products/api/products.ts:78
+#: src/features/products/api/products.ts:107
 msgid "Failed to update product"
 msgstr "Failed to update product"
 
@@ -1052,6 +1083,10 @@ msgstr "Failed to update roles"
 #: src/features/store/api/store.ts:69
 msgid "Failed to update store"
 msgstr "Failed to update store"
+
+#: src/features/categories/api/categories.ts:165
+msgid "Failed to update the category's products"
+msgstr "Failed to update the category's products"
 
 #: src/features/products/api/product-variants.ts:145
 msgid "Failed to update variant"
@@ -1162,7 +1197,7 @@ msgstr "Guest"
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:33
 #: src/features/products/components/product-general-section.tsx:52
 #: src/features/products/hooks/use-product-table.tsx:29
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:70
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:71
 msgid "Handle"
 msgstr "Handle"
 
@@ -1184,6 +1219,10 @@ msgstr "Image not found"
 msgid "Image variants updated successfully"
 msgstr "Image variants updated successfully"
 
+#: src/features/categories/components/category-picker.tsx:94
+msgid "in {ancestors}"
+msgstr "in {ancestors}"
+
 #: src/features/categories/components/category-tree-list.tsx:55
 msgid "Inactive"
 msgstr "Inactive"
@@ -1191,7 +1230,7 @@ msgstr "Inactive"
 #: src/features/categories/components/category-tree-list.tsx:60
 #: src/features/categories/components/create-category-form.tsx:65
 #: src/features/categories/components/edit-category-form.tsx:37
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:75
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:76
 msgid "Internal"
 msgstr "Internal"
 
@@ -1449,10 +1488,18 @@ msgstr "Next"
 #: src/components/data-table/config.tsx:19
 #: src/features/products/hooks/use-variant-table.tsx:49
 #: src/features/products/hooks/use-variant-table.tsx:57
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:77
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:78
 msgid "No"
 msgstr "No"
+
+#: src/features/categories/components/category-picker.tsx:90
+msgid "No categories found"
+msgstr "No categories found"
+
+#: src/features/categories/components/category-picker.tsx:114
+msgid "No categories yet"
+msgstr "No categories yet"
 
 #: src/features/categories/components/create-category-form.tsx:54
 msgid "No categories yet."
@@ -1569,6 +1616,7 @@ msgstr "No permissions registered."
 msgid "No product options available. Create one first."
 msgstr "No product options available. Create one first."
 
+#: src/features/categories/hooks/use-category-products-table.tsx:37
 #: src/features/product-options/hooks/use-option-products-table.tsx:38
 msgid "No products"
 msgstr "No products"
@@ -1577,11 +1625,14 @@ msgstr "No products"
 msgid "No products are using this option yet."
 msgstr "No products are using this option yet."
 
+#: src/features/categories/hooks/use-category-products-table.tsx:38
 #: src/features/product-options/hooks/use-option-products-table.tsx:42
+#: src/features/products/hooks/use-product-picker-table.tsx:44
 #: src/features/products/hooks/use-product-table.tsx:71
 msgid "No products found"
 msgstr "No products found"
 
+#: src/features/products/hooks/use-product-picker-table.tsx:43
 #: src/features/products/hooks/use-product-table.tsx:67
 msgid "No products yet"
 msgstr "No products yet"
@@ -1657,7 +1708,7 @@ msgstr "No variants yet"
 msgid "None — a top-level category"
 msgstr "None — a top-level category"
 
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:38
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:39
 msgid "None — top-level"
 msgstr "None — top-level"
 
@@ -1719,9 +1770,13 @@ msgstr "Orders"
 msgid "Orders will appear here once customers complete checkout."
 msgstr "Orders will appear here once customers complete checkout."
 
+#: src/features/products/components/product-organization-section.tsx:16
+msgid "Organization"
+msgstr "Organization"
+
 #: src/features/categories/components/category-tree-list.tsx:23
 #: src/features/products/components/create-product-form/create-product-form.tsx:44
-#: src/features/products/components/create-product-form/product-create-organize-form.tsx:21
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:27
 #: src/routes/_authed/_shell/categories/organize.tsx:8
 msgid "Organize"
 msgstr "Organize"
@@ -1740,7 +1795,7 @@ msgid "Paid Total"
 msgstr "Paid Total"
 
 #: src/features/categories/components/create-category-form.tsx:51
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:72
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
 msgid "Parent"
 msgstr "Parent"
 
@@ -1839,11 +1894,17 @@ msgid "Product variants"
 msgstr "Product variants"
 
 #: src/components/layout/use-sidebar-label.ts:13
+#: src/features/categories/components/category-products-section.tsx:12
+#: src/features/products/components/product-picker.tsx:15
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:76
 #: src/routes/_authed/_shell/products/index.tsx:24
 #: src/routes/_authed/_shell/products/route.tsx:5
 msgid "Products"
 msgstr "Products"
+
+#: src/features/categories/components/edit-category-products-form.tsx:30
+msgid "Products in {categoryName}"
+msgstr "Products in {categoryName}"
 
 #: src/features/store/components/store-currency-row-actions.tsx:41
 msgid "Products will no longer carry a {currencyName} price, and no region will be able to settle in it."
@@ -1915,6 +1976,10 @@ msgstr "Rejected"
 msgid "Remove"
 msgstr "Remove"
 
+#: src/features/categories/components/category-picker.tsx:56
+msgid "Remove {name}"
+msgstr "Remove {name}"
+
 #: src/features/regions/components/region-countries-card.tsx:29
 msgid "Remove countries"
 msgstr "Remove countries"
@@ -1930,6 +1995,10 @@ msgstr "Remove currencies"
 #: src/features/store/components/store-currency-row-actions.tsx:40
 msgid "Remove currency"
 msgstr "Remove currency"
+
+#: src/features/categories/components/category-product-row-actions.tsx:24
+msgid "Remove from category"
+msgstr "Remove from category"
 
 #: src/features/products/components/variant/edit-variant-media-form.tsx:134
 msgid "Remove Selected"
@@ -2005,6 +2074,7 @@ msgstr "Roles define what actions users can perform. Assign permissions to contr
 #: src/features/product-options/components/edit-product-option-form.tsx:49
 #: src/features/product-options/components/manage-product-options-form.tsx:67
 #: src/features/products/components/edit-product-form.tsx:35
+#: src/features/products/components/edit-product-organization-form.tsx:51
 #: src/features/products/components/media/edit-product-media-form.tsx:43
 #: src/features/products/components/media/manage-image-variants-form.tsx:74
 #: src/features/products/components/variant/edit-variant-form.tsx:106
@@ -2035,6 +2105,11 @@ msgstr "Saving will delete variants"
 #: src/features/users/components/user-role-assignment.tsx:56
 msgid "Saving..."
 msgstr "Saving..."
+
+#: src/features/categories/components/category-picker.tsx:85
+#: src/features/categories/components/category-picker.tsx:86
+msgid "Search categories"
+msgstr "Search categories"
 
 #: src/features/products/components/variant/create-variant-form.tsx:83
 #: src/features/products/components/variant/edit-variant-form.tsx:64
@@ -2140,9 +2215,13 @@ msgstr "shipped"
 msgid "Shipping Subtotal"
 msgstr "Shipping Subtotal"
 
+#: src/features/categories/components/category-picker.tsx:158
+msgid "Show categories in {name}"
+msgstr "Show categories in {name}"
+
 #: src/features/categories/components/create-category-form.tsx:60
 #: src/features/categories/components/edit-category-form.tsx:32
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
 msgid "Shown on the store."
 msgstr "Shown on the store."
 
@@ -2169,9 +2248,11 @@ msgstr "Signing in..."
 msgid "SKU"
 msgstr "SKU"
 
+#: src/features/categories/hooks/use-category-products-table.tsx:23
 #: src/features/orders/hooks/use-order-table.tsx:35
 #: src/features/orders/hooks/use-order-table.tsx:54
 #: src/features/product-options/hooks/use-option-products-table.tsx:24
+#: src/features/products/hooks/use-product-picker-table.tsx:26
 #: src/features/products/hooks/use-product-table.tsx:31
 #: src/features/products/hooks/use-product-table.tsx:42
 #: src/features/users/hooks/use-invite-table.tsx:24
@@ -2277,6 +2358,7 @@ msgstr "This ranking will affect the variants' order in your storefront."
 msgid "Thumbnail"
 msgstr "Thumbnail"
 
+#: src/features/categories/hooks/use-category-products-table.tsx:21
 #: src/features/product-options/components/create-product-option-form.tsx:31
 #: src/features/product-options/components/edit-product-option-form.tsx:27
 #: src/features/product-options/hooks/use-product-option-table.tsx:21
@@ -2285,6 +2367,7 @@ msgstr "Thumbnail"
 #: src/features/products/components/variant/create-variant-form.tsx:95
 #: src/features/products/components/variant/edit-variant-form.tsx:47
 #: src/features/products/hooks/use-image-variants-table.tsx:32
+#: src/features/products/hooks/use-product-picker-table.tsx:24
 #: src/features/products/hooks/use-product-table.tsx:28
 #: src/features/products/hooks/use-variant-table.tsx:27
 msgid "Title"
@@ -2333,10 +2416,12 @@ msgid "Try changing your filters."
 msgstr "Try changing your filters."
 
 #: src/features/access-control/hooks/use-role-table.tsx:50
+#: src/features/categories/hooks/use-category-products-table.tsx:38
 #: src/features/product-options/hooks/use-option-products-table.tsx:43
 #: src/features/product-options/hooks/use-option-values-table.tsx:33
 #: src/features/product-options/hooks/use-product-option-table.tsx:41
 #: src/features/products/hooks/use-image-variants-table.tsx:50
+#: src/features/products/hooks/use-product-picker-table.tsx:44
 #: src/features/regions/hooks/use-region-country-table.tsx:58
 #: src/features/regions/hooks/use-region-table.tsx:52
 #: src/features/store/hooks/use-store-currency-table.tsx:73
@@ -2505,9 +2590,13 @@ msgstr "When enabled, the variant can be purchased even when out of stock."
 msgid "When off, a single variant is created, named after the product."
 msgstr "When off, a single variant is created, named after the product."
 
-#: src/features/products/components/create-product-form/product-create-organize-form.tsx:28
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:34
 msgid "When unchecked, discounts will not apply to this product."
 msgstr "When unchecked, discounts will not apply to this product."
+
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:51
+msgid "Where the product is listed on the store."
+msgstr "Where the product is listed on the store."
 
 #: src/features/products/components/create-product-form/product-create-attributes-form.tsx:53
 #: src/features/products/components/product-attribute-section.tsx:28
@@ -2517,8 +2606,8 @@ msgstr "Width"
 #: src/components/data-table/config.tsx:19
 #: src/features/products/hooks/use-variant-table.tsx:48
 #: src/features/products/hooks/use-variant-table.tsx:56
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:77
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:78
 msgid "Yes"
 msgstr "Yes"
 
@@ -2526,7 +2615,7 @@ msgstr "Yes"
 msgid "Yes, this is a product with variants"
 msgstr "Yes, this is a product with variants"
 
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:44
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:45
 msgid "You are about to delete the category {name}."
 msgstr "You are about to delete the category {name}."
 

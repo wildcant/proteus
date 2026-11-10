@@ -8,6 +8,11 @@
 import type { AdminUpdateProductImagesItem } from './adminUpdateProductImagesItem.ts';
 
 export interface AdminUpdateProduct {
+  /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  categoryIds?: string[];
   /** @maxItems 100 */
   images?: AdminUpdateProductImagesItem[];
   /**

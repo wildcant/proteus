@@ -45,6 +45,15 @@ CREATE TABLE "product_option" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
+CREATE TABLE "product_product_category" (
+	"id" text PRIMARY KEY DEFAULT CONCAT('ppcat_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
+	"product_id" text NOT NULL,
+	"category_id" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"deleted_at" timestamp with time zone
+);
+--> statement-breakpoint
 CREATE TABLE "product_product_option_value" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('prodoptval_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"product_product_option_id" text NOT NULL,
@@ -136,6 +145,8 @@ CREATE TABLE "product" (
 ALTER TABLE "product_category" ADD CONSTRAINT "product_category_parent_id_product_category_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."product_category"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_image" ADD CONSTRAINT "product_image_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_option_value" ADD CONSTRAINT "product_option_value_option_id_product_option_id_fk" FOREIGN KEY ("option_id") REFERENCES "public"."product_option"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_product_category" ADD CONSTRAINT "product_product_category_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_product_category" ADD CONSTRAINT "product_product_category_category_id_product_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."product_category"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_product_option_value" ADD CONSTRAINT "product_product_option_value_product_product_option_id_product_product_option_id_fk" FOREIGN KEY ("product_product_option_id") REFERENCES "public"."product_product_option"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_product_option_value" ADD CONSTRAINT "product_product_option_value_option_value_id_product_option_value_id_fk" FOREIGN KEY ("option_value_id") REFERENCES "public"."product_option_value"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_product_option" ADD CONSTRAINT "product_product_option_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -153,6 +164,8 @@ CREATE INDEX "idx_product_image_rank_product_id" ON "product_image" USING btree 
 CREATE INDEX "idx_product_option_value_option_id" ON "product_option_value" USING btree ("option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_option_value_option_id_value" ON "product_option_value" USING btree ("option_id","value") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_option_title" ON "product_option" USING btree ("title") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_product_product_category_product_category" ON "product_product_category" USING btree ("product_id","category_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_product_category_category_id" ON "product_product_category" USING btree ("category_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_product_option_value_product_product_option_id" ON "product_product_option_value" USING btree ("product_product_option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_product_option_value_option_value_id" ON "product_product_option_value" USING btree ("option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_product_option_value_value_once_per_option" ON "product_product_option_value" USING btree ("product_product_option_id","option_value_id") WHERE deleted_at IS NULL;--> statement-breakpoint

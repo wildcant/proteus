@@ -17,7 +17,7 @@ lib/
 
 The two apps register different sets, because they ask for different things: the store has
 `TextField`, `SelectField`, `CheckboxField` and `CountryField`; the admin adds `TextareaField`,
-`SwitchField`, `SingleComboboxField`, `NumberField` and `FileUploadField`.
+`SwitchField`, `SingleComboboxField`, `MultiComboboxField`, `NumberField` and `FileUploadField`.
 
 ## Shape
 

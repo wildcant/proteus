@@ -1,10 +1,16 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
+import { AdminProductCategory } from '../product-category/entities.js'
 import { AdminProductScopedOption } from '../product-option/entities.js'
 import { AdminProductVariant } from '../product-variant/entities.js'
 import { AdminProduct, AdminProductImage } from './entities.js'
 
-const AdminProductDetail = AdminProduct.extend({
+/** A product with what it is grouped under — every single-product response embeds these. */
+const AdminGroupedProduct = AdminProduct.extend({
+  categories: z.array(AdminProductCategory),
+}).openapi('AdminGroupedProduct')
+
+const AdminProductDetail = AdminGroupedProduct.extend({
   options: z.array(AdminProductScopedOption).optional(),
   images: z.array(AdminProductImage).optional(),
 })
@@ -12,10 +18,14 @@ const AdminProductDetail = AdminProduct.extend({
 export const AdminProductResponse = z.object({ product: AdminProductDetail }).openapi('AdminProductResponse')
 export type AdminProductResponse = z.input<typeof AdminProductResponse>
 
-export const AdminCreateProductResponse = z.object({ product: AdminProduct }).openapi('AdminCreateProductResponse')
+export const AdminCreateProductResponse = z
+  .object({ product: AdminGroupedProduct })
+  .openapi('AdminCreateProductResponse')
 export type AdminCreateProductResponse = z.input<typeof AdminCreateProductResponse>
 
-export const AdminUpdateProductResponse = z.object({ product: AdminProduct }).openapi('AdminUpdateProductResponse')
+export const AdminUpdateProductResponse = z
+  .object({ product: AdminGroupedProduct })
+  .openapi('AdminUpdateProductResponse')
 export type AdminUpdateProductResponse = z.input<typeof AdminUpdateProductResponse>
 
 export const AdminProductListResponse = PaginatedResponse.extend({

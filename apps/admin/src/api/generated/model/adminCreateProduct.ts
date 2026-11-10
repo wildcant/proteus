@@ -11,6 +11,11 @@ import type { AdminCreateProductStatus } from './adminCreateProductStatus.ts';
 import type { AdminCreateProductVariant } from './adminCreateProductVariant.ts';
 
 export interface AdminCreateProduct {
+  /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  categoryIds?: string[];
   /** @maxLength 4000 */
   description?: string;
   discountable?: boolean;

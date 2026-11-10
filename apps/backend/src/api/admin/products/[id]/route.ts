@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -13,21 +14,28 @@ export const GetOutput = AdminProductResponse
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)
-  const [product, options, images] = await Promise.all([
+  const [product, options, images, groupings] = await Promise.all([
     productService.retrieveProduct(req.params.id),
     productService.listProductScopedOptions(req.params.id),
     productService.listProductImages({ productId: req.params.id }, { order: { rank: 'ASC' } }),
+    productService.listProductGroupings([req.params.id]),
   ])
-  return { status: 200, json: { product: { ...product, options, images } } }
+  const categories = groupings[req.params.id]?.categories ?? []
+  return { status: 200, json: { product: { ...product, categories, options, images } } }
 }
 
 export const PatchInput = { params: IdParams, body: AdminUpdateProduct }
 export const PatchOutput = AdminUpdateProductResponse
+// updateProduct throws NOT_FOUND from the module for a missing product, and for an unknown id in
+// `categoryIds` through the mapped foreign-key violation
+// ast-grep-ignore: route-declares-unthrown-error
+export const PatchThrows = [ErrorTypes.NOT_FOUND] as const
 
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)
   const product = await productService.updateProduct(req.params.id, req.body)
-  return { status: 200, json: { product } }
+  const groupings = await productService.listProductGroupings([product.id])
+  return { status: 200, json: { product: { ...product, categories: groupings[product.id]?.categories ?? [] } } }
 }
 
 export const DeleteInput = { params: IdParams }

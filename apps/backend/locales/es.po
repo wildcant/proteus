@@ -568,22 +568,22 @@ msgid "Unknown stock location ids: {ids}"
 msgstr "IDs de ubicación de inventario desconocidos: {ids}"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-category-service.ts:110
+#: src/modules/product/services/product-category-service.ts:118
 msgid "A category cannot be moved under itself or one of its subcategories"
 msgstr "Una categoría no puede moverse dentro de sí misma ni de una de sus subcategorías"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:255
+#: src/modules/product/services/product-module-service.ts:273
 msgid "Variant creation returned no rows"
 msgstr "La creación de la variante no devolvió filas"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:334
+#: src/modules/product/services/product-module-service.ts:352
 msgid "Variant \"{variantId}\" not found"
 msgstr "No se encontró la variante \"{variantId}\""
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:859
+#: src/modules/product/services/product-module-service.ts:897
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "Estas opciones no encajan con las variantes del producto: {reasons}. Elimina primero esas variantes o haz el cambio desde el admin, que las mueve por ti."
 

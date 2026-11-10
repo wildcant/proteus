@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -21,10 +22,14 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PostInput = { body: AdminCreateProduct }
 export const PostOutput = AdminCreateProductResponse
-export const PostThrows = [...createProductWorkflow.throws] as const
+// an unknown id in `categoryIds` is a foreign-key violation the module maps to NOT_FOUND
+// ast-grep-ignore: route-declares-unthrown-error
+export const PostThrows = [...createProductWorkflow.throws, ErrorTypes.NOT_FOUND] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
+  const productService = req.scope.resolve(Modules.PRODUCT)
   const { options, variants, ...productData } = req.body
   const product = await createProductWorkflow.run({ product: productData, options, variants })
-  return { status: 201, json: { product } }
+  const groupings = await productService.listProductGroupings([product.id])
+  return { status: 201, json: { product: { ...product, categories: groupings[product.id]?.categories ?? [] } } }
 }

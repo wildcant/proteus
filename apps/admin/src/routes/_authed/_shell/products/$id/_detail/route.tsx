@@ -6,10 +6,11 @@ import { useSuspenseProduct } from '#/features/products/api/products'
 import { ProductMediaSection } from '#/features/products/components/media/product-media-section'
 import { ProductAttributeSection } from '#/features/products/components/product-attribute-section'
 import { ProductGeneralSection } from '#/features/products/components/product-general-section'
+import { ProductOrganizationSection } from '#/features/products/components/product-organization-section'
 import { ProductVariantSection } from '#/features/products/components/product-variant-section'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/_detail')({
-  pendingComponent: () => <TwoColumnPageSkeleton mainSections={1} sidebarSections={1} />,
+  pendingComponent: () => <TwoColumnPageSkeleton mainSections={1} sidebarSections={2} />,
   component: ProductDetailLayout,
 })
 
@@ -26,6 +27,7 @@ function ProductDetailLayout() {
         <ProductVariantSection productId={id} />
       </PageLayout.TwoColumn.Main>
       <PageLayout.TwoColumn.Side>
+        <ProductOrganizationSection product={data.product} />
         <ProductAttributeSection product={data.product} />
       </PageLayout.TwoColumn.Side>
     </PageLayout.TwoColumn>

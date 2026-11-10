@@ -1,4 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro'
+import { Field, FieldDescription, FieldLabel } from '@proteus/ui'
+import { useId } from 'react'
+import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
+import { CategoryPicker } from '#/features/categories/components/category-picker'
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { type GroupRefs, Tab } from './constants'
@@ -10,6 +14,8 @@ export const ProductCreateOrganizeForm = withForm({
   props: { groupRefs: {} as GroupRefs },
   render: function ProductCreateOrganizeForm({ form, groupRefs }) {
     const { t } = useLingui()
+    const { data: tree } = useSuspenseCategoryTree()
+    const categoriesId = useId()
 
     return (
       <form.FormGroup name="organize" validators={{ onSubmit: organizeSchema }}>
@@ -29,6 +35,24 @@ export const ProductCreateOrganizeForm = withForm({
                     />
                   )}
                 </form.AppField>
+                <form.Field name="organize.categoryIds">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel htmlFor={categoriesId}>
+                        <Trans>Categories</Trans>
+                      </FieldLabel>
+                      <CategoryPicker
+                        id={categoriesId}
+                        tree={tree.productCategories}
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                      />
+                      <FieldDescription>
+                        <Trans>Where the product is listed on the store.</Trans>
+                      </FieldDescription>
+                    </Field>
+                  )}
+                </form.Field>
               </div>
             </div>
           </>

@@ -654,6 +654,43 @@ if (existingProducts.length > 0) {
   }
   console.info(`Seeded ${createdProducts.length} products`)
 
+  // --- Category membership ---
+  // Unisex products sit under both Men and Women. Shoes are all unisex.
+  const SHOES = [
+    'high-top-sneakers',
+    'white-leather-sneakers',
+    'grey-leather-sneakers',
+    'canvas-sneakers',
+    'grey-runners',
+  ]
+  const CATEGORY_MEMBERS: Record<string, string[]> = {
+    'mens-tops': ['mens-t-shirt', 'workout-shirt'],
+    'mens-sweatshirts': ['hoodie', 'mens-crewneck'],
+    'mens-bottoms': ['sweatpants', 'shorts'],
+    'mens-shoes': SHOES,
+    'womens-tops': ['womens-t-shirt', 'workout-shirt'],
+    'womens-sweatshirts': ['hoodie', 'womens-crewneck'],
+    'womens-bottoms': ['leggings', 'sweatpants'],
+    'womens-shoes': SHOES,
+  }
+  const categoryTree = await productService.listCategoryTree()
+  const categoryByHandle = new Map(
+    categoryTree.flatMap((root) => [root, ...root.children]).map((category) => [category.handle, category]),
+  )
+  await Promise.all(
+    Object.entries(CATEGORY_MEMBERS).map(([categoryHandle, productHandles]) => {
+      const category = categoryByHandle.get(categoryHandle)
+      if (!category) throw new Error(`Missing seeded category "${categoryHandle}"`)
+      const productIds = productHandles.map((handle) => {
+        const product = productByHandle.get(handle)
+        if (!product) throw new Error(`Missing seeded product "${handle}"`)
+        return product.id
+      })
+      return productService.setCategoryProducts(category.id, { add: productIds })
+    }),
+  )
+  console.info(`Assigned products to ${Object.keys(CATEGORY_MEMBERS).length} categories`)
+
   // --- Options (global) ---
   // Colour ranks follow first appearance in the catalogue, which keeps the swatch order stable.
   const colorValues = [...new Set(CATALOG.flatMap((entry) => Object.keys(entry.colors)))]

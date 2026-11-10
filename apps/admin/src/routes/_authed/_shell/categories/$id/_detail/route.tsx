@@ -12,13 +12,14 @@ import {
   useSuspenseCategory,
   useSuspenseCategoryTree,
 } from '#/features/categories/api/categories'
+import { CategoryProductsSection } from '#/features/categories/components/category-products-section'
 import { flattenCategoryTree } from '#/features/categories/utils/flatten-category-tree'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export const Route = createFileRoute('/_authed/_shell/categories/$id/_detail')({
   // The tree names the parent; the Category itself carries only its id.
   loader: ({ context }) => context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
-  pendingComponent: () => <SingleColumnPageSkeleton sections={1} />,
+  pendingComponent: () => <SingleColumnPageSkeleton sections={2} />,
   component: CategoryDetailLayout,
 })
 
@@ -77,6 +78,7 @@ function CategoryDetailLayout() {
           value={category.isInternal ? t`Yes` : t`No`}
         />
       </Card>
+      <CategoryProductsSection categoryId={id} />
     </PageLayout.SingleColumn>
   )
 }

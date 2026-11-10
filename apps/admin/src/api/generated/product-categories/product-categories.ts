@@ -9,6 +9,7 @@ import type {
   AdminCreateProductCategory,
   AdminProductCategoryResponse,
   AdminProductCategoryTreeResponse,
+  AdminSetCategoryProducts,
   AdminUpdateProductCategory,
   DeleteResponse
 } from '../model';
@@ -78,8 +79,23 @@ export const deleteProductCategory = (
     },
       );
     }
+  /**
+ * @summary Add and remove a Category's products
+ */
+export const setProductCategoryProducts = (
+    id: string,
+    adminSetCategoryProducts?: BodyType<AdminSetCategoryProducts>,
+ ) => {
+      return fetcher<AdminProductCategoryResponse>(
+      {url: `/admin/product-categories/${id}/products`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminSetCategoryProducts
+    },
+      );
+    }
   export type ListProductCategoryTreeResult = NonNullable<Awaited<ReturnType<typeof listProductCategoryTree>>>
 export type CreateProductCategoryResult = NonNullable<Awaited<ReturnType<typeof createProductCategory>>>
 export type GetProductCategoryResult = NonNullable<Awaited<ReturnType<typeof getProductCategory>>>
 export type UpdateProductCategoryResult = NonNullable<Awaited<ReturnType<typeof updateProductCategory>>>
 export type DeleteProductCategoryResult = NonNullable<Awaited<ReturnType<typeof deleteProductCategory>>>
+export type SetProductCategoryProductsResult = NonNullable<Awaited<ReturnType<typeof setProductCategoryProducts>>>

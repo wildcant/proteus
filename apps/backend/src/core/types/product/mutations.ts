@@ -29,6 +29,8 @@ export type CreateProductDTO = {
   externalId?: string | null
   metadata?: Record<string, unknown> | null
   images?: CreateProductImageInput[]
+  /** The product's Categories. */
+  categoryIds?: string[]
 }
 
 export type UpdateProductDTO = {
@@ -51,6 +53,8 @@ export type UpdateProductDTO = {
   externalId?: string | null
   metadata?: Record<string, unknown> | null
   images?: UpsertProductImageInput[]
+  /** Replaces the product's Categories. Absent leaves them alone. */
+  categoryIds?: string[]
 }
 
 export type CreateProductVariantDTO = {
@@ -180,4 +184,10 @@ export type UpdateProductCategoryDTO = {
   rank?: number
   isActive?: boolean
   isInternal?: boolean
+}
+
+/** Applied `add` then `remove`. Adding a member or removing a non-member is a no-op. */
+export type SetCategoryProductsDTO = {
+  add?: string[]
+  remove?: string[]
 }

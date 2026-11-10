@@ -2,13 +2,19 @@ import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { Context } from '../../../core/types/context.js'
 import type { ProductCategoryDTO, ProductCategoryTreeNodeDTO } from '../../../core/types/product/common.js'
-import type { CreateProductCategoryDTO, UpdateProductCategoryDTO } from '../../../core/types/product/mutations.js'
+import type {
+  CreateProductCategoryDTO,
+  SetCategoryProductsDTO,
+  UpdateProductCategoryDTO,
+} from '../../../core/types/product/mutations.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductCategoryRepository } from '../repositories/product-category.js'
+import type { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
 
 type InjectedDependencies = {
   productCategoryRepository: ProductCategoryRepository
+  productProductCategoryRepository: ProductProductCategoryRepository
   withTransaction: WithTransaction
 }
 
@@ -23,10 +29,12 @@ type InjectedDependencies = {
  */
 export class ProductCategoryService {
   private productCategoryRepository: ProductCategoryRepository
+  private productProductCategoryRepository: ProductProductCategoryRepository
   private withTransaction: WithTransaction
 
-  constructor({ productCategoryRepository, withTransaction }: InjectedDependencies) {
+  constructor({ productCategoryRepository, productProductCategoryRepository, withTransaction }: InjectedDependencies) {
     this.productCategoryRepository = productCategoryRepository
+    this.productProductCategoryRepository = productProductCategoryRepository
     this.withTransaction = withTransaction
   }
 
@@ -130,5 +138,76 @@ export class ProductCategoryService {
     const orderedIds = siblings.map((sibling) => sibling.id)
     orderedIds.splice(Math.min(rank ?? orderedIds.length, orderedIds.length), 0, categoryId)
     await this.productCategoryRepository.renumber(orderedIds, context)
+  }
+
+  // ── Membership ─────────────────────────────────────────────────────────
+
+  /**
+   * Adds then removes direct members. A product already in is left alone, and so is one asked to
+   * leave that was never in. An unknown product id is a foreign-key violation, answered `NOT_FOUND`.
+   */
+  async setCategoryProducts(
+    categoryId: string,
+    { add = [], remove = [] }: SetCategoryProductsDTO,
+    context?: Context,
+  ): Promise<ProductCategoryDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      const category = await this.productCategoryRepository.findByIdOrFail(categoryId, undefined, ctx)
+
+      const toAdd = [...new Set(add)]
+      if (toAdd.length > 0) {
+        const members = await this.productProductCategoryRepository.find(
+          { categoryId, productId: toAdd },
+          { select: ['productId'] },
+          ctx,
+        )
+        const memberIds = new Set(members.map((member) => member.productId))
+        await this.productProductCategoryRepository.createMany(
+          toAdd.filter((productId) => !memberIds.has(productId)).map((productId) => ({ productId, categoryId })),
+          ctx,
+        )
+      }
+
+      if (remove.length > 0) {
+        const leaving = await this.productProductCategoryRepository.find(
+          { categoryId, productId: remove },
+          { select: ['id'] },
+          ctx,
+        )
+        await this.productProductCategoryRepository.softDelete(
+          leaving.map((row) => row.id),
+          ctx,
+        )
+      }
+
+      return category
+    })
+  }
+
+  /**
+   * Makes `categoryIds` the product's whole set: soft-deletes the rows it drops, keeps the rest and
+   * creates the new ones — the same diff the product's options use.
+   */
+  async replaceProductCategories(productId: string, categoryIds: string[], context: Context): Promise<void> {
+    const wanted = new Set(categoryIds)
+    const existing = await this.productProductCategoryRepository.find({ productId }, undefined, context)
+    const existingIds = new Set(existing.map((row) => row.categoryId))
+
+    await this.productProductCategoryRepository.softDelete(
+      existing.filter((row) => !wanted.has(row.categoryId)).map((row) => row.id),
+      context,
+    )
+    await this.productProductCategoryRepository.createMany(
+      [...wanted].filter((categoryId) => !existingIds.has(categoryId)).map((categoryId) => ({ productId, categoryId })),
+      context,
+    )
+  }
+
+  /** Every product's live Categories, by name, in one query. A product in none maps to `[]`. */
+  async listCategoriesOfProducts(productIds: string[], context?: Context): Promise<Map<string, ProductCategoryDTO[]>> {
+    const rows = await this.productProductCategoryRepository.findCategoriesOfProducts(productIds, context)
+    const byProduct = new Map<string, ProductCategoryDTO[]>(productIds.map((productId) => [productId, []]))
+    for (const { productId, category } of rows) byProduct.get(productId)?.push(category)
+    return byProduct
   }
 }

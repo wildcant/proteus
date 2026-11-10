@@ -3018,6 +3018,27 @@
           }
         }
       },
+      "AdminSetCategoryProducts": {
+        "type": "object",
+        "properties": {
+          "add": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
+          }
+        }
+      },
       "AdminProductOptionListResponse": {
         "type": "object",
         "properties": {
@@ -3461,16 +3482,45 @@
         "type": "object",
         "properties": {
           "product": {
-            "$ref": "#/components/schemas/AdminProduct"
+            "$ref": "#/components/schemas/AdminGroupedProduct"
           }
         },
         "required": [
           "product"
         ]
       },
+      "AdminGroupedProduct": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AdminProduct"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "categories": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminProductCategory"
+                }
+              }
+            },
+            "required": [
+              "categories"
+            ]
+          }
+        ]
+      },
       "AdminCreateProduct": {
         "type": "object",
         "properties": {
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
+          },
           "description": {
             "type": "string",
             "maxLength": 4000
@@ -3751,7 +3801,7 @@
           "product": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/AdminProduct"
+                "$ref": "#/components/schemas/AdminGroupedProduct"
               },
               {
                 "type": "object",
@@ -3896,7 +3946,7 @@
         "type": "object",
         "properties": {
           "product": {
-            "$ref": "#/components/schemas/AdminProduct"
+            "$ref": "#/components/schemas/AdminGroupedProduct"
           }
         },
         "required": [
@@ -3906,6 +3956,14 @@
       "AdminUpdateProduct": {
         "type": "object",
         "properties": {
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
+          },
           "images": {
             "type": "array",
             "items": {
@@ -9411,6 +9469,61 @@
         }
       }
     },
+    "/admin/product-categories/{id}/products": {
+      "post": {
+        "operationId": "setProductCategoryProducts",
+        "summary": "Add and remove a Category's products",
+        "tags": [
+          "Product Categories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetCategoryProducts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/admin/product-options": {
       "get": {
         "operationId": "listProductOptions",
@@ -9830,6 +9943,24 @@
             "required": false,
             "name": "createdAt",
             "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "categoryId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -10095,6 +10226,24 @@
             "required": false,
             "name": "createdAt",
             "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "categoryId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -10152,6 +10301,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
           }
         }
       }

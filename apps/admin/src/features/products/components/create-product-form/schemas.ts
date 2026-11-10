@@ -11,6 +11,8 @@ export const detailsSchema = AdminCreateProduct.pick({
 
 export const organizeSchema = AdminCreateProduct.pick({
   discountable: true,
+}).extend({
+  categoryIds: z.array(z.string()),
 })
 
 export const attributesSchema = AdminCreateProduct.pick({

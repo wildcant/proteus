@@ -38,6 +38,8 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   status?: ProductStatusType | ProductStatusType[]
   isGiftcard?: boolean
   createdAt?: OperatorMap<Date>
+  /** Direct members of any of these Categories. Not a column: `ProductRepository.extraWhere` applies it. */
+  categoryId?: string | string[]
 }
 
 export type ProductVariantDTO = {
@@ -316,4 +318,9 @@ export type ProductCategoryDTO = {
 /** A Category with its children nested, siblings in rank order. */
 export type ProductCategoryTreeNodeDTO = ProductCategoryDTO & {
   children: ProductCategoryTreeNodeDTO[]
+}
+
+/** What a product is grouped under, read for many products at once. */
+export type ProductGroupingsDTO = {
+  categories: ProductCategoryDTO[]
 }
