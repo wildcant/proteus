@@ -40,6 +40,8 @@ test.describe('Filter by tag', () => {
     await expect(product(tee.title)).toBeVisible()
     await expect(product(boot.title)).toBeVisible()
     await expect(product(sock.title)).toBeHidden()
+    // A repeated key, `?tag=a&tag=b`, rather than a JSON array in one.
+    await expect.poll(() => new URL(page.url()).searchParams.getAll('tag')).toEqual([cotton.value, leather.value])
 
     await chips.getByRole('button', { name: `Remove filter ${cotton.value}` }).click()
     await expect(main.getByText('1 Product', { exact: true })).toBeVisible()
