@@ -7,7 +7,11 @@ import type { DbProvider } from './ports.js'
 
 const als = new AsyncLocalStorage<Database>()
 
-export function createWorkersDbProvider(databaseUrl: string): DbProvider {
+/**
+ * `databaseUrl` is a function because Hyperdrive's connection string can only be read inside a
+ * handler; workerd rejects reading it at module scope, where the provider is built.
+ */
+export function createWorkersDbProvider(databaseUrl: () => string): DbProvider {
   return {
     getDb: () => {
       const db = als.getStore()
@@ -16,7 +20,9 @@ export function createWorkersDbProvider(databaseUrl: string): DbProvider {
     },
 
     async withConnection<T>(fn: () => Promise<T>): Promise<T> {
-      const client = postgres(databaseUrl, { prepare: false })
+      // Prepared statements are what Hyperdrive caches per connection; it warns that `prepare: false`
+      // can hang or fail intermittently behind its pool.
+      const client = postgres(databaseUrl(), { prepare: true })
       const db = drizzle(client, DB_OPTIONS)
       try {
         return await als.run(db, fn)

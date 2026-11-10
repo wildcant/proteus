@@ -3,7 +3,7 @@ import { test } from '@tests/setup/test-extend.js'
 import { createWorkersDbProvider } from '../workers-provider.js'
 
 test.describe('createWorkersDbProvider', () => {
-  const provider = createWorkersDbProvider(env.DATABASE_URL)
+  const provider = createWorkersDbProvider(() => env.DATABASE_URL)
 
   test('getDb throws outside withConnection', ({ expect }) => {
     expect(() => provider.getDb()).toThrow('Called outside withConnection()')

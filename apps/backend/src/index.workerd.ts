@@ -1,10 +1,11 @@
 import { env as bindings } from 'cloudflare:workers'
+import { createWorkersDbProvider } from './core/db/workers-provider.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/container.js'
 import { env } from './env.js'
 import { createCloudflareQueuesConsumer } from './framework/event-bus/cloudflare-queues-adapter.js'
 import { subscriberRegistry } from './framework/event-bus/registry.js'
-import { createWorkerdContainer, dbProvider } from './framework/runtime/container.workerd.js'
+import { createWorkerdContainer } from './framework/runtime/container.workerd.js'
 import { createHonoApp } from './framework/runtime/hono/app.js'
 import { Cron } from './framework/scheduler/kuron/cron.js'
 import { GENERATED_JOBS } from './jobs/registry.gen.js'
@@ -16,7 +17,8 @@ import { prepareRoutes } from './routes.js'
  * cannot be serialised into a string, so it can only be read here, and reading it here is also what
  * keeps `cloudflare:workers` out of every module the node build shares.
  */
-const container = await createWorkerdContainer({ events: bindings.EVENTS })
+const dbProvider = createWorkersDbProvider(() => bindings.HYPERDRIVE.connectionString)
+const container = await createWorkerdContainer({ events: bindings.EVENTS, dbProvider })
 
 const logger: Logger = container.resolve(ContainerRegistrationKeys.LOGGER)
 const routes = prepareRoutes(logger)
