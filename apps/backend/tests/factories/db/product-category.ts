@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
-import { productCategoryTable } from '../../../src/schema.gen.js'
+import { productCategoryTable, productProductCategoryTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 type CreateProductCategory = typeof productCategoryTable.$inferInsert
@@ -42,4 +42,30 @@ export async function createProductCategory(overrides?: Partial<CreateProductCat
 
 export async function deleteProductCategoryById(categoryId: string) {
   await db.delete(productCategoryTable).where(eq(productCategoryTable.id, categoryId))
+}
+
+/**
+ * Puts a product directly in a Category. Deleting either end deletes the row with it — both
+ * references cascade — so disposing the product or the Category is enough on its own.
+ */
+export async function createProductProductCategory({
+  productId,
+  categoryId,
+}: {
+  productId: string
+  categoryId: string
+}) {
+  const result = await db
+    .insert(productProductCategoryTable)
+    .values({ id: `ppcat_${faker.string.alphanumeric(32)}`, productId, categoryId })
+    .returning()
+  const membership = result[0]
+  if (!membership) throw new Error('ProductProductCategory insert returned no rows')
+
+  return {
+    ...membership,
+    [Symbol.asyncDispose]: async () => {
+      await db.delete(productProductCategoryTable).where(eq(productProductCategoryTable.id, membership.id))
+    },
+  }
 }

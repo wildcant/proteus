@@ -20,6 +20,7 @@ import {
   createProductImage,
   createProductOption,
   createProductOptionValue,
+  createProductProductCategory,
   createProductProductOption,
   createProductProductOptionValue,
   createProductVariant,
@@ -227,6 +228,7 @@ export type Factories = {
     productVariantImage: typeof createProductVariantImage
     productOption: typeof createProductOption
     productOptionValue: typeof createProductOptionValue
+    productProductCategory: typeof createProductProductCategory
     productProductOption: typeof createProductProductOption
     productProductOptionValue: typeof createProductProductOptionValue
     productVariantOption: typeof createProductVariantOption
@@ -348,6 +350,7 @@ export function createTest<RoutePath extends string = string>() {
         productVariantImage: createProductVariantImage,
         productOption: createProductOption,
         productOptionValue: createProductOptionValue,
+        productProductCategory: createProductProductCategory,
         productProductOption: createProductProductOption,
         productProductOptionValue: createProductProductOptionValue,
         productVariantOption: createProductVariantOption,

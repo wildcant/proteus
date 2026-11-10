@@ -9,7 +9,7 @@ test.describe('Header', () => {
     // Above lg the rail carries the navigation and there is no hamburger at all
     const header = page.locator('header')
     await expect(header.getByText('Proteus')).toBeVisible()
-    await expect(header.getByRole('link', { name: 'Shop all' })).toBeVisible()
+    await expect(header.getByRole('link', { name: 'Shop all', exact: true })).toBeVisible()
     await expect(header.getByLabel('Search products')).toBeVisible()
     // No `.last()`: the bag is one button at every width now, so a second `aria-label="Cart"`
     // should fail this rather than be silently absorbed.
@@ -47,7 +47,7 @@ test.describe('Header', () => {
 
     const header = page.locator('header')
     await expect(header.getByLabel('Open menu')).toBeVisible()
-    await expect(header.getByRole('link', { name: 'Shop all' })).not.toBeVisible()
+    await expect(header.getByRole('link', { name: 'Shop all', exact: true })).not.toBeVisible()
 
     // The magnifier stands in for the control, which has nowhere to sit at this width, and
     // opens the same panel the desktop button does
@@ -75,13 +75,12 @@ test.describe('Header', () => {
 
     // Side menu carries the expected links. No `Cart` row: the bag is in the header at every
     // width, so the menu does not restate it.
-    await expect(sideMenu.getByText('Home')).toBeVisible()
-    await expect(sideMenu.getByText('Products')).toBeVisible()
-    await expect(sideMenu.getByText('Account')).toBeVisible()
+    await expect(sideMenu.getByRole('link', { name: 'Shop all', exact: true })).toBeVisible()
+    await expect(sideMenu.getByRole('link', { name: 'Account', exact: true })).toBeVisible()
 
     // Following a row closes the menu with no explicit dismissal — a plain <Link> drops the
     // search params, and `modal` is one of them
-    await sideMenu.getByText('Products').click()
+    await sideMenu.getByRole('link', { name: 'Shop all', exact: true }).click()
     await expect(page).toHaveURL('/en-US')
     await expect(sideMenu).not.toBeVisible()
 
