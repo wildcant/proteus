@@ -78,6 +78,8 @@ export * from './storePaymentSessionData.ts';
 export * from './storePaymentSessionMetadata.ts';
 export * from './storePaymentSessionStatus.ts';
 export * from './storeProduct.ts';
+export * from './storeProductCategoryTreeNode.ts';
+export * from './storeProductCategoryTreeResponse.ts';
 export * from './storeProductImage.ts';
 export * from './storeProductListItem.ts';
 export * from './storeProductListResponse.ts';

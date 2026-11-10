@@ -12,6 +12,7 @@ import type {
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
+  ListCategoryTreeDTO,
   PickerVariantDTO,
   ProductCategoryDTO,
   ProductCategoryTreeNodeDTO,
@@ -177,8 +178,11 @@ export type IProductModuleService = {
   ): Promise<[ProductDTO[], number]>
 
   // Categories
-  /** Every live Category, nested under its parent, siblings in rank order. */
-  listCategoryTree(context?: Context): Promise<ProductCategoryTreeNodeDTO[]>
+  /**
+   * Every live Category, nested under its parent, siblings in rank order. `visibleOnly` keeps the
+   * Visible ones — active, not internal, every ancestor visible.
+   */
+  listCategoryTree(filters?: ListCategoryTreeDTO, context?: Context): Promise<ProductCategoryTreeNodeDTO[]>
   retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO>
   /** Places the new Category among its siblings and renumbers the set 0..n-1. */
   createCategory(data: CreateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO>

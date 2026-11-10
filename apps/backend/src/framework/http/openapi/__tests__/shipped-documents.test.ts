@@ -52,6 +52,8 @@ const unauthenticatedOperations = {
     // and a country's name and ISO code are catalogue data, the same as the two product
     // operations beside it here.
     'listStoreCountries',
+    // The navigation every page draws: the Visible Category tree, catalogue data like the rest.
+    'listStoreProductCategoryTree',
     'listStoreProducts',
     'storeAuthLogin',
     'storeAuthSignup',
@@ -66,7 +68,13 @@ const unauthenticatedOperations = {
  */
 const operationsWithoutUnauthorized = {
   admin: ['acceptInvite', 'authRegister', 'authResetPassword'],
-  store: ['authResetPassword', 'getStoreProduct', 'listStoreCountries', 'listStoreProducts'],
+  store: [
+    'authResetPassword',
+    'getStoreProduct',
+    'listStoreCountries',
+    'listStoreProductCategoryTree',
+    'listStoreProducts',
+  ],
 }
 
 test.describe('shipped OpenAPI documents', () => {
