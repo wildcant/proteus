@@ -80,6 +80,45 @@ test.describe('addToCartWorkflow', () => {
     expect(lineItem?.variantTitle).toBe('M / Olive')
   })
 
+  test('snapshots the Product Type’s value, frozen at add time', async ({ service, expect }) => {
+    const cart = await usdCart(service)
+    const type = await service.create.productType(container, { value: 'T-shirt' })
+    const { variant: typed } = await service.create.sellableVariant(container, {
+      product: { typeId: type.id },
+      inventory: { level: { stockedQuantity: 10 } },
+    })
+    const { variant: untyped } = await service.create.sellableVariant(container, {
+      inventory: { level: { stockedQuantity: 10 } },
+    })
+
+    await addToCartWorkflow.run({
+      cartId: cart.id,
+      items: [
+        { variantId: typed.id, quantity: 1 },
+        { variantId: untyped.id, quantity: 1 },
+      ],
+    })
+    const typeOfLine = async (variantId: string) => {
+      const lineItems = await service.read.cartLineItems(container, { cartId: cart.id, variantId })
+      return lineItems.map((lineItem) => lineItem.productType)
+    }
+    expect(await typeOfLine(typed.id)).toEqual(['T-shirt'])
+    expect(await typeOfLine(untyped.id)).toEqual([null])
+
+    // Renaming the Type, then deleting it, never rewrites the line — and a repeat add merges into
+    // the line that already holds the old text.
+    await service.update.productType(container, type.id, { value: 'Tee' })
+    await addToCartWorkflow.run({ cartId: cart.id, items: [{ variantId: typed.id, quantity: 1 }] })
+    await service.update.deletedProductType(container, type.id)
+    expect(await typeOfLine(typed.id)).toEqual(['T-shirt'])
+
+    // A product whose Type was deleted reads none, so a fresh line snapshots null.
+    const fresh = await usdCart(service)
+    await addToCartWorkflow.run({ cartId: fresh.id, items: [{ variantId: typed.id, quantity: 1 }] })
+    const [freshLine] = await service.read.cartLineItems(container, { cartId: fresh.id })
+    expect(freshLine?.productType).toBeNull()
+  })
+
   test('raises the line the cart already holds instead of adding a second', async ({ service, expect }) => {
     const cart = await usdCart(service)
     const { variant } = await service.create.sellableVariant(container, {

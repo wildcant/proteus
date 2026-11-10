@@ -16,8 +16,10 @@ test.beforeEach(async ({ createTestContainer }) => {
 
 test.describe('completeCartWorkflow', () => {
   test('turns the cart into an order, reserves its stock, and locks the cart', async ({ service, expect }) => {
-    const { cart, lineItem, paymentCollection, inventoryItem, inventoryLevel } =
-      await service.create.checkoutReadyCart(container)
+    const { cart, lineItem, paymentCollection, inventoryItem, inventoryLevel } = await service.create.checkoutReadyCart(
+      container,
+      { lineItem: { productType: 'Sneakers' } },
+    )
     assertDefined(paymentCollection)
     assertDefined(inventoryItem)
     assertDefined(inventoryLevel)
@@ -28,7 +30,8 @@ test.describe('completeCartWorkflow', () => {
     expect(order).toMatchObject({ status: 'pending', email: cart.email, currencyCode: cart.currencyCode })
     const [orderLineItem] = await service.read.orderLineItems(container, order.id)
     assertDefined(orderLineItem)
-    expect(orderLineItem).toMatchObject({ title: lineItem.title })
+    // The Product Type snapshot travels from the cart line to the order line.
+    expect(orderLineItem).toMatchObject({ title: lineItem.title, productType: 'Sneakers' })
     expect(await service.read.orderShippingMethods(container, order.id)).toHaveLength(1)
 
     // Both links go out as one batch, order↔cart first so the unique index on `cartId` rejects

@@ -93,7 +93,11 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       }
 
       const productIds = [...new Set(variants.map((variant) => variant.productId))]
-      const products = await productService.listProducts({ id: productIds })
+      // The product rows are flat, so the Type's value comes through the batched groupings read.
+      const [products, groupings] = await Promise.all([
+        productService.listProducts({ id: productIds }),
+        productService.listProductGroupings(productIds),
+      ])
       const productById = new Map(products.map((product) => [product.id, product]))
 
       const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
@@ -146,6 +150,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
         return prepareLineItemData({
           quantity: item.quantity,
           product,
+          productType: groupings[product.id]?.type?.value ?? null,
           variant,
           unitPrice: price.calculatedAmount,
           thumbnail: thumbnails.get(variant.id) ?? null,

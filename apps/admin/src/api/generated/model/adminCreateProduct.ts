@@ -55,6 +55,11 @@ export interface AdminCreateProduct {
      * @maxLength 255
      */
   title: string;
+  /**
+     * @maxLength 64
+     * @nullable
+     */
+  typeId?: string | null;
   /** @maxItems 1000 */
   variants?: AdminCreateProductVariant[];
   /** @nullable */

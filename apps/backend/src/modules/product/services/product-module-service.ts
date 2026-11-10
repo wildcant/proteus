@@ -12,6 +12,7 @@ import type {
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
+  FilterableProductTypeProps,
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
@@ -29,6 +30,7 @@ import type {
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
   ProductScopedOptionDTO,
+  ProductTypeDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
@@ -41,6 +43,7 @@ import type {
   CreateProductImageDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetCategoryProductsDTO,
   SetCollectionProductsDTO,
@@ -49,6 +52,7 @@ import type {
   UpdateProductCollectionDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
+  UpdateProductTypeDTO,
   UpdateProductVariantDTO,
   UpsertProductImageInput,
   UpsertProductVariantDTO,
@@ -67,6 +71,7 @@ import type { ProductProductCategoryRepository } from '../repositories/product-p
 import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
 import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import type { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
+import type { ProductTypeRepository } from '../repositories/product-type.js'
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
 import type { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
 import type { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
@@ -94,6 +99,7 @@ type InjectedDependencies = {
   productProductCategoryRepository: ProductProductCategoryRepository
   productCollectionRepository: ProductCollectionRepository
   productProductCollectionRepository: ProductProductCollectionRepository
+  productTypeRepository: ProductTypeRepository
   withTransaction: WithTransaction
   logger: Logger
 }
@@ -804,6 +810,32 @@ export class ProductModuleService implements IProductModuleService {
     return this.productGroupingService.setCollectionProducts(collectionId, data, context)
   }
 
+  // ── Product Types ─────────────────────────────────────────────────────
+
+  async listAndCountTypes(
+    filters?: FilterableProductTypeProps,
+    config?: FindConfig<ProductTypeDTO>,
+    context?: Context,
+  ): Promise<[ProductTypeDTO[], number]> {
+    return this.productGroupingService.listAndCountTypes(filters, config, context)
+  }
+
+  async retrieveType(typeId: string, context?: Context): Promise<ProductTypeDTO> {
+    return this.productGroupingService.retrieveType(typeId, context)
+  }
+
+  async createType(data: CreateProductTypeDTO, context?: Context): Promise<ProductTypeDTO> {
+    return this.productGroupingService.createType(data, context)
+  }
+
+  async updateType(typeId: string, data: UpdateProductTypeDTO, context?: Context): Promise<ProductTypeDTO> {
+    return this.productGroupingService.updateType(typeId, data, context)
+  }
+
+  async softDeleteTypes(typeIds: string[], context?: Context): Promise<void> {
+    return this.productGroupingService.softDeleteTypes(typeIds, context)
+  }
+
   // ── Groupings ─────────────────────────────────────────────────────────
 
   /**
@@ -812,14 +844,19 @@ export class ProductModuleService implements IProductModuleService {
    */
   async listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>> {
     const unique = [...new Set(productIds)]
-    const [categories, collections] = await Promise.all([
+    const [types, categories, collections] = await Promise.all([
+      this.productGroupingService.listTypesOfProducts(unique, context),
       this.productCategoryService.listCategoriesOfProducts(unique, context),
       this.productGroupingService.listCollectionsOfProducts(unique, context),
     ])
     return Object.fromEntries(
       unique.map((productId) => [
         productId,
-        { categories: categories.get(productId) ?? [], collections: collections.get(productId) ?? [] },
+        {
+          type: types.get(productId) ?? null,
+          categories: categories.get(productId) ?? [],
+          collections: collections.get(productId) ?? [],
+        },
       ]),
     )
   }

@@ -22,7 +22,8 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PostInput = { body: AdminCreateProduct }
 export const PostOutput = AdminCreateProductResponse
-// an unknown id in `categoryIds` or `collectionIds` is a foreign-key violation the module maps to NOT_FOUND
+// an unknown id in `categoryIds`, `collectionIds` or `typeId` is a foreign-key violation the module maps to
+// NOT_FOUND
 // ast-grep-ignore: route-declares-unthrown-error
 export const PostThrows = [...createProductWorkflow.throws, ErrorTypes.NOT_FOUND] as const
 
@@ -31,6 +32,6 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const { options, variants, ...productData } = req.body
   const product = await createProductWorkflow.run({ product: productData, options, variants })
   const groupings = await productService.listProductGroupings([product.id])
-  const { categories = [], collections = [] } = groupings[product.id] ?? {}
-  return { status: 201, json: { product: { ...product, categories, collections } } }
+  const { type = null, categories = [], collections = [] } = groupings[product.id] ?? {}
+  return { status: 201, json: { product: { ...product, type, categories, collections } } }
 }

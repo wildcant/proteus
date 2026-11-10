@@ -14,6 +14,7 @@ export * from './payments/payments.ts';
 export * from './permissions/permissions.ts';
 export * from './product-categories/product-categories.ts';
 export * from './product-options/product-options.ts';
+export * from './product-types/product-types.ts';
 export * from './product-variants/product-variants.ts';
 export * from './products/products.ts';
 export * from './refund-reasons/refund-reasons.ts';

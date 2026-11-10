@@ -9,6 +9,7 @@ import type {
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
+  FilterableProductTypeProps,
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
@@ -26,6 +27,7 @@ import type {
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
   ProductScopedOptionDTO,
+  ProductTypeDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
@@ -39,6 +41,7 @@ import type {
   CreateProductImageDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetCategoryProductsDTO,
   SetCollectionProductsDTO,
@@ -47,6 +50,7 @@ import type {
   UpdateProductCollectionDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
+  UpdateProductTypeDTO,
   UpdateProductVariantDTO,
   UpsertProductVariantDTO,
   VariantImageInput,
@@ -213,6 +217,18 @@ export type IProductModuleService = {
     data: SetCollectionProductsDTO,
     context?: Context,
   ): Promise<ProductCollectionDTO>
+
+  // Product Types
+  listAndCountTypes(
+    filters?: FilterableProductTypeProps,
+    config?: FindConfig<ProductTypeDTO>,
+    context?: Context,
+  ): Promise<[ProductTypeDTO[], number]>
+  retrieveType(typeId: string, context?: Context): Promise<ProductTypeDTO>
+  createType(data: CreateProductTypeDTO, context?: Context): Promise<ProductTypeDTO>
+  updateType(typeId: string, data: UpdateProductTypeDTO, context?: Context): Promise<ProductTypeDTO>
+  /** Allowed while in use: the products keep the id but read no Type, and line snapshots keep the text. */
+  softDeleteTypes(typeIds: string[], context?: Context): Promise<void>
 
   /** Each product's live groupings, keyed by product id — one query per relation over the whole list. */
   listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>>

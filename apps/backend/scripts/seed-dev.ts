@@ -725,6 +725,25 @@ if (existingProducts.length > 0) {
   )
   console.info(`Seeded ${COLLECTIONS.length} collections`)
 
+  // --- Product Types ---
+  const PRODUCT_TYPES: Record<string, string[]> = {
+    'T-shirt': ['mens-t-shirt', 'womens-t-shirt', 'workout-shirt'],
+    Hoodie: ['hoodie'],
+    Crewneck: ['mens-crewneck', 'womens-crewneck'],
+    Sweatpants: ['sweatpants'],
+    Shorts: ['shorts'],
+    Leggings: ['leggings'],
+    Sneakers: ['high-top-sneakers', 'white-leather-sneakers', 'grey-leather-sneakers', 'canvas-sneakers'],
+    'Running Shoes': ['grey-runners'],
+  }
+  await Promise.all(
+    Object.entries(PRODUCT_TYPES).map(async ([value, members]) => {
+      const type = await productService.createType({ value })
+      await productService.updateProducts(members.map(seededProductId), { typeId: type.id })
+    }),
+  )
+  console.info(`Seeded ${Object.keys(PRODUCT_TYPES).length} product types`)
+
   // --- Options (global) ---
   // Colour ranks follow first appearance in the catalogue, which keeps the swatch order stable.
   const colorValues = [...new Set(CATALOG.flatMap((entry) => Object.keys(entry.colors)))]

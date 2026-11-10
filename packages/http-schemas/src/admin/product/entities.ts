@@ -33,6 +33,8 @@ export const AdminProduct = z
     discountable: z.boolean(),
     externalId: z.string().nullable(),
     metadata,
+    /** Can name a deleted Product Type; the embedded `type` is the live one. */
+    typeId: z.string().nullable(),
     ...timestamps.shape,
   })
   .openapi('AdminProduct')

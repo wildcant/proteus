@@ -171,8 +171,10 @@ import {
   createProduct,
   createProductOption,
   createProducts,
+  createProductType,
   createProductVariant,
   createProductVariants,
+  deleteProductType,
   listProductImages,
   listProductOptionsForProduct,
   listProducts,
@@ -180,6 +182,7 @@ import {
   listProductVariants,
   retrieveProductVariant,
   setProductOptions,
+  updateProductType,
   updateProductVariant,
 } from '../factories/services/product.js'
 import { createStockLocation } from '../factories/services/stock-location.js'
@@ -370,6 +373,7 @@ export type Fixtures = {
       product: typeof createProduct
       products: typeof createProducts
       productOption: typeof createProductOption
+      productType: typeof createProductType
       productVariant: typeof createProductVariant
       productVariants: typeof createProductVariants
       variantImages: typeof addImageToVariant
@@ -381,6 +385,8 @@ export type Fixtures = {
     update: {
       inventoryLevel: typeof adjustInventoryLevel
       productOptions: typeof setProductOptions
+      productType: typeof updateProductType
+      deletedProductType: typeof deleteProductType
       productVariant: typeof updateProductVariant
       authIdentity: typeof updateAuthIdentity
       authVerification: typeof updateAuthVerification
@@ -593,6 +599,7 @@ export const test = testBase.extend<Fixtures>({
         product: createProduct,
         products: createProducts,
         productOption: createProductOption,
+        productType: createProductType,
         productVariant: createProductVariant,
         productVariants: createProductVariants,
         variantImages: addImageToVariant,
@@ -604,6 +611,8 @@ export const test = testBase.extend<Fixtures>({
       update: {
         inventoryLevel: adjustInventoryLevel,
         productOptions: setProductOptions,
+        productType: updateProductType,
+        deletedProductType: deleteProductType,
         productVariant: updateProductVariant,
         authIdentity: updateAuthIdentity,
         authVerification: updateAuthVerification,

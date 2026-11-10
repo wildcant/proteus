@@ -26,6 +26,8 @@ export type ProductDTO = {
   discountable: boolean
   externalId: string | null
   metadata: Record<string, unknown> | null
+  /** The product's Product Type. Can name a soft-deleted Type; `listProductGroupings` joins live ones only. */
+  typeId: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -38,6 +40,8 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   status?: ProductStatusType | ProductStatusType[]
   isGiftcard?: boolean
   createdAt?: OperatorMap<Date>
+  /** Products of any of these Product Types. */
+  typeId?: string | string[]
   /** Direct members of any of these Categories. Not a column: `ProductRepository.extraWhere` applies it. */
   categoryId?: string | string[]
   /** Members of any of these Collections. Not a column: `ProductRepository.extraWhere` applies it. */
@@ -349,8 +353,23 @@ export interface FilterableProductCollectionProps extends BaseFilterable<Filtera
   handle?: string | string[]
 }
 
+export type ProductTypeDTO = {
+  id: string
+  value: string
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductTypeProps extends BaseFilterable<FilterableProductTypeProps> {
+  id?: string | string[]
+  value?: string | string[] | OperatorMap<string>
+}
+
 /** What a product is grouped under, read for many products at once. */
 export type ProductGroupingsDTO = {
+  /** `null` when the product has none, or its Type was deleted. */
+  type: ProductTypeDTO | null
   categories: ProductCategoryDTO[]
   collections: ProductCollectionDTO[]
 }
