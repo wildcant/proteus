@@ -16,6 +16,7 @@ import {
   createPrice,
   createPriceSet,
   createProduct,
+  createProductCategory,
   createProductImage,
   createProductOption,
   createProductOptionValue,
@@ -50,6 +51,7 @@ import {
   deletePriceById,
   deletePriceSetById,
   deleteProductById,
+  deleteProductCategoryById,
   deleteProductImageById,
   deleteProductOptionById,
   deleteProductOptionValueById,
@@ -77,6 +79,7 @@ import {
   generatePrice,
   generatePriceSet,
   generateProduct,
+  generateProductCategory,
   generateProductImage,
   generateProductOption,
   generateProductOptionValue,
@@ -181,6 +184,7 @@ export type Factories = {
     role: typeof generateRole
     user: typeof generateUser
     product: typeof generateProduct
+    productCategory: typeof generateProductCategory
     productImage: typeof generateProductImage
     productVariant: typeof generateProductVariant
     productVariantImage: typeof generateProductVariantImage
@@ -217,6 +221,7 @@ export type Factories = {
     role: typeof createRole
     user: typeof createUser
     product: typeof createProduct
+    productCategory: typeof createProductCategory
     productImage: typeof createProductImage
     productVariant: typeof createProductVariant
     productVariantImage: typeof createProductVariantImage
@@ -255,6 +260,7 @@ export type Factories = {
     role: typeof deleteRoleById
     user: typeof deleteUserById
     product: typeof deleteProductById
+    productCategory: typeof deleteProductCategoryById
     productImage: typeof deleteProductImageById
     productVariantImage: typeof deleteProductVariantImageById
     productOption: typeof deleteProductOptionById
@@ -297,6 +303,7 @@ export function createTest<RoutePath extends string = string>() {
         role: generateRole,
         user: generateUser,
         product: generateProduct,
+        productCategory: generateProductCategory,
         productImage: generateProductImage,
         productVariant: generateProductVariant,
         productVariantImage: generateProductVariantImage,
@@ -335,6 +342,7 @@ export function createTest<RoutePath extends string = string>() {
         role: createRole,
         user: createUser,
         product: createProduct,
+        productCategory: createProductCategory,
         productImage: createProductImage,
         productVariant: createProductVariant,
         productVariantImage: createProductVariantImage,
@@ -373,6 +381,7 @@ export function createTest<RoutePath extends string = string>() {
         role: deleteRoleById,
         user: deleteUserById,
         product: deleteProductById,
+        productCategory: deleteProductCategoryById,
         productImage: deleteProductImageById,
         productVariantImage: deleteProductVariantImageById,
         productOption: deleteProductOptionById,

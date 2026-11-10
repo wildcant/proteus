@@ -161,7 +161,7 @@ export type CreateProductCategoryDTO = {
   /** Generated from the name when absent. */
   handle?: string
   description?: string
-  /** Fixed at creation. Absent or null places the Category at the root. */
+  /** Absent or null places the Category at the root. */
   parentId?: string | null
   /** Position among the new siblings. Absent appends. */
   rank?: number
@@ -174,6 +174,10 @@ export type UpdateProductCategoryDTO = {
   name?: string
   handle?: string
   description?: string
+  /** Absent keeps the parent; null moves the Category to the root. */
+  parentId?: string | null
+  /** Position among the siblings it lands in. Absent appends when the parent changes. */
+  rank?: number
   isActive?: boolean
   isInternal?: boolean
 }

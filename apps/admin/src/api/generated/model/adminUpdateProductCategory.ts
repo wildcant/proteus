@@ -19,6 +19,14 @@ export interface AdminUpdateProductCategory {
   handle?: string;
   /** @maxLength 4000 */
   description?: string;
+  /**
+     * @minLength 1
+     * @maxLength 64
+     * @nullable
+     */
+  parentId?: string | null;
+  /** @minimum 0 */
+  rank?: number;
   isActive?: boolean;
   isInternal?: boolean;
 }

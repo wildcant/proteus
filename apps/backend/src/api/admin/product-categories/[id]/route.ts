@@ -22,9 +22,10 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
 export const PatchInput = { params: IdParams, body: AdminUpdateProductCategory }
 export const PatchOutput = AdminProductCategoryResponse
-// updateCategory throws NOT_FOUND (missing Category) and DUPLICATE_ERROR (handle taken) from the module
+// updateCategory throws NOT_FOUND (missing Category or parent), DUPLICATE_ERROR (handle taken) and
+// INVALID_ARGUMENT (moved under itself or a descendant) from the module
 // ast-grep-ignore: route-declares-unthrown-error
-export const PatchThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.DUPLICATE_ERROR] as const
+export const PatchThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.DUPLICATE_ERROR, ErrorTypes.INVALID_ARGUMENT] as const
 
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)

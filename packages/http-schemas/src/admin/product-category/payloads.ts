@@ -7,7 +7,7 @@ export const AdminCreateProductCategory = z
     /** Generated from the name when absent. */
     handle: machineCode.min(1).optional(),
     description: longText.optional(),
-    /** Fixed at creation. Absent or null places the Category at the root. */
+    /** Absent or null places the Category at the root. */
     parentId: entityId.min(1).nullable().optional(),
     /** Position among the new siblings. Absent appends. */
     rank: z.number().int().min(0).optional(),
@@ -22,6 +22,10 @@ export const AdminUpdateProductCategory = z
     name: shortText.min(1).optional(),
     handle: machineCode.min(1).optional(),
     description: longText.optional(),
+    /** Absent keeps the parent; null moves the Category to the root. Never under itself or a descendant. */
+    parentId: entityId.min(1).nullable().optional(),
+    /** Position among the siblings it lands in. Absent appends when the parent changes. */
+    rank: z.number().int().min(0).optional(),
     isActive: z.boolean().optional(),
     isInternal: z.boolean().optional(),
   })

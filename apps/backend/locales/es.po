@@ -568,6 +568,11 @@ msgid "Unknown stock location ids: {ids}"
 msgstr "IDs de ubicación de inventario desconocidos: {ids}"
 
 #. js-lingui-explicit-id
+#: src/modules/product/services/product-category-service.ts:110
+msgid "A category cannot be moved under itself or one of its subcategories"
+msgstr "Una categoría no puede moverse dentro de sí misma ni de una de sus subcategorías"
+
+#. js-lingui-explicit-id
 #: src/modules/product/services/product-module-service.ts:255
 msgid "Variant creation returned no rows"
 msgstr "La creación de la variante no devolvió filas"

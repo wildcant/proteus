@@ -46,6 +46,7 @@ import { Route as AuthedSettingsRolesCreateRouteImport } from './routes/_authed/
 import { Route as AuthedSettingsRegionsCreateRouteImport } from './routes/_authed/settings/regions/create'
 import { Route as AuthedShellProductsCreateRouteImport } from './routes/_authed/_shell/products/create'
 import { Route as AuthedShellProductOptionsCreateRouteImport } from './routes/_authed/_shell/product-options/create'
+import { Route as AuthedShellCategoriesOrganizeRouteImport } from './routes/_authed/_shell/categories/organize'
 import { Route as AuthedShellCategoriesCreateRouteImport } from './routes/_authed/_shell/categories/create'
 import { Route as AuthedSettingsRolesIdRouteRouteImport } from './routes/_authed/settings/roles/$id/route'
 import { Route as AuthedSettingsRegionsIdRouteRouteImport } from './routes/_authed/settings/regions/$id/route'
@@ -288,6 +289,12 @@ const AuthedShellProductOptionsCreateRoute =
     path: '/create',
     getParentRoute: () => AuthedShellProductOptionsRouteRoute,
   } as any)
+const AuthedShellCategoriesOrganizeRoute =
+  AuthedShellCategoriesOrganizeRouteImport.update({
+    id: '/organize',
+    path: '/organize',
+    getParentRoute: () => AuthedShellCategoriesRouteRoute,
+  } as any)
 const AuthedShellCategoriesCreateRoute =
   AuthedShellCategoriesCreateRouteImport.update({
     id: '/create',
@@ -505,6 +512,7 @@ export interface FileRoutesByFullPath {
   '/settings/regions/$id': typeof AuthedSettingsRegionsIdRouteRouteWithChildren
   '/settings/roles/$id': typeof AuthedSettingsRolesIdRouteRoute
   '/categories/create': typeof AuthedShellCategoriesCreateRoute
+  '/categories/organize': typeof AuthedShellCategoriesOrganizeRoute
   '/product-options/create': typeof AuthedShellProductOptionsCreateRoute
   '/products/create': typeof AuthedShellProductsCreateRoute
   '/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
@@ -558,6 +566,7 @@ export interface FileRoutesByTo {
   '/settings/regions/$id': typeof AuthedSettingsRegionsIdDetailIndexRoute
   '/settings/roles/$id': typeof AuthedSettingsRolesIdRouteRoute
   '/categories/create': typeof AuthedShellCategoriesCreateRoute
+  '/categories/organize': typeof AuthedShellCategoriesOrganizeRoute
   '/product-options/create': typeof AuthedShellProductOptionsCreateRoute
   '/products/create': typeof AuthedShellProductsCreateRoute
   '/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
@@ -621,6 +630,7 @@ export interface FileRoutesById {
   '/_authed/settings/regions/$id': typeof AuthedSettingsRegionsIdRouteRouteWithChildren
   '/_authed/settings/roles/$id': typeof AuthedSettingsRolesIdRouteRoute
   '/_authed/_shell/categories/create': typeof AuthedShellCategoriesCreateRoute
+  '/_authed/_shell/categories/organize': typeof AuthedShellCategoriesOrganizeRoute
   '/_authed/_shell/product-options/create': typeof AuthedShellProductOptionsCreateRoute
   '/_authed/_shell/products/create': typeof AuthedShellProductsCreateRoute
   '/_authed/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
@@ -692,6 +702,7 @@ export interface FileRouteTypes {
     | '/settings/regions/$id'
     | '/settings/roles/$id'
     | '/categories/create'
+    | '/categories/organize'
     | '/product-options/create'
     | '/products/create'
     | '/settings/regions/create'
@@ -745,6 +756,7 @@ export interface FileRouteTypes {
     | '/settings/regions/$id'
     | '/settings/roles/$id'
     | '/categories/create'
+    | '/categories/organize'
     | '/product-options/create'
     | '/products/create'
     | '/settings/regions/create'
@@ -807,6 +819,7 @@ export interface FileRouteTypes {
     | '/_authed/settings/regions/$id'
     | '/_authed/settings/roles/$id'
     | '/_authed/_shell/categories/create'
+    | '/_authed/_shell/categories/organize'
     | '/_authed/_shell/product-options/create'
     | '/_authed/_shell/products/create'
     | '/_authed/settings/regions/create'
@@ -1120,6 +1133,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellProductOptionsCreateRouteImport
       parentRoute: typeof AuthedShellProductOptionsRouteRoute
     }
+    '/_authed/_shell/categories/organize': {
+      id: '/_authed/_shell/categories/organize'
+      path: '/organize'
+      fullPath: '/categories/organize'
+      preLoaderRoute: typeof AuthedShellCategoriesOrganizeRouteImport
+      parentRoute: typeof AuthedShellCategoriesRouteRoute
+    }
     '/_authed/_shell/categories/create': {
       id: '/_authed/_shell/categories/create'
       path: '/create'
@@ -1390,6 +1410,7 @@ const AuthedShellCategoriesIdRouteRouteWithChildren =
 interface AuthedShellCategoriesRouteRouteChildren {
   AuthedShellCategoriesIdRouteRoute: typeof AuthedShellCategoriesIdRouteRouteWithChildren
   AuthedShellCategoriesCreateRoute: typeof AuthedShellCategoriesCreateRoute
+  AuthedShellCategoriesOrganizeRoute: typeof AuthedShellCategoriesOrganizeRoute
   AuthedShellCategoriesIndexRoute: typeof AuthedShellCategoriesIndexRoute
 }
 
@@ -1398,6 +1419,7 @@ const AuthedShellCategoriesRouteRouteChildren: AuthedShellCategoriesRouteRouteCh
     AuthedShellCategoriesIdRouteRoute:
       AuthedShellCategoriesIdRouteRouteWithChildren,
     AuthedShellCategoriesCreateRoute: AuthedShellCategoriesCreateRoute,
+    AuthedShellCategoriesOrganizeRoute: AuthedShellCategoriesOrganizeRoute,
     AuthedShellCategoriesIndexRoute: AuthedShellCategoriesIndexRoute,
   }
 
