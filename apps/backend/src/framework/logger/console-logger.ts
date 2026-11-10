@@ -9,14 +9,30 @@ const LOG_LEVELS: Record<string, number> = {
   debug: 4,
 }
 
+/**
+ * workerd prints an Error as its stack alone and drops `cause`. Drizzle wraps every database failure
+ * in `Failed query: …`, so without the chain the log never says why Postgres refused.
+ */
+function formatError(error: Error): string {
+  let text = error.stack ?? `${error.name}: ${error.message}`
+  let cause: unknown = error.cause
+
+  while (cause !== undefined) {
+    text += `\nCaused by: ${cause instanceof Error ? (cause.stack ?? `${cause.name}: ${cause.message}`) : String(cause)}`
+    cause = cause instanceof Error ? cause.cause : undefined
+  }
+
+  return text
+}
+
 export class ConsoleLogger implements Logger {
   #level: string = env.LOG_LEVEL
 
   error(messageOrError: string | Error, error?: Error): void {
     if (typeof messageOrError === 'object' && messageOrError instanceof Error) {
-      console.error(messageOrError)
+      console.error(formatError(messageOrError))
     } else if (error) {
-      console.error(messageOrError, error)
+      console.error(`${messageOrError}: ${formatError(error)}`)
     } else {
       console.error(messageOrError)
     }
