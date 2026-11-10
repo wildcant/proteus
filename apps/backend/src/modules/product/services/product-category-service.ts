@@ -82,9 +82,10 @@ export class ProductCategoryService {
   }
 
   /**
-   * Moves and reorders as well as edits: a `parentId` or a `rank` places the Category by the Rank
-   * rule. No lock is taken — of two concurrent reorders the last write wins, and whatever duplicate
-   * or gap it leaves heals on the next write in that sibling set.
+   * Moves and reorders as well as edits: a new `parentId` or a `rank` places the Category by the Rank
+   * rule. Naming the parent it already has is no move, so without a rank it keeps its place. No lock
+   * is taken — of two concurrent reorders the last write wins, and whatever duplicate or gap it
+   * leaves heals on the next write in that sibling set.
    */
   async updateCategory(
     categoryId: string,
@@ -97,13 +98,14 @@ export class ProductCategoryService {
       if (Object.values(fields).some((value) => value !== undefined)) {
         await this.productCategoryRepository.update(categoryId, fields, transactionContext)
       }
-      if (parentId === undefined && rank === undefined) {
+      const targetParentId = parentId === undefined ? category.parentId : parentId
+      const moves = targetParentId !== category.parentId
+      if (!moves && rank === undefined) {
         return this.productCategoryRepository.findByIdOrFail(categoryId, undefined, transactionContext)
       }
 
-      const targetParentId = parentId === undefined ? category.parentId : parentId
-      if (targetParentId) await this.assertParentOutsideSubtree(categoryId, targetParentId, transactionContext)
-      if (targetParentId !== category.parentId) {
+      if (moves) {
+        if (targetParentId) await this.assertParentOutsideSubtree(categoryId, targetParentId, transactionContext)
         await this.productCategoryRepository.update(categoryId, { parentId: targetParentId }, transactionContext)
       }
       await this.place(categoryId, targetParentId, rank, transactionContext)

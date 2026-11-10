@@ -137,6 +137,13 @@ test.describe('Organize', () => {
       [shoes.id, 0],
       [socks.id, 1],
     ])
+    // Naming the parent it already has is no move: without a rank it keeps its place.
+    await move(shoes.id, { parentId: women.id })
+    tree = await readTree()
+    expect(ranks(tree[2]?.children)).toEqual([
+      [shoes.id, 0],
+      [socks.id, 1],
+    ])
 
     // Under itself, or under its own descendant, would cut the subtree off the tree.
     for (const parentId of [women.id, sneakers.id]) {

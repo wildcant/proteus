@@ -568,7 +568,7 @@ msgid "Unknown stock location ids: {ids}"
 msgstr "IDs de ubicación de inventario desconocidos: {ids}"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-category-service.ts:126
+#: src/modules/product/services/product-category-service.ts:128
 msgid "A category cannot be moved under itself or one of its subcategories"
 msgstr "Una categoría no puede moverse dentro de sí misma ni de una de sus subcategorías"
 
