@@ -17,10 +17,12 @@ import {
   createPriceSet,
   createProduct,
   createProductCategory,
+  createProductCollection,
   createProductImage,
   createProductOption,
   createProductOptionValue,
   createProductProductCategory,
+  createProductProductCollection,
   createProductProductOption,
   createProductProductOptionValue,
   createProductVariant,
@@ -223,12 +225,14 @@ export type Factories = {
     user: typeof createUser
     product: typeof createProduct
     productCategory: typeof createProductCategory
+    productCollection: typeof createProductCollection
     productImage: typeof createProductImage
     productVariant: typeof createProductVariant
     productVariantImage: typeof createProductVariantImage
     productOption: typeof createProductOption
     productOptionValue: typeof createProductOptionValue
     productProductCategory: typeof createProductProductCategory
+    productProductCollection: typeof createProductProductCollection
     productProductOption: typeof createProductProductOption
     productProductOptionValue: typeof createProductProductOptionValue
     productVariantOption: typeof createProductVariantOption
@@ -345,12 +349,14 @@ export function createTest<RoutePath extends string = string>() {
         user: createUser,
         product: createProduct,
         productCategory: createProductCategory,
+        productCollection: createProductCollection,
         productImage: createProductImage,
         productVariant: createProductVariant,
         productVariantImage: createProductVariantImage,
         productOption: createProductOption,
         productOptionValue: createProductOptionValue,
         productProductCategory: createProductProductCategory,
+        productProductCollection: createProductProductCollection,
         productProductOption: createProductProductOption,
         productProductOptionValue: createProductProductOptionValue,
         productVariantOption: createProductVariantOption,
