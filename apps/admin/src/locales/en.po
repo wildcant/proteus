@@ -37,6 +37,14 @@ msgstr "{fileName} is not a supported file type. Supported file types are: {exte
 msgid "{module} — All"
 msgstr "{module} — All"
 
+#: src/features/categories/components/category-organize-tree.tsx:72
+msgid "{name} is over {overName}."
+msgstr "{name} is over {overName}."
+
+#: src/features/categories/components/category-organize-tree.tsx:76
+msgid "{name} was dropped."
+msgstr "{name} was dropped."
+
 #: src/features/regions/components/region-country-row-actions.tsx:38
 msgid "{name} will stop being sold to, and its storefront will no longer resolve."
 msgstr "{name} will stop being sold to, and its storefront will no longer resolve."
@@ -93,7 +101,7 @@ msgstr "Access Denied"
 msgid "Account"
 msgstr "Account"
 
-#: src/features/categories/components/category-tree-list.tsx:48
+#: src/features/categories/components/category-tree-list.tsx:51
 #: src/features/categories/components/create-category-form.tsx:60
 #: src/features/categories/components/edit-category-form.tsx:32
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
@@ -426,7 +434,7 @@ msgstr "Countries"
 msgid "Country of Origin"
 msgstr "Country of Origin"
 
-#: src/features/categories/components/category-tree-list.tsx:23
+#: src/features/categories/components/category-tree-list.tsx:26
 #: src/features/products/components/product-variant-section.tsx:12
 #: src/features/products/components/variant/create-variant-form.tsx:122
 #: src/routes/_authed/_shell/product-options/index.tsx:25
@@ -704,6 +712,10 @@ msgstr "draft"
 msgid "Draft"
 msgstr "Draft"
 
+#: src/features/categories/components/category-organize-tree.tsx:103
+msgid "Drag a category up or down to reorder it, or right and left to move it under another category or out of one. Each move is saved at once."
+msgstr "Drag a category up or down to reorder it, or right and left to move it under another category or out of one. Each move is saved at once."
+
 #: src/features/products/components/media/upload-media-form-item.tsx:19
 msgid "Drag and drop images here or click to upload."
 msgstr "Drag and drop images here or click to upload."
@@ -913,7 +925,7 @@ msgstr "Failed to change the language"
 msgid "Failed to complete order"
 msgstr "Failed to complete order"
 
-#: src/features/categories/api/categories.ts:54
+#: src/features/categories/api/categories.ts:56
 msgid "Failed to create category"
 msgstr "Failed to create category"
 
@@ -945,7 +957,7 @@ msgstr "Failed to create shipment"
 msgid "Failed to create variant"
 msgstr "Failed to create variant"
 
-#: src/features/categories/api/categories.ts:94
+#: src/features/categories/api/categories.ts:137
 msgid "Failed to delete category"
 msgstr "Failed to delete category"
 
@@ -977,6 +989,10 @@ msgstr "Failed to delete variant"
 msgid "Failed to mark as delivered"
 msgstr "Failed to mark as delivered"
 
+#: src/features/categories/api/categories.ts:119
+msgid "Failed to move category"
+msgstr "Failed to move category"
+
 #: src/features/regions/api/countries.ts:136
 msgid "Failed to remove countries"
 msgstr "Failed to remove countries"
@@ -997,7 +1013,7 @@ msgstr "Failed to send invite"
 msgid "Failed to set product options"
 msgstr "Failed to set product options"
 
-#: src/features/categories/api/categories.ts:76
+#: src/features/categories/api/categories.ts:78
 msgid "Failed to update category"
 msgstr "Failed to update category"
 
@@ -1168,11 +1184,11 @@ msgstr "Image not found"
 msgid "Image variants updated successfully"
 msgstr "Image variants updated successfully"
 
-#: src/features/categories/components/category-tree-list.tsx:52
+#: src/features/categories/components/category-tree-list.tsx:55
 msgid "Inactive"
 msgstr "Inactive"
 
-#: src/features/categories/components/category-tree-list.tsx:57
+#: src/features/categories/components/category-tree-list.tsx:60
 #: src/features/categories/components/create-category-form.tsx:65
 #: src/features/categories/components/edit-category-form.tsx:37
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:75
@@ -1400,6 +1416,14 @@ msgstr "Media updated successfully"
 msgid "MID Code"
 msgstr "MID Code"
 
+#: src/features/categories/components/category-organize-tree.tsx:184
+msgid "Move {name}"
+msgstr "Move {name}"
+
+#: src/features/categories/components/category-organize-tree.tsx:80
+msgid "Moving {name} was cancelled."
+msgstr "Moving {name} was cancelled."
+
 #: src/features/access-control/components/create-role-form.tsx:33
 #: src/features/access-control/components/edit-role-form.tsx:41
 #: src/features/access-control/hooks/use-role-table.tsx:22
@@ -1434,7 +1458,8 @@ msgstr "No"
 msgid "No categories yet."
 msgstr "No categories yet."
 
-#: src/features/categories/components/category-tree-list.tsx:29
+#: src/features/categories/components/category-organize-tree.tsx:111
+#: src/features/categories/components/category-tree-list.tsx:32
 msgid "No categories yet. Create one to start the tree."
 msgstr "No categories yet. Create one to start the tree."
 
@@ -1694,10 +1719,16 @@ msgstr "Orders"
 msgid "Orders will appear here once customers complete checkout."
 msgstr "Orders will appear here once customers complete checkout."
 
+#: src/features/categories/components/category-tree-list.tsx:23
 #: src/features/products/components/create-product-form/create-product-form.tsx:44
 #: src/features/products/components/create-product-form/product-create-organize-form.tsx:21
+#: src/routes/_authed/_shell/categories/organize.tsx:8
 msgid "Organize"
 msgstr "Organize"
+
+#: src/features/categories/components/category-organize-tree.tsx:100
+msgid "Organize categories"
+msgstr "Organize categories"
 
 #: src/features/orders/components/order-summary-section.tsx:70
 msgid "Outstanding amount"
@@ -1760,6 +1791,10 @@ msgstr "Pick a combination."
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:59
 msgid "Pick options and values on the Details step to generate the variants."
 msgstr "Pick options and values on the Details step to generate the variants."
+
+#: src/features/categories/components/category-organize-tree.tsx:66
+msgid "Picked up {name}."
+msgstr "Picked up {name}."
 
 #: src/features/inventory/hooks/use-reservation-table.tsx:45
 msgid "Placing an order holds its stock, and the hold shows up here."
@@ -2258,6 +2293,10 @@ msgstr "Title"
 #: src/components/data-table/filters/date-filter.tsx:54
 msgid "To"
 msgstr "To"
+
+#: src/features/categories/components/category-organize-tree.tsx:121
+msgid "To pick up a category, press space or enter. Use the up and down arrow keys to move it, and the left and right arrow keys to change its level. Press space or enter again to drop it, or escape to cancel."
+msgstr "To pick up a category, press space or enter. Use the up and down arrow keys to move it, and the left and right arrow keys to change its level. Press space or enter again to drop it, or escape to cancel."
 
 #: src/features/customers/hooks/use-customer-table.tsx:39
 #: src/features/orders/hooks/use-order-table.tsx:66

@@ -5,6 +5,7 @@ import { queryOptions, useMutation, useSuspenseQuery } from '@tanstack/react-que
 import type {
   AdminCreateProductCategory,
   AdminProductCategoryResponse,
+  AdminProductCategoryTreeResponse,
   AdminUpdateProductCategory,
   DeleteResponse,
 } from '#/api/generated/model'
@@ -15,6 +16,7 @@ import {
   listProductCategoryTree,
   updateProductCategory,
 } from '#/api/generated/product-categories/product-categories'
+import { type CategoryMove, moveCategoryInTree } from '#/features/categories/utils/move-category-in-tree'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -74,6 +76,47 @@ export const useUpdateCategory = (
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: t`Failed to update category`, description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+type MoveContext = { previousTree: AdminProductCategoryTreeResponse | undefined }
+
+/**
+ * A drop on the Organize page. The tree shows the move before the save answers, and goes back to
+ * how it was if the save fails.
+ */
+export const useMoveCategory = (
+  options?: UseMutationOptions<AdminProductCategoryResponse, Error, CategoryMove, MoveContext>,
+) => {
+  const { t } = useLingui()
+  const { onSuccess, onError, ...rest } = options ?? {}
+  const treeKey = categoryTreeQueryOptions().queryKey
+  return useMutation({
+    ...rest,
+    mutationFn: ({ id, parentId, rank }: CategoryMove) => updateProductCategory(id, { parentId, rank }),
+    onMutate: async (move) => {
+      // A refetch landing after this write would overwrite it with the tree from before the move.
+      await queryClient.cancelQueries({ queryKey: treeKey })
+      const previousTree = queryClient.getQueryData(treeKey)
+      if (previousTree) {
+        queryClient.setQueryData(treeKey, {
+          productCategories: moveCategoryInTree(previousTree.productCategories, move),
+        })
+      }
+      return { previousTree }
+    },
+    onSuccess: (...args) => {
+      const [, move] = args
+      queryClient.invalidateQueries({ queryKey: categoryKeys.detail(move.id) })
+      queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error, , context] = args
+      if (context?.previousTree) queryClient.setQueryData(treeKey, context.previousTree)
+      toast.add({ type: 'error', title: t`Failed to move category`, description: error.message })
       onError?.(...args)
     },
   })

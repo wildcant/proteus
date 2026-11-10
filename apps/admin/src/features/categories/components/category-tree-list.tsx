@@ -18,7 +18,10 @@ export function CategoryTreeList({ categories }: { categories: AdminProductCateg
         <CardTitle>
           <Trans>Categories</Trans>
         </CardTitle>
-        <CardAction>
+        <CardAction className="flex items-center gap-x-2">
+          <ButtonLink to="/categories/organize" variant="outline" size="sm">
+            <Trans>Organize</Trans>
+          </ButtonLink>
           <ButtonLink to="/categories/create" variant="outline" size="sm">
             <Trans>Create</Trans>
           </ButtonLink>
