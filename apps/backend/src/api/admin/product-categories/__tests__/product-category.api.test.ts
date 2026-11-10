@@ -59,6 +59,11 @@ test.describe('Category tree', () => {
     const refused = await api.delete<ApiErrorBody>(`/admin/product-categories/${men.id}`)
     expect(refused.status).toBe(400)
     expect(refused.body.type).toBe(ErrorTypes.NOT_ALLOWED)
+    // The admin shows this message to the merchant as it comes, so it names the remedy rather than
+    // the foreign key that refused.
+    expect(refused.body.message).toBe(
+      'A category with subcategories cannot be deleted. Delete or move its subcategories first.',
+    )
 
     const deleted = await api.delete<typeof categoryByIdRoutes.DeleteOutput>(`/admin/product-categories/${tops.id}`)
     expect(deleted.body).toEqual({ id: tops.id, deleted: true })

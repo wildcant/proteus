@@ -28,8 +28,10 @@ type InjectedDependencies = {
  * **Internal to the module**, like `ProductOptionService`: `ProductModuleService` builds it and
  * holds it privately, so the module's public surface stays `IProductModuleService`.
  *
- * Deleting needs no code here. `parent_id` is `on delete restrict`, so the derived soft-delete
- * cascade refuses a Category that still has live children with `NOT_ALLOWED`.
+ * `parent_id` is `on delete restrict`, so the derived soft-delete cascade already refuses a Category
+ * that still has live children with `NOT_ALLOWED`. `softDeleteCategories` asks first only to say so
+ * in the merchant's words: the walker's refusal names the foreign key, and the admin shows the
+ * message as it comes. Product Options ask the same way.
  */
 export class ProductCategoryService {
   private productCategoryRepository: ProductCategoryRepository
@@ -114,9 +116,20 @@ export class ProductCategoryService {
   }
 
   async softDeleteCategories(categoryIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (transactionContext) =>
-      this.productCategoryRepository.softDelete(categoryIds, transactionContext),
-    )
+    return this.withTransaction(context, async (transactionContext) => {
+      const child = await this.productCategoryRepository.findOne(
+        { parentId: categoryIds },
+        { select: ['id'] },
+        transactionContext,
+      )
+      if (child) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: i18n.t('A category with subcategories cannot be deleted. Delete or move its subcategories first.'),
+        })
+      }
+      await this.productCategoryRepository.softDelete(categoryIds, transactionContext)
+    })
   }
 
   /** The parent must exist, and must not be the Category itself or below it — that would cut the subtree loose. */

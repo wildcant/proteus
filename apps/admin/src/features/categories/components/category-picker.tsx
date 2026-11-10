@@ -66,10 +66,12 @@ export function CategoryPicker({ tree, id, 'aria-invalid': ariaInvalid, ...selec
             const row = byId.get(categoryId)
             // A Category deleted since the form was loaded is not in the tree; it is dropped on save.
             if (!row) return null
-            const name = row.category.name
+            // The path, as everywhere a chosen Category is shown: two "Sweatshirts" chips would be
+            // indistinguishable.
+            const name = categoryPath(row)
             return (
               <li key={categoryId}>
-                <Badge variant="secondary" className="gap-1 pr-0.5" title={categoryPath(row)}>
+                <Badge variant="secondary" className="gap-1 pr-0.5">
                   {name}
                   <button
                     type="button"

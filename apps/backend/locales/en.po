@@ -569,6 +569,11 @@ msgstr "Unknown stock location ids: {ids}"
 
 #. js-lingui-explicit-id
 #: src/modules/product/services/product-category-service.ts:128
+msgid "A category with subcategories cannot be deleted. Delete or move its subcategories first."
+msgstr "A category with subcategories cannot be deleted. Delete or move its subcategories first."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-category-service.ts:141
 msgid "A category cannot be moved under itself or one of its subcategories"
 msgstr "A category cannot be moved under itself or one of its subcategories"
 

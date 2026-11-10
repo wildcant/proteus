@@ -569,6 +569,11 @@ msgstr "IDs de ubicación de inventario desconocidos: {ids}"
 
 #. js-lingui-explicit-id
 #: src/modules/product/services/product-category-service.ts:128
+msgid "A category with subcategories cannot be deleted. Delete or move its subcategories first."
+msgstr "Una categoría con subcategorías no se puede eliminar. Elimina o mueve primero sus subcategorías."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-category-service.ts:141
 msgid "A category cannot be moved under itself or one of its subcategories"
 msgstr "Una categoría no puede moverse dentro de sí misma ni de una de sus subcategorías"
 

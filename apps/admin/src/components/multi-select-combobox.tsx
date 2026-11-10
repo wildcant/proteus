@@ -74,9 +74,14 @@ export function MultiSelectCombobox({
         <ComboboxValue>
           {(values: string[]) => (
             <Fragment>
-              {values.map((id: string) => (
-                <ComboboxChip key={id}>{labelOf(id)}</ComboboxChip>
-              ))}
+              {values.map((id: string) => {
+                const name = labelOf(id)
+                return (
+                  <ComboboxChip key={id} removeLabel={t`Remove ${name}`}>
+                    {name}
+                  </ComboboxChip>
+                )
+              })}
               <ComboboxChipsInput placeholder={placeholder} />
             </Fragment>
           )}
