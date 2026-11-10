@@ -5,6 +5,7 @@ import type { AdminGroupedProduct } from '#/api/generated/model'
 import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
 import { CategoryPicker } from '#/features/categories/components/category-picker'
 import { useSuspenseAllCollections } from '#/features/collections/api/collections'
+import { useProductTypeOptions } from '#/features/product-types/hooks/use-product-type-options'
 import { useEditProductOrganizationForm } from '#/features/products/hooks/use-edit-product-organization-form'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
@@ -14,6 +15,7 @@ export function EditProductOrganizationForm({ product }: { product: AdminGrouped
   const { handleSuccess } = useRouteModal()
   const { data: tree } = useSuspenseCategoryTree()
   const { data: collections } = useSuspenseAllCollections()
+  const { options: typeOptions, createOption: createTypeOption } = useProductTypeOptions()
   const categoriesId = useId()
 
   const { form } = useEditProductOrganizationForm(product, {
@@ -30,6 +32,17 @@ export function EditProductOrganizationForm({ product }: { product: AdminGrouped
             </RouteDrawer.Title>
           </RouteDrawer.Header>
           <RouteDrawer.Body className="flex flex-col gap-y-6">
+            <form.AppField name="type">
+              {(field) => (
+                <field.SingleComboboxField
+                  label={t`Type`}
+                  items={typeOptions}
+                  onCreate={createTypeOption}
+                  placeholder={t`Search or add a type`}
+                  emptyMessage={t`Type to add one.`}
+                />
+              )}
+            </form.AppField>
             <form.Field name="categoryIds">
               {(field) => (
                 <Field>

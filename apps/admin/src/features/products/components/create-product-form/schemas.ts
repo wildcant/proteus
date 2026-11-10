@@ -12,6 +12,8 @@ export const detailsSchema = AdminCreateProduct.pick({
 export const organizeSchema = AdminCreateProduct.pick({
   discountable: true,
 }).extend({
+  /** The chosen item rather than its id, as `SingleComboboxField` holds it; sent as `typeId`. */
+  type: z.object({ id: z.string(), label: z.string() }).nullable(),
   categoryIds: z.array(z.string()),
   collectionIds: z.array(z.string()),
 })
