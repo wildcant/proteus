@@ -12,6 +12,7 @@ import type {
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
+  FilterableProductTagProps,
   FilterableProductTypeProps,
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
@@ -30,6 +31,7 @@ import type {
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
   ProductScopedOptionDTO,
+  ProductTagDTO,
   ProductTypeDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
@@ -43,6 +45,7 @@ import type {
   CreateProductImageDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  CreateProductTagDTO,
   CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetCategoryProductsDTO,
@@ -52,6 +55,7 @@ import type {
   UpdateProductCollectionDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
+  UpdateProductTagDTO,
   UpdateProductTypeDTO,
   UpdateProductVariantDTO,
   UpsertProductImageInput,
@@ -71,6 +75,8 @@ import type { ProductProductCategoryRepository } from '../repositories/product-p
 import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
 import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import type { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
+import type { ProductProductTagRepository } from '../repositories/product-product-tag.js'
+import type { ProductTagRepository } from '../repositories/product-tag.js'
 import type { ProductTypeRepository } from '../repositories/product-type.js'
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
 import type { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
@@ -99,6 +105,8 @@ type InjectedDependencies = {
   productProductCategoryRepository: ProductProductCategoryRepository
   productCollectionRepository: ProductCollectionRepository
   productProductCollectionRepository: ProductProductCollectionRepository
+  productTagRepository: ProductTagRepository
+  productProductTagRepository: ProductProductTagRepository
   productTypeRepository: ProductTypeRepository
   withTransaction: WithTransaction
   logger: Logger
@@ -166,17 +174,19 @@ export class ProductModuleService implements IProductModuleService {
     this.logger.debug(`Creating ${data.length} product(s)`)
     return this.withTransaction(context, async (ctx) => {
       const products = await this.productRepository.createMany(
-        data.map(({ images, categoryIds: _categoryIds, collectionIds: _collectionIds, ...product }) => ({
-          ...product,
-          handle: product.handle ?? toHandle(product.title),
-          thumbnail: this.resolveThumbnail(product, images),
-        })),
+        data.map(
+          ({ images, categoryIds: _categoryIds, collectionIds: _collectionIds, tagIds: _tagIds, ...product }) => ({
+            ...product,
+            handle: product.handle ?? toHandle(product.title),
+            thumbnail: this.resolveThumbnail(product, images),
+          }),
+        ),
         ctx,
       )
 
       await Promise.all(
         products.flatMap((product, index) => {
-          const { images, categoryIds, collectionIds } = data[index] ?? {}
+          const { images, categoryIds, collectionIds, tagIds } = data[index] ?? {}
           return [
             images ? this.replaceProductImages(product.id, images, ctx) : undefined,
             categoryIds
@@ -185,6 +195,7 @@ export class ProductModuleService implements IProductModuleService {
             collectionIds
               ? this.productGroupingService.replaceProductCollections(product.id, collectionIds, ctx)
               : undefined,
+            tagIds ? this.productGroupingService.replaceProductTags(product.id, tagIds, ctx) : undefined,
           ]
         }),
       )
@@ -194,7 +205,7 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   async updateProducts(productIds: string[], data: UpdateProductDTO, context?: Context): Promise<ProductDTO[]> {
-    const { images, categoryIds, collectionIds, ...productData } = data
+    const { images, categoryIds, collectionIds, tagIds, ...productData } = data
     return this.withTransaction(context, async (ctx) => {
       const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
       const products = Object.values(changes).some((value) => value !== undefined)
@@ -218,6 +229,11 @@ export class ProductModuleService implements IProductModuleService {
           ),
         )
       }
+      if (tagIds) {
+        await Promise.all(
+          productIds.map((productId) => this.productGroupingService.replaceProductTags(productId, tagIds, ctx)),
+        )
+      }
 
       return products
     })
@@ -225,7 +241,7 @@ export class ProductModuleService implements IProductModuleService {
 
   async createProduct(data: CreateProductDTO, context?: Context): Promise<ProductDTO> {
     return this.withTransaction(context, async (ctx) => {
-      const { images, categoryIds, collectionIds, ...product } = data
+      const { images, categoryIds, collectionIds, tagIds, ...product } = data
       const created = await this.productRepository.create(
         {
           ...product,
@@ -239,12 +255,13 @@ export class ProductModuleService implements IProductModuleService {
       if (collectionIds) {
         await this.productGroupingService.replaceProductCollections(created.id, collectionIds, ctx)
       }
+      if (tagIds) await this.productGroupingService.replaceProductTags(created.id, tagIds, ctx)
       return created
     })
   }
 
   async updateProduct(productId: string, data: UpdateProductDTO, context?: Context): Promise<ProductDTO> {
-    const { images, categoryIds, collectionIds, ...productData } = data
+    const { images, categoryIds, collectionIds, tagIds, ...productData } = data
     return this.withTransaction(context, async (ctx) => {
       const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
       const product = Object.values(changes).some((value) => value !== undefined)
@@ -256,6 +273,7 @@ export class ProductModuleService implements IProductModuleService {
       if (collectionIds) {
         await this.productGroupingService.replaceProductCollections(productId, collectionIds, ctx)
       }
+      if (tagIds) await this.productGroupingService.replaceProductTags(productId, tagIds, ctx)
 
       return product
     })
@@ -836,6 +854,32 @@ export class ProductModuleService implements IProductModuleService {
     return this.productGroupingService.softDeleteTypes(typeIds, context)
   }
 
+  // ── Product Tags ──────────────────────────────────────────────────────
+
+  async listAndCountTags(
+    filters?: FilterableProductTagProps,
+    config?: FindConfig<ProductTagDTO>,
+    context?: Context,
+  ): Promise<[ProductTagDTO[], number]> {
+    return this.productGroupingService.listAndCountTags(filters, config, context)
+  }
+
+  async retrieveTag(tagId: string, context?: Context): Promise<ProductTagDTO> {
+    return this.productGroupingService.retrieveTag(tagId, context)
+  }
+
+  async createTag(data: CreateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
+    return this.productGroupingService.createTag(data, context)
+  }
+
+  async updateTag(tagId: string, data: UpdateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
+    return this.productGroupingService.updateTag(tagId, data, context)
+  }
+
+  async softDeleteTags(tagIds: string[], context?: Context): Promise<void> {
+    return this.productGroupingService.softDeleteTags(tagIds, context)
+  }
+
   // ── Groupings ─────────────────────────────────────────────────────────
 
   /**
@@ -844,10 +888,11 @@ export class ProductModuleService implements IProductModuleService {
    */
   async listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>> {
     const unique = [...new Set(productIds)]
-    const [types, categories, collections] = await Promise.all([
+    const [types, categories, collections, tags] = await Promise.all([
       this.productGroupingService.listTypesOfProducts(unique, context),
       this.productCategoryService.listCategoriesOfProducts(unique, context),
       this.productGroupingService.listCollectionsOfProducts(unique, context),
+      this.productGroupingService.listTagsOfProducts(unique, context),
     ])
     return Object.fromEntries(
       unique.map((productId) => [
@@ -856,6 +901,7 @@ export class ProductModuleService implements IProductModuleService {
           type: types.get(productId) ?? null,
           categories: categories.get(productId) ?? [],
           collections: collections.get(productId) ?? [],
+          tags: tags.get(productId) ?? [],
         },
       ]),
     )

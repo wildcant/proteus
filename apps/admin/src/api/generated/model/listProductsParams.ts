@@ -39,4 +39,5 @@ createdAt?: {
 categoryId?: string | string[];
 collectionId?: string | string[];
 typeId?: string | string[];
+tagId?: string | string[];
 };

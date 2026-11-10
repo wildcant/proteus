@@ -9,9 +9,11 @@ import type { AdminGroupedProductType } from './adminGroupedProductType.ts';
 import type { AdminProduct } from './adminProduct.ts';
 import type { AdminProductCategory } from './adminProductCategory.ts';
 import type { AdminProductCollection } from './adminProductCollection.ts';
+import type { AdminProductTag } from './adminProductTag.ts';
 
 export type AdminGroupedProduct = AdminProduct & {
   type: AdminGroupedProductType;
   categories: AdminProductCategory[];
   collections: AdminProductCollection[];
+  tags: AdminProductTag[];
 };

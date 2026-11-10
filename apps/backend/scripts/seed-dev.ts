@@ -744,6 +744,30 @@ if (existingProducts.length > 0) {
   )
   console.info(`Seeded ${Object.keys(PRODUCT_TYPES).length} product types`)
 
+  // --- Tags ---
+  const PRODUCT_TAGS: Record<string, string[]> = {
+    'organic-cotton': ['mens-t-shirt', 'womens-t-shirt'],
+    cotton: ['hoodie', 'mens-crewneck', 'womens-crewneck'],
+    leather: ['white-leather-sneakers', 'grey-leather-sneakers'],
+    canvas: ['canvas-sneakers'],
+    nylon: ['shorts', 'workout-shirt'],
+  }
+  const tags = await Promise.all(
+    Object.entries(PRODUCT_TAGS).map(async ([value, members]) => ({
+      tag: await productService.createTag({ value }),
+      members,
+    })),
+  )
+  // `tagIds` replaces a product's set, so each product is written once with all of its Tags.
+  const tagIdsByProduct = new Map<string, string[]>()
+  for (const { tag, members } of tags) {
+    for (const handle of members) tagIdsByProduct.set(handle, [...(tagIdsByProduct.get(handle) ?? []), tag.id])
+  }
+  await Promise.all(
+    [...tagIdsByProduct].map(([handle, tagIds]) => productService.updateProduct(seededProductId(handle), { tagIds })),
+  )
+  console.info(`Seeded ${tags.length} tags`)
+
   // --- Options (global) ---
   // Colour ranks follow first appearance in the catalogue, which keeps the swatch order stable.
   const colorValues = [...new Set(CATALOG.flatMap((entry) => Object.keys(entry.colors)))]

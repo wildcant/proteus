@@ -35,6 +35,8 @@ export type CreateProductDTO = {
   collectionIds?: string[]
   /** The product's Product Type. */
   typeId?: string | null
+  /** The product's Tags. */
+  tagIds?: string[]
 }
 
 export type UpdateProductDTO = {
@@ -63,6 +65,8 @@ export type UpdateProductDTO = {
   collectionIds?: string[]
   /** `null` clears the Product Type. Absent leaves it alone. */
   typeId?: string | null
+  /** Replaces the product's Tags. Absent leaves them alone. */
+  tagIds?: string[]
 }
 
 export type CreateProductVariantDTO = {
@@ -226,5 +230,14 @@ export type CreateProductTypeDTO = {
 }
 
 export type UpdateProductTypeDTO = {
+  value?: string
+}
+
+/** The value is stored as sent: uniqueness is exact and case-sensitive. */
+export type CreateProductTagDTO = {
+  value: string
+}
+
+export type UpdateProductTagDTO = {
   value?: string
 }

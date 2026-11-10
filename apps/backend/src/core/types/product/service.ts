@@ -9,6 +9,7 @@ import type {
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
+  FilterableProductTagProps,
   FilterableProductTypeProps,
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
@@ -27,6 +28,7 @@ import type {
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
   ProductScopedOptionDTO,
+  ProductTagDTO,
   ProductTypeDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
@@ -41,6 +43,7 @@ import type {
   CreateProductImageDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  CreateProductTagDTO,
   CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetCategoryProductsDTO,
@@ -50,6 +53,7 @@ import type {
   UpdateProductCollectionDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
+  UpdateProductTagDTO,
   UpdateProductTypeDTO,
   UpdateProductVariantDTO,
   UpsertProductVariantDTO,
@@ -229,6 +233,18 @@ export type IProductModuleService = {
   updateType(typeId: string, data: UpdateProductTypeDTO, context?: Context): Promise<ProductTypeDTO>
   /** Allowed while in use: the products keep the id but read no Type, and line snapshots keep the text. */
   softDeleteTypes(typeIds: string[], context?: Context): Promise<void>
+
+  // Product Tags
+  listAndCountTags(
+    filters?: FilterableProductTagProps,
+    config?: FindConfig<ProductTagDTO>,
+    context?: Context,
+  ): Promise<[ProductTagDTO[], number]>
+  retrieveTag(tagId: string, context?: Context): Promise<ProductTagDTO>
+  createTag(data: CreateProductTagDTO, context?: Context): Promise<ProductTagDTO>
+  updateTag(tagId: string, data: UpdateProductTagDTO, context?: Context): Promise<ProductTagDTO>
+  /** Allowed while in use: the Tags' pivot rows are hidden with them, so their products lose them. */
+  softDeleteTags(tagIds: string[], context?: Context): Promise<void>
 
   /** Each product's live groupings, keyed by product id — one query per relation over the whole list. */
   listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>>

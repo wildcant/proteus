@@ -10,6 +10,8 @@ import { productProductCategoryTable } from './models/product-product-category.j
 import { productProductCollectionTable } from './models/product-product-collection.js'
 import { productProductOptionTable } from './models/product-product-option.js'
 import { productProductOptionValueTable } from './models/product-product-option-value.js'
+import { productProductTagTable } from './models/product-product-tag.js'
+import { productTagTable } from './models/product-tag.js'
 import { productTypeTable } from './models/product-type.js'
 import { productVariantTable } from './models/product-variant.js'
 import { productVariantImageTable } from './models/product-variant-image.js'
@@ -24,6 +26,8 @@ import { ProductProductCategoryRepository } from './repositories/product-product
 import { ProductProductCollectionRepository } from './repositories/product-product-collection.js'
 import { ProductProductOptionRepository } from './repositories/product-product-option.js'
 import { ProductProductOptionValueRepository } from './repositories/product-product-option-value.js'
+import { ProductProductTagRepository } from './repositories/product-product-tag.js'
+import { ProductTagRepository } from './repositories/product-tag.js'
 import { ProductTypeRepository } from './repositories/product-type.js'
 import { ProductVariantRepository } from './repositories/product-variant.js'
 import { ProductVariantImageRepository } from './repositories/product-variant-image.js'
@@ -48,7 +52,9 @@ export default Module(Modules.PRODUCT, {
     productProductCollectionTable,
     productProductOptionTable,
     productProductOptionValueTable,
+    productProductTagTable,
     productTable,
+    productTagTable,
     productTypeTable,
     productVariantImageTable,
     productVariantOptionTable,
@@ -68,6 +74,8 @@ export default Module(Modules.PRODUCT, {
     productProductCategoryRepository: ProductProductCategoryRepository,
     productCollectionRepository: ProductCollectionRepository,
     productProductCollectionRepository: ProductProductCollectionRepository,
+    productTagRepository: ProductTagRepository,
+    productProductTagRepository: ProductProductTagRepository,
     productTypeRepository: ProductTypeRepository,
   },
 })

@@ -28,6 +28,7 @@ export const Tags = {
   PRODUCTS: 'Products',
   PRODUCT_CATEGORIES: 'Product Categories',
   PRODUCT_OPTIONS: 'Product Options',
+  PRODUCT_TAGS: 'Product Tags',
   PRODUCT_TYPES: 'Product Types',
   PRODUCT_VARIANTS: 'Product Variants',
   REFUND_REASONS: 'Refund Reasons',

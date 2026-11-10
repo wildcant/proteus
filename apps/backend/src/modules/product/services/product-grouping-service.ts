@@ -2,26 +2,34 @@ import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type {
   FilterableProductCollectionProps,
+  FilterableProductTagProps,
   FilterableProductTypeProps,
   ProductCollectionDTO,
+  ProductTagDTO,
   ProductTypeDTO,
 } from '../../../core/types/product/common.js'
 import type {
   CreateProductCollectionDTO,
+  CreateProductTagDTO,
   CreateProductTypeDTO,
   SetCollectionProductsDTO,
   UpdateProductCollectionDTO,
+  UpdateProductTagDTO,
   UpdateProductTypeDTO,
 } from '../../../core/types/product/mutations.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductCollectionRepository } from '../repositories/product-collection.js'
 import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
+import type { ProductProductTagRepository } from '../repositories/product-product-tag.js'
+import type { ProductTagRepository } from '../repositories/product-tag.js'
 import type { ProductTypeRepository } from '../repositories/product-type.js'
 
 type InjectedDependencies = {
   productCollectionRepository: ProductCollectionRepository
   productProductCollectionRepository: ProductProductCollectionRepository
+  productTagRepository: ProductTagRepository
+  productProductTagRepository: ProductProductTagRepository
   productTypeRepository: ProductTypeRepository
   withTransaction: WithTransaction
 }
@@ -33,24 +41,30 @@ type InjectedDependencies = {
  * **Internal to the module**, like `ProductCategoryService`: `ProductModuleService` builds it and
  * holds it privately, so the module's public surface stays `IProductModuleService`.
  *
- * Deleting needs no code here: the pivot cascades from the Collection, so the derived soft-delete
- * cascade hides its memberships and leaves the products alone. A Product Type sits outside the
+ * Deleting needs no code here: the pivots cascade from the Collection and the Tag, so the derived
+ * soft-delete cascade hides their memberships and leaves the products alone. A Product Type sits outside the
  * cascade (`product.type_id` is `set null`), so its products keep the id and read no Type.
  */
 export class ProductGroupingService {
   private productCollectionRepository: ProductCollectionRepository
   private productProductCollectionRepository: ProductProductCollectionRepository
+  private productTagRepository: ProductTagRepository
+  private productProductTagRepository: ProductProductTagRepository
   private productTypeRepository: ProductTypeRepository
   private withTransaction: WithTransaction
 
   constructor({
     productCollectionRepository,
     productProductCollectionRepository,
+    productTagRepository,
+    productProductTagRepository,
     productTypeRepository,
     withTransaction,
   }: InjectedDependencies) {
     this.productCollectionRepository = productCollectionRepository
     this.productProductCollectionRepository = productProductCollectionRepository
+    this.productTagRepository = productTagRepository
+    this.productProductTagRepository = productProductTagRepository
     this.productTypeRepository = productTypeRepository
     this.withTransaction = withTransaction
   }
@@ -200,5 +214,58 @@ export class ProductGroupingService {
   async listTypesOfProducts(productIds: string[], context?: Context): Promise<Map<string, ProductTypeDTO>> {
     const rows = await this.productTypeRepository.findTypesOfProducts(productIds, context)
     return new Map(rows.map(({ productId, type }) => [productId, type]))
+  }
+
+  // ── Product Tags ───────────────────────────────────────────────────────
+
+  async listAndCountTags(
+    filters?: FilterableProductTagProps,
+    config?: FindConfig<ProductTagDTO>,
+    context?: Context,
+  ): Promise<[ProductTagDTO[], number]> {
+    return this.productTagRepository.findAndCount(filters, config, context)
+  }
+
+  async retrieveTag(tagId: string, context?: Context): Promise<ProductTagDTO> {
+    return this.productTagRepository.findByIdOrFail(tagId, undefined, context)
+  }
+
+  async createTag(data: CreateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
+    return this.withTransaction(context, async (ctx) => this.productTagRepository.create(data, ctx))
+  }
+
+  async updateTag(tagId: string, data: UpdateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
+    return this.withTransaction(context, async (ctx) => {
+      if (data.value === undefined) return this.productTagRepository.findByIdOrFail(tagId, undefined, ctx)
+      return this.productTagRepository.update(tagId, data, ctx)
+    })
+  }
+
+  async softDeleteTags(tagIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => this.productTagRepository.softDelete(tagIds, ctx))
+  }
+
+  /** Makes `tagIds` the product's whole set, with the same diff as `replaceProductCollections`. */
+  async replaceProductTags(productId: string, tagIds: string[], context: Context): Promise<void> {
+    const wanted = new Set(tagIds)
+    const existing = await this.productProductTagRepository.find({ productId }, undefined, context)
+    const existingIds = new Set(existing.map((row) => row.tagId))
+
+    await this.productProductTagRepository.softDelete(
+      existing.filter((row) => !wanted.has(row.tagId)).map((row) => row.id),
+      context,
+    )
+    await this.productProductTagRepository.createMany(
+      [...wanted].filter((tagId) => !existingIds.has(tagId)).map((tagId) => ({ productId, tagId })),
+      context,
+    )
+  }
+
+  /** Every product's live Tags, by value, in one query. A product with none maps to `[]`. */
+  async listTagsOfProducts(productIds: string[], context?: Context): Promise<Map<string, ProductTagDTO[]>> {
+    const rows = await this.productProductTagRepository.findTagsOfProducts(productIds, context)
+    const byProduct = new Map<string, ProductTagDTO[]>(productIds.map((productId) => [productId, []]))
+    for (const { productId, tag } of rows) byProduct.get(productId)?.push(tag)
+    return byProduct
   }
 }

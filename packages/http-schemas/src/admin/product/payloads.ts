@@ -28,6 +28,8 @@ export const AdminCreateProduct = z
     originCountry: machineCode.optional(),
     status: ProductStatus.optional(),
     subtitle: shortText.optional(),
+    /** The product's Tags. An unknown id answers `NOT_FOUND`. */
+    tagIds: z.array(entityId).max(MAX_ITEMS.batch).optional(),
     thumbnail: httpUrl.nullable().optional(),
     title: shortText.min(1),
     /** The product's Product Type. An unknown id answers `NOT_FOUND`. */
@@ -50,6 +52,8 @@ export const AdminUpdateProduct = z
     /** Replaces the product's Collections. An unknown id answers `NOT_FOUND`. */
     collectionIds: z.array(entityId).max(MAX_ITEMS.batch).optional(),
     images: z.array(AdminUpsertProductImage).max(MAX_ITEMS.batch).optional(),
+    /** Replaces the product's Tags. An unknown id answers `NOT_FOUND`. */
+    tagIds: z.array(entityId).max(MAX_ITEMS.batch).optional(),
     thumbnail: httpUrl.nullable().optional(),
     title: shortText.min(1).optional(),
     /** `null` clears the Product Type. An unknown id answers `NOT_FOUND`. */

@@ -15,6 +15,7 @@ export const AdminMeResponseSettingsSidebarItemItemsItemChildrenItemIcon = {
   'sliders-horizontal': 'sliders-horizontal',
   'folder-tree': 'folder-tree',
   layers: 'layers',
+  tags: 'tags',
   shapes: 'shapes',
   boxes: 'boxes',
   'clipboard-list': 'clipboard-list',
