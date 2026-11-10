@@ -1,24 +1,16 @@
-import { Trans, useLingui } from '@lingui/react/macro'
-import { Button, Field, FieldLabel, KeyboundForm, RouteDrawer, useRouteModal } from '@proteus/ui'
-import { useId } from 'react'
+import { Trans } from '@lingui/react/macro'
+import { Button, KeyboundForm, RouteDrawer, useRouteModal } from '@proteus/ui'
 import type { AdminGroupedProduct } from '#/api/generated/model'
-import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
-import { CategoryPicker } from '#/features/categories/components/category-picker'
-import { useSuspenseAllCollections } from '#/features/collections/api/collections'
-import { useProductTagOptions } from '#/features/product-tags/hooks/use-product-tag-options'
-import { useProductTypeOptions } from '#/features/product-types/hooks/use-product-type-options'
+import { ProductCategoriesPicker } from '#/features/categories/components/product-categories-picker'
+import { CollectionsCombobox } from '#/features/collections/components/collections-combobox'
+import { ProductTagsCombobox } from '#/features/product-tags/components/product-tags-combobox'
+import { ProductTypeCombobox } from '#/features/product-types/components/product-type-combobox'
 import { useEditProductOrganizationForm } from '#/features/products/hooks/use-edit-product-organization-form'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function EditProductOrganizationForm({ product }: { product: AdminGroupedProduct }) {
-  const { t } = useLingui()
   const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
-  const { data: tree } = useSuspenseCategoryTree()
-  const { data: collections } = useSuspenseAllCollections()
-  const { options: typeOptions, createOption: createTypeOption } = useProductTypeOptions()
-  const { options: tagOptions, createOption: createTagOption } = useProductTagOptions()
-  const categoriesId = useId()
 
   const { form } = useEditProductOrganizationForm(product, {
     onSuccess: () => handleSuccess(),
@@ -34,53 +26,10 @@ export function EditProductOrganizationForm({ product }: { product: AdminGrouped
             </RouteDrawer.Title>
           </RouteDrawer.Header>
           <RouteDrawer.Body className="flex flex-col gap-y-6">
-            <form.AppField name="type">
-              {(field) => (
-                <field.SingleComboboxField
-                  label={t`Type`}
-                  items={typeOptions}
-                  onCreate={createTypeOption}
-                  placeholder={t`Search or add a type`}
-                  emptyMessage={t`Type to add one.`}
-                />
-              )}
-            </form.AppField>
-            <form.Field name="categoryIds">
-              {(field) => (
-                <Field>
-                  <FieldLabel htmlFor={categoriesId}>
-                    <Trans>Categories</Trans>
-                  </FieldLabel>
-                  <CategoryPicker
-                    id={categoriesId}
-                    tree={tree.productCategories}
-                    value={field.state.value}
-                    onValueChange={field.handleChange}
-                  />
-                </Field>
-              )}
-            </form.Field>
-            <form.AppField name="collectionIds">
-              {(field) => (
-                <field.MultiComboboxField
-                  label={t`Collections`}
-                  items={collections.map((collection) => ({ id: collection.id, label: collection.title }))}
-                  placeholder={t`Choose collections`}
-                  emptyMessage={t`No collections yet.`}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="tagIds">
-              {(field) => (
-                <field.MultiComboboxField
-                  label={t`Tags`}
-                  items={tagOptions}
-                  onCreate={createTagOption}
-                  placeholder={t`Search or add tags`}
-                  emptyMessage={t`Type to add a tag.`}
-                />
-              )}
-            </form.AppField>
+            <form.AppField name="type">{() => <ProductTypeCombobox />}</form.AppField>
+            <form.AppField name="categoryIds">{() => <ProductCategoriesPicker />}</form.AppField>
+            <form.AppField name="collectionIds">{() => <CollectionsCombobox />}</form.AppField>
+            <form.AppField name="tagIds">{() => <ProductTagsCombobox />}</form.AppField>
           </RouteDrawer.Body>
           <RouteDrawer.Footer>
             <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>

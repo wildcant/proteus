@@ -1,8 +1,10 @@
+import { AdminUpdateProduct } from '@proteus/http-schemas/admin'
+import type { z } from 'zod'
 import type { AdminGroupedProduct, AdminUpdateProductResponse } from '#/api/generated/model'
-import type { ComboboxOption } from '#/components/form/single-combobox-field'
-import { toProductTypeOption } from '#/features/product-types/hooks/use-product-type-options'
 import { useUpdateProduct } from '#/features/products/api/products'
+import { organizationSchema } from '#/features/products/components/create-product-form/schemas'
 import { useAppForm } from '#/lib/form-hook.ts'
+import { toValueOption } from '#/lib/value-option'
 import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type EditProductOrganizationFormParams = SubmitFormParams<AdminUpdateProductResponse>
@@ -14,18 +16,22 @@ export function useEditProductOrganizationForm(
 ) {
   const updateMutation = useUpdateProduct(product.id)
 
+  const defaultValues: z.input<typeof organizationSchema> = {
+    type: product.type ? toValueOption(product.type) : null,
+    categoryIds: product.categories.map((category) => category.id),
+    collectionIds: product.collections.map((collection) => collection.id),
+    tagIds: product.tags.map((tag) => tag.id),
+  }
+
   const form = useAppForm({
-    defaultValues: {
-      // The chosen item rather than its id, as `SingleComboboxField` holds it.
-      type: product.type ? toProductTypeOption(product.type) : (null as ComboboxOption | null),
-      categoryIds: product.categories.map((category) => category.id),
-      collectionIds: product.collections.map((collection) => collection.id),
-      tagIds: product.tags.map((tag) => tag.id),
-    },
+    defaultValues,
+    validators: { onSubmit: organizationSchema },
     onSubmit: async ({ value }) => {
       try {
         const { type, ...groupings } = value
-        const data = await updateMutation.mutateAsync({ ...groupings, typeId: type?.id ?? null })
+        const data = await updateMutation.mutateAsync(
+          AdminUpdateProduct.parse({ ...groupings, typeId: type?.id ?? null }),
+        )
         form.reset()
         params?.onSuccess?.(data)
       } catch (error) {

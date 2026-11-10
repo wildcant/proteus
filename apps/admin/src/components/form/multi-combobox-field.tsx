@@ -13,10 +13,10 @@ type MultiComboboxFieldProps = {
   /** Shown under the control. For saying why the list is empty, not for errors. */
   description?: string
   /**
-   * Makes the list creatable: "Add <value>" calls this, and the item it resolves to joins the
-   * choice. Resolve `null` when creating failed and the caller has already said so.
+   * Makes the list creatable: "Add <value>" calls this, and the caller hands `choose` the item once
+   * it exists. A failed create never calls `choose`; its mutation has already said why.
    */
-  onCreate?: (value: string) => Promise<ComboboxOption | null>
+  onCreate?: (value: string, choose: (item: ComboboxOption) => void) => void
   className?: string
 }
 
@@ -41,12 +41,11 @@ export function MultiComboboxField({
   const [created, setCreated] = useState<ComboboxOption[]>([])
   const options = [...items, ...created.filter((item) => !items.some((existing) => existing.id === item.id))]
 
-  const handleCreate = async (value: string) => {
-    const item = await onCreate?.(value)
-    if (!item) return
-    setCreated((previous) => [...previous, item])
-    field.handleChange([...field.state.value, item.id])
-  }
+  const handleCreate = (value: string) =>
+    onCreate?.(value, (item) => {
+      setCreated((previous) => [...previous, item])
+      field.handleChange([...field.state.value, item.id])
+    })
 
   return (
     <Field data-invalid={isInvalid} className={cn(className)}>

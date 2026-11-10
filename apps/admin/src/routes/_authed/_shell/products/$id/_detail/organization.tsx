@@ -1,21 +1,11 @@
 import { RouteDrawer } from '@proteus/ui'
 import { createFileRoute } from '@tanstack/react-router'
-import { categoryTreeQueryOptions } from '#/features/categories/api/categories'
-import { allCollectionsQueryOptions } from '#/features/collections/api/collections'
-import { allProductTagsQueryOptions } from '#/features/product-tags/api/product-tags'
-import { allProductTypesQueryOptions } from '#/features/product-types/api/product-types'
+import { ensureOrganizationOptions } from '#/features/products/api/organization-options'
 import { useSuspenseProduct } from '#/features/products/api/products'
 import { EditProductOrganizationForm } from '#/features/products/components/edit-product-organization-form'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/_detail/organization')({
-  // The category picker browses the whole tree; the Collections and Type selects offer every row.
-  loader: ({ context }) =>
-    Promise.all([
-      context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
-      context.queryClient.ensureQueryData(allCollectionsQueryOptions()),
-      context.queryClient.ensureQueryData(allProductTypesQueryOptions()),
-      context.queryClient.ensureQueryData(allProductTagsQueryOptions()),
-    ]),
+  loader: ({ context }) => ensureOrganizationOptions(context.queryClient),
   component: EditProductOrganizationRoute,
 })
 
