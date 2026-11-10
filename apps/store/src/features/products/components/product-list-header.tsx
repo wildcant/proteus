@@ -4,6 +4,7 @@ import { PRODUCT_SORT_DEFAULT, productsPageQuery, useSuspenseProducts } from '#/
 import type { ProductListView } from '#/features/products/utils/product-list-search'
 import { useMarket } from '#/hooks/use-market'
 import { ProductSort } from './product-sort'
+import { ProductTagFilter } from './product-tag-filter'
 
 type ProductListHeaderProps = ProductListView & {
   /** The title while nothing is searched; a search term takes its place. */
@@ -15,12 +16,12 @@ type ProductListHeaderProps = ProductListView & {
 }
 
 /**
- * Everything on the page that needs no data: the eyebrow, the title and the bar. It renders
+ * Everything on the page above the grid: the eyebrow, the title, the Tag chips and the bar. It renders
  * outside the grid's `<Suspense>` boundary — `orders-panel.tsx` sets that split, and it matters
  * twice over here, because a sort control that vanishes while the sort you just picked is loading
  * is the worst possible moment for it to go.
  *
- * The result count is the one thing here that does need the query, so it suspends on its own.
+ * The result count and the chips are the things here that need a query, so each suspends on its own.
  */
 export function ProductListHeader({
   scope,
@@ -40,6 +41,10 @@ export function ProductListHeader({
           and the third is what would make a `PageHeading` worth having. */}
       <h1 className="type-display mt-2 text-ink">{q ?? heading}</h1>
       {children}
+      {/* Its own boundary, so a slow answer leaves the title and the bar in place. */}
+      <Suspense fallback={null}>
+        <ProductTagFilter scope={scope} search={search} onSearchChange={onSearchChange} />
+      </Suspense>
 
       {/* Sticky at every width, not just on a phone: the reference only needs a rail above `lg`
           because it has ten filter groups to put there. `top-14`/`lg:top-20` is the header's own

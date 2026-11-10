@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { categoryTreeQueryOptions, findCategoryTrail, useSuspenseCategoryTree } from '#/api/product-categories'
 import { ButtonLink } from '#/components/button'
+import { productTagValuesQuery, productTagValuesQueryOptions } from '#/features/products/api/product-tags'
 import { type ProductListScope, productsListQueryOptions, productsPageQuery } from '#/features/products/api/products'
 import { CategoryBreadcrumb } from '#/features/products/components/category-breadcrumb'
 import { CategoryIntro } from '#/features/products/components/category-intro'
@@ -22,19 +23,22 @@ export const Route = createFileRoute('/_main/categories/$handle')({
   validateSearch: productListSearchSchema,
   component: CategoryPage,
   // See the home route: a param the loader does not see is one the server renders wrong.
-  loaderDeps: ({ search }) => ({ q: search.q, sort: search.sort, offset: search.offset }),
+  loaderDeps: ({ search }) => ({ q: search.q, tag: search.tag, sort: search.sort, offset: search.offset }),
   loader: async ({ context, deps, params }) => {
     // The `_main` loader is fetching the tree alongside this one, so this joins its request rather
     // than making a second: the Category, its ancestors and its children all come from there.
     const tree = await context.queryClient.ensureQueryData(categoryTreeQueryOptions())
     // A handle the Visible tree does not hold renders the not-found state, with no list to load.
     if (!findCategoryTrail(tree, params.handle)) return
-    const query = productsPageQuery({
-      ...deps,
-      scope: scopeFor(params.handle),
-      countryCode: context.market.current.iso2,
-    })
-    await context.queryClient.ensureQueryData(productsListQueryOptions(query))
+    const scope = scopeFor(params.handle)
+    const countryCode = context.market.current.iso2
+    const query = productsPageQuery({ ...deps, scope, countryCode })
+    await Promise.all([
+      context.queryClient.ensureQueryData(productsListQueryOptions(query)),
+      context.queryClient.ensureQueryData(
+        productTagValuesQueryOptions(productTagValuesQuery({ scope, ...deps, countryCode })),
+      ),
+    ])
   },
   headers: () => ({
     'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',

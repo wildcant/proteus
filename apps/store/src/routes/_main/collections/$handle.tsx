@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ButtonLink } from '#/components/button'
 import { collectionQueryOptions, useSuspenseCollection } from '#/features/products/api/collections'
+import { productTagValuesQuery, productTagValuesQueryOptions } from '#/features/products/api/product-tags'
 import { type ProductListScope, productsListQueryOptions, productsPageQuery } from '#/features/products/api/products'
 import { CollectionHero } from '#/features/products/components/collection-hero'
 import { ProductList } from '#/features/products/components/product-list'
@@ -20,18 +21,19 @@ export const Route = createFileRoute('/_main/collections/$handle')({
   validateSearch: productListSearchSchema,
   component: CollectionPage,
   // See the home route: a param the loader does not see is one the server renders wrong.
-  loaderDeps: ({ search }) => ({ q: search.q, sort: search.sort, offset: search.offset }),
+  loaderDeps: ({ search }) => ({ q: search.q, tag: search.tag, sort: search.sort, offset: search.offset }),
   loader: async ({ context, deps, params }) => {
-    const query = productsPageQuery({
-      ...deps,
-      scope: scopeFor(params.handle),
-      countryCode: context.market.current.iso2,
-    })
+    const scope = scopeFor(params.handle)
+    const countryCode = context.market.current.iso2
+    const query = productsPageQuery({ ...deps, scope, countryCode })
     // In parallel, not Collection first: the list is filtered by the same handle, so an unknown
     // one costs an empty page rather than a second round trip on every known one.
     await Promise.all([
       context.queryClient.ensureQueryData(collectionQueryOptions(params.handle)),
       context.queryClient.ensureQueryData(productsListQueryOptions(query)),
+      context.queryClient.ensureQueryData(
+        productTagValuesQueryOptions(productTagValuesQuery({ scope, ...deps, countryCode })),
+      ),
     ])
   },
   headers: () => ({
