@@ -2970,73 +2970,24 @@
         ]
       },
       "AdminProductCategoryTreeNode": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "handle": {
-            "type": "string"
-          },
-          "parentId": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "rank": {
-            "type": "number"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "isInternal": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "children": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminProductCategoryTreeNode"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "handle",
-          "parentId",
-          "rank",
-          "isActive",
-          "isInternal",
-          "createdAt",
-          "updatedAt",
-          "children"
-        ]
-      },
-      "AdminProductCategoryResponse": {
-        "type": "object",
-        "properties": {
-          "productCategory": {
+        "allOf": [
+          {
             "$ref": "#/components/schemas/AdminProductCategory"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "children": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminProductCategoryTreeNode"
+                }
+              }
+            },
+            "required": [
+              "children"
+            ]
           }
-        },
-        "required": [
-          "productCategory"
         ]
       },
       "AdminProductCategory": {
@@ -3089,6 +3040,17 @@
           "isInternal",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "AdminProductCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "productCategory": {
+            "$ref": "#/components/schemas/AdminProductCategory"
+          }
+        },
+        "required": [
+          "productCategory"
         ]
       },
       "AdminCreateProductCategory": {

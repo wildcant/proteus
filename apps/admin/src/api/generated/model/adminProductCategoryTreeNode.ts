@@ -5,18 +5,8 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminProductCategory } from './adminProductCategory.ts';
 
-export interface AdminProductCategoryTreeNode {
-  id: string;
-  name: string;
-  description: string;
-  handle: string;
-  /** @nullable */
-  parentId: string | null;
-  rank: number;
-  isActive: boolean;
-  isInternal: boolean;
-  createdAt: string;
-  updatedAt: string;
+export type AdminProductCategoryTreeNode = AdminProductCategory & {
   children: AdminProductCategoryTreeNode[];
-}
+};

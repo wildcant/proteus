@@ -21,21 +21,9 @@ export const AdminProductCategory = z
 export type AdminProductCategory = z.input<typeof AdminProductCategory>
 
 /** A Category with its children nested, siblings in rank order. */
-export const AdminProductCategoryTreeNode = z
-  .object({
-    id: z.string(),
-    name: z.string(),
-    description: z.string(),
-    handle: z.string(),
-    parentId: z.string().nullable(),
-    rank: z.number(),
-    isActive: z.boolean(),
-    isInternal: z.boolean(),
-    createdAt: dateToIso,
-    updatedAt: dateToIso,
-    get children(): z.ZodArray<typeof AdminProductCategoryTreeNode> {
-      return z.array(AdminProductCategoryTreeNode)
-    },
-  })
-  .openapi('AdminProductCategoryTreeNode')
+export const AdminProductCategoryTreeNode = AdminProductCategory.extend({
+  get children(): z.ZodArray<typeof AdminProductCategoryTreeNode> {
+    return z.array(AdminProductCategoryTreeNode)
+  },
+}).openapi('AdminProductCategoryTreeNode')
 export type AdminProductCategoryTreeNode = z.input<typeof AdminProductCategoryTreeNode>
