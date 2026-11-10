@@ -21,7 +21,10 @@ function createEnv() {
   } catch {
     throw new Error(`VITE_BACKEND_URL is not a valid URL: "${url}"`)
   }
-  return { VITE_BACKEND_URL: url as string }
+  // Where uploaded photos are publicly served from. Set only where the store can resize them
+  // (see src/lib/image-url.ts); unset, photos are used as stored.
+  const imageOrigin: string | undefined = import.meta.env.VITE_IMAGE_ORIGIN || undefined
+  return { VITE_BACKEND_URL: url as string, VITE_IMAGE_ORIGIN: imageOrigin }
 }
 
 export const env = createEnv()

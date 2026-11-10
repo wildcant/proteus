@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { PackageIcon } from 'lucide-react'
 import type { StoreProductListItem } from '#/api/generated/model'
 import { useFormatters } from '#/hooks/use-formatters'
+import { responsiveImage } from '#/lib/image-url'
 
 export function ProductCard({ product, priority }: { product: StoreProductListItem; priority?: boolean }) {
   const { formatPrice } = useFormatters()
@@ -15,7 +16,8 @@ export function ProductCard({ product, priority }: { product: StoreProductListIt
       <div className="relative aspect-4/5 overflow-hidden bg-surface-subtle">
         {product.thumbnail ? (
           <img
-            src={product.thumbnail}
+            // Two columns on a phone, three from `sm`, four from `lg` (see ProductGrid).
+            {...responsiveImage(product.thumbnail, '(min-width: 64rem) 25vw, (min-width: 40rem) 33vw, 50vw')}
             alt={product.title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             fetchPriority={priority ? 'high' : undefined}
