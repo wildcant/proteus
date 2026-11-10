@@ -1,17 +1,21 @@
-import { getRouteApi, useRouterState } from '@tanstack/react-router'
+import { useRouterState } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
 import { Pagination } from '#/components/pagination'
 import { PRODUCTS_DEFAULT_LIMIT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
+import type { ProductListView } from '#/features/products/utils/product-list-search'
 import { useMarket } from '#/hooks/use-market'
 import { ProductEmpty } from './product-empty'
 import { ProductGrid } from './product-grid'
 
-const route = getRouteApi('/_main/')
+type ProductListProps = ProductListView & {
+  /** Where an empty, unsearched list sends the shopper. The home page has nowhere wider to send them. */
+  emptyLink?: ReactNode
+}
 
-export function ProductList() {
-  const { q, sort, offset } = route.useSearch()
-  const navigate = route.useNavigate()
+export function ProductList({ scope, search, onSearchChange, emptyLink }: ProductListProps) {
+  const { q, offset } = search
   const { current } = useMarket()
-  const { products, count } = useSuspenseProducts(productsPageQuery({ q, sort, offset, countryCode: current.iso2 }))
+  const { products, count } = useSuspenseProducts(productsPageQuery({ ...search, scope, countryCode: current.iso2 }))
 
   /**
    * Paging no longer suspends: `offset` is a loader dep, so the loader has already awaited the
@@ -20,7 +24,7 @@ export function ProductList() {
    */
   const isNavigating = useRouterState({ select: (state) => state.isLoading })
 
-  if (products.length === 0) return <ProductEmpty q={q} />
+  if (products.length === 0) return <ProductEmpty q={q} link={emptyLink} />
 
   return (
     <>
@@ -34,7 +38,7 @@ export function ProductList() {
         count={count}
         // Page 1 is written as `undefined`, not `offset=0`, so the default stays out of the URL
         // the way `sort`'s does.
-        onOffsetChange={(next) => navigate({ search: (previous) => ({ ...previous, offset: next || undefined }) })}
+        onOffsetChange={(next) => onSearchChange({ offset: next || undefined })}
         className="mt-12"
       />
     </>

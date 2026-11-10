@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { PackageIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { ButtonLink } from '#/components/button'
 
 /**
@@ -7,9 +8,11 @@ import { ButtonLink } from '#/components/button'
  * element above the message.
  *
  * Two branches, because "nothing matched what you typed" and "there is nothing here" are different
- * facts and only the first has anything to clear.
+ * facts and only the first has anything to clear. "Clear search" drops the search params and keeps
+ * the path, so a scoped list — a category, a collection — stays scoped. `link` is the second
+ * branch's way out, for a list narrower than the whole catalogue.
  */
-export function ProductEmpty({ q }: { q?: string }) {
+export function ProductEmpty({ q, link }: { q?: string; link?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <PackageIcon className="size-8 text-ink-subtle" strokeWidth={1.5} />
@@ -19,14 +22,17 @@ export function ProductEmpty({ q }: { q?: string }) {
           <p className="mt-6 max-w-70 text-ink-muted text-sm">
             <Trans>No products match &ldquo;{q}&rdquo;.</Trans>
           </p>
-          <ButtonLink to="/" className="mt-8">
+          <ButtonLink to="." search={{}} className="mt-8">
             <Trans>Clear search</Trans>
           </ButtonLink>
         </>
       ) : (
-        <p className="mt-6 max-w-70 text-ink-muted text-sm">
-          <Trans>No products yet.</Trans>
-        </p>
+        <>
+          <p className="mt-6 max-w-70 text-ink-muted text-sm">
+            <Trans>No products yet.</Trans>
+          </p>
+          {link ? <div className="mt-8">{link}</div> : null}
+        </>
       )}
     </div>
   )

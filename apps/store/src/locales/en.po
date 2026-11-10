@@ -31,7 +31,7 @@ msgstr "{alt} — view {position} of {count}"
 msgid "{alt} images"
 msgstr "{alt} images"
 
-#: src/features/products/components/product-list-header.tsx:63
+#: src/features/products/components/product-list-header.tsx:61
 msgid "{count, plural, one {# Product} other {# Products}}"
 msgstr "{count, plural, one {# Product} other {# Products}}"
 
@@ -133,7 +133,7 @@ msgid "Address options"
 msgstr "Address options"
 
 #: src/components/footer.tsx:21
-#: src/features/products/components/product-list-header.tsx:28
+#: src/routes/_main/index.tsx:48
 msgid "All products"
 msgstr "All products"
 
@@ -270,7 +270,7 @@ msgid "City"
 msgstr "City"
 
 #: src/components/header/search-form.tsx:74
-#: src/features/products/components/product-empty.tsx:23
+#: src/features/products/components/product-empty.tsx:26
 msgid "Clear search"
 msgstr "Clear search"
 
@@ -650,11 +650,11 @@ msgstr "No problem. Enter your account email address and we'll send you instruct
 msgid "No products match “{debouncedTerm}”."
 msgstr "No products match “{debouncedTerm}”."
 
-#: src/features/products/components/product-empty.tsx:20
+#: src/features/products/components/product-empty.tsx:23
 msgid "No products match “{q}”."
 msgstr "No products match “{q}”."
 
-#: src/features/products/components/product-empty.tsx:28
+#: src/features/products/components/product-empty.tsx:32
 msgid "No products yet."
 msgstr "No products yet."
 
@@ -835,7 +835,7 @@ msgid "Save this card for next time"
 msgstr "Save this card for next time"
 
 #: src/components/header/search-triggers.tsx:47
-#: src/features/products/components/product-list-header.tsx:25
+#: src/features/products/components/product-list-header.tsx:27
 #: src/features/products/components/search-drawer.tsx:39
 msgid "Search"
 msgstr "Search"
@@ -901,7 +901,7 @@ msgid "Shipping method"
 msgstr "Shipping method"
 
 #: src/components/footer.tsx:18
-#: src/features/products/components/product-list-header.tsx:25
+#: src/features/products/components/product-list-header.tsx:27
 msgid "Shop"
 msgstr "Shop"
 
