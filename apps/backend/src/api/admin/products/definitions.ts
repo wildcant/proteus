@@ -54,6 +54,7 @@ export default [
     method: 'PATCH',
     matcher: '/admin/products/:id',
     handler: productByIdRoutes.PATCH,
+    throws: productByIdRoutes.PatchThrows,
     input: productByIdRoutes.PatchInput,
     permissions: ['product.update'],
     operationId: 'updateProduct',

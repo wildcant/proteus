@@ -10,6 +10,8 @@ export const AdminUpsertProductImage = z.object({ id: entityId.optional(), url: 
 
 export const AdminCreateProduct = z
   .object({
+    /** The product's Categories. An unknown id answers `NOT_FOUND`. */
+    categoryIds: z.array(entityId).max(MAX_ITEMS.batch).optional(),
     description: longText.optional(),
     discountable: z.boolean().optional(),
     handle: machineCode.optional(),
@@ -39,6 +41,8 @@ export type AdminCreateProductBody = z.infer<typeof AdminCreateProduct>
 
 export const AdminUpdateProduct = z
   .object({
+    /** Replaces the product's Categories. An unknown id answers `NOT_FOUND`. */
+    categoryIds: z.array(entityId).max(MAX_ITEMS.batch).optional(),
     images: z.array(AdminUpsertProductImage).max(MAX_ITEMS.batch).optional(),
     thumbnail: httpUrl.nullable().optional(),
     title: shortText.min(1).optional(),

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { entityId, longText, machineCode, shortText } from '../../bounded.js'
+import { entityId, longText, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
 
 export const AdminCreateProductCategory = z
   .object({
@@ -16,6 +16,15 @@ export const AdminCreateProductCategory = z
   })
   .openapi('AdminCreateProductCategory')
 export type AdminCreateProductCategoryBody = z.infer<typeof AdminCreateProductCategory>
+
+/** Applied `add` then `remove`. Adding a member or removing a non-member is a no-op. */
+export const AdminSetCategoryProducts = z
+  .object({
+    add: z.array(entityId).max(MAX_ITEMS.batch).optional(),
+    remove: z.array(entityId).max(MAX_ITEMS.batch).optional(),
+  })
+  .openapi('AdminSetCategoryProducts')
+export type AdminSetCategoryProductsBody = z.infer<typeof AdminSetCategoryProducts>
 
 export const AdminUpdateProductCategory = z
   .object({

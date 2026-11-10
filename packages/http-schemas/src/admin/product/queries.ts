@@ -6,6 +6,8 @@ export const AdminProductListParams = createFindParams().extend({
   q: z.string().optional(),
   status: z.union([ProductStatus, ProductStatus.array()]).optional(),
   createdAt: createDateOperatorMap().optional(),
+  /** Direct members of the Category only — a product in one of its children is not listed. */
+  categoryId: z.union([z.string(), z.string().array()]).optional(),
 })
 
 export type AdminProductListQuery = FindParams<typeof AdminProductListParams>

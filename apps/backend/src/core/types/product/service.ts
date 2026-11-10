@@ -15,6 +15,7 @@ import type {
   ProductCategoryDTO,
   ProductCategoryTreeNodeDTO,
   ProductDTO,
+  ProductGroupingsDTO,
   ProductImageDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
@@ -35,6 +36,7 @@ import type {
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductVariantDTO,
+  SetCategoryProductsDTO,
   SetProductOptionsDTO,
   UpdateProductCategoryDTO,
   UpdateProductDTO,
@@ -178,6 +180,10 @@ export type IProductModuleService = {
   updateCategory(categoryId: string, data: UpdateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO>
   /** Refused with `NOT_ALLOWED` while a Category still has live children. */
   softDeleteCategories(categoryIds: string[], context?: Context): Promise<void>
+  /** Adds then removes direct members. Adding a member or removing a non-member is a no-op. */
+  setCategoryProducts(categoryId: string, data: SetCategoryProductsDTO, context?: Context): Promise<ProductCategoryDTO>
+  /** Each product's live groupings, keyed by product id — one query per relation over the whole list. */
+  listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>>
 
   // Images
   listProductImages(

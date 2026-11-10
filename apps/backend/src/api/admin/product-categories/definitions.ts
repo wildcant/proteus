@@ -1,5 +1,6 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
+import * as categoryProductRoutes from './[id]/products/route.js'
 import * as categoryByIdRoutes from './[id]/route.js'
 import * as categoryRoutes from './route.js'
 
@@ -61,5 +62,17 @@ export default [
     tags: [Tags.PRODUCT_CATEGORIES],
     output: categoryByIdRoutes.DeleteOutput,
     throws: categoryByIdRoutes.DeleteThrows,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/product-categories/:id/products',
+    handler: categoryProductRoutes.POST,
+    input: categoryProductRoutes.PostInput,
+    permissions: ['product.update'],
+    operationId: 'setProductCategoryProducts',
+    summary: "Add and remove a Category's products",
+    tags: [Tags.PRODUCT_CATEGORIES],
+    output: categoryProductRoutes.PostOutput,
+    throws: categoryProductRoutes.PostThrows,
   },
 ] satisfies RouteDefinition[]
