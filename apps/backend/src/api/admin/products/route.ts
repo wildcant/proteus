@@ -31,7 +31,6 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const productService = req.scope.resolve(Modules.PRODUCT)
   const { options, variants, ...productData } = req.body
   const product = await createProductWorkflow.run({ product: productData, options, variants })
-  const groupings = await productService.listProductGroupings([product.id])
-  const { type = null, categories = [], collections = [], tags = [] } = groupings[product.id] ?? {}
-  return { status: 201, json: { product: { ...product, type, categories, collections, tags } } }
+  const groupings = await productService.retrieveProductGroupings(product.id)
+  return { status: 201, json: { product: { ...product, ...groupings } } }
 }

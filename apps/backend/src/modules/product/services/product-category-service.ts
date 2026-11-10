@@ -70,14 +70,14 @@ export class ProductCategoryService {
   async createCategory(data: CreateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO> {
     const { rank, ...categoryData } = data
     const parentId = data.parentId ?? null
-    return this.withTransaction(context, async (ctx) => {
-      if (parentId) await this.productCategoryRepository.findByIdOrFail(parentId, undefined, ctx)
+    return this.withTransaction(context, async (transactionContext) => {
+      if (parentId) await this.productCategoryRepository.findByIdOrFail(parentId, undefined, transactionContext)
       const created = await this.productCategoryRepository.create(
         { ...categoryData, parentId, handle: data.handle ?? toHandle(data.name) },
-        ctx,
+        transactionContext,
       )
-      await this.place(created.id, parentId, rank, ctx)
-      return this.productCategoryRepository.findByIdOrFail(created.id, undefined, ctx)
+      await this.place(created.id, parentId, rank, transactionContext)
+      return this.productCategoryRepository.findByIdOrFail(created.id, undefined, transactionContext)
     })
   }
 
@@ -92,27 +92,29 @@ export class ProductCategoryService {
     context?: Context,
   ): Promise<ProductCategoryDTO> {
     const { parentId, rank, ...fields } = data
-    return this.withTransaction(context, async (ctx) => {
-      const category = await this.productCategoryRepository.findByIdOrFail(categoryId, undefined, ctx)
+    return this.withTransaction(context, async (transactionContext) => {
+      const category = await this.productCategoryRepository.findByIdOrFail(categoryId, undefined, transactionContext)
       if (Object.values(fields).some((value) => value !== undefined)) {
-        await this.productCategoryRepository.update(categoryId, fields, ctx)
+        await this.productCategoryRepository.update(categoryId, fields, transactionContext)
       }
       if (parentId === undefined && rank === undefined) {
-        return this.productCategoryRepository.findByIdOrFail(categoryId, undefined, ctx)
+        return this.productCategoryRepository.findByIdOrFail(categoryId, undefined, transactionContext)
       }
 
       const targetParentId = parentId === undefined ? category.parentId : parentId
-      if (targetParentId) await this.assertParentOutsideSubtree(categoryId, targetParentId, ctx)
+      if (targetParentId) await this.assertParentOutsideSubtree(categoryId, targetParentId, transactionContext)
       if (targetParentId !== category.parentId) {
-        await this.productCategoryRepository.update(categoryId, { parentId: targetParentId }, ctx)
+        await this.productCategoryRepository.update(categoryId, { parentId: targetParentId }, transactionContext)
       }
-      await this.place(categoryId, targetParentId, rank, ctx)
-      return this.productCategoryRepository.findByIdOrFail(categoryId, undefined, ctx)
+      await this.place(categoryId, targetParentId, rank, transactionContext)
+      return this.productCategoryRepository.findByIdOrFail(categoryId, undefined, transactionContext)
     })
   }
 
   async softDeleteCategories(categoryIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => this.productCategoryRepository.softDelete(categoryIds, ctx))
+    return this.withTransaction(context, async (transactionContext) =>
+      this.productCategoryRepository.softDelete(categoryIds, transactionContext),
+    )
   }
 
   /** The parent must exist, and must not be the Category itself or below it — that would cut the subtree loose. */
@@ -154,66 +156,13 @@ export class ProductCategoryService {
    */
   async setCategoryProducts(
     categoryId: string,
-    { add = [], remove = [] }: SetCategoryProductsDTO,
+    data: SetCategoryProductsDTO,
     context?: Context,
   ): Promise<ProductCategoryDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      const category = await this.productCategoryRepository.findByIdOrFail(categoryId, undefined, ctx)
-
-      const toAdd = [...new Set(add)]
-      if (toAdd.length > 0) {
-        const members = await this.productProductCategoryRepository.find(
-          { categoryId, productId: toAdd },
-          { select: ['productId'] },
-          ctx,
-        )
-        const memberIds = new Set(members.map((member) => member.productId))
-        await this.productProductCategoryRepository.createMany(
-          toAdd.filter((productId) => !memberIds.has(productId)).map((productId) => ({ productId, categoryId })),
-          ctx,
-        )
-      }
-
-      if (remove.length > 0) {
-        const leaving = await this.productProductCategoryRepository.find(
-          { categoryId, productId: remove },
-          { select: ['id'] },
-          ctx,
-        )
-        await this.productProductCategoryRepository.softDelete(
-          leaving.map((row) => row.id),
-          ctx,
-        )
-      }
-
+    return this.withTransaction(context, async (transactionContext) => {
+      const category = await this.productCategoryRepository.findByIdOrFail(categoryId, undefined, transactionContext)
+      await this.productProductCategoryRepository.setProducts(categoryId, data, transactionContext)
       return category
     })
-  }
-
-  /**
-   * Makes `categoryIds` the product's whole set: soft-deletes the rows it drops, keeps the rest and
-   * creates the new ones — the same diff the product's options use.
-   */
-  async replaceProductCategories(productId: string, categoryIds: string[], context: Context): Promise<void> {
-    const wanted = new Set(categoryIds)
-    const existing = await this.productProductCategoryRepository.find({ productId }, undefined, context)
-    const existingIds = new Set(existing.map((row) => row.categoryId))
-
-    await this.productProductCategoryRepository.softDelete(
-      existing.filter((row) => !wanted.has(row.categoryId)).map((row) => row.id),
-      context,
-    )
-    await this.productProductCategoryRepository.createMany(
-      [...wanted].filter((categoryId) => !existingIds.has(categoryId)).map((categoryId) => ({ productId, categoryId })),
-      context,
-    )
-  }
-
-  /** Every product's live Categories, by name, in one query. A product in none maps to `[]`. */
-  async listCategoriesOfProducts(productIds: string[], context?: Context): Promise<Map<string, ProductCategoryDTO[]>> {
-    const rows = await this.productProductCategoryRepository.findCategoriesOfProducts(productIds, context)
-    const byProduct = new Map<string, ProductCategoryDTO[]>(productIds.map((productId) => [productId, []]))
-    for (const { productId, category } of rows) byProduct.get(productId)?.push(category)
-    return byProduct
   }
 }

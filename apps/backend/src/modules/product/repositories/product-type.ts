@@ -7,18 +7,16 @@ import { productTypeTable } from '../models/product-type.js'
 
 export class ProductTypeRepository extends BaseRepository(productTypeTable) {
   /**
-   * The live Type of every product in `productIds` that has one, in one query. A soft-deleted Type
+   * The live Type of every product in `productIds` that has one, in one query; a product with none is absent. A soft-deleted Type
    * stays in `product.type_id` (`set null` fires only on a hard delete), so the join filters it out.
    */
-  async findTypesOfProducts(
-    productIds: string[],
-    context?: Context,
-  ): Promise<{ productId: string; type: ProductTypeDTO }[]> {
-    if (productIds.length === 0) return []
-    return this.getClient(context)
+  async findTypesOfProducts(productIds: string[], context?: Context): Promise<Map<string, ProductTypeDTO>> {
+    if (productIds.length === 0) return new Map()
+    const rows = await this.getClient(context)
       .select({ productId: productTable.id, type: this.table })
       .from(productTable)
       .innerJoin(this.table, eq(this.table.id, productTable.typeId))
       .where(and(inArray(productTable.id, productIds), isNull(this.table.deletedAt)))
+    return new Map(rows.map(({ productId, type }) => [productId, type]))
   }
 }

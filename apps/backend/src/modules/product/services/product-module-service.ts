@@ -48,6 +48,7 @@ import type {
   CreateProductTagDTO,
   CreateProductTypeDTO,
   CreateProductVariantDTO,
+  ProductGroupingIdsDTO,
   SetCategoryProductsDTO,
   SetCollectionProductsDTO,
   SetProductOptionsDTO,
@@ -82,6 +83,7 @@ import type { ProductVariantRepository } from '../repositories/product-variant.j
 import type { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
 import type { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
 import { combinationLabel } from '../utils/option-combinations.js'
+import { separateGroupingIds } from '../utils/product-grouping-ids.js'
 import type { VariantReconciliationPlan, VariantRemovalReason } from '../utils/reconcile-variants.js'
 import { ProductCategoryService } from './product-category-service.js'
 import { ProductGroupingService } from './product-grouping-service.js'
@@ -125,6 +127,10 @@ export class ProductModuleService implements IProductModuleService {
   private productVariantRepository: ProductVariantRepository
   private productImageRepository: ProductImageRepository
   private productVariantImageRepository: ProductVariantImageRepository
+  private productProductCategoryRepository: ProductProductCategoryRepository
+  private productProductCollectionRepository: ProductProductCollectionRepository
+  private productProductTagRepository: ProductProductTagRepository
+  private productTypeRepository: ProductTypeRepository
   /** Private on purpose: not registered anywhere, not exported, not resolvable. */
   private productOptionService: ProductOptionService
   /** Private for the same reason. */
@@ -139,6 +145,10 @@ export class ProductModuleService implements IProductModuleService {
     this.productVariantRepository = dependencies.productVariantRepository
     this.productImageRepository = dependencies.productImageRepository
     this.productVariantImageRepository = dependencies.productVariantImageRepository
+    this.productProductCategoryRepository = dependencies.productProductCategoryRepository
+    this.productProductCollectionRepository = dependencies.productProductCollectionRepository
+    this.productProductTagRepository = dependencies.productProductTagRepository
+    this.productTypeRepository = dependencies.productTypeRepository
     this.withTransaction = dependencies.withTransaction
     this.logger = dependencies.logger
     // Built from the same cradle this was, so it shares the module's repositories and transaction
@@ -172,30 +182,25 @@ export class ProductModuleService implements IProductModuleService {
 
   async createProducts(data: CreateProductDTO[], context?: Context): Promise<ProductDTO[]> {
     this.logger.debug(`Creating ${data.length} product(s)`)
-    return this.withTransaction(context, async (ctx) => {
+    const writes = data.map((input) => separateGroupingIds(input))
+    return this.withTransaction(context, async (transactionContext) => {
       const products = await this.productRepository.createMany(
-        data.map(
-          ({ images, categoryIds: _categoryIds, collectionIds: _collectionIds, tagIds: _tagIds, ...product }) => ({
-            ...product,
-            handle: product.handle ?? toHandle(product.title),
-            thumbnail: this.resolveThumbnail(product, images),
-          }),
-        ),
-        ctx,
+        writes.map(({ fields: { images, ...product } }) => ({
+          ...product,
+          handle: product.handle ?? toHandle(product.title),
+          thumbnail: this.resolveThumbnail(product, images),
+        })),
+        transactionContext,
       )
 
       await Promise.all(
         products.flatMap((product, index) => {
-          const { images, categoryIds, collectionIds, tagIds } = data[index] ?? {}
+          const write = writes[index]
+          if (!write) return []
+          const { images } = write.fields
           return [
-            images ? this.replaceProductImages(product.id, images, ctx) : undefined,
-            categoryIds
-              ? this.productCategoryService.replaceProductCategories(product.id, categoryIds, ctx)
-              : undefined,
-            collectionIds
-              ? this.productGroupingService.replaceProductCollections(product.id, collectionIds, ctx)
-              : undefined,
-            tagIds ? this.productGroupingService.replaceProductTags(product.id, tagIds, ctx) : undefined,
+            images ? this.replaceProductImages(product.id, images, transactionContext) : undefined,
+            this.replaceProductGroupings([product.id], write.groupingIds, transactionContext),
           ]
         }),
       )
@@ -205,75 +210,60 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   async updateProducts(productIds: string[], data: UpdateProductDTO, context?: Context): Promise<ProductDTO[]> {
-    const { images, categoryIds, collectionIds, tagIds, ...productData } = data
-    return this.withTransaction(context, async (ctx) => {
+    const {
+      fields: { images, ...productData },
+      groupingIds,
+    } = separateGroupingIds(data)
+    return this.withTransaction(context, async (transactionContext) => {
       const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
       const products = Object.values(changes).some((value) => value !== undefined)
-        ? await this.productRepository.updateMany(productIds, changes, ctx)
-        : await this.productRepository.find({ id: productIds }, undefined, ctx)
+        ? await this.productRepository.updateMany(productIds, changes, transactionContext)
+        : await this.productRepository.find({ id: productIds }, undefined, transactionContext)
 
       if (images) {
-        await Promise.all(productIds.map((productId) => this.replaceProductImages(productId, images, ctx)))
-      }
-      if (categoryIds) {
         await Promise.all(
-          productIds.map((productId) =>
-            this.productCategoryService.replaceProductCategories(productId, categoryIds, ctx),
-          ),
+          productIds.map((productId) => this.replaceProductImages(productId, images, transactionContext)),
         )
       }
-      if (collectionIds) {
-        await Promise.all(
-          productIds.map((productId) =>
-            this.productGroupingService.replaceProductCollections(productId, collectionIds, ctx),
-          ),
-        )
-      }
-      if (tagIds) {
-        await Promise.all(
-          productIds.map((productId) => this.productGroupingService.replaceProductTags(productId, tagIds, ctx)),
-        )
-      }
+      await this.replaceProductGroupings(productIds, groupingIds, transactionContext)
 
       return products
     })
   }
 
   async createProduct(data: CreateProductDTO, context?: Context): Promise<ProductDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      const { images, categoryIds, collectionIds, tagIds, ...product } = data
+    const {
+      fields: { images, ...product },
+      groupingIds,
+    } = separateGroupingIds(data)
+    return this.withTransaction(context, async (transactionContext) => {
       const created = await this.productRepository.create(
         {
           ...product,
           handle: product.handle ?? toHandle(product.title),
           thumbnail: this.resolveThumbnail(product, images),
         },
-        ctx,
+        transactionContext,
       )
-      if (images) await this.replaceProductImages(created.id, images, ctx)
-      if (categoryIds) await this.productCategoryService.replaceProductCategories(created.id, categoryIds, ctx)
-      if (collectionIds) {
-        await this.productGroupingService.replaceProductCollections(created.id, collectionIds, ctx)
-      }
-      if (tagIds) await this.productGroupingService.replaceProductTags(created.id, tagIds, ctx)
+      if (images) await this.replaceProductImages(created.id, images, transactionContext)
+      await this.replaceProductGroupings([created.id], groupingIds, transactionContext)
       return created
     })
   }
 
   async updateProduct(productId: string, data: UpdateProductDTO, context?: Context): Promise<ProductDTO> {
-    const { images, categoryIds, collectionIds, tagIds, ...productData } = data
-    return this.withTransaction(context, async (ctx) => {
+    const {
+      fields: { images, ...productData },
+      groupingIds,
+    } = separateGroupingIds(data)
+    return this.withTransaction(context, async (transactionContext) => {
       const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
       const product = Object.values(changes).some((value) => value !== undefined)
-        ? await this.productRepository.update(productId, changes, ctx)
-        : await this.productRepository.findByIdOrFail(productId, undefined, ctx)
+        ? await this.productRepository.update(productId, changes, transactionContext)
+        : await this.productRepository.findByIdOrFail(productId, undefined, transactionContext)
 
-      if (images) await this.replaceProductImages(productId, images, ctx)
-      if (categoryIds) await this.productCategoryService.replaceProductCategories(productId, categoryIds, ctx)
-      if (collectionIds) {
-        await this.productGroupingService.replaceProductCollections(productId, collectionIds, ctx)
-      }
-      if (tagIds) await this.productGroupingService.replaceProductTags(productId, tagIds, ctx)
+      if (images) await this.replaceProductImages(productId, images, transactionContext)
+      await this.replaceProductGroupings([productId], groupingIds, transactionContext)
 
       return product
     })
@@ -889,29 +879,15 @@ export class ProductModuleService implements IProductModuleService {
 
   // ── Groupings ─────────────────────────────────────────────────────────
 
-  /**
-   * The repository joins no relations, so every embed of a product's groupings goes through here:
-   * one query per relation over the whole id list, never one per product.
-   */
+  async retrieveProductGroupings(productId: string, context?: Context): Promise<ProductGroupingsDTO> {
+    const groupingsOf = await this.readGroupings([productId], context)
+    return groupingsOf(productId)
+  }
+
   async listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>> {
     const unique = [...new Set(productIds)]
-    const [types, categories, collections, tags] = await Promise.all([
-      this.productGroupingService.listTypesOfProducts(unique, context),
-      this.productCategoryService.listCategoriesOfProducts(unique, context),
-      this.productGroupingService.listCollectionsOfProducts(unique, context),
-      this.productGroupingService.listTagsOfProducts(unique, context),
-    ])
-    return Object.fromEntries(
-      unique.map((productId) => [
-        productId,
-        {
-          type: types.get(productId) ?? null,
-          categories: categories.get(productId) ?? [],
-          collections: collections.get(productId) ?? [],
-          tags: tags.get(productId) ?? [],
-        },
-      ]),
-    )
+    const groupingsOf = await this.readGroupings(unique, context)
+    return Object.fromEntries(unique.map((productId) => [productId, groupingsOf(productId)]))
   }
 
   // ── Variant options ───────────────────────────────────────────────────
@@ -1077,6 +1053,49 @@ export class ProductModuleService implements IProductModuleService {
   ): string | null | undefined {
     if (!images) return data.thumbnail
     return data.thumbnail ?? images[0]?.url ?? null
+  }
+
+  /**
+   * The repository joins no relations, so every embed of a product's groupings goes through here:
+   * one query per relation over the whole id list, never one per product. The answer is complete
+   * for every id asked about — a product in nothing reads `null` and empty lists.
+   */
+  private async readGroupings(
+    productIds: string[],
+    context?: Context,
+  ): Promise<(productId: string) => ProductGroupingsDTO> {
+    const [types, categories, collections, tags] = await Promise.all([
+      this.productTypeRepository.findTypesOfProducts(productIds, context),
+      this.productProductCategoryRepository.findGroupingsOfProducts(productIds, context),
+      this.productProductCollectionRepository.findGroupingsOfProducts(productIds, context),
+      this.productProductTagRepository.findGroupingsOfProducts(productIds, context),
+    ])
+    return (productId) => ({
+      type: types.get(productId) ?? null,
+      categories: categories.get(productId) ?? [],
+      collections: collections.get(productId) ?? [],
+      tags: tags.get(productId) ?? [],
+    })
+  }
+
+  /** Each grouping the write names replaces that grouping's whole set on every product; absent ones are left alone. */
+  private async replaceProductGroupings(
+    productIds: string[],
+    { categoryIds, collectionIds, tagIds }: ProductGroupingIdsDTO,
+    context: Context,
+  ): Promise<void> {
+    const pivots = [
+      [this.productProductCategoryRepository, categoryIds],
+      [this.productProductCollectionRepository, collectionIds],
+      [this.productProductTagRepository, tagIds],
+    ] as const
+    await Promise.all(
+      pivots.flatMap(([repository, groupingIds]) =>
+        groupingIds
+          ? productIds.map((productId) => repository.replaceGroupingsOfProduct(productId, groupingIds, context))
+          : [],
+      ),
+    )
   }
 
   /**
