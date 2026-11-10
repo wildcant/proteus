@@ -292,9 +292,10 @@ either: the child is still live when the parent is checked. Subtrees go leaf-fir
 
 Any other overlap is a schema to redesign. Guards between two different tables point only upward
 across a layer boundary ([ADR 0018](adr/0018-layered-product-options.md)), so no closure reaches one
-by accident — the shape `product_variant_option` had when it declared `option_id → cascade`
-alongside `option_value_id → restrict`, so that deleting a `product_option` reached both
-`product_option_value` and the row guarding it.
+by accident. The shape to avoid is a row that cascades from one table and guards another inside the
+same closure: a `product_variant_option` declaring `option_id → cascade` alongside
+`option_value_id → restrict` would let deleting a `product_option` reach both `product_option_value`
+and the row guarding it.
 
 That shape is why the check reads pre-cascade state. Interleaved with the hiding, the restrict
 check's "is anything live referencing this?" query excludes rows already hidden — so:
