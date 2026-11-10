@@ -3,34 +3,55 @@ import { Badge, Button, Checkbox, Input, Popover, PopoverContent, PopoverTrigger
 import { ChevronLeftIcon, ChevronRightIcon, XIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { AdminProductCategoryTreeNode } from '#/api/generated/model'
-import { type FlatCategory, flattenCategoryTree } from '#/features/categories/utils/flatten-category-tree'
+import { categoryPath, flattenCategoryTree } from '#/features/categories/utils/flatten-category-tree'
 
-type CategoryPickerProps = {
+/** Several Categories — a product's — or at most one — a Category's parent. */
+type CategoryPickerSelection =
+  | { multiple: true; value: string[]; onValueChange: (categoryIds: string[]) => void }
+  | { multiple: false; value: string | null; onValueChange: (categoryId: string | null) => void }
+
+type CategoryPickerProps = CategoryPickerSelection & {
   /** The whole tree, loaded once — a shop has tens of Categories. */
   tree: AdminProductCategoryTreeNode[]
-  value: string[]
-  onValueChange: (categoryIds: string[]) => void
   id?: string
   'aria-invalid'?: boolean
 }
 
 /**
- * Picks any number of Categories from the tree.
+ * Picks Categories from the tree.
  *
  * Browsing drills down one level at a time; typing switches to a flat list of matches across the
- * whole tree, each with its path ("Tops in Men"), because names repeat between branches.
+ * whole tree, each with its path ("Tops in Men"), because names repeat between branches. Choosing
+ * in single mode replaces the choice and closes the list.
  */
-export function CategoryPicker({ tree, value, onValueChange, id, 'aria-invalid': ariaInvalid }: CategoryPickerProps) {
+export function CategoryPicker({ tree, id, 'aria-invalid': ariaInvalid, ...selection }: CategoryPickerProps) {
   const { t } = useLingui()
+  const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [trail, setTrail] = useState<AdminProductCategoryTreeNode[]>([])
 
   const flat = useMemo(() => flattenCategoryTree(tree), [tree])
   const byId = useMemo(() => new Map(flat.map((row) => [row.category.id, row])), [flat])
+  const value = selection.multiple ? selection.value : selection.value ? [selection.value] : []
   const selected = new Set(value)
 
-  const toggle = (categoryId: string) =>
-    onValueChange(selected.has(categoryId) ? value.filter((id) => id !== categoryId) : [...value, categoryId])
+  const toggle = (categoryId: string) => {
+    if (selection.multiple) {
+      selection.onValueChange(
+        selected.has(categoryId) ? value.filter((id) => id !== categoryId) : [...value, categoryId],
+      )
+      return
+    }
+    selection.onValueChange(selected.has(categoryId) ? null : categoryId)
+    setOpen(false)
+  }
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen)
+    if (nextOpen) return
+    setQuery('')
+    setTrail([])
+  }
 
   const current = trail.at(-1)
   const level = current ? current.children : tree
@@ -43,12 +64,12 @@ export function CategoryPicker({ tree, value, onValueChange, id, 'aria-invalid':
         <ul className="flex flex-wrap gap-1.5">
           {value.map((categoryId) => {
             const row = byId.get(categoryId)
-            // A Category deleted since the product was loaded is not in the tree; it is dropped on save.
+            // A Category deleted since the form was loaded is not in the tree; it is dropped on save.
             if (!row) return null
             const name = row.category.name
             return (
               <li key={categoryId}>
-                <Badge variant="secondary" className="gap-1 pr-0.5" title={pathOf(row)}>
+                <Badge variant="secondary" className="gap-1 pr-0.5" title={categoryPath(row)}>
                   {name}
                   <button
                     type="button"
@@ -64,19 +85,13 @@ export function CategoryPicker({ tree, value, onValueChange, id, 'aria-invalid':
           })}
         </ul>
       )}
-      <Popover
-        onOpenChange={(open) => {
-          if (open) return
-          setQuery('')
-          setTrail([])
-        }}
-      >
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger
           render={
             <Button id={id} type="button" variant="outline" className="justify-start" aria-invalid={ariaInvalid} />
           }
         >
-          <Trans>Choose categories</Trans>
+          {selection.multiple ? <Trans>Choose categories</Trans> : <Trans>Choose a category</Trans>}
         </PopoverTrigger>
         <PopoverContent align="start" className="w-80 gap-1.5">
           <Input
@@ -166,8 +181,4 @@ function CategoryList({ rows, selected, onToggle, onOpen, empty }: CategoryListP
       })}
     </ul>
   )
-}
-
-function pathOf(row: FlatCategory): string {
-  return [...row.ancestors, row.category.name].join(' › ')
 }

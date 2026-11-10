@@ -9,9 +9,10 @@ import { PageLayout } from '#/components/layout/page-layout'
 import {
   collectionQueryOptions,
   useDeleteCollection,
+  useSetCollectionProducts,
   useSuspenseCollection,
 } from '#/features/collections/api/collections'
-import { CollectionProductsSection } from '#/features/collections/components/collection-products-section'
+import { ProductGroupSection } from '#/features/products/components/product-group-section'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export const Route = createFileRoute('/_authed/_shell/collections/$id/_detail')({
@@ -27,6 +28,7 @@ function CollectionDetailLayout() {
   const { data } = useSuspenseCollection(id)
   const navigate = useNavigate()
   const { mutate: deleteCollection } = useDeleteCollection(id)
+  const { mutate: setProducts } = useSetCollectionProducts(id)
   const prompt = usePrompt()
 
   const collection = data.collection
@@ -73,7 +75,15 @@ function CollectionDetailLayout() {
           }
         />
       </Card>
-      <CollectionProductsSection collectionId={id} />
+      <ProductGroupSection
+        filter={{ collectionId: id }}
+        emptyDescription={t`Add products to list them in this collection.`}
+        membership={{
+          editTo: `/collections/${id}/products`,
+          removeLabel: t`Remove from collection`,
+          onRemove: (productId) => setProducts({ remove: [productId] }),
+        }}
+      />
     </PageLayout.SingleColumn>
   )
 }

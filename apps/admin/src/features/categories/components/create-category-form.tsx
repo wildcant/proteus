@@ -1,8 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { KeyboundForm, RouteFocusModal, useRouteModal } from '@proteus/ui'
+import { Field, FieldDescription, FieldLabel, KeyboundForm, RouteFocusModal, useRouteModal } from '@proteus/ui'
+import { useId } from 'react'
 import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
+import { CategoryPicker } from '#/features/categories/components/category-picker'
 import { useCreateCategoryForm } from '#/features/categories/hooks/use-create-category-form'
-import { flattenCategoryTree } from '#/features/categories/utils/flatten-category-tree'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function CreateCategoryForm() {
@@ -10,16 +11,11 @@ export function CreateCategoryForm() {
   const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
   const { data } = useSuspenseCategoryTree()
+  const parentId = useId()
 
   const { form } = useCreateCategoryForm({
     onSuccess: () => handleSuccess(),
   })
-
-  // Names repeat across the tree ("Tops" under Men and under Women), so each option shows its path.
-  const parents = flattenCategoryTree(data.productCategories).map(({ category, ancestors }) => ({
-    id: category.id,
-    label: [...ancestors, category.name].join(' › '),
-  }))
 
   return (
     <RouteFocusModal.Form form={form} copy={unsavedChanges}>
@@ -45,17 +41,25 @@ export function CreateCategoryForm() {
               <form.AppField name="description">
                 {(field) => <field.TextareaField label={t`Description`} rows={3} />}
               </form.AppField>
-              <form.AppField name="parent">
+              <form.Field name="parentId">
                 {(field) => (
-                  <field.SingleComboboxField
-                    label={t`Parent`}
-                    items={parents}
-                    placeholder={t`None — a top-level category`}
-                    emptyMessage={t`No categories yet.`}
-                    description={t`Fixed once the category is created.`}
-                  />
+                  <Field>
+                    <FieldLabel htmlFor={parentId}>
+                      <Trans>Parent</Trans>
+                    </FieldLabel>
+                    <CategoryPicker
+                      multiple={false}
+                      id={parentId}
+                      tree={data.productCategories}
+                      value={field.state.value}
+                      onValueChange={field.handleChange}
+                    />
+                    <FieldDescription>
+                      <Trans>None makes it a top-level category. Fixed once the category is created.</Trans>
+                    </FieldDescription>
+                  </Field>
                 )}
-              </form.AppField>
+              </form.Field>
               <form.AppField name="isActive">
                 {(field) => <field.SwitchField label={t`Active`} description={t`Shown on the store.`} />}
               </form.AppField>

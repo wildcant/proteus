@@ -15,3 +15,8 @@ export function flattenCategoryTree(nodes: AdminProductCategoryTreeNode[], ances
     ...flattenCategoryTree(category.children, [...ancestors, category.name]),
   ])
 }
+
+/** "Men › Tops" — how a Category is named wherever names alone would be ambiguous. */
+export function categoryPath({ ancestors, category }: FlatCategory): string {
+  return [...ancestors, category.name].join(' › ')
+}

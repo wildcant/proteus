@@ -1,18 +1,14 @@
 import { AdminCreateProductCategory } from '@proteus/http-schemas/admin'
 import { z } from 'zod'
 import type { AdminProductCategoryResponse } from '#/api/generated/model'
-import type { ComboboxOption } from '#/components/form/single-combobox-field'
 import { useCreateCategory } from '#/features/categories/api/categories'
 import { useAppForm } from '#/lib/form-hook.ts'
 import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
-/**
- * The form holds the chosen parent as an item, which is what the combobox field keeps; the payload
- * takes only its id. A blank handle is left out so the server generates one from the name.
- */
+/** A blank handle is left out so the server generates one from the name. */
 const createCategorySchema = AdminCreateProductCategory.pick({ name: true, description: true }).extend({
   handle: z.string(),
-  parent: z.custom<ComboboxOption>().nullable(),
+  parentId: z.string().nullable(),
   isActive: z.boolean(),
   isInternal: z.boolean(),
 })
@@ -24,7 +20,7 @@ export function useCreateCategoryForm(params?: SubmitFormParams<AdminProductCate
     name: '',
     handle: '',
     description: '',
-    parent: null,
+    parentId: null,
     isActive: false,
     isInternal: false,
   }
@@ -34,13 +30,9 @@ export function useCreateCategoryForm(params?: SubmitFormParams<AdminProductCate
     validators: { onSubmit: createCategorySchema },
     onSubmit: async ({ value }) => {
       try {
-        const { parent, handle, ...category } = value
+        const { handle, ...category } = value
         const data = await createMutation.mutateAsync(
-          AdminCreateProductCategory.parse({
-            ...category,
-            handle: handle.trim() || undefined,
-            parentId: parent?.id ?? null,
-          }),
+          AdminCreateProductCategory.parse({ ...category, handle: handle.trim() || undefined }),
         )
         form.reset()
         params?.onSuccess?.(data)

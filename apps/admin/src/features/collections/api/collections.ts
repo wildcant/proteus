@@ -12,14 +12,14 @@ import {
 } from '#/api/generated/collections/collections'
 import type {
   AdminCreateProductCollection,
-  AdminProductCollection,
   AdminProductCollectionResponse,
   AdminSetCollectionProducts,
   AdminUpdateProductCollection,
   DeleteResponse,
   ListProductCollectionsParams,
 } from '#/api/generated/model'
-import { collectionMemberKeys, productKeys } from '#/features/products/api/products'
+import { productIdKeys, productKeys } from '#/features/products/api/products'
+import { listEveryPage } from '#/lib/list-every-page'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -27,9 +27,6 @@ const collectionKeys = queryKeysFactory<'collections', ListProductCollectionsPar
 
 /** Every Collection at once, for the product form. Its own factory: the cached value is an array, not a page. */
 const collectionOptionKeys = queryKeysFactory<'collectionOptions'>('collectionOptions')
-
-/** The list endpoint's ceiling, which is also the page the walk over every Collection reads at a time. */
-const MAX_PAGE_SIZE = 100
 
 export const collectionsListQueryOptions = (params?: ListProductCollectionsParams) =>
   queryOptions({
@@ -44,21 +41,15 @@ export const collectionQueryOptions = (id: string) =>
     queryFn: () => getProductCollection(id),
   })
 
-/**
- * Every Collection, walked page by page — what the product form's multi-select offers. A shop has
- * tens of Collections, so this is a request or two.
- */
+/** Every Collection — what the product form's multi-select offers. */
 export const allCollectionsQueryOptions = () =>
   queryOptions({
     queryKey: collectionOptionKeys.list(),
-    queryFn: async () => {
-      const collections: AdminProductCollection[] = []
-      for (let offset = 0; ; offset += MAX_PAGE_SIZE) {
-        const page = await listProductCollections({ offset, limit: MAX_PAGE_SIZE, order: 'title' })
-        collections.push(...page.collections)
-        if (offset + MAX_PAGE_SIZE >= page.count) return collections
-      }
-    },
+    queryFn: () =>
+      listEveryPage(
+        (range) => listProductCollections({ ...range, order: 'title' }),
+        (page) => page.collections,
+      ),
   })
 
 export const useCollections = (params?: ListProductCollectionsParams) => useQuery(collectionsListQueryOptions(params))
@@ -146,7 +137,7 @@ export const useSetCollectionProducts = (
     mutationFn: (data: AdminSetCollectionProducts) => setProductCollectionProducts(id, data),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.all })
-      queryClient.invalidateQueries({ queryKey: collectionMemberKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: productIdKeys.list({ collectionId: id }) })
       onSuccess?.(...args)
     },
     onError: (...args) => {

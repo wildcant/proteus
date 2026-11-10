@@ -1,21 +1,29 @@
 import { useLingui } from '@lingui/react/macro'
-import type { AdminProduct } from '#/api/generated/model'
+import type { AdminProduct, ListProductsParams } from '#/api/generated/model'
 import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
+import type { TableConfig } from '#/components/data-table/types'
 import { useProducts } from '#/features/products/api/products'
 import { productStatusColors, productStatusLabels } from '#/features/products/utils/product-status'
 
+/** Narrows the list to one grouping's products; empty for every product. */
+export type ProductListFilter = Pick<ListProductsParams, 'categoryId' | 'collectionId' | 'typeId' | 'tagId'>
+
+type ProductListTableConfig = Pick<
+  TableConfig<AdminProduct>,
+  'prefix' | 'rowHref' | 'rowActions' | 'rowSelection' | 'empty'
+>
+
 /**
- * Every product, searchable, with a checkbox per row. Selection is held by the caller as the whole
- * set of ids, so it survives paging and search. Nothing is ever disabled: a current member is
- * simply pre-checked, and unchecking it is how it is removed.
+ * A compact product list — thumbnail, title, status — for the tables that sit inside another page:
+ * a grouping's products, and the product picker opened over it.
  */
-export const useProductPickerTable = (selectedIds: string[], onSelectedIdsChange: (ids: string[]) => void) => {
+export const useProductListTable = (filter: ProductListFilter, config: ProductListTableConfig) => {
   const { t, i18n } = useLingui()
 
   return useDefineTable<AdminProduct>({
     useData: (params) => {
-      const { data, isPending, isFetching } = useProducts(params)
+      const { data, isPending, isFetching } = useProducts({ ...params, ...filter })
       return { data: data?.products ?? [], count: data?.count, isPending, isFetching }
     },
 
@@ -31,16 +39,9 @@ export const useProductPickerTable = (selectedIds: string[], onSelectedIdsChange
       }),
     ],
 
-    // The picker opens over a page that lists products of its own.
-    prefix: 'pp',
     pageSize: 10,
     getRowId: (row) => row.id,
-    rowSelection: () => ({
-      value: Object.fromEntries(selectedIds.map((id) => [id, true])),
-      onChange: (next) => onSelectedIdsChange(Object.keys(next).filter((id) => next[id])),
-    }),
-
-    empty: { heading: t`No products yet`, description: t`Create a product to add it here.` },
     filtered: { heading: t`No products found`, description: t`Try changing your search term.` },
+    ...config,
   })
 }

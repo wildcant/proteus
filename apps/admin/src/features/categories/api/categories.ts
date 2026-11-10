@@ -19,7 +19,7 @@ import {
   updateProductCategory,
 } from '#/api/generated/product-categories/product-categories'
 import { type CategoryMove, moveCategoryInTree } from '#/features/categories/utils/move-category-in-tree'
-import { categoryMemberKeys, productKeys } from '#/features/products/api/products'
+import { productIdKeys, productKeys } from '#/features/products/api/products'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -157,7 +157,7 @@ export const useSetCategoryProducts = (
     mutationFn: (data: AdminSetCategoryProducts) => setProductCategoryProducts(id, data),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.all })
-      queryClient.invalidateQueries({ queryKey: categoryMemberKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: productIdKeys.list({ categoryId: id }) })
       onSuccess?.(...args)
     },
     onError: (...args) => {

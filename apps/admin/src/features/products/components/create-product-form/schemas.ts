@@ -1,4 +1,4 @@
-import { AdminCreateProduct } from '@proteus/http-schemas/admin'
+import { AdminCreateProduct, AdminUpdateProduct } from '@proteus/http-schemas/admin'
 import { z } from 'zod'
 import { mediaSchema } from '#/features/products/utils/media'
 
@@ -9,15 +9,20 @@ export const detailsSchema = AdminCreateProduct.pick({
   description: true,
 })
 
+/**
+ * What a product is grouped under, as the Organization fields hold it — on create and on edit. Every
+ * set is required: the form edits the whole of it.
+ */
+export const organizationSchema = AdminUpdateProduct.pick({ categoryIds: true, collectionIds: true, tagIds: true })
+  .required()
+  .extend({
+    /** The chosen item rather than its id, as `SingleComboboxField` holds it; sent as `typeId`. */
+    type: z.object({ id: z.string(), label: z.string() }).nullable(),
+  })
+
 export const organizeSchema = AdminCreateProduct.pick({
   discountable: true,
-}).extend({
-  /** The chosen item rather than its id, as `SingleComboboxField` holds it; sent as `typeId`. */
-  type: z.object({ id: z.string(), label: z.string() }).nullable(),
-  categoryIds: z.array(z.string()),
-  collectionIds: z.array(z.string()),
-  tagIds: z.array(z.string()),
-})
+}).extend(organizationSchema.shape)
 
 export const attributesSchema = AdminCreateProduct.pick({
   material: true,
