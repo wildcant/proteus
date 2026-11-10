@@ -77,7 +77,10 @@ export class ProductRepository extends BaseRepository(productTable) {
   }
 
   /** Members of the live Collections whose `column` is one of `values`. */
-  private inCollections(column: typeof productCollectionTable.id | typeof productCollectionTable.handle, values: string[]): SQL {
+  private inCollections(
+    column: typeof productCollectionTable.id | typeof productCollectionTable.handle,
+    values: string[],
+  ): SQL {
     const client = this.getClient()
     return exists(
       client
