@@ -5,6 +5,8 @@ export const StoreProductListParams = createFindParams().extend({
   q: z.string().optional(),
   /** A Category's handle. Lists its products and its Visible descendants'; a hidden Category matches nothing. */
   category: z.string().min(1).optional(),
+  /** A Collection's handle. Lists its members; an unknown or deleted Collection matches nothing. */
+  collection: z.string().min(1).optional(),
 })
 
 export type StoreProductListQuery = FindParams<typeof StoreProductListParams>

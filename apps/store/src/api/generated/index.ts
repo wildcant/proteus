@@ -1,5 +1,6 @@
 export * from './auth/auth.ts';
 export * from './carts/carts.ts';
+export * from './collections/collections.ts';
 export * from './countries/countries.ts';
 export * from './customers/customers.ts';
 export * from './orders/orders.ts';

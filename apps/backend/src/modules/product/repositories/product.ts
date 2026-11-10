@@ -23,12 +23,22 @@ export class ProductRepository extends BaseRepository(productTable) {
   /** The grouping filters: each one an `EXISTS`, ANDed with the column filters and each other. */
   protected override extraWhere(filters?: FilterableProductProps): SQL | undefined {
     if (!filters) return undefined
-    const { categoryId, categoryHandle, collectionId, includeDescendants = false, visibleOnly = false } = filters
+    const {
+      categoryId,
+      categoryHandle,
+      collectionId,
+      collectionHandle,
+      includeDescendants = false,
+      visibleOnly = false,
+    } = filters
     const clauses: SQL[] = []
     const scope = { includeDescendants, visibleOnly }
     if (categoryId !== undefined) clauses.push(this.inCategories(sql`id`, asArray(categoryId), scope))
     if (categoryHandle !== undefined) clauses.push(this.inCategories(sql`handle`, asArray(categoryHandle), scope))
-    if (collectionId !== undefined) clauses.push(this.inCollections(asArray(collectionId)))
+    if (collectionId !== undefined) clauses.push(this.inCollections(productCollectionTable.id, asArray(collectionId)))
+    if (collectionHandle !== undefined) {
+      clauses.push(this.inCollections(productCollectionTable.handle, asArray(collectionHandle)))
+    }
     return clauses.length > 0 ? and(...clauses) : undefined
   }
 
@@ -66,7 +76,8 @@ export class ProductRepository extends BaseRepository(productTable) {
     )`
   }
 
-  private inCollections(collectionIds: string[]): SQL {
+  /** Members of the live Collections whose `column` is one of `values`. */
+  private inCollections(column: typeof productCollectionTable.id | typeof productCollectionTable.handle, values: string[]): SQL {
     const client = this.getClient()
     return exists(
       client
@@ -76,7 +87,7 @@ export class ProductRepository extends BaseRepository(productTable) {
         .where(
           and(
             eq(productProductCollectionTable.productId, this.table.id),
-            inArray(productProductCollectionTable.collectionId, collectionIds),
+            inArray(column, values),
             isNull(productProductCollectionTable.deletedAt),
             isNull(productCollectionTable.deletedAt),
           ),
