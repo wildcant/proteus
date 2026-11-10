@@ -26,6 +26,9 @@ export const productKeys = queryKeysFactory<'products', ListProductsParams>('pro
 /** Who is directly in each Category, by id. Its own factory: the cached value is an id list, not a page. */
 export const categoryMemberKeys = queryKeysFactory<'categoryMembers'>('categoryMembers')
 
+/** Who is in each Collection, by id. Its own factory for the same reason. */
+export const collectionMemberKeys = queryKeysFactory<'collectionMembers'>('collectionMembers')
+
 /** The list endpoint's ceiling, which is also the page the member-id walk reads at a time. */
 const MAX_PAGE_SIZE = 100
 
@@ -59,10 +62,27 @@ export const productIdsInCategoryQueryOptions = (categoryId: string) =>
     },
   })
 
+/** Every member of a Collection, as ids, walked page by page — what the product picker pre-checks. */
+export const productIdsInCollectionQueryOptions = (collectionId: string) =>
+  queryOptions({
+    queryKey: collectionMemberKeys.detail(collectionId),
+    queryFn: async () => {
+      const ids: string[] = []
+      for (let offset = 0; ; offset += MAX_PAGE_SIZE) {
+        const page = await listProducts({ collectionId, offset, limit: MAX_PAGE_SIZE })
+        ids.push(...page.products.map((product) => product.id))
+        if (offset + MAX_PAGE_SIZE >= page.count) return ids
+      }
+    },
+  })
+
 export const useProducts = (params?: ListProductsParams) => useQuery(productsListQueryOptions(params))
 
 export const useSuspenseProductIdsInCategory = (categoryId: string) =>
   useSuspenseQuery(productIdsInCategoryQueryOptions(categoryId))
+
+export const useSuspenseProductIdsInCollection = (collectionId: string) =>
+  useSuspenseQuery(productIdsInCollectionQueryOptions(collectionId))
 
 export const useSuspenseProduct = (id: string) => useSuspenseQuery(productQueryOptions(id))
 
@@ -76,6 +96,9 @@ export const useCreateProduct = (
     mutationFn: (data: AdminCreateProduct) => createProduct(data),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+      // The new product may already sit in Categories and Collections.
+      queryClient.invalidateQueries({ queryKey: categoryMemberKeys.all })
+      queryClient.invalidateQueries({ queryKey: collectionMemberKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {
@@ -98,8 +121,9 @@ export const useUpdateProduct = (
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: productKeys.lists() })
-      // `categoryIds` may have moved the product between Categories.
+      // `categoryIds` and `collectionIds` may have moved the product between groupings.
       queryClient.invalidateQueries({ queryKey: categoryMemberKeys.all })
+      queryClient.invalidateQueries({ queryKey: collectionMemberKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {

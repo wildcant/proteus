@@ -31,6 +31,8 @@ export type CreateProductDTO = {
   images?: CreateProductImageInput[]
   /** The product's Categories. */
   categoryIds?: string[]
+  /** The product's Collections. */
+  collectionIds?: string[]
 }
 
 export type UpdateProductDTO = {
@@ -55,6 +57,8 @@ export type UpdateProductDTO = {
   images?: UpsertProductImageInput[]
   /** Replaces the product's Categories. Absent leaves them alone. */
   categoryIds?: string[]
+  /** Replaces the product's Collections. Absent leaves them alone. */
+  collectionIds?: string[]
 }
 
 export type CreateProductVariantDTO = {
@@ -188,6 +192,26 @@ export type UpdateProductCategoryDTO = {
 
 /** Applied `add` then `remove`. Adding a member or removing a non-member is a no-op. */
 export type SetCategoryProductsDTO = {
+  add?: string[]
+  remove?: string[]
+}
+
+export type CreateProductCollectionDTO = {
+  title: string
+  /** Generated from the title when absent. */
+  handle?: string
+  thumbnail?: string | null
+}
+
+/** Never regenerates the handle. */
+export type UpdateProductCollectionDTO = {
+  title?: string
+  handle?: string
+  thumbnail?: string | null
+}
+
+/** Applied `add` then `remove`. Adding a member or removing a non-member is a no-op. */
+export type SetCollectionProductsDTO = {
   add?: string[]
   remove?: string[]
 }

@@ -15,6 +15,7 @@ export function searchable<T>(...columns: Array<keyof T & string>): string[] {
 export const Tags = {
   AUTH: 'Auth',
   CARTS: 'Carts',
+  COLLECTIONS: 'Collections',
   COUNTRIES: 'Countries',
   CUSTOMERS: 'Customers',
   FULFILLMENTS: 'Fulfillments',

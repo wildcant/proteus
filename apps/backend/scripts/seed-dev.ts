@@ -691,6 +691,40 @@ if (existingProducts.length > 0) {
   )
   console.info(`Assigned products to ${Object.keys(CATEGORY_MEMBERS).length} categories`)
 
+  // --- Collections ---
+  // The Hoodie sits in both: joining one Collection never takes a product out of another. Each hero
+  // borrows a member's photo.
+  const COLLECTIONS = [
+    {
+      title: 'Essentials',
+      handle: 'essentials',
+      cover: 'hoodie',
+      members: ['mens-t-shirt', 'womens-t-shirt', 'mens-crewneck', 'womens-crewneck', 'hoodie', 'sweatpants'],
+    },
+    {
+      title: 'Active',
+      handle: 'active',
+      cover: 'grey-runners',
+      members: ['workout-shirt', 'shorts', 'leggings', 'grey-runners', 'hoodie'],
+    },
+  ]
+  const seededProductId = (handle: string) => {
+    const product = productByHandle.get(handle)
+    if (!product) throw new Error(`Missing seeded product "${handle}"`)
+    return product.id
+  }
+  await Promise.all(
+    COLLECTIONS.map(async ({ title, handle, cover, members }) => {
+      const collection = await productService.createCollection({
+        title,
+        handle,
+        thumbnail: productByHandle.get(cover)?.thumbnail ?? null,
+      })
+      await productService.setCollectionProducts(collection.id, { add: members.map(seededProductId) })
+    }),
+  )
+  console.info(`Seeded ${COLLECTIONS.length} collections`)
+
   // --- Options (global) ---
   // Colour ranks follow first appearance in the catalogue, which keeps the swatch order stable.
   const colorValues = [...new Set(CATALOG.flatMap((entry) => Object.keys(entry.colors)))]

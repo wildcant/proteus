@@ -16,6 +16,11 @@ export interface AdminCreateProduct {
      * @items.maxLength 64
      */
   categoryIds?: string[];
+  /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  collectionIds?: string[];
   /** @maxLength 4000 */
   description?: string;
   discountable?: boolean;

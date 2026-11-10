@@ -13,6 +13,7 @@ export const organizeSchema = AdminCreateProduct.pick({
   discountable: true,
 }).extend({
   categoryIds: z.array(z.string()),
+  collectionIds: z.array(z.string()),
 })
 
 export const attributesSchema = AdminCreateProduct.pick({

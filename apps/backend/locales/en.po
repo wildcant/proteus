@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:123
+#: src/routes.ts:125
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Routes with auth: 'required' must declare permissions. Missing on:\n"
@@ -573,17 +573,17 @@ msgid "A category cannot be moved under itself or one of its subcategories"
 msgstr "A category cannot be moved under itself or one of its subcategories"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:273
+#: src/modules/product/services/product-module-service.ts:302
 msgid "Variant creation returned no rows"
 msgstr "Variant creation returned no rows"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:352
+#: src/modules/product/services/product-module-service.ts:381
 msgid "Variant \"{variantId}\" not found"
 msgstr "Variant \"{variantId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:897
+#: src/modules/product/services/product-module-service.ts:972
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 

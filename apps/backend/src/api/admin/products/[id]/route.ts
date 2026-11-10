@@ -20,14 +20,14 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     productService.listProductImages({ productId: req.params.id }, { order: { rank: 'ASC' } }),
     productService.listProductGroupings([req.params.id]),
   ])
-  const categories = groupings[req.params.id]?.categories ?? []
-  return { status: 200, json: { product: { ...product, categories, options, images } } }
+  const { categories = [], collections = [] } = groupings[req.params.id] ?? {}
+  return { status: 200, json: { product: { ...product, categories, collections, options, images } } }
 }
 
 export const PatchInput = { params: IdParams, body: AdminUpdateProduct }
 export const PatchOutput = AdminUpdateProductResponse
 // updateProduct throws NOT_FOUND from the module for a missing product, and for an unknown id in
-// `categoryIds` through the mapped foreign-key violation
+// `categoryIds` or `collectionIds` through the mapped foreign-key violation
 // ast-grep-ignore: route-declares-unthrown-error
 export const PatchThrows = [ErrorTypes.NOT_FOUND] as const
 
@@ -35,7 +35,8 @@ export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpRe
   const productService = req.scope.resolve(Modules.PRODUCT)
   const product = await productService.updateProduct(req.params.id, req.body)
   const groupings = await productService.listProductGroupings([product.id])
-  return { status: 200, json: { product: { ...product, categories: groupings[product.id]?.categories ?? [] } } }
+  const { categories = [], collections = [] } = groupings[product.id] ?? {}
+  return { status: 200, json: { product: { ...product, categories, collections } } }
 }
 
 export const DeleteInput = { params: IdParams }

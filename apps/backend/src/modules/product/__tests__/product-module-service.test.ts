@@ -7,10 +7,12 @@ import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import productModule from '../index.js'
 import { ProductRepository } from '../repositories/product.js'
 import { ProductCategoryRepository } from '../repositories/product-category.js'
+import { ProductCollectionRepository } from '../repositories/product-collection.js'
 import { ProductImageRepository } from '../repositories/product-image.js'
 import { ProductOptionRepository } from '../repositories/product-option.js'
 import { ProductOptionValueRepository } from '../repositories/product-option-value.js'
 import { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
+import { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
 import { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import { ProductVariantRepository } from '../repositories/product-variant.js'
@@ -54,6 +56,8 @@ test.beforeEach(({ getDb, logger }) => {
     productVariantOptionRepository,
     productCategoryRepository: new ProductCategoryRepository({ getDb, cascadeGraph }),
     productProductCategoryRepository: new ProductProductCategoryRepository({ getDb, cascadeGraph }),
+    productCollectionRepository: new ProductCollectionRepository({ getDb, cascadeGraph }),
+    productProductCollectionRepository: new ProductProductCollectionRepository({ getDb, cascadeGraph }),
     withTransaction,
     logger,
   })

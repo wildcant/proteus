@@ -3,6 +3,7 @@ import { Field, FieldDescription, FieldLabel } from '@proteus/ui'
 import { useId } from 'react'
 import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
 import { CategoryPicker } from '#/features/categories/components/category-picker'
+import { useSuspenseAllCollections } from '#/features/collections/api/collections'
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
 import { type GroupRefs, Tab } from './constants'
@@ -15,6 +16,7 @@ export const ProductCreateOrganizeForm = withForm({
   render: function ProductCreateOrganizeForm({ form, groupRefs }) {
     const { t } = useLingui()
     const { data: tree } = useSuspenseCategoryTree()
+    const { data: collections } = useSuspenseAllCollections()
     const categoriesId = useId()
 
     return (
@@ -53,6 +55,17 @@ export const ProductCreateOrganizeForm = withForm({
                     </Field>
                   )}
                 </form.Field>
+                <form.AppField name="organize.collectionIds">
+                  {(field) => (
+                    <field.MultiComboboxField
+                      label={t`Collections`}
+                      items={collections.map((collection) => ({ id: collection.id, label: collection.title }))}
+                      placeholder={t`Choose collections`}
+                      emptyMessage={t`No collections yet.`}
+                      description={t`A product can sit in several collections.`}
+                    />
+                  )}
+                </form.AppField>
               </div>
             </div>
           </>

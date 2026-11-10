@@ -13,7 +13,7 @@ import { resolveVariantsPayload } from '../components/create-product-form/varian
 export const productCreateFormOpts = formOptions({
   defaultValues: {
     details: { title: '', subtitle: '', handle: '', description: '' },
-    organize: { discountable: true, categoryIds: [] },
+    organize: { discountable: true, categoryIds: [], collectionIds: [] },
     attributes: {
       material: '',
       originCountry: '',

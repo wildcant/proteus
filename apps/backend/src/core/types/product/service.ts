@@ -3,6 +3,7 @@ import type { Context } from '../context.js'
 import type {
   AppliedProductOptionChangeDTO,
   EnrichedProductVariantDTO,
+  FilterableProductCollectionProps,
   FilterableProductImageProps,
   FilterableProductOptionCombinationProps,
   FilterableProductOptionProps,
@@ -14,6 +15,7 @@ import type {
   PickerVariantDTO,
   ProductCategoryDTO,
   ProductCategoryTreeNodeDTO,
+  ProductCollectionDTO,
   ProductDTO,
   ProductGroupingsDTO,
   ProductImageDTO,
@@ -31,14 +33,17 @@ import type {
 } from './common.js'
 import type {
   CreateProductCategoryDTO,
+  CreateProductCollectionDTO,
   CreateProductDTO,
   CreateProductImageDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductVariantDTO,
   SetCategoryProductsDTO,
+  SetCollectionProductsDTO,
   SetProductOptionsDTO,
   UpdateProductCategoryDTO,
+  UpdateProductCollectionDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
   UpdateProductVariantDTO,
@@ -182,6 +187,29 @@ export type IProductModuleService = {
   softDeleteCategories(categoryIds: string[], context?: Context): Promise<void>
   /** Adds then removes direct members. Adding a member or removing a non-member is a no-op. */
   setCategoryProducts(categoryId: string, data: SetCategoryProductsDTO, context?: Context): Promise<ProductCategoryDTO>
+
+  // Collections
+  listAndCountCollections(
+    filters?: FilterableProductCollectionProps,
+    config?: FindConfig<ProductCollectionDTO>,
+    context?: Context,
+  ): Promise<[ProductCollectionDTO[], number]>
+  retrieveCollection(collectionId: string, context?: Context): Promise<ProductCollectionDTO>
+  createCollection(data: CreateProductCollectionDTO, context?: Context): Promise<ProductCollectionDTO>
+  updateCollection(
+    collectionId: string,
+    data: UpdateProductCollectionDTO,
+    context?: Context,
+  ): Promise<ProductCollectionDTO>
+  /** Hides the Collections' memberships with them; the products stay. */
+  softDeleteCollections(collectionIds: string[], context?: Context): Promise<void>
+  /** Adds then removes members. Adding a member or removing a non-member is a no-op. */
+  setCollectionProducts(
+    collectionId: string,
+    data: SetCollectionProductsDTO,
+    context?: Context,
+  ): Promise<ProductCollectionDTO>
+
   /** Each product's live groupings, keyed by product id — one query per relation over the whole list. */
   listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>>
 

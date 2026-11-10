@@ -4,7 +4,9 @@ import type { FilterableProductProps } from '../../../core/types/product/common.
 import { BaseRepository } from '../../../core/utils/base-repository.js'
 import { productTable } from '../models/product.js'
 import { productCategoryTable } from '../models/product-category.js'
+import { productCollectionTable } from '../models/product-collection.js'
 import { productProductCategoryTable } from '../models/product-product-category.js'
+import { productProductCollectionTable } from '../models/product-product-collection.js'
 
 const asArray = (value: string | string[]) => (Array.isArray(value) ? value : [value])
 
@@ -22,6 +24,7 @@ export class ProductRepository extends BaseRepository(productTable) {
   protected override extraWhere(filters?: FilterableProductProps): SQL | undefined {
     const clauses: SQL[] = []
     if (filters?.categoryId !== undefined) clauses.push(this.inCategories(asArray(filters.categoryId)))
+    if (filters?.collectionId !== undefined) clauses.push(this.inCollections(asArray(filters.collectionId)))
     return clauses.length > 0 ? and(...clauses) : undefined
   }
 
@@ -39,6 +42,24 @@ export class ProductRepository extends BaseRepository(productTable) {
             inArray(productProductCategoryTable.categoryId, categoryIds),
             isNull(productProductCategoryTable.deletedAt),
             isNull(productCategoryTable.deletedAt),
+          ),
+        ),
+    )
+  }
+
+  private inCollections(collectionIds: string[]): SQL {
+    const client = this.getClient()
+    return exists(
+      client
+        .select({ id: productProductCollectionTable.id })
+        .from(productProductCollectionTable)
+        .innerJoin(productCollectionTable, eq(productCollectionTable.id, productProductCollectionTable.collectionId))
+        .where(
+          and(
+            eq(productProductCollectionTable.productId, this.table.id),
+            inArray(productProductCollectionTable.collectionId, collectionIds),
+            isNull(productProductCollectionTable.deletedAt),
+            isNull(productCollectionTable.deletedAt),
           ),
         ),
     )
