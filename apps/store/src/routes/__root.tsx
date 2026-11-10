@@ -8,13 +8,24 @@ import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts, useRouter } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { SHOW_DEVTOOLS } from '#/env.ts'
+import { createIsomorphicFn } from '@tanstack/react-start'
+import { INLINE_STYLESHEET, SHOW_DEVTOOLS } from '#/env.ts'
 import { CartMarketSwitch } from '#/features/cart/components/cart-market-switch'
-import { MARKET_GLOBAL, type MarketContext } from '#/lib/market'
+import { MARKET_GLOBAL, type MarketContext, marketCookieScript } from '#/lib/market'
 import { modalSearchSchema } from '#/lib/modal-state'
 import { marketHeadLinksFor } from '#/lib/seo/market-links'
 import manropeFont from '../assets/fonts/Manrope-VariableFont_wght.woff2?url'
+import appCssText from '../styles.css?inline'
 import appCss from '../styles.css?url'
+
+/**
+ * The stylesheet's text, inlined into the document in production so the first paint needs no
+ * second request. Server-only: the client never renders it, because React keeps the `<style>` the
+ * server sent (it is matched by `href`), so the text stays out of the client bundle.
+ */
+const inlineAppCss = createIsomorphicFn()
+  .server(() => appCssText)
+  .client(() => '')
 
 const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`
 
@@ -61,10 +72,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
         type: 'font/woff2',
         crossOrigin: 'anonymous',
       },
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
+      // Linked only where it is not inlined below; see INLINE_STYLESHEET.
+      ...(INLINE_STYLESHEET ? [] : [{ rel: 'stylesheet', href: appCss }]),
       ...marketHeadLinksFor(context),
     ],
   }),
@@ -91,6 +100,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   // document navigation — so a plain read is correct and needs no subscription.
   const { market } = useRouter().options.context
   const { t } = useLingui()
+  // Only a market the URL named is a choice to remember: a path with none is a not-found, and says
+  // nothing about where the shopper is buying from.
+  const cookieScript = market.resolvedFromUrl ? marketCookieScript(market.current.localeCode) : ''
 
   return (
     // The locale code is the language tag; its language subtag picks the catalog.
@@ -102,6 +114,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {/** biome-ignore lint/security/noDangerouslySetInnerHtml: inlining resolved server state */}
         {/* biome-ignore lint/style/useNamingConvention: React API */}
         <script dangerouslySetInnerHTML={{ __html: marketInitScript(market) }} />
+        {/* Remembers this page's market, so a later visit to `/` lands back here. Rendered even
+            when empty, so the client tree matches the server's either way. */}
+        {/** biome-ignore lint/security/noDangerouslySetInnerHtml: a locale code from the routable set */}
+        {/* biome-ignore lint/style/useNamingConvention: React API */}
+        <script dangerouslySetInnerHTML={{ __html: cookieScript }} />
+        {!!INLINE_STYLESHEET && (
+          <style href={appCss} precedence="default">
+            {inlineAppCss()}
+          </style>
+        )}
         <HeadContent />
       </head>
       <body className="wrap-anywhere font-sans antialiased selection:bg-[rgba(79,184,178,0.24)]">

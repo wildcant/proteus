@@ -15,7 +15,8 @@
       "!**/src/api/generated",
       "!apps/backend/openapi/openapi-*.json",
       "!apps/backend/structure/dependency-graph.svg",
-      "!apps/backend/worker-configuration.d.ts"
+      "!apps/backend/worker-configuration.d.ts",
+      "!apps/store/worker-configuration.d.ts"
     ]
   },
   "formatter": {
@@ -186,6 +187,7 @@
         "apps/backend/src/modules/*/index.ts",
         "apps/backend/src/providers/*/index.ts",
         "apps/backend/src/index.workerd.ts",
+        "apps/store/src/server.ts",
         "packages/testing/**"
       ],
       "linter": {

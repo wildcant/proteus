@@ -4,6 +4,7 @@ import { PackageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { StoreProductImage } from '#/api/generated/model'
 import { GalleryDots } from '#/features/products/components/gallery-dots'
+import { responsiveImage } from '#/lib/image-url'
 
 type ProductGalleryProps = {
   images: StoreProductImage[]
@@ -82,18 +83,17 @@ export function ProductGallery({ images, thumbnail, alt, variantId }: ProductGal
         {slides.map((image, index) => {
           const position = index + 1
           const count = slides.length
+          // The mosaic's rhythm: every third image spans both columns, and so does a trailing
+          // image that would otherwise sit alone in the left one. No count leaves an orphan.
+          const spansBoth = index % 3 === 2 || (index === slides.length - 1 && index % 3 === 0)
           return (
             <li
               key={image.id}
-              className={cn(
-                'w-full shrink-0 snap-start bg-surface-subtle lg:w-auto',
-                // The mosaic's rhythm: every third image spans both columns, and so does a trailing
-                // image that would otherwise sit alone in the left one. No count leaves an orphan.
-                (index % 3 === 2 || (index === slides.length - 1 && index % 3 === 0)) && 'lg:col-span-2',
-              )}
+              className={cn('w-full shrink-0 snap-start bg-surface-subtle lg:w-auto', spansBoth && 'lg:col-span-2')}
             >
               <img
-                src={image.url}
+                // Full width in the carousel; half the mosaic from `lg`, unless the slot spans both.
+                {...responsiveImage(image.url, spansBoth ? '100vw' : '(min-width: 64rem) 50vw, 100vw')}
                 // No alt column on the image, so the honest fallback is positional. Every slide is
                 // content here, unlike the thumbnails it replaces, which were navigation.
                 alt={t`${alt} — view ${position} of ${count}`}

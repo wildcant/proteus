@@ -32,7 +32,7 @@ export class ApiError extends Error {
  * different things to go and look at, and without the distinction the two log identically.
  */
 export async function apiErrorFor(response: Response, request: string): Promise<ApiError> {
-  const body: { message?: string; code?: string } | null = await response.json().catch(() => null)
+  const body = (await response.json().catch(() => null)) as { message?: string; code?: string } | null
   if (!body) return new ApiError(`${request} failed: ${response.status}`, response.status, 'no_json_body')
 
   return new ApiError(
