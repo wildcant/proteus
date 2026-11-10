@@ -32,6 +32,3 @@ export const productCategoryTable = pgTable(
     liveIndex('idx_product_category_parent_id_rank').on(table.parentId, table.rank),
   ],
 )
-
-export type ProductCategory = typeof productCategoryTable.$inferSelect
-export type CreateProductCategory = typeof productCategoryTable.$inferInsert
