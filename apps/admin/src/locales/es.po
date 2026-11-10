@@ -37,6 +37,14 @@ msgstr "{fileName} no es un tipo de archivo compatible. Los tipos de archivo com
 msgid "{module} — All"
 msgstr "{module} — Todos"
 
+#: src/features/categories/components/category-organize-tree.tsx:72
+msgid "{name} is over {overName}."
+msgstr "{name} está sobre {overName}."
+
+#: src/features/categories/components/category-organize-tree.tsx:76
+msgid "{name} was dropped."
+msgstr "{name} se soltó."
+
 #: src/features/regions/components/region-country-row-actions.tsx:38
 msgid "{name} will stop being sold to, and its storefront will no longer resolve."
 msgstr "Se dejará de vender en {name} y su tienda dejará de estar disponible."
@@ -93,7 +101,7 @@ msgstr "Acceso denegado"
 msgid "Account"
 msgstr "Cuenta"
 
-#: src/features/categories/components/category-tree-list.tsx:48
+#: src/features/categories/components/category-tree-list.tsx:51
 #: src/features/categories/components/create-category-form.tsx:60
 #: src/features/categories/components/edit-category-form.tsx:32
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
@@ -443,7 +451,7 @@ msgstr "Países"
 msgid "Country of Origin"
 msgstr "País de origen"
 
-#: src/features/categories/components/category-tree-list.tsx:23
+#: src/features/categories/components/category-tree-list.tsx:26
 #: src/features/products/components/product-variant-section.tsx:12
 #: src/features/products/components/variant/create-variant-form.tsx:122
 #: src/routes/_authed/_shell/product-options/index.tsx:25
@@ -729,6 +737,10 @@ msgstr "borrador"
 msgid "Draft"
 msgstr "Borrador"
 
+#: src/features/categories/components/category-organize-tree.tsx:103
+msgid "Drag a category up or down to reorder it, or right and left to move it under another category or out of one. Each move is saved at once."
+msgstr "Arrastra una categoría hacia arriba o abajo para reordenarla, o a la derecha y la izquierda para moverla dentro de otra categoría o sacarla de ella. Cada movimiento se guarda al instante."
+
 #: src/features/products/components/media/upload-media-form-item.tsx:19
 msgid "Drag and drop images here or click to upload."
 msgstr "Arrastra y suelta imágenes aquí o haz clic para subirlas."
@@ -944,7 +956,7 @@ msgstr "No se pudo cambiar el idioma"
 msgid "Failed to complete order"
 msgstr "No se pudo completar el pedido"
 
-#: src/features/categories/api/categories.ts:57
+#: src/features/categories/api/categories.ts:59
 msgid "Failed to create category"
 msgstr "No se pudo crear la categoría"
 
@@ -976,7 +988,7 @@ msgstr "No se pudo crear el envío"
 msgid "Failed to create variant"
 msgstr "No se pudo crear la variante"
 
-#: src/features/categories/api/categories.ts:99
+#: src/features/categories/api/categories.ts:142
 msgid "Failed to delete category"
 msgstr "No se pudo eliminar la categoría"
 
@@ -1008,6 +1020,10 @@ msgstr "No se pudo eliminar la variante"
 msgid "Failed to mark as delivered"
 msgstr "No se pudo marcar como entregado"
 
+#: src/features/categories/api/categories.ts:122
+msgid "Failed to move category"
+msgstr "No se pudo mover la categoría"
+
 #: src/features/regions/api/countries.ts:136
 msgid "Failed to remove countries"
 msgstr "No se pudieron quitar los países"
@@ -1028,7 +1044,7 @@ msgstr "No se pudo enviar la invitación"
 msgid "Failed to set product options"
 msgstr "No se pudieron configurar las opciones del producto"
 
-#: src/features/categories/api/categories.ts:79
+#: src/features/categories/api/categories.ts:81
 msgid "Failed to update category"
 msgstr "No se pudo actualizar la categoría"
 
@@ -1068,7 +1084,7 @@ msgstr "No se pudieron actualizar los roles"
 msgid "Failed to update store"
 msgstr "No se pudo actualizar la tienda"
 
-#: src/features/categories/api/categories.ts:122
+#: src/features/categories/api/categories.ts:165
 msgid "Failed to update the category's products"
 msgstr "No se pudieron actualizar los productos de la categoría"
 
@@ -1207,11 +1223,11 @@ msgstr "Variantes de la imagen actualizadas correctamente"
 msgid "in {ancestors}"
 msgstr "en {ancestors}"
 
-#: src/features/categories/components/category-tree-list.tsx:52
+#: src/features/categories/components/category-tree-list.tsx:55
 msgid "Inactive"
 msgstr "Inactiva"
 
-#: src/features/categories/components/category-tree-list.tsx:57
+#: src/features/categories/components/category-tree-list.tsx:60
 #: src/features/categories/components/create-category-form.tsx:65
 #: src/features/categories/components/edit-category-form.tsx:37
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:76
@@ -1439,6 +1455,14 @@ msgstr "Multimedia actualizada correctamente"
 msgid "MID Code"
 msgstr "Código MID"
 
+#: src/features/categories/components/category-organize-tree.tsx:184
+msgid "Move {name}"
+msgstr "Mover {name}"
+
+#: src/features/categories/components/category-organize-tree.tsx:80
+msgid "Moving {name} was cancelled."
+msgstr "Se canceló el movimiento de {name}."
+
 #: src/features/access-control/components/create-role-form.tsx:33
 #: src/features/access-control/components/edit-role-form.tsx:41
 #: src/features/access-control/hooks/use-role-table.tsx:22
@@ -1481,7 +1505,8 @@ msgstr "Aún no hay categorías"
 msgid "No categories yet."
 msgstr "Aún no hay categorías."
 
-#: src/features/categories/components/category-tree-list.tsx:29
+#: src/features/categories/components/category-organize-tree.tsx:111
+#: src/features/categories/components/category-tree-list.tsx:32
 msgid "No categories yet. Create one to start the tree."
 msgstr "Aún no hay categorías. Crea una para empezar el árbol."
 
@@ -1749,10 +1774,16 @@ msgstr "Los pedidos aparecerán aquí cuando los clientes finalicen la compra."
 msgid "Organization"
 msgstr "Organización"
 
+#: src/features/categories/components/category-tree-list.tsx:23
 #: src/features/products/components/create-product-form/create-product-form.tsx:44
 #: src/features/products/components/create-product-form/product-create-organize-form.tsx:27
+#: src/routes/_authed/_shell/categories/organize.tsx:8
 msgid "Organize"
 msgstr "Organizar"
+
+#: src/features/categories/components/category-organize-tree.tsx:100
+msgid "Organize categories"
+msgstr "Organizar categorías"
 
 #: src/features/orders/components/order-summary-section.tsx:70
 msgid "Outstanding amount"
@@ -1815,6 +1846,10 @@ msgstr "Elige una combinación."
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:59
 msgid "Pick options and values on the Details step to generate the variants."
 msgstr "Elige opciones y valores en el paso Detalles para generar las variantes."
+
+#: src/features/categories/components/category-organize-tree.tsx:66
+msgid "Picked up {name}."
+msgstr "{name} seleccionada."
 
 #: src/features/inventory/hooks/use-reservation-table.tsx:45
 msgid "Placing an order holds its stock, and the hold shows up here."
@@ -2341,6 +2376,10 @@ msgstr "Título"
 #: src/components/data-table/filters/date-filter.tsx:54
 msgid "To"
 msgstr "Hasta"
+
+#: src/features/categories/components/category-organize-tree.tsx:121
+msgid "To pick up a category, press space or enter. Use the up and down arrow keys to move it, and the left and right arrow keys to change its level. Press space or enter again to drop it, or escape to cancel."
+msgstr "Para tomar una categoría, pulsa espacio o intro. Usa las flechas arriba y abajo para moverla, y las flechas izquierda y derecha para cambiar su nivel. Pulsa espacio o intro de nuevo para soltarla, o escape para cancelar."
 
 #: src/features/customers/hooks/use-customer-table.tsx:39
 #: src/features/orders/hooks/use-order-table.tsx:66

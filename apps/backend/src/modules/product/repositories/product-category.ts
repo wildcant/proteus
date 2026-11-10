@@ -16,4 +16,19 @@ export class ProductCategoryRepository extends BaseRepository(productCategoryTab
       .set({ rank: sql`array_position(ARRAY[${ids}]::text[], ${this.table.id}) - 1` })
       .where(inArray(this.table.id, orderedIds))
   }
+
+  /** Whether `candidateId` is `categoryId` itself or one of its live descendants. */
+  async isInSubtree(categoryId: string, candidateId: string, context?: Context): Promise<boolean> {
+    const [row] = await this.getClient(context).execute<{ found: boolean }>(sql`
+      WITH RECURSIVE subtree AS (
+        SELECT id FROM product_category WHERE id = ${categoryId} AND deleted_at IS NULL
+        UNION ALL
+        SELECT child.id FROM product_category child
+        JOIN subtree ON child.parent_id = subtree.id
+        WHERE child.deleted_at IS NULL
+      )
+      SELECT EXISTS (SELECT 1 FROM subtree WHERE id = ${candidateId}) AS found
+    `)
+    return row?.found === true
+  }
 }
