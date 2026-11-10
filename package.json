@@ -17,10 +17,9 @@
     "check:standards": "ast-grep scan --config sgconfig.yml --error=unused-suppression .",
     "check:standards:test": "ast-grep test --config sgconfig.yml",
     "check:unused": "./scripts/checks/unused.sh",
-    "sync-secrets:admin": "./scripts/sync-secrets.sh proteus-admin",
     "sync-secrets:backend": "./scripts/sync-secrets.sh proteus-backend",
     "sync-secrets:store": "./scripts/sync-secrets.sh proteus",
-    "pull-keys": "wrangler r2 object get dotenv-keys/.env.keys --file=.env.keys --remote"
+    "pull-keys": "./scripts/pull-keys.sh"
   },
   "devDependencies": {
     "@ast-grep/cli": "^0.45.3",

@@ -32,7 +32,9 @@
   "workspaces": {
     ".": {
       // verify.sh runs these as `node scripts/checks/*.mts`; knip does not parse shell.
-      "entry": ["scripts/**/*.mts"]
+      "entry": ["scripts/**/*.mts"],
+      // `scripts/pull-keys.sh` and `scripts/sync-secrets.sh` call `wrangler`; knip does not parse shell.
+      "ignoreDependencies": ["wrangler"]
     },
     "apps/admin": {
       // `src/types/router.ts` is a `declare module '@tanstack/react-router'` augmentation — route

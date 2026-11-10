@@ -7,18 +7,15 @@ if [ -z "${1:-}" ]; then
 fi
 
 WORKER_NAME="$1"
-ENV_FILE=".env"
-KEYS_FILE=".env.keys.production"
 
-if [ ! -f "$KEYS_FILE" ]; then
-  echo "Error: $KEYS_FILE not found. Only admins with the production key can sync secrets."
+# dotenvx reads the production key from .env.keys. Without it every value stays encrypted, and the
+# Worker would receive the ciphertext as its secrets.
+if ! grep -q '^DOTENV_PRIVATE_KEY=' .env.keys 2>/dev/null; then
+  echo "Error: .env.keys has no DOTENV_PRIVATE_KEY. Run 'pnpm run pull-keys' first."
   exit 1
 fi
 
-DOTENV_PRIVATE_KEY=$(grep '^DOTENV_PRIVATE_KEY=' "$KEYS_FILE" | cut -d'=' -f2)
-export DOTENV_PRIVATE_KEY
-
-SECRETS_JSON=$(dotenvx get -f "$ENV_FILE" --format json \
+SECRETS_JSON=$(dotenvx get -f .env --format json \
   | jq 'with_entries(select(.key | startswith("DOTENV_") | not))')
 
 echo "Setting $(echo "$SECRETS_JSON" | jq 'length') secrets..."
