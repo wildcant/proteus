@@ -20,6 +20,9 @@
       "name": "Auth"
     },
     {
+      "name": "Collections"
+    },
+    {
       "name": "Countries"
     },
     {
@@ -2805,6 +2808,147 @@
           }
         }
       },
+      "AdminProductCollectionListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductCollection"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "collections"
+        ]
+      },
+      "AdminProductCollection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "thumbnail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "handle",
+          "thumbnail",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AdminProductCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/AdminProductCollection"
+          }
+        },
+        "required": [
+          "collection"
+        ]
+      },
+      "AdminCreateProductCollection": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "handle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "thumbnail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "AdminUpdateProductCollection": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "handle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "thumbnail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2048
+          }
+        }
+      },
+      "AdminSetCollectionProducts": {
+        "type": "object",
+        "properties": {
+          "add": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
+          }
+        }
+      },
       "AdminProductCategoryTreeResponse": {
         "type": "object",
         "properties": {
@@ -3502,10 +3646,17 @@
                 "items": {
                   "$ref": "#/components/schemas/AdminProductCategory"
                 }
+              },
+              "collections": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminProductCollection"
+                }
               }
             },
             "required": [
-              "categories"
+              "categories",
+              "collections"
             ]
           }
         ]
@@ -3514,6 +3665,14 @@
         "type": "object",
         "properties": {
           "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
+          },
+          "collectionIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -3957,6 +4116,14 @@
         "type": "object",
         "properties": {
           "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100
+          },
+          "collectionIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -5767,6 +5934,7 @@
                           "package",
                           "sliders-horizontal",
                           "folder-tree",
+                          "layers",
                           "boxes",
                           "clipboard-list",
                           "users",
@@ -5794,6 +5962,7 @@
                                 "package",
                                 "sliders-horizontal",
                                 "folder-tree",
+                                "layers",
                                 "boxes",
                                 "clipboard-list",
                                 "users",
@@ -5850,6 +6019,7 @@
                           "package",
                           "sliders-horizontal",
                           "folder-tree",
+                          "layers",
                           "boxes",
                           "clipboard-list",
                           "users",
@@ -5877,6 +6047,7 @@
                                 "package",
                                 "sliders-horizontal",
                                 "folder-tree",
+                                "layers",
                                 "boxes",
                                 "clipboard-list",
                                 "users",
@@ -9246,6 +9417,323 @@
         }
       }
     },
+    "/admin/collections": {
+      "get": {
+        "operationId": "listProductCollections",
+        "summary": "List Collections",
+        "tags": [
+          "Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCollectionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createProductCollection",
+        "summary": "Create a Collection",
+        "tags": [
+          "Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateProductCollection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCollectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable entity"
+          }
+        }
+      }
+    },
+    "/admin/collections/{id}": {
+      "get": {
+        "operationId": "getProductCollection",
+        "summary": "Retrieve a Collection",
+        "tags": [
+          "Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCollectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateProductCollection",
+        "summary": "Update a Collection",
+        "tags": [
+          "Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateProductCollection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCollectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Unprocessable entity"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteProductCollection",
+        "summary": "Delete a Collection",
+        "tags": [
+          "Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/collections/{id}/products": {
+      "post": {
+        "operationId": "setProductCollectionProducts",
+        "summary": "Add and remove a Collection's products",
+        "tags": [
+          "Collections"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetCollectionProducts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductCollectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/admin/product-categories": {
       "get": {
         "operationId": "listProductCategoryTree",
@@ -9961,6 +10449,24 @@
             "required": false,
             "name": "categoryId",
             "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "collectionId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -10243,6 +10749,24 @@
             },
             "required": false,
             "name": "categoryId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "collectionId",
             "in": "query"
           }
         ],

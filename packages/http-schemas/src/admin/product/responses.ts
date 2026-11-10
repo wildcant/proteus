@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
 import { AdminProductCategory } from '../product-category/entities.js'
+import { AdminProductCollection } from '../product-collection/entities.js'
 import { AdminProductScopedOption } from '../product-option/entities.js'
 import { AdminProductVariant } from '../product-variant/entities.js'
 import { AdminProduct, AdminProductImage } from './entities.js'
@@ -8,6 +9,7 @@ import { AdminProduct, AdminProductImage } from './entities.js'
 /** A product with what it is grouped under — every single-product response embeds these. */
 const AdminGroupedProduct = AdminProduct.extend({
   categories: z.array(AdminProductCategory),
+  collections: z.array(AdminProductCollection),
 }).openapi('AdminGroupedProduct')
 
 const AdminProductDetail = AdminGroupedProduct.extend({

@@ -5,6 +5,7 @@ type SidebarIcon =
   | 'package'
   | 'sliders-horizontal'
   | 'folder-tree'
+  | 'layers'
   | 'boxes'
   | 'clipboard-list'
   | 'users'
@@ -39,6 +40,7 @@ const MAIN_SIDEBAR: InternalSidebarGroup[] = [
         permission: 'product.read',
         children: [
           { label: 'Categories', to: '/categories', icon: 'folder-tree', permission: 'product.read' },
+          { label: 'Collections', to: '/collections', icon: 'layers', permission: 'product.read' },
           { label: 'Options', to: '/product-options', icon: 'sliders-horizontal', permission: 'product.read' },
         ],
       },

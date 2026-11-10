@@ -55,6 +55,7 @@ import {
 } from '../factories/fulfillment-dto.js'
 import { generateAdminCreateOrderFulfillmentBody } from '../factories/http/admin-order.js'
 import { generateAdminCreateProductCategoryBody } from '../factories/http/admin-product-category.js'
+import { generateAdminCreateProductCollectionBody } from '../factories/http/admin-product-collection.js'
 import { generateStoreCreateAddressBody } from '../factories/http/store-customer.js'
 import {
   generateCreateInventoryItemDTO,
@@ -258,6 +259,7 @@ export type Fixtures = {
     admin: {
       createOrderFulfillment: typeof generateAdminCreateOrderFulfillmentBody
       createProductCategory: typeof generateAdminCreateProductCategoryBody
+      createProductCollection: typeof generateAdminCreateProductCollectionBody
     }
     store: {
       createAddress: typeof generateStoreCreateAddressBody
@@ -479,6 +481,7 @@ export const test = testBase.extend<Fixtures>({
       admin: {
         createOrderFulfillment: generateAdminCreateOrderFulfillmentBody,
         createProductCategory: generateAdminCreateProductCategoryBody,
+        createProductCollection: generateAdminCreateProductCollectionBody,
       },
       store: {
         createAddress: generateStoreCreateAddressBody,

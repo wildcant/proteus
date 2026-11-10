@@ -7,7 +7,9 @@
  */
 import type { AdminProduct } from './adminProduct.ts';
 import type { AdminProductCategory } from './adminProductCategory.ts';
+import type { AdminProductCollection } from './adminProductCollection.ts';
 
 export type AdminGroupedProduct = AdminProduct & {
   categories: AdminProductCategory[];
+  collections: AdminProductCollection[];
 };

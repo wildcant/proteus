@@ -11,6 +11,7 @@ import { RoutesSorter } from './framework/http/routes-sorter.js'
 
 // ---- Definition imports ----
 
+import adminCollectionDefinitions from './api/admin/collections/definitions.js'
 import adminCountryDefinitions from './api/admin/countries/definitions.js'
 import adminCustomerDefinitions from './api/admin/customers/definitions.js'
 import adminFulfillmentProviderDefinitions from './api/admin/fulfillment-providers/definitions.js'
@@ -71,6 +72,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,
   ...adminPaymentProviderDefinitions,
+  ...adminCollectionDefinitions,
   ...adminProductCategoryDefinitions,
   ...adminProductOptionDefinitions,
   ...adminProductDefinitions,

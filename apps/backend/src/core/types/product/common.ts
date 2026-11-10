@@ -40,6 +40,8 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   createdAt?: OperatorMap<Date>
   /** Direct members of any of these Categories. Not a column: `ProductRepository.extraWhere` applies it. */
   categoryId?: string | string[]
+  /** Members of any of these Collections. Not a column: `ProductRepository.extraWhere` applies it. */
+  collectionId?: string | string[]
 }
 
 export type ProductVariantDTO = {
@@ -320,7 +322,24 @@ export type ProductCategoryTreeNodeDTO = ProductCategoryDTO & {
   children: ProductCategoryTreeNodeDTO[]
 }
 
+export type ProductCollectionDTO = {
+  id: string
+  title: string
+  handle: string
+  thumbnail: string | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductCollectionProps extends BaseFilterable<FilterableProductCollectionProps> {
+  id?: string | string[]
+  title?: string | OperatorMap<string>
+  handle?: string | string[]
+}
+
 /** What a product is grouped under, read for many products at once. */
 export type ProductGroupingsDTO = {
   categories: ProductCategoryDTO[]
+  collections: ProductCollectionDTO[]
 }

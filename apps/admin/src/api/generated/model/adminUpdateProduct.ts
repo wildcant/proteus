@@ -13,6 +13,11 @@ export interface AdminUpdateProduct {
      * @items.maxLength 64
      */
   categoryIds?: string[];
+  /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  collectionIds?: string[];
   /** @maxItems 100 */
   images?: AdminUpdateProductImagesItem[];
   /**

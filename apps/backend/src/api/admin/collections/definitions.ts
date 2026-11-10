@@ -1,0 +1,80 @@
+import type { RouteDefinition } from '@framework/http/types.js'
+import { searchable, Tags } from '@framework/http/types.js'
+import type { ProductCollectionDTO } from '../../../core/types/product/common.js'
+import * as collectionProductRoutes from './[id]/products/route.js'
+import * as collectionByIdRoutes from './[id]/route.js'
+import * as collectionRoutes from './route.js'
+
+export default [
+  {
+    method: 'GET',
+    matcher: '/admin/collections',
+    handler: collectionRoutes.GET,
+    input: collectionRoutes.GetInput,
+    searchableColumns: searchable<ProductCollectionDTO>('title', 'handle'),
+    permissions: ['product.read'],
+    operationId: 'listProductCollections',
+    summary: 'List Collections',
+    tags: [Tags.COLLECTIONS],
+    output: collectionRoutes.GetOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/collections',
+    handler: collectionRoutes.POST,
+    input: collectionRoutes.PostInput,
+    permissions: ['product.create'],
+    operationId: 'createProductCollection',
+    summary: 'Create a Collection',
+    tags: [Tags.COLLECTIONS],
+    output: collectionRoutes.PostOutput,
+    throws: collectionRoutes.PostThrows,
+  },
+  {
+    method: 'GET',
+    matcher: '/admin/collections/:id',
+    handler: collectionByIdRoutes.GET,
+    input: collectionByIdRoutes.GetInput,
+    permissions: ['product.read'],
+    operationId: 'getProductCollection',
+    summary: 'Retrieve a Collection',
+    tags: [Tags.COLLECTIONS],
+    output: collectionByIdRoutes.GetOutput,
+    throws: collectionByIdRoutes.GetThrows,
+  },
+  {
+    method: 'PATCH',
+    matcher: '/admin/collections/:id',
+    handler: collectionByIdRoutes.PATCH,
+    input: collectionByIdRoutes.PatchInput,
+    permissions: ['product.update'],
+    operationId: 'updateProductCollection',
+    summary: 'Update a Collection',
+    tags: [Tags.COLLECTIONS],
+    output: collectionByIdRoutes.PatchOutput,
+    throws: collectionByIdRoutes.PatchThrows,
+  },
+  {
+    method: 'DELETE',
+    matcher: '/admin/collections/:id',
+    handler: collectionByIdRoutes.DELETE,
+    input: collectionByIdRoutes.DeleteInput,
+    permissions: ['product.delete'],
+    operationId: 'deleteProductCollection',
+    summary: 'Delete a Collection',
+    tags: [Tags.COLLECTIONS],
+    output: collectionByIdRoutes.DeleteOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/collections/:id/products',
+    handler: collectionProductRoutes.POST,
+    input: collectionProductRoutes.PostInput,
+    permissions: ['product.update'],
+    operationId: 'setProductCollectionProducts',
+    summary: "Add and remove a Collection's products",
+    tags: [Tags.COLLECTIONS],
+    output: collectionProductRoutes.PostOutput,
+    throws: collectionProductRoutes.PostThrows,
+  },
+] satisfies RouteDefinition[]
