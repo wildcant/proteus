@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { categoryTreeQueryOptions } from '#/api/product-categories'
 import { Footer } from '#/components/footer'
 import { Header } from '#/components/header/header'
 import { useMe } from '#/features/account/api/customer'
@@ -11,6 +12,12 @@ import { marketHeadLinksFor } from '#/lib/seo/market-links'
 export const Route = createFileRoute('/_main')({
   ssr: true,
   head: (context) => ({ links: marketHeadLinksFor(context) }),
+  // The Category tree is the navigation, and the nav renders only under this layout. Child
+  // loaders run alongside this one, so a page that needs the tree asks for it again and joins
+  // this same request.
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(categoryTreeQueryOptions())
+  },
   component: MainLayout,
 })
 

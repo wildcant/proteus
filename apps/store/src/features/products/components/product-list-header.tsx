@@ -8,6 +8,10 @@ import { ProductSort } from './product-sort'
 type ProductListHeaderProps = ProductListView & {
   /** The title while nothing is searched; a search term takes its place. */
   heading: ReactNode
+  /** Replaces the "Shop" line above the title while nothing is searched — a category's breadcrumb. */
+  eyebrow?: ReactNode
+  /** Whatever the page shows between its title and the bar — a category's description and chips. */
+  children?: ReactNode
 }
 
 /**
@@ -18,16 +22,24 @@ type ProductListHeaderProps = ProductListView & {
  *
  * The result count is the one thing here that does need the query, so it suspends on its own.
  */
-export function ProductListHeader({ scope, search, onSearchChange, heading }: ProductListHeaderProps) {
+export function ProductListHeader({
+  scope,
+  search,
+  onSearchChange,
+  heading,
+  eyebrow,
+  children,
+}: ProductListHeaderProps) {
   const { t } = useLingui()
   const { q, sort } = search
 
   return (
     <div>
-      <p className="text-ink-muted text-sm">{q ? t`Search` : t`Shop`}</p>
+      {!q && eyebrow ? eyebrow : <p className="text-ink-muted text-sm">{q ? t`Search` : t`Shop`}</p>}
       {/* Written inline rather than extracted: `account-detail.tsx` is the only other callsite,
           and the third is what would make a `PageHeading` worth having. */}
       <h1 className="type-display mt-2 text-ink">{q ?? heading}</h1>
+      {children}
 
       {/* Sticky at every width, not just on a phone: the reference only needs a rail above `lg`
           because it has ten filter groups to put there. `top-14`/`lg:top-20` is the header's own

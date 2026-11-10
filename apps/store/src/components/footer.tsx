@@ -1,8 +1,8 @@
-import { msg } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
+import { useSuspenseCategoryTree } from '#/api/product-categories'
 import { MarketSelect } from '#/components/market-select'
 
 /**
@@ -11,24 +11,34 @@ import { MarketSelect } from '#/components/market-select'
  * not a placeholder they can read. The legal column is the conspicuous absence — it waits on
  * `/terms`, `/privacy` and `/returns` existing.
  *
- * One constant feeds both the accordion and the static columns, so the two trees cannot drift.
+ * The Shop column is "Shop all" and the top-level Visible Categories, read from the tree rather
+ * than named here. One list feeds both the accordion and the static columns, so the two trees
+ * cannot drift.
  */
-const footerColumns = [
-  {
-    title: msg`Shop`,
-    links: [
-      { label: msg`Home`, to: '/' as const },
-      { label: msg`All products`, to: '/' as const },
-    ],
-  },
-  {
-    title: msg`Account`,
-    links: [
-      { label: msg`Sign in`, to: '/login' as const },
-      { label: msg`Create account`, to: '/signup' as const },
-    ],
-  },
-]
+type FooterLink = { key: string; label: string } & ({ to: '/' | '/login' | '/signup' } | { categoryHandle: string })
+type FooterColumn = { title: string; links: FooterLink[] }
+
+function useFooterColumns(): FooterColumn[] {
+  const { t } = useLingui()
+  const categories = useSuspenseCategoryTree()
+
+  return [
+    {
+      title: t`Shop`,
+      links: [
+        { key: 'shop-all', label: t`Shop all`, to: '/' },
+        ...categories.map((category) => ({ key: category.id, label: category.name, categoryHandle: category.handle })),
+      ],
+    },
+    {
+      title: t`Account`,
+      links: [
+        { key: 'sign-in', label: t`Sign in`, to: '/login' },
+        { key: 'create-account', label: t`Create account`, to: '/signup' },
+      ],
+    },
+  ]
+}
 
 /**
  * Full-colour card badges, which is the one place the ink/surface/accent palette is deliberately
@@ -56,7 +66,7 @@ const paymentMarks: { label: string; mark: Icon }[] = [
 const socialLinks: { label: string; href: string; mark: Icon }[] = []
 
 export function Footer() {
-  const { t } = useLingui()
+  const footerColumns = useFooterColumns()
   const year = new Date().getFullYear()
 
   return (
@@ -71,12 +81,12 @@ export function Footer() {
         <Accordion className="sm:hidden">
           {footerColumns.map((column) => (
             <AccordionItem
-              key={column.title.id}
-              value={column.title.id}
+              key={column.title}
+              value={column.title}
               className="border-line border-t not-last:border-b-0 last:border-b"
             >
               <AccordionTrigger className="items-center py-5 text-ink **:data-[slot=accordion-trigger-icon]:size-5 **:data-[slot=accordion-trigger-icon]:text-ink">
-                <span className="type-heading">{t(column.title)}</span>
+                <span className="type-heading">{column.title}</span>
               </AccordionTrigger>
               <AccordionContent className="pb-5 [&_a]:no-underline">
                 <FooterLinks column={column} />
@@ -87,8 +97,8 @@ export function Footer() {
 
         <div className="hidden gap-8 sm:grid sm:grid-cols-2 lg:grid-cols-4">
           {footerColumns.map((column) => (
-            <div key={column.title.id}>
-              <h3 className="type-heading m-0 mb-4 text-ink">{t(column.title)}</h3>
+            <div key={column.title}>
+              <h3 className="type-heading m-0 mb-4 text-ink">{column.title}</h3>
               <FooterLinks column={column} />
             </div>
           ))}
@@ -146,15 +156,21 @@ export function Footer() {
   )
 }
 
-function FooterLinks({ column }: { column: (typeof footerColumns)[number] }) {
-  const { t } = useLingui()
+function FooterLinks({ column }: { column: FooterColumn }) {
+  const className = 'block py-1.5 text-ink-muted no-underline hover:text-ink'
   return (
     <ul className="m-0 flex list-none flex-col p-0">
       {column.links.map((link) => (
-        <li key={link.label.id}>
-          <Link to={link.to} className="block py-1.5 text-ink-muted no-underline hover:text-ink">
-            {t(link.label)}
-          </Link>
+        <li key={link.key}>
+          {'categoryHandle' in link ? (
+            <Link to="/categories/$handle" params={{ handle: link.categoryHandle }} className={className}>
+              {link.label}
+            </Link>
+          ) : (
+            <Link to={link.to} className={className}>
+              {link.label}
+            </Link>
+          )}
         </li>
       ))}
     </ul>

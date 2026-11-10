@@ -31,7 +31,7 @@ msgstr "{alt} — view {position} of {count}"
 msgid "{alt} images"
 msgstr "{alt} images"
 
-#: src/features/products/components/product-list-header.tsx:61
+#: src/features/products/components/product-list-header.tsx:73
 msgid "{count, plural, one {# Product} other {# Products}}"
 msgstr "{count, plural, one {# Product} other {# Products}}"
 
@@ -64,7 +64,7 @@ msgstr "{total} reserved by your bank, charged when your order ships"
 msgid "{total} was not charged"
 msgstr "{total} was not charged"
 
-#: src/components/footer.tsx:140
+#: src/components/footer.tsx:150
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. All rights reserved."
 
@@ -84,9 +84,9 @@ msgstr "<0>Items in your cart aren't reserved.</0> Check out soon to make sure y
 msgid "A–Z"
 msgstr "A–Z"
 
-#: src/components/footer.tsx:25
+#: src/components/footer.tsx:34
 #: src/components/header/header.tsx:56
-#: src/components/header/side-menu.tsx:20
+#: src/components/header/side-menu.tsx:90
 #: src/features/account/components/account-detail.tsx:21
 #: src/features/orders/components/order-content.tsx:28
 msgid "Account"
@@ -132,7 +132,6 @@ msgstr "Address book is empty"
 msgid "Address options"
 msgstr "Address options"
 
-#: src/components/footer.tsx:21
 #: src/routes/_main/index.tsx:48
 msgid "All products"
 msgstr "All products"
@@ -207,6 +206,10 @@ msgstr "Billing address"
 msgid "Billing address same as shipping"
 msgstr "Billing address same as shipping"
 
+#: src/features/products/components/category-breadcrumb.tsx:16
+msgid "Breadcrumb"
+msgstr "Breadcrumb"
+
 #: src/features/cart/components/cart-empty.tsx:20
 #: src/features/products/components/product-error.tsx:27
 msgid "Browse products"
@@ -278,7 +281,7 @@ msgstr "Clear search"
 msgid "Close cart"
 msgstr "Close cart"
 
-#: src/components/header/side-menu.tsx:52
+#: src/components/header/side-menu.tsx:55
 msgid "Close menu"
 msgstr "Close menu"
 
@@ -323,7 +326,7 @@ msgstr "Continue shopping"
 msgid "Country"
 msgstr "Country"
 
-#: src/components/footer.tsx:28
+#: src/components/footer.tsx:37
 #: src/features/auth/components/register-form.tsx:33
 msgid "Create account"
 msgstr "Create account"
@@ -522,11 +525,6 @@ msgstr "Hide password"
 msgid "Hold on while we confirm your email."
 msgstr "Hold on while we confirm your email."
 
-#: src/components/footer.tsx:20
-#: src/components/header/side-menu.tsx:18
-msgid "Home"
-msgstr "Home"
-
 #: src/routes/_auth/forgot-password.tsx:21
 msgid "If an account exists with that email, we've sent a link to reset your password."
 msgstr "If an account exists with that email, we've sent a link to reset your password."
@@ -543,6 +541,10 @@ msgstr "Invalid link"
 #: src/features/cart/components/cart-market-switch.tsx:81
 msgid "It is still priced in {0}"
 msgstr "It is still priced in {0}"
+
+#: src/routes/_main/categories/$handle.tsx:55
+msgid "It may have moved, or no longer be in the store."
+msgstr "It may have moved, or no longer be in the store."
 
 #: src/features/products/components/product-error.tsx:24
 msgid "It may not be one we sell here."
@@ -601,7 +603,7 @@ msgstr "Market: {marketName}"
 msgid "Material"
 msgstr "Material"
 
-#: src/components/header/side-menu.tsx:46
+#: src/components/header/side-menu.tsx:49
 msgid "Menu"
 msgstr "Menu"
 
@@ -769,7 +771,6 @@ msgstr "Preparing"
 msgid "Previous"
 msgstr "Previous"
 
-#: src/components/header/side-menu.tsx:19
 #: src/features/products/components/product-detail.tsx:42
 #: src/features/products/components/search-results.tsx:52
 msgid "Products"
@@ -835,7 +836,7 @@ msgid "Save this card for next time"
 msgstr "Save this card for next time"
 
 #: src/components/header/search-triggers.tsx:47
-#: src/features/products/components/product-list-header.tsx:27
+#: src/features/products/components/product-list-header.tsx:38
 #: src/features/products/components/search-drawer.tsx:39
 msgid "Search"
 msgstr "Search"
@@ -900,14 +901,24 @@ msgstr "Shipping"
 msgid "Shipping method"
 msgstr "Shipping method"
 
-#: src/components/footer.tsx:18
-#: src/features/products/components/product-list-header.tsx:27
+#: src/components/footer.tsx:27
+#: src/features/products/components/product-list-header.tsx:38
 msgid "Shop"
 msgstr "Shop"
 
-#: src/components/header/nav.tsx:11
+#: src/components/footer.tsx:29
+#: src/components/header/nav.tsx:36
+#: src/components/header/side-menu.tsx:72
+#: src/features/products/components/category-breadcrumb.tsx:20
+#: src/features/products/components/product-list-not-found.tsx:20
+#: src/routes/_main/categories/$handle.tsx:79
 msgid "Shop all"
 msgstr "Shop all"
+
+#: src/components/header/nav.tsx:81
+#: src/components/header/side-menu.tsx:121
+msgid "Shop all {name}"
+msgstr "Shop all {name}"
 
 #: src/features/account/components/orders-panel.tsx:111
 msgid "Shop all products"
@@ -921,7 +932,7 @@ msgstr "Show image {position}"
 msgid "Show password"
 msgstr "Show password"
 
-#: src/components/footer.tsx:27
+#: src/components/footer.tsx:36
 #: src/features/auth/components/login-form.tsx:28
 #: src/features/checkout/components/contact/contact-section.tsx:28
 #: src/routes/_auth/login.tsx:43
@@ -1127,6 +1138,10 @@ msgstr "We could not process your payment. Please try again or use a different c
 #: src/components/not-found.tsx:27
 msgid "We couldn’t find that page"
 msgstr "We couldn’t find that page"
+
+#: src/routes/_main/categories/$handle.tsx:54
+msgid "We couldn't find this category"
+msgstr "We couldn't find this category"
 
 #: src/features/orders/components/order-error.tsx:18
 msgid "We couldn't load this order"
