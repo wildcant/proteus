@@ -15,6 +15,7 @@ import type {
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
   PickerVariantDTO,
+  ListCategoryTreeDTO,
   ProductCategoryDTO,
   ProductCategoryTreeNodeDTO,
   ProductDTO,
@@ -704,8 +705,8 @@ export class ProductModuleService implements IProductModuleService {
 
   // ── Categories ────────────────────────────────────────────────────────
 
-  async listCategoryTree(context?: Context): Promise<ProductCategoryTreeNodeDTO[]> {
-    return this.productCategoryService.listCategoryTree(context)
+  async listCategoryTree(filters?: ListCategoryTreeDTO, context?: Context): Promise<ProductCategoryTreeNodeDTO[]> {
+    return this.productCategoryService.listCategoryTree(filters, context)
   }
 
   async retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO> {

@@ -30,6 +30,11 @@ export const GET = async (
 
   const { pagination, filters } = req.validatedQuery
   const { offset, limit } = pagination
+  // Mapped by hand rather than spread: `category` is no column, so a spread would reach the query
+  // builder as a key it silently drops.
+  const { category, ...columnFilters } = filters
+  const categoryFilters =
+    category === undefined ? {} : { categoryHandle: category, includeDescendants: true, visibleOnly: true }
 
   /**
    * Pricing decides the catalogue, so it is resolved before the page is drawn rather than after.
@@ -59,7 +64,7 @@ export const GET = async (
   if (sellableProductIds.length === 0) return { status: 200, json: { products: [], count: 0, offset, limit } }
 
   const [products, count] = await productService.listAndCountProducts(
-    { ...filters, status: 'published', id: sellableProductIds },
+    { ...columnFilters, ...categoryFilters, status: 'published', id: sellableProductIds },
     pagination,
   )
 

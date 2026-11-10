@@ -40,6 +40,12 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   createdAt?: OperatorMap<Date>
   /** Direct members of any of these Categories. Not a column: `ProductRepository.extraWhere` applies it. */
   categoryId?: string | string[]
+  /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
+  categoryHandle?: string | string[]
+  /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */
+  includeDescendants?: boolean
+  /** Narrows `categoryId` / `categoryHandle` to Visible Categories: a hidden one matches nothing. */
+  visibleOnly?: boolean
 }
 
 export type ProductVariantDTO = {
@@ -313,6 +319,11 @@ export type ProductCategoryDTO = {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+}
+
+export type ListCategoryTreeDTO = {
+  /** Only Visible Categories — active, not internal, every ancestor visible. The store's tree. */
+  visibleOnly?: boolean
 }
 
 /** A Category with its children nested, siblings in rank order. */

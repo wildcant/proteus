@@ -5,4 +5,5 @@ export * from './customers/customers.ts';
 export * from './orders/orders.ts';
 export * from './payment-collections/payment-collections.ts';
 export * from './payments/payments.ts';
+export * from './product-categories/product-categories.ts';
 export * from './products/products.ts';

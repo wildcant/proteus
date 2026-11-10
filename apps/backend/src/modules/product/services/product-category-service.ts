@@ -1,7 +1,11 @@
 import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { Context } from '../../../core/types/context.js'
-import type { ProductCategoryDTO, ProductCategoryTreeNodeDTO } from '../../../core/types/product/common.js'
+import type {
+  ListCategoryTreeDTO,
+  ProductCategoryDTO,
+  ProductCategoryTreeNodeDTO,
+} from '../../../core/types/product/common.js'
 import type {
   CreateProductCategoryDTO,
   SetCategoryProductsDTO,
@@ -38,12 +42,14 @@ export class ProductCategoryService {
     this.withTransaction = withTransaction
   }
 
-  async listCategoryTree(context?: Context): Promise<ProductCategoryTreeNodeDTO[]> {
-    const categories = await this.productCategoryRepository.find(
-      undefined,
-      { order: { rank: 'ASC', id: 'ASC' } },
-      context,
-    )
+  /** `visibleOnly` is the store's tree: a hidden Category is left out together with its subtree. */
+  async listCategoryTree(
+    { visibleOnly = false }: ListCategoryTreeDTO = {},
+    context?: Context,
+  ): Promise<ProductCategoryTreeNodeDTO[]> {
+    const categories = visibleOnly
+      ? await this.productCategoryRepository.findVisible(context)
+      : await this.productCategoryRepository.find(undefined, { order: { rank: 'ASC', id: 'ASC' } }, context)
 
     const nodes = new Map<string, ProductCategoryTreeNodeDTO>(
       categories.map((category) => [category.id, { ...category, children: [] }]),
