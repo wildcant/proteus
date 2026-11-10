@@ -4,6 +4,7 @@ import { useId } from 'react'
 import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
 import { CategoryPicker } from '#/features/categories/components/category-picker'
 import { useSuspenseAllCollections } from '#/features/collections/api/collections'
+import { useProductTagOptions } from '#/features/product-tags/hooks/use-product-tag-options'
 import { useProductTypeOptions } from '#/features/product-types/hooks/use-product-type-options'
 import { withForm } from '#/lib/form-hook.ts'
 import { productCreateFormOpts } from '../../hooks/use-create-product-form'
@@ -19,6 +20,7 @@ export const ProductCreateOrganizeForm = withForm({
     const { data: tree } = useSuspenseCategoryTree()
     const { data: collections } = useSuspenseAllCollections()
     const { options: typeOptions, createOption: createTypeOption } = useProductTypeOptions()
+    const { options: tagOptions, createOption: createTagOption } = useProductTagOptions()
     const categoriesId = useId()
 
     return (
@@ -77,6 +79,18 @@ export const ProductCreateOrganizeForm = withForm({
                       placeholder={t`Choose collections`}
                       emptyMessage={t`No collections yet.`}
                       description={t`A product can sit in several collections.`}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="organize.tagIds">
+                  {(field) => (
+                    <field.MultiComboboxField
+                      label={t`Tags`}
+                      items={tagOptions}
+                      onCreate={createTagOption}
+                      placeholder={t`Search or add tags`}
+                      emptyMessage={t`Type to add a tag.`}
+                      description={t`Keywords shoppers can filter products by.`}
                     />
                   )}
                 </form.AppField>

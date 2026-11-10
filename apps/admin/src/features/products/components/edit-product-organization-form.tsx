@@ -5,6 +5,7 @@ import type { AdminGroupedProduct } from '#/api/generated/model'
 import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
 import { CategoryPicker } from '#/features/categories/components/category-picker'
 import { useSuspenseAllCollections } from '#/features/collections/api/collections'
+import { useProductTagOptions } from '#/features/product-tags/hooks/use-product-tag-options'
 import { useProductTypeOptions } from '#/features/product-types/hooks/use-product-type-options'
 import { useEditProductOrganizationForm } from '#/features/products/hooks/use-edit-product-organization-form'
 import { useUiCopy } from '#/hooks/use-ui-copy'
@@ -16,6 +17,7 @@ export function EditProductOrganizationForm({ product }: { product: AdminGrouped
   const { data: tree } = useSuspenseCategoryTree()
   const { data: collections } = useSuspenseAllCollections()
   const { options: typeOptions, createOption: createTypeOption } = useProductTypeOptions()
+  const { options: tagOptions, createOption: createTagOption } = useProductTagOptions()
   const categoriesId = useId()
 
   const { form } = useEditProductOrganizationForm(product, {
@@ -65,6 +67,17 @@ export function EditProductOrganizationForm({ product }: { product: AdminGrouped
                   items={collections.map((collection) => ({ id: collection.id, label: collection.title }))}
                   placeholder={t`Choose collections`}
                   emptyMessage={t`No collections yet.`}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="tagIds">
+              {(field) => (
+                <field.MultiComboboxField
+                  label={t`Tags`}
+                  items={tagOptions}
+                  onCreate={createTagOption}
+                  placeholder={t`Search or add tags`}
+                  emptyMessage={t`Type to add a tag.`}
                 />
               )}
             </form.AppField>

@@ -12,6 +12,7 @@ import {
   ShoppingCartIcon,
   SlidersHorizontalIcon,
   StoreIcon,
+  TagsIcon,
   UsersIcon,
 } from 'lucide-react'
 import type { AdminMeResponseSidebarItem, AdminMeResponseSidebarItemItemsItemIcon } from '#/api/generated/model'
@@ -26,6 +27,7 @@ export const sidebarIcons: Record<SidebarIcon, LucideIcon> = {
   'sliders-horizontal': SlidersHorizontalIcon,
   'folder-tree': FolderTreeIcon,
   layers: LayersIcon,
+  tags: TagsIcon,
   shapes: ShapesIcon,
   boxes: BoxesIcon,
   'clipboard-list': ClipboardListIcon,

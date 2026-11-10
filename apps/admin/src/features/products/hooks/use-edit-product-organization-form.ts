@@ -20,6 +20,7 @@ export function useEditProductOrganizationForm(
       type: product.type ? toProductTypeOption(product.type) : (null as ComboboxOption | null),
       categoryIds: product.categories.map((category) => category.id),
       collectionIds: product.collections.map((collection) => collection.id),
+      tagIds: product.tags.map((tag) => tag.id),
     },
     onSubmit: async ({ value }) => {
       try {

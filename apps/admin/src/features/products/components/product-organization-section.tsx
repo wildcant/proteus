@@ -9,6 +9,7 @@ export function ProductOrganizationSection({ product }: { product: AdminGroupedP
   const { t } = useLingui()
   const categories = product.categories.map((category) => category.name).join(', ')
   const collections = product.collections.map((collection) => collection.title).join(', ')
+  const tags = product.tags.map((tag) => tag.value).join(', ')
 
   return (
     <Card className="gap-0 divide-y py-0">
@@ -23,6 +24,7 @@ export function ProductOrganizationSection({ product }: { product: AdminGroupedP
       <SectionRow title={t`Type`} value={product.type?.value ?? '-'} />
       <SectionRow title={t`Categories`} value={categories || '-'} />
       <SectionRow title={t`Collections`} value={collections || '-'} />
+      <SectionRow title={t`Tags`} value={tags || '-'} />
     </Card>
   )
 }
