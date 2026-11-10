@@ -26,7 +26,12 @@ function ComboboxChips({ className, ...props }: ComboboxPrimitive.Chips.Props) {
   )
 }
 
-function ComboboxChip({ children, className, ...props }: ComboboxPrimitive.Chip.Props) {
+type ComboboxChipProps = ComboboxPrimitive.Chip.Props & {
+  /** The remove button's accessible name, e.g. "Remove Summer" — it shows only an icon. */
+  removeLabel: string
+}
+
+function ComboboxChip({ children, className, removeLabel, ...props }: ComboboxChipProps) {
   return (
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
@@ -37,7 +42,7 @@ function ComboboxChip({ children, className, ...props }: ComboboxPrimitive.Chip.
       {...props}
     >
       {children}
-      <ComboboxPrimitive.ChipRemove className="ml-0.5 rounded-full hover:text-foreground">
+      <ComboboxPrimitive.ChipRemove aria-label={removeLabel} className="ml-0.5 rounded-full hover:text-foreground">
         <XIcon className="size-3" />
       </ComboboxPrimitive.ChipRemove>
     </ComboboxPrimitive.Chip>

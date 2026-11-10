@@ -2171,6 +2171,7 @@ msgstr "Rejected"
 msgid "Remove"
 msgstr "Remove"
 
+#: src/components/multi-select-combobox.tsx:80
 #: src/features/categories/components/category-picker.tsx:77
 msgid "Remove {name}"
 msgstr "Remove {name}"
