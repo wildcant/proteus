@@ -1,5 +1,4 @@
 import { useRouterState } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
 import { Pagination } from '#/components/pagination'
 import { PRODUCTS_DEFAULT_LIMIT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
 import type { ProductListView } from '#/features/products/utils/product-list-search'
@@ -7,13 +6,8 @@ import { useMarket } from '#/hooks/use-market'
 import { ProductEmpty } from './product-empty'
 import { ProductGrid } from './product-grid'
 
-type ProductListProps = ProductListView & {
-  /** Where an empty, unsearched list sends the shopper. The home page has nowhere wider to send them. */
-  emptyLink?: ReactNode
-}
-
-export function ProductList({ scope, search, onSearchChange, emptyLink }: ProductListProps) {
-  const { q, offset } = search
+export function ProductList({ scope, search, onSearchChange }: ProductListView) {
+  const { offset } = search
   const { current } = useMarket()
   const { products, count } = useSuspenseProducts(productsPageQuery({ ...search, scope, countryCode: current.iso2 }))
 
@@ -24,7 +18,9 @@ export function ProductList({ scope, search, onSearchChange, emptyLink }: Produc
    */
   const isNavigating = useRouterState({ select: (state) => state.isLoading })
 
-  if (products.length === 0) return <ProductEmpty q={q} link={emptyLink} />
+  // A scope is what makes a list narrower than the whole catalogue, and so what gives "Shop all"
+  // somewhere wider to go. The home page's is empty.
+  if (products.length === 0) return <ProductEmpty search={search} isScoped={Object.keys(scope).length > 0} />
 
   return (
     <>

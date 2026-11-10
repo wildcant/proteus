@@ -3,6 +3,7 @@ import { UserIcon } from '@proteus/icons'
 import { Link } from '@tanstack/react-router'
 import { MenuIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
 import { Button } from '#/components/button'
 import { Nav } from '#/components/header/nav'
 import { SearchBarTrigger, SearchIconTrigger } from '#/components/header/search-triggers'
@@ -18,7 +19,14 @@ import { SideMenu } from './side-menu'
  * overlays whose open state is a URL param, so they are siblings in the `_main` layout route now
  * rather than props threaded through the bar. See `packages/frontend-structure` for the rule.
  */
-export function Header({ actions }: { actions?: ReactNode }) {
+export function Header({
+  categories,
+  actions,
+}: {
+  /** The Visible Category tree the rail and the side menu draw from, read by the layout route. */
+  categories: StoreProductCategoryTreeNode[]
+  actions?: ReactNode
+}) {
   const { t } = useLingui()
   const { setOpen: setMenuOpen } = useModal('menu')
 
@@ -42,7 +50,7 @@ export function Header({ actions }: { actions?: ReactNode }) {
 
           <SearchIconTrigger className="lg:hidden" />
 
-          <Nav />
+          <Nav categories={categories} />
         </div>
 
         <Wordmark />
@@ -62,7 +70,7 @@ export function Header({ actions }: { actions?: ReactNode }) {
         </div>
       </div>
 
-      <SideMenu />
+      <SideMenu categories={categories} />
     </header>
   )
 }
