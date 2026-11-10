@@ -49,8 +49,13 @@ export type SellableMarkets = {
   defaultMarket: Market
 }
 
-/** Where the resolved locale code is persisted, so a later visit to `/` lands on the same market. */
-const MARKET_COOKIE = 'proteus_store_market'
+/**
+ * Where the resolved locale code is persisted, so a later visit to `/` lands on the same market.
+ *
+ * Not `proteus_store_market`: browsers still hold that name as an `HttpOnly` cookie, and a script
+ * cannot overwrite one, so the page could never update it.
+ */
+const MARKET_COOKIE = 'proteus_market'
 
 /** A year: the market is a preference, not a session, and re-choosing it every month is noise. */
 const MARKET_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
