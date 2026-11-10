@@ -1,16 +1,19 @@
-import { Trans } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, Field, FieldLabel, KeyboundForm, RouteDrawer, useRouteModal } from '@proteus/ui'
 import { useId } from 'react'
 import type { AdminGroupedProduct } from '#/api/generated/model'
 import { useSuspenseCategoryTree } from '#/features/categories/api/categories'
 import { CategoryPicker } from '#/features/categories/components/category-picker'
+import { useSuspenseAllCollections } from '#/features/collections/api/collections'
 import { useEditProductOrganizationForm } from '#/features/products/hooks/use-edit-product-organization-form'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export function EditProductOrganizationForm({ product }: { product: AdminGroupedProduct }) {
+  const { t } = useLingui()
   const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
   const { data: tree } = useSuspenseCategoryTree()
+  const { data: collections } = useSuspenseAllCollections()
   const categoriesId = useId()
 
   const { form } = useEditProductOrganizationForm(product, {
@@ -26,7 +29,7 @@ export function EditProductOrganizationForm({ product }: { product: AdminGrouped
               <Trans>Edit Organization</Trans>
             </RouteDrawer.Title>
           </RouteDrawer.Header>
-          <RouteDrawer.Body>
+          <RouteDrawer.Body className="flex flex-col gap-y-6">
             <form.Field name="categoryIds">
               {(field) => (
                 <Field>
@@ -42,6 +45,16 @@ export function EditProductOrganizationForm({ product }: { product: AdminGrouped
                 </Field>
               )}
             </form.Field>
+            <form.AppField name="collectionIds">
+              {(field) => (
+                <field.MultiComboboxField
+                  label={t`Collections`}
+                  items={collections.map((collection) => ({ id: collection.id, label: collection.title }))}
+                  placeholder={t`Choose collections`}
+                  emptyMessage={t`No collections yet.`}
+                />
+              )}
+            </form.AppField>
           </RouteDrawer.Body>
           <RouteDrawer.Footer>
             <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>

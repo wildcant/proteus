@@ -77,6 +77,10 @@ msgstr "{selectedCount} seleccionados"
 msgid "{title} media"
 msgstr "Imágenes de {title}"
 
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:65
+msgid "A product can sit in several collections."
+msgstr "Un producto puede estar en varias colecciones."
+
 #: src/routes/_authed/settings/regions/index.tsx:25
 msgid "A region is an area that you sell products in. It can cover multiple countries, and has different providers and currency."
 msgstr "Una región es un área en la que vendes productos. Puede abarcar varios países y tiene sus propios proveedores y moneda."
@@ -156,6 +160,10 @@ msgstr "Agrega imágenes del producto a la variante. Para agregar imágenes nuev
 #: src/features/categories/hooks/use-category-products-table.tsx:37
 msgid "Add products to list them in this category."
 msgstr "Añade productos para listarlos en esta categoría."
+
+#: src/features/collections/hooks/use-collection-products-table.tsx:36
+msgid "Add products to list them in this collection."
+msgstr "Añade productos para listarlos en esta colección."
 
 #: src/features/regions/components/country-locale-select.tsx:49
 msgid "Add the countries included in this region."
@@ -321,13 +329,15 @@ msgstr "bytes"
 #: src/features/access-control/components/edit-role-form.tsx:75
 #: src/features/categories/components/edit-category-form.tsx:45
 #: src/features/categories/components/edit-category-products-form.tsx:43
+#: src/features/collections/components/edit-collection-form.tsx:35
+#: src/features/collections/components/edit-collection-products-form.tsx:47
 #: src/features/customers/components/update-customer-form.tsx:49
 #: src/features/orders/components/order-general-section.tsx:66
 #: src/features/product-options/components/edit-product-option-form.tsx:46
 #: src/features/product-options/components/manage-product-options-form.tsx:64
 #: src/features/products/components/create-product-form/create-product-form.tsx:73
 #: src/features/products/components/edit-product-form.tsx:32
-#: src/features/products/components/edit-product-organization-form.tsx:48
+#: src/features/products/components/edit-product-organization-form.tsx:61
 #: src/features/products/components/media/edit-product-media-form.tsx:40
 #: src/features/products/components/media/manage-image-variants-form.tsx:71
 #: src/features/products/components/variant/create-variant-form.tsx:119
@@ -369,20 +379,26 @@ msgstr "Capturar pagos"
 
 #: src/components/layout/use-sidebar-label.ts:14
 #: src/features/categories/components/category-tree-list.tsx:19
-#: src/features/products/components/create-product-form/product-create-organize-form.tsx:42
-#: src/features/products/components/edit-product-organization-form.tsx:34
-#: src/features/products/components/product-organization-section.tsx:22
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:44
+#: src/features/products/components/edit-product-organization-form.tsx:37
+#: src/features/products/components/product-organization-section.tsx:23
 #: src/routes/_authed/_shell/categories/route.tsx:5
 msgid "Categories"
 msgstr "Categorías"
 
 #: src/features/categories/components/edit-category-products-form.tsx:33
+#: src/features/collections/components/edit-collection-products-form.tsx:37
 msgid "Check a product to add it, uncheck one to remove it."
 msgstr "Marca un producto para añadirlo y desmárcalo para quitarlo."
 
 #: src/features/categories/components/category-picker.tsx:79
 msgid "Choose categories"
 msgstr "Elegir categorías"
+
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:63
+#: src/features/products/components/edit-product-organization-form.tsx:53
+msgid "Choose collections"
+msgstr "Elige colecciones"
 
 #: src/components/data-table/data-table-ui/filter-bar.tsx:55
 msgid "Clear all"
@@ -400,6 +416,15 @@ msgstr "Cerrar notificación"
 #: src/features/store/hooks/use-store-currency-table.tsx:49
 msgid "Code"
 msgstr "Código"
+
+#: src/components/layout/use-sidebar-label.ts:15
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:61
+#: src/features/products/components/edit-product-organization-form.tsx:51
+#: src/features/products/components/product-organization-section.tsx:24
+#: src/routes/_authed/_shell/collections/index.tsx:24
+#: src/routes/_authed/_shell/collections/route.tsx:5
+msgid "Collections"
+msgstr "Colecciones"
 
 #: src/features/products/components/variant/create-variant-form.tsx:79
 #: src/features/products/components/variant/edit-variant-form.tsx:61
@@ -454,11 +479,16 @@ msgstr "País de origen"
 #: src/features/categories/components/category-tree-list.tsx:26
 #: src/features/products/components/product-variant-section.tsx:12
 #: src/features/products/components/variant/create-variant-form.tsx:122
+#: src/routes/_authed/_shell/collections/index.tsx:25
 #: src/routes/_authed/_shell/product-options/index.tsx:25
 #: src/routes/_authed/settings/regions/index.tsx:26
 #: src/routes/_authed/settings/roles/index.tsx:24
 msgid "Create"
 msgstr "Crear"
+
+#: src/features/collections/hooks/use-collection-table.tsx:25
+msgid "Create a collection to group products for a campaign or a season."
+msgstr "Crea una colección para agrupar productos para una campaña o una temporada."
 
 #: src/features/product-options/components/create-product-option-form.tsx:27
 msgid "Create a new product option with values."
@@ -487,6 +517,10 @@ msgstr "Crear cuenta"
 #: src/features/categories/components/create-category-form.tsx:33
 msgid "Create Category"
 msgstr "Crear categoría"
+
+#: src/features/collections/components/create-collection-form.tsx:25
+msgid "Create Collection"
+msgstr "Crear colección"
 
 #: src/features/access-control/utils/permission-titles.ts:15
 msgid "Create customers"
@@ -579,7 +613,7 @@ msgstr "Cliente"
 msgid "Customer ID"
 msgstr "ID de cliente"
 
-#: src/components/layout/use-sidebar-label.ts:16
+#: src/components/layout/use-sidebar-label.ts:17
 #: src/routes/_authed/_shell/customers/index.tsx:21
 #: src/routes/_authed/_shell/customers/route.tsx:5
 msgid "Customers"
@@ -632,6 +666,8 @@ msgstr "Región predeterminada"
 #: src/features/users/components/invite-row-actions.tsx:70
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:46
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:66
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:39
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:59
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:37
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:58
 msgid "Delete"
@@ -640,6 +676,10 @@ msgstr "Eliminar"
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:44
 msgid "Delete category"
 msgstr "Eliminar categoría"
+
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:37
+msgid "Delete collection"
+msgstr "Eliminar colección"
 
 #: src/features/access-control/utils/permission-titles.ts:17
 msgid "Delete customers"
@@ -716,12 +756,13 @@ msgstr "Descripción"
 msgid "Details"
 msgstr "Detalles"
 
-#: src/features/products/components/create-product-form/product-create-organize-form.tsx:33
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:35
 #: src/features/products/components/product-general-section.tsx:54
 msgid "Discountable"
 msgstr "Admite descuentos"
 
 #: src/features/categories/components/edit-category-products-form.tsx:46
+#: src/features/collections/components/edit-collection-products-form.tsx:50
 msgid "Done"
 msgstr "Listo"
 
@@ -740,6 +781,10 @@ msgstr "Borrador"
 #: src/features/categories/components/category-organize-tree.tsx:103
 msgid "Drag a category up or down to reorder it, or right and left to move it under another category or out of one. Each move is saved at once."
 msgstr "Arrastra una categoría hacia arriba o abajo para reordenarla, o a la derecha y la izquierda para moverla dentro de otra categoría o sacarla de ella. Cada movimiento se guarda al instante."
+
+#: src/features/collections/components/collection-thumbnail-picker.tsx:61
+msgid "Drag and drop an image here or click to upload."
+msgstr "Arrastra y suelta una imagen aquí o haz clic para subirla."
 
 #: src/features/products/components/media/upload-media-form-item.tsx:19
 msgid "Drag and drop images here or click to upload."
@@ -784,6 +829,10 @@ msgstr "p. ej., Proteus"
 msgid "e.g. Store Manager"
 msgstr "p. ej., Gerente de tienda"
 
+#: src/features/collections/components/create-collection-form.tsx:32
+msgid "e.g. Summer 2026"
+msgstr "p. ej. Verano 2026"
+
 #: src/features/categories/components/create-category-form.tsx:40
 msgid "e.g. Tops"
 msgstr "p. ej. Camisetas"
@@ -797,12 +846,13 @@ msgstr "La configuración regional de cada país es el segmento de URL de su tie
 #: src/features/product-options/components/option-row-actions.tsx:48
 #: src/features/products/components/product-attribute-section.tsx:21
 #: src/features/products/components/product-general-section.tsx:44
-#: src/features/products/components/product-organization-section.tsx:19
+#: src/features/products/components/product-organization-section.tsx:20
 #: src/features/products/components/product-row-actions.tsx:21
 #: src/features/products/components/variant/variant-general-section.tsx:36
 #: src/features/products/components/variant/variant-row-actions.tsx:23
 #: src/features/regions/components/region-row-actions.tsx:23
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:65
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:58
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:57
 #: src/routes/_authed/settings/regions/$id/_detail/route.tsx:33
 #: src/routes/_authed/settings/store/route.tsx:63
@@ -812,6 +862,10 @@ msgstr "Editar"
 #: src/features/categories/components/edit-category-form.tsx:22
 msgid "Edit Category"
 msgstr "Editar categoría"
+
+#: src/features/collections/components/edit-collection-form.tsx:23
+msgid "Edit Collection"
+msgstr "Editar colección"
 
 #: src/features/customers/components/update-customer-form.tsx:31
 msgid "Edit Customer"
@@ -838,7 +892,7 @@ msgstr "Editar configuración regional"
 msgid "Edit Media"
 msgstr "Editar imágenes"
 
-#: src/features/products/components/edit-product-organization-form.tsx:26
+#: src/features/products/components/edit-product-organization-form.tsx:29
 msgid "Edit Organization"
 msgstr "Editar organización"
 
@@ -856,6 +910,7 @@ msgstr "Editar opción de producto"
 
 #: src/features/access-control/utils/permission-titles.ts:39
 #: src/features/categories/components/category-products-section.tsx:13
+#: src/features/collections/components/collection-products-section.tsx:13
 msgid "Edit products"
 msgstr "Editar productos"
 
@@ -960,6 +1015,10 @@ msgstr "No se pudo completar el pedido"
 msgid "Failed to create category"
 msgstr "No se pudo crear la categoría"
 
+#: src/features/collections/api/collections.ts:85
+msgid "Failed to create collection"
+msgstr "No se pudo crear la colección"
+
 #: src/features/orders/api/orders.ts:126
 msgid "Failed to create fulfillment"
 msgstr "No se pudo crear la preparación"
@@ -968,7 +1027,7 @@ msgstr "No se pudo crear la preparación"
 msgid "Failed to create option"
 msgstr "No se pudo crear la opción"
 
-#: src/features/products/api/products.ts:83
+#: src/features/products/api/products.ts:106
 msgid "Failed to create product"
 msgstr "No se pudo crear el producto"
 
@@ -992,6 +1051,10 @@ msgstr "No se pudo crear la variante"
 msgid "Failed to delete category"
 msgstr "No se pudo eliminar la categoría"
 
+#: src/features/collections/api/collections.ts:131
+msgid "Failed to delete collection"
+msgstr "No se pudo eliminar la colección"
+
 #: src/features/customers/api/customers.ts:84
 msgid "Failed to delete customer"
 msgstr "No se pudo eliminar el cliente"
@@ -1004,7 +1067,7 @@ msgstr "No se pudo eliminar la invitación"
 msgid "Failed to delete option"
 msgstr "No se pudo eliminar la opción"
 
-#: src/features/products/api/products.ts:125
+#: src/features/products/api/products.ts:149
 msgid "Failed to delete product"
 msgstr "No se pudo eliminar el producto"
 
@@ -1048,6 +1111,10 @@ msgstr "No se pudieron configurar las opciones del producto"
 msgid "Failed to update category"
 msgstr "No se pudo actualizar la categoría"
 
+#: src/features/collections/api/collections.ts:110
+msgid "Failed to update collection"
+msgstr "No se pudo actualizar la colección"
+
 #: src/features/customers/api/customers.ts:64
 msgid "Failed to update customer"
 msgstr "No se pudo actualizar el cliente"
@@ -1064,7 +1131,7 @@ msgstr "No se pudo actualizar la configuración regional"
 msgid "Failed to update option"
 msgstr "No se pudo actualizar la opción"
 
-#: src/features/products/api/products.ts:107
+#: src/features/products/api/products.ts:131
 msgid "Failed to update product"
 msgstr "No se pudo actualizar el producto"
 
@@ -1087,6 +1154,10 @@ msgstr "No se pudo actualizar la tienda"
 #: src/features/categories/api/categories.ts:165
 msgid "Failed to update the category's products"
 msgstr "No se pudieron actualizar los productos de la categoría"
+
+#: src/features/collections/api/collections.ts:154
+msgid "Failed to update the collection's products"
+msgstr "No se pudieron actualizar los productos de la colección"
 
 #: src/features/products/api/product-variants.ts:145
 msgid "Failed to update variant"
@@ -1155,7 +1226,7 @@ msgstr "Preparación"
 msgid "GB"
 msgstr "GB"
 
-#: src/components/layout/use-sidebar-label.ts:19
+#: src/components/layout/use-sidebar-label.ts:20
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:23
 msgid "General"
 msgstr "General"
@@ -1163,6 +1234,10 @@ msgstr "General"
 #: src/features/categories/components/create-category-form.tsx:43
 msgid "Generated from the name when blank"
 msgstr "Se genera a partir del nombre si se deja en blanco"
+
+#: src/features/collections/components/create-collection-form.tsx:35
+msgid "Generated from the title when blank"
+msgstr "Se genera a partir del título si se deja en blanco"
 
 #: src/routes/_public/invite.tsx:37
 msgid "Get started with the admin right away."
@@ -1192,12 +1267,20 @@ msgstr "Agrupa los productos en un árbol que los compradores recorren."
 msgid "Guest"
 msgstr "Invitado"
 
+#: src/features/collections/components/create-collection-form.tsx:28
+msgid "Hand-pick products for a campaign or a season."
+msgstr "Elige a mano productos para una campaña o una temporada."
+
 #: src/features/categories/components/create-category-form.tsx:43
 #: src/features/categories/components/edit-category-form.tsx:27
+#: src/features/collections/components/create-collection-form.tsx:35
+#: src/features/collections/components/edit-collection-form.tsx:28
+#: src/features/collections/hooks/use-collection-table.tsx:17
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:33
 #: src/features/products/components/product-general-section.tsx:52
 #: src/features/products/hooks/use-product-table.tsx:29
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:71
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:64
 msgid "Handle"
 msgstr "Identificador"
 
@@ -1234,7 +1317,7 @@ msgstr "Inactiva"
 msgid "Internal"
 msgstr "Interna"
 
-#: src/components/layout/use-sidebar-label.ts:17
+#: src/components/layout/use-sidebar-label.ts:18
 #: src/routes/_authed/_shell/inventory/index.tsx:21
 #: src/routes/_authed/_shell/inventory/route.tsx:5
 msgid "Inventory"
@@ -1510,6 +1593,19 @@ msgstr "Aún no hay categorías."
 msgid "No categories yet. Create one to start the tree."
 msgstr "Aún no hay categorías. Crea una para empezar el árbol."
 
+#: src/features/collections/hooks/use-collection-table.tsx:27
+msgid "No collections found"
+msgstr "No se encontraron colecciones"
+
+#: src/features/collections/hooks/use-collection-table.tsx:24
+msgid "No collections yet"
+msgstr "Aún no hay colecciones"
+
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:64
+#: src/features/products/components/edit-product-organization-form.tsx:54
+msgid "No collections yet."
+msgstr "Aún no hay colecciones."
+
 #: src/features/products/components/variant/create-variant-form.tsx:84
 #: src/features/products/components/variant/edit-variant-form.tsx:65
 msgid "No combinations left."
@@ -1617,6 +1713,7 @@ msgid "No product options available. Create one first."
 msgstr "No hay opciones de producto disponibles. Crea una primero."
 
 #: src/features/categories/hooks/use-category-products-table.tsx:37
+#: src/features/collections/hooks/use-collection-products-table.tsx:36
 #: src/features/product-options/hooks/use-option-products-table.tsx:38
 msgid "No products"
 msgstr "Sin productos"
@@ -1626,6 +1723,7 @@ msgid "No products are using this option yet."
 msgstr "Aún no hay productos que usen esta opción."
 
 #: src/features/categories/hooks/use-category-products-table.tsx:38
+#: src/features/collections/hooks/use-collection-products-table.tsx:37
 #: src/features/product-options/hooks/use-option-products-table.tsx:42
 #: src/features/products/hooks/use-product-picker-table.tsx:44
 #: src/features/products/hooks/use-product-table.tsx:71
@@ -1712,6 +1810,10 @@ msgstr "Ninguna — una categoría de nivel superior"
 msgid "None — top-level"
 msgstr "Ninguna — nivel superior"
 
+#: src/features/collections/components/collection-thumbnail-picker.tsx:33
+msgid "Not a supported image. Supported file types are: {extensions}."
+msgstr "No es una imagen compatible. Los tipos de archivo compatibles son: {extensions}."
+
 #: src/features/inventory/hooks/use-inventory-table.tsx:66
 msgid "Nothing tracked yet"
 msgstr "Aún no hay nada con seguimiento"
@@ -1744,7 +1846,7 @@ msgstr "Opcional"
 msgid "Optional description"
 msgstr "Descripción opcional"
 
-#: src/components/layout/use-sidebar-label.ts:15
+#: src/components/layout/use-sidebar-label.ts:16
 #: src/features/product-options/components/product-option-section.tsx:16
 #: src/routes/_authed/_shell/product-options/index.tsx:24
 #: src/routes/_authed/_shell/product-options/route.tsx:5
@@ -1770,13 +1872,13 @@ msgstr "Pedidos"
 msgid "Orders will appear here once customers complete checkout."
 msgstr "Los pedidos aparecerán aquí cuando los clientes finalicen la compra."
 
-#: src/features/products/components/product-organization-section.tsx:16
+#: src/features/products/components/product-organization-section.tsx:17
 msgid "Organization"
 msgstr "Organización"
 
 #: src/features/categories/components/category-tree-list.tsx:23
 #: src/features/products/components/create-product-form/create-product-form.tsx:44
-#: src/features/products/components/create-product-form/product-create-organize-form.tsx:27
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:29
 #: src/routes/_authed/_shell/categories/organize.tsx:8
 msgid "Organize"
 msgstr "Organizar"
@@ -1895,6 +1997,7 @@ msgstr "Variantes del producto"
 
 #: src/components/layout/use-sidebar-label.ts:13
 #: src/features/categories/components/category-products-section.tsx:12
+#: src/features/collections/components/collection-products-section.tsx:12
 #: src/features/products/components/product-picker.tsx:15
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:76
 #: src/routes/_authed/_shell/products/index.tsx:24
@@ -1905,6 +2008,10 @@ msgstr "Productos"
 #: src/features/categories/components/edit-category-products-form.tsx:30
 msgid "Products in {categoryName}"
 msgstr "Productos en {categoryName}"
+
+#: src/features/collections/components/edit-collection-products-form.tsx:34
+msgid "Products in {collectionTitle}"
+msgstr "Productos en {collectionTitle}"
 
 #: src/features/store/components/store-currency-row-actions.tsx:41
 msgid "Products will no longer carry a {currencyName} price, and no region will be able to settle in it."
@@ -1946,7 +2053,7 @@ msgstr "Publicado"
 msgid "Refund payments"
 msgstr "Reembolsar pagos"
 
-#: src/components/layout/use-sidebar-label.ts:22
+#: src/components/layout/use-sidebar-label.ts:23
 #: src/routes/_authed/settings/regions/index.tsx:24
 #: src/routes/_authed/settings/regions/route.tsx:5
 msgid "Regions"
@@ -1964,6 +2071,7 @@ msgstr "rechazado"
 msgid "Rejected"
 msgstr "Rechazado"
 
+#: src/features/collections/components/collection-thumbnail-picker.tsx:53
 #: src/features/product-options/components/value-row-actions.tsx:28
 #: src/features/regions/components/region-countries-card.tsx:34
 #: src/features/regions/components/region-countries-card.tsx:56
@@ -2000,6 +2108,10 @@ msgstr "Quitar moneda"
 msgid "Remove from category"
 msgstr "Quitar de la categoría"
 
+#: src/features/collections/components/collection-product-row-actions.tsx:24
+msgid "Remove from collection"
+msgstr "Quitar de la colección"
+
 #: src/features/products/components/variant/edit-variant-media-form.tsx:134
 msgid "Remove Selected"
 msgstr "Quitar seleccionadas"
@@ -2029,7 +2141,7 @@ msgstr "Reenviar invitación"
 msgid "Resend invites"
 msgstr "Reenviar invitaciones"
 
-#: src/components/layout/use-sidebar-label.ts:18
+#: src/components/layout/use-sidebar-label.ts:19
 #: src/routes/_authed/_shell/reservations/index.tsx:21
 #: src/routes/_authed/_shell/reservations/route.tsx:5
 msgid "Reservations"
@@ -2048,7 +2160,7 @@ msgstr "Cantidad reservada"
 msgid "Role \"{name}\" deleted"
 msgstr "Rol \"{name}\" eliminado"
 
-#: src/components/layout/use-sidebar-label.ts:21
+#: src/components/layout/use-sidebar-label.ts:22
 #: src/features/users/components/invite-form.tsx:42
 #: src/features/users/components/user-role-assignment.tsx:43
 #: src/features/users/hooks/use-user-table.tsx:23
@@ -2069,12 +2181,14 @@ msgstr "Los roles definen qué acciones pueden realizar los usuarios. Asigna per
 #: src/features/access-control/components/edit-role-form.tsx:79
 #: src/features/categories/components/create-category-form.tsx:74
 #: src/features/categories/components/edit-category-form.tsx:48
+#: src/features/collections/components/create-collection-form.tsx:44
+#: src/features/collections/components/edit-collection-form.tsx:38
 #: src/features/customers/components/update-customer-form.tsx:52
 #: src/features/product-options/components/create-product-option-form.tsx:51
 #: src/features/product-options/components/edit-product-option-form.tsx:49
 #: src/features/product-options/components/manage-product-options-form.tsx:67
 #: src/features/products/components/edit-product-form.tsx:35
-#: src/features/products/components/edit-product-organization-form.tsx:51
+#: src/features/products/components/edit-product-organization-form.tsx:64
 #: src/features/products/components/media/edit-product-media-form.tsx:43
 #: src/features/products/components/media/manage-image-variants-form.tsx:74
 #: src/features/products/components/variant/edit-variant-form.tsx:106
@@ -2219,6 +2333,10 @@ msgstr "Subtotal de envío"
 msgid "Show categories in {name}"
 msgstr "Ver categorías en {name}"
 
+#: src/features/collections/components/collection-thumbnail-picker.tsx:46
+msgid "Shown at the top of the collection page."
+msgstr "Se muestra en la parte superior de la página de la colección."
+
 #: src/features/categories/components/create-category-form.tsx:60
 #: src/features/categories/components/edit-category-form.tsx:32
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
@@ -2249,6 +2367,7 @@ msgid "SKU"
 msgstr "SKU"
 
 #: src/features/categories/hooks/use-category-products-table.tsx:23
+#: src/features/collections/hooks/use-collection-products-table.tsx:22
 #: src/features/orders/hooks/use-order-table.tsx:35
 #: src/features/orders/hooks/use-order-table.tsx:54
 #: src/features/product-options/hooks/use-option-products-table.tsx:24
@@ -2310,6 +2429,10 @@ msgstr "TB"
 msgid "The currencies the store sells in are the prices a product can carry, and the money a region may settle in."
 msgstr "Las monedas en las que vende la tienda son los precios que puede tener un producto y el dinero en el que puede liquidar una región."
 
+#: src/features/collections/components/collection-thumbnail-picker.tsx:28
+msgid "The image exceeds the maximum file size of {maxSize}."
+msgstr "La imagen supera el tamaño máximo de archivo de {maxSize}."
+
 #: src/routes/_authed/settings/store/route.tsx:87
 msgid "The market — and so the currency — a shopper is priced in before they pick one."
 msgstr "El mercado —y por tanto la moneda— con el que se muestran los precios a un comprador antes de que elija uno."
@@ -2346,6 +2469,7 @@ msgstr "Este producto no se vende en variaciones. Se creará una sola variante p
 msgid "This ranking will affect the variants' order in your storefront."
 msgstr "Este orden afectará el orden de las variantes en tu tienda."
 
+#: src/features/collections/components/collection-thumbnail-picker.tsx:43
 #: src/features/products/components/media/product-media-grid.tsx:202
 #: src/features/products/components/media/product-media-grid.tsx:206
 #: src/features/products/components/media/product-media-section.tsx:124
@@ -2355,10 +2479,15 @@ msgstr "Este orden afectará el orden de las variantes en tu tienda."
 #: src/features/products/components/variant/variant-media-section.tsx:42
 #: src/features/products/components/variant/variant-media-section.tsx:46
 #: src/features/products/hooks/use-image-variants-table.tsx:35
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:66
 msgid "Thumbnail"
 msgstr "Miniatura"
 
 #: src/features/categories/hooks/use-category-products-table.tsx:21
+#: src/features/collections/components/create-collection-form.tsx:32
+#: src/features/collections/components/edit-collection-form.tsx:27
+#: src/features/collections/hooks/use-collection-products-table.tsx:20
+#: src/features/collections/hooks/use-collection-table.tsx:16
 #: src/features/product-options/components/create-product-option-form.tsx:31
 #: src/features/product-options/components/edit-product-option-form.tsx:27
 #: src/features/product-options/hooks/use-product-option-table.tsx:21
@@ -2417,6 +2546,8 @@ msgstr "Intenta cambiar los filtros."
 
 #: src/features/access-control/hooks/use-role-table.tsx:50
 #: src/features/categories/hooks/use-category-products-table.tsx:38
+#: src/features/collections/hooks/use-collection-products-table.tsx:37
+#: src/features/collections/hooks/use-collection-table.tsx:27
 #: src/features/product-options/hooks/use-option-products-table.tsx:43
 #: src/features/product-options/hooks/use-option-values-table.tsx:33
 #: src/features/product-options/hooks/use-product-option-table.tsx:41
@@ -2449,6 +2580,10 @@ msgstr "sin preparar"
 msgid "unlimited"
 msgstr "ilimitado"
 
+#: src/features/collections/components/collection-thumbnail-picker.tsx:60
+msgid "Upload an image"
+msgstr "Subir una imagen"
+
 #: src/features/access-control/utils/permission-titles.ts:19
 msgid "Upload files"
 msgstr "Subir archivos"
@@ -2465,7 +2600,7 @@ msgstr "Las imágenes subidas aparecerán aquí."
 msgid "User"
 msgstr "Usuario"
 
-#: src/components/layout/use-sidebar-label.ts:20
+#: src/components/layout/use-sidebar-label.ts:21
 #: src/features/access-control/hooks/use-role-table.tsx:35
 #: src/routes/_authed/settings/users/index.tsx:22
 #: src/routes/_authed/settings/users/route.tsx:5
@@ -2590,11 +2725,11 @@ msgstr "Si está activado, la variante se puede comprar aunque no haya stock."
 msgid "When off, a single variant is created, named after the product."
 msgstr "Si está desactivado, se crea una sola variante con el nombre del producto."
 
-#: src/features/products/components/create-product-form/product-create-organize-form.tsx:34
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:36
 msgid "When unchecked, discounts will not apply to this product."
 msgstr "Si no está marcado, los descuentos no se aplicarán a este producto."
 
-#: src/features/products/components/create-product-form/product-create-organize-form.tsx:51
+#: src/features/products/components/create-product-form/product-create-organize-form.tsx:53
 msgid "Where the product is listed on the store."
 msgstr "Dónde aparece el producto en la tienda."
 
@@ -2618,6 +2753,10 @@ msgstr "Sí, este producto tiene variantes"
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:45
 msgid "You are about to delete the category {name}."
 msgstr "Vas a eliminar la categoría {name}."
+
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:38
+msgid "You are about to delete the collection {title}."
+msgstr "Vas a eliminar la colección {title}."
 
 #: src/components/error/forbidden-page.tsx:14
 msgid "You don't have permission to access this page."

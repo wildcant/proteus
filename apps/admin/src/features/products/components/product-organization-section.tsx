@@ -8,6 +8,7 @@ import { SectionRow } from '#/components/common/section-row'
 export function ProductOrganizationSection({ product }: { product: AdminGroupedProduct }) {
   const { t } = useLingui()
   const categories = product.categories.map((category) => category.name).join(', ')
+  const collections = product.collections.map((collection) => collection.title).join(', ')
 
   return (
     <Card className="gap-0 divide-y py-0">
@@ -20,6 +21,7 @@ export function ProductOrganizationSection({ product }: { product: AdminGroupedP
         </CardAction>
       </CardHeader>
       <SectionRow title={t`Categories`} value={categories || '-'} />
+      <SectionRow title={t`Collections`} value={collections || '-'} />
     </Card>
   )
 }

@@ -13,7 +13,10 @@ export function useEditProductOrganizationForm(
   const updateMutation = useUpdateProduct(product.id)
 
   const form = useAppForm({
-    defaultValues: { categoryIds: product.categories.map((category) => category.id) },
+    defaultValues: {
+      categoryIds: product.categories.map((category) => category.id),
+      collectionIds: product.collections.map((collection) => collection.id),
+    },
     onSubmit: async ({ value }) => {
       try {
         const data = await updateMutation.mutateAsync(value)
