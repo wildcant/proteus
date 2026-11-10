@@ -402,11 +402,11 @@ msgstr "Categories"
 msgid "Check a product to add it, uncheck one to remove it."
 msgstr "Check a product to add it, uncheck one to remove it."
 
-#: src/features/categories/components/category-picker.tsx:94
+#: src/features/categories/components/category-picker.tsx:96
 msgid "Choose a category"
 msgstr "Choose a category"
 
-#: src/features/categories/components/category-picker.tsx:94
+#: src/features/categories/components/category-picker.tsx:96
 msgid "Choose categories"
 msgstr "Choose categories"
 
@@ -1378,7 +1378,7 @@ msgstr "Image not found"
 msgid "Image variants updated successfully"
 msgstr "Image variants updated successfully"
 
-#: src/features/categories/components/category-picker.tsx:109
+#: src/features/categories/components/category-picker.tsx:111
 msgid "in {ancestors}"
 msgstr "in {ancestors}"
 
@@ -1660,11 +1660,11 @@ msgstr "Next"
 msgid "No"
 msgstr "No"
 
-#: src/features/categories/components/category-picker.tsx:105
+#: src/features/categories/components/category-picker.tsx:107
 msgid "No categories found"
 msgstr "No categories found"
 
-#: src/features/categories/components/category-picker.tsx:129
+#: src/features/categories/components/category-picker.tsx:131
 msgid "No categories yet"
 msgstr "No categories yet"
 
@@ -2172,7 +2172,7 @@ msgid "Remove"
 msgstr "Remove"
 
 #: src/components/multi-select-combobox.tsx:80
-#: src/features/categories/components/category-picker.tsx:77
+#: src/features/categories/components/category-picker.tsx:79
 msgid "Remove {name}"
 msgstr "Remove {name}"
 
@@ -2310,8 +2310,8 @@ msgstr "Saving will delete variants"
 msgid "Saving..."
 msgstr "Saving..."
 
-#: src/features/categories/components/category-picker.tsx:100
-#: src/features/categories/components/category-picker.tsx:101
+#: src/features/categories/components/category-picker.tsx:102
+#: src/features/categories/components/category-picker.tsx:103
 msgid "Search categories"
 msgstr "Search categories"
 
@@ -2431,7 +2431,7 @@ msgstr "shipped"
 msgid "Shipping Subtotal"
 msgstr "Shipping Subtotal"
 
-#: src/features/categories/components/category-picker.tsx:173
+#: src/features/categories/components/category-picker.tsx:175
 msgid "Show categories in {name}"
 msgstr "Show categories in {name}"
 
