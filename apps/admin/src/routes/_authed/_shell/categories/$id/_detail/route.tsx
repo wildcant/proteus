@@ -9,11 +9,12 @@ import { PageLayout } from '#/components/layout/page-layout'
 import {
   categoryTreeQueryOptions,
   useDeleteCategory,
+  useSetCategoryProducts,
   useSuspenseCategory,
   useSuspenseCategoryTree,
 } from '#/features/categories/api/categories'
-import { CategoryProductsSection } from '#/features/categories/components/category-products-section'
-import { flattenCategoryTree } from '#/features/categories/utils/flatten-category-tree'
+import { categoryPath, flattenCategoryTree } from '#/features/categories/utils/flatten-category-tree'
+import { ProductGroupSection } from '#/features/products/components/product-group-section'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export const Route = createFileRoute('/_authed/_shell/categories/$id/_detail')({
@@ -32,11 +33,12 @@ function CategoryDetailLayout() {
   const navigate = useNavigate()
   // `mutate`, not `mutateAsync`: a refusal (the Category still has children) is reported by the hook's toast.
   const { mutate: deleteCategory } = useDeleteCategory(id)
+  const { mutate: setProducts } = useSetCategoryProducts(id)
   const prompt = usePrompt()
 
   const category = data.productCategory
   const parent = flattenCategoryTree(tree.productCategories).find((row) => row.category.id === category.parentId)
-  const parentPath = parent ? [...parent.ancestors, parent.category.name].join(' › ') : t`None — top-level`
+  const parentPath = parent ? categoryPath(parent) : t`None — top-level`
 
   const handleDelete = async () => {
     const name = category.name
@@ -78,7 +80,15 @@ function CategoryDetailLayout() {
           value={category.isInternal ? t`Yes` : t`No`}
         />
       </Card>
-      <CategoryProductsSection categoryId={id} />
+      <ProductGroupSection
+        filter={{ categoryId: id }}
+        emptyDescription={t`Add products to list them in this category.`}
+        membership={{
+          editTo: `/categories/${id}/products`,
+          removeLabel: t`Remove from category`,
+          onRemove: (productId) => setProducts({ remove: [productId] }),
+        }}
+      />
     </PageLayout.SingleColumn>
   )
 }

@@ -4,7 +4,6 @@ import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type {
   AdminCreateProductType,
-  AdminProductType,
   AdminProductTypeResponse,
   AdminUpdateProductType,
   DeleteResponse,
@@ -18,6 +17,7 @@ import {
   updateProductType,
 } from '#/api/generated/product-types/product-types'
 import { productKeys } from '#/features/products/api/products'
+import { listEveryPage } from '#/lib/list-every-page'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -25,9 +25,6 @@ const productTypeKeys = queryKeysFactory<'productTypes', ListProductTypesParams>
 
 /** Every Type at once, for the product form. Its own factory: the cached value is an array, not a page. */
 const productTypeOptionKeys = queryKeysFactory<'productTypeOptions'>('productTypeOptions')
-
-/** The list endpoint's ceiling, which is also the page the walk over every Type reads at a time. */
-const MAX_PAGE_SIZE = 100
 
 export const productTypesListQueryOptions = (params?: ListProductTypesParams) =>
   queryOptions({
@@ -49,14 +46,11 @@ export const productTypeQueryOptions = (id: string) =>
 export const allProductTypesQueryOptions = () =>
   queryOptions({
     queryKey: productTypeOptionKeys.list(),
-    queryFn: async () => {
-      const types: AdminProductType[] = []
-      for (let offset = 0; ; offset += MAX_PAGE_SIZE) {
-        const page = await listProductTypes({ offset, limit: MAX_PAGE_SIZE, order: 'value' })
-        types.push(...page.types)
-        if (offset + MAX_PAGE_SIZE >= page.count) return types
-      }
-    },
+    queryFn: () =>
+      listEveryPage(
+        (range) => listProductTypes({ ...range, order: 'value' }),
+        (page) => page.types,
+      ),
   })
 
 export const useProductTypes = (params?: ListProductTypesParams) => useQuery(productTypesListQueryOptions(params))

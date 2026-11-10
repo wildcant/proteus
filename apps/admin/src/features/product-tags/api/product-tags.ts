@@ -4,7 +4,6 @@ import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type {
   AdminCreateProductTag,
-  AdminProductTag,
   AdminProductTagResponse,
   AdminUpdateProductTag,
   DeleteResponse,
@@ -18,6 +17,7 @@ import {
   updateProductTag,
 } from '#/api/generated/product-tags/product-tags'
 import { productKeys } from '#/features/products/api/products'
+import { listEveryPage } from '#/lib/list-every-page'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -25,9 +25,6 @@ const productTagKeys = queryKeysFactory<'productTags', ListProductTagsParams>('p
 
 /** Every Tag at once, for the product form. Its own factory: the cached value is an array, not a page. */
 const productTagOptionKeys = queryKeysFactory<'productTagOptions'>('productTagOptions')
-
-/** The list endpoint's ceiling, which is also the page the walk over every Tag reads at a time. */
-const MAX_PAGE_SIZE = 100
 
 export const productTagsListQueryOptions = (params?: ListProductTagsParams) =>
   queryOptions({
@@ -49,14 +46,11 @@ export const productTagQueryOptions = (id: string) =>
 export const allProductTagsQueryOptions = () =>
   queryOptions({
     queryKey: productTagOptionKeys.list(),
-    queryFn: async () => {
-      const tags: AdminProductTag[] = []
-      for (let offset = 0; ; offset += MAX_PAGE_SIZE) {
-        const page = await listProductTags({ offset, limit: MAX_PAGE_SIZE, order: 'value' })
-        tags.push(...page.tags)
-        if (offset + MAX_PAGE_SIZE >= page.count) return tags
-      }
-    },
+    queryFn: () =>
+      listEveryPage(
+        (range) => listProductTags({ ...range, order: 'value' }),
+        (page) => page.tags,
+      ),
   })
 
 export const useProductTags = (params?: ListProductTagsParams) => useQuery(productTagsListQueryOptions(params))
