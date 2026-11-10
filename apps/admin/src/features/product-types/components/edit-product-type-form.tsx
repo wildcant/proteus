@@ -1,40 +1,12 @@
-import { Trans, useLingui } from '@lingui/react/macro'
-import { Button, KeyboundForm, RouteDrawer, useRouteModal } from '@proteus/ui'
+import { useLingui } from '@lingui/react/macro'
+import { AdminUpdateProductType } from '@proteus/http-schemas/admin'
 import type { AdminProductType } from '#/api/generated/model'
-import { useEditProductTypeForm } from '#/features/product-types/hooks/use-edit-product-type-form'
-import { useUiCopy } from '#/hooks/use-ui-copy'
+import { EditValueForm } from '#/components/value-entity/edit-value-form'
+import { useUpdateProductType } from '#/features/product-types/api/product-types'
 
 export function EditProductTypeForm({ type }: { type: AdminProductType }) {
   const { t } = useLingui()
-  const { closeLabel, unsavedChanges } = useUiCopy()
-  const { handleSuccess } = useRouteModal()
+  const { mutateAsync: updateType } = useUpdateProductType(type.id)
 
-  const { form } = useEditProductTypeForm(type, {
-    onSuccess: () => handleSuccess(),
-  })
-
-  return (
-    <RouteDrawer.Form form={form} copy={unsavedChanges}>
-      <KeyboundForm onSubmit={form.handleSubmit} className="flex flex-1 flex-col">
-        <form.AppForm>
-          <RouteDrawer.Header closeLabel={closeLabel}>
-            <RouteDrawer.Title>
-              <Trans>Edit Type</Trans>
-            </RouteDrawer.Title>
-          </RouteDrawer.Header>
-          <RouteDrawer.Body className="flex flex-col gap-y-6">
-            <form.AppField name="value">{(field) => <field.TextField label={t`Value`} autoFocus />}</form.AppField>
-          </RouteDrawer.Body>
-          <RouteDrawer.Footer>
-            <RouteDrawer.Close render={<Button variant="secondary" size="sm" />}>
-              <Trans>Cancel</Trans>
-            </RouteDrawer.Close>
-            <form.SubmitButton size="sm">
-              <Trans>Save</Trans>
-            </form.SubmitButton>
-          </RouteDrawer.Footer>
-        </form.AppForm>
-      </KeyboundForm>
-    </RouteDrawer.Form>
-  )
+  return <EditValueForm heading={t`Edit Type`} value={type.value} schema={AdminUpdateProductType} save={updateType} />
 }
