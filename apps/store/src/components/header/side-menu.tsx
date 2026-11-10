@@ -13,8 +13,8 @@ import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
-import { useSuspenseCategoryTree } from '#/api/product-categories'
 import { Button } from '#/components/button'
+import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
 import { SearchBarTrigger } from '#/components/header/search-triggers'
 import { ThemeToggle } from '#/components/theme-toggle'
 import { useModal } from '#/lib/modal-state'
@@ -31,10 +31,10 @@ const rowClassName =
  * without an onClick. The search trigger sets `modal` to `search` in a single navigation, so
  * the menu closes exactly as the panel opens rather than the two overlapping.
  */
-export function SideMenu() {
+export function SideMenu({ categories }: { categories: StoreProductCategoryTreeNode[] }) {
   const { t } = useLingui()
   const { isOpen, setOpen } = useModal('menu')
-  const categories = useSuspenseCategoryTree()
+  const entries = useMenuEntries(categories)
 
   return (
     <Drawer open={isOpen} onOpenChange={setOpen} swipeDirection="left">
@@ -61,27 +61,21 @@ export function SideMenu() {
           <SearchBarTrigger />
         </div>
 
-        {/* The rail's destinations, nested: a Category with children expands in place to "Shop all
-            <name>" and its children, where the rail opens a panel. No `Cart` entry: the bag sits in
+        {/* The rail's destinations, from the same menu, nested: a Category with children expands in
+            place, where the rail opens a panel. No `Cart` entry: the bag sits in
             the header at every width, and a nav link that opens a modal is a weaker copy of a
             control already on screen. */}
         <nav className="flex-1 overflow-y-auto px-4 pt-2 sm:px-6 lg:px-8">
           <ul className="m-0 flex list-none flex-col p-0">
-            <li>
-              <Link to="/" className={rowClassName}>
-                <Trans>Shop all</Trans>
-                <ChevronRightIcon className="size-5 shrink-0" />
-              </Link>
-            </li>
-            {categories.map((category) => (
-              <li key={category.id}>
-                {category.children.length > 0 ? (
-                  <SideMenuCategory category={category} />
+            {entries.map((entry) => (
+              <li key={entry.key}>
+                {isMenuGroup(entry) ? (
+                  <SideMenuGroup group={entry} />
                 ) : (
-                  <Link to="/categories/$handle" params={{ handle: category.handle }} className={rowClassName}>
-                    {category.name}
+                  <MenuLink destination={entry} className={rowClassName}>
+                    {entry.label}
                     <ChevronRightIcon className="size-5 shrink-0" />
-                  </Link>
+                  </MenuLink>
                 )}
               </li>
             ))}
@@ -104,28 +98,20 @@ export function SideMenu() {
 }
 
 /** Following any of its links closes the menu for free — see `SideMenu` — so this holds no state. */
-function SideMenuCategory({ category }: { category: StoreProductCategoryTreeNode }) {
-  const { name } = category
+function SideMenuGroup({ group }: { group: MenuGroup }) {
   const childClassName = 'block py-3 text-base text-ink-muted no-underline hover:text-ink'
 
   return (
     <Accordion>
-      <AccordionItem value={category.id} className="not-last:border-b-0">
+      <AccordionItem value={group.key} className="not-last:border-b-0">
         <AccordionTrigger className="items-center py-4 font-normal text-base text-ink **:data-[slot=accordion-trigger-icon]:size-5 **:data-[slot=accordion-trigger-icon]:text-ink">
-          {name}
+          {group.label}
         </AccordionTrigger>
         <AccordionContent className="pb-2 [&_a]:no-underline">
           <ul className="m-0 flex list-none flex-col p-0 pl-4">
-            <li>
-              <Link to="/categories/$handle" params={{ handle: category.handle }} className={childClassName}>
-                <Trans>Shop all {name}</Trans>
-              </Link>
-            </li>
-            {category.children.map((child) => (
-              <li key={child.id}>
-                <Link to="/categories/$handle" params={{ handle: child.handle }} className={childClassName}>
-                  {child.name}
-                </Link>
+            {group.links.map((link) => (
+              <li key={link.key}>
+                <MenuLink destination={link} className={childClassName} />
               </li>
             ))}
           </ul>

@@ -2,7 +2,7 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
-import { useSuspenseCategoryTree } from '#/api/product-categories'
+import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
 import { MarketSelect } from '#/components/market-select'
 
 /**
@@ -18,9 +18,8 @@ import { MarketSelect } from '#/components/market-select'
 type FooterLink = { key: string; label: string } & ({ to: '/' | '/login' | '/signup' } | { categoryHandle: string })
 type FooterColumn = { title: string; links: FooterLink[] }
 
-function useFooterColumns(): FooterColumn[] {
+function useFooterColumns(categories: StoreProductCategoryTreeNode[]): FooterColumn[] {
   const { t } = useLingui()
-  const categories = useSuspenseCategoryTree()
 
   return [
     {
@@ -65,8 +64,9 @@ const paymentMarks: { label: string; mark: Icon }[] = [
  */
 const socialLinks: { label: string; href: string; mark: Icon }[] = []
 
-export function Footer() {
-  const footerColumns = useFooterColumns()
+/** `categories` is the Visible Category tree, read by the layout route: shared chrome may not import the feature. */
+export function Footer({ categories }: { categories: StoreProductCategoryTreeNode[] }) {
+  const footerColumns = useFooterColumns(categories)
   const year = new Date().getFullYear()
 
   return (

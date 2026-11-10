@@ -29,16 +29,4 @@ test.describe('Collection pages', () => {
     await main.getByRole('heading', { level: 3, name: member.title }).click()
     await expect(page).toHaveURL(new RegExp(`/en-US/products/${member.id}`))
   })
-
-  test('an unknown handle renders the not-found state inside the chrome', async ({ page, authenticate, navigate }) => {
-    await authenticate({ as: 'customer' })
-
-    await navigate({ to: '/collections/$handle', params: { handle: 'no-such-collection' } })
-
-    await expect(page.getByRole('heading', { name: "We couldn't find this collection" })).toBeVisible()
-    await expect(page.locator('header')).toBeVisible()
-    await expect(page.locator('footer')).toBeVisible()
-    await page.locator('main').getByRole('link', { name: 'Shop all', exact: true }).click()
-    await expect(page).toHaveURL('/en-US')
-  })
 })

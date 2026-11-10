@@ -12,25 +12,22 @@ import { PRODUCT_SORT_NAMES, type ProductListScope } from '#/features/products/a
 export const productListSearchSchema = z.object({
   // `.catch` so a stray `?q=` degrades to the unfiltered list instead of erroring the route.
   q: z.string().trim().min(1).optional().catch(undefined),
+  // Tag values, any of which a product may carry, as a repeated key: `?tag=cotton&tag=wool`. One
+  // `?tag=cotton` reads as one value. Coerced, because the router's parser turns a value that looks
+  // like a number into one, and `?tag=2024` is still the Tag "2024".
+  tag: z
+    .preprocess(
+      (value) => (value === undefined || Array.isArray(value) ? value : [value]),
+      z.array(z.coerce.string().min(1)).min(1).optional(),
+    )
+    .catch(undefined),
   // A friendly enum rather than the API's `order` string: an unrecognised column is not a 400,
   // it is silently an unordered list, and an enum makes that unrepresentable.
-  // Tag values, any of which a product may carry. A lone `?tag=cotton` someone typed reads as one
-  // value; the router writes an array itself.
-  tag: z
-    .union([
-      z.array(z.string().min(1)).min(1),
-      z
-        .string()
-        .min(1)
-        .transform((value) => [value]),
-    ])
-    .optional()
-    .catch(undefined),
   sort: z.enum(PRODUCT_SORT_NAMES).optional().catch(undefined),
   offset: z.coerce.number().int().min(0).optional().catch(undefined),
 })
 
-type ProductListSearch = z.infer<typeof productListSearchSchema>
+export type ProductListSearch = z.infer<typeof productListSearchSchema>
 
 /**
  * What a page hands both `ProductListHeader` and `ProductList`, so the header's count and the grid

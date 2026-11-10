@@ -46,7 +46,8 @@ test.describe('Shop by category', () => {
     await expect(page.getByRole('heading', { name: product.title })).toBeVisible()
   })
 
-  test('a handle the store does not show renders the not-found state inside the chrome', async ({
+  // One journey for both scoped pages: they share the not-found state and differ only in its copy.
+  test('a category or collection handle the store does not show renders the not-found state inside the chrome', async ({
     page,
     authenticate,
     navigate,
@@ -58,6 +59,14 @@ test.describe('Shop by category', () => {
     await navigate({ to: '/categories/$handle', params: { handle: hidden.handle } })
 
     await expect(page.getByRole('heading', { name: "We couldn't find this category" })).toBeVisible()
+    await expect(page.locator('header')).toBeVisible()
+    await expect(page.locator('footer')).toBeVisible()
+    await page.locator('main').getByRole('link', { name: 'Shop all', exact: true }).click()
+    await expect(page).toHaveURL('/en-US')
+
+    await navigate({ to: '/collections/$handle', params: { handle: 'no-such-collection' } })
+
+    await expect(page.getByRole('heading', { name: "We couldn't find this collection" })).toBeVisible()
     await expect(page.locator('header')).toBeVisible()
     await expect(page.locator('footer')).toBeVisible()
     await page.locator('main').getByRole('link', { name: 'Shop all', exact: true }).click()

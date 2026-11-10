@@ -1,11 +1,11 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { categoryTreeQueryOptions } from '#/api/product-categories'
 import { Footer } from '#/components/footer'
 import { Header } from '#/components/header/header'
 import { useMe } from '#/features/account/api/customer'
 import { CartDrawer } from '#/features/cart/components/cart-drawer'
 import { CartMismatchBanner } from '#/features/cart/components/cart-mismatch-banner'
 import { CartTrigger } from '#/features/cart/components/cart-trigger'
+import { categoryTreeQueryOptions, useSuspenseCategoryTree } from '#/features/products/api/product-categories'
 import { SearchDrawer } from '#/features/products/components/search-drawer'
 import { marketHeadLinksFor } from '#/lib/seo/market-links'
 
@@ -31,17 +31,19 @@ function MainLayout() {
   // The app layer is the only place allowed to compose two features, which is why the bag, the
   // drawers and the mismatch banner are wired together here rather than inside the header.
   const { customer } = useMe()
+  // Read here and handed down, because the header and footer are shared chrome and the tree is a feature's.
+  const categories = useSuspenseCategoryTree()
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header actions={<CartTrigger />} />
+      <Header categories={categories} actions={<CartTrigger />} />
       <SearchDrawer />
       <CartDrawer />
       <CartMismatchBanner customerId={customer?.id} />
       <div className="flex flex-1 flex-col">
         <Outlet />
       </div>
-      <Footer />
+      <Footer categories={categories} />
     </div>
   )
 }
