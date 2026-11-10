@@ -50,6 +50,8 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   collectionHandle?: string | string[]
   /** Products carrying any of these Tags. Not a column: `ProductRepository.extraWhere` applies it. */
   tagId?: string | string[]
+  /** Products carrying any of the Tags with these values. Not a column, as `tagId`. */
+  tagValue?: string | string[]
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
   categoryHandle?: string | string[]
   /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */

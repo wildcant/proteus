@@ -49,6 +49,7 @@ import storeOrderDefinitions from './api/store/orders/definitions.js'
 import storePaymentCollectionDefinitions from './api/store/payment-collections/definitions.js'
 import storePaymentMethodDefinitions from './api/store/payment-methods/definitions.js'
 import storeProductCategoryDefinitions from './api/store/product-categories/definitions.js'
+import storeProductTagDefinitions from './api/store/product-tags/definitions.js'
 import storeProductDefinitions from './api/store/products/definitions.js'
 
 // ---- Shared auth routes exposed to the store API ----
@@ -103,6 +104,7 @@ export const storeDefinitions: RouteDefinition[] = [
   ...storePaymentCollectionDefinitions,
   ...storePaymentMethodDefinitions,
   ...storeProductCategoryDefinitions,
+  ...storeProductTagDefinitions,
   ...storeProductDefinitions,
 ]
 

@@ -1,4 +1,4 @@
-import { and, eq, exists, inArray, isNull, type SQL, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, inArray, isNull, type SQL, sql } from 'drizzle-orm'
 import type { Context } from '../../../core/types/context.js'
 import type { FilterableProductProps } from '../../../core/types/product/common.js'
 import { BaseRepository } from '../../../core/utils/base-repository.js'
@@ -22,6 +22,22 @@ export class ProductRepository extends BaseRepository(productTable) {
     return rows[0] ?? null
   }
 
+  /**
+   * The distinct live Tag values on the products `filters` match, sorted. The product filters are the
+   * list's own `WHERE`, so the values follow every scope the list does.
+   */
+  async findTagValues(filters: FilterableProductProps, context?: Context): Promise<string[]> {
+    const client = this.getClient(context)
+    const rows = await client
+      .selectDistinct({ value: productTagTable.value })
+      .from(productTagTable)
+      .innerJoin(productProductTagTable, eq(productProductTagTable.tagId, productTagTable.id))
+      .innerJoin(this.table, eq(this.table.id, productProductTagTable.productId))
+      .where(and(isNull(productTagTable.deletedAt), isNull(productProductTagTable.deletedAt), this.buildWhere(filters)))
+      .orderBy(asc(productTagTable.value))
+    return rows.map((row) => row.value)
+  }
+
   /** The grouping filters: each one an `EXISTS`, ANDed with the column filters and each other. */
   protected override extraWhere(filters?: FilterableProductProps): SQL | undefined {
     if (!filters) return undefined
@@ -31,6 +47,7 @@ export class ProductRepository extends BaseRepository(productTable) {
       collectionId,
       collectionHandle,
       tagId,
+      tagValue,
       includeDescendants = false,
       visibleOnly = false,
     } = filters
@@ -43,6 +60,7 @@ export class ProductRepository extends BaseRepository(productTable) {
       clauses.push(this.inCollections(productCollectionTable.handle, asArray(collectionHandle)))
     }
     if (tagId !== undefined) clauses.push(this.withTags(productTagTable.id, asArray(tagId)))
+    if (tagValue !== undefined) clauses.push(this.withTags(productTagTable.value, asArray(tagValue)))
     return clauses.length > 0 ? and(...clauses) : undefined
   }
 

@@ -48,7 +48,7 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
       return (context?.transaction as Database) ?? this.#getDb()
     }
 
-    private buildWhere(filters?: EntityFilters<Select>, config?: FindConfig<Select>): SQL | undefined {
+    protected buildWhere(filters?: EntityFilters<Select>, config?: FindConfig<Select>): SQL | undefined {
       const columns = getTableColumns(this.table)
       const parts: SQL[] = []
 
