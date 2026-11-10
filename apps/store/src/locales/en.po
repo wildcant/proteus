@@ -542,6 +542,10 @@ msgstr "Invalid link"
 msgid "It is still priced in {0}"
 msgstr "It is still priced in {0}"
 
+#: src/routes/_main/collections/$handle.tsx:53
+msgid "It may have ended, or no longer be in the store."
+msgstr "It may have ended, or no longer be in the store."
+
 #: src/routes/_main/categories/$handle.tsx:55
 msgid "It may have moved, or no longer be in the store."
 msgstr "It may have moved, or no longer be in the store."
@@ -912,6 +916,7 @@ msgstr "Shop"
 #: src/features/products/components/category-breadcrumb.tsx:20
 #: src/features/products/components/product-list-not-found.tsx:20
 #: src/routes/_main/categories/$handle.tsx:79
+#: src/routes/_main/collections/$handle.tsx:76
 msgid "Shop all"
 msgstr "Shop all"
 
@@ -1142,6 +1147,10 @@ msgstr "We couldn’t find that page"
 #: src/routes/_main/categories/$handle.tsx:54
 msgid "We couldn't find this category"
 msgstr "We couldn't find this category"
+
+#: src/routes/_main/collections/$handle.tsx:52
+msgid "We couldn't find this collection"
+msgstr "We couldn't find this collection"
 
 #: src/features/orders/components/order-error.tsx:18
 msgid "We couldn't load this order"
