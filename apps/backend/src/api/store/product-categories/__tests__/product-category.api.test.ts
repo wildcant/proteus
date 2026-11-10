@@ -11,7 +11,9 @@ let api: TestApi
 
 /** The store's default market: every store product read is priced, and the price factory writes USD. */
 test.beforeEach(async ({ createApi, factories }) => {
-  api = await createApi({ definitions: [...adminCategoryDefinitions, ...storeCategoryDefinitions, ...productDefinitions] })
+  api = await createApi({
+    definitions: [...adminCategoryDefinitions, ...storeCategoryDefinitions, ...productDefinitions],
+  })
   const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
   await factories.create.store({ defaultRegionId: region.id })
 })
