@@ -46,6 +46,8 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   categoryId?: string | string[]
   /** Members of any of these Collections. Not a column: `ProductRepository.extraWhere` applies it. */
   collectionId?: string | string[]
+  /** Members of any of the Collections with these handles. Not a column, as `collectionId`. */
+  collectionHandle?: string | string[]
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
   categoryHandle?: string | string[]
   /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */

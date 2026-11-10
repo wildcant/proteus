@@ -23,6 +23,9 @@
       "name": "Carts"
     },
     {
+      "name": "Collections"
+    },
+    {
       "name": "Countries"
     },
     {
@@ -872,6 +875,58 @@
         },
         "required": [
           "cart"
+        ]
+      },
+      "StoreProductCollectionListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductCollection"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "collections"
+        ]
+      },
+      "StoreProductCollection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "thumbnail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "handle",
+          "thumbnail"
         ]
       },
       "StoreCountryListResponse": {
@@ -3477,6 +3532,85 @@
         }
       }
     },
+    "/store/collections": {
+      "get": {
+        "operationId": "listStoreProductCollections",
+        "summary": "List Collections",
+        "tags": [
+          "Collections"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "handle",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreProductCollectionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
     "/store/countries": {
       "get": {
         "operationId": "listStoreCountries",
@@ -4220,6 +4354,15 @@
             },
             "required": false,
             "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "collection",
             "in": "query"
           },
           {

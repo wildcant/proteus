@@ -48,6 +48,7 @@ export const Route = createFileRoute('/_main/products/')({
 | `products/` | `true` | SEO — crawlable product listing |
 | `products/$productId` | `true` | SEO — crawlable product detail |
 | `categories/$handle` | `true` | SEO — crawlable category listing |
+| `collections/$handle` | `true` | SEO — crawlable collection listing |
 | `_authed/*` | `false` (default) | Auth-gated, no SEO value, depends on `localStorage` |
 | `cart`, `checkout` | `false` (default) | User-specific, cart ID in `localStorage` |
 | `login`, `register` | `false` (default) | No SEO value |

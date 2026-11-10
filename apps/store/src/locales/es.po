@@ -542,6 +542,10 @@ msgstr "Enlace no válido"
 msgid "It is still priced in {0}"
 msgstr "Sus precios siguen en {0}"
 
+#: src/routes/_main/collections/$handle.tsx:53
+msgid "It may have ended, or no longer be in the store."
+msgstr "Puede que haya terminado o que ya no esté en la tienda."
+
 #: src/routes/_main/categories/$handle.tsx:55
 msgid "It may have moved, or no longer be in the store."
 msgstr "Puede que se haya movido o que ya no esté en la tienda."
@@ -912,6 +916,7 @@ msgstr "Tienda"
 #: src/features/products/components/category-breadcrumb.tsx:20
 #: src/features/products/components/product-list-not-found.tsx:20
 #: src/routes/_main/categories/$handle.tsx:79
+#: src/routes/_main/collections/$handle.tsx:76
 msgid "Shop all"
 msgstr "Ver todo"
 
@@ -1142,6 +1147,10 @@ msgstr "No encontramos esa página"
 #: src/routes/_main/categories/$handle.tsx:54
 msgid "We couldn't find this category"
 msgstr "No encontramos esta categoría"
+
+#: src/routes/_main/collections/$handle.tsx:52
+msgid "We couldn't find this collection"
+msgstr "No encontramos esta colección"
 
 #: src/features/orders/components/order-error.tsx:18
 msgid "We couldn't load this order"

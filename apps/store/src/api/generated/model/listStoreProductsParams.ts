@@ -24,6 +24,10 @@ q?: string;
  */
 category?: string;
 /**
+ * @minLength 1
+ */
+collection?: string;
+/**
  * ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.
  * @minLength 2
  * @maxLength 2

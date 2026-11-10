@@ -54,6 +54,8 @@ const unauthenticatedOperations = {
     'listStoreCountries',
     // The navigation every page draws: the Visible Category tree, catalogue data like the rest.
     'listStoreProductCategoryTree',
+    // A collection page's hero, reached by URL before any sign-in: catalogue data like the rest.
+    'listStoreProductCollections',
     'listStoreProducts',
     'storeAuthLogin',
     'storeAuthSignup',
@@ -73,6 +75,7 @@ const operationsWithoutUnauthorized = {
     'getStoreProduct',
     'listStoreCountries',
     'listStoreProductCategoryTree',
+    'listStoreProductCollections',
     'listStoreProducts',
   ],
 }
