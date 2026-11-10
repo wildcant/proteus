@@ -61,7 +61,18 @@ export function BaseRepository<TTable extends PgTable & BaseColumns>(table: TTab
         if (filterSql) parts.push(filterSql)
       }
 
+      const extraSql = this.extraWhere(filters)
+      if (extraSql) parts.push(extraSql)
+
       return parts.length ? and(...parts) : undefined
+    }
+
+    /**
+     * Filters that are not columns of this table — `buildFilters` drops those keys. A subclass returns
+     * its own clause here; it is ANDed with the column filters, so it narrows `find` and its count alike.
+     */
+    protected extraWhere(_filters?: EntityFilters<Select>): SQL | undefined {
+      return undefined
     }
 
     async find(filters?: EntityFilters<Select>, config?: FindConfig<Select>, context?: Context): Promise<Select[]> {

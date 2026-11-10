@@ -1072,13 +1072,13 @@ msgid "This authentication provider does not support validateCallback"
 msgstr "This authentication provider does not support validateCallback"
 
 #. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:128
-#: src/core/utils/base-repository.ts:195
+#: src/core/utils/base-repository.ts:139
+#: src/core/utils/base-repository.ts:206
 msgid "Entity with id \"{id}\" not found"
 msgstr "Entity with id \"{id}\" not found"
 
 #. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:168
+#: src/core/utils/base-repository.ts:179
 msgid "Expected row to be created"
 msgstr "Expected row to be created"
 
