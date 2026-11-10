@@ -101,7 +101,7 @@ type SellableProducts = {
 }
 
 /**
- * Resolves which products this market can sell, for every store route that lists from the catalogue.
+ * Which products this market can sell, for every store route that lists from the catalogue.
  *
  * Pricing decides the catalogue, so it is resolved before any list is drawn rather than after.
  *
@@ -113,37 +113,28 @@ type SellableProducts = {
  * describing the list that actually comes back. The Tag chips read the same ids, so they offer
  * only values the list can show.
  *
- * Runs after `setPricingContext()`, whose market it prices in. The 500 is the runtime witness for
- * that order, which the middleware list cannot express in its types.
+ * A plain function rather than a middleware: it needs the market `setPricingContext()` resolved,
+ * and taking that as an argument makes the order a fact the compiler checks.
  */
-export function setSellableProducts(): MiddlewareFunction<{ sellableProducts: SellableProducts }> {
-  return async (req: Parameters<MiddlewareFunction>[0] & { pricingContext?: PricingContext }) => {
-    if (!req.pricingContext) {
-      throw new AppError({
-        type: ErrorTypes.UNEXPECTED_STATE,
-        message: i18n.t('setSellableProducts() must run after setPricingContext()'),
-      })
-    }
+export async function listSellableProducts(
+  scope: AppContainer,
+  pricingContext: PricingContext,
+): Promise<SellableProducts> {
+  const productService = scope.resolve(Modules.PRODUCT)
+  const pricingService = scope.resolve(Modules.PRICING)
+  const linkService = scope.resolve(ContainerRegistrationKeys.LINK)
 
-    const productService = req.scope.resolve(Modules.PRODUCT)
-    const pricingService = req.scope.resolve(Modules.PRICING)
-    const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
+  const variants = await productService.listProductVariants()
+  const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variants.map((variant) => variant.id))
+  const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
+  const calculatedPrices = await pricingService.calculatePrices(priceSetIds, pricingContext)
 
-    const variants = await productService.listProductVariants()
-    const links = await linkService
-      .repo('productVariantPriceSet')
-      .findByVariantIds(variants.map((variant) => variant.id))
-    const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
-    const calculatedPrices = await pricingService.calculatePrices(priceSetIds, req.pricingContext)
-
-    const startingPriceByProductId = buildStartingPrices(variants, links, calculatedPrices)
-    const sellableProducts = {
-      productIds: [...startingPriceByProductId.keys()],
-      variants,
-      priceByVariantId: buildVariantPrices(links, calculatedPrices),
-      startingPriceByProductId,
-    }
-    return { ...req, sellableProducts }
+  const startingPriceByProductId = buildStartingPrices(variants, links, calculatedPrices)
+  return {
+    productIds: [...startingPriceByProductId.keys()],
+    variants,
+    priceByVariantId: buildVariantPrices(links, calculatedPrices),
+    startingPriceByProductId,
   }
 }
 

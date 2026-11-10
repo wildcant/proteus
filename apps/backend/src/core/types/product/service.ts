@@ -254,7 +254,13 @@ export type IProductModuleService = {
     context?: Context,
   ): Promise<string[]>
 
-  /** Each product's live groupings, keyed by product id — one query per relation over the whole list. */
+  /** One product's live groupings: `null` and empty lists where it has none. */
+  retrieveProductGroupings(productId: string, context?: Context): Promise<ProductGroupingsDTO>
+
+  /**
+   * Each product's live groupings, keyed by product id — one query per relation over the whole list.
+   * Every id asked about has an entry.
+   */
   listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>>
 
   // Images

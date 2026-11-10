@@ -29,15 +29,9 @@ export type CreateProductDTO = {
   externalId?: string | null
   metadata?: Record<string, unknown> | null
   images?: CreateProductImageInput[]
-  /** The product's Categories. */
-  categoryIds?: string[]
-  /** The product's Collections. */
-  collectionIds?: string[]
   /** The product's Product Type. */
   typeId?: string | null
-  /** The product's Tags. */
-  tagIds?: string[]
-}
+} & ProductGroupingIdsDTO
 
 export type UpdateProductDTO = {
   title?: string
@@ -59,13 +53,14 @@ export type UpdateProductDTO = {
   externalId?: string | null
   metadata?: Record<string, unknown> | null
   images?: UpsertProductImageInput[]
-  /** Replaces the product's Categories. Absent leaves them alone. */
-  categoryIds?: string[]
-  /** Replaces the product's Collections. Absent leaves them alone. */
-  collectionIds?: string[]
   /** `null` clears the Product Type. Absent leaves it alone. */
   typeId?: string | null
-  /** Replaces the product's Tags. Absent leaves them alone. */
+} & ProductGroupingIdsDTO
+
+/** The pivot-backed groupings a product write sets. Each replaces the product's whole set; absent leaves it alone. */
+export type ProductGroupingIdsDTO = {
+  categoryIds?: string[]
+  collectionIds?: string[]
   tagIds?: string[]
 }
 

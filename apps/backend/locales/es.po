@@ -568,22 +568,22 @@ msgid "Unknown stock location ids: {ids}"
 msgstr "IDs de ubicación de inventario desconocidos: {ids}"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-category-service.ts:124
+#: src/modules/product/services/product-category-service.ts:128
 msgid "A category cannot be moved under itself or one of its subcategories"
 msgstr "Una categoría no puede moverse dentro de sí misma ni de una de sus subcategorías"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:327
+#: src/modules/product/services/product-module-service.ts:317
 msgid "Variant creation returned no rows"
 msgstr "La creación de la variante no devolvió filas"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:406
+#: src/modules/product/services/product-module-service.ts:396
 msgid "Variant \"{variantId}\" not found"
 msgstr "No se encontró la variante \"{variantId}\""
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1063
+#: src/modules/product/services/product-module-service.ts:1039
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "Estas opciones no encajan con las variantes del producto: {reasons}. Elimina primero esas variantes o haz el cambio desde el admin, que las mueve por ti."
 
@@ -1183,16 +1183,11 @@ msgid "Cannot price this request: no countryCode was given and the store has no 
 msgstr "No se puede calcular el precio: no se indicó countryCode y la tienda no tiene región predeterminada"
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:124
-msgid "setSellableProducts() must run after setPricingContext()"
-msgstr "setSellableProducts() debe ejecutarse después de setPricingContext()"
-
-#. js-lingui-explicit-id
 #: src/api/store/customers/me/addresses/[id]/route.ts:19
 #: src/api/store/customers/me/addresses/route.ts:17
 #: src/api/store/customers/me/addresses/route.ts:33
 #: src/api/store/customers/me/route.ts:13
-#: src/api/store/middlewares.ts:169
+#: src/api/store/middlewares.ts:160
 #: src/api/store/orders/route.ts:16
 msgid "Not authenticated"
 msgstr "No has iniciado sesión"

@@ -40,6 +40,9 @@ test.describe('Product Types', () => {
     expect(renamed.body.type.value).toBe('Running Shoes')
     const fetched = await api.get<typeof productTypeByIdRoutes.GetOutput>(`/admin/product-types/${sneakers.id}`)
     expect(fetched.body.type.value).toBe('Running Shoes')
+    const takenOnRename = await api.patch<ApiErrorBody>(`/admin/product-types/${sneakers.id}`, { value: 'T-shirt' })
+    expect(takenOnRename.status).toBe(422)
+    expect(takenOnRename.body.type).toBe(ErrorTypes.DUPLICATE_ERROR)
 
     const searched = await api.get<typeof productTypeRoutes.GetOutput>('/admin/product-types?q=running')
     expect(searched.body.types.map((type) => type.id)).toEqual([sneakers.id])

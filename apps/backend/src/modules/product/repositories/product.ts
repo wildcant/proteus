@@ -1,4 +1,5 @@
 import { and, asc, eq, exists, inArray, isNull, type SQL, sql } from 'drizzle-orm'
+import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import type { Context } from '../../../core/types/context.js'
 import type { FilterableProductProps } from '../../../core/types/product/common.js'
 import { BaseRepository } from '../../../core/utils/base-repository.js'
@@ -11,6 +12,17 @@ import { productTagTable } from '../models/product-tag.js'
 import { visibleCategoriesQuery } from './product-category.js'
 
 const asArray = (value: string | string[]) => (Array.isArray(value) ? value : [value])
+
+const collectionPivot = {
+  pivot: productProductCollectionTable,
+  groupingColumn: productProductCollectionTable.collectionId,
+  grouping: productCollectionTable,
+}
+const tagPivot = {
+  pivot: productProductTagTable,
+  groupingColumn: productProductTagTable.tagId,
+  grouping: productTagTable,
+}
 
 export class ProductRepository extends BaseRepository(productTable) {
   async findByHandle(handle: string, context?: Context) {
@@ -55,12 +67,13 @@ export class ProductRepository extends BaseRepository(productTable) {
     const scope = { includeDescendants, visibleOnly }
     if (categoryId !== undefined) clauses.push(this.inCategories(sql`id`, asArray(categoryId), scope))
     if (categoryHandle !== undefined) clauses.push(this.inCategories(sql`handle`, asArray(categoryHandle), scope))
-    if (collectionId !== undefined) clauses.push(this.inCollections(productCollectionTable.id, asArray(collectionId)))
+    if (collectionId !== undefined)
+      clauses.push(this.inGroupings(collectionPivot, productCollectionTable.id, collectionId))
     if (collectionHandle !== undefined) {
-      clauses.push(this.inCollections(productCollectionTable.handle, asArray(collectionHandle)))
+      clauses.push(this.inGroupings(collectionPivot, productCollectionTable.handle, collectionHandle))
     }
-    if (tagId !== undefined) clauses.push(this.withTags(productTagTable.id, asArray(tagId)))
-    if (tagValue !== undefined) clauses.push(this.withTags(productTagTable.value, asArray(tagValue)))
+    if (tagId !== undefined) clauses.push(this.inGroupings(tagPivot, productTagTable.id, tagId))
+    if (tagValue !== undefined) clauses.push(this.inGroupings(tagPivot, productTagTable.value, tagValue))
     return clauses.length > 0 ? and(...clauses) : undefined
   }
 
@@ -98,42 +111,27 @@ export class ProductRepository extends BaseRepository(productTable) {
     )`
   }
 
-  /** Members of the live Collections whose `column` is one of `values`. */
-  private inCollections(
-    column: typeof productCollectionTable.id | typeof productCollectionTable.handle,
-    values: string[],
+  /**
+   * Members of the live groupings — Collections or Tags — whose `column` is one of `values`. Both the
+   * pivot row and the grouping must be live.
+   */
+  private inGroupings(
+    { pivot, groupingColumn, grouping }: typeof collectionPivot | typeof tagPivot,
+    column: AnyPgColumn,
+    values: string | string[],
   ): SQL {
     const client = this.getClient()
     return exists(
       client
-        .select({ id: productProductCollectionTable.id })
-        .from(productProductCollectionTable)
-        .innerJoin(productCollectionTable, eq(productCollectionTable.id, productProductCollectionTable.collectionId))
+        .select({ id: pivot.id })
+        .from(pivot)
+        .innerJoin(grouping, eq(grouping.id, groupingColumn))
         .where(
           and(
-            eq(productProductCollectionTable.productId, this.table.id),
-            inArray(column, values),
-            isNull(productProductCollectionTable.deletedAt),
-            isNull(productCollectionTable.deletedAt),
-          ),
-        ),
-    )
-  }
-
-  /** Products carrying any of the live Tags whose `column` is one of `values`. */
-  private withTags(column: typeof productTagTable.id | typeof productTagTable.value, values: string[]): SQL {
-    const client = this.getClient()
-    return exists(
-      client
-        .select({ id: productProductTagTable.id })
-        .from(productProductTagTable)
-        .innerJoin(productTagTable, eq(productTagTable.id, productProductTagTable.tagId))
-        .where(
-          and(
-            eq(productProductTagTable.productId, this.table.id),
-            inArray(column, values),
-            isNull(productProductTagTable.deletedAt),
-            isNull(productTagTable.deletedAt),
+            eq(pivot.productId, this.table.id),
+            inArray(column, asArray(values)),
+            isNull(pivot.deletedAt),
+            isNull(grouping.deletedAt),
           ),
         ),
     )

@@ -21,7 +21,6 @@ import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductCollectionRepository } from '../repositories/product-collection.js'
 import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
-import type { ProductProductTagRepository } from '../repositories/product-product-tag.js'
 import type { ProductTagRepository } from '../repositories/product-tag.js'
 import type { ProductTypeRepository } from '../repositories/product-type.js'
 
@@ -29,14 +28,14 @@ type InjectedDependencies = {
   productCollectionRepository: ProductCollectionRepository
   productProductCollectionRepository: ProductProductCollectionRepository
   productTagRepository: ProductTagRepository
-  productProductTagRepository: ProductProductTagRepository
   productTypeRepository: ProductTypeRepository
   withTransaction: WithTransaction
 }
 
 /**
  * The flat groupings — Collections, and the same CRUD again for tags and types. Each is a list of
- * rows joined to products through a pivot, with none of the Category tree's shape or rank.
+ * rows with none of the Category tree's shape or rank. A product's memberships are pivot rows, read
+ * and written by `ProductGroupingPivotRepository`; only the Collection's merchandising side starts here.
  *
  * **Internal to the module**, like `ProductCategoryService`: `ProductModuleService` builds it and
  * holds it privately, so the module's public surface stays `IProductModuleService`.
@@ -49,7 +48,6 @@ export class ProductGroupingService {
   private productCollectionRepository: ProductCollectionRepository
   private productProductCollectionRepository: ProductProductCollectionRepository
   private productTagRepository: ProductTagRepository
-  private productProductTagRepository: ProductProductTagRepository
   private productTypeRepository: ProductTypeRepository
   private withTransaction: WithTransaction
 
@@ -57,14 +55,12 @@ export class ProductGroupingService {
     productCollectionRepository,
     productProductCollectionRepository,
     productTagRepository,
-    productProductTagRepository,
     productTypeRepository,
     withTransaction,
   }: InjectedDependencies) {
     this.productCollectionRepository = productCollectionRepository
     this.productProductCollectionRepository = productProductCollectionRepository
     this.productTagRepository = productTagRepository
-    this.productProductTagRepository = productProductTagRepository
     this.productTypeRepository = productTypeRepository
     this.withTransaction = withTransaction
   }
@@ -84,8 +80,11 @@ export class ProductGroupingService {
   }
 
   async createCollection(data: CreateProductCollectionDTO, context?: Context): Promise<ProductCollectionDTO> {
-    return this.withTransaction(context, async (ctx) =>
-      this.productCollectionRepository.create({ ...data, handle: data.handle ?? toHandle(data.title) }, ctx),
+    return this.withTransaction(context, async (transactionContext) =>
+      this.productCollectionRepository.create(
+        { ...data, handle: data.handle ?? toHandle(data.title) },
+        transactionContext,
+      ),
     )
   }
 
@@ -94,16 +93,18 @@ export class ProductGroupingService {
     data: UpdateProductCollectionDTO,
     context?: Context,
   ): Promise<ProductCollectionDTO> {
-    return this.withTransaction(context, async (ctx) => {
+    return this.withTransaction(context, async (transactionContext) => {
       if (Object.values(data).every((value) => value === undefined)) {
-        return this.productCollectionRepository.findByIdOrFail(collectionId, undefined, ctx)
+        return this.productCollectionRepository.findByIdOrFail(collectionId, undefined, transactionContext)
       }
-      return this.productCollectionRepository.update(collectionId, data, ctx)
+      return this.productCollectionRepository.update(collectionId, data, transactionContext)
     })
   }
 
   async softDeleteCollections(collectionIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => this.productCollectionRepository.softDelete(collectionIds, ctx))
+    return this.withTransaction(context, async (transactionContext) =>
+      this.productCollectionRepository.softDelete(collectionIds, transactionContext),
+    )
   }
 
   /**
@@ -113,72 +114,18 @@ export class ProductGroupingService {
    */
   async setCollectionProducts(
     collectionId: string,
-    { add = [], remove = [] }: SetCollectionProductsDTO,
+    data: SetCollectionProductsDTO,
     context?: Context,
   ): Promise<ProductCollectionDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      const collection = await this.productCollectionRepository.findByIdOrFail(collectionId, undefined, ctx)
-
-      const toAdd = [...new Set(add)]
-      if (toAdd.length > 0) {
-        const members = await this.productProductCollectionRepository.find(
-          { collectionId, productId: toAdd },
-          { select: ['productId'] },
-          ctx,
-        )
-        const memberIds = new Set(members.map((member) => member.productId))
-        await this.productProductCollectionRepository.createMany(
-          toAdd.filter((productId) => !memberIds.has(productId)).map((productId) => ({ productId, collectionId })),
-          ctx,
-        )
-      }
-
-      if (remove.length > 0) {
-        const leaving = await this.productProductCollectionRepository.find(
-          { collectionId, productId: remove },
-          { select: ['id'] },
-          ctx,
-        )
-        await this.productProductCollectionRepository.softDelete(
-          leaving.map((row) => row.id),
-          ctx,
-        )
-      }
-
+    return this.withTransaction(context, async (transactionContext) => {
+      const collection = await this.productCollectionRepository.findByIdOrFail(
+        collectionId,
+        undefined,
+        transactionContext,
+      )
+      await this.productProductCollectionRepository.setProducts(collectionId, data, transactionContext)
       return collection
     })
-  }
-
-  /**
-   * Makes `collectionIds` the product's whole set: soft-deletes the rows it drops, keeps the rest and
-   * creates the new ones — the same diff the product's options use.
-   */
-  async replaceProductCollections(productId: string, collectionIds: string[], context: Context): Promise<void> {
-    const wanted = new Set(collectionIds)
-    const existing = await this.productProductCollectionRepository.find({ productId }, undefined, context)
-    const existingIds = new Set(existing.map((row) => row.collectionId))
-
-    await this.productProductCollectionRepository.softDelete(
-      existing.filter((row) => !wanted.has(row.collectionId)).map((row) => row.id),
-      context,
-    )
-    await this.productProductCollectionRepository.createMany(
-      [...wanted]
-        .filter((collectionId) => !existingIds.has(collectionId))
-        .map((collectionId) => ({ productId, collectionId })),
-      context,
-    )
-  }
-
-  /** Every product's live Collections, by title, in one query. A product in none maps to `[]`. */
-  async listCollectionsOfProducts(
-    productIds: string[],
-    context?: Context,
-  ): Promise<Map<string, ProductCollectionDTO[]>> {
-    const rows = await this.productProductCollectionRepository.findCollectionsOfProducts(productIds, context)
-    const byProduct = new Map<string, ProductCollectionDTO[]>(productIds.map((productId) => [productId, []]))
-    for (const { productId, collection } of rows) byProduct.get(productId)?.push(collection)
-    return byProduct
   }
 
   // ── Product Types ──────────────────────────────────────────────────────
@@ -196,24 +143,23 @@ export class ProductGroupingService {
   }
 
   async createType(data: CreateProductTypeDTO, context?: Context): Promise<ProductTypeDTO> {
-    return this.withTransaction(context, async (ctx) => this.productTypeRepository.create(data, ctx))
+    return this.withTransaction(context, async (transactionContext) =>
+      this.productTypeRepository.create(data, transactionContext),
+    )
   }
 
   async updateType(typeId: string, data: UpdateProductTypeDTO, context?: Context): Promise<ProductTypeDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      if (data.value === undefined) return this.productTypeRepository.findByIdOrFail(typeId, undefined, ctx)
-      return this.productTypeRepository.update(typeId, data, ctx)
+    return this.withTransaction(context, async (transactionContext) => {
+      if (data.value === undefined)
+        return this.productTypeRepository.findByIdOrFail(typeId, undefined, transactionContext)
+      return this.productTypeRepository.update(typeId, data, transactionContext)
     })
   }
 
   async softDeleteTypes(typeIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => this.productTypeRepository.softDelete(typeIds, ctx))
-  }
-
-  /** Every product's live Type in one query. A product with none, or with a deleted one, is absent. */
-  async listTypesOfProducts(productIds: string[], context?: Context): Promise<Map<string, ProductTypeDTO>> {
-    const rows = await this.productTypeRepository.findTypesOfProducts(productIds, context)
-    return new Map(rows.map(({ productId, type }) => [productId, type]))
+    return this.withTransaction(context, async (transactionContext) =>
+      this.productTypeRepository.softDelete(typeIds, transactionContext),
+    )
   }
 
   // ── Product Tags ───────────────────────────────────────────────────────
@@ -231,41 +177,22 @@ export class ProductGroupingService {
   }
 
   async createTag(data: CreateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
-    return this.withTransaction(context, async (ctx) => this.productTagRepository.create(data, ctx))
+    return this.withTransaction(context, async (transactionContext) =>
+      this.productTagRepository.create(data, transactionContext),
+    )
   }
 
   async updateTag(tagId: string, data: UpdateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      if (data.value === undefined) return this.productTagRepository.findByIdOrFail(tagId, undefined, ctx)
-      return this.productTagRepository.update(tagId, data, ctx)
+    return this.withTransaction(context, async (transactionContext) => {
+      if (data.value === undefined)
+        return this.productTagRepository.findByIdOrFail(tagId, undefined, transactionContext)
+      return this.productTagRepository.update(tagId, data, transactionContext)
     })
   }
 
   async softDeleteTags(tagIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (ctx) => this.productTagRepository.softDelete(tagIds, ctx))
-  }
-
-  /** Makes `tagIds` the product's whole set, with the same diff as `replaceProductCollections`. */
-  async replaceProductTags(productId: string, tagIds: string[], context: Context): Promise<void> {
-    const wanted = new Set(tagIds)
-    const existing = await this.productProductTagRepository.find({ productId }, undefined, context)
-    const existingIds = new Set(existing.map((row) => row.tagId))
-
-    await this.productProductTagRepository.softDelete(
-      existing.filter((row) => !wanted.has(row.tagId)).map((row) => row.id),
-      context,
+    return this.withTransaction(context, async (transactionContext) =>
+      this.productTagRepository.softDelete(tagIds, transactionContext),
     )
-    await this.productProductTagRepository.createMany(
-      [...wanted].filter((tagId) => !existingIds.has(tagId)).map((tagId) => ({ productId, tagId })),
-      context,
-    )
-  }
-
-  /** Every product's live Tags, by value, in one query. A product with none maps to `[]`. */
-  async listTagsOfProducts(productIds: string[], context?: Context): Promise<Map<string, ProductTagDTO[]>> {
-    const rows = await this.productProductTagRepository.findTagsOfProducts(productIds, context)
-    const byProduct = new Map<string, ProductTagDTO[]>(productIds.map((productId) => [productId, []]))
-    for (const { productId, tag } of rows) byProduct.get(productId)?.push(tag)
-    return byProduct
   }
 }

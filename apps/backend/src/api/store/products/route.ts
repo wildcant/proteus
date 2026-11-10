@@ -12,10 +12,10 @@ import {
   isPurchasable,
   variantStockProjection,
 } from '@workflows/product/utils/build-variant-stock.js'
-import { setPricingContext, setSellableProducts } from '../middlewares.js'
+import { listSellableProducts, setPricingContext } from '../middlewares.js'
 
 export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
-export const GetMiddlewares = [setPricingContext(), setSellableProducts()] as const
+export const GetMiddlewares = [setPricingContext()] as const
 export const GetOutput = StoreProductListResponse
 
 export const GET = async (
@@ -30,7 +30,12 @@ export const GET = async (
   const { offset, limit } = pagination
   const { category, collection, tag, ...columnFilters } = filters
 
-  const { productIds: sellableProductIds, variants, priceByVariantId, startingPriceByProductId } = req.sellableProducts
+  const {
+    productIds: sellableProductIds,
+    variants,
+    priceByVariantId,
+    startingPriceByProductId,
+  } = await listSellableProducts(req.scope, req.pricingContext)
 
   // An empty filter array would reach the query builder as `inArray(column, [])`, and a market
   // that can price nothing has no page to draw either way.

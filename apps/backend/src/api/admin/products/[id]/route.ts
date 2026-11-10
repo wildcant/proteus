@@ -18,10 +18,9 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     productService.retrieveProduct(req.params.id),
     productService.listProductScopedOptions(req.params.id),
     productService.listProductImages({ productId: req.params.id }, { order: { rank: 'ASC' } }),
-    productService.listProductGroupings([req.params.id]),
+    productService.retrieveProductGroupings(req.params.id),
   ])
-  const { type = null, categories = [], collections = [], tags = [] } = groupings[req.params.id] ?? {}
-  return { status: 200, json: { product: { ...product, type, categories, collections, tags, options, images } } }
+  return { status: 200, json: { product: { ...product, ...groupings, options, images } } }
 }
 
 export const PatchInput = { params: IdParams, body: AdminUpdateProduct }
@@ -35,9 +34,8 @@ export const PatchThrows = [ErrorTypes.NOT_FOUND] as const
 export const PATCH = async (req: HttpRequest<typeof PatchInput>): Promise<HttpResult<typeof PatchOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)
   const product = await productService.updateProduct(req.params.id, req.body)
-  const groupings = await productService.listProductGroupings([product.id])
-  const { type = null, categories = [], collections = [], tags = [] } = groupings[product.id] ?? {}
-  return { status: 200, json: { product: { ...product, type, categories, collections, tags } } }
+  const groupings = await productService.retrieveProductGroupings(product.id)
+  return { status: 200, json: { product: { ...product, ...groupings } } }
 }
 
 export const DeleteInput = { params: IdParams }
