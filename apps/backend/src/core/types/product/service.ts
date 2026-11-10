@@ -245,6 +245,14 @@ export type IProductModuleService = {
   updateTag(tagId: string, data: UpdateProductTagDTO, context?: Context): Promise<ProductTagDTO>
   /** Allowed while in use: the Tags' pivot rows are hidden with them, so their products lose them. */
   softDeleteTags(tagIds: string[], context?: Context): Promise<void>
+  /**
+   * The distinct live Tag values on the products matching `filters`, sorted — one `SELECT DISTINCT`.
+   * The tag filter itself is not taken: the values offered must not narrow to the ones already chosen.
+   */
+  listProductTagValues(
+    filters: Omit<FilterableProductProps, 'tagId' | 'tagValue'>,
+    context?: Context,
+  ): Promise<string[]>
 
   /** Each product's live groupings, keyed by product id — one query per relation over the whole list. */
   listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>>

@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "Se seleccionó el adaptador de bus de eventos \"{adapter}\", pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createEventBusAdapter`, o fijar `projectConfig.eventBus.adapter` en \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:133
+#: src/routes.ts:135
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
@@ -322,7 +322,7 @@ msgid "Customer with id \"{customerId}\" not found"
 msgstr "No se encontró el cliente con id \"{customerId}\""
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:31
+#: src/api/store/middlewares.ts:36
 #: src/workflows/cart/update-cart.ts:139
 msgid "No region sells to country \"{countryCode}\""
 msgstr "Ninguna región vende al país \"{countryCode}\""
@@ -583,7 +583,7 @@ msgid "Variant \"{variantId}\" not found"
 msgstr "No se encontró la variante \"{variantId}\""
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1056
+#: src/modules/product/services/product-module-service.ts:1063
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "Estas opciones no encajan con las variantes del producto: {reasons}. Elimina primero esas variantes o haz el cambio desde el admin, que las mueve por ti."
 
@@ -1178,16 +1178,21 @@ msgid "Verification token TTL must be a positive integer"
 msgstr "El TTL del token de verificación debe ser un entero positivo"
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:51
+#: src/api/store/middlewares.ts:56
 msgid "Cannot price this request: no countryCode was given and the store has no default region"
 msgstr "No se puede calcular el precio: no se indicó countryCode y la tienda no tiene región predeterminada"
+
+#. js-lingui-explicit-id
+#: src/api/store/middlewares.ts:124
+msgid "setSellableProducts() must run after setPricingContext()"
+msgstr "setSellableProducts() debe ejecutarse después de setPricingContext()"
 
 #. js-lingui-explicit-id
 #: src/api/store/customers/me/addresses/[id]/route.ts:19
 #: src/api/store/customers/me/addresses/route.ts:17
 #: src/api/store/customers/me/addresses/route.ts:33
 #: src/api/store/customers/me/route.ts:13
-#: src/api/store/middlewares.ts:104
+#: src/api/store/middlewares.ts:169
 #: src/api/store/orders/route.ts:16
 msgid "Not authenticated"
 msgstr "No has iniciado sesión"

@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
+import { productTagValuesQuery, productTagValuesQueryOptions } from '#/features/products/api/product-tags'
 import { type ProductListScope, productsListQueryOptions, productsPageQuery } from '#/features/products/api/products'
 import { ProductList } from '#/features/products/components/product-list'
 import { ProductListHeader } from '#/features/products/components/product-list-header'
@@ -16,15 +17,21 @@ export const Route = createFileRoute('/_main/')({
   head: (context) => ({ links: marketHeadLinksFor(context) }),
   validateSearch: productListSearchSchema,
   component: ProductsPage,
-  // All three, because a param the loader does not see is a param the server renders the wrong
+  // Every one, because a param the loader does not see is a param the server renders the wrong
   // value for — a cold hit on `?offset=24` would otherwise be SSR'd as page 1.
-  loaderDeps: ({ search }) => ({ q: search.q, sort: search.sort, offset: search.offset }),
+  loaderDeps: ({ search }) => ({ q: search.q, tag: search.tag, sort: search.sort, offset: search.offset }),
   loader: async ({ context, deps }) => {
     // The market's country goes in with the rest of the page's parameters: it is what the backend
     // prices the response in, so a loader that left it out would SSR one market's catalogue at
     // another's currency and then swap it on hydration.
-    const query = productsPageQuery({ ...deps, scope: HOME_SCOPE, countryCode: context.market.current.iso2 })
-    await context.queryClient.ensureQueryData(productsListQueryOptions(query))
+    const countryCode = context.market.current.iso2
+    const query = productsPageQuery({ ...deps, scope: HOME_SCOPE, countryCode })
+    await Promise.all([
+      context.queryClient.ensureQueryData(productsListQueryOptions(query)),
+      context.queryClient.ensureQueryData(
+        productTagValuesQueryOptions(productTagValuesQuery({ scope: HOME_SCOPE, ...deps, countryCode })),
+      ),
+    ])
   },
   headers: () => ({
     'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',

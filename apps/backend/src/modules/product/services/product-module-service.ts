@@ -880,6 +880,13 @@ export class ProductModuleService implements IProductModuleService {
     return this.productGroupingService.softDeleteTags(tagIds, context)
   }
 
+  async listProductTagValues(
+    filters: Omit<FilterableProductProps, 'tagId' | 'tagValue'>,
+    context?: Context,
+  ): Promise<string[]> {
+    return this.productRepository.findTagValues(filters, context)
+  }
+
   // ── Groupings ─────────────────────────────────────────────────────────
 
   /**

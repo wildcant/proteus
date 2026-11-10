@@ -8,9 +8,9 @@ import { ButtonLink } from '#/components/button'
  * element above the message.
  *
  * Two branches, because "nothing matched what you typed" and "there is nothing here" are different
- * facts and only the first has anything to clear. "Clear search" drops the search params and keeps
- * the path, so a scoped list — a category, a collection — stays scoped. `link` is the second
- * branch's way out, for a list narrower than the whole catalogue.
+ * facts and only the first has anything to clear. "Clear search" drops the term and the page but
+ * keeps the path, the order and the chosen Tags, so a scoped, filtered list stays scoped and filtered.
+ * `link` is the second branch's way out, for a list narrower than the whole catalogue.
  */
 export function ProductEmpty({ q, link }: { q?: string; link?: ReactNode }) {
   return (
@@ -22,7 +22,7 @@ export function ProductEmpty({ q, link }: { q?: string; link?: ReactNode }) {
           <p className="mt-6 max-w-70 text-ink-muted text-sm">
             <Trans>No products match &ldquo;{q}&rdquo;.</Trans>
           </p>
-          <ButtonLink to="." search={{}} className="mt-8">
+          <ButtonLink to="." search={(previous) => ({ ...previous, q: undefined, offset: undefined })} className="mt-8">
             <Trans>Clear search</Trans>
           </ButtonLink>
         </>
