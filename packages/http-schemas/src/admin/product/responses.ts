@@ -3,6 +3,7 @@ import { PaginatedResponse } from '../../common.js'
 import { AdminProductCategory } from '../product-category/entities.js'
 import { AdminProductCollection } from '../product-collection/entities.js'
 import { AdminProductScopedOption } from '../product-option/entities.js'
+import { AdminProductTag } from '../product-tag/entities.js'
 import { AdminProductType } from '../product-type/entities.js'
 import { AdminProductVariant } from '../product-variant/entities.js'
 import { AdminProduct, AdminProductImage } from './entities.js'
@@ -13,6 +14,7 @@ const AdminGroupedProduct = AdminProduct.extend({
   type: AdminProductType.nullable(),
   categories: z.array(AdminProductCategory),
   collections: z.array(AdminProductCollection),
+  tags: z.array(AdminProductTag),
 }).openapi('AdminGroupedProduct')
 
 const AdminProductDetail = AdminGroupedProduct.extend({

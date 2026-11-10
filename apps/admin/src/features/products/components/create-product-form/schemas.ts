@@ -16,6 +16,7 @@ export const organizeSchema = AdminCreateProduct.pick({
   type: z.object({ id: z.string(), label: z.string() }).nullable(),
   categoryIds: z.array(z.string()),
   collectionIds: z.array(z.string()),
+  tagIds: z.array(z.string()),
 })
 
 export const attributesSchema = AdminCreateProduct.pick({

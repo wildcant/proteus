@@ -13,6 +13,7 @@ const SIDEBAR_LABELS: Record<string, MessageDescriptor> = {
   Products: msg`Products`,
   Categories: msg`Categories`,
   Collections: msg`Collections`,
+  Tags: msg`Tags`,
   Types: msg`Types`,
   Options: msg`Options`,
   Customers: msg`Customers`,

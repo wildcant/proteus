@@ -6,6 +6,8 @@ import { productTable } from '../models/product.js'
 import { productCollectionTable } from '../models/product-collection.js'
 import { productProductCategoryTable } from '../models/product-product-category.js'
 import { productProductCollectionTable } from '../models/product-product-collection.js'
+import { productProductTagTable } from '../models/product-product-tag.js'
+import { productTagTable } from '../models/product-tag.js'
 import { visibleCategoriesQuery } from './product-category.js'
 
 const asArray = (value: string | string[]) => (Array.isArray(value) ? value : [value])
@@ -28,6 +30,7 @@ export class ProductRepository extends BaseRepository(productTable) {
       categoryHandle,
       collectionId,
       collectionHandle,
+      tagId,
       includeDescendants = false,
       visibleOnly = false,
     } = filters
@@ -39,6 +42,7 @@ export class ProductRepository extends BaseRepository(productTable) {
     if (collectionHandle !== undefined) {
       clauses.push(this.inCollections(productCollectionTable.handle, asArray(collectionHandle)))
     }
+    if (tagId !== undefined) clauses.push(this.withTags(productTagTable.id, asArray(tagId)))
     return clauses.length > 0 ? and(...clauses) : undefined
   }
 
@@ -93,6 +97,25 @@ export class ProductRepository extends BaseRepository(productTable) {
             inArray(column, values),
             isNull(productProductCollectionTable.deletedAt),
             isNull(productCollectionTable.deletedAt),
+          ),
+        ),
+    )
+  }
+
+  /** Products carrying any of the live Tags whose `column` is one of `values`. */
+  private withTags(column: typeof productTagTable.id | typeof productTagTable.value, values: string[]): SQL {
+    const client = this.getClient()
+    return exists(
+      client
+        .select({ id: productProductTagTable.id })
+        .from(productProductTagTable)
+        .innerJoin(productTagTable, eq(productTagTable.id, productProductTagTable.tagId))
+        .where(
+          and(
+            eq(productProductTagTable.productId, this.table.id),
+            inArray(column, values),
+            isNull(productProductTagTable.deletedAt),
+            isNull(productTagTable.deletedAt),
           ),
         ),
     )

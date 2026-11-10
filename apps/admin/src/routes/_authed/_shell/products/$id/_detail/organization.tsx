@@ -2,6 +2,7 @@ import { RouteDrawer } from '@proteus/ui'
 import { createFileRoute } from '@tanstack/react-router'
 import { categoryTreeQueryOptions } from '#/features/categories/api/categories'
 import { allCollectionsQueryOptions } from '#/features/collections/api/collections'
+import { allProductTagsQueryOptions } from '#/features/product-tags/api/product-tags'
 import { allProductTypesQueryOptions } from '#/features/product-types/api/product-types'
 import { useSuspenseProduct } from '#/features/products/api/products'
 import { EditProductOrganizationForm } from '#/features/products/components/edit-product-organization-form'
@@ -13,6 +14,7 @@ export const Route = createFileRoute('/_authed/_shell/products/$id/_detail/organ
       context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
       context.queryClient.ensureQueryData(allCollectionsQueryOptions()),
       context.queryClient.ensureQueryData(allProductTypesQueryOptions()),
+      context.queryClient.ensureQueryData(allProductTagsQueryOptions()),
     ]),
   component: EditProductOrganizationRoute,
 })

@@ -3,6 +3,7 @@ import type {
   CreateProductDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  CreateProductTagDTO,
   CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetProductOptionsDTO,
@@ -147,6 +148,14 @@ export function generateCreateProductTypeDTO(overrides?: Partial<CreateProductTy
   return {
     // Unique among live Types, so two generated values in one test cannot collide.
     value: `${faker.commerce.product()} ${faker.string.alphanumeric(6)}`,
+    ...overrides,
+  }
+}
+
+export function generateCreateProductTagDTO(overrides?: Partial<CreateProductTagDTO>): CreateProductTagDTO {
+  return {
+    // Unique among live Tags, so two generated values in one test cannot collide.
+    value: `${faker.word.noun()}-${faker.string.alphanumeric(6)}`,
     ...overrides,
   }
 }

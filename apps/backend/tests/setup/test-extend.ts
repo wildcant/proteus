@@ -171,6 +171,7 @@ import {
   createProduct,
   createProductOption,
   createProducts,
+  createProductTag,
   createProductType,
   createProductVariant,
   createProductVariants,
@@ -373,6 +374,7 @@ export type Fixtures = {
       product: typeof createProduct
       products: typeof createProducts
       productOption: typeof createProductOption
+      productTag: typeof createProductTag
       productType: typeof createProductType
       productVariant: typeof createProductVariant
       productVariants: typeof createProductVariants
@@ -599,6 +601,7 @@ export const test = testBase.extend<Fixtures>({
         product: createProduct,
         products: createProducts,
         productOption: createProductOption,
+        productTag: createProductTag,
         productType: createProductType,
         productVariant: createProductVariant,
         productVariants: createProductVariants,

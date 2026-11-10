@@ -46,6 +46,11 @@ export interface AdminCreateProduct {
   /** @maxLength 255 */
   subtitle?: string;
   /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  tagIds?: string[];
+  /**
      * @maxLength 2048
      * @nullable
      */

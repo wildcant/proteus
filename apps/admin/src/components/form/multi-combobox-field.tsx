@@ -1,4 +1,5 @@
 import { cn, Field, FieldDescription, FieldLabel } from '@proteus/ui'
+import { useState } from 'react'
 import { TranslatedFieldError } from '#/components/form/field-errors'
 import type { ComboboxOption } from '#/components/form/single-combobox-field'
 import { MultiSelectCombobox } from '#/components/multi-select-combobox'
@@ -11,6 +12,11 @@ type MultiComboboxFieldProps = {
   emptyMessage?: string
   /** Shown under the control. For saying why the list is empty, not for errors. */
   description?: string
+  /**
+   * Makes the list creatable: "Add <value>" calls this, and the item it resolves to joins the
+   * choice. Resolve `null` when creating failed and the caller has already said so.
+   */
+  onCreate?: (value: string) => Promise<ComboboxOption | null>
   className?: string
 }
 
@@ -26,18 +32,30 @@ export function MultiComboboxField({
   placeholder,
   emptyMessage,
   description,
+  onCreate,
   className,
 }: MultiComboboxFieldProps) {
   const field = useFieldContext<string[]>()
   const isInvalid = !field.state.meta.isValid
+  // A just-created item is chosen before the list refetches; offering it keeps its label showing.
+  const [created, setCreated] = useState<ComboboxOption[]>([])
+  const options = [...items, ...created.filter((item) => !items.some((existing) => existing.id === item.id))]
+
+  const handleCreate = async (value: string) => {
+    const item = await onCreate?.(value)
+    if (!item) return
+    setCreated((previous) => [...previous, item])
+    field.handleChange([...field.state.value, item.id])
+  }
 
   return (
     <Field data-invalid={isInvalid} className={cn(className)}>
       <FieldLabel>{label}</FieldLabel>
       <MultiSelectCombobox
-        items={items}
+        items={options}
         value={field.state.value}
         onValueChange={field.handleChange}
+        onCreate={onCreate ? handleCreate : undefined}
         placeholder={placeholder}
         emptyMessage={emptyMessage}
       />

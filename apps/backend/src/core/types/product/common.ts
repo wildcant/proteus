@@ -48,6 +48,8 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   collectionId?: string | string[]
   /** Members of any of the Collections with these handles. Not a column, as `collectionId`. */
   collectionHandle?: string | string[]
+  /** Products carrying any of these Tags. Not a column: `ProductRepository.extraWhere` applies it. */
+  tagId?: string | string[]
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
   categoryHandle?: string | string[]
   /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */
@@ -368,10 +370,24 @@ export interface FilterableProductTypeProps extends BaseFilterable<FilterablePro
   value?: string | string[] | OperatorMap<string>
 }
 
+export type ProductTagDTO = {
+  id: string
+  value: string
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductTagProps extends BaseFilterable<FilterableProductTagProps> {
+  id?: string | string[]
+  value?: string | string[] | OperatorMap<string>
+}
+
 /** What a product is grouped under, read for many products at once. */
 export type ProductGroupingsDTO = {
   /** `null` when the product has none, or its Type was deleted. */
   type: ProductTypeDTO | null
   categories: ProductCategoryDTO[]
   collections: ProductCollectionDTO[]
+  tags: ProductTagDTO[]
 }

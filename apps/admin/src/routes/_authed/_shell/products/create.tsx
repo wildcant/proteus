@@ -2,6 +2,7 @@ import { RouteFocusModal } from '@proteus/ui'
 import { createFileRoute } from '@tanstack/react-router'
 import { categoryTreeQueryOptions } from '#/features/categories/api/categories'
 import { allCollectionsQueryOptions } from '#/features/collections/api/collections'
+import { allProductTagsQueryOptions } from '#/features/product-tags/api/product-tags'
 import { allProductTypesQueryOptions } from '#/features/product-types/api/product-types'
 import { CreateProductForm } from '#/features/products/components/create-product-form/create-product-form'
 
@@ -12,6 +13,7 @@ export const Route = createFileRoute('/_authed/_shell/products/create')({
       context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
       context.queryClient.ensureQueryData(allCollectionsQueryOptions()),
       context.queryClient.ensureQueryData(allProductTypesQueryOptions()),
+      context.queryClient.ensureQueryData(allProductTagsQueryOptions()),
     ]),
   component: CreateProductRoute,
 })

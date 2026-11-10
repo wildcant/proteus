@@ -21,6 +21,11 @@ export interface AdminUpdateProduct {
   /** @maxItems 100 */
   images?: AdminUpdateProductImagesItem[];
   /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  tagIds?: string[];
+  /**
      * @maxLength 2048
      * @nullable
      */

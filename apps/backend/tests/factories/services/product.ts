@@ -11,6 +11,7 @@ import type {
 import type {
   CreateProductDTO,
   CreateProductOptionDTO,
+  CreateProductTagDTO,
   CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetProductOptionsDTO,
@@ -22,6 +23,7 @@ import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
   generateCreateProductDTO,
   generateCreateProductOptionDTO,
+  generateCreateProductTagDTO,
   generateCreateProductTypeDTO,
   generateCreateProductVariantDTO,
   generateSetProductOptionsDTO,
@@ -62,6 +64,12 @@ export async function createProductOption(container: AppContainer, overrides?: P
   const productService = container.resolve(Modules.PRODUCT)
 
   return productService.createProductOption(generateCreateProductOptionDTO(overrides))
+}
+
+export async function createProductTag(container: AppContainer, overrides?: Partial<CreateProductTagDTO>) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.createTag(generateCreateProductTagDTO(overrides))
 }
 
 export async function createProductType(container: AppContainer, overrides?: Partial<CreateProductTypeDTO>) {

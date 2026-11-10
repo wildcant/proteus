@@ -10,6 +10,8 @@ export const AdminProductListParams = createFindParams().extend({
   categoryId: z.union([z.string(), z.string().array()]).optional(),
   collectionId: z.union([z.string(), z.string().array()]).optional(),
   typeId: z.union([z.string(), z.string().array()]).optional(),
+  /** Products carrying any of these Tags. */
+  tagId: z.union([z.string(), z.string().array()]).optional(),
 })
 
 export type AdminProductListQuery = FindParams<typeof AdminProductListParams>

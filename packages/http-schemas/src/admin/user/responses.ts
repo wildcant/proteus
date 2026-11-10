@@ -11,6 +11,7 @@ const SidebarIcon = z.enum([
   'sliders-horizontal',
   'folder-tree',
   'layers',
+  'tags',
   'shapes',
   'boxes',
   'clipboard-list',
