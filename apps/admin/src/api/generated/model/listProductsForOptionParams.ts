@@ -36,4 +36,5 @@ createdAt?: {
   $in?: (string | null)[];
   $nin?: (string | null)[];
 };
+categoryId?: string | string[];
 };
