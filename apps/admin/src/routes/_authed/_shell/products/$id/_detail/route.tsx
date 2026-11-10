@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { TwoColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
+import { categoryTreeQueryOptions } from '#/features/categories/api/categories'
 import { ProductOptionSection } from '#/features/product-options/components/product-option-section'
 import { useSuspenseProduct } from '#/features/products/api/products'
 import { ProductMediaSection } from '#/features/products/components/media/product-media-section'
@@ -10,6 +11,8 @@ import { ProductOrganizationSection } from '#/features/products/components/produ
 import { ProductVariantSection } from '#/features/products/components/product-variant-section'
 
 export const Route = createFileRoute('/_authed/_shell/products/$id/_detail')({
+  // The Organization card names each Category by its path through the tree.
+  loader: ({ context }) => context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
   pendingComponent: () => <TwoColumnPageSkeleton mainSections={1} sidebarSections={2} />,
   component: ProductDetailLayout,
 })
