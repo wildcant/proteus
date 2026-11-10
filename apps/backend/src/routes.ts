@@ -23,6 +23,7 @@ import adminPaymentCollectionDefinitions from './api/admin/payment-collections/d
 import adminPaymentProviderDefinitions from './api/admin/payment-providers/definitions.js'
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
 import adminAccessControlPermissionDefinitions from './api/admin/permissions/definitions.js'
+import adminProductCategoryDefinitions from './api/admin/product-categories/definitions.js'
 import adminProductOptionDefinitions from './api/admin/product-options/definitions.js'
 import adminProductDefinitions from './api/admin/products/definitions.js'
 import adminRefundReasonDefinitions from './api/admin/refund-reasons/definitions.js'
@@ -70,6 +71,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,
   ...adminPaymentProviderDefinitions,
+  ...adminProductCategoryDefinitions,
   ...adminProductOptionDefinitions,
   ...adminProductDefinitions,
   ...adminRefundReasonDefinitions,

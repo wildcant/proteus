@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:121
+#: src/routes.ts:123
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Routes with auth: 'required' must declare permissions. Missing on:\n"
@@ -568,17 +568,17 @@ msgid "Unknown stock location ids: {ids}"
 msgstr "Unknown stock location ids: {ids}"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:245
+#: src/modules/product/services/product-module-service.ts:255
 msgid "Variant creation returned no rows"
 msgstr "Variant creation returned no rows"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:324
+#: src/modules/product/services/product-module-service.ts:334
 msgid "Variant \"{variantId}\" not found"
 msgstr "Variant \"{variantId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:823
+#: src/modules/product/services/product-module-service.ts:859
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 

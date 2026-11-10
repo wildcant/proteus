@@ -9,6 +9,7 @@ const SidebarIcon = z.enum([
   'shopping-cart',
   'package',
   'sliders-horizontal',
+  'folder-tree',
   'boxes',
   'clipboard-list',
   'users',

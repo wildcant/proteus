@@ -15,6 +15,8 @@ import type {
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
   PickerVariantDTO,
+  ProductCategoryDTO,
+  ProductCategoryTreeNodeDTO,
   ProductDTO,
   ProductImageDTO,
   ProductOptionCombinationDTO,
@@ -29,12 +31,14 @@ import type {
   VariantReassignmentDTO,
 } from '../../../core/types/product/common.js'
 import type {
+  CreateProductCategoryDTO,
   CreateProductDTO,
   CreateProductImageDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductVariantDTO,
   SetProductOptionsDTO,
+  UpdateProductCategoryDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
   UpdateProductVariantDTO,
@@ -46,6 +50,7 @@ import type { IProductModuleService } from '../../../core/types/product/service.
 import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductRepository } from '../repositories/product.js'
+import type { ProductCategoryRepository } from '../repositories/product-category.js'
 import type { ProductImageRepository } from '../repositories/product-image.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
@@ -56,6 +61,7 @@ import type { ProductVariantImageRepository } from '../repositories/product-vari
 import type { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
 import { combinationLabel } from '../utils/option-combinations.js'
 import type { VariantReconciliationPlan, VariantRemovalReason } from '../utils/reconcile-variants.js'
+import { ProductCategoryService } from './product-category-service.js'
 import { ProductOptionService } from './product-option-service.js'
 
 /**
@@ -72,6 +78,7 @@ type InjectedDependencies = {
   productImageRepository: ProductImageRepository
   productVariantImageRepository: ProductVariantImageRepository
   productVariantOptionRepository: ProductVariantOptionRepository
+  productCategoryRepository: ProductCategoryRepository
   withTransaction: WithTransaction
   logger: Logger
 }
@@ -91,6 +98,8 @@ export class ProductModuleService implements IProductModuleService {
   private productVariantImageRepository: ProductVariantImageRepository
   /** Private on purpose: not registered anywhere, not exported, not resolvable. */
   private productOptionService: ProductOptionService
+  /** Private for the same reason. */
+  private productCategoryService: ProductCategoryService
   private withTransaction: WithTransaction
   private logger: Logger
 
@@ -104,6 +113,7 @@ export class ProductModuleService implements IProductModuleService {
     // Built from the same cradle this was, so it shares the module's repositories and transaction
     // helper rather than opening its own.
     this.productOptionService = new ProductOptionService(dependencies)
+    this.productCategoryService = new ProductCategoryService(dependencies)
   }
 
   // ── Products ──────────────────────────────────────────────────────────
@@ -672,6 +682,32 @@ export class ProductModuleService implements IProductModuleService {
     context?: Context,
   ): Promise<[ProductDTO[], number]> {
     return this.productOptionService.listAndCountProductsForOption(optionId, filters, config, context)
+  }
+
+  // ── Categories ────────────────────────────────────────────────────────
+
+  async listCategoryTree(context?: Context): Promise<ProductCategoryTreeNodeDTO[]> {
+    return this.productCategoryService.listCategoryTree(context)
+  }
+
+  async retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO> {
+    return this.productCategoryService.retrieveCategory(categoryId, context)
+  }
+
+  async createCategory(data: CreateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO> {
+    return this.productCategoryService.createCategory(data, context)
+  }
+
+  async updateCategory(
+    categoryId: string,
+    data: UpdateProductCategoryDTO,
+    context?: Context,
+  ): Promise<ProductCategoryDTO> {
+    return this.productCategoryService.updateCategory(categoryId, data, context)
+  }
+
+  async softDeleteCategories(categoryIds: string[], context?: Context): Promise<void> {
+    return this.productCategoryService.softDeleteCategories(categoryIds, context)
   }
 
   // ── Variant options ───────────────────────────────────────────────────

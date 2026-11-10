@@ -6,6 +6,7 @@ import { buildSearchFilter } from '../../../core/utils/build-search-filter.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import productModule from '../index.js'
 import { ProductRepository } from '../repositories/product.js'
+import { ProductCategoryRepository } from '../repositories/product-category.js'
 import { ProductImageRepository } from '../repositories/product-image.js'
 import { ProductOptionRepository } from '../repositories/product-option.js'
 import { ProductOptionValueRepository } from '../repositories/product-option-value.js'
@@ -50,6 +51,7 @@ test.beforeEach(({ getDb, logger }) => {
     productImageRepository,
     productVariantImageRepository,
     productVariantOptionRepository,
+    productCategoryRepository: new ProductCategoryRepository({ getDb, cascadeGraph }),
     withTransaction,
     logger,
   })

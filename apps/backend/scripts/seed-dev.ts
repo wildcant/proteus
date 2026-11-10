@@ -599,6 +599,34 @@ console.info(
     : `Seeded stock location "${stockLocation.name}"`,
 )
 
+// --- Categories ---
+// Men and Women are top-level, so a unisex product can sit under both. Handles are unique across the
+// whole tree, hence the prefixes. Every seeded Category is active.
+const CATEGORY_TREE = [
+  { name: 'Men', handle: 'mens' },
+  { name: 'Women', handle: 'womens' },
+]
+const CATEGORY_CHILDREN = ['Tops', 'Sweatshirts', 'Bottoms', 'Shoes']
+
+const existingCategories = await productService.listCategoryTree()
+if (existingCategories.length > 0) {
+  console.info(`Skipped categories (${existingCategories.length} top-level already exist)`)
+} else {
+  // Sequential on purpose: each create renumbers its sibling set, and the order written is the rank.
+  for (const root of CATEGORY_TREE) {
+    const parent = await productService.createCategory({ ...root, isActive: true })
+    for (const name of CATEGORY_CHILDREN) {
+      await productService.createCategory({
+        name,
+        handle: `${root.handle}-${name.toLowerCase()}`,
+        parentId: parent.id,
+        isActive: true,
+      })
+    }
+  }
+  console.info(`Seeded ${CATEGORY_TREE.length * (CATEGORY_CHILDREN.length + 1)} categories`)
+}
+
 // --- Products ---
 const existingProducts = await productService.listProducts()
 if (existingProducts.length > 0) {

@@ -155,3 +155,25 @@ export type VariantImageInput = {
   imageId: string
   variantId: string
 }
+
+export type CreateProductCategoryDTO = {
+  name: string
+  /** Generated from the name when absent. */
+  handle?: string
+  description?: string
+  /** Fixed at creation. Absent or null places the Category at the root. */
+  parentId?: string | null
+  /** Position among the new siblings. Absent appends. */
+  rank?: number
+  isActive?: boolean
+  isInternal?: boolean
+}
+
+/** Never regenerates the handle. */
+export type UpdateProductCategoryDTO = {
+  name?: string
+  handle?: string
+  description?: string
+  isActive?: boolean
+  isInternal?: boolean
+}

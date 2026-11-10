@@ -13,6 +13,7 @@ export const AdminMeResponseSettingsSidebarItemItemsItemIcon = {
   'shopping-cart': 'shopping-cart',
   package: 'package',
   'sliders-horizontal': 'sliders-horizontal',
+  'folder-tree': 'folder-tree',
   boxes: 'boxes',
   'clipboard-list': 'clipboard-list',
   users: 'users',
