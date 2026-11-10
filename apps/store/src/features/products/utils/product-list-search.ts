@@ -18,7 +18,7 @@ export const productListSearchSchema = z.object({
   offset: z.coerce.number().int().min(0).optional().catch(undefined),
 })
 
-export type ProductListSearch = z.infer<typeof productListSearchSchema>
+type ProductListSearch = z.infer<typeof productListSearchSchema>
 
 /**
  * What a page hands both `ProductListHeader` and `ProductList`, so the header's count and the grid
