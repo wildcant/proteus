@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
+import type { StoreNavigationEntryDTO } from '../../../core/types/store/common.js'
 
 export const storeTable = pgTable('store', {
   id: text().primaryKey().default(sql`CONCAT('store_', REPLACE(gen_random_uuid()::text, '-', ''))`),
@@ -18,6 +19,8 @@ export const storeTable = pgTable('store', {
    * as an addition in a schema comparison rather than as a rename.
    */
   lowStockThreshold: integer(),
+  /** The menu, in order, as the structure file's `menu` lists it. Handles, not ids: the groupings live in the product module. */
+  navigation: jsonb().$type<StoreNavigationEntryDTO[]>().default([]).notNull(),
   metadata: text(),
   ...timestamps,
 })

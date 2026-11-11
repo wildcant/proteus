@@ -5,6 +5,9 @@ import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
   AppliedProductOptionChangeDTO,
+  CatalogStructureChangesDTO,
+  CatalogStructureDTO,
+  CatalogStructurePlanDTO,
   EnrichedProductVariantDTO,
   FilterableProductCategoryProps,
   FilterableProductCollectionProps,
@@ -95,6 +98,7 @@ import type { ProductVariantOptionRepository } from '../repositories/product-var
 import { combinationLabel } from '../utils/option-combinations.js'
 import { separateGroupingIds } from '../utils/product-grouping-ids.js'
 import type { VariantReconciliationPlan, VariantRemovalReason } from '../utils/reconcile-variants.js'
+import { ProductCatalogStructureService } from './product-catalog-structure-service.js'
 import { ProductCategoryService } from './product-category-service.js'
 import { ProductGroupingService } from './product-grouping-service.js'
 import { ProductImportService } from './product-import-service.js'
@@ -154,6 +158,8 @@ export class ProductModuleService implements IProductModuleService {
   private productImportService: ProductImportService
   /** Private for the same reason. */
   private productRuleMembershipService: ProductRuleMembershipService
+  /** Private for the same reason. */
+  private productCatalogStructureService: ProductCatalogStructureService
   private withTransaction: WithTransaction
   private logger: Logger
 
@@ -175,6 +181,11 @@ export class ProductModuleService implements IProductModuleService {
     this.productGroupingService = new ProductGroupingService(dependencies)
     this.productImportService = new ProductImportService(dependencies, this.productCategoryService)
     this.productRuleMembershipService = new ProductRuleMembershipService(dependencies)
+    this.productCatalogStructureService = new ProductCatalogStructureService(dependencies, {
+      productCategoryService: this.productCategoryService,
+      productGroupingService: this.productGroupingService,
+      productRuleMembershipService: this.productRuleMembershipService,
+    })
   }
 
   // ── Products ──────────────────────────────────────────────────────────
@@ -943,6 +954,19 @@ export class ProductModuleService implements IProductModuleService {
 
   async syncRuleMemberships(scope?: SyncRuleMembershipsDTO, context?: Context): Promise<void> {
     return this.productRuleMembershipService.syncRuleMemberships(scope, context)
+  }
+
+  // ── Structure files ───────────────────────────────────────────────────
+
+  async planCatalogStructure(
+    source: AsyncIterable<Uint8Array | string>,
+    context?: Context,
+  ): Promise<CatalogStructurePlanDTO> {
+    return this.productCatalogStructureService.planCatalogStructure(source, context)
+  }
+
+  async applyCatalogStructure(structure: CatalogStructureDTO, context?: Context): Promise<CatalogStructureChangesDTO> {
+    return this.productCatalogStructureService.applyCatalogStructure(structure, context)
   }
 
   async retrieveProductGroupings(productId: string, context?: Context): Promise<ProductGroupingsDTO> {

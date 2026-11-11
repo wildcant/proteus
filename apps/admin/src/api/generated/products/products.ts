@@ -6,8 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AdminApplyCatalogStructure,
   AdminBatchImageVariant,
   AdminBatchImageVariantResponse,
+  AdminCatalogStructureResponse,
   AdminCreateProduct,
   AdminCreateProductImport,
   AdminCreateProductResponse,
@@ -26,6 +28,34 @@ import type { BodyType } from '../../fetcher.ts';
 
 
 
+  /**
+ * Reads an uploaded structure file (`estructura.yaml`: categorias, colecciones, menu) and answers with the Categories and Collections it would create, update, move and delete, and the menu before and after. Every error carries its path in the file. Writes nothing.
+ * @summary Preview a structure file
+ */
+export const previewCatalogStructure = (
+    adminApplyCatalogStructure?: BodyType<AdminApplyCatalogStructure>,
+ ) => {
+      return fetcher<AdminCatalogStructureResponse>(
+      {url: `/admin/catalog-structure/preview`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminApplyCatalogStructure
+    },
+      );
+    }
+  /**
+ * Makes the store's Categories, Collections and menu the file's, matched by handle. Groupings the file leaves out are deleted, and every ruled grouping is re-matched. A file with errors is refused.
+ * @summary Apply a structure file
+ */
+export const applyCatalogStructure = (
+    adminApplyCatalogStructure?: BodyType<AdminApplyCatalogStructure>,
+ ) => {
+      return fetcher<AdminCatalogStructureResponse>(
+      {url: `/admin/catalog-structure`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminApplyCatalogStructure
+    },
+      );
+    }
   /**
  * @summary List products
  */
@@ -161,7 +191,9 @@ export const cancelProductImport = (
     },
       );
     }
-  export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
+  export type PreviewCatalogStructureResult = NonNullable<Awaited<ReturnType<typeof previewCatalogStructure>>>
+export type ApplyCatalogStructureResult = NonNullable<Awaited<ReturnType<typeof applyCatalogStructure>>>
+export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
 export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
 export type GetProductResult = NonNullable<Awaited<ReturnType<typeof getProduct>>>
 export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>

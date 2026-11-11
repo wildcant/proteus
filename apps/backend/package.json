@@ -102,6 +102,7 @@
     "swagger-ui-express": "^5.0.1",
     "ulid": "^3.0.2",
     "winston": "^3.19.0",
+    "yaml": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

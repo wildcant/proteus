@@ -14,6 +14,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/workflows/product/apply-catalog-structure.ts:43
+msgid "The structure file has errors. Preview it to see them, fix them and upload it again."
+msgstr "The structure file has errors. Preview it to see them, fix them and upload it again."
+
+#. js-lingui-explicit-id
 #: src/container.ts:140
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
@@ -24,7 +29,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:137
+#: src/routes.ts:141
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Routes with auth: 'required' must declare permissions. Missing on:\n"
@@ -608,17 +613,17 @@ msgid "Only an import waiting in preview can be confirmed or canceled."
 msgstr "Only an import waiting in preview can be confirmed or canceled."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:342
+#: src/modules/product/services/product-module-service.ts:353
 msgid "Variant creation returned no rows"
 msgstr "Variant creation returned no rows"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:421
+#: src/modules/product/services/product-module-service.ts:432
 msgid "Variant \"{variantId}\" not found"
 msgstr "Variant \"{variantId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1154
+#: src/modules/product/services/product-module-service.ts:1178
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 

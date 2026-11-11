@@ -1,6 +1,9 @@
 import '../openapi-setup.js'
 
 export * from '../common.js'
+export * from './catalog-structure/entities.js'
+export * from './catalog-structure/payloads.js'
+export * from './catalog-structure/responses.js'
 export * from './customer/entities.js'
 export * from './customer/payloads.js'
 export * from './customer/queries.js'
