@@ -1,7 +1,9 @@
 import { expect, test } from '../setup/test-extend.js'
 
 test.describe('Shop by category', () => {
-  test('a shopper browses from the rail into a category, down a child chip, to a product', async ({
+  // Entered by URL rather than from the rail: the rail shows the store's menu, which
+  // `header.spec.ts` sets and covers, on a store every spec running alongside shares.
+  test('a shopper opens a category, goes down a child chip, to a product', async ({
     page,
     authenticate,
     navigate,
@@ -18,16 +20,9 @@ test.describe('Shop by category', () => {
     })
     await authenticate({ as: 'customer' })
 
-    await navigate({ to: '/' })
-
-    // The parent has a child, so its rail entry opens a panel rather than navigating.
-    const header = page.locator('header')
-    await header.getByRole('button', { name: parent.name }).click()
-    await expect(page.getByRole('link', { name: child.name, exact: true })).toBeVisible()
-    await page.getByRole('link', { name: `Shop all ${parent.name}` }).click()
+    await navigate({ to: '/categories/$handle', params: { handle: parent.handle } })
 
     // The parent's page lists its descendants' products too: the product sits only in the child.
-    await expect(page).toHaveURL(`/en-US/categories/${parent.handle}`)
     const main = page.locator('main')
     await expect(main.getByRole('heading', { level: 1, name: parent.name })).toBeVisible()
     await expect(main.getByText('Everything for the season')).toBeVisible()
