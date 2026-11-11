@@ -1,3 +1,4 @@
+import { createReadStream } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { BigNumber } from '../src/core/bignumber.js'
@@ -12,7 +13,6 @@ import type { IInventoryModuleService } from '../src/core/types/inventory/servic
 import type { ILinkService } from '../src/core/types/link/service.js'
 import type { INotificationModuleService } from '../src/core/types/notification/service.js'
 import type { IPaymentModuleService } from '../src/core/types/payment/service.js'
-import type { IPricingModuleService } from '../src/core/types/pricing/service.js'
 import type { IProductModuleService } from '../src/core/types/product/service.js'
 import type { IRegionModuleService } from '../src/core/types/region/service.js'
 import type { IStockLocationModuleService } from '../src/core/types/stock-location/service.js'
@@ -20,11 +20,18 @@ import type { IStoreModuleService } from '../src/core/types/store/service.js'
 import type { IUserModuleService } from '../src/core/types/user/service.js'
 import { ContainerRegistrationKeys } from '../src/core/utils/container.js'
 import { Modules } from '../src/core/utils/modules-definition.js'
-import { container } from '../src/framework/runtime/container.node.js'
+import { createWorkerContainer } from '../src/framework/runtime/container.worker.js'
 import type { AccessControlModuleService } from '../src/modules/access-control/services/access-control-module-service.js'
 import { config as alertLowStock } from '../src/subscribers/alert-low-stock.js'
 import { SOURCE_LOCALE } from '../src/workflows/admin/utils/admin-locales.js'
-import { amountIn, MARKETS, seedMarkets } from './seed/markets.js'
+import { importProductWorkflow } from '../src/workflows/product/import-product.js'
+import { MARKETS, seedMarkets } from './seed/markets.js'
+import { SEED_IMAGE_DIR, seedImageFile } from './seed/seed-images.js'
+
+// The catalogue is imported through workflows, and `import-product` runs `create-product` inside a
+// step. The simple engine runs both here, in-process, as the workflow Worker does — so seeding needs
+// no Temporal server. The bus stays Temporal, as on the API's root: nothing below publishes.
+const { container } = await createWorkerContainer({ engine: 'simple', eventBus: 'temporal' })
 
 const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
 const customerService = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
@@ -35,7 +42,6 @@ const inventoryService = container.resolve<IInventoryModuleService>(Modules.INVE
 const cartService = container.resolve<ICartModuleService>(Modules.CART)
 const paymentService = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
 const notificationService = container.resolve<INotificationModuleService>(Modules.NOTIFICATION)
-const pricingService = container.resolve<IPricingModuleService>(Modules.PRICING)
 const fulfillmentService = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
 const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
 const stockLocationService = container.resolve<IStockLocationModuleService>(Modules.STOCK_LOCATION)
@@ -43,282 +49,10 @@ const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
 const linkService = container.resolve<ILinkService>(ContainerRegistrationKeys.LINK)
 const accessControlService = container.resolve<AccessControlModuleService>(Modules.ACCESS_CONTROL)
 
-// --- Catalogue ---
-// One catalogue drives products, option values, variants, prices and images, so a colourway is
-// described once and everything downstream derives from it, including the list of photos to
-// upload. Photos live in `seed-images/` (committed, see its README for provenance).
-const APPAREL_SIZES = ['S', 'M', 'L', 'XL']
-const SHOE_SIZES = ['4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']
-
-type CatalogEntry = {
-  title: string
-  handle: string
-  description: string
-  skuPrefix: string
-  price: number
-  /** Which global size option the product draws from. Garments and shoes do not share a scale. */
-  sizeOption: 'Size' | 'Shoe Size'
-  /** The subset of that option's values this product is stocked in. */
-  sizes: string[]
-  /** Colourway to its photos in gallery order. The first photo becomes that colourway's thumbnail. */
-  colors: Record<string, string[]>
-}
-
-const CATALOG: CatalogEntry[] = [
-  {
-    title: 'Hoodie',
-    handle: 'hoodie',
-    description:
-      "This hoodie is the perfect choice for comfort and warmth. Meticulously crafted from 100% cotton, the hoodie features a soft, plush fleece interior and a unisex sizing design. Soft and lightweight, it's sure to be your go-to for chilly days.",
-    skuPrefix: 'HOODIE',
-    price: 9000,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: {
-      Green: ['hoodie-green-01.jpg', 'hoodie-green-02.jpg', 'hoodie-green-03.jpg'],
-      Olive: ['hoodie-olive-01.jpg', 'hoodie-olive-02.jpg', 'hoodie-olive-03.jpg'],
-      Ocean: ['hoodie-ocean-01.jpg', 'hoodie-ocean-02.jpg', 'hoodie-ocean-03.jpg'],
-      Purple: ['hoodie-purple-01.jpg', 'hoodie-purple-02.jpg', 'hoodie-purple-03.jpg'],
-      Red: ['hoodie-red-01.jpg', 'hoodie-red-02.jpg', 'hoodie-red-03.jpg'],
-    },
-  },
-  {
-    title: "Men's T-shirt",
-    handle: 'mens-t-shirt',
-    description:
-      'Crafted from organic cotton, this classic T-shirt features a relaxed fit, crew neckline and timeless look. Enjoy the breathable comfort of 100% organic cotton.',
-    skuPrefix: 'MENS-TSHIRT',
-    price: 4000,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: {
-      Green: ['mens-t-shirt-green-01.jpg', 'mens-t-shirt-green-02.jpg', 'mens-t-shirt-green-03.jpg'],
-      Olive: ['mens-t-shirt-olive-01.jpg', 'mens-t-shirt-olive-02.jpg', 'mens-t-shirt-olive-03.jpg'],
-      Ocean: ['mens-t-shirt-ocean-01.jpg', 'mens-t-shirt-ocean-02.jpg', 'mens-t-shirt-ocean-03.jpg'],
-      Purple: ['mens-t-shirt-purple-01.jpg', 'mens-t-shirt-purple-02.jpg', 'mens-t-shirt-purple-03.jpg'],
-      Red: ['mens-t-shirt-red-01.jpg', 'mens-t-shirt-red-02.jpg', 'mens-t-shirt-red-03.jpg'],
-    },
-  },
-  {
-    title: "Men's Crewneck",
-    handle: 'mens-crewneck',
-    description:
-      "This high-quality crewneck is perfect for your everyday look. Made with 100% cotton, it's soft, comfortable, and undeniably stylish. Full sleeved for a classic look and effortlessly versatile, this cotton crewneck is a must-have in any wardrobe.",
-    skuPrefix: 'MENS-CREW',
-    price: 12000,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L'],
-    colors: {
-      Green: [
-        'mens-crewneck-green-01.jpg',
-        'mens-crewneck-green-02.jpg',
-        'mens-crewneck-green-03.jpg',
-        'mens-crewneck-green-04.jpg',
-      ],
-      Olive: [
-        'mens-crewneck-olive-01.jpg',
-        'mens-crewneck-olive-02.jpg',
-        'mens-crewneck-olive-03.jpg',
-        'mens-crewneck-olive-04.jpg',
-      ],
-      Ocean: [
-        'mens-crewneck-ocean-01.jpg',
-        'mens-crewneck-ocean-02.jpg',
-        'mens-crewneck-ocean-03.jpg',
-        'mens-crewneck-ocean-04.jpg',
-      ],
-      Purple: [
-        'mens-crewneck-purple-01.jpg',
-        'mens-crewneck-purple-02.jpg',
-        'mens-crewneck-purple-03.jpg',
-        'mens-crewneck-purple-04.jpg',
-      ],
-      Red: [
-        'mens-crewneck-red-01.jpg',
-        'mens-crewneck-red-02.jpg',
-        'mens-crewneck-red-03.jpg',
-        'mens-crewneck-red-04.jpg',
-      ],
-    },
-  },
-  {
-    title: 'Sweatpants',
-    handle: 'sweatpants',
-    description:
-      'Soft and comfortable sweatpants in stylish shades. They are perfect for lounging with their cozy stretch fabric that offers just the right amount of warmth. Enjoy the ultimate relaxation experience!',
-    skuPrefix: 'SWEATPANTS',
-    price: 3500,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L'],
-    colors: {
-      Green: ['sweatpants-green-01.jpg', 'sweatpants-green-02.jpg', 'sweatpants-green-03.jpg'],
-      Olive: ['sweatpants-olive-01.jpg', 'sweatpants-olive-02.jpg', 'sweatpants-olive-03.jpg'],
-      Ocean: ['sweatpants-ocean-01.jpg', 'sweatpants-ocean-02.jpg', 'sweatpants-ocean-03.jpg'],
-      Purple: ['sweatpants-purple-01.jpg', 'sweatpants-purple-02.jpg', 'sweatpants-purple-03.jpg'],
-      Red: ['sweatpants-red-01.jpg', 'sweatpants-red-02.jpg', 'sweatpants-red-03.jpg'],
-    },
-  },
-  {
-    title: 'Shorts',
-    handle: 'shorts',
-    description:
-      'These shorts are designed to help you reach peak performance. Constructed with high performance nylon fabric in a variety of shades, they are built to last and provide maximum comfort.',
-    skuPrefix: 'SHORTS',
-    price: 4500,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L'],
-    colors: {
-      Green: ['shorts-green-01.jpg'],
-      Olive: ['shorts-olive-01.jpg'],
-      Ocean: ['shorts-ocean-01.jpg'],
-      Purple: ['shorts-purple-01.jpg'],
-      Red: ['shorts-red-01.jpg'],
-    },
-  },
-  {
-    title: 'High Top Sneakers',
-    handle: 'high-top-sneakers',
-    description:
-      'These stylish and durable high top sneakers are perfect for any casual look, offering superior comfort and protection with their foam cushioning and reinforced heel support.',
-    skuPrefix: 'HIGHTOP',
-    price: 18000,
-    sizeOption: 'Shoe Size',
-    sizes: ['6', '7', '8', '9', '10'],
-    colors: {
-      White: ['high-top-sneakers-white-01.jpg'],
-    },
-  },
-  {
-    title: 'White Leather Sneakers',
-    handle: 'white-leather-sneakers',
-    description:
-      'A pared-back leather sneaker on a cupsole, finished with a gum outsole. Understated enough for every day, sturdy enough to keep wearing.',
-    skuPrefix: 'WHITELEATHER',
-    price: 9000,
-    sizeOption: 'Shoe Size',
-    sizes: ['4', '5', '6', '7', '8'],
-    colors: {
-      White: ['white-leather-sneakers-white-01.jpg'],
-    },
-  },
-  {
-    title: 'Gray Leather Sneakers',
-    handle: 'grey-leather-sneakers',
-    description:
-      'These gray leather sneakers combine comfort and style for the perfect professional look. The breathable leather material ensures breathability and provides a comfortable fit, perfect for the office and other formal occasions. The handmade design is stylish and guaranteed to last.',
-    skuPrefix: 'GREYLEATHER',
-    price: 100000,
-    sizeOption: 'Shoe Size',
-    sizes: ['4', '5', '6', '7', '8', '9', '10', '11', '12'],
-    colors: {
-      Grey: ['grey-leather-sneakers-grey-01.jpg'],
-    },
-  },
-  {
-    title: 'Gray Runners',
-    handle: 'grey-runners',
-    description:
-      'These gray runners are the perfect choice for running enthusiasts. These shoes provide superior breathability and comfort, so you can run longer with less fatigue. The lightweight design and airy mesh material make these shoes durable and lightweight, giving you the support you need for peak performance.',
-    skuPrefix: 'RUNNERS',
-    price: 3000,
-    sizeOption: 'Shoe Size',
-    sizes: ['4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'],
-    colors: {
-      Grey: ['grey-runners-grey-01.jpg'],
-    },
-  },
-  {
-    title: 'Canvas Sneakers',
-    handle: 'canvas-sneakers',
-    description:
-      'These high-quality canvas sneakers offer a comfortable fit and superior breathability, thanks to their cushioning midsoles and durable construction. An array of stylish colors adds to the appeal, making them perfect for casual wear. Slip them on and enjoy reliable performance and style that lasts.',
-    skuPrefix: 'CANVAS',
-    price: 4000,
-    sizeOption: 'Shoe Size',
-    sizes: ['4', '5', '6', '7', '8', '9', '10', '11', '12'],
-    colors: {
-      Green: ['canvas-sneakers-green-01.jpg'],
-      Olive: ['canvas-sneakers-olive-01.jpg'],
-      Ocean: ['canvas-sneakers-ocean-01.jpg'],
-      Purple: ['canvas-sneakers-purple-01.jpg'],
-      Red: ['canvas-sneakers-red-01.jpg'],
-    },
-  },
-  {
-    title: "Women's T-shirt",
-    handle: 'womens-t-shirt',
-    description:
-      'Crafted from organic cotton, this classic T-shirt features a relaxed fit, crew neckline and timeless look. Enjoy the breathable comfort of 100% organic cotton.',
-    skuPrefix: 'WOMENS-TSHIRT',
-    price: 4000,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: {
-      Green: ['womens-t-shirt-green-01.jpg'],
-      Olive: ['womens-t-shirt-olive-01.jpg'],
-      Ocean: ['womens-t-shirt-ocean-01.jpg'],
-      Purple: ['womens-t-shirt-purple-01.jpg'],
-      Red: ['womens-t-shirt-red-01.jpg'],
-    },
-  },
-  {
-    title: "Women's Crewneck",
-    handle: 'womens-crewneck',
-    description:
-      "This high-quality crewneck is perfect for your everyday look. Made with 100% cotton, it's soft, comfortable, and undeniably stylish. Full sleeved for a classic look and effortlessly versatile, this cotton crewneck is a must-have in any wardrobe.",
-    skuPrefix: 'WOMENS-CREW',
-    price: 12000,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L'],
-    colors: {
-      Green: ['womens-crewneck-green-01.jpg', 'womens-crewneck-green-02.jpg', 'womens-crewneck-green-03.jpg'],
-      Olive: ['womens-crewneck-olive-01.jpg', 'womens-crewneck-olive-02.jpg', 'womens-crewneck-olive-03.jpg'],
-      Ocean: ['womens-crewneck-ocean-01.jpg', 'womens-crewneck-ocean-02.jpg', 'womens-crewneck-ocean-03.jpg'],
-      Purple: ['womens-crewneck-purple-01.jpg', 'womens-crewneck-purple-02.jpg', 'womens-crewneck-purple-03.jpg'],
-      Red: ['womens-crewneck-red-01.jpg', 'womens-crewneck-red-02.jpg', 'womens-crewneck-red-03.jpg'],
-    },
-  },
-  {
-    title: 'Workout Shirt',
-    handle: 'workout-shirt',
-    description:
-      "This high-performance workout shirt made from high-quality Nylon is designed with comfort and durability in mind. Its breathable mesh construction keeps your body temperature regulated while you exercise, while the antistatic and antibacterial finish ensures it will remain light and soft to the touch, wash after wash. With its lightweight design and adjustable straps, it's sure to stay in place during even the toughest workouts.",
-    skuPrefix: 'WORKOUT',
-    price: 1000,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L'],
-    colors: {
-      Green: ['workout-shirt-green-01.jpg'],
-      Olive: ['workout-shirt-olive-01.jpg'],
-      Ocean: ['workout-shirt-ocean-01.jpg'],
-      Purple: ['workout-shirt-purple-01.jpg'],
-      Red: ['workout-shirt-red-01.jpg'],
-    },
-  },
-  {
-    title: 'Leggings',
-    handle: 'leggings',
-    description:
-      'These sporty and lightweight leggings are designed for comfort and ease of movement. Its moisture-wicking fabric and strong seams keep you feeling cool and secure. Available in an array of colors, these leggings are an ideal choice to look stylish while exercising.',
-    skuPrefix: 'LEGGINGS',
-    price: 2000,
-    sizeOption: 'Size',
-    sizes: ['S', 'M', 'L'],
-    colors: {
-      Green: ['leggings-green-01.jpg', 'leggings-green-02.jpg'],
-      Olive: ['leggings-olive-01.jpg', 'leggings-olive-02.jpg'],
-      Ocean: ['leggings-ocean-01.jpg', 'leggings-ocean-02.jpg'],
-      Purple: ['leggings-purple-01.jpg', 'leggings-purple-02.jpg'],
-      Red: ['leggings-red-01.jpg', 'leggings-red-02.jpg'],
-    },
-  },
-]
-
-const galleryOf = (entry: CatalogEntry) => Object.values(entry.colors).flat()
-
 // --- Seed images ---
-const SEED_IMAGE_SOURCE_DIR = path.join(process.cwd(), 'seed-images')
-const SEED_IMAGE_DIR = path.join(process.cwd(), 'static', 'seed')
+// The catalogue's photos are committed in `seed-images/` (see its README), each named after the CDN
+// URL the CSV gives for it, so the import below attaches stored copies and never reaches the network.
+const STATIC_SEED_DIR = path.join(process.cwd(), 'static', 'seed')
 // Mirrors the default in `src/providers/file-localfs/local-file-provider.ts`.
 const STATIC_BASE_URL = 'http://localhost:3000/static'
 
@@ -329,8 +63,9 @@ const MIME_TYPE_BY_EXTENSION: Record<string, string> = {
   '.webp': 'image/webp',
 }
 
-// A photo shared by two colourways would otherwise be uploaded twice.
-const SEED_IMAGES = [...new Set(CATALOG.flatMap(galleryOf))]
+const SEED_IMAGES = (await fs.readdir(SEED_IMAGE_DIR)).filter(
+  (file) => MIME_TYPE_BY_EXTENSION[path.extname(file).toLowerCase()],
+)
 
 /**
  * Copies the photos into the gitignored `static/` root so they serve through the same `/static`
@@ -338,13 +73,13 @@ const SEED_IMAGES = [...new Set(CATALOG.flatMap(galleryOf))]
  * half-populated.
  */
 async function copySeedImages(): Promise<Map<string, string>> {
-  await fs.mkdir(SEED_IMAGE_DIR, { recursive: true })
+  await fs.mkdir(STATIC_SEED_DIR, { recursive: true })
 
   await Promise.all(
-    SEED_IMAGES.map((file) => fs.copyFile(path.join(SEED_IMAGE_SOURCE_DIR, file), path.join(SEED_IMAGE_DIR, file))),
+    SEED_IMAGES.map((file) => fs.copyFile(path.join(SEED_IMAGE_DIR, file), path.join(STATIC_SEED_DIR, file))),
   )
 
-  console.info(`Copied ${SEED_IMAGES.length} seed images to ${SEED_IMAGE_DIR}`)
+  console.info(`Copied ${SEED_IMAGES.length} seed images to ${STATIC_SEED_DIR}`)
   return new Map(SEED_IMAGES.map((file) => [file, `${STATIC_BASE_URL}/seed/${file}`]))
 }
 
@@ -361,7 +96,7 @@ async function uploadSeedImages(): Promise<Map<string, string>> {
         return {
           filename: `seed/${file}`,
           mimeType,
-          content: (await fs.readFile(path.join(SEED_IMAGE_SOURCE_DIR, file))).toString('base64'),
+          content: (await fs.readFile(path.join(SEED_IMAGE_DIR, file))).toString('base64'),
           access: 'public' as const,
         }
       }),
@@ -385,9 +120,10 @@ async function uploadSeedImages(): Promise<Map<string, string>> {
 const seedImageUrls =
   fileService.getProvider().getIdentifier() === 'localfs' ? await copySeedImages() : await uploadSeedImages()
 
-const imageUrl = (file: string) => {
-  const url = seedImageUrls.get(file)
-  if (!url) throw new Error(`No seeded URL for image "${file}"`)
+/** Where the photo a CSV image URL names was stored. */
+const hostedImageUrl = (csvUrl: string) => {
+  const url = seedImageUrls.get(seedImageFile(csvUrl))
+  if (!url) throw new Error(`No seed image for "${csvUrl}". Rerun scripts/seed/build-product-import-csv.ts`)
   return url
 }
 
@@ -599,442 +335,140 @@ console.info(
     : `Seeded stock location "${stockLocation.name}"`,
 )
 
-// --- Categories ---
-// Men and Women are top-level, so a unisex product can sit under both. Handles are unique across the
-// whole tree, hence the prefixes. Every seeded Category is active.
-const CATEGORY_TREE = [
-  { name: 'Men', handle: 'mens' },
-  { name: 'Women', handle: 'womens' },
-]
-const CATEGORY_CHILDREN = ['Tops', 'Sweatshirts', 'Bottoms', 'Shoes']
+// --- Catalogue ---
+// Two committed files define it, the way they define a real store: `catalog-structure.yaml` holds
+// the Categories and Collections with their tag rules plus the menu, and `product-import.csv` the
+// products. Both go through what the admin runs — the structure apply, then the CSV's parse and one
+// `import-product` workflow per product — so membership comes from the rules, as it would there.
+const CATALOG_STRUCTURE_PATH = path.join(import.meta.dirname, 'seed', 'catalog-structure.yaml')
+const CATALOG_CSV_PATH = path.join(import.meta.dirname, 'seed', 'product-import.csv')
 
-const existingCategories = await productService.listCategoryTree()
-if (existingCategories.length > 0) {
-  console.info(`Skipped categories (${existingCategories.length} top-level already exist)`)
-} else {
-  // Sequential on purpose: each create renumbers its sibling set, and the order written is the rank.
-  for (const root of CATEGORY_TREE) {
-    const parent = await productService.createCategory({ ...root, isActive: true })
-    for (const name of CATEGORY_CHILDREN) {
-      await productService.createCategory({
-        name,
-        handle: `${root.handle}-${name.toLowerCase()}`,
-        parentId: parent.id,
-        isActive: true,
-      })
-    }
-  }
-  console.info(`Seeded ${CATEGORY_TREE.length * (CATEGORY_CHILDREN.length + 1)} categories`)
-}
+// The CSV build script stocks this variant low (`STOCK_BY_SKU` there) — at or below the threshold
+// `seedMarkets` writes onto the store — so the shopper's "only N left" line and the shopkeeper's
+// alert are both reachable on a fresh database.
+const LOW_STOCK_SKU = 'MENTSHIRT-MEDIUM-OCEAN'
 
-// --- Products ---
 const existingProducts = await productService.listProducts()
 if (existingProducts.length > 0) {
-  console.info(`Skipped products (${existingProducts.length} already exist)`)
+  console.info(`Skipped catalogue (${existingProducts.length} products already exist)`)
 } else {
-  const createdProducts = await productService.createProducts(
-    CATALOG.map((entry) => {
-      const [thumbnail] = galleryOf(entry)
-      if (!thumbnail) throw new Error(`Catalog entry "${entry.handle}" has no images`)
-      return {
-        title: entry.title,
-        handle: entry.handle,
-        description: entry.description,
-        status: 'published' as const,
-        weight: 400,
-        thumbnail: imageUrl(thumbnail),
-      }
-    }),
-  )
-  const productByHandle = new Map(createdProducts.map((product) => [product.handle, product]))
-  const productFor = (entry: CatalogEntry) => {
-    const product = productByHandle.get(entry.handle)
-    if (!product) throw new Error(`Missing product for catalog entry "${entry.handle}"`)
-    return product
+  const structurePlan = await productService.planCatalogStructure(createReadStream(CATALOG_STRUCTURE_PATH))
+  if (!structurePlan.structure) {
+    const errors = structurePlan.errors.map((error) => `${error.path}: ${error.message}`).join('\n')
+    throw new Error(`catalog-structure.yaml has errors:\n${errors}`)
   }
-  console.info(`Seeded ${createdProducts.length} products`)
-
-  // --- Category membership ---
-  // Unisex products sit under both Men and Women. Shoes are all unisex.
-  const SHOES = [
-    'high-top-sneakers',
-    'white-leather-sneakers',
-    'grey-leather-sneakers',
-    'canvas-sneakers',
-    'grey-runners',
-  ]
-  const CATEGORY_MEMBERS: Record<string, string[]> = {
-    'mens-tops': ['mens-t-shirt', 'workout-shirt'],
-    'mens-sweatshirts': ['hoodie', 'mens-crewneck'],
-    'mens-bottoms': ['sweatpants', 'shorts'],
-    'mens-shoes': SHOES,
-    'womens-tops': ['womens-t-shirt', 'workout-shirt'],
-    'womens-sweatshirts': ['hoodie', 'womens-crewneck'],
-    'womens-bottoms': ['leggings', 'sweatpants'],
-    'womens-shoes': SHOES,
-  }
-  const categoryTree = await productService.listCategoryTree()
-  const categoryByHandle = new Map(
-    categoryTree.flatMap((root) => [root, ...root.children]).map((category) => [category.handle, category]),
-  )
-  await Promise.all(
-    Object.entries(CATEGORY_MEMBERS).map(([categoryHandle, productHandles]) => {
-      const category = categoryByHandle.get(categoryHandle)
-      if (!category) throw new Error(`Missing seeded category "${categoryHandle}"`)
-      const productIds = productHandles.map((handle) => {
-        const product = productByHandle.get(handle)
-        if (!product) throw new Error(`Missing seeded product "${handle}"`)
-        return product.id
-      })
-      return productService.setCategoryProducts(category.id, { add: productIds })
-    }),
-  )
-  console.info(`Assigned products to ${Object.keys(CATEGORY_MEMBERS).length} categories`)
-
-  // --- Collections ---
-  // The Hoodie sits in both: joining one Collection never takes a product out of another. Each hero
-  // borrows a member's photo.
-  const COLLECTIONS = [
-    {
-      title: 'Essentials',
-      handle: 'essentials',
-      cover: 'hoodie',
-      members: ['mens-t-shirt', 'womens-t-shirt', 'mens-crewneck', 'womens-crewneck', 'hoodie', 'sweatpants'],
-    },
-    {
-      title: 'Active',
-      handle: 'active',
-      cover: 'grey-runners',
-      members: ['workout-shirt', 'shorts', 'leggings', 'grey-runners', 'hoodie'],
-    },
-  ]
-  const seededProductId = (handle: string) => {
-    const product = productByHandle.get(handle)
-    if (!product) throw new Error(`Missing seeded product "${handle}"`)
-    return product.id
-  }
-  await Promise.all(
-    COLLECTIONS.map(async ({ title, handle, cover, members }) => {
-      const collection = await productService.createCollection({
-        title,
-        handle,
-        thumbnail: productByHandle.get(cover)?.thumbnail ?? null,
-      })
-      await productService.setCollectionProducts(collection.id, { add: members.map(seededProductId) })
-    }),
-  )
-  console.info(`Seeded ${COLLECTIONS.length} collections`)
-
-  // --- Product Types ---
-  const PRODUCT_TYPES: Record<string, string[]> = {
-    'T-shirt': ['mens-t-shirt', 'womens-t-shirt', 'workout-shirt'],
-    Hoodie: ['hoodie'],
-    Crewneck: ['mens-crewneck', 'womens-crewneck'],
-    Sweatpants: ['sweatpants'],
-    Shorts: ['shorts'],
-    Leggings: ['leggings'],
-    Sneakers: ['high-top-sneakers', 'white-leather-sneakers', 'grey-leather-sneakers', 'canvas-sneakers'],
-    'Running Shoes': ['grey-runners'],
-  }
-  await Promise.all(
-    Object.entries(PRODUCT_TYPES).map(async ([value, members]) => {
-      const type = await productService.createType({ value })
-      await productService.updateProducts(members.map(seededProductId), { typeId: type.id })
-    }),
-  )
-  console.info(`Seeded ${Object.keys(PRODUCT_TYPES).length} product types`)
-
-  // --- Tags ---
-  const PRODUCT_TAGS: Record<string, string[]> = {
-    'organic-cotton': ['mens-t-shirt', 'womens-t-shirt'],
-    cotton: ['hoodie', 'mens-crewneck', 'womens-crewneck'],
-    leather: ['white-leather-sneakers', 'grey-leather-sneakers'],
-    canvas: ['canvas-sneakers'],
-    nylon: ['shorts', 'workout-shirt'],
-  }
-  const tags = await Promise.all(
-    Object.entries(PRODUCT_TAGS).map(async ([value, members]) => ({
-      tag: await productService.createTag({ value }),
-      members,
-    })),
-  )
-  // `tagIds` replaces a product's set, so each product is written once with all of its Tags.
-  const tagIdsByProduct = new Map<string, string[]>()
-  for (const { tag, members } of tags) {
-    for (const handle of members) tagIdsByProduct.set(handle, [...(tagIdsByProduct.get(handle) ?? []), tag.id])
-  }
-  await Promise.all(
-    [...tagIdsByProduct].map(([handle, tagIds]) => productService.updateProduct(seededProductId(handle), { tagIds })),
-  )
-  console.info(`Seeded ${tags.length} tags`)
-
-  // --- Options (global) ---
-  // Colour ranks follow first appearance in the catalogue, which keeps the swatch order stable.
-  const colorValues = [...new Set(CATALOG.flatMap((entry) => Object.keys(entry.colors)))]
-
-  const apparelSizeOption = await productService.createProductOption({
-    title: 'Size',
-    values: APPAREL_SIZES.map((value, rank) => ({ value, rank })),
-  })
-  const shoeSizeOption = await productService.createProductOption({
-    title: 'Shoe Size',
-    values: SHOE_SIZES.map((value, rank) => ({ value, rank })),
-  })
-  const colorOption = await productService.createProductOption({
-    title: 'Color',
-    // Each colourway has its own photos, so the storefront draws this option as image swatches.
-    renderAs: 'swatch',
-    values: colorValues.map((value, rank) => ({ value, rank })),
-  })
-  console.info('Seeded global product options')
-
-  const sizeOptionFor = (entry: CatalogEntry) => (entry.sizeOption === 'Shoe Size' ? shoeSizeOption : apparelSizeOption)
-
-  // --- Link options to products ---
-  // A product exposes only the sizes it is stocked in and the colourways it has photos for.
-  type Option = { values: { id: string; value: string }[] }
-  const valueIdFor = (option: Option, name: string) => option.values.find((value) => value.value === name)?.id
-  const valueIdsFor = (option: Option, names: string[]) =>
-    names.flatMap((name) => {
-      const id = valueIdFor(option, name)
-      return id ? [id] : []
-    })
-
-  await Promise.all(
-    CATALOG.map((entry) =>
-      productService.setProductOptions(productFor(entry).id, {
-        // Colour first: payload order is the option's rank (`setProductOptions`), and rank is what
-        // orders the storefront's pickers and the cart line's `Green · M`. The colourway decides
-        // which photos the page shows, so it is the choice made before the size.
-        options: [
-          { optionId: colorOption.id, valueIds: valueIdsFor(colorOption, Object.keys(entry.colors)) },
-          { optionId: sizeOptionFor(entry).id, valueIds: valueIdsFor(sizeOptionFor(entry), entry.sizes) },
-        ],
-      }),
-    ),
-  )
-  console.info('Linked options to products')
-
-  // --- Variants ---
-  // Every product is now size x colour, so each variant maps onto exactly one colourway gallery.
-  // Option values are free text, so anything non-alphanumeric would put a second separator inside
-  // the SKU and make the prefix/size/colour split ambiguous to read back.
-  const skuToken = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '')
-
-  const variantSpecs = CATALOG.flatMap((entry) =>
-    Object.keys(entry.colors).flatMap((color) =>
-      entry.sizes.map((size) => ({
-        entry,
-        productId: productFor(entry).id,
-        sku: `${entry.skuPrefix}-${skuToken(size)}-${skuToken(color)}`,
-        size,
-        color,
-        price: entry.price,
-      })),
-    ),
-  )
-
-  // The option tuple rides along on the variant, so there is no second pass to link them.
-  const optionValuesFor = (entry: CatalogEntry, size: string, color: string) => {
-    const sizeOption = sizeOptionFor(entry)
-    const sizeValueId = valueIdFor(sizeOption, size)
-    const colorValueId = valueIdFor(colorOption, color)
-    if (!sizeValueId || !colorValueId) throw new Error(`Missing option value for "${size} / ${color}"`)
-    return { [sizeOption.id]: sizeValueId, [colorOption.id]: colorValueId }
-  }
-
-  const createdVariants = await productService.createProductVariants(
-    // No title: it is derived from the Option Combination these values name.
-    variantSpecs.map(({ entry, productId, sku, size, color }) => ({
-      productId,
-      sku,
-      optionValues: optionValuesFor(entry, size, color),
-    })),
-  )
-  console.info(`Seeded ${createdVariants.length} product variants with their option values`)
-
-  // --- Prices ---
-  // One price per market currency, so a variant is buyable from either region without a fallback.
-  const priceSets = await pricingService.createPriceSets(
-    variantSpecs.map((spec) => ({
-      prices: MARKETS.map((market) => ({
-        currencyCode: market.currencyCode,
-        amount: new BigNumber(amountIn(market.currencyCode, spec.price)),
-      })),
-    })),
-  )
-
-  await Promise.all(
-    createdVariants.map((variant, i) => {
-      const priceSet = priceSets[i]
-      if (!priceSet) throw new Error(`Missing price set for variant "${variant.id}"`)
-      return linkService.repo('productVariantPriceSet').create({ variantId: variant.id, priceSetId: priceSet.id })
-    }),
-  )
-  console.info(`Seeded ${priceSets.length} price sets with variant links`)
-
-  // --- Images ---
-  const createdImages = await productService.createProductImages(
-    CATALOG.flatMap((entry) =>
-      galleryOf(entry).map((file, rank) => ({ productId: productFor(entry).id, url: imageUrl(file), rank })),
-    ),
-  )
-  console.info(`Seeded ${createdImages.length} product images`)
-
-  // --- Variant images ---
-  // A variant shows the photos of its own colourway, which is the case variant images exist for.
-  const imageIdByUrl = new Map(createdImages.map((image) => [image.url, image.id]))
-  const galleryKey = (productId: string, color: string) => `${productId}:${color}`
-  const galleryByColorway = new Map(
-    CATALOG.flatMap((entry) =>
-      Object.entries(entry.colors).map(([color, files]) => [galleryKey(productFor(entry).id, color), files] as const),
-    ),
-  )
-
-  const variantImageLinks = createdVariants.flatMap((variant, i) => {
-    const spec = variantSpecs[i]
-    const files = spec ? (galleryByColorway.get(galleryKey(spec.productId, spec.color)) ?? []) : []
-    return files.flatMap((file) => {
-      const imageId = imageIdByUrl.get(imageUrl(file))
-      return imageId ? [{ imageId, variantId: variant.id }] : []
-    })
-  })
-
-  await productService.addImageToVariant(variantImageLinks)
-
-  // Grouped by thumbnail so each colourway is one update rather than one per size.
-  const variantIdsByThumbnail = new Map<string, string[]>()
-  for (const [i, variant] of createdVariants.entries()) {
-    const spec = variantSpecs[i]
-    const [front] = spec ? (galleryByColorway.get(galleryKey(spec.productId, spec.color)) ?? []) : []
-    if (!front) continue
-    const url = imageUrl(front)
-    variantIdsByThumbnail.set(url, [...(variantIdsByThumbnail.get(url) ?? []), variant.id])
-  }
-
-  await Promise.all(
-    [...variantIdsByThumbnail].map(([thumbnail, variantIds]) =>
-      productService.updateProductVariants(variantIds, { thumbnail }),
-    ),
-  )
-  console.info(`Seeded ${variantImageLinks.length} variant image links with colour-matched thumbnails`)
-
-  // --- Inventory Items + Levels + Variant Links ---
-  const inventoryData = createdVariants.map((v) => ({
-    sku: v.sku,
-    title: v.title,
-    requiresShipping: true,
-  }))
-
-  const createdItems = await inventoryService.createInventoryItems(inventoryData)
-  console.info(`Seeded ${createdItems.length} inventory items`)
-
-  // Create inventory levels (every item stocked at the one Stock Location). One SKU is left
-  // with nothing on hand so the storefront's sold-out option state is reachable without editing
-  // the database by hand.
-  const SOLD_OUT_SKU = 'MENS-TSHIRT-XL-GREEN'
-
-  // And one left genuinely low — at or below the threshold `seedMarkets` writes onto the store —
-  // so the shopper's "only N left" line and the shopkeeper's alert are both reachable on a fresh
-  // database without anyone editing a row by hand.
-  const LOW_STOCK_SKU = 'MENS-TSHIRT-M-OCEAN'
-  const LOW_STOCK_QUANTITY = 3
-
-  const stockedQuantityFor = (sku: string | null) => {
-    if (sku === SOLD_OUT_SKU) return 0
-    if (sku === LOW_STOCK_SKU) return LOW_STOCK_QUANTITY
-    return 100
-  }
-
-  const createdLevels = await inventoryService.createInventoryLevels(
-    createdItems.map((item) => ({
-      inventoryItemId: item.id,
-      locationId: stockLocation.id,
-      stockedQuantity: stockedQuantityFor(item.sku),
-      incomingQuantity: 0,
-    })),
-  )
+  const store = await storeService.resolveStore()
+  if (!store) throw new Error('Expected seedMarkets to have created the store')
+  await storeService.updateStores([store.id], { navigation: structurePlan.structure.menu })
+  const { categories, collections } = await productService.applyCatalogStructure(structurePlan.structure)
   console.info(
-    `Seeded ${createdItems.length} inventory levels (${SOLD_OUT_SKU} deliberately sold out, ${LOW_STOCK_SKU} left low at ${LOW_STOCK_QUANTITY})`,
+    `Applied catalog-structure.yaml: ${categories.create.length} categories, ${collections.create.length} collections`,
   )
 
-  // Link variants -> inventory items (1:1 by matching SKU order)
-  const links = createdVariants.map((variant, i) => {
-    const item = createdItems[i]
-    if (!item) throw new Error(`Missing inventory item for variant "${variant.id}"`)
-    return { variantId: variant.id, inventoryItemId: item.id }
+  // Read against the store's currencies, as the admin's preview reads an uploaded file.
+  const [defaultCurrency] = await storeService.listStoreCurrencies({ storeId: store.id, isDefault: true })
+  const regions = await regionService.listRegions()
+  const importPlan = await productService.planProductImport(createReadStream(CATALOG_CSV_PATH), {
+    overwrite: false,
+    publish: true,
+    defaultCurrency: defaultCurrency?.currencyCode ?? null,
+    marketCurrencies: Object.fromEntries(
+      regions.map((region) => [region.name.trim().toLowerCase(), region.currencyCode]),
+    ),
   })
-  await linkService.repo('productVariantInventoryItem').createMany(links)
-  console.info(`Seeded ${links.length} variant-inventory links`)
+  if (importPlan.errors.length > 0) {
+    const errors = importPlan.errors.map((error) => `line ${error.line}: ${error.message}`).join('\n')
+    throw new Error(`product-import.csv has errors:\n${errors}`)
+  }
+
+  // One at a time, as the admin's run goes: a product creates the tags, types and option values the
+  // next one may share.
+  const products = importPlan.chunks.flat()
+  for (const product of products) {
+    await importProductWorkflow.run({
+      product: {
+        ...product,
+        imageUrls: product.imageUrls.map(hostedImageUrl),
+        variants: product.variants.map((variant) => ({
+          ...variant,
+          imageUrl: variant.imageUrl ? hostedImageUrl(variant.imageUrl) : null,
+        })),
+      },
+      overwrite: false,
+      hostedImages: true,
+    })
+  }
+  console.info(`Imported ${products.length} products from product-import.csv`)
+
+  // A CSV has no column for how an option is drawn. Each colourway has its own photos, so the
+  // storefront draws Color as image swatches.
+  const [colorOption] = await productService.listProductOptions({ title: 'Color' })
+  if (colorOption) await productService.updateProductOption(colorOption.id, { renderAs: 'swatch' })
 
   // --- The low-stock alert, produced rather than written ---
   // The notification is the subscriber's, not the seed's: it does the threshold comparison, writes
   // the body and links to the variant, so a dev database shows the real thing rather than a fixture
   // that can drift from it.
   //
-  // Delivered to the handler directly rather than through `bus.emit`, because this script boots the
-  // node root, whose bus is Temporal-backed — an emitted event would sit on `proteus-events` until
-  // someone ran `worker:events`, and seeding has to be self-contained. Through `defineSubscriber`
-  // for the reason the generated registry calls it: that erased handler is what an adapter invokes.
-  const lowStockItem = createdItems.find((item) => item.sku === LOW_STOCK_SKU)
-  const lowStockLevel = createdLevels.find((level) => level.inventoryItemId === lowStockItem?.id)
+  // Delivered to the handler directly rather than through `bus.emit`, because this script's bus is
+  // Temporal-backed — an emitted event would sit on `proteus-events` until someone ran
+  // `worker:events`, and seeding has to be self-contained. Through `defineSubscriber` for the reason
+  // the generated registry calls it: that erased handler is what an adapter invokes.
+  const [lowStockItem] = await inventoryService.listInventoryItems({ sku: LOW_STOCK_SKU })
+  const [lowStockLevel] = lowStockItem
+    ? await inventoryService.listInventoryLevels({ inventoryItemId: lowStockItem.id, locationId: stockLocation.id })
+    : []
+  if (!lowStockLevel) throw new Error(`Expected product-import.csv to stock ${LOW_STOCK_SKU}`)
 
-  if (lowStockLevel) {
-    await defineSubscriber(alertLowStock).handler({
-      event: buildEvent(
-        'inventory.available_decreased',
-        {
-          id: lowStockLevel.id,
-          version: lowStockLevel.version,
-          stockedQuantity: lowStockLevel.stockedQuantity,
-          reservedQuantity: lowStockLevel.reservedQuantity,
-        },
-        alertLowStock.name,
-      ),
-      container,
-    })
-    console.info(`Delivered the low-stock event for ${LOW_STOCK_SKU} — "${alertLowStock.name}" wrote the alert`)
-  }
+  await defineSubscriber(alertLowStock).handler({
+    event: buildEvent(
+      'inventory.available_decreased',
+      {
+        id: lowStockLevel.id,
+        version: lowStockLevel.version,
+        stockedQuantity: lowStockLevel.stockedQuantity,
+        reservedQuantity: lowStockLevel.reservedQuantity,
+      },
+      alertLowStock.name,
+    ),
+    container,
+  })
+  console.info(`Delivered the low-stock event for ${LOW_STOCK_SKU} — "${alertLowStock.name}" wrote the alert`)
 
   // --- Cart with line items (for testing payment endpoints) ---
   const existingCarts = await cartService.listCarts()
   if (existingCarts.length === 0) {
-    const tshirt = productByHandle.get('mens-t-shirt')
-    const hoodie = productByHandle.get('hoodie')
-    const tshirtVariant = createdVariants.find((v) => v.sku === 'MENS-TSHIRT-M-GREEN')
-    const hoodieVariant = createdVariants.find((v) => v.sku === 'HOODIE-L-OLIVE')
-    if (!tshirt || !hoodie || !tshirtVariant || !hoodieVariant) {
-      throw new Error('Expected the seeded catalog to contain the cart line item variants')
-    }
+    const CART_LINES = [
+      { sku: 'MENTSHIRT-MEDIUM-GREEN', quantity: 2 },
+      { sku: 'HOODIEOLD-LARGE-OLIVE', quantity: 1 },
+    ]
+    const variants = await productService.listProductVariants({ sku: CART_LINES.map((line) => line.sku) })
+    const cartProducts = await productService.listProducts({ id: variants.map((variant) => variant.productId) })
+    const importedVariants = products.flatMap((product) => product.variants)
 
-    const [cart] = (await cartService.createCarts([
-      {
-        currencyCode: 'usd',
-        email: 'test@example.com',
-        items: [
-          {
-            title: "Men's T-shirt (Green / M)",
-            quantity: 2,
-            unitPrice: new BigNumber(4000),
-            variantId: tshirtVariant.id,
-            variantSku: tshirtVariant.sku,
-            productId: tshirt.id,
-            productTitle: "Men's T-shirt",
-          },
-          {
-            title: 'Hoodie (Olive / L)',
-            quantity: 1,
-            unitPrice: new BigNumber(9000),
-            variantId: hoodieVariant.id,
-            variantSku: hoodieVariant.sku,
-            productId: hoodie.id,
-            productTitle: 'Hoodie',
-          },
-        ],
-      },
-    ])) as [Awaited<ReturnType<typeof cartService.createCarts>>[number]]
+    const items = CART_LINES.map(({ sku, quantity }) => {
+      const variant = variants.find((candidate) => candidate.sku === sku)
+      const product = cartProducts.find((candidate) => candidate.id === variant?.productId)
+      const price = importedVariants
+        .find((candidate) => candidate.sku === sku)
+        ?.prices.find((candidate) => candidate.currencyCode === 'usd')
+      if (!variant || !product || !price) {
+        throw new Error(`Expected product-import.csv to contain the cart line item variant ${sku}`)
+      }
+      return {
+        title: `${product.title} (${variant.title})`,
+        quantity,
+        unitPrice: new BigNumber(price.amount),
+        variantId: variant.id,
+        variantSku: variant.sku,
+        productId: product.id,
+        productTitle: product.title,
+      }
+    })
 
-    console.info(`Seeded cart ${cart.id} with 2 line items (total: $170.00)`)
+    const [cart] = await cartService.createCarts([{ currencyCode: 'usd', email: 'test@example.com', items }])
+    const total = items.reduce((sum, item) => sum.plus(item.unitPrice.times(item.quantity)), new BigNumber(0))
+    console.info(`Seeded cart ${cart?.id} with ${items.length} line items (total: $${total.toFixed(2)})`)
   } else {
     console.info(`Skipped cart (${existingCarts.length} already exist)`)
   }
