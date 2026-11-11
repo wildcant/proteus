@@ -458,8 +458,6 @@ export type ImportedProductDTO = {
   description: string | null
   status: ProductStatusType
   type: string | null
-  categoryHandles: string[]
-  collectionHandles: string[]
   tags: string[]
   options: Array<{ title: string; values: string[] }>
   variants: ImportedVariantDTO[]
@@ -471,8 +469,8 @@ export type ProductImportSummaryDTO = {
   products: { create: number; update: number; skip: number }
   skus: number
   images: number
-  /** Groupings the file names that do not exist yet, created when the import runs. */
-  willCreate: { categories: string[]; collections: string[]; tags: string[]; types: string[] }
+  /** Tags and types the file names that do not exist yet, created when the import runs. */
+  willCreate: { tags: string[]; types: string[] }
   /** Columns present in the file that the import does not read. */
   ignoredColumns: string[]
   firstProduct: ImportedProductDTO | null
@@ -524,8 +522,6 @@ export type ProductImportReferencesDTO = {
   /** The live product with the same handle, if any. */
   existingProductId: string | null
   typeId: string | null
-  categoryIds: string[]
-  collectionIds: string[]
   tagIds: string[]
   /** In the product's option order; `valueIds` line up with `ImportedProductDTO.options[].values`. */
   options: Array<{ optionId: string; valueIds: string[] }>

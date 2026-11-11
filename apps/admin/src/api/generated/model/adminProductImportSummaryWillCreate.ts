@@ -7,8 +7,6 @@
  */
 
 export type AdminProductImportSummaryWillCreate = {
-  categories: string[];
-  collections: string[];
   tags: string[];
   types: string[];
 };

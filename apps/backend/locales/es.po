@@ -593,17 +593,17 @@ msgid "This collection's products follow its tag rule. Change the rule or the pr
 msgstr "Los productos de esta colección siguen su regla de etiquetas. Cambia la regla o las etiquetas de los productos."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:161
+#: src/modules/product/services/product-import-service.ts:130
 msgid "This import has errors. Fix the file and upload it again."
 msgstr "Esta importación tiene errores. Corrige el archivo y súbelo de nuevo."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:167
+#: src/modules/product/services/product-import-service.ts:136
 msgid "This import has expired. Upload the file again."
 msgstr "Esta importación ha caducado. Sube el archivo de nuevo."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:325
+#: src/modules/product/services/product-import-service.ts:269
 msgid "Only an import waiting in preview can be confirmed or canceled."
 msgstr "Solo se puede confirmar o cancelar una importación en vista previa."
 

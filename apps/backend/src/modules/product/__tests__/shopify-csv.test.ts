@@ -23,10 +23,10 @@ const parse = (lines: string[], overrides: Partial<ProductImportSettingsDTO> = {
   parseShopifyCsv(streamOf(`${lines.join('\n')}\n`), { ...settings, ...overrides })
 
 test.describe('parseShopifyCsv', () => {
-  test('groups rows by handle into products with their variants, prices, groupings and gallery', async ({ expect }) => {
+  test('groups rows by handle into products with their variants, prices, tags and gallery', async ({ expect }) => {
     const { products, errors, ignoredColumns } = await parse([
       HEADER,
-      'Hoodie,hoodie,"<p>Warm,\nsoft</p>",Proteus,Hoodie,"categoria:mens-sweatshirts, coleccion:essentials, cotton",Active,HOODIE-S-GREEN,Color,Green,Size,S,90,360000,shopify,100,DENY,400,https://cdn.example.com/b.jpg,2,https://cdn.example.com/a.jpg',
+      'Hoodie,hoodie,"<p>Warm,\nsoft</p>",Proteus,Hoodie,"genero:hombre, coleccion:essentials, cotton, , cotton",Active,HOODIE-S-GREEN,Color,Green,Size,S,90,360000,shopify,100,DENY,400,https://cdn.example.com/b.jpg,2,https://cdn.example.com/a.jpg',
       ',hoodie,,,,,,HOODIE-M-GREEN,,Green,,M,"90,50",,shopify,5,CONTINUE,400,https://cdn.example.com/a.jpg,1,',
       ',hoodie,,,,,,,,,,,,,,,,,https://cdn.example.com/c.jpg,3,',
       'Cap,cap,,,,,draft,CAP-1,Title,Default Title,,,10,,,,,,,,',
@@ -44,9 +44,8 @@ test.describe('parseShopifyCsv', () => {
       description: '<p>Warm,\nsoft</p>',
       status: 'published',
       type: 'Hoodie',
-      categoryHandles: ['mens-sweatshirts'],
-      collectionHandles: ['essentials'],
-      tags: ['cotton'],
+      // Prefixed tags are plain tags, kept as written; blanks and repeats are dropped.
+      tags: ['genero:hombre', 'coleccion:essentials', 'cotton'],
       options: [
         { title: 'Color', values: ['Green'] },
         { title: 'Size', values: ['S', 'M'] },

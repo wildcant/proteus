@@ -7,15 +7,7 @@ import type {
   ProductImportErrorDTO,
   ProductImportSettingsDTO,
 } from '../../../../core/types/product/common.js'
-import {
-  CATEGORY_TAG_PREFIX,
-  COLLECTION_TAG_PREFIX,
-  IMPORT_COLUMNS,
-  type ImportColumn,
-  MARKET_PRICE_HEADER,
-  normalizeHeader,
-  OPTION_COLUMNS,
-} from './columns.js'
+import { IMPORT_COLUMNS, type ImportColumn, MARKET_PRICE_HEADER, normalizeHeader, OPTION_COLUMNS } from './columns.js'
 
 const MAX_IMPORT_FILE_BYTES = 15 * 1024 * 1024
 
@@ -268,7 +260,6 @@ function startProduct(
     report(`The status "${get('status')}" is not one of active, draft or archived.`)
   }
 
-  const groupings = readTags(get('tags'))
   const optionNames = OPTION_COLUMNS.map(({ name }) => get(name)).filter(Boolean)
   // Shopify's way of saying "no options": a single `Title` option whose one value is `Default Title`.
   const hasNoOptions = optionNames.length === 1 && optionNames[0] === 'Title' && get('option1Value') === 'Default Title'
@@ -281,7 +272,7 @@ function startProduct(
     description: get('description') || null,
     status: (status === '' || status === 'active') && settings.publish ? 'published' : 'draft',
     type: get('type') || null,
-    ...groupings,
+    tags: readTags(get('tags')),
     options: hasNoOptions ? [] : optionNames.map((title) => ({ title, values: [] })),
     variants: [],
     imageUrls: [],
@@ -290,25 +281,12 @@ function startProduct(
   }
 }
 
-/** `categoria:x` and `coleccion:x` name groupings by handle; anything else is a plain tag. */
-function readTags(raw: string): Pick<ImportedProductDTO, 'categoryHandles' | 'collectionHandles' | 'tags'> {
-  const categoryHandles = new Set<string>()
-  const collectionHandles = new Set<string>()
-  const tags = new Set<string>()
-  for (const entry of raw.split(',')) {
-    const tag = entry.trim()
-    if (!tag) continue
-    const lower = tag.toLowerCase()
-    if (lower.startsWith(CATEGORY_TAG_PREFIX)) categoryHandles.add(tag.slice(CATEGORY_TAG_PREFIX.length).trim())
-    else if (lower.startsWith(COLLECTION_TAG_PREFIX)) {
-      collectionHandles.add(tag.slice(COLLECTION_TAG_PREFIX.length).trim())
-    } else tags.add(tag)
-  }
-  return {
-    categoryHandles: [...categoryHandles].filter(Boolean),
-    collectionHandles: [...collectionHandles].filter(Boolean),
-    tags: [...tags],
-  }
+/**
+ * Every tag is a plain tag, `genero:hombre` included: the structure file's rules read them to place
+ * the product in categories and collections, so the import never names a grouping itself.
+ */
+function readTags(raw: string): string[] {
+  return [...new Set(raw.split(',').map((entry) => entry.trim()))].filter(Boolean)
 }
 
 /**

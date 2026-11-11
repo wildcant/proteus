@@ -22,8 +22,6 @@ export type AdminImportedProduct = {
   status: AdminImportedProductStatus;
   /** @nullable */
   type: string | null;
-  categoryHandles: string[];
-  collectionHandles: string[];
   tags: string[];
   options: AdminImportedProductOptionsItem[];
   variants: AdminImportedVariant[];

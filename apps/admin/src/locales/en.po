@@ -415,8 +415,6 @@ msgstr "Capture payments"
 #: src/components/layout/use-sidebar-label.ts:14
 #: src/features/categories/components/category-tree-list.tsx:19
 #: src/features/categories/components/product-categories-picker.tsx:20
-#: src/features/products/components/import-products/import-preview-step.tsx:147
-#: src/features/products/components/import-products/import-preview-step.tsx:192
 #: src/features/products/components/product-organization-section.tsx:30
 #: src/routes/_authed/_shell/categories/route.tsx:5
 msgid "Categories"
@@ -465,8 +463,6 @@ msgstr "Code"
 
 #: src/components/layout/use-sidebar-label.ts:15
 #: src/features/collections/components/collections-combobox.tsx:15
-#: src/features/products/components/import-products/import-preview-step.tsx:148
-#: src/features/products/components/import-products/import-preview-step.tsx:193
 #: src/features/products/components/product-organization-section.tsx:31
 #: src/routes/_authed/_shell/collections/index.tsx:24
 #: src/routes/_authed/_shell/collections/route.tsx:5
@@ -699,7 +695,7 @@ msgstr "Dashboard"
 msgid "Date"
 msgstr "Date"
 
-#: src/features/products/components/import-products/import-preview-step.tsx:218
+#: src/features/products/components/import-products/import-preview-step.tsx:209
 #: src/features/store/hooks/use-store-currency-table.tsx:52
 #: src/features/store/hooks/use-store-currency-table.tsx:53
 msgid "Default"
@@ -824,7 +820,7 @@ msgstr "Descending"
 #: src/features/categories/components/create-category-form.tsx:42
 #: src/features/categories/components/edit-category-form.tsx:29
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:36
-#: src/features/products/components/import-products/import-preview-step.tsx:185
+#: src/features/products/components/import-products/import-preview-step.tsx:178
 #: src/features/products/components/product-general-section.tsx:50
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
 msgid "Description"
@@ -1453,8 +1449,8 @@ msgid "Import"
 msgstr "Import"
 
 #: src/features/products/components/import-products/import-upload-step.tsx:50
-msgid "Import a CSV file in the Shopify product format, one row per variant. Tag a product <0>categoria:handle</0> or <1>coleccion:handle</1> to place it in a category or collection."
-msgstr "Import a CSV file in the Shopify product format, one row per variant. Tag a product <0>categoria:handle</0> or <1>coleccion:handle</1> to place it in a category or collection."
+msgid "Import a CSV file in the Shopify product format, one row per variant. Tags such as <0>genero:hombre</0> are kept as written; the rules in the store structure use them to place products in categories and collections."
+msgstr "Import a CSV file in the Shopify product format, one row per variant. Tags such as <0>genero:hombre</0> are kept as written; the rules in the store structure use them to place products in categories and collections."
 
 #: src/features/products/components/import-products/import-progress-step.tsx:23
 msgid "Import failed"
@@ -1763,10 +1759,6 @@ msgstr "Name"
 #: src/features/product-types/components/create-product-type-form.tsx:13
 msgid "Name what a product is. A product has one type."
 msgstr "Name what a product is. A product has one type."
-
-#: src/features/products/components/import-products/import-preview-step.tsx:169
-msgid "New categories are created active, at the top of the category tree."
-msgstr "New categories are created active, at the top of the category tree."
 
 #: src/features/products/components/import-products/import-preview-step.tsx:131
 msgid "New products will be <0>published</0>."
@@ -2193,7 +2185,7 @@ msgstr "Prev"
 msgid "Preview your first product"
 msgstr "Preview your first product"
 
-#: src/features/products/components/import-products/import-preview-step.tsx:211
+#: src/features/products/components/import-products/import-preview-step.tsx:202
 msgid "Price"
 msgstr "Price"
 
@@ -2616,7 +2608,7 @@ msgstr "Skipped"
 #: src/features/inventory/hooks/use-inventory-table.tsx:35
 #: src/features/inventory/hooks/use-reservation-table.tsx:31
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:27
-#: src/features/products/components/import-products/import-preview-step.tsx:205
+#: src/features/products/components/import-products/import-preview-step.tsx:196
 #: src/features/products/components/variant/create-variant-form.tsx:103
 #: src/features/products/components/variant/edit-variant-form.tsx:77
 #: src/features/products/components/variant/variant-general-section.tsx:42
@@ -2628,7 +2620,7 @@ msgstr "SKU"
 #: src/features/orders/hooks/use-order-table.tsx:35
 #: src/features/orders/hooks/use-order-table.tsx:54
 #: src/features/product-options/hooks/use-option-products-table.tsx:24
-#: src/features/products/components/import-products/import-preview-step.tsx:188
+#: src/features/products/components/import-products/import-preview-step.tsx:181
 #: src/features/products/hooks/use-product-list-table.tsx:34
 #: src/features/products/hooks/use-product-table.tsx:31
 #: src/features/products/hooks/use-product-table.tsx:42
@@ -2681,8 +2673,8 @@ msgstr "System"
 
 #: src/components/layout/use-sidebar-label.ts:16
 #: src/features/product-tags/components/product-tags-combobox.tsx:17
-#: src/features/products/components/import-products/import-preview-step.tsx:149
-#: src/features/products/components/import-products/import-preview-step.tsx:194
+#: src/features/products/components/import-products/import-preview-step.tsx:147
+#: src/features/products/components/import-products/import-preview-step.tsx:185
 #: src/features/products/components/product-organization-section.tsx:32
 #: src/routes/_authed/_shell/product-tags/index.tsx:21
 #: src/routes/_authed/_shell/product-tags/route.tsx:5
@@ -2733,7 +2725,7 @@ msgstr "These products were not imported"
 msgid "This changes the live storefront URLs for {countryName}. Links to the current ones stop resolving — nothing redirects them."
 msgstr "This changes the live storefront URLs for {countryName}. Links to the current ones stop resolving — nothing redirects them."
 
-#: src/features/products/components/import-products/import-preview-step.tsx:158
+#: src/features/products/components/import-products/import-preview-step.tsx:156
 msgid "This import will create"
 msgstr "This import will create"
 
@@ -2779,7 +2771,7 @@ msgstr "Thumbnail"
 #: src/features/product-options/hooks/use-product-option-table.tsx:21
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:28
 #: src/features/products/components/edit-product-form.tsx:27
-#: src/features/products/components/import-products/import-preview-step.tsx:184
+#: src/features/products/components/import-products/import-preview-step.tsx:177
 #: src/features/products/components/variant/create-variant-form.tsx:95
 #: src/features/products/components/variant/edit-variant-form.tsx:47
 #: src/features/products/hooks/use-image-variants-table.tsx:32
@@ -2851,7 +2843,7 @@ msgid "Try requesting a new invite link."
 msgstr "Try requesting a new invite link."
 
 #: src/features/product-types/components/product-type-combobox.tsx:17
-#: src/features/products/components/import-products/import-preview-step.tsx:191
+#: src/features/products/components/import-products/import-preview-step.tsx:184
 #: src/features/products/components/product-organization-section.tsx:29
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:64
 msgid "Type"
@@ -2871,7 +2863,7 @@ msgid "Type to add one."
 msgstr "Type to add one."
 
 #: src/components/layout/use-sidebar-label.ts:17
-#: src/features/products/components/import-products/import-preview-step.tsx:150
+#: src/features/products/components/import-products/import-preview-step.tsx:148
 #: src/routes/_authed/_shell/product-types/index.tsx:21
 #: src/routes/_authed/_shell/product-types/route.tsx:5
 msgid "Types"
@@ -2943,7 +2935,7 @@ msgstr "Values"
 #: src/features/inventory/hooks/use-inventory-table.tsx:34
 #: src/features/inventory/hooks/use-reservation-table.tsx:30
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:26
-#: src/features/products/components/import-products/import-preview-step.tsx:202
+#: src/features/products/components/import-products/import-preview-step.tsx:193
 msgid "Variant"
 msgstr "Variant"
 
@@ -3022,7 +3014,7 @@ msgid "View users"
 msgstr "View users"
 
 #: src/features/products/components/create-product-form/product-create-attributes-form.tsx:42
-#: src/features/products/components/import-products/import-preview-step.tsx:208
+#: src/features/products/components/import-products/import-preview-step.tsx:199
 #: src/features/products/components/product-attribute-section.tsx:30
 msgid "Weight"
 msgstr "Weight"

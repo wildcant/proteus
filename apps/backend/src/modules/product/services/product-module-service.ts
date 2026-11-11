@@ -173,7 +173,7 @@ export class ProductModuleService implements IProductModuleService {
     this.productOptionService = new ProductOptionService(dependencies)
     this.productCategoryService = new ProductCategoryService(dependencies)
     this.productGroupingService = new ProductGroupingService(dependencies)
-    this.productImportService = new ProductImportService(dependencies, this.productCategoryService)
+    this.productImportService = new ProductImportService(dependencies)
     this.productRuleMembershipService = new ProductRuleMembershipService(dependencies)
   }
 
