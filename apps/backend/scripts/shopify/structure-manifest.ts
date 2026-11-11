@@ -4,20 +4,31 @@ import type {
   CatalogStructureCategoryDTO,
   CatalogStructureDTO,
   ProductGroupingRuleDTO,
+  ProductMetafieldType,
 } from '../../src/core/types/product/common.js'
 import { parseCatalogStructure } from '../../src/modules/product/utils/catalog-structure/parse-catalog-structure.js'
 
 /**
- * Turns a structure file into what the Shopify admin needs: one automated collection per Category
- * and Collection, and the nested main menu. The `shopify-sync` skill applies it.
+ * Turns a structure file into what the Shopify admin needs: the product metafield definitions its
+ * rules read, one automated collection per Category and Collection, and the nested main menu. The
+ * `shopify-sync` skill applies it.
  *
  *   pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [estructura.yaml]
  *
  * Prints the manifest as JSON; with no path it reads the seed `catalog-structure.yaml`.
  */
 
-/** Shopify's "Etiqueta" condition list, matched on all conditions or on any of them. */
-type ShopifyCollectionRule = { applies: 'all' | 'any'; tags: string[] }
+/**
+ * A product metafield definition. Every one is created as a collection condition and a storefront
+ * filter, which is what Proteus' rules and facets read it for.
+ */
+type ShopifyMetafieldDefinition = { name: string; namespace: 'custom'; key: string; type: ProductMetafieldType }
+
+/** One metafield condition: the product's `metafield` (`custom.genero`) list holds `value`. */
+type ShopifyCollectionCondition = { metafield: string; value: string }
+
+/** A smart collection's conditions, matched on all of them or on any of them. */
+type ShopifyCollectionRule = { applies: 'all' | 'any'; conditions: ShopifyCollectionCondition[] }
 
 /**
  * `rule` null is a manual collection: the file gives no rule, or one Shopify can't express, and then
@@ -32,7 +43,11 @@ type ShopifyCollection = {
 
 type ShopifyMenuItem = { title: string; collectionHandle: string; children: ShopifyMenuItem[] }
 
-type ShopifyStructureManifest = { collections: ShopifyCollection[]; menu: ShopifyMenuItem[] }
+type ShopifyStructureManifest = {
+  metafields: ShopifyMetafieldDefinition[]
+  collections: ShopifyCollection[]
+  menu: ShopifyMenuItem[]
+}
 
 const DEFAULT_STRUCTURE_PATH = path.join(import.meta.dirname, '../seed/catalog-structure.yaml')
 
@@ -73,34 +88,46 @@ export function buildStructureManifest(structure: CatalogStructureDTO): ShopifyS
     return title === undefined ? [] : [{ title, collectionHandle: entry.handle, children: [] }]
   })
 
-  return { collections, menu }
+  const metafields = structure.metafields.map(
+    ({ name, key }): ShopifyMetafieldDefinition => ({
+      name,
+      namespace: 'custom',
+      key,
+      type: 'list.single_line_text_field',
+    }),
+  )
+
+  return { metafields, collections, menu }
 }
 
 /**
- * Shopify takes either all-of single tags or any-of tags. Every condition holding one tag is the
- * first; a single condition of several tags is the second. Anything else mixes the two. Each
- * metafield value is written as the tag `<key>:<value>`, the shape the seed CSV tags carry.
+ * A Shopify collection matches all of its conditions or any of them. A rule whose keys each hold one
+ * value is the first; a rule of one key with several values is the second. Anything else mixes the two.
  */
 function toCollection(title: string, handle: string, metafieldRule: ProductGroupingRuleDTO | null): ShopifyCollection {
   if (metafieldRule === null) return { title, handle, rule: null }
-  const rule = Object.entries(metafieldRule).map(([key, values]) => values.map((value) => `${key}:${value}`))
+  const rule = Object.entries(metafieldRule).map(([key, values]) =>
+    values.map((value) => ({ metafield: `custom.${key}`, value })),
+  )
 
   if (rule.every((condition) => condition.length === 1)) {
-    return { title, handle, rule: { applies: 'all', tags: [...new Set(rule.flat())] } }
+    return { title, handle, rule: { applies: 'all', conditions: rule.flat() } }
   }
   const [condition, ...rest] = rule
   if (condition && rest.length === 0) {
-    return { title, handle, rule: { applies: 'any', tags: [...new Set(condition)] } }
+    return { title, handle, rule: { applies: 'any', conditions: condition } }
   }
 
-  const written = `[${rule.map((group) => `[${group.join(', ')}]`).join(', ')}]`
+  const written = Object.entries(metafieldRule)
+    .map(([key, values]) => `${key}: [${values.join(', ')}]`)
+    .join(', ')
   return {
     title,
     handle,
     rule: null,
     unsupported:
-      `The rule ${written} mixes "all" and "any": a Shopify collection matches all of its conditions or any of ` +
-      'them, never both. Tag the products so each condition is one tag, or make it a single list of alternatives.',
+      `The rule { ${written} } mixes "all" and "any": a Shopify collection matches all of its conditions or any ` +
+      'of them, never both. Give each key one value, or make the rule a single key with its alternatives.',
   }
 }
 

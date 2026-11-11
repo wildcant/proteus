@@ -43,29 +43,46 @@ test.describe('buildStructureManifest', () => {
       ]),
     )
 
+    expect(manifest.metafields).toEqual([
+      { name: 'Género', namespace: 'custom', key: 'genero', type: 'list.single_line_text_field' },
+      { name: 'Estilo', namespace: 'custom', key: 'estilo', type: 'list.single_line_text_field' },
+      { name: 'Colección', namespace: 'custom', key: 'coleccion', type: 'list.single_line_text_field' },
+    ])
     expect(manifest.collections).toEqual([
       {
         title: 'Hombre',
         handle: 'hombre',
-        rule: { applies: 'any', tags: ['genero:hombre', 'genero:unisex'] },
+        rule: {
+          applies: 'any',
+          conditions: [
+            { metafield: 'custom.genero', value: 'hombre' },
+            { metafield: 'custom.genero', value: 'unisex' },
+          ],
+        },
       },
       {
         title: 'Hombre › Clásicos',
         handle: 'hombre-clasicos',
         rule: null,
         unsupported:
-          'The rule [[genero:hombre, genero:unisex], [estilo:clasicos]] mixes "all" and "any": a Shopify collection matches all of its conditions or any of them, never both. Tag the products so each condition is one tag, or make it a single list of alternatives.',
+          'The rule { genero: [hombre, unisex], estilo: [clasicos] } mixes "all" and "any": a Shopify collection matches all of its conditions or any of them, never both. Give each key one value, or make the rule a single key with its alternatives.',
       },
       { title: 'Hombre › Ofertas', handle: 'hombre-ofertas', rule: null },
       {
         title: 'Mujer',
         handle: 'mujer',
-        rule: { applies: 'all', tags: ['genero:mujer', 'estilo:clasicos'] },
+        rule: {
+          applies: 'all',
+          conditions: [
+            { metafield: 'custom.genero', value: 'mujer' },
+            { metafield: 'custom.estilo', value: 'clasicos' },
+          ],
+        },
       },
       {
         title: 'Selección de Don Juan',
         handle: 'seleccion-de-don-juan',
-        rule: { applies: 'all', tags: ['coleccion:seleccion-de-don-juan'] },
+        rule: { applies: 'all', conditions: [{ metafield: 'custom.coleccion', value: 'seleccion-de-don-juan' }] },
       },
     ])
     expect(manifest.menu).toEqual([
@@ -91,8 +108,15 @@ test.describe('buildStructureManifest', () => {
     expect(manifest.collections.find((collection) => collection.handle === 'men-tops')).toEqual({
       title: 'Men › Tops',
       handle: 'men-tops',
-      rule: { applies: 'all', tags: ['genero:men', 'tipo:tops'] },
+      rule: {
+        applies: 'all',
+        conditions: [
+          { metafield: 'custom.genero', value: 'men' },
+          { metafield: 'custom.tipo', value: 'tops' },
+        ],
+      },
     })
+    expect(manifest.metafields.map((metafield) => metafield.key)).toEqual(['genero', 'tipo', 'colecciones'])
     expect(manifest.collections).toHaveLength(16)
     expect(manifest.menu.map((item) => [item.title, item.children.map((child) => child.title)])).toEqual([
       ['Men', ['Tops', 'Bottoms', 'Shoes', 'Accessories']],
