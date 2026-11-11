@@ -19,8 +19,11 @@ async function* streamOf(text: string, pieceSize = 7): AsyncGenerator<Uint8Array
   for (let offset = 0; offset < bytes.length; offset += pieceSize) yield bytes.slice(offset, offset + pieceSize)
 }
 
-const parse = (lines: string[], overrides: Partial<ProductImportSettingsDTO> = {}) =>
-  parseShopifyCsv(streamOf(`${lines.join('\n')}\n`), { ...settings, ...overrides })
+const parse = (
+  lines: string[],
+  overrides: Partial<ProductImportSettingsDTO> = {},
+  definedMetafieldKeys: string[] = [],
+) => parseShopifyCsv(streamOf(`${lines.join('\n')}\n`), { ...settings, ...overrides }, new Set(definedMetafieldKeys))
 
 test.describe('parseShopifyCsv', () => {
   test('groups rows by handle into products with their variants, prices, tags and gallery', async ({ expect }) => {
@@ -108,9 +111,50 @@ test.describe('parseShopifyCsv', () => {
       products: [],
       errors: [{ line: 1, handle: null, message: 'The file is missing the "URL handle" column.' }],
       ignoredColumns: [],
+      metafieldKeys: [],
     })
     expect(unknownMarket.errors).toEqual([
       { line: 1, handle: null, message: 'The column "Price / Atlantis" names a market the store does not sell in.' },
+    ])
+  })
+
+  test('reads custom metafield columns one value per line, ignores Shopify’s own, and refuses an undefined key', async ({
+    expect,
+  }) => {
+    const header =
+      'Title,URL handle,Tags,Género (product.metafields.custom.genero),Tipo (product.metafields.custom.tipo),Color (product.metafields.shopify.color-pattern)'
+    const { products, errors, ignoredColumns, metafieldKeys } = await parse(
+      [
+        header,
+        // A list cell is one value per line; a comma is part of the value, blanks and repeats drop.
+        'Sweatpants,sweatpants,cotton,"men\nunisex\n\nmen","bottoms, lounge",gray',
+        // Only the first row of a product is read.
+        ',sweatpants,,women,tops,',
+        // An empty cell is an empty list: on overwrite it clears the metafield.
+        'Cap,cap,,,accessories,',
+      ],
+      {},
+      ['genero', 'tipo'],
+    )
+
+    expect(errors).toEqual([])
+    expect(metafieldKeys).toEqual(['genero', 'tipo'])
+    expect(ignoredColumns).toEqual(['Color (product.metafields.shopify.color-pattern)'])
+    expect(products.map((product) => [product.handle, product.metafields])).toEqual([
+      ['sweatpants', { genero: ['men', 'unisex'], tipo: ['bottoms, lounge'] }],
+      ['cap', { genero: [], tipo: ['accessories'] }],
+    ])
+    // Tags stay free words beside the metafields.
+    expect(products[0]?.tags).toEqual(['cotton'])
+
+    const undefinedKey = await parse([header, 'Cap,cap,,men,accessories,'], {}, ['tipo'])
+    expect(undefinedKey.errors).toEqual([
+      {
+        line: 1,
+        handle: null,
+        message:
+          'The column "Género (product.metafields.custom.genero)" is the metafield "genero", which the store does not define. Declare the campo "genero" in the structure file first.',
+      },
     ])
   })
 
@@ -118,6 +162,7 @@ test.describe('parseShopifyCsv', () => {
     const { products, errors } = await parseShopifyCsv(
       streamOf('﻿TITLE;Url Handle;Price\nHoodie;hoodie;9,99\n', 3),
       settings,
+      new Set(),
     )
 
     expect(errors).toEqual([])
@@ -139,7 +184,7 @@ test.describe('parseShopifyCsv', () => {
     const row = 'Hoodie,hoodie,,,,,active,H-1,,,,,10,,,,,,,,\n'
     const text = `${HEADER}\n${row.repeat(Math.ceil((15 * 1024 * 1024) / row.length) + 1)}`
 
-    const { products, errors } = await parseShopifyCsv(streamOf(text, 64 * 1024), settings)
+    const { products, errors } = await parseShopifyCsv(streamOf(text, 64 * 1024), settings, new Set())
 
     expect(products).toEqual([])
     expect(errors).toEqual([{ line: 1, handle: null, message: 'The file is larger than 15 MB.' }])

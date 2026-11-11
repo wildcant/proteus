@@ -45,6 +45,8 @@ export const AdminImportedProduct = z
     status: ProductStatus,
     type: z.string().nullable(),
     tags: z.array(z.string()),
+    /** Values by key for each metafield column in the file; `[]` is an empty cell, which clears it. */
+    metafields: z.record(z.string(), z.array(z.string())),
     options: z.array(z.object({ title: z.string(), values: z.array(z.string()) })),
     variants: z.array(AdminImportedVariant),
     imageUrls: z.array(z.string()),
@@ -64,6 +66,8 @@ export const AdminProductImportSummary = z
     }),
     /** Columns in the file the import does not read. */
     ignoredColumns: z.array(z.string()),
+    /** The metafields the file has a column for, with the name the store gives each. */
+    metafields: z.array(z.object({ key: z.string(), name: z.string() })),
     firstProduct: AdminImportedProduct.nullable(),
   })
   .openapi('AdminProductImportSummary')

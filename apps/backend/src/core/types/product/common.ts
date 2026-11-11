@@ -570,6 +570,11 @@ export type ImportedProductDTO = {
   status: ProductStatusType
   type: string | null
   tags: string[]
+  /**
+   * Values by key for each metafield column in the file, read from the product's first row. `[]` is
+   * an empty cell, which clears the metafield; a key without a column is absent and left alone.
+   */
+  metafields: Record<string, string[]>
   options: Array<{ title: string; values: string[] }>
   variants: ImportedVariantDTO[]
   /** In display order. */
@@ -584,6 +589,8 @@ export type ProductImportSummaryDTO = {
   willCreate: { tags: string[]; types: string[] }
   /** Columns present in the file that the import does not read. */
   ignoredColumns: string[]
+  /** The metafields the file has a column for, by key, with the name the store gives each. */
+  metafields: Array<{ key: string; name: string }>
   firstProduct: ImportedProductDTO | null
 }
 

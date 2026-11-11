@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AdminImportedProduct } from './adminImportedProduct.ts';
+import type { AdminProductImportSummaryMetafieldsItem } from './adminProductImportSummaryMetafieldsItem.ts';
 import type { AdminProductImportSummaryProducts } from './adminProductImportSummaryProducts.ts';
 import type { AdminProductImportSummaryWillCreate } from './adminProductImportSummaryWillCreate.ts';
 
@@ -15,5 +16,6 @@ export interface AdminProductImportSummary {
   images: number;
   willCreate: AdminProductImportSummaryWillCreate;
   ignoredColumns: string[];
+  metafields: AdminProductImportSummaryMetafieldsItem[];
   firstProduct: AdminImportedProduct | null;
 }

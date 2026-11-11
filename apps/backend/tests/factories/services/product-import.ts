@@ -50,6 +50,7 @@ export async function createProductImport(
       images: 0,
       willCreate: { tags: [], types: [] },
       ignoredColumns: [],
+      metafields: [],
       firstProduct: products[0] ?? null,
     },
     errors: [],

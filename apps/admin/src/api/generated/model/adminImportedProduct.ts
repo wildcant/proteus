@@ -5,6 +5,7 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminImportedProductMetafields } from './adminImportedProductMetafields.ts';
 import type { AdminImportedProductOptionsItem } from './adminImportedProductOptionsItem.ts';
 import type { AdminImportedProductStatus } from './adminImportedProductStatus.ts';
 import type { AdminImportedVariant } from './adminImportedVariant.ts';
@@ -23,6 +24,7 @@ export type AdminImportedProduct = {
   /** @nullable */
   type: string | null;
   tags: string[];
+  metafields: AdminImportedProductMetafields;
   options: AdminImportedProductOptionsItem[];
   variants: AdminImportedVariant[];
   imageUrls: string[];

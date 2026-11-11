@@ -5584,6 +5584,24 @@
               "type": "string"
             }
           },
+          "metafields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ]
+            }
+          },
           "firstProduct": {
             "$ref": "#/components/schemas/AdminImportedProduct"
           }
@@ -5594,6 +5612,7 @@
           "images",
           "willCreate",
           "ignoredColumns",
+          "metafields",
           "firstProduct"
         ]
       },
@@ -5642,6 +5661,15 @@
               "type": "string"
             }
           },
+          "metafields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
           "options": {
             "type": "array",
             "items": {
@@ -5685,6 +5713,7 @@
           "status",
           "type",
           "tags",
+          "metafields",
           "options",
           "variants",
           "imageUrls"

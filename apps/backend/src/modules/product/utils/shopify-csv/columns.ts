@@ -35,6 +35,15 @@ export const OPTION_COLUMNS = [
   { name: 'option3Name', value: 'option3Value' },
 ] as const
 
+/**
+ * `Género (product.metafields.custom.genero)` — a product metafield, by namespace and key. The name
+ * before the parenthesis is only a label; the key is what names the metafield.
+ */
+export const METAFIELD_HEADER = /^.*\(product\.metafields\.([^.\s]+)\.([^\s)]+)\)$/
+
+/** The namespace of a merchant's own metafields, the one the structure file's `campos` define. */
+export const CUSTOM_METAFIELD_NAMESPACE = 'custom'
+
 /** `Price / Colombia` — a price in the currency of the region the market names. */
 export const MARKET_PRICE_HEADER = /^price \/ (.+)$/
 
