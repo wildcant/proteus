@@ -1,5 +1,11 @@
 import type { BaseFilterable, OperatorMap } from '../common.js'
 
+/** One entry of the store's menu: a Category, which brings its children, or a Collection, by handle. */
+export type StoreNavigationEntryDTO = {
+  type: 'category' | 'collection'
+  handle: string
+}
+
 export type StoreDTO = {
   id: string
   name: string
@@ -11,6 +17,8 @@ export type StoreDTO = {
    * the shopper's "only N left" line — so the two cannot disagree about what low means.
    */
   lowStockThreshold: number | null
+  /** The store's menu, in order. Written by applying a structure file; a handle may name nothing live. */
+  navigation: StoreNavigationEntryDTO[]
   metadata: string | null
   createdAt: Date
   updatedAt: Date

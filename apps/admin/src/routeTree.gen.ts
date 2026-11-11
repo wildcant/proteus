@@ -50,6 +50,7 @@ import { Route as AuthedSettingsStoreEditRouteImport } from './routes/_authed/se
 import { Route as AuthedSettingsStoreCurrenciesRouteImport } from './routes/_authed/settings/store/currencies'
 import { Route as AuthedSettingsRolesCreateRouteImport } from './routes/_authed/settings/roles/create'
 import { Route as AuthedSettingsRegionsCreateRouteImport } from './routes/_authed/settings/regions/create'
+import { Route as AuthedShellProductsImportStructureRouteImport } from './routes/_authed/_shell/products/import-structure'
 import { Route as AuthedShellProductsImportRouteImport } from './routes/_authed/_shell/products/import'
 import { Route as AuthedShellProductsCreateRouteImport } from './routes/_authed/_shell/products/create'
 import { Route as AuthedShellProductTypesCreateRouteImport } from './routes/_authed/_shell/product-types/create'
@@ -337,6 +338,12 @@ const AuthedSettingsRegionsCreateRoute =
     id: '/create',
     path: '/create',
     getParentRoute: () => AuthedSettingsRegionsRouteRoute,
+  } as any)
+const AuthedShellProductsImportStructureRoute =
+  AuthedShellProductsImportStructureRouteImport.update({
+    id: '/import-structure',
+    path: '/import-structure',
+    getParentRoute: () => AuthedShellProductsRouteRoute,
   } as any)
 const AuthedShellProductsImportRoute =
   AuthedShellProductsImportRouteImport.update({
@@ -697,6 +704,7 @@ export interface FileRoutesByFullPath {
   '/product-types/create': typeof AuthedShellProductTypesCreateRoute
   '/products/create': typeof AuthedShellProductsCreateRoute
   '/products/import': typeof AuthedShellProductsImportRoute
+  '/products/import-structure': typeof AuthedShellProductsImportStructureRoute
   '/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
   '/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
@@ -770,6 +778,7 @@ export interface FileRoutesByTo {
   '/product-types/create': typeof AuthedShellProductTypesCreateRoute
   '/products/create': typeof AuthedShellProductsCreateRoute
   '/products/import': typeof AuthedShellProductsImportRoute
+  '/products/import-structure': typeof AuthedShellProductsImportStructureRoute
   '/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
   '/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
@@ -853,6 +862,7 @@ export interface FileRoutesById {
   '/_authed/_shell/product-types/create': typeof AuthedShellProductTypesCreateRoute
   '/_authed/_shell/products/create': typeof AuthedShellProductsCreateRoute
   '/_authed/_shell/products/import': typeof AuthedShellProductsImportRoute
+  '/_authed/_shell/products/import-structure': typeof AuthedShellProductsImportStructureRoute
   '/_authed/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
   '/_authed/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/_authed/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
@@ -950,6 +960,7 @@ export interface FileRouteTypes {
     | '/product-types/create'
     | '/products/create'
     | '/products/import'
+    | '/products/import-structure'
     | '/settings/regions/create'
     | '/settings/roles/create'
     | '/settings/store/currencies'
@@ -1023,6 +1034,7 @@ export interface FileRouteTypes {
     | '/product-types/create'
     | '/products/create'
     | '/products/import'
+    | '/products/import-structure'
     | '/settings/regions/create'
     | '/settings/roles/create'
     | '/settings/store/currencies'
@@ -1105,6 +1117,7 @@ export interface FileRouteTypes {
     | '/_authed/_shell/product-types/create'
     | '/_authed/_shell/products/create'
     | '/_authed/_shell/products/import'
+    | '/_authed/_shell/products/import-structure'
     | '/_authed/settings/regions/create'
     | '/_authed/settings/roles/create'
     | '/_authed/settings/store/currencies'
@@ -1458,6 +1471,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/regions/create'
       preLoaderRoute: typeof AuthedSettingsRegionsCreateRouteImport
       parentRoute: typeof AuthedSettingsRegionsRouteRoute
+    }
+    '/_authed/_shell/products/import-structure': {
+      id: '/_authed/_shell/products/import-structure'
+      path: '/import-structure'
+      fullPath: '/products/import-structure'
+      preLoaderRoute: typeof AuthedShellProductsImportStructureRouteImport
+      parentRoute: typeof AuthedShellProductsRouteRoute
     }
     '/_authed/_shell/products/import': {
       id: '/_authed/_shell/products/import'
@@ -2268,6 +2288,7 @@ interface AuthedShellProductsRouteRouteChildren {
   AuthedShellProductsIdRouteRoute: typeof AuthedShellProductsIdRouteRouteWithChildren
   AuthedShellProductsCreateRoute: typeof AuthedShellProductsCreateRoute
   AuthedShellProductsImportRoute: typeof AuthedShellProductsImportRoute
+  AuthedShellProductsImportStructureRoute: typeof AuthedShellProductsImportStructureRoute
   AuthedShellProductsIndexRoute: typeof AuthedShellProductsIndexRoute
 }
 
@@ -2277,6 +2298,8 @@ const AuthedShellProductsRouteRouteChildren: AuthedShellProductsRouteRouteChildr
       AuthedShellProductsIdRouteRouteWithChildren,
     AuthedShellProductsCreateRoute: AuthedShellProductsCreateRoute,
     AuthedShellProductsImportRoute: AuthedShellProductsImportRoute,
+    AuthedShellProductsImportStructureRoute:
+      AuthedShellProductsImportStructureRoute,
     AuthedShellProductsIndexRoute: AuthedShellProductsIndexRoute,
   }
 

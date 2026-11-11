@@ -21,6 +21,7 @@ import { createOrderShipmentWorkflow } from '../../../workflows/order/create-ord
 import { markOrderDeliveredWorkflow } from '../../../workflows/order/mark-order-delivered.js'
 import { createPaymentCollectionForCartWorkflow } from '../../../workflows/payment/create-payment-collection-for-cart.js'
 import { repricePaymentSessionWorkflow } from '../../../workflows/payment/reprice-payment-session.js'
+import { applyCatalogStructureWorkflow } from '../../../workflows/product/apply-catalog-structure.js'
 import { batchImageVariantsWorkflow } from '../../../workflows/product/batch-image-variants.js'
 import { batchVariantImagesWorkflow } from '../../../workflows/product/batch-variant-images.js'
 import { createProductImportWorkflow } from '../../../workflows/product/create-product-import.js'
@@ -55,6 +56,7 @@ export const GENERATED_WORKFLOWS: WorkflowDefinition<never, unknown>[] = [
   markOrderDeliveredWorkflow,
   createPaymentCollectionForCartWorkflow,
   repricePaymentSessionWorkflow,
+  applyCatalogStructureWorkflow,
   batchImageVariantsWorkflow,
   batchVariantImagesWorkflow,
   createProductImportWorkflow,
