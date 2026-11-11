@@ -11,6 +11,7 @@ export default [
     matcher: '/admin/uploads',
     handler: uploadRoutes.POST,
     throws: uploadRoutes.PostThrows,
+    input: uploadRoutes.PostInput,
     multipartBody: AdminUploadFiles,
     permissions: ['file.create'],
     operationId: 'uploadFiles',

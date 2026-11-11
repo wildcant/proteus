@@ -9,6 +9,31 @@ test.beforeEach(async ({ createApi }) => {
   api = await createApi({ definitions: uploadDefinitions })
 })
 
+test.describe('POST /admin/uploads', () => {
+  const uploadFile = (fields: Record<string, string>) => {
+    const request = api.request.post('/admin/uploads')
+    for (const [name, value] of Object.entries(fields)) request.field(name, value)
+    return request.attach('files', Buffer.from('a,b\n'), { filename: 'catalogue.csv', contentType: 'text/csv' })
+  }
+
+  // The local provider keeps private files apart, under a `private-` key, and serves only public ones.
+  test('stores a file public unless the form asks for private', async ({ expect }) => {
+    const publicUpload = await uploadFile({})
+    const privateUpload = await uploadFile({ access: 'private' })
+
+    expect(publicUpload.status).toBe(201)
+    expect(publicUpload.body.files[0].id).not.toMatch(/^private-/)
+    expect(privateUpload.status).toBe(201)
+    expect(privateUpload.body.files[0].id).toMatch(/^private-/)
+  })
+
+  test('rejects an unknown access', async ({ expect }) => {
+    const response = await uploadFile({ access: 'secret' })
+
+    expect(response.status).toBe(400)
+  })
+})
+
 test.describe('POST /admin/uploads/presigned-urls', () => {
   // The pattern was previously anchored only at the start, so a valid prefix
   // carried arbitrary trailing input past validation into MIMEType, which threw
