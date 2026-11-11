@@ -132,3 +132,13 @@ msgstr "Not a well-formed BCP 47 language tag"
 #: src/admin/region/payloads.ts:102
 msgid "Select at least one country."
 msgstr "Select at least one country."
+
+#. js-lingui-explicit-id
+#: src/admin/product-metafield/entities.ts:19
+msgid "Must hold at least one condition."
+msgstr "Must hold at least one condition."
+
+#. js-lingui-explicit-id
+#: src/admin/product-metafield/entities.ts:21
+msgid "Must hold no more than 20 conditions."
+msgstr "Must hold no more than 20 conditions."

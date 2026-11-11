@@ -78,10 +78,12 @@ export function buildStructureManifest(structure: CatalogStructureDTO): ShopifyS
 
 /**
  * Shopify takes either all-of single tags or any-of tags. Every condition holding one tag is the
- * first; a single condition of several tags is the second. Anything else mixes the two.
+ * first; a single condition of several tags is the second. Anything else mixes the two. Each
+ * metafield value is written as the tag `<key>:<value>`, the shape the seed CSV tags carry.
  */
-function toCollection(title: string, handle: string, rule: ProductGroupingRuleDTO | null): ShopifyCollection {
-  if (rule === null) return { title, handle, rule: null }
+function toCollection(title: string, handle: string, metafieldRule: ProductGroupingRuleDTO | null): ShopifyCollection {
+  if (metafieldRule === null) return { title, handle, rule: null }
+  const rule = Object.entries(metafieldRule).map(([key, values]) => values.map((value) => `${key}:${value}`))
 
   if (rule.every((condition) => condition.length === 1)) {
     return { title, handle, rule: { applies: 'all', tags: [...new Set(rule.flat())] } }

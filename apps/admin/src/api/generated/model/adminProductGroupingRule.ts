@@ -7,12 +7,6 @@
  */
 
 /**
- * @minItems 1
- * @maxItems 20
  * @nullable
- * @items.minItems 1
- * @items.maxItems 20
- * @items.items.minLength 1
- * @items.items.maxLength 255
  */
-export type AdminProductGroupingRule = string[][] | null;
+export type AdminProductGroupingRule = {[key: string]: string[]} | null;

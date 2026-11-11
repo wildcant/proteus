@@ -28,24 +28,37 @@ const name = z
   .trim()
   .min(1, 'Must not be empty.')
 
+/** Shopify's limits on a metafield key, narrowed to lowercase so a key is written one way. */
+const KEY_PATTERN = /^[a-z0-9_-]{2,64}$/
+
+const key = z
+  .string({ error: ifWrongType('Must be a clave.') })
+  .regex(KEY_PATTERN, 'Must be 2 to 64 lowercase letters, digits, "-" or "_", like "genero".')
+
+const field = z.strictObject(
+  { nombre: name, clave: key },
+  { error: ifWrongType('Must be a campo with nombre and clave.') },
+)
+
 const rule = z
-  .array(
+  .record(
+    z.string(),
     z
       .array(
         z
-          .string({ error: ifWrongType('Must be a tag.') })
+          .string({ error: ifWrongType('Must be a value.') })
           .trim()
           .min(1, 'Must not be empty.'),
-        {
-          error: ifWrongType('Must be a list of tags, any one of which matches.'),
-        },
+        { error: ifWrongType('Must be a list of values, any one of which matches.') },
       )
-      .min(1, 'Must name at least one tag.'),
-    { error: ifWrongType('Must be a list of conditions, each a list of tags.') },
+      .min(1, 'Must name at least one value.'),
+    { error: ifWrongType('Must be a mapping of claves to lists of values.') },
   )
-  .min(1, 'Must hold at least one condition.')
+  .refine((conditions) => Object.keys(conditions).length > 0, 'Must hold at least one condition.')
 
-type RawCategory = { nombre: string; handle: string; regla?: string[][]; hijos?: RawCategory[] }
+type RawRule = Record<string, string[]>
+
+type RawCategory = { nombre: string; handle: string; regla?: RawRule; hijos?: RawCategory[] }
 
 const category: z.ZodType<RawCategory> = z.lazy(() =>
   z.strictObject(
@@ -70,11 +83,12 @@ const menuEntry = z.union([z.strictObject({ categoria: handle }), z.strictObject
 
 const structureFile = z.strictObject(
   {
+    campos: z.array(field, { error: ifWrongType('Must be a list of campos.') }).default([]),
     categorias: z.array(category, { error: ifWrongType('Must be a list of categories.') }).default([]),
     colecciones: z.array(collection, { error: ifWrongType('Must be a list of collections.') }).default([]),
     menu: z.array(menuEntry, { error: ifWrongType('Must be a list of menu entries.') }).default([]),
   },
-  { error: ifWrongType('The file must be a mapping with categorias, colecciones and menu.') },
+  { error: ifWrongType('The file must be a mapping with campos, categorias, colecciones and menu.') },
 )
 
 export type ParsedCatalogStructure =
@@ -86,8 +100,9 @@ export type ParsedCatalogStructure =
 
 /**
  * Reads `estructura.yaml` into a structure, or every problem with it, each with the path it is at
- * (`categorias[0].hijos[1].handle`). Beyond the shape: a handle is used once among the Categories
- * and once among the Collections, and every menu entry names one the file declares.
+ * (`categorias[0].hijos[1].handle`). Beyond the shape: a clave is declared once, every rule names
+ * only declared claves, a handle is used once among the Categories and once among the Collections,
+ * and every menu entry names one the file declares.
  */
 export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   const document = parseDocument(text, { prettyErrors: false })
@@ -105,8 +120,26 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     return fail(parsed.error.issues.map((issue) => ({ path: formatPath(issue.path), message: issue.message })))
   }
 
-  const { categorias, colecciones, menu } = parsed.data
+  const { campos, categorias, colecciones, menu } = parsed.data
   const errors: CatalogStructureErrorDTO[] = []
+
+  const keys = new Set<string>()
+  const metafields = campos.map((raw, index) => {
+    if (keys.has(raw.clave)) {
+      errors.push({ path: `campos[${index}].clave`, message: `The clave "${raw.clave}" is used more than once.` })
+    }
+    keys.add(raw.clave)
+    return { name: raw.nombre, key: raw.clave }
+  })
+  const toRule = (raw: RawRule | undefined, path: string) => {
+    if (!raw) return null
+    for (const ruleKey of Object.keys(raw)) {
+      if (!keys.has(ruleKey)) {
+        errors.push({ path: `${path}.regla.${ruleKey}`, message: `No campo in the file has the clave "${ruleKey}".` })
+      }
+    }
+    return raw
+  }
 
   const categoryHandles = new Set<string>()
   const toCategory = (raw: RawCategory, path: string): CatalogStructureCategoryDTO => {
@@ -117,7 +150,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     return {
       name: raw.nombre,
       handle: raw.handle,
-      rule: raw.regla ?? null,
+      rule: toRule(raw.regla, path),
       children: (raw.hijos ?? []).map((child, index) => toCategory(child, `${path}.hijos[${index}]`)),
     }
   }
@@ -132,7 +165,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       })
     }
     collectionHandles.add(raw.handle)
-    return { name: raw.nombre, handle: raw.handle, rule: raw.regla ?? null }
+    return { name: raw.nombre, handle: raw.handle, rule: toRule(raw.regla, `colecciones[${index}]`) }
   })
 
   const navigation = menu.map((entry, index) => {
@@ -155,7 +188,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   })
 
   if (errors.length > 0) return fail(errors)
-  return { structure: { categories, collections, menu: navigation }, errors: [] }
+  return { structure: { metafields, categories, collections, menu: navigation }, errors: [] }
 }
 
 function fail(errors: CatalogStructureErrorDTO[]): ParsedCatalogStructure {

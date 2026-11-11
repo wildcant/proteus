@@ -54,6 +54,28 @@ CREATE TABLE "product_import" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
+CREATE TABLE "product_metafield_definition" (
+	"id" text PRIMARY KEY DEFAULT CONCAT('pmfd_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
+	"namespace" text DEFAULT 'custom' NOT NULL,
+	"key" text NOT NULL,
+	"name" text NOT NULL,
+	"type" text DEFAULT 'list.single_line_text_field' NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"deleted_at" timestamp with time zone
+);
+--> statement-breakpoint
+CREATE TABLE "product_metafield" (
+	"id" text PRIMARY KEY DEFAULT CONCAT('pmf_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
+	"product_id" text NOT NULL,
+	"definition_id" text NOT NULL,
+	"value" text NOT NULL,
+	"position" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"deleted_at" timestamp with time zone
+);
+--> statement-breakpoint
 CREATE TABLE "product_option_value" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('optval_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"option_id" text NOT NULL,
@@ -209,6 +231,8 @@ CREATE TABLE "product" (
 --> statement-breakpoint
 ALTER TABLE "product_category" ADD CONSTRAINT "product_category_parent_id_product_category_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."product_category"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_image" ADD CONSTRAINT "product_image_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_metafield" ADD CONSTRAINT "product_metafield_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_metafield" ADD CONSTRAINT "product_metafield_definition_id_product_metafield_definition_id_fk" FOREIGN KEY ("definition_id") REFERENCES "public"."product_metafield_definition"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_option_value" ADD CONSTRAINT "product_option_value_option_id_product_option_id_fk" FOREIGN KEY ("option_id") REFERENCES "public"."product_option"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_product_category" ADD CONSTRAINT "product_product_category_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_product_category" ADD CONSTRAINT "product_product_category_category_id_product_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."product_category"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -233,6 +257,9 @@ CREATE INDEX "idx_product_image_product_id" ON "product_image" USING btree ("pro
 CREATE INDEX "idx_product_image_url" ON "product_image" USING btree ("url") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_image_rank_product_id" ON "product_image" USING btree ("rank","product_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_import_status_created_at" ON "product_import" USING btree ("status","created_at") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_product_metafield_definition_namespace_key" ON "product_metafield_definition" USING btree ("namespace","key") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_product_metafield_product_definition_value" ON "product_metafield" USING btree ("product_id","definition_id","value") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_metafield_definition_value" ON "product_metafield" USING btree ("definition_id","value") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_option_value_option_id" ON "product_option_value" USING btree ("option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_option_value_option_id_value" ON "product_option_value" USING btree ("option_id","value") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_option_title" ON "product_option" USING btree ("title") WHERE deleted_at IS NULL;--> statement-breakpoint

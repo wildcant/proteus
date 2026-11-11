@@ -9,6 +9,7 @@ import type {
   SetProductOptionsDTO,
   UpdateProductDTO,
   UpdateProductVariantDTO,
+  UpsertProductMetafieldDefinitionDTO,
   VariantImageInput,
 } from '@core/types/product/mutations.js'
 import { faker } from '@faker-js/faker'
@@ -156,6 +157,17 @@ export function generateCreateProductTagDTO(overrides?: Partial<CreateProductTag
   return {
     // Unique among live Tags, so two generated values in one test cannot collide.
     value: `${faker.word.noun()}-${faker.string.alphanumeric(6)}`,
+    ...overrides,
+  }
+}
+
+export function generateUpsertProductMetafieldDefinitionDTO(
+  overrides?: Partial<UpsertProductMetafieldDefinitionDTO>,
+): UpsertProductMetafieldDefinitionDTO {
+  return {
+    // Unique among live definitions, so two generated keys in one test cannot collide.
+    key: `${faker.word.noun().toLowerCase()}_${faker.string.alphanumeric({ length: 6, casing: 'lower' })}`,
+    name: faker.word.noun(),
     ...overrides,
   }
 }

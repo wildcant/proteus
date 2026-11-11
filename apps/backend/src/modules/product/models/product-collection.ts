@@ -13,7 +13,7 @@ export const productCollectionTable = pgTable(
     handle: text().notNull(),
     /** A URL from `POST /admin/uploads`, as `product.thumbnail` is. */
     thumbnail: text(),
-    /** The tag rule that decides the members; `null` is a manual Collection whose members are picked. */
+    /** The rule over metafields that decides the members; `null` is a manual Collection whose members are picked. */
     rule: jsonb().$type<ProductGroupingRuleDTO | null>(),
     ...timestamps,
   },

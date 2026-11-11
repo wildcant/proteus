@@ -32,6 +32,8 @@ import type {
   ProductImportPlanDTO,
   ProductImportReferencesDTO,
   ProductImportSettingsDTO,
+  ProductMetafieldDefinitionDTO,
+  ProductMetafieldDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -68,6 +70,7 @@ import type {
   UpdateProductTagDTO,
   UpdateProductTypeDTO,
   UpdateProductVariantDTO,
+  UpsertProductMetafieldDefinitionDTO,
   UpsertProductVariantDTO,
   VariantImageInput,
 } from './mutations.js'
@@ -299,10 +302,24 @@ export type IProductModuleService = {
     context?: Context,
   ): Promise<string[]>
 
+  // Metafields
+  /** The live metafield definitions, by key. */
+  listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]>
   /**
-   * Makes every ruled Category and Collection in scope hold exactly the scoped products its tag rule
-   * matches, in one transaction. Manual groupings are never touched. Product, rule and Tag writes
-   * call it themselves; it is public for writes that change many groupings at once.
+   * Creates each definition whose key is new and renames the ones that exist. Deletes nothing: the
+   * structure file, which is the source, deletes the ones it leaves out when it is applied.
+   */
+  upsertMetafieldDefinitions(
+    data: UpsertProductMetafieldDefinitionDTO[],
+    context?: Context,
+  ): Promise<ProductMetafieldDefinitionDTO[]>
+  /** A product's metafields that hold values, by key. */
+  retrieveProductMetafields(productId: string, context?: Context): Promise<ProductMetafieldDTO[]>
+
+  /**
+   * Makes every ruled Category and Collection in scope hold exactly the scoped products its rule
+   * matches, in one transaction. Manual groupings are never touched. Product and rule writes call
+   * it themselves; it is public for writes that change many groupings at once.
    */
   syncRuleMemberships(scope?: SyncRuleMembershipsDTO, context?: Context): Promise<void>
 
@@ -313,9 +330,10 @@ export type IProductModuleService = {
    */
   planCatalogStructure(source: AsyncIterable<Uint8Array | string>, context?: Context): Promise<CatalogStructurePlanDTO>
   /**
-   * Makes the Categories and Collections exactly the structure's, by handle, in one transaction:
-   * named ones written as declared (Categories active, at their file rank), absent ones deleted, then
-   * every ruled grouping re-matched. Answers with what changed. The menu is not this module's.
+   * Makes the metafield definitions (by key), Categories and Collections (by handle) exactly the
+   * structure's, in one transaction: named ones written as declared (Categories active, at their file
+   * rank), absent ones deleted, then every ruled grouping re-matched. Answers with what changed. The
+   * menu is not this module's.
    */
   applyCatalogStructure(structure: CatalogStructureDTO, context?: Context): Promise<CatalogStructureChangesDTO>
 

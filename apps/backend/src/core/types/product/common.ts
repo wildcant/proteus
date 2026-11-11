@@ -321,11 +321,34 @@ export interface FilterableProductVariantImageProps extends BaseFilterable<Filte
 }
 
 /**
- * A tag rule: every condition must hold, and a condition holds when the product carries any one of its
- * tag values — an AND of ORs. `[['genero:hombre', 'genero:unisex'], ['estilo:clasicos']]` reads
- * "(hombre or unisex) and clasicos". Values match exactly, as tags are stored.
+ * A rule: one condition per metafield key, every condition must hold, and a condition holds when the
+ * product's metafield carries any one of its values — an AND of ORs.
+ * `{ genero: ['hombre', 'unisex'], estilo: ['clasicos'] }` reads "(hombre or unisex) and clasicos".
+ * Values match exactly, as they are stored.
  */
-export type ProductGroupingRuleDTO = string[][]
+export type ProductGroupingRuleDTO = Record<string, string[]>
+
+/** What a metafield holds. A list of short texts is the only kind, the one Shopify can filter on and build collections from. */
+export type ProductMetafieldType = 'list.single_line_text_field'
+
+/** A named product field ("Género", key `genero`), as the structure file's `campos` declare it. */
+export type ProductMetafieldDefinitionDTO = {
+  id: string
+  namespace: string
+  key: string
+  name: string
+  type: ProductMetafieldType
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+/** One of a product's metafields with its values, in the order they were written. */
+export type ProductMetafieldDTO = {
+  key: string
+  name: string
+  values: string[]
+}
 
 export type ProductCategoryDTO = {
   id: string
@@ -386,11 +409,19 @@ type CatalogStructureCollectionDTO = {
   rule: ProductGroupingRuleDTO | null
 }
 
+/** A metafield definition as a structure file's `campos` declare it. */
+type CatalogStructureMetafieldDTO = {
+  name: string
+  key: string
+}
+
 /**
- * The store's structure as `estructura.yaml` declares it: the Category tree, the Collections and the
- * menu. The file is the source: applying it makes the catalogue's groupings exactly these.
+ * The store's structure as `estructura.yaml` declares it: the metafield definitions its rules read,
+ * the Category tree, the Collections and the menu. The file is the source: applying it makes the
+ * catalogue's definitions and groupings exactly these.
  */
 export type CatalogStructureDTO = {
+  metafields: CatalogStructureMetafieldDTO[]
   categories: CatalogStructureCategoryDTO[]
   collections: CatalogStructureCollectionDTO[]
   menu: StoreNavigationEntryDTO[]
@@ -420,10 +451,16 @@ type CatalogStructureCollectionChangeDTO = {
 }
 
 /**
- * What applying a structure does to the groupings, by handle. An update is a new name, rule, rank
- * or an inactive Category turned active; a move is a new parent, and is listed only as a move.
+ * What applying a structure does to the metafield definitions, by key, and to the groupings, by
+ * handle. A definition update is a new name. A grouping update is a new name, rule, rank or an
+ * inactive Category turned active; a move is a new parent, and is listed only as a move.
  */
 export type CatalogStructureChangesDTO = {
+  metafields: {
+    create: CatalogStructureMetafieldDTO[]
+    update: CatalogStructureMetafieldDTO[]
+    delete: CatalogStructureMetafieldDTO[]
+  }
   categories: {
     create: CatalogStructureCategoryChangeDTO[]
     update: CatalogStructureCategoryChangeDTO[]

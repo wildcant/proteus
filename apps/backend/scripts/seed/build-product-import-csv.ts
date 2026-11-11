@@ -168,7 +168,10 @@ const money = (amount: number) => amount.toFixed(2)
 
 /** mock.shop descriptions are one paragraph of editor HTML; the CSV keeps only its text. */
 function plainText(html: string): string {
-  return html.replaceAll(/<[^>]*>/g, '').replaceAll('\u00a0', ' ').trim()
+  return html
+    .replaceAll(/<[^>]*>/g, '')
+    .replaceAll('\u00a0', ' ')
+    .trim()
 }
 
 function tagsFor(product: MockShopProduct, enrichment: Enrichment): string {

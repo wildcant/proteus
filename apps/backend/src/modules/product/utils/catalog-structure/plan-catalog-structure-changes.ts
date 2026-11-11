@@ -5,6 +5,7 @@ import type {
   ProductCategoryDTO,
   ProductCollectionDTO,
   ProductGroupingRuleDTO,
+  ProductMetafieldDefinitionDTO,
 } from '../../../../core/types/product/common.js'
 
 /** A file Category with where the file puts it: its parent's handle and its rank among its siblings. */
@@ -42,16 +43,43 @@ export function absentCategoryLevels(structure: CatalogStructureDTO, live: Produ
   return levels.filter((level) => level.length > 0).reverse()
 }
 
-/** What applying `structure` would do to the live groupings, matched by handle. */
+/** The live catalogue a structure file is read against. */
+export type LiveCatalogStructure = {
+  metafields: ProductMetafieldDefinitionDTO[]
+  categories: ProductCategoryDTO[]
+  collections: ProductCollectionDTO[]
+}
+
+/** The live definitions the file leaves out, which applying it deletes. */
+export function absentMetafieldDefinitions(
+  structure: CatalogStructureDTO,
+  live: ProductMetafieldDefinitionDTO[],
+): ProductMetafieldDefinitionDTO[] {
+  const kept = new Set(structure.metafields.map((metafield) => metafield.key))
+  return live.filter((definition) => !kept.has(definition.key))
+}
+
+/** What applying `structure` would do to the live definitions, matched by key, and groupings, matched by handle. */
 export function planCatalogStructureChanges(
   structure: CatalogStructureDTO,
-  categories: ProductCategoryDTO[],
-  collections: ProductCollectionDTO[],
+  { metafields, categories, collections }: LiveCatalogStructure,
 ): CatalogStructureChangesDTO {
   const changes: CatalogStructureChangesDTO = {
+    metafields: { create: [], update: [], delete: [] },
     categories: { create: [], update: [], move: [], delete: [] },
     collections: { create: [], update: [], delete: [] },
   }
+
+  const definitionByKey = new Map(metafields.map((definition) => [definition.key, definition]))
+  for (const metafield of structure.metafields) {
+    const live = definitionByKey.get(metafield.key)
+    if (!live) changes.metafields.create.push(metafield)
+    else if (live.name !== metafield.name) changes.metafields.update.push(metafield)
+  }
+  changes.metafields.delete = absentMetafieldDefinitions(structure, metafields).map(({ key, name }) => ({
+    key,
+    name,
+  }))
 
   const categoryByHandle = new Map(categories.map((category) => [category.handle, category]))
   const handleOfId = new Map(categories.map((category) => [category.id, category.handle]))
@@ -107,6 +135,17 @@ export function planCatalogStructureChanges(
   return changes
 }
 
+/**
+ * Compared as sets: `jsonb` stores an object's keys in its own order, so the rule read back is not
+ * the rule as written, and neither key nor value order changes what a rule matches.
+ */
 function sameRule(left: ProductGroupingRuleDTO | null, right: ProductGroupingRuleDTO | null): boolean {
-  return JSON.stringify(left) === JSON.stringify(right)
+  if (left === null || right === null) return left === right
+  const canonical = (rule: ProductGroupingRuleDTO) =>
+    JSON.stringify(
+      Object.entries(rule)
+        .map(([key, values]) => [key, [...new Set(values)].sort()] as const)
+        .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey)),
+    )
+  return canonical(left) === canonical(right)
 }

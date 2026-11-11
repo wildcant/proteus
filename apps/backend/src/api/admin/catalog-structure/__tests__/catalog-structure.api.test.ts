@@ -11,6 +11,7 @@ import collectionDefinitions from '../../collections/definitions.js'
 import type * as collectionRoutes from '../../collections/route.js'
 import productCategoryDefinitions from '../../product-categories/definitions.js'
 import type * as categoryRoutes from '../../product-categories/route.js'
+import type * as productByIdRoutes from '../../products/[id]/route.js'
 import productDefinitions from '../../products/definitions.js'
 import type * as productRoutes from '../../products/route.js'
 import uploadDefinitions from '../../uploads/definitions.js'
@@ -18,7 +19,7 @@ import type * as uploadRoutes from '../../uploads/route.js'
 import catalogStructureDefinitions from '../definitions.js'
 import type * as structureRoutes from '../route.js'
 
-/** The development catalogue's structure: Men, Women and Unisex with their children, three Collections, a menu of the three. */
+/** The development catalogue's structure: three campos, Men, Women and Unisex with their children, three Collections, a menu of the three. */
 const FIXTURE = readFileSync(resolve(__dirname, '../../../../../scripts/seed/catalog-structure.yaml'), 'utf8')
 
 type Plan = (typeof structureRoutes.PostOutput)['_zod']['output']['catalogStructure']
@@ -63,8 +64,9 @@ test.describe('Structure files', () => {
     http,
     service,
   }) => {
-    // What the catalogue holds before: a men's category under another name and inactive, a manual
-    // tree the file does not know, `men-tops` filed under that tree, and a collection the file drops.
+    // What the catalogue holds before: `genero` under another name and a metafield the file drops, a
+    // men's category under another name and inactive, a manual tree the file does not know,
+    // `men-tops` filed under that tree, and a collection the file drops.
     const createCategory = async (body: Parameters<typeof http.admin.createProductCategory>[0]) => {
       const response = await api.post<typeof categoryRoutes.PostOutput>(
         '/admin/product-categories',
@@ -83,22 +85,28 @@ test.describe('Structure files', () => {
     )
     expect(dropped.status).toBe(201)
 
-    const tagIds = await Promise.all(
-      ['genero:men', 'tipo:tops', 'coleccion:featured'].map(
-        async (value) => (await service.create.productTag(api.container, { value })).id,
-      ),
-    )
-    const product = await api.post<typeof productRoutes.PostOutput>('/admin/products', {
+    await service.create.metafieldDefinitions(api.container, [
+      { key: 'genero', name: 'Gender' },
+      { key: 'temporada', name: 'Temporada' },
+    ])
+    const { product } = await service.create.product(api.container, {
       title: 'Crew Tee',
-      tagIds,
+      metafields: { genero: ['men'], temporada: ['verano'] },
     })
-    expect(product.status).toBe(201)
 
     const fileId = await upload(FIXTURE)
     const previewed = await preview(fileId)
     expect(previewed.status).toBe(200)
     const plan: Plan = previewed.body.catalogStructure
     expect(plan.errors).toEqual([])
+    expect(plan.metafields).toEqual({
+      create: [
+        { key: 'tipo', name: 'Tipo' },
+        { key: 'colecciones', name: 'Colecciones' },
+      ],
+      update: [{ key: 'genero', name: 'Género' }],
+      delete: [{ key: 'temporada', name: 'Temporada' }],
+    })
     expect(handles(plan.categories.create)).toEqual(
       [
         'men-bottoms',
@@ -142,7 +150,7 @@ test.describe('Structure files', () => {
     const tree = (await api.get<typeof categoryRoutes.GetOutput>('/admin/product-categories')).body.productCategories
     expect(tree.map((root) => root.handle)).toEqual(['men', 'women', 'unisex'])
     const [menNode] = tree
-    expect(menNode).toMatchObject({ id: men.id, name: 'Men', isActive: true, rule: [['genero:men']] })
+    expect(menNode).toMatchObject({ id: men.id, name: 'Men', isActive: true, rule: { genero: ['men'] } })
     expect(menNode?.children.map((child) => child.handle)).toEqual([
       'men-tops',
       'men-bottoms',
@@ -157,14 +165,25 @@ test.describe('Structure files', () => {
     const collections = (await api.get<typeof collectionRoutes.GetOutput>('/admin/collections')).body.collections
     expect(handles(collections)).toEqual(['active', 'essentials', 'featured'])
 
-    // The rules picked the product up: Men and Men › Tops by its tags, Featured by its collection tag.
+    // The re-match picked the product up: Men by the género it already had. The dropped metafield
+    // went with its definition, and `genero` reads under the file's name.
     const membersOf = async (filter: string) =>
       (await api.get<typeof productRoutes.GetOutput>(`/admin/products?${filter}`)).body.products.map(
         (member) => member.id,
       )
-    expect(await membersOf(`categoryId=${menTops.id}`)).toEqual([product.body.product.id])
+    expect(await membersOf(`categoryId=${men.id}`)).toEqual([product.id])
+    expect(await membersOf(`categoryId=${menTops.id}`)).toEqual([])
+    const detail = await api.get<typeof productByIdRoutes.GetOutput>(`/admin/products/${product.id}`)
+    expect(detail.body.product.metafields).toEqual([{ key: 'genero', name: 'Género', values: ['men'] }])
+
+    // The metafields the file defines are the ones rules read: Men › Tops by tipo, Featured by colecciones.
+    await service.update.productMetafields(api.container, product.id, {
+      tipo: ['tops'],
+      colecciones: ['featured'],
+    })
+    expect(await membersOf(`categoryId=${menTops.id}`)).toEqual([product.id])
     const featuredCollection = collections.find((collection) => collection.handle === 'featured')
-    expect(await membersOf(`collectionId=${featuredCollection?.id}`)).toEqual([product.body.product.id])
+    expect(await membersOf(`collectionId=${featuredCollection?.id}`)).toEqual([product.id])
     const womenId = tree[1]?.id
     expect(await membersOf(`categoryId=${womenId}`)).toEqual([])
 
@@ -174,6 +193,7 @@ test.describe('Structure files', () => {
     const again = await preview(await upload(FIXTURE))
     expect(again.body.catalogStructure).toEqual({
       errors: [],
+      metafields: { create: [], update: [], delete: [] },
       categories: { create: [], update: [], move: [], delete: [] },
       collections: { create: [], update: [], delete: [] },
       menu: { current: plan.menu.next, next: plan.menu.next },

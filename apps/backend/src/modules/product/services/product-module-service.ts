@@ -28,6 +28,7 @@ import type {
   ProductCategoryTreeNodeDTO,
   ProductCollectionDTO,
   ProductDTO,
+  ProductGroupingRuleDTO,
   ProductGroupingsDTO,
   ProductImageDTO,
   ProductImportDTO,
@@ -35,6 +36,8 @@ import type {
   ProductImportPlanDTO,
   ProductImportReferencesDTO,
   ProductImportSettingsDTO,
+  ProductMetafieldDefinitionDTO,
+  ProductMetafieldDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -60,6 +63,7 @@ import type {
   CreateProductTypeDTO,
   CreateProductVariantDTO,
   ProductGroupingIdsDTO,
+  ProductMetafieldValuesDTO,
   SetCategoryProductsDTO,
   SetCollectionProductsDTO,
   SetProductOptionsDTO,
@@ -72,6 +76,7 @@ import type {
   UpdateProductTypeDTO,
   UpdateProductVariantDTO,
   UpsertProductImageInput,
+  UpsertProductMetafieldDefinitionDTO,
   UpsertProductVariantDTO,
   VariantImageInput,
 } from '../../../core/types/product/mutations.js'
@@ -83,6 +88,8 @@ import type { ProductCategoryRepository } from '../repositories/product-category
 import type { ProductCollectionRepository } from '../repositories/product-collection.js'
 import type { ProductImageRepository } from '../repositories/product-image.js'
 import type { ProductImportRepository } from '../repositories/product-import.js'
+import type { ProductMetafieldRepository } from '../repositories/product-metafield.js'
+import type { ProductMetafieldDefinitionRepository } from '../repositories/product-metafield-definition.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
 import type { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
@@ -127,6 +134,8 @@ type InjectedDependencies = {
   productProductTagRepository: ProductProductTagRepository
   productTypeRepository: ProductTypeRepository
   productImportRepository: ProductImportRepository
+  productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
+  productMetafieldRepository: ProductMetafieldRepository
   withTransaction: WithTransaction
   logger: Logger
 }
@@ -148,6 +157,8 @@ export class ProductModuleService implements IProductModuleService {
   private productProductCollectionRepository: ProductProductCollectionRepository
   private productProductTagRepository: ProductProductTagRepository
   private productTypeRepository: ProductTypeRepository
+  private productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
+  private productMetafieldRepository: ProductMetafieldRepository
   /** Private on purpose: not registered anywhere, not exported, not resolvable. */
   private productOptionService: ProductOptionService
   /** Private for the same reason. */
@@ -172,6 +183,8 @@ export class ProductModuleService implements IProductModuleService {
     this.productProductCollectionRepository = dependencies.productProductCollectionRepository
     this.productProductTagRepository = dependencies.productProductTagRepository
     this.productTypeRepository = dependencies.productTypeRepository
+    this.productMetafieldDefinitionRepository = dependencies.productMetafieldDefinitionRepository
+    this.productMetafieldRepository = dependencies.productMetafieldRepository
     this.withTransaction = dependencies.withTransaction
     this.logger = dependencies.logger
     // Built from the same cradle this was, so it shares the module's repositories and transaction
@@ -215,7 +228,7 @@ export class ProductModuleService implements IProductModuleService {
     const writes = data.map((input) => separateGroupingIds(input))
     return this.withTransaction(context, async (transactionContext) => {
       const products = await this.productRepository.createMany(
-        writes.map(({ fields: { images, ...product } }) => ({
+        writes.map(({ fields: { images, metafields: _metafields, ...product } }) => ({
           ...product,
           handle: product.handle ?? toHandle(product.title),
           thumbnail: this.resolveThumbnail(product, images),
@@ -227,10 +240,11 @@ export class ProductModuleService implements IProductModuleService {
         products.flatMap((product, index) => {
           const write = writes[index]
           if (!write) return []
-          const { images } = write.fields
+          const { images, metafields } = write.fields
           return [
             images ? this.replaceProductImages(product.id, images, transactionContext) : undefined,
             this.replaceProductGroupings([product.id], write.groupingIds, transactionContext),
+            metafields ? this.writeProductMetafields([product.id], metafields, transactionContext) : undefined,
           ]
         }),
       )
@@ -242,7 +256,7 @@ export class ProductModuleService implements IProductModuleService {
 
   async updateProducts(productIds: string[], data: UpdateProductDTO, context?: Context): Promise<ProductDTO[]> {
     const {
-      fields: { images, ...productData },
+      fields: { images, metafields, ...productData },
       groupingIds,
     } = separateGroupingIds(data)
     return this.withTransaction(context, async (transactionContext) => {
@@ -257,7 +271,10 @@ export class ProductModuleService implements IProductModuleService {
         )
       }
       await this.replaceProductGroupings(productIds, groupingIds, transactionContext)
-      if (this.writesGroupings(groupingIds)) await this.syncRuleMemberships({ productIds }, transactionContext)
+      if (metafields) await this.writeProductMetafields(productIds, metafields, transactionContext)
+      if (this.writesGroupings(groupingIds, metafields)) {
+        await this.syncRuleMemberships({ productIds }, transactionContext)
+      }
 
       return products
     })
@@ -265,7 +282,7 @@ export class ProductModuleService implements IProductModuleService {
 
   async createProduct(data: CreateProductDTO, context?: Context): Promise<ProductDTO> {
     const {
-      fields: { images, ...product },
+      fields: { images, metafields, ...product },
       groupingIds,
     } = separateGroupingIds(data)
     return this.withTransaction(context, async (transactionContext) => {
@@ -279,6 +296,7 @@ export class ProductModuleService implements IProductModuleService {
       )
       if (images) await this.replaceProductImages(created.id, images, transactionContext)
       await this.replaceProductGroupings([created.id], groupingIds, transactionContext)
+      if (metafields) await this.writeProductMetafields([created.id], metafields, transactionContext)
       await this.syncRuleMemberships({ productIds: [created.id] }, transactionContext)
       return created
     })
@@ -286,7 +304,7 @@ export class ProductModuleService implements IProductModuleService {
 
   async updateProduct(productId: string, data: UpdateProductDTO, context?: Context): Promise<ProductDTO> {
     const {
-      fields: { images, ...productData },
+      fields: { images, metafields, ...productData },
       groupingIds,
     } = separateGroupingIds(data)
     return this.withTransaction(context, async (transactionContext) => {
@@ -297,7 +315,8 @@ export class ProductModuleService implements IProductModuleService {
 
       if (images) await this.replaceProductImages(productId, images, transactionContext)
       await this.replaceProductGroupings([productId], groupingIds, transactionContext)
-      if (this.writesGroupings(groupingIds)) {
+      if (metafields) await this.writeProductMetafields([productId], metafields, transactionContext)
+      if (this.writesGroupings(groupingIds, metafields)) {
         await this.syncRuleMemberships({ productIds: [productId] }, transactionContext)
       }
 
@@ -798,6 +817,7 @@ export class ProductModuleService implements IProductModuleService {
 
   async createCategory(data: CreateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO> {
     return this.withTransaction(context, async (transactionContext) => {
+      if (data.rule) await this.assertRuleKeysDefined(data.rule, transactionContext)
       const category = await this.productCategoryService.createCategory(data, transactionContext)
       if (category.rule) {
         await this.syncRuleMemberships({ categoryIds: [category.id], collectionIds: [] }, transactionContext)
@@ -812,6 +832,7 @@ export class ProductModuleService implements IProductModuleService {
     context?: Context,
   ): Promise<ProductCategoryDTO> {
     return this.withTransaction(context, async (transactionContext) => {
+      if (data.rule) await this.assertRuleKeysDefined(data.rule, transactionContext)
       const category = await this.productCategoryService.updateCategory(categoryId, data, transactionContext)
       if (data.rule !== undefined) {
         await this.syncRuleMemberships({ categoryIds: [categoryId], collectionIds: [] }, transactionContext)
@@ -848,6 +869,7 @@ export class ProductModuleService implements IProductModuleService {
 
   async createCollection(data: CreateProductCollectionDTO, context?: Context): Promise<ProductCollectionDTO> {
     return this.withTransaction(context, async (transactionContext) => {
+      if (data.rule) await this.assertRuleKeysDefined(data.rule, transactionContext)
       const collection = await this.productGroupingService.createCollection(data, transactionContext)
       if (collection.rule) {
         await this.syncRuleMemberships({ categoryIds: [], collectionIds: [collection.id] }, transactionContext)
@@ -862,6 +884,7 @@ export class ProductModuleService implements IProductModuleService {
     context?: Context,
   ): Promise<ProductCollectionDTO> {
     return this.withTransaction(context, async (transactionContext) => {
+      if (data.rule) await this.assertRuleKeysDefined(data.rule, transactionContext)
       const collection = await this.productGroupingService.updateCollection(collectionId, data, transactionContext)
       if (data.rule !== undefined) {
         await this.syncRuleMemberships({ categoryIds: [], collectionIds: [collectionId] }, transactionContext)
@@ -927,20 +950,11 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   async updateTag(tagId: string, data: UpdateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
-    return this.withTransaction(context, async (transactionContext) => {
-      const productIds = data.value === undefined ? [] : await this.productIdsTagged([tagId], transactionContext)
-      const tag = await this.productGroupingService.updateTag(tagId, data, transactionContext)
-      if (productIds.length > 0) await this.syncRuleMemberships({ productIds }, transactionContext)
-      return tag
-    })
+    return this.productGroupingService.updateTag(tagId, data, context)
   }
 
   async softDeleteTags(tagIds: string[], context?: Context): Promise<void> {
-    return this.withTransaction(context, async (transactionContext) => {
-      const productIds = await this.productIdsTagged(tagIds, transactionContext)
-      await this.productGroupingService.softDeleteTags(tagIds, transactionContext)
-      if (productIds.length > 0) await this.syncRuleMemberships({ productIds }, transactionContext)
-    })
+    return this.productGroupingService.softDeleteTags(tagIds, context)
   }
 
   async listProductTagValues(
@@ -948,6 +962,25 @@ export class ProductModuleService implements IProductModuleService {
     context?: Context,
   ): Promise<string[]> {
     return this.productRepository.findTagValues(filters, context)
+  }
+
+  // ── Metafields ────────────────────────────────────────────────────────
+
+  async listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]> {
+    return this.productMetafieldDefinitionRepository.find(undefined, { order: { key: 'ASC' } }, context)
+  }
+
+  async upsertMetafieldDefinitions(
+    data: UpsertProductMetafieldDefinitionDTO[],
+    context?: Context,
+  ): Promise<ProductMetafieldDefinitionDTO[]> {
+    return this.withTransaction(context, (transactionContext) =>
+      this.productMetafieldDefinitionRepository.upsertByKey(data, transactionContext),
+    )
+  }
+
+  async retrieveProductMetafields(productId: string, context?: Context): Promise<ProductMetafieldDTO[]> {
+    return this.productMetafieldRepository.findProductMetafields(productId, context)
   }
 
   // ── Groupings ─────────────────────────────────────────────────────────
@@ -1217,16 +1250,56 @@ export class ProductModuleService implements IProductModuleService {
     })
   }
 
-  /** Whether a product write set any of its groupings, which is what can move it in or out of a ruled one. */
-  private writesGroupings({ categoryIds, collectionIds, tagIds }: ProductGroupingIdsDTO): boolean {
-    return categoryIds !== undefined || collectionIds !== undefined || tagIds !== undefined
+  /**
+   * Whether a product write set its metafields, which rules read, or its Categories or Collections,
+   * which a ruled one puts back as its rule says.
+   */
+  private writesGroupings(
+    { categoryIds, collectionIds }: ProductGroupingIdsDTO,
+    metafields: ProductMetafieldValuesDTO | undefined,
+  ): boolean {
+    return categoryIds !== undefined || collectionIds !== undefined || metafields !== undefined
   }
 
-  /** The live products carrying any of the Tags, read before a write changes what the Tags match. */
-  private async productIdsTagged(tagIds: string[], context: Context): Promise<string[]> {
-    const filters: FilterableProductProps = { tagId: tagIds }
-    const products = await this.productRepository.find(filters, { select: ['id'] }, context)
-    return products.map((product) => product.id)
+  /** Each key named replaces that metafield's values on every product; a key with no definition is refused. */
+  private async writeProductMetafields(
+    productIds: string[],
+    metafields: ProductMetafieldValuesDTO,
+    context: Context,
+  ): Promise<void> {
+    const definitionIdOf = await this.definitionIdsOf(Object.keys(metafields), context)
+    const valuesByDefinitionId = new Map(
+      Object.entries(metafields).flatMap(([key, values]) => {
+        const definitionId = definitionIdOf.get(key)
+        return definitionId ? [[definitionId, values] as const] : []
+      }),
+    )
+    await Promise.all(
+      productIds.map((productId) =>
+        this.productMetafieldRepository.setProductMetafields(productId, valuesByDefinitionId, context),
+      ),
+    )
+  }
+
+  /** A rule may only name metafields that are defined: a key nothing defines could never match. */
+  private async assertRuleKeysDefined(rule: ProductGroupingRuleDTO, context: Context): Promise<void> {
+    await this.definitionIdsOf(Object.keys(rule), context)
+  }
+
+  /** The definition id of each key, refusing with `INVALID_DATA` the keys no live definition has. */
+  private async definitionIdsOf(keys: string[], context: Context): Promise<Map<string, string>> {
+    if (keys.length === 0) return new Map()
+    const definitions = await this.productMetafieldDefinitionRepository.find({ key: keys }, undefined, context)
+    const idOf = new Map(definitions.map((definition) => [definition.key, definition.id]))
+    const unknown = keys.filter((key) => !idOf.has(key))
+    if (unknown.length > 0) {
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: i18n.t('No metafield is defined with the key {keys}. Declare it under campos in the structure file.'),
+        values: { keys: unknown.join(', ') },
+      })
+    }
+    return idOf
   }
 
   /** Each grouping the write names replaces that grouping's whole set on every product; absent ones are left alone. */

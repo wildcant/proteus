@@ -132,3 +132,13 @@ msgstr "No es una etiqueta de idioma BCP 47 válida"
 #: src/admin/region/payloads.ts:102
 msgid "Select at least one country."
 msgstr "Selecciona al menos un país."
+
+#. js-lingui-explicit-id
+#: src/admin/product-metafield/entities.ts:19
+msgid "Must hold at least one condition."
+msgstr "Debe tener al menos una condición."
+
+#. js-lingui-explicit-id
+#: src/admin/product-metafield/entities.ts:21
+msgid "Must hold no more than 20 conditions."
+msgstr "No puede tener más de 20 condiciones."

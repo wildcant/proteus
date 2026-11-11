@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { entityId, httpUrl, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
-import { AdminProductGroupingRule } from '../product-tag/entities.js'
+import { AdminProductGroupingRule } from '../product-metafield/entities.js'
 
 export const AdminCreateProductCollection = z
   .object({

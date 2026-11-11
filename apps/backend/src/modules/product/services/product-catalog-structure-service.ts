@@ -7,10 +7,13 @@ import type {
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductCategoryRepository } from '../repositories/product-category.js'
 import type { ProductCollectionRepository } from '../repositories/product-collection.js'
+import type { ProductMetafieldDefinitionRepository } from '../repositories/product-metafield-definition.js'
 import { MAX_STRUCTURE_FILE_BYTES, parseCatalogStructure } from '../utils/catalog-structure/parse-catalog-structure.js'
 import {
   absentCategoryLevels,
+  absentMetafieldDefinitions,
   flattenStructureCategories,
+  type LiveCatalogStructure,
   planCatalogStructureChanges,
 } from '../utils/catalog-structure/plan-catalog-structure-changes.js'
 import type { ProductCategoryService } from './product-category-service.js'
@@ -20,6 +23,7 @@ import type { ProductRuleMembershipService } from './product-rule-membership-ser
 type InjectedDependencies = {
   productCategoryRepository: ProductCategoryRepository
   productCollectionRepository: ProductCollectionRepository
+  productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
   withTransaction: WithTransaction
 }
 
@@ -30,14 +34,15 @@ type Collaborators = {
 }
 
 const NO_CHANGES: CatalogStructureChangesDTO = {
+  metafields: { create: [], update: [], delete: [] },
   categories: { create: [], update: [], move: [], delete: [] },
   collections: { create: [], update: [], delete: [] },
 }
 
 /**
- * Applies a structure file (`estructura.yaml`) to the Categories and Collections. The file is the
- * source: groupings are matched by handle, the ones it names are made to read as it says, and the
- * ones it leaves out are deleted.
+ * Applies a structure file (`estructura.yaml`) to the metafield definitions, the Categories and the
+ * Collections. The file is the source: definitions are matched by key and groupings by handle, the
+ * ones it names are made to read as it says, and the ones it leaves out are deleted.
  *
  * **Internal to the module**, like `ProductCategoryService`, whose tree rules it writes through. The
  * menu the file also carries belongs to the store module; this reads it and leaves it for the caller.
@@ -45,6 +50,7 @@ const NO_CHANGES: CatalogStructureChangesDTO = {
 export class ProductCatalogStructureService {
   private productCategoryRepository: ProductCategoryRepository
   private productCollectionRepository: ProductCollectionRepository
+  private productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
   private withTransaction: WithTransaction
   private productCategoryService: ProductCategoryService
   private productGroupingService: ProductGroupingService
@@ -53,6 +59,7 @@ export class ProductCatalogStructureService {
   constructor(dependencies: InjectedDependencies, collaborators: Collaborators) {
     this.productCategoryRepository = dependencies.productCategoryRepository
     this.productCollectionRepository = dependencies.productCollectionRepository
+    this.productMetafieldDefinitionRepository = dependencies.productMetafieldDefinitionRepository
     this.withTransaction = dependencies.withTransaction
     this.productCategoryService = collaborators.productCategoryService
     this.productGroupingService = collaborators.productGroupingService
@@ -75,25 +82,28 @@ export class ProductCatalogStructureService {
     const { structure, errors } = parseCatalogStructure(text)
     if (!structure) return { structure, errors, changes: NO_CHANGES }
 
-    const [categories, collections] = await Promise.all([
-      this.productCategoryRepository.find(undefined, undefined, context),
-      this.productCollectionRepository.find(undefined, undefined, context),
-    ])
-    return { structure, errors, changes: planCatalogStructureChanges(structure, categories, collections) }
+    const live = await this.readLive(context)
+    return { structure, errors, changes: planCatalogStructureChanges(structure, live) }
   }
 
   /**
-   * One transaction: Categories parents first, so a move never lands under its own subtree, each
-   * placed at its file rank and made active; then Collections; then what the file leaves out,
-   * leaf-first so no deletion meets a live child; then every ruled grouping re-matched.
+   * One transaction: the metafield definitions first, so every rule names one, and the ones the file
+   * leaves out deleted with their values; then Categories parents first, so a move never lands under
+   * its own subtree, each placed at its file rank and made active; then Collections; then the
+   * groupings the file leaves out, leaf-first so no deletion meets a live child; then every ruled
+   * grouping re-matched.
    */
   async applyCatalogStructure(structure: CatalogStructureDTO, context?: Context): Promise<CatalogStructureChangesDTO> {
     return this.withTransaction(context, async (transactionContext) => {
-      const [categories, collections] = await Promise.all([
-        this.productCategoryRepository.find(undefined, undefined, transactionContext),
-        this.productCollectionRepository.find(undefined, undefined, transactionContext),
-      ])
-      const changes = planCatalogStructureChanges(structure, categories, collections)
+      const live = await this.readLive(transactionContext)
+      const { categories, collections } = live
+      const changes = planCatalogStructureChanges(structure, live)
+
+      await this.productMetafieldDefinitionRepository.upsertByKey(structure.metafields, transactionContext)
+      await this.productMetafieldDefinitionRepository.softDelete(
+        absentMetafieldDefinitions(structure, live.metafields).map((definition) => definition.id),
+        transactionContext,
+      )
 
       const categoryIdOf = new Map(categories.map((category) => [category.handle, category.id]))
       for (const category of flattenStructureCategories(structure.categories)) {
@@ -143,6 +153,15 @@ export class ProductCatalogStructureService {
       await this.productRuleMembershipService.syncRuleMemberships(undefined, transactionContext)
       return changes
     })
+  }
+
+  private async readLive(context?: Context): Promise<LiveCatalogStructure> {
+    const [metafields, categories, collections] = await Promise.all([
+      this.productMetafieldDefinitionRepository.find(undefined, undefined, context),
+      this.productCategoryRepository.find(undefined, undefined, context),
+      this.productCollectionRepository.find(undefined, undefined, context),
+    ])
+    return { metafields, categories, collections }
   }
 
   /** The whole file as text, or `null` once it passes the size ceiling. */

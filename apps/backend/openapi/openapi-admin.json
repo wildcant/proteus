@@ -2834,6 +2834,34 @@
               "$ref": "#/components/schemas/AdminCatalogStructureError"
             }
           },
+          "metafields": {
+            "type": "object",
+            "properties": {
+              "create": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminCatalogStructureMetafieldChange"
+                }
+              },
+              "update": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminCatalogStructureMetafieldChange"
+                }
+              },
+              "delete": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminCatalogStructureMetafieldChange"
+                }
+              }
+            },
+            "required": [
+              "create",
+              "update",
+              "delete"
+            ]
+          },
           "categories": {
             "type": "object",
             "properties": {
@@ -2921,6 +2949,7 @@
         },
         "required": [
           "errors",
+          "metafields",
           "categories",
           "collections",
           "menu"
@@ -2939,6 +2968,21 @@
         "required": [
           "path",
           "message"
+        ]
+      },
+      "AdminCatalogStructureMetafieldChange": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name"
         ]
       },
       "AdminCatalogStructureCategoryChange": {
@@ -3099,10 +3143,10 @@
       },
       "AdminProductGroupingRule": {
         "type": [
-          "array",
+          "object",
           "null"
         ],
-        "items": {
+        "additionalProperties": {
           "type": "array",
           "items": {
             "type": "string",
@@ -3111,9 +3155,7 @@
           },
           "minItems": 1,
           "maxItems": 20
-        },
-        "minItems": 1,
-        "maxItems": 20
+        }
       },
       "AdminProductCollectionResponse": {
         "type": "object",
@@ -4071,15 +4113,44 @@
                 "items": {
                   "$ref": "#/components/schemas/AdminProductTag"
                 }
+              },
+              "metafields": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminProductMetafield"
+                }
               }
             },
             "required": [
               "type",
               "categories",
               "collections",
-              "tags"
+              "tags",
+              "metafields"
             ]
           }
+        ]
+      },
+      "AdminProductMetafield": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "values"
         ]
       },
       "AdminCreateProduct": {

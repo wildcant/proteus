@@ -10,6 +10,8 @@ import { ProductCategoryRepository } from '../repositories/product-category.js'
 import { ProductCollectionRepository } from '../repositories/product-collection.js'
 import { ProductImageRepository } from '../repositories/product-image.js'
 import { ProductImportRepository } from '../repositories/product-import.js'
+import { ProductMetafieldRepository } from '../repositories/product-metafield.js'
+import { ProductMetafieldDefinitionRepository } from '../repositories/product-metafield-definition.js'
 import { ProductOptionRepository } from '../repositories/product-option.js'
 import { ProductOptionValueRepository } from '../repositories/product-option-value.js'
 import { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
@@ -66,6 +68,8 @@ test.beforeEach(({ getDb, logger }) => {
     productProductTagRepository: new ProductProductTagRepository({ getDb, cascadeGraph }),
     productTypeRepository: new ProductTypeRepository({ getDb, cascadeGraph }),
     productImportRepository: new ProductImportRepository({ getDb, cascadeGraph }),
+    productMetafieldDefinitionRepository: new ProductMetafieldDefinitionRepository({ getDb, cascadeGraph }),
+    productMetafieldRepository: new ProductMetafieldRepository({ getDb, cascadeGraph }),
     withTransaction,
     logger,
   })

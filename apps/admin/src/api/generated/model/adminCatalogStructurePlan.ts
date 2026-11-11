@@ -9,9 +9,11 @@ import type { AdminCatalogStructureError } from './adminCatalogStructureError.ts
 import type { AdminCatalogStructurePlanCategories } from './adminCatalogStructurePlanCategories.ts';
 import type { AdminCatalogStructurePlanCollections } from './adminCatalogStructurePlanCollections.ts';
 import type { AdminCatalogStructurePlanMenu } from './adminCatalogStructurePlanMenu.ts';
+import type { AdminCatalogStructurePlanMetafields } from './adminCatalogStructurePlanMetafields.ts';
 
 export interface AdminCatalogStructurePlan {
   errors: AdminCatalogStructureError[];
+  metafields: AdminCatalogStructurePlanMetafields;
   categories: AdminCatalogStructurePlanCategories;
   collections: AdminCatalogStructurePlanCollections;
   menu: AdminCatalogStructurePlanMenu;

@@ -172,7 +172,7 @@ export class ProductImportService {
    * Finds what the product's names refer to and creates what is missing, in one transaction.
    *
    * Only types, tags and options: categories and collections come from the structure file, and the
-   * product joins the ruled ones when its tags are written.
+   * product joins the ruled ones when its metafields are written.
    */
   async resolveProductImportReferences(
     product: ImportedProductDTO,
