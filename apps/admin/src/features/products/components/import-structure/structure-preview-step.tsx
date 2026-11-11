@@ -7,16 +7,29 @@ import type { PreviewedCatalogStructure } from '#/features/products/hooks/use-up
 
 type ChangeRow = { key: string; label: string; detail: string }
 
-/** Step two: every grouping the file creates, changes, moves or deletes, and the menu it leaves. */
+/** Step two: every metafield and grouping the file creates, changes, moves or deletes, and the menu it leaves. */
 export function StructurePreviewStep({ fileId, plan }: PreviewedCatalogStructure) {
   const { t } = useLingui()
   const { handleSuccess } = useRouteModal()
   const apply = useApplyCatalogStructure()
-  const { categories, collections } = plan
+  const { metafields, categories, collections } = plan
 
   const atRoot = t`top level`
   const under = (parentHandle: string | null | undefined) => parentHandle ?? atRoot
   const groups: { title: string; rows: ChangeRow[]; destructive?: boolean }[] = [
+    {
+      title: t`Metafields to create`,
+      rows: metafields.create.map((row) => ({ key: row.key, label: row.name, detail: row.key })),
+    },
+    {
+      title: t`Metafields to rename`,
+      rows: metafields.update.map((row) => ({ key: row.key, label: row.name, detail: row.key })),
+    },
+    {
+      title: t`Metafields to delete`,
+      rows: metafields.delete.map((row) => ({ key: row.key, label: row.name, detail: row.key })),
+      destructive: true,
+    },
     {
       title: t`Categories to create`,
       rows: categories.create.map((row) => ({ key: row.handle, label: row.name, detail: under(row.parentHandle) })),
@@ -66,8 +79,9 @@ export function StructurePreviewStep({ fileId, plan }: PreviewedCatalogStructure
           <p className="flex items-start gap-x-2 rounded-md border border-blue-500/30 bg-blue-500/5 p-3 text-sm">
             <InfoIcon className="mt-0.5 size-4 shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true" />
             <Trans>
-              Categories and collections are matched by handle. Applying makes every category in the file active and
-              re-matches every tag rule.
+              Metafields are matched by key, categories and collections by handle. Applying makes every category in the
+              file active and re-matches every rule against the products' metafields. Deleting a metafield deletes its
+              values on every product.
             </Trans>
           </p>
 

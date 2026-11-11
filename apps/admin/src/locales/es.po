@@ -37,7 +37,7 @@ msgstr "{create} nuevos, {update} por actualizar, {skip} omitidos."
 msgid "{fileName} is not a supported file type. Supported file types are: {extensions}."
 msgstr "{fileName} no es un tipo de archivo compatible. Los tipos de archivo compatibles son: {extensions}."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:162
+#: src/features/products/components/import-structure/structure-preview-step.tsx:176
 msgid "{handle} (collection)"
 msgstr "{handle} (colección)"
 
@@ -113,11 +113,11 @@ msgstr "Una variante es una combinación de los valores de las opciones de este 
 msgid "Accepted"
 msgstr "Aceptada"
 
-#: src/features/products/components/import-products/import-upload-step.tsx:65
+#: src/features/products/components/import-products/import-upload-step.tsx:64
 msgid "Accepts .csv up to {maxSize}"
 msgstr "Acepta .csv de hasta {maxSize}"
 
-#: src/features/products/components/import-structure/structure-upload-step.tsx:73
+#: src/features/products/components/import-structure/structure-upload-step.tsx:74
 msgid "Accepts .yaml up to {maxSize}"
 msgstr "Acepta .yaml de hasta {maxSize}"
 
@@ -222,7 +222,7 @@ msgstr "Al agregar una moneda, cada producto obtiene una columna de precio en el
 msgid "Admin"
 msgstr "Admin"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:108
+#: src/features/products/components/import-structure/structure-preview-step.tsx:122
 msgid "After"
 msgstr "Después"
 
@@ -238,7 +238,7 @@ msgstr "Permitir pedidos sin stock"
 msgid "Allow backorders"
 msgstr "Permitir pedidos sin stock"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:138
+#: src/features/products/components/import-structure/structure-preview-step.tsx:152
 msgid "Apply structure"
 msgstr "Aplicar estructura"
 
@@ -388,9 +388,9 @@ msgstr "bytes"
 #: src/features/products/components/edit-product-group-form.tsx:48
 #: src/features/products/components/edit-product-organization-form.tsx:36
 #: src/features/products/components/import-products/import-preview-step.tsx:75
-#: src/features/products/components/import-products/import-upload-step.tsx:89
-#: src/features/products/components/import-structure/structure-preview-step.tsx:120
-#: src/features/products/components/import-structure/structure-upload-step.tsx:83
+#: src/features/products/components/import-products/import-upload-step.tsx:88
+#: src/features/products/components/import-structure/structure-preview-step.tsx:134
+#: src/features/products/components/import-structure/structure-upload-step.tsx:84
 #: src/features/products/components/media/edit-product-media-form.tsx:40
 #: src/features/products/components/media/manage-image-variants-form.tsx:71
 #: src/features/products/components/variant/create-variant-form.tsx:119
@@ -438,23 +438,19 @@ msgstr "Capturar pagos"
 msgid "Categories"
 msgstr "Categorías"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:68
-msgid "Categories and collections are matched by handle. Applying makes every category in the file active and re-matches every tag rule."
-msgstr "Las categorías y colecciones se emparejan por handle. Al aplicar, cada categoría del archivo queda activa y se vuelven a evaluar todas las reglas de etiquetas."
-
-#: src/features/products/components/import-structure/structure-preview-step.tsx:21
+#: src/features/products/components/import-structure/structure-preview-step.tsx:34
 msgid "Categories to create"
 msgstr "Categorías por crear"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:37
+#: src/features/products/components/import-structure/structure-preview-step.tsx:50
 msgid "Categories to delete"
 msgstr "Categorías por eliminar"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:29
+#: src/features/products/components/import-structure/structure-preview-step.tsx:42
 msgid "Categories to move"
 msgstr "Categorías por mover"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:25
+#: src/features/products/components/import-structure/structure-preview-step.tsx:38
 msgid "Categories to update"
 msgstr "Categorías por actualizar"
 
@@ -515,15 +511,15 @@ msgstr "Código"
 msgid "Collections"
 msgstr "Colecciones"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:42
+#: src/features/products/components/import-structure/structure-preview-step.tsx:55
 msgid "Collections to create"
 msgstr "Colecciones por crear"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:50
+#: src/features/products/components/import-structure/structure-preview-step.tsx:63
 msgid "Collections to delete"
 msgstr "Colecciones por eliminar"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:46
+#: src/features/products/components/import-structure/structure-preview-step.tsx:59
 msgid "Collections to update"
 msgstr "Colecciones por actualizar"
 
@@ -902,7 +898,7 @@ msgstr "Listo"
 msgid "Download file"
 msgstr "Descargar archivo"
 
-#: src/features/products/components/import-products/import-upload-step.tsx:52
+#: src/features/products/components/import-products/import-upload-step.tsx:51
 msgid "Download sample CSV"
 msgstr "Descargar CSV de ejemplo"
 
@@ -1119,7 +1115,7 @@ msgstr "Cuadrícula de datos editable"
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:149
+#: src/features/products/components/import-structure/structure-preview-step.tsx:163
 msgid "Empty"
 msgstr "Vacío"
 
@@ -1127,7 +1123,7 @@ msgstr "Vacío"
 msgid "Every combination of this product's options already has a variant."
 msgstr "Cada combinación de las opciones de este producto ya tiene una variante."
 
-#: src/features/products/components/import-products/import-upload-step.tsx:76
+#: src/features/products/components/import-products/import-upload-step.tsx:75
 msgid "Existing values will be replaced for all columns included in the CSV."
 msgstr "Se reemplazarán los valores existentes de todas las columnas incluidas en el CSV."
 
@@ -1519,8 +1515,8 @@ msgid "Import"
 msgstr "Importar"
 
 #: src/features/products/components/import-products/import-upload-step.tsx:46
-msgid "Import a CSV file in the Shopify product format, one row per variant. Tags such as <0>genero:hombre</0> are kept as written; the rules in the store structure use them to place products in categories and collections."
-msgstr "Importa un archivo CSV en el formato de productos de Shopify, una fila por variante. Las etiquetas como <0>genero:hombre</0> se guardan tal cual; las reglas de la estructura de la tienda las usan para ubicar los productos en categorías y colecciones."
+msgid "Import a CSV file in the Shopify product format, one row per variant. The rules in the store structure place products in categories and collections by their metafields; tags are kept as written."
+msgstr "Importa un archivo CSV en el formato de productos de Shopify, una fila por variante. Las reglas de la estructura de la tienda ubican los productos en categorías y colecciones según sus metacampos; las etiquetas se guardan tal cual."
 
 #: src/features/products/components/import-products/import-progress-step.tsx:23
 msgid "Import failed"
@@ -1801,9 +1797,25 @@ msgstr "Multimedia"
 msgid "Media updated successfully"
 msgstr "Multimedia actualizada correctamente"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:98
+#: src/features/products/components/import-structure/structure-preview-step.tsx:112
 msgid "Menu"
 msgstr "Menú"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:81
+msgid "Metafields are matched by key, categories and collections by handle. Applying makes every category in the file active and re-matches every rule against the products' metafields. Deleting a metafield deletes its values on every product."
+msgstr "Los metacampos se emparejan por clave, y las categorías y colecciones por handle. Al aplicar, cada categoría del archivo queda activa y todas las reglas se vuelven a evaluar contra los metacampos de los productos. Eliminar un metacampo elimina sus valores en todos los productos."
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:21
+msgid "Metafields to create"
+msgstr "Metacampos por crear"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:29
+msgid "Metafields to delete"
+msgstr "Metacampos por eliminar"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:25
+msgid "Metafields to rename"
+msgstr "Metacampos por renombrar"
 
 #: src/features/products/components/create-product-form/product-create-attributes-form.tsx:37
 #: src/features/products/components/product-attribute-section.tsx:31
@@ -2102,7 +2114,7 @@ msgstr "Ninguna — nivel superior"
 msgid "None makes it a top-level category. Fixed once the category is created."
 msgstr "Sin padre, es una categoría de nivel superior. No se puede cambiar una vez creada la categoría."
 
-#: src/features/products/components/import-products/import-upload-step.tsx:66
+#: src/features/products/components/import-products/import-upload-step.tsx:65
 msgid "Not a CSV file. Choose a file ending in .csv."
 msgstr "No es un archivo CSV. Elige un archivo que termine en .csv."
 
@@ -2110,7 +2122,7 @@ msgstr "No es un archivo CSV. Elige un archivo que termine en .csv."
 msgid "Not a supported image. Supported file types are: {extensions}."
 msgstr "No es una imagen compatible. Los tipos de archivo compatibles son: {extensions}."
 
-#: src/features/products/components/import-structure/structure-upload-step.tsx:74
+#: src/features/products/components/import-structure/structure-upload-step.tsx:75
 msgid "Not a YAML file. Choose a file ending in .yaml or .yml."
 msgstr "No es un archivo YAML. Elige un archivo que termine en .yaml o .yml."
 
@@ -2126,7 +2138,7 @@ msgstr "Notificación"
 msgid "Notifications"
 msgstr "Notificaciones"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:102
+#: src/features/products/components/import-structure/structure-preview-step.tsx:116
 msgid "Now"
 msgstr "Ahora"
 
@@ -2195,7 +2207,7 @@ msgstr "Organizar categorías"
 msgid "Outstanding amount"
 msgstr "Monto pendiente"
 
-#: src/features/products/components/import-products/import-upload-step.tsx:75
+#: src/features/products/components/import-products/import-upload-step.tsx:74
 msgid "Overwrite products with matching handles."
 msgstr "Sobrescribir productos con el mismo handle."
 
@@ -2269,7 +2281,7 @@ msgstr "Al realizar un pedido se reserva su stock, y la reserva aparece aquí."
 msgid "Prev"
 msgstr "Ant."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:63
+#: src/features/products/components/import-structure/structure-preview-step.tsx:76
 msgid "Preview the structure"
 msgstr "Vista previa de la estructura"
 
@@ -2356,7 +2368,7 @@ msgstr "Proveedores"
 msgid "Publish"
 msgstr "Publicar"
 
-#: src/features/products/components/import-products/import-upload-step.tsx:81
+#: src/features/products/components/import-products/import-upload-step.tsx:80
 msgid "Publish new products."
 msgstr "Publicar los productos nuevos."
 
@@ -2746,7 +2758,7 @@ msgstr "Cantidad en stock"
 msgid "Store"
 msgstr "Tienda"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:131
+#: src/features/products/components/import-structure/structure-preview-step.tsx:145
 msgid "Structure applied"
 msgstr "Estructura aplicada"
 
@@ -2790,8 +2802,8 @@ msgid "The file exceeds the maximum file size of {maxSize}."
 msgstr "El archivo supera el tamaño máximo de {maxSize}."
 
 #: src/features/products/components/import-structure/structure-upload-step.tsx:57
-msgid "The file lists <0>categorias</0> with their <1>hijos</1>, <2>colecciones</2> and the <3>menu</3>. A <4>regla</4> fills a category or collection with the products whose tags match. The file is the source: categories and collections it leaves out are deleted."
-msgstr "El archivo enumera las <0>categorias</0> con sus <1>hijos</1>, las <2>colecciones</2> y el <3>menu</3>. Una <4>regla</4> llena una categoría o colección con los productos cuyas etiquetas coinciden. El archivo manda: las categorías y colecciones que no incluye se eliminan."
+msgid "The file lists the product metafields as <0>campos</0>, then <1>categorias</1> with their <2>hijos</2>, <3>colecciones</3> and the <4>menu</4>. A <5>regla</5> fills a category or collection with the products whose metafields match. The file is the source: metafields, categories and collections it leaves out are deleted."
+msgstr "El archivo enumera los metacampos de producto como <0>campos</0>, luego las <1>categorias</1> con sus <2>hijos</2>, las <3>colecciones</3> y el <4>menu</4>. Una <5>regla</5> llena una categoría o colección con los productos cuyos metacampos coinciden. El archivo manda: los metacampos, categorías y colecciones que no incluye se eliminan."
 
 #: src/features/collections/components/collection-thumbnail-picker.tsx:28
 msgid "The image exceeds the maximum file size of {maxSize}."
@@ -2801,7 +2813,7 @@ msgstr "La imagen supera el tamaño máximo de archivo de {maxSize}."
 msgid "The market — and so the currency — a shopper is priced in before they pick one."
 msgstr "El mercado —y por tanto la moneda— con el que se muestran los precios a un comprador antes de que elija uno."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:76
+#: src/features/products/components/import-structure/structure-preview-step.tsx:90
 msgid "The store already has this structure. Applying it changes nothing."
 msgstr "La tienda ya tiene esta estructura. Aplicarla no cambia nada."
 
@@ -2997,8 +3009,8 @@ msgstr "Actualizados"
 msgid "Upload an image"
 msgstr "Subir una imagen"
 
-#: src/features/products/components/import-products/import-upload-step.tsx:92
-#: src/features/products/components/import-structure/structure-upload-step.tsx:86
+#: src/features/products/components/import-products/import-upload-step.tsx:91
+#: src/features/products/components/import-structure/structure-upload-step.tsx:87
 msgid "Upload file"
 msgstr "Subir archivo"
 

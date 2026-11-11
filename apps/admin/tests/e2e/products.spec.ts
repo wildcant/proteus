@@ -474,11 +474,8 @@ test('product CSV import journey', async ({ page, authenticate, navigate, cleanu
   const suffix = Date.now()
   const title = `E2E Imported Product ${suffix}`
   const sku = `E2E-IMPORT-${suffix}`
-  // A tag no other run uses, and a Category whose rule reads it: the import names no Category, the
-  // rule places the product.
-  const tag = `e2e-import:${suffix}`
-  const category = await factories.create.productCategory({ rule: [[tag]] })
-  cleanup.add(() => factories.destroy.productCategory(category.id))
+  // A tag no other run uses, so the preview lists it among what the import creates.
+  const tag = `e2e-import-${suffix}`
   // No prices, stock or options: each of those resolves something store-wide, and this journey is
   // about the modal, not the mapping the backend suite covers.
   const csv = `Title,URL handle,Status,SKU,Tags\n${title},e2e-imported-${suffix},active,${sku},${tag}\n`
@@ -516,7 +513,5 @@ test('product CSV import journey', async ({ page, authenticate, navigate, cleanu
   const productId = page.url().split('/products/')[1]?.split('/')[0]
   if (productId) cleanup.add(() => factories.destroy.product(productId))
   await expect(page.getByText(`/e2e-imported-${suffix}`)).toBeVisible()
-  // The Category's rule picked the product up from its imported tag.
-  await expect(page.getByText(category.name, { exact: true })).toBeVisible()
   await expect(page.getByText(tag, { exact: true })).toBeVisible()
 })

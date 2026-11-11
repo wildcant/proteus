@@ -44,9 +44,8 @@ export function ImportUploadStep({ errors, onRead }: ImportUploadStepProps) {
               </h2>
               <p className="text-muted-foreground text-sm">
                 <Trans>
-                  Import a CSV file in the Shopify product format, one row per variant. Tags such as{' '}
-                  <code>genero:hombre</code> are kept as written; the rules in the store structure use them to place
-                  products in categories and collections.
+                  Import a CSV file in the Shopify product format, one row per variant. The rules in the store structure
+                  place products in categories and collections by their metafields; tags are kept as written.
                 </Trans>{' '}
                 <a href="/product-import-template.csv" download className="text-primary hover:underline">
                   <Trans>Download sample CSV</Trans>

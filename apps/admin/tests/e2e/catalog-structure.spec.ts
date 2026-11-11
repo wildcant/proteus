@@ -1,6 +1,7 @@
 import { expect, test } from '../setup/test-extend.js'
 
-// Applying a structure file deletes every Category and Collection it leaves out, store-wide. Specs run
+// Applying a structure file deletes every metafield definition, Category and Collection it leaves out,
+// store-wide. Specs run
 // fully parallel against one database, so this journey can delete groupings another spec is using.
 // Run it on its own (`pnpm --filter admin run test:e2e catalog-structure`) until it gets a database
 // of its own.
@@ -15,11 +16,16 @@ test('structure import journey: upload, preview the changes and the menu, apply'
   const suffix = Date.now()
   const parentName = `E2E Structure ${suffix}`
   const childName = `E2E Structure Child ${suffix}`
+  const metafieldName = `E2E Field ${suffix}`
+  const metafieldKey = `e2e_${suffix}`
   const yaml = [
+    'campos:',
+    `  - nombre: ${metafieldName}`,
+    `    clave: ${metafieldKey}`,
     'categorias:',
     `  - nombre: ${parentName}`,
     `    handle: e2e-structure-${suffix}`,
-    `    regla: [[e2e:structure-${suffix}]]`,
+    `    regla: { ${metafieldKey}: [structure] }`,
     '    hijos:',
     `      - nombre: ${childName}`,
     `        handle: e2e-structure-child-${suffix}`,
@@ -50,8 +56,10 @@ test('structure import journey: upload, preview the changes and the menu, apply'
     .setInputFiles({ name: 'estructura.yaml', mimeType: 'application/yaml', buffer: Buffer.from(yaml) })
   await modal.getByRole('button', { name: 'Upload file' }).click()
 
-  // Preview — both categories are new, and the menu after holds the parent.
+  // Preview — the metafield and both categories are new, and the menu after holds the parent.
   await expect(modal.getByText('Preview the structure')).toBeVisible({ timeout: 15000 })
+  const createdMetafields = modal.locator('section').filter({ hasText: 'Metafields to create' })
+  await expect(createdMetafields.getByText(metafieldName, { exact: true })).toBeVisible()
   const created = modal.locator('section').filter({ hasText: 'Categories to create' })
   await expect(created.getByText(parentName, { exact: true })).toBeVisible()
   await expect(created.getByText(childName, { exact: true })).toBeVisible()
