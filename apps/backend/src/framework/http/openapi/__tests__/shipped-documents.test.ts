@@ -47,6 +47,8 @@ const unauthenticatedOperations = {
   admin: ['acceptInvite', 'authAuthenticate', 'authRegister', 'authResetPassword'],
   store: [
     'authResetPassword',
+    // The store menu every page draws, before any sign-in: catalogue structure like the category tree.
+    'getStoreNavigation',
     'getStoreProduct',
     // The market picker draws this list before a shopper has done anything, sign in included —
     // and a country's name and ISO code are catalogue data, the same as the two product
@@ -74,6 +76,7 @@ const operationsWithoutUnauthorized = {
   admin: ['acceptInvite', 'authRegister', 'authResetPassword'],
   store: [
     'authResetPassword',
+    'getStoreNavigation',
     'getStoreProduct',
     'listStoreCountries',
     'listStoreProductCategoryTree',
