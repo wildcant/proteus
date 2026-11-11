@@ -14,11 +14,6 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/workflows/product/apply-catalog-structure.ts:43
-msgid "The structure file has errors. Preview it to see them, fix them and upload it again."
-msgstr "El archivo de estructura tiene errores. Previsualízalo para verlos, corrígelos y vuelve a subirlo."
-
-#. js-lingui-explicit-id
 #: src/container.ts:140
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "Se seleccionó el motor de flujos de trabajo temporal, pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createTemporalWorkflowEngine`, o fijar `projectConfig.workflows.engine` en \"simple\"."
@@ -64,6 +59,11 @@ msgstr "La tienda no vende en \"{currencyCode}\". No tiene monedas configuradas.
 #: src/workflows/region/steps/assign-countries-to-region.ts:53
 msgid "\"{displayName}\" is already sold to by region \"{regionId}\". Remove it from that region first."
 msgstr "\"{displayName}\" ya está asignado a la región \"{regionId}\". Primero quítalo de esa región."
+
+#. js-lingui-explicit-id
+#: src/workflows/product/apply-catalog-structure.ts:43
+msgid "The structure file has errors. Preview it to see them, fix them and upload it again."
+msgstr "El archivo de estructura tiene errores. Previsualízalo para verlos, corrígelos y vuelve a subirlo."
 
 #. js-lingui-explicit-id
 #: src/workflows/product/import-product.ts:275

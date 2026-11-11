@@ -380,7 +380,7 @@ export type CatalogStructureCategoryDTO = {
 }
 
 /** A Collection as a structure file declares it. `rule` null is a manual Collection. */
-export type CatalogStructureCollectionDTO = {
+type CatalogStructureCollectionDTO = {
   name: string
   handle: string
   rule: ProductGroupingRuleDTO | null
@@ -403,18 +403,18 @@ export type CatalogStructureErrorDTO = {
 }
 
 /** A Category the file creates, updates or deletes. `parentHandle` is where it ends up (for a delete, where it was). */
-export type CatalogStructureCategoryChangeDTO = {
+type CatalogStructureCategoryChangeDTO = {
   handle: string
   name: string
   parentHandle: string | null
 }
 
 /** A Category the file puts under another parent; it may change otherwise too. */
-export type CatalogStructureCategoryMoveDTO = CatalogStructureCategoryChangeDTO & {
+type CatalogStructureCategoryMoveDTO = CatalogStructureCategoryChangeDTO & {
   previousParentHandle: string | null
 }
 
-export type CatalogStructureCollectionChangeDTO = {
+type CatalogStructureCollectionChangeDTO = {
   handle: string
   name: string
 }
