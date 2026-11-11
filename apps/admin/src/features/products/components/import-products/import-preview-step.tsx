@@ -144,8 +144,6 @@ function ImportSummary({ productImport }: { productImport: AdminProductImport })
 function WillCreate({ willCreate }: { willCreate: AdminProductImport['summary']['willCreate'] }) {
   const { t } = useLingui()
   const groups = [
-    { label: t`Categories`, values: willCreate.categories },
-    { label: t`Collections`, values: willCreate.collections },
     { label: t`Tags`, values: willCreate.tags },
     { label: t`Types`, values: willCreate.types },
   ].filter((group) => group.values.length > 0)
@@ -164,11 +162,6 @@ function WillCreate({ willCreate }: { willCreate: AdminProductImport['summary'][
           </FieldRow>
         ))}
       </dl>
-      {willCreate.categories.length > 0 && (
-        <p className="text-muted-foreground text-xs">
-          <Trans>New categories are created active, at the top of the category tree.</Trans>
-        </p>
-      )}
     </section>
   )
 }
@@ -189,8 +182,6 @@ function FirstProduct({ product }: { product: NonNullable<AdminImportedProduct> 
           <span className="capitalize">{i18n._(productStatusLabels[product.status])}</span>
         </FieldRow>
         <FieldRow label={t`Type`}>{product.type ?? none}</FieldRow>
-        <FieldRow label={t`Categories`}>{product.categoryHandles.join(', ') || none}</FieldRow>
-        <FieldRow label={t`Collections`}>{product.collectionHandles.join(', ') || none}</FieldRow>
         <FieldRow label={t`Tags`}>{product.tags.join(', ') || none}</FieldRow>
       </dl>
 
