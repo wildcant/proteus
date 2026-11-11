@@ -1,5 +1,6 @@
 import type { BaseFilterable, OperatorMap } from '../common.js'
 import type { PriceDTO } from '../pricing/common.js'
+import type { StoreNavigationEntryDTO } from '../store/common.js'
 
 export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 
@@ -319,6 +320,13 @@ export interface FilterableProductVariantImageProps extends BaseFilterable<Filte
   imageId?: string | string[]
 }
 
+/**
+ * A tag rule: every condition must hold, and a condition holds when the product carries any one of its
+ * tag values — an AND of ORs. `[['genero:hombre', 'genero:unisex'], ['estilo:clasicos']]` reads
+ * "(hombre or unisex) and clasicos". Values match exactly, as tags are stored.
+ */
+export type ProductGroupingRuleDTO = string[][]
+
 export type ProductCategoryDTO = {
   id: string
   name: string
@@ -328,6 +336,8 @@ export type ProductCategoryDTO = {
   rank: number
   isActive: boolean
   isInternal: boolean
+  /** `null` is manual: the members are picked. A ruled Category's members follow its rule. */
+  rule: ProductGroupingRuleDTO | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -348,6 +358,8 @@ export type ProductCollectionDTO = {
   title: string
   handle: string
   thumbnail: string | null
+  /** `null` is manual: the members are picked. A ruled Collection's members follow its rule. */
+  rule: ProductGroupingRuleDTO | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -357,6 +369,79 @@ export interface FilterableProductCollectionProps extends BaseFilterable<Filtera
   id?: string | string[]
   title?: string | OperatorMap<string>
   handle?: string | string[]
+}
+
+/** A Category as a structure file declares it, its children in file order. `rule` null is a manual Category. */
+export type CatalogStructureCategoryDTO = {
+  name: string
+  handle: string
+  rule: ProductGroupingRuleDTO | null
+  children: CatalogStructureCategoryDTO[]
+}
+
+/** A Collection as a structure file declares it. `rule` null is a manual Collection. */
+type CatalogStructureCollectionDTO = {
+  name: string
+  handle: string
+  rule: ProductGroupingRuleDTO | null
+}
+
+/**
+ * The store's structure as `estructura.yaml` declares it: the Category tree, the Collections and the
+ * menu. The file is the source: applying it makes the catalogue's groupings exactly these.
+ */
+export type CatalogStructureDTO = {
+  categories: CatalogStructureCategoryDTO[]
+  collections: CatalogStructureCollectionDTO[]
+  menu: StoreNavigationEntryDTO[]
+}
+
+/** One problem with a structure file. `path` names where it is, `categorias[0].hijos[1].handle`. */
+export type CatalogStructureErrorDTO = {
+  path: string
+  message: string
+}
+
+/** A Category the file creates, updates or deletes. `parentHandle` is where it ends up (for a delete, where it was). */
+type CatalogStructureCategoryChangeDTO = {
+  handle: string
+  name: string
+  parentHandle: string | null
+}
+
+/** A Category the file puts under another parent; it may change otherwise too. */
+type CatalogStructureCategoryMoveDTO = CatalogStructureCategoryChangeDTO & {
+  previousParentHandle: string | null
+}
+
+type CatalogStructureCollectionChangeDTO = {
+  handle: string
+  name: string
+}
+
+/**
+ * What applying a structure does to the groupings, by handle. An update is a new name, rule, rank
+ * or an inactive Category turned active; a move is a new parent, and is listed only as a move.
+ */
+export type CatalogStructureChangesDTO = {
+  categories: {
+    create: CatalogStructureCategoryChangeDTO[]
+    update: CatalogStructureCategoryChangeDTO[]
+    move: CatalogStructureCategoryMoveDTO[]
+    delete: CatalogStructureCategoryChangeDTO[]
+  }
+  collections: {
+    create: CatalogStructureCollectionChangeDTO[]
+    update: CatalogStructureCollectionChangeDTO[]
+    delete: CatalogStructureCollectionChangeDTO[]
+  }
+}
+
+/** A structure file read against the catalogue. A file with errors has no structure, and changes nothing. */
+export type CatalogStructurePlanDTO = {
+  structure: CatalogStructureDTO | null
+  errors: CatalogStructureErrorDTO[]
+  changes: CatalogStructureChangesDTO
 }
 
 export type ProductTypeDTO = {
@@ -447,8 +532,6 @@ export type ImportedProductDTO = {
   description: string | null
   status: ProductStatusType
   type: string | null
-  categoryHandles: string[]
-  collectionHandles: string[]
   tags: string[]
   options: Array<{ title: string; values: string[] }>
   variants: ImportedVariantDTO[]
@@ -460,8 +543,8 @@ export type ProductImportSummaryDTO = {
   products: { create: number; update: number; skip: number }
   skus: number
   images: number
-  /** Groupings the file names that do not exist yet, created when the import runs. */
-  willCreate: { categories: string[]; collections: string[]; tags: string[]; types: string[] }
+  /** Tags and types the file names that do not exist yet, created when the import runs. */
+  willCreate: { tags: string[]; types: string[] }
   /** Columns present in the file that the import does not read. */
   ignoredColumns: string[]
   firstProduct: ImportedProductDTO | null
@@ -513,8 +596,6 @@ export type ProductImportReferencesDTO = {
   /** The live product with the same handle, if any. */
   existingProductId: string | null
   typeId: string | null
-  categoryIds: string[]
-  collectionIds: string[]
   tagIds: string[]
   /** In the product's option order; `valueIds` line up with `ImportedProductDTO.options[].values`. */
   options: Array<{ optionId: string; valueIds: string[] }>

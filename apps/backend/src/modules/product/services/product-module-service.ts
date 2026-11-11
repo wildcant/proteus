@@ -5,6 +5,9 @@ import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
   AppliedProductOptionChangeDTO,
+  CatalogStructureChangesDTO,
+  CatalogStructureDTO,
+  CatalogStructurePlanDTO,
   EnrichedProductVariantDTO,
   FilterableProductCategoryProps,
   FilterableProductCollectionProps,
@@ -60,6 +63,7 @@ import type {
   SetCategoryProductsDTO,
   SetCollectionProductsDTO,
   SetProductOptionsDTO,
+  SyncRuleMembershipsDTO,
   UpdateProductCategoryDTO,
   UpdateProductCollectionDTO,
   UpdateProductDTO,
@@ -94,10 +98,12 @@ import type { ProductVariantOptionRepository } from '../repositories/product-var
 import { combinationLabel } from '../utils/option-combinations.js'
 import { separateGroupingIds } from '../utils/product-grouping-ids.js'
 import type { VariantReconciliationPlan, VariantRemovalReason } from '../utils/reconcile-variants.js'
+import { ProductCatalogStructureService } from './product-catalog-structure-service.js'
 import { ProductCategoryService } from './product-category-service.js'
 import { ProductGroupingService } from './product-grouping-service.js'
 import { ProductImportService } from './product-import-service.js'
 import { ProductOptionService } from './product-option-service.js'
+import { ProductRuleMembershipService } from './product-rule-membership-service.js'
 
 /**
  * Everything the module is built from. The five option repositories are not used here — they are
@@ -150,6 +156,10 @@ export class ProductModuleService implements IProductModuleService {
   private productGroupingService: ProductGroupingService
   /** Private for the same reason. */
   private productImportService: ProductImportService
+  /** Private for the same reason. */
+  private productRuleMembershipService: ProductRuleMembershipService
+  /** Private for the same reason. */
+  private productCatalogStructureService: ProductCatalogStructureService
   private withTransaction: WithTransaction
   private logger: Logger
 
@@ -169,7 +179,13 @@ export class ProductModuleService implements IProductModuleService {
     this.productOptionService = new ProductOptionService(dependencies)
     this.productCategoryService = new ProductCategoryService(dependencies)
     this.productGroupingService = new ProductGroupingService(dependencies)
-    this.productImportService = new ProductImportService(dependencies, this.productCategoryService)
+    this.productImportService = new ProductImportService(dependencies)
+    this.productRuleMembershipService = new ProductRuleMembershipService(dependencies)
+    this.productCatalogStructureService = new ProductCatalogStructureService(dependencies, {
+      productCategoryService: this.productCategoryService,
+      productGroupingService: this.productGroupingService,
+      productRuleMembershipService: this.productRuleMembershipService,
+    })
   }
 
   // ── Products ──────────────────────────────────────────────────────────
@@ -218,6 +234,7 @@ export class ProductModuleService implements IProductModuleService {
           ]
         }),
       )
+      await this.syncRuleMemberships({ productIds: products.map((product) => product.id) }, transactionContext)
 
       return products
     })
@@ -240,6 +257,7 @@ export class ProductModuleService implements IProductModuleService {
         )
       }
       await this.replaceProductGroupings(productIds, groupingIds, transactionContext)
+      if (this.writesGroupings(groupingIds)) await this.syncRuleMemberships({ productIds }, transactionContext)
 
       return products
     })
@@ -261,6 +279,7 @@ export class ProductModuleService implements IProductModuleService {
       )
       if (images) await this.replaceProductImages(created.id, images, transactionContext)
       await this.replaceProductGroupings([created.id], groupingIds, transactionContext)
+      await this.syncRuleMemberships({ productIds: [created.id] }, transactionContext)
       return created
     })
   }
@@ -278,6 +297,9 @@ export class ProductModuleService implements IProductModuleService {
 
       if (images) await this.replaceProductImages(productId, images, transactionContext)
       await this.replaceProductGroupings([productId], groupingIds, transactionContext)
+      if (this.writesGroupings(groupingIds)) {
+        await this.syncRuleMemberships({ productIds: [productId] }, transactionContext)
+      }
 
       return product
     })
@@ -775,7 +797,13 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   async createCategory(data: CreateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO> {
-    return this.productCategoryService.createCategory(data, context)
+    return this.withTransaction(context, async (transactionContext) => {
+      const category = await this.productCategoryService.createCategory(data, transactionContext)
+      if (category.rule) {
+        await this.syncRuleMemberships({ categoryIds: [category.id], collectionIds: [] }, transactionContext)
+      }
+      return category
+    })
   }
 
   async updateCategory(
@@ -783,7 +811,13 @@ export class ProductModuleService implements IProductModuleService {
     data: UpdateProductCategoryDTO,
     context?: Context,
   ): Promise<ProductCategoryDTO> {
-    return this.productCategoryService.updateCategory(categoryId, data, context)
+    return this.withTransaction(context, async (transactionContext) => {
+      const category = await this.productCategoryService.updateCategory(categoryId, data, transactionContext)
+      if (data.rule !== undefined) {
+        await this.syncRuleMemberships({ categoryIds: [categoryId], collectionIds: [] }, transactionContext)
+      }
+      return category
+    })
   }
 
   async softDeleteCategories(categoryIds: string[], context?: Context): Promise<void> {
@@ -813,7 +847,13 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   async createCollection(data: CreateProductCollectionDTO, context?: Context): Promise<ProductCollectionDTO> {
-    return this.productGroupingService.createCollection(data, context)
+    return this.withTransaction(context, async (transactionContext) => {
+      const collection = await this.productGroupingService.createCollection(data, transactionContext)
+      if (collection.rule) {
+        await this.syncRuleMemberships({ categoryIds: [], collectionIds: [collection.id] }, transactionContext)
+      }
+      return collection
+    })
   }
 
   async updateCollection(
@@ -821,7 +861,13 @@ export class ProductModuleService implements IProductModuleService {
     data: UpdateProductCollectionDTO,
     context?: Context,
   ): Promise<ProductCollectionDTO> {
-    return this.productGroupingService.updateCollection(collectionId, data, context)
+    return this.withTransaction(context, async (transactionContext) => {
+      const collection = await this.productGroupingService.updateCollection(collectionId, data, transactionContext)
+      if (data.rule !== undefined) {
+        await this.syncRuleMemberships({ categoryIds: [], collectionIds: [collectionId] }, transactionContext)
+      }
+      return collection
+    })
   }
 
   async softDeleteCollections(collectionIds: string[], context?: Context): Promise<void> {
@@ -881,11 +927,20 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   async updateTag(tagId: string, data: UpdateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
-    return this.productGroupingService.updateTag(tagId, data, context)
+    return this.withTransaction(context, async (transactionContext) => {
+      const productIds = data.value === undefined ? [] : await this.productIdsTagged([tagId], transactionContext)
+      const tag = await this.productGroupingService.updateTag(tagId, data, transactionContext)
+      if (productIds.length > 0) await this.syncRuleMemberships({ productIds }, transactionContext)
+      return tag
+    })
   }
 
   async softDeleteTags(tagIds: string[], context?: Context): Promise<void> {
-    return this.productGroupingService.softDeleteTags(tagIds, context)
+    return this.withTransaction(context, async (transactionContext) => {
+      const productIds = await this.productIdsTagged(tagIds, transactionContext)
+      await this.productGroupingService.softDeleteTags(tagIds, transactionContext)
+      if (productIds.length > 0) await this.syncRuleMemberships({ productIds }, transactionContext)
+    })
   }
 
   async listProductTagValues(
@@ -896,6 +951,23 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   // ── Groupings ─────────────────────────────────────────────────────────
+
+  async syncRuleMemberships(scope?: SyncRuleMembershipsDTO, context?: Context): Promise<void> {
+    return this.productRuleMembershipService.syncRuleMemberships(scope, context)
+  }
+
+  // ── Structure files ───────────────────────────────────────────────────
+
+  async planCatalogStructure(
+    source: AsyncIterable<Uint8Array | string>,
+    context?: Context,
+  ): Promise<CatalogStructurePlanDTO> {
+    return this.productCatalogStructureService.planCatalogStructure(source, context)
+  }
+
+  async applyCatalogStructure(structure: CatalogStructureDTO, context?: Context): Promise<CatalogStructureChangesDTO> {
+    return this.productCatalogStructureService.applyCatalogStructure(structure, context)
+  }
 
   async retrieveProductGroupings(productId: string, context?: Context): Promise<ProductGroupingsDTO> {
     const groupingsOf = await this.readGroupings([productId], context)
@@ -1143,6 +1215,18 @@ export class ProductModuleService implements IProductModuleService {
       collections: collections.get(productId) ?? [],
       tags: tags.get(productId) ?? [],
     })
+  }
+
+  /** Whether a product write set any of its groupings, which is what can move it in or out of a ruled one. */
+  private writesGroupings({ categoryIds, collectionIds, tagIds }: ProductGroupingIdsDTO): boolean {
+    return categoryIds !== undefined || collectionIds !== undefined || tagIds !== undefined
+  }
+
+  /** The live products carrying any of the Tags, read before a write changes what the Tags match. */
+  private async productIdsTagged(tagIds: string[], context: Context): Promise<string[]> {
+    const filters: FilterableProductProps = { tagId: tagIds }
+    const products = await this.productRepository.find(filters, { select: ['id'] }, context)
+    return products.map((product) => product.id)
   }
 
   /** Each grouping the write names replaces that grouping's whole set on every product; absent ones are left alone. */

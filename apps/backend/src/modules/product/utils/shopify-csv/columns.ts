@@ -38,10 +38,6 @@ export const OPTION_COLUMNS = [
 /** `Price / Colombia` — a price in the currency of the region the market names. */
 export const MARKET_PRICE_HEADER = /^price \/ (.+)$/
 
-/** Tag prefixes that name a grouping rather than a tag. */
-export const CATEGORY_TAG_PREFIX = 'categoria:'
-export const COLLECTION_TAG_PREFIX = 'coleccion:'
-
 export function normalizeHeader(header: string): string {
   return header.trim().toLowerCase().replace(/\s+/g, ' ')
 }

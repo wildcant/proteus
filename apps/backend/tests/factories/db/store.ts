@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
-import { eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
+import type { StoreNavigationEntryDTO } from '../../../src/core/types/store/common.js'
 import type { CreateStore, CreateStoreCurrency } from '../../../src/schema.gen.js'
 import { storeCurrencyTable, storeTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
@@ -35,6 +36,26 @@ export async function createStore(overrides?: Partial<CreateStore>) {
 
 export async function deleteStoreById(id: string) {
   await db.delete(storeTable).where(eq(storeTable.id, id))
+}
+
+// --- Store navigation ---
+
+/**
+ * Sets the menu on the store the API serves (the oldest), restoring the one it replaced on dispose.
+ * There is one store, so a test that sets the menu changes it for every test running alongside.
+ */
+export async function createStoreNavigation(navigation: StoreNavigationEntryDTO[]) {
+  const [store] = await db.select().from(storeTable).orderBy(asc(storeTable.createdAt)).limit(1)
+  if (!store) throw new Error('No store to set the navigation on')
+
+  await db.update(storeTable).set({ navigation }).where(eq(storeTable.id, store.id))
+
+  return {
+    navigation,
+    [Symbol.asyncDispose]: async () => {
+      await db.update(storeTable).set({ navigation: store.navigation }).where(eq(storeTable.id, store.id))
+    },
+  }
 }
 
 // --- StoreCurrency ---

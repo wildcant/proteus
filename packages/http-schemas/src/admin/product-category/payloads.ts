@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { entityId, longText, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
+import { AdminProductGroupingRule } from '../product-tag/entities.js'
 
 export const AdminCreateProductCategory = z
   .object({
@@ -13,11 +14,13 @@ export const AdminCreateProductCategory = z
     rank: z.number().int().min(0).optional(),
     isActive: z.boolean().optional(),
     isInternal: z.boolean().optional(),
+    /** Absent or null makes a manual Category. A rule fills it with the products that match. */
+    rule: AdminProductGroupingRule.nullable().optional(),
   })
   .openapi('AdminCreateProductCategory')
 export type AdminCreateProductCategoryBody = z.infer<typeof AdminCreateProductCategory>
 
-/** Applied `add` then `remove`. Adding a member or removing a non-member is a no-op. */
+/** Applied `add` then `remove`. Adding a member or removing a non-member is a no-op. Refused for a ruled Category. */
 export const AdminSetCategoryProducts = z
   .object({
     add: z.array(entityId).max(MAX_ITEMS.batch).optional(),
@@ -37,6 +40,8 @@ export const AdminUpdateProductCategory = z
     rank: z.number().int().min(0).optional(),
     isActive: z.boolean().optional(),
     isInternal: z.boolean().optional(),
+    /** A new rule re-matches every product. Null makes it manual and keeps the members it has. */
+    rule: AdminProductGroupingRule.nullable().optional(),
   })
   .openapi('AdminUpdateProductCategory')
 export type AdminUpdateProductCategoryBody = z.infer<typeof AdminUpdateProductCategory>

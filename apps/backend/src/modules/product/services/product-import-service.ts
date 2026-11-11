@@ -12,8 +12,6 @@ import type {
 import type { CreateProductImportDTO } from '../../../core/types/product/mutations.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductRepository } from '../repositories/product.js'
-import type { ProductCategoryRepository } from '../repositories/product-category.js'
-import type { ProductCollectionRepository } from '../repositories/product-collection.js'
 import type { ProductImportRepository } from '../repositories/product-import.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
@@ -21,13 +19,10 @@ import type { ProductTagRepository } from '../repositories/product-tag.js'
 import type { ProductTypeRepository } from '../repositories/product-type.js'
 import { chunkImportedProducts } from '../utils/shopify-csv/chunk-products.js'
 import { parseShopifyCsv } from '../utils/shopify-csv/parse-shopify-csv.js'
-import type { ProductCategoryService } from './product-category-service.js'
 
 type InjectedDependencies = {
   productImportRepository: ProductImportRepository
   productRepository: ProductRepository
-  productCategoryRepository: ProductCategoryRepository
-  productCollectionRepository: ProductCollectionRepository
   productTagRepository: ProductTagRepository
   productTypeRepository: ProductTypeRepository
   productOptionRepository: ProductOptionRepository
@@ -37,12 +32,6 @@ type InjectedDependencies = {
 
 /** How long a preview can wait for its confirmation before it expires and its files are deleted. */
 const PRODUCT_IMPORT_TTL_MS = 60 * 60 * 1000
-
-/** `mens-sweatshirts` → `Mens sweatshirts`: the name a grouping the file only knows by handle starts with. */
-const titleFromHandle = (handle: string) => {
-  const words = handle.replace(/[-_]+/g, ' ').trim()
-  return words.charAt(0).toUpperCase() + words.slice(1)
-}
 
 /**
  * CSV imports: the job record from preview to finish, and the lookups that turn the names a file
@@ -54,26 +43,20 @@ const titleFromHandle = (handle: string) => {
 export class ProductImportService {
   private productImportRepository: ProductImportRepository
   private productRepository: ProductRepository
-  private productCategoryRepository: ProductCategoryRepository
-  private productCollectionRepository: ProductCollectionRepository
   private productTagRepository: ProductTagRepository
   private productTypeRepository: ProductTypeRepository
   private productOptionRepository: ProductOptionRepository
   private productOptionValueRepository: ProductOptionValueRepository
-  private productCategoryService: ProductCategoryService
   private withTransaction: WithTransaction
 
-  constructor(dependencies: InjectedDependencies, productCategoryService: ProductCategoryService) {
+  constructor(dependencies: InjectedDependencies) {
     this.productImportRepository = dependencies.productImportRepository
     this.productRepository = dependencies.productRepository
-    this.productCategoryRepository = dependencies.productCategoryRepository
-    this.productCollectionRepository = dependencies.productCollectionRepository
     this.productTagRepository = dependencies.productTagRepository
     this.productTypeRepository = dependencies.productTypeRepository
     this.productOptionRepository = dependencies.productOptionRepository
     this.productOptionValueRepository = dependencies.productOptionValueRepository
     this.withTransaction = dependencies.withTransaction
-    this.productCategoryService = productCategoryService
   }
 
   async planProductImport(
@@ -85,17 +68,11 @@ export class ProductImportService {
 
     const handlesOf = (pick: (product: ImportedProductDTO) => string[]) => [...new Set(products.flatMap(pick))]
     const productHandles = handlesOf((product) => [product.handle])
-    const categoryHandles = handlesOf((product) => product.categoryHandles)
-    const collectionHandles = handlesOf((product) => product.collectionHandles)
     const tagValues = handlesOf((product) => product.tags)
     const typeValues = handlesOf((product) => (product.type ? [product.type] : []))
 
-    const [existingProducts, categories, collections, tags, types] = await Promise.all([
+    const [existingProducts, tags, types] = await Promise.all([
       this.findIfAny(productHandles, (handle) => this.productRepository.find({ handle }, undefined, context)),
-      this.findIfAny(categoryHandles, (handle) => this.productCategoryRepository.find({ handle }, undefined, context)),
-      this.findIfAny(collectionHandles, (handle) =>
-        this.productCollectionRepository.find({ handle }, undefined, context),
-      ),
       this.findIfAny(tagValues, (value) => this.productTagRepository.find({ value }, undefined, context)),
       this.findIfAny(typeValues, (value) => this.productTypeRepository.find({ value }, undefined, context)),
     ])
@@ -114,14 +91,6 @@ export class ProductImportService {
         skus: products.reduce((total, product) => total + product.variants.length, 0),
         images: products.reduce((total, product) => total + product.imageUrls.length, 0),
         willCreate: {
-          categories: missing(
-            categoryHandles,
-            categories.map((category) => category.handle),
-          ),
-          collections: missing(
-            collectionHandles,
-            collections.map((collection) => collection.handle),
-          ),
           tags: missing(
             tagValues,
             tags.map((tag) => tag.value),
@@ -202,9 +171,8 @@ export class ProductImportService {
   /**
    * Finds what the product's names refer to and creates what is missing, in one transaction.
    *
-   * New Categories go at the root and active, the way the reference's tag-driven collections go live
-   * on import: the file says a product is in `mens-sweatshirts` but not where that sits in the tree,
-   * so the storefront shows it at the top level until the merchant moves it on the Organize page.
+   * Only types, tags and options: categories and collections come from the structure file, and the
+   * product joins the ruled ones when its tags are written.
    */
   async resolveProductImportReferences(
     product: ImportedProductDTO,
@@ -228,30 +196,6 @@ export class ProductImportService {
           )[0] ?? null)
         : null
 
-      const categoryIds = await this.findOrCreate(
-        product.categoryHandles,
-        (handle) => this.productCategoryRepository.find({ handle }, undefined, ctx),
-        (category) => category.handle,
-        (handles) =>
-          Promise.all(
-            handles.map((handle) =>
-              this.productCategoryService.createCategory(
-                { name: titleFromHandle(handle), handle, parentId: null, isActive: true },
-                ctx,
-              ),
-            ),
-          ),
-      )
-      const collectionIds = await this.findOrCreate(
-        product.collectionHandles,
-        (handle) => this.productCollectionRepository.find({ handle }, undefined, ctx),
-        (collection) => collection.handle,
-        (handles) =>
-          this.productCollectionRepository.createMany(
-            handles.map((handle) => ({ title: titleFromHandle(handle), handle })),
-            ctx,
-          ),
-      )
       const tagIds = await this.findOrCreate(
         product.tags,
         (value) => this.productTagRepository.find({ value }, undefined, ctx),
@@ -290,7 +234,7 @@ export class ProductImportService {
         }),
       )
 
-      return { existingProductId: existing?.id ?? null, typeId, categoryIds, collectionIds, tagIds, options }
+      return { existingProductId: existing?.id ?? null, typeId, tagIds, options }
     })
   }
 

@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { IFileModuleService } from '@core/types/file/service.js'
 import type { ImportedProductDTO } from '@core/types/product/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
@@ -20,6 +21,12 @@ import {
 type ImportProductInput = {
   product: ImportedProductDTO
   overwrite: boolean
+  /**
+   * The product's image URLs already point at file storage, so they are attached as they are
+   * rather than downloaded and stored again. The development seed sets it: it places its committed
+   * photos in storage first, which keeps seeding offline.
+   */
+  hostedImages?: boolean
 }
 
 /** The product an import wrote, and which of its variants each imported variant became. */
@@ -167,18 +174,11 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
         const written = created ?? updated
         const { product } = input
         if (!written || product.imageUrls.length === 0) return []
-        const fileService = container.resolve(Modules.FILE)
         const productService = container.resolve(Modules.PRODUCT)
 
-        const downloads = await Promise.all(product.imageUrls.map((url) => downloadImage(url)))
-        const files = await fileService.createFiles(
-          downloads.map((download, index) => ({
-            filename: `${product.handle}-${index + 1}.${download.extension}`,
-            mimeType: download.mimeType,
-            content: download.content,
-            access: 'public',
-          })),
-        )
+        const files = input.hostedImages
+          ? product.imageUrls.map((url) => ({ id: null, url }))
+          : await storeImages(container.resolve(Modules.FILE), product)
         const urlBySource = new Map(product.imageUrls.map((url, index) => [url, files[index]?.url ?? '']))
 
         await productService.updateProduct(written.productId, {
@@ -196,7 +196,7 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
         })
         if (links.length > 0) await productService.addImageToVariant(links)
 
-        return files.map((file) => file.id)
+        return files.flatMap((file) => (file.id ? [file.id] : []))
       },
       async (fileIds, { container }) => {
         if (fileIds.length === 0) return
@@ -263,6 +263,22 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
     return { created, updated }
   },
 )
+
+/** The product's images downloaded off the merchant's host and stored as public files, in display order. */
+async function storeImages(
+  fileService: IFileModuleService,
+  product: ImportedProductDTO,
+): Promise<Array<{ id: string | null; url: string }>> {
+  const downloads = await Promise.all(product.imageUrls.map((url) => downloadImage(url)))
+  return fileService.createFiles(
+    downloads.map((download, index) => ({
+      filename: `${product.handle}-${index + 1}.${download.extension}`,
+      mimeType: download.mimeType,
+      content: download.content,
+      access: 'public',
+    })),
+  )
+}
 
 /** One image off the merchant's host, refused unless it answers with an image. */
 async function downloadImage(url: string): Promise<{ mimeType: string; extension: string; content: string }> {

@@ -6,9 +6,9 @@ import { AdminProductCategoryResponse, AdminSetCategoryProducts, IdParams } from
 export const PostInput = { params: IdParams, body: AdminSetCategoryProducts }
 export const PostOutput = AdminProductCategoryResponse
 // setCategoryProducts throws NOT_FOUND from the module for a missing Category, and for an unknown
-// product id through the mapped foreign-key violation
+// product id through the mapped foreign-key violation, and NOT_ALLOWED for a ruled grouping
 // ast-grep-ignore: route-declares-unthrown-error
-export const PostThrows = [ErrorTypes.NOT_FOUND] as const
+export const PostThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.NOT_ALLOWED] as const
 
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)

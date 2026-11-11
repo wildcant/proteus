@@ -1,5 +1,5 @@
 {
-  "id": "39e1ff5c-867c-4ab6-9a6a-50d05832618b",
+  "id": "844647a8-ce58-4c5b-bd7e-c045634a2953",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -60,6 +60,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "rule": {
+          "name": "rule",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -165,6 +171,12 @@
         "thumbnail": {
           "name": "thumbnail",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rule": {
+          "name": "rule",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },

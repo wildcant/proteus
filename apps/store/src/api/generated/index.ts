@@ -9,3 +9,4 @@ export * from './payments/payments.ts';
 export * from './product-categories/product-categories.ts';
 export * from './product-tags/product-tags.ts';
 export * from './products/products.ts';
+export * from './store/store.ts';

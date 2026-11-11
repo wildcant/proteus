@@ -72,10 +72,10 @@ Category hides its whole subtree.
 _Avoid_: public category, published category
 
 **Collection**:
-A flat, hand-picked group of products around a season, campaign or story, with its own landing
-page — `Summer 2026`, `Gifts under $200`. Says nothing about what the product is, so Collections
-overlap: a product can sit in several. Its membership is stored and chosen by a person; a list
-derived from data is a Computed List, never a Collection.
+A flat group of products around a season, campaign or story, with its own landing page —
+`Summer 2026`, `Gifts under $200`. Says nothing about what the product is, so Collections overlap: a
+product can sit in several. Its membership is stored, and chosen by a person or by a Tag Rule; a
+list derived from sales or dates each time it is read is a Computed List, never a Collection.
 _Avoid_: category, curated shop, edit, lookbook, range, assortment
 
 **Computed List**:
@@ -86,6 +86,14 @@ but no product is ever added to or removed from it by hand; changing what it sho
 its rule.
 _Avoid_: collection, smart collection, automated collection, featured category, sort (for the list
 itself)
+
+**Tag Rule**:
+The condition that decides a Category's or Collection's members from product Tags: a list of
+conditions that must all hold, each met by any one of its Tags — `(genero:hombre or genero:unisex)
+and estilo:clasicos`. A ruled grouping's members follow the rule and cannot be picked by hand; a
+grouping without one is manual. Membership is stored, and recomputed whenever a product's Tags, the
+rule or a Tag changes.
+_Avoid_: smart collection, automated collection, filter, condition set
 
 **Tag**:
 A free, flat keyword on a product — `organic-cotton`, `gold` — used for filtering, search and rule

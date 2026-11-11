@@ -39,7 +39,7 @@ export const TEMPORAL_SERVER_TESTS = './src/**/*.server.test.{ts,tsx}'
 
 export const testConfig: ViteUserConfig['test'] = {
   env: testEnv ?? {},
-  include: ['./src/**/*.test.{ts,tsx}'],
+  include: ['./src/**/*.test.{ts,tsx}', './scripts/**/*.test.ts'],
   // Both the default run and the parity run read this, which is what keeps them the same file set.
   exclude: [...configDefaults.exclude, TEMPORAL_SERVER_TESTS],
   globalSetup: ['./tests/setup/global-setup.ts'],

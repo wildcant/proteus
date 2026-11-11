@@ -1,3 +1,5 @@
+import { i18n } from '@proteus/utils'
+import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { FindConfig } from '../../../core/types/common.js'
 import type { Context } from '../../../core/types/context.js'
 import type {
@@ -110,7 +112,8 @@ export class ProductGroupingService {
   /**
    * Adds then removes members. A product already in is left alone, and so is one asked to leave
    * that was never in. Joining this Collection never takes a product out of another (ADR 0032). An
-   * unknown product id is a foreign-key violation, answered `NOT_FOUND`.
+   * unknown product id is a foreign-key violation, answered `NOT_FOUND`. A ruled Collection is
+   * refused with `NOT_ALLOWED`: its rule alone decides the members.
    */
   async setCollectionProducts(
     collectionId: string,
@@ -123,6 +126,12 @@ export class ProductGroupingService {
         undefined,
         transactionContext,
       )
+      if (collection.rule) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: i18n.t("This collection's products follow its tag rule. Change the rule or the products' tags."),
+        })
+      }
       await this.productProductCollectionRepository.setProducts(collectionId, data, transactionContext)
       return collection
     })
