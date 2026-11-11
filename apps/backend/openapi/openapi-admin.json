@@ -5116,6 +5116,398 @@
           }
         }
       },
+      "AdminProductImportResponse": {
+        "type": "object",
+        "properties": {
+          "productImport": {
+            "$ref": "#/components/schemas/AdminProductImport"
+          }
+        },
+        "required": [
+          "productImport"
+        ]
+      },
+      "AdminProductImport": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "previewed",
+              "importing",
+              "completed",
+              "failed",
+              "canceled",
+              "expired"
+            ]
+          },
+          "options": {
+            "type": "object",
+            "properties": {
+              "overwrite": {
+                "type": "boolean"
+              },
+              "publish": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "overwrite",
+              "publish"
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/AdminProductImportSummary"
+          },
+          "created": {
+            "type": "number"
+          },
+          "updated": {
+            "type": "number"
+          },
+          "skipped": {
+            "type": "number"
+          },
+          "failed": {
+            "type": "number"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductImportError"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "options",
+          "summary",
+          "created",
+          "updated",
+          "skipped",
+          "failed",
+          "errors",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AdminProductImportSummary": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "object",
+            "properties": {
+              "create": {
+                "type": "number"
+              },
+              "update": {
+                "type": "number"
+              },
+              "skip": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "create",
+              "update",
+              "skip"
+            ]
+          },
+          "skus": {
+            "type": "number"
+          },
+          "images": {
+            "type": "number"
+          },
+          "willCreate": {
+            "type": "object",
+            "properties": {
+              "categories": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "collections": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "types": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "categories",
+              "collections",
+              "tags",
+              "types"
+            ]
+          },
+          "ignoredColumns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "firstProduct": {
+            "$ref": "#/components/schemas/AdminImportedProduct"
+          }
+        },
+        "required": [
+          "products",
+          "skus",
+          "images",
+          "willCreate",
+          "ignoredColumns",
+          "firstProduct"
+        ]
+      },
+      "AdminImportedProduct": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "line": {
+            "type": "number"
+          },
+          "rows": {
+            "type": "number"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "proposed",
+              "published",
+              "rejected"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "categoryHandles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "collectionHandles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "title",
+                "values"
+              ]
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminImportedVariant"
+            }
+          },
+          "imageUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "line",
+          "rows",
+          "handle",
+          "title",
+          "description",
+          "status",
+          "type",
+          "categoryHandles",
+          "collectionHandles",
+          "tags",
+          "options",
+          "variants",
+          "imageUrls"
+        ]
+      },
+      "AdminImportedVariant": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "number"
+          },
+          "sku": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "optionValues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "weight": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "manageInventory": {
+            "type": "boolean"
+          },
+          "allowBackorder": {
+            "type": "boolean"
+          },
+          "inventoryQuantity": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currencyCode": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "currencyCode",
+                "amount"
+              ]
+            }
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "line",
+          "sku",
+          "optionValues",
+          "weight",
+          "manageInventory",
+          "allowBackorder",
+          "inventoryQuantity",
+          "prices",
+          "imageUrl"
+        ]
+      },
+      "AdminProductImportError": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "number"
+          },
+          "handle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "line",
+          "handle",
+          "message"
+        ]
+      },
+      "AdminCreateProductImport": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false
+          },
+          "publish": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      },
       "AdminRefundReasonListResponse": {
         "type": "object",
         "properties": {
@@ -5982,6 +6374,14 @@
       "AdminUploadFiles": {
         "type": "object",
         "properties": {
+          "access": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private"
+            ],
+            "default": "public"
+          },
           "files": {
             "type": "array",
             "items": {
@@ -6012,6 +6412,9 @@
           "url": {
             "type": "string"
           },
+          "fileKey": {
+            "type": "string"
+          },
           "filename": {
             "type": "string"
           },
@@ -6030,6 +6433,7 @@
         },
         "required": [
           "url",
+          "fileKey",
           "filename",
           "mimeType",
           "size",
@@ -12741,6 +13145,192 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminBatchVariantImagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/product-imports": {
+      "post": {
+        "operationId": "createProductImport",
+        "summary": "Preview a product CSV import",
+        "description": "Reads an uploaded Shopify-format product CSV and records a `previewed` job with what it would create, update and skip, and every error with its line. A job with errors cannot be confirmed.",
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateProductImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductImportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/product-imports/{id}": {
+      "get": {
+        "operationId": "getProductImport",
+        "summary": "Retrieve a product import",
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductImportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/product-imports/{id}/confirm": {
+      "post": {
+        "operationId": "confirmProductImport",
+        "summary": "Start a previewed product import",
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductImportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/product-imports/{id}/cancel": {
+      "post": {
+        "operationId": "cancelProductImport",
+        "summary": "Cancel a previewed product import",
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductImportResponse"
                 }
               }
             }

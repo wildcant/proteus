@@ -9,8 +9,10 @@ import type {
   AdminBatchImageVariant,
   AdminBatchImageVariantResponse,
   AdminCreateProduct,
+  AdminCreateProductImport,
   AdminCreateProductResponse,
   AdminImageVariantsResponse,
+  AdminProductImportResponse,
   AdminProductListResponse,
   AdminProductResponse,
   AdminUpdateProduct,
@@ -112,6 +114,53 @@ export const batchImageVariants = (
     },
       );
     }
+  /**
+ * Reads an uploaded Shopify-format product CSV and records a `previewed` job with what it would create, update and skip, and every error with its line. A job with errors cannot be confirmed.
+ * @summary Preview a product CSV import
+ */
+export const createProductImport = (
+    adminCreateProductImport?: BodyType<AdminCreateProductImport>,
+ ) => {
+      return fetcher<AdminProductImportResponse>(
+      {url: `/admin/product-imports`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminCreateProductImport
+    },
+      );
+    }
+  /**
+ * @summary Retrieve a product import
+ */
+export const getProductImport = (
+    id: string,
+ ) => {
+      return fetcher<AdminProductImportResponse>(
+      {url: `/admin/product-imports/${id}`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * @summary Start a previewed product import
+ */
+export const confirmProductImport = (
+    id: string,
+ ) => {
+      return fetcher<AdminProductImportResponse>(
+      {url: `/admin/product-imports/${id}/confirm`, method: 'POST'
+    },
+      );
+    }
+  /**
+ * @summary Cancel a previewed product import
+ */
+export const cancelProductImport = (
+    id: string,
+ ) => {
+      return fetcher<AdminProductImportResponse>(
+      {url: `/admin/product-imports/${id}/cancel`, method: 'POST'
+    },
+      );
+    }
   export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
 export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
 export type GetProductResult = NonNullable<Awaited<ReturnType<typeof getProduct>>>
@@ -119,3 +168,7 @@ export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updatePr
 export type DeleteProductResult = NonNullable<Awaited<ReturnType<typeof deleteProduct>>>
 export type ListImageVariantsResult = NonNullable<Awaited<ReturnType<typeof listImageVariants>>>
 export type BatchImageVariantsResult = NonNullable<Awaited<ReturnType<typeof batchImageVariants>>>
+export type CreateProductImportResult = NonNullable<Awaited<ReturnType<typeof createProductImport>>>
+export type GetProductImportResult = NonNullable<Awaited<ReturnType<typeof getProductImport>>>
+export type ConfirmProductImportResult = NonNullable<Awaited<ReturnType<typeof confirmProductImport>>>
+export type CancelProductImportResult = NonNullable<Awaited<ReturnType<typeof cancelProductImport>>>

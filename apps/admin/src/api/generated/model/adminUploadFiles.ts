@@ -5,8 +5,10 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminUploadFilesAccess } from './adminUploadFilesAccess.ts';
 
 export interface AdminUploadFiles {
+  access?: AdminUploadFilesAccess;
   /** @maxItems 20 */
   files: Blob[];
 }

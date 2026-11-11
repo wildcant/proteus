@@ -2,6 +2,7 @@ import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { Context } from '../../../core/types/context.js'
 import type {
+  FilterableProductCategoryProps,
   ListCategoryTreeDTO,
   ProductCategoryDTO,
   ProductCategoryTreeNodeDTO,
@@ -63,6 +64,10 @@ export class ProductCategoryService {
       else if (!node.parentId) roots.push(node)
     }
     return roots
+  }
+
+  async listCategories(filters?: FilterableProductCategoryProps, context?: Context): Promise<ProductCategoryDTO[]> {
+    return this.productCategoryRepository.find(filters, { order: { rank: 'ASC', id: 'ASC' } }, context)
   }
 
   async retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO> {

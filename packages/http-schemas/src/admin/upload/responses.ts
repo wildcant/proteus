@@ -9,7 +9,10 @@ export type AdminFileResponse = z.input<typeof AdminFileResponse>
 
 export const AdminPresignedUploadUrlResponse = z
   .object({
+    /** Where to `PUT` the bytes. A relative `/admin/uploads` means the provider takes no direct uploads: post the file there as multipart instead. */
     url: z.string(),
+    /** The storage key the object lands at — the file's id once uploaded. */
+    fileKey: z.string(),
     filename: z.string(),
     mimeType: z.string(),
     size: z.number(),

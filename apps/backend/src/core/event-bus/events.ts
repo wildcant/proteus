@@ -69,6 +69,15 @@ export type EventPayloads = {
    * now rather than as the payload found it.
    */
   'inventory.available_decreased': { id: string; version: number; stockedQuantity: number; reservedQuantity: number }
+  /**
+   * A merchant confirmed a previewed product import — published by the confirm route once the job
+   * is `importing`, and by nothing else.
+   *
+   * The id is the job's, and a job is confirmed once, so a repeat is a redelivery. The import itself
+   * runs in `run-product-import`, off the request: a catalogue of thousands of products downloads
+   * images and writes for longer than a request is allowed to take.
+   */
+  'product.import_confirmed': { id: string }
 }
 
 export type EventName = keyof EventPayloads

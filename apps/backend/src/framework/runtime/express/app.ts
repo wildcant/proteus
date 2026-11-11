@@ -7,7 +7,7 @@ import type { AppContainer } from '../../../core/types/container.js'
 import type { Logger } from '../../../core/types/logger.js'
 import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
-import { extractFiles } from '../../http/multipart.js'
+import { extractMultipart } from '../../http/multipart.js'
 import { createDefaultLanguage, loadDefaultMarketLocale } from '../../i18n/default-language.js'
 import { createLinguiTranslator, LOCALE_HEADER } from '../../i18n/lingui-translator.js'
 
@@ -91,8 +91,9 @@ export function createExpressApp({ routes, container, logger, corsOrigins }: Cre
         const hasBody = !['GET', 'HEAD', 'DELETE'].includes(req.method)
         const multipart = hasBody && isMultipart(req.headers['content-type'])
 
-        const files = multipart ? await extractFiles(await toWebRequest(req)) : undefined
-        const body = multipart ? undefined : req.body
+        const form = multipart ? await extractMultipart(await toWebRequest(req)) : undefined
+        const files = form?.files
+        const body = form ? form.fields : req.body
 
         const result = await route.handler({
           params: req.params as Record<string, string>,

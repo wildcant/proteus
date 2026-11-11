@@ -9,8 +9,10 @@
 // read this one list — node through the cron Worker, workerd through its scheduled handler.
 
 import type { JobDefinition } from '../core/types/scheduler.js'
+import { config as expireProductImports } from './expire-product-imports.js'
 import { config as heartbeat } from './heartbeat.js'
 
 export const GENERATED_JOBS: JobDefinition[] = [
+  expireProductImports,
   heartbeat,
 ]

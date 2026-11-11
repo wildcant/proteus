@@ -8,6 +8,7 @@
 
 export interface AdminPresignedUploadUrlResponse {
   url: string;
+  fileKey: string;
   filename: string;
   mimeType: string;
   size: number;

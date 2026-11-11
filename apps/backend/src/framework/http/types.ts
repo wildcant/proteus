@@ -103,9 +103,9 @@ type GetRoute = BaseRoute & {
 
 type BodyRoute = BaseRoute & {
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-  // Multipart bodies reach the handler as `req.files`, not `req.body`, so they are
-  // never run through `input.body` validation. This schema exists purely to describe
-  // the form shape in the OpenAPI spec so generated clients accept a FormData payload.
+  // Multipart uploads reach the handler as `req.files`, and the form's text fields as
+  // `req.body`, which `input.body` validates. This schema describes the whole form in the
+  // OpenAPI spec so generated clients accept a FormData payload.
   multipartBody?: z.ZodType
 }
 

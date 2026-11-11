@@ -13,6 +13,7 @@ export const NotificationTemplates = {
   CHECKOUT_FAILED: 'checkout-failed',
   PAYMENT_WITHOUT_ORDER: 'payment-without-order',
   LOW_STOCK: 'low-stock',
+  PRODUCT_IMPORT_FINISHED: 'product-import-finished',
 } as const
 
 export type NotificationTemplate = (typeof NotificationTemplates)[keyof typeof NotificationTemplates]
