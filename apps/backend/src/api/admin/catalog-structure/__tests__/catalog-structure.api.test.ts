@@ -111,7 +111,6 @@ test.describe('Structure files', () => {
       [
         'men-bottoms',
         'men-shoes',
-        'men-accessories',
         'women',
         'women-tops',
         'women-bottoms',
@@ -155,7 +154,6 @@ test.describe('Structure files', () => {
       'men-tops',
       'men-bottoms',
       'men-shoes',
-      'men-accessories',
     ])
     expect(menNode?.children[0]?.id).toBe(menTops.id)
     for (const gone of [legacy, legacyChild]) {

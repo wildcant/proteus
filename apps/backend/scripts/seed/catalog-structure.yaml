@@ -22,9 +22,6 @@ categorias:
       - nombre: Shoes
         handle: men-shoes
         regla: { genero: [men], tipo: [shoes] }
-      - nombre: Accessories
-        handle: men-accessories
-        regla: { genero: [men], tipo: [accessories] }
   - nombre: Women
     handle: women
     regla: { genero: [women] }

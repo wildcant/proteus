@@ -91,7 +91,6 @@ test.describe('parseCatalogStructure', () => {
       'men-tops',
       'men-bottoms',
       'men-shoes',
-      'men-accessories',
     ])
   })
 

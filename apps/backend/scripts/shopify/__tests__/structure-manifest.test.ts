@@ -117,9 +117,9 @@ test.describe('buildStructureManifest', () => {
       },
     })
     expect(manifest.metafields.map((metafield) => metafield.key)).toEqual(['genero', 'tipo', 'colecciones'])
-    expect(manifest.collections).toHaveLength(16)
+    expect(manifest.collections).toHaveLength(15)
     expect(manifest.menu.map((item) => [item.title, item.children.map((child) => child.title)])).toEqual([
-      ['Men', ['Tops', 'Bottoms', 'Shoes', 'Accessories']],
+      ['Men', ['Tops', 'Bottoms', 'Shoes']],
       ['Women', ['Tops', 'Bottoms']],
       ['Unisex', ['Tops', 'Bottoms', 'Shoes', 'Accessories']],
     ])
