@@ -1,0 +1,59 @@
+# Store structure for the development catalogue in product-import.csv. A rule is a list of
+# conditions that must all hold; each condition is a list of tags, any one of which matches.
+categorias:
+  - nombre: Men
+    handle: men
+    regla: [[genero:men]]
+    hijos:
+      - nombre: Tops
+        handle: men-tops
+        regla: [[genero:men], [tipo:tops]]
+      - nombre: Bottoms
+        handle: men-bottoms
+        regla: [[genero:men], [tipo:bottoms]]
+      - nombre: Shoes
+        handle: men-shoes
+        regla: [[genero:men], [tipo:shoes]]
+      - nombre: Accessories
+        handle: men-accessories
+        regla: [[genero:men], [tipo:accessories]]
+  - nombre: Women
+    handle: women
+    regla: [[genero:women]]
+    hijos:
+      - nombre: Tops
+        handle: women-tops
+        regla: [[genero:women], [tipo:tops]]
+      - nombre: Bottoms
+        handle: women-bottoms
+        regla: [[genero:women], [tipo:bottoms]]
+  - nombre: Unisex
+    handle: unisex
+    regla: [[genero:unisex]]
+    hijos:
+      - nombre: Tops
+        handle: unisex-tops
+        regla: [[genero:unisex], [tipo:tops]]
+      - nombre: Bottoms
+        handle: unisex-bottoms
+        regla: [[genero:unisex], [tipo:bottoms]]
+      - nombre: Shoes
+        handle: unisex-shoes
+        regla: [[genero:unisex], [tipo:shoes]]
+      - nombre: Accessories
+        handle: unisex-accessories
+        regla: [[genero:unisex], [tipo:accessories]]
+colecciones:
+  - nombre: Featured
+    handle: featured
+    regla: [[coleccion:featured]]
+  - nombre: Essentials
+    handle: essentials
+    regla: [[coleccion:essentials]]
+  - nombre: Active
+    handle: active
+    regla: [[coleccion:active]]
+menu:
+  - categoria: men
+  - categoria: women
+  - categoria: unisex
