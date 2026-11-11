@@ -1,18 +1,23 @@
-import { writeFile } from 'node:fs/promises'
+import { access, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { SEED_IMAGE_DIR, seedImageFile } from './seed-images.js'
 
 /**
  * Builds `product-import.csv`, a Shopify product CSV, from the mock.shop demo store catalogue.
  *
  *   pnpm --filter backend exec tsx scripts/seed/build-product-import-csv.ts
  *
- * The output is committed, so seeding never reaches the network; rerun this only to change the
- * catalogue. Tags are the readable vocabulary `catalog-structure.yaml` writes its rules in:
+ * It also downloads every photo the CSV names into `seed-images/`, and deletes the ones it no longer
+ * names. Both outputs are committed, so seeding never reaches the network; rerun this only to change
+ * the catalogue. Tags are the readable vocabulary `catalog-structure.yaml` writes its rules in:
  * `genero:` and `tipo:` come from mock.shop's own collections, `coleccion:featured` too, and the
  * rest — the Essentials and Active collections, materials, the product type — from `ENRICHMENT`.
  */
 
 const MOCK_SHOP_API = 'https://demostore.mock.shop/api'
+
+/** The originals are 4096px; the Shopify CDN resizes on `?width=`, which keeps the committed set small. */
+const SEED_IMAGE_WIDTH = 1200
 const OUTPUT_PATH = path.join(import.meta.dirname, 'product-import.csv')
 
 /** mock.shop prices in USD; the Colombia market price is a flat conversion, kept whole. */
@@ -273,3 +278,31 @@ await writeFile(
   [csvLine(HEADER), ...rows.map((row) => csvLine(HEADER.map((column) => row[column])))].join(''),
 )
 console.info(`Wrote ${products.length} products, ${rows.length} rows to ${path.relative(process.cwd(), OUTPUT_PATH)}`)
+
+const imageUrls = [
+  ...new Set(rows.flatMap((row) => [row['Product image URL'], row['Variant image URL']]).filter(Boolean)),
+]
+const wanted = new Set(imageUrls.map(seedImageFile))
+if (wanted.size !== imageUrls.length) throw new Error('Two image URLs map to the same seed image file')
+
+const exists = (file: string) =>
+  access(path.join(SEED_IMAGE_DIR, file)).then(
+    () => true,
+    () => false,
+  )
+// A file is named by its content hash, so one already on disk is already right.
+const missing = (
+  await Promise.all(imageUrls.map(async (url) => ((await exists(seedImageFile(url))) ? [] : [url])))
+).flat()
+await Promise.all(
+  missing.map(async (url) => {
+    const source = new URL(url)
+    source.searchParams.set('width', String(SEED_IMAGE_WIDTH))
+    const image = await fetch(source)
+    if (!image.ok) throw new Error(`${url} answered ${image.status}`)
+    await writeFile(path.join(SEED_IMAGE_DIR, seedImageFile(url)), Buffer.from(await image.arrayBuffer()))
+  }),
+)
+const stale = (await readdir(SEED_IMAGE_DIR)).filter((file) => file !== 'README.md' && !wanted.has(file))
+await Promise.all(stale.map((file) => rm(path.join(SEED_IMAGE_DIR, file))))
+console.info(`Seed images: ${missing.length} downloaded, ${stale.length} deleted, ${wanted.size} in use`)
