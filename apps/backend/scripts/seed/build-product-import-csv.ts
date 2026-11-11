@@ -9,9 +9,10 @@ import { SEED_IMAGE_DIR, seedImageFile } from './seed-images.js'
  *
  * It also downloads every photo the CSV names into `seed-images/`, and deletes the ones it no longer
  * names. Both outputs are committed, so seeding never reaches the network; rerun this only to change
- * the catalogue. Tags are the readable vocabulary `catalog-structure.yaml` writes its rules in:
- * `genero:` and `tipo:` come from mock.shop's own collections, `coleccion:featured` too, and the
- * rest — the Essentials and Active collections, materials, the product type — from `ENRICHMENT`.
+ * the catalogue. The Género, Tipo and Colecciones metafields are what `catalog-structure.yaml`'s rules
+ * read: Género and Tipo come from mock.shop's own collections, Colecciones' `featured` too, and the
+ * rest — the Essentials and Active collections, the material tags, the product type — from
+ * `ENRICHMENT`.
  */
 
 const MOCK_SHOP_API = 'https://demostore.mock.shop/api'
@@ -159,6 +160,9 @@ const HEADER = [
   'Image alt text',
   'Variant image URL',
   'Gift card',
+  'Género (product.metafields.custom.genero)',
+  'Tipo (product.metafields.custom.tipo)',
+  'Colecciones (product.metafields.custom.colecciones)',
 ] as const
 
 type Row = Record<(typeof HEADER)[number], string>
@@ -174,17 +178,23 @@ function plainText(html: string): string {
     .trim()
 }
 
-function tagsFor(product: MockShopProduct, enrichment: Enrichment): string {
+/** Shopify reads a list metafield cell as one value per line. */
+const listCell = (values: string[]) => values.join('\n')
+
+function metafieldsFor(product: MockShopProduct, enrichment: Enrichment) {
   const groupings = new Set([...product.collections.nodes.map(({ handle }) => handle), ...product.tags])
   const pick = (vocabulary: string[]) => vocabulary.filter((handle) => groupings.has(handle)).sort()
-  return [
-    ...pick(GENDERS).map((handle) => `genero:${handle}`),
-    ...pick(KINDS).map((handle) => `tipo:${handle}`),
-    ...[...pick(MOCK_SHOP_COLLECTIONS), ...(enrichment.collections ?? [])]
-      .sort()
-      .map((handle) => `coleccion:${handle}`),
-    ...[...(enrichment.materials ?? [])].sort(),
-  ].join(', ')
+  const kinds = pick(KINDS)
+  return {
+    'Género (product.metafields.custom.genero)': listCell(pick(GENDERS)),
+    // mock.shop files every shoe under accessories as well; the catalogue keeps them apart.
+    'Tipo (product.metafields.custom.tipo)': listCell(
+      kinds.includes('shoes') ? kinds.filter((kind) => kind !== 'accessories') : kinds,
+    ),
+    'Colecciones (product.metafields.custom.colecciones)': listCell(
+      [...pick(MOCK_SHOP_COLLECTIONS), ...(enrichment.collections ?? [])].sort(),
+    ),
+  }
 }
 
 function rowsFor(product: MockShopProduct, stockedSkus: Set<string>): Row[] {
@@ -206,10 +216,11 @@ function rowsFor(product: MockShopProduct, stockedSkus: Set<string>): Row[] {
         Description: plainText(product.descriptionHtml),
         Vendor: product.vendor,
         Type: enrichment.type,
-        Tags: tagsFor(product, enrichment),
+        Tags: [...(enrichment.materials ?? [])].sort().join(', '),
         'Published on online store': 'TRUE',
         Status: 'Active',
         'Gift card': 'FALSE',
+        ...metafieldsFor(product, enrichment),
       })
       optionNames.forEach((name, position) => {
         row[position === 0 ? 'Option1 name' : 'Option2 name'] = name
