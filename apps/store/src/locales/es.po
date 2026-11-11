@@ -64,7 +64,7 @@ msgstr "{total} reservado por tu banco; se cobra cuando se envíe tu pedido"
 msgid "{total} was not charged"
 msgstr "No se cobraron {total}"
 
-#: src/components/footer.tsx:150
+#: src/components/footer.tsx:151
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
 
@@ -84,7 +84,7 @@ msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu com
 msgid "A–Z"
 msgstr "A–Z"
 
-#: src/components/footer.tsx:33
+#: src/components/footer.tsx:34
 #: src/components/header/header.tsx:64
 #: src/components/header/side-menu.tsx:84
 #: src/features/account/components/account-detail.tsx:21
@@ -330,7 +330,7 @@ msgstr "Seguir comprando"
 msgid "Country"
 msgstr "País"
 
-#: src/components/footer.tsx:36
+#: src/components/footer.tsx:37
 #: src/features/auth/components/register-form.tsx:33
 msgid "Create account"
 msgstr "Crear cuenta"
@@ -921,12 +921,12 @@ msgstr "Envío"
 msgid "Shipping method"
 msgstr "Método de envío"
 
-#: src/components/footer.tsx:26
+#: src/components/footer.tsx:27
 #: src/features/products/components/product-list-header.tsx:39
 msgid "Shop"
 msgstr "Tienda"
 
-#: src/components/footer.tsx:28
+#: src/components/footer.tsx:29
 #: src/components/header/menu.tsx:29
 #: src/features/products/components/category-breadcrumb.tsx:20
 #: src/features/products/components/product-empty.tsx:45
@@ -934,7 +934,7 @@ msgstr "Tienda"
 msgid "Shop all"
 msgstr "Ver todo"
 
-#: src/components/header/menu.tsx:36
+#: src/components/header/menu.tsx:32
 msgid "Shop all {name}"
 msgstr "Ver todo en {name}"
 
@@ -950,7 +950,7 @@ msgstr "Mostrar imagen {position}"
 msgid "Show password"
 msgstr "Mostrar contraseña"
 
-#: src/components/footer.tsx:35
+#: src/components/footer.tsx:36
 #: src/features/auth/components/login-form.tsx:28
 #: src/features/checkout/components/contact/contact-section.tsx:28
 #: src/routes/_auth/login.tsx:43

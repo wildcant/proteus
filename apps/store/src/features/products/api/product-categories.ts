@@ -3,8 +3,9 @@ import { listStoreProductCategoryTree } from '#/api/generated/product-categories
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
 /**
- * The Visible Category tree, which is the storefront's navigation: the header rail, the side menu
- * and the footer all draw from it, and the category page resolves its Category from it.
+ * The Visible Category tree. The menu's Category entries resolve against it (with no menu, its top
+ * level is the menu), and the category page resolves its Category from it, whether or not the menu
+ * names that Category.
  *
  * The chrome is shared and may not import a feature, so the `_main` layout reads the tree here and
  * hands it to the header and footer as a prop. Fetched once in the `_main` loader; a child loader
