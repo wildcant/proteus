@@ -166,6 +166,11 @@ type Row = Record<(typeof HEADER)[number], string>
 const skuToken = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '')
 const money = (amount: number) => amount.toFixed(2)
 
+/** mock.shop descriptions are one paragraph of editor HTML; the CSV keeps only its text. */
+function plainText(html: string): string {
+  return html.replaceAll(/<[^>]*>/g, '').replaceAll('\u00a0', ' ').trim()
+}
+
 function tagsFor(product: MockShopProduct, enrichment: Enrichment): string {
   const groupings = new Set([...product.collections.nodes.map(({ handle }) => handle), ...product.tags])
   const pick = (vocabulary: string[]) => vocabulary.filter((handle) => groupings.has(handle)).sort()
@@ -195,7 +200,7 @@ function rowsFor(product: MockShopProduct, stockedSkus: Set<string>): Row[] {
     if (index === 0) {
       Object.assign(row, {
         Title: product.title,
-        Description: product.descriptionHtml,
+        Description: plainText(product.descriptionHtml),
         Vendor: product.vendor,
         Type: enrichment.type,
         Tags: tagsFor(product, enrichment),
