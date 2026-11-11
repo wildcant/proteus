@@ -5272,18 +5272,6 @@
           "willCreate": {
             "type": "object",
             "properties": {
-              "categories": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "collections": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
               "tags": {
                 "type": "array",
                 "items": {
@@ -5298,8 +5286,6 @@
               }
             },
             "required": [
-              "categories",
-              "collections",
               "tags",
               "types"
             ]
@@ -5362,18 +5348,6 @@
               "null"
             ]
           },
-          "categoryHandles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "collectionHandles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
           "tags": {
             "type": "array",
             "items": {
@@ -5422,8 +5396,6 @@
           "description",
           "status",
           "type",
-          "categoryHandles",
-          "collectionHandles",
           "tags",
           "options",
           "variants",

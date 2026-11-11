@@ -2,10 +2,15 @@ import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import type { PermissionGrant } from '@core/types/access-control/common.js'
 import type { UserDTO } from '@core/types/user/common.js'
+import type { AdminCreateProductCategoryBody } from '@proteus/http-schemas/admin'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import { authHeader } from '@tests/utils/auth-header.js'
 import { sql } from 'drizzle-orm'
+import storeProductDefinitions from '../../../store/products/definitions.js'
+import type * as storeProductRoutes from '../../../store/products/route.js'
+import productCategoryDefinitions from '../../product-categories/definitions.js'
+import type * as categoryRoutes from '../../product-categories/route.js'
 import type * as productByIdRoutes from '../../products/[id]/route.js'
 import productDefinitions from '../../products/definitions.js'
 import uploadDefinitions from '../../uploads/definitions.js'
@@ -36,15 +41,22 @@ const IMPORT_FEATURES: PermissionGrant[] = [
 
 test.beforeEach(async ({ createApi, factories, service }) => {
   api = await createApi({
-    definitions: [...productImportDefinitions, ...uploadDefinitions, ...productDefinitions],
+    definitions: [
+      ...productImportDefinitions,
+      ...uploadDefinitions,
+      ...productDefinitions,
+      ...productCategoryDefinitions,
+      ...storeProductDefinitions,
+    ],
     namespaceAuth: true,
   })
   operator = await service.create.operator(api.container, IMPORT_FEATURES)
   headers = authHeader('user', operator.id)
 
-  const store = await factories.create.store()
+  // Colombia is the storefront's market, so a product the import prices in pesos is listed there.
+  const colombia = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+  const store = await factories.create.store({ defaultRegionId: colombia.id })
   await factories.create.storeCurrency({ storeId: store.id, currencyCode: 'usd', isDefault: true })
-  await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
   await service.create.stockLocation(api.container)
 
   imageHost = createServer((request, response) => {
@@ -103,7 +115,7 @@ test.describe('product CSV import', () => {
   }) => {
     const lines = [
       HEADER,
-      `Hoodie,hoodie,<p>Warm</p>,Proteus,Hoodie,"categoria:mens-sweatshirts, coleccion:essentials, cotton",active,HOODIE-S,Size,S,90,360000,shopify,100,${imageBaseUrl}/hoodie.png,1,${imageBaseUrl}/hoodie.png`,
+      `Hoodie,hoodie,<p>Warm</p>,Proteus,Hoodie,"genero:hombre, cotton",active,HOODIE-S,Size,S,90,360000,shopify,100,${imageBaseUrl}/hoodie.png,1,${imageBaseUrl}/hoodie.png`,
       ',hoodie,,,,,,HOODIE-M,,M,95,380000,shopify,5,,,',
       `Broken,broken,,,,,active,BROKEN-1,,,10,,shopify,3,${imageBaseUrl}/missing.png,1,`,
       'Mug,mug,,,,,active,MUG-1,,,9,,,,,,',
@@ -120,15 +132,14 @@ test.describe('product CSV import', () => {
         products: { create: 3, update: 0, skip: 0 },
         skus: 4,
         images: 2,
-        willCreate: {
-          categories: ['mens-sweatshirts'],
-          collections: ['essentials'],
-          tags: ['cotton'],
-          types: ['Hoodie'],
-        },
         ignoredColumns: ['Vendor'],
         firstProduct: { handle: 'hoodie', title: 'Hoodie', options: [{ title: 'Size', values: ['S', 'M'] }] },
       },
+    })
+    // A prefixed tag is a tag like any other: the file names no groupings to create.
+    expect(response.body.productImport.summary.willCreate).toEqual({
+      tags: ['genero:hombre', 'cotton'],
+      types: ['Hoodie'],
     })
 
     const id = response.body.productImport.id
@@ -153,16 +164,14 @@ test.describe('product CSV import', () => {
       headers,
     })
     expect(detail.body.product.type?.value).toBe('Hoodie')
-    expect(detail.body.product.categories).toEqual([
-      expect.objectContaining({
-        handle: 'mens-sweatshirts',
-        name: 'Mens sweatshirts',
-        parentId: null,
-        isActive: true,
-      }),
-    ])
-    expect(detail.body.product.collections).toEqual([expect.objectContaining({ handle: 'essentials' })])
-    expect(detail.body.product.tags).toEqual([expect.objectContaining({ value: 'cotton' })])
+    // No structure is applied, so the import placed the hoodie in nothing and created no Category.
+    expect(detail.body.product.categories).toEqual([])
+    expect(detail.body.product.collections).toEqual([])
+    expect(detail.body.product.tags.map((tag) => tag.value).sort()).toEqual(['cotton', 'genero:hombre'])
+    const categories = await api.get<typeof categoryRoutes.GetOutput>('/admin/product-categories', undefined, {
+      headers,
+    })
+    expect(categories.body.productCategories).toEqual([])
 
     const variants = await service.read.productVariants(api.container, { productId: hoodie.id })
     expect(variants.map((variant) => variant.sku).sort()).toEqual(['HOODIE-M', 'HOODIE-S'])
@@ -216,6 +225,62 @@ test.describe('product CSV import', () => {
       `Broken,broken,,,,,active,BROKEN-1,,,10,,shopify,3,${imageBaseUrl}/hoodie.png,1,`,
     ])
     expect(retried).toMatchObject({ status: 'completed', created: 1, failed: 0, errors: [] })
+  })
+
+  test('places imported products in the ruled Categories their tags match, and moves them on overwrite', async ({
+    expect,
+    http,
+    service,
+  }) => {
+    const createCategory = async (body: Partial<AdminCreateProductCategoryBody>) => {
+      const response = await api.post<typeof categoryRoutes.PostOutput>(
+        '/admin/product-categories',
+        http.admin.createProductCategory({ isActive: true, ...body }),
+        { headers },
+      )
+      expect(response.status).toBe(201)
+      return response.body.productCategory
+    }
+    // The structure comes first; the tags it reads do not exist until the import creates them.
+    const men = await createCategory({ name: 'Hombre', handle: 'hombre', rule: [['genero:hombre']] })
+    const menClassics = await createCategory({
+      name: 'Clásicos',
+      handle: 'hombre-clasicos',
+      parentId: men.id,
+      rule: [['genero:hombre'], ['estilo:clasicos']],
+    })
+    const women = await createCategory({ name: 'Mujer', handle: 'mujer', rule: [['genero:mujer']] })
+
+    const loafer = (tags: string) => [HEADER, `Loafer,loafer,,,,"${tags}",active,LOAFER-1,,,90,360000,,,,,`]
+    const listedIn = async (handle: string) => {
+      const response = await api.get<typeof storeProductRoutes.GetOutput>(`/store/products?category=${handle}`)
+      expect(response.status).toBe(200)
+      return response.body.products.map((product) => product.handle)
+    }
+    const placement = async () => {
+      const [product] = await service.read.products(api.container, { handle: 'loafer' })
+      const detail = await api.get<typeof productByIdRoutes.GetOutput>(
+        `/admin/products/${product?.id ?? ''}`,
+        undefined,
+        { headers },
+      )
+      return detail.body.product.categories.map((category) => category.handle).sort()
+    }
+
+    const created = await runImport(loafer('genero:hombre, estilo:clasicos'))
+
+    expect(created).toMatchObject({ status: 'completed', created: 1, failed: 0 })
+    expect(await placement()).toEqual([men.handle, menClassics.handle].sort())
+    expect(await listedIn('hombre')).toEqual(['loafer'])
+    expect(await listedIn('hombre-clasicos')).toEqual(['loafer'])
+    expect(await listedIn(women.handle)).toEqual([])
+
+    const moved = await runImport(loafer('genero:mujer, estilo:clasicos'), { overwrite: true })
+
+    expect(moved).toMatchObject({ status: 'completed', updated: 1, failed: 0 })
+    expect(await placement()).toEqual([women.handle])
+    expect(await listedIn('hombre')).toEqual([])
+    expect(await listedIn(women.handle)).toEqual(['loafer'])
   })
 
   test('skips products whose handle exists, and with overwrite updates them, matching variants by SKU', async ({

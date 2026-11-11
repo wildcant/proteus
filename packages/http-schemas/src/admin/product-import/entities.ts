@@ -44,8 +44,6 @@ export const AdminImportedProduct = z
     description: z.string().nullable(),
     status: ProductStatus,
     type: z.string().nullable(),
-    categoryHandles: z.array(z.string()),
-    collectionHandles: z.array(z.string()),
     tags: z.array(z.string()),
     options: z.array(z.object({ title: z.string(), values: z.array(z.string()) })),
     variants: z.array(AdminImportedVariant),
@@ -59,10 +57,8 @@ export const AdminProductImportSummary = z
     products: z.object({ create: z.number(), update: z.number(), skip: z.number() }),
     skus: z.number(),
     images: z.number(),
-    /** Grouping handles and values the file names that do not exist yet, created when the import runs. */
+    /** Tag and type values the file names that do not exist yet, created when the import runs. */
     willCreate: z.object({
-      categories: z.array(z.string()),
-      collections: z.array(z.string()),
       tags: z.array(z.string()),
       types: z.array(z.string()),
     }),

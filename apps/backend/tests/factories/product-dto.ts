@@ -171,8 +171,6 @@ export function generateImportedProductDTO(overrides?: Partial<ImportedProductDT
     description: null,
     status: 'published',
     type: null,
-    categoryHandles: [],
-    collectionHandles: [],
     tags: [],
     options: [],
     variants: [

@@ -8,7 +8,10 @@ type ProductOptionEntry = { optionId: string; valueIds: string[] }
 /** A variant already on the product, as the matcher compares it. */
 export type ExistingImportVariant = { id: string; sku: string | null; optionValues: Record<string, string> }
 
-/** The fields an import writes on a product, the same on create and on overwrite. */
+/**
+ * The fields an import writes on a product, the same on create and on overwrite. Categories and
+ * collections are left out: ruled ones follow from the tags, and manual ones survive an overwrite.
+ */
 export function buildImportedProductFields(
   product: ImportedProductDTO,
   references: ProductImportReferencesDTO,
@@ -19,8 +22,6 @@ export function buildImportedProductFields(
     description: product.description,
     status: product.status,
     typeId: references.typeId,
-    categoryIds: references.categoryIds,
-    collectionIds: references.collectionIds,
     tagIds: references.tagIds,
   }
 }

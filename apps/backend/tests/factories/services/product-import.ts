@@ -48,7 +48,7 @@ export async function createProductImport(
       products: { create: products.length, update: 0, skip: 0 },
       skus: products.reduce((total, product) => total + product.variants.length, 0),
       images: 0,
-      willCreate: { categories: [], collections: [], tags: [], types: [] },
+      willCreate: { tags: [], types: [] },
       ignoredColumns: [],
       firstProduct: products[0] ?? null,
     },
