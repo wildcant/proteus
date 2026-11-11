@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { type AnyPgColumn, boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { type AnyPgColumn, boolean, integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
+import type { ProductGroupingRuleDTO } from '../../../core/types/product/common.js'
 
 /**
  * A node in the merchant's Category tree. `parentId` alone shapes the tree — no materialised path —
@@ -25,6 +26,8 @@ export const productCategoryTable = pgTable(
     isActive: boolean().default(false).notNull(),
     /** Assignable in the admin, never shown on the store. */
     isInternal: boolean().default(false).notNull(),
+    /** The tag rule that decides the members; `null` is a manual Category whose members are picked. */
+    rule: jsonb().$type<ProductGroupingRuleDTO | null>(),
     ...timestamps,
   },
   (table) => [

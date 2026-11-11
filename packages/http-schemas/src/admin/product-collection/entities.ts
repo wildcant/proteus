@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { dateToIso } from '../../common.js'
+import { AdminProductGroupingRule } from '../product-tag/entities.js'
 
 export const AdminProductCollection = z
   .object({
@@ -8,6 +9,8 @@ export const AdminProductCollection = z
     handle: z.string(),
     /** A URL from `POST /admin/uploads`. */
     thumbnail: z.string().nullable(),
+    /** `null` is manual: the members are picked. A ruled Collection's members follow its rule. */
+    rule: AdminProductGroupingRule.nullable(),
     createdAt: dateToIso,
     updatedAt: dateToIso,
   })

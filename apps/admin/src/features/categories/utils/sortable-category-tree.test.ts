@@ -19,6 +19,7 @@ const node = (id: string, children: AdminProductCategoryTreeNode[] = []): AdminP
   rank: 0,
   isActive: true,
   isInternal: false,
+  rule: null,
   createdAt: '',
   updatedAt: '',
   children: children.map((child, rank) => ({ ...child, parentId: id, rank })),

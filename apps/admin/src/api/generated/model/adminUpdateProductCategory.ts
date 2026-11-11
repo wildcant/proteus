@@ -5,6 +5,7 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminProductGroupingRule } from './adminProductGroupingRule.ts';
 
 export interface AdminUpdateProductCategory {
   /**
@@ -29,4 +30,5 @@ export interface AdminUpdateProductCategory {
   rank?: number;
   isActive?: boolean;
   isInternal?: boolean;
+  rule?: AdminProductGroupingRule | null;
 }

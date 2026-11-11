@@ -8,6 +8,7 @@ CREATE TABLE "product_category" (
 	"rank" integer DEFAULT 0 NOT NULL,
 	"is_active" boolean DEFAULT false NOT NULL,
 	"is_internal" boolean DEFAULT false NOT NULL,
+	"rule" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -18,6 +19,7 @@ CREATE TABLE "product_collection" (
 	"title" text NOT NULL,
 	"handle" text NOT NULL,
 	"thumbnail" text,
+	"rule" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone

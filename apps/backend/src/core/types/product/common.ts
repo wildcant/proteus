@@ -319,6 +319,13 @@ export interface FilterableProductVariantImageProps extends BaseFilterable<Filte
   imageId?: string | string[]
 }
 
+/**
+ * A tag rule: every condition must hold, and a condition holds when the product carries any one of its
+ * tag values — an AND of ORs. `[['genero:hombre', 'genero:unisex'], ['estilo:clasicos']]` reads
+ * "(hombre or unisex) and clasicos". Values match exactly, as tags are stored.
+ */
+export type ProductGroupingRuleDTO = string[][]
+
 export type ProductCategoryDTO = {
   id: string
   name: string
@@ -328,6 +335,8 @@ export type ProductCategoryDTO = {
   rank: number
   isActive: boolean
   isInternal: boolean
+  /** `null` is manual: the members are picked. A ruled Category's members follow its rule. */
+  rule: ProductGroupingRuleDTO | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -348,6 +357,8 @@ export type ProductCollectionDTO = {
   title: string
   handle: string
   thumbnail: string | null
+  /** `null` is manual: the members are picked. A ruled Collection's members follow its rule. */
+  rule: ProductGroupingRuleDTO | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null

@@ -2858,6 +2858,9 @@
               "null"
             ]
           },
+          "rule": {
+            "$ref": "#/components/schemas/AdminProductGroupingRule"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -2872,9 +2875,28 @@
           "title",
           "handle",
           "thumbnail",
+          "rule",
           "createdAt",
           "updatedAt"
         ]
+      },
+      "AdminProductGroupingRule": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "minItems": 1,
+        "maxItems": 20
       },
       "AdminProductCollectionResponse": {
         "type": "object",
@@ -2906,6 +2928,9 @@
               "null"
             ],
             "maxLength": 2048
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AdminProductGroupingRule"
           }
         },
         "required": [
@@ -2931,6 +2956,9 @@
               "null"
             ],
             "maxLength": 2048
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AdminProductGroupingRule"
           }
         }
       },
@@ -3020,6 +3048,9 @@
           "isInternal": {
             "type": "boolean"
           },
+          "rule": {
+            "$ref": "#/components/schemas/AdminProductGroupingRule"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -3038,6 +3069,7 @@
           "rank",
           "isActive",
           "isInternal",
+          "rule",
           "createdAt",
           "updatedAt"
         ]
@@ -3087,6 +3119,9 @@
           },
           "isInternal": {
             "type": "boolean"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AdminProductGroupingRule"
           }
         },
         "required": [
@@ -3127,6 +3162,9 @@
           },
           "isInternal": {
             "type": "boolean"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AdminProductGroupingRule"
           }
         }
       },

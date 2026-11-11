@@ -118,4 +118,38 @@ test.describe('Collections', () => {
     expect(afterDelete.body.product.collections.map((collection) => collection.id)).toEqual([active.id])
     expect(await listIn(`collectionId=${essentials.id}`)).toEqual({ ids: [], count: 0 })
   })
+
+  test('a ruled Collection holds the products its tags match, and refuses manual picks', async ({
+    expect,
+    http,
+    service,
+  }) => {
+    const featured = await service.create.productTag(api.container, { value: 'coleccion:featured' })
+    const { product: tagged } = await service.create.product(api.container, { tagIds: [featured.id] })
+    const { product: untagged } = await service.create.product(api.container)
+
+    const created = await api.post<typeof collectionRoutes.PostOutput>(
+      '/admin/collections',
+      http.admin.createProductCollection({ rule: [[featured.value]] }),
+    )
+    expect(created.status).toBe(201)
+    const collection = created.body.collection
+    expect(collection.rule).toEqual([[featured.value]])
+
+    const members = async () => {
+      const response = await api.get<typeof productRoutes.GetOutput>(`/admin/products?collectionId=${collection.id}`)
+      return response.body.products.map((product) => product.id)
+    }
+    expect(await members()).toEqual([tagged.id])
+
+    // Tagging the other product brings it in.
+    await api.patch(`/admin/products/${untagged.id}`, { tagIds: [featured.id] })
+    expect((await members()).sort()).toEqual([tagged.id, untagged.id].sort())
+
+    const picked = await api.post<ApiErrorBody>(`/admin/collections/${collection.id}/products`, {
+      remove: [tagged.id],
+    })
+    expect(picked.status).toBe(400)
+    expect(picked.body.type).toBe(ErrorTypes.NOT_ALLOWED)
+  })
 })
