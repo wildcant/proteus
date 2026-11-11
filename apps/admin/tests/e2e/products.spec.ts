@@ -476,9 +476,19 @@ test('product CSV import journey', async ({ page, authenticate, navigate, cleanu
   const sku = `E2E-IMPORT-${suffix}`
   // A tag no other run uses, so the preview lists it among what the import creates.
   const tag = `e2e-import-${suffix}`
+  // A metafield and a Category whose rule reads it: the import names no Category, the rule places
+  // the product.
+  await using metafield = await factories.create.productMetafieldDefinition()
+  const value = `e2e-${suffix}`
+  const category = await factories.create.productCategory({ rule: { [metafield.key]: [value] } })
+  cleanup.add(() => factories.destroy.productCategory(category.id))
   // No prices, stock or options: each of those resolves something store-wide, and this journey is
   // about the modal, not the mapping the backend suite covers.
-  const csv = `Title,URL handle,Status,SKU,Tags\n${title},e2e-imported-${suffix},active,${sku},${tag}\n`
+  const csv = [
+    `Title,URL handle,Status,SKU,Tags,${metafield.name} (product.metafields.custom.${metafield.key})`,
+    `${title},e2e-imported-${suffix},active,${sku},${tag},${value}`,
+    '',
+  ].join('\n')
 
   await navigate({ to: '/products' })
   await page.getByRole('link', { name: 'Import' }).click()
@@ -499,6 +509,9 @@ test('product CSV import journey', async ({ page, authenticate, navigate, cleanu
   // The tag is new, so the preview lists it among what the import creates, next to the product's own.
   await expect(modal.getByText('This import will create')).toBeVisible()
   await expect(modal.getByText(tag, { exact: true })).toHaveCount(2)
+  // The first product shows its metafield under the name the store gives it.
+  await expect(modal.getByText(metafield.name, { exact: true })).toBeVisible()
+  await expect(modal.getByText(value, { exact: true })).toBeVisible()
   await modal.getByRole('button', { name: 'Import products' }).click()
 
   // Import — runs in the background; the modal polls the job until it finishes.
@@ -513,5 +526,7 @@ test('product CSV import journey', async ({ page, authenticate, navigate, cleanu
   const productId = page.url().split('/products/')[1]?.split('/')[0]
   if (productId) cleanup.add(() => factories.destroy.product(productId))
   await expect(page.getByText(`/e2e-imported-${suffix}`)).toBeVisible()
+  // The Category's rule picked the product up from its imported metafield.
+  await expect(page.getByText(category.name, { exact: true })).toBeVisible()
   await expect(page.getByText(tag, { exact: true })).toBeVisible()
 })
