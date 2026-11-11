@@ -173,6 +173,7 @@ export class ProductCategoryService {
   /**
    * Adds then removes direct members. A product already in is left alone, and so is one asked to
    * leave that was never in. An unknown product id is a foreign-key violation, answered `NOT_FOUND`.
+   * A ruled Category is refused with `NOT_ALLOWED`: its rule alone decides the members.
    */
   async setCategoryProducts(
     categoryId: string,
@@ -181,6 +182,12 @@ export class ProductCategoryService {
   ): Promise<ProductCategoryDTO> {
     return this.withTransaction(context, async (transactionContext) => {
       const category = await this.productCategoryRepository.findByIdOrFail(categoryId, undefined, transactionContext)
+      if (category.rule) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: i18n.t("This category's products follow its tag rule. Change the rule or the products' tags."),
+        })
+      }
       await this.productProductCategoryRepository.setProducts(categoryId, data, transactionContext)
       return category
     })

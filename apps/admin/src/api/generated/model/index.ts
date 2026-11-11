@@ -161,6 +161,7 @@ export * from './adminProductCategoryTreeResponse.ts';
 export * from './adminProductCollection.ts';
 export * from './adminProductCollectionListResponse.ts';
 export * from './adminProductCollectionResponse.ts';
+export * from './adminProductGroupingRule.ts';
 export * from './adminProductImage.ts';
 export * from './adminProductImport.ts';
 export * from './adminProductImportError.ts';

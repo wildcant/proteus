@@ -57,6 +57,7 @@ import type {
   SetCategoryProductsDTO,
   SetCollectionProductsDTO,
   SetProductOptionsDTO,
+  SyncRuleMembershipsDTO,
   UpdateProductCategoryDTO,
   UpdateProductCollectionDTO,
   UpdateProductDTO,
@@ -207,7 +208,10 @@ export type IProductModuleService = {
   updateCategory(categoryId: string, data: UpdateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO>
   /** Refused with `NOT_ALLOWED` while a Category still has live children. */
   softDeleteCategories(categoryIds: string[], context?: Context): Promise<void>
-  /** Adds then removes direct members. Adding a member or removing a non-member is a no-op. */
+  /**
+   * Adds then removes direct members. Adding a member or removing a non-member is a no-op. Refused
+   * with `NOT_ALLOWED` for a ruled Category.
+   */
   setCategoryProducts(categoryId: string, data: SetCategoryProductsDTO, context?: Context): Promise<ProductCategoryDTO>
 
   // Imports
@@ -250,7 +254,10 @@ export type IProductModuleService = {
   ): Promise<ProductCollectionDTO>
   /** Hides the Collections' memberships with them; the products stay. */
   softDeleteCollections(collectionIds: string[], context?: Context): Promise<void>
-  /** Adds then removes members. Adding a member or removing a non-member is a no-op. */
+  /**
+   * Adds then removes members. Adding a member or removing a non-member is a no-op. Refused with
+   * `NOT_ALLOWED` for a ruled Collection.
+   */
   setCollectionProducts(
     collectionId: string,
     data: SetCollectionProductsDTO,
@@ -288,6 +295,13 @@ export type IProductModuleService = {
     filters: Omit<FilterableProductProps, 'tagId' | 'tagValue'>,
     context?: Context,
   ): Promise<string[]>
+
+  /**
+   * Makes every ruled Category and Collection in scope hold exactly the scoped products its tag rule
+   * matches, in one transaction. Manual groupings are never touched. Product, rule and Tag writes
+   * call it themselves; it is public for writes that change many groupings at once.
+   */
+  syncRuleMemberships(scope?: SyncRuleMembershipsDTO, context?: Context): Promise<void>
 
   /** One product's live groupings: `null` and empty lists where it has none. */
   retrieveProductGroupings(productId: string, context?: Context): Promise<ProductGroupingsDTO>
