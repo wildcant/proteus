@@ -158,7 +158,7 @@ test.describe('product CSV import', () => {
         handle: 'mens-sweatshirts',
         name: 'Mens sweatshirts',
         parentId: null,
-        isActive: false,
+        isActive: true,
       }),
     ])
     expect(detail.body.product.collections).toEqual([expect.objectContaining({ handle: 'essentials' })])

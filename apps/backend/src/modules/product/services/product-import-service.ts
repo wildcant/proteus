@@ -202,8 +202,9 @@ export class ProductImportService {
   /**
    * Finds what the product's names refer to and creates what is missing, in one transaction.
    *
-   * New Categories go at the root and inactive: the file says a product is in `mens-sweatshirts` but
-   * not where that sits in the tree, so the merchant places it and turns it on from the Organize page.
+   * New Categories go at the root and active, the way the reference's tag-driven collections go live
+   * on import: the file says a product is in `mens-sweatshirts` but not where that sits in the tree,
+   * so the storefront shows it at the top level until the merchant moves it on the Organize page.
    */
   async resolveProductImportReferences(
     product: ImportedProductDTO,
@@ -235,7 +236,7 @@ export class ProductImportService {
           Promise.all(
             handles.map((handle) =>
               this.productCategoryService.createCategory(
-                { name: titleFromHandle(handle), handle, parentId: null, isActive: false },
+                { name: titleFromHandle(handle), handle, parentId: null, isActive: true },
                 ctx,
               ),
             ),

@@ -593,7 +593,7 @@ msgid "This import has expired. Upload the file again."
 msgstr "This import has expired. Upload the file again."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:324
+#: src/modules/product/services/product-import-service.ts:325
 msgid "Only an import waiting in preview can be confirmed or canceled."
 msgstr "Only an import waiting in preview can be confirmed or canceled."
 

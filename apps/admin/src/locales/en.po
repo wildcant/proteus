@@ -1765,8 +1765,8 @@ msgid "Name what a product is. A product has one type."
 msgstr "Name what a product is. A product has one type."
 
 #: src/features/products/components/import-products/import-preview-step.tsx:169
-msgid "New categories are created inactive, at the top of the category tree."
-msgstr "New categories are created inactive, at the top of the category tree."
+msgid "New categories are created active, at the top of the category tree."
+msgstr "New categories are created active, at the top of the category tree."
 
 #: src/features/products/components/import-products/import-preview-step.tsx:131
 msgid "New products will be <0>published</0>."

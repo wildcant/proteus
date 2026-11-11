@@ -166,7 +166,7 @@ function WillCreate({ willCreate }: { willCreate: AdminProductImport['summary'][
       </dl>
       {willCreate.categories.length > 0 && (
         <p className="text-muted-foreground text-xs">
-          <Trans>New categories are created inactive, at the top of the category tree.</Trans>
+          <Trans>New categories are created active, at the top of the category tree.</Trans>
         </p>
       )}
     </section>
