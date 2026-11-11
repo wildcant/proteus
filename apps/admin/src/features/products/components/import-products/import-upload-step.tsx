@@ -1,14 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteFocusModal } from '@proteus/ui'
-import { FileTextIcon } from 'lucide-react'
-import { useState } from 'react'
 import type { AdminProductImport, AdminProductImportError } from '#/api/generated/model'
 import { CSV_FORMATS, CSV_MAX_FILE_SIZE } from '#/components/common/file-upload/constants'
-import { FileUpload } from '#/components/common/file-upload/file-upload'
-import { TranslatedFieldError } from '#/components/form/field-errors'
 import { ImportErrorList } from '#/features/products/components/import-products/import-error-list'
+import { ImportFilePicker } from '#/features/products/components/import-products/import-file-picker'
 import { useUploadProductImportForm } from '#/features/products/hooks/use-upload-product-import-form'
-import { formatFileSize } from '#/lib/format-file-size.ts'
 
 type ImportUploadStepProps = {
   /** What the last file was refused for. Empty until a file comes back with problems. */
@@ -60,10 +56,14 @@ export function ImportUploadStep({ errors, onRead }: ImportUploadStepProps) {
 
             <form.Field name="file">
               {(field) => (
-                <CsvFilePicker
+                <ImportFilePicker
                   value={field.state.value}
                   onValueChange={field.handleChange}
                   errors={field.state.meta.isValid ? undefined : field.state.meta.errors}
+                  formats={CSV_FORMATS}
+                  maxFileSize={CSV_MAX_FILE_SIZE}
+                  hint={(maxSize) => t`Accepts .csv up to ${maxSize}`}
+                  notAccepted={t`Not a CSV file. Choose a file ending in .csv.`}
                 />
               )}
             </form.Field>
@@ -94,67 +94,5 @@ export function ImportUploadStep({ errors, onRead }: ImportUploadStepProps) {
         </RouteFocusModal.Footer>
       </form.AppForm>
     </KeyboundForm>
-  )
-}
-
-type CsvFilePickerProps = {
-  value: File | null
-  onValueChange: (file: File | null) => void
-  errors?: readonly unknown[]
-}
-
-/** One CSV: the drop zone until a file is picked, then the file with a way to swap it. */
-function CsvFilePicker({ value, onValueChange, errors }: CsvFilePickerProps) {
-  const { t, i18n } = useLingui()
-  const [rejection, setRejection] = useState<string | null>(null)
-  const maxSize = formatFileSize(CSV_MAX_FILE_SIZE, i18n, 0)
-
-  const handleUploaded = (files: { file: File }[], rejected: { file: File }[]) => {
-    const [picked] = files
-    if (rejected.length > 0 || !picked) {
-      setRejection(t`The file exceeds the maximum file size of ${maxSize}.`)
-      return
-    }
-    // Browsers that cannot tell what a file is report no type at all; the server reads it either way.
-    const isCsv = picked.file.name.toLowerCase().endsWith('.csv') || picked.file.type === 'text/csv'
-    if (!isCsv) {
-      setRejection(t`Not a CSV file. Choose a file ending in .csv.`)
-      return
-    }
-    setRejection(null)
-    onValueChange(picked.file)
-  }
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      {value ? (
-        <div className="flex items-center gap-x-3 rounded-lg border p-3">
-          <FileTextIcon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate font-medium text-sm">{value.name}</span>
-            <span className="text-muted-foreground text-xs">{formatFileSize(value.size, i18n)}</span>
-          </div>
-          <Button type="button" variant="secondary" size="sm" onClick={() => onValueChange(null)}>
-            <Trans>Replace file</Trans>
-          </Button>
-        </div>
-      ) : (
-        <FileUpload
-          multiple={false}
-          label={t`Add file`}
-          hint={t`Accepts .csv up to ${maxSize}`}
-          hasError={!!rejection || !!errors?.length}
-          // The extension too: a spreadsheet app may register its own type for .csv files.
-          formats={CSV_FORMATS.flatMap((format) => [format.mimeType, format.extension])}
-          maxFileSize={CSV_MAX_FILE_SIZE}
-          onUploaded={handleUploaded}
-        />
-      )}
-      {rejection ? (
-        <TranslatedFieldError errors={[rejection]} />
-      ) : (
-        !!errors?.length && <TranslatedFieldError errors={errors} />
-      )}
-    </div>
   )
 }
