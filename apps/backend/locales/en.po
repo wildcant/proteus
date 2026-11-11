@@ -61,7 +61,7 @@ msgid "\"{displayName}\" is already sold to by region \"{regionId}\". Remove it 
 msgstr "\"{displayName}\" is already sold to by region \"{regionId}\". Remove it from that region first."
 
 #. js-lingui-explicit-id
-#: src/workflows/product/import-product.ts:269
+#: src/workflows/product/import-product.ts:275
 msgid "The image \"{url}\" could not be downloaded."
 msgstr "The image \"{url}\" could not be downloaded."
 

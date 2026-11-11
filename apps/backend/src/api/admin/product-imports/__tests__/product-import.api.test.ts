@@ -105,7 +105,7 @@ test.describe('product CSV import', () => {
       HEADER,
       `Hoodie,hoodie,<p>Warm</p>,Proteus,Hoodie,"categoria:mens-sweatshirts, coleccion:essentials, cotton",active,HOODIE-S,Size,S,90,360000,shopify,100,${imageBaseUrl}/hoodie.png,1,${imageBaseUrl}/hoodie.png`,
       ',hoodie,,,,,,HOODIE-M,,M,95,380000,shopify,5,,,',
-      `Broken,broken,,,,,active,BROKEN-1,,,10,,,,${imageBaseUrl}/missing.png,1,`,
+      `Broken,broken,,,,,active,BROKEN-1,,,10,,shopify,3,${imageBaseUrl}/missing.png,1,`,
       'Mug,mug,,,,,active,MUG-1,,,9,,,,,,',
     ]
 
@@ -209,6 +209,13 @@ test.describe('product CSV import', () => {
     // The run cleans up after itself.
     const uploaded = await api.get(`/admin/uploads/${fileId}`, undefined, { headers })
     expect(uploaded.status).toBe(404)
+
+    // The failed product left nothing behind that blocks it, SKU included: fixed, it imports.
+    const retried = await runImport([
+      HEADER,
+      `Broken,broken,,,,,active,BROKEN-1,,,10,,shopify,3,${imageBaseUrl}/hoodie.png,1,`,
+    ])
+    expect(retried).toMatchObject({ status: 'completed', created: 1, failed: 0, errors: [] })
   })
 
   test('skips products whose handle exists, and with overwrite updates them, matching variants by SKU', async ({

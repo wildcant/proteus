@@ -7,6 +7,7 @@ import { createWorkflow } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
 import { createProductWorkflow } from './create-product.js'
 import { createProductVariantsWorkflow } from './create-product-variants.js'
+import { deleteProductVariantWorkflow } from './delete-product-variant.js'
 import { updateVariantPricesWorkflow } from './update-variant-prices.js'
 import {
   buildImportedProductFields,
@@ -58,6 +59,7 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
     throws: [
       ...createProductWorkflow.throws,
       ...createProductVariantsWorkflow.throws,
+      ...deleteProductVariantWorkflow.throws,
       ...updateVariantPricesWorkflow.throws,
       // raised by this file's image download and by the module services it calls
       // ast-grep-ignore: workflow-declares-unthrown-error
@@ -98,6 +100,10 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
       async (written, { container }) => {
         if (!written) return
         const productService = container.resolve(Modules.PRODUCT)
+        // The nested create finished, so its own compensation never runs. Deleting each variant
+        // takes its price set and inventory item with it, which frees the SKUs for the next try.
+        const variants = await productService.listProductVariants({ productId: written.productId })
+        for (const variant of variants) await deleteProductVariantWorkflow.run({ variantId: variant.id })
         await productService.softDeleteProducts([written.productId])
       },
     )
