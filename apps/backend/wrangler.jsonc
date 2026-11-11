@@ -14,7 +14,8 @@
   "triggers": {
     // Each entry must match a JobDefinition.schedule in src/jobs/
     "crons": [
-      // "* * * * *"
+      // expire-product-imports
+      "*/10 * * * *"
     ]
   },
   // The event bus transport on this runtime. One queue carries every event; a message is one

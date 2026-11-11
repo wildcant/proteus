@@ -6,11 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AdminApplyCatalogStructure,
   AdminBatchImageVariant,
   AdminBatchImageVariantResponse,
+  AdminCatalogStructureResponse,
   AdminCreateProduct,
+  AdminCreateProductImport,
   AdminCreateProductResponse,
   AdminImageVariantsResponse,
+  AdminProductImportResponse,
   AdminProductListResponse,
   AdminProductResponse,
   AdminUpdateProduct,
@@ -24,6 +28,34 @@ import type { BodyType } from '../../fetcher.ts';
 
 
 
+  /**
+ * Reads an uploaded structure file (`estructura.yaml`: categorias, colecciones, menu) and answers with the Categories and Collections it would create, update, move and delete, and the menu before and after. Every error carries its path in the file. Writes nothing.
+ * @summary Preview a structure file
+ */
+export const previewCatalogStructure = (
+    adminApplyCatalogStructure?: BodyType<AdminApplyCatalogStructure>,
+ ) => {
+      return fetcher<AdminCatalogStructureResponse>(
+      {url: `/admin/catalog-structure/preview`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminApplyCatalogStructure
+    },
+      );
+    }
+  /**
+ * Makes the store's Categories, Collections and menu the file's, matched by handle. Groupings the file leaves out are deleted, and every ruled grouping is re-matched. A file with errors is refused.
+ * @summary Apply a structure file
+ */
+export const applyCatalogStructure = (
+    adminApplyCatalogStructure?: BodyType<AdminApplyCatalogStructure>,
+ ) => {
+      return fetcher<AdminCatalogStructureResponse>(
+      {url: `/admin/catalog-structure`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminApplyCatalogStructure
+    },
+      );
+    }
   /**
  * @summary List products
  */
@@ -112,10 +144,63 @@ export const batchImageVariants = (
     },
       );
     }
-  export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
+  /**
+ * Reads an uploaded Shopify-format product CSV and records a `previewed` job with what it would create, update and skip, and every error with its line. A job with errors cannot be confirmed.
+ * @summary Preview a product CSV import
+ */
+export const createProductImport = (
+    adminCreateProductImport?: BodyType<AdminCreateProductImport>,
+ ) => {
+      return fetcher<AdminProductImportResponse>(
+      {url: `/admin/product-imports`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminCreateProductImport
+    },
+      );
+    }
+  /**
+ * @summary Retrieve a product import
+ */
+export const getProductImport = (
+    id: string,
+ ) => {
+      return fetcher<AdminProductImportResponse>(
+      {url: `/admin/product-imports/${id}`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * @summary Start a previewed product import
+ */
+export const confirmProductImport = (
+    id: string,
+ ) => {
+      return fetcher<AdminProductImportResponse>(
+      {url: `/admin/product-imports/${id}/confirm`, method: 'POST'
+    },
+      );
+    }
+  /**
+ * @summary Cancel a previewed product import
+ */
+export const cancelProductImport = (
+    id: string,
+ ) => {
+      return fetcher<AdminProductImportResponse>(
+      {url: `/admin/product-imports/${id}/cancel`, method: 'POST'
+    },
+      );
+    }
+  export type PreviewCatalogStructureResult = NonNullable<Awaited<ReturnType<typeof previewCatalogStructure>>>
+export type ApplyCatalogStructureResult = NonNullable<Awaited<ReturnType<typeof applyCatalogStructure>>>
+export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
 export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
 export type GetProductResult = NonNullable<Awaited<ReturnType<typeof getProduct>>>
 export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
 export type DeleteProductResult = NonNullable<Awaited<ReturnType<typeof deleteProduct>>>
 export type ListImageVariantsResult = NonNullable<Awaited<ReturnType<typeof listImageVariants>>>
 export type BatchImageVariantsResult = NonNullable<Awaited<ReturnType<typeof batchImageVariants>>>
+export type CreateProductImportResult = NonNullable<Awaited<ReturnType<typeof createProductImport>>>
+export type GetProductImportResult = NonNullable<Awaited<ReturnType<typeof getProductImport>>>
+export type ConfirmProductImportResult = NonNullable<Awaited<ReturnType<typeof confirmProductImport>>>
+export type CancelProductImportResult = NonNullable<Awaited<ReturnType<typeof cancelProductImport>>>

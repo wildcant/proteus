@@ -2,6 +2,7 @@ import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
 import type { Context } from '../../../core/types/context.js'
 import type {
+  FilterableProductCategoryProps,
   ListCategoryTreeDTO,
   ProductCategoryDTO,
   ProductCategoryTreeNodeDTO,
@@ -63,6 +64,10 @@ export class ProductCategoryService {
       else if (!node.parentId) roots.push(node)
     }
     return roots
+  }
+
+  async listCategories(filters?: FilterableProductCategoryProps, context?: Context): Promise<ProductCategoryDTO[]> {
+    return this.productCategoryRepository.find(filters, { order: { rank: 'ASC', id: 'ASC' } }, context)
   }
 
   async retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO> {
@@ -168,6 +173,7 @@ export class ProductCategoryService {
   /**
    * Adds then removes direct members. A product already in is left alone, and so is one asked to
    * leave that was never in. An unknown product id is a foreign-key violation, answered `NOT_FOUND`.
+   * A ruled Category is refused with `NOT_ALLOWED`: its rule alone decides the members.
    */
   async setCategoryProducts(
     categoryId: string,
@@ -176,6 +182,12 @@ export class ProductCategoryService {
   ): Promise<ProductCategoryDTO> {
     return this.withTransaction(context, async (transactionContext) => {
       const category = await this.productCategoryRepository.findByIdOrFail(categoryId, undefined, transactionContext)
+      if (category.rule) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: i18n.t("This category's products follow its tag rule. Change the rule or the products' tags."),
+        })
+      }
       await this.productProductCategoryRepository.setProducts(categoryId, data, transactionContext)
       return category
     })

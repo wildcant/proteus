@@ -9,7 +9,7 @@ import type { Logger } from '../../../core/types/logger.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
 import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
-import { extractFiles } from '../../http/multipart.js'
+import { extractMultipart } from '../../http/multipart.js'
 import { createDefaultLanguage, loadDefaultMarketLocale } from '../../i18n/default-language.js'
 import { createLinguiTranslator, LOCALE_HEADER } from '../../i18n/lingui-translator.js'
 
@@ -71,12 +71,13 @@ export function createHonoApp({ routes, container, logger, corsOrigins }: Create
       const hasBody = !['GET', 'HEAD', 'DELETE'].includes(c.req.method)
 
       const multipart = hasBody && isMultipart(c.req.header('content-type'))
-      const files = multipart ? await extractFiles(c.req.raw) : undefined
+      const form = multipart ? await extractMultipart(c.req.raw) : undefined
 
       // Read once, then parse those same bytes. A route verifying a gateway signature needs
       // exactly what was transmitted, and re-serialising the parsed body does not reproduce it.
       const rawBody = multipart || !hasBody ? undefined : new Uint8Array(await c.req.arrayBuffer())
-      const body = rawBody ? parseJsonBody(rawBody) : undefined
+      const body = form ? form.fields : rawBody ? parseJsonBody(rawBody) : undefined
+      const files = form?.files
 
       const headers: Record<string, string> = {}
       c.req.raw.headers.forEach((value, key) => {

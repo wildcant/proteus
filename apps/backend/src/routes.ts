@@ -11,6 +11,7 @@ import { RoutesSorter } from './framework/http/routes-sorter.js'
 
 // ---- Definition imports ----
 
+import adminCatalogStructureDefinitions from './api/admin/catalog-structure/definitions.js'
 import adminCollectionDefinitions from './api/admin/collections/definitions.js'
 import adminCountryDefinitions from './api/admin/countries/definitions.js'
 import adminCustomerDefinitions from './api/admin/customers/definitions.js'
@@ -25,6 +26,7 @@ import adminPaymentProviderDefinitions from './api/admin/payment-providers/defin
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
 import adminAccessControlPermissionDefinitions from './api/admin/permissions/definitions.js'
 import adminProductCategoryDefinitions from './api/admin/product-categories/definitions.js'
+import adminProductImportDefinitions from './api/admin/product-imports/definitions.js'
 import adminProductOptionDefinitions from './api/admin/product-options/definitions.js'
 import adminProductTagDefinitions from './api/admin/product-tags/definitions.js'
 import adminProductTypeDefinitions from './api/admin/product-types/definitions.js'
@@ -45,6 +47,7 @@ import storeCartDefinitions from './api/store/carts/definitions.js'
 import storeCollectionDefinitions from './api/store/collections/definitions.js'
 import storeCountryDefinitions from './api/store/countries/definitions.js'
 import storeCustomerDefinitions from './api/store/customers/definitions.js'
+import storeNavigationDefinitions from './api/store/navigation/definitions.js'
 import storeOrderDefinitions from './api/store/orders/definitions.js'
 import storePaymentCollectionDefinitions from './api/store/payment-collections/definitions.js'
 import storePaymentMethodDefinitions from './api/store/payment-methods/definitions.js'
@@ -77,12 +80,14 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,
   ...adminPaymentProviderDefinitions,
+  ...adminCatalogStructureDefinitions,
   ...adminCollectionDefinitions,
   ...adminProductCategoryDefinitions,
   ...adminProductOptionDefinitions,
   ...adminProductTagDefinitions,
   ...adminProductTypeDefinitions,
   ...adminProductDefinitions,
+  ...adminProductImportDefinitions,
   ...adminRefundReasonDefinitions,
   ...adminReservationDefinitions,
   ...adminRegionDefinitions,
@@ -100,6 +105,7 @@ export const storeDefinitions: RouteDefinition[] = [
   ...storeCollectionDefinitions,
   ...storeCountryDefinitions,
   ...storeCustomerDefinitions,
+  ...storeNavigationDefinitions,
   ...storeOrderDefinitions,
   ...storePaymentCollectionDefinitions,
   ...storePaymentMethodDefinitions,

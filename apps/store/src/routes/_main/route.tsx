@@ -5,6 +5,7 @@ import { useMe } from '#/features/account/api/customer'
 import { CartDrawer } from '#/features/cart/components/cart-drawer'
 import { CartMismatchBanner } from '#/features/cart/components/cart-mismatch-banner'
 import { CartTrigger } from '#/features/cart/components/cart-trigger'
+import { navigationQueryOptions, useSuspenseNavigation } from '#/features/products/api/navigation'
 import { categoryTreeQueryOptions, useSuspenseCategoryTree } from '#/features/products/api/product-categories'
 import { SearchDrawer } from '#/features/products/components/search-drawer'
 import { marketHeadLinksFor } from '#/lib/seo/market-links'
@@ -12,11 +13,14 @@ import { marketHeadLinksFor } from '#/lib/seo/market-links'
 export const Route = createFileRoute('/_main')({
   ssr: true,
   head: (context) => ({ links: marketHeadLinksFor(context) }),
-  // The Category tree is the navigation, and the nav renders only under this layout. Child
-  // loaders run alongside this one, so a page that needs the tree asks for it again and joins
-  // this same request.
+  // The menu and the Category tree it resolves against, which the nav renders only under this
+  // layout. Child loaders run alongside this one, so a page that needs the tree asks for it again
+  // and joins this same request.
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(categoryTreeQueryOptions())
+    await Promise.all([
+      context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
+      context.queryClient.ensureQueryData(navigationQueryOptions()),
+    ])
   },
   component: MainLayout,
 })
@@ -31,19 +35,19 @@ function MainLayout() {
   // The app layer is the only place allowed to compose two features, which is why the bag, the
   // drawers and the mismatch banner are wired together here rather than inside the header.
   const { customer } = useMe()
-  // Read here and handed down, because the header and footer are shared chrome and the tree is a feature's.
-  const categories = useSuspenseCategoryTree()
+  // Read here and handed down, because the header and footer are shared chrome and the menu is a feature's.
+  const menu = { categories: useSuspenseCategoryTree(), ...useSuspenseNavigation() }
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header categories={categories} actions={<CartTrigger />} />
+      <Header menu={menu} actions={<CartTrigger />} />
       <SearchDrawer />
       <CartDrawer />
       <CartMismatchBanner customerId={customer?.id} />
       <div className="flex flex-1 flex-col">
         <Outlet />
       </div>
-      <Footer categories={categories} />
+      <Footer menu={menu} />
     </div>
   )
 }

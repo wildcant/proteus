@@ -8,6 +8,7 @@ CREATE TABLE "product_category" (
 	"rank" integer DEFAULT 0 NOT NULL,
 	"is_active" boolean DEFAULT false NOT NULL,
 	"is_internal" boolean DEFAULT false NOT NULL,
+	"rule" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -18,6 +19,7 @@ CREATE TABLE "product_collection" (
 	"title" text NOT NULL,
 	"handle" text NOT NULL,
 	"thumbnail" text,
+	"rule" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -29,6 +31,24 @@ CREATE TABLE "product_image" (
 	"url" text NOT NULL,
 	"rank" integer DEFAULT 0 NOT NULL,
 	"metadata" jsonb,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"deleted_at" timestamp with time zone
+);
+--> statement-breakpoint
+CREATE TABLE "product_import" (
+	"id" text PRIMARY KEY DEFAULT CONCAT('pimp_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
+	"file_id" text NOT NULL,
+	"options" jsonb NOT NULL,
+	"status" text NOT NULL,
+	"summary" jsonb NOT NULL,
+	"chunks" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"created" integer DEFAULT 0 NOT NULL,
+	"updated" integer DEFAULT 0 NOT NULL,
+	"skipped" integer DEFAULT 0 NOT NULL,
+	"failed" integer DEFAULT 0 NOT NULL,
+	"errors" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"created_by" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -212,6 +232,7 @@ CREATE UNIQUE INDEX "idx_product_collection_handle" ON "product_collection" USIN
 CREATE INDEX "idx_product_image_product_id" ON "product_image" USING btree ("product_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_image_url" ON "product_image" USING btree ("url") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_image_rank_product_id" ON "product_image" USING btree ("rank","product_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_import_status_created_at" ON "product_import" USING btree ("status","created_at") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_option_value_option_id" ON "product_option_value" USING btree ("option_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_option_value_option_id_value" ON "product_option_value" USING btree ("option_id","value") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_option_title" ON "product_option" USING btree ("title") WHERE deleted_at IS NULL;--> statement-breakpoint

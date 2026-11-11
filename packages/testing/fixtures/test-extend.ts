@@ -42,6 +42,7 @@ import {
   createShippingOptionWithZone,
   createShippingProfile,
   createStockLocation,
+  createStoreNavigation,
   createUser,
   deleteActorRoleAssignmentById,
   deleteCartById,
@@ -252,6 +253,7 @@ export type Factories = {
     geoZone: typeof createGeoZone
     shippingProfile: typeof createShippingProfile
     stockLocation: typeof createStockLocation
+    storeNavigation: typeof createStoreNavigation
     inventoryItem: typeof createInventoryItem
     inventoryLevel: typeof createInventoryLevel
     productVariantInventoryItem: typeof createProductVariantInventoryItem
@@ -378,6 +380,7 @@ export function createTest<RoutePath extends string = string>() {
         geoZone: createGeoZone,
         shippingProfile: createShippingProfile,
         stockLocation: createStockLocation,
+        storeNavigation: createStoreNavigation,
         inventoryItem: createInventoryItem,
         inventoryLevel: createInventoryLevel,
         productVariantInventoryItem: createProductVariantInventoryItem,

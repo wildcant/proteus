@@ -1,11 +1,12 @@
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
-import { AdminUploadResponse } from '@proteus/http-schemas/admin'
+import { AdminUploadFilesFields, AdminUploadResponse } from '@proteus/http-schemas/admin'
 import { uploadFilesWorkflow } from '@workflows/file/upload-files.js'
 
+export const PostInput = { body: AdminUploadFilesFields }
 export const PostOutput = AdminUploadResponse
 export const PostThrows = [...uploadFilesWorkflow.throws] as const
 
-export const POST = async (req: HttpRequest): Promise<HttpResult<typeof PostOutput>> => {
+export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
   const uploadedFiles = req.files ?? []
 
   const fileData = await Promise.all(
@@ -16,7 +17,7 @@ export const POST = async (req: HttpRequest): Promise<HttpResult<typeof PostOutp
         filename: file.name,
         mimeType: file.type,
         content,
-        access: 'public' as const,
+        access: req.body.access,
       }
     }),
   )

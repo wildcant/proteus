@@ -37,19 +37,6 @@ const STORE_NAME = 'Proteus'
  */
 const LOW_STOCK_THRESHOLD = 5
 
-/**
- * A price is stored in whole currency units — `amount` is a `numeric`, and `formatPrice` hands it
- * to `Intl` unscaled — so the peso price is the dollar price times the rate, with nothing to
- * convert between minor and major units. The rate is round rather than accurate: this is seed data.
- */
-const COP_PER_USD = 4000
-
-export function amountIn(currencyCode: string, usdAmount: number): number {
-  if (currencyCode === 'usd') return usdAmount
-  if (currencyCode === 'cop') return usdAmount * COP_PER_USD
-  throw new Error(`No seed conversion for currency "${currencyCode}"`)
-}
-
 type MarketSeedServices = {
   regionService: IRegionModuleService
   storeService: IStoreModuleService

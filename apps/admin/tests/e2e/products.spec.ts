@@ -468,3 +468,55 @@ test('editing a variant is never offered a combination another variant holds', a
   void smallLink
   void mediumLink
 })
+
+test('product CSV import journey', async ({ page, authenticate, navigate, cleanup, factories }) => {
+  await authenticate({ as: 'admin' })
+  const suffix = Date.now()
+  const title = `E2E Imported Product ${suffix}`
+  const sku = `E2E-IMPORT-${suffix}`
+  // A tag no other run uses, and a Category whose rule reads it: the import names no Category, the
+  // rule places the product.
+  const tag = `e2e-import:${suffix}`
+  const category = await factories.create.productCategory({ rule: [[tag]] })
+  cleanup.add(() => factories.destroy.productCategory(category.id))
+  // No prices, stock or options: each of those resolves something store-wide, and this journey is
+  // about the modal, not the mapping the backend suite covers.
+  const csv = `Title,URL handle,Status,SKU,Tags\n${title},e2e-imported-${suffix},active,${sku},${tag}\n`
+
+  await navigate({ to: '/products' })
+  await page.getByRole('link', { name: 'Import' }).click()
+
+  const modal = page.getByRole('dialog').last()
+  await expect(modal.getByText('Bulk import via CSV')).toBeVisible()
+  await modal
+    .locator('input[type="file"]')
+    .setInputFiles({ name: 'products.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
+  await expect(modal.getByText('products.csv')).toBeVisible()
+  await modal.getByRole('button', { name: 'Upload file' }).click()
+
+  // Preview — the summary counts the file, and the first product is the one in it.
+  await expect(modal.getByText('Preview your first product')).toBeVisible({ timeout: 15000 })
+  await expect(modal.getByText('1 product', { exact: true })).toBeVisible()
+  await expect(modal.getByText(title)).toBeVisible()
+  await expect(modal.getByRole('cell', { name: sku })).toBeVisible()
+  // The tag is new, so the preview lists it among what the import creates, next to the product's own.
+  await expect(modal.getByText('This import will create')).toBeVisible()
+  await expect(modal.getByText(tag, { exact: true })).toHaveCount(2)
+  await modal.getByRole('button', { name: 'Import products' }).click()
+
+  // Import — runs in the background; the modal polls the job until it finishes.
+  await expect(modal.getByText('Import finished')).toBeVisible({ timeout: 30000 })
+  await expect(modal.getByText('1 of 1 products processed')).toBeVisible()
+  await modal.getByRole('button', { name: 'Done' }).click()
+
+  // The list refreshed when the import finished, so the new product is there without a reload.
+  await page.getByPlaceholder('Search...').fill(title)
+  await page.getByRole('cell', { name: title }).click()
+  await page.waitForURL(/\/products\/prod_/)
+  const productId = page.url().split('/products/')[1]?.split('/')[0]
+  if (productId) cleanup.add(() => factories.destroy.product(productId))
+  await expect(page.getByText(`/e2e-imported-${suffix}`)).toBeVisible()
+  // The Category's rule picked the product up from its imported tag.
+  await expect(page.getByText(category.name, { exact: true })).toBeVisible()
+  await expect(page.getByText(tag, { exact: true })).toBeVisible()
+})

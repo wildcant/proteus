@@ -29,9 +29,17 @@ msgstr "{count, plural, one {Los productos dejarán de tener precio en # moneda 
 msgid "{count} values"
 msgstr "{count} valores"
 
+#: src/features/products/components/import-products/import-preview-step.tsx:116
+msgid "{create} new, {update} to update, {skip} skipped."
+msgstr "{create} nuevos, {update} por actualizar, {skip} omitidos."
+
 #: src/components/form/file-upload-field.tsx:45
 msgid "{fileName} is not a supported file type. Supported file types are: {extensions}."
 msgstr "{fileName} no es un tipo de archivo compatible. Los tipos de archivo compatibles son: {extensions}."
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:162
+msgid "{handle} (collection)"
+msgstr "{handle} (colección)"
 
 #: src/features/access-control/components/permission-grid.tsx:110
 msgid "{module} — All"
@@ -56,6 +64,10 @@ msgstr "{named} + {remaining} más"
 #: src/components/data-table/data-table-ui/pagination.tsx:39
 msgid "{page} of {totalPages} pages"
 msgstr "{page} de {totalPages} páginas"
+
+#: src/features/products/components/import-products/import-progress-step.tsx:51
+msgid "{processed} of {total} products processed"
+msgstr "{processed} de {total} productos procesados"
 
 #: src/components/data-table/data-table-ui/pagination.tsx:36
 msgid "{rangeStart} — {rangeEnd} of {count} results"
@@ -101,6 +113,14 @@ msgstr "Una variante es una combinación de los valores de las opciones de este 
 msgid "Accepted"
 msgstr "Aceptada"
 
+#: src/features/products/components/import-products/import-upload-step.tsx:65
+msgid "Accepts .csv up to {maxSize}"
+msgstr "Acepta .csv de hasta {maxSize}"
+
+#: src/features/products/components/import-structure/structure-upload-step.tsx:73
+msgid "Accepts .yaml up to {maxSize}"
+msgstr "Acepta .yaml de hasta {maxSize}"
+
 #: src/components/error/forbidden-page.tsx:11
 msgid "Access Denied"
 msgstr "Acceso denegado"
@@ -141,6 +161,10 @@ msgstr "Agregar países"
 #: src/features/store/components/add-currencies-form.tsx:24
 msgid "Add Currencies"
 msgstr "Agregar monedas"
+
+#: src/features/products/components/import-products/import-file-picker.tsx:70
+msgid "Add file"
+msgstr "Añadir archivo"
 
 #: src/components/data-table/data-table-ui/filter-menu.tsx:19
 msgid "Add filter"
@@ -198,6 +222,10 @@ msgstr "Al agregar una moneda, cada producto obtiene una columna de precio en el
 msgid "Admin"
 msgstr "Admin"
 
+#: src/features/products/components/import-structure/structure-preview-step.tsx:108
+msgid "After"
+msgstr "Después"
+
 #: src/components/data-table/utils/format.ts:33
 msgid "After {date}"
 msgstr "Después del {date}"
@@ -209,6 +237,10 @@ msgstr "Permitir pedidos sin stock"
 #: src/features/products/components/variant/edit-variant-form.tsx:93
 msgid "Allow backorders"
 msgstr "Permitir pedidos sin stock"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:138
+msgid "Apply structure"
+msgstr "Aplicar estructura"
 
 #: src/features/orders/components/order-general-section.tsx:54
 #: src/features/orders/components/order-general-section.tsx:67
@@ -333,6 +365,10 @@ msgstr "Código de barras"
 msgid "Before {date}"
 msgstr "Antes del {date}"
 
+#: src/features/products/components/import-products/import-upload-step.tsx:43
+msgid "Bulk import via CSV"
+msgstr "Importación masiva con CSV"
+
 #: src/lib/format-file-size.ts:5
 #: src/lib/format-file-size.ts:14
 msgid "Bytes"
@@ -351,6 +387,10 @@ msgstr "bytes"
 #: src/features/products/components/edit-product-form.tsx:32
 #: src/features/products/components/edit-product-group-form.tsx:48
 #: src/features/products/components/edit-product-organization-form.tsx:36
+#: src/features/products/components/import-products/import-preview-step.tsx:75
+#: src/features/products/components/import-products/import-upload-step.tsx:89
+#: src/features/products/components/import-structure/structure-preview-step.tsx:120
+#: src/features/products/components/import-structure/structure-upload-step.tsx:83
 #: src/features/products/components/media/edit-product-media-form.tsx:40
 #: src/features/products/components/media/manage-image-variants-form.tsx:71
 #: src/features/products/components/variant/create-variant-form.tsx:119
@@ -398,13 +438,49 @@ msgstr "Capturar pagos"
 msgid "Categories"
 msgstr "Categorías"
 
+#: src/features/products/components/import-structure/structure-preview-step.tsx:68
+msgid "Categories and collections are matched by handle. Applying makes every category in the file active and re-matches every tag rule."
+msgstr "Las categorías y colecciones se emparejan por handle. Al aplicar, cada categoría del archivo queda activa y se vuelven a evaluar todas las reglas de etiquetas."
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:21
+msgid "Categories to create"
+msgstr "Categorías por crear"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:37
+msgid "Categories to delete"
+msgstr "Categorías por eliminar"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:29
+msgid "Categories to move"
+msgstr "Categorías por mover"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:25
+msgid "Categories to update"
+msgstr "Categorías por actualizar"
+
+#: src/features/products/components/import-structure/structure-upload-step.tsx:54
+msgid "Categories, collections and menu from a YAML file"
+msgstr "Categorías, colecciones y menú desde un archivo YAML"
+
 #: src/features/products/components/edit-product-group-form.tsx:38
 msgid "Check a product to add it, uncheck one to remove it."
 msgstr "Marca un producto para añadirlo y desmárcalo para quitarlo."
 
+#: src/features/products/components/import-products/import-preview-step.tsx:45
+msgid "Check that the first product reads the way you expect before importing the whole file."
+msgstr "Comprueba que el primer producto se ve como esperas antes de importar el archivo completo."
+
 #: src/features/categories/components/category-picker.tsx:96
 msgid "Choose a category"
 msgstr "Elegir una categoría"
+
+#: src/features/products/hooks/use-upload-product-import-form.ts:15
+msgid "Choose a CSV file to import."
+msgstr "Elige un archivo CSV para importar."
+
+#: src/features/products/hooks/use-upload-catalog-structure-form.ts:15
+msgid "Choose a structure file to import."
+msgstr "Elige un archivo de estructura para importar."
 
 #: src/features/categories/components/category-picker.tsx:96
 msgid "Choose categories"
@@ -438,6 +514,18 @@ msgstr "Código"
 #: src/routes/_authed/_shell/collections/route.tsx:5
 msgid "Collections"
 msgstr "Colecciones"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:42
+msgid "Collections to create"
+msgstr "Colecciones por crear"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:50
+msgid "Collections to delete"
+msgstr "Colecciones por eliminar"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:46
+msgid "Collections to update"
+msgstr "Colecciones por actualizar"
 
 #: src/features/products/components/variant/create-variant-form.tsx:79
 #: src/features/products/components/variant/edit-variant-form.tsx:61
@@ -562,7 +650,7 @@ msgid "Create Option"
 msgstr "Crear opción"
 
 #: src/features/products/components/create-product-form/create-product-form.tsx:37
-#: src/routes/_authed/_shell/products/index.tsx:25
+#: src/routes/_authed/_shell/products/index.tsx:28
 msgid "Create Product"
 msgstr "Crear producto"
 
@@ -616,6 +704,7 @@ msgstr "Crea tu primera variante para empezar."
 
 #: src/features/customers/hooks/use-customer-table.tsx:31
 #: src/features/customers/hooks/use-customer-table.tsx:37
+#: src/features/products/components/import-products/import-progress-step.tsx:27
 #: src/features/products/hooks/use-product-table.tsx:52
 msgid "Created"
 msgstr "Creado"
@@ -664,6 +753,7 @@ msgstr "Panel"
 msgid "Date"
 msgstr "Fecha"
 
+#: src/features/products/components/import-products/import-preview-step.tsx:209
 #: src/features/store/hooks/use-store-currency-table.tsx:52
 #: src/features/store/hooks/use-store-currency-table.tsx:53
 msgid "Default"
@@ -788,6 +878,7 @@ msgstr "Descendente"
 #: src/features/categories/components/create-category-form.tsx:42
 #: src/features/categories/components/edit-category-form.tsx:29
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:36
+#: src/features/products/components/import-products/import-preview-step.tsx:178
 #: src/features/products/components/product-general-section.tsx:50
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
 msgid "Description"
@@ -803,12 +894,17 @@ msgid "Discountable"
 msgstr "Admite descuentos"
 
 #: src/features/products/components/edit-product-group-form.tsx:51
+#: src/features/products/components/import-products/import-progress-step.tsx:85
 msgid "Done"
 msgstr "Listo"
 
-#: src/features/notifications/components/notification-item.tsx:36
+#: src/features/notifications/components/notification-item.tsx:42
 msgid "Download file"
 msgstr "Descargar archivo"
+
+#: src/features/products/components/import-products/import-upload-step.tsx:52
+msgid "Download sample CSV"
+msgstr "Descargar CSV de ejemplo"
 
 #: src/features/products/utils/product-status.ts:17
 msgid "draft"
@@ -1023,9 +1119,17 @@ msgstr "Cuadrícula de datos editable"
 msgid "Email"
 msgstr "Correo electrónico"
 
+#: src/features/products/components/import-structure/structure-preview-step.tsx:149
+msgid "Empty"
+msgstr "Vacío"
+
 #: src/features/products/components/variant/create-variant-form.tsx:114
 msgid "Every combination of this product's options already has a variant."
 msgstr "Cada combinación de las opciones de este producto ya tiene una variante."
+
+#: src/features/products/components/import-products/import-upload-step.tsx:76
+msgid "Existing values will be replaced for all columns included in the CSV."
+msgstr "Se reemplazarán los valores existentes de todas las columnas incluidas en el CSV."
 
 #: src/features/users/hooks/use-invite-table.tsx:27
 msgid "Expired"
@@ -1034,6 +1138,10 @@ msgstr "Vencida"
 #: src/features/users/hooks/use-invite-table.tsx:31
 msgid "Expires"
 msgstr "Vence"
+
+#: src/features/products/components/import-products/import-progress-step.tsx:30
+msgid "Failed"
+msgstr "Fallidos"
 
 #: src/features/users/api/invites.ts:90
 msgid "Failed to accept invite"
@@ -1047,6 +1155,10 @@ msgstr "No se pudieron agregar los países"
 msgid "Failed to add currencies"
 msgstr "No se pudieron agregar las monedas"
 
+#: src/features/products/api/catalog-structure.ts:41
+msgid "Failed to apply the structure file"
+msgstr "No se pudo aplicar el archivo de estructura"
+
 #: src/features/orders/api/orders.ts:104
 msgid "Failed to archive order"
 msgstr "No se pudo archivar el pedido"
@@ -1054,6 +1166,10 @@ msgstr "No se pudo archivar el pedido"
 #: src/features/orders/api/orders.ts:85
 msgid "Failed to cancel order"
 msgstr "No se pudo cancelar el pedido"
+
+#: src/features/products/api/product-imports.ts:108
+msgid "Failed to cancel the import"
+msgstr "No se pudo cancelar la importación"
 
 #: src/features/store/api/store.ts:107
 msgid "Failed to change the default currency"
@@ -1159,6 +1275,14 @@ msgstr "No se pudo marcar como entregado"
 msgid "Failed to move category"
 msgstr "No se pudo mover la categoría"
 
+#: src/features/products/api/product-imports.ts:65
+msgid "Failed to read the CSV file"
+msgstr "No se pudo leer el archivo CSV"
+
+#: src/features/products/api/catalog-structure.ts:20
+msgid "Failed to read the structure file"
+msgstr "No se pudo leer el archivo de estructura"
+
 #: src/features/regions/api/countries.ts:136
 msgid "Failed to remove countries"
 msgstr "No se pudieron quitar los países"
@@ -1178,6 +1302,10 @@ msgstr "No se pudo enviar la invitación"
 #: src/features/product-options/api/product-options.ts:172
 msgid "Failed to set product options"
 msgstr "No se pudieron configurar las opciones del producto"
+
+#: src/features/products/api/product-imports.ts:87
+msgid "Failed to start the import"
+msgstr "No se pudo iniciar la importación"
 
 #: src/features/categories/api/categories.ts:81
 msgid "Failed to update category"
@@ -1254,6 +1382,10 @@ msgstr "No se pudieron actualizar los precios de la variante"
 #: src/features/products/api/product-variants.ts:218
 msgid "Failed to update variant stock"
 msgstr "No se pudo actualizar el stock de la variante"
+
+#: src/features/uploads/api/uploads.ts:59
+msgid "Failed to upload file"
+msgstr "No se pudo subir el archivo"
 
 #: src/features/uploads/api/uploads.ts:18
 msgid "Failed to upload files"
@@ -1370,6 +1502,10 @@ msgstr "Alto"
 msgid "HS Code"
 msgstr "Código SA"
 
+#: src/features/products/components/import-products/import-preview-step.tsx:55
+msgid "Ignored columns"
+msgstr "Columnas ignoradas"
+
 #: src/routes/_authed/_shell/products/$id/_detail/images/$imageId/variants.tsx:37
 msgid "Image not found"
 msgstr "Imagen no encontrada"
@@ -1377,6 +1513,50 @@ msgstr "Imagen no encontrada"
 #: src/features/products/components/media/manage-image-variants-form.tsx:27
 msgid "Image variants updated successfully"
 msgstr "Variantes de la imagen actualizadas correctamente"
+
+#: src/routes/_authed/_shell/products/index.tsx:26
+msgid "Import"
+msgstr "Importar"
+
+#: src/features/products/components/import-products/import-upload-step.tsx:46
+msgid "Import a CSV file in the Shopify product format, one row per variant. Tags such as <0>genero:hombre</0> are kept as written; the rules in the store structure use them to place products in categories and collections."
+msgstr "Importa un archivo CSV en el formato de productos de Shopify, una fila por variante. Las etiquetas como <0>genero:hombre</0> se guardan tal cual; las reglas de la estructura de la tienda las usan para ubicar los productos en categorías y colecciones."
+
+#: src/features/products/components/import-products/import-progress-step.tsx:23
+msgid "Import failed"
+msgstr "La importación falló"
+
+#: src/features/products/components/import-products/import-progress-step.tsx:24
+msgid "Import finished"
+msgstr "Importación terminada"
+
+#: src/features/products/components/import-products/import-preview-step.tsx:83
+#: src/features/products/components/import-products/import-products.tsx:37
+#: src/features/products/components/import-products/import-upload-step.tsx:26
+msgid "Import products"
+msgstr "Importar productos"
+
+#: src/features/products/components/import-products/import-progress-step.tsx:42
+msgid "Import progress"
+msgstr "Progreso de la importación"
+
+#: src/features/products/components/import-structure/import-structure.tsx:28
+#: src/features/products/components/import-structure/structure-upload-step.tsx:28
+#: src/routes/_authed/_shell/products/index.tsx:27
+msgid "Import structure"
+msgstr "Importar estructura"
+
+#: src/features/products/components/import-products/import-progress-step.tsx:21
+msgid "Importing products"
+msgstr "Importando productos"
+
+#: src/features/products/components/import-products/import-preview-step.tsx:126
+msgid "Importing will <0>not overwrite any existing products</0> that have the same product handle."
+msgstr "La importación <0>no sobrescribirá ningún producto existente</0> con el mismo handle."
+
+#: src/features/products/components/import-products/import-preview-step.tsx:122
+msgid "Importing will <0>overwrite existing products</0> that have the same product handle."
+msgstr "La importación <0>sobrescribirá los productos existentes</0> con el mismo handle."
 
 #: src/features/categories/components/category-picker.tsx:111
 msgid "in {ancestors}"
@@ -1481,6 +1661,14 @@ msgstr "Largo"
 #: src/components/layout/theme-toggle.tsx:12
 msgid "Light"
 msgstr "Claro"
+
+#: src/features/products/components/import-products/import-error-list.tsx:14
+msgid "Line {line} ({handle}): {message}"
+msgstr "Línea {line} ({handle}): {message}"
+
+#: src/features/products/components/import-products/import-error-list.tsx:18
+msgid "Line {line}: {message}"
+msgstr "Línea {line}: {message}"
 
 #: src/features/regions/components/country-locale-select.tsx:56
 msgid "Loading countries…"
@@ -1613,6 +1801,10 @@ msgstr "Multimedia"
 msgid "Media updated successfully"
 msgstr "Multimedia actualizada correctamente"
 
+#: src/features/products/components/import-structure/structure-preview-step.tsx:98
+msgid "Menu"
+msgstr "Menú"
+
 #: src/features/products/components/create-product-form/product-create-attributes-form.tsx:37
 #: src/features/products/components/product-attribute-section.tsx:31
 msgid "MID Code"
@@ -1647,6 +1839,14 @@ msgstr "Nombre"
 #: src/features/product-types/components/create-product-type-form.tsx:13
 msgid "Name what a product is. A product has one type."
 msgstr "Nombra qué es un producto. Un producto tiene un tipo."
+
+#: src/features/products/components/import-products/import-preview-step.tsx:131
+msgid "New products will be <0>published</0>."
+msgstr "Los productos nuevos se <0>publicarán</0>."
+
+#: src/features/products/components/import-products/import-preview-step.tsx:135
+msgid "New products will be saved as <0>drafts</0>."
+msgstr "Los productos nuevos se guardarán como <0>borradores</0>."
 
 #: src/components/data-table/data-table-ui/pagination.tsx:50
 msgid "Next"
@@ -1902,9 +2102,17 @@ msgstr "Ninguna — nivel superior"
 msgid "None makes it a top-level category. Fixed once the category is created."
 msgstr "Sin padre, es una categoría de nivel superior. No se puede cambiar una vez creada la categoría."
 
+#: src/features/products/components/import-products/import-upload-step.tsx:66
+msgid "Not a CSV file. Choose a file ending in .csv."
+msgstr "No es un archivo CSV. Elige un archivo que termine en .csv."
+
 #: src/features/collections/components/collection-thumbnail-picker.tsx:33
 msgid "Not a supported image. Supported file types are: {extensions}."
 msgstr "No es una imagen compatible. Los tipos de archivo compatibles son: {extensions}."
+
+#: src/features/products/components/import-structure/structure-upload-step.tsx:74
+msgid "Not a YAML file. Choose a file ending in .yaml or .yml."
+msgstr "No es un archivo YAML. Elige un archivo que termine en .yaml o .yml."
 
 #: src/features/inventory/hooks/use-inventory-table.tsx:66
 msgid "Nothing tracked yet"
@@ -1917,6 +2125,10 @@ msgstr "Notificación"
 #: src/features/notifications/components/notification-bell.tsx:73
 msgid "Notifications"
 msgstr "Notificaciones"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:102
+msgid "Now"
+msgstr "Ahora"
 
 #: src/components/form/file-upload-field.tsx:60
 msgid "One or more files exceed the maximum file size of {maxSize}:{fileList}"
@@ -1982,6 +2194,10 @@ msgstr "Organizar categorías"
 #: src/features/orders/components/order-summary-section.tsx:70
 msgid "Outstanding amount"
 msgstr "Monto pendiente"
+
+#: src/features/products/components/import-products/import-upload-step.tsx:75
+msgid "Overwrite products with matching handles."
+msgstr "Sobrescribir productos con el mismo handle."
 
 #: src/features/orders/components/order-payment-section.tsx:37
 #: src/features/orders/components/order-summary-section.tsx:68
@@ -2052,6 +2268,18 @@ msgstr "Al realizar un pedido se reserva su stock, y la reserva aparece aquí."
 #: src/components/data-table/data-table-ui/pagination.tsx:47
 msgid "Prev"
 msgstr "Ant."
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:63
+msgid "Preview the structure"
+msgstr "Vista previa de la estructura"
+
+#: src/features/products/components/import-products/import-preview-step.tsx:40
+msgid "Preview your first product"
+msgstr "Vista previa de tu primer producto"
+
+#: src/features/products/components/import-products/import-preview-step.tsx:202
+msgid "Price"
+msgstr "Precio"
 
 #: src/features/products/utils/price-columns.ts:17
 msgid "Price {code}"
@@ -2127,6 +2355,10 @@ msgstr "Proveedores"
 #: src/features/products/components/create-product-form/create-product-form.tsx:87
 msgid "Publish"
 msgstr "Publicar"
+
+#: src/features/products/components/import-products/import-upload-step.tsx:81
+msgid "Publish new products."
+msgstr "Publicar los productos nuevos."
 
 #: src/features/products/utils/product-status.ts:16
 msgid "published"
@@ -2220,6 +2452,10 @@ msgstr "Quitar <0>{title}</0> fusiona las variantes que solo se diferencian por 
 #: src/features/products/components/media/staged-media-list.tsx:127
 msgid "Reorder"
 msgstr "Reordenar"
+
+#: src/features/products/components/import-products/import-file-picker.tsx:64
+msgid "Replace file"
+msgstr "Reemplazar archivo"
 
 #: src/features/users/components/invite-row-actions.tsx:60
 msgid "Resend invite"
@@ -2457,9 +2693,14 @@ msgstr "Inicia sesión para acceder al área de tu cuenta"
 msgid "Signing in..."
 msgstr "Iniciando sesión..."
 
+#: src/features/products/components/import-products/import-progress-step.tsx:29
+msgid "Skipped"
+msgstr "Omitidos"
+
 #: src/features/inventory/hooks/use-inventory-table.tsx:35
 #: src/features/inventory/hooks/use-reservation-table.tsx:31
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:27
+#: src/features/products/components/import-products/import-preview-step.tsx:196
 #: src/features/products/components/variant/create-variant-form.tsx:103
 #: src/features/products/components/variant/edit-variant-form.tsx:77
 #: src/features/products/components/variant/variant-general-section.tsx:42
@@ -2471,6 +2712,7 @@ msgstr "SKU"
 #: src/features/orders/hooks/use-order-table.tsx:35
 #: src/features/orders/hooks/use-order-table.tsx:54
 #: src/features/product-options/hooks/use-option-products-table.tsx:24
+#: src/features/products/components/import-products/import-preview-step.tsx:181
 #: src/features/products/hooks/use-product-list-table.tsx:34
 #: src/features/products/hooks/use-product-table.tsx:31
 #: src/features/products/hooks/use-product-table.tsx:42
@@ -2504,6 +2746,10 @@ msgstr "Cantidad en stock"
 msgid "Store"
 msgstr "Tienda"
 
+#: src/features/products/components/import-structure/structure-preview-step.tsx:131
+msgid "Structure applied"
+msgstr "Estructura aplicada"
+
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:31
 #: src/features/products/components/product-general-section.tsx:51
 msgid "Subtitle"
@@ -2523,6 +2769,8 @@ msgstr "Sistema"
 
 #: src/components/layout/use-sidebar-label.ts:16
 #: src/features/product-tags/components/product-tags-combobox.tsx:17
+#: src/features/products/components/import-products/import-preview-step.tsx:147
+#: src/features/products/components/import-products/import-preview-step.tsx:185
 #: src/features/products/components/product-organization-section.tsx:32
 #: src/routes/_authed/_shell/product-tags/index.tsx:21
 #: src/routes/_authed/_shell/product-tags/route.tsx:5
@@ -2537,6 +2785,14 @@ msgstr "TB"
 msgid "The currencies the store sells in are the prices a product can carry, and the money a region may settle in."
 msgstr "Las monedas en las que vende la tienda son los precios que puede tener un producto y el dinero en el que puede liquidar una región."
 
+#: src/features/products/components/import-products/import-file-picker.tsx:40
+msgid "The file exceeds the maximum file size of {maxSize}."
+msgstr "El archivo supera el tamaño máximo de {maxSize}."
+
+#: src/features/products/components/import-structure/structure-upload-step.tsx:57
+msgid "The file lists <0>categorias</0> with their <1>hijos</1>, <2>colecciones</2> and the <3>menu</3>. A <4>regla</4> fills a category or collection with the products whose tags match. The file is the source: categories and collections it leaves out are deleted."
+msgstr "El archivo enumera las <0>categorias</0> con sus <1>hijos</1>, las <2>colecciones</2> y el <3>menu</3>. Una <4>regla</4> llena una categoría o colección con los productos cuyas etiquetas coinciden. El archivo manda: las categorías y colecciones que no incluye se eliminan."
+
 #: src/features/collections/components/collection-thumbnail-picker.tsx:28
 msgid "The image exceeds the maximum file size of {maxSize}."
 msgstr "La imagen supera el tamaño máximo de archivo de {maxSize}."
@@ -2545,17 +2801,41 @@ msgstr "La imagen supera el tamaño máximo de archivo de {maxSize}."
 msgid "The market — and so the currency — a shopper is priced in before they pick one."
 msgstr "El mercado —y por tanto la moneda— con el que se muestran los precios a un comprador antes de que elija uno."
 
+#: src/features/products/components/import-structure/structure-preview-step.tsx:76
+msgid "The store already has this structure. Applying it changes nothing."
+msgstr "La tienda ya tiene esta estructura. Aplicarla no cambia nada."
+
 #: src/features/regions/components/region-currency-select.tsx:54
 msgid "The store sells in no currencies yet, so a region has none to settle in."
 msgstr "La tienda aún no vende en ninguna moneda, así que una región no tiene en cuál liquidar."
+
+#: src/features/products/components/import-structure/structure-upload-step.tsx:34
+msgid "The structure file has errors. After you fix them, try importing it again."
+msgstr "El archivo de estructura tiene errores. Cuando los corrijas, vuelve a importarlo."
 
 #: src/components/layout/theme-toggle.tsx:42
 msgid "Theme: {current}. Switch to {next}."
 msgstr "Tema: {current}. Cambiar a {next}."
 
+#: src/features/products/components/import-products/import-upload-step.tsx:32
+msgid "There was an error importing your CSV file. After you fix the error, try importing the CSV file again."
+msgstr "Hubo un error al importar tu archivo CSV. Cuando lo corrijas, intenta importar el archivo CSV de nuevo."
+
+#: src/features/products/components/import-products/import-preview-step.tsx:58
+msgid "These columns are not imported: {ignoredColumns}"
+msgstr "Estas columnas no se importan: {ignoredColumns}"
+
+#: src/features/products/components/import-products/import-progress-step.tsx:69
+msgid "These products were not imported"
+msgstr "Estos productos no se importaron"
+
 #: src/features/regions/components/edit-country-locale-form.tsx:46
 msgid "This changes the live storefront URLs for {countryName}. Links to the current ones stop resolving — nothing redirects them."
 msgstr "Esto cambia las URL activas de la tienda para {countryName}. Los enlaces a las actuales dejarán de funcionar: nada los redirige."
+
+#: src/features/products/components/import-products/import-preview-step.tsx:156
+msgid "This import will create"
+msgstr "Esta importación creará"
 
 #: src/features/store/utils/store-currencies.ts:53
 msgid "This is the store's default currency. Make another currency the default first."
@@ -2599,6 +2879,7 @@ msgstr "Miniatura"
 #: src/features/product-options/hooks/use-product-option-table.tsx:21
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:28
 #: src/features/products/components/edit-product-form.tsx:27
+#: src/features/products/components/import-products/import-preview-step.tsx:177
 #: src/features/products/components/variant/create-variant-form.tsx:95
 #: src/features/products/components/variant/edit-variant-form.tsx:47
 #: src/features/products/hooks/use-image-variants-table.tsx:32
@@ -2627,6 +2908,10 @@ msgstr "Hoy"
 #: src/components/layout/shell.tsx:188
 msgid "Toggle Sidebar"
 msgstr "Alternar barra lateral"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:17
+msgid "top level"
+msgstr "nivel superior"
 
 #: src/features/orders/components/order-payment-section.tsx:14
 msgid "Transactions"
@@ -2670,6 +2955,7 @@ msgid "Try requesting a new invite link."
 msgstr "Intenta solicitar un nuevo enlace de invitación."
 
 #: src/features/product-types/components/product-type-combobox.tsx:17
+#: src/features/products/components/import-products/import-preview-step.tsx:184
 #: src/features/products/components/product-organization-section.tsx:29
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:64
 msgid "Type"
@@ -2689,6 +2975,7 @@ msgid "Type to add one."
 msgstr "Escribe para añadir uno."
 
 #: src/components/layout/use-sidebar-label.ts:17
+#: src/features/products/components/import-products/import-preview-step.tsx:148
 #: src/routes/_authed/_shell/product-types/index.tsx:21
 #: src/routes/_authed/_shell/product-types/route.tsx:5
 msgid "Types"
@@ -2702,9 +2989,18 @@ msgstr "sin preparar"
 msgid "unlimited"
 msgstr "ilimitado"
 
+#: src/features/products/components/import-products/import-progress-step.tsx:28
+msgid "Updated"
+msgstr "Actualizados"
+
 #: src/features/collections/components/collection-thumbnail-picker.tsx:60
 msgid "Upload an image"
 msgstr "Subir una imagen"
+
+#: src/features/products/components/import-products/import-upload-step.tsx:92
+#: src/features/products/components/import-structure/structure-upload-step.tsx:86
+msgid "Upload file"
+msgstr "Subir archivo"
 
 #: src/features/access-control/utils/permission-titles.ts:19
 msgid "Upload files"
@@ -2752,6 +3048,7 @@ msgstr "Valores"
 #: src/features/inventory/hooks/use-inventory-table.tsx:34
 #: src/features/inventory/hooks/use-reservation-table.tsx:30
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:26
+#: src/features/products/components/import-products/import-preview-step.tsx:193
 msgid "Variant"
 msgstr "Variante"
 
@@ -2830,6 +3127,7 @@ msgid "View users"
 msgstr "Ver usuarios"
 
 #: src/features/products/components/create-product-form/product-create-attributes-form.tsx:42
+#: src/features/products/components/import-products/import-preview-step.tsx:199
 #: src/features/products/components/product-attribute-section.tsx:30
 msgid "Weight"
 msgstr "Peso"
@@ -2899,6 +3197,10 @@ msgstr "Vas a eliminar la etiqueta {value}."
 msgid "You are about to delete the type {value}."
 msgstr "Vas a eliminar el tipo {value}."
 
+#: src/features/products/components/import-products/import-progress-step.tsx:77
+msgid "You can close this window — you'll get a notification when it finishes."
+msgstr "Puedes cerrar esta ventana: recibirás una notificación cuando termine."
+
 #: src/components/error/forbidden-page.tsx:14
 msgid "You don't have permission to access this page."
 msgstr "No tienes permiso para acceder a esta página."
@@ -2906,6 +3208,10 @@ msgstr "No tienes permiso para acceder a esta página."
 #: src/hooks/use-ui-copy.ts:14
 msgid "You have unsaved changes"
 msgstr "Tienes cambios sin guardar"
+
+#: src/features/products/components/import-products/import-preview-step.tsx:99
+msgid "You will be importing approximately <0>{total, plural, one {# product} other {# products}}</0> with a total of <1>{skus, plural, one {# SKU} other {# SKUs}}</1> and <2>{images, plural, one {# image} other {# images}}</2>."
+msgstr "Vas a importar aproximadamente <0>{total, plural, one {# producto} other {# productos}}</0> con un total de <1>{skus, plural, one {# SKU} other {# SKUs}}</1> y <2>{images, plural, one {# imagen} other {# imágenes}}</2>."
 
 #: src/routes/_public/invite.tsx:34
 msgid "Your account has been registered"

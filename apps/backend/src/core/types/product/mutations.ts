@@ -1,4 +1,11 @@
-import type { ProductOptionRenderAs, ProductStatusType } from './common.js'
+import type {
+  ProductGroupingRuleDTO,
+  ProductImportErrorDTO,
+  ProductImportOptionsDTO,
+  ProductImportSummaryDTO,
+  ProductOptionRenderAs,
+  ProductStatusType,
+} from './common.js'
 
 type CreateProductImageInput = {
   url: string
@@ -178,6 +185,8 @@ export type CreateProductCategoryDTO = {
   rank?: number
   isActive?: boolean
   isInternal?: boolean
+  /** Absent or null makes a manual Category. A rule fills it with the products that match. */
+  rule?: ProductGroupingRuleDTO | null
 }
 
 /** Never regenerates the handle. */
@@ -191,6 +200,8 @@ export type UpdateProductCategoryDTO = {
   rank?: number
   isActive?: boolean
   isInternal?: boolean
+  /** A new rule re-matches every product. Null makes it manual and keeps the members it has. */
+  rule?: ProductGroupingRuleDTO | null
 }
 
 /** Applied `add` then `remove`. Adding a member or removing a non-member is a no-op. */
@@ -204,6 +215,8 @@ export type CreateProductCollectionDTO = {
   /** Generated from the title when absent. */
   handle?: string
   thumbnail?: string | null
+  /** Absent or null makes a manual Collection. A rule fills it with the products that match. */
+  rule?: ProductGroupingRuleDTO | null
 }
 
 /** Never regenerates the handle. */
@@ -211,6 +224,18 @@ export type UpdateProductCollectionDTO = {
   title?: string
   handle?: string
   thumbnail?: string | null
+  /** A new rule re-matches every product. Null makes it manual and keeps the members it has. */
+  rule?: ProductGroupingRuleDTO | null
+}
+
+/**
+ * Which ruled memberships to recompute. Each absent list means all of its kind; an empty one means
+ * none — so `{ categoryIds: [id], collectionIds: [] }` re-matches one Category against every product.
+ */
+export type SyncRuleMembershipsDTO = {
+  productIds?: string[]
+  categoryIds?: string[]
+  collectionIds?: string[]
 }
 
 /** Applied `add` then `remove`. Adding a member or removing a non-member is a no-op. */
@@ -235,4 +260,14 @@ export type CreateProductTagDTO = {
 
 export type UpdateProductTagDTO = {
   value?: string
+}
+
+/** A previewed import. A job with `errors` is stored so the preview can show them, and never runs. */
+export type CreateProductImportDTO = {
+  fileId: string
+  options: ProductImportOptionsDTO
+  summary: ProductImportSummaryDTO
+  errors: ProductImportErrorDTO[]
+  chunks: string[]
+  createdBy: string | null
 }

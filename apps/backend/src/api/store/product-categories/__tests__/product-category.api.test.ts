@@ -102,4 +102,30 @@ test.describe('Shop by category', () => {
     // Unscoped, the list is the whole sellable catalogue.
     expect((await listIn('limit=100')).count).toBe(7)
   })
+
+  test('a product a child rule picks up is listed on the parent category too', async ({ expect, http, service }) => {
+    const classics = await service.create.productTag(api.container, { value: 'estilo:clasicos' })
+    const createCategory = async (body: object) => {
+      const response = await api.post<typeof adminCategoryRoutes.PostOutput>(
+        '/admin/product-categories',
+        http.admin.createProductCategory({ isActive: true, ...body }),
+      )
+      expect(response.status).toBe(201)
+      return response.body.productCategory
+    }
+    // The parent is manual and holds nothing directly; only the child's rule places the product.
+    const men = await createCategory({})
+    const menClassics = await createCategory({ parentId: men.id, rule: [[classics.value]] })
+
+    const { product } = await service.create.product(api.container, { status: 'published', tagIds: [classics.id] })
+    const [variant] = await service.create.productVariants(api.container, product.id)
+    if (!variant) throw new Error('Expected a variant')
+    await service.create.variantPrices(api.container, [variant.id])
+
+    for (const handle of [menClassics.handle, men.handle]) {
+      const response = await api.get<typeof productRoutes.GetOutput>(`/store/products?category=${handle}`)
+      expect(response.status).toBe(200)
+      expect(response.body.products.map((listed) => listed.id)).toEqual([product.id])
+    }
+  })
 })

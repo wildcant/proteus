@@ -1,8 +1,8 @@
 import { cn } from '@proteus/ui'
 import { ChevronDownIcon } from 'lucide-react'
 import { useState } from 'react'
-import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
 import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
+import type { MenuSource } from '#/components/header/menu-items'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/popover'
 
 const railItemClassName = 'font-medium text-ink text-sm no-underline hover:text-ink-muted'
@@ -16,12 +16,12 @@ const railItemClassName = 'font-medium text-ink text-sm no-underline hover:text-
  * merely collapsed would be the same links twice.
  */
 type NavProps = {
-  categories: StoreProductCategoryTreeNode[]
+  menu: MenuSource
   className?: string
 }
 
-export function Nav({ categories, className }: NavProps) {
-  const entries = useMenuEntries(categories)
+export function Nav({ menu, className }: NavProps) {
+  const entries = useMenuEntries(menu)
 
   return (
     <nav className={cn('hidden lg:block', className)}>

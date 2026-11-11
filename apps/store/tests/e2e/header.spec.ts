@@ -94,6 +94,61 @@ test.describe('Header', () => {
     await page.keyboard.press('Escape')
   })
 
+  test("the rail, the side menu and the footer follow the store's menu", async ({
+    page,
+    authenticate,
+    navigate,
+    factories,
+  }) => {
+    // Disposed child-first: a Category with children cannot be deleted.
+    await using parent = await factories.create.productCategory()
+    await using child = await factories.create.productCategory({ parentId: parent.id })
+    // A top-level Visible Category the menu does not name, which a store with no menu would list.
+    await using offMenu = await factories.create.productCategory()
+    await using collection = await factories.create.productCollection()
+    // Declared last so it is restored first. The store is shared, so every other spec that reads
+    // the menu asserts only "Shop all", which is on it whatever this sets.
+    await using _navigation = await factories.create.storeNavigation([
+      { type: 'collection', handle: collection.handle },
+      { type: 'category', handle: parent.handle },
+      { type: 'category', handle: 'no-such-category' },
+    ])
+    await authenticate({ as: 'customer' })
+
+    await navigate({ to: '/' })
+
+    // The menu's entries in its order, after "Shop all": the unnamed root and the dangling handle are not there.
+    const rail = page.locator('header').getByRole('navigation')
+    await expect(rail.getByRole('listitem')).toHaveText(['Shop all', collection.title, parent.name])
+
+    // A Category entry expands into its children, as it did when the tree was the menu.
+    await rail.getByRole('button', { name: parent.name }).click()
+    await expect(page.getByRole('link', { name: `Shop all ${parent.name}` })).toBeVisible()
+    await page.getByRole('link', { name: child.name, exact: true }).click()
+    await expect(page).toHaveURL(`/en-US/categories/${child.handle}`)
+
+    // A Collection entry links to its page, under its title.
+    await rail.getByRole('link', { name: collection.title }).click()
+    await expect(page).toHaveURL(`/en-US/collections/${collection.handle}`)
+    await expect(page.locator('main').getByRole('heading', { level: 1, name: collection.title })).toBeVisible()
+
+    // The footer's Shop column carries the same top level, flat.
+    const footer = page.locator('footer')
+    await expect(footer.getByRole('link', { name: collection.title })).toBeVisible()
+    await expect(footer.getByRole('link', { name: parent.name, exact: true })).toBeVisible()
+    await expect(footer.getByRole('link', { name: offMenu.name })).toHaveCount(0)
+
+    // Below lg the side menu carries it too, the Category expanding in place.
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.locator('header').getByLabel('Open menu').click()
+    const sideMenu = page.locator('[data-slot="drawer-popup"]')
+    await expect(sideMenu.getByRole('link', { name: collection.title })).toBeVisible()
+    await expect(sideMenu.getByText(offMenu.name)).toHaveCount(0)
+    await sideMenu.getByRole('button', { name: parent.name }).click()
+    await sideMenu.getByRole('link', { name: child.name, exact: true }).click()
+    await expect(page).toHaveURL(`/en-US/categories/${child.handle}`)
+  })
+
   test('the search panel filters, and View all carries the term to the list', async ({
     page,
     authenticate,

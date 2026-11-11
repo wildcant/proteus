@@ -2,7 +2,11 @@ import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
   AppliedProductOptionChangeDTO,
+  CatalogStructureChangesDTO,
+  CatalogStructureDTO,
+  CatalogStructurePlanDTO,
   EnrichedProductVariantDTO,
+  FilterableProductCategoryProps,
   FilterableProductCollectionProps,
   FilterableProductImageProps,
   FilterableProductOptionCombinationProps,
@@ -14,6 +18,7 @@ import type {
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
+  ImportedProductDTO,
   ListCategoryTreeDTO,
   PickerVariantDTO,
   ProductCategoryDTO,
@@ -22,6 +27,11 @@ import type {
   ProductDTO,
   ProductGroupingsDTO,
   ProductImageDTO,
+  ProductImportDTO,
+  ProductImportOutcomeDTO,
+  ProductImportPlanDTO,
+  ProductImportReferencesDTO,
+  ProductImportSettingsDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -41,6 +51,7 @@ import type {
   CreateProductCollectionDTO,
   CreateProductDTO,
   CreateProductImageDTO,
+  CreateProductImportDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductTagDTO,
@@ -49,6 +60,7 @@ import type {
   SetCategoryProductsDTO,
   SetCollectionProductsDTO,
   SetProductOptionsDTO,
+  SyncRuleMembershipsDTO,
   UpdateProductCategoryDTO,
   UpdateProductCollectionDTO,
   UpdateProductDTO,
@@ -191,14 +203,44 @@ export type IProductModuleService = {
    * Visible ones — active, not internal, every ancestor visible.
    */
   listCategoryTree(filters?: ListCategoryTreeDTO, context?: Context): Promise<ProductCategoryTreeNodeDTO[]>
+  /** Live Categories matching `filters`, flat, in sibling rank order. */
+  listCategories(filters?: FilterableProductCategoryProps, context?: Context): Promise<ProductCategoryDTO[]>
   retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO>
   /** Places the new Category among its siblings and renumbers the set 0..n-1. */
   createCategory(data: CreateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO>
   updateCategory(categoryId: string, data: UpdateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO>
   /** Refused with `NOT_ALLOWED` while a Category still has live children. */
   softDeleteCategories(categoryIds: string[], context?: Context): Promise<void>
-  /** Adds then removes direct members. Adding a member or removing a non-member is a no-op. */
+  /**
+   * Adds then removes direct members. Adding a member or removing a non-member is a no-op. Refused
+   * with `NOT_ALLOWED` for a ruled Category.
+   */
   setCategoryProducts(categoryId: string, data: SetCategoryProductsDTO, context?: Context): Promise<ProductCategoryDTO>
+
+  // Imports
+  /**
+   * Reads a Shopify-format CSV into a plan: what the import would create, update and skip, every
+   * error with its line, and the products in chunks. Writes nothing.
+   */
+  planProductImport(
+    source: AsyncIterable<Uint8Array | string>,
+    settings: ProductImportSettingsDTO,
+    context?: Context,
+  ): Promise<ProductImportPlanDTO>
+  createProductImport(data: CreateProductImportDTO, context?: Context): Promise<ProductImportDTO>
+  retrieveProductImport(importId: string, context?: Context): Promise<ProductImportDTO>
+  /** `previewed` → `importing`. Refused with `NOT_ALLOWED` for a job with errors, one past its hour, or one not previewed. */
+  confirmProductImport(importId: string, context?: Context): Promise<ProductImportDTO>
+  /** `previewed` → `canceled`, refused with `NOT_ALLOWED` otherwise. */
+  cancelProductImport(importId: string, context?: Context): Promise<ProductImportDTO>
+  /** Marks every preview older than an hour `expired` and returns them, so their files can go. */
+  expireProductImports(context?: Context): Promise<ProductImportDTO[]>
+  /** Adds one product's outcome to the job's counters, and its error to the job's list. */
+  recordProductImportOutcome(importId: string, outcome: ProductImportOutcomeDTO, context?: Context): Promise<void>
+  /** `importing` → `completed`, or `failed` when no product made it in. A finished job is returned unchanged. */
+  finishProductImport(importId: string, context?: Context): Promise<ProductImportDTO>
+  /** The ids the product's handles, values and option titles name, creating the ones that do not exist. */
+  resolveProductImportReferences(product: ImportedProductDTO, context?: Context): Promise<ProductImportReferencesDTO>
 
   // Collections
   listAndCountCollections(
@@ -215,7 +257,10 @@ export type IProductModuleService = {
   ): Promise<ProductCollectionDTO>
   /** Hides the Collections' memberships with them; the products stay. */
   softDeleteCollections(collectionIds: string[], context?: Context): Promise<void>
-  /** Adds then removes members. Adding a member or removing a non-member is a no-op. */
+  /**
+   * Adds then removes members. Adding a member or removing a non-member is a no-op. Refused with
+   * `NOT_ALLOWED` for a ruled Collection.
+   */
   setCollectionProducts(
     collectionId: string,
     data: SetCollectionProductsDTO,
@@ -253,6 +298,26 @@ export type IProductModuleService = {
     filters: Omit<FilterableProductProps, 'tagId' | 'tagValue'>,
     context?: Context,
   ): Promise<string[]>
+
+  /**
+   * Makes every ruled Category and Collection in scope hold exactly the scoped products its tag rule
+   * matches, in one transaction. Manual groupings are never touched. Product, rule and Tag writes
+   * call it themselves; it is public for writes that change many groupings at once.
+   */
+  syncRuleMemberships(scope?: SyncRuleMembershipsDTO, context?: Context): Promise<void>
+
+  // Structure files
+  /**
+   * Reads a structure file (`estructura.yaml`) into a plan: the structure, every error with its
+   * path, and what applying it would create, update, move and delete. Writes nothing.
+   */
+  planCatalogStructure(source: AsyncIterable<Uint8Array | string>, context?: Context): Promise<CatalogStructurePlanDTO>
+  /**
+   * Makes the Categories and Collections exactly the structure's, by handle, in one transaction:
+   * named ones written as declared (Categories active, at their file rank), absent ones deleted, then
+   * every ruled grouping re-matched. Answers with what changed. The menu is not this module's.
+   */
+  applyCatalogStructure(structure: CatalogStructureDTO, context?: Context): Promise<CatalogStructureChangesDTO>
 
   /** One product's live groupings: `null` and empty lists where it has none. */
   retrieveProductGroupings(productId: string, context?: Context): Promise<ProductGroupingsDTO>

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { dateToIso } from '../../common.js'
+import { AdminProductGroupingRule } from '../product-tag/entities.js'
 
 export const AdminProductCategory = z
   .object({
@@ -14,6 +15,8 @@ export const AdminProductCategory = z
     isActive: z.boolean(),
     /** Assignable in the admin, never shown on the store. */
     isInternal: z.boolean(),
+    /** `null` is manual: the members are picked. A ruled Category's members follow its rule. */
+    rule: AdminProductGroupingRule.nullable(),
     createdAt: dateToIso,
     updatedAt: dateToIso,
   })

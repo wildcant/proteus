@@ -48,6 +48,9 @@
     },
     {
       "name": "Products"
+    },
+    {
+      "name": "Store"
     }
   ],
   "components": {
@@ -1358,6 +1361,39 @@
             "type": "boolean"
           }
         }
+      },
+      "StoreNavigationResponse": {
+        "type": "object",
+        "properties": {
+          "navigation": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationEntry"
+            }
+          }
+        },
+        "required": [
+          "navigation"
+        ]
+      },
+      "StoreNavigationEntry": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "category",
+              "collection"
+            ]
+          },
+          "handle": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "handle"
+        ]
       },
       "StoreOrderListResponse": {
         "type": "object",
@@ -3868,6 +3904,32 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/navigation": {
+      "get": {
+        "operationId": "getStoreNavigation",
+        "summary": "Retrieve the store's menu",
+        "description": "The menu entries in order, each a Category (shown with its children) or a Collection by handle. A handle naming no visible grouping is skipped by the storefront.",
+        "tags": [
+          "Store"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreNavigationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }

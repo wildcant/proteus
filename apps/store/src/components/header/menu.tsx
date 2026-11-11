@@ -1,14 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
+import { type MenuSource, type MenuTarget, resolveMenuItems } from '#/components/header/menu-items'
 
-/** One destination: the catalogue when `handle` is absent, otherwise that Category's page. */
-type MenuDestination = { key: string; label: string; handle?: string }
+/** One destination: the catalogue when `target` is absent, otherwise that Category's or Collection's page. */
+type MenuDestination = { key: string; label: string; target?: MenuTarget }
 
 /**
- * A top-level Category with children. It opens rather than navigates, so its own page is the first
- * of `links`, as "Shop all <name>".
+ * A Category with children. It opens rather than navigates, so its own page is the first of
+ * `links`, as "Shop all <name>".
  */
 export type MenuGroup = { key: string; label: string; links: MenuDestination[] }
 
@@ -18,25 +18,18 @@ export const isMenuGroup = (entry: MenuEntry): entry is MenuGroup => 'links' in 
 
 /**
  * The storefront's navigation as data, which the header rail and the side menu each render in
- * their own shape: "Shop all", then one entry per top-level Visible Category, straight from the
- * tree. No category is named in code, so the same menu serves any shop — and one with no
- * Categories still has a way to the catalogue.
+ * their own shape: "Shop all", then the store's menu (see `resolveMenuItems`). No grouping is
+ * named in code, so the same menu serves any shop — and one with nothing on its menu still has a
+ * way to the catalogue.
  */
-export function useMenuEntries(categories: StoreProductCategoryTreeNode[]): MenuEntry[] {
+export function useMenuEntries(source: MenuSource): MenuEntry[] {
   const { t } = useLingui()
 
   return [
     { key: 'shop-all', label: t`Shop all` },
-    ...categories.map(({ id, name, handle, children }): MenuEntry => {
-      if (children.length === 0) return { key: id, label: name, handle }
-      return {
-        key: id,
-        label: name,
-        links: [
-          { key: id, label: t`Shop all ${name}`, handle },
-          ...children.map((child) => ({ key: child.id, label: child.name, handle: child.handle })),
-        ],
-      }
+    ...resolveMenuItems(source).map(({ key, label: name, target, children }): MenuEntry => {
+      if (children.length === 0) return { key, label: name, target }
+      return { key, label: name, links: [{ key, label: t`Shop all ${name}`, target }, ...children] }
     }),
   ]
 }
@@ -54,15 +47,23 @@ export function MenuLink({
   children?: ReactNode
 }) {
   const content = children ?? destination.label
-  if (!destination.handle) {
+  const { target } = destination
+  if (!target) {
     return (
       <Link to="/" onClick={onClick} className={className}>
         {content}
       </Link>
     )
   }
+  if (target.type === 'collection') {
+    return (
+      <Link to="/collections/$handle" params={{ handle: target.handle }} onClick={onClick} className={className}>
+        {content}
+      </Link>
+    )
+  }
   return (
-    <Link to="/categories/$handle" params={{ handle: destination.handle }} onClick={onClick} className={className}>
+    <Link to="/categories/$handle" params={{ handle: target.handle }} onClick={onClick} className={className}>
       {content}
     </Link>
   )

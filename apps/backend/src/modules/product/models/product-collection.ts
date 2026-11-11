@@ -1,9 +1,10 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, text } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveUniqueIndex } from '../../../core/db/indexes.js'
+import type { ProductGroupingRuleDTO } from '../../../core/types/product/common.js'
 
-/** A hand-picked merchandising group ("Summer 2026"). A product can sit in several (ADR 0032). */
+/** A merchandising group ("Summer 2026"), hand-picked or ruled. A product can sit in several (ADR 0032). */
 export const productCollectionTable = pgTable(
   'product_collection',
   {
@@ -12,6 +13,8 @@ export const productCollectionTable = pgTable(
     handle: text().notNull(),
     /** A URL from `POST /admin/uploads`, as `product.thumbnail` is. */
     thumbnail: text(),
+    /** The tag rule that decides the members; `null` is a manual Collection whose members are picked. */
+    rule: jsonb().$type<ProductGroupingRuleDTO | null>(),
     ...timestamps,
   },
   (table) => [liveUniqueIndex('idx_product_collection_handle').on(table.handle)],
