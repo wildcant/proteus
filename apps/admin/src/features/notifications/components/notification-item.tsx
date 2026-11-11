@@ -14,12 +14,18 @@ export function NotificationItem({ notification }: { notification: AdminNotifica
   // The in-app destination the notification is about — the low-stock alert's variant page, so
   // acting on it is one click. Absent on a notification with nothing to open, which is most of them.
   const href = data?.href as string | undefined
+  // The router reads `to` as a path only, so a query string — the import job's `?id=` — rides in `search`.
+  const destination = href ? new URL(href, window.location.origin) : null
 
   return (
     <div className="border-b px-4 py-3">
       <div className="flex items-start justify-between gap-2">
-        {href ? (
-          <Link to={href} className="font-medium text-sm hover:underline">
+        {destination ? (
+          <Link
+            to={destination.pathname}
+            search={Object.fromEntries(destination.searchParams)}
+            className="font-medium text-sm hover:underline"
+          >
             {title}
           </Link>
         ) : (
