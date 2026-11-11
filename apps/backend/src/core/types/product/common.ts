@@ -393,3 +393,129 @@ export type ProductGroupingsDTO = {
   collections: ProductCollectionDTO[]
   tags: ProductTagDTO[]
 }
+
+export type FilterableProductCategoryProps = {
+  handle?: string | string[]
+}
+
+// ── Product imports ─────────────────────────────────────────────────────
+
+/**
+ * `previewed` is the only state a job can be confirmed or canceled from. `failed` means no product
+ * made it in; a run where some products failed and others did not is `completed`, with the
+ * failures on the job.
+ */
+export type ProductImportStatus = 'previewed' | 'importing' | 'completed' | 'failed' | 'canceled' | 'expired'
+
+export type ProductImportOptionsDTO = {
+  /** Products whose handle already exists are updated rather than skipped. */
+  overwrite: boolean
+  /** Active products are imported published rather than as drafts. */
+  publish: boolean
+}
+
+/** One problem with the file or one product's import. `line` is the CSV line, the header being line 1. */
+export type ProductImportErrorDTO = {
+  line: number
+  handle: string | null
+  message: string
+}
+
+export type ImportedVariantDTO = {
+  /** The CSV line the variant was read from. */
+  line: number
+  sku: string | null
+  /** In the product's option order; empty for a product with no options. */
+  optionValues: string[]
+  weight: number | null
+  manageInventory: boolean
+  allowBackorder: boolean
+  /** Units on hand at the default location; `null` leaves stock alone. */
+  inventoryQuantity: number | null
+  prices: Array<{ currencyCode: string; amount: number }>
+  imageUrl: string | null
+}
+
+/** A product as the import file describes it, normalized from its rows. */
+export type ImportedProductDTO = {
+  /** The line of the product's first row. */
+  line: number
+  /** How many CSV rows the product spans, which is what chunks are sized by. */
+  rows: number
+  handle: string
+  title: string
+  description: string | null
+  status: ProductStatusType
+  type: string | null
+  categoryHandles: string[]
+  collectionHandles: string[]
+  tags: string[]
+  options: Array<{ title: string; values: string[] }>
+  variants: ImportedVariantDTO[]
+  /** In display order. */
+  imageUrls: string[]
+}
+
+export type ProductImportSummaryDTO = {
+  products: { create: number; update: number; skip: number }
+  skus: number
+  images: number
+  /** Groupings the file names that do not exist yet, created when the import runs. */
+  willCreate: { categories: string[]; collections: string[]; tags: string[]; types: string[] }
+  /** Columns present in the file that the import does not read. */
+  ignoredColumns: string[]
+  firstProduct: ImportedProductDTO | null
+}
+
+export type ProductImportDTO = {
+  id: string
+  /** The uploaded CSV. */
+  fileId: string
+  options: ProductImportOptionsDTO
+  status: ProductImportStatus
+  summary: ProductImportSummaryDTO
+  /** File keys of the normalized product chunks the run reads, in order. */
+  chunks: string[]
+  created: number
+  updated: number
+  skipped: number
+  failed: number
+  errors: ProductImportErrorDTO[]
+  /** The user who uploaded the file, and who is told when it finishes. */
+  createdBy: string | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+/** What one product's import came to. */
+export type ProductImportOutcomeDTO =
+  | { outcome: 'created' | 'updated' | 'skipped' }
+  | { outcome: 'failed'; error: ProductImportErrorDTO }
+
+/** What an import file comes to before anything is written: the summary, every error, and the products in chunks. */
+export type ProductImportPlanDTO = {
+  summary: ProductImportSummaryDTO
+  errors: ProductImportErrorDTO[]
+  chunks: ImportedProductDTO[][]
+}
+
+/** The settings a file is read against: what each price column is quoted in. */
+export type ProductImportSettingsDTO = ProductImportOptionsDTO & {
+  /** The store's default currency, which the plain `Price` column is in. `null` when the store has none. */
+  defaultCurrency: string | null
+  /** Region currency by lower-cased region name, for `Price / <Market>` columns. */
+  marketCurrencies: Record<string, string>
+}
+
+/** The ids an imported product's names resolve to, created where missing. */
+export type ProductImportReferencesDTO = {
+  /** The live product with the same handle, if any. */
+  existingProductId: string | null
+  typeId: string | null
+  categoryIds: string[]
+  collectionIds: string[]
+  tagIds: string[]
+  /** In the product's option order; `valueIds` line up with `ImportedProductDTO.options[].values`. */
+  options: Array<{ optionId: string; valueIds: string[] }>
+}

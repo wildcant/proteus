@@ -25,6 +25,7 @@ import adminPaymentProviderDefinitions from './api/admin/payment-providers/defin
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
 import adminAccessControlPermissionDefinitions from './api/admin/permissions/definitions.js'
 import adminProductCategoryDefinitions from './api/admin/product-categories/definitions.js'
+import adminProductImportDefinitions from './api/admin/product-imports/definitions.js'
 import adminProductOptionDefinitions from './api/admin/product-options/definitions.js'
 import adminProductTagDefinitions from './api/admin/product-tags/definitions.js'
 import adminProductTypeDefinitions from './api/admin/product-types/definitions.js'
@@ -83,6 +84,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminProductTagDefinitions,
   ...adminProductTypeDefinitions,
   ...adminProductDefinitions,
+  ...adminProductImportDefinitions,
   ...adminRefundReasonDefinitions,
   ...adminReservationDefinitions,
   ...adminRegionDefinitions,

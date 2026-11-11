@@ -1,4 +1,4 @@
-import type { ProductOptionRenderAs } from '@core/types/product/common.js'
+import type { ImportedProductDTO, ProductOptionRenderAs } from '@core/types/product/common.js'
 import type {
   CreateProductDTO,
   CreateProductOptionDTO,
@@ -156,6 +156,39 @@ export function generateCreateProductTagDTO(overrides?: Partial<CreateProductTag
   return {
     // Unique among live Tags, so two generated values in one test cannot collide.
     value: `${faker.word.noun()}-${faker.string.alphanumeric(6)}`,
+    ...overrides,
+  }
+}
+
+/** A product as an import file would describe it: one untracked, option-less variant, no groupings, no images. */
+export function generateImportedProductDTO(overrides?: Partial<ImportedProductDTO>): ImportedProductDTO {
+  const handle = `${faker.helpers.slugify(faker.commerce.productName()).toLowerCase()}-${faker.string.alphanumeric(6).toLowerCase()}`
+  return {
+    line: 2,
+    rows: 1,
+    handle,
+    title: faker.commerce.productName(),
+    description: null,
+    status: 'published',
+    type: null,
+    categoryHandles: [],
+    collectionHandles: [],
+    tags: [],
+    options: [],
+    variants: [
+      {
+        line: 2,
+        sku: null,
+        optionValues: [],
+        weight: null,
+        manageInventory: false,
+        allowBackorder: false,
+        inventoryQuantity: null,
+        prices: [],
+        imageUrl: null,
+      },
+    ],
+    imageUrls: [],
     ...overrides,
   }
 }

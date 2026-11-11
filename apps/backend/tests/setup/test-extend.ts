@@ -96,6 +96,7 @@ import {
   generateCreateProductOptionDTO,
   generateCreateProductOptionValueDTO,
   generateCreateProductVariantDTO,
+  generateImportedProductDTO,
   generateSetProductOptionsDTO,
   generateUpdateProductDTO,
   generateUpdateProductVariantDTO,
@@ -186,6 +187,12 @@ import {
   updateProductType,
   updateProductVariant,
 } from '../factories/services/product.js'
+import {
+  createConfirmedProductImport,
+  createProductImport,
+  fileExists,
+  retrieveProductImport,
+} from '../factories/services/product-import.js'
 import { createStockLocation } from '../factories/services/stock-location.js'
 import { generateCreateStockLocationDTO } from '../factories/stock-location-dto.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
@@ -304,6 +311,7 @@ export type Fixtures = {
       createPriceSet: typeof generateCreatePriceSetDTO
       createPrice: typeof generateCreatePriceDTO
       createProduct: typeof generateCreateProductDTO
+      importedProduct: typeof generateImportedProductDTO
       createProductOption: typeof generateCreateProductOptionDTO
       createProductOptionValue: typeof generateCreateProductOptionValueDTO
       createProductVariant: typeof generateCreateProductVariantDTO
@@ -373,6 +381,8 @@ export type Fixtures = {
       shippedOrder: typeof shipOrder
       product: typeof createProduct
       products: typeof createProducts
+      productImport: typeof createProductImport
+      confirmedProductImport: typeof createConfirmedProductImport
       productOption: typeof createProductOption
       productTag: typeof createProductTag
       productType: typeof createProductType
@@ -427,6 +437,8 @@ export type Fixtures = {
       productVariants: typeof listProductVariants
       productVariant: typeof retrieveProductVariant
       productImages: typeof listProductImages
+      productImport: typeof retrieveProductImport
+      fileExists: typeof fileExists
       productOptionsForProduct: typeof listProductOptionsForProduct
       productVariantImages: typeof listProductVariantImages
     }
@@ -532,6 +544,7 @@ export const test = testBase.extend<Fixtures>({
         createPriceSet: generateCreatePriceSetDTO,
         createPrice: generateCreatePriceDTO,
         createProduct: generateCreateProductDTO,
+        importedProduct: generateImportedProductDTO,
         createProductOption: generateCreateProductOptionDTO,
         createProductOptionValue: generateCreateProductOptionValueDTO,
         createProductVariant: generateCreateProductVariantDTO,
@@ -600,6 +613,8 @@ export const test = testBase.extend<Fixtures>({
         shippedOrder: shipOrder,
         product: createProduct,
         products: createProducts,
+        productImport: createProductImport,
+        confirmedProductImport: createConfirmedProductImport,
         productOption: createProductOption,
         productTag: createProductTag,
         productType: createProductType,
@@ -654,6 +669,8 @@ export const test = testBase.extend<Fixtures>({
         productVariants: listProductVariants,
         productVariant: retrieveProductVariant,
         productImages: listProductImages,
+        productImport: retrieveProductImport,
+        fileExists,
         productOptionsForProduct: listProductOptionsForProduct,
         productVariantImages: listProductVariantImages,
       },

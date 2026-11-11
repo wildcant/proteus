@@ -61,6 +61,7 @@ catalog:
   "@vitejs/plugin-react": ^6.0.3
   bignumber.js: ^11.1.5
   class-variance-authority: ^0.7.1
+  csv-parse: ^7.0.3
   dependency-cruiser: ^18.1.0
   drizzle-orm: ^0.45.2
   lucide-react: ^0.545.0

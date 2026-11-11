@@ -6,6 +6,7 @@ import type { Logger } from '../../../core/types/logger.js'
 import type {
   AppliedProductOptionChangeDTO,
   EnrichedProductVariantDTO,
+  FilterableProductCategoryProps,
   FilterableProductCollectionProps,
   FilterableProductImageProps,
   FilterableProductOptionCombinationProps,
@@ -17,6 +18,7 @@ import type {
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
+  ImportedProductDTO,
   ListCategoryTreeDTO,
   PickerVariantDTO,
   ProductCategoryDTO,
@@ -25,6 +27,11 @@ import type {
   ProductDTO,
   ProductGroupingsDTO,
   ProductImageDTO,
+  ProductImportDTO,
+  ProductImportOutcomeDTO,
+  ProductImportPlanDTO,
+  ProductImportReferencesDTO,
+  ProductImportSettingsDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -43,6 +50,7 @@ import type {
   CreateProductCollectionDTO,
   CreateProductDTO,
   CreateProductImageDTO,
+  CreateProductImportDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
   CreateProductTagDTO,
@@ -70,6 +78,7 @@ import type { ProductRepository } from '../repositories/product.js'
 import type { ProductCategoryRepository } from '../repositories/product-category.js'
 import type { ProductCollectionRepository } from '../repositories/product-collection.js'
 import type { ProductImageRepository } from '../repositories/product-image.js'
+import type { ProductImportRepository } from '../repositories/product-import.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
 import type { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
@@ -87,6 +96,7 @@ import { separateGroupingIds } from '../utils/product-grouping-ids.js'
 import type { VariantReconciliationPlan, VariantRemovalReason } from '../utils/reconcile-variants.js'
 import { ProductCategoryService } from './product-category-service.js'
 import { ProductGroupingService } from './product-grouping-service.js'
+import { ProductImportService } from './product-import-service.js'
 import { ProductOptionService } from './product-option-service.js'
 
 /**
@@ -110,6 +120,7 @@ type InjectedDependencies = {
   productTagRepository: ProductTagRepository
   productProductTagRepository: ProductProductTagRepository
   productTypeRepository: ProductTypeRepository
+  productImportRepository: ProductImportRepository
   withTransaction: WithTransaction
   logger: Logger
 }
@@ -137,6 +148,8 @@ export class ProductModuleService implements IProductModuleService {
   private productCategoryService: ProductCategoryService
   /** Private for the same reason. */
   private productGroupingService: ProductGroupingService
+  /** Private for the same reason. */
+  private productImportService: ProductImportService
   private withTransaction: WithTransaction
   private logger: Logger
 
@@ -156,6 +169,7 @@ export class ProductModuleService implements IProductModuleService {
     this.productOptionService = new ProductOptionService(dependencies)
     this.productCategoryService = new ProductCategoryService(dependencies)
     this.productGroupingService = new ProductGroupingService(dependencies)
+    this.productImportService = new ProductImportService(dependencies, this.productCategoryService)
   }
 
   // ── Products ──────────────────────────────────────────────────────────
@@ -752,6 +766,10 @@ export class ProductModuleService implements IProductModuleService {
     return this.productCategoryService.listCategoryTree(filters, context)
   }
 
+  async listCategories(filters?: FilterableProductCategoryProps, context?: Context): Promise<ProductCategoryDTO[]> {
+    return this.productCategoryService.listCategories(filters, context)
+  }
+
   async retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO> {
     return this.productCategoryService.retrieveCategory(categoryId, context)
   }
@@ -888,6 +906,55 @@ export class ProductModuleService implements IProductModuleService {
     const unique = [...new Set(productIds)]
     const groupingsOf = await this.readGroupings(unique, context)
     return Object.fromEntries(unique.map((productId) => [productId, groupingsOf(productId)]))
+  }
+
+  // ── Imports ───────────────────────────────────────────────────────────
+
+  async planProductImport(
+    source: AsyncIterable<Uint8Array | string>,
+    settings: ProductImportSettingsDTO,
+    context?: Context,
+  ): Promise<ProductImportPlanDTO> {
+    return this.productImportService.planProductImport(source, settings, context)
+  }
+
+  async createProductImport(data: CreateProductImportDTO, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.createProductImport(data, context)
+  }
+
+  async retrieveProductImport(importId: string, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.retrieveProductImport(importId, context)
+  }
+
+  async confirmProductImport(importId: string, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.confirmProductImport(importId, context)
+  }
+
+  async cancelProductImport(importId: string, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.cancelProductImport(importId, context)
+  }
+
+  async expireProductImports(context?: Context): Promise<ProductImportDTO[]> {
+    return this.productImportService.expireProductImports(context)
+  }
+
+  async recordProductImportOutcome(
+    importId: string,
+    outcome: ProductImportOutcomeDTO,
+    context?: Context,
+  ): Promise<void> {
+    return this.productImportService.recordProductImportOutcome(importId, outcome, context)
+  }
+
+  async finishProductImport(importId: string, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.finishProductImport(importId, context)
+  }
+
+  async resolveProductImportReferences(
+    product: ImportedProductDTO,
+    context?: Context,
+  ): Promise<ProductImportReferencesDTO> {
+    return this.productImportService.resolveProductImportReferences(product, context)
   }
 
   // ── Variant options ───────────────────────────────────────────────────

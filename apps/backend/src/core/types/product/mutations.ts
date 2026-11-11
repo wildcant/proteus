@@ -1,4 +1,10 @@
-import type { ProductOptionRenderAs, ProductStatusType } from './common.js'
+import type {
+  ProductImportErrorDTO,
+  ProductImportOptionsDTO,
+  ProductImportSummaryDTO,
+  ProductOptionRenderAs,
+  ProductStatusType,
+} from './common.js'
 
 type CreateProductImageInput = {
   url: string
@@ -235,4 +241,14 @@ export type CreateProductTagDTO = {
 
 export type UpdateProductTagDTO = {
   value?: string
+}
+
+/** A previewed import. A job with `errors` is stored so the preview can show them, and never runs. */
+export type CreateProductImportDTO = {
+  fileId: string
+  options: ProductImportOptionsDTO
+  summary: ProductImportSummaryDTO
+  errors: ProductImportErrorDTO[]
+  chunks: string[]
+  createdBy: string | null
 }
