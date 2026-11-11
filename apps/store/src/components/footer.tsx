@@ -2,7 +2,8 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
-import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
+import { MenuLink } from '#/components/header/menu'
+import { type MenuSource, type MenuTarget, resolveMenuItems } from '#/components/header/menu-items'
 import { MarketSelect } from '#/components/market-select'
 
 /**
@@ -11,14 +12,14 @@ import { MarketSelect } from '#/components/market-select'
  * not a placeholder they can read. The legal column is the conspicuous absence — it waits on
  * `/terms`, `/privacy` and `/returns` existing.
  *
- * The Shop column is "Shop all" and the top-level Visible Categories, read from the tree rather
- * than named here. One list feeds both the accordion and the static columns, so the two trees
- * cannot drift.
+ * The Shop column is "Shop all" and the top level of the store's menu — the same entries the header
+ * carries, flat — rather than named here. One list feeds both the accordion and the static
+ * columns, so the two trees cannot drift.
  */
-type FooterLink = { key: string; label: string } & ({ to: '/' | '/login' | '/signup' } | { categoryHandle: string })
+type FooterLink = { key: string; label: string } & ({ to: '/' | '/login' | '/signup' } | { target: MenuTarget })
 type FooterColumn = { title: string; links: FooterLink[] }
 
-function useFooterColumns(categories: StoreProductCategoryTreeNode[]): FooterColumn[] {
+function useFooterColumns(menu: MenuSource): FooterColumn[] {
   const { t } = useLingui()
 
   return [
@@ -26,7 +27,7 @@ function useFooterColumns(categories: StoreProductCategoryTreeNode[]): FooterCol
       title: t`Shop`,
       links: [
         { key: 'shop-all', label: t`Shop all`, to: '/' },
-        ...categories.map((category) => ({ key: category.id, label: category.name, categoryHandle: category.handle })),
+        ...resolveMenuItems(menu).map(({ key, label, target }) => ({ key, label, target })),
       ],
     },
     {
@@ -64,9 +65,9 @@ const paymentMarks: { label: string; mark: Icon }[] = [
  */
 const socialLinks: { label: string; href: string; mark: Icon }[] = []
 
-/** `categories` is the Visible Category tree, read by the layout route: shared chrome may not import the feature. */
-export function Footer({ categories }: { categories: StoreProductCategoryTreeNode[] }) {
-  const footerColumns = useFooterColumns(categories)
+/** `menu` is read by the layout route: shared chrome may not import the feature. */
+export function Footer({ menu }: { menu: MenuSource }) {
+  const footerColumns = useFooterColumns(menu)
   const year = new Date().getFullYear()
 
   return (
@@ -162,10 +163,8 @@ function FooterLinks({ column }: { column: FooterColumn }) {
     <ul className="m-0 flex list-none flex-col p-0">
       {column.links.map((link) => (
         <li key={link.key}>
-          {'categoryHandle' in link ? (
-            <Link to="/categories/$handle" params={{ handle: link.categoryHandle }} className={className}>
-              {link.label}
-            </Link>
+          {'target' in link ? (
+            <MenuLink destination={link} className={className} />
           ) : (
             <Link to={link.to} className={className}>
               {link.label}

@@ -12,9 +12,9 @@ import {
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
-import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
 import { Button } from '#/components/button'
 import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
+import type { MenuSource } from '#/components/header/menu-items'
 import { SearchBarTrigger } from '#/components/header/search-triggers'
 import { ThemeToggle } from '#/components/theme-toggle'
 import { useModal } from '#/lib/modal-state'
@@ -31,10 +31,10 @@ const rowClassName =
  * without an onClick. The search trigger sets `modal` to `search` in a single navigation, so
  * the menu closes exactly as the panel opens rather than the two overlapping.
  */
-export function SideMenu({ categories }: { categories: StoreProductCategoryTreeNode[] }) {
+export function SideMenu({ menu }: { menu: MenuSource }) {
   const { t } = useLingui()
   const { isOpen, setOpen } = useModal('menu')
-  const entries = useMenuEntries(categories)
+  const entries = useMenuEntries(menu)
 
   return (
     <Drawer open={isOpen} onOpenChange={setOpen} swipeDirection="left">
