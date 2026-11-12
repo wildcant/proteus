@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, RouteFocusModal, toast, useRouteModal } from '@proteus/ui'
 import { InfoIcon } from 'lucide-react'
-import type { AdminNavigationEntry } from '#/api/generated/model'
+import type { AdminCatalogStructureMetafieldChange, AdminNavigationEntry } from '#/api/generated/model'
 import { useApplyCatalogStructure } from '#/features/products/api/catalog-structure'
 import type { PreviewedCatalogStructure } from '#/features/products/hooks/use-upload-catalog-structure-form'
 
@@ -15,9 +15,12 @@ export function StructurePreviewStep({ fileId, plan }: PreviewedCatalogStructure
   const { metafields, categories, collections } = plan
 
   const atRoot = t`top level`
-  // The key, and whether the storefront offers the metafield as a filter.
-  const metafieldDetail = (row: { key: string; filterable: boolean }) =>
-    row.filterable ? t`${row.key} · filter` : row.key
+  // The key, whether the campo is the product's brand rather than a metafield, and whether the
+  // storefront offers it as a filter.
+  const metafieldDetail = (row: AdminCatalogStructureMetafieldChange) =>
+    [row.key, row.source === 'vendor' ? t`brand` : null, row.filterable ? t`filter` : null]
+      .filter((part) => part !== null)
+      .join(' · ')
   const under = (parentHandle: string | null | undefined) => parentHandle ?? atRoot
   const groups: { title: string; rows: ChangeRow[]; destructive?: boolean }[] = [
     {

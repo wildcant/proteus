@@ -61,7 +61,11 @@ export function ImportPreviewStep({ productImport, onConfirmed }: ImportPreviewS
           )}
 
           {summary.firstProduct ? (
-            <FirstProduct product={summary.firstProduct} metafields={summary.metafields} />
+            <FirstProduct
+              product={summary.firstProduct}
+              metafields={summary.metafields}
+              brandName={summary.brandName}
+            />
           ) : null}
         </div>
       </RouteFocusModal.Body>
@@ -171,10 +175,13 @@ function WillCreate({ willCreate }: { willCreate: AdminProductImport['summary'][
 function FirstProduct({
   product,
   metafields,
+  brandName,
 }: {
   product: NonNullable<AdminImportedProduct>
   /** The file's metafield columns, which name each key the product's values are under. */
   metafields: AdminProductImport['summary']['metafields']
+  /** The vendor campo's name, what the store calls the brand. */
+  brandName: string | null
 }) {
   const { t, i18n } = useLingui()
   const none = '—'
@@ -191,6 +198,7 @@ function FirstProduct({
           <span className="capitalize">{i18n._(productStatusLabels[product.status])}</span>
         </FieldRow>
         <FieldRow label={t`Type`}>{product.type ?? none}</FieldRow>
+        <FieldRow label={brandName ?? t`Brand`}>{product.brand ?? none}</FieldRow>
         <FieldRow label={t`Tags`}>{product.tags.join(', ') || none}</FieldRow>
         {metafields.map(({ key, name }) => (
           <FieldRow key={key} label={name}>
