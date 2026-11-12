@@ -3,7 +3,13 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { buildComponents, type ComponentsContext } from '../components/build.ts'
-import { type ComponentSet, exportCandidates, type Layer } from '../components/snapshot.ts'
+import {
+  type ComponentSet,
+  chooseExports,
+  exportCandidates,
+  type Layer,
+  setOfComponents,
+} from '../components/snapshot.ts'
 import { formatTs } from '../files.ts'
 import { componentsConfig, fill, frame, text, tokenSnapshot } from './fixtures.ts'
 
@@ -247,6 +253,68 @@ describe('components', () => {
       ['Button', 'components/ui'],
       ['Label', 'components/ui'],
     ])
+  })
+
+  it('tells a component from the screen set named after it, by page: only the component is exported', () => {
+    const pages = new Map([
+      ['1', 'features/auth'],
+      ['2', 'features/account'],
+      ['3', 'app/_auth'],
+      ['4', 'app/_main/_authed'],
+    ])
+    const list = [
+      // A component outside any set, and a screen set of the same name on the route's page.
+      { id: '10', name: 'LoginForm', type: 'COMPONENT', page: 1, folder: ['features/auth', 'LoginForm'] },
+      { id: '11', name: 'LoginForm', type: 'COMPONENT_SET', page: 3, folder: ['app/_auth', 'LoginForm'] },
+      { id: '12', name: 'state=default', type: 'COMPONENT', page: 3, folder: ['app/_auth', 'LoginForm', 'LoginForm'] },
+      // A component set, and a screen set of the same name.
+      {
+        id: '20',
+        name: 'AccountDetail',
+        type: 'COMPONENT_SET',
+        page: 2,
+        folder: ['features/account', 'AccountDetail'],
+      },
+      {
+        id: '21',
+        name: 'viewport=mobile',
+        type: 'COMPONENT',
+        page: 2,
+        folder: ['features/account', 'AccountDetail', 'AccountDetail'],
+      },
+      {
+        id: '22',
+        name: 'AccountDetail',
+        type: 'COMPONENT_SET',
+        page: 4,
+        folder: ['app/_main/_authed', 'AccountDetail'],
+      },
+      {
+        id: '23',
+        name: 'state=orders',
+        type: 'COMPONENT',
+        page: 4,
+        folder: ['app/_main/_authed', 'AccountDetail', 'AccountDetail'],
+      },
+    ]
+    const candidates = exportCandidates(list, pages)
+    const chosen = (names: string[]) => chooseExports(candidates, names, componentsConfig).map((c) => [c.name, c.page])
+
+    expect(chosen([])).toEqual([
+      ['LoginForm', 'features/auth'],
+      ['AccountDetail', 'features/account'],
+    ])
+    expect(chosen(['LoginForm', 'AccountDetail'])).toEqual([
+      ['LoginForm', 'features/auth'],
+      ['AccountDetail', 'features/account'],
+    ])
+    expect(() => chosen(['Missing'])).toThrow('expected one component or component set named "Missing", found 0')
+    // An instance's set is the one on its main component's page.
+    expect(Object.fromEntries(setOfComponents(list))).toEqual({
+      '12': 'LoginForm',
+      '21': 'AccountDetail',
+      '23': 'AccountDetail',
+    })
   })
 
   it('leaves out example children, stretches children that all fill the cross axis, and makes a listed set inline', () => {

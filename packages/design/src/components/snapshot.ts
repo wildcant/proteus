@@ -116,13 +116,19 @@ export function notExportedBecause(set: Pick<ComponentSet, 'name' | 'page' | 'de
   const reason = config.notExported[set.name]
   if (reason) return reason
   if (REFERENCE.test(set.name)) return 'a reference frame, design only'
-  if (set.description?.startsWith('Screen set') || /^app\//.test(set.page) || set.page === 'flows') {
-    return 'a screen set, composed in code'
-  }
+  if (isScreenSet(set)) return 'a screen set, composed in code'
   if (config.skippedPages.includes(set.page)) return `its page ${set.page} is never exported`
   if (!/^(components|entities|features)\/[^/]+$/.test(set.page)) return `its page ${set.page} is not in the page map`
   return undefined
 }
+
+/** A screen set is named like the feature component its route renders, so a set is known by its page and name. */
+function isScreenSet(set: Pick<ComponentSet, 'page' | 'description'>) {
+  return set.description?.startsWith('Screen set') || /^app\//.test(set.page) || set.page === 'flows'
+}
+
+/** Sets are identified by page and name: a screen set shares its name with the component its route renders. */
+const setKey = (page: string | number, name: string) => `${page}\u0000${name}`
 
 export function readComponentSets(snapshot: string): ComponentSet[] {
   const dir = join(snapshot, COMPONENTS_DIR)
@@ -148,10 +154,58 @@ type ListedComponent = {
  * @internal exported for its test
  */
 export function exportCandidates(list: ListedComponent[], pages: Map<string, string>) {
-  const setNames = new Set(list.filter((c) => c.type === 'COMPONENT_SET').map((c) => c.name))
+  const sets = setKeys(list)
   return list
-    .filter((c) => c.type === 'COMPONENT_SET' || (c.type === 'COMPONENT' && !setNames.has(c.folder?.at(-1) ?? '')))
+    .filter(
+      (c) =>
+        c.type === 'COMPONENT_SET' || (c.type === 'COMPONENT' && !sets.has(setKey(c.page, c.folder?.at(-1) ?? ''))),
+    )
     .map((c) => ({ ...c, page: pages.get(String(c.page)) ?? String(c.page) }))
+}
+
+/**
+ * The candidates an export writes: with no names, every one the page map exports; with names, each named one. A name
+ * never picks a screen set while a component of that name exists.
+ * @internal exported for its test
+ */
+export function chooseExports<C extends Pick<ComponentSet, 'name' | 'page' | 'description'> & { type: string }>(
+  candidates: C[],
+  names: string[],
+  config: ComponentsConfig,
+): C[] {
+  if (names.length === 0) return candidates.filter((c) => !notExportedBecause(c, config))
+  return names.map((name) => {
+    const named = candidates.filter((c) => c.name === name)
+    const components = named.filter((c) => !isScreenSet(c))
+    const pool = components.length ? components : named
+    const sets = pool.filter((c) => c.type === 'COMPONENT_SET')
+    const found = sets.length ? sets : pool
+    const [only] = found
+    if (!only || found.length > 1) {
+      throw new Error(`expected one component or component set named "${name}", found ${found.length}`)
+    }
+    const reason = notExportedBecause(only, config)
+    if (reason) throw new Error(`${name} is not exported: ${reason}`)
+    return only
+  })
+}
+
+/**
+ * The component set each variant belongs to, by the variant's id: the set on its page its last folder names.
+ * @internal exported for its test
+ */
+export function setOfComponents(list: ListedComponent[]) {
+  const sets = setKeys(list)
+  return new Map(
+    list.flatMap((c) => {
+      const folder = c.folder?.at(-1)
+      return c.type === 'COMPONENT' && folder && sets.has(setKey(c.page, folder)) ? [[c.id, folder] as const] : []
+    }),
+  )
+}
+
+function setKeys(list: ListedComponent[]) {
+  return new Set(list.filter((c) => c.type === 'COMPONENT_SET').map((c) => setKey(c.page, c.name)))
 }
 
 type FigCraftNode = Record<string, unknown> & {
@@ -177,29 +231,8 @@ export function exportComponentSnapshot(config: ResolvedConfig, names: string[])
     ]) as [ListedComponent[], { id: string | number; name: string }[]]
     const pages = new Map(pageList.map((page) => [String(page.id), page.name]))
     const candidates = exportCandidates(list, pages)
-    const chosen =
-      names.length === 0
-        ? candidates.filter((c) => !notExportedBecause(c, components))
-        : names.map((name) => {
-            const sets = candidates.filter((c) => c.type === 'COMPONENT_SET' && c.name === name)
-            const found = sets.length ? sets : candidates.filter((c) => c.name === name)
-            const [only] = found
-            if (!only || found.length > 1) {
-              throw new Error(`expected one component or component set named "${name}", found ${found.length}`)
-            }
-            const reason = notExportedBecause(only, components)
-            if (reason) throw new Error(`${name} is not exported: ${reason}`)
-            return only
-          })
-
-    // The component set a nested instance comes from: the last folder of its main component.
-    const setNames = new Set(list.filter((c) => c.type === 'COMPONENT_SET').map((c) => c.name))
-    const setOf = new Map(
-      list.flatMap((c) => {
-        const folder = c.folder?.at(-1)
-        return c.type === 'COMPONENT' && folder && setNames.has(folder) ? [[c.id, folder] as const] : []
-      }),
-    )
+    const chosen = chooseExports(candidates, names, components)
+    const setOf = setOfComponents(list)
 
     const overflows = readOverflows(config.figcraft.file)
     if (names.length === 0) rmSync(dir, { recursive: true, force: true })
