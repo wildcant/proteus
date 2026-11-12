@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { toast } from '@proteus/ui'
+import { toast } from '@proteus/ui-core'
 import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { queryOptions, useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {

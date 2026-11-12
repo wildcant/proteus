@@ -27,7 +27,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0017](adr/0017-cart-state-is-a-timestamp.md) | Cart state is a timestamp | `cart.status` is removed; state is `completedAt` and `deletedAt` |
 | [0018](adr/0018-layered-product-options.md) | Layered product options | The variant pivot points at the product's option value, not at a string |
 | [0019](adr/0019-modals-are-url-state.md) | URL state is the default | List, panel and modal state goes in a validated search param |
-| [0020](adr/0020-store-feature-graph-is-acyclic.md) | The store's feature graph is acyclic | Features form a declared DAG, and dependency-cruiser enforces it |
+| [0020](adr/0020-store-feature-graph-is-acyclic.md) | The store's feature graph is acyclic | Features form a declared DAG, and dependency-cruiser enforces it. Superseded by 0034 |
 | [0021](adr/0021-temporal-adapter-replays-to-the-next-step.md) | The Temporal adapter replays to the next step | One generic driver workflow; the handler is re-entered from the top each step |
 | [0022](adr/0022-durable-execution-is-a-runtime-split.md) | Durable execution is a runtime split | The engine is derived from the runtime; workerd gets the in-process one |
 | [0023](adr/0023-event-bus-is-one-port-over-three-adapters.md) | The event bus is one port over three adapters | Subscribers are written to the weakest adapter's guarantees |
@@ -37,6 +37,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0027](adr/0027-the-backend-layer-graph-is-default-deny.md) | The backend's layer graph is declared and default-deny | `LAYER_GRAPH` says what each layer may import; everything else under `src/` is an error |
 | [0028](adr/0028-barrels-only-at-a-published-boundary.md) | A barrel lives only at a published boundary | Biome's `noBarrelFile` repo-wide; the nine exemptions are the files a `package.json` `exports` map names |
 | [0029](adr/0029-cron-is-a-temporal-schedule-on-a-worker-of-its-own.md) | Cron is a Temporal Schedule on a Worker of its own | One Schedule per job starting a driver workflow on `proteus-cron`; `JobDefinition` unchanged, handler outside the sandbox |
+| [0034](adr/0034-store-entities-layer-replaces-the-feature-graph.md) | Code two store features share lives in an entity | `src/entities/<entity>/` sits between shared code and features; entities import only shared code; supersedes 0020 |
 
 ---
 

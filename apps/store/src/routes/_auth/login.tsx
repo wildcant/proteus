@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { toast } from '@proteus/ui'
+import { toast } from '@proteus/ui-core'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
 import { ButtonLink } from '#/components/button'

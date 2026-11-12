@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { useCountryName } from '#/api/countries'
 import type { StoreOrderAddress, StoreOrderResponseOrder } from '#/api/generated/model'
 import { Panel } from '#/components/panel'

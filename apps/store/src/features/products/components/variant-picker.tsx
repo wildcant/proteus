@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/react/macro'
-import { cn, NativeSelect, NativeSelectOption } from '@proteus/ui'
+import { NativeSelect, NativeSelectOption } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import type { StoreProductScopedOption, StoreProductVariant } from '#/api/generated/model'
 
 type PickerTargets = Record<string, Record<string, string | null>>

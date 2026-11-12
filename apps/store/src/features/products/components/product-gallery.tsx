@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { PackageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { StoreProductImage } from '#/api/generated/model'

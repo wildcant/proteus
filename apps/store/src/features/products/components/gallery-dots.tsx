@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 
 type GalleryDotsProps = {
   count: number

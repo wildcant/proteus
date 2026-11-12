@@ -1,6 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { cn, FieldLabel, RadioGroup, RadioGroupItem } from '@proteus/ui'
+import { FieldLabel, RadioGroup, RadioGroupItem } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { AcceptedNetworks } from '#/components/payment-network'
 import { PaymentRow, paymentRowLabelVariants } from '#/components/payment-row'

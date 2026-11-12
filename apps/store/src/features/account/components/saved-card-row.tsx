@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { cn, FieldLabel, RadioGroupItem, Skeleton } from '@proteus/ui'
+import { FieldLabel, RadioGroupItem, Skeleton } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { Trash2Icon } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { StoreSavedMethod } from '#/api/generated/model'

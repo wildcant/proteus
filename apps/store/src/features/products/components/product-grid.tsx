@@ -1,4 +1,4 @@
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import type { StoreProductListItem } from '#/api/generated/model'
 import { ProductCard } from './product-card'
 

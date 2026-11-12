@@ -68,11 +68,11 @@ msgstr "No se cobraron {total}"
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
 
-#: src/features/account/components/saved-card-row.tsx:134
+#: src/features/account/components/saved-card-row.tsx:135
 msgid "<0>Couldn't remove that card.</0> Try again."
 msgstr "<0>No pudimos eliminar esa tarjeta.</0> Inténtalo de nuevo."
 
-#: src/features/account/components/saved-card-row.tsx:120
+#: src/features/account/components/saved-card-row.tsx:121
 msgid "<0>Expired</0> — add this card again to use it"
 msgstr "<0>Vencida</0>: agrégala de nuevo para usarla"
 
@@ -146,7 +146,7 @@ msgstr "¿Ya tienes una cuenta?"
 msgid "Apartment, suite, etc."
 msgstr "Apartamento, oficina, etc."
 
-#: src/features/products/components/product-filters.tsx:135
+#: src/features/products/components/product-filters.tsx:136
 msgid "Apply"
 msgstr "Aplicar"
 
@@ -276,7 +276,7 @@ msgstr "Elige una nueva contraseña para tu cuenta."
 msgid "City"
 msgstr "Ciudad"
 
-#: src/features/products/components/product-filters.tsx:86
+#: src/features/products/components/product-filters.tsx:87
 msgid "Clear all"
 msgstr "Borrar todo"
 
@@ -359,7 +359,7 @@ msgstr "Oscuro"
 msgid "Decrease quantity for {label}"
 msgstr "Disminuir cantidad de {label}"
 
-#: src/features/account/components/saved-card-row.tsx:115
+#: src/features/account/components/saved-card-row.tsx:116
 #: src/features/checkout/components/delivery/shipping-address-picker.tsx:74
 msgid "Default"
 msgstr "Predeterminada"
@@ -430,7 +430,7 @@ msgstr "Ingresa tu dirección de envío para ver los métodos de envío disponib
 msgid "Every card here has expired. Pay with a new card at checkout to save a usable one."
 msgstr "Todas tus tarjetas vencieron. Paga con una tarjeta nueva al finalizar la compra para guardar una que funcione."
 
-#: src/features/account/components/saved-card-row.tsx:128
+#: src/features/account/components/saved-card-row.tsx:129
 msgid "Expires this month"
 msgstr "Vence este mes"
 
@@ -466,7 +466,7 @@ msgstr "No se pudo eliminar la dirección"
 msgid "Failed to remove cart item"
 msgstr "No se pudo eliminar el producto del carrito"
 
-#: src/features/auth/api/auth.ts:71
+#: src/entities/customer/api/auth.ts:20
 msgid "Failed to request password reset"
 msgstr "No pudimos solicitar el cambio de contraseña"
 
@@ -494,7 +494,7 @@ msgstr "No pudimos actualizar el carrito"
 msgid "Failed to update cart item"
 msgstr "No se pudo actualizar el producto del carrito"
 
-#: src/features/auth/api/auth.ts:90
+#: src/features/auth/api/auth.ts:65
 msgid "Failed to update password"
 msgstr "No pudimos actualizar tu contraseña"
 
@@ -502,7 +502,7 @@ msgstr "No pudimos actualizar tu contraseña"
 msgid "Filter by tag"
 msgstr "Filtrar por etiqueta"
 
-#: src/features/products/components/product-filters.tsx:62
+#: src/features/products/components/product-filters.tsx:63
 msgid "Filters"
 msgstr "Filtros"
 
@@ -525,7 +525,7 @@ msgstr "¿Olvidaste tu contraseña?"
 msgid "Forgot your password?"
 msgstr "¿Olvidaste tu contraseña?"
 
-#: src/features/products/components/product-filters.tsx:129
+#: src/features/products/components/product-filters.tsx:130
 msgid "From"
 msgstr "Desde"
 
@@ -541,7 +541,7 @@ msgstr "Hola"
 msgid "Hello, {firstName}"
 msgstr "Hola, {firstName}"
 
-#: src/components/form/input.tsx:83
+#: src/components/form/input.tsx:84
 msgid "Hide password"
 msgstr "Ocultar contraseña"
 
@@ -578,7 +578,7 @@ msgstr "Puede que se haya movido o que ya no esté en la tienda."
 msgid "It may not be one we sell here."
 msgstr "Puede que no lo vendamos aquí."
 
-#: src/features/account/components/saved-card-row.tsx:75
+#: src/features/account/components/saved-card-row.tsx:76
 msgid "Keep"
 msgstr "Conservar"
 
@@ -597,7 +597,7 @@ msgstr "Apellido"
 msgid "Light"
 msgstr "Claro"
 
-#: src/features/auth/api/auth.ts:36
+#: src/features/auth/api/auth.ts:27
 msgid "Login failed"
 msgstr "No pudimos iniciar tu sesión"
 
@@ -623,7 +623,7 @@ msgstr "Usar como principal"
 msgid "Make this my main address"
 msgstr "Usar como mi dirección principal"
 
-#: src/components/market-select.tsx:32
+#: src/components/market-select.tsx:33
 msgid "Market: {marketName}"
 msgstr "Mercado: {marketName}"
 
@@ -742,7 +742,7 @@ msgid "Password updated"
 msgstr "Contraseña actualizada"
 
 #. placeholder {0}: savedMethodName(method)
-#: src/features/checkout/components/payment/payment-method-selector.tsx:196
+#: src/features/checkout/components/payment/payment-method-selector.tsx:197
 msgid "Pay with {0}"
 msgstr "Pagar con {0}"
 
@@ -755,7 +755,7 @@ msgstr "Pago"
 msgid "Payment authorized"
 msgstr "Pago autorizado"
 
-#: src/features/checkout/components/payment/payment-method-selector.tsx:183
+#: src/features/checkout/components/payment/payment-method-selector.tsx:184
 msgid "Payment method"
 msgstr "Método de pago"
 
@@ -803,24 +803,24 @@ msgstr "En preparación"
 msgid "Previous"
 msgstr "Anterior"
 
-#: src/features/products/components/product-filters.tsx:110
-#: src/features/products/components/product-filters.tsx:124
+#: src/features/products/components/product-filters.tsx:111
+#: src/features/products/components/product-filters.tsx:125
 msgid "Price"
 msgstr "Precio"
 
 #. placeholder {0}: format(minPrice)
 #. placeholder {1}: format(maxPrice)
-#: src/features/products/components/product-filters.tsx:107
+#: src/features/products/components/product-filters.tsx:108
 msgid "Price: {0} – {1}"
 msgstr "Precio: {0} – {1}"
 
 #. placeholder {0}: format(minPrice)
-#: src/features/products/components/product-filters.tsx:108
+#: src/features/products/components/product-filters.tsx:109
 msgid "Price: from {0}"
 msgstr "Precio: desde {0}"
 
 #. placeholder {0}: format(maxPrice)
-#: src/features/products/components/product-filters.tsx:109
+#: src/features/products/components/product-filters.tsx:110
 msgid "Price: up to {0}"
 msgstr "Precio: hasta {0}"
 
@@ -841,11 +841,11 @@ msgstr "Listo para enviar"
 msgid "Ref."
 msgstr "Ref."
 
-#: src/features/auth/api/auth.ts:55
+#: src/features/auth/api/auth.ts:46
 msgid "Registration failed"
 msgstr "No pudimos crear tu cuenta"
 
-#: src/features/account/components/saved-card-row.tsx:83
+#: src/features/account/components/saved-card-row.tsx:84
 #: src/features/address/components/address-card.tsx:69
 #: src/features/checkout/components/delivery/address-actions.tsx:27
 msgid "Remove"
@@ -855,11 +855,11 @@ msgstr "Eliminar"
 msgid "Remove {label}"
 msgstr "Eliminar {label}"
 
-#: src/features/account/components/saved-card-row.tsx:144
+#: src/features/account/components/saved-card-row.tsx:145
 msgid "Remove {name}"
 msgstr "Eliminar {name}"
 
-#: src/features/account/components/saved-card-row.tsx:68
+#: src/features/account/components/saved-card-row.tsx:69
 msgid "Remove {name}?"
 msgstr "¿Eliminar {name}?"
 
@@ -872,7 +872,7 @@ msgstr "Quitar el filtro {value}"
 msgid "Remove this address?"
 msgstr "¿Eliminar esta dirección?"
 
-#: src/features/account/components/saved-card-row.tsx:83
+#: src/features/account/components/saved-card-row.tsx:84
 msgid "Removing…"
 msgstr "Eliminando…"
 
@@ -880,7 +880,7 @@ msgstr "Eliminando…"
 msgid "Reset link sent to <0>{email}</0>. Check your inbox."
 msgstr "Enviamos el enlace a <0>{email}</0>. Revisa tu bandeja de entrada."
 
-#: src/features/cart/components/cart-mismatch-banner.tsx:29
+#: src/features/cart/components/cart-mismatch-banner.tsx:27
 msgid "Run transfer again"
 msgstr "Volver a transferir"
 
@@ -983,7 +983,7 @@ msgstr "Ver todos los productos"
 msgid "Show image {position}"
 msgstr "Mostrar imagen {position}"
 
-#: src/components/form/input.tsx:83
+#: src/components/form/input.tsx:84
 msgid "Show password"
 msgstr "Mostrar contraseña"
 
@@ -1021,7 +1021,7 @@ msgstr "Agotado"
 msgid "Something went wrong loading order <0>{orderId}</0>. Try again in a moment — if it keeps happening, quote that number to us."
 msgstr "Algo salió mal al cargar el pedido <0>{orderId}</0>. Inténtalo de nuevo en un momento; si sigue pasando, compártenos ese número."
 
-#: src/features/cart/components/cart-mismatch-banner.tsx:25
+#: src/features/cart/components/cart-mismatch-banner.tsx:23
 msgid "Something went wrong when we tried to transfer your cart"
 msgstr "Algo salió mal al intentar transferir tu carrito"
 
@@ -1056,7 +1056,7 @@ msgstr "Resumen"
 msgid "Thank you!"
 msgstr "¡Gracias!"
 
-#: src/features/checkout/components/payment/payment-method-selector.tsx:216
+#: src/features/checkout/components/payment/payment-method-selector.tsx:217
 msgid "That saved card is no longer available. Pick another, or enter a new card below."
 msgstr "Esa tarjeta guardada ya no está disponible. Elige otra o ingresa una tarjeta nueva abajo."
 
@@ -1113,7 +1113,7 @@ msgstr "Este producto aún no está disponible para pedir."
 msgid "This verification link is invalid or has expired. Request a new one from your account."
 msgstr "Este enlace de verificación no es válido o ya venció. Solicita uno nuevo desde tu cuenta."
 
-#: src/features/products/components/product-filters.tsx:132
+#: src/features/products/components/product-filters.tsx:133
 msgid "To"
 msgstr "Hasta"
 
@@ -1127,7 +1127,7 @@ msgstr "Total"
 msgid "Track your orders, save your details, and check out faster."
 msgstr "Sigue tus pedidos, guarda tus datos y paga más rápido."
 
-#: src/features/cart/components/cart-mismatch-banner.tsx:29
+#: src/features/cart/components/cart-mismatch-banner.tsx:27
 msgid "Transferring…"
 msgstr "Transfiriendo…"
 
@@ -1143,8 +1143,8 @@ msgstr "Actualizando..."
 msgid "Use a different address"
 msgstr "Usar otra dirección"
 
-#: src/features/checkout/components/payment/payment-method-selector.tsx:234
-#: src/features/checkout/components/payment/payment-method-selector.tsx:236
+#: src/features/checkout/components/payment/payment-method-selector.tsx:235
+#: src/features/checkout/components/payment/payment-method-selector.tsx:237
 msgid "Use a different card"
 msgstr "Usar otra tarjeta"
 
@@ -1152,7 +1152,7 @@ msgstr "Usar otra tarjeta"
 msgid "Used for your order confirmation and cart reminders"
 msgstr "Lo usamos para la confirmación de tu pedido y los recordatorios del carrito"
 
-#: src/features/products/components/variant-picker.tsx:206
+#: src/features/products/components/variant-picker.tsx:207
 msgid "Variant"
 msgstr "Variante"
 
@@ -1214,7 +1214,7 @@ msgstr "No pudimos cargar este pedido"
 msgid "We couldn't load your saved cards."
 msgstr "No pudimos cargar tus tarjetas guardadas."
 
-#: src/features/checkout/components/payment/payment-method-selector.tsx:167
+#: src/features/checkout/components/payment/payment-method-selector.tsx:168
 msgid "We couldn't load your saved cards. Enter a card below to pay."
 msgstr "No pudimos cargar tus tarjetas guardadas. Ingresa una tarjeta abajo para pagar."
 
@@ -1254,7 +1254,7 @@ msgstr "Tienes cambios sin guardar"
 msgid "You haven't made any orders yet. When you make an order it'll show up here."
 msgstr "Aún no has hecho pedidos. Cuando hagas uno, aparecerá aquí."
 
-#: src/features/account/components/saved-card-row.tsx:70
+#: src/features/account/components/saved-card-row.tsx:71
 msgid "You'll need to enter it again next time."
 msgstr "Tendrás que ingresarla de nuevo la próxima vez."
 

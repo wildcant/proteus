@@ -1,5 +1,5 @@
 import { ResetPasswordBody } from '@proteus/http-schemas/auth'
-import { useRequestPasswordReset } from '#/features/auth/api/auth'
+import { useRequestPasswordReset } from '#/entities/customer/api/auth'
 import { errorMessage, type SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
 

@@ -3,11 +3,11 @@ import { Link } from '@tanstack/react-router'
 import { LogOutIcon } from 'lucide-react'
 import { Button } from '#/components/button'
 import { Panel } from '#/components/panel'
-import { useSuspenseMe } from '#/features/account/api/customer'
+import { useLogout } from '#/entities/customer/api/auth'
+import { useSuspenseMe } from '#/entities/customer/api/customer'
 import { DetailsPanel } from '#/features/account/components/details-panel'
 import { OrdersPanel } from '#/features/account/components/orders-panel'
 import { PasswordPanel } from '#/features/account/components/password-panel'
-import { useLogout } from '#/features/auth/api/auth'
 
 export function AccountDetail() {
   const { customer } = useSuspenseMe()

@@ -5,7 +5,7 @@ import type { CartAddressInputBody, StoreCompleteCartResponse } from '@proteus/h
 import { formOptions } from '@tanstack/react-form'
 import { useState } from 'react'
 import { z } from 'zod'
-import { useLogout } from '#/features/auth/api/auth'
+import { useLogout } from '#/entities/customer/api/auth'
 import { useMarket } from '#/hooks/use-market'
 import { errorMessage, type SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'

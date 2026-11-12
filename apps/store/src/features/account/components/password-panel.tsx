@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '#/components/button'
 import { Panel } from '#/components/panel'
-import { useRequestPasswordReset } from '#/features/auth/api/auth'
+import { useRequestPasswordReset } from '#/entities/customer/api/auth'
 
 /**
  * No form: the signed-in customer's email is already known, so the panel is one action that

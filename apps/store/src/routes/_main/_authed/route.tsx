@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { customerMeQueryOptions } from '#/features/account/api/customer'
+import { customerMeQueryOptions } from '#/entities/customer/api/customer'
 import { isRegistered } from '#/lib/auth-token'
 
 export const Route = createFileRoute('/_main/_authed')({

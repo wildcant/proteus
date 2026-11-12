@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
 import { orderProgress, type ProgressStep } from '#/features/orders/utils/order-progress'
 

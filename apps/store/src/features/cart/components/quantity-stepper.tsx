@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { Loader2Icon, MinusIcon, PlusIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 

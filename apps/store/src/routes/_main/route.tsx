@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Footer } from '#/components/footer'
 import { Header } from '#/components/header/header'
-import { useMe } from '#/features/account/api/customer'
+import { useMe } from '#/entities/customer/api/customer'
 import { CartDrawer } from '#/features/cart/components/cart-drawer'
 import { CartMismatchBanner } from '#/features/cart/components/cart-mismatch-banner'
 import { CartTrigger } from '#/features/cart/components/cart-trigger'

@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Checkbox, cn } from '@proteus/ui'
+import { Checkbox } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { ChevronDownIcon } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { StoreProductFilter } from '#/api/generated/model'

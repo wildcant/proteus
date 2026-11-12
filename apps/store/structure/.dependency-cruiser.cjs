@@ -1,4 +1,12 @@
-const { apiLayerRules, featureStructureRules, layerDirectionRules } = require('@proteus/frontend-structure')
+const {
+  apiLayerRules,
+  entityStructureRules,
+  featureStructureRules,
+  layerDirectionRules,
+} = require('@proteus/frontend-structure')
+
+/** shared -> entities -> features -> routes. The admin has no entities layer and does not opt in. */
+const entityRules = entityStructureRules()
 
 /**
  * Which store feature may import which, as a directed acyclic graph.
@@ -11,7 +19,8 @@ const { apiLayerRules, featureStructureRules, layerDirectionRules } = require('@
  * checkout, so `checkout -> cart` and never the reverse. When two features need the same thing,
  * the thing was never feature-specific — move it down to a shared layer instead of adding an edge.
  *
- * See docs/adr/0020-store-feature-graph-is-acyclic.md for the graph and the reasoning.
+ * See docs/adr/0020-store-feature-graph-is-acyclic.md for the graph and the reasoning, and
+ * docs/adr/0034-store-entities-layer-replaces-the-feature-graph.md for what replaces it.
  */
 const FEATURE_GRAPH = {
   cart: [],
@@ -84,8 +93,9 @@ module.exports = {
     },
     // shared -> features -> app, shared with the admin. See packages/frontend-structure.
     ...layerDirectionRules(),
+    ...entityRules.forbidden,
   ],
-  required: featureStructureRules(),
+  required: [...featureStructureRules(), ...entityRules.required],
   options: {
     doNotFollow: { path: 'node_modules' },
     exclude: { path: '\\.gen\\.ts$' },
