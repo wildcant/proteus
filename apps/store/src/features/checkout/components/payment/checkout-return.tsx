@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useEffect, useRef, useState } from 'react'
 import { ButtonLink } from '#/components/button'
-import { useCart } from '#/features/cart/api/cart'
+import { useCart } from '#/entities/cart/api/cart'
 import { usePaymentProviders } from '../../api/checkout'
 import { useCompleteOrder } from '../../hooks/use-complete-order'
 import type { ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from '../../types/payment'

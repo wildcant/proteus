@@ -3,7 +3,7 @@ import { Loader2Icon } from 'lucide-react'
 import { useState } from 'react'
 import type { StoreProductResponseProduct, StoreProductVariant } from '#/api/generated/model'
 import { Button } from '#/components/button'
-import { useAddLineItem } from '#/features/cart/api/cart'
+import { useAddLineItem } from '#/entities/cart/api/cart'
 import { QuantityStepper } from '#/features/cart/components/quantity-stepper'
 import { useModal } from '#/lib/modal-state'
 

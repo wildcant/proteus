@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { addressesQueryOptions } from '#/features/address/api/addresses'
+import { addressesQueryOptions } from '#/entities/address/api/addresses'
 import { AddressBook } from '#/features/address/components/address-book'
 
 export const Route = createFileRoute('/_main/_authed/account/addresses')({

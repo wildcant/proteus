@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
-import { cartQueryOptions } from '#/features/cart/api/cart'
+import { cartQueryOptions } from '#/entities/cart/api/cart'
 import { CheckoutContent } from '#/features/checkout/components/checkout-content'
 import { CheckoutSkeleton } from '#/features/checkout/components/checkout-skeleton'
 

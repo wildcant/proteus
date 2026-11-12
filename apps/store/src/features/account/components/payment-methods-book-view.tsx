@@ -3,8 +3,8 @@ import { RadioGroup } from '@proteus/ui'
 import { ChevronLeftIcon } from 'lucide-react'
 import type { StoreSavedMethod } from '#/api/generated/model'
 import { Button, ButtonLink } from '#/components/button'
-import { SavedCardRow, WalletSkeleton } from '#/features/account/components/saved-card-row'
-import { isUsable } from '#/features/account/utils/expiry'
+import { isUsable } from '#/entities/payment-method/lib/expiry'
+import { SavedCardRow, WalletSkeleton } from '#/entities/payment-method/ui/saved-card-row/saved-card-row'
 import { savedMethodName } from '#/lib/card-networks'
 
 /**

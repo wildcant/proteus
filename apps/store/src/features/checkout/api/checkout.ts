@@ -28,7 +28,7 @@ import {
   updateStorePaymentSession,
 } from '#/api/generated/payment-collections/payment-collections'
 import { listStoreCartPaymentProviders } from '#/api/generated/payments/payments'
-import { cartQueryKeys } from '#/features/cart/api/cart'
+import { cartQueryKeys } from '#/entities/cart/api/cart'
 import { clearCartId, getCartId } from '#/lib/cart-id'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 import { isStaleMethodError, rethrowAsStaleMethod } from '../utils/payment/session-errors'

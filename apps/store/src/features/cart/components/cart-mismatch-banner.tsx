@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { CircleAlertIcon } from 'lucide-react'
 import { Button } from '#/components/button'
-import { useCart, useTransferCart } from '#/features/cart/api/cart'
+import { useCart, useTransferCart } from '#/entities/cart/api/cart'
 
 /**
  * Shown when a shopper is signed in but the cart still belongs to someone else — the transfer that

@@ -158,6 +158,57 @@ orders already promised from it — and it is Available that decides sold out, l
 a cart can be completed.
 _Avoid_: stock, in stock, remaining stock, free quantity, stocked quantity
 
+### Commerce
+
+**Cart**:
+What a shopper is collecting to buy: line items priced in one Region's currency, plus the email,
+addresses and shipping method that will become an Order. A Cart may have no Customer — a guest Cart,
+remembered by its id in the browser — and signing in transfers it to the Customer. Switching Market
+moves it to the new Region when every item can be sold there. A Cart is never reserved against
+stock; it becomes exactly one Order when completed, and `completedAt` is stamped then. Store Copy
+calls it the **bag** ("Your Bag"); the code, the API and this glossary say Cart.
+_Avoid_: bag (in code and docs — Store Copy only), basket, checkout (for the thing itself), session
+
+**Customer**:
+The person a Cart and an Order belong to, identified by an email. A Customer exists for every
+shopper who has given an email, registered or not: `hasAccount` says whether they can sign in, and
+at most one Customer with an account and one without may hold the same email. A guest checkout
+writes a Customer without an account; registering, or signing in and claiming a guest Cart, is what
+ties a Cart to a Customer with an account.
+_Avoid_: user (reserved for admin staff), account (for the person), shopper (in code), member, client
+
+**Address**:
+A postal destination and recipient — name, company, street lines, city, province, postal code,
+country and phone. It takes three forms, and they are three different records: a Customer's
+**saved address**, a row in their address book with an optional label and the main-address flags;
+a Cart's address, its own copy per type, shipping and billing; and an Order's address, copied from
+the Cart when it is placed and never touched by the address book again. Picking a saved address at
+checkout copies it onto the Cart, so editing the saved address later changes neither Cart nor Order.
+_Avoid_: location (reserved for Stock Location), destination, contact
+
+**Order**:
+A completed Cart, made permanent: the line items with their Variant Titles and prices copied at that
+moment, the addresses and shipping method copied from the Cart, the email the confirmation went to,
+and a shopper-facing number (`displayId`). Its status (pending, completed, canceled, archived) is
+separate from its fulfillment status (preparing, ready to ship, shipped, delivered) and from its
+payment status (awaiting, authorized, captured), and the storefront shows each on its own. A
+guest's Order has no account to be listed under and is reached only from the confirmation page.
+_Avoid_: purchase, receipt (for the record), transaction (reserved for the payment module's rows),
+checkout
+
+**Payment Method**:
+A card or digital wallet a Customer with an account has stored at a payment gateway, so a later
+checkout can pay with it without typing it again. The storefront knows only its network, last four
+digits, expiry and whether it is the default; the gateway holds the method and the default, and
+Proteus stores neither — only the account holder that links the Customer to the gateway. Distinct
+from a **payment provider**, which is a way to pay that a Region offers at checkout (a card gateway,
+a test-only provider): a shopper picks a provider, then may pick one of their Payment Methods within
+it. A card past its expiry month is still listed but cannot be chosen. The Customer's list of
+Payment Methods is their **wallet**.
+_Avoid_: saved card (in code — Store Copy may say "card"), wallet (for one method, even a stored
+digital wallet), payment (reserved for the payment module's record), payment provider (for a stored
+card)
+
 ### Markets
 
 **Region**:
@@ -170,7 +221,7 @@ _Avoid_: zone, territory, market, currency zone
 **Market**:
 One country a shopper can shop in, as the storefront offers it: the country, the Locale it is read
 and formatted in, and the name the market control lists it under. Every Market belongs to a Region,
-so choosing one also chooses the currency prices are quoted in, the payment methods offered and the
+so choosing one also chooses the currency prices are quoted in, the payment providers offered and the
 country deliveries are priced to. The Markets are exactly the countries the store sells to — a
 Region is how the store groups them, a Market is how a shopper picks one.
 _Avoid_: region, locale (for the country), storefront region, country picker

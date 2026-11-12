@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
+import { ordersListQueryOptions, ordersPageQuery } from '#/entities/order/api/orders'
 import { AccountDetail } from '#/features/account/components/account-detail'
 import { AccountSkeleton } from '#/features/account/components/account-skeleton'
-import { ordersListQueryOptions, ordersPageQuery } from '#/features/orders/api/orders'
 
 export const Route = createFileRoute('/_main/_authed/account/')({
   // Fire-and-forget alongside the customer prefetch in `_authed`, so the orders panel resolves

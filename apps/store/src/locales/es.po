@@ -68,11 +68,11 @@ msgstr "No se cobraron {total}"
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
 
-#: src/features/account/components/saved-card-row.tsx:135
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:135
 msgid "<0>Couldn't remove that card.</0> Try again."
 msgstr "<0>No pudimos eliminar esa tarjeta.</0> Inténtalo de nuevo."
 
-#: src/features/account/components/saved-card-row.tsx:121
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:121
 msgid "<0>Expired</0> — add this card again to use it"
 msgstr "<0>Vencida</0>: agrégala de nuevo para usarla"
 
@@ -359,7 +359,7 @@ msgstr "Oscuro"
 msgid "Decrease quantity for {label}"
 msgstr "Disminuir cantidad de {label}"
 
-#: src/features/account/components/saved-card-row.tsx:116
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:116
 #: src/features/checkout/components/delivery/shipping-address-picker.tsx:74
 msgid "Default"
 msgstr "Predeterminada"
@@ -372,7 +372,7 @@ msgstr "Eliminar"
 msgid "Delete address"
 msgstr "Eliminar dirección"
 
-#: src/features/orders/utils/fulfillment-labels.ts:10
+#: src/entities/order/lib/fulfillment-labels.ts:10
 msgid "Delivered"
 msgstr "Entregado"
 
@@ -430,15 +430,15 @@ msgstr "Ingresa tu dirección de envío para ver los métodos de envío disponib
 msgid "Every card here has expired. Pay with a new card at checkout to save a usable one."
 msgstr "Todas tus tarjetas vencieron. Paga con una tarjeta nueva al finalizar la compra para guardar una que funcione."
 
-#: src/features/account/components/saved-card-row.tsx:129
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:129
 msgid "Expires this month"
 msgstr "Vence este mes"
 
-#: src/features/address/api/addresses.ts:62
+#: src/entities/address/api/addresses.ts:62
 msgid "Failed to add address"
 msgstr "No se pudo agregar la dirección"
 
-#: src/features/cart/api/cart.ts:128
+#: src/entities/cart/api/cart.ts:128
 msgid "Failed to add item to cart"
 msgstr "No se pudo agregar el producto al carrito"
 
@@ -458,11 +458,11 @@ msgstr "No pudimos iniciar el pago"
 msgid "Failed to price the payment"
 msgstr "No pudimos calcular el valor del pago"
 
-#: src/features/address/api/addresses.ts:106
+#: src/entities/address/api/addresses.ts:106
 msgid "Failed to remove address"
 msgstr "No se pudo eliminar la dirección"
 
-#: src/features/cart/api/cart.ts:182
+#: src/entities/cart/api/cart.ts:182
 msgid "Failed to remove cart item"
 msgstr "No se pudo eliminar el producto del carrito"
 
@@ -470,7 +470,7 @@ msgstr "No se pudo eliminar el producto del carrito"
 msgid "Failed to request password reset"
 msgstr "No pudimos solicitar el cambio de contraseña"
 
-#: src/features/address/api/addresses.ts:86
+#: src/entities/address/api/addresses.ts:86
 msgid "Failed to save address"
 msgstr "No se pudo guardar la dirección"
 
@@ -478,11 +478,11 @@ msgstr "No se pudo guardar la dirección"
 msgid "Failed to select shipping method"
 msgstr "No pudimos seleccionar el método de envío"
 
-#: src/features/account/api/payment-methods.ts:159
+#: src/entities/payment-method/api/payment-methods.ts:156
 msgid "Failed to set default card"
 msgstr "No pudimos cambiar tu tarjeta predeterminada"
 
-#: src/features/cart/api/cart.ts:206
+#: src/entities/cart/api/cart.ts:206
 msgid "Failed to transfer cart"
 msgstr "No se pudo transferir el carrito"
 
@@ -490,7 +490,7 @@ msgstr "No se pudo transferir el carrito"
 msgid "Failed to update cart"
 msgstr "No pudimos actualizar el carrito"
 
-#: src/features/cart/api/cart.ts:158
+#: src/entities/cart/api/cart.ts:158
 msgid "Failed to update cart item"
 msgstr "No se pudo actualizar el producto del carrito"
 
@@ -578,7 +578,7 @@ msgstr "Puede que se haya movido o que ya no esté en la tienda."
 msgid "It may not be one we sell here."
 msgstr "Puede que no lo vendamos aquí."
 
-#: src/features/account/components/saved-card-row.tsx:76
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:76
 msgid "Keep"
 msgstr "Conservar"
 
@@ -655,9 +655,9 @@ msgstr "Siguiente"
 msgid "No address provided"
 msgstr "Sin dirección"
 
-#: src/features/cart/api/cart.ts:82
-#: src/features/cart/api/cart.ts:149
-#: src/features/cart/api/cart.ts:173
+#: src/entities/cart/api/cart.ts:82
+#: src/entities/cart/api/cart.ts:149
+#: src/entities/cart/api/cart.ts:173
 #: src/features/checkout/api/checkout.ts:98
 #: src/features/checkout/api/checkout.ts:124
 #: src/features/checkout/api/checkout.ts:214
@@ -795,7 +795,7 @@ msgstr "Realizando pedido..."
 msgid "Postal code"
 msgstr "Código postal"
 
-#: src/features/orders/utils/fulfillment-labels.ts:7
+#: src/entities/order/lib/fulfillment-labels.ts:7
 msgid "Preparing"
 msgstr "En preparación"
 
@@ -833,7 +833,7 @@ msgstr "Productos"
 msgid "Proteus — modern storefront powered by TanStack Start"
 msgstr "Proteus — tienda moderna impulsada por TanStack Start"
 
-#: src/features/orders/utils/fulfillment-labels.ts:8
+#: src/entities/order/lib/fulfillment-labels.ts:8
 msgid "Ready to ship"
 msgstr "Listo para enviar"
 
@@ -845,7 +845,7 @@ msgstr "Ref."
 msgid "Registration failed"
 msgstr "No pudimos crear tu cuenta"
 
-#: src/features/account/components/saved-card-row.tsx:84
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:84
 #: src/features/address/components/address-card.tsx:69
 #: src/features/checkout/components/delivery/address-actions.tsx:27
 msgid "Remove"
@@ -855,11 +855,11 @@ msgstr "Eliminar"
 msgid "Remove {label}"
 msgstr "Eliminar {label}"
 
-#: src/features/account/components/saved-card-row.tsx:145
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:145
 msgid "Remove {name}"
 msgstr "Eliminar {name}"
 
-#: src/features/account/components/saved-card-row.tsx:69
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:69
 msgid "Remove {name}?"
 msgstr "¿Eliminar {name}?"
 
@@ -872,7 +872,7 @@ msgstr "Quitar el filtro {value}"
 msgid "Remove this address?"
 msgstr "¿Eliminar esta dirección?"
 
-#: src/features/account/components/saved-card-row.tsx:84
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:84
 msgid "Removing…"
 msgstr "Eliminando…"
 
@@ -944,7 +944,7 @@ msgstr "Guardar contraseña"
 msgid "Ship to"
 msgstr "Enviar a"
 
-#: src/features/orders/utils/fulfillment-labels.ts:9
+#: src/entities/order/lib/fulfillment-labels.ts:9
 msgid "Shipped"
 msgstr "Enviado"
 
@@ -1254,7 +1254,7 @@ msgstr "Tienes cambios sin guardar"
 msgid "You haven't made any orders yet. When you make an order it'll show up here."
 msgstr "Aún no has hecho pedidos. Cuando hagas uno, aparecerá aquí."
 
-#: src/features/account/components/saved-card-row.tsx:71
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:71
 msgid "You'll need to enter it again next time."
 msgstr "Tendrás que ingresarla de nuevo la próxima vez."
 

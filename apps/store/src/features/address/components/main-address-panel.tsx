@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Panel } from '#/components/panel'
-import { useSuspenseAddresses } from '#/features/address/api/addresses'
-import { AddressLines } from '#/features/address/components/address-lines'
+import { useSuspenseAddresses } from '#/entities/address/api/addresses'
+import { AddressLines } from '#/entities/address/ui/address-lines/address-lines'
 
 /**
  * The default address, surfaced above the add button in the left column.

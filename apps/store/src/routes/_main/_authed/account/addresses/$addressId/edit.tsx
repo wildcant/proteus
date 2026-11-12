@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate } from '@tanstack/react-router'
 import { StoreDrawer } from '#/components/store-drawer'
-import { addressesQueryOptions, useSuspenseAddresses } from '#/features/address/api/addresses'
+import { addressesQueryOptions, useSuspenseAddresses } from '#/entities/address/api/addresses'
 import { UpdateAddressForm } from '#/features/address/components/update-address-form'
 
 export const Route = createFileRoute('/_main/_authed/account/addresses/$addressId/edit')({

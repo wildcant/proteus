@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import type { AuthenticateResponse } from '#/api/generated/model'
-import { useTransferCart } from '#/features/cart/api/cart'
+import { useTransferCart } from '#/entities/cart/api/cart'
 
 export type AuthSuccessParams = {
   /** Where to land instead of /account — checkout passes its own path so a mid-checkout sign-in

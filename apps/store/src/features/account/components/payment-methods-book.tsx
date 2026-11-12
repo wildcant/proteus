@@ -2,7 +2,7 @@ import {
   usePaymentMethods,
   useRemovePaymentMethod,
   useSetDefaultPaymentMethod,
-} from '#/features/account/api/payment-methods'
+} from '#/entities/payment-method/api/payment-methods'
 import { PaymentMethodsBookView } from './payment-methods-book-view'
 
 /**

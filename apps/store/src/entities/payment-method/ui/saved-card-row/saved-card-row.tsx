@@ -6,8 +6,8 @@ import { useId, useState } from 'react'
 import type { StoreSavedMethod } from '#/api/generated/model'
 import { NetworkMark } from '#/components/payment-network'
 import { PaymentRow, paymentRowLabelVariants } from '#/components/payment-row'
+import { expiryStatus, formatExpiry } from '#/entities/payment-method/lib/expiry'
 import { savedMethodName } from '#/lib/card-networks'
-import { expiryStatus, formatExpiry } from '../utils/expiry'
 
 /**
  * One stored card, rendered by one component wherever a stored card appears.

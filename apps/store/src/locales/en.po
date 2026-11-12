@@ -68,11 +68,11 @@ msgstr "{total} was not charged"
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. All rights reserved."
 
-#: src/features/account/components/saved-card-row.tsx:135
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:135
 msgid "<0>Couldn't remove that card.</0> Try again."
 msgstr "<0>Couldn't remove that card.</0> Try again."
 
-#: src/features/account/components/saved-card-row.tsx:121
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:121
 msgid "<0>Expired</0> — add this card again to use it"
 msgstr "<0>Expired</0> — add this card again to use it"
 
@@ -359,7 +359,7 @@ msgstr "Dark"
 msgid "Decrease quantity for {label}"
 msgstr "Decrease quantity for {label}"
 
-#: src/features/account/components/saved-card-row.tsx:116
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:116
 #: src/features/checkout/components/delivery/shipping-address-picker.tsx:74
 msgid "Default"
 msgstr "Default"
@@ -372,7 +372,7 @@ msgstr "Delete"
 msgid "Delete address"
 msgstr "Delete address"
 
-#: src/features/orders/utils/fulfillment-labels.ts:10
+#: src/entities/order/lib/fulfillment-labels.ts:10
 msgid "Delivered"
 msgstr "Delivered"
 
@@ -430,15 +430,15 @@ msgstr "Enter your shipping address to view available shipping methods."
 msgid "Every card here has expired. Pay with a new card at checkout to save a usable one."
 msgstr "Every card here has expired. Pay with a new card at checkout to save a usable one."
 
-#: src/features/account/components/saved-card-row.tsx:129
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:129
 msgid "Expires this month"
 msgstr "Expires this month"
 
-#: src/features/address/api/addresses.ts:62
+#: src/entities/address/api/addresses.ts:62
 msgid "Failed to add address"
 msgstr "Failed to add address"
 
-#: src/features/cart/api/cart.ts:128
+#: src/entities/cart/api/cart.ts:128
 msgid "Failed to add item to cart"
 msgstr "Failed to add item to cart"
 
@@ -458,11 +458,11 @@ msgstr "Failed to create payment session"
 msgid "Failed to price the payment"
 msgstr "Failed to price the payment"
 
-#: src/features/address/api/addresses.ts:106
+#: src/entities/address/api/addresses.ts:106
 msgid "Failed to remove address"
 msgstr "Failed to remove address"
 
-#: src/features/cart/api/cart.ts:182
+#: src/entities/cart/api/cart.ts:182
 msgid "Failed to remove cart item"
 msgstr "Failed to remove cart item"
 
@@ -470,7 +470,7 @@ msgstr "Failed to remove cart item"
 msgid "Failed to request password reset"
 msgstr "Failed to request password reset"
 
-#: src/features/address/api/addresses.ts:86
+#: src/entities/address/api/addresses.ts:86
 msgid "Failed to save address"
 msgstr "Failed to save address"
 
@@ -478,11 +478,11 @@ msgstr "Failed to save address"
 msgid "Failed to select shipping method"
 msgstr "Failed to select shipping method"
 
-#: src/features/account/api/payment-methods.ts:159
+#: src/entities/payment-method/api/payment-methods.ts:156
 msgid "Failed to set default card"
 msgstr "Failed to set default card"
 
-#: src/features/cart/api/cart.ts:206
+#: src/entities/cart/api/cart.ts:206
 msgid "Failed to transfer cart"
 msgstr "Failed to transfer cart"
 
@@ -490,7 +490,7 @@ msgstr "Failed to transfer cart"
 msgid "Failed to update cart"
 msgstr "Failed to update cart"
 
-#: src/features/cart/api/cart.ts:158
+#: src/entities/cart/api/cart.ts:158
 msgid "Failed to update cart item"
 msgstr "Failed to update cart item"
 
@@ -578,7 +578,7 @@ msgstr "It may have moved, or no longer be in the store."
 msgid "It may not be one we sell here."
 msgstr "It may not be one we sell here."
 
-#: src/features/account/components/saved-card-row.tsx:76
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:76
 msgid "Keep"
 msgstr "Keep"
 
@@ -655,9 +655,9 @@ msgstr "Next"
 msgid "No address provided"
 msgstr "No address provided"
 
-#: src/features/cart/api/cart.ts:82
-#: src/features/cart/api/cart.ts:149
-#: src/features/cart/api/cart.ts:173
+#: src/entities/cart/api/cart.ts:82
+#: src/entities/cart/api/cart.ts:149
+#: src/entities/cart/api/cart.ts:173
 #: src/features/checkout/api/checkout.ts:98
 #: src/features/checkout/api/checkout.ts:124
 #: src/features/checkout/api/checkout.ts:214
@@ -795,7 +795,7 @@ msgstr "Placing order..."
 msgid "Postal code"
 msgstr "Postal code"
 
-#: src/features/orders/utils/fulfillment-labels.ts:7
+#: src/entities/order/lib/fulfillment-labels.ts:7
 msgid "Preparing"
 msgstr "Preparing"
 
@@ -833,7 +833,7 @@ msgstr "Products"
 msgid "Proteus — modern storefront powered by TanStack Start"
 msgstr "Proteus — modern storefront powered by TanStack Start"
 
-#: src/features/orders/utils/fulfillment-labels.ts:8
+#: src/entities/order/lib/fulfillment-labels.ts:8
 msgid "Ready to ship"
 msgstr "Ready to ship"
 
@@ -845,7 +845,7 @@ msgstr "Ref."
 msgid "Registration failed"
 msgstr "Registration failed"
 
-#: src/features/account/components/saved-card-row.tsx:84
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:84
 #: src/features/address/components/address-card.tsx:69
 #: src/features/checkout/components/delivery/address-actions.tsx:27
 msgid "Remove"
@@ -855,11 +855,11 @@ msgstr "Remove"
 msgid "Remove {label}"
 msgstr "Remove {label}"
 
-#: src/features/account/components/saved-card-row.tsx:145
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:145
 msgid "Remove {name}"
 msgstr "Remove {name}"
 
-#: src/features/account/components/saved-card-row.tsx:69
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:69
 msgid "Remove {name}?"
 msgstr "Remove {name}?"
 
@@ -872,7 +872,7 @@ msgstr "Remove filter {value}"
 msgid "Remove this address?"
 msgstr "Remove this address?"
 
-#: src/features/account/components/saved-card-row.tsx:84
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:84
 msgid "Removing…"
 msgstr "Removing…"
 
@@ -944,7 +944,7 @@ msgstr "Set new password"
 msgid "Ship to"
 msgstr "Ship to"
 
-#: src/features/orders/utils/fulfillment-labels.ts:9
+#: src/entities/order/lib/fulfillment-labels.ts:9
 msgid "Shipped"
 msgstr "Shipped"
 
@@ -1254,7 +1254,7 @@ msgstr "You have unsaved changes"
 msgid "You haven't made any orders yet. When you make an order it'll show up here."
 msgstr "You haven't made any orders yet. When you make an order it'll show up here."
 
-#: src/features/account/components/saved-card-row.tsx:71
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:71
 msgid "You'll need to enter it again next time."
 msgstr "You'll need to enter it again next time."
 

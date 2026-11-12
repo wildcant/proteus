@@ -4,7 +4,7 @@ import { MoreVerticalIcon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
 import { Button, ButtonLink } from '#/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/popover'
-import { useDeleteAddress } from '#/features/address/api/addresses'
+import { useDeleteAddress } from '#/entities/address/api/addresses'
 
 /**
  * Edit and delete, behind the row's own menu.

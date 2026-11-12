@@ -1,5 +1,5 @@
 import { Navigate } from '@tanstack/react-router'
-import { useSuspenseCart } from '#/features/cart/api/cart'
+import { useSuspenseCart } from '#/entities/cart/api/cart'
 import { CheckoutForm } from '#/features/checkout/components/checkout-form'
 import { CheckoutSummary } from './checkout-summary'
 

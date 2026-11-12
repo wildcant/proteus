@@ -3,8 +3,8 @@ import { Field, FieldLabel, RadioGroupItem, usePrompt } from '@proteus/ui'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
 import { Button, ButtonLink } from '#/components/button'
-import { useDeleteAddress } from '#/features/address/api/addresses'
-import { AddressLines } from '#/features/address/components/address-lines'
+import { useDeleteAddress } from '#/entities/address/api/addresses'
+import { AddressLines } from '#/entities/address/ui/address-lines/address-lines'
 
 type AddressCardProps = {
   address: StoreCustomerAddress

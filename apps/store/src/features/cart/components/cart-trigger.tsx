@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { ShoppingBagIcon } from '@proteus/icons'
 import { Button } from '#/components/button'
-import { useCart } from '#/features/cart/api/cart'
+import { useCart } from '#/entities/cart/api/cart'
 import { useModal } from '#/lib/modal-state'
 
 /**

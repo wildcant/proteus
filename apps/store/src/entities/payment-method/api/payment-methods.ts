@@ -19,9 +19,6 @@ import { queryKeysFactory } from '#/lib/query-key-factory'
  * that could disagree is the failure mode the shared row component exists to prevent, and two
  * cache entries would reintroduce it below the components. Nothing here sorts — ordering is the
  * backend's, defined once in `orderSavedMethods`, so neither surface holds an opinion about it.
- *
- * It lives under `features/account` rather than under the checkout because the wallet is an
- * account concept and the feature graph runs `checkout -> account`, never the reverse.
  */
 const paymentMethodsQueryKeys = queryKeysFactory('customer-payment-methods')
 

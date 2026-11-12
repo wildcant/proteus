@@ -2,9 +2,9 @@ import { Trans } from '@lingui/react/macro'
 import { useRouterState } from '@tanstack/react-router'
 import { CircleAlertIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useCart, useSwitchCartMarket } from '#/entities/cart/api/cart'
 import { useMarket } from '#/hooks/use-market'
 import { marketHref } from '#/lib/market'
-import { useCart, useSwitchCartMarket } from '../api/cart'
 
 /**
  * Brings the cart across when the shopper changes market, and says so when it cannot come.

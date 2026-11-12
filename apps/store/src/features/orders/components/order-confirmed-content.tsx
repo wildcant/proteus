@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { getRouteApi } from '@tanstack/react-router'
-import { useSuspenseOrder } from '#/features/orders/api/orders'
+import { useSuspenseOrder } from '#/entities/order/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
 import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'
 import { useFormatters } from '#/hooks/use-formatters'

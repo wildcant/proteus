@@ -3,7 +3,7 @@ import { RadioGroup, Skeleton } from '@proteus/ui'
 import { ChevronLeftIcon, PlusIcon } from 'lucide-react'
 import { Suspense } from 'react'
 import { ButtonLink } from '#/components/button'
-import { useSuspenseAddresses, useUpdateAddress } from '#/features/address/api/addresses'
+import { useSuspenseAddresses, useUpdateAddress } from '#/entities/address/api/addresses'
 import { AddressCard } from '#/features/address/components/address-card'
 import { MainAddressPanel } from '#/features/address/components/main-address-panel'
 

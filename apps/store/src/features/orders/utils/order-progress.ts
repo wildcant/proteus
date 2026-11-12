@@ -1,7 +1,7 @@
 import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import type { StoreOrderFulfillmentStatus, StoreOrderResponseOrder } from '#/api/generated/model'
-import { fulfillmentLabels } from './fulfillment-labels'
+import { fulfillmentLabels } from '#/entities/order/lib/fulfillment-labels'
 
 /**
  * The fulfillment states in the order they happen. The generated union is a set of strings with

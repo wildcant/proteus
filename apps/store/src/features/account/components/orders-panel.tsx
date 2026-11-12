@@ -7,8 +7,8 @@ import type { StoreOrderListResponseOrdersItem } from '#/api/generated/model'
 import { ButtonLink } from '#/components/button'
 import { Pagination } from '#/components/pagination'
 import { Panel } from '#/components/panel'
-import { ORDERS_DEFAULT_OFFSET, ordersPageQuery, useSuspenseOrders } from '#/features/orders/api/orders'
-import { fulfillmentLabels } from '#/features/orders/utils/fulfillment-labels'
+import { ORDERS_DEFAULT_OFFSET, ordersPageQuery, useSuspenseOrders } from '#/entities/order/api/orders'
+import { fulfillmentLabels } from '#/entities/order/lib/fulfillment-labels'
 import { useFormatters } from '#/hooks/use-formatters'
 
 /**

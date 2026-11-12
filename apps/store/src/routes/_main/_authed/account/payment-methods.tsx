@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { paymentMethodsQueryOptions } from '#/features/account/api/payment-methods'
+import { paymentMethodsQueryOptions } from '#/entities/payment-method/api/payment-methods'
 import { PaymentMethodsBook } from '#/features/account/components/payment-methods-book'
 
 export const Route = createFileRoute('/_main/_authed/account/payment-methods')({
