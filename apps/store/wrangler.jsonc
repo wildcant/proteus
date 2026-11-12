@@ -5,12 +5,26 @@
   "compatibility_date": "2026-07-26",
   // TODO: Remove global_fetch_strictly_public when using custom domains — only needed for *.workers.dev Worker-to-Worker fetch
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "./src/server.ts",
   "vars": {
     "RUNTIME": "workerd",
     "LOG_LEVEL": "info"
   },
   "observability": {
+    "enabled": true
+  },
+  // Product photos are resized on request (`/img/…`, see src/server.ts): read from the bucket,
+  // transformed by the Images binding, then kept by Workers Cache so each size is made once.
+  "r2_buckets": [
+    {
+      "binding": "ASSETS_BUCKET",
+      "bucket_name": "proteus-assets"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "cache": {
     "enabled": true
   }
 }

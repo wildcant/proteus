@@ -27,7 +27,7 @@ msgstr "{0}, tu tarjeta predeterminada"
 msgid "{alt} — view {position} of {count}"
 msgstr "{alt} — vista {position} de {count}"
 
-#: src/features/products/components/product-gallery.tsx:74
+#: src/features/products/components/product-gallery.tsx:75
 msgid "{alt} images"
 msgstr "Imágenes de {alt}"
 
@@ -301,7 +301,7 @@ msgstr "Cerrar menú"
 msgid "Close search"
 msgstr "Cerrar búsqueda"
 
-#: src/routes/__root.tsx:111
+#: src/routes/__root.tsx:133
 msgid "Close toast"
 msgstr "Cerrar notificación"
 
@@ -529,7 +529,7 @@ msgstr "¿Olvidaste tu contraseña?"
 msgid "From"
 msgstr "Desde"
 
-#: src/features/products/components/product-card.tsx:47
+#: src/features/products/components/product-card.tsx:49
 msgid "From {startingPrice}"
 msgstr "Desde {startingPrice}"
 
@@ -829,7 +829,7 @@ msgstr "Precio: hasta {0}"
 msgid "Products"
 msgstr "Productos"
 
-#: src/routes/__root.tsx:53
+#: src/routes/__root.tsx:64
 msgid "Proteus — modern storefront powered by TanStack Start"
 msgstr "Proteus — tienda moderna impulsada por TanStack Start"
 
@@ -1012,7 +1012,7 @@ msgid "Signing in..."
 msgstr "Iniciando sesión..."
 
 #: src/features/products/components/add-to-cart.tsx:77
-#: src/features/products/components/product-card.tsx:69
+#: src/features/products/components/product-card.tsx:71
 #: src/features/products/components/variant-stock.tsx:24
 msgid "Sold out"
 msgstr "Agotado"

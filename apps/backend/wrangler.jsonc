@@ -11,6 +11,21 @@
   "observability": {
     "enabled": true
   },
+  // Run next to the database (Supabase, São Paulo). A request makes several sequential queries, so
+  // each one crossing from a distant edge costs far more than the single hop from the visitor here.
+  "placement": {
+    "region": "aws:sa-east-1"
+  },
+  // Keeps warm connections to Supabase (direct connection, caching off), so a request no longer
+  // pays a TCP + TLS + auth handshake before its first query. `wrangler dev` connects to the local
+  // docker Postgres instead.
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "8c9163c0aadf439a8629d11d9cff7c13",
+      "localConnectionString": "postgres://postgres:postgres@127.0.0.1:5432/proteus"
+    }
+  ],
   "triggers": {
     // Each entry must match a JobDefinition.schedule in src/jobs/
     "crons": [

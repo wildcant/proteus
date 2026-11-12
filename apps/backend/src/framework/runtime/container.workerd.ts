@@ -1,19 +1,17 @@
 /** Workers entry point — per-request connections, console logger, Cloudflare Queues events. */
 
-import { env } from '@env'
 import { appConfigInput } from '../../config.js'
 import { bootstrapContainer } from '../../container.js'
-import { createWorkersDbProvider } from '../../core/db/workers-provider.js'
+import type { DbProvider } from '../../core/db/ports.js'
 import { createCloudflareQueuesEventBus, type QueuedEvent } from '../event-bus/cloudflare-queues-adapter.js'
 import { subscriberRegistry } from '../event-bus/registry.js'
 import { ConsoleLogger } from '../logger/console-logger.js'
 
-const dbProvider = createWorkersDbProvider(env.DATABASE_URL)
 const logger = new ConsoleLogger()
 
 /**
- * A function rather than a module-level container, because building one now needs something only
- * the runtime can hand over: the queue binding.
+ * A function rather than a module-level container, because building one needs things only the
+ * runtime can hand over: the queue binding, and the database connection string Hyperdrive issues.
  *
  * A binding is a live object workerd constructs from `wrangler.jsonc`. It is never serialised into
  * one, so it cannot arrive through `.env.workerd` or any other environment source however
@@ -22,10 +20,10 @@ const logger = new ConsoleLogger()
  * that import stays out of this file so the container keeps being buildable by anything that has a
  * binding to pass.
  */
-export function createWorkerdContainer(deps: { events: Queue<QueuedEvent> | undefined }) {
+export function createWorkerdContainer(deps: { events: Queue<QueuedEvent> | undefined; dbProvider: DbProvider }) {
   return bootstrapContainer({
     logger,
-    dbProvider,
+    dbProvider: deps.dbProvider,
     config: {
       /**
        * Spread from `appConfigInput` because passing a bare `projectConfig` would drop the http
@@ -44,5 +42,3 @@ export function createWorkerdContainer(deps: { events: Queue<QueuedEvent> | unde
       createCloudflareQueuesEventBus({ queue: deps.events, registry: subscriberRegistry, logger }),
   })
 }
-
-export { dbProvider }

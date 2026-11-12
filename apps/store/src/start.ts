@@ -3,7 +3,6 @@ import { loadSellableMarkets } from '#/api/sellable-markets'
 import {
   joinMarketSegment,
   looksLikeMarketSegment,
-  marketCookie,
   readMarketCookie,
   readShopperCountry,
   resolveMarketTarget,
@@ -11,24 +10,16 @@ import {
 } from '#/lib/market'
 
 /**
- * What a document request answers with now depends on the market cookie, and the product list
- * declares `Cache-Control: public, max-age=300`. Without this, a browser that has already cached
- * `/` in the default market replays it after the shopper has chosen another one, and the redirect
- * below never runs — the request never reaches the server at all.
- */
-function withCookieVary<T extends { response: Response }>(result: T): T {
-  result.response.headers.append('vary', 'Cookie')
-  return result
-}
-
-/**
  * Resolves the market for every document request: URL first, then the persisted cookie, then the
  * country Cloudflare places the shopper in, then the store default.
  *
- * It sits in front of the router rather than in a route's `beforeLoad` because the two answers it
- * gives are HTTP answers — a redirect to the market a returning shopper chose, and the `Set-Cookie`
- * that remembers the one they are looking at. Doing it in the router would mean rendering a page
- * to find out we should not have.
+ * It sits in front of the router rather than in a route's `beforeLoad` because its answer is an
+ * HTTP answer — a redirect to the market a returning shopper chose. Doing it in the router would
+ * mean rendering a page to find out we should not have.
+ *
+ * A page itself is the same for every shopper: its market is in its URL, and it remembers that
+ * market from the document (see `marketCookieScript`) rather than with a `Set-Cookie`, so the
+ * Worker's cache can keep the page and serve it without running the Worker.
  *
  * Every market is prefixed, the default one included, so `/` is a router and never a page. The
  * alternative — serving the default market unprefixed — puts the same content at two addresses
@@ -41,23 +32,17 @@ const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ r
 
   const { markets, defaultMarket } = await loadSellableMarkets()
   const url = new URL(request.url)
-  const fromUrl = splitMarketSegment(url.pathname, markets)
 
-  if (fromUrl) {
-    // Choosing a market by its URL is what persists it, so a later visit to `/` lands there — and
-    // it is what makes the market control's document navigation the whole of the switch.
-    const result = await next()
-    result.response.headers.append('set-cookie', marketCookie(fromUrl.market.localeCode, url.protocol === 'https:'))
-    return withCookieVary(result)
-  }
+  // The URL names the market, so there is nothing to resolve.
+  if (splitMarketSegment(url.pathname, markets)) return next()
 
   // A market asked for by name that the store does not sell in. Not a path missing its prefix, so
   // there is nowhere to send the shopper that answers what they asked: the router gets it
   // unchanged and returns not-found at the address they typed.
-  if (looksLikeMarketSegment(url.pathname)) return withCookieVary(await next())
+  if (looksLikeMarketSegment(url.pathname)) return next()
 
   // A first visit lands on the shopper's own market rather than the default. The redirect points
-  // at a segment URL, and the segment request is what persists it, so geo is consulted once.
+  // at a segment URL, and the page there is what persists it, so geo is consulted once.
   const target = resolveMarketTarget({
     cookie: readMarketCookie(request.headers.get('cookie')),
     country: readShopperCountry(request),
@@ -66,11 +51,11 @@ const marketMiddleware = createMiddleware({ type: 'request' }).server(async ({ r
   })
 
   url.pathname = joinMarketSegment(target, url.pathname)
-  // `vary` for the same reason as above, and `no-store` because where this redirect points is one
-  // shopper's answer: a cache that kept it would send the next shopper to someone else's market.
+  // `no-store` because where this redirect points is one shopper's answer: a cache that kept it
+  // would send the next shopper to someone else's market.
   return new Response(null, {
     status: 302,
-    headers: { location: url.toString(), vary: 'Cookie', 'cache-control': 'no-store' },
+    headers: { location: url.toString(), 'cache-control': 'no-store' },
   })
 })
 
