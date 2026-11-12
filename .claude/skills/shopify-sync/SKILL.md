@@ -48,23 +48,25 @@ Done when the manifest JSON is in hand.
 
 The CSV's metafield columns (`Género (product.metafields.custom.genero)`) only import into a
 definition that already exists, so create the definitions before the import. A list cell holds one
-value per line.
+value per line (a quoted multi-line cell); a comma, `;` or a JSON array imports as one literal value.
 
-Open Configuración › Metacampos y metaobjetos › Productos. For each manifest `metafields[]` entry
-whose `custom.<key>` is not listed yet:
+Open `/settings/custom_data/product/metafields` (Configuración › Metacampos y metaobjetos ›
+Productos). For each manifest `metafields[]` entry whose name is not listed yet, open
+`/settings/custom_data/product/metafields/create` and:
 
-1. Click "Agregar definición" (verify on first run).
-2. Type the entry's `name` in "Nombre". Check that the namespace and key read `custom.<key>`; edit
-   them if they differ.
-3. Choose the type "Texto de una sola línea", and pick "Lista" (a list of values) rather than one value.
-4. Tick "Usar como condición en colecciones" (checkbox "Activar colecciones") and "Usa como filtro…"
-   (checkbox "Activar filtro…").
-5. Click "Guardar".
+1. Click "Nombre" and type the entry's `name`. Shopify suggests standards ("Estándares sugeridos");
+   ignore them. Check the button "Espacio de nombres y clave: custom.<key>" reads the manifest key.
+2. Click the "Uno" button next to "Tipo" and choose "Lista de valores".
+3. Open the "Tipo" combobox and pick "Texto de una sola línea". The type then reads "Lista ·
+   Texto de una sola línea".
+4. Tick the checkboxes "Activar filtro para la lista de producto en el admin o con la Admin API" and
+   "Activar colecciones" (the "Usar como condición en colecciones" option).
+5. Click "Guardar". The page moves to `/settings/custom_data/product/metafields/<id>`.
 
 An existing definition whose type is not a single-line text list can't be changed in place; tell the
 user rather than deleting it, since deleting it drops its values on every product.
 
-Done when every manifest key is listed as a single-line text list with both options on.
+Done when the definitions list shows every manifest name as "Texto de una sola línea".
 
 ## 3. Import the products
 
@@ -82,7 +84,11 @@ unless those products are deleted first. Ask the user before deleting.
    distinct `URL handle` values.
 
 Done when every CSV product is listed. Open one product and check that its Género, Tipo and
-Colecciones metafields hold the CSV's values, one per line.
+Colecciones metafields hold the CSV's values, one per line ("Metacampos del producto" shows each
+value as its own chip).
+
+Apply the collections only after the import has finished: a collection saved while products are
+still arriving can keep a stale membership (a re-save of its condition fixes it).
 
 ## 4. Apply the collections
 
@@ -98,26 +104,30 @@ the key; open a collection to read its handle.
   metafield conditions.
 - **In the manifest only:** create it.
 
-Each of `rule.conditions` is one condition: the product metafield named after the definition (for
-`custom.genero`, "Género"), the relation "es igual a", and `value`. The collection's "Los productos
-deben coincidir con" choice expresses `applies`: "todas las condiciones" for `all`, "cualquier
-condición" for `any`. The condition and choice labels in this section are not verified yet; verify
-them on the first run and fix this runbook.
+The collection editor's sidebar holds the conditions. A condition reads "Atributo de condición: <x>",
+"es igual a", then its values. `evaluate_script` reaches every control by `aria-label` (deep query
+through shadow roots, visible elements only); snapshot uids work too.
 
-Creating a collection (set the condition before the title; once the title field has focus, typing
-lands in it):
+- **Point a condition at a metafield:** click its "Atributo de condición: …" button, click the
+  "Metacampo" cell, then the metafield's name cell ("Género"). The relation becomes "es igual a" and
+  the old values clear. Click the condition's "Agregar" button (the one after that attribute); the
+  "Valores de lista de cadenas del metacampo" box gets focus. Type `value` and press Enter.
+- **Add a condition:** click the sidebar's "Agregar condición"; it opens the same attribute picker
+  directly (no empty row first). Pick "Metacampo" › name, then the new row's "Agregar" and the value.
+  Add the new conditions first, then retarget the existing one: retargeting first left the picker
+  state confused once.
+- **All or any:** with two or more conditions a "Cumplir [todas las | cualquier] condiciones" switch
+  appears above them ("Tipo de coincidencia de inclusión"). "todas las" is the default; pick
+  "cualquier" for `applies: 'any'`.
+- A collection still on "Etiqueta" conditions shows "Valor seleccionado: <tag>" buttons; retargeting
+  its first condition to the metafield replaces them.
 
-1. Open `/collections/new` and wait for "Agregar condición".
-2. For each of `rule.conditions`: click the sidebar's "Agregar condición" (the one marked
-   expandable). The "Buscar atributos" search gets focus; type the metafield's name (`Género`) and
-   pick the product metafield. Keep the equals relation and type `value`. (Verify on first run.)
-3. With more than one condition, set the match to all or any per `applies`. (Verify on first run.)
-4. Read the product grid; it previews the members. Compare the count with the CSV.
-5. For `rule: null`, add no condition and pick products manually instead.
-6. Click "Agregar título" and type the manifest `title`. The handle follows the title ("Men › Tops"
-   becomes `men-tops`); check it in the search engine listing, and edit it there if it differs from
-   the manifest `handle`.
-7. Click "Guardar". The page moves to `/collections/<id>`.
+Creating a collection: open `/collections/new`, set the conditions as above, then click
+"Agregar título" and type the manifest `title`. The handle follows the title ("Men › Tops" becomes
+`men-tops`); check it in the search engine listing. For `rule: null`, add no condition and pick
+products manually. Click "Guardar".
+
+Deleting a collection also removes the menu items that link to it.
 
 Done when `/collections` lists exactly the manifest's titles (plus any extras the user chose to keep),
 each with the manifest's handle and conditions.
@@ -152,15 +162,18 @@ Done when the menu tree equals the manifest's `menu`, item for item and level fo
 
 ## 6. Add the storefront filters
 
-The Search & Discovery app holds the storefront's collection filters. Every step of this section is
-unverified; verify the labels on the first run and fix this runbook.
+The Search & Discovery app (`/apps/search-and-discovery/filters`) holds the storefront's collection
+filters. Its pages render inside an iframe; snapshots reach into it.
 
-1. Open Apps › Search & Discovery › Filtros.
-2. Click "Agregar filtro" and pick the product metafield "Género". Click "Guardar".
-3. Do the same for "Tipo". Colecciones is not a filter; it only builds collections.
+1. Open `/apps/search-and-discovery/filters/new`.
+2. Click "Seleccionar fuente". A dialog lists the sources, each as a button "<name>, n de m, botón"
+   with its kind ("Metacampo de producto", "Opción de producto", or "Brand · Origen: Proveedor ·
+   Estándar" for Vendor). Click "Género".
+3. "Etiqueta del filtro" fills with the metafield name; keep it. Keep "Condición OR" (a shopper's
+   selections widen the list). Click "Guardar".
+4. Repeat for "Tipo". Colecciones is not a filter; it only builds collections.
 
-Done when the filter list holds Género and Tipo, and a collection page on the live storefront shows
-both as separate filters with counts.
+Done when a collection page on the live storefront shows "Género" and "Tipo" as separate filters.
 
 ## 7. Verify
 
