@@ -62,13 +62,19 @@
       "Popover › tip": "the arrow's ::before square: size calc(16px*sqrt(2)), rotate-45, rounded-tl-arrow, border-popup-ring, bg-surface, centred on the box's bottom edge; hand-written",
       "CartDrawer › noticeText": "rich text: a <strong> lead (font-bold) inside the sentence; a text layer holds one text style, so its classes are hand-written (text-ink text-sm, the lead font-bold)",
       "ProductListHeader › exampleIntro": "example content: the intro is the route's (CategoryIntro, CollectionHero)",
+      "PaymentMethodsBookView › exampleContent": "example content: the wallet's state (WalletSkeleton, WalletUnavailable, WalletEmpty or the card list)",
+      "NetworkMark › artwork": "the network's badge artwork from the icon set (payment/*): fixed fills, the svg itself in code",
+      "CheckoutSection › exampleAction": "example content: the action is the caller's (Contact's Sign in link)",
+      "CheckoutSection › exampleBody": "example content: the step's body is the caller's",
       "SearchDrawer › exampleResults": "example content: the results region holds SearchResults or SearchBestSellers"
     },
     "inline": ["Button"],
     "fullWidth": ["Input", "NativeSelect", "Field", "RadioGroup"],
-    "runtimePositions": ["Tooltip › arrow", "Popover › arrow", "SearchDrawer › close"],
+    "runtimePositions": ["Tooltip › arrow", "SearchDrawer › close"],
+    "positionerAnchored": ["Popover › arrow"],
     "inheritedText": {
-      "Drawer": "type/body-compact"
+      "Drawer": "type/body-compact",
+      "Popover": "type/body-compact"
     },
     "interactionParts": {
       "QuantityStepper": ["decrement", "increment"],
@@ -76,6 +82,7 @@
       "Pagination": ["previous", "next"],
       "Nav": ["link", "trigger"],
       "RailPanel": ["shopAll", "link"],
+      "SideMenu": ["row"],
       "ProductFilters": ["clear"],
       "AlertDialog": ["action", "cancel"],
       "RouteDrawer": ["close"],
@@ -90,6 +97,8 @@
       }
     },
     "runtimeSizes": {
+      "CheckoutSummaryBody › thumbnail": "vertical",
+      "OrderItems › thumbnail": "vertical",
       "CartItem › thumbnail": "vertical",
       "CartDrawerSkeleton › thumbnail": "vertical",
       "CartDrawerSkeleton › titleLine": "horizontal",
@@ -102,7 +111,7 @@
       "SwatchValue › image": "vertical",
       "ProductGallery › slide": "vertical"
     },
-    "runtimeFills": ["CartItem › image", "ProductCard › image", "SwatchValue › image", "ProductGallery › image"]
+    "runtimeFills": ["CheckoutSummaryBody › image", "OrderRow › image", "OrderItems › image", "CartItem › image", "ProductCard › image", "SwatchValue › image", "ProductGallery › image"]
   },
   "designMd": {
     "output": "../../DESIGN.md",

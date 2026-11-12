@@ -3,10 +3,34 @@ import { cva } from 'class-variance-authority'
 
 export const addressLines = cva('flex flex-col items-stretch')
 
-export const addressLinesRecipient = cva('type-body-compact text-ink-muted')
+export const addressLinesRecipient = cva('text-ink-muted', {
+  variants: {
+    weight: {
+      regular: 'type-body-compact',
+      medium: 'type-label',
+    },
+  },
+  defaultVariants: { weight: 'regular' },
+})
 
-export const addressLinesPostal = cva('type-body-compact text-ink-muted')
+export const addressLinesPostal = cva('text-ink-muted', {
+  variants: {
+    weight: {
+      regular: 'type-body-compact',
+      medium: 'type-label',
+    },
+  },
+  defaultVariants: { weight: 'regular' },
+})
 
 export const addressLinesPhone = cva('flex flex-col items-stretch pt-2')
 
-export const addressLinesPhoneText = cva('type-body-compact text-ink-muted')
+export const addressLinesPhoneText = cva('text-ink-muted', {
+  variants: {
+    weight: {
+      regular: 'type-body-compact',
+      medium: 'type-label',
+    },
+  },
+  defaultVariants: { weight: 'regular' },
+})

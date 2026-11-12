@@ -1,0 +1,84 @@
+{
+  "name": "AuthHeading",
+  "page": "features/auth",
+  "properties": [
+    {
+      "default": "Track your orders, save your details, and check out faster.",
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "default": "Sign in",
+      "name": "title",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "AuthHeading",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:41"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 16,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "title",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "center",
+          "textStyle": "S:heading"
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "center",
+          "textStyle": "S:8"
+        }
+      ]
+    }
+  ]
+}

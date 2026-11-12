@@ -1,0 +1,95 @@
+{
+  "name": "TestOnlyNotice",
+  "page": "features/checkout",
+  "properties": [],
+  "variants": [
+    {
+      "name": "TestOnlyNotice",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "gap": "VariableID:35",
+        "paddingHorizontal": "VariableID:38",
+        "paddingVertical": "VariableID:34"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 8,
+        "padding": [
+          6,
+          12,
+          6,
+          12
+        ],
+        "strokesIncluded": true
+      },
+      "width": 466,
+      "children": [
+        {
+          "name": "icon",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:39",
+            "width": "VariableID:39"
+          },
+          "width": 14,
+          "height": 14,
+          "children": [
+            {
+              "name": "info",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1.167,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:19"
+              }
+            }
+          ]
+        },
+        {
+          "name": "message",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:11"
+        }
+      ]
+    }
+  ]
+}

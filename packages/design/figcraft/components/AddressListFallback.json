@@ -1,0 +1,85 @@
+{
+  "name": "AddressListFallback",
+  "page": "features/address",
+  "properties": [],
+  "variants": [
+    {
+      "name": "AddressListFallback",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:41"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 16,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "card",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#F5F5F5",
+              "type": "solid"
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:123",
+            "height": "VariableID:64"
+          },
+          "mainComponentName": "Skeleton",
+          "overrides": [
+            "name",
+            "size"
+          ],
+          "height": 160
+        },
+        {
+          "name": "card",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#F5F5F5",
+              "type": "solid"
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:123",
+            "height": "VariableID:64"
+          },
+          "mainComponentName": "Skeleton",
+          "overrides": [
+            "name",
+            "size"
+          ],
+          "height": 160
+        }
+      ]
+    }
+  ]
+}

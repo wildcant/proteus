@@ -1,0 +1,62 @@
+{
+  "name": "ShippingMethodNotice",
+  "page": "features/checkout",
+  "properties": [],
+  "variants": [
+    {
+      "name": "ShippingMethodNotice",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:41"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 0,
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "message",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "center",
+          "textStyle": "S:8"
+        }
+      ]
+    }
+  ]
+}

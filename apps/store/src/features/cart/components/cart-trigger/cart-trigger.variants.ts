@@ -3,7 +3,7 @@ import { cva } from 'class-variance-authority'
 
 export const cartTrigger = cva('relative flex items-start')
 
-export const cartTriggerGlyph = cva('h-4 w-4')
+export const cartTriggerGlyph = cva('h-5 w-5')
 
 export const cartTriggerBag = cva('text-ink')
 

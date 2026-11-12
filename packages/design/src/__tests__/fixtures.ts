@@ -104,6 +104,7 @@ export const componentsConfig: ComponentsConfig = {
   interactionPrefixes: {},
   interactionParts: {},
   runtimePositions: [],
+  positionerAnchored: [],
   fullWidth: [],
   inheritedText: {},
 }

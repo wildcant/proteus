@@ -19,9 +19,17 @@ export const productDetailInfo = cva('flex flex-col items-stretch gap-6 lg:w-102
 
 export const productDetailHeading = cva('flex flex-col items-start gap-3')
 
+export const productDetailTitleGroup = cva('flex flex-col items-start gap-2 self-stretch')
+
+export const productDetailSubtitle = cva('type-caption text-ink-subtle')
+
 export const productDetailTitle = cva('type-title self-stretch text-ink')
 
+export const productDetailPricing = cva('flex flex-col items-start gap-2')
+
 export const productDetailPrice = cva('type-body-bold text-ink')
+
+export const productDetailStock = cva('flex')
 
 export const productDetailDescription = cva('type-body text-ink')
 

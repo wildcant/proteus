@@ -7,6 +7,6 @@ export const productGallerySlides = cva(
   'flex items-start overflow-x-auto lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-1 lg:overflow-visible',
 )
 
-export const productGallerySlide = cva('flex flex-1 flex-col items-stretch bg-surface-subtle lg:w-auto')
+export const productGallerySlide = cva('flex flex-1 flex-col items-stretch bg-surface-subtle lg:col-span-2 lg:w-auto')
 
 export const productGalleryImage = cva('flex-1')

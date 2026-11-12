@@ -251,12 +251,13 @@
               "type": "FRAME",
               "clip": false,
               "sizing": {
-                "horizontal": "fill",
+                "horizontal": "fixed",
                 "vertical": "hug"
               },
               "boundVariables": {
                 "maxWidth": "VariableID:70",
-                "paddingTop": "VariableID:46"
+                "paddingTop": "VariableID:46",
+                "width": "VariableID:70"
               },
               "maxWidth": 280,
               "layout": {
@@ -272,6 +273,7 @@
                 ],
                 "strokesIncluded": true
               },
+              "width": 280,
               "children": [
                 {
                   "name": "button",

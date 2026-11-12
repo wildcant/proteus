@@ -136,6 +136,12 @@ What the exporters do with the file, so a design choice doesn't break an export.
 - Example children of a wrapper (`Field › exampleInput`, `RadioGroup › exampleItem`) go on `components.notStyledLayers` in `design.json`. Make every child `fill` across a stack to export `items-stretch`. Give every Button variant a stroke, transparent (`#RRGGBB00`) where none shows, so all variants share the bordered box.
 - Bind every padding, gap, fixed size and max width to a `space/*` variable, every radius to `radius/*`, every shadow to a `shadow/*` style. A gap that stops an export is fixed in the design or the exporter, never in the generated file.
 - A shadow's colour bound to a variable takes the variable's alpha, not the paint's: a translucent shadow needs a translucent role (`color/shadow`).
+- An inner shadow with offset 0, blur 0 and a spread is an inset ring (`ring-1 ring-ink ring-inset`).
+- Markup a caller puts in a nested instance's slot (the list inside a `Panel`'s body: reparent a frame into the instance's slot frame) is the caller's own layers and gets its cvas; a glyph put in a slot does not. Instances inserted there may be resized (their box).
+- Grid column tracks: a hugging column is `auto`, a filling one `1fr` (`grid-cols-[auto_1fr]`); a fixed track stops the build. A grid child spanning columns (`gridColumnSpan`) is `col-span-n`, per viewport.
+- A layer Base UI places against its positioner, outside the set's root (the popover arrow), goes on `components.positionerAnchored`: `absolute`, and its parent stays unpositioned.
+- A nested instance's own min/max width is not exported (only its box size): wrap it in a frame that carries the `max-w-*`.
+- Swapping a nested instance's variant (a `Panel` to `viewport=lg`) drops what was put in its slots: keep the nested instance's variant and let the component's own breakpoints do the rest.
 
 ## FigCraft's built-in prompts
 

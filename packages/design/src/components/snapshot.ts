@@ -80,6 +80,8 @@ export type Layer = {
   effectStyle?: string
   maxWidth?: number
   maxHeight?: number
+  /** A grid child's cell, kept when it spans several columns. */
+  gridCell?: { columnSpan?: number }
   /** Scrolling (prototype overflow): the axis the frame's content scrolls along. */
   overflow?: 'horizontal' | 'vertical' | 'both'
   layout?: Layout
@@ -285,6 +287,9 @@ function trim(
   const styles = node.styles as { text?: string; effect?: string } | undefined
   if (styles?.text) out.textStyle = styles.text
   if (styles?.effect) out.effectStyle = styles.effect
+  const cell = node.gridCell as { columnSpan?: number } | undefined
+  const inGrid = (parent?.layout as { mode?: string } | undefined)?.mode === 'grid'
+  if (inGrid && (cell?.columnSpan ?? 1) > 1) out.gridCell = { columnSpan: cell?.columnSpan }
   const overflow = overflows.get(String(node.id))
   if (overflow) out.overflow = overflow
   const layout = node.layout as (Layout & { mode: string }) | undefined

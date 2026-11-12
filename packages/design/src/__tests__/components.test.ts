@@ -457,6 +457,137 @@ describe('components', () => {
     )
   })
 
+  it('leaves the parent of a layer Base UI places against its positioner unpositioned', () => {
+    const pop = single('Pop', 'components/ui', {
+      variants: [
+        {
+          ...frame('Pop', 'vertical'),
+          type: 'COMPONENT',
+          children: [
+            {
+              ...frame('arrow', 'horizontal'),
+              absolute: { horizontal: 'left', vertical: 'top', left: 8, top: -15, right: 8, bottom: 0 },
+            },
+          ],
+        },
+      ],
+    })
+    const { files } = buildComponents([pop], {
+      ...context,
+      config: { ...componentsConfig, positionerAnchored: ['Pop › arrow'] },
+    })
+    const source = files.get('/shop/src/components/ui/pop/pop.variants.ts')
+    expect(source).toContain("export const pop = cva('flex flex-col')")
+    expect(source).toContain("export const popArrow = cva('flex absolute')")
+  })
+
+  it("styles the caller's own markup put in a nested instance's slot, but not a glyph put there", () => {
+    const set = single('Details', 'features/account', {
+      variants: [
+        {
+          ...frame('Details', 'vertical'),
+          type: 'COMPONENT',
+          children: [
+            {
+              name: 'panel',
+              type: 'INSTANCE',
+              mainSet: 'Panel',
+              children: [
+                {
+                  ...frame('body', 'vertical'),
+                  slot: true,
+                  overrides: ['slot'],
+                  children: [
+                    { ...frame('list', 'vertical'), children: [text('term', 'body', 'c:ink')] },
+                    // An instance the caller resized in its own markup is its box, not a change to the Panel.
+                    { name: 'mark', type: 'INSTANCE', mainSet: 'Skeleton', overrides: ['size'] },
+                  ],
+                },
+                {
+                  ...frame('icon', 'horizontal'),
+                  slot: true,
+                  overrides: ['slot'],
+                  children: [{ name: 'glyph', type: 'VECTOR', boundVariables: { stroke: 'c:ink' } }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    const source = buildComponents([set], context).files.get(
+      '/shop/src/features/account/components/details/details.variants.ts',
+    )
+    expect(source).toContain("export const detailsList = cva('flex flex-col')")
+    expect(source).toContain('export const detailsTerm = cva(')
+    expect(source).not.toContain('detailsGlyph')
+  })
+
+  it('maps grid column tracks that hug or share the rest to an arbitrary template', () => {
+    const terms = single('Terms', 'components/ui', {
+      variants: [
+        {
+          ...frame('Terms', 'vertical'),
+          type: 'COMPONENT',
+          layout: {
+            mode: 'grid',
+            gap: 24,
+            crossGap: 8,
+            padding: [0, 0, 0, 0],
+            gridColumns: 2,
+            columnTracks: [
+              { sizing: 'hug', value: 0 },
+              { sizing: 'fill', value: 1 },
+            ],
+            rowTracks: [],
+          },
+          boundVariables: { gap: 's:6', crossGap: 's:2' },
+        },
+      ],
+    })
+    const source = buildComponents([terms], context).files.get('/shop/src/components/ui/terms/terms.variants.ts')
+    expect(source).toContain("export const terms = cva('grid grid-cols-[auto_1fr] gap-x-6 gap-y-2')")
+  })
+
+  it('spans a grid child across the columns its cell covers', () => {
+    const page = (viewport: 'mobile' | 'lg'): Layer => ({
+      ...frame(`viewport=${viewport}`, 'vertical'),
+      type: 'COMPONENT',
+      layout: { mode: 'grid', gap: 0, crossGap: 0, padding: [0, 0, 0, 0], gridColumns: viewport === 'lg' ? 3 : 1 },
+      children: [
+        { ...frame('main', 'vertical'), gridCell: { columnSpan: viewport === 'lg' ? 2 : 1 } },
+        { ...frame('aside', 'vertical'), gridCell: { columnSpan: 1 } },
+      ],
+    })
+    const set: ComponentSet = {
+      name: 'Board',
+      page: 'components/ui',
+      properties: [variantProperty('viewport', ['mobile', 'lg'])],
+      variants: [page('mobile'), page('lg')],
+    }
+    const source = buildComponents([set], context).files.get('/shop/src/components/ui/board/board.variants.ts')
+    expect(source).toMatch(/export const boardMain = cva\('[^']*\blg:col-span-2\b/)
+    expect(source).toContain("export const boardAside = cva('flex flex-col')")
+  })
+
+  it('maps an inner ring drawn as a spread inner shadow to ring-inset', () => {
+    const ring = { type: 'innerShadow', color: { r: 0, g: 0, b: 0, a: 1 }, offset: [0, 0], radius: 0, spread: 1 }
+    const row = (state: 'default' | 'selected'): Layer => ({
+      ...frame(`state=${state}`, 'horizontal'),
+      type: 'COMPONENT',
+      effects: [{ ...ring, visible: state === 'selected' }],
+      boundVariables: { 'effects/0/color': 'c:ink' },
+    })
+    const set: ComponentSet = {
+      name: 'Row',
+      page: 'components/ui',
+      properties: [variantProperty('state', ['default', 'selected'])],
+      variants: [row('default'), row('selected')],
+    }
+    const source = buildComponents([set], context).files.get('/shop/src/components/ui/row/row.variants.ts')
+    expect(source).toContain("selected: 'ring-1 ring-ink ring-inset'")
+  })
+
   it('maps a position property to first:/last: and a part that owns its states to its own variants', () => {
     // Every item has a top rule; the first one's is transparent, the last one also closes with a bottom rule.
     const item = (position: 'default' | 'first' | 'last'): Layer => ({

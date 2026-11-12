@@ -204,6 +204,9 @@
               "boundVariables": {
                 "fill": "VariableID:23"
               },
+              "gridCell": {
+                "columnSpan": 2
+              },
               "layout": {
                 "mode": "vertical",
                 "mainAlign": "min",

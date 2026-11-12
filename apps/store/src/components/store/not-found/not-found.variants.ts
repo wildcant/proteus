@@ -17,6 +17,6 @@ export const notFoundDescription = cva('flex max-w-100 flex-col items-center pt-
 
 export const notFoundDescriptionText = cva('type-body-compact text-center text-ink-muted')
 
-export const notFoundAction = cva('flex max-w-70 flex-col items-stretch self-stretch pt-8 sm:w-auto sm:items-start')
+export const notFoundAction = cva('flex w-70 max-w-70 flex-col items-stretch pt-8 sm:w-auto sm:items-start')
 
 export const notFoundButton = cva('flex')

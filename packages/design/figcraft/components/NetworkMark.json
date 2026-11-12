@@ -1,0 +1,67 @@
+{
+  "name": "NetworkMark",
+  "page": "entities/payment-method",
+  "properties": [],
+  "variants": [
+    {
+      "name": "NetworkMark",
+      "type": "COMPONENT",
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "height": "VariableID:44",
+        "width": "VariableID:48"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 40,
+      "height": 24,
+      "children": [
+        {
+          "name": "artwork",
+          "type": "RECTANGLE",
+          "fills": [
+            {
+              "blend": "normal",
+              "crop": null,
+              "filters": {
+                "contrast": 0,
+                "exposure": 0,
+                "highlights": 0,
+                "saturation": 0,
+                "shadows": 0,
+                "temperature": 0,
+                "tint": 0
+              },
+              "image": "188879a5584c0b84950f8b19bcfadc17750435ecdbbd06e8be9f3c90faab06cb",
+              "opacity": 1,
+              "rotation": 0,
+              "scale": 1,
+              "scale_mode": "fill",
+              "type": "image",
+              "visible": true
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fill"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -13,13 +13,13 @@ export const sideMenuSearchBar = cva('relative flex')
 
 export const sideMenuNav = cva('flex flex-1 flex-col items-stretch overflow-y-auto px-4 pt-2 sm:px-6')
 
-export const sideMenuRow = cva('flex items-center justify-between gap-3 py-4')
+export const sideMenuRow = cva('group/side-menu-row flex items-center justify-between gap-3 py-4')
 
-export const sideMenuLabel = cva('type-body-lg text-ink')
+export const sideMenuLabel = cva('type-body-lg text-ink group-hover/side-menu-row:text-ink-muted')
 
 export const sideMenuChevron = cva('h-5 w-5')
 
-export const sideMenuGlyph = cva('text-ink')
+export const sideMenuGlyph = cva('text-ink group-hover/side-menu-row:text-ink-muted')
 
 export const sideMenuGroup = cva('flex')
 

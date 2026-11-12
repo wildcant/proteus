@@ -7,7 +7,7 @@ export const paymentRow = cva('flex items-center gap-3 border px-4 py-4', {
       default: 'border-line bg-surface hover:bg-surface-subtle',
       muted: 'border-line bg-surface-subtle',
       open: 'border-line bg-surface-subtle',
-      selected: 'border-ink bg-surface-subtle',
+      selected: 'border-ink bg-surface-subtle ring-1 ring-ink ring-inset',
     },
   },
   defaultVariants: { state: 'default' },

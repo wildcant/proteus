@@ -3,6 +3,15 @@
   "page": "entities/address",
   "properties": [
     {
+      "default": "regular",
+      "name": "weight",
+      "options": [
+        "regular",
+        "medium"
+      ],
+      "type": "variant"
+    },
+    {
       "default": true,
       "name": "hasPhone",
       "type": "boolean"
@@ -25,7 +34,7 @@
   ],
   "variants": [
     {
-      "name": "AddressLines",
+      "name": "weight=regular",
       "type": "COMPONENT",
       "clip": false,
       "sizing": {
@@ -128,6 +137,115 @@
               },
               "textAlign": "left",
               "textStyle": "S:8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "weight=medium",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 310,
+      "children": [
+        {
+          "name": "recipient",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:9"
+        },
+        {
+          "name": "postal",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:9"
+        },
+        {
+          "name": "phone",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "paddingTop": "VariableID:35"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "phoneText",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
             }
           ]
         }

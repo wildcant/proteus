@@ -13,4 +13,4 @@ export const panelDescription = cva('flex flex-col items-stretch pt-2')
 
 export const panelDescriptionText = cva('type-body-compact text-ink-muted')
 
-export const panelBody = cva('flex flex-col items-stretch')
+export const panelBody = cva('flex flex-1 flex-col items-stretch')

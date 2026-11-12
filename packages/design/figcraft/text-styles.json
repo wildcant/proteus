@@ -592,6 +592,33 @@
   {
     "bound": {
       "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92"
+    },
+    "description": "Order totals in the account's order list (font-semibold in the 14 px body at 1.4).",
+    "id": "S:31",
+    "name": "type/body-semibold",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "SemiBold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "percent",
+        "value": 140
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
       "fontSize": "VariableID:90",
       "lineHeight": "VariableID:91"
     },
@@ -608,6 +635,34 @@
       "letter_spacing": {
         "unit": "percent",
         "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 16
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:90",
+      "lineHeight": "VariableID:91"
+    },
+    "description": "Small uppercase section labels in order details (text-xs uppercase tracking-widest).",
+    "id": "S:32",
+    "name": "type/caption-caps-wide",
+    "style": {
+      "case": "upper",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 12,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 10
       },
       "line_height": {
         "unit": "pixels",
@@ -776,6 +831,60 @@
       "line_height": {
         "unit": "pixels",
         "value": 24
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
+    "description": "A customer's initial in the checkout account chip (font-medium text-sm uppercase).",
+    "id": "S:33",
+    "name": "type/label-upper",
+    "style": {
+      "case": "upper",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Medium",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17"
+    },
+    "description": "The neutral network chip's text (text-[10px] leading-none): the +N overflow and unillustrated networks.",
+    "id": "S:34",
+    "name": "type/chip",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 10,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "percent",
+        "value": 100
       },
       "link": null
     },

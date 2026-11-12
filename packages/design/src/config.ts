@@ -94,6 +94,11 @@ type ComponentsSection = {
   interactionParts?: Record<string, string[]>
   /** Layers placed at run time (a tooltip's arrow, which Base UI moves along the edge): `absolute`, no inset. */
   runtimePositions?: string[]
+  /**
+   * Layers Base UI places against its positioner, outside the set's root (a popover's arrow, clear of the popup's
+   * border): `absolute`, no inset, and the parent stays unpositioned so the positioner is their containing block.
+   */
+  positionerAnchored?: string[]
   /** Sets whose root fills its parent's width (`w-full`), as the form controls do. */
   fullWidth?: string[]
   /**
@@ -205,6 +210,7 @@ export function loadConfig(path: string): ResolvedConfig {
       interactionPrefixes: components.interactionPrefixes ?? {},
       interactionParts: components.interactionParts ?? {},
       runtimePositions: components.runtimePositions ?? [],
+      positionerAnchored: components.positionerAnchored ?? [],
       fullWidth: components.fullWidth ?? [],
       inheritedText: components.inheritedText ?? {},
     },

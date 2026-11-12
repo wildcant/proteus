@@ -181,7 +181,8 @@
           "VariableID:132",
           "VariableID:133",
           "VariableID:136",
-          "VariableID:139"
+          "VariableID:139",
+          "VariableID:140"
         ]
       },
       "VariableCollectionId:5": {
@@ -1266,6 +1267,23 @@
           }
         },
         "variableCollectionId": "VariableCollectionId:1"
+      },
+      "VariableID:140": {
+        "codeSyntax": {},
+        "description": "",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:140",
+        "key": "VariableID:140",
+        "name": "space/88",
+        "remote": false,
+        "resolvedType": "FLOAT",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:4/mode1": 352.0
+        },
+        "variableCollectionId": "VariableCollectionId:4"
       },
       "VariableID:15": {
         "codeSyntax": {},

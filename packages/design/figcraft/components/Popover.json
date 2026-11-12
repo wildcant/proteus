@@ -31,7 +31,7 @@
       "strokeAlign": "inside",
       "clip": false,
       "sizing": {
-        "horizontal": "hug",
+        "horizontal": "fixed",
         "vertical": "hug"
       },
       "boundVariables": {
@@ -90,13 +90,14 @@
         ],
         "strokesIncluded": true
       },
+      "width": 224,
       "children": [
         {
           "name": "content",
           "type": "FRAME",
           "clip": false,
           "sizing": {
-            "horizontal": "hug",
+            "horizontal": "fill",
             "vertical": "hug"
           },
           "slot": "content",
@@ -119,7 +120,7 @@
               "type": "FRAME",
               "clip": true,
               "sizing": {
-                "horizontal": "fixed",
+                "horizontal": "fill",
                 "vertical": "hug"
               },
               "layout": {
@@ -135,7 +136,6 @@
                 ],
                 "strokesIncluded": true
               },
-              "width": 222,
               "children": [
                 {
                   "name": "exampleLink",

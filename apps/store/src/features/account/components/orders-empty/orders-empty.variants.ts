@@ -7,7 +7,7 @@ export const ordersEmptyIcon = cva('h-8 w-8')
 
 export const ordersEmptyPackage = cva('text-ink-subtle')
 
-export const ordersEmptyMessage = cva('flex max-w-70 flex-col items-stretch self-stretch pt-6')
+export const ordersEmptyMessage = cva('flex w-70 max-w-70 flex-col items-stretch pt-6')
 
 export const ordersEmptyMessageText = cva('type-body-compact text-center text-ink-muted')
 

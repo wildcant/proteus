@@ -650,7 +650,7 @@
           "showBehind": false,
           "spread": 1,
           "type": "innerShadow",
-          "visible": false
+          "visible": true
         }
       ],
       "layout": {

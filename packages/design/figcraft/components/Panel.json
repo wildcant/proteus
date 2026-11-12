@@ -63,7 +63,7 @@
       "clip": false,
       "sizing": {
         "horizontal": "fixed",
-        "vertical": "hug"
+        "vertical": "fixed"
       },
       "boundVariables": {
         "fill": "VariableID:23",
@@ -84,6 +84,7 @@
         "strokesIncluded": true
       },
       "width": 358,
+      "height": 116,
       "children": [
         {
           "name": "header",
@@ -216,7 +217,7 @@
           "clip": false,
           "sizing": {
             "horizontal": "fill",
-            "vertical": "hug"
+            "vertical": "fill"
           },
           "slot": "body",
           "layout": {
@@ -247,7 +248,7 @@
       "clip": false,
       "sizing": {
         "horizontal": "fixed",
-        "vertical": "hug"
+        "vertical": "fixed"
       },
       "boundVariables": {
         "fill": "VariableID:23",
@@ -268,6 +269,7 @@
         "strokesIncluded": true
       },
       "width": 435,
+      "height": 148,
       "children": [
         {
           "name": "header",
@@ -400,7 +402,7 @@
           "clip": false,
           "sizing": {
             "horizontal": "fill",
-            "vertical": "hug"
+            "vertical": "fill"
           },
           "slot": "body",
           "layout": {
