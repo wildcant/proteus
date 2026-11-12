@@ -12,8 +12,17 @@ import {
 } from '#/features/auth/components/login-form/login-form.variants'
 import type { LoginFormParams } from '#/features/auth/hooks/use-login-form'
 import { useLoginForm } from '#/features/auth/hooks/use-login-form'
+import type { LinkTarget } from '#/lib/link-target'
 
-export function LoginForm({ className, ...props }: LoginFormParams & { className?: string }) {
+export function LoginForm({
+  forgotPasswordLink,
+  className,
+  ...props
+}: LoginFormParams & {
+  /** FORGOT_PASSWORD. */
+  forgotPasswordLink: LinkTarget
+  className?: string
+}) {
   const { form } = useLoginForm(props)
   const { t } = useLingui()
 
@@ -43,7 +52,7 @@ export function LoginForm({ className, ...props }: LoginFormParams & { className
             )}
           </form.AppField>
         </div>
-        <ButtonLink variant="link" size="lg" to="/forgot-password" className={loginFormForgotPassword()}>
+        <ButtonLink {...forgotPasswordLink} variant="link" size="lg" className={loginFormForgotPassword()}>
           <Trans>Forgot password?</Trans>
         </ButtonLink>
         <form.Subscribe selector={(state) => state.isSubmitting}>

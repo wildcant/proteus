@@ -14,6 +14,7 @@ import {
 } from '#/components/store/not-found/not-found.variants'
 import { Wordmark } from '#/components/store/wordmark/wordmark'
 import { ButtonLink } from '#/components/ui/button/button'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * What every unmatched URL answers with, wired to the router as `defaultNotFoundComponent`.
@@ -25,10 +26,10 @@ import { ButtonLink } from '#/components/ui/button/button'
  * The wordmark is the only chrome, the same bargain `_auth` makes — and it is a link, so leaving
  * stays one click away even before the shopper reaches the button.
  */
-export function NotFound() {
+export function NotFound({ homeLink }: { homeLink: LinkTarget }) {
   return (
     <div className={cn(notFound(), 'min-h-screen')}>
-      <Wordmark className={notFoundWordmark()} />
+      <Wordmark link={homeLink} className={notFoundWordmark()} />
 
       {/* Grows into the space below the wordmark and centres in it. As a flex item it never
           shrinks below its content, so the block never clips off the top of a short viewport. */}
@@ -49,7 +50,7 @@ export function NotFound() {
         {/* Centred as the store runs it: the set's stretched action, capped at 280px, would sit at
             the start. An instance can't override padding, so the wider desktop button is set here. */}
         <div className={notFoundAction()}>
-          <ButtonLink to="/" className={cn(notFoundButton(), 'sm:px-10')}>
+          <ButtonLink {...homeLink} className={cn(notFoundButton(), 'sm:px-10')}>
             <Trans>Back to home</Trans>
           </ButtonLink>
         </div>

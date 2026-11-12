@@ -1,6 +1,7 @@
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 import { wordmark, wordmarkLabel } from '#/components/store/wordmark/wordmark.variants'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * The Proteus home link. Every layout that renders chrome renders this, so the wordmark
@@ -11,12 +12,14 @@ import { wordmark, wordmarkLabel } from '#/components/store/wordmark/wordmark.va
  * link's own children, so the label layer's type sits on the link itself.
  */
 type WordmarkProps = {
+  /** The layout's HOME. */
+  link: LinkTarget
   className?: string
 }
 
-export function Wordmark({ className }: WordmarkProps) {
+export function Wordmark({ link, className }: WordmarkProps) {
   return (
-    <Link to="/" className={cn(wordmark(), wordmarkLabel(), className)}>
+    <Link {...link} className={cn(wordmark(), wordmarkLabel(), className)}>
       Proteus
     </Link>
   )

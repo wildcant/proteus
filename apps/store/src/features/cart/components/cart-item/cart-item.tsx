@@ -17,6 +17,7 @@ import {
 } from '#/features/cart/components/cart-item/cart-item.variants'
 import { useLineItemQuantity } from '#/features/cart/hooks/use-line-item-quantity'
 import { useFormatters } from '#/hooks/use-formatters'
+import type { LinkTarget } from '#/lib/link-target'
 
 /** The ceiling the PDP already enforces, restated here so the panel cannot exceed it. */
 const MAX_QUANTITY = 10
@@ -28,10 +29,13 @@ const MAX_QUANTITY = 10
 export function CartItem({
   item,
   currencyCode,
+  productLink,
   className,
 }: {
   item: StoreCartLineItem
   currencyCode: string
+  /** PRODUCT: the line's product page. */
+  productLink: (productId: string) => LinkTarget
   className?: string
 }) {
   // Not disabled while saving — the hook holds the value and debounces, so taps land on the click.
@@ -55,9 +59,9 @@ export function CartItem({
 
       <div className={cn(cartItemInfo(), 'min-w-0')}>
         <div className={cartItemDetails()}>
-          {/* productId, not a handle: the PDP route is `/products/$productId`. */}
+          {/* productId, not a handle: the product page is addressed by id. */}
           {item.productId ? (
-            <Link to="/products/$productId" params={{ productId: item.productId }} className={cartItemTitle()}>
+            <Link {...productLink(item.productId)} className={cartItemTitle()}>
               {item.title}
             </Link>
           ) : (

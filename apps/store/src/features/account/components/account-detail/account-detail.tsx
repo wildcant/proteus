@@ -24,10 +24,11 @@ import {
 import { DetailsPanel } from '#/features/account/components/details-panel/details-panel'
 import { OrdersPanel } from '#/features/account/components/orders-panel/orders-panel'
 import { PasswordPanel } from '#/features/account/components/password-panel/password-panel'
+import type { AccountLinks } from '#/features/account/types/links'
 
-export function AccountDetail() {
+export function AccountDetail({ links }: { links: AccountLinks }) {
   const { customer } = useSuspenseMe()
-  const logout = useLogout()
+  const logout = useLogout(links)
   const { t } = useLingui()
   const { firstName } = customer
 
@@ -44,18 +45,18 @@ export function AccountDetail() {
           stretch, so above lg the Orders block matches the height of the stack beside it without a
           hand-picked min-height that goes wrong the moment a panel is added. */}
       <div className={accountDetailPanels()}>
-        <OrdersPanel className={accountDetailOrders()} />
+        <OrdersPanel links={links} className={accountDetailOrders()} />
         <div className={accountDetailSide()}>
           <Panel
             title={t`Address Book`}
             chevron
-            render={<Link to="/account/addresses" />}
+            render={<Link {...links.addressBook} />}
             className={accountDetailAddressBook()}
           />
           <Panel
             title={t`Payment Methods`}
             chevron
-            render={<Link to="/account/payment-methods" />}
+            render={<Link {...links.paymentMethods} />}
             className={accountDetailPaymentMethods()}
           />
           <DetailsPanel

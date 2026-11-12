@@ -26,7 +26,10 @@ export const screens = {
   Root: { route: '/_main', to: '.', search: { modal: undefined } },
   'Root/menu': { route: '/_main', to: '.', search: { modal: 'menu' } },
   'Root/search': { route: '/_main', to: '.', search: { modal: 'search' } },
+  'Root/searchResults': { route: '/_main', to: '.', search: { modal: 'search' } },
+  'Root/searchNoMatch': { route: '/_main', to: '.', search: { modal: 'search' } },
   'Root/bag': { route: '/_main', to: '.', search: { modal: 'cart' } },
+  'Root/bagEmpty': { route: '/_main', to: '.', search: { modal: 'cart' } },
   // The chrome of the auth and checkout layouts: their way back to the store.
   AuthLayout: { route: '/_auth' },
   CheckoutLayout: { route: '/_checkout' },
@@ -37,6 +40,11 @@ export const screens = {
   'ProductListPage/category': { route: '/_main/categories/$handle', to: '/categories/$handle' },
   'ProductListPage/collection': { route: '/_main/collections/$handle', to: '/collections/$handle' },
   ProductDetail: { route: '/_main/products/$productId', to: '/products/$productId' },
+  'ProductDetail/bagOpen': {
+    route: '/_main/products/$productId',
+    to: '/products/$productId',
+    search: { modal: 'cart' },
+  },
 
   CheckoutContent: { route: '/_checkout/checkout/', to: '/checkout' },
   'CheckoutContent/addressCreate': {

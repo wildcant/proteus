@@ -100,7 +100,7 @@ function Harness() {
         selectedVariant={selectedVariant}
         onVariantChange={setVariantId}
       />
-      <AddToCart product={product} selectedVariant={selectedVariant} />
+      <AddToCart product={product} selectedVariant={selectedVariant} bagLink={{ to: '.', search: { modal: 'cart' } }} />
     </>
   )
 }

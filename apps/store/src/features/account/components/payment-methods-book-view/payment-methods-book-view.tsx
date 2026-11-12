@@ -15,6 +15,7 @@ import {
 import { WalletEmpty } from '#/features/account/components/wallet-empty/wallet-empty'
 import { WalletSkeleton } from '#/features/account/components/wallet-skeleton/wallet-skeleton'
 import { WalletUnavailable } from '#/features/account/components/wallet-unavailable/wallet-unavailable'
+import type { PaymentMethodsLinks } from '#/features/account/types/links'
 import { savedMethodName } from '#/lib/card-networks'
 
 /**
@@ -34,6 +35,7 @@ export type PaymentMethodsBookViewProps = {
   onRetry: () => void
   onSetDefault: (methodId: string) => void
   onRemove: (methodId: string) => Promise<void>
+  links: PaymentMethodsLinks
 }
 
 export function PaymentMethodsBookView({
@@ -43,6 +45,7 @@ export function PaymentMethodsBookView({
   onRetry,
   onSetDefault,
   onRemove,
+  links,
 }: PaymentMethodsBookViewProps) {
   const { t } = useLingui()
   const defaultMethod = methods.find((method) => method.isDefault)
@@ -50,7 +53,7 @@ export function PaymentMethodsBookView({
   return (
     <main className={cn(paymentMethodsBookView(), 'mx-auto w-full')}>
       <div className={paymentMethodsBookViewHeading()}>
-        <BackLink to="/account" className={paymentMethodsBookViewBack()}>
+        <BackLink link={links.account} className={paymentMethodsBookViewBack()}>
           <Trans>Back to account</Trans>
         </BackLink>
         <h1 className={paymentMethodsBookViewTitle()}>
@@ -66,7 +69,7 @@ export function PaymentMethodsBookView({
         ) : failed ? (
           <WalletUnavailable onRetry={onRetry} />
         ) : methods.length === 0 ? (
-          <WalletEmpty />
+          <WalletEmpty startShoppingLink={links.startShopping} />
         ) : (
           <>
             <h2 className="type-heading text-ink">

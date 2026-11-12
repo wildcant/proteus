@@ -20,10 +20,13 @@ import {
   addressCardTitle,
 } from '#/features/address/components/address-card/address-card.variants'
 import { DeleteAddressButton } from '#/features/address/components/delete-address-button/delete-address-button'
+import type { LinkTarget } from '#/lib/link-target'
 
 type AddressCardProps = {
   address: StoreCustomerAddress
   isDefault: boolean
+  /** EDIT_ADDRESS. */
+  editLink: LinkTarget
   className?: string
 }
 
@@ -33,7 +36,7 @@ type AddressCardProps = {
  * The `RadioGroupItem` takes its group from `AddressList` rather than owning one — exactly one
  * address can be the main one, which is a property of the list, not of a row.
  */
-export function AddressCard({ address, isDefault, className }: AddressCardProps) {
+export function AddressCard({ address, isDefault, editLink, className }: AddressCardProps) {
   const { t } = useLingui()
   const recipient = [address.firstName, address.lastName].filter(Boolean).join(' ')
 
@@ -49,12 +52,7 @@ export function AddressCard({ address, isDefault, className }: AddressCardProps)
       {/* A wrapping row beneath the address on a phone, where there is no room beside it; a
           right-aligned column from lg, which is where the reference puts it. */}
       <div className={cn(addressCardActions(), 'shrink-0')}>
-        <ButtonLink
-          variant="link"
-          to="/account/addresses/$addressId/edit"
-          params={{ addressId: address.id }}
-          className={addressCardEdit()}
-        >
+        <ButtonLink {...editLink} variant="link" className={addressCardEdit()}>
           <Icon name="pencil" />
           <Trans>Edit</Trans>
         </ButtonLink>

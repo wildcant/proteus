@@ -19,15 +19,17 @@ import { ShippingMethodSection } from '#/features/checkout/components/shipping/s
 import { useCheckoutData } from '#/features/checkout/hooks/use-checkout-data'
 import { useCheckoutForm } from '#/features/checkout/hooks/use-checkout-form'
 import { PaymentControllerProvider } from '#/features/checkout/hooks/use-payment-controller'
+import type { CheckoutLinks } from '#/features/checkout/types/links'
 
 type CheckoutFormProps = {
   cart: StoreCartDetailResponseCart
+  links: CheckoutLinks
   className?: string
 }
 
-export function CheckoutForm({ cart, className }: CheckoutFormProps) {
+export function CheckoutForm({ cart, links, className }: CheckoutFormProps) {
   const data = useCheckoutData({ cart })
-  const { form, placeOrder, signOut, controller, paymentError } = useCheckoutForm({ data })
+  const { form, placeOrder, signOut, controller, paymentError } = useCheckoutForm({ data, links })
 
   return (
     // The provider spans the button as well as the payment step: the adapter registers its
@@ -35,10 +37,17 @@ export function CheckoutForm({ cart, className }: CheckoutFormProps) {
     <PaymentControllerProvider value={controller}>
       <Form onSubmit={placeOrder} className={cn(checkoutForm(), className)}>
         <form.AppForm>
-          <ContactSection form={form} onSignOut={signOut} className={checkoutFormContact()} {...data} />
+          <ContactSection
+            form={form}
+            onSignOut={signOut}
+            signInLink={links.signIn}
+            className={checkoutFormContact()}
+            {...data}
+          />
           {/* The section bodies' content is the caller's (`checkoutFormContent`, one per section). */}
           <DeliverySection
             form={form}
+            links={links}
             className={checkoutFormDelivery()}
             contentClassName={checkoutFormContent()}
             {...data}

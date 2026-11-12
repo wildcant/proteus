@@ -1,6 +1,7 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useCallback } from 'react'
 import { z } from 'zod'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * Modals are URL state, not component state.
@@ -34,21 +35,18 @@ export const modalSearchSchema = z.object({
   modal: z.enum(MODAL_NAMES).optional().catch(undefined),
 })
 
-export function useModal(name: ModalName) {
+/** The flow map's ways in and out of a modal: its OPEN event and the CLOSE back to the page under it. */
+export type ModalLinks = { open: LinkTarget; close: LinkTarget }
+
+export function useModal(name: ModalName, links: ModalLinks) {
   const navigate = useNavigate()
   const { modal } = useSearch({ strict: false })
 
   const setOpen = useCallback(
-    (open: boolean) => {
-      navigate({
-        to: '.',
-        search: (prev) => ({ ...prev, modal: open ? name : undefined }),
-        // Opening pushes, so hardware back closes the modal. Closing replaces, so the entry
-        // opening pushed is consumed rather than left for a forward navigation to re-enter.
-        replace: !open,
-      })
-    },
-    [navigate, name],
+    // Opening pushes, so hardware back closes the modal. Closing replaces, so the entry opening pushed is consumed
+    // rather than left for a forward navigation to re-enter.
+    (open: boolean) => navigate(open ? links.open : { ...links.close, replace: true }),
+    [navigate, links],
   )
 
   return { isOpen: modal === name, setOpen }

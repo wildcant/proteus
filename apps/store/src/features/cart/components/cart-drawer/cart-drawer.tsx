@@ -32,6 +32,7 @@ import {
 import { CartDrawerSkeleton } from '#/features/cart/components/cart-drawer-skeleton/cart-drawer-skeleton'
 import { CartEmpty } from '#/features/cart/components/cart-empty/cart-empty'
 import { CartItem } from '#/features/cart/components/cart-item/cart-item'
+import type { BagLinks } from '#/features/cart/types/links'
 import { useFormatters } from '#/hooks/use-formatters'
 import { useModal } from '#/lib/modal-state'
 
@@ -40,9 +41,9 @@ import { useModal } from '#/lib/modal-state'
  * overlays at once stays unrepresentable; it mounts in the `_main` layout route, so `/checkout`
  * cannot open it.
  */
-export function CartDrawer() {
+export function CartDrawer({ links }: { links: BagLinks }) {
   const { t } = useLingui()
-  const { isOpen, setOpen } = useModal('cart')
+  const { isOpen, setOpen } = useModal('cart', links)
   const { cart, isLoading } = useCart()
   const { formatPrice } = useFormatters()
 
@@ -85,7 +86,7 @@ export function CartDrawer() {
         </div>
 
         {isEmpty ? (
-          <CartEmpty />
+          <CartEmpty browseLink={links.browse} />
         ) : (
           <>
             {/* One region for rows and summary together. With the list alone as `flex-1` the slack
@@ -112,7 +113,13 @@ export function CartDrawer() {
                   {/* Space, not rules: a hairline per row turns a bag of three into a table. */}
                   <ul className={cn(cartDrawerItems(), 'm-0 list-none p-0')}>
                     {sortedItems.map((item) => (
-                      <CartItem key={item.id} item={item} currencyCode={currencyCode} className={cartDrawerItem()} />
+                      <CartItem
+                        key={item.id}
+                        item={item}
+                        currencyCode={currencyCode}
+                        productLink={links.product}
+                        className={cartDrawerItem()}
+                      />
                     ))}
                   </ul>
 
@@ -153,7 +160,7 @@ export function CartDrawer() {
             <div className={cn(cartDrawerFooter(), 'shrink-0')}>
               {/* "Checkout", not "securely": that is a payment claim one test-only provider cannot make.
                   The bag glyph's gap is the caller's: Button has no icon slot at size default. */}
-              <ButtonLink to="/checkout" className={cn(cartDrawerCheckout(), 'w-full gap-2')}>
+              <ButtonLink {...links.checkout} className={cn(cartDrawerCheckout(), 'w-full gap-2')}>
                 <Icon name="bag" className="h-4 w-4" />
                 <Trans>Checkout</Trans>
               </ButtonLink>

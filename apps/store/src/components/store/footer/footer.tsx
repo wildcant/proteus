@@ -1,9 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { Link } from '@tanstack/react-router'
 import type { ComponentType, ReactNode } from 'react'
-import { MenuLink } from '#/components/header/menu'
-import { type MenuSource, type MenuTarget, resolveMenuItems } from '#/components/header/menu-items'
+import { MenuLink, type MenuLinkTo } from '#/components/header/menu'
+import { type MenuSource, resolveMenuItems } from '#/components/header/menu-items'
 import {
   footer,
   footerAccordion,
@@ -24,6 +23,7 @@ import {
 } from '#/components/store/footer/footer.variants'
 import { MarketSelect } from '#/components/store/market-select/market-select'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '#/components/ui/accordion/accordion'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * Every slot the storefront can actually back. A column is two or three real routes or it is
@@ -35,25 +35,28 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '#/
  * carries, flat — rather than named here. One list feeds both the accordion and the static
  * columns, so the two trees cannot drift.
  */
-type FooterLink = { key: string; label: string } & ({ to: '/' | '/login' | '/signup' } | { target: MenuTarget })
+type FooterLink = { key: string; label: string; link: LinkTarget }
 type FooterColumn = { title: string; links: FooterLink[] }
 
-function useFooterColumns(menu: MenuSource): FooterColumn[] {
+/** The `Root` screen's ways out that the footer carries, from the flow map, which the `_main` layout hands it. */
+export type FooterLinkTargets = { menu: MenuLinkTo; signIn: LinkTarget; createAccount: LinkTarget }
+
+function useFooterColumns(menu: MenuSource, links: FooterLinkTargets): FooterColumn[] {
   const { t } = useLingui()
 
   return [
     {
       title: t`Shop`,
       links: [
-        { key: 'shop-all', label: t`Shop all`, to: '/' },
-        ...resolveMenuItems(menu).map(({ key, label, target }) => ({ key, label, target })),
+        { key: 'shop-all', label: t`Shop all`, link: links.menu() },
+        ...resolveMenuItems(menu).map(({ key, label, target }) => ({ key, label, link: links.menu(target) })),
       ],
     },
     {
       title: t`Account`,
       links: [
-        { key: 'sign-in', label: t`Sign in`, to: '/login' },
-        { key: 'create-account', label: t`Create account`, to: '/signup' },
+        { key: 'sign-in', label: t`Sign in`, link: links.signIn },
+        { key: 'create-account', label: t`Create account`, link: links.createAccount },
       ],
     },
   ]
@@ -83,12 +86,14 @@ const socialLinks: { label: string; href: string; mark: ComponentType<{ size: nu
 /** `menu` is read by the layout route: shared chrome may not import the feature. */
 export function Footer({
   menu,
+  links,
   renderPaymentMark,
 }: {
   menu: MenuSource
+  links: FooterLinkTargets
   renderPaymentMark: (network: string) => ReactNode
 }) {
-  const columns = useFooterColumns(menu)
+  const columns = useFooterColumns(menu, links)
   const year = new Date().getFullYear()
 
   return (
@@ -196,13 +201,7 @@ function FooterLinks({
     <ul className={cn('m-0 list-none p-0', className)}>
       {column.links.map((link) => (
         <li key={link.key}>
-          {'target' in link ? (
-            <MenuLink destination={link} className={linkClassName} />
-          ) : (
-            <Link to={link.to} className={linkClassName}>
-              {link.label}
-            </Link>
-          )}
+          <MenuLink destination={link} className={linkClassName} />
         </li>
       ))}
     </ul>

@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { getRouteApi } from '@tanstack/react-router'
 import { useSuspenseOrder } from '#/entities/order/api/orders'
 import {
   orderConfirmedContent,
@@ -21,8 +20,6 @@ import { OrderDetails } from '#/features/orders/components/order-details/order-d
 import { OrderProgressTrack } from '#/features/orders/components/order-progress-track/order-progress-track'
 import { useFormatters } from '#/hooks/use-formatters'
 
-const route = getRouteApi('/_main/order/$orderId/confirmed')
-
 /**
  * Where checkout lands. The number is printed the same way the account route prints it — one
  * order rendered two ways across two pages is the inconsistency this redesign exists to remove —
@@ -30,8 +27,7 @@ const route = getRouteApi('/_main/order/$orderId/confirmed')
  *
  * No back link: a guest who just checked out has nothing behind them to go back to.
  */
-export function OrderConfirmedContent() {
-  const { orderId } = route.useParams()
+export function OrderConfirmedContent({ orderId }: { orderId: string }) {
   const { order } = useSuspenseOrder(orderId)
   const { formatDate } = useFormatters()
   const { displayId, email } = order

@@ -28,6 +28,7 @@ import {
 } from '#/features/checkout/components/shipping-address-picker/shipping-address-picker.variants'
 import type { CheckoutData } from '#/features/checkout/hooks/use-checkout-data'
 import { checkoutFormOpts, emptyShippingAddress } from '#/features/checkout/hooks/use-checkout-form'
+import type { CheckoutLinks } from '#/features/checkout/types/links'
 import type { CheckoutAddress } from '#/features/checkout/utils/checkout-address'
 import { useMarket } from '#/hooks/use-market'
 import { withForm } from '#/lib/form-hook'
@@ -36,13 +37,14 @@ type DeepNonNullableProps<T> = {
   [K in keyof T]-?: NonNullable<T[K]>
 }
 type ShippingAddressPickerProps = DeepNonNullableProps<Pick<CheckoutData, 'cart' | 'addresses' | 'cartAddresses'>> & {
+  links: Pick<CheckoutLinks, 'addAddress' | 'editAddress'>
   className?: string
 }
 
 export const ShippingAddressPicker = withForm({
   ...checkoutFormOpts,
   props: {} as ShippingAddressPickerProps,
-  render: function ShippingAddressPicker({ form, addresses, cartAddresses, className }) {
+  render: function ShippingAddressPicker({ form, addresses, cartAddresses, links, className }) {
     const { current } = useMarket()
 
     /**
@@ -119,7 +121,11 @@ export const ShippingAddressPicker = withForm({
                             </div>
                           </FieldLabel>
 
-                          <AddressActions address={address} className={shippingAddressPickerOptions()} />
+                          <AddressActions
+                            address={address}
+                            editLink={links.editAddress(address.id)}
+                            className={shippingAddressPickerOptions()}
+                          />
                         </Field>
                       )
                     })}
@@ -130,8 +136,8 @@ export const ShippingAddressPicker = withForm({
                       around the plus: the set draws the link label-only (icons slice). */}
                   <div className={cn(shippingAddressPickerNewAddress(), 'block')}>
                     <ButtonLink
+                      {...links.addAddress}
                       variant="link"
-                      to="/checkout/addresses/new"
                       className={cn(shippingAddressPickerUseDifferent(), 'inline-flex gap-2')}
                     >
                       <Icon name="plus" className="size-4" />

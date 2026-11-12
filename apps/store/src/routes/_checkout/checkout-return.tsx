@@ -1,5 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { CheckoutReturn } from '#/features/checkout/components/payment/checkout-return'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('CheckoutReturn')
+const returnLinks = {
+  orderPlaced: (orderId: string) => links.ORDER_PLACED({ params: { orderId } }),
+  checkout: links.BACK_TO_CHECKOUT(),
+}
 
 /**
  * `/checkout-return`, deliberately a sibling of `/checkout` rather than a child of it.
@@ -19,5 +26,5 @@ export const Route = createFileRoute('/_checkout/checkout-return')({
 
 function CheckoutReturnPage() {
   const search = Route.useSearch()
-  return <CheckoutReturn query={new URLSearchParams(search)} />
+  return <CheckoutReturn query={new URLSearchParams(search)} links={returnLinks} />
 }

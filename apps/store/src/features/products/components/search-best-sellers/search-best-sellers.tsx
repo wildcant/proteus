@@ -11,6 +11,7 @@ import {
   searchBestSellersTitle,
   searchBestSellersViewAll,
 } from '#/features/products/components/search-best-sellers/search-best-sellers.variants'
+import type { SearchLinks } from '#/features/products/types/links'
 import { useMarket } from '#/hooks/use-market'
 
 /**
@@ -22,7 +23,7 @@ import { useMarket } from '#/hooks/use-market'
  * runs a merchandised row here, not a computed one. The heading is aspirational until one of
  * those lands. See `.scratch/store-design-system/issues/03-header.md`.
  */
-export function SearchBestSellers() {
+export function SearchBestSellers({ links }: { links: Pick<SearchLinks, 'product' | 'bestSellers'> }) {
   const { current } = useMarket()
   // The row shows prices, so it is a priced request like any other and carries the market.
   const { products } = useProducts({ limit: SEARCH_RESULTS_LIMIT, countryCode: current.iso2 })
@@ -37,12 +38,12 @@ export function SearchBestSellers() {
         <h2 className={cn(searchBestSellersTitle(), 'm-0')}>
           <Trans>Best sellers</Trans>
         </h2>
-        <Link to="/" className={cn(searchBestSellersViewAll(), 'shrink-0')}>
+        <Link {...links.bestSellers} className={cn(searchBestSellersViewAll(), 'shrink-0')}>
           <Trans>View all</Trans>
         </Link>
       </div>
 
-      <ProductGrid products={products} className={searchBestSellersGrid()} />
+      <ProductGrid products={products} productLink={links.product} className={searchBestSellersGrid()} />
     </section>
   )
 }

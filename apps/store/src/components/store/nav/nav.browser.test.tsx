@@ -3,10 +3,18 @@ import { expect, test } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
+import type { MenuLinkTo } from '#/components/header/menu'
 import type { MenuSource } from '#/components/header/menu-items'
 import { Nav } from '#/components/store/nav/nav'
 import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { stringifySearch } from '#/lib/search-params'
+
+/** The links the `_main` layout hands the rail, as plain paths: this router has no such routes. */
+const menuLink: MenuLinkTo = (target) => {
+  if (!target) return { to: '/' }
+  const search = target.filter ? { filter: target.filter } : undefined
+  return { to: `/${target.type === 'collection' ? 'collections' : 'categories'}/${target.handle}`, search }
+}
 
 /**
  * The rail handed a menu the API already resolved. Mounted in a memory router with the subject as
@@ -17,7 +25,7 @@ async function renderNav(menu: MenuSource) {
   // The rail is the desktop navigation: below lg it is not displayed at all.
   await page.viewport(1280, 800)
   const router = createRouter({
-    routeTree: createRootRoute({ component: () => <Nav menu={menu} /> }),
+    routeTree: createRootRoute({ component: () => <Nav menu={menu} menuLink={menuLink} /> }),
     history: createMemoryHistory({ initialEntries: ['/'] }),
     stringifySearch,
   })

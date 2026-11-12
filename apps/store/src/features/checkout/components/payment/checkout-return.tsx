@@ -2,8 +2,10 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { useEffect, useRef, useState } from 'react'
 import { ButtonLink } from '#/components/ui/button/button'
 import { useCart } from '#/entities/cart/api/cart'
+import type { LinkTarget } from '#/lib/link-target'
 import { usePaymentProviders } from '../../api/checkout'
 import { useCompleteOrder } from '../../hooks/use-complete-order'
+import type { CheckoutReturnLinks } from '../../types/links'
 import type { ConfirmOutcome, PaymentAdapterContext, StorePaymentAdapter } from '../../types/payment'
 import { logPaymentFailure } from '../../utils/payment/log'
 import { resolvePaymentAdapter } from '../../utils/payment/registry'
@@ -22,9 +24,10 @@ import { resolvePaymentAdapter } from '../../utils/payment/registry'
 type CheckoutReturnProps = {
   /** The gateway's own query string, verbatim — only its adapter knows how to read it. */
   query: URLSearchParams
+  links: CheckoutReturnLinks
 }
 
-export function CheckoutReturn({ query }: CheckoutReturnProps) {
+export function CheckoutReturn({ query, links }: CheckoutReturnProps) {
   const { t } = useLingui()
   const providerId = query.get('providerId') ?? ''
   const adapter = resolvePaymentAdapter(providerId)
@@ -39,6 +42,7 @@ export function CheckoutReturn({ query }: CheckoutReturnProps) {
   if (!adapter || !provider || !cart) {
     return (
       <ReturnFailure
+        checkoutLink={links.checkout}
         message={t`We could not pick your order back up after your payment. If you were charged, nothing has been taken twice — contact us and we will finish it.`}
       />
     )
@@ -53,7 +57,7 @@ export function CheckoutReturn({ query }: CheckoutReturnProps) {
 
   return (
     <adapter.Root context={context}>
-      <ResumeRedirect adapter={adapter} query={query} />
+      <ResumeRedirect adapter={adapter} query={query} links={links} />
     </adapter.Root>
   )
 }
@@ -64,11 +68,11 @@ export function CheckoutReturn({ query }: CheckoutReturnProps) {
  * The guard is not decoration: React runs effects twice in development, and a second resume would
  * ask `completeCart` to create a second order for a cart the first call is still completing.
  */
-function ResumeRedirect({ adapter, query }: { adapter: StorePaymentAdapter } & CheckoutReturnProps) {
+function ResumeRedirect({ adapter, query, links }: { adapter: StorePaymentAdapter } & CheckoutReturnProps) {
   // `undefined` means this gateway never leaves the tab; `null` means its SDK is still loading.
   const canResume = typeof adapter.useResumeRedirect === 'function'
   const resume = adapter.useResumeRedirect?.() ?? null
-  const { completeOrder } = useCompleteOrder()
+  const { completeOrder } = useCompleteOrder(links)
   const { t } = useLingui()
   const [outcome, setOutcome] = useState<ConfirmOutcome | null>(null)
   const started = useRef(false)
@@ -89,12 +93,23 @@ function ResumeRedirect({ adapter, query }: { adapter: StorePaymentAdapter } & C
   }, [resume, query, completeOrder, t])
 
   if (!canResume) {
-    return <ReturnFailure message={t`This payment method cannot be resumed here. Please start the checkout again.`} />
+    return (
+      <ReturnFailure
+        checkoutLink={links.checkout}
+        message={t`This payment method cannot be resumed here. Please start the checkout again.`}
+      />
+    )
   }
 
-  if (outcome?.kind === 'failed') return <ReturnFailure message={outcome.customerMessage} />
+  if (outcome?.kind === 'failed')
+    return <ReturnFailure checkoutLink={links.checkout} message={outcome.customerMessage} />
   if (outcome?.kind === 'staleMethod') {
-    return <ReturnFailure message={t`That saved card is no longer available. Please start the checkout again.`} />
+    return (
+      <ReturnFailure
+        checkoutLink={links.checkout}
+        message={t`That saved card is no longer available. Please start the checkout again.`}
+      />
+    )
   }
 
   return <ReturnStatus title={t`Completing your order…`} />
@@ -111,7 +126,7 @@ function ReturnStatus({ title }: { title: string }) {
   )
 }
 
-function ReturnFailure({ message }: { message: string }) {
+function ReturnFailure({ message, checkoutLink }: { message: string; checkoutLink: LinkTarget }) {
   return (
     <div className="mx-auto w-full max-w-125 px-4 py-16 text-center">
       <h1 className="type-heading m-0 text-ink">
@@ -120,7 +135,7 @@ function ReturnFailure({ message }: { message: string }) {
       <p role="alert" className="mt-2 text-ink-muted text-sm">
         {message}
       </p>
-      <ButtonLink variant="outline" className="mt-6" to="/checkout">
+      <ButtonLink {...checkoutLink} variant="outline" className="mt-6">
         <Trans>Back to checkout</Trans>
       </ButtonLink>
     </div>

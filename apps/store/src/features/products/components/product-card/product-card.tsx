@@ -15,21 +15,18 @@ import {
 } from '#/features/products/components/product-card/product-card.variants'
 import { useFormatters } from '#/hooks/use-formatters'
 import { responsiveImage } from '#/lib/image-url'
+import type { LinkTarget } from '#/lib/link-target'
 
-type ProductCardProps = { product: StoreProductListItem; priority?: boolean; className?: string }
+type ProductCardProps = { product: StoreProductListItem; link: LinkTarget; priority?: boolean; className?: string }
 
-export function ProductCard({ product, priority, className }: ProductCardProps) {
+export function ProductCard({ product, link, priority, className }: ProductCardProps) {
   const { formatPrice } = useFormatters()
   const startingPrice = product.startingPrice
     ? formatPrice(product.startingPrice.calculatedAmount, product.startingPrice.currencyCode)
     : null
 
   return (
-    <Link
-      to="/products/$productId"
-      params={{ productId: product.id }}
-      className={cn(productCard(), 'group', className)}
-    >
+    <Link {...link} className={cn(productCard(), 'group', className)}>
       <div className={cn(productCardMedia(), 'aspect-4/5')}>
         {product.thumbnail ? (
           <img

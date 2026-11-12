@@ -8,9 +8,10 @@ import {
   walletEmptyStartShopping,
   walletEmptyTitle,
 } from '#/features/account/components/wallet-empty/wallet-empty.variants'
+import type { LinkTarget } from '#/lib/link-target'
 
 /** Two lines of type and a way out, the same shape the address book's empty state uses. */
-export function WalletEmpty() {
+export function WalletEmpty({ startShoppingLink }: { startShoppingLink: LinkTarget }) {
   return (
     <div className={walletEmpty()}>
       <h2 className={walletEmptyTitle()}>
@@ -25,7 +26,7 @@ export function WalletEmpty() {
         </p>
       </div>
       <div className={walletEmptyAction()}>
-        <ButtonLink to="/" className={walletEmptyStartShopping()}>
+        <ButtonLink {...startShoppingLink} className={walletEmptyStartShopping()}>
           <Trans>Start shopping</Trans>
         </ButtonLink>
       </div>

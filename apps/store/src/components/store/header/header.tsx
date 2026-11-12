@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import type { HeaderLinks } from '#/components/header/header-links'
 import type { MenuSource } from '#/components/header/menu-items'
 import { SearchBarTrigger, SearchIconTrigger } from '#/components/header/search-triggers'
 import {
@@ -22,7 +23,6 @@ import { SideMenu } from '#/components/store/side-menu/side-menu'
 import { Wordmark } from '#/components/store/wordmark/wordmark'
 import { Button } from '#/components/ui/button/button'
 import { Icon } from '#/components/ui/icon/icon'
-import { useModal } from '#/lib/modal-state'
 
 /**
  * The bar itself: nav, wordmark, search triggers, account link.
@@ -34,14 +34,16 @@ import { useModal } from '#/lib/modal-state'
  */
 export function Header({
   menu,
+  links,
   actions,
 }: {
   /** What the rail and the side menu draw from, read by the layout route. */
   menu: MenuSource
+  links: HeaderLinks
   actions?: ReactNode
 }) {
   const { t } = useLingui()
-  const { setOpen: setMenuOpen } = useModal('menu')
+  const navigate = useNavigate()
 
   return (
     <header className={cn(header(), 'sticky top-0 z-50')}>
@@ -56,24 +58,24 @@ export function Header({
             size="icon"
             aria-label={t`Open menu`}
             className={cn(headerMenuButton(), '-ml-2')}
-            onClick={() => setMenuOpen(true)}
+            onClick={() => navigate(links.openMenu)}
           >
             <Icon name="menu" className="h-5 w-5" />
           </Button>
 
-          <SearchIconTrigger className={headerSearchButton()} />
+          <SearchIconTrigger openLink={links.openSearch} className={headerSearchButton()} />
 
-          <Nav menu={menu} className={headerNav()} />
+          <Nav menu={menu} menuLink={links.menu} className={headerNav()} />
         </div>
 
-        <Wordmark className={headerWordmark()} />
+        <Wordmark link={links.home} className={headerWordmark()} />
 
         <div className={headerEnd()}>
-          <SearchBarTrigger className={headerSearchBar()} />
+          <SearchBarTrigger openLink={links.openSearch} className={headerSearchBar()} />
 
           {/* Account before bag, as the reference has it — the bag is the last thing on the
               bar because it is the one the shopper reaches for mid-task. */}
-          <Link to="/account">
+          <Link {...links.account}>
             <Button variant="ghost" size="icon" aria-label={t`Account`} className={headerAccountButton()}>
               <Icon name="user" className="h-5 w-5" />
             </Button>
@@ -83,7 +85,7 @@ export function Header({
         </div>
       </div>
 
-      <SideMenu menu={menu} />
+      <SideMenu menu={menu} links={links} />
     </header>
   )
 }

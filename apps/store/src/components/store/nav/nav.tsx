@@ -1,5 +1,5 @@
 import { cn } from '@proteus/ui-core'
-import { isMenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
+import { isMenuGroup, MenuLink, type MenuLinkTo, useMenuEntries } from '#/components/header/menu'
 import type { MenuSource } from '#/components/header/menu-items'
 import { nav, navLink } from '#/components/store/nav/nav.variants'
 import { RailPanel } from '#/components/store/rail-panel/rail-panel'
@@ -14,11 +14,12 @@ import { RailPanel } from '#/components/store/rail-panel/rail-panel'
  */
 type NavProps = {
   menu: MenuSource
+  menuLink: MenuLinkTo
   className?: string
 }
 
-export function Nav({ menu, className }: NavProps) {
-  const entries = useMenuEntries(menu)
+export function Nav({ menu, menuLink, className }: NavProps) {
+  const entries = useMenuEntries(menu, menuLink)
 
   return (
     <nav className={className}>

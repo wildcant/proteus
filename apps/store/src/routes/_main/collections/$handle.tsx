@@ -6,7 +6,15 @@ import type { ProductListScope } from '#/features/products/api/products'
 import { CollectionHero } from '#/features/products/components/collection-hero'
 import { ProductListNotFound } from '#/features/products/components/product-list-not-found/product-list-not-found'
 import { ProductListPage } from '#/features/products/components/product-list-page/product-list-page'
+import type { ProductListLinks } from '#/features/products/types/links'
 import { productListRouteOptions } from '#/features/products/utils/product-list-route'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('ProductListPage')
+const listLinks: ProductListLinks = {
+  product: (productId) => links.PRODUCT({ params: { productId } }),
+  shopAll: links.SHOP_ALL(),
+}
 
 const scopeFor = (handle: string): ProductListScope => ({ collection: handle })
 
@@ -36,6 +44,7 @@ function CollectionPage() {
   return (
     <ProductListPage
       from={Route.fullPath}
+      links={listLinks}
       scope={scopeFor(handle)}
       search={search}
       heading={collection.title}
@@ -47,6 +56,7 @@ function CollectionPage() {
 function CollectionNotFound() {
   return (
     <ProductListNotFound
+      shopAllLink={links.SHOP_ALL()}
       heading={<Trans>We couldn't find this collection</Trans>}
       body={<Trans>It may have ended, or no longer be in the store.</Trans>}
     />

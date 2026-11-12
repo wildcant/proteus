@@ -13,36 +13,43 @@ import {
   ordersPanelOrders,
   ordersPanelPanel,
 } from '#/features/account/components/orders-panel/orders-panel.variants'
+import type { AccountLinks } from '#/features/account/types/links'
 
 /**
  * The panel chrome renders straight away and only the list suspends, so paging does not blank
  * the heading — and, on first load, the greeting does not wait on the orders request.
  */
-export function OrdersPanel({ className }: { className?: string }) {
+export function OrdersPanel({
+  links,
+  className,
+}: {
+  links: Pick<AccountLinks, 'order' | 'shopAll'>
+  className?: string
+}) {
   const { t } = useLingui()
   return (
     <Panel title={t`Orders`} className={cn(ordersPanel(), ordersPanelPanel(), className)}>
       <Suspense fallback={<OrdersFallback />}>
-        <OrderList />
+        <OrderList links={links} />
       </Suspense>
     </Panel>
   )
 }
 
-function OrderList() {
+function OrderList({ links }: { links: Pick<AccountLinks, 'order' | 'shopAll'> }) {
   const [offset, setOffset] = useState(ORDERS_DEFAULT_OFFSET)
   const { orders, count, limit } = useSuspenseOrders(ordersPageQuery(offset))
 
   // `flex-1` fills the panel's body so the empty state centres in the tall lg panel: OrdersPanel
   // draws only the list, so no layer carries the empty state's fill.
-  if (count === 0) return <OrdersEmpty className="flex-1" />
+  if (count === 0) return <OrdersEmpty shopAllLink={links.shopAll} className="flex-1" />
 
   return (
     <>
       <ul className={ordersPanelOrders()}>
         {orders.map((order) => (
           <li key={order.id}>
-            <OrderRow order={order} className={ordersPanelOrder()} />
+            <OrderRow order={order} link={links.order(order.id)} className={ordersPanelOrder()} />
           </li>
         ))}
       </ul>

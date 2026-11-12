@@ -7,8 +7,17 @@ import { CategoryBreadcrumb } from '#/features/products/components/category-brea
 import { CategoryIntro } from '#/features/products/components/category-intro/category-intro'
 import { ProductListNotFound } from '#/features/products/components/product-list-not-found/product-list-not-found'
 import { ProductListPage } from '#/features/products/components/product-list-page/product-list-page'
+import type { ProductListLinks } from '#/features/products/types/links'
 import { findCategoryTrail } from '#/features/products/utils/category-trail'
 import { productListRouteOptions } from '#/features/products/utils/product-list-route'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('ProductListPage')
+const listLinks: ProductListLinks = {
+  product: (productId) => links.PRODUCT({ params: { productId } }),
+  shopAll: links.SHOP_ALL(),
+}
+const categoryLink = (handle: string) => links.CATEGORY({ params: { handle } })
 
 /** The list is scoped by handle; the backend widens it to the Category's Visible descendants. */
 const scopeFor = (handle: string): ProductListScope => ({ category: handle })
@@ -39,11 +48,14 @@ function CategoryPage() {
   return (
     <ProductListPage
       from={Route.fullPath}
+      links={listLinks}
       scope={scopeFor(handle)}
       search={search}
       heading={category.name}
-      eyebrow={<CategoryBreadcrumb ancestors={ancestors} />}
-      intro={<CategoryIntro category={category} />}
+      eyebrow={
+        <CategoryBreadcrumb ancestors={ancestors} allProductsLink={links.ALL_PRODUCTS()} categoryLink={categoryLink} />
+      }
+      intro={<CategoryIntro category={category} categoryLink={categoryLink} />}
     />
   )
 }
@@ -51,6 +63,7 @@ function CategoryPage() {
 function CategoryNotFound() {
   return (
     <ProductListNotFound
+      shopAllLink={links.SHOP_ALL()}
       heading={<Trans>We couldn't find this category</Trans>}
       body={<Trans>It may have moved, or no longer be in the store.</Trans>}
     />

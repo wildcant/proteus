@@ -6,6 +6,9 @@ import { z } from 'zod'
 import { ButtonLink } from '#/components/ui/button/button'
 import { AuthHeading } from '#/features/auth/components/auth-heading/auth-heading'
 import { ResetPasswordForm } from '#/features/auth/components/reset-password-form/reset-password-form'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('ResetPasswordForm')
 
 const searchSchema = z.object({
   token: z.string().min(1),
@@ -27,7 +30,7 @@ function ResetPasswordPage() {
         <AuthHeading title={t`Password updated`}>
           <Trans>Your password has been reset. Sign in with your new password to pick up where you left off.</Trans>
         </AuthHeading>
-        <ButtonLink to="/login" size="lg" className="mt-10 w-full">
+        <ButtonLink {...links.SIGN_IN()} size="lg" className="mt-10 w-full">
           <Trans>Sign in</Trans>
         </ButtonLink>
       </main>
@@ -46,7 +49,7 @@ function ResetPasswordPage() {
           onError={(error) => toast.add({ type: 'error', title: error })}
         />
       </div>
-      <ButtonLink variant="link" to="/login" className="mt-6">
+      <ButtonLink {...links.BACK_TO_SIGN_IN()} variant="link" className="mt-6">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>

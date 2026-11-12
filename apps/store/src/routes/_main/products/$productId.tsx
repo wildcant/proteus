@@ -5,7 +5,11 @@ import { productQueryOptions } from '#/features/products/api/products'
 import { ProductDetail } from '#/features/products/components/product-detail/product-detail'
 import { ProductDetailSkeleton } from '#/features/products/components/product-detail-skeleton'
 import { ProductError } from '#/features/products/components/product-error/product-error'
+import type { ProductDetailLinks } from '#/features/products/types/links'
 import { marketHeadLinksFor } from '#/lib/seo/market-links'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('ProductDetail')
 
 /** Keeps the chosen variant shareable — a link to a colourway renders that colourway on the server. */
 const productSearchSchema = z.object({
@@ -21,7 +25,7 @@ export const Route = createFileRoute('/_main/products/$productId')({
   // header, the bag and the market notice keep rendering around it. Only a genuine failure arrives
   // here: a product this market cannot price answers 404, which the query resolves as an absent
   // product for `ProductDetail` to render.
-  errorComponent: ProductError,
+  errorComponent: () => <ProductError browseLink={links.BROWSE()} />,
   loader: async ({ context, params }) => {
     // See the list route: the market's country is what the price on this page is quoted in.
     await context.queryClient.ensureQueryData(
@@ -36,9 +40,17 @@ export const Route = createFileRoute('/_main/products/$productId')({
 })
 
 function ProductDetailPage() {
+  const { productId } = Route.useParams()
+  const { variant } = Route.useSearch()
+  const productLinks: ProductDetailLinks = {
+    products: links.BACK_TO_PRODUCTS(),
+    browse: links.BROWSE(),
+    variant: (variantId) => links.CHOOSE_VARIANT({ params: { productId }, search: { variant: variantId } }),
+    bagOpen: links.ADD_TO_BAG({ params: { productId } }),
+  }
   return (
     <Suspense fallback={<ProductDetailSkeleton />}>
-      <ProductDetail />
+      <ProductDetail productId={productId} variantId={variant} links={productLinks} />
     </Suspense>
   )
 }

@@ -15,6 +15,7 @@ import {
   searchDrawerResults,
 } from '#/features/products/components/search-drawer/search-drawer.variants'
 import { SearchResults } from '#/features/products/components/search-results/search-results'
+import type { SearchLinks } from '#/features/products/types/links'
 import { useModal } from '#/lib/modal-state'
 
 /**
@@ -28,9 +29,9 @@ import { useModal } from '#/lib/modal-state'
  * Open state is the `?modal=search` param, read here rather than passed in — the panel is
  * URL state, so there is nothing for a parent to own. See `docs/adr/0019-modals-are-url-state.md`.
  */
-export function SearchDrawer() {
+export function SearchDrawer({ links }: { links: SearchLinks }) {
   const { t } = useLingui()
-  const { isOpen, setOpen } = useModal('search')
+  const { isOpen, setOpen } = useModal('search', links)
   const [term, setTerm] = useState('')
 
   // The panel keeps its term while open so the results can read it, and drops it on close —
@@ -71,7 +72,13 @@ export function SearchDrawer() {
           {/* The field takes the width the chevron leaves on mobile; capped and auto-margined
               above lg, where it centres on the bar instead. */}
           <div className={cn(searchDrawerField(), 'mx-auto')}>
-            <SearchForm className={searchDrawerForm()} focusOnMount value={term} onChange={setTerm} />
+            <SearchForm
+              className={searchDrawerForm()}
+              focusOnMount
+              value={term}
+              onChange={setTerm}
+              submitLink={links.submit}
+            />
           </div>
 
           {/* Out of flow so the field centres against the viewport, not against the space left
@@ -91,7 +98,7 @@ export function SearchDrawer() {
         </div>
 
         <div className={cn(searchDrawerResults(), 'min-h-0 flex-1')}>
-          <SearchResults term={term} />
+          <SearchResults term={term} links={links} />
         </div>
       </DrawerContent>
     </Drawer>

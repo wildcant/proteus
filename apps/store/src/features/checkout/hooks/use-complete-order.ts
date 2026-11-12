@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback } from 'react'
+import type { LinkTarget } from '#/lib/link-target'
 import { useCompleteCart } from '../api/checkout'
 
 /**
@@ -13,15 +14,15 @@ import { useCompleteCart } from '../api/checkout'
  * Neither path writes anything down about money: `completeCart` creates the order and authorizes
  * the session, payment truth arrives by webhook, and the browser only changes what is on screen.
  */
-export function useCompleteOrder() {
+export function useCompleteOrder({ orderPlaced }: { orderPlaced: (orderId: string) => LinkTarget }) {
   const navigate = useNavigate()
   const completeCart = useCompleteCart()
 
   const completeOrder = useCallback(async () => {
     const order = await completeCart.mutateAsync()
-    await navigate({ to: '/order/$orderId/confirmed', params: { orderId: order.orderId } })
+    await navigate(orderPlaced(order.orderId))
     return order
-  }, [completeCart, navigate])
+  }, [completeCart, navigate, orderPlaced])
 
   return { completeOrder }
 }
