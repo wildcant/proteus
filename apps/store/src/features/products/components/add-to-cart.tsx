@@ -3,8 +3,8 @@ import { Loader2Icon } from 'lucide-react'
 import { useState } from 'react'
 import type { StoreProductResponseProduct, StoreProductVariant } from '#/api/generated/model'
 import { Button } from '#/components/button'
+import { QuantityStepper } from '#/components/ui/quantity-stepper/quantity-stepper'
 import { useAddLineItem } from '#/entities/cart/api/cart'
-import { QuantityStepper } from '#/features/cart/components/quantity-stepper'
 import { useModal } from '#/lib/modal-state'
 
 const MAX_QUANTITY = 10

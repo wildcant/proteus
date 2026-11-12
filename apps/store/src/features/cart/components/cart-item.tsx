@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ShoppingBagIcon } from 'lucide-react'
 import type { StoreCartLineItem } from '#/api/generated/model'
-import { QuantityStepper } from '#/features/cart/components/quantity-stepper'
+import { QuantityStepper } from '#/components/ui/quantity-stepper/quantity-stepper'
 import { useLineItemQuantity } from '#/features/cart/hooks/use-line-item-quantity'
 import { useFormatters } from '#/hooks/use-formatters'
 
@@ -54,7 +54,6 @@ export function CartItem({ item, currencyCode }: { item: StoreCartLineItem; curr
 
           <QuantityStepper
             size="xs"
-            variant="bare"
             label={item.title}
             value={quantity}
             min={1}

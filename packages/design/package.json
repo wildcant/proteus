@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./tokens.css": "./tokens/tokens.gen.css"
+    "./tokens.css": "./tokens/tokens.gen.css",
+    "./figcraft-set": "./src/figcraft-set.ts",
+    "./components/*.json": "./figcraft/components/*.json"
   },
   "scripts": {
     "tokens": "node src/cli.ts tokens",

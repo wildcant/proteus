@@ -26,6 +26,7 @@
     "storybook": "storybook dev --port 6006"
   },
   "dependencies": {
+    "@base-ui/react": "catalog:",
     "@lingui/core": "catalog:",
     "@lingui/react": "catalog:",
     "@proteus/design": "workspace:*",

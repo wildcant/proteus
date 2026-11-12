@@ -11,11 +11,11 @@ export const quantityStepper = cva('flex items-start', {
   defaultVariants: { size: 'xs' },
 })
 
-export const quantityStepperDecrement = cva('flex justify-center items-center', {
+export const quantityStepperDecrement = cva('flex items-center justify-center', {
   variants: {
     size: {
-      lg: 'w-13 h-12.5',
-      xs: 'w-8 h-8',
+      lg: 'h-12.5 w-13',
+      xs: 'h-8 w-8',
     },
   },
   defaultVariants: { size: 'xs' },
@@ -24,14 +24,14 @@ export const quantityStepperDecrement = cva('flex justify-center items-center', 
 export const quantityStepperDecrementIcon = cva('text-ink', {
   variants: {
     size: {
-      lg: 'w-4 h-4',
-      xs: 'w-3.5 h-3.5',
+      lg: 'h-4 w-4',
+      xs: 'h-3.5 w-3.5',
     },
   },
   defaultVariants: { size: 'xs' },
 })
 
-export const quantityStepperCount = cva('flex self-stretch justify-center items-center', {
+export const quantityStepperCount = cva('flex items-center justify-center self-stretch', {
   variants: {
     size: {
       lg: 'w-9',
@@ -43,11 +43,11 @@ export const quantityStepperCount = cva('flex self-stretch justify-center items-
 
 export const quantityStepperValue = cva('type-body-compact text-ink')
 
-export const quantityStepperIncrement = cva('flex justify-center items-center', {
+export const quantityStepperIncrement = cva('flex items-center justify-center', {
   variants: {
     size: {
-      lg: 'w-13 h-12.5',
-      xs: 'w-8 h-8',
+      lg: 'h-12.5 w-13',
+      xs: 'h-8 w-8',
     },
   },
   defaultVariants: { size: 'xs' },
@@ -56,8 +56,8 @@ export const quantityStepperIncrement = cva('flex justify-center items-center', 
 export const quantityStepperIncrementIcon = cva('text-ink', {
   variants: {
     size: {
-      lg: 'w-4 h-4',
-      xs: 'w-3.5 h-3.5',
+      lg: 'h-4 w-4',
+      xs: 'h-3.5 w-3.5',
     },
   },
   defaultVariants: { size: 'xs' },

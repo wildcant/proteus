@@ -43,10 +43,9 @@ An entity exists only once two or more features use its code. Code only one feat
 feature, which is why sign-in, registration and password update stay in `features/auth` while the
 "me" queries, `useLogout` and `useRequestPasswordReset` form the first entity, `customer`.
 
-Once the last cross-feature import is gone, `FEATURE_GRAPH` and `feature-graph-undeclared` are deleted
-and replaced by one rule: **features may not import features**. Until then the graph stays exactly as
-it is. No interim edge is added or rewritten, including edges an entity move has left unused — they
-fail nothing, and they go with the graph.
+In place of the graph there is one rule: **features may not import features**. Code a second feature
+needs is an entity; a primitive with no domain logic, such as `QuantityStepper`, is shared code in
+`src/components/ui/`.
 
 ## Enforcement
 
@@ -54,7 +53,7 @@ fail nothing, and they go with the graph.
 edge rules (`entities-may-not-import-entities`, `entities-may-not-import-features`,
 `entities-may-not-import-routes`, `shared-may-not-import-entities`) and the two `required` placement
 rules (`entity-segment-vocabulary`, `no-loose-entity-files`). The store opts in from
-`apps/store/structure/.dependency-cruiser.cjs`. The admin has no entities layer and does not opt in;
+`apps/store/structure/.dependency-cruiser.cjs`, which also holds `features-may-not-import-features`. The admin has no entities layer and does not opt in;
 its structure check is unchanged.
 
 `apiLayerRules()` counts `src/entities/<entity>/api/` as part of the api layer. In an app without
@@ -64,8 +63,6 @@ its structure check is unchanged.
 
 - The default answer to "these two features need each other" changes from "edit `FEATURE_GRAPH`" to
   "the shared part is an entity". The structure config stops growing an edge per shared need.
-- `account → auth` and `checkout → auth` are now unused edges in `FEATURE_GRAPH`, and stay until the
-  graph is deleted.
 - Every entity move is a pure move — no behaviour or visual change rides with it — so review is
   mechanical: an import path changes, nothing else does.
 - `no-circular` stays and still guards the module level. With features unable to import features and
@@ -75,5 +72,5 @@ its structure check is unchanged.
 ## References
 
 - `packages/frontend-structure/index.cjs` — `entityStructureRules()` and `apiLayerRules()`
-- `apps/store/structure/.dependency-cruiser.cjs` — the store's opt-in and the remaining `FEATURE_GRAPH`
+- `apps/store/structure/.dependency-cruiser.cjs` — the store's opt-in and `features-may-not-import-features`
 - `apps/store/src/entities/customer/` — the first entity

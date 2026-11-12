@@ -355,7 +355,7 @@ msgstr "Creando cuenta..."
 msgid "Dark"
 msgstr "Oscuro"
 
-#: src/features/cart/components/quantity-stepper.tsx:89
+#: src/components/ui/quantity-stepper/quantity-stepper.tsx:76
 msgid "Decrease quantity for {label}"
 msgstr "Disminuir cantidad de {label}"
 
@@ -553,7 +553,7 @@ msgstr "Espera mientras confirmamos tu correo."
 msgid "If an account exists with that email, we've sent a link to reset your password."
 msgstr "Si existe una cuenta con ese correo, te enviamos un enlace para restablecer tu contraseña."
 
-#: src/features/cart/components/quantity-stepper.tsx:103
+#: src/components/ui/quantity-stepper/quantity-stepper.tsx:89
 msgid "Increase quantity for {label}"
 msgstr "Aumentar cantidad de {label}"
 
@@ -851,7 +851,7 @@ msgstr "No pudimos crear tu cuenta"
 msgid "Remove"
 msgstr "Eliminar"
 
-#: src/features/cart/components/quantity-stepper.tsx:89
+#: src/components/ui/quantity-stepper/quantity-stepper.tsx:76
 msgid "Remove {label}"
 msgstr "Eliminar {label}"
 
