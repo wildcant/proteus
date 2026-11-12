@@ -25,6 +25,8 @@ export type AdminImportedProduct = {
   type: string | null;
   tags: string[];
   metafields: AdminImportedProductMetafields;
+  /** @nullable */
+  brand: string | null;
   options: AdminImportedProductOptionsItem[];
   variants: AdminImportedVariant[];
   imageUrls: string[];

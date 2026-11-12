@@ -43,6 +43,8 @@ export interface AdminProduct {
   metadata: AdminProductMetadata;
   /** @nullable */
   typeId: string | null;
+  /** @nullable */
+  brand: string | null;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

@@ -6,6 +6,7 @@ import type { ProductRepository } from '../repositories/product.js'
 import type { ProductCategoryRepository } from '../repositories/product-category.js'
 import type { ProductCollectionRepository } from '../repositories/product-collection.js'
 import type { ProductMetafieldRepository } from '../repositories/product-metafield.js'
+import type { ProductMetafieldDefinitionRepository } from '../repositories/product-metafield-definition.js'
 import type { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
 import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
 import { matchesGroupingRule } from '../utils/grouping-rule.js'
@@ -17,8 +18,12 @@ type InjectedDependencies = {
   productProductCategoryRepository: ProductProductCategoryRepository
   productProductCollectionRepository: ProductProductCollectionRepository
   productMetafieldRepository: ProductMetafieldRepository
+  productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
   withTransaction: WithTransaction
 }
+
+/** Each scoped product's field values by key, and which key is the brand's. */
+type ProductFacts = { fieldsOf: Map<string, Map<string, Set<string>>>; vendorKey: string | undefined }
 
 type RuledGrouping = { id: string; rule: ProductGroupingRuleDTO | null }
 
@@ -30,10 +35,10 @@ type MembershipPivot = {
 
 /**
  * Keeps ruled Categories and Collections holding exactly the products their rule matches on their
- * metafields.
+ * fields: metafields, and the brand under the vendor field's key.
  *
  * **Internal to the module**, like `ProductCategoryService`. `ProductModuleService` calls it inside
- * the transaction of every write that can change a match: a product's metafields or groupings, a
+ * the transaction of every write that can change a match: a product's metafields, brand or groupings, a
  * grouping's rule, a structure file. A manual grouping (`rule` null) is never touched, so clearing a rule leaves the
  * members it had as picked ones.
  */
@@ -44,6 +49,7 @@ export class ProductRuleMembershipService {
   private productProductCategoryRepository: ProductProductCategoryRepository
   private productProductCollectionRepository: ProductProductCollectionRepository
   private productMetafieldRepository: ProductMetafieldRepository
+  private productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
   private withTransaction: WithTransaction
 
   constructor(dependencies: InjectedDependencies) {
@@ -53,6 +59,7 @@ export class ProductRuleMembershipService {
     this.productProductCategoryRepository = dependencies.productProductCategoryRepository
     this.productProductCollectionRepository = dependencies.productProductCollectionRepository
     this.productMetafieldRepository = dependencies.productMetafieldRepository
+    this.productMetafieldDefinitionRepository = dependencies.productMetafieldDefinitionRepository
     this.withTransaction = dependencies.withTransaction
   }
 
@@ -74,13 +81,14 @@ export class ProductRuleMembershipService {
         )
       if (scopedProductIds.length === 0) return
 
-      const metafieldsOf = await this.productMetafieldRepository.findMetafieldsOfProducts(
-        scopedProductIds,
-        transactionContext,
-      )
+      const [fieldsOf, [vendorField]] = await Promise.all([
+        this.productMetafieldRepository.findFieldValuesOfProducts(scopedProductIds, transactionContext),
+        this.productMetafieldDefinitionRepository.find({ source: 'vendor' }, { select: ['key'] }, transactionContext),
+      ])
+      const facts = { fieldsOf, vendorKey: vendorField?.key }
 
-      await this.applyRules(this.productProductCategoryRepository, categories, metafieldsOf, transactionContext)
-      await this.applyRules(this.productProductCollectionRepository, collections, metafieldsOf, transactionContext)
+      await this.applyRules(this.productProductCategoryRepository, categories, facts, transactionContext)
+      await this.applyRules(this.productProductCollectionRepository, collections, facts, transactionContext)
     })
   }
 
@@ -103,20 +111,20 @@ export class ProductRuleMembershipService {
   private async applyRules(
     pivot: MembershipPivot,
     groupings: RuledGrouping[],
-    metafieldsOf: Map<string, Map<string, Set<string>>>,
+    { fieldsOf, vendorKey }: ProductFacts,
     context: Context,
   ): Promise<void> {
     if (groupings.length === 0) return
-    const membershipsOf = await pivot.findGroupingsOfProducts([...metafieldsOf.keys()], context)
+    const membershipsOf = await pivot.findGroupingsOfProducts([...fieldsOf.keys()], context)
 
     await Promise.all(
       groupings.map(({ id, rule }) => {
         if (!rule) return undefined
         const add: string[] = []
         const remove: string[] = []
-        for (const [productId, metafields] of metafieldsOf) {
+        for (const [productId, fields] of fieldsOf) {
           const isMember = membershipsOf.get(productId)?.some((grouping) => grouping.id === id) ?? false
-          const matches = matchesGroupingRule(rule, metafields)
+          const matches = matchesGroupingRule(rule, fields, vendorKey)
           if (matches && !isMember) add.push(productId)
           if (!matches && isMember) remove.push(productId)
         }

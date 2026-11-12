@@ -312,6 +312,7 @@ function startProduct(
     type: get('type') || null,
     tags: readTags(get('tags')),
     metafields,
+    brand: get('brand') || null,
     options: hasNoOptions ? [] : optionNames.map((title) => ({ title, values: [] })),
     variants: [],
     imageUrls: [],

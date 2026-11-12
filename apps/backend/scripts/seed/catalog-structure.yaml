@@ -1,5 +1,6 @@
 # Store structure for the development catalogue in product-import.csv. `campos` are the product
 # metafields the rules read; `filtro: true` also offers one as a storefront filter, in this order.
+# `origen: vendor` makes a campo the product's brand, the CSV's Vendor column, instead of a metafield.
 # A rule maps each clave to the values that satisfy it: every clave must match, each by any one of
 # its values.
 campos:
@@ -11,6 +12,7 @@ campos:
     filtro: true
   - nombre: Colecciones
     clave: colecciones
+  - { nombre: Marca, clave: marca, origen: vendor }
 categorias:
   - nombre: Men
     handle: men

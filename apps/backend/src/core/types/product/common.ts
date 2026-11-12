@@ -29,6 +29,8 @@ export type ProductDTO = {
   metadata: Record<string, unknown> | null
   /** The product's Product Type. Can name a soft-deleted Type; `listProductGroupings` joins live ones only. */
   typeId: string | null
+  /** The product's brand, the CSV's Vendor column. */
+  brand: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -54,9 +56,10 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   /** Products carrying any of the Tags with these values. Not a column, as `tagId`. */
   tagValue?: string | string[]
   /**
-   * Products whose metafield holds any of the values listed for its key, for every key listed —
-   * `{ genero: ['women'], tipo: ['tops', 'bottoms'] }`. An unknown key matches nothing; a key with no
-   * values narrows nothing. Not a column, as `tagId`.
+   * Products whose field holds any of the values listed for its key, for every key listed —
+   * `{ genero: ['women'], tipo: ['tops', 'bottoms'] }`. A vendor field's key matches the brand,
+   * ignoring case. An unknown key matches nothing; a key with no values narrows nothing. Not a
+   * column, as `tagId`.
    */
   metafields?: Record<string, string[]>
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
@@ -327,15 +330,21 @@ export interface FilterableProductVariantImageProps extends BaseFilterable<Filte
 }
 
 /**
- * A rule: one condition per metafield key, every condition must hold, and a condition holds when the
- * product's metafield carries any one of its values — an AND of ORs.
+ * A rule: one condition per field key, every condition must hold, and a condition holds when the
+ * product's field carries any one of its values — an AND of ORs.
  * `{ genero: ['hombre', 'unisex'], estilo: ['clasicos'] }` reads "(hombre or unisex) and clasicos".
- * Values match exactly, as they are stored.
+ * Metafield values match exactly, as they are stored; the vendor field matches the brand ignoring case.
  */
 export type ProductGroupingRuleDTO = Record<string, string[]>
 
 /** What a metafield holds. A list of short texts is the only kind, the one Shopify can filter on and build collections from. */
 export type ProductMetafieldType = 'list.single_line_text_field'
+
+/**
+ * Where a field's values come from: the product's metafield rows, or its `brand` column (the CSV's
+ * Vendor). At most one field is `vendor`.
+ */
+export type ProductFieldSource = 'metafield' | 'vendor'
 
 /** A named product field ("Género", key `genero`), as the structure file's `campos` declare it. */
 export type ProductMetafieldDefinitionDTO = {
@@ -348,6 +357,7 @@ export type ProductMetafieldDefinitionDTO = {
   filterable: boolean
   /** Place among the definitions, the structure file's order. */
   rank: number
+  source: ProductFieldSource
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -438,6 +448,8 @@ type CatalogStructureMetafieldDTO = {
   key: string
   /** `filtro: true`: offered as a storefront filter. */
   filterable: boolean
+  /** `origen: vendor`: the product's brand rather than a metafield. */
+  source: ProductFieldSource
 }
 
 /**
@@ -600,6 +612,8 @@ export type ImportedProductDTO = {
    * an empty cell, which clears the metafield; a key without a column is absent and left alone.
    */
   metafields: Record<string, string[]>
+  /** The Vendor cell, trimmed; `null` when empty or the file has no Vendor column. */
+  brand: string | null
   options: Array<{ title: string; values: string[] }>
   variants: ImportedVariantDTO[]
   /** In display order. */
@@ -616,6 +630,8 @@ export type ProductImportSummaryDTO = {
   ignoredColumns: string[]
   /** The metafields the file has a column for, by key, with the name the store gives each. */
   metafields: Array<{ key: string; name: string }>
+  /** What the store calls the brand: the vendor campo's name, `null` when no campo reads it. */
+  brandName: string | null
   firstProduct: ImportedProductDTO | null
 }
 

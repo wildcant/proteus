@@ -598,37 +598,37 @@ msgid "This collection's products follow its rule. Change the rule or the produc
 msgstr "This collection's products follow its rule. Change the rule or the products' metafields."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:146
+#: src/modules/product/services/product-import-service.ts:150
 msgid "This import has errors. Fix the file and upload it again."
 msgstr "This import has errors. Fix the file and upload it again."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:152
+#: src/modules/product/services/product-import-service.ts:156
 msgid "This import has expired. Upload the file again."
 msgstr "This import has expired. Upload the file again."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:285
+#: src/modules/product/services/product-import-service.ts:289
 msgid "Only an import waiting in preview can be confirmed or canceled."
 msgstr "Only an import waiting in preview can be confirmed or canceled."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:373
+#: src/modules/product/services/product-module-service.ts:374
 msgid "Variant creation returned no rows"
 msgstr "Variant creation returned no rows"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:452
+#: src/modules/product/services/product-module-service.ts:453
 msgid "Variant \"{variantId}\" not found"
 msgstr "Variant \"{variantId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1230
+#: src/modules/product/services/product-module-service.ts:1231
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1317
+#: src/modules/product/services/product-module-service.ts:1330
 msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 msgstr "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 

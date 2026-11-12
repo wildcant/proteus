@@ -2231,6 +2231,12 @@
               "string",
               "null"
             ]
+          },
+          "brand": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -2245,7 +2251,8 @@
           "height",
           "width",
           "originCountry",
-          "material"
+          "material",
+          "brand"
         ]
       },
       "StoreProductResponse": {

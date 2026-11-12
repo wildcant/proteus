@@ -185,6 +185,7 @@ export function generateImportedProductDTO(overrides?: Partial<ImportedProductDT
     type: null,
     tags: [],
     metafields: {},
+    brand: null,
     options: [],
     variants: [
       {

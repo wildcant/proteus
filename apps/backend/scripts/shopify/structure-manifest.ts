@@ -95,14 +95,19 @@ export function buildStructureManifest(structure: CatalogStructureDTO): ShopifyS
     return title === undefined ? [] : [{ title, collectionHandle: entry.handle, children: [] }]
   })
 
-  const metafields = structure.metafields.map(
-    ({ name, key, filterable }): ShopifyMetafieldDefinition => ({
-      name,
-      namespace: 'custom',
-      key,
-      type: 'list.single_line_text_field',
-      filter: filterable,
-    }),
+  // The vendor campo is the product's built-in Vendor, which has no metafield definition.
+  const metafields = structure.metafields.flatMap(({ name, key, filterable, source }): ShopifyMetafieldDefinition[] =>
+    source === 'vendor'
+      ? []
+      : [
+          {
+            name,
+            namespace: 'custom',
+            key,
+            type: 'list.single_line_text_field',
+            filter: filterable,
+          },
+        ],
   )
 
   return { metafields, collections, menu }

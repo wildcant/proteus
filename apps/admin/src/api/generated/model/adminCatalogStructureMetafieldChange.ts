@@ -5,9 +5,11 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminCatalogStructureMetafieldChangeSource } from './adminCatalogStructureMetafieldChangeSource.ts';
 
 export interface AdminCatalogStructureMetafieldChange {
   key: string;
   name: string;
   filterable: boolean;
+  source: AdminCatalogStructureMetafieldChangeSource;
 }

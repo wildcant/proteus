@@ -51,6 +51,7 @@ export async function createProductImport(
       willCreate: { tags: [], types: [] },
       ignoredColumns: [],
       metafields: [],
+      brandName: null,
       firstProduct: products[0] ?? null,
     },
     errors: [],

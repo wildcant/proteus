@@ -38,8 +38,11 @@ const key = z
 /** `filtro: true` offers the campo as a storefront filter, Shopify's per-definition filter switch. */
 const filter = z.boolean({ error: ifWrongType('Must be true or false.') })
 
+/** `origen: vendor` makes the campo the product's brand, the CSV's Vendor column, rather than a metafield. */
+const source = z.literal('vendor', { error: 'Must be "vendor", or left out for a metafield.' })
+
 const field = z.strictObject(
-  { nombre: name, clave: key, filtro: filter.optional() },
+  { nombre: name, clave: key, filtro: filter.optional(), origen: source.optional() },
   { error: ifWrongType('Must be a campo with nombre and clave.') },
 )
 
@@ -103,7 +106,8 @@ export type ParsedCatalogStructure =
 
 /**
  * Reads `estructura.yaml` into a structure, or every problem with it, each with the path it is at
- * (`categorias[0].hijos[1].handle`). Beyond the shape: a clave is declared once, every rule names
+ * (`categorias[0].hijos[1].handle`). Beyond the shape: a clave is declared once, at most one campo
+ * is the vendor (`origen: vendor`), every rule names
  * only declared claves, a handle is used once among the Categories and once among the Collections,
  * and every menu entry names one the file declares.
  */
@@ -127,12 +131,27 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   const errors: CatalogStructureErrorDTO[] = []
 
   const keys = new Set<string>()
+  let vendorKey: string | null = null
   const metafields = campos.map((raw, index) => {
     if (keys.has(raw.clave)) {
       errors.push({ path: `campos[${index}].clave`, message: `The clave "${raw.clave}" is used more than once.` })
     }
     keys.add(raw.clave)
-    return { name: raw.nombre, key: raw.clave, filterable: raw.filtro ?? false }
+    if (raw.origen === 'vendor') {
+      if (vendorKey !== null) {
+        errors.push({
+          path: `campos[${index}].origen`,
+          message: `Only one campo can be the vendor; "${vendorKey}" already is.`,
+        })
+      }
+      vendorKey ??= raw.clave
+    }
+    return {
+      name: raw.nombre,
+      key: raw.clave,
+      filterable: raw.filtro ?? false,
+      source: raw.origen ?? ('metafield' as const),
+    }
   })
   const toRule = (raw: RawRule | undefined, path: string) => {
     if (!raw) return null

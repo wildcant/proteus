@@ -77,9 +77,12 @@ export class ProductImportService {
     const { products, errors, ignoredColumns, metafieldKeys } = await parseShopifyCsv(
       source,
       settings,
-      new Set(definitions.map((definition) => definition.key)),
+      new Set(
+        definitions.filter((definition) => definition.source === 'metafield').map((definition) => definition.key),
+      ),
     )
     const nameOf = new Map(definitions.map((definition) => [definition.key, definition.name]))
+    const brandName = definitions.find((definition) => definition.source === 'vendor')?.name ?? null
 
     const handlesOf = (pick: (product: ImportedProductDTO) => string[]) => [...new Set(products.flatMap(pick))]
     const productHandles = handlesOf((product) => [product.handle])
@@ -117,6 +120,7 @@ export class ProductImportService {
         },
         ignoredColumns,
         metafields: metafieldKeys.map((key) => ({ key, name: nameOf.get(key) ?? key })),
+        brandName,
         firstProduct: products[0] ?? null,
       },
       errors,

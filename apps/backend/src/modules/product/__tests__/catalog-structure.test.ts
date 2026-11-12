@@ -18,11 +18,16 @@ test.describe('parseCatalogStructure', () => {
         '    filtro: false',
         '  - nombre: Colecciones',
         '    clave: colecciones',
+        '  - nombre: Marca',
+        '    clave: marca',
+        '    origen: vendor',
+        '    filtro: true',
         'categorias:',
         '  - nombre: Hombre',
         '    handle: hombre',
         '    regla:',
         '      genero: [hombre, unisex]',
+        '      marca: [Nike]',
         '    hijos:',
         '      - nombre: Clásicos',
         '        handle: hombre-clasicos',
@@ -45,16 +50,18 @@ test.describe('parseCatalogStructure', () => {
     expect(errors).toEqual([])
     expect(structure).toEqual({
       metafields: [
-        // `filtro` left out is no filter.
-        { name: 'Género', key: 'genero', filterable: true },
-        { name: 'Estilo', key: 'estilo', filterable: false },
-        { name: 'Colecciones', key: 'colecciones', filterable: false },
+        // `filtro` left out is no filter; `origen` left out is a metafield.
+        { name: 'Género', key: 'genero', filterable: true, source: 'metafield' },
+        { name: 'Estilo', key: 'estilo', filterable: false, source: 'metafield' },
+        { name: 'Colecciones', key: 'colecciones', filterable: false, source: 'metafield' },
+        // The brand, named by its clave like any other campo.
+        { name: 'Marca', key: 'marca', filterable: true, source: 'vendor' },
       ],
       categories: [
         {
           name: 'Hombre',
           handle: 'hombre',
-          rule: { genero: ['hombre', 'unisex'] },
+          rule: { genero: ['hombre', 'unisex'], marca: ['Nike'] },
           children: [
             {
               name: 'Clásicos',
@@ -88,7 +95,11 @@ test.describe('parseCatalogStructure', () => {
     const { structure, errors } = parseCatalogStructure(text)
 
     expect(errors).toEqual([])
-    expect(structure?.metafields.map((metafield) => metafield.key)).toEqual(['genero', 'tipo', 'colecciones'])
+    expect(structure?.metafields.map((metafield) => metafield.key)).toEqual(['genero', 'tipo', 'colecciones', 'marca'])
+    expect(structure?.metafields.find((metafield) => metafield.key === 'marca')).toMatchObject({
+      source: 'vendor',
+      filterable: false,
+    })
     expect(structure?.categories.map((category) => category.handle)).toEqual(['men', 'women', 'unisex'])
     expect(structure?.categories[0]?.children.map((child) => child.handle)).toEqual([
       'men-tops',
@@ -107,6 +118,9 @@ test.describe('parseCatalogStructure', () => {
         '  - nombre: Talla',
         '    clave: talla',
         '    filtro: si',
+        '  - nombre: Marca',
+        '    clave: marca',
+        '    origen: proveedor',
         'categorias:',
         '  - nombre: Hombre',
         '    handle: hombre',
@@ -132,6 +146,7 @@ test.describe('parseCatalogStructure', () => {
       { path: 'campos[0].clave', message: 'Must be 2 to 64 lowercase letters, digits, "-" or "_", like "genero".' },
       { path: 'campos[1].clave', message: 'Must be a clave.' },
       { path: 'campos[2].filtro', message: 'Must be true or false.' },
+      { path: 'campos[3].origen', message: 'Must be "vendor", or left out for a metafield.' },
       { path: 'categorias[0].regla', message: 'Must hold at least one condition.' },
       {
         path: 'categorias[0].hijos[0].handle',
@@ -146,7 +161,7 @@ test.describe('parseCatalogStructure', () => {
     ])
   })
 
-  test('refuses a clave or handle used twice, a rule naming an undeclared clave and a menu entry naming an undeclared handle', async ({
+  test('refuses a clave or handle used twice, a second vendor campo, a rule naming an undeclared clave and a menu entry naming an undeclared handle', async ({
     expect,
   }) => {
     const { structure, errors } = parseCatalogStructure(
@@ -154,6 +169,8 @@ test.describe('parseCatalogStructure', () => {
         'campos:',
         '  - { nombre: Género, clave: genero }',
         '  - { nombre: Sexo, clave: genero }',
+        '  - { nombre: Marca, clave: marca, origen: vendor }',
+        '  - { nombre: Fabricante, clave: fabricante, origen: vendor }',
         'categorias:',
         '  - nombre: Hombre',
         '    handle: hombre',
@@ -178,6 +195,7 @@ test.describe('parseCatalogStructure', () => {
     expect(structure).toBeNull()
     expect(errors).toEqual([
       { path: 'campos[1].clave', message: 'The clave "genero" is used more than once.' },
+      { path: 'campos[3].origen', message: 'Only one campo can be the vendor; "marca" already is.' },
       { path: 'categorias[0].regla.estilo', message: 'No campo in the file has the clave "estilo".' },
       { path: 'categorias[0].hijos[0].handle', message: 'The category handle "hombre" is used more than once.' },
       { path: 'colecciones[0].regla.rebajas', message: 'No campo in the file has the clave "rebajas".' },

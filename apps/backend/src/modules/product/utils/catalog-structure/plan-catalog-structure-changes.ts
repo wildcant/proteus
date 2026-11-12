@@ -59,13 +59,18 @@ export function absentMetafieldDefinitions(
   return live.filter((definition) => !kept.has(definition.key))
 }
 
-/** A new name, filter switch or place in the file. */
+/** A new name, filter switch, source or place in the file. */
 function definitionChanges(
   live: ProductMetafieldDefinitionDTO,
   metafield: CatalogStructureDTO['metafields'][number],
   rank: number,
 ): boolean {
-  return live.name !== metafield.name || live.filterable !== metafield.filterable || live.rank !== rank
+  return (
+    live.name !== metafield.name ||
+    live.filterable !== metafield.filterable ||
+    live.source !== metafield.source ||
+    live.rank !== rank
+  )
 }
 
 /** What applying `structure` would do to the live definitions, matched by key, and groupings, matched by handle. */
@@ -85,11 +90,9 @@ export function planCatalogStructureChanges(
     if (!live) changes.metafields.create.push(metafield)
     else if (definitionChanges(live, metafield, rank)) changes.metafields.update.push(metafield)
   }
-  changes.metafields.delete = absentMetafieldDefinitions(structure, metafields).map(({ key, name, filterable }) => ({
-    key,
-    name,
-    filterable,
-  }))
+  changes.metafields.delete = absentMetafieldDefinitions(structure, metafields).map(
+    ({ key, name, filterable, source }) => ({ key, name, filterable, source }),
+  )
 
   const categoryByHandle = new Map(categories.map((category) => [category.handle, category]))
   const handleOfId = new Map(categories.map((category) => [category.id, category.handle]))

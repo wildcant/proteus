@@ -2981,12 +2981,20 @@
           },
           "filterable": {
             "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "metafield",
+              "vendor"
+            ]
           }
         },
         "required": [
           "key",
           "name",
-          "filterable"
+          "filterable",
+          "source"
         ]
       },
       "AdminCatalogStructureCategoryChange": {
@@ -3830,6 +3838,12 @@
               "null"
             ]
           },
+          "brand": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -3867,6 +3881,7 @@
           "externalId",
           "metadata",
           "typeId",
+          "brand",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -5606,6 +5621,12 @@
               ]
             }
           },
+          "brandName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "firstProduct": {
             "$ref": "#/components/schemas/AdminImportedProduct"
           }
@@ -5617,6 +5638,7 @@
           "willCreate",
           "ignoredColumns",
           "metafields",
+          "brandName",
           "firstProduct"
         ]
       },
@@ -5674,6 +5696,12 @@
               }
             }
           },
+          "brand": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "options": {
             "type": "array",
             "items": {
@@ -5718,6 +5746,7 @@
           "type",
           "tags",
           "metafields",
+          "brand",
           "options",
           "variants",
           "imageUrls"

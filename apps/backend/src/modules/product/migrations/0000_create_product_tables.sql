@@ -62,6 +62,7 @@ CREATE TABLE "product_metafield_definition" (
 	"type" text DEFAULT 'list.single_line_text_field' NOT NULL,
 	"filterable" boolean DEFAULT false NOT NULL,
 	"rank" integer DEFAULT 0 NOT NULL,
+	"source" text DEFAULT 'metafield' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -226,6 +227,7 @@ CREATE TABLE "product" (
 	"external_id" text,
 	"metadata" jsonb,
 	"type_id" text,
+	"brand" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -291,4 +293,5 @@ CREATE UNIQUE INDEX "idx_product_variant_barcode" ON "product_variant" USING btr
 CREATE UNIQUE INDEX "idx_product_variant_ean" ON "product_variant" USING btree ("ean") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_variant_upc" ON "product_variant" USING btree ("upc") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_handle" ON "product" USING btree ("handle") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_product_type_id" ON "product" USING btree ("type_id") WHERE deleted_at IS NULL;
+CREATE INDEX "idx_product_type_id" ON "product" USING btree ("type_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_brand" ON "product" USING btree (lower("brand")) WHERE deleted_at IS NULL;

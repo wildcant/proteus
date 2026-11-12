@@ -17,5 +17,7 @@ export interface AdminProductImportSummary {
   willCreate: AdminProductImportSummaryWillCreate;
   ignoredColumns: string[];
   metafields: AdminProductImportSummaryMetafieldsItem[];
+  /** @nullable */
+  brandName: string | null;
   firstProduct: AdminImportedProduct | null;
 }

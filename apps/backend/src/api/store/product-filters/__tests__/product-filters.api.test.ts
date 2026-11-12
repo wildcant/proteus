@@ -134,3 +134,66 @@ test.describe('Filter by metafield', () => {
     })
   })
 })
+
+test.describe('Filter by brand', () => {
+  test('the vendor field filters and counts by brand like a metafield, ignoring case', async ({ expect, service }) => {
+    await service.create.metafieldDefinitions(api.container, [
+      { key: 'marca', name: 'Marca', filterable: true, source: 'vendor' },
+      { key: 'genero', name: 'Género', filterable: true },
+    ])
+    const product = async (brand: string | null, metafields: Record<string, string[]>) => {
+      const { product } = await service.create.product(api.container, { status: 'published', brand, metafields })
+      const [variant] = await service.create.productVariants(api.container, product.id)
+      if (!variant) throw new Error('Expected a variant')
+      await service.create.variantPrices(api.container, [variant.id])
+      return product
+    }
+    const nikeMen = await product('Nike', { genero: ['men'] })
+    const nikeWomen = await product('NIKE', { genero: ['women'] })
+    const nikeKids = await product('Nike', { genero: ['kids'] })
+    const adidasMen = await product('Adidas', { genero: ['men'] })
+    await product(null, { genero: ['women'] })
+
+    const listOf = async (query: string) => {
+      const response = await api.get<typeof productRoutes.GetOutput>(`/store/products?${query}`)
+      expect(response.status).toBe(200)
+      return response.body.products.map((item) => item.id).sort()
+    }
+    const filtersOf = async (query: string) => {
+      const response = await api.get<typeof productFilterRoutes.GetOutput>(`/store/product-filters?${query}`)
+      expect(response.status).toBe(200)
+      return Object.fromEntries(
+        response.body.filters.map((filter) => [
+          filter.key,
+          filter.values.map(({ value, count }) => `${value} ${count}`),
+        ]),
+      )
+    }
+    const sorted = (...ids: string[]) => ids.sort()
+
+    // Any spelling of the brand selects it; two brands widen (OR); a metafield narrows (AND).
+    expect(await listOf('filter=marca:nike')).toEqual(sorted(nikeMen.id, nikeWomen.id, nikeKids.id))
+    expect(await listOf('filter=marca:Nike&filter=marca:adidas')).toEqual(
+      sorted(nikeMen.id, nikeWomen.id, nikeKids.id, adidasMen.id),
+    )
+    expect(await listOf('filter=marca:Nike&filter=genero:men')).toEqual([nikeMen.id])
+    expect(await listOf('filter=marca:Puma')).toEqual([])
+
+    // The list items carry the brand.
+    const page = await api.get<typeof productRoutes.GetOutput>('/store/products?filter=genero:men')
+    expect(page.body.products.map((item) => item.brand).sort()).toEqual(['Adidas', 'Nike'])
+
+    // In file order. Spellings that differ only in case are one value, shown as most products write
+    // it; a product with no brand offers none.
+    expect(await filtersOf('')).toEqual({ marca: ['Adidas 1', 'Nike 3'], genero: ['kids 1', 'men 2', 'women 2'] })
+    // A brand choice narrows the other filter, not its own.
+    expect(await filtersOf('filter=marca:nike')).toEqual({
+      marca: ['Adidas 1', 'Nike 3'],
+      genero: ['kids 1', 'men 1', 'women 1'],
+    })
+    expect(await filtersOf('filter=genero:women')).toEqual({
+      marca: ['Adidas 0', 'Nike 1'],
+      genero: ['kids 1', 'men 2', 'women 2'],
+    })
+  })
+})

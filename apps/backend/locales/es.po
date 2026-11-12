@@ -598,37 +598,37 @@ msgid "This collection's products follow its rule. Change the rule or the produc
 msgstr "Los productos de esta colección siguen su regla. Cambia la regla o los metacampos de los productos."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:146
+#: src/modules/product/services/product-import-service.ts:150
 msgid "This import has errors. Fix the file and upload it again."
 msgstr "Esta importación tiene errores. Corrige el archivo y súbelo de nuevo."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:152
+#: src/modules/product/services/product-import-service.ts:156
 msgid "This import has expired. Upload the file again."
 msgstr "Esta importación ha caducado. Sube el archivo de nuevo."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-import-service.ts:285
+#: src/modules/product/services/product-import-service.ts:289
 msgid "Only an import waiting in preview can be confirmed or canceled."
 msgstr "Solo se puede confirmar o cancelar una importación en vista previa."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:373
+#: src/modules/product/services/product-module-service.ts:374
 msgid "Variant creation returned no rows"
 msgstr "La creación de la variante no devolvió filas"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:452
+#: src/modules/product/services/product-module-service.ts:453
 msgid "Variant \"{variantId}\" not found"
 msgstr "No se encontró la variante \"{variantId}\""
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1230
+#: src/modules/product/services/product-module-service.ts:1231
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "Estas opciones no encajan con las variantes del producto: {reasons}. Elimina primero esas variantes o haz el cambio desde el admin, que las mueve por ti."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1317
+#: src/modules/product/services/product-module-service.ts:1330
 msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 msgstr "No hay ningún metacampo definido con la clave {keys}. Decláralo en campos del archivo de estructura."
 

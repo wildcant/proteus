@@ -13,13 +13,16 @@ export class ProductMetafieldDefinitionRepository extends BaseRepository(product
     const existing = await this.find({ key: data.map((definition) => definition.key) }, undefined, context)
     const byKey = new Map(existing.map((definition) => [definition.key, definition]))
     return Promise.all(
-      data.map(({ key, name, filterable = false }, rank) => {
+      data.map(({ key, name, filterable = false, source = 'metafield' }, rank) => {
         const definition = byKey.get(key)
-        if (!definition) return this.create({ key, name, filterable, rank }, context)
-        if (definition.name === name && definition.filterable === filterable && definition.rank === rank) {
-          return definition
-        }
-        return this.update(definition.id, { name, filterable, rank }, context)
+        if (!definition) return this.create({ key, name, filterable, rank, source }, context)
+        const unchanged =
+          definition.name === name &&
+          definition.filterable === filterable &&
+          definition.rank === rank &&
+          definition.source === source
+        if (unchanged) return definition
+        return this.update(definition.id, { name, filterable, rank, source }, context)
       }),
     )
   }

@@ -40,11 +40,15 @@ export const productTable = pgTable(
      * soft-deleting a Type leaves the id in place; reads join live Types only.
      */
     typeId: text().references(() => productTypeTable.id, { onDelete: 'set null' }),
+    /** The product's brand (Nike, Adidas), the column a Shopify CSV calls Vendor. The structure file's vendor campo reads it. */
+    brand: text(),
     ...timestamps,
   },
   (table) => [
     liveUniqueIndex('idx_product_handle').on(table.handle),
     liveIndex('idx_product_type_id').on(table.typeId),
+    // Brand selections and facets match case-insensitively.
+    liveIndex('idx_product_brand').on(sql`lower(${table.brand})`),
   ],
 )
 

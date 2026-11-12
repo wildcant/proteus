@@ -10,6 +10,7 @@ export const IMPORT_COLUMNS = {
   status: ['status'],
   type: ['type'],
   tags: ['tags'],
+  brand: ['vendor'],
   sku: ['sku'],
   weight: ['weight value (grams)'],
   price: ['price'],

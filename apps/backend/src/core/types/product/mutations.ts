@@ -1,4 +1,5 @@
 import type {
+  ProductFieldSource,
   ProductGroupingRuleDTO,
   ProductImportErrorDTO,
   ProductImportOptionsDTO,
@@ -38,6 +39,8 @@ export type CreateProductDTO = {
   images?: CreateProductImageInput[]
   /** The product's Product Type. */
   typeId?: string | null
+  /** The product's brand, which the vendor field reads. */
+  brand?: string | null
   metafields?: ProductMetafieldValuesDTO
 } & ProductGroupingIdsDTO
 
@@ -63,6 +66,8 @@ export type UpdateProductDTO = {
   images?: UpsertProductImageInput[]
   /** `null` clears the Product Type. Absent leaves it alone. */
   typeId?: string | null
+  /** `null` clears the brand. Absent leaves it alone. */
+  brand?: string | null
   metafields?: ProductMetafieldValuesDTO
 } & ProductGroupingIdsDTO
 
@@ -79,6 +84,8 @@ export type UpsertProductMetafieldDefinitionDTO = {
   name: string
   /** Absent is not filterable. */
   filterable?: boolean
+  /** Absent is a metafield. */
+  source?: ProductFieldSource
 }
 
 /** The pivot-backed groupings a product write sets. Each replaces the product's whole set; absent leaves it alone. */

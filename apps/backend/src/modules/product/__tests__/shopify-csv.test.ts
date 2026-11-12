@@ -29,14 +29,14 @@ test.describe('parseShopifyCsv', () => {
   test('groups rows by handle into products with their variants, prices, tags and gallery', async ({ expect }) => {
     const { products, errors, ignoredColumns } = await parse([
       HEADER,
-      'Hoodie,hoodie,"<p>Warm,\nsoft</p>",Proteus,Hoodie,"genero:hombre, coleccion:essentials, cotton, , cotton",Active,HOODIE-S-GREEN,Color,Green,Size,S,90,360000,shopify,100,DENY,400,https://cdn.example.com/b.jpg,2,https://cdn.example.com/a.jpg',
+      'Hoodie,hoodie,"<p>Warm,\nsoft</p>", Nike ,Hoodie,"genero:hombre, coleccion:essentials, cotton, , cotton",Active,HOODIE-S-GREEN,Color,Green,Size,S,90,360000,shopify,100,DENY,400,https://cdn.example.com/b.jpg,2,https://cdn.example.com/a.jpg',
       ',hoodie,,,,,,HOODIE-M-GREEN,,Green,,M,"90,50",,shopify,5,CONTINUE,400,https://cdn.example.com/a.jpg,1,',
       ',hoodie,,,,,,,,,,,,,,,,,https://cdn.example.com/c.jpg,3,',
       'Cap,cap,,,,,draft,CAP-1,Title,Default Title,,,10,,,,,,,,',
     ])
 
     expect(errors).toEqual([])
-    expect(ignoredColumns).toEqual(['Vendor'])
+    expect(ignoredColumns).toEqual([])
     expect(products).toHaveLength(2)
     const [hoodie, cap] = products
     expect(hoodie).toMatchObject({
@@ -47,6 +47,8 @@ test.describe('parseShopifyCsv', () => {
       description: '<p>Warm,\nsoft</p>',
       status: 'published',
       type: 'Hoodie',
+      // Vendor is the brand, trimmed.
+      brand: 'Nike',
       // Prefixed tags are plain tags, kept as written; blanks and repeats are dropped.
       tags: ['genero:hombre', 'coleccion:essentials', 'cotton'],
       options: [
@@ -81,6 +83,8 @@ test.describe('parseShopifyCsv', () => {
     expect(cap).toMatchObject({
       line: 6,
       status: 'draft',
+      // An empty Vendor cell leaves the product without a brand.
+      brand: null,
       options: [],
       variants: [expect.objectContaining({ sku: 'CAP-1', optionValues: [] })],
     })

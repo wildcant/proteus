@@ -186,6 +186,7 @@ import {
   retrieveProductVariant,
   setProductMetafields,
   setProductOptions,
+  updateProduct,
   updateProductType,
   updateProductVariant,
 } from '../factories/services/product.js'
@@ -401,6 +402,7 @@ export type Fixtures = {
       inventoryLevel: typeof adjustInventoryLevel
       productOptions: typeof setProductOptions
       productMetafields: typeof setProductMetafields
+      product: typeof updateProduct
       productType: typeof updateProductType
       deletedProductType: typeof deleteProductType
       productVariant: typeof updateProductVariant
@@ -635,6 +637,7 @@ export const test = testBase.extend<Fixtures>({
         inventoryLevel: adjustInventoryLevel,
         productOptions: setProductOptions,
         productMetafields: setProductMetafields,
+        product: updateProduct,
         productType: updateProductType,
         deletedProductType: deleteProductType,
         productVariant: updateProductVariant,

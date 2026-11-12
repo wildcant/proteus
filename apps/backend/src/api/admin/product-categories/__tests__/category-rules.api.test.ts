@@ -111,4 +111,47 @@ test.describe('Ruled Categories', () => {
       expect(invalid.status).toBe(400)
     }
   })
+
+  test('a rule on the vendor field fills a Category from the brand, ignoring case, and follows a brand change', async ({
+    expect,
+    http,
+    service,
+  }) => {
+    await service.create.metafieldDefinitions(api.container, [
+      { key: 'genero', name: 'Género' },
+      { key: 'marca', name: 'Marca', source: 'vendor' },
+    ])
+    const createProduct = async (brand: string | null, metafields: ProductMetafieldValuesDTO = {}) =>
+      (await service.create.product(api.container, { brand, metafields })).product
+
+    const nike = await createProduct('Nike', { genero: ['hombre'] })
+    const shoutedNike = await createProduct('NIKE', { genero: ['hombre'] })
+    const adidas = await createProduct('Adidas', { genero: ['hombre'] })
+    const womenNike = await createProduct('Nike', { genero: ['mujer'] })
+    await createProduct(null, { genero: ['hombre'] })
+
+    const created = await api.post<typeof categoryRoutes.PostOutput>(
+      '/admin/product-categories',
+      http.admin.createProductCategory({ rule: { marca: ['Nike'], genero: ['hombre'] } }),
+    )
+    expect(created.status).toBe(201)
+    const category = created.body.productCategory
+    const members = async () => {
+      const response = await api.get<typeof productRoutes.GetOutput>(`/admin/products?categoryId=${category.id}`)
+      expect(response.status).toBe(200)
+      return response.body.products.map((product) => product.id).sort()
+    }
+    // The brand condition ANDs with the metafield one, and matches whatever the case.
+    expect(await members()).toEqual([nike.id, shoutedNike.id].sort())
+
+    // A brand change moves the product, both ways.
+    await service.update.product(api.container, adidas.id, { brand: 'nike' })
+    await service.update.product(api.container, nike.id, { brand: 'Puma' })
+    expect(await members()).toEqual([shoutedNike.id, adidas.id].sort())
+
+    // The product shows its brand; the vendor field is not one of its metafields.
+    const detail = await api.get<typeof productByIdRoutes.GetOutput>(`/admin/products/${womenNike.id}`)
+    expect(detail.body.product.brand).toBe('Nike')
+    expect(detail.body.product.metafields).toEqual([{ key: 'genero', name: 'Género', values: ['mujer'] }])
+  })
 })

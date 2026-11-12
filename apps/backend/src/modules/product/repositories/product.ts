@@ -1,4 +1,4 @@
-import { and, asc, eq, exists, inArray, isNull, type SQL, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, inArray, isNotNull, isNull, or, type SQL, sql } from 'drizzle-orm'
 import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import type { Context } from '../../../core/types/context.js'
 import type {
@@ -62,20 +62,32 @@ export class ProductRepository extends BaseRepository(productTable) {
    * before any selection, so a value nothing in view would keep still comes back, at 0; the count
    * applies every selection but this definition's own, because choosing a value widens its own key
    * (values OR) and narrows only through the others (keys AND). The Tag selection counts as one of
-   * the others. One `GROUP BY` over the definition's values.
+   * the others. One `GROUP BY` over the definition's values; for the vendor field, over the brands,
+   * spellings that differ only in case being one value under the most used one.
    */
   async findMetafieldValueCounts(
-    definition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'key'>,
+    definition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'key' | 'source'>,
     { tagValue, metafields, ...scope }: FilterableProductProps,
     context?: Context,
   ): Promise<ProductMetafieldFilterValueDTO[]> {
     const { [definition.key]: _own, ...otherMetafields } = metafields ?? {}
     const narrowed = this.extraWhere({ tagValue, metafields: otherMetafields }) ?? sql`TRUE`
+    const count = sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number)
     const client = this.getClient(context)
+    if (definition.source === 'vendor') {
+      // The spelling most of the products use stands for the value.
+      const brand = sql<string>`mode() WITHIN GROUP (ORDER BY ${this.table.brand})`
+      return client
+        .select({ value: brand, count })
+        .from(this.table)
+        .where(and(isNotNull(this.table.brand), this.buildWhere(scope)))
+        .groupBy(sql`lower(${this.table.brand})`)
+        .orderBy(asc(brand))
+    }
     return client
       .select({
         value: productMetafieldTable.value,
-        count: sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number),
+        count,
       })
       .from(productMetafieldTable)
       .innerJoin(this.table, eq(this.table.id, productMetafieldTable.productId))
@@ -181,24 +193,41 @@ export class ProductRepository extends BaseRepository(productTable) {
     )
   }
 
-  /** Products whose live metafield `key` holds any of `values`, under a live definition. */
+  /**
+   * Products whose field `key` holds any of `values`, under a live definition: a metafield's live
+   * values exactly, or the vendor field's brand ignoring case.
+   */
   private holdsMetafield(key: string, values: string[]): SQL {
     const client = this.getClient()
-    return exists(
+    const heldMetafield = exists(
       client
         .select({ id: productMetafieldTable.id })
         .from(productMetafieldTable)
-        .innerJoin(
-          productMetafieldDefinitionTable,
-          eq(productMetafieldDefinitionTable.id, productMetafieldTable.definitionId),
-        )
         .where(
           and(
             eq(productMetafieldTable.productId, this.table.id),
-            eq(productMetafieldDefinitionTable.key, key),
+            eq(productMetafieldTable.definitionId, productMetafieldDefinitionTable.id),
             inArray(productMetafieldTable.value, values),
             isNull(productMetafieldTable.deletedAt),
+          ),
+        ),
+    )
+    const heldBrand = inArray(
+      sql`lower(${this.table.brand})`,
+      values.map((value) => value.toLowerCase()),
+    )
+    return exists(
+      client
+        .select({ id: productMetafieldDefinitionTable.id })
+        .from(productMetafieldDefinitionTable)
+        .where(
+          and(
+            eq(productMetafieldDefinitionTable.key, key),
             isNull(productMetafieldDefinitionTable.deletedAt),
+            or(
+              and(eq(productMetafieldDefinitionTable.source, 'metafield'), heldMetafield),
+              and(eq(productMetafieldDefinitionTable.source, 'vendor'), heldBrand),
+            ),
           ),
         ),
     )

@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm'
 import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveUniqueIndex } from '../../../core/db/indexes.js'
-import type { ProductMetafieldType } from '../../../core/types/product/common.js'
+import type { ProductFieldSource, ProductMetafieldType } from '../../../core/types/product/common.js'
 
 /**
  * A named product field ("Género", key `genero`), the shape Shopify calls a metafield definition.
@@ -21,6 +21,11 @@ export const productMetafieldDefinitionTable = pgTable(
     filterable: boolean().default(false).notNull(),
     /** Place in the structure file's `campos`, which is the order the storefront's filters show in. */
     rank: integer().default(0).notNull(),
+    /**
+     * Where the field's values come from: `metafield` rows, or the product's `brand` (`origen: vendor`
+     * in the file), which holds no values here but is named, ordered and filtered like any other field.
+     */
+    source: text().$type<ProductFieldSource>().default('metafield').notNull(),
     ...timestamps,
   },
   (table) => [liveUniqueIndex('idx_product_metafield_definition_namespace_key').on(table.namespace, table.key)],

@@ -28,6 +28,7 @@ import type {
   ProductCategoryTreeNodeDTO,
   ProductCollectionDTO,
   ProductDTO,
+  ProductFieldSource,
   ProductGroupingRuleDTO,
   ProductGroupingsDTO,
   ProductImageDTO,
@@ -273,7 +274,7 @@ export class ProductModuleService implements IProductModuleService {
       }
       await this.replaceProductGroupings(productIds, groupingIds, transactionContext)
       if (metafields) await this.writeProductMetafields(productIds, metafields, transactionContext)
-      if (this.writesGroupings(groupingIds, metafields)) {
+      if (this.writesGroupings(groupingIds, metafields, productData.brand)) {
         await this.syncRuleMemberships({ productIds }, transactionContext)
       }
 
@@ -317,7 +318,7 @@ export class ProductModuleService implements IProductModuleService {
       if (images) await this.replaceProductImages(productId, images, transactionContext)
       await this.replaceProductGroupings([productId], groupingIds, transactionContext)
       if (metafields) await this.writeProductMetafields([productId], metafields, transactionContext)
-      if (this.writesGroupings(groupingIds, metafields)) {
+      if (this.writesGroupings(groupingIds, metafields, productData.brand)) {
         await this.syncRuleMemberships({ productIds: [productId] }, transactionContext)
       }
 
@@ -1270,14 +1271,15 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   /**
-   * Whether a product write set its metafields, which rules read, or its Categories or Collections,
-   * which a ruled one puts back as its rule says.
+   * Whether a product write set its metafields or brand, which rules read, or its Categories or
+   * Collections, which a ruled one puts back as its rule says.
    */
   private writesGroupings(
     { categoryIds, collectionIds }: ProductGroupingIdsDTO,
     metafields: ProductMetafieldValuesDTO | undefined,
+    brand: string | null | undefined,
   ): boolean {
-    return categoryIds !== undefined || collectionIds !== undefined || metafields !== undefined
+    return categoryIds !== undefined || collectionIds !== undefined || metafields !== undefined || brand !== undefined
   }
 
   /** Each key named replaces that metafield's values on every product; a key with no definition is refused. */
@@ -1286,7 +1288,7 @@ export class ProductModuleService implements IProductModuleService {
     metafields: ProductMetafieldValuesDTO,
     context: Context,
   ): Promise<void> {
-    const definitionIdOf = await this.definitionIdsOf(Object.keys(metafields), context)
+    const definitionIdOf = await this.definitionIdsOf(Object.keys(metafields), context, 'metafield')
     const valuesByDefinitionId = new Map(
       Object.entries(metafields).flatMap(([key, values]) => {
         const definitionId = definitionIdOf.get(key)
@@ -1305,10 +1307,21 @@ export class ProductModuleService implements IProductModuleService {
     await this.definitionIdsOf(Object.keys(rule), context)
   }
 
-  /** The definition id of each key, refusing with `INVALID_DATA` the keys no live definition has. */
-  private async definitionIdsOf(keys: string[], context: Context): Promise<Map<string, string>> {
+  /**
+   * The definition id of each key, refusing with `INVALID_DATA` the keys no live definition has — of
+   * `source` when given: the vendor field holds no metafield values, a product's `brand` is its value.
+   */
+  private async definitionIdsOf(
+    keys: string[],
+    context: Context,
+    source?: ProductFieldSource,
+  ): Promise<Map<string, string>> {
     if (keys.length === 0) return new Map()
-    const definitions = await this.productMetafieldDefinitionRepository.find({ key: keys }, undefined, context)
+    const definitions = await this.productMetafieldDefinitionRepository.find(
+      { key: keys, ...(source ? { source } : {}) },
+      undefined,
+      context,
+    )
     const idOf = new Map(definitions.map((definition) => [definition.key, definition.id]))
     const unknown = keys.filter((key) => !idOf.has(key))
     if (unknown.length > 0) {

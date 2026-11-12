@@ -23,6 +23,7 @@ export * from './adminCatalogStructureCategoryMove.ts';
 export * from './adminCatalogStructureCollectionChange.ts';
 export * from './adminCatalogStructureError.ts';
 export * from './adminCatalogStructureMetafieldChange.ts';
+export * from './adminCatalogStructureMetafieldChangeSource.ts';
 export * from './adminCatalogStructurePlan.ts';
 export * from './adminCatalogStructurePlanCategories.ts';
 export * from './adminCatalogStructurePlanCollections.ts';

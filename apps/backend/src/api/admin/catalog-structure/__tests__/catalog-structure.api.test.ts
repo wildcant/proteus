@@ -19,7 +19,7 @@ import type * as uploadRoutes from '../../uploads/route.js'
 import catalogStructureDefinitions from '../definitions.js'
 import type * as structureRoutes from '../route.js'
 
-/** The development catalogue's structure: three campos, Men, Women and Unisex with their children, three Collections, a menu of the three. */
+/** The development catalogue's structure: three metafield campos and the brand, Men, Women and Unisex with their children, three Collections, a menu of the three. */
 const FIXTURE = readFileSync(resolve(__dirname, '../../../../../scripts/seed/catalog-structure.yaml'), 'utf8')
 
 type Plan = (typeof structureRoutes.PostOutput)['_zod']['output']['catalogStructure']
@@ -101,11 +101,12 @@ test.describe('Structure files', () => {
     expect(plan.errors).toEqual([])
     expect(plan.metafields).toEqual({
       create: [
-        { key: 'tipo', name: 'Tipo', filterable: true },
-        { key: 'colecciones', name: 'Colecciones', filterable: false },
+        { key: 'tipo', name: 'Tipo', filterable: true, source: 'metafield' },
+        { key: 'colecciones', name: 'Colecciones', filterable: false, source: 'metafield' },
+        { key: 'marca', name: 'Marca', filterable: false, source: 'vendor' },
       ],
-      update: [{ key: 'genero', name: 'Género', filterable: true }],
-      delete: [{ key: 'temporada', name: 'Temporada', filterable: false }],
+      update: [{ key: 'genero', name: 'Género', filterable: true, source: 'metafield' }],
+      delete: [{ key: 'temporada', name: 'Temporada', filterable: false, source: 'metafield' }],
     })
     expect(handles(plan.categories.create)).toEqual(
       [

@@ -1,7 +1,8 @@
-import { and, asc, eq, inArray, isNull } from 'drizzle-orm'
+import { and, asc, eq, inArray, isNotNull, isNull } from 'drizzle-orm'
 import type { Context } from '../../../core/types/context.js'
 import type { ProductMetafieldDTO } from '../../../core/types/product/common.js'
 import { BaseRepository } from '../../../core/utils/base-repository.js'
+import { productTable } from '../models/product.js'
 import { productMetafieldTable } from '../models/product-metafield.js'
 import { productMetafieldDefinitionTable } from '../models/product-metafield-definition.js'
 
@@ -56,18 +57,25 @@ export class ProductMetafieldRepository extends BaseRepository(productMetafieldT
     if (rows.length > 0) await this.createMany(rows, context)
   }
 
-  /** Every product's live metafield values as sets by key, in one query. A product with none maps to an empty map. */
-  async findMetafieldsOfProducts(
+  /**
+   * Every product's field values as sets by key, in two queries: its live metafield values, and its
+   * brand under the vendor field's key when one is defined. A product with none maps to an empty map.
+   */
+  async findFieldValuesOfProducts(
     productIds: string[],
     context?: Context,
   ): Promise<Map<string, Map<string, Set<string>>>> {
     const byProduct = new Map<string, Map<string, Set<string>>>(productIds.map((productId) => [productId, new Map()]))
-    for (const row of await this.findRows(productIds, context)) {
-      const metafields = byProduct.get(row.productId)
-      if (!metafields) continue
-      const values = metafields.get(row.key) ?? new Set<string>()
+    const [metafieldRows, brandRows] = await Promise.all([
+      this.findRows(productIds, context),
+      this.findBrandRows(productIds, context),
+    ])
+    for (const row of [...metafieldRows, ...brandRows]) {
+      const fields = byProduct.get(row.productId)
+      if (!fields) continue
+      const values = fields.get(row.key) ?? new Set<string>()
       values.add(row.value)
-      metafields.set(row.key, values)
+      fields.set(row.key, values)
     }
     return byProduct
   }
@@ -100,6 +108,7 @@ export class ProductMetafieldRepository extends BaseRepository(productMetafieldT
       .where(
         and(
           inArray(productMetafieldTable.productId, productIds),
+          eq(productMetafieldDefinitionTable.source, 'metafield'),
           isNull(productMetafieldTable.deletedAt),
           isNull(productMetafieldDefinitionTable.deletedAt),
         ),
@@ -109,5 +118,26 @@ export class ProductMetafieldRepository extends BaseRepository(productMetafieldT
         asc(productMetafieldTable.position),
         asc(productMetafieldTable.id),
       )
+  }
+
+  /** Each product's brand under the live vendor field's key; none when no field is the vendor's. */
+  private async findBrandRows(
+    productIds: string[],
+    context?: Context,
+  ): Promise<{ productId: string; key: string; value: string }[]> {
+    if (productIds.length === 0) return []
+    const rows = await this.getClient(context)
+      .select({
+        productId: productTable.id,
+        key: productMetafieldDefinitionTable.key,
+        value: productTable.brand,
+      })
+      .from(productTable)
+      .innerJoin(
+        productMetafieldDefinitionTable,
+        and(eq(productMetafieldDefinitionTable.source, 'vendor'), isNull(productMetafieldDefinitionTable.deletedAt)),
+      )
+      .where(and(inArray(productTable.id, productIds), isNotNull(productTable.brand)))
+    return rows.flatMap((row) => (row.value === null ? [] : [{ ...row, value: row.value }]))
   }
 }

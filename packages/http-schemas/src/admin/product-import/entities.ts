@@ -47,6 +47,8 @@ export const AdminImportedProduct = z
     tags: z.array(z.string()),
     /** Values by key for each metafield column in the file; `[]` is an empty cell, which clears it. */
     metafields: z.record(z.string(), z.array(z.string())),
+    /** The Vendor cell, trimmed; `null` when it is empty or the file has no Vendor column. */
+    brand: z.string().nullable(),
     options: z.array(z.object({ title: z.string(), values: z.array(z.string()) })),
     variants: z.array(AdminImportedVariant),
     imageUrls: z.array(z.string()),
@@ -68,6 +70,8 @@ export const AdminProductImportSummary = z
     ignoredColumns: z.array(z.string()),
     /** The metafields the file has a column for, with the name the store gives each. */
     metafields: z.array(z.object({ key: z.string(), name: z.string() })),
+    /** The vendor campo's name, which the store calls the brand; `null` when no campo reads it. */
+    brandName: z.string().nullable(),
     firstProduct: AdminImportedProduct.nullable(),
   })
   .openapi('AdminProductImportSummary')
